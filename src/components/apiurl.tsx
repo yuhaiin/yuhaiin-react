@@ -1,0 +1,1 @@
+export var APIUrl = 'http://localhost:50051'
