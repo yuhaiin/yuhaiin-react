@@ -4,16 +4,18 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap-icons/font/bootstrap-icons.css";
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import Config from './components/config'
+import Config from './components/config/config'
 import Home from './components/home'
 import Group from './components/group'
 import Connections from './components/connections'
 import Subscribe from './components/subscribe';
 import Tags from './components/tags';
+import { NewNode } from './components/node';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 
@@ -27,23 +29,27 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "/config",
+        path: "/yuhaiin/config",
         element: <Config />,
       },
       {
-        path: "/group",
+        path: "/yuhaiin/group",
         element: <Group />,
       },
       {
-        path: "/connections",
+        path: "/yuhaiin/connections",
         element: <Connections />,
       },
       {
-        path: "/subscribe",
+        path: "/yuhaiin/subscribe",
         element: <Subscribe />,
       },
       {
-        path: "/tag",
+        path: "/yuhaiin/tools",
+        element: <NewNode />,
+      },
+      {
+        path: "/yuhaiin/tag",
         element: <Tags />,
       }
     ]

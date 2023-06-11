@@ -3,37 +3,37 @@ import { Row, Col, ButtonGroup, Button, Dropdown, Card, ListGroup, Badge, Spinne
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import { APIUrl } from "./apiurl";
+import NodeModal, { NewNode } from "./node";
 
 
 
 function Group() {
-
     let groupList: string[] = [];
     const [groups, setGroups] = useState({ gs: groupList });
     const [nodes, setNodes] = useState({ nodes: {} })
     const [selectNode, setSelectNode] = useState({ node: "" });
+    const [currentGroup, setCurrentGroup] = useState({ value: "" });
     var tcpObj: { [k: string]: string } = {};
     var udpObj: { [k: string]: string } = {};
     var isTestingObj: { [k: string]: boolean } = {};
     const [latency, setLatency] = useState({ tcplt: tcpObj, udplt: udpObj, testing: isTestingObj });
 
-    useEffect(() => {
-        (async () => {
-            try {
-                await fetch(
-                    APIUrl + "/grouplist",
-                    {
-                        method: "get",
-                    },
-                ).then(async (resp) => {
-                    setGroups({ gs: await resp.json() as string[] })
-                })
+    const refresh = async () => {
+        try {
+            await fetch(
+                APIUrl + "/grouplist",
+                {
+                    method: "get",
+                },
+            ).then(async (resp) => {
+                setGroups({ gs: await resp.json() as string[] })
+            })
 
-            } catch (e) {
-                console.log(e)
-            }
-        })()
-    }, [])
+        } catch (e) {
+            console.log(e)
+        }
+    }
+    useEffect(() => { (async () => { await refresh(); })() }, [])
 
     const handleChangeGroup = async (e: string | null) => {
         if (e == null || e?.length == 0) {
@@ -137,12 +137,16 @@ function Group() {
         })
     };
 
+    const [modalHash, setModalHash] = useState({ hash: "" });
 
     function NodeItem({ name = "", hash = "" }) {
         return (<>
             <ListGroup.Item as={"label"} style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}>
                 <input className="form-check-input me-1" type="radio" name="select_node" value={hash} onChange={handleChange} checked={selectNode.node === hash} />
-                <a>{name}</a>
+                <a href="#" onClick={(e) => {
+                    e.preventDefault();
+                    setModalHash({ hash: hash });
+                }}>{name}</a>
                 <Badge className="rounded-pill bg-light text-dark ms-1 text-uppercase">tcp: {latency.tcplt[hash] != null ? latency.tcplt[hash] : "N/A"}</Badge>
                 <Badge className="rounded-pill bg-light text-dark ms-1 me-1 text-uppercase">udp:{latency.udplt[hash] != null ? latency.udplt[hash] : "N/A"}</Badge>
                 {
@@ -155,8 +159,8 @@ function Group() {
         </>)
     }
 
-    const generateNodes = () => {
-        let entries = Object.entries(nodes.nodes);
+    const Nodes = React.memo((props: { nodes: {} }) => {
+        let entries = Object.entries(props.nodes);
 
         if (entries.length == 0) {
             return (
@@ -166,58 +170,81 @@ function Group() {
         }
 
         return (
-            <div>
+            <ListGroup variant="flush">
                 {
                     entries.map(([k, v]) => {
                         return <NodeItem name={k} hash={typeof v === 'string' ? v : undefined} key={k} />
                     })
                 }
-            </div>
+            </ListGroup>
         )
-    }
+    })
 
     return (
-        <div>
-            <Row>
-                <Col className="mb-4 d-flex">
-                    <Dropdown onSelect={(e) => handleChangeGroup(e)}>
-                        <Dropdown.Toggle variant="light">GROUP</Dropdown.Toggle>
-                        <Dropdown.Menu>
-                            <Dropdown.Item eventKey={""}>Select...</Dropdown.Item>
+        <>
+            {modalHash.hash != "" && <NodeModal hash={modalHash.hash} editable onHide={() => setModalHash({ hash: "" })} />}
+            <div>
+                <Row>
+                    <Col className="mb-4 d-flex">
+                        <Dropdown onSelect={(e) => {
+                            setCurrentGroup({ value: e != null ? e : "" })
+                            handleChangeGroup(e)
+                        }
+                        }>
+                            <Dropdown.Toggle variant="light">GROUP</Dropdown.Toggle>
+                            <Dropdown.Menu>
+                                <Dropdown.Item eventKey={""}>Select...</Dropdown.Item>
 
-                            {
-                                groups.gs.map((k) => {
-                                    return <Dropdown.Item eventKey={k} key={k}>{k}</Dropdown.Item>
-                                })
-                            }
-                        </Dropdown.Menu>
-                    </Dropdown>
-                </Col>
-            </Row>
+                                {
+                                    groups.gs.map((k) => {
+                                        return <Dropdown.Item eventKey={k} key={k}>{k}</Dropdown.Item>
+                                    })
+                                }
+                            </Dropdown.Menu>
+                        </Dropdown>
+                    </Col>
+                </Row>
 
-            <Card className="mb-3">
-                <div>
-                    {generateNodes()}
-                </div>
+                <Card className="mb-3">
+                    <Nodes nodes={nodes.nodes} />
 
-                <Card.Header>
-                    <Dropdown>
-                        <ButtonGroup>
+                    <Card.Header>
+                        <Dropdown>
                             <ButtonGroup>
-                                <Dropdown.Toggle variant="outline-primary">USE</Dropdown.Toggle>
-                                <Dropdown.Menu>
-                                    <Dropdown.Item onClick={() => console.log("all")}>TCP&UDP</Dropdown.Item>
-                                    <Dropdown.Item eventKey={"tcp"}>TCP</Dropdown.Item>
-                                    <Dropdown.Item eventKey={"udp"}>UDP</Dropdown.Item>
-                                </Dropdown.Menu>
+                                <ButtonGroup>
+                                    <Dropdown.Toggle variant="outline-primary">USE</Dropdown.Toggle>
+                                    <Dropdown.Menu>
+                                        <Dropdown.Item onClick={() => console.log("all")}>TCP&UDP</Dropdown.Item>
+                                        <Dropdown.Item eventKey={"tcp"}>TCP</Dropdown.Item>
+                                        <Dropdown.Item eventKey={"udp"}>UDP</Dropdown.Item>
+                                    </Dropdown.Menu>
+                                </ButtonGroup>
+                                <Button
+                                    variant="outline-danger"
+                                    onClick={async () => {
+
+                                        const resp = await fetch(
+                                            `${APIUrl}/node?hash=${selectNode.node}`,
+                                            {
+                                                method: "DELETE"
+                                            }
+                                        )
+                                        if (!resp.ok) console.log(await resp.text())
+                                        else {
+                                            console.log("delete successful")
+                                            await handleChangeGroup(currentGroup.value);
+                                        }
+                                    }}
+                                >
+                                    DELETE
+                                </Button>
+                                {/* <Button variant="outline-primary" onClick={() => console.log("add new node")}>Add New Node</Button> */}
                             </ButtonGroup>
-                            <Button variant="outline-danger" onClick={() => console.log("delete")}>DELETE</Button>
-                            <Button variant="outline-primary" onClick={() => console.log("add new node")}>Add New Node</Button>
-                        </ButtonGroup>
-                    </Dropdown>
-                </Card.Header>
-            </Card>
-        </div >
+                        </Dropdown>
+                    </Card.Header>
+                </Card>
+            </div >
+        </>
     );
 }
 

@@ -1,41 +1,40 @@
 import { useEffect, useState } from "react";
-import { Badge, Button, Card, Form, InputGroup, ListGroup } from "react-bootstrap";
+import { Badge, Button, Card, FloatingLabel, Form, InputGroup, ListGroup } from "react-bootstrap";
 import { APIUrl } from "./apiurl";
 
 
 function Tags() {
-    const [currentGroup, setCurrentGroup] = useState("");
     let tags: { [k: string]: { hash: string, type: string } } = {};
     let groups: { [k: string]: { [k: string]: string } } = {};
     const [data, setData] = useState({ tags: tags, groups: groups });
-    const [addType, setAddType] = useState("Node");
-    const [addTag, setAddTag] = useState("");
+    const [currentGroup, setCurrentGroup] = useState("");
+    const [addType, setAddType] = useState("node");
+    const [addTag, setAddTag] = useState({ tag: "" });
+    const [addHash, setAddHash] = useState({ hash: "" });
 
-    useEffect(() => {
-        (async () => {
-            try {
-                await fetch(
-                    APIUrl + "/taglist",
-                    {
-                        method: "get",
-                    },
-                ).then(async (resp) => {
-                    setData(await resp.json())
-                })
+    const refresh = async () => {
+        try {
+            await fetch(
+                APIUrl + "/taglist",
+                {
+                    method: "get",
+                },
+            ).then(async (resp) => {
+                setData(await resp.json())
+            })
 
-            } catch (e) {
-                console.log(e)
-            }
-        })()
-
-    }, [])
+        } catch (e) {
+            console.log(e)
+        }
+    }
+    useEffect(() => { (async () => await refresh())() }, [])
 
 
     const TagItem = ({ k = "", v = { hash: "", type: "" } }) => {
         return (
             <ListGroup.Item style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }} key={k}>
                 <div className="d-flex flex-wrap">
-                    <a className="text-decoration-none" href="#" onClick={(e) => { e.preventDefault(); setAddTag(k) }}>{k}</a>
+                    <a className="text-decoration-none" href="#" onClick={(e) => { e.preventDefault(); setAddTag({ tag: k }) }}>{k}</a>
                     <Badge className="rounded-pill bg-light text-dark text-truncate ms-1">
                         {v.hash == ""
                             ?
@@ -50,14 +49,25 @@ function Tags() {
                         }
                     </Badge>
 
-                    <a className="text-decoration-none ms-auto text-truncate" href='#'>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-trash"
-                            viewBox="0 0 16 16">
-                            <path
-                                d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
-                            <path fillRule="evenodd"
-                                d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
-                        </svg>DELETE
+                    <a
+                        className="text-decoration-none ms-auto text-truncate"
+                        href='#'
+                        onClick={async (e) => {
+                            e.preventDefault();
+                            const resp = await fetch(APIUrl + "/tag?tag=" + k,
+                                {
+                                    method: "delete"
+                                }
+                            )
+
+                            if (!resp.ok) console.log(await resp.text())
+                            else {
+                                console.log("delete successful");
+                                await refresh();
+                            }
+                        }}
+                    >
+                        <i className="bi-trash"></i>DELETE
                     </a>
                 </div>
             </ListGroup.Item>
@@ -77,19 +87,18 @@ function Tags() {
             < Card className="mb-3" >
                 <Card.Body>
                     <InputGroup className="mb-3">
-                        <Form.Check inline type="radio" onChange={() => setAddType("Node")} checked={addType == "Node"} label="Node" />
-                        <Form.Check inline type="radio" onChange={() => setAddType("Mirror")} checked={addType == "Mirror"} label="Mirror" />
+                        <Form.Check inline type="radio" onChange={() => { setAddType("node"); setAddHash({ hash: "" }) }} checked={addType == "node"} label="Node" />
+                        <Form.Check inline type="radio" onChange={() => { setAddType("mirror"); setAddHash({ hash: "" }) }} checked={addType == "mirror"} label="Mirror" />
                     </InputGroup>
 
-                    <InputGroup className="mb-3">
-                        <InputGroup.Text id="basic-addon1">Tag</InputGroup.Text>
-                        <Form.Control placeholder="Tag" aria-label="Tag" aria-describedby="basic-addon1" defaultValue={addTag}></Form.Control>
-                    </InputGroup>
+                    <FloatingLabel label="Tag" className="mb-2" >
+                        <Form.Control placeholder="Tag" aria-label="Tag" aria-describedby="basic-addon1"
+                            value={addTag.tag} onChange={(e) => setAddTag({ tag: e.target.value })}></Form.Control>
+                    </FloatingLabel>
 
-                    {addType == "Node" ?
+                    {addType == "node" ?
                         <>
-                            <InputGroup className="mb-3">
-                                <InputGroup.Text>Group</InputGroup.Text>
+                            <FloatingLabel label="Group" className="mb-2" >
                                 <Form.Select defaultValue={""} onChange={(e) => setCurrentGroup(e.target.value)}>
                                     <option>Choose...</option>
                                     {
@@ -98,11 +107,10 @@ function Tags() {
                                         })
                                     }
                                 </Form.Select>
-                            </InputGroup>
+                            </FloatingLabel>
 
-                            <InputGroup className="mb-3">
-                                <InputGroup.Text>Node</InputGroup.Text>
-                                <Form.Select defaultValue={""}>
+                            <FloatingLabel label="Node" className="mb-2" >
+                                <Form.Select defaultValue={""} onChange={(e) => setAddHash({ hash: e.target.value })}>
                                     <option value="">Choose...</option>
                                     {
                                         Object.entries(data.groups[currentGroup] != null ? data.groups[currentGroup] : {}).map(([k, v]) => {
@@ -110,12 +118,11 @@ function Tags() {
                                         })
                                     }
                                 </Form.Select>
-                            </InputGroup>
+                            </FloatingLabel>
                         </>
                         :
-                        <InputGroup className="mb-3">
-                            <InputGroup.Text>Mirror</InputGroup.Text>
-                            <Form.Select defaultValue={""}>
+                        <FloatingLabel label="Mirror" className="mb-2" >
+                            <Form.Select defaultValue={""} onChange={(e) => setAddHash({ hash: e.target.value })}>
                                 <option value="">Choose...</option>
                                 {
                                     Object.keys(data.tags).map((k) => {
@@ -123,9 +130,29 @@ function Tags() {
                                     })
                                 }
                             </Form.Select>
-                        </InputGroup>
+                        </FloatingLabel>
                     }
-                    <Button variant="outline-secondary">Save</Button>
+                    <Button
+                        variant="outline-secondary"
+                        onClick={async () => {
+                            if (addTag.tag == "" || addHash.hash == "") return
+
+                            const resp = await fetch(
+                                APIUrl + "/tag",
+                                {
+                                    method: "post",
+                                    body: `{"tag":"${addTag.tag}","hash":"${addHash.hash}","type":"${addType}"}`,
+                                }
+                            )
+                            if (!resp.ok) console.log(await resp.text())
+                            else {
+                                console.log("add successful");
+                                await refresh();
+                            }
+                        }}
+                    >
+                        Save
+                    </Button>
 
                 </Card.Body>
             </Card >
