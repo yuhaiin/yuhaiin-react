@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Badge, Button, Card, FloatingLabel, Form, InputGroup, ListGroup } from "react-bootstrap";
 import { APIUrl } from "./apiurl";
+import Loading from "./loading";
 
 
 function Tags() {
@@ -11,18 +12,21 @@ function Tags() {
     const [addType, setAddType] = useState("node");
     const [addTag, setAddTag] = useState({ tag: "" });
     const [addHash, setAddHash] = useState({ hash: "" });
+    const [loading, setLoading] = useState({ value: true })
 
     const refresh = async () => {
         try {
-            await fetch(
+            const resp = await fetch(
                 APIUrl + "/taglist",
                 {
                     method: "get",
                 },
-            ).then(async (resp) => {
-                setData(await resp.json())
-            })
+            )
 
+            if (!resp.ok) return
+
+            setData(await resp.json())
+            setLoading({ value: false })
         } catch (e) {
             console.log(e)
         }
@@ -76,86 +80,91 @@ function Tags() {
 
     return (
         <>
-            <Card className="mb-3">
-                {
-                    Object.entries(data.tags).map(([k, v]) => {
-                        return (<TagItem v={v} k={k} key={k} />)
-                    })
-                }
-            </Card >
+            {loading.value && <Loading />}
+            {!loading.value &&
+                <>
+                    <Card className="mb-3">
+                        {
+                            Object.entries(data.tags).map(([k, v]) => {
+                                return (<TagItem v={v} k={k} key={k} />)
+                            })
+                        }
+                    </Card >
 
-            < Card className="mb-3" >
-                <Card.Body>
-                    <InputGroup className="mb-3">
-                        <Form.Check inline type="radio" onChange={() => { setAddType("node"); setAddHash({ hash: "" }) }} checked={addType == "node"} label="Node" />
-                        <Form.Check inline type="radio" onChange={() => { setAddType("mirror"); setAddHash({ hash: "" }) }} checked={addType == "mirror"} label="Mirror" />
-                    </InputGroup>
+                    < Card className="mb-3" >
+                        <Card.Body>
+                            <InputGroup className="mb-3">
+                                <Form.Check inline type="radio" onChange={() => { setAddType("node"); setAddHash({ hash: "" }) }} checked={addType == "node"} label="Node" />
+                                <Form.Check inline type="radio" onChange={() => { setAddType("mirror"); setAddHash({ hash: "" }) }} checked={addType == "mirror"} label="Mirror" />
+                            </InputGroup>
 
-                    <FloatingLabel label="Tag" className="mb-2" >
-                        <Form.Control placeholder="Tag" aria-label="Tag" aria-describedby="basic-addon1"
-                            value={addTag.tag} onChange={(e) => setAddTag({ tag: e.target.value })}></Form.Control>
-                    </FloatingLabel>
-
-                    {addType == "node" ?
-                        <>
-                            <FloatingLabel label="Group" className="mb-2" >
-                                <Form.Select defaultValue={""} onChange={(e) => setCurrentGroup(e.target.value)}>
-                                    <option>Choose...</option>
-                                    {
-                                        Object.keys(data.groups).map((k) => {
-                                            return (<option value={k} key={k}>{k}</option>)
-                                        })
-                                    }
-                                </Form.Select>
+                            <FloatingLabel label="Tag" className="mb-2" >
+                                <Form.Control placeholder="Tag" aria-label="Tag" aria-describedby="basic-addon1"
+                                    value={addTag.tag} onChange={(e) => setAddTag({ tag: e.target.value })}></Form.Control>
                             </FloatingLabel>
 
-                            <FloatingLabel label="Node" className="mb-2" >
-                                <Form.Select defaultValue={""} onChange={(e) => setAddHash({ hash: e.target.value })}>
-                                    <option value="">Choose...</option>
-                                    {
-                                        Object.entries(data.groups[currentGroup] != null ? data.groups[currentGroup] : {}).map(([k, v]) => {
-                                            return (<option value={v} key={k}>{k}</option>)
-                                        })
-                                    }
-                                </Form.Select>
-                            </FloatingLabel>
-                        </>
-                        :
-                        <FloatingLabel label="Mirror" className="mb-2" >
-                            <Form.Select defaultValue={""} onChange={(e) => setAddHash({ hash: e.target.value })}>
-                                <option value="">Choose...</option>
-                                {
-                                    Object.keys(data.tags).map((k) => {
-                                        return (<option value={k} key={k}>{k}</option>)
-                                    })
-                                }
-                            </Form.Select>
-                        </FloatingLabel>
-                    }
-                    <Button
-                        variant="outline-secondary"
-                        onClick={async () => {
-                            if (addTag.tag == "" || addHash.hash == "") return
+                            {addType == "node" ?
+                                <>
+                                    <FloatingLabel label="Group" className="mb-2" >
+                                        <Form.Select defaultValue={""} onChange={(e) => setCurrentGroup(e.target.value)}>
+                                            <option>Choose...</option>
+                                            {
+                                                Object.keys(data.groups).map((k) => {
+                                                    return (<option value={k} key={k}>{k}</option>)
+                                                })
+                                            }
+                                        </Form.Select>
+                                    </FloatingLabel>
 
-                            const resp = await fetch(
-                                APIUrl + "/tag",
-                                {
-                                    method: "post",
-                                    body: `{"tag":"${addTag.tag}","hash":"${addHash.hash}","type":"${addType}"}`,
-                                }
-                            )
-                            if (!resp.ok) console.log(await resp.text())
-                            else {
-                                console.log("add successful");
-                                await refresh();
+                                    <FloatingLabel label="Node" className="mb-2" >
+                                        <Form.Select defaultValue={""} onChange={(e) => setAddHash({ hash: e.target.value })}>
+                                            <option value="">Choose...</option>
+                                            {
+                                                Object.entries(data.groups[currentGroup] != null ? data.groups[currentGroup] : {}).map(([k, v]) => {
+                                                    return (<option value={v} key={k}>{k}</option>)
+                                                })
+                                            }
+                                        </Form.Select>
+                                    </FloatingLabel>
+                                </>
+                                :
+                                <FloatingLabel label="Mirror" className="mb-2" >
+                                    <Form.Select defaultValue={""} onChange={(e) => setAddHash({ hash: e.target.value })}>
+                                        <option value="">Choose...</option>
+                                        {
+                                            Object.keys(data.tags).map((k) => {
+                                                return (<option value={k} key={k}>{k}</option>)
+                                            })
+                                        }
+                                    </Form.Select>
+                                </FloatingLabel>
                             }
-                        }}
-                    >
-                        Save
-                    </Button>
+                            <Button
+                                variant="outline-secondary"
+                                onClick={async () => {
+                                    if (addTag.tag == "" || addHash.hash == "") return
 
-                </Card.Body>
-            </Card >
+                                    const resp = await fetch(
+                                        APIUrl + "/tag",
+                                        {
+                                            method: "post",
+                                            body: `{"tag":"${addTag.tag}","hash":"${addHash.hash}","type":"${addType}"}`,
+                                        }
+                                    )
+                                    if (!resp.ok) console.log(await resp.text())
+                                    else {
+                                        console.log("add successful");
+                                        await refresh();
+                                    }
+                                }}
+                            >
+                                Save
+                            </Button>
+
+                        </Card.Body>
+                    </Card >
+                </>
+            }
         </>
     )
 }

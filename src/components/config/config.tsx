@@ -5,6 +5,8 @@ import Bypass, { defaultBypassConfig, BypassConfig } from './bypass';
 import Inbound, { ServerConfig, defaultServers } from './inbound';
 import { APIUrl } from '../apiurl';
 import SwitchSelect from '../common/switch';
+import Loading from '../loading';
+import { SettingCheck, SettingInputText } from './components';
 
 
 type Config = {
@@ -47,6 +49,7 @@ function Config() {
     };
 
     const [state, setState] = useState({ data: config });
+    const [loading, setLoading] = useState({ value: true })
 
     const updateState = (modify: (x: typeof config) => void) => {
         let x = state.data;
@@ -56,15 +59,17 @@ function Config() {
 
     const refresh = async () => {
         try {
-            await fetch(
+            const resp = await fetch(
                 APIUrl + "/config/json",
                 {
                     method: "get",
                 },
-            ).then(async (resp) => {
-                setState({ data: await resp.json() as Config })
-            })
+            )
 
+            if (!resp.ok) return
+
+            setState({ data: await resp.json() as Config })
+            setLoading({ value: false })
         } catch (e) {
             console.log(e)
         }
@@ -74,90 +79,78 @@ function Config() {
 
     return (
         <>
-            <Card className='mb-3'>
-                <Card.Body>
-                    <Tabs
-                        defaultActiveKey="home"
-                        className="mb-3"
-                    >
-                        <Tab eventKey="home" title="Home">
+            {loading.value && <Loading />}
+            {!loading.value &&
+                <Card className='mb-3'>
+                    <Card.Body>
+                        <Tabs
+                            defaultActiveKey="home"
+                            className="mb-3"
+                        >
+                            <Tab eventKey="home" title="Home">
 
-                            <FloatingLabel label="IPv6" className="mb-2">
-                                <SwitchSelect value={state.data.ipv6} onChange={(e) => setState({ data: { ...state.data, ipv6: e } })} />
-                            </FloatingLabel >
+                                <SettingCheck label='IPv6' checked={state.data.ipv6} onChange={() => setState({ data: { ...state.data, ipv6: !state.data.ipv6 } })} />
+                                <SettingInputText label='Network Interface' value={state.data.net_interface} onChange={(v) => updateState((x) => x.net_interface = v)} />
 
-                            <FloatingLabel label="Network Interface" className="mb-2" >
-                                <Form.Control value={state.data.net_interface} onChange={(v) => updateState((x) => x.net_interface = v.target.value)} />
-                            </FloatingLabel>
+                                <hr />
 
-                            <Card className='mb-2'>
-                                <Card.Body>
-                                    <Card.Title className='mb-2'>System Proxy</Card.Title>
+                                <Card.Title className='mb-2'>System Proxy</Card.Title>
 
-                                    <FloatingLabel label="SOCKS5" className="mb-2">
-                                        <SwitchSelect value={state.data.system_proxy.socks5 != undefined ? state.data.system_proxy.socks5 : false}
-                                            onChange={(e) => updateState((x) => x.system_proxy.socks5 = e)} />
-                                    </FloatingLabel >
 
-                                    <FloatingLabel label="HTTP" className="mb-2">
-                                        <SwitchSelect value={state.data.system_proxy.http != undefined ? state.data.system_proxy.http : false}
-                                            onChange={(e) => updateState((x) => x.system_proxy.http = e)} />
-                                    </FloatingLabel >
+                                <SettingCheck label='SOCKS5'
+                                    checked={state.data.system_proxy.socks5 != undefined ? state.data.system_proxy.socks5 : false}
+                                    onChange={() => updateState((x) => x.system_proxy.socks5 = !x.system_proxy.socks5)} />
 
-                                </Card.Body>
-                            </Card>
-                            <Card className='mb-2'>
-                                <Card.Body>
-                                    <Card.Title className='mb-2'>Logcat</Card.Title>
+                                <SettingCheck label='HTTP'
+                                    checked={state.data.system_proxy.http != undefined ? state.data.system_proxy.http : false}
+                                    onChange={() => updateState((x) => x.system_proxy.http = !x.system_proxy.http)} />
 
-                                    <FloatingLabel label="Level" className="mb-2">
-                                        <Form.Select value={state.data.logcat.level} onChange={(e) => updateState((x) => x.logcat.level = e.target.value)}>
-                                            <option value="debug">DEBUG</option>
-                                            <option value="info">INFO</option>
-                                            <option value="warning">WARN</option>
-                                            <option value="error">ERROR</option>
-                                        </Form.Select>
-                                    </FloatingLabel >
 
-                                    <FloatingLabel label="Save" className="mb-2">
-                                        <SwitchSelect value={state.data.logcat.save} onChange={(e) => updateState((x) => x.logcat.save = e)} />
-                                    </FloatingLabel >
+                                <hr />
 
-                                </Card.Body>
-                            </Card>
+                                <Card.Title className='mb-2'>Logcat</Card.Title>
+                                <SettingCheck label='Save'
+                                    checked={state.data.logcat.save}
+                                    onChange={() => updateState((x) => x.logcat.save = !x.logcat.save)} />
+                                <SettingLogcatLevelSelect label='Level' value={state.data.logcat.level} onChange={(e) => updateState((x) => x.logcat.level = e)} />
 
-                        </Tab>
-                        <Tab eventKey="bypass" title="Bypass">
-                            <Bypass bypass={state.data.bypass} onChange={(e) => updateState((x) => x.bypass = e)} />
-                        </Tab>
-                        <Tab eventKey="dns" title="DNS">
-                            <DNS data={state.data.dns} onChange={(e) => updateState((x) => x.dns = e)} />
-                        </Tab>
-                        <Tab eventKey="inbound" title="Inbound">
-                            <Inbound server={state.data.server.servers} onChange={(e) => updateState((x) => x.server.servers = e)} />
-                        </Tab>
 
-                    </Tabs>
-                    <Button onClick={async () => {
-                        console.log(state.data)
+                            </Tab>
+                            <Tab eventKey="bypass" title="Bypass">
+                                <Bypass bypass={state.data.bypass} onChange={(e) => updateState((x) => x.bypass = e)} />
+                            </Tab>
+                            <Tab eventKey="dns" title="DNS">
+                                <DNS data={state.data.dns} onChange={(e) => updateState((x) => x.dns = e)} />
+                            </Tab>
+                            <Tab eventKey="inbound" title="Inbound">
+                                <Inbound server={state.data.server.servers} onChange={(e) => updateState((x) => x.server.servers = e)} />
+                            </Tab>
 
-                        const resp = await fetch(APIUrl + "/config", {
-                            method: "post",
-                            headers: {
-                                'content-type': 'application/json;charset=UTF-8',
-                            },
-                            body: JSON.stringify(state.data),
-                        })
+                        </Tabs>
 
-                        if (!resp.ok) console.log(await resp.text())
-                        else {
-                            await refresh()
-                            console.log("save successful")
+                        <hr />
+
+                        <Button onClick={async () => {
+                            console.log(state.data)
+
+                            const resp = await fetch(APIUrl + "/config", {
+                                method: "post",
+                                headers: {
+                                    'content-type': 'application/json;charset=UTF-8',
+                                },
+                                body: JSON.stringify(state.data),
+                            })
+
+                            if (!resp.ok) console.log(await resp.text())
+                            else {
+                                await refresh()
+                                console.log("save successful")
+                            }
                         }
-                    }
-                    }>Save</Button>
-                </Card.Body>
-            </Card >
+                        }>Save</Button>
+                    </Card.Body>
+                </Card >
+            }
         </>
 
 
@@ -168,3 +161,19 @@ function Config() {
 
 
 export default Config;
+
+function SettingLogcatLevelSelect(props: { label: string, value: string, onChange: (value: string) => void }) {
+    return (
+        <Form.Group as={Row} className='mb-3'>
+            <Form.Label column sm={2}>{props.label}</Form.Label>
+            <Col sm={10}>
+                <Form.Select value={props.value} onChange={(e) => props.onChange(e.target.value)}>
+                    <option value="debug">DEBUG</option>
+                    <option value="info">INFO</option>
+                    <option value="warning">WARN</option>
+                    <option value="error">ERROR</option>
+                </Form.Select>
+            </Col>
+        </Form.Group>
+    )
+}

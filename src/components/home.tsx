@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { Card } from 'react-bootstrap';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
+import { Card, Spinner } from 'react-bootstrap';
 import { APIUrl } from './apiurl';
+import Loading from './loading';
 
 function Home() {
     const [data, setData] = useState({ tcp: "", udp: "" })
-
+    const [loading, setLoading] = useState({ value: true })
 
     const refresh = async () => {
         try {
@@ -14,31 +15,40 @@ function Home() {
                     method: "get",
                 },
             ).then(async (resp) => {
-                setData(await resp.json())
+                if (resp.ok) {
+                    setData(await resp.json())
+                    setLoading({ value: false })
+                }
             })
 
         } catch (e) {
             console.log(e)
         }
     }
-    useEffect(() => { (async () => { await refresh(); })() }, [])
+    useLayoutEffect(() => { (async () => { await refresh(); })() }, [])
 
     return (
-        <div>
-            <Card className='mb-3'>
-                <Card.Header>TCP</Card.Header>
-                <Card.Body>
-                    <pre>{data.tcp}</pre>
-                </Card.Body>
-            </Card>
+        <>
+            {loading.value && <Loading />}
+            {!loading.value &&
+                <div>
+                    <Card className='mb-3'>
+                        <Card.Header>TCP</Card.Header>
+                        <Card.Body>
+                            <pre>{data.tcp}</pre>
+                        </Card.Body>
+                    </Card>
 
-            <Card className='mb-3'>
-                <Card.Header>UDP</Card.Header>
-                <Card.Body>
-                    <pre>{data.udp}</pre>
-                </Card.Body>
-            </Card>
-        </div>
+                    <Card className='mb-3'>
+                        <Card.Header>UDP</Card.Header>
+                        <Card.Body>
+                            <pre>{data.udp}</pre>
+                        </Card.Body>
+                    </Card>
+                </div>
+            }
+        </>
+
     );
 }
 

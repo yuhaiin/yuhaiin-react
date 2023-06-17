@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Form, FormGroup, InputGroup, Card, Row, Col, Button, Tabs, Tab, FloatingLabel } from 'react-bootstrap';
 import SwitchSelect from '../common/switch';
+import { SettingCheck, SettingInputText, SettingInputTextarea } from './components';
 
 type HTTP = {
     host: string,
@@ -17,18 +18,9 @@ const HTTPComponents = React.memo((props: { http: HTTP, onChange: (x: HTTP) => v
 
     return (
         <>
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Host</InputGroup.Text>
-                <Form.Control value={props.http.host} onChange={(e) => updateState((x) => x.host = e.target.value)} />
-            </InputGroup >
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Username</InputGroup.Text>
-                <Form.Control value={props.http.username} onChange={(e) => updateState((x) => x.username = e.target.value)} />
-            </InputGroup>
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Password</InputGroup.Text>
-                <Form.Control value={props.http.password} onChange={(e) => updateState((x) => x.password = e.target.value)} />
-            </InputGroup>
+            <SettingInputText label='Host' value={props.http.host} onChange={(e) => updateState((x) => x.host = e)} />
+            <SettingInputText label='Username' value={props.http.username} onChange={(e) => updateState((x) => x.username = e)} />
+            <SettingInputText label='Password' value={props.http.password} onChange={(e) => updateState((x) => x.password = e)} />
         </>
     )
 })
@@ -47,10 +39,7 @@ const RedirComponents = React.memo((props: { redir: Redir, onChange: (x: Redir) 
 
     return (
         <>
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Host</InputGroup.Text>
-                <Form.Control value={props.redir.host} onChange={(e) => updateState((x) => x.host = e.target.value)} />
-            </InputGroup >
+            <SettingInputText label='Host' value={props.redir.host} onChange={(e) => updateState((x) => x.host = e)} />
         </>
     )
 })
@@ -71,18 +60,9 @@ const Socks5Components = React.memo((props: { socks5: Socks5, onChange: (x: Sock
 
     return (
         <>
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Host</InputGroup.Text>
-                <Form.Control value={props.socks5.host} onChange={(e) => updateState((x) => x.host = e.target.value)} />
-            </InputGroup >
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Username</InputGroup.Text>
-                <Form.Control value={props.socks5.username} onChange={(e) => updateState((x) => x.username = e.target.value)} />
-            </InputGroup>
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Password</InputGroup.Text>
-                <Form.Control value={props.socks5.password} onChange={(e) => updateState((x) => x.password = e.target.value)} />
-            </InputGroup>
+            <SettingInputText label='Host' value={props.socks5.host} onChange={(e) => updateState((x) => x.host = e)} />
+            <SettingInputText label='Username' value={props.socks5.username} onChange={(e) => updateState((x) => x.username = e)} />
+            <SettingInputText label='Password' value={props.socks5.password} onChange={(e) => updateState((x) => x.password = e)} />
         </>
     )
 })
@@ -107,44 +87,31 @@ const TunComponents = React.memo((props: { tun: Tun, onChange: (x: Tun) => void 
 
     return (
         <>
-            <Form className='mb-2'>
-                <Form.Switch
-                    inline
-                    checked={props.tun.dns_hijacking}
-                    onChange={() => updateState((x) => x.dns_hijacking = !x.dns_hijacking)}
-                    label="DNS Hijacking"
-                />
-                <Form.Switch
-                    inline
-                    checked={props.tun.skip_multicast}
-                    onChange={() => updateState((x) => x.skip_multicast = !x.skip_multicast)}
-                    label="Skip Multicast"
-                />
-            </Form>
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Name</InputGroup.Text>
-                <Form.Control value={props.tun.name} onChange={(e) => updateState((x) => x.name = e.target.value)} />
-            </InputGroup >
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Mtu</InputGroup.Text>
-                <Form.Control value={props.tun.mtu} onChange={(e) => updateState((x) => x.mtu = !isNaN(Number(e.target.value)) ? Number(e.target.value) : x.mtu)} />
-            </InputGroup>
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Gateway</InputGroup.Text>
-                <Form.Control value={props.tun.gateway} onChange={(e) => updateState((x) => x.gateway = e.target.value)} />
-            </InputGroup>
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Portal</InputGroup.Text>
-                <Form.Control value={props.tun.portal} onChange={(e) => updateState((x) => x.portal = e.target.value)} />
-            </InputGroup>
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Driver</InputGroup.Text>
-                <Form.Select value={props.tun.driver} onChange={(e) => updateState((x) => x.driver = e.target.value)}>
-                    <option value="fdbased">Fdbased</option>
-                    <option value="channel">Channel</option>
-                    <option value="system_gvisor">System</option>
-                </Form.Select>
-            </InputGroup>
+            <SettingCheck label='DNS Hijacking'
+                checked={props.tun.dns_hijacking}
+                onChange={() => updateState((x) => x.dns_hijacking = !x.dns_hijacking)} />
+
+            <SettingCheck
+                checked={props.tun.skip_multicast}
+                onChange={() => updateState((x) => x.skip_multicast = !x.skip_multicast)}
+                label="Skip Multicast"
+            />
+
+            <SettingInputText label='Name' value={props.tun.name} onChange={(e) => updateState((x) => x.name = e)} />
+            <SettingInputText label='Mtu' value={props.tun.mtu} onChange={(e) => updateState((x) => x.mtu = !isNaN(Number(e)) ? Number(e) : x.mtu)} />
+            <SettingInputText label='Gateway' value={props.tun.gateway} onChange={(e) => updateState((x) => x.gateway = e)} />
+            <SettingInputText label='Portal' value={props.tun.portal} onChange={(e) => updateState((x) => x.portal = e)} />
+
+            <Form.Group as={Row} className='mb-3'>
+                <Form.Label column sm={2}>Driver</Form.Label>
+                <Col sm={10}>
+                    <Form.Select value={props.tun.driver} onChange={(e) => updateState((x) => x.driver = e.target.value)}>
+                        <option value="fdbased">Fdbased</option>
+                        <option value="channel">Channel</option>
+                        <option value="system_gvisor">System</option>
+                    </Form.Select>
+                </Col>
+            </Form.Group>
         </>
     )
 })
@@ -172,32 +139,22 @@ const TLSCertificateComponents = React.memo((props: { cert: TLSCertificate, onCh
 
     return (
         <>
-            <FloatingLabel label="Cert" className='mb-2'>
-                <Form.Control as="textarea" rows={3} value={props.cert.cert != undefined ? atob(props.cert.cert) : ""}
-                    onChange={(e) => updateState((x) => { x.cert = btoa(e.target.value) })} />
-            </FloatingLabel>
 
-            <FloatingLabel label="Key" className='mb-2'>
-                <Form.Control as="textarea" rows={3} value={props.cert.key != undefined ? atob(props.cert.key) : ""}
-                    onChange={(e) => updateState((x) => { x.key = btoa(e.target.value) })} />
-            </FloatingLabel>
+            <SettingInputTextarea label='Cert' value={props.cert.cert != undefined ? atob(props.cert.cert) : ""}
+                onChange={(e) => updateState((x) => { x.cert = btoa(e) })} />
 
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Cert File</InputGroup.Text>
-                <Form.Control value={props.cert.cert_file_path}
-                    onChange={(e) => updateState((x) => { x.cert_file_path = e.target.value })} />
-            </InputGroup>
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Key File</InputGroup.Text>
-                <Form.Control value={props.cert.key_file_path}
-                    onChange={(e) => updateState((x) => { x.key_file_path = e.target.value })} />
-            </InputGroup>
+            <SettingInputTextarea label='Key' value={props.cert.key != undefined ? atob(props.cert.key) : ""}
+                onChange={(e) => updateState((x) => { x.key = btoa(e) })} />
+
+            <SettingInputText label='Cert File' value={props.cert.cert_file_path} onChange={(e) => updateState((x) => { x.cert_file_path = e })} />
+            <SettingInputText label='Key File' value={props.cert.key_file_path} onChange={(e) => updateState((x) => { x.key_file_path = e })} />
         </>
     )
 })
 
 const TLSComponents = React.memo((props: { tls: TLS | null, onChange: (x: TLS) => void }) => {
     const [newSni, setNewSni] = useState("www.example.com")
+    const [newNextProtos, setNewNextProtos] = useState({ value: "" });
 
     const updateState = (x: (x: TLS) => void) => {
         let v = props.tls;
@@ -208,6 +165,39 @@ const TLSComponents = React.memo((props: { tls: TLS | null, onChange: (x: TLS) =
 
     return (
         <>
+
+            <Form.Group as={Row} className='mb-3'>
+                <Form.Label column sm={2} className="nowrap">Next Protos</Form.Label>
+
+
+                {
+                    props.tls !== null && props.tls.next_protos?.map((v, index) => {
+                        return (
+                            <Col sm={{ span: 10, offset: index != 0 ? 2 : 0 }} key={index} >
+                                <InputGroup className="mb-2" >
+                                    <Form.Control value={v} onChange={(e) => updateState((x) => { if (x != null && x.next_protos != undefined) x.next_protos[index] = e.target.value })} />
+                                    <Button variant='outline-danger' onClick={() => updateState((x) => { if (x != null && x.next_protos != undefined) x?.next_protos.splice(index, 1) })}>
+                                        <i className="bi bi-x-lg" ></i>
+                                    </Button>
+                                </InputGroup>
+                            </Col>
+                        )
+                    })
+                }
+
+                <Col sm={{ span: 10, offset: props.tls !== null && props.tls.next_protos?.length != 0 ? 2 : 0 }}>
+                    <InputGroup className="mb-2" >
+                        <Form.Control value={newNextProtos.value} onChange={(e) => setNewNextProtos({ value: e.target.value })} />
+                        <Button variant='outline-success' onClick={() => updateState((x) => {
+                            if (x?.next_protos == undefined) x.next_protos = []
+                            x.next_protos.push(newNextProtos.value)
+                        })} >
+                            <i className="bi bi-plus-lg" />
+                        </Button>
+                    </InputGroup>
+                </Col>
+            </Form.Group>
+
             {
                 props.tls !== null && props.tls.certificates?.map((v, index) => {
                     return <Card className='mb-2' key={"tls_certificates" + index}>
@@ -239,34 +229,6 @@ const TLSComponents = React.memo((props: { tls: TLS | null, onChange: (x: TLS) =
             </InputGroup>
 
 
-            <Card className='mb-2'>
-                <Card.Body>
-                    <Card.Title>Next Protos</Card.Title>
-                    {
-                        props.tls !== null && props.tls.next_protos?.map((v, index) => {
-                            return (
-                                <InputGroup className='mb-2' key={"next_protos" + index}>
-                                    <Form.Control value={v} key={"tls_next_protos" + index}
-                                        onChange={(e) => updateState((x) => { if (x != null && x.next_protos != undefined) x.next_protos[index] = e.target.value })} />
-                                    <Button variant='outline-danger'
-                                        onClick={() => updateState((x) => { if (x != null && x.next_protos != undefined) x?.next_protos.splice(index, 1) })}>
-                                        <i className="bi bi-x-lg"></i>
-                                    </Button>
-                                </InputGroup>
-                            )
-                        })
-                    }
-                    <InputGroup className="d-flex justify-content-end">
-                        <Button variant='outline-success'
-                            onClick={() => updateState((x) => {
-                                if (x?.next_protos == undefined) x.next_protos = []
-                                x.next_protos.push("h2")
-                            })} >
-                            <i className="bi bi-plus-lg"></i>
-                        </Button>
-                    </InputGroup>
-                </Card.Body>
-            </Card>
 
             {
                 props.tls !== null
@@ -319,10 +281,8 @@ const WebsocketComponents = React.memo((props: { websocket: Websocket, onChange:
 
     return (
         <>
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Protocol</InputGroup.Text>
-                <Form.Control value={"Websocket"} disabled />
-            </InputGroup >
+            <SettingInputText plaintext={true} label='Protocol' value={"Websocket"} />
+
             {
                 props.websocket.tls !== undefined && <TLSComponents tls={props.websocket.tls} onChange={(e) => updateState((x) => x.tls = e)} />
             }
@@ -344,14 +304,12 @@ const QuicComponents = React.memo((props: { quic: Quic, onChange: (x: Quic) => v
 
     return (
         <>
-            <Card>
-                <Card.Header>QUIC</Card.Header>
-                <Card.Body>
-                    {
-                        props.quic.tls !== undefined && <TLSComponents tls={props.quic.tls} onChange={(e) => updateState((x) => x.tls = e)} />
-                    }
-                </Card.Body>
-            </Card>
+            <SettingInputText plaintext={true} label='Protocol' value={"QUIC"} />
+
+            {
+                props.quic.tls !== undefined && <TLSComponents tls={props.quic.tls} onChange={(e) => updateState((x) => x.tls = e)} />
+            }
+
         </>
     )
 })
@@ -368,14 +326,10 @@ const GrpcComponents = React.memo((props: { grpc: Grpc, onChange: (x: Grpc) => v
 
     return (
         <>
-            <Card>
-                <Card.Header>GRPC</Card.Header>
-                <Card.Body>
-                    {
-                        props.grpc.tls !== undefined && <TLSComponents tls={props.grpc.tls} onChange={(e) => updateState((x) => x.tls = e)} />
-                    }
-                </Card.Body>
-            </Card>
+            <SettingInputText plaintext={true} label='Protocol' value={"GRPC"} />
+            {
+                props.grpc.tls !== undefined && <TLSComponents tls={props.grpc.tls} onChange={(e) => updateState((x) => x.tls = e)} />
+            }
         </>
     )
 })
@@ -393,14 +347,10 @@ const TlsComponents = React.memo((props: { tls: Tls, onChange: (x: Tls) => void 
 
     return (
         <>
-            <Card>
-                <Card.Header>TLS</Card.Header>
-                <Card.Body>
-                    {
-                        props.tls.tls !== undefined && <TLSComponents tls={props.tls.tls} onChange={(e) => updateState((x) => x.tls = e)} />
-                    }
-                </Card.Body>
-            </Card>
+            <SettingInputText plaintext={true} label='Protocol' value={"TLS"} />
+            {
+                props.tls.tls !== undefined && <TLSComponents tls={props.tls.tls} onChange={(e) => updateState((x) => x.tls = e)} />
+            }
         </>
     )
 })
@@ -428,21 +378,12 @@ const YuubinsyaComponents = React.memo((props: { yuubinsya: Yuubinsya, onChange:
 
     return (
         <>
-            <Form.Switch
-                inline
-                className='mb-2'
+            <SettingCheck label='Force Disable Encrypt'
                 checked={props.yuubinsya.force_disable_encrypt}
-                onChange={() => updateState((x) => x.force_disable_encrypt = !x.force_disable_encrypt)}
-                label="Force Disable Encrypt"
-            />
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Host</InputGroup.Text>
-                <Form.Control value={props.yuubinsya.host} onChange={(e) => updateState((x) => x.host = e.target.value)} />
-            </InputGroup >
-            <InputGroup className='mb-2'>
-                <InputGroup.Text>Password</InputGroup.Text>
-                <Form.Control value={props.yuubinsya.password} onChange={(e) => updateState((x) => x.password = e.target.value)} />
-            </InputGroup>
+                onChange={() => updateState((x) => x.force_disable_encrypt = !x.force_disable_encrypt)} />
+
+            <SettingInputText label='Host' value={props.yuubinsya.host} onChange={(e) => updateState((x) => x.host = e)} />
+            <SettingInputText label='Password' value={props.yuubinsya.password} onChange={(e) => updateState((x) => x.password = e)} />
 
             {
                 props.yuubinsya.websocket != undefined &&
@@ -511,24 +452,24 @@ const Inbound = React.memo((props: { server: { [key: string]: ServerConfig }, on
             {
                 Object.entries(props.server).map(([k, v]) => {
                     return (
-                        <Card className='mb-2' key={k}>
-                            <Card.Body>
-                                <Card.Title className='d-flex justify-content-between align-items-center'>
-                                    {k}
-                                    <Button variant='outline-danger' onClick={() => updateState((x) => { delete x[k] })}>
-                                        <i className="bi bi-x-lg"></i>
-                                    </Button>
-                                </Card.Title>
 
-                                <FloatingLabel label="Enabled" className="mb-2" >
-                                    <SwitchSelect value={v.enabled} onChange={(e) => updateState((x) => x[k].enabled = e)} />
-                                </FloatingLabel>
+                        <div key={k}>
+                            <Card.Title className='d-flex justify-content-between align-items-center'>
+                                {k}
+                                <Button variant='outline-danger' onClick={() => updateState((x) => { delete x[k] })}>
+                                    <i className="bi bi-x-lg"></i>
+                                </Button>
+                            </Card.Title>
 
-                                <Protocol protocol={v} onChange={(e) => updateState((x) => x[k] = e)} />
-                            </Card.Body>
-                        </Card>)
+                            <SettingCheck label='Enabled' checked={v.enabled} onChange={() => updateState((x) => x[k].enabled = !x[k].enabled)} />
+                            <Protocol protocol={v} onChange={(e) => updateState((x) => x[k] = e)} />
+
+                            <hr />
+                        </div>
+                    )
                 })
             }
+
 
             <Card className='mb-2'>
                 <Card.Body>

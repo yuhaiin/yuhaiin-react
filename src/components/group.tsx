@@ -4,6 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import { APIUrl } from "./apiurl";
 import NodeModal, { NewNode } from "./node";
+import Loading from "./loading";
 
 
 
@@ -17,23 +18,29 @@ function Group() {
     var udpObj: { [k: string]: string } = {};
     var isTestingObj: { [k: string]: boolean } = {};
     const [latency, setLatency] = useState({ tcplt: tcpObj, udplt: udpObj, testing: isTestingObj });
+    const [loading, setLoading] = useState({ value: true })
 
     const refresh = async () => {
         try {
-            await fetch(
+            const resp = await fetch(
                 APIUrl + "/grouplist",
                 {
                     method: "get",
                 },
-            ).then(async (resp) => {
-                setGroups({ gs: await resp.json() as string[] })
-            })
+            )
+            if (!resp.ok) return
 
+            setGroups({ gs: await resp.json() as string[] })
+            setLoading({ value: false })
         } catch (e) {
             console.log(e)
         }
     }
-    useEffect(() => { (async () => { await refresh(); })() }, [])
+    useEffect(() => {
+        (async () => {
+            await refresh();
+        })()
+    }, [])
 
     const handleChangeGroup = async (e: string | null) => {
         if (e == null || e?.length == 0) {
@@ -87,20 +94,6 @@ function Group() {
     const handleLatency = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, hash: string) => {
         e.preventDefault();
 
-        {/*
-        function lat(id, type, callback) {
-            const elem = document.querySelector(`#i${id} .${type}`);
-            ajax("GET", `/latency?hash=${id}&type=${type}`, null, 3500,
-                (xmlhttp) => {
-                    if (xmlhttp.responseText != "") elem.innerText = `${type}: ${xmlhttp.responseText}`
-                    else elem.innerText = `${type}: timeout`
-                    console.log(`get ${type} data:`, elem.innerText)
-                    callback()
-                },
-                () => { elem.innerText = `${type}: timeout`; callback() });
-        }
-    */}
-
 
         if (latency.testing[hash] == true) return
 
@@ -112,7 +105,7 @@ function Group() {
         fetch(
             APIUrl + "/latency?hash=" + hash + "&type=tcp",
             {
-                method: "get"
+                method: "GET"
             }
         ).then(async (result) => {
             setLatencyResult(hash, result)
@@ -125,7 +118,7 @@ function Group() {
         fetch(
             APIUrl + "/latency?hash=" + hash + "&type=udp",
             {
-                method: "get"
+                method: "GET"
             }
         ).then(async (result) => {
             setLatencyResult(hash, result, false)
@@ -183,67 +176,71 @@ function Group() {
     return (
         <>
             {modalHash.hash != "" && <NodeModal hash={modalHash.hash} editable onHide={() => setModalHash({ hash: "" })} />}
-            <div>
-                <Row>
-                    <Col className="mb-4 d-flex">
-                        <Dropdown onSelect={(e) => {
-                            setCurrentGroup({ value: e != null ? e : "" })
-                            handleChangeGroup(e)
-                        }
-                        }>
-                            <Dropdown.Toggle variant="light">GROUP</Dropdown.Toggle>
-                            <Dropdown.Menu>
-                                <Dropdown.Item eventKey={""}>Select...</Dropdown.Item>
 
-                                {
-                                    groups.gs.map((k) => {
-                                        return <Dropdown.Item eventKey={k} key={k}>{k}</Dropdown.Item>
-                                    })
-                                }
-                            </Dropdown.Menu>
-                        </Dropdown>
-                    </Col>
-                </Row>
+            {loading.value && <Loading />}
+            {!loading.value &&
+                <div>
+                    <Row>
+                        <Col className="mb-4 d-flex">
+                            <Dropdown onSelect={(e) => {
+                                setCurrentGroup({ value: e != null ? e : "" })
+                                handleChangeGroup(e)
+                            }
+                            }>
+                                <Dropdown.Toggle variant="light">GROUP</Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    <Dropdown.Item eventKey={""}>Select...</Dropdown.Item>
 
-                <Card className="mb-3">
-                    <Nodes nodes={nodes.nodes} />
+                                    {
+                                        groups.gs.map((k) => {
+                                            return <Dropdown.Item eventKey={k} key={k}>{k}</Dropdown.Item>
+                                        })
+                                    }
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </Col>
+                    </Row>
 
-                    <Card.Header>
-                        <Dropdown>
-                            <ButtonGroup>
+                    <Card className="mb-3">
+                        <Nodes nodes={nodes.nodes} />
+
+                        <Card.Header>
+                            <Dropdown>
                                 <ButtonGroup>
-                                    <Dropdown.Toggle variant="outline-primary">USE</Dropdown.Toggle>
-                                    <Dropdown.Menu>
-                                        <Dropdown.Item onClick={() => console.log("all")}>TCP&UDP</Dropdown.Item>
-                                        <Dropdown.Item eventKey={"tcp"}>TCP</Dropdown.Item>
-                                        <Dropdown.Item eventKey={"udp"}>UDP</Dropdown.Item>
-                                    </Dropdown.Menu>
-                                </ButtonGroup>
-                                <Button
-                                    variant="outline-danger"
-                                    onClick={async () => {
+                                    <ButtonGroup>
+                                        <Dropdown.Toggle variant="outline-primary">USE</Dropdown.Toggle>
+                                        <Dropdown.Menu>
+                                            <Dropdown.Item onClick={() => console.log("all")}>TCP&UDP</Dropdown.Item>
+                                            <Dropdown.Item eventKey={"tcp"}>TCP</Dropdown.Item>
+                                            <Dropdown.Item eventKey={"udp"}>UDP</Dropdown.Item>
+                                        </Dropdown.Menu>
+                                    </ButtonGroup>
+                                    <Button
+                                        variant="outline-danger"
+                                        onClick={async () => {
 
-                                        const resp = await fetch(
-                                            `${APIUrl}/node?hash=${selectNode.node}`,
-                                            {
-                                                method: "DELETE"
+                                            const resp = await fetch(
+                                                `${APIUrl}/node?hash=${selectNode.node}`,
+                                                {
+                                                    method: "DELETE"
+                                                }
+                                            )
+                                            if (!resp.ok) console.log(await resp.text())
+                                            else {
+                                                console.log("delete successful")
+                                                await handleChangeGroup(currentGroup.value);
                                             }
-                                        )
-                                        if (!resp.ok) console.log(await resp.text())
-                                        else {
-                                            console.log("delete successful")
-                                            await handleChangeGroup(currentGroup.value);
-                                        }
-                                    }}
-                                >
-                                    DELETE
-                                </Button>
-                                {/* <Button variant="outline-primary" onClick={() => console.log("add new node")}>Add New Node</Button> */}
-                            </ButtonGroup>
-                        </Dropdown>
-                    </Card.Header>
-                </Card>
-            </div >
+                                        }}
+                                    >
+                                        DELETE
+                                    </Button>
+                                    {/* <Button variant="outline-primary" onClick={() => console.log("add new node")}>Add New Node</Button> */}
+                                </ButtonGroup>
+                            </Dropdown>
+                        </Card.Header>
+                    </Card>
+                </div >
+            }
         </>
     );
 }
