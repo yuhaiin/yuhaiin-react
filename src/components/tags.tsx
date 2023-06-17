@@ -38,13 +38,13 @@ function Tags() {
                     <Badge className="rounded-pill bg-light text-dark text-truncate ms-1">
                         {v.hash == ""
                             ?
-                            <>Fallback &rarr; Global</>
+                            <>Fallback <i className="bi bi-heart-arrow"></i> Global</>
                             :
                             v.type == "mirror"
                                 ?
-                                <>Mirror &rarr; {v.hash}</>
+                                <>Mirror <i className="bi bi-arrow-right"></i> {v.hash}</>
                                 :
-                                <>Target &rarr; <a href='#' className="text-truncate" >{v.hash}</a></>
+                                <>Target <i className="bi bi-arrow-right"></i> <a href='#' className="text-truncate" >{v.hash}</a></>
 
                         }
                     </Badge>

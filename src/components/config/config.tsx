@@ -54,23 +54,23 @@ function Config() {
         setState({ data: x })
     }
 
-    useEffect(() => {
-        (async () => {
-            try {
-                await fetch(
-                    APIUrl + "/config/json",
-                    {
-                        method: "get",
-                    },
-                ).then(async (resp) => {
-                    setState({ data: await resp.json() as Config })
-                })
+    const refresh = async () => {
+        try {
+            await fetch(
+                APIUrl + "/config/json",
+                {
+                    method: "get",
+                },
+            ).then(async (resp) => {
+                setState({ data: await resp.json() as Config })
+            })
 
-            } catch (e) {
-                console.log(e)
-            }
-        })()
-    }, [])
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    useEffect(() => { (async () => { await refresh() })() }, [])
 
     return (
         <>
@@ -150,7 +150,10 @@ function Config() {
                         })
 
                         if (!resp.ok) console.log(await resp.text())
-                        else console.log("save successful")
+                        else {
+                            await refresh()
+                            console.log("save successful")
+                        }
                     }
                     }>Save</Button>
                 </Card.Body>
