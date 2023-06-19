@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Row, Col, ButtonGroup, Button, Dropdown, Card, ListGroup, Badge, Spinner } from "react-bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import { APIUrl } from "./apiurl";
 import NodeModal, { NewNode } from "./node";
 import Loading from "./loading";
+import { GlobalToastContext } from "./toast";
 
 
 
@@ -19,13 +20,14 @@ function Group() {
     var isTestingObj: { [k: string]: boolean } = {};
     const [latency, setLatency] = useState({ tcplt: tcpObj, udplt: udpObj, testing: isTestingObj });
     const [loading, setLoading] = useState({ value: true })
+    const ctx = useContext(GlobalToastContext);
 
     const refresh = async () => {
         try {
             const resp = await fetch(
                 APIUrl + "/grouplist",
                 {
-                    method: "get",
+                    method: "GET",
                 },
             )
             if (!resp.ok) return
@@ -49,12 +51,14 @@ function Group() {
         }
 
         try {
-            fetch(
+            const resp = await fetch(
                 APIUrl + "/group?name=" + e,
                 {
-                    method: "get",
+                    method: "GET",
                 }
-            ).then(async (result) => { setNodes({ nodes: await result.json() }) })
+            )
+            if (resp.ok) setNodes({ nodes: await resp.json() })
+            else console.log(await resp.text())
         } catch (e) {
             console.log(e)
         }
@@ -175,7 +179,13 @@ function Group() {
 
     return (
         <>
-            {modalHash.hash != "" && <NodeModal hash={modalHash.hash} editable onHide={() => setModalHash({ hash: "" })} />}
+            {modalHash.hash != "" &&
+                <NodeModal
+                    hash={modalHash.hash}
+                    editable
+                    onHide={() => setModalHash({ hash: "" })}
+                    onSave={() => handleChangeGroup(currentGroup.value)}
+                />}
 
             {loading.value && <Loading />}
             {!loading.value &&
@@ -205,12 +215,34 @@ function Group() {
                         <Nodes nodes={nodes.nodes} />
 
                         <Card.Header>
-                            <Dropdown>
+                            <Dropdown
+                                onSelect={
+                                    async (key) => {
+                                        const resp = await fetch(
+                                            `${APIUrl}/node?hash=${selectNode.node}&&net=${key}`,
+                                            {
+                                                method: "PUT"
+                                            }
+                                        )
+                                        if (!resp.ok) console.log(await resp.text())
+                                        else {
+                                            let net = "";
+                                            if (key == "tcp") net = " TCP";
+                                            if (key == "udp") net = " UDP";
+
+                                            ctx.Info(`Change${net} Node To ${selectNode.node} Successful!`)
+                                            console.log("change node successful")
+
+                                        }
+                                    }
+
+                                }
+                            >
                                 <ButtonGroup>
                                     <ButtonGroup>
                                         <Dropdown.Toggle variant="outline-primary">USE</Dropdown.Toggle>
                                         <Dropdown.Menu>
-                                            <Dropdown.Item onClick={() => console.log("all")}>TCP&UDP</Dropdown.Item>
+                                            <Dropdown.Item eventKey={"tcpudp"}>TCP&UDP</Dropdown.Item>
                                             <Dropdown.Item eventKey={"tcp"}>TCP</Dropdown.Item>
                                             <Dropdown.Item eventKey={"udp"}>UDP</Dropdown.Item>
                                         </Dropdown.Menu>
@@ -225,9 +257,13 @@ function Group() {
                                                     method: "DELETE"
                                                 }
                                             )
-                                            if (!resp.ok) console.log(await resp.text())
-                                            else {
+                                            if (!resp.ok) {
+                                                let error = resp.text();
+                                                console.log(error)
+                                                ctx.Info(`Delete Node ${selectNode.node} Failed! ${error}`)
+                                            } else {
                                                 console.log("delete successful")
+                                                ctx.Info(`Delete Node ${selectNode.node} Successful!`)
                                                 await handleChangeGroup(currentGroup.value);
                                             }
                                         }}

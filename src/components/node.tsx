@@ -3,7 +3,7 @@ import { Row, Col, ButtonGroup, Button, Modal, Form, Dropdown, Card, ListGroup, 
 import { APIUrl } from "./apiurl";
 
 
-function NodeModal(props: { hash: string, editable: boolean, onHide: () => void }) {
+function NodeModal(props: { hash: string, editable: boolean, onHide: () => void, onSave?: () => void }) {
     const [node, setNode] = useState({ value: "" });
     const [show, setShow] = useState({ value: true });
 
@@ -14,7 +14,7 @@ function NodeModal(props: { hash: string, editable: boolean, onHide: () => void 
                 await fetch(
                     APIUrl + "/node?hash=" + props.hash,
                     {
-                        method: "get",
+                        method: "GET",
                     },
                 ).then(async (resp) => {
                     setNode({ value: await resp.text() })
@@ -53,17 +53,25 @@ function NodeModal(props: { hash: string, editable: boolean, onHide: () => void 
                     <Button variant="secondary" onClick={() => { setShow({ value: false }); props.onHide() }}>Close</Button>
                     {props.editable &&
                         <Button variant="primary"
-                            onChange={async () => {
+                            onClick={async () => {
                                 const resp = await fetch(APIUrl + "/node", {
-                                    method: "post",
+                                    method: "POST",
                                     headers: {
                                         'content-type': 'application/json;charset=UTF-8',
                                     },
-                                    body: JSON.stringify(node),
+                                    body: node.value,
                                 })
                                 if (!resp.ok) console.log(await resp.text())
-                                else console.log("save successful")
-                            }}
+                                else {
+                                    console.log("save successful")
+
+                                    if (props.onSave != undefined) props.onSave();
+
+                                    setShow({ value: false });
+                                    props.onHide();
+                                }
+                            }
+                            }
                         >
                             Save
                         </Button>

@@ -233,7 +233,7 @@ const AccordionItem = React.memo((props: { data: any }) => {
                                     const resp = await fetch(
                                         APIUrl + "/conn?id=" + props.data.id,
                                         {
-                                            method: "delete",
+                                            method: "DELETE",
                                         }
                                     )
                                     if (!resp.ok) console.log(await resp.text())

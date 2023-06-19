@@ -1,7 +1,8 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { Card, Spinner } from 'react-bootstrap';
+import React, { useContext, useEffect, useLayoutEffect, useState } from 'react';
+import { Button, Card, Spinner } from 'react-bootstrap';
 import { APIUrl } from './apiurl';
 import Loading from './loading';
+import { GlobalToastContext } from './toast';
 
 function Home() {
     const [data, setData] = useState({ tcp: "", udp: "" })
@@ -12,7 +13,7 @@ function Home() {
             await fetch(
                 APIUrl + "/node/now",
                 {
-                    method: "get",
+                    method: "GET",
                 },
             ).then(async (resp) => {
                 if (resp.ok) {
@@ -47,6 +48,7 @@ function Home() {
                     </Card>
                 </div>
             }
+
         </>
 
     );

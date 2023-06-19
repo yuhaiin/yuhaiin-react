@@ -19,7 +19,7 @@ function Subscribe() {
             const resp = await fetch(
                 APIUrl + "/sublist",
                 {
-                    method: "get",
+                    method: "GET",
                 },
             )
             if (!resp.ok) return
@@ -39,29 +39,31 @@ function Subscribe() {
             {!loading.value &&
                 <>
                     <Card className="mb-3">
-                        {
-                            links.value.map((k) => {
-                                return (
-                                    <ListGroup.Item as={"label"} style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }} key={k.name}>
-                                        <Form.Check
-                                            inline
-                                            type="checkbox"
-                                            checked={checked.value[k.name] != undefined && checked.value[k.name]}
-                                            onChange={(e) => {
-                                                let v = checked.value;
-                                                v[k.name] = e.target.checked
-                                                setChecked({ value: v });
-                                            }}
-                                        />
 
-                                        <OverlayTrigger overlay={<Popover><Popover.Body>{k.url}</Popover.Body></Popover>}>
-                                            <span>{k.name}</span>
-                                        </OverlayTrigger>
-                                    </ListGroup.Item>
-                                )
-                            })
-                        }
+                        <ListGroup variant="flush">
+                            {
+                                links.value.map((k) => {
+                                    return (
+                                        <ListGroup.Item as={"label"} style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }} key={k.name}>
+                                            <Form.Check
+                                                inline
+                                                type="checkbox"
+                                                checked={checked.value[k.name] != undefined && checked.value[k.name]}
+                                                onChange={(e) => {
+                                                    let v = checked.value;
+                                                    v[k.name] = e.target.checked
+                                                    setChecked({ value: v });
+                                                }}
+                                            />
 
+                                            <OverlayTrigger overlay={<Popover><Popover.Body>{k.url}</Popover.Body></Popover>}>
+                                                <span>{k.name}</span>
+                                            </OverlayTrigger>
+                                        </ListGroup.Item>
+                                    )
+                                })
+                            }
+                        </ListGroup>
                         <CardHeader>
                             <Button
                                 variant="outline-primary"

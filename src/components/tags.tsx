@@ -19,7 +19,7 @@ function Tags() {
             const resp = await fetch(
                 APIUrl + "/taglist",
                 {
-                    method: "get",
+                    method: "GET",
                 },
             )
 
@@ -60,7 +60,7 @@ function Tags() {
                             e.preventDefault();
                             const resp = await fetch(APIUrl + "/tag?tag=" + k,
                                 {
-                                    method: "delete"
+                                    method: "DELETE"
                                 }
                             )
 
@@ -84,11 +84,14 @@ function Tags() {
             {!loading.value &&
                 <>
                     <Card className="mb-3">
-                        {
-                            Object.entries(data.tags).map(([k, v]) => {
-                                return (<TagItem v={v} k={k} key={k} />)
-                            })
-                        }
+
+                        <ListGroup variant="flush">
+                            {
+                                Object.entries(data.tags).map(([k, v]) => {
+                                    return (<TagItem v={v} k={k} key={k} />)
+                                })
+                            }
+                        </ListGroup>
                     </Card >
 
                     < Card className="mb-3" >
@@ -147,7 +150,7 @@ function Tags() {
                                     const resp = await fetch(
                                         APIUrl + "/tag",
                                         {
-                                            method: "post",
+                                            method: "POST",
                                             body: `{"tag":"${addTag.tag}","hash":"${addHash.hash}","type":"${addType}"}`,
                                         }
                                     )

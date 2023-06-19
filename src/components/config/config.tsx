@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Form, FormGroup, InputGroup, Card, Row, Col, Button, Tabs, Tab, FloatingLabel } from 'react-bootstrap';
 import DNS, { DefaultDnsConfig, DnsConfig } from './dns';
 import Bypass, { defaultBypassConfig, BypassConfig } from './bypass';
@@ -7,6 +7,7 @@ import { APIUrl } from '../apiurl';
 import SwitchSelect from '../common/switch';
 import Loading from '../loading';
 import { SettingCheck, SettingInputText } from './components';
+import { GlobalToastContext } from '../toast';
 
 
 type Config = {
@@ -28,7 +29,7 @@ type Config = {
 }
 
 function Config() {
-
+    const ctx = useContext(GlobalToastContext);
 
     const config: Config = {
         "ipv6": true,
@@ -62,7 +63,7 @@ function Config() {
             const resp = await fetch(
                 APIUrl + "/config/json",
                 {
-                    method: "get",
+                    method: "GET",
                 },
             )
 
@@ -134,7 +135,7 @@ function Config() {
                             console.log(state.data)
 
                             const resp = await fetch(APIUrl + "/config", {
-                                method: "post",
+                                method: "POST",
                                 headers: {
                                     'content-type': 'application/json;charset=UTF-8',
                                 },
@@ -144,6 +145,7 @@ function Config() {
                             if (!resp.ok) console.log(await resp.text())
                             else {
                                 await refresh()
+                                ctx.Info("Save Config Successful!!");
                                 console.log("save successful")
                             }
                         }
