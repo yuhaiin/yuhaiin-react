@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { Row, Col, ButtonGroup, Button, Modal, Form, Dropdown, Card, ListGroup, Badge, Spinner, InputGroup } from "react-bootstrap";
+import { useContext, useEffect, useState } from "react";
+import { Button, Modal, Form, Card, ListGroup, InputGroup } from "react-bootstrap";
 import { APIUrl } from "./apiurl";
+import { GlobalToastContext } from "./toast";
 
 
 function NodeModal(props: { hash: string, editable: boolean, onHide: () => void, onSave?: () => void }) {
     const [node, setNode] = useState({ value: "" });
     const [show, setShow] = useState({ value: true });
 
+
+    const ctx = useContext(GlobalToastContext);
 
     useEffect(() => {
         (async () => {
@@ -17,10 +20,11 @@ function NodeModal(props: { hash: string, editable: boolean, onHide: () => void,
                         method: "GET",
                     },
                 ).then(async (resp) => {
-                    setNode({ value: await resp.text() })
+                    setNode({ value: JSON.stringify(await resp.json(), null, "  ") })
                 })
 
             } catch (e) {
+                ctx.Error(`Get Node ${props.hash} Failed. ${e}`)
                 console.log(e)
             }
         })()
@@ -44,7 +48,7 @@ function NodeModal(props: { hash: string, editable: boolean, onHide: () => void,
                     <Form.Control
                         as="textarea"
                         value={node.value}
-                        style={{ height: "65vh" }}
+                        style={{ height: "65vh", fontFamily: "monospace" }}
                         readOnly={!props.editable}
                         onChange={(e) => setNode({ value: e.target.value })}
                     />
@@ -89,6 +93,9 @@ export function NewNode() {
     const [templateProtocols, setTemplateProtocols] = useState({ value: ["simple"] });
     const [currentProtocol, setCurrentProtocol] = useState({ value: "simple" });
     const [newNode, setNewNode] = useState({ value: "" });
+
+    const ctx = useContext(GlobalToastContext);
+
     return (
         <>
             <Card className="mb-3">
@@ -130,8 +137,11 @@ export function NewNode() {
                                             method: "GET"
                                         }
                                     )
-                                    if (!resp.ok) console.log(await resp.text())
-                                    else {
+                                    if (!resp.ok) {
+                                        let err = await resp.text();
+                                        ctx.Error(`Generate template failed. ${err}`)
+                                        console.log(err)
+                                    } else {
                                         console.log("get successful");
                                         setNewNode({ value: await resp.text() })
                                     }
@@ -173,7 +183,7 @@ export function NewNode() {
                 <Card.Body>
                     <Form.Control
                         as={"textarea"}
-                        style={{ height: "500px" }}
+                        style={{ height: "500px", fontFamily: "monospace" }}
                         className="mb-3"
                         value={newNode.value}
                         onChange={(e) => setNewNode({ value: e.target.value })}
@@ -189,8 +199,12 @@ export function NewNode() {
                                     body: newNode.value,
                                 }
                             )
-                            if (!resp.ok) console.log(await resp.text())
-                            else {
+                            if (!resp.ok) {
+                                let err = await resp.text();
+                                ctx.Error(`Add New Node Failed. ${err}`)
+                                console.log(err)
+                            } else {
+                                ctx.Info(`Add New Node Successful`)
                                 console.log("add successful");
                             }
                         }}

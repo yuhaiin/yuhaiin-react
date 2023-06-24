@@ -1,8 +1,7 @@
-import React, { useContext, useEffect, useLayoutEffect, useState } from 'react';
-import { Button, Card, Spinner } from 'react-bootstrap';
+import { useLayoutEffect, useState } from 'react';
+import { Card } from 'react-bootstrap';
 import { APIUrl } from './apiurl';
 import Loading from './loading';
-import { GlobalToastContext } from './toast';
 
 function Home() {
     const [data, setData] = useState({ tcp: "", udp: "" })

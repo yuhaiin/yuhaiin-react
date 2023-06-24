@@ -1,22 +1,26 @@
-import React, { createContext, useContext, useState, } from 'react';
-import { Button, CloseButton, Toast, ToastContainer } from 'react-bootstrap';
+import React, { createContext, useState, } from 'react';
+import { Toast, ToastContainer } from 'react-bootstrap';
 const initialState = {
     Info: (text: string) => { },
+    Error: (text: string) => { }
 };
 
 export const GlobalToastContext = createContext(initialState);
 
 export const GlobalToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    let tts: { [key: string]: string } = {};
+    let tts: { [key: string]: { text: string, type: string } } = {};
     const [texts, setTexts] = useState({ value: tts, index: 0 });
-    const info = (text: string) => {
+    const msg = (text: string, type: string) => {
         let tts = texts.value;
-        tts[texts.index] = text;
+        tts[texts.index] = { text: text, type: type };
         setTexts({ value: tts, index: texts.index + 1 });
     }
 
+    const info = (text: string) => { msg(text, "success") }
+    const error = (text: string) => { msg(text, "danger") }
+
     return (
-        <GlobalToastContext.Provider value={{ Info: info }}>
+        <GlobalToastContext.Provider value={{ Info: info, Error: error }}>
             <ToastContainer
                 className="p-3"
                 position={"top-center"}
@@ -28,10 +32,10 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
                         return <Toast
                             key={"toast" + key}
-                            className='text-bg-primary'
                             role='alert'
                             aria-live='assertive'
                             show={true}
+                            bg={v.type}
                             onClose={
                                 () => {
                                     let tts = texts.value;
@@ -50,7 +54,7 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode }> = ({ c
                                 <small className="text-muted">just now</small>
                             </Toast.Header>
 
-                            <Toast.Body>{v}</Toast.Body>
+                            <Toast.Body className='text-center'>{v.text}</Toast.Body>
 
                         </Toast>
                     })

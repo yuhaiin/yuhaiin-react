@@ -1,4 +1,4 @@
-import { Modal, Placeholder, Card, Spinner, Col, Row, Overlay } from "react-bootstrap";
+import { Spinner } from "react-bootstrap";
 
 function Loading() {
     return (

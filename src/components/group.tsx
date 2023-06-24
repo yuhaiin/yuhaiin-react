@@ -3,7 +3,7 @@ import { Row, Col, ButtonGroup, Button, Dropdown, Card, ListGroup, Badge, Spinne
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import { APIUrl } from "./apiurl";
-import NodeModal, { NewNode } from "./node";
+import NodeModal from "./node";
 import Loading from "./loading";
 import { GlobalToastContext } from "./toast";
 
@@ -20,6 +20,7 @@ function Group() {
     var isTestingObj: { [k: string]: boolean } = {};
     const [latency, setLatency] = useState({ tcplt: tcpObj, udplt: udpObj, testing: isTestingObj });
     const [loading, setLoading] = useState({ value: true })
+
     const ctx = useContext(GlobalToastContext);
 
     const refresh = async () => {
@@ -230,8 +231,8 @@ function Group() {
                                             if (key == "tcp") net = " TCP";
                                             if (key == "udp") net = " UDP";
 
-                                            ctx.Info(`Change${net} Node To ${selectNode.node} Successful!`)
-                                            console.log("change node successful")
+                                            ctx.Info(`Change${net} Node To ${selectNode.node} Successful`)
+                                            console.log("change node successfully")
 
                                         }
                                     }
@@ -260,10 +261,10 @@ function Group() {
                                             if (!resp.ok) {
                                                 let error = resp.text();
                                                 console.log(error)
-                                                ctx.Info(`Delete Node ${selectNode.node} Failed! ${error}`)
+                                                ctx.Error(`Delete Node ${selectNode.node} Failed. ${error}`)
                                             } else {
                                                 console.log("delete successful")
-                                                ctx.Info(`Delete Node ${selectNode.node} Successful!`)
+                                                ctx.Info(`Delete Node ${selectNode.node} Successful.`)
                                                 await handleChangeGroup(currentGroup.value);
                                             }
                                         }}

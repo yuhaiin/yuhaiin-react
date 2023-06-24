@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { Button, Card, FloatingLabel, Form, InputGroup, ListGroup, OverlayTrigger, Popover, Spinner, Tooltip } from "react-bootstrap";
+import { useContext, useEffect, useState } from "react";
+import { Button, Card, Form, ListGroup, OverlayTrigger, Popover, Spinner, Tooltip } from "react-bootstrap";
 import CardHeader from "react-bootstrap/esm/CardHeader";
 import { APIUrl } from "./apiurl";
 import Loading from "./loading";
 import { SettingInputText } from "./config/components";
+import { GlobalToastContext } from "./toast";
 
 function Subscribe() {
     let linksList: { name: string, url: string }[] = [];
@@ -13,6 +14,8 @@ function Subscribe() {
     const [updating, setUpdating] = useState({ value: false });
     const [addItem, setAddItem] = useState({ name: "", link: "" });
     const [loading, setLoading] = useState({ value: true })
+
+    const ctx = useContext(GlobalToastContext);
 
     const refresh = async () => {
         try {
@@ -81,9 +84,13 @@ function Subscribe() {
                                         }
                                     )
                                     setUpdating({ value: false });
-                                    if (!resp.ok) console.log(await resp.text())
-                                    else {
-                                        console.log("update successful");
+                                    if (!resp.ok) {
+                                        let err = await resp.text();
+                                        ctx.Error(`Update ${data} failed. ${err}`)
+                                        console.log(err)
+                                    } else {
+                                        ctx.Info(`Update ${data} successfully`);
+                                        console.log(`Update ${data} successfully`);
                                     }
                                 }}
                             >

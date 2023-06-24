@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, FormGroup, InputGroup, Card, Row, Col, Button, Tabs, Tab, CloseButton, FloatingLabel } from 'react-bootstrap';
+import { Form, InputGroup, Row, Col, Button, } from 'react-bootstrap';
 import { SettingInputText } from './components';
 
 type BypassCustomRuleConfig = {

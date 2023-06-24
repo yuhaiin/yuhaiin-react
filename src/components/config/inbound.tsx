@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Form, FormGroup, InputGroup, Card, Row, Col, Button, Tabs, Tab, FloatingLabel } from 'react-bootstrap';
-import SwitchSelect from '../common/switch';
+import { Form, InputGroup, Card, Row, Col, Button, FloatingLabel } from 'react-bootstrap';
 import { SettingCheck, SettingInputText, SettingInputTextarea } from './components';
 
 type HTTP = {

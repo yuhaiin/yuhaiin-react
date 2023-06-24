@@ -1,10 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Form, FormGroup, InputGroup, Card, Row, Col, Button, Tabs, Tab, FloatingLabel } from 'react-bootstrap';
+import { useContext, useEffect, useState } from 'react';
+import { Form, Card, Row, Col, Button, Tabs, Tab, FloatingLabel } from 'react-bootstrap';
 import DNS, { DefaultDnsConfig, DnsConfig } from './dns';
 import Bypass, { defaultBypassConfig, BypassConfig } from './bypass';
 import Inbound, { ServerConfig, defaultServers } from './inbound';
 import { APIUrl } from '../apiurl';
-import SwitchSelect from '../common/switch';
 import Loading from '../loading';
 import { SettingCheck, SettingInputText } from './components';
 import { GlobalToastContext } from '../toast';
@@ -51,6 +50,7 @@ function Config() {
 
     const [state, setState] = useState({ data: config });
     const [loading, setLoading] = useState({ value: true })
+    const [isAndroid, setIsAndroid] = useState({ value: false })
 
     const updateState = (modify: (x: typeof config) => void) => {
         let x = state.data;
@@ -71,6 +71,7 @@ function Config() {
 
             setState({ data: await resp.json() as Config })
             setLoading({ value: false })
+            setIsAndroid({ value: resp.headers.get("Core-OS") === "android" })
         } catch (e) {
             console.log(e)
         }
@@ -129,27 +130,35 @@ function Config() {
 
                         </Tabs>
 
-                        <hr />
 
-                        <Button onClick={async () => {
-                            console.log(state.data)
+                        {!isAndroid.value &&
+                            <>
+                                <hr />
+                                <Button
+                                    onClick={async () => {
+                                        console.log(state.data)
 
-                            const resp = await fetch(APIUrl + "/config", {
-                                method: "POST",
-                                headers: {
-                                    'content-type': 'application/json;charset=UTF-8',
-                                },
-                                body: JSON.stringify(state.data),
-                            })
+                                        const resp = await fetch(APIUrl + "/config", {
+                                            method: "POST",
+                                            headers: {
+                                                'content-type': 'application/json;charset=UTF-8',
+                                            },
+                                            body: JSON.stringify(state.data),
+                                        })
 
-                            if (!resp.ok) console.log(await resp.text())
-                            else {
-                                await refresh()
-                                ctx.Info("Save Config Successful!!");
-                                console.log("save successful")
-                            }
+                                        if (!resp.ok) console.log(await resp.text())
+                                        else {
+                                            await refresh()
+                                            ctx.Info("Save Config Successfully");
+                                            console.log("save successful")
+                                        }
+                                    }
+                                    }
+                                >
+                                    Save
+                                </Button>
+                            </>
                         }
-                        }>Save</Button>
                     </Card.Body>
                 </Card >
             }
