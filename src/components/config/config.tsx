@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { Form, Card, Row, Col, Button, Tabs, Tab, FloatingLabel } from 'react-bootstrap';
+import { Form, Card, Row, Col, Button, Tabs, Tab } from 'react-bootstrap';
 import DNS, { DefaultDnsConfig, DnsConfig } from './dns';
 import Bypass, { defaultBypassConfig, BypassConfig } from './bypass';
 import Inbound, { ServerConfig, defaultServers } from './inbound';
@@ -27,7 +27,7 @@ type Config = {
     }
 }
 
-function Config() {
+function ConfigComponent() {
     const ctx = useContext(GlobalToastContext);
 
     const config: Config = {
@@ -171,7 +171,7 @@ function Config() {
 
 
 
-export default Config;
+export default ConfigComponent;
 
 function SettingLogcatLevelSelect(props: { label: string, value: string, onChange: (value: string) => void }) {
     return (

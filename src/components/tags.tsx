@@ -38,7 +38,7 @@ function Tags() {
         return (
             <ListGroup.Item style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }} key={k}>
                 <div className="d-flex flex-wrap">
-                    <a className="text-decoration-none" href="#" onClick={(e) => { e.preventDefault(); setAddTag({ tag: k }) }}>{k}</a>
+                    <a className="text-decoration-none" href="#empty" onClick={(e) => { e.preventDefault(); setAddTag({ tag: k }) }}>{k}</a>
                     <Badge className="rounded-pill bg-light text-dark text-truncate ms-1">
                         {v.hash == ""
                             ?
@@ -48,14 +48,14 @@ function Tags() {
                                 ?
                                 <>Mirror <i className="bi bi-arrow-right"></i> {v.hash}</>
                                 :
-                                <>Target <i className="bi bi-arrow-right"></i> <a href='#' className="text-truncate" >{v.hash}</a></>
+                                <>Target <i className="bi bi-arrow-right"></i> <a href='#empty' className="text-truncate" >{v.hash}</a></>
 
                         }
                     </Badge>
 
                     <a
                         className="text-decoration-none ms-auto text-truncate"
-                        href='#'
+                        href='#empty'
                         onClick={async (e) => {
                             e.preventDefault();
                             const resp = await fetch(APIUrl + "/tag?tag=" + k,

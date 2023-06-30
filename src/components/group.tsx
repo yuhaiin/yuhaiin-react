@@ -141,7 +141,7 @@ function Group() {
         return (<>
             <ListGroup.Item as={"label"} style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}>
                 <input className="form-check-input me-1" type="radio" name="select_node" value={hash} onChange={handleChange} checked={selectNode.node === hash} />
-                <a href="#" onClick={(e) => {
+                <a href="#empty" onClick={(e) => {
                     e.preventDefault();
                     setModalHash({ hash: hash });
                 }}>{name}</a>
@@ -151,7 +151,7 @@ function Group() {
                     (latency.testing[hash] != null && latency.testing[hash]) ?
                         <Spinner animation="border" size="sm" />
                         :
-                        <a href="#" onClick={(e) => handleLatency(e, hash)}>Test</a>
+                        <a href="#empty" onClick={(e) => handleLatency(e, hash)}>Test</a>
                 }
             </ListGroup.Item>
         </>)

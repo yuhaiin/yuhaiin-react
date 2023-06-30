@@ -143,22 +143,6 @@ const DNS = React.memo((props: DNSProps) => {
         </>)
 })
 
-function DNSTypeSelect({ value = "", onChange = (value: string) => { } }) {
-    return (
-
-        <Form.Select value={value} onChange={(e) => onChange(e.target.value)}>
-            <option value="udp">UDP</option>
-            <option value="tcp">TCP</option>
-            <option value="doh">DOH</option>
-            <option value="dot">DOT</option>
-            <option value="doq">DOQ</option>
-            <option value="doh3">DOH3</option>
-        </Form.Select>
-    )
-}
-
-export default DNS;
-
 function SettingDNSTypeSelect(props: { label: string, value: string, onChange: (value: string) => void }) {
     return (
         <Form.Group as={Row} className='mb-3'>
@@ -176,3 +160,5 @@ function SettingDNSTypeSelect(props: { label: string, value: string, onChange: (
         </Form.Group>
     )
 }
+
+export default DNS;

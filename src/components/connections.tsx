@@ -193,7 +193,7 @@ const ListGroupItem = React.memo((props: { itemKey: string, itemValue: string, }
                                 ?
                                 props.itemValue
                                 :
-                                <a href="#" onClick={(e) => { e.preventDefault(); setModalHash({ hash: props.itemValue }) }}>{props.itemValue}</a>}
+                                <a href="#empty" onClick={(e) => { e.preventDefault(); setModalHash({ hash: props.itemValue }) }}>{props.itemValue}</a>}
                     </div>
                 </div>
             </ListGroup.Item>

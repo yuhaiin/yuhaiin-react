@@ -8,7 +8,7 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import Config from './components/config/config'
+import ConfigComponent from './components/config/config'
 import Home from './components/home'
 import Group from './components/group'
 import Connections from './components/connections'
@@ -29,7 +29,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/yuhaiin/config",
-        element: <Config />,
+        element: <ConfigComponent />,
       },
       {
         path: "/yuhaiin/group",

@@ -104,7 +104,7 @@ const BypassSingleComponents = (props: { config: BypassCustomRuleConfig, onChang
                 {
                     props.config.hostname.map((v, index) => {
                         return (
-                            <Col sm={{ span: 10, offset: index != 0 ? 2 : 0 }} key={index} >
+                            <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
                                 <InputGroup className="mb-2" >
                                     <Form.Control value={v} onChange={(e) => updateState((x) => x.hostname[index] = e.target.value)} />
                                     <Button variant='outline-danger' onClick={() => updateState((x) => x.hostname.splice(index, 1))}>
@@ -116,7 +116,7 @@ const BypassSingleComponents = (props: { config: BypassCustomRuleConfig, onChang
                     })
                 }
 
-                <Col sm={{ span: 10, offset: props.config.hostname.length != 0 ? 2 : 0 }}>
+                <Col sm={{ span: 10, offset: props.config.hostname.length !== 0 ? 2 : 0 }}>
                     <InputGroup className="mb-2" >
                         <Form.Control value={newDomain.value} onChange={(e) => setNewDomain({ value: e.target.value })} />
                         <Button variant='outline-success' onClick={() => updateState((x) => x.hostname.push(newDomain.value))} >
@@ -127,17 +127,6 @@ const BypassSingleComponents = (props: { config: BypassCustomRuleConfig, onChang
 
             </Form.Group>
         </>
-    )
-}
-
-function ModeSelect({ value = "bypass", network = true, onChange = (value: string) => { } }) {
-    return (
-        <Form.Select value={value} onChange={(e) => onChange(e.target.value)}>
-            {network && <option value="bypass">BYPASS</option>}
-            <option value="direct">DIRECT</option>
-            <option value="proxy">PROXY</option>
-            <option value="block">BLOCK</option>
-        </Form.Select>
     )
 }
 
