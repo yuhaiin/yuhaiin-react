@@ -1,5 +1,6 @@
 import { Nav } from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
+import { APIUrl } from './apiurl';
 
 
 function NavBar() {
@@ -14,7 +15,7 @@ function NavBar() {
                     <Nav.Item><NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/yuhaiin/connections">CONNECTIONS</NavLink></Nav.Item>
                     <Nav.Item><NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/yuhaiin/config">CONFIG</NavLink></Nav.Item>
                     <Nav.Item><NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/yuhaiin/tools">TOOLS</NavLink></Nav.Item>
-                    <Nav.Item><NavLink className={({ isActive }) => "nav-link" + (isActive ? " active" : "")} to="/pprof">PPROF</NavLink></Nav.Item>
+                    <Nav.Item><a className="nav-link" href={`${APIUrl}/debug/pprof`}>PPROF</a></Nav.Item>
                 </Nav>
             </div>
         </div>
