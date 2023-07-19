@@ -129,6 +129,13 @@ type TLS = {
     server_name_certificate?: { [key: string]: TLSCertificate },
 }
 
+const IsTLSEmpty = (tls?: TLS | null) => {
+    if (tls == null || tls == undefined) {
+        return true
+    }
+    if (tls.certificates == undefined && tls.next_protos == undefined && tls.server_name_certificate == undefined) return true
+}
+
 const TLSCertificateComponents = React.memo((props: { cert: TLSCertificate, onChange: (x: TLSCertificate) => void }) => {
     const updateState = (x: (x: TLSCertificate) => void) => {
         let v = props.cert;
@@ -274,6 +281,7 @@ type Websocket = {
 const WebsocketComponents = React.memo((props: { websocket: Websocket, onChange: (x: Websocket) => void }) => {
     const updateState = (x: (x: Websocket) => void) => {
         let v = props.websocket;
+        if (IsTLSEmpty(v.tls)) v.tls = null
         x(v)
         if (v !== null) props.onChange(v)
     }
@@ -297,6 +305,7 @@ type Quic = {
 const QuicComponents = React.memo((props: { quic: Quic, onChange: (x: Quic) => void }) => {
     const updateState = (x: (x: Quic) => void) => {
         let v = props.quic;
+        if (IsTLSEmpty(v.tls)) v.tls = null
         x(v)
         if (v !== null) props.onChange(v)
     }
@@ -319,6 +328,7 @@ type Grpc = {
 const GrpcComponents = React.memo((props: { grpc: Grpc, onChange: (x: Grpc) => void }) => {
     const updateState = (x: (x: Grpc) => void) => {
         let v = props.grpc;
+        if (IsTLSEmpty(v.tls)) v.tls = null
         x(v)
         if (v !== null) props.onChange(v)
     }
@@ -340,6 +350,7 @@ type Tls = {
 const TlsComponents = React.memo((props: { tls: Tls, onChange: (x: Tls) => void }) => {
     const updateState = (x: (x: Tls) => void) => {
         let v = props.tls;
+        if (IsTLSEmpty(v.tls)) v.tls = null
         x(v)
         if (v !== null) props.onChange(v)
     }
@@ -354,6 +365,115 @@ const TlsComponents = React.memo((props: { tls: Tls, onChange: (x: Tls) => void 
     )
 })
 
+type Http2 = {
+    tls?: TLS | null,
+}
+
+const Http2Components = React.memo((props: { http2: Http2, onChange: (x: Http2) => void }) => {
+    const updateState = (x: (x: Tls) => void) => {
+        let v = props.http2;
+        if (IsTLSEmpty(v.tls)) v.tls = null
+        x(v)
+        if (v !== null) props.onChange(v)
+    }
+
+    return (
+        <>
+            <SettingInputText plaintext={true} label='Protocol' value={"HTTP2"} />
+            {
+                props.http2.tls !== undefined && <TLSComponents tls={props.http2.tls} onChange={(e) => updateState((x) => x.tls = e)} />
+            }
+        </>
+    )
+})
+
+type reality = {
+    short_id: string[],
+    server_name: string[],
+    dest: string,
+    private_key: string,
+}
+
+const RealityComponents = React.memo((props: { reality: reality, onChange: (x: reality) => void }) => {
+    const updateState = (x: (x: reality) => void) => {
+        let v = props.reality;
+        x(v)
+        if (v !== null) props.onChange(v)
+    }
+
+    const [newShortID, setNewShortID] = useState({ value: "" });
+    const [newServerName, setNewServerName] = useState({ value: "" });
+
+    return (
+        <>
+            <SettingInputText plaintext={true} label='Protocol' value={"Reality"} />
+
+            <SettingInputText label='Dest' value={props.reality.dest} onChange={(e) => updateState((x) => x.dest = e)} />
+            <SettingInputText label='Private Key' value={props.reality.private_key} onChange={(e) => updateState((x) => x.private_key = e)} />
+
+            <Form.Group as={Row} className='mb-3'>
+                <Form.Label column sm={2} className="nowrap">Short ID</Form.Label>
+
+
+                {
+                    props.reality.short_id.map((v, index) => {
+                        return (
+                            <Col sm={{ span: 10, offset: index != 0 ? 2 : 0 }} key={index} >
+                                <InputGroup className="mb-2" >
+                                    <Form.Control value={v} onChange={(e) => updateState((x) => { x.short_id[index] = e.target.value })} />
+                                    <Button variant='outline-danger' onClick={() => updateState((x) => { x.short_id.splice(index, 1) })}>
+                                        <i className="bi bi-x-lg" ></i>
+                                    </Button>
+                                </InputGroup>
+                            </Col>
+                        )
+                    })
+                }
+
+                <Col sm={{ span: 10, offset: props.reality.short_id.length != 0 ? 2 : 0 }}>
+                    <InputGroup className="mb-2" >
+                        <Form.Control value={newShortID.value} onChange={(e) => setNewShortID({ value: e.target.value })} />
+                        <Button variant='outline-success' onClick={() => updateState((x) => {
+                            x.short_id.push(newShortID.value)
+                        })} >
+                            <i className="bi bi-plus-lg" />
+                        </Button>
+                    </InputGroup>
+                </Col>
+            </Form.Group>
+
+
+            <Form.Group as={Row} className='mb-3'>
+                <Form.Label column sm={2} className="nowrap">Server Name</Form.Label>
+                {
+                    props.reality.server_name.map((v, index) => {
+                        return (
+                            <Col sm={{ span: 10, offset: index != 0 ? 2 : 0 }} key={index} >
+                                <InputGroup className="mb-2" >
+                                    <Form.Control value={v} onChange={(e) => updateState((x) => { x.server_name[index] = e.target.value })} />
+                                    <Button variant='outline-danger' onClick={() => updateState((x) => { x.server_name.splice(index, 1) })}>
+                                        <i className="bi bi-x-lg" ></i>
+                                    </Button>
+                                </InputGroup>
+                            </Col>
+                        )
+                    })
+                }
+
+                <Col sm={{ span: 10, offset: props.reality.server_name.length != 0 ? 2 : 0 }}>
+                    <InputGroup className="mb-2" >
+                        <Form.Control value={newServerName.value} onChange={(e) => setNewServerName({ value: e.target.value })} />
+                        <Button variant='outline-success' onClick={() => updateState((x) => {
+                            x.server_name.push(newServerName.value)
+                        })} >
+                            <i className="bi bi-plus-lg" />
+                        </Button>
+                    </InputGroup>
+                </Col>
+            </Form.Group>
+        </>
+    )
+})
 type Yuubinsya = {
     host: string,
     password: string,
@@ -363,6 +483,8 @@ type Yuubinsya = {
     quic?: Quic | null,
     tls?: Tls | null,
     grpc?: Grpc | null,
+    http2?: Http2 | null,
+    reality?: reality | null,
 }
 
 
@@ -400,6 +522,14 @@ const YuubinsyaComponents = React.memo((props: { yuubinsya: Yuubinsya, onChange:
 
                 props.yuubinsya.tls != undefined &&
                 <TlsComponents tls={props.yuubinsya.tls} onChange={(e) => updateState((x) => x.tls = e)} />
+            }
+            {
+                props.yuubinsya.http2 != undefined &&
+                <Http2Components http2={props.yuubinsya.http2} onChange={(e) => updateState((x) => x.http2 = e)} />
+            }
+            {
+                props.yuubinsya.reality != undefined &&
+                <RealityComponents reality={props.yuubinsya.reality} onChange={(e) => updateState((x) => x.reality = e)} />
             }
         </>
     )
@@ -485,6 +615,8 @@ const Inbound = React.memo((props: { server: { [key: string]: ServerConfig }, on
                             <option value="yuubinsya-tls">Yuubinsya TLS</option>
                             <option value="yuubinsya-grpc">Yuubinsya GRPC</option>
                             <option value="yuubinsya-quic">Yuubinsya QUIC</option>
+                            <option value="yuubinsya-http2">Yuubinsya HTTP2</option>
+                            <option value="yuubinsya-reality">Yuubinsya Reality</option>
                         </Form.Select>
                     </FloatingLabel>
 
@@ -541,7 +673,7 @@ const defaultProtocol = (x: { [key: string]: ServerConfig }, name: string, proto
                 host: ":2096",
                 force_disable_encrypt: false,
                 password: "password",
-                normal: {},
+                normal: null,
             }
             break
         case "yuubinsya-websocket":
@@ -550,7 +682,7 @@ const defaultProtocol = (x: { [key: string]: ServerConfig }, name: string, proto
                 force_disable_encrypt: false,
                 password: "password",
                 websocket: {
-                    tls: {},
+                    tls: null,
                 }
             }
             break
@@ -560,7 +692,7 @@ const defaultProtocol = (x: { [key: string]: ServerConfig }, name: string, proto
                 force_disable_encrypt: false,
                 password: "password",
                 tls: {
-                    tls: {},
+                    tls: null,
                 }
             }
             break
@@ -570,7 +702,7 @@ const defaultProtocol = (x: { [key: string]: ServerConfig }, name: string, proto
                 force_disable_encrypt: false,
                 password: "password",
                 grpc: {
-                    tls: {},
+                    tls: null,
                 }
             }
             break
@@ -580,10 +712,34 @@ const defaultProtocol = (x: { [key: string]: ServerConfig }, name: string, proto
                 force_disable_encrypt: false,
                 password: "password",
                 quic: {
-                    tls: {},
+                    tls: null,
                 }
             }
             break
+        case "yuubinsya-http2":
+            sc.yuubinsya = {
+                host: ":2096",
+                force_disable_encrypt: false,
+                password: "password",
+                http2: {
+                    tls: null,
+                }
+            }
+            break
+        case "yuubinsya-reality":
+            sc.yuubinsya = {
+                host: ":2096",
+                force_disable_encrypt: false,
+                password: "password",
+                reality: {
+                    short_id: ["123456"],
+                    server_name: ["www.example.com"],
+                    private_key: "",
+                    dest: "dl.google.com:443",
+                }
+            }
+            break
+
         default:
             return
     }

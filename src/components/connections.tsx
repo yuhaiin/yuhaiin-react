@@ -82,9 +82,10 @@ function Connections() {
     }
 
     const connectWS = () => {
-        let url = (APIUrl != "" ? APIUrl : window.location.host).replace("http://", "").replace("https://", "");
+        let scheme = window.location.protocol == "https:" ? "wss://" : "ws://";
+        let url = APIUrl != "" ? APIUrl : window.location.hostname;
 
-        const ws = new WebSocket("ws://" + url + "/conn");
+        const ws = new WebSocket(scheme + url + "/conn");
         let closed = false;
 
         let close = () => {
