@@ -83,8 +83,7 @@ function Connections() {
 
     const connectWS = () => {
         let scheme = window.location.protocol == "https:" ? "wss://" : "ws://";
-        let url = APIUrl != "" ? APIUrl : window.location.hostname;
-
+        let url = APIUrl != "" ? APIUrl.replace("http://", "").replace("https://", "") : window.location.host
         const ws = new WebSocket(scheme + url + "/conn");
         let closed = false;
 
