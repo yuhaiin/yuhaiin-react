@@ -211,6 +211,10 @@ const AccordionItem = React.memo((props: { data: any }) => {
                     <span className="ms-2">{props.data.addr}</span>
                     <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{props.data.extra.MODE}</Badge>
                     <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{net_map[props.data.type.conn_type as keyof typeof net_map]}</Badge>
+                    {
+                        props.data.extra.Tag != null &&
+                        <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{props.data.extra.Tag}</Badge>
+                    }
                 </div>
             </Accordion.Header>
 
