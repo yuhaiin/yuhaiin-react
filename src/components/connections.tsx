@@ -14,32 +14,53 @@ const formatBytes =
     }
 
 
-const net_map = {
-    0: "unknown",
-    1: "tcp",
-    2: "tcp4",
-    3: "tcp6",
-    4: "udp",
-    5: "udp4",
-    6: "udp6",
-    7: "ip",
-    8: "ip4",
-    9: "ip6",
-    10: "unix",
-    11: "unixgram",
-    12: "unixpacket",
+enum Net {
+    unknown = 0,
+    tcp = 1,
+    tcp4 = 2,
+    tcp6 = 3,
+    udp = 4,
+    udp4 = 5,
+    udp6 = 6,
+    ip = 7,
+    ip4 = 8,
+    ip6 = 9,
+    unix = 10,
+    unixgram = 11,
+    unixpacket = 12,
 }
 
+type FlowData = {
+    download: number,
+    upload: number,
+}
+
+type ConnectionData = {
+    addr: string,
+    id: number,
+    type: {
+        conn_type: Net,
+        underlying_type: Net,
+    },
+    extra: { [key: string]: string }
+}
+
+type ConnData = {
+    type: number,
+    flow: FlowData,
+    remove_ids: number[],
+    connections: ConnectionData[]
+}
 
 function Connections() {
     const [flow, setFlow] = useState({ download: 0, upload: 0, dstr: "Loading...", ustr: "Loading...", });
-    const [conns, setConns] = useState({ cs: new Map() });
+    const [conns, setConns] = useState({ cs: new Map<number, ConnectionData>() });
 
 
     let download = 0;
     let upload = 0;
 
-    const updateFlow = (data: any) => {
+    const updateFlow = (data: FlowData) => {
         let drate = 0;
         let urate = 0;
         if (download != 0 || upload != 0) {
@@ -60,22 +81,20 @@ function Connections() {
         let ustr = `(${su}): ${sur}/S`
 
         setFlow({ download: download, upload: upload, dstr: dstr, ustr: ustr })
-
-        // console.log(dstr, ustr)
     }
 
-    const updateConns = (data: any) => {
+    const updateConns = (data: ConnectionData[]) => {
         let cs = conns.cs;
-        data.forEach((e: any) => {
+        data.forEach((e: ConnectionData) => {
             cs.set(e.id, e);
         });
         setConns({ cs: cs });
         // console.log(conns.cs.size);
     }
 
-    const removeConns = (data: any) => {
+    const removeConns = (data: number[]) => {
         let cs = conns.cs;
-        data.forEach((e: any) => {
+        data.forEach((e: number) => {
             cs.delete(e);
         })
         setConns({ cs: cs });
@@ -99,7 +118,7 @@ function Connections() {
         }
 
         ws.onmessage = function (ev) {
-            const data = JSON.parse(ev.data);
+            const data: ConnData = JSON.parse(ev.data);
             // console.log(data)
 
             switch (data.type) {
@@ -108,11 +127,11 @@ function Connections() {
                     return
                 case 1:
                     // console.log("start")
-                    updateConns(data.data);
+                    updateConns(data.connections);
                     // console.log("end")
                     return;
                 case 2:
-                    removeConns(data.data);
+                    removeConns(data.remove_ids);
             }
         }
 
@@ -167,7 +186,7 @@ function Connections() {
 
             <Accordion className="mb-3" alwaysOpen id="connections">
                 {
-                    Array.from(conns.cs.values()).map((e: any) => {
+                    Array.from(conns.cs.values()).map((e: ConnectionData) => {
                         return <AccordionItem data={e} key={e.id} />
                     })
                 }
@@ -201,16 +220,16 @@ const ListGroupItem = React.memo((props: { itemKey: string, itemValue: string, }
     )
 })
 
-const AccordionItem = React.memo((props: { data: any }) => {
+const AccordionItem = React.memo((props: { data: ConnectionData }) => {
     return (
-        <Accordion.Item eventKey={props.data.id} key={props.data.id}>
+        <Accordion.Item eventKey={props.data.id.toString()} key={props.data.id}>
 
             <Accordion.Header>
                 <div className="d-line">
                     <code className="ms-2">{props.data.id}</code>
                     <span className="ms-2">{props.data.addr}</span>
                     <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{props.data.extra.MODE}</Badge>
-                    <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{net_map[props.data.type.conn_type as keyof typeof net_map]}</Badge>
+                    <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{Net[props.data.type.conn_type]}</Badge>
                     {
                         props.data.extra.Tag != null &&
                         <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{props.data.extra.Tag}</Badge>
@@ -220,8 +239,8 @@ const AccordionItem = React.memo((props: { data: any }) => {
 
             <Accordion.Body>
                 <ListGroup variant="flush">
-                    <ListGroupItem itemKey="Type" itemValue={net_map[props.data.type.conn_type as keyof typeof net_map]} />
-                    <ListGroupItem itemKey="Underlying" itemValue={net_map[props.data.type.underlying_type as keyof typeof net_map]} />
+                    <ListGroupItem itemKey="Type" itemValue={Net[props.data.type.conn_type]} />
+                    <ListGroupItem itemKey="Underlying" itemValue={Net[props.data.type.underlying_type]} />
 
                     {
                         Object.keys(props.data.extra).map((k) => {
