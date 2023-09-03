@@ -5,7 +5,7 @@ export const SettingInputText = (props: { label: string, value: string | number 
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2} className="nowrap">{props.label}</Form.Label>
             <Col sm={10}>
-                <Form.Control value={props.value} plaintext={props.plaintext} onChange={(v) => props.onChange != undefined && props.onChange(v.target.value)} />
+                <Form.Control value={props.value} plaintext={props.plaintext} onChange={(v) => props.onChange !== undefined && props.onChange(v.target.value)} />
             </Col>
         </Form.Group>
     )
