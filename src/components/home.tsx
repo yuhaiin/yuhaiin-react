@@ -2,9 +2,11 @@ import { useLayoutEffect, useState } from 'react';
 import { Card } from 'react-bootstrap';
 import { APIUrl } from './apiurl';
 import Loading from './loading';
+import { now_resp as Now } from '../protos/node/grpc/node';
+import { point as Point } from '../protos/node/point/point';
 
 function Home() {
-    const [data, setData] = useState({ tcp: "", udp: "" })
+    const [data, setData] = useState<Now>({ tcp: undefined, udp: undefined })
     const [loading, setLoading] = useState({ value: true })
 
     const refresh = async () => {
@@ -16,7 +18,7 @@ function Home() {
                 },
             ).then(async (resp) => {
                 if (resp.ok) {
-                    setData(await resp.json())
+                    setData(Now.decode(new Uint8Array(await resp.arrayBuffer())))
                     setLoading({ value: false })
                 }
             })
@@ -35,14 +37,14 @@ function Home() {
                     <Card className='mb-3'>
                         <Card.Header>TCP</Card.Header>
                         <Card.Body>
-                            <pre>{data.tcp}</pre>
+                            <pre>{data.tcp !== undefined && JSON.stringify(Point.toJSON(data.tcp), null, "  ")}</pre>
                         </Card.Body>
                     </Card>
 
                     <Card className='mb-3'>
                         <Card.Header>UDP</Card.Header>
                         <Card.Body>
-                            <pre>{data.udp}</pre>
+                            <pre>{data.udp !== undefined && JSON.stringify(Point.toJSON(data.udp), null, "  ")}</pre>
                         </Card.Body>
                     </Card>
                 </div>

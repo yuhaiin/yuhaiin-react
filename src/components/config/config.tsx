@@ -1,67 +1,46 @@
 import { useContext, useEffect, useState } from 'react';
 import { Form, Card, Row, Col, Button, Tabs, Tab } from 'react-bootstrap';
-import DNS, { DefaultDnsConfig, DnsConfig } from './dns';
-import Bypass, { defaultBypassConfig, BypassConfig } from './bypass';
-import Inbound, { ServerConfig, defaultServers } from './inbound';
+import DNS, { DefaultDnsConfig, } from './dns';
+import Bypass, { defaultBypassConfig, } from './bypass';
+import Inbound, { defaultServers } from './inbound';
 import { APIUrl } from '../apiurl';
 import Loading from '../loading';
 import { SettingCheck, SettingInputText } from './components';
 import { GlobalToastContext } from '../toast';
-
-
-type Config = {
-    ipv6: boolean,
-    net_interface: string,
-    system_proxy: {
-        socks5?: boolean,
-        http?: boolean,
-    }
-    bypass: BypassConfig,
-    dns: DnsConfig,
-    server: {
-        servers: { [key: string]: ServerConfig },
-    }
-    logcat: {
-        level: string,
-        save: boolean,
-    }
-}
+import {
+    log_level as LogLevel,
+    log_levelToJSON as LogLevelToJSON,
+    log_levelFromJSON as LogLevelFromJSON,
+} from '../../protos/config/log/log';
+import { setting as Setting } from '../../protos/config/config';
 
 function ConfigComponent() {
     const ctx = useContext(GlobalToastContext);
 
-    const config: Config = {
-        "ipv6": true,
-        "net_interface": "",
-        "system_proxy": {
-            "http": true,
-            "socks5": false
-        },
-        "bypass": defaultBypassConfig,
-        "dns": DefaultDnsConfig,
-        "server": {
-            "servers": defaultServers,
-        },
-        "logcat": {
-            "level": "verbose",
-            "save": true
-        }
+    const config: Setting = {
+        ipv6: true,
+        net_interface: "",
+        system_proxy: { http: true, socks5: false },
+        bypass: defaultBypassConfig,
+        dns: DefaultDnsConfig,
+        server: { servers: defaultServers },
+        logcat: { level: LogLevel.verbose, save: true }
     };
 
-    const [state, setState] = useState({ data: config });
+    const [setting, setSetting] = useState<Setting>(config);
     const [loading, setLoading] = useState({ value: true })
     const [isAndroid, setIsAndroid] = useState({ value: false })
 
-    const updateState = (modify: (x: typeof config) => void) => {
-        let x = state.data;
+    const updateState = (modify: (x: Setting) => void) => {
+        let x = setting;
         modify(x)
-        setState({ data: x })
+        setSetting({ ...x })
     }
 
     const refresh = async () => {
         try {
             const resp = await fetch(
-                APIUrl + "/config/json",
+                APIUrl + "/config",
                 {
                     method: "GET",
                 },
@@ -69,7 +48,7 @@ function ConfigComponent() {
 
             if (!resp.ok) return
 
-            setState({ data: await resp.json() as Config })
+            setSetting({ ...Setting.decode(new Uint8Array(await resp.arrayBuffer())) })
             setLoading({ value: false })
             setIsAndroid({ value: resp.headers.get("Core-OS") === "android" })
         } catch (e) {
@@ -91,8 +70,8 @@ function ConfigComponent() {
                         >
                             <Tab eventKey="home" title="Home">
 
-                                <SettingCheck label='IPv6' checked={state.data.ipv6} onChange={() => setState({ data: { ...state.data, ipv6: !state.data.ipv6 } })} />
-                                <SettingInputText label='Network Interface' value={state.data.net_interface} onChange={(v) => updateState((x) => x.net_interface = v)} />
+                                <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting({ ...setting, ipv6: !setting.ipv6 })} />
+                                <SettingInputText label='Network Interface' value={setting.net_interface} onChange={(v) => updateState((x) => x.net_interface = v)} />
 
                                 <hr />
 
@@ -100,32 +79,32 @@ function ConfigComponent() {
 
 
                                 <SettingCheck label='SOCKS5'
-                                    checked={state.data.system_proxy.socks5 != undefined ? state.data.system_proxy.socks5 : false}
-                                    onChange={() => updateState((x) => x.system_proxy.socks5 = !x.system_proxy.socks5)} />
+                                    checked={setting.system_proxy!!.socks5}
+                                    onChange={() => updateState((x) => x.system_proxy!!.socks5 = !x.system_proxy!!.socks5)} />
 
                                 <SettingCheck label='HTTP'
-                                    checked={state.data.system_proxy.http != undefined ? state.data.system_proxy.http : false}
-                                    onChange={() => updateState((x) => x.system_proxy.http = !x.system_proxy.http)} />
+                                    checked={setting.system_proxy!!.http}
+                                    onChange={() => updateState((x) => x.system_proxy!!.http = !x.system_proxy!!.http)} />
 
 
                                 <hr />
 
                                 <Card.Title className='mb-2'>Logcat</Card.Title>
                                 <SettingCheck label='Save'
-                                    checked={state.data.logcat.save}
-                                    onChange={() => updateState((x) => x.logcat.save = !x.logcat.save)} />
-                                <SettingLogcatLevelSelect label='Level' value={state.data.logcat.level} onChange={(e) => updateState((x) => x.logcat.level = e)} />
+                                    checked={setting.logcat!!.save}
+                                    onChange={() => updateState((x) => x.logcat!!.save = !x.logcat!!.save)} />
+                                <SettingLogcatLevelSelect label='Level' value={setting.logcat!!.level} onChange={(e) => updateState((x) => { x.logcat!!.level = e })} />
 
 
                             </Tab>
                             <Tab eventKey="bypass" title="Bypass">
-                                <Bypass bypass={state.data.bypass} onChange={(e) => updateState((x) => x.bypass = e)} />
+                                <Bypass bypass={setting.bypass!!} onChange={(e) => updateState((x) => x.bypass = e)} />
                             </Tab>
                             <Tab eventKey="dns" title="DNS">
-                                <DNS data={state.data.dns} onChange={(e) => updateState((x) => x.dns = e)} />
+                                <DNS data={setting.dns!!} onChange={(e) => updateState((x) => x.dns = e)} />
                             </Tab>
                             <Tab eventKey="inbound" title="Inbound">
-                                <Inbound server={state.data.server.servers} onChange={(e) => updateState((x) => x.server.servers = e)} />
+                                <Inbound server={setting.server!!.servers} onChange={(e) => updateState((x) => x.server!!.servers = e)} />
                             </Tab>
 
                         </Tabs>
@@ -136,14 +115,14 @@ function ConfigComponent() {
                                 <hr />
                                 <Button
                                     onClick={async () => {
-                                        console.log(state.data)
+                                        console.log(setting)
 
                                         const resp = await fetch(APIUrl + "/config", {
                                             method: "POST",
                                             headers: {
-                                                'content-type': 'application/json;charset=UTF-8',
+                                                'content-type': 'application/protobuf',
                                             },
-                                            body: JSON.stringify(state.data),
+                                            body: Setting.encode(setting).finish(),
                                         })
 
                                         if (!resp.ok) console.log(await resp.text())
@@ -173,16 +152,16 @@ function ConfigComponent() {
 
 export default ConfigComponent;
 
-function SettingLogcatLevelSelect(props: { label: string, value: string, onChange: (value: string) => void }) {
+function SettingLogcatLevelSelect(props: { label: string, value: LogLevel, onChange: (value: LogLevel) => void }) {
     return (
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2}>{props.label}</Form.Label>
             <Col sm={10}>
-                <Form.Select value={props.value} onChange={(e) => props.onChange(e.target.value)}>
-                    <option value="debug">DEBUG</option>
-                    <option value="info">INFO</option>
-                    <option value="warning">WARN</option>
-                    <option value="error">ERROR</option>
+                <Form.Select value={LogLevelToJSON(props.value)} onChange={(e) => props.onChange(LogLevelFromJSON(e.target.value))}>
+                    <option value={LogLevelToJSON(LogLevel.debug)}>DEBUG</option>
+                    <option value={LogLevelToJSON(LogLevel.info)}>INFO</option>
+                    <option value={LogLevelToJSON(LogLevel.warning)}>WARN</option>
+                    <option value={LogLevelToJSON(LogLevel.error)}>ERROR</option>
                 </Form.Select>
             </Col>
         </Form.Group>

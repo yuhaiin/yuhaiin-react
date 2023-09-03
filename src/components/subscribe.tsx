@@ -5,14 +5,14 @@ import { APIUrl } from "./apiurl";
 import Loading from "./loading";
 import { SettingInputText } from "./config/components";
 import { GlobalToastContext } from "./toast";
+import { save_link_req as SaveLink, get_links_resp as GetLinks, link_req as LinkReq } from "../protos/node/grpc/node";
+import { type as LinkType, link as Link } from "../protos/node/subscribe/subscribe";
 
 function Subscribe() {
-    let linksList: { name: string, url: string }[] = [];
-    const [links, setLinks] = useState({ value: linksList });
-    let checkedObj: { [key: string]: boolean } = {};
-    const [checked, setChecked] = useState({ value: checkedObj });
+    const [links, setLinks] = useState<GetLinks>({ links: {} });
+    const [checked, setChecked] = useState<{ [key: string]: boolean }>({});
     const [updating, setUpdating] = useState({ value: false });
-    const [addItem, setAddItem] = useState({ name: "", link: "" });
+    const [addItem, setAddItem] = useState<Link>({ name: "", url: "", type: LinkType.reserve });
     const [loading, setLoading] = useState({ value: true })
 
     const ctx = useContext(GlobalToastContext);
@@ -27,7 +27,7 @@ function Subscribe() {
             )
             if (!resp.ok) return
 
-            setLinks({ value: await resp.json() })
+            setLinks(GetLinks.decode(new Uint8Array(await resp.arrayBuffer())))
             setLoading({ value: false })
         } catch (e) {
             console.log(e)
@@ -45,26 +45,28 @@ function Subscribe() {
 
                         <ListGroup variant="flush">
                             {
-                                links.value.map((k) => {
-                                    return (
-                                        <ListGroup.Item as={"label"} style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }} key={k.name}>
-                                            <Form.Check
-                                                inline
-                                                type="checkbox"
-                                                checked={checked.value[k.name] != undefined && checked.value[k.name]}
-                                                onChange={(e) => {
-                                                    let v = checked.value;
-                                                    v[k.name] = e.target.checked
-                                                    setChecked({ value: v });
-                                                }}
-                                            />
+                                Object.entries(links.links)
+                                    .sort((a, b) => { return a <= b ? -1 : 1 })
+                                    .map(([k, v]) => {
+                                        return (
+                                            <ListGroup.Item as={"label"} style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }} key={v.name}>
+                                                <Form.Check
+                                                    inline
+                                                    type="checkbox"
+                                                    checked={checked[v.name] !== undefined && checked[v.name]}
+                                                    onChange={(e) => {
+                                                        let c = checked;
+                                                        c[v.name] = e.target.checked
+                                                        setChecked({ ...c });
+                                                    }}
+                                                />
 
-                                            <OverlayTrigger overlay={<Popover><Popover.Body>{k.url}</Popover.Body></Popover>}>
-                                                <span>{k.name}</span>
-                                            </OverlayTrigger>
-                                        </ListGroup.Item>
-                                    )
-                                })
+                                                <OverlayTrigger overlay={<Popover><Popover.Body>{v.url}</Popover.Body></Popover>}>
+                                                    <span>{v.name}</span>
+                                                </OverlayTrigger>
+                                            </ListGroup.Item>
+                                        )
+                                    })
                             }
                         </ListGroup>
                         <CardHeader>
@@ -74,23 +76,23 @@ function Subscribe() {
                                 disabled={updating.value}
                                 onClick={async () => {
                                     setUpdating({ value: true });
-                                    let data = Object.keys(checked.value).filter((i) => checked.value[i]);
-                                    console.log(data);
-
                                     const resp = await fetch(
-                                        `${APIUrl}/sub?links=${encodeURIComponent(JSON.stringify(data))}`,
+                                        `${APIUrl}/sub`,
                                         {
-                                            method: "PATCH"
+                                            method: "PATCH",
+                                            body: LinkReq
+                                                .encode({ names: Object.keys(checked).filter((i) => checked[i]) })
+                                                .finish()
                                         }
                                     )
                                     setUpdating({ value: false });
                                     if (!resp.ok) {
                                         let err = await resp.text();
-                                        ctx.Error(`Update ${data} failed. ${err}`)
+                                        ctx.Error(`Update failed. ${err}`)
                                         console.log(err)
                                     } else {
-                                        ctx.Info(`Update ${data} successfully`);
-                                        console.log(`Update ${data} successfully`);
+                                        ctx.Info(`Update successfully`);
+                                        console.log(`Update successfully`);
                                     }
                                 }}
                             >
@@ -99,14 +101,15 @@ function Subscribe() {
                             <Button
                                 variant="outline-danger"
                                 onClick={async () => {
-                                    let data = Object.keys(checked.value).filter((i) => checked.value[i]);
-                                    console.log(data);
-
                                     const resp = await fetch(
-                                        `${APIUrl}/sub?links=${encodeURIComponent(JSON.stringify(data))}`,
+                                        `${APIUrl}/sub`,
                                         {
-                                            method: "DELETE"
+                                            method: "DELETE",
+                                            body: LinkReq
+                                                .encode({ names: Object.keys(checked).filter((i) => checked[i]) })
+                                                .finish()
                                         }
+
                                     )
                                     if (!resp.ok) console.log(await resp.text())
                                     else {
@@ -127,18 +130,19 @@ function Subscribe() {
                                 onChange={(e) => setAddItem({ ...addItem, name: e })}
                             />
                             <SettingInputText label="Link"
-                                value={addItem.link}
-                                onChange={(e) => setAddItem({ ...addItem, link: e })}
+                                value={addItem.url}
+                                onChange={(e) => setAddItem({ ...addItem, url: e })}
                             />
 
                             <Button
                                 variant="outline-primary"
                                 onClick={async () => {
-                                    if (addItem.name == "" || addItem.link == "") return
+                                    if (addItem.name === "" || addItem.url === "") return
                                     const resp = await fetch(
-                                        `${APIUrl}/sub?name=${encodeURIComponent(addItem.name)}&link=${encodeURIComponent(addItem.link)}`,
+                                        `${APIUrl}/sub`,
                                         {
-                                            method: "POST"
+                                            method: "POST",
+                                            body: SaveLink.encode({ links: [addItem] }).finish(),
                                         }
                                     )
                                     if (!resp.ok) console.log(await resp.text())

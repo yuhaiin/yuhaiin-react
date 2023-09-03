@@ -10,15 +10,11 @@ import { GlobalToastContext } from "./toast";
 
 
 function Group() {
-    let groupList: string[] = [];
-    const [groups, setGroups] = useState({ gs: groupList });
+    const [groups, setGroups] = useState<{ gs: string[] }>({ gs: [] });
     const [nodes, setNodes] = useState({ nodes: {} })
     const [selectNode, setSelectNode] = useState({ node: "" });
     const [currentGroup, setCurrentGroup] = useState({ value: "" });
-    var tcpObj: { [k: string]: string } = {};
-    var udpObj: { [k: string]: string } = {};
-    var isTestingObj: { [k: string]: boolean } = {};
-    const [latency, setLatency] = useState({ tcplt: tcpObj, udplt: udpObj, testing: isTestingObj });
+    const [latency, setLatency] = useState<{ [key: string]: { tcp: string, udp: string, testing: boolean } }>({});
     const [loading, setLoading] = useState({ value: true })
 
     const ctx = useContext(GlobalToastContext);
@@ -33,7 +29,7 @@ function Group() {
             )
             if (!resp.ok) return
 
-            setGroups({ gs: await resp.json() as string[] })
+            setGroups({ gs: await resp.json() })
             setLoading({ value: false })
         } catch (e) {
             console.log(e)
@@ -46,7 +42,7 @@ function Group() {
     }, [])
 
     const handleChangeGroup = async (e: string | null) => {
-        if (e == null || e?.length == 0) {
+        if (e === null || e?.length === 0) {
             setNodes({ nodes: new Map<string, string>() })
             return
         }
@@ -73,36 +69,32 @@ function Group() {
     };
 
 
-    const updateTestingStatus = (hash: string, testing: boolean) => {
-        let ltesting = latency.testing
-        ltesting[hash] = testing
-        setLatency({ ...latency, testing: ltesting })
+    const updateTestingStatus = (hash: string, modify: (x: { tcp: string, udp: string, testing: boolean }) => void) => {
+        let data = latency[hash]
+        if (data === undefined || data === null) data = { tcp: "N/A", udp: "N/A", testing: false }
+        modify(data)
+        latency[hash] = data
+        setLatency({ ...latency })
     }
 
     const setLatencyResult = async (hash: string, result: Response, tcp = true) => {
         let str = "";
-        if (result.status == 200) {
+        if (result.status === 200) {
             str = await result.text();
         }
+        str = str !== "" ? str : "timeout"
 
-        let lt: { [k: string]: string };
-
-        if (tcp) lt = latency.tcplt;
-        else lt = latency.udplt;
-
-        lt[hash] = str != "" ? str : "timeout"
-
-        if (tcp) setLatency({ ...latency, tcplt: lt })
-        else setLatency({ ...latency, udplt: lt })
+        if (tcp) updateTestingStatus(hash, (x) => x.tcp = str);
+        else updateTestingStatus(hash, (x) => x.udp = str);
     }
 
     const handleLatency = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, hash: string) => {
         e.preventDefault();
 
 
-        if (latency.testing[hash] == true) return
+        if (latency[hash] !== undefined && latency[hash] != null && latency[hash].testing === true) return
 
-        updateTestingStatus(hash, true)
+        updateTestingStatus(hash, (x) => x.testing = true)
 
         let tcp = false;
         let udp = false;
@@ -116,7 +108,7 @@ function Group() {
             setLatencyResult(hash, result)
             tcp = true;
 
-            if (udp) updateTestingStatus(hash, false)
+            if (udp) updateTestingStatus(hash, (x) => x.testing = false)
 
         })
 
@@ -130,7 +122,7 @@ function Group() {
 
             udp = true;
 
-            if (tcp) updateTestingStatus(hash, false)
+            if (tcp) updateTestingStatus(hash, (x) => x.testing = false)
 
         })
     };
@@ -145,10 +137,10 @@ function Group() {
                     e.preventDefault();
                     setModalHash({ hash: hash });
                 }}>{name}</a>
-                <Badge className="rounded-pill bg-light text-dark ms-1 text-uppercase">tcp: {latency.tcplt[hash] != null ? latency.tcplt[hash] : "N/A"}</Badge>
-                <Badge className="rounded-pill bg-light text-dark ms-1 me-1 text-uppercase">udp:{latency.udplt[hash] != null ? latency.udplt[hash] : "N/A"}</Badge>
+                <Badge className="rounded-pill bg-light text-dark ms-1 text-uppercase">tcp: {latency[hash] != null ? latency[hash].tcp : "N/A"}</Badge>
+                <Badge className="rounded-pill bg-light text-dark ms-1 me-1 text-uppercase">udp:{latency[hash] != null ? latency[hash].udp : "N/A"}</Badge>
                 {
-                    (latency.testing[hash] != null && latency.testing[hash]) ?
+                    (latency[hash] != null && latency[hash].testing) ?
                         <Spinner animation="border" size="sm" />
                         :
                         <a href="#empty" onClick={(e) => handleLatency(e, hash)}>Test</a>
@@ -160,7 +152,7 @@ function Group() {
     const Nodes = React.memo((props: { nodes: {} }) => {
         let entries = Object.entries(props.nodes);
 
-        if (entries.length == 0) {
+        if (entries.length === 0) {
             return (
                 <Card.Body>
                     <div className="text-center my-2" style={{ opacity: '0.4' }}>グールプはまだ指定されていません。</div>
@@ -180,7 +172,7 @@ function Group() {
 
     return (
         <>
-            {modalHash.hash != "" &&
+            {modalHash.hash !== "" &&
                 <NodeModal
                     hash={modalHash.hash}
                     editable
@@ -228,8 +220,8 @@ function Group() {
                                         if (!resp.ok) console.log(await resp.text())
                                         else {
                                             let net = "";
-                                            if (key == "tcp") net = " TCP";
-                                            if (key == "udp") net = " UDP";
+                                            if (key === "tcp") net = " TCP";
+                                            if (key === "udp") net = " UDP";
 
                                             ctx.Info(`Change${net} Node To ${selectNode.node} Successful`)
                                             console.log("change node successfully")

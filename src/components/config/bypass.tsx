@@ -1,37 +1,31 @@
 import React, { useState } from 'react';
 import { Form, InputGroup, Row, Col, Button, } from 'react-bootstrap';
 import { SettingInputText } from './components';
-
-type BypassCustomRuleConfig = {
-    hostname: string[],
-    mode: string,
-    tag: string,
-    resolve_strategy: string,
-}
-
-export type BypassConfig = {
-    tcp: string,
-    udp: string,
-    bypass_file: string,
-    custom_rule_v3: BypassCustomRuleConfig[],
-}
+import {
+    config as BypassConfig,
+    mode as BypassMode,
+    mode_config as CustomRule,
+    resolve_strategy as ResolveStrategy,
+    modeToJSON as BypassModeToJson,
+    modeFromJSON as BypassModeFromJson,
+    resolve_strategyToJSON as ResolveStrategyToJSON,
+    resolve_strategyFromJSON as ResolveStrategyFromJSON,
+} from '../../protos/config/bypass/bypass';
 
 export const defaultBypassConfig: BypassConfig = {
-    "tcp": "bypass",
-    "udp": "bypass",
-    "bypass_file": "yuhaiin.conf",
-    "custom_rule_v3": []
+    tcp: BypassMode.bypass,
+    udp: BypassMode.bypass,
+    bypass_file: "yuhaiin.conf",
+    custom_rule_v3: []
 }
 
 const Bypass = React.memo((props: { bypass: BypassConfig, onChange: (x: BypassConfig) => void, }) => {
 
-    const defaultRule = {
-        "hostname": [
-            "www.example.com"
-        ],
-        "mode": "proxy",
-        "tag": "",
-        "resolve_strategy": "default"
+    const defaultRule: CustomRule = {
+        hostname: ["www.example.com"],
+        mode: BypassMode.proxy,
+        tag: "",
+        resolve_strategy: ResolveStrategy.default
     }
 
     const updateState = (x: (x: BypassConfig) => void) => {
@@ -81,8 +75,8 @@ const Bypass = React.memo((props: { bypass: BypassConfig, onChange: (x: BypassCo
     )
 })
 
-const BypassSingleComponents = (props: { config: BypassCustomRuleConfig, onChange: (x: BypassCustomRuleConfig) => void }) => {
-    const updateState = (x: (v: BypassCustomRuleConfig) => void) => {
+const BypassSingleComponents = (props: { config: CustomRule, onChange: (x: CustomRule) => void }) => {
+    const updateState = (x: (v: CustomRule) => void) => {
         let v = props.config;
         x(v)
         props.onChange(v)
@@ -130,16 +124,16 @@ const BypassSingleComponents = (props: { config: BypassCustomRuleConfig, onChang
     )
 }
 
-function SettingModeSelect(props: { label: string, network: boolean, value: string, onChange: (value: string) => void }) {
+function SettingModeSelect(props: { label: string, network: boolean, value: BypassMode, onChange: (value: BypassMode) => void }) {
     return (
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2}>{props.label}</Form.Label>
             <Col sm={10}>
-                <Form.Select value={props.value} onChange={(e) => props.onChange(e.target.value)}>
-                    {props.network && <option value="bypass">BYPASS</option>}
-                    <option value="direct">DIRECT</option>
-                    <option value="proxy">PROXY</option>
-                    <option value="block">BLOCK</option>
+                <Form.Select value={BypassModeToJson(props.value)} onChange={(e) => props.onChange(BypassModeFromJson(e.target.value))}>
+                    {props.network && <option value={BypassModeToJson(BypassMode.bypass)}>BYPASS</option>}
+                    <option value={BypassModeToJson(BypassMode.direct)}>DIRECT</option>
+                    <option value={BypassModeToJson(BypassMode.proxy)}>PROXY</option>
+                    <option value={BypassModeToJson(BypassMode.block)}>BLOCK</option>
                 </Form.Select>
             </Col>
         </Form.Group>
@@ -147,17 +141,17 @@ function SettingModeSelect(props: { label: string, network: boolean, value: stri
 }
 
 
-function SettingResolveStrategySelect(props: { label: string, value: string, onChange: (value: string) => void }) {
+function SettingResolveStrategySelect(props: { label: string, value: ResolveStrategy, onChange: (value: ResolveStrategy) => void }) {
     return (
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2}>{props.label}</Form.Label>
             <Col sm={10}>
-                <Form.Select value={props.value} onChange={(e) => props.onChange(e.target.value)}>
-                    <option value="default">default</option>
-                    <option value="prefer_ipv4">prefer_ipv4</option>
-                    <option value="only_ipv4">only_ipv4</option>
-                    <option value="prefer_ipv6">prefer_ipv6</option>
-                    <option value="only_ipv6">only_ipv6</option>
+                <Form.Select value={ResolveStrategyToJSON(props.value)} onChange={(e) => props.onChange(ResolveStrategyFromJSON(e.target.value))}>
+                    <option value={ResolveStrategyToJSON(ResolveStrategy.default)}>default</option>
+                    <option value={ResolveStrategyToJSON(ResolveStrategy.prefer_ipv4)}>prefer_ipv4</option>
+                    <option value={ResolveStrategyToJSON(ResolveStrategy.only_ipv4)}>only_ipv4</option>
+                    <option value={ResolveStrategyToJSON(ResolveStrategy.prefer_ipv6)}>prefer_ipv6</option>
+                    <option value={ResolveStrategyToJSON(ResolveStrategy.only_ipv6)}>only_ipv6</option>
                 </Form.Select>
             </Col>
         </Form.Group>

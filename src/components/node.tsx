@@ -28,7 +28,7 @@ function NodeModal(props: { hash: string, editable: boolean, onHide: () => void,
                 console.log(e)
             }
         })()
-    }, [])
+    }, [ctx, props.hash])
 
     return (
         <>
@@ -69,7 +69,7 @@ function NodeModal(props: { hash: string, editable: boolean, onHide: () => void,
                                 else {
                                     console.log("save successful")
 
-                                    if (props.onSave != undefined) props.onSave();
+                                    if (props.onSave !== undefined) props.onSave();
 
                                     setShow({ value: false });
                                     props.onHide();
