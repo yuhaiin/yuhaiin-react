@@ -1,5 +1,5 @@
 ts_plugin=./node_modules/.bin/protoc-gen-ts_proto
-output=./src/protos
+output=./pages/components/protos
 proto_opt="esModuleInterop=true,env=browser,snakeToCamel=false,outputClientImpl=false,outputServices=false,oneof=unions"
 proto_dir="${HOME}/Documents/Programming/yuhaiin/pkg/protos"
 protoc --plugin=${ts_plugin} --ts_proto_out=${output} --ts_proto_opt=${proto_opt} --proto_path=${proto_dir} ${proto_dir}/config/config.proto
