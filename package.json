@@ -3,28 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^29.5.2",
     "@types/node": "^20.2.5",
     "@types/react": "^18.2.8",
     "@types/react-dom": "^18.2.4",
     "bootstrap": "^v5.3.1",
     "bootstrap-icons": "^1.10.5",
     "buffer": "^6.0.3",
+    "immer": "^10.0.2",
     "next": "^13.4.19",
+    "postcss": "^8.4.29",
     "react": "^18.2.0",
     "react-bootstrap": "^2.8.0",
     "react-dom": "^18.2.0",
+    "swr": "^2.2.2",
     "ts-proto": "^1.156.8",
-    "typescript": "^5.2.2",
-    "web-vitals": "^3.4.0"
-  },
-  "overrides": {
-    "react-scripts": {
-      "typescript": "^5"
-    }
+    "typescript": "^5.2.2"
   },
   "scripts": {
     "dev": "next dev",
@@ -32,27 +25,8 @@
     "start": "next start",
     "export": "next export"
   },
-  "sideEffects": false,
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
   "devDependencies": {
-    "compression-webpack-plugin": "^10.0.0",
-    "eslint": "^8.48.0"
+    "eslint": "^8.48.0",
+    "eslint-config-next": "^13.4.19"
   }
 }

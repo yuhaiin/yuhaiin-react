@@ -21,14 +21,10 @@ import {
     tun_endpoint_driverFromJSON as TunDriverFromJSON,
     tun_endpoint_driverToJSON as TunDriverToJSON,
 } from '../protos/config/listener/listener';
-
+import { produce } from 'immer'
 
 const HTTPComponents = React.memo((props: { http: HTTP, onChange: (x: HTTP) => void }) => {
-    const updateState = (x: (x: HTTP) => void) => {
-        let v = props.http;
-        x(v)
-        props.onChange(v)
-    }
+    const updateState = (x: (x: HTTP) => void) => props.onChange(produce(props.http, (v) => { x(v) }))
 
     return (
         <>
@@ -41,11 +37,7 @@ const HTTPComponents = React.memo((props: { http: HTTP, onChange: (x: HTTP) => v
 
 
 const RedirComponents = React.memo((props: { redir: Redir, onChange: (x: Redir) => void }) => {
-    const updateState = (x: (x: Redir) => void) => {
-        let v = props.redir;
-        x(v)
-        props.onChange(v)
-    }
+    const updateState = (x: (x: Redir) => void) => props.onChange(produce(props.redir, (v) => { x(v) }))
 
     return (
         <>
@@ -55,11 +47,8 @@ const RedirComponents = React.memo((props: { redir: Redir, onChange: (x: Redir) 
 })
 
 const Socks5Components = React.memo((props: { socks5: Socks5, onChange: (x: Socks5) => void }) => {
-    const updateState = (x: (x: Socks5) => void) => {
-        let v = props.socks5;
-        x(v)
-        props.onChange(v)
-    }
+    const updateState = (x: (x: Socks5) => void) => props.onChange(produce(props.socks5, (v) => { x(v) }))
+
 
     return (
         <>
@@ -72,11 +61,8 @@ const Socks5Components = React.memo((props: { socks5: Socks5, onChange: (x: Sock
 
 
 const TunComponents = React.memo((props: { tun: Tun, onChange: (x: Tun) => void }) => {
-    const updateState = (x: (x: Tun) => void) => {
-        let v = props.tun;
-        x(v)
-        props.onChange(v)
-    }
+    const updateState = (x: (x: Tun) => void) => props.onChange(produce(props.tun, (v) => { x(v) }))
+
 
     return (
         <>
@@ -120,20 +106,16 @@ const IsTLSEmpty = (tls?: TLS | null) => {
 }
 
 const TLSCertificateComponents = React.memo((props: { cert: TLSCertificate, onChange: (x: TLSCertificate) => void }) => {
-    const updateState = (x: (x: TLSCertificate) => void) => {
-        let v = props.cert;
-        x(v)
-        if (v != null) props.onChange(v)
-    }
+    const updateState = (x: (x: TLSCertificate) => void) => props.onChange(produce(props.cert, (v) => { x(v) }))
+
 
     return (
         <>
+            <SettingInputTextarea label='Cert' value={Buffer.from(props.cert.cert).toString()}
+                onChange={(e) => updateState((x) => { x.cert = new Uint8Array(Buffer.from(e)) })} />
 
-            <SettingInputTextarea label='Cert' value={Buffer.from(props.cert.cert).toString('base64')}
-                onChange={(e) => updateState((x) => { x.cert = new Uint8Array(Buffer.from(e, 'base64')) })} />
-
-            <SettingInputTextarea label='Key' value={Buffer.from(props.cert.key).toString('base64')}
-                onChange={(e) => updateState((x) => { x.key = new Uint8Array(Buffer.from(e, 'base64')) })} />
+            <SettingInputTextarea label='Key' value={Buffer.from(props.cert.key).toString()}
+                onChange={(e) => updateState((x) => { x.key = new Uint8Array(Buffer.from(e)) })} />
 
             <SettingInputText label='Cert File' value={props.cert.cert_file_path} onChange={(e) => updateState((x) => { x.cert_file_path = e })} />
             <SettingInputText label='Key File' value={props.cert.key_file_path} onChange={(e) => updateState((x) => { x.key_file_path = e })} />
@@ -145,11 +127,8 @@ const TLSComponents = React.memo((props: { tls: TLS, onChange: (x: TLS) => void 
     const [newSni, setNewSni] = useState("www.example.com")
     const [newNextProtos, setNewNextProtos] = useState({ value: "" });
 
-    const updateState = (x: (x: TLS) => void) => {
-        let v = props.tls;
-        x(v)
-        if (v != null) props.onChange(v)
-    }
+    const updateState = (x: (x: TLS) => void) => props.onChange(produce(props.tls, (v) => { x(v) }))
+
 
     return (
         <>
@@ -260,12 +239,11 @@ const TLSComponents = React.memo((props: { tls: TLS, onChange: (x: TLS) => void 
 })
 
 const WebsocketComponents = React.memo((props: { websocket: Websocket, onChange: (x: Websocket) => void }) => {
-    const updateState = (x: (x: Websocket) => void) => {
-        let v = props.websocket;
+    const updateState = (x: (x: Websocket) => void) => props.onChange(produce(props.websocket, (v) => {
         if (IsTLSEmpty(v.tls)) v.tls = undefined
         x(v)
-        if (v !== null) props.onChange(v)
-    }
+    }))
+
 
     return (
         <>
@@ -280,10 +258,10 @@ const WebsocketComponents = React.memo((props: { websocket: Websocket, onChange:
 
 const QuicComponents = React.memo((props: { quic: Quic, onChange: (x: Quic) => void }) => {
     const updateState = (x: (x: Quic) => void) => {
-        let v = props.quic;
-        if (IsTLSEmpty(v.tls)) v.tls = undefined
-        x(v)
-        if (v !== null) props.onChange(v)
+        props.onChange(produce(props.quic, (v) => {
+            if (IsTLSEmpty(v.tls)) v.tls = undefined
+            x(v)
+        }))
     }
 
     return (
@@ -300,10 +278,10 @@ const QuicComponents = React.memo((props: { quic: Quic, onChange: (x: Quic) => v
 
 const GrpcComponents = React.memo((props: { grpc: Grpc, onChange: (x: Grpc) => void }) => {
     const updateState = (x: (x: Grpc) => void) => {
-        let v = props.grpc;
-        if (IsTLSEmpty(v.tls)) v.tls = undefined
-        x(v)
-        if (v !== null) props.onChange(v)
+        props.onChange(produce(props.grpc, (v) => {
+            if (IsTLSEmpty(v.tls)) v.tls = undefined
+            x(v)
+        }))
     }
 
     return (
@@ -318,10 +296,10 @@ const GrpcComponents = React.memo((props: { grpc: Grpc, onChange: (x: Grpc) => v
 
 const TlsComponents = React.memo((props: { tls: Tls, onChange: (x: Tls) => void }) => {
     const updateState = (x: (x: Tls) => void) => {
-        let v = props.tls;
-        if (IsTLSEmpty(v.tls)) v.tls = undefined
-        x(v)
-        if (v !== null) props.onChange(v)
+        props.onChange(produce(props.tls, (v) => {
+            if (IsTLSEmpty(v.tls)) v.tls = undefined
+            x(v)
+        }))
     }
 
     return (
@@ -335,11 +313,11 @@ const TlsComponents = React.memo((props: { tls: Tls, onChange: (x: Tls) => void 
 })
 
 const Http2Components = React.memo((props: { http2: Http2, onChange: (x: Http2) => void }) => {
-    const updateState = (x: (x: Tls) => void) => {
-        let v = props.http2;
-        if (IsTLSEmpty(v.tls)) v.tls = undefined
-        x(v)
-        if (v !== null) props.onChange(v)
+    const updateState = (x: (x: Http2) => void) => {
+        props.onChange(produce(props.http2, (v) => {
+            if (IsTLSEmpty(v.tls)) v.tls = undefined
+            x(v)
+        }))
     }
 
     return (
@@ -354,9 +332,7 @@ const Http2Components = React.memo((props: { http2: Http2, onChange: (x: Http2) 
 
 const RealityComponents = React.memo((props: { reality: reality, onChange: (x: reality) => void }) => {
     const updateState = (x: (x: reality) => void) => {
-        let v = props.reality;
-        x(v)
-        if (v !== null) props.onChange(v)
+        props.onChange(produce(props.reality, (v) => { x(v) }))
     }
 
     const [newShortID, setNewShortID] = useState({ value: "" });
@@ -435,9 +411,7 @@ const RealityComponents = React.memo((props: { reality: reality, onChange: (x: r
 
 const YuubinsyaComponents = React.memo((props: { yuubinsya: Yuubinsya, onChange: (x: Yuubinsya) => void }) => {
     const updateState = (x: (x: Yuubinsya) => void) => {
-        let v = props.yuubinsya;
-        x(v)
-        props.onChange(v)
+        props.onChange(produce(props.yuubinsya, (v) => { x(v) }))
     }
 
     const components = () => {
@@ -474,9 +448,7 @@ export const defaultServers: { [key: string]: ServerConfig } = {};
 
 const Protocol = React.memo((props: { protocol: ServerConfig, onChange: (x: ServerConfig) => void }) => {
     const updateState = (x: (x: ServerConfig) => void) => {
-        let v = props.protocol;
-        x(v)
-        props.onChange(v)
+        props.onChange(produce(props.protocol, (v) => { x(v) }))
     }
 
     switch (props.protocol.protocol?.$case) {
@@ -500,10 +472,9 @@ const Inbound = React.memo((props: { server: { [key: string]: ServerConfig }, on
     const [newProtocol, setNewProtocol] = useState({ value: "http", name: "" });
 
     const updateState = (x: (x: { [key: string]: ServerConfig }) => void) => {
-        let v = props.server;
-        x(v)
-        props.onChange(v)
+        props.onChange(produce(props.server, (v) => { x(v) }))
     }
+
     return (
         <>
             {

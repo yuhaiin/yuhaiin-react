@@ -158,7 +158,13 @@ const ListGroupItem = React.memo((props: { itemKey: string, itemValue: string, }
 
     return (
         <>
-            {modalHash.hash !== "" && <NodeModal hash={modalHash.hash} editable={false} onHide={() => setModalHash({ hash: "" })} />}
+            <NodeModal
+                show={modalHash.hash !== ""}
+                hash={modalHash.hash}
+                editable={false}
+                onHide={() => setModalHash({ hash: "" })}
+            />
+
             <ListGroup.Item>
                 <div className="d-sm-flex">
                     <div className="endpoint-name flex-grow-1 notranslate">{props.itemKey}</div>

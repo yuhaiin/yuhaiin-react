@@ -11,6 +11,7 @@ import {
     resolve_strategyToJSON as ResolveStrategyToJSON,
     resolve_strategyFromJSON as ResolveStrategyFromJSON,
 } from '../protos/config/bypass/bypass';
+import { produce } from 'immer';
 
 export const defaultBypassConfig: BypassConfig = {
     tcp: BypassMode.bypass,
@@ -29,9 +30,7 @@ const Bypass = React.memo((props: { bypass: BypassConfig, onChange: (x: BypassCo
     }
 
     const updateState = (x: (x: BypassConfig) => void) => {
-        let v = props.bypass;
-        x(v)
-        props.onChange(v)
+        props.onChange(produce(props.bypass, (v) => { x(v) }))
     }
 
 
@@ -77,9 +76,7 @@ const Bypass = React.memo((props: { bypass: BypassConfig, onChange: (x: BypassCo
 
 const BypassSingleComponents = (props: { config: CustomRule, onChange: (x: CustomRule) => void }) => {
     const updateState = (x: (v: CustomRule) => void) => {
-        let v = props.config;
-        x(v)
-        props.onChange(v)
+        props.onChange(produce(props.config, (v) => { x(v) }))
     }
 
     const [newDomain, setNewDomain] = useState({ value: "" });

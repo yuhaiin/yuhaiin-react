@@ -1,39 +1,45 @@
-import { useContext, useEffect, useState } from "react";
+import { useState } from "react";
 import { Button, Modal, Form } from "react-bootstrap";
 import { APIUrl } from "../apiurl";
-import { GlobalToastContext } from "../common/toast";
+import useSWR from 'swr'
+import { JsonStrFetcher } from '../common/proto';
+import { point as Point } from "../protos/node/point/point";
+import Loading from "../common/loading";
 
+function NodeModal(props: { hash: string, editable: boolean, show: boolean, onHide: () => void, onSave?: () => void }) {
 
-function NodeModal(props: { hash: string, editable: boolean, onHide: () => void, onSave?: () => void }) {
-    const [node, setNode] = useState({ value: "" });
-    const [show, setShow] = useState({ value: true });
+    const { data: node, error, isLoading, mutate } =
+        useSWR(props.hash !== "" ? `${APIUrl}/node?hash=${props.hash}` : null, JsonStrFetcher)
 
-
-    const ctx = useContext(GlobalToastContext);
-
-    useEffect(() => {
-        (async () => {
-            try {
-                await fetch(
-                    APIUrl + "/node?hash=" + props.hash,
-                    {
-                        method: "GET",
+    const Footer = () => {
+        if (!props.editable) return <></>
+        return <Button variant="primary" active={!isLoading && error === undefined}
+            onClick={async () => {
+                const resp = await fetch(APIUrl + "/node", {
+                    method: "POST",
+                    headers: {
+                        'content-type': 'application/json;charset=UTF-8',
                     },
-                ).then(async (resp) => {
-                    setNode({ value: JSON.stringify(await resp.json(), null, "  ") })
+                    body: node,
                 })
+                if (!resp.ok) console.log(await resp.text())
+                else {
+                    console.log("save successful")
 
-            } catch (e) {
-                ctx.Error(`Get Node ${props.hash} Failed. ${e}`)
-                console.log(e)
+                    if (props.onSave !== undefined) props.onSave();
+                    props.onHide();
+                }
             }
-        })()
-    }, [ctx, props.hash])
+            }
+        >
+            Save
+        </Button>
+    }
 
     return (
         <>
             <Modal
-                show={show.value}
+                show={props.show}
                 aria-labelledby="contained-modal-title-vcenter"
                 size='xl'
                 onHide={() => { props.onHide() }}
@@ -45,41 +51,19 @@ function NodeModal(props: { hash: string, editable: boolean, onHide: () => void,
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Form.Control
-                        as="textarea"
-                        value={node.value}
-                        style={{ height: "65vh", fontFamily: "monospace" }}
-                        readOnly={!props.editable}
-                        onChange={(e) => setNode({ value: e.target.value })}
-                    />
+                    {error !== undefined ? <>error.info</> : isLoading ? <Loading /> :
+                        <Form.Control
+                            as="textarea"
+                            value={node}
+                            style={{ height: "65vh", fontFamily: "monospace" }}
+                            readOnly={!props.editable}
+                            onChange={(e) => mutate(e.target.value, false)}
+                        />
+                    }
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => { setShow({ value: false }); props.onHide() }}>Close</Button>
-                    {props.editable &&
-                        <Button variant="primary"
-                            onClick={async () => {
-                                const resp = await fetch(APIUrl + "/node", {
-                                    method: "POST",
-                                    headers: {
-                                        'content-type': 'application/json;charset=UTF-8',
-                                    },
-                                    body: node.value,
-                                })
-                                if (!resp.ok) console.log(await resp.text())
-                                else {
-                                    console.log("save successful")
-
-                                    if (props.onSave !== undefined) props.onSave();
-
-                                    setShow({ value: false });
-                                    props.onHide();
-                                }
-                            }
-                            }
-                        >
-                            Save
-                        </Button>
-                    }
+                    <Button variant="secondary" onClick={() => { props.onHide() }}>Close</Button>
+                    <Footer />
                 </Modal.Footer>
             </Modal>
         </>

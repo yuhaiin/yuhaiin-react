@@ -7,6 +7,7 @@ import {
     typeToJSON as DnsTypeToJSON,
     typeFromJSON as DnsTypeFromJSON,
 } from '../protos/config/dns/dns';
+import { produce } from 'immer';
 
 export const DefaultDnsConfig: DnsConfig = {
     server: "",
@@ -44,9 +45,7 @@ const DNS = React.memo((props: DNSProps) => {
     const [newHosts, setNewHosts] = useState({ key: "", value: "" })
 
     const updateDNS = (x: (x: DnsConfig) => void) => {
-        let v = props.data;
-        x(v)
-        props.onChange(v)
+        props.onChange(produce(props.data, (v) => { x(v) }))
     }
 
     return (
