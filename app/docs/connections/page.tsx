@@ -45,15 +45,14 @@ function Connections() {
 
     const { data, error } = useSWRSubscription("/conn",
         (key, { next }: SWRSubscriptionOptions<Statistic, { msg: string, code: number }>) => {
-            let scheme = window.location.protocol === "https:" ? "wss://" : "ws://";
-            let url = APIUrl !== "" ? APIUrl.replace("http://", "").replace("https://", "") : window.location.host
+            let url = new URL(APIUrl !== "" ? APIUrl : window.location.toString());
+            let scheme = url.protocol === "https:" ? "wss://" : "ws://";
 
-
-            const socket = new WebSocket(`${scheme}${url}${key}`)
+            const socket = new WebSocket(`${scheme}${url.host}${key}`)
             socket.binaryType = "arraybuffer";
 
             socket.addEventListener('open', (e) => {
-                console.log(`connect to: ${scheme}${url}${key}, event type: ${e.type}`)
+                console.log(`connect to: ${scheme}${url.host}${key}, event type: ${e.type}`)
                 socket.send('2000')
             })
 
@@ -83,9 +82,8 @@ function Connections() {
             })
 
             socket.addEventListener('close', (e) => {
-                let msg = "websocket closed, code: " + e.code
-                next({ msg: 'websocket closed', code: e.code })
-                console.log(msg)
+                console.log("websocket closed, code: " + e.code)
+                next(null, undefined)
             })
 
             return () => socket.close()
