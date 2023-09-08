@@ -1,5 +1,6 @@
 import React, { createContext, useState, } from 'react';
 import { Toast, ToastContainer } from 'react-bootstrap';
+
 const initialState = {
     Info: (text: string) => { },
     Error: (text: string) => { }
@@ -8,16 +9,25 @@ const initialState = {
 export const GlobalToastContext = createContext(initialState);
 
 export const GlobalToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    let tts: { [key: string]: { text: string, type: string } } = {};
-    const [texts, setTexts] = useState({ value: tts, index: 0 });
-    const msg = (text: string, type: string) => {
-        let tts = texts.value;
-        tts[texts.index] = { text: text, type: type };
-        setTexts({ value: tts, index: texts.index + 1 });
-    }
+    const [texts, setTexts] =
+        useState<{ value: { [key: string]: { text: string, type: string } }, index: number }>({ value: {}, index: 0 });
 
-    const info = (text: string) => { msg(text, "success") }
-    const error = (text: string) => { msg(text, "danger") }
+    const msg = (text: string, type: string) => {
+        setTexts(prev => {
+            prev.value[prev.index] = { text: text, type: type };
+            prev.index++
+            return { ...prev }
+        })
+    };
+
+    const info = (text: string) => {
+        console.log(text);
+        msg(text, "success")
+    }
+    const error = (text: string) => {
+        console.error(text)
+        msg(text, "danger")
+    }
 
     return (
         <GlobalToastContext.Provider value={{ Info: info, Error: error }}>
@@ -55,12 +65,10 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode }> = ({ c
                             </Toast.Header>
 
                             <Toast.Body className='text-center'>{v.text}</Toast.Body>
-
                         </Toast>
                     })
                 }
             </ToastContainer>
-
             {children}
         </GlobalToastContext.Provider>
     )

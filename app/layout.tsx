@@ -1,9 +1,10 @@
 "use client"
 
-import './globals.css'
 import { Container } from 'react-bootstrap';
 import NavBar from './docs/nav';
-
+import { GlobalToastProvider } from './docs/common/toast';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 export default function RootLayout({
   children,
@@ -22,11 +23,13 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/docs/logo192.png" />
       </head>
       <body>
-        <NavBar />
-
-        <Container className="mt-3">
-          {children}
-        </Container>
+        <NavBar>
+          <Container className="mt-3">
+            <GlobalToastProvider>
+              {children}
+            </GlobalToastProvider>
+          </Container>
+        </NavBar>
       </body>
     </html>
   )

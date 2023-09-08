@@ -11,17 +11,18 @@ import { save_link_req as SaveLink, get_links_resp as GetLinks, link_req as Link
 import { type as LinkType, link as Link } from "../protos/node/subscribe/subscribe";
 import useSWR from 'swr'
 import { ProtoFetcher } from '../common/proto';
+import Error from 'next/error';
 
 function Subscribe() {
     const [checked, setChecked] = useState<{ [key: string]: boolean }>({});
     const [updating, setUpdating] = useState({ value: false });
     const [addItem, setAddItem] = useState<Link>({ name: "", url: "", type: LinkType.reserve });
-    const { data: links, error, isLoading, mutate } = useSWR(APIUrl + "/sublist", ProtoFetcher(GetLinks))
+    const { data: links, error, isLoading, mutate } = useSWR("/sublist", ProtoFetcher(GetLinks))
     const ctx = useContext(GlobalToastContext);
 
+    if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || links === undefined) return <Loading />
 
-    if (error !== undefined) return <div>{error.info}</div>
 
     return (
         <>

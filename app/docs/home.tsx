@@ -1,17 +1,18 @@
 import { Card } from 'react-bootstrap';
-import { APIUrl } from './apiurl';
 import Loading from './common/loading';
 import { now_resp as Now } from './protos/node/grpc/node';
 import { point as Point } from './protos/node/point/point';
 import useSWR from 'swr'
 import { ProtoFetcher } from './common/proto';
+import Error from 'next/error';
 
 function Index() {
-    const { data, error, isLoading, } = useSWR(APIUrl + "/node/now", ProtoFetcher(Now))
+    const { data, error, isLoading, } = useSWR("/node/now", ProtoFetcher(Now))
 
-    if (isLoading) return <Loading />
 
-    if (error != undefined) return <Card className='mb-3'>{error.info}</Card>
+    if (error != undefined) return <Error statusCode={error.code} title={error.msg} />
+    if (isLoading || data === undefined) return <Loading />
+
 
     return <div>
         <Card className='mb-3'>

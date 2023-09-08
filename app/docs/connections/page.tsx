@@ -1,11 +1,15 @@
 "use client"
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, Card, ListGroup, Accordion, Badge } from "react-bootstrap";
 import { APIUrl } from "../apiurl";
 import NodeModal from "../modal/node";
 import { connection, type as netType } from "../protos/statistic/config";
-import { notify_remove_connections, notify_new_connections, total_flow, notify_data } from "../protos/statistic/grpc/config";
+import { notify_remove_connections, total_flow, notify_data } from "../protos/statistic/grpc/config";
+import useSWRSubscription from 'swr/subscription'
+import type { SWRSubscriptionOptions } from 'swr/subscription'
+import { produce } from "immer";
+import Loading from "../common/loading";
 
 const formatBytes =
     (a = 0, b = 2) => {
@@ -19,107 +23,79 @@ const formatBytes =
 
 
 function Connections() {
-    const [flow, setFlow] = useState({ download: 0, upload: 0, dstr: "Loading...", ustr: "Loading...", });
-    const [conns, setConns] = useState<{ [key: number]: connection }>({});
-
-
-    let download = 0;
-    let upload = 0;
-
-    const updateFlow = (data: total_flow) => {
-        let drate = 0;
-        let urate = 0;
-        if (download !== 0 || upload !== 0) {
-            drate = (data.download - download) / 2
-            urate = (data.upload - upload) / 2
-        }
-        download = data.download
-        upload = data.upload
-
-        const sd = formatBytes(download)
-        const su = formatBytes(upload)
-        const sdr = formatBytes(drate)
-        const sur = formatBytes(urate)
-
-        if (sd === "" || su === "" || sdr === "" || sur === "") return
-
-        let dstr = `(${sd}): ${sdr}/S`
-        let ustr = `(${su}): ${sur}/S`
-
-        setFlow({ download: download, upload: upload, dstr: dstr, ustr: ustr })
+    type Flow = {
+        download: number,
+        upload: number,
+        dstr: string,
+        ustr: string
     }
 
-    const updateConns = (data: notify_new_connections) => {
-        let cs = conns;
-        data.connections.forEach((e: connection) => { cs[e.id] = e });
-        setConns({ ...cs });
+    type Statistic = {
+        flow: Flow,
+        conns: { [key: number]: connection }
     }
 
-    const removeConns = (data: notify_remove_connections) => {
-        let cs = conns;
-        data.ids.forEach((e: number) => { delete cs[e] })
-        setConns({ ...cs });
+    const generateFlow = (flow: total_flow, prev: Flow): Flow => {
+        let drate = (flow.download - (prev.download !== 0 ? prev.download : flow.download)) / 2
+        let urate = (flow.upload - (prev.upload !== 0 ? prev.upload : flow.upload)) / 2
+        let dstr = `(${formatBytes(flow.download)}): ${formatBytes(drate)}/S`
+        let ustr = `(${formatBytes(flow.upload)}): ${formatBytes(urate)}/S`
+        return { download: flow.download, upload: flow.upload, dstr: dstr, ustr: ustr }
     }
 
-    const connectWS = () => {
-        let scheme = window.location.protocol === "https:" ? "wss://" : "ws://";
-        let url = APIUrl !== "" ? APIUrl.replace("http://", "").replace("https://", "") : window.location.host
-        console.log("websocket url: ", url);
-        const ws = new WebSocket(scheme + url + "/conn");
-        ws.binaryType = "arraybuffer";
-        let closed = false;
-
-        let close = () => {
-            console.log("close websocket")
-            closed = true;
-            ws.close();
-        }
-
-        ws.onopen = () => {
-            console.log("websocket connect")
-            ws.send('2000')
-        }
-
-        ws.onmessage = function (ev) {
-            const data = notify_data.decode(new Uint8Array(ev.data));
-
-            switch (data.data?.$case) {
-                case "total_flow":
-                    updateFlow(data.data.total_flow)
-                    return
-                case "notify_new_connections":
-                    updateConns(data.data.notify_new_connections)
-                    return
-                case "notify_remove_connections":
-                    removeConns(data.data.notify_remove_connections)
-            }
-        }
+    const { data, error } = useSWRSubscription("/conn",
+        (key, { next }: SWRSubscriptionOptions<Statistic, { msg: string, code: number }>) => {
+            let scheme = window.location.protocol === "https:" ? "wss://" : "ws://";
+            let url = APIUrl !== "" ? APIUrl.replace("http://", "").replace("https://", "") : window.location.host
 
 
-        window.onbeforeunload = function () { ws.close(); }
+            const socket = new WebSocket(`${scheme}${url}${key}`)
+            socket.binaryType = "arraybuffer";
 
-        ws.onclose = function () {
-            if (closed) {
-                console.log("websocket closed")
-                return
-            }
+            socket.addEventListener('open', (e) => {
+                console.log(`connect to: ${scheme}${url}${key}, event type: ${e.type}`)
+                socket.send('2000')
+            })
 
-            console.log('close websocket, reconnect will in 1 second')
-            setConns({})
-            setFlow({ download: 0, upload: 0, dstr: "Loading...", ustr: "Loading...", })
-            close = connectWS()
-        }
+            socket.addEventListener('message', (event) => {
+                const raw = notify_data.decode(new Uint8Array(event.data));
+                next(null, pre => {
+                    let prev = pre;
+                    if (prev === undefined) prev = { flow: { download: 0, upload: 0, dstr: "Loading...", ustr: "Loading..." }, conns: {} }
+                    switch (raw.data?.$case) {
+                        case "total_flow":
+                            let xfw = raw.data.total_flow;
+                            return produce(prev, (v) => { v.flow = generateFlow(xfw, v.flow) })
+                        case "notify_new_connections":
+                            let conns = raw.data.notify_new_connections.connections;
+                            return produce(prev, (v) => { conns.forEach((e: connection) => { v.conns[e.id] = e }) })
+                        case "notify_remove_connections":
+                            let ids = raw.data.notify_remove_connections.ids;
+                            return produce(prev, (v) => { ids.forEach((e: number) => { delete v.conns[e] }) })
+                    }
+                })
+            })
 
-        return close
-    }
+            socket.addEventListener('error', (e) => {
+                let msg = "websocket have some error"
+                next({ msg: msg, code: 500 })
+                console.log(msg)
+            })
 
-    // eslint-disable-next-line
-    useEffect(connectWS, [])
+            socket.addEventListener('close', (e) => {
+                let msg = "websocket closed, code: " + e.code
+                next({ msg: 'websocket closed', code: e.code })
+                console.log(msg)
+            })
 
+            return () => socket.close()
+        })
+
+    if (error !== undefined) return <Loading code={error.code}>{error.msg}</Loading>
+    if (data === undefined) return <Loading />
 
     return (
         <>
-
             <Card className="mb-3">
                 <ListGroup variant="flush">
 
@@ -127,7 +103,7 @@ function Connections() {
 
                         <div className="d-sm-flex">
                             <div className="endpoint-name flex-grow-1 notranslate">Download</div>
-                            <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-download">{flow.dstr}</div>
+                            <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-download">{data?.flow.dstr}</div>
                         </div>
                     </ListGroup.Item>
 
@@ -135,7 +111,7 @@ function Connections() {
                     <ListGroup.Item>
                         <div className="d-sm-flex">
                             <div className="endpoint-name flex-grow-1 notranslate">Upload</div>
-                            <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-upload">{flow.ustr}</div>
+                            <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-upload">{data?.flow.ustr}</div>
                         </div>
                     </ListGroup.Item>
                 </ListGroup>
@@ -143,7 +119,7 @@ function Connections() {
 
             <Accordion className="mb-3" alwaysOpen id="connections">
                 {
-                    Object.entries(conns).map(([k, e]) => {
+                    Object.entries(data.conns).map(([k, e]) => {
                         return <AccordionItem data={e} key={e.id} />
                     })
                 }
@@ -194,7 +170,7 @@ const AccordionItem = React.memo((props: { data: connection }) => {
                     <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{props.data.extra.MODE}</Badge>
                     <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{netType[props.data.type!!.conn_type]}</Badge>
                     {
-                        props.data.extra.Tag != null &&
+                        props.data.extra.Tag !== undefined &&
                         <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{props.data.extra.Tag}</Badge>
                     }
                 </div>

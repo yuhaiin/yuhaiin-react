@@ -1,6 +1,6 @@
 "use client"
 
-import { useContext, useEffect, useState } from 'react';
+import { useContext } from 'react';
 import { Form, Card, Row, Col, Button, Tabs, Tab } from 'react-bootstrap';
 import DNS from './dns';
 import Bypass from './bypass';
@@ -18,14 +18,19 @@ import { setting as Setting } from '../protos/config/config';
 import useSWR from "swr";
 import { ProtoFetcher } from '../common/proto';
 import { produce } from "immer"
+import Error from 'next/error';
 
 function ConfigComponent() {
     const ctx = useContext(GlobalToastContext);
 
-    const { data: setting, error, isLoading, mutate: setSetting } = useSWR(APIUrl + "/config", ProtoFetcher(Setting))
+    const { data: setting, error, isLoading, mutate: setSetting } = useSWR("/config", ProtoFetcher(Setting), {
+        onSuccess(data, key, config) {
 
+        },
+    })
+
+    if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || setting === undefined) return <Loading />
-    if (error !== undefined) return <div>{error.info}</div>
 
     // const [isAndroid, setIsAndroid] = useState({ value: false })
 
@@ -88,13 +93,8 @@ function ConfigComponent() {
                         <hr />
                         <Button
                             onClick={async () => {
-                                console.log(setting)
-
                                 const resp = await fetch(APIUrl + "/config", {
                                     method: "POST",
-                                    headers: {
-                                        'content-type': 'application/protobuf',
-                                    },
                                     body: Setting.encode(setting).finish(),
                                 })
 
@@ -116,7 +116,6 @@ function ConfigComponent() {
         </>
     );
 }
-
 
 
 

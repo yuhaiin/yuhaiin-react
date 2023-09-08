@@ -5,14 +5,15 @@ import useSWR from 'swr'
 import { JsonStrFetcher } from '../common/proto';
 import { point as Point } from "../protos/node/point/point";
 import Loading from "../common/loading";
+import Error from 'next/error';
 
-function NodeModal(props: { hash: string, editable: boolean, show: boolean, onHide: () => void, onSave?: () => void }) {
+function NodeModal(props: { hash: string, editable?: boolean, show: boolean, onHide: () => void, onSave?: () => void }) {
 
     const { data: node, error, isLoading, mutate } =
-        useSWR(props.hash !== "" ? `${APIUrl}/node?hash=${props.hash}` : null, JsonStrFetcher)
+        useSWR(props.hash !== "" ? `/node?hash=${props.hash}` : null, JsonStrFetcher)
 
     const Footer = () => {
-        if (!props.editable) return <></>
+        if (props.editable === undefined || !props.editable) return <></>
         return <Button variant="primary" active={!isLoading && error === undefined}
             onClick={async () => {
                 const resp = await fetch(APIUrl + "/node", {
@@ -51,7 +52,7 @@ function NodeModal(props: { hash: string, editable: boolean, show: boolean, onHi
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {error !== undefined ? <>error.info</> : isLoading ? <Loading /> :
+                    {error !== undefined ? <Error statusCode={error.code} title={error.msg} /> : isLoading ? <Loading /> :
                         <Form.Control
                             as="textarea"
                             value={node}

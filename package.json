@@ -22,8 +22,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "export": "next export"
+    "start": "next start"
   },
   "devDependencies": {
     "eslint": "^8.48.0",

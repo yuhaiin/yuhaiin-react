@@ -8,7 +8,7 @@ import Loading from "../common/loading";
 import { GlobalToastContext } from "../common/toast";
 import useSWR from 'swr'
 import { JsonFetcher } from '../common/proto';
-import { produce } from 'immer';
+import Error from 'next/error';
 
 type Latency = {
     tcp?: string,
@@ -22,10 +22,13 @@ function Group() {
     const [selectNode, setSelectNode] = useState("");
     const [currentGroup, setCurrentGroup] = useState({ value: "" });
     const [modalHash, setModalHash] = useState({ hash: "" });
-    const { data: groups, error, isLoading } = useSWR(APIUrl + "/grouplist", JsonFetcher<string[]>)
-    const { data: nodes, mutate: mutateNodes } = useSWR(currentGroup.value !== "" ? `${APIUrl}/group?name=${currentGroup.value}` : null, JsonFetcher<{}>)
+    const { data: groups, error, isLoading } = useSWR("/grouplist", JsonFetcher<string[]>)
+    const { data: nodes, mutate: mutateNodes } =
+        useSWR(currentGroup.value !== "" ? `/group?name=${currentGroup.value}` : null, JsonFetcher<{}>)
     const [latency, setLatency] = useState<{ [key: string]: Latency }>({})
 
+    if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
+    if (isLoading && groups === undefined) return <Loading />
 
     const NodeItem = React.memo((props: { hash: string, latency: Latency | undefined }) => {
         const getStr = (s: string | undefined) => s === undefined ? "N/A" : s
@@ -119,8 +122,6 @@ function Group() {
         </ListGroup>
     })
 
-    if (isLoading) return <Loading />
-    if (error !== undefined) return <div>{error.info}</div>
 
     return (
         <>

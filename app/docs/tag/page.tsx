@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Badge, Button, Card, FloatingLabel, Form, InputGroup, ListGroup } from "react-bootstrap";
 import { APIUrl } from "../apiurl";
 import Loading from "../common/loading";
@@ -9,12 +9,20 @@ import { tag_type as TagType, tags as Tag } from "../protos/node/tag/tag";
 import { manager as Manager } from "../protos/node/node";
 import useSWR from 'swr'
 import { ProtoFetcher } from '../common/proto';
+import Error from 'next/error';
+import NodeModal from "../modal/node";
+import { GlobalToastContext } from "../common/toast";
 
 function Tags() {
+    const ctx = useContext(GlobalToastContext);
     const [currentGroup, setCurrentGroup] = useState("");
     const [saveTag, setSaveTag] = useState<SaveTag>({ tag: "", hash: "", type: TagType.node });
-    const { data, error, isLoading, mutate } = useSWR(APIUrl + "/taglist", ProtoFetcher(Manager))
+    const { data, error, isLoading, mutate } = useSWR("/taglist", ProtoFetcher(Manager))
+    const [modalHash, setModalHash] = useState({ hash: "" });
 
+    if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
+
+    if (isLoading || data == undefined) return <Loading />
 
     const TagItem = (k: string, v: Tag) => {
         return (
@@ -36,7 +44,8 @@ function Tags() {
                                 ?
                                 <>Mirror <i className="bi bi-arrow-right"></i> {v.hash}</>
                                 :
-                                <>Target <i className="bi bi-arrow-right"></i> <a href='#empty' className="text-truncate" >{v.hash}</a></>
+                                <>Target <i className="bi bi-arrow-right"></i>
+                                    <a className="text-truncate" href="#" onClick={(e) => { e.preventDefault(); setModalHash({ hash: v.hash[0] }) }} >{v.hash}</a></>
                         }
                     </Badge>
 
@@ -51,9 +60,9 @@ function Tags() {
                                 }
                             )
 
-                            if (!resp.ok) console.log(await resp.text())
+                            if (!resp.ok) ctx.Error(await resp.text())
                             else {
-                                console.log("delete successful");
+                                ctx.Info(`delete tag ${k} success`);
                                 await mutate();
                             }
                         }}
@@ -65,11 +74,14 @@ function Tags() {
         )
     }
 
-    if (isLoading || data == undefined) return <Loading />
 
-    if (error !== undefined) return <div>{error.info}</div>
     return (
         <>
+            <NodeModal
+                show={modalHash.hash !== ""}
+                hash={modalHash.hash}
+                onHide={() => setModalHash({ hash: "" })}
+            />
             <Card className="mb-3">
 
                 <ListGroup variant="flush">
@@ -156,7 +168,7 @@ function Tags() {
                         </FloatingLabel>
                     }
                     <Button
-                        variant="outline-secondary"
+                        variant="outline-primary"
                         onClick={async () => {
                             if (saveTag.tag === "" || saveTag.hash === "") return
 
@@ -167,9 +179,9 @@ function Tags() {
                                     body: SaveTag.encode(saveTag).finish(),
                                 }
                             )
-                            if (!resp.ok) console.log(await resp.text())
+                            if (!resp.ok) ctx.Error(await resp.text())
                             else {
-                                console.log("add successful");
+                                ctx.Info(`Set tag ${saveTag.tag} to ${saveTag.hash} successful`);
                                 await mutate();
                             }
                         }}
