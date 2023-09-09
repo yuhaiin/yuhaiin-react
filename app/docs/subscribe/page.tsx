@@ -3,14 +3,13 @@
 import { useContext, useState } from "react";
 import { Button, Card, Form, ListGroup, OverlayTrigger, Popover, Spinner } from "react-bootstrap";
 import CardHeader from "react-bootstrap/esm/CardHeader";
-import { APIUrl } from "../apiurl";
 import Loading from "../common/loading";
 import { SettingInputText } from "../config/components";
 import { GlobalToastContext } from "../common/toast";
 import { save_link_req as SaveLink, get_links_resp as GetLinks, link_req as LinkReq } from "../protos/node/grpc/node";
 import { type as LinkType, link as Link } from "../protos/node/subscribe/subscribe";
 import useSWR from 'swr'
-import { ProtoFetcher } from '../common/proto';
+import { Fetch, ProtoFetcher } from '../common/proto';
 import Error from 'next/error';
 
 function Subscribe() {
@@ -60,48 +59,39 @@ function Subscribe() {
                         variant="outline-primary"
                         className="me-1"
                         disabled={updating.value}
-                        onClick={async () => {
+                        onClick={() => {
                             setUpdating({ value: true });
-                            const resp = await fetch(
-                                `${APIUrl}/sub`,
+                            Fetch(
+                                `/sub`,
                                 {
                                     method: "PATCH",
                                     body: LinkReq
                                         .encode({ names: Object.keys(checked).filter((i) => checked[i]) })
                                         .finish()
                                 }
-                            )
-                            setUpdating({ value: false });
-                            if (!resp.ok) {
-                                let err = await resp.text();
-                                ctx.Error(`Update failed. ${err}`)
-                                console.log(err)
-                            } else {
-                                ctx.Info(`Update successfully`);
-                                console.log(`Update successfully`);
-                            }
+                            ).then(async ({ error }) => {
+                                if (error !== undefined) ctx.Error(`Update failed ${error.code}| ${await error.msg}`)
+                                else ctx.Info(`Update successfully`);
+                                setUpdating({ value: false });
+                            })
                         }}
                     >
                         {updating.value && <Spinner animation="border" size="sm" />}UPDATE
                     </Button>
                     <Button
                         variant="outline-danger"
-                        onClick={async () => {
-                            const resp = await fetch(
-                                `${APIUrl}/sub`,
+                        onClick={() => {
+                            Fetch(`/sub`,
                                 {
                                     method: "DELETE",
                                     body: LinkReq
                                         .encode({ names: Object.keys(checked).filter((i) => checked[i]) })
                                         .finish()
                                 }
-
-                            )
-                            if (!resp.ok) console.log(await resp.text())
-                            else {
-                                mutate()
-                                console.log("delete successful");
-                            }
+                            ).then(async ({ error }) => {
+                                if (error !== undefined) ctx.Error(`delete ${Object.keys(checked)} failed, ${error.code}| ${await error.msg}`)
+                                else mutate()
+                            })
                         }}
                     >
                         DELETE
@@ -124,18 +114,12 @@ function Subscribe() {
                         variant="outline-primary"
                         onClick={async () => {
                             if (addItem.name === "" || addItem.url === "") return
-                            const resp = await fetch(
-                                `${APIUrl}/sub`,
-                                {
-                                    method: "POST",
-                                    body: SaveLink.encode({ links: [addItem] }).finish(),
-                                }
-                            )
-                            if (!resp.ok) console.log(await resp.text())
-                            else {
-                                mutate()
-                                console.log("add successful");
-                            }
+                            Fetch(`/sub`, { body: SaveLink.encode({ links: [addItem] }).finish(), })
+                                .then(async ({ error }) => {
+                                    if (error !== undefined) ctx.Error(`save link ${addItem.url} failed, ${error.code}| ${await error.msg}`)
+                                    else mutate()
+                                })
+
                         }}
                     >
                         ADD

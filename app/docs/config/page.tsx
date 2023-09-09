@@ -5,7 +5,6 @@ import { Form, Card, Row, Col, Button, Tabs, Tab } from 'react-bootstrap';
 import DNS from './dns';
 import Bypass from './bypass';
 import Inbound from './inbound';
-import { APIUrl } from '../apiurl';
 import Loading from '../common/loading';
 import { SettingCheck, SettingInputText } from './components';
 import { GlobalToastContext } from '../common/toast';
@@ -16,18 +15,14 @@ import {
 } from '../protos/config/log/log';
 import { setting as Setting } from '../protos/config/config';
 import useSWR from "swr";
-import { ProtoFetcher } from '../common/proto';
+import { ProtoFetcher, Fetch } from '../common/proto';
 import { produce } from "immer"
 import Error from 'next/error';
 
 function ConfigComponent() {
     const ctx = useContext(GlobalToastContext);
 
-    const { data: setting, error, isLoading, mutate: setSetting } = useSWR("/config", ProtoFetcher(Setting), {
-        onSuccess(data, key, config) {
-
-        },
-    })
+    const { data: setting, error, isLoading, mutate: setSetting } = useSWR("/config", ProtoFetcher(Setting), { revalidateOnFocus: false })
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || setting === undefined) return <Loading />
@@ -92,20 +87,16 @@ function ConfigComponent() {
                     <>
                         <hr />
                         <Button
-                            onClick={async () => {
-                                const resp = await fetch(APIUrl + "/config", {
-                                    method: "POST",
-                                    body: Setting.encode(setting).finish(),
-                                })
-
-                                if (!resp.ok) console.log(await resp.text())
-                                else {
-                                    setSetting()
-                                    ctx.Info("Save Config Successfully");
-                                    console.log("save successful")
-                                }
-                            }
-                            }
+                            onClick={() => {
+                                Fetch("/config", { body: Setting.encode(setting).finish() })
+                                    .then(async ({ error }) => {
+                                        if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${await error.msg}`)
+                                        else {
+                                            ctx.Info("Save Config Successfully");
+                                            setSetting()
+                                        }
+                                    })
+                            }}
                         >
                             Save
                         </Button>

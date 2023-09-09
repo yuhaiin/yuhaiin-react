@@ -2,9 +2,10 @@
 
 import { useContext, useState } from "react";
 import { Button, Form, Card, ListGroup, InputGroup } from "react-bootstrap";
-import { APIUrl } from "../apiurl";
 import { GlobalToastContext } from "../common/toast";
-
+import { point as Point, origin as Oringin } from "../protos/node/point/point";
+import { Fetch } from "../common/proto";
+import { protocol as Protocol, tls_config as TlsConfig } from "../protos/node/protocol/protocol";
 
 export default function NewNode() {
     const [templateProtocols, setTemplateProtocols] = useState({ value: ["simple"] });
@@ -22,18 +23,11 @@ export default function NewNode() {
                     <ListGroup.Item>
                         <InputGroup>
                             <Form.Select value={currentProtocol.value} onChange={(e) => setCurrentProtocol({ value: e.target.value })}>
-                                <option value="simple">simple</option>
-                                <option value="direct">direct</option>
-                                <option value="none">none</option>
-                                <option value="websocket">websocket</option>
-                                <option value="quic">quic</option>
-                                <option value="shadowsocks">shadowsocks</option>
-                                <option value="obfshttp">obfshttp</option>
-                                <option value="shadowsocksr">shadowsocksr</option>
-                                <option value="vmess">vmess</option>
-                                <option value="trojan">trojan</option>
-                                <option value="socks5">socks5</option>
-                                <option value="http">http</option>
+                                {
+                                    Object.keys(protocolMapping).map((v) => {
+                                        return <option value={v}>{v}</option>
+                                    })
+                                }
                             </Form.Select>
                             <Button
                                 variant="outline-secondary"
@@ -48,20 +42,20 @@ export default function NewNode() {
                             <Button
                                 variant="outline-secondary"
                                 onClick={async () => {
-                                    const resp = await fetch(
-                                        `${APIUrl}/node?page=generate_template&protocols=${encodeURIComponent(JSON.stringify(templateProtocols.value))}`,
-                                        {
-                                            method: "GET"
-                                        }
-                                    )
-                                    if (!resp.ok) {
-                                        let err = await resp.text();
-                                        ctx.Error(`Generate template failed. ${err}`)
-                                        console.log(err)
-                                    } else {
-                                        console.log("get successful");
-                                        setNewNode({ value: await resp.text() })
+                                    let point: Point = {
+                                        group: "template_group",
+                                        name: "template_name",
+                                        origin: Oringin.manual,
+                                        hash: "",
+                                        protocols: []
                                     }
+
+                                    templateProtocols.value.map((v) => {
+                                        let protocol = protocolMapping[v];
+                                        if (protocol !== undefined) point.protocols.push(protocolMapping[v])
+                                    })
+
+                                    setNewNode({ value: JSON.stringify(Point.toJSON(point), null, "   ") })
                                 }}
                             >
                                 Generate
@@ -109,21 +103,9 @@ export default function NewNode() {
                     <Button
                         className="outline-primary me-2"
                         onClick={async () => {
-                            const resp = await fetch(
-                                APIUrl + "/node",
-                                {
-                                    method: "POST",
-                                    body: newNode.value,
-                                }
-                            )
-                            if (!resp.ok) {
-                                let err = await resp.text();
-                                ctx.Error(`Add New Node Failed. ${err}`)
-                                console.log(err)
-                            } else {
-                                ctx.Info(`Add New Node Successful`)
-                                console.log("add successful");
-                            }
+                            const { error } = await Fetch("/node", { method: "PATCH", body: Point.encode(Point.fromJSON(JSON.parse(newNode.value))).finish() })
+                            if (error !== undefined) ctx.Error(`Add new node failed ${error.code}| ${await error.msg}.`)
+                            else ctx.Info(`Add New Node Successful`)
                         }}
                     >
                         Save
@@ -133,4 +115,138 @@ export default function NewNode() {
             </Card>
         </>
     )
+}
+
+let tlsConfig: TlsConfig = {
+    enable: false,
+    ca_cert: [new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0])],
+    insecure_skip_verify: false,
+    next_protos: ["h2"],
+    server_names: ["www.example.com"]
+}
+
+let protocolMapping: { [key: string]: Protocol } = {
+    "simple": {
+        protocol: {
+            $case: "simple",
+            simple: {
+                host: "",
+                alternate_host: [],
+                port: 1080,
+                packet_conn_direct: false,
+                timeout: 0,
+                tls: tlsConfig
+            }
+        }
+    },
+    "none": {
+        protocol: {
+            $case: "none",
+            none: {},
+        }
+    },
+    "websocket": {
+        protocol: {
+            $case: "websocket",
+            websocket: {
+                host: "www.example.com",
+                path: "/msg",
+                tls_enabled: false,
+            }
+        }
+    },
+    "quic": {
+        protocol: {
+            $case: "quic",
+            quic: {
+                tls: tlsConfig
+            }
+        }
+    },
+    "shadowsocks": {
+        protocol: {
+            $case: "shadowsocks",
+            shadowsocks: {
+                method: "CHACHA20-IETF-POLY1305",
+                password: "password"
+            }
+        }
+    },
+    "obfshttp": {
+        protocol: {
+            $case: "obfs_http",
+            obfs_http: {
+                host: "www.example.com",
+                port: "443"
+            }
+        }
+    },
+    "shadowsocksr": {
+        protocol: {
+            $case: "shadowsocksr",
+            shadowsocksr: {
+                method: "chacha20-ietf",
+                obfs: "http_post",
+                obfsparam: "#name=v",
+                password: "password",
+                port: "1080",
+                protocol: "auth_aes128_sha1",
+                protoparam: "",
+                server: "127.0.0.1"
+            }
+        }
+    },
+    "vmess": {
+        protocol: {
+            $case: "vmess",
+            vmess: {
+                alter_id: "0",
+                security: "chacha20-poly1305",
+                uuid: "9d5031b6-4ef5-11ee-be56-0242ac120002"
+            }
+        }
+    },
+    "trojan": {
+        protocol: {
+            $case: "trojan",
+            trojan: {
+                password: "password",
+                peer: "peer"
+            }
+        }
+    },
+    "socks5": {
+        protocol: {
+            $case: "socks5",
+            socks5: {
+                hostname: "127.0.0.1:1080",
+                password: "password",
+                user: "username"
+            }
+        }
+    },
+    "http": {
+        protocol: {
+            $case: "http",
+            http: {
+                password: "password",
+                user: "username"
+            }
+        }
+    },
+    "direct": {
+        protocol: {
+            $case: "direct",
+            direct: {}
+        }
+    },
+    "yuubinsya": {
+        protocol: {
+            $case: "yuubinsya",
+            yuubinsya: {
+                encrypted: true,
+                password: "password"
+            }
+        }
+    }
 }

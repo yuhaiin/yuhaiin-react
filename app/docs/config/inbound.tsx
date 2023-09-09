@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Form, InputGroup, Card, Row, Col, Button, FloatingLabel } from 'react-bootstrap';
-import { Buffer } from 'buffer';
 import { SettingCheck, SettingInputText, SettingInputTextarea } from './components';
 import {
     http as HTTP,
@@ -111,11 +110,11 @@ const TLSCertificateComponents = React.memo((props: { cert: TLSCertificate, onCh
 
     return (
         <>
-            <SettingInputTextarea label='Cert' value={Buffer.from(props.cert.cert).toString()}
-                onChange={(e) => updateState((x) => { x.cert = new Uint8Array(Buffer.from(e)) })} />
+            <SettingInputTextarea label='Cert' value={new TextDecoder().decode(props.cert.cert)}
+                onChange={(e) => updateState((x) => { x.cert = new TextEncoder().encode(e) })} />
 
-            <SettingInputTextarea label='Key' value={Buffer.from(props.cert.key).toString()}
-                onChange={(e) => updateState((x) => { x.key = new Uint8Array(Buffer.from(e)) })} />
+            <SettingInputTextarea label='Key' value={new TextDecoder().decode(props.cert.key)}
+                onChange={(e) => updateState((x) => { x.key = new TextEncoder().encode(e) })} />
 
             <SettingInputText label='Cert File' value={props.cert.cert_file_path} onChange={(e) => updateState((x) => { x.cert_file_path = e })} />
             <SettingInputText label='Key File' value={props.cert.key_file_path} onChange={(e) => updateState((x) => { x.key_file_path = e })} />

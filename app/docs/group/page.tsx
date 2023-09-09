@@ -2,13 +2,35 @@
 
 import React, { useContext, useState } from "react";
 import { Row, Col, ButtonGroup, Button, Dropdown, Card, ListGroup, Badge, Spinner } from "react-bootstrap";
-import { APIUrl } from "../apiurl";
 import NodeModal from "../modal/node";
 import Loading from "../common/loading";
 import { GlobalToastContext } from "../common/toast";
 import useSWR from 'swr'
-import { JsonFetcher } from '../common/proto';
+import { ProtoFetcher, Fetch } from '../common/proto';
 import Error from 'next/error';
+import { manager as Manager } from "../protos/node/node";
+import { point as Point } from "../protos/node/point/point";
+import { requests as LatencyRequest, response as LatencyResponse, protocol as LatencyProtocol } from "../protos/node/latency/latency";
+import { use_req as UseRequest } from "../protos/node/grpc/node";
+import { StringValue } from "../protos/google/protobuf/wrappers";
+
+
+const Nanosecond = 1
+const Microsecond = 1000 * Nanosecond
+const Millisecond = 1000 * Microsecond
+const Second = 1000 * Millisecond
+const Minute = 60 * Second
+const Hour = 60 * Minute
+
+function durationToStroing(seconds: number, nonoseconds: number): string {
+    const total = seconds * Second + nonoseconds * Nanosecond;
+    if (total >= Hour) return `${total / Hour} h`
+    if (total >= Minute) return `${total / Minute} m`
+    if (total >= Second) return `${total / Second} s`
+    if (total >= Millisecond) return `${total / Millisecond} ms`
+    if (total >= Microsecond) return `${total / Microsecond} us`
+    return `${total / Nanosecond} ns`
+}
 
 type Latency = {
     tcp?: string,
@@ -20,15 +42,14 @@ type Latency = {
 function Group() {
     const ctx = useContext(GlobalToastContext);
     const [selectNode, setSelectNode] = useState("");
-    const [currentGroup, setCurrentGroup] = useState({ value: "" });
-    const [modalHash, setModalHash] = useState({ hash: "" });
-    const { data: groups, error, isLoading } = useSWR("/grouplist", JsonFetcher<string[]>)
-    const { data: nodes, mutate: mutateNodes } =
-        useSWR(currentGroup.value !== "" ? `/group?name=${currentGroup.value}` : null, JsonFetcher<{}>)
+    const [currentGroup, setCurrentGroup] = useState("");
+    const [modalData, setModalData] = useState({ point: "", hash: "" });
     const [latency, setLatency] = useState<{ [key: string]: Latency }>({})
 
+    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoFetcher(Manager))
+
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
-    if (isLoading && groups === undefined) return <Loading />
+    if (isLoading || data === undefined) return <Loading />
 
     const NodeItem = React.memo((props: { hash: string, latency: Latency | undefined }) => {
         const getStr = (s: string | undefined) => s === undefined ? "N/A" : s
@@ -36,13 +57,32 @@ function Group() {
         const updateTestingStatus = (modify: (x: Latency) => void) => {
             setLatency((latency) => {
                 let data = latency[props.hash]
-                if (data === undefined || data === null) data = {
-                    tcp: "N/A",
-                    udp: "N/A",
-                }
+                if (data === undefined || data === null) data = { tcp: "N/A", udp: "N/A", }
                 modify(data)
                 latency[props.hash] = data
                 return { ...latency }
+            })
+        }
+
+        const latency = (protocol: LatencyProtocol, onFinish: (r: string) => void) => {
+            Fetch<string>("/latency", {
+                body: LatencyRequest.encode({
+                    requests: [{
+                        hash: props.hash,
+                        id: "latency",
+                        protocol: protocol
+                    }]
+                }).finish(),
+                process: async (r) => {
+                    let resp = LatencyResponse.decode(new Uint8Array(await r.arrayBuffer()));
+                    const t = resp.id_latency_map["latency"]
+                    if (t !== undefined && (t.nanos !== 0 || t.seconds !== 0)) return durationToStroing(t.seconds, t.nanos)
+                    return "timeout"
+                }
+            }).then(async ({ data, error }) => {
+                let duration = "timeout";
+                if (error === undefined && data !== undefined) duration = await data;
+                onFinish(duration)
             })
         }
 
@@ -52,14 +92,27 @@ function Group() {
             return <a href="#empty"
                 onClick={async () => {
                     updateTestingStatus((v) => { v.tcpOnLoading = true; v.udpOnLoading = true })
-                    fetch(`${APIUrl}/latency?hash=${props.hash}&type=tcp`).then(async (r) => {
-                        let tcp = r.ok ? await r.text() : "timeout"
-                        updateTestingStatus(async (v) => { v.tcpOnLoading = false; v.tcp = tcp })
-                    })
-                    fetch(`${APIUrl}/latency?hash=${props.hash}&type=udp`).then(async (r) => {
-                        let udp = r.ok ? await r.text() : "timeout"
-                        updateTestingStatus(async (v) => { v.udpOnLoading = false; v.udp = udp })
-                    })
+                    latency(
+                        {
+                            protocol: {
+                                $case: "http",
+                                http: {
+                                    url: "https://clients3.google.com/generate_204"
+                                }
+                            }
+                        },
+                        (r) => { updateTestingStatus(async (v) => { v.tcpOnLoading = false; v.tcp = r }) })
+                    latency(
+                        {
+                            protocol: {
+                                $case: "dns_over_quic",
+                                dns_over_quic: {
+                                    host: "dns.nextdns.io:853",
+                                    target_domain: "www.google.com"
+                                }
+                            }
+                        },
+                        (r) => { updateTestingStatus(async (v) => { v.udpOnLoading = false; v.udp = r }) })
                 }}>
                 Test
             </a>
@@ -76,48 +129,45 @@ function Group() {
         </>
     })
 
-    const Nodes = React.memo((props: { nodes: { [key: string]: string } }) => {
-        let entries = Object.entries(props.nodes);
+    const Nodes = React.memo((props: { nodes?: { [key: string]: string } }) => {
+        let entries = Object.entries(props.nodes !== undefined ? props.nodes : {});
 
         if (entries.length === 0)
             return <Card.Body>
                 <div className="text-center my-2" style={{ opacity: '0.4' }}>グールプはまだ指定されていません。</div>
             </Card.Body>
 
-
-
         return <ListGroup variant="flush">
             {
-                entries.map(([k, v]) => {
-                    return <ListGroup.Item
-                        key={v}
-                        as={"label"}
-                        style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
-                    >
-                        <input
-                            className="form-check-input me-1"
-                            type="radio"
-                            name="select_node"
-                            value={v}
-                            onChange={
-                                (e) => {
-                                    console.log(e.target.value)
-                                    setSelectNode(e.target.value)
-                                }
-                            }
-                            checked={selectNode === v}
-                        />
-                        <a href="#empty"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                setModalHash({ hash: v });
-                            }}
+                entries
+                    .sort((a, b) => { return a <= b ? -1 : 1 })
+                    .map(([k, v]) => {
+                        return <ListGroup.Item
+                            key={v}
+                            as={"label"}
+                            style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
                         >
-                            {k}
-                        </a>
-                        <NodeItem hash={v} latency={latency[v]} />
-                    </ListGroup.Item>
-                })
+                            <input
+                                className="form-check-input me-1"
+                                type="radio"
+                                name="select_node"
+                                value={v}
+                                onChange={(e) => { setSelectNode(e.target.value) }}
+                                checked={selectNode === v}
+                            />
+                            <a href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    let node = data.nodes[v];
+                                    let point = node !== undefined ? JSON.stringify(Point.toJSON(node), null, "  ") : ""
+                                    setModalData({ point: point, hash: v })
+                                }}
+                            >
+                                {k}
+                            </a>
+                            <NodeItem hash={v} latency={latency[v]} />
+                        </ListGroup.Item>
+                    })
             }
         </ListGroup>
     })
@@ -126,29 +176,30 @@ function Group() {
     return (
         <>
             <NodeModal
-                show={modalHash.hash !== ""}
-                hash={modalHash.hash}
+                show={modalData.point !== "" && modalData.hash !== ""}
+                hash={modalData.hash}
+                point={modalData.point}
+                onChangePoint={(v) => { setModalData(prev => { return { ...prev, point: v } }) }}
                 editable
-                onHide={() => setModalHash({ hash: "" })}
-                onSave={() => mutateNodes()}
+                onHide={() => setModalData({ point: "", hash: "" })}
+                onSave={() => mutate()}
             />
 
             <div>
                 <Row>
                     <Col className="mb-4 d-flex">
-                        <Dropdown onSelect={(e) => {
-                            setCurrentGroup({ value: e != null ? e : "" })
-                            mutateNodes()
-                        }
-                        }>
-                            <Dropdown.Toggle variant="light">GROUP</Dropdown.Toggle>
+                        <Dropdown onSelect={(e) => { setCurrentGroup(e != null ? e : "") }}>
+                            <Dropdown.Toggle variant="light">{currentGroup !== "" ? currentGroup : "GROUP"}</Dropdown.Toggle>
                             <Dropdown.Menu>
                                 <Dropdown.Item eventKey={""}>Select...</Dropdown.Item>
 
                                 {
-                                    groups?.map((k) => {
-                                        return <Dropdown.Item eventKey={k} key={k}>{k}</Dropdown.Item>
-                                    })
+                                    Object
+                                        .keys(data.groupsV2)
+                                        .sort((a, b) => { return a <= b ? -1 : 1 })
+                                        .map((k) => {
+                                            return <Dropdown.Item eventKey={k} key={k}>{k}</Dropdown.Item>
+                                        })
                                 }
                             </Dropdown.Menu>
                         </Dropdown>
@@ -156,24 +207,25 @@ function Group() {
                 </Row>
 
                 <Card className="mb-3">
-                    <Nodes nodes={nodes !== undefined ? nodes : {}} />
+                    <Nodes nodes={currentGroup !== "" ? data.groupsV2[currentGroup]?.nodesV2 : undefined} />
 
                     <Card.Header>
                         <Dropdown
                             onSelect={
                                 async (key) => {
-                                    fetch(
-                                        `${APIUrl}/node?hash=${selectNode}&&net=${key}`,
+                                    Fetch(
+                                        `/node`,
                                         {
-                                            method: "PUT"
+                                            method: "PUT",
+                                            body: UseRequest.encode({
+                                                tcp: key === "tcp" || key === "tcpudp",
+                                                udp: key === "udp" || key === "tcpudp",
+                                                hash: selectNode,
+                                            }).finish()
                                         }
-                                    ).then(async (r) => {
-                                        if (!r.ok) console.log(await r.text())
-                                        else {
-                                            let net = key === "tcp" ? "TCP" : "UDP";
-                                            ctx.Info(`Change${net} Node To ${selectNode} Successful`)
-                                            console.log("change node successfully")
-                                        }
+                                    ).then(async ({ error }) => {
+                                        if (error !== undefined) ctx.Error(`change node failed, ${error.code}| ${await error.msg}`)
+                                        else ctx.Info(`Change${key} Node To ${selectNode} Successful`)
                                     })
                                 }
                             }
@@ -190,20 +242,18 @@ function Group() {
                                 <Button
                                     variant="outline-danger"
                                     onClick={() => {
-                                        fetch(
-                                            `${APIUrl}/node?hash=${selectNode}`,
+                                        Fetch(
+                                            `/node`,
                                             {
-                                                method: "DELETE"
+                                                method: "DELETE",
+                                                body: StringValue.encode({ value: selectNode }).finish()
                                             }
-                                        ).then(async (r) => {
-                                            if (!r.ok) {
-                                                let error = await r.text();
-                                                console.log(error)
-                                                ctx.Error(`Delete Node ${selectNode} Failed. ${error}`)
+                                        ).then(async ({ error }) => {
+                                            if (error !== undefined) {
+                                                ctx.Error(`Delete Node ${selectNode} Failed ${error.code}| ${await error.msg}`)
                                             } else {
-                                                console.log("delete successful")
                                                 ctx.Info(`Delete Node ${selectNode} Successful.`)
-                                                mutateNodes()
+                                                mutate()
                                             }
                                         })
                                     }}

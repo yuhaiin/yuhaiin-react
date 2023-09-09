@@ -2,13 +2,12 @@
 
 import { useState, useContext } from "react";
 import { Badge, Button, Card, FloatingLabel, Form, InputGroup, ListGroup } from "react-bootstrap";
-import { APIUrl } from "../apiurl";
 import Loading from "../common/loading";
 import { save_tag_req as SaveTag } from "../protos/node/grpc/node";
 import { tag_type as TagType, tags as Tag } from "../protos/node/tag/tag";
 import { manager as Manager } from "../protos/node/node";
 import useSWR from 'swr'
-import { ProtoFetcher } from '../common/proto';
+import { Fetch, ProtoFetcher } from '../common/proto';
 import Error from 'next/error';
 import NodeModal from "../modal/node";
 import { GlobalToastContext } from "../common/toast";
@@ -17,7 +16,7 @@ function Tags() {
     const ctx = useContext(GlobalToastContext);
     const [currentGroup, setCurrentGroup] = useState("");
     const [saveTag, setSaveTag] = useState<SaveTag>({ tag: "", hash: "", type: TagType.node });
-    const { data, error, isLoading, mutate } = useSWR("/taglist", ProtoFetcher(Manager))
+    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoFetcher(Manager))
     const [modalHash, setModalHash] = useState({ hash: "" });
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
@@ -52,19 +51,16 @@ function Tags() {
                     <a
                         className="text-decoration-none ms-auto text-truncate"
                         href='#empty'
-                        onClick={async (e) => {
+                        onClick={(e) => {
                             e.preventDefault();
-                            const resp = await fetch(APIUrl + "/tag?tag=" + k,
-                                {
-                                    method: "DELETE"
-                                }
-                            )
-
-                            if (!resp.ok) ctx.Error(await resp.text())
-                            else {
-                                ctx.Info(`delete tag ${k} success`);
-                                await mutate();
-                            }
+                            Fetch("/tag?tag=" + k, { method: "DELETE" })
+                                .then(async ({ error }) => {
+                                    if (error !== undefined) ctx.Error(`delete tag ${k} failed, ${error.code}| ${await error.msg}`)
+                                    else {
+                                        ctx.Info(`delete tag ${k} success`);
+                                        await mutate();
+                                    }
+                                })
                         }}
                     >
                         <i className="bi-trash"></i>DELETE
@@ -169,21 +165,17 @@ function Tags() {
                     }
                     <Button
                         variant="outline-primary"
-                        onClick={async () => {
+                        onClick={() => {
                             if (saveTag.tag === "" || saveTag.hash === "") return
+                            Fetch("/tag", { body: SaveTag.encode(saveTag).finish() })
+                                .then(async ({ error }) => {
+                                    if (error !== undefined) ctx.Error(`save tag ${saveTag.tag} failed, ${error.code}| ${await error.msg}`)
+                                    else {
+                                        ctx.Info(`Set tag ${saveTag.tag} to ${saveTag.hash} successful`);
+                                        await mutate();
+                                    }
+                                })
 
-                            const resp = await fetch(
-                                APIUrl + "/tag",
-                                {
-                                    method: "POST",
-                                    body: SaveTag.encode(saveTag).finish(),
-                                }
-                            )
-                            if (!resp.ok) ctx.Error(await resp.text())
-                            else {
-                                ctx.Info(`Set tag ${saveTag.tag} to ${saveTag.hash} successful`);
-                                await mutate();
-                            }
                         }}
                     >
                         Save

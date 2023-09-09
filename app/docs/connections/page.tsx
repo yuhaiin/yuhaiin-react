@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Button, Card, ListGroup, Accordion, Badge } from "react-bootstrap";
 import { APIUrl } from "../apiurl";
 import NodeModal from "../modal/node";
@@ -10,6 +10,8 @@ import useSWRSubscription from 'swr/subscription'
 import type { SWRSubscriptionOptions } from 'swr/subscription'
 import { produce } from "immer";
 import Loading from "../common/loading";
+import { Fetch } from "../common/proto";
+import { GlobalToastContext } from "../common/toast";
 
 const formatBytes =
     (a = 0, b = 2) => {
@@ -43,50 +45,70 @@ function Connections() {
         return { download: flow.download, upload: flow.upload, dstr: dstr, ustr: ustr }
     }
 
+
     const { data, error } = useSWRSubscription("/conn",
         (key, { next }: SWRSubscriptionOptions<Statistic, { msg: string, code: number }>) => {
-            let url = new URL(APIUrl !== "" ? APIUrl : window.location.toString());
-            let scheme = url.protocol === "https:" ? "wss://" : "ws://";
 
-            const socket = new WebSocket(`${scheme}${url.host}${key}`)
-            socket.binaryType = "arraybuffer";
+            const connect = () => {
+                let url = new URL(APIUrl !== "" ? APIUrl : window.location.toString());
+                let scheme = url.protocol === "https:" ? "wss://" : "ws://";
+                let closed = false;
 
-            socket.addEventListener('open', (e) => {
-                console.log(`connect to: ${scheme}${url.host}${key}, event type: ${e.type}`)
-                socket.send('2000')
-            })
+                const socket = new WebSocket(`${scheme}${url.host}${key}`)
+                socket.binaryType = "arraybuffer";
 
-            socket.addEventListener('message', (event) => {
-                const raw = notify_data.decode(new Uint8Array(event.data));
-                next(null, pre => {
-                    let prev = pre;
-                    if (prev === undefined) prev = { flow: { download: 0, upload: 0, dstr: "Loading...", ustr: "Loading..." }, conns: {} }
-                    switch (raw.data?.$case) {
-                        case "total_flow":
-                            let xfw = raw.data.total_flow;
-                            return produce(prev, (v) => { v.flow = generateFlow(xfw, v.flow) })
-                        case "notify_new_connections":
-                            let conns = raw.data.notify_new_connections.connections;
-                            return produce(prev, (v) => { conns.forEach((e: connection) => { v.conns[e.id] = e }) })
-                        case "notify_remove_connections":
-                            let ids = raw.data.notify_remove_connections.ids;
-                            return produce(prev, (v) => { ids.forEach((e: number) => { delete v.conns[e] }) })
+
+                let close = () => {
+                    closed = true;
+                    socket.close()
+                }
+
+                socket.addEventListener('open', (e) => {
+                    console.log(`connect to: ${scheme}${url.host}${key}, event type: ${e.type}`)
+                    socket.send('2000')
+                })
+
+                socket.addEventListener('message', (event) => {
+                    const raw = notify_data.decode(new Uint8Array(event.data));
+                    next(null, pre => {
+                        let prev = pre;
+                        if (prev === undefined) prev = { flow: { download: 0, upload: 0, dstr: "Loading...", ustr: "Loading..." }, conns: {} }
+                        switch (raw.data?.$case) {
+                            case "total_flow":
+                                let xfw = raw.data.total_flow;
+                                return produce(prev, (v) => { v.flow = generateFlow(xfw, v.flow) })
+                            case "notify_new_connections":
+                                let conns = raw.data.notify_new_connections.connections;
+                                return produce(prev, (v) => { conns.forEach((e: connection) => { v.conns[e.id] = e }) })
+                            case "notify_remove_connections":
+                                let ids = raw.data.notify_remove_connections.ids;
+                                return produce(prev, (v) => { ids.forEach((e: number) => { delete v.conns[e] }) })
+                        }
+                    })
+                })
+
+                socket.addEventListener('error', (e) => {
+                    let msg = "websocket have some error"
+                    next({ msg: msg, code: 500 })
+                    console.log(msg)
+                })
+
+                socket.addEventListener('close', (e) => {
+                    console.log("websocket closed, code: " + e.code)
+                    next(null, undefined)
+
+                    if (closed) return
+
+                    else {
+                        console.log("reconnect after 1 seconds")
+                        setTimeout(() => { close = connect() }, 1000)
                     }
                 })
-            })
 
-            socket.addEventListener('error', (e) => {
-                let msg = "websocket have some error"
-                next({ msg: msg, code: 500 })
-                console.log(msg)
-            })
+                return () => { close() }
+            }
 
-            socket.addEventListener('close', (e) => {
-                console.log("websocket closed, code: " + e.code)
-                next(null, undefined)
-            })
-
-            return () => socket.close()
+            return connect()
         })
 
     if (error !== undefined) return <Loading code={error.code}>{error.msg}</Loading>
@@ -158,6 +180,8 @@ const ListGroupItem = React.memo((props: { itemKey: string, itemValue: string, }
 })
 
 const AccordionItem = React.memo((props: { data: connection }) => {
+    const ctx = useContext(GlobalToastContext);
+
     return (
         <Accordion.Item eventKey={props.data.id.toString()} key={props.data.id}>
 
@@ -180,25 +204,20 @@ const AccordionItem = React.memo((props: { data: connection }) => {
                     <ListGroupItem itemKey="Underlying" itemValue={netType[props.data.type!!.underlying_type]} />
 
                     {
-                        Object.keys(props.data.extra).map((k) => {
-                            return <ListGroupItem itemKey={k} itemValue={props.data.extra[k]} key={k} />
-                        })
+                        Object.entries(props.data.extra)
+                            .sort((a, b) => { return a <= b ? -1 : 1 })
+                            .map(([k, v]) => {
+                                return <ListGroupItem itemKey={k} itemValue={v} key={k} />
+                            })
                     }
                     <ListGroup.Item>
                         <div className="d-sm-flex">
                             <Button
                                 variant="outline-danger"
                                 className="flex-grow-1 notranslate"
-                                onClick={async () => {
-                                    const resp = await fetch(
-                                        APIUrl + "/conn",
-                                        {
-                                            method: "DELETE",
-                                            body: notify_remove_connections.encode({ ids: [props.data.id] }).finish()
-                                        }
-                                    )
-                                    if (!resp.ok) console.log(await resp.text())
-                                    else console.log(`close ${props.data.id} successful`);
+                                onClick={() => {
+                                    Fetch("/conn", { method: "DELETE", body: notify_remove_connections.encode({ ids: [props.data.id] }).finish() })
+                                        .then(async ({ error }) => { if (error !== undefined) ctx.Error(`code ${props.data.id} failed, ${error.code}| ${await error.msg}`) })
                                 }}
                             >
                                 Close
