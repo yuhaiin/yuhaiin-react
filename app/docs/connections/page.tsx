@@ -167,11 +167,15 @@ const ListGroupItem = React.memo((props: { itemKey: string, itemValue: string, }
 
                     <div className="notranslate" style={{ opacity: 0.6 }}>
                         {
-                            props.itemKey !== "Hash"
-                                ?
-                                props.itemValue
-                                :
-                                <a href="#empty" onClick={(e) => { e.preventDefault(); setModalHash({ hash: props.itemValue }) }}>{props.itemValue}</a>}
+                            props.itemKey !== "Hash" ? props.itemValue :
+                                <a
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault()
+                                        setModalHash({ hash: props.itemValue })
+                                    }}>
+                                    {props.itemValue}
+                                </a>}
                     </div>
                 </div>
             </ListGroup.Item>
@@ -216,8 +220,15 @@ const AccordionItem = React.memo((props: { data: connection }) => {
                                 variant="outline-danger"
                                 className="flex-grow-1 notranslate"
                                 onClick={() => {
-                                    Fetch("/conn", { method: "DELETE", body: notify_remove_connections.encode({ ids: [props.data.id] }).finish() })
-                                        .then(async ({ error }) => { if (error !== undefined) ctx.Error(`code ${props.data.id} failed, ${error.code}| ${await error.msg}`) })
+                                    Fetch("/conn",
+                                        {
+                                            method: "DELETE",
+                                            body: notify_remove_connections.encode({ ids: [props.data.id] }).finish()
+                                        })
+                                        .then(async ({ error }) => {
+                                            if (error !== undefined)
+                                                ctx.Error(`code ${props.data.id} failed, ${error.code}| ${await error.msg}`)
+                                        })
                                 }}
                             >
                                 Close

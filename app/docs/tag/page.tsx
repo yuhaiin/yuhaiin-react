@@ -11,6 +11,7 @@ import { Fetch, ProtoFetcher } from '../common/proto';
 import Error from 'next/error';
 import NodeModal from "../modal/node";
 import { GlobalToastContext } from "../common/toast";
+import { StringValue } from "../protos/google/protobuf/wrappers";
 
 function Tags() {
     const ctx = useContext(GlobalToastContext);
@@ -53,7 +54,10 @@ function Tags() {
                         href='#empty'
                         onClick={(e) => {
                             e.preventDefault();
-                            Fetch("/tag?tag=" + k, { method: "DELETE" })
+                            Fetch("/tag", {
+                                method: "DELETE",
+                                body: StringValue.encode({ value: k }).finish()
+                            })
                                 .then(async ({ error }) => {
                                     if (error !== undefined) ctx.Error(`delete tag ${k} failed, ${error.code}| ${await error.msg}`)
                                     else {

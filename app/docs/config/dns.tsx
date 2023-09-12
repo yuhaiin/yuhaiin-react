@@ -9,32 +9,6 @@ import {
 } from '../protos/config/dns/dns';
 import { produce } from 'immer';
 
-export const DefaultDnsConfig: DnsConfig = {
-    server: "",
-    fakedns: false,
-    fakedns_ip_range: "",
-    resolve_remote_domain: false,
-    remote: {
-        host: "",
-        type: DnsType.udp,
-        subnet: "",
-        tls_servername: ""
-    },
-    local: {
-        host: "",
-        type: DnsType.udp,
-        subnet: "",
-        tls_servername: ""
-    },
-    bootstrap: {
-        host: "",
-        type: DnsType.udp,
-        subnet: "",
-        tls_servername: ""
-    },
-    hosts: {}
-}
-
 type DNSProps = {
     data: DnsConfig,
     onChange: (x: DnsConfig) => void,

@@ -7,7 +7,7 @@ import Link from 'next/link';
 function NavBar(props: { children: React.ReactNode }) {
     return (
         <>
-            <div className="pt-2 border-bottom" style={{ overflowY: 'hidden', height: '52px' }}>
+            <div className="pt-2 border-bottom shadow-sm" style={{ overflowY: 'hidden', height: '52px' }}>
                 <div style={{ overflow: 'auto hidden' }}>
                     <Nav variant="pills" style={{ paddingBottom: '100px', paddingLeft: '10px', flexWrap: 'nowrap' }}>
                         <Nav.Item><NavLink href='/'>HOME</NavLink></Nav.Item>

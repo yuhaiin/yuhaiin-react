@@ -46,7 +46,7 @@ function Subscribe() {
                                             }}
                                         />
 
-                                        <OverlayTrigger overlay={<Popover><Popover.Body>{v.url}</Popover.Body></Popover>}>
+                                        <OverlayTrigger trigger="click" placement="auto-end" overlay={<Popover><Popover.Body>{v.url}</Popover.Body></Popover>}>
                                             <span>{v.name}</span>
                                         </OverlayTrigger>
                                     </ListGroup.Item>
