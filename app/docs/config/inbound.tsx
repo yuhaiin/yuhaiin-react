@@ -1,29 +1,13 @@
 import React, { useState } from 'react';
 import { Form, InputGroup, Card, Row, Col, Button, FloatingLabel } from 'react-bootstrap';
 import { SettingCheck, SettingInputText, SettingInputTextarea } from './components';
-import {
-    http as HTTP,
-    socks5 as Socks5,
-    redir as Redir,
-    tun as Tun,
-    yuubinsya as Yuubinsya,
-    tls_config as TLS,
-    certificate as TLSCertificate,
-    quic as Quic,
-    websocket as Websocket,
-    grpc as Grpc,
-    http2 as Http2,
-    reality,
-    tls as Tls,
-    protocol as ServerConfig,
-    tun_endpoint_driver as TunDriver,
-    tun_endpoint_driverFromJSON as TunDriverFromJSON,
-    tun_endpoint_driverToJSON as TunDriverToJSON,
-} from '../protos/config/listener/listener';
-import { produce } from 'immer'
+import { yuhaiin } from '../pbts/proto';
 
-const HTTPComponents = React.memo((props: { http: HTTP, onChange: (x: HTTP) => void }) => {
-    const updateState = (x: (x: HTTP) => void) => props.onChange(produce(props.http, (v) => { x(v) }))
+const HTTPComponents = React.memo((props: { http: yuhaiin.listener.http, onChange: (x: yuhaiin.listener.http) => void }) => {
+    const updateState = (x: (x: yuhaiin.listener.http) => void) => {
+        x(props.http)
+        props.onChange(props.http)
+    }
 
     return (
         <>
@@ -35,8 +19,11 @@ const HTTPComponents = React.memo((props: { http: HTTP, onChange: (x: HTTP) => v
 })
 
 
-const RedirComponents = React.memo((props: { redir: Redir, onChange: (x: Redir) => void }) => {
-    const updateState = (x: (x: Redir) => void) => props.onChange(produce(props.redir, (v) => { x(v) }))
+const RedirComponents = React.memo((props: { redir: yuhaiin.listener.redir, onChange: (x: yuhaiin.listener.redir) => void }) => {
+    const updateState = (x: (x: yuhaiin.listener.redir) => void) => {
+        x(props.redir)
+        props.onChange(props.redir)
+    }
 
     return (
         <>
@@ -45,8 +32,11 @@ const RedirComponents = React.memo((props: { redir: Redir, onChange: (x: Redir) 
     )
 })
 
-const Socks5Components = React.memo((props: { socks5: Socks5, onChange: (x: Socks5) => void }) => {
-    const updateState = (x: (x: Socks5) => void) => props.onChange(produce(props.socks5, (v) => { x(v) }))
+const Socks5Components = React.memo((props: { socks5: yuhaiin.listener.socks5, onChange: (x: yuhaiin.listener.socks5) => void }) => {
+    const updateState = (x: (x: yuhaiin.listener.socks5) => void) => {
+        x(props.socks5)
+        props.onChange(props.socks5)
+    }
 
 
     return (
@@ -59,8 +49,11 @@ const Socks5Components = React.memo((props: { socks5: Socks5, onChange: (x: Sock
 })
 
 
-const TunComponents = React.memo((props: { tun: Tun, onChange: (x: Tun) => void }) => {
-    const updateState = (x: (x: Tun) => void) => props.onChange(produce(props.tun, (v) => { x(v) }))
+const TunComponents = React.memo((props: { tun: yuhaiin.listener.tun, onChange: (x: yuhaiin.listener.tun) => void }) => {
+    const updateState = (x: (x: yuhaiin.listener.tun) => void) => {
+        x(props.tun)
+        props.onChange(props.tun)
+    }
 
 
     return (
@@ -83,10 +76,10 @@ const TunComponents = React.memo((props: { tun: Tun, onChange: (x: Tun) => void 
             <Form.Group as={Row} className='mb-3'>
                 <Form.Label column sm={2}>Driver</Form.Label>
                 <Col sm={10}>
-                    <Form.Select value={props.tun.driver} onChange={(e) => updateState((x) => x.driver = TunDriverFromJSON(e.target.value))}>
-                        <option value={TunDriverToJSON(TunDriver.fdbased)}>Fdbased</option>
-                        <option value={TunDriverToJSON(TunDriver.channel)}>Channel</option>
-                        <option value={TunDriverToJSON(TunDriver.system_gvisor)}>System</option>
+                    <Form.Select value={props.tun.driver} onChange={(e) => updateState((x) => x.driver = yuhaiin.listener.tun.endpoint_driver[e.target.value])}>
+                        <option value={yuhaiin.listener.tun.endpoint_driver[yuhaiin.listener.tun.endpoint_driver.fdbased]}>Fdbased</option>
+                        <option value={yuhaiin.listener.tun.endpoint_driver[yuhaiin.listener.tun.endpoint_driver.channel]}>Channel</option>
+                        <option value={yuhaiin.listener.tun.endpoint_driver[yuhaiin.listener.tun.endpoint_driver.system_gvisor]}>System</option>
                     </Form.Select>
                 </Col>
             </Form.Group>
@@ -97,15 +90,18 @@ const TunComponents = React.memo((props: { tun: Tun, onChange: (x: Tun) => void 
 
 
 
-const IsTLSEmpty = (tls?: TLS | null) => {
+const IsTLSEmpty = (tls?: yuhaiin.listener.Itls_config | null) => {
     if (tls === null || tls === undefined) {
         return true
     }
     if (tls.certificates === undefined && tls.next_protos === undefined && tls.server_name_certificate === undefined) return true
 }
 
-const TLSCertificateComponents = React.memo((props: { cert: TLSCertificate, onChange: (x: TLSCertificate) => void }) => {
-    const updateState = (x: (x: TLSCertificate) => void) => props.onChange(produce(props.cert, (v) => { x(v) }))
+const TLSCertificateComponents = React.memo((props: { cert: yuhaiin.listener.certificate, onChange: (x: yuhaiin.listener.certificate) => void }) => {
+    const updateState = (x: (x: yuhaiin.listener.certificate) => void) => {
+        x(props.cert)
+        props.onChange(props.cert)
+    }
 
 
     return (
@@ -122,11 +118,14 @@ const TLSCertificateComponents = React.memo((props: { cert: TLSCertificate, onCh
     )
 })
 
-const TLSComponents = React.memo((props: { tls: TLS, onChange: (x: TLS) => void }) => {
+const TLSComponents = React.memo((props: { tls: yuhaiin.listener.tls_config, onChange: (x: yuhaiin.listener.tls_config) => void }) => {
     const [newSni, setNewSni] = useState("www.example.com")
     const [newNextProtos, setNewNextProtos] = useState({ value: "" });
 
-    const updateState = (x: (x: TLS) => void) => props.onChange(produce(props.tls, (v) => { x(v) }))
+    const updateState = (x: (x: yuhaiin.listener.tls_config) => void) => {
+        x(props.tls)
+        props.onChange(props.tls)
+    }
 
 
     return (
@@ -154,10 +153,7 @@ const TLSComponents = React.memo((props: { tls: TLS, onChange: (x: TLS) => void 
                 <Col sm={{ span: 10, offset: props.tls !== null && props.tls.next_protos?.length !== 0 ? 2 : 0 }}>
                     <InputGroup className="mb-2" >
                         <Form.Control value={newNextProtos.value} onChange={(e) => setNewNextProtos({ value: e.target.value })} />
-                        <Button variant='outline-success' onClick={() => updateState((x) => {
-                            if (x?.next_protos === undefined) x.next_protos = []
-                            x.next_protos.push(newNextProtos.value)
-                        })} >
+                        <Button variant='outline-success' onClick={() => updateState((x) => { x.next_protos.push(newNextProtos.value) })} >
                             <i className="bi bi-plus-lg" />
                         </Button>
                     </InputGroup>
@@ -175,7 +171,7 @@ const TLSComponents = React.memo((props: { tls: TLS, onChange: (x: TLS) => void 
                                     <i className="bi bi-x-lg"></i>
                                 </Button>
                             </Card.Title>
-                            <TLSCertificateComponents cert={v}
+                            <TLSCertificateComponents cert={new yuhaiin.listener.certificate(v)}
                                 onChange={(e) => updateState((x) => {
                                     if (x?.certificates !== undefined) x.certificates[index] = e
                                 })} />
@@ -215,7 +211,7 @@ const TLSComponents = React.memo((props: { tls: TLS, onChange: (x: TLS) => void 
                                         <i className="bi bi-x-lg"></i>
                                     </Button>
                                 </Card.Title>
-                                <TLSCertificateComponents cert={v} onChange={(e) => updateState((x) => {
+                                <TLSCertificateComponents cert={new yuhaiin.listener.certificate(v)} onChange={(e) => updateState((x) => {
                                     if (x?.server_name_certificate !== undefined) x.server_name_certificate[k] = e
                                 })} />
                             </Card.Body>
@@ -237,11 +233,12 @@ const TLSComponents = React.memo((props: { tls: TLS, onChange: (x: TLS) => void 
     )
 })
 
-const WebsocketComponents = React.memo((props: { websocket: Websocket, onChange: (x: Websocket) => void }) => {
-    const updateState = (x: (x: Websocket) => void) => props.onChange(produce(props.websocket, (v) => {
-        if (IsTLSEmpty(v.tls)) v.tls = undefined
-        x(v)
-    }))
+const WebsocketComponents = React.memo((props: { websocket: yuhaiin.listener.websocket, onChange: (x: yuhaiin.listener.websocket) => void }) => {
+    const updateState = (x: (x: yuhaiin.listener.websocket) => void) => {
+        if (IsTLSEmpty(props.websocket.tls)) props.websocket.tls = undefined
+        x(props.websocket)
+        props.onChange(props.websocket)
+    }
 
 
     return (
@@ -249,18 +246,17 @@ const WebsocketComponents = React.memo((props: { websocket: Websocket, onChange:
             <SettingInputText plaintext={true} label='Protocol' value={"Websocket"} />
 
             {
-                props.websocket.tls !== undefined && <TLSComponents tls={props.websocket.tls} onChange={(e) => updateState((x) => x.tls = e)} />
+                props.websocket.tls !== undefined && <TLSComponents tls={new yuhaiin.listener.tls_config(props.websocket.tls !== null ? props.websocket.tls : undefined)} onChange={(e) => updateState((x) => x.tls = e)} />
             }
         </>
     )
 })
 
-const QuicComponents = React.memo((props: { quic: Quic, onChange: (x: Quic) => void }) => {
-    const updateState = (x: (x: Quic) => void) => {
-        props.onChange(produce(props.quic, (v) => {
-            if (IsTLSEmpty(v.tls)) v.tls = undefined
-            x(v)
-        }))
+const QuicComponents = React.memo((props: { quic: yuhaiin.listener.quic, onChange: (x: yuhaiin.listener.quic) => void }) => {
+    const updateState = (x: (x: yuhaiin.listener.quic) => void) => {
+        if (IsTLSEmpty(props.quic.tls)) props.quic.tls = undefined
+        x(props.quic)
+        props.onChange(props.quic)
     }
 
     return (
@@ -268,70 +264,68 @@ const QuicComponents = React.memo((props: { quic: Quic, onChange: (x: Quic) => v
             <SettingInputText plaintext={true} label='Protocol' value={"QUIC"} />
 
             {
-                props.quic.tls !== undefined && <TLSComponents tls={props.quic.tls} onChange={(e) => updateState((x) => x.tls = e)} />
+                props.quic.tls !== undefined && <TLSComponents tls={new yuhaiin.listener.tls_config(props.quic.tls !== null ? props.quic.tls : undefined)} onChange={(e) => updateState((x) => x.tls = e)} />
             }
 
         </>
     )
 })
 
-const GrpcComponents = React.memo((props: { grpc: Grpc, onChange: (x: Grpc) => void }) => {
-    const updateState = (x: (x: Grpc) => void) => {
-        props.onChange(produce(props.grpc, (v) => {
-            if (IsTLSEmpty(v.tls)) v.tls = undefined
-            x(v)
-        }))
+const GrpcComponents = React.memo((props: { grpc: yuhaiin.listener.grpc, onChange: (x: yuhaiin.listener.grpc) => void }) => {
+    const updateState = (x: (x: yuhaiin.listener.grpc) => void) => {
+        if (IsTLSEmpty(props.grpc.tls)) props.grpc.tls = undefined
+        x(props.grpc)
+        props.onChange(props.grpc)
     }
 
     return (
         <>
             <SettingInputText plaintext={true} label='Protocol' value={"GRPC"} />
             {
-                props.grpc.tls !== undefined && <TLSComponents tls={props.grpc.tls} onChange={(e) => updateState((x) => x.tls = e)} />
+                props.grpc.tls !== null && props.grpc.tls !== undefined && <TLSComponents tls={new yuhaiin.listener.tls_config(props.grpc.tls)} onChange={(e) => updateState((x) => x.tls = e)} />
             }
         </>
     )
 })
 
-const TlsComponents = React.memo((props: { tls: Tls, onChange: (x: Tls) => void }) => {
-    const updateState = (x: (x: Tls) => void) => {
-        props.onChange(produce(props.tls, (v) => {
-            if (IsTLSEmpty(v.tls)) v.tls = undefined
-            x(v)
-        }))
+const TlsComponents = React.memo((props: { tls: yuhaiin.listener.tls, onChange: (x: yuhaiin.listener.tls) => void }) => {
+    const updateState = (x: (x: yuhaiin.listener.tls) => void) => {
+        if (IsTLSEmpty(props.tls.tls)) props.tls.tls = undefined
+        x(props.tls)
+        props.onChange(props.tls)
     }
 
     return (
         <>
             <SettingInputText plaintext={true} label='Protocol' value={"TLS"} />
             {
-                props.tls.tls !== undefined && <TLSComponents tls={props.tls.tls} onChange={(e) => updateState((x) => x.tls = e)} />
+                props.tls.tls !== null && <TLSComponents tls={new yuhaiin.listener.tls_config(props.tls.tls)} onChange={(e) => updateState((x) => x.tls = e)} />
             }
         </>
     )
 })
 
-const Http2Components = React.memo((props: { http2: Http2, onChange: (x: Http2) => void }) => {
-    const updateState = (x: (x: Http2) => void) => {
-        props.onChange(produce(props.http2, (v) => {
-            if (IsTLSEmpty(v.tls)) v.tls = undefined
-            x(v)
-        }))
+const Http2Components = React.memo((props: { http2: yuhaiin.listener.http2, onChange: (x: yuhaiin.listener.http2) => void }) => {
+    const updateState = (x: (x: yuhaiin.listener.http2) => void) => {
+        if (IsTLSEmpty(props.http2.tls)) props.http2.tls = undefined
+        x(props.http2)
+        props.onChange(props.http2)
     }
 
     return (
         <>
             <SettingInputText plaintext={true} label='Protocol' value={"HTTP2"} />
             {
-                props.http2.tls !== undefined && <TLSComponents tls={props.http2.tls} onChange={(e) => updateState((x) => x.tls = e)} />
+                props.http2.tls !== null && <TLSComponents tls={new yuhaiin.listener.tls_config(props.http2.tls)} onChange={(e) => updateState((x) => x.tls = e)} />
             }
         </>
     )
 })
 
-const RealityComponents = React.memo((props: { reality: reality, onChange: (x: reality) => void }) => {
-    const updateState = (x: (x: reality) => void) => {
-        props.onChange(produce(props.reality, (v) => { x(v) }))
+const RealityComponents = React.memo((props: { reality: yuhaiin.listener.reality, onChange: (x: yuhaiin.listener.reality) => void }) => {
+    const updateState = (x: (x: yuhaiin.listener.reality) => void) => {
+        x(props.reality)
+        props.onChange(props.reality)
     }
 
     const [newShortID, setNewShortID] = useState({ value: "" });
@@ -408,25 +402,26 @@ const RealityComponents = React.memo((props: { reality: reality, onChange: (x: r
     )
 })
 
-const YuubinsyaComponents = React.memo((props: { yuubinsya: Yuubinsya, onChange: (x: Yuubinsya) => void }) => {
-    const updateState = (x: (x: Yuubinsya) => void) => {
-        props.onChange(produce(props.yuubinsya, (v) => { x(v) }))
+const YuubinsyaComponents = React.memo((props: { yuubinsya: yuhaiin.listener.yuubinsya, onChange: (x: yuhaiin.listener.yuubinsya) => void }) => {
+    const updateState = (x: (x: yuhaiin.listener.yuubinsya) => void) => {
+        x(props.yuubinsya)
+        props.onChange(props.yuubinsya)
     }
 
     const components = () => {
-        switch (props.yuubinsya.protocol?.$case) {
+        switch (props.yuubinsya.protocol) {
             case "websocket":
-                return <WebsocketComponents websocket={props.yuubinsya.protocol.websocket} onChange={(e) => updateState((x) => x.protocol = { $case: "websocket", websocket: e })} />
+                return <WebsocketComponents websocket={new yuhaiin.listener.websocket(props.yuubinsya.websocket!!)} onChange={(e) => updateState((x) => x.websocket = e)} />
             case "quic":
-                return <QuicComponents quic={props.yuubinsya.protocol.quic} onChange={(e) => updateState((x) => x.protocol = { $case: "quic", quic: e })} />
+                return <QuicComponents quic={new yuhaiin.listener.quic(props.yuubinsya.quic!!)} onChange={(e) => updateState((x) => x.quic = e)} />
             case "grpc":
-                return <GrpcComponents grpc={props.yuubinsya.protocol.grpc} onChange={(e) => updateState((x) => x.protocol = { $case: "grpc", grpc: e })} />
+                return <GrpcComponents grpc={new yuhaiin.listener.grpc(props.yuubinsya.grpc!!)} onChange={(e) => updateState((x) => x.grpc = e)} />
             case "http2":
-                return <Http2Components http2={props.yuubinsya.protocol.http2} onChange={(e) => updateState((x) => x.protocol = { $case: "http2", http2: e })} />
+                return <Http2Components http2={new yuhaiin.listener.http2(props.yuubinsya.http2!!)} onChange={(e) => updateState((x) => x.http2 = e)} />
             case "reality":
-                return <RealityComponents reality={props.yuubinsya.protocol.reality} onChange={(e) => updateState((x) => x.protocol = { $case: "reality", reality: e })} />
+                return <RealityComponents reality={new yuhaiin.listener.reality(props.yuubinsya.reality!!)} onChange={(e) => updateState((x) => x.reality = e)} />
             case "tls":
-                return <TlsComponents tls={props.yuubinsya.protocol.tls} onChange={(e) => updateState((x) => x.protocol = { $case: "tls", tls: e })} />
+                return <TlsComponents tls={new yuhaiin.listener.tls(props.yuubinsya.tls!!)} onChange={(e) => updateState((x) => x.tls = e)} />
         }
     }
     return (
@@ -443,35 +438,37 @@ const YuubinsyaComponents = React.memo((props: { yuubinsya: Yuubinsya, onChange:
     )
 })
 
-export const defaultServers: { [key: string]: ServerConfig } = {};
+export const defaultServers: { [key: string]: yuhaiin.listener.protocol } = {};
 
-const Protocol = React.memo((props: { protocol: ServerConfig, onChange: (x: ServerConfig) => void }) => {
-    const updateState = (x: (x: ServerConfig) => void) => {
-        props.onChange(produce(props.protocol, (v) => { x(v) }))
+const Protocol = React.memo((props: { protocol: yuhaiin.listener.protocol, onChange: (x: yuhaiin.listener.protocol) => void }) => {
+    const updateState = (x: (x: yuhaiin.listener.protocol) => void) => {
+        x(props.protocol)
+        props.onChange(props.protocol)
     }
 
-    switch (props.protocol.protocol?.$case) {
+    switch (props.protocol.protocol) {
         case "http":
-            return <HTTPComponents http={props.protocol.protocol.http} onChange={(e) => updateState((x) => x.protocol = { $case: "http", http: e })} />
+            return <HTTPComponents http={new yuhaiin.listener.http(props.protocol.http!!)} onChange={(e) => updateState((x) => x.http = e)} />
         case "socks5":
-            return <Socks5Components socks5={props.protocol.protocol.socks5} onChange={(e) => updateState((x) => x.protocol = { $case: "socks5", socks5: e })} />
+            return <Socks5Components socks5={new yuhaiin.listener.socks5(props.protocol.socks5!!)} onChange={(e) => updateState((x) => x.socks5 = e)} />
         case "redir":
-            return <RedirComponents redir={props.protocol.protocol.redir} onChange={(e) => updateState((x) => x.protocol = { $case: "redir", redir: e })} />
+            return <RedirComponents redir={new yuhaiin.listener.redir(props.protocol.redir!!)} onChange={(e) => updateState((x) => x.redir = e)} />
         case "tun":
-            return <TunComponents tun={props.protocol.protocol.tun} onChange={(e) => updateState((x) => x.protocol = { $case: "tun", tun: e })} />
+            return <TunComponents tun={new yuhaiin.listener.tun(props.protocol.tun!!)} onChange={(e) => updateState((x) => x.tun = e)} />
         case "yuubinsya":
-            return <YuubinsyaComponents yuubinsya={props.protocol.protocol.yuubinsya} onChange={(e) => updateState((x) => x.protocol = { $case: "yuubinsya", yuubinsya: e })} />
+            return <YuubinsyaComponents yuubinsya={new yuhaiin.listener.yuubinsya(props.protocol.yuubinsya!!)} onChange={(e) => updateState((x) => x.yuubinsya = e)} />
     }
     return <></>
 })
 
 
-const Inbound = React.memo((props: { server: { [key: string]: ServerConfig }, onChange: (x: { [key: string]: ServerConfig }) => void, }) => {
+const Inbound = React.memo((props: { server: { [key: string]: yuhaiin.listener.Iprotocol }, onChange: (x: { [key: string]: yuhaiin.listener.Iprotocol }) => void, }) => {
 
     const [newProtocol, setNewProtocol] = useState({ value: "http", name: "" });
 
-    const updateState = (x: (x: { [key: string]: ServerConfig }) => void) => {
-        props.onChange(produce(props.server, (v) => { x(v) }))
+    const updateState = (x: (x: { [key: string]: yuhaiin.listener.Iprotocol }) => void) => {
+        x(props.server)
+        props.onChange(props.server)
     }
 
     return (
@@ -488,8 +485,8 @@ const Inbound = React.memo((props: { server: { [key: string]: ServerConfig }, on
                                 </Button>
                             </Card.Title>
 
-                            <SettingCheck label='Enabled' checked={v.enabled} onChange={() => updateState((x) => x[k].enabled = !x[k].enabled)} />
-                            <Protocol protocol={v} onChange={(e) => updateState((x) => x[k] = e)} />
+                            <SettingCheck label='Enabled' checked={v.enabled!!} onChange={() => updateState((x) => x[k].enabled = !x[k].enabled)} />
+                            <Protocol protocol={new yuhaiin.listener.protocol(v)} onChange={(e) => updateState((x) => x[k] = e)} />
 
                             <hr />
                         </div>
@@ -534,159 +531,105 @@ const Inbound = React.memo((props: { server: { [key: string]: ServerConfig }, on
     )
 })
 
-const defaultProtocol = (x: { [key: string]: ServerConfig }, name: string, protocol: string) => {
+const defaultProtocol = (x: { [key: string]: yuhaiin.listener.Iprotocol }, name: string, protocol: string) => {
     if (name === "" || x[name] !== undefined) return
 
-    let sc: ServerConfig = {
+    let sc: yuhaiin.listener.Iprotocol = {
         name: name,
         enabled: false,
     }
 
     switch (protocol) {
         case "http":
-            sc.protocol = {
-                $case: "http",
-                http: {
-                    host: ":8188",
-                    username: "",
-                    password: ""
-                }
+            sc.http = {
+                host: ":8188",
+                username: "",
+                password: ""
             }
             break
         case "socks5":
-            sc.protocol = {
-                $case: "socks5",
-                socks5: {
-                    host: ":1080",
-                    password: "",
-                    username: ""
-                }
+            sc.socks5 = {
+                host: ":1080",
+                password: "",
+                username: ""
             }
             break
         case "tun":
-            sc.protocol = {
-                $case: "tun",
-                tun: {
-                    name: "tun://tun0",
-                    mtu: 1500,
-                    gateway: "172.16.0.1",
-                    dns_hijacking: true,
-                    skip_multicast: false,
-                    driver: TunDriver.system_gvisor,
-                    portal: "172.16.0.2"
-                },
+            sc.tun = {
+                name: "tun://tun0",
+                mtu: 1500,
+                gateway: "172.16.0.1",
+                dns_hijacking: true,
+                skip_multicast: false,
+                driver: yuhaiin.listener.tun.endpoint_driver.system_gvisor,
+                portal: "172.16.0.2"
             }
             break
 
         case "redir":
-            sc.protocol = {
-                $case: "redir",
-                redir: {
-                    host: ":8088"
-                }
+            sc.redir = {
+                host: ":8088"
             }
             break
         case "yuubinsya":
-            sc.protocol = {
-                $case: "yuubinsya",
-                yuubinsya: {
-                    host: ":2096",
-                    force_disable_encrypt: false,
-                    password: "password",
-                    protocol: {
-                        $case: "normal",
-                        normal: {}
-                    }
-                }
+            sc.yuubinsya = {
+                host: ":2096",
+                force_disable_encrypt: false,
+                password: "password",
+                normal: {}
             }
             break
         case "yuubinsya-websocket":
-            sc.protocol = {
-                $case: "yuubinsya",
-                yuubinsya: {
-                    host: ":2096",
-                    force_disable_encrypt: false,
-                    password: "password",
-                    protocol: {
-                        $case: "websocket",
-                        websocket: { tls: undefined }
-                    }
-                }
+            sc.yuubinsya = {
+                host: ":2096",
+                force_disable_encrypt: false,
+                password: "password",
+                websocket: { tls: undefined }
             }
             break
         case "yuubinsya-tls":
-            sc.protocol = {
-                $case: "yuubinsya",
-                yuubinsya: {
-                    host: ":2096",
-                    force_disable_encrypt: false,
-                    password: "password",
-                    protocol: {
-                        $case: "tls",
-                        tls: { tls: undefined }
-                    }
-                }
+            sc.yuubinsya = {
+                host: ":2096",
+                force_disable_encrypt: false,
+                password: "password",
+                tls: { tls: undefined }
             }
             break
         case "yuubinsya-grpc":
-            sc.protocol = {
-                $case: "yuubinsya",
-                yuubinsya: {
-                    host: ":2096",
-                    force_disable_encrypt: false,
-                    password: "password",
-                    protocol: {
-                        $case: "grpc",
-                        grpc: { tls: undefined }
-                    }
-                }
+            sc.yuubinsya = {
+                host: ":2096",
+                force_disable_encrypt: false,
+                password: "password",
+                grpc: { tls: undefined }
             }
             break
         case "yuubinsya-quic":
-            sc.protocol = {
-                $case: "yuubinsya",
-                yuubinsya: {
-                    host: ":2096",
-                    force_disable_encrypt: false,
-                    password: "password",
-                    protocol: {
-                        $case: "quic",
-                        quic: { tls: undefined }
-                    }
-                }
+            sc.yuubinsya = {
+                host: ":2096",
+                force_disable_encrypt: false,
+                password: "password",
+                quic: { tls: undefined }
             }
             break
         case "yuubinsya-http2":
-            sc.protocol = {
-                $case: "yuubinsya",
-                yuubinsya: {
-                    host: ":2096",
-                    force_disable_encrypt: false,
-                    password: "password",
-                    protocol: {
-                        $case: "http2",
-                        http2: { tls: undefined }
-                    }
-                }
+            sc.yuubinsya = {
+                host: ":2096",
+                force_disable_encrypt: false,
+                password: "password",
+                http2: { tls: undefined }
             }
             break
         case "yuubinsya-reality":
-            sc.protocol = {
-                $case: "yuubinsya",
-                yuubinsya: {
-                    host: ":2096",
-                    force_disable_encrypt: false,
-                    password: "password",
-                    protocol: {
-                        $case: "reality",
-                        reality: {
-                            short_id: ["123456"],
-                            server_name: ["www.example.com"],
-                            private_key: "",
-                            dest: "dl.google.com:443",
-                            debug: false,
-                        }
-                    }
+            sc.yuubinsya = {
+                host: ":2096",
+                force_disable_encrypt: false,
+                password: "password",
+                reality: {
+                    short_id: ["123456"],
+                    server_name: ["www.example.com"],
+                    private_key: "",
+                    dest: "dl.google.com:443",
+                    debug: false,
                 }
             }
             break
@@ -695,7 +638,7 @@ const defaultProtocol = (x: { [key: string]: ServerConfig }, name: string, proto
             return
     }
 
-    x[name] = sc
+    x[name] = new yuhaiin.listener.protocol(sc)
 }
 
 export default Inbound;

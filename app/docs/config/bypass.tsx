@@ -1,36 +1,30 @@
 import React, { useState } from 'react';
 import { Form, InputGroup, Row, Col, Button, } from 'react-bootstrap';
 import { SettingInputText } from './components';
-import {
-    bypass_config as BypassConfig,
-    mode as BypassMode,
-    mode_config as CustomRule,
-    resolve_strategy as ResolveStrategy,
-    modeToJSON as BypassModeToJson,
-    modeFromJSON as BypassModeFromJson,
-    resolve_strategyToJSON as ResolveStrategyToJSON,
-    resolve_strategyFromJSON as ResolveStrategyFromJSON,
-} from '../protos/config/bypass/bypass';
-import { produce } from 'immer';
+import { yuhaiin } from '../pbts/proto';
 
-export const defaultBypassConfig: BypassConfig = {
+const BypassMode = yuhaiin.bypass.mode;
+const ResolveStrategy = yuhaiin.bypass.resolve_strategy;
+
+export const defaultBypassConfig: yuhaiin.bypass.Ibypass_config = {
     tcp: BypassMode.bypass,
     udp: BypassMode.bypass,
     bypass_file: "yuhaiin.conf",
     custom_rule_v3: []
 }
 
-const Bypass = React.memo((props: { bypass: BypassConfig, onChange: (x: BypassConfig) => void, }) => {
+const Bypass = React.memo((props: { bypass: yuhaiin.bypass.bypass_config, onChange: (x: yuhaiin.bypass.bypass_config) => void, }) => {
 
-    const defaultRule: CustomRule = {
+    const defaultRule: yuhaiin.bypass.Imode_config = {
         hostname: ["www.example.com"],
         mode: BypassMode.proxy,
         tag: "",
         resolve_strategy: ResolveStrategy.default
     }
 
-    const updateState = (x: (x: BypassConfig) => void) => {
-        props.onChange(produce(props.bypass, (v) => { x(v) }))
+    const updateState = (x: (x: yuhaiin.bypass.bypass_config) => void) => {
+        x(props.bypass)
+        props.onChange(props.bypass)
     }
 
 
@@ -52,7 +46,7 @@ const Bypass = React.memo((props: { bypass: BypassConfig, onChange: (x: BypassCo
 
                         <hr />
 
-                        <BypassSingleComponents config={value} onChange={(e) => updateState((x) => x.custom_rule_v3[index] = e)} />
+                        <BypassSingleComponents config={new yuhaiin.bypass.mode_config(value)} onChange={(e) => updateState((x) => x.custom_rule_v3[index] = e)} />
 
 
                         <Button variant='outline-danger' onClick={() => updateState((x) => x.custom_rule_v3.splice(index, 1))} >
@@ -74,9 +68,10 @@ const Bypass = React.memo((props: { bypass: BypassConfig, onChange: (x: BypassCo
     )
 })
 
-const BypassSingleComponents = (props: { config: CustomRule, onChange: (x: CustomRule) => void }) => {
-    const updateState = (x: (v: CustomRule) => void) => {
-        props.onChange(produce(props.config, (v) => { x(v) }))
+const BypassSingleComponents = (props: { config: yuhaiin.bypass.mode_config, onChange: (x: yuhaiin.bypass.mode_config) => void }) => {
+    const updateState = (x: (v: yuhaiin.bypass.mode_config) => void) => {
+        x(props.config)
+        props.onChange(props.config)
     }
 
     const [newDomain, setNewDomain] = useState({ value: "" });
@@ -121,16 +116,16 @@ const BypassSingleComponents = (props: { config: CustomRule, onChange: (x: Custo
     )
 }
 
-function SettingModeSelect(props: { label: string, network: boolean, value: BypassMode, onChange: (value: BypassMode) => void }) {
+function SettingModeSelect(props: { label: string, network: boolean, value: yuhaiin.bypass.mode, onChange: (value: yuhaiin.bypass.mode) => void }) {
     return (
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2}>{props.label}</Form.Label>
             <Col sm={10}>
-                <Form.Select value={BypassModeToJson(props.value)} onChange={(e) => props.onChange(BypassModeFromJson(e.target.value))}>
-                    {props.network && <option value={BypassModeToJson(BypassMode.bypass)}>BYPASS</option>}
-                    <option value={BypassModeToJson(BypassMode.direct)}>DIRECT</option>
-                    <option value={BypassModeToJson(BypassMode.proxy)}>PROXY</option>
-                    <option value={BypassModeToJson(BypassMode.block)}>BLOCK</option>
+                <Form.Select value={BypassMode[props.value]} onChange={(e) => props.onChange(BypassMode[e.target.value])}>
+                    {props.network && <option value={BypassMode[BypassMode.bypass]}>BYPASS</option>}
+                    <option value={BypassMode[BypassMode.direct]}>DIRECT</option>
+                    <option value={BypassMode[BypassMode.proxy]}>PROXY</option>
+                    <option value={BypassMode[BypassMode.block]}>BLOCK</option>
                 </Form.Select>
             </Col>
         </Form.Group>
@@ -138,17 +133,17 @@ function SettingModeSelect(props: { label: string, network: boolean, value: Bypa
 }
 
 
-function SettingResolveStrategySelect(props: { label: string, value: ResolveStrategy, onChange: (value: ResolveStrategy) => void }) {
+function SettingResolveStrategySelect(props: { label: string, value: yuhaiin.bypass.resolve_strategy, onChange: (value: yuhaiin.bypass.resolve_strategy) => void }) {
     return (
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2}>{props.label}</Form.Label>
             <Col sm={10}>
-                <Form.Select value={ResolveStrategyToJSON(props.value)} onChange={(e) => props.onChange(ResolveStrategyFromJSON(e.target.value))}>
-                    <option value={ResolveStrategyToJSON(ResolveStrategy.default)}>default</option>
-                    <option value={ResolveStrategyToJSON(ResolveStrategy.prefer_ipv4)}>prefer_ipv4</option>
-                    <option value={ResolveStrategyToJSON(ResolveStrategy.only_ipv4)}>only_ipv4</option>
-                    <option value={ResolveStrategyToJSON(ResolveStrategy.prefer_ipv6)}>prefer_ipv6</option>
-                    <option value={ResolveStrategyToJSON(ResolveStrategy.only_ipv6)}>only_ipv6</option>
+                <Form.Select value={ResolveStrategy[props.value]} onChange={(e) => props.onChange(ResolveStrategy[e.target.value])}>
+                    <option value={ResolveStrategy[ResolveStrategy.default]}>default</option>
+                    <option value={ResolveStrategy[ResolveStrategy.prefer_ipv4]}>prefer_ipv4</option>
+                    <option value={ResolveStrategy[ResolveStrategy.only_ipv4]}>only_ipv4</option>
+                    <option value={ResolveStrategy[ResolveStrategy.prefer_ipv6]}>prefer_ipv6</option>
+                    <option value={ResolveStrategy[ResolveStrategy.only_ipv6]}>only_ipv6</option>
                 </Form.Select>
             </Col>
         </Form.Group>

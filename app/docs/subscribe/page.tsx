@@ -6,17 +6,21 @@ import CardHeader from "react-bootstrap/esm/CardHeader";
 import Loading from "../common/loading";
 import { SettingInputText } from "../config/components";
 import { GlobalToastContext } from "../common/toast";
-import { save_link_req as SaveLink, get_links_resp as GetLinks, link_req as LinkReq } from "../protos/node/grpc/node";
-import { type as LinkType, link as Link } from "../protos/node/subscribe/subscribe";
 import useSWR from 'swr'
-import { Fetch, ProtoFetcher } from '../common/proto';
+import { Fetch, ProtoTSFetcher } from '../common/proto';
 import Error from 'next/error';
+import { yuhaiin } from "../pbts/proto";
+
+const LinkType = yuhaiin.subscribe.type;
+const SaveLink = yuhaiin.protos.node.service.save_link_req;
+const GetLinks = yuhaiin.protos.node.service.get_links_resp;
+const LinkReq = yuhaiin.protos.node.service.link_req;
 
 function Subscribe() {
     const [checked, setChecked] = useState<{ [key: string]: boolean }>({});
     const [updating, setUpdating] = useState({ value: false });
-    const [addItem, setAddItem] = useState<Link>({ name: "", url: "", type: LinkType.reserve });
-    const { data: links, error, isLoading, mutate } = useSWR("/sublist", ProtoFetcher(GetLinks))
+    const [addItem, setAddItem] = useState<yuhaiin.subscribe.link>(new yuhaiin.subscribe.link({ name: "", url: "", type: LinkType.reserve }));
+    const { data: links, error, isLoading, mutate } = useSWR("/sublist", ProtoTSFetcher<yuhaiin.protos.node.service.get_links_resp>(GetLinks))
     const ctx = useContext(GlobalToastContext);
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
@@ -29,9 +33,10 @@ function Subscribe() {
 
                 <ListGroup variant="flush">
                     {
-                        Object.entries(links.links)
+                        links.links !== null && Object.entries(links.links)
                             .sort((a, b) => { return a <= b ? -1 : 1 })
-                            .map(([k, v]) => {
+                            .map(([k, vv]) => {
+                                const v = new yuhaiin.subscribe.link(vv);
                                 return (
                                     <ListGroup.Item as={"label"} style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }} key={v.name}>
                                         <Form.Check
@@ -103,11 +108,11 @@ function Subscribe() {
                 <Card.Body>
                     <SettingInputText label="Name"
                         value={addItem.name}
-                        onChange={(e) => setAddItem({ ...addItem, name: e })}
+                        onChange={(e) => setAddItem(new yuhaiin.subscribe.link({ ...addItem, name: e }))}
                     />
                     <SettingInputText label="Link"
                         value={addItem.url}
-                        onChange={(e) => setAddItem({ ...addItem, url: e })}
+                        onChange={(e) => setAddItem(new yuhaiin.subscribe.link({ ...addItem, url: e }))}
                     />
 
                     <Button

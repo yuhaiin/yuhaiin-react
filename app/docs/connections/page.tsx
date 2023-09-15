@@ -4,14 +4,16 @@ import React, { useState, useContext } from "react";
 import { Button, Card, ListGroup, Accordion, Badge } from "react-bootstrap";
 import { APIUrl } from "../apiurl";
 import NodeModal from "../modal/node";
-import { connection, type as netType } from "../protos/statistic/config";
-import { notify_remove_connections, total_flow, notify_data } from "../protos/statistic/grpc/config";
 import useSWRSubscription from 'swr/subscription'
 import type { SWRSubscriptionOptions } from 'swr/subscription'
-import { produce } from "immer";
 import Loading from "../common/loading";
 import { Fetch } from "../common/proto";
 import { GlobalToastContext } from "../common/toast";
+import { yuhaiin } from "../pbts/proto";
+
+const netType = yuhaiin.statistic.type;
+const notify_remove_connections = yuhaiin.protos.statistic.service.notify_remove_connections;
+const notify_data = yuhaiin.protos.statistic.service.notify_data;
 
 const formatBytes =
     (a = 0, b = 2) => {
@@ -34,10 +36,10 @@ function Connections() {
 
     type Statistic = {
         flow: Flow,
-        conns: { [key: number]: connection }
+        conns: { [key: number]: yuhaiin.statistic.connection }
     }
 
-    const generateFlow = (flow: total_flow, prev: Flow): Flow => {
+    const generateFlow = (flow: yuhaiin.protos.statistic.service.total_flow, prev: Flow): Flow => {
         let drate = (flow.download - (prev.download !== 0 ? prev.download : flow.download)) / 2
         let urate = (flow.upload - (prev.upload !== 0 ? prev.upload : flow.upload)) / 2
         let dstr = `(${formatBytes(flow.download)}): ${formatBytes(drate)}/S`
@@ -71,18 +73,40 @@ function Connections() {
                 socket.addEventListener('message', (event) => {
                     const raw = notify_data.decode(new Uint8Array(event.data));
                     next(null, pre => {
-                        let prev = pre;
-                        if (prev === undefined) prev = { flow: { download: 0, upload: 0, dstr: "Loading...", ustr: "Loading..." }, conns: {} }
-                        switch (raw.data?.$case) {
+                        let prev: Statistic = pre !== undefined ?
+                            {
+                                flow: pre.flow,
+                                conns: { ...pre.conns }
+                            }
+                            :
+                            {
+                                flow: { download: 0, upload: 0, dstr: "Loading...", ustr: "Loading..." },
+                                conns: {}
+                            };
+                        switch (raw.data) {
                             case "total_flow":
-                                let xfw = raw.data.total_flow;
-                                return produce(prev, (v) => { v.flow = generateFlow(xfw, v.flow) })
+                                let xfw = new yuhaiin.protos.statistic.service.total_flow(raw.total_flow !== null ? raw.total_flow : undefined);
+                                prev.flow = generateFlow(xfw, prev.flow)
+                                return prev
                             case "notify_new_connections":
-                                let conns = raw.data.notify_new_connections.connections;
-                                return produce(prev, (v) => { conns.forEach((e: connection) => { v.conns[e.id] = e }) })
+                                let conns = new yuhaiin
+                                    .protos
+                                    .statistic
+                                    .service
+                                    .notify_new_connections(raw.notify_new_connections !== null ? raw.notify_new_connections : undefined)
+                                    .connections;
+
+                                conns.forEach((e: yuhaiin.statistic.connection) => { prev.conns[e.id] = e })
+                                return prev;
                             case "notify_remove_connections":
-                                let ids = raw.data.notify_remove_connections.ids;
-                                return produce(prev, (v) => { ids.forEach((e: number) => { delete v.conns[e] }) })
+                                let ids = new yuhaiin
+                                    .protos
+                                    .statistic
+                                    .service
+                                    .notify_remove_connections(raw.notify_remove_connections !== null ? raw.notify_remove_connections : {})
+                                    .ids;
+                                ids.forEach((e: number) => { delete prev.conns[e] })
+                                return prev
                         }
                     })
                 })
@@ -183,7 +207,7 @@ const ListGroupItem = React.memo((props: { itemKey: string, itemValue: string, }
     )
 })
 
-const AccordionItem = React.memo((props: { data: connection }) => {
+const AccordionItem = React.memo((props: { data: yuhaiin.statistic.connection }) => {
     const ctx = useContext(GlobalToastContext);
 
     return (
@@ -194,7 +218,7 @@ const AccordionItem = React.memo((props: { data: connection }) => {
                     <code className="ms-2">{props.data.id}</code>
                     <span className="ms-2">{props.data.addr}</span>
                     <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{props.data.extra.MODE}</Badge>
-                    <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{netType[props.data.type!!.conn_type]}</Badge>
+                    <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{netType[new yuhaiin.statistic.net_type(props.data.type!!).conn_type]}</Badge>
                     {
                         props.data.extra.Tag !== undefined &&
                         <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{props.data.extra.Tag}</Badge>
@@ -204,8 +228,8 @@ const AccordionItem = React.memo((props: { data: connection }) => {
 
             <Accordion.Body>
                 <ListGroup variant="flush">
-                    <ListGroupItem itemKey="Type" itemValue={netType[props.data.type!!.conn_type]} />
-                    <ListGroupItem itemKey="Underlying" itemValue={netType[props.data.type!!.underlying_type]} />
+                    <ListGroupItem itemKey="Type" itemValue={netType[new yuhaiin.statistic.net_type(props.data.type!!).conn_type]} />
+                    <ListGroupItem itemKey="Underlying" itemValue={netType[new yuhaiin.statistic.net_type(props.data.type!!).underlying_type]} />
 
                     {
                         Object.entries(props.data.extra)

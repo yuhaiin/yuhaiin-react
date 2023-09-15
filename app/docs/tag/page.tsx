@@ -3,28 +3,32 @@
 import { useState, useContext } from "react";
 import { Badge, Button, Card, FloatingLabel, Form, InputGroup, ListGroup } from "react-bootstrap";
 import Loading from "../common/loading";
-import { save_tag_req as SaveTag } from "../protos/node/grpc/node";
-import { tag_type as TagType, tags as Tag } from "../protos/node/tag/tag";
-import { manager as Manager } from "../protos/node/node";
 import useSWR from 'swr'
-import { Fetch, ProtoFetcher } from '../common/proto';
+import { Fetch, ProtoTSFetcher, NewObject } from '../common/proto';
 import Error from 'next/error';
 import NodeModal from "../modal/node";
 import { GlobalToastContext } from "../common/toast";
-import { StringValue } from "../protos/google/protobuf/wrappers";
+import { yuhaiin, google } from "../pbts/proto";
+
+const StringValue = google.protobuf.StringValue;
+const Manager = yuhaiin.node.manager;
+const TagType = yuhaiin.tag.tag_type;
+const Tag = yuhaiin.tag.tags;
+const SaveTag = yuhaiin.protos.node.service.save_tag_req;
+
 
 function Tags() {
     const ctx = useContext(GlobalToastContext);
     const [currentGroup, setCurrentGroup] = useState("");
-    const [saveTag, setSaveTag] = useState<SaveTag>({ tag: "", hash: "", type: TagType.node });
-    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoFetcher(Manager))
+    const [saveTag, setSaveTag] = useState<yuhaiin.protos.node.service.save_tag_req>(new yuhaiin.protos.node.service.save_tag_req({ tag: "", hash: "", type: TagType.node }));
+    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoTSFetcher<yuhaiin.node.manager>(Manager))
     const [modalHash, setModalHash] = useState({ hash: "" });
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
 
     if (isLoading || data == undefined) return <Loading />
 
-    const TagItem = (k: string, v: Tag) => {
+    const TagItem = (k: string, v: yuhaiin.tag.tags) => {
         return (
             <ListGroup.Item style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }} key={k}>
                 <div className="d-flex flex-wrap">
@@ -32,7 +36,7 @@ function Tags() {
                         href="#empty"
                         onClick={(e) => {
                             e.preventDefault();
-                            setSaveTag((x) => { return { ...x, tag: k } })
+                            setSaveTag((x) => { return new yuhaiin.protos.node.service.save_tag_req({ ...x, tag: k }) })
                         }}
                     >{k}</a>
                     <Badge className="rounded-pill bg-light text-dark text-truncate ms-1">
@@ -89,7 +93,7 @@ function Tags() {
                         Object
                             .entries(data.tags)
                             .sort((a, b) => { return a <= b ? -1 : 1 })
-                            .map(([k, v]) => { return TagItem(k, v) })
+                            .map(([k, v]) => { return TagItem(k, new yuhaiin.tag.tags(v)) })
                     }
                 </ListGroup>
             </Card >
@@ -99,13 +103,13 @@ function Tags() {
                     <InputGroup className="mb-3">
                         <Form.Check inline
                             type="radio"
-                            onChange={() => { setSaveTag((x) => { return { ...x, type: TagType.node, hash: "" } }) }}
+                            onChange={() => { setSaveTag((x) => { return new yuhaiin.protos.node.service.save_tag_req({ ...x, type: TagType.node, hash: "" }) }) }}
                             checked={saveTag.type === TagType.node}
                             label="Node"
                         />
                         <Form.Check inline
                             type="radio"
-                            onChange={() => { setSaveTag((x) => { return { ...x, type: TagType.mirror, hash: "" } }) }}
+                            onChange={() => { setSaveTag((x) => { return new yuhaiin.protos.node.service.save_tag_req({ ...x, type: TagType.mirror, hash: "" }) }) }}
                             checked={saveTag.type === TagType.mirror}
                             label="Mirror"
                         />
@@ -114,7 +118,7 @@ function Tags() {
                     <FloatingLabel label="Tag" className="mb-2" >
                         <Form.Control placeholder="Tag" aria-label="Tag" aria-describedby="basic-addon1"
                             value={saveTag.tag}
-                            onChange={(e) => { setSaveTag((x) => { return { ...x, tag: e.target.value } }) }}
+                            onChange={(e) => { setSaveTag((x) => { return new yuhaiin.protos.node.service.save_tag_req({ ...x, tag: e.target.value }) }) }}
                         ></Form.Control>
                     </FloatingLabel>
 
@@ -137,11 +141,11 @@ function Tags() {
 
                             <FloatingLabel label="Node" className="mb-2" >
                                 <Form.Select defaultValue={""}
-                                    onChange={(e) => { setSaveTag((x) => { return { ...x, hash: e.target.value } }) }}>
+                                    onChange={(e) => { setSaveTag((x) => { return new yuhaiin.protos.node.service.save_tag_req({ ...x, hash: e.target.value }) }) }}>
                                     <option value="">Choose...</option>
                                     {
                                         Object
-                                            .entries(data.groupsV2[currentGroup] !== undefined ? data.groupsV2[currentGroup].nodesV2 : {})
+                                            .entries(NewObject(data.groupsV2[currentGroup]?.nodesV2))
                                             .sort((a, b) => { return a <= b ? -1 : 1 })
                                             .map(([k, v]) => {
                                                 return (<option value={v} key={k}>{k}</option>)
@@ -153,7 +157,7 @@ function Tags() {
                         :
                         <FloatingLabel label="Mirror" className="mb-2" >
                             <Form.Select defaultValue={""}
-                                onChange={(e) => { setSaveTag((x) => { return { ...x, hash: e.target.value } }) }}
+                                onChange={(e) => { setSaveTag((x) => { return new yuhaiin.protos.node.service.save_tag_req({ ...x, hash: e.target.value }) }) }}
                             >
                                 <option value="">Choose...</option>
                                 {

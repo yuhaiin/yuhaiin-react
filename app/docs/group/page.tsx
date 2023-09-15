@@ -6,14 +6,16 @@ import NodeModal from "../modal/node";
 import Loading from "../common/loading";
 import { GlobalToastContext } from "../common/toast";
 import useSWR from 'swr'
-import { ProtoFetcher, Fetch } from '../common/proto';
+import { ProtoTSFetcher, Fetch, ToObjectOption } from '../common/proto';
 import Error from 'next/error';
-import { manager as Manager } from "../protos/node/node";
-import { point as Point } from "../protos/node/point/point";
-import { requests as LatencyRequest, response as LatencyResponse, protocol as LatencyProtocol } from "../protos/node/latency/latency";
-import { use_req as UseRequest } from "../protos/node/grpc/node";
-import { StringValue } from "../protos/google/protobuf/wrappers";
+import { yuhaiin, google } from "../pbts/proto";
 
+
+const Point = yuhaiin.point.point;
+const UseRequest = yuhaiin.protos.node.service.use_req;
+const StringValue = google.protobuf.StringValue;
+const LatencyRequest = yuhaiin.latency.requests;
+const LatencyResponse = yuhaiin.latency.response;
 
 const Nanosecond = 1
 const Microsecond = 1000 * Nanosecond
@@ -46,7 +48,7 @@ function Group() {
     const [modalData, setModalData] = useState({ point: "", hash: "" });
     const [latency, setLatency] = useState<{ [key: string]: Latency }>({})
 
-    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoFetcher(Manager))
+    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoTSFetcher(yuhaiin.node.manager))
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || data === undefined) return <Loading />
@@ -64,7 +66,7 @@ function Group() {
             })
         }
 
-        const latency = (protocol: LatencyProtocol, onFinish: (r: string) => void) => {
+        const latency = (protocol: yuhaiin.latency.Iprotocol, onFinish: (r: string) => void) => {
             Fetch<string>("/latency", {
                 body: LatencyRequest.encode({
                     requests: [{
@@ -75,7 +77,7 @@ function Group() {
                 }).finish(),
                 process: async (r) => {
                     let resp = LatencyResponse.decode(new Uint8Array(await r.arrayBuffer()));
-                    const t = resp.id_latency_map["latency"]
+                    const t = new google.protobuf.Duration(resp.id_latency_map["latency"])
                     if (t !== undefined && (t.nanos !== 0 || t.seconds !== 0)) return durationToStroing(t.seconds, t.nanos)
                     return "timeout"
                 }
@@ -94,22 +96,16 @@ function Group() {
                     updateTestingStatus((v) => { v.tcpOnLoading = true; v.udpOnLoading = true })
                     latency(
                         {
-                            protocol: {
-                                $case: "http",
-                                http: {
-                                    url: "https://clients3.google.com/generate_204"
-                                }
+                            http: {
+                                url: "https://clients3.google.com/generate_204"
                             }
                         },
                         (r) => { updateTestingStatus(async (v) => { v.tcpOnLoading = false; v.tcp = r }) })
                     latency(
                         {
-                            protocol: {
-                                $case: "dns_over_quic",
-                                dns_over_quic: {
-                                    host: "dns.nextdns.io:853",
-                                    target_domain: "www.google.com"
-                                }
+                            dns_over_quic: {
+                                host: "dns.nextdns.io:853",
+                                target_domain: "www.google.com"
                             }
                         },
                         (r) => { updateTestingStatus(async (v) => { v.udpOnLoading = false; v.udp = r }) })
@@ -129,8 +125,8 @@ function Group() {
         </>
     })
 
-    const Nodes = React.memo((props: { nodes?: { [key: string]: string } }) => {
-        let entries = Object.entries(props.nodes !== undefined ? props.nodes : {});
+    const Nodes = React.memo((props: { nodes?: { [key: string]: string } | null }) => {
+        let entries = Object.entries((props.nodes !== undefined && props.nodes !== null) ? props.nodes : {});
 
         if (entries.length === 0)
             return <Card.Body>
@@ -158,8 +154,14 @@ function Group() {
                             <a href="#"
                                 onClick={(e) => {
                                     e.preventDefault();
+                                    if (data.nodes === null || data.nodes === undefined) return
                                     let node = data.nodes[v];
-                                    let point = node !== undefined ? JSON.stringify(Point.toJSON(node), null, "  ") : ""
+
+                                    let point =
+                                        node !== undefined ?
+                                            JSON.stringify(Point.toObject(Point.create(node), ToObjectOption), null, "  ")
+                                            :
+                                            ""
                                     setModalData({ point: point, hash: v })
                                 }}
                             >
@@ -194,7 +196,9 @@ function Group() {
                                 <Dropdown.Item eventKey={""}>Select...</Dropdown.Item>
 
                                 {
-                                    Object
+                                    data.groupsV2 !== null
+                                    && data.groupsV2 !== undefined
+                                    && Object
                                         .keys(data.groupsV2)
                                         .sort((a, b) => { return a <= b ? -1 : 1 })
                                         .map((k) => {
@@ -207,7 +211,13 @@ function Group() {
                 </Row>
 
                 <Card className="mb-3">
-                    <Nodes nodes={currentGroup !== "" ? data.groupsV2[currentGroup]?.nodesV2 : undefined} />
+                    <Nodes nodes={
+                        currentGroup !== ""
+                            && data.groupsV2 !== null
+                            && data.groupsV2 !== undefined
+                            ? data.groupsV2[currentGroup]?.nodesV2 : undefined
+                    }
+                    />
 
                     <Card.Header>
                         <Dropdown

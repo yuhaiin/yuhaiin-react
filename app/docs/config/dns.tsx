@@ -1,25 +1,21 @@
 import React, { useState } from 'react';
 import { Form, InputGroup, Card, Row, Col, Button } from 'react-bootstrap';
 import { SettingInputText, SettingCheck } from './components';
-import {
-    dns_config as DnsConfig,
-    type as DnsType,
-    typeToJSON as DnsTypeToJSON,
-    typeFromJSON as DnsTypeFromJSON,
-} from '../protos/config/dns/dns';
-import { produce } from 'immer';
+import { yuhaiin } from '../pbts/proto';
 
 type DNSProps = {
-    data: DnsConfig,
-    onChange: (x: DnsConfig) => void,
+    data: yuhaiin.dns.dns_config,
+    onChange: (x: yuhaiin.dns.dns_config) => void,
 }
 
 const DNS = React.memo((props: DNSProps) => {
 
     const [newHosts, setNewHosts] = useState({ key: "", value: "" })
 
-    const updateDNS = (x: (x: DnsConfig) => void) => {
-        props.onChange(produce(props.data, (v) => { x(v) }))
+
+    const updateDNS = (x: (x: yuhaiin.dns.dns_config) => void) => {
+        x(props.data)
+        props.onChange(props.data)
     }
 
     return (
@@ -39,30 +35,29 @@ const DNS = React.memo((props: DNSProps) => {
             <hr />
 
             <Card.Title>Local DNS</Card.Title>
-            <SettingInputText label='Host' value={props.data.local?.host} onChange={(v) => updateDNS((x) => { if (x.local !== undefined) x.local.host = v })} />
-            <SettingDNSTypeSelect label='Type' value={props.data.local?.type} onChange={(v) => updateDNS((x) => { if (x.local !== undefined) x.local.type = v })} />
-            <SettingInputText label='Subnet' value={props.data.local?.subnet} onChange={(v) => updateDNS((x) => { if (x.local !== undefined) x.local.subnet = v })} />
-            <SettingInputText label='SNI' value={props.data.local?.tls_servername} onChange={(v) => updateDNS((x) => { if (x.local !== undefined) x.local.tls_servername = v })} />
+            <SettingInputText label='Host' value={props.data.local?.host} onChange={(v) => updateDNS((x) => { if (x.local !== undefined) x.local!!.host = v })} />
+            <SettingDNSTypeSelect label='Type' value={props.data.local?.type} onChange={(v) => updateDNS((x) => { if (x.local !== undefined) x.local!!.type = v })} />
+            <SettingInputText label='Subnet' value={props.data.local?.subnet} onChange={(v) => updateDNS((x) => { if (x.local !== undefined) x.local!!.subnet = v })} />
+            <SettingInputText label='SNI' value={props.data.local?.tls_servername} onChange={(v) => updateDNS((x) => { if (x.local !== undefined) x.local!!.tls_servername = v })} />
 
 
             <hr />
 
             <Card.Title>Remote DNS</Card.Title>
             <SettingCheck label="Use IP" checked={props.data.resolve_remote_domain} onChange={() => updateDNS((x) => x.resolve_remote_domain = !x.resolve_remote_domain)} />
-            <SettingInputText label='Host' value={props.data.remote?.host} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote.host = v })} />
-            <SettingDNSTypeSelect label='Type' value={props.data.remote?.type} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote.type = v })} />
-            <SettingInputText label='Subnet' value={props.data.remote?.subnet} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote.subnet = v })} />
-            <SettingInputText label='SNI' value={props.data.remote?.tls_servername} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote.tls_servername = v })} />
+            <SettingInputText label='Host' value={props.data.remote?.host} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote!!.host = v })} />
+            <SettingDNSTypeSelect label='Type' value={props.data.remote?.type} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote!!.type = v })} />
+            <SettingInputText label='Subnet' value={props.data.remote?.subnet} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote!!.subnet = v })} />
+            <SettingInputText label='SNI' value={props.data.remote?.tls_servername} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote!!.tls_servername = v })} />
 
 
             <hr />
 
             <Card.Title>Bootstrap DNS</Card.Title>
-            <SettingInputText label='Host' value={props.data.bootstrap?.host} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap.host = v })} />
-            <SettingDNSTypeSelect label='Type' value={props.data.bootstrap?.type} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap.type = v })} />
-            <SettingInputText label='Subnet' value={props.data.bootstrap?.subnet} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap.subnet = v })} />
-            <SettingInputText label='SNI' value={props.data.bootstrap?.tls_servername} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap.tls_servername = v })} />
-
+            <SettingInputText label='Host' value={props.data.bootstrap?.host} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap!!.host = v })} />
+            <SettingDNSTypeSelect label='Type' value={props.data.bootstrap?.type} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap!!.type = v })} />
+            <SettingInputText label='Subnet' value={props.data.bootstrap?.subnet} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap!!.subnet = v })} />
+            <SettingInputText label='SNI' value={props.data.bootstrap?.tls_servername} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap!!.tls_servername = v })} />
 
 
             <hr />
@@ -103,18 +98,20 @@ const DNS = React.memo((props: DNSProps) => {
         </>)
 })
 
-function SettingDNSTypeSelect(props: { label: string, value: DnsType | undefined, onChange: (value: DnsType) => void }) {
+const DnsType = yuhaiin.dns.type;
+
+function SettingDNSTypeSelect(props: { label: string, value?: yuhaiin.dns.type | null, onChange: (value: yuhaiin.dns.type) => void }) {
     return (
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2}>{props.label}</Form.Label>
             <Col sm={10}>
-                <Form.Select value={DnsTypeToJSON(props.value === undefined ? DnsType.udp : props.value)} onChange={(e) => props.onChange(DnsTypeFromJSON(e.target.value))}>
-                    <option value={DnsTypeToJSON(DnsType.udp)}>UDP</option>
-                    <option value={DnsTypeToJSON(DnsType.tcp)}>TCP</option>
-                    <option value={DnsTypeToJSON(DnsType.doh)}>DOH</option>
-                    <option value={DnsTypeToJSON(DnsType.dot)}>DOT</option>
-                    <option value={DnsTypeToJSON(DnsType.doq)}>DOQ</option>
-                    <option value={DnsTypeToJSON(DnsType.doh3)}>DOH3</option>
+                <Form.Select value={DnsType[(props.value === undefined || props.value === null) ? DnsType.udp : props.value]} onChange={(e) => props.onChange(DnsType[e.target.value])}>
+                    <option value={DnsType[DnsType.udp]}>UDP</option>
+                    <option value={DnsType[DnsType.tcp]}>TCP</option>
+                    <option value={DnsType[DnsType.doh]}>DOH</option>
+                    <option value={DnsType[DnsType.dot]}>DOT</option>
+                    <option value={DnsType[DnsType.doq]}>DOQ</option>
+                    <option value={DnsType[DnsType.doh3]}>DOH3</option>
                 </Form.Select>
             </Col>
         </Form.Group>
