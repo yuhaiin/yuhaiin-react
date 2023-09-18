@@ -49,6 +49,22 @@ const Socks5Components = React.memo((props: { socks5: yuhaiin.listener.socks5, o
 })
 
 
+const MixedComponents = React.memo((props: { mixed: yuhaiin.listener.mixed, onChange: (x: yuhaiin.listener.mixed) => void }) => {
+    const updateState = (x: (x: yuhaiin.listener.mixed) => void) => {
+        x(props.mixed)
+        props.onChange(props.mixed)
+    }
+
+
+    return (
+        <>
+            <SettingInputText label='Host' value={props.mixed.host} onChange={(e) => updateState((x) => x.host = e)} />
+            <SettingInputText label='Username' value={props.mixed.username} onChange={(e) => updateState((x) => x.username = e)} />
+            <SettingInputText label='Password' value={props.mixed.password} onChange={(e) => updateState((x) => x.password = e)} />
+        </>
+    )
+})
+
 const TunComponents = React.memo((props: { tun: yuhaiin.listener.tun, onChange: (x: yuhaiin.listener.tun) => void }) => {
     const updateState = (x: (x: yuhaiin.listener.tun) => void) => {
         x(props.tun)
@@ -136,7 +152,7 @@ const TLSComponents = React.memo((props: { tls: yuhaiin.listener.tls_config, onC
 
 
                 {
-                    props.tls !== null && props.tls.next_protos?.map((v, index) => {
+                    props.tls !== null && props.tls.next_protos.map((v, index) => {
                         return (
                             <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
                                 <InputGroup className="mb-2" >
@@ -161,7 +177,7 @@ const TLSComponents = React.memo((props: { tls: yuhaiin.listener.tls_config, onC
             </Form.Group>
 
             {
-                props.tls !== null && props.tls.certificates?.map((v, index) => {
+                props.tls !== null && props.tls.certificates.map((v, index) => {
                     return <Card className='mb-2' key={"tls_certificates" + index}>
                         <Card.Body>
                             <Card.Title className='d-flex justify-content-end align-items-center'>
@@ -451,6 +467,8 @@ const Protocol = React.memo((props: { protocol: yuhaiin.listener.protocol, onCha
             return <HTTPComponents http={new yuhaiin.listener.http(props.protocol.http!!)} onChange={(e) => updateState((x) => x.http = e)} />
         case "socks5":
             return <Socks5Components socks5={new yuhaiin.listener.socks5(props.protocol.socks5!!)} onChange={(e) => updateState((x) => x.socks5 = e)} />
+        case "mix":
+            return <MixedComponents mixed={new yuhaiin.listener.mixed(props.protocol.mix!!)} onChange={(e) => updateState((x) => x.mix = e)} />
         case "redir":
             return <RedirComponents redir={new yuhaiin.listener.redir(props.protocol.redir!!)} onChange={(e) => updateState((x) => x.redir = e)} />
         case "tun":
@@ -474,24 +492,25 @@ const Inbound = React.memo((props: { server: { [key: string]: yuhaiin.listener.I
     return (
         <>
             {
-                Object.entries(props.server).map(([k, v]) => {
-                    return (
+                Object.entries(props.server)
+                    .sort((a, b) => { return a[0] <= b[0] ? -1 : 1 })
+                    .map(([k, v]) => {
+                        return (
+                            <div key={k}>
+                                <Card.Title className='d-flex justify-content-between align-items-center'>
+                                    {k}
+                                    <Button variant='outline-danger' onClick={() => updateState((x) => { delete x[k] })}>
+                                        <i className="bi bi-x-lg"></i>
+                                    </Button>
+                                </Card.Title>
 
-                        <div key={k}>
-                            <Card.Title className='d-flex justify-content-between align-items-center'>
-                                {k}
-                                <Button variant='outline-danger' onClick={() => updateState((x) => { delete x[k] })}>
-                                    <i className="bi bi-x-lg"></i>
-                                </Button>
-                            </Card.Title>
+                                <SettingCheck label='Enabled' checked={v.enabled!!} onChange={() => updateState((x) => x[k].enabled = !x[k].enabled)} />
+                                <Protocol protocol={new yuhaiin.listener.protocol(v)} onChange={(e) => updateState((x) => x[k] = e)} />
 
-                            <SettingCheck label='Enabled' checked={v.enabled!!} onChange={() => updateState((x) => x[k].enabled = !x[k].enabled)} />
-                            <Protocol protocol={new yuhaiin.listener.protocol(v)} onChange={(e) => updateState((x) => x[k] = e)} />
-
-                            <hr />
-                        </div>
-                    )
-                })
+                                <hr />
+                            </div>
+                        )
+                    })
             }
 
 
@@ -501,6 +520,7 @@ const Inbound = React.memo((props: { server: { [key: string]: yuhaiin.listener.I
 
                     <FloatingLabel label="Protocol" className='mb-2'>
                         <Form.Select value={newProtocol.value} onChange={(e) => setNewProtocol({ ...newProtocol, value: e.target.value })}>
+                            <option value="mix">Mixed</option>
                             <option value="http">HTTP</option>
                             <option value="socks5">SOCKS5</option>
                             <option value="tun">TUN</option>
@@ -549,6 +569,13 @@ const defaultProtocol = (x: { [key: string]: yuhaiin.listener.Iprotocol }, name:
             break
         case "socks5":
             sc.socks5 = {
+                host: ":1080",
+                password: "",
+                username: ""
+            }
+            break
+        case "mix":
+            sc.mix = {
                 host: ":1080",
                 password: "",
                 username: ""
