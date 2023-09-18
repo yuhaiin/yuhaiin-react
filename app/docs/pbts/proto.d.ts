@@ -689,6 +689,9 @@ export namespace yuhaiin {
 
             /** protocol yuubinsya */
             yuubinsya?: (yuhaiin.listener.Iyuubinsya|null);
+
+            /** protocol mix */
+            mix?: (yuhaiin.listener.Imixed|null);
         }
 
         /** Represents a protocol. */
@@ -721,8 +724,11 @@ export namespace yuhaiin {
             /** protocol yuubinsya. */
             public yuubinsya?: (yuhaiin.listener.Iyuubinsya|null);
 
+            /** protocol mix. */
+            public mix?: (yuhaiin.listener.Imixed|null);
+
             /** protocol protocol. */
-            public protocol?: ("http"|"socks5"|"redir"|"tun"|"yuubinsya");
+            public protocol?: ("http"|"socks5"|"redir"|"tun"|"yuubinsya"|"mix");
 
             /**
              * Creates a new protocol instance using the specified properties.
@@ -988,6 +994,84 @@ export namespace yuhaiin {
 
             /**
              * Converts this socks5 to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a mixed. */
+        interface Imixed {
+
+            /** mixed host */
+            host?: (string|null);
+
+            /** mixed username */
+            username?: (string|null);
+
+            /** mixed password */
+            password?: (string|null);
+        }
+
+        /** Represents a mixed. */
+        class mixed implements Imixed {
+
+            /**
+             * Constructs a new mixed.
+             * @param [p] Properties to set
+             */
+            constructor(p?: yuhaiin.listener.Imixed);
+
+            /** mixed host. */
+            public host: string;
+
+            /** mixed username. */
+            public username: string;
+
+            /** mixed password. */
+            public password: string;
+
+            /**
+             * Creates a new mixed instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns mixed instance
+             */
+            public static create(properties?: yuhaiin.listener.Imixed): yuhaiin.listener.any;
+
+            /**
+             * Encodes the specified mixed message. Does not implicitly {@link yuhaiin.listener.mixed.verify|verify} messages.
+             * @param m mixed message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: yuhaiin.listener.Imixed, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a mixed message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns mixed
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): yuhaiin.listener.any;
+
+            /**
+             * Creates a mixed message from a plain object. Also converts values to their respective internal types.
+             * @param d Plain object
+             * @returns mixed
+             */
+            public static fromObject(d: { [k: string]: any }): yuhaiin.listener.any;
+
+            /**
+             * Creates a plain object from a mixed message. Also converts values to other types if specified.
+             * @param m mixed
+             * @param [o] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(m: yuhaiin.listener.any, o?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this mixed to JSON.
              * @returns JSON object
              */
             public toJSON(): { [k: string]: any };

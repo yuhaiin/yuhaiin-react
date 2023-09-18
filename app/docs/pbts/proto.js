@@ -1945,6 +1945,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {yuhaiin.listener.Iredir|null} [redir] protocol redir
              * @property {yuhaiin.listener.Itun|null} [tun] protocol tun
              * @property {yuhaiin.listener.Iyuubinsya|null} [yuubinsya] protocol yuubinsya
+             * @property {yuhaiin.listener.Imixed|null} [mix] protocol mix
              */
 
             /**
@@ -2018,17 +2019,25 @@ export const yuhaiin = $root.yuhaiin = (() => {
              */
             protocol.prototype.yuubinsya = null;
 
+            /**
+             * protocol mix.
+             * @member {yuhaiin.listener.Imixed|null|undefined} mix
+             * @memberof yuhaiin.listener.protocol
+             * @instance
+             */
+            protocol.prototype.mix = null;
+
             // OneOf field names bound to virtual getters and setters
             let $oneOfFields;
 
             /**
              * protocol protocol.
-             * @member {"http"|"socks5"|"redir"|"tun"|"yuubinsya"|undefined} protocol
+             * @member {"http"|"socks5"|"redir"|"tun"|"yuubinsya"|"mix"|undefined} protocol
              * @memberof yuhaiin.listener.protocol
              * @instance
              */
             Object.defineProperty(protocol.prototype, "protocol", {
-                get: $util.oneOfGetter($oneOfFields = ["http", "socks5", "redir", "tun", "yuubinsya"]),
+                get: $util.oneOfGetter($oneOfFields = ["http", "socks5", "redir", "tun", "yuubinsya", "mix"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
 
@@ -2070,6 +2079,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     $root.yuhaiin.listener.tun.encode(m.tun, w.uint32(50).fork()).ldelim();
                 if (m.yuubinsya != null && Object.hasOwnProperty.call(m, "yuubinsya"))
                     $root.yuhaiin.listener.yuubinsya.encode(m.yuubinsya, w.uint32(58).fork()).ldelim();
+                if (m.mix != null && Object.hasOwnProperty.call(m, "mix"))
+                    $root.yuhaiin.listener.mixed.encode(m.mix, w.uint32(66).fork()).ldelim();
                 return w;
             };
 
@@ -2117,6 +2128,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         }
                     case 7: {
                             m.yuubinsya = $root.yuhaiin.listener.yuubinsya.decode(r, r.uint32());
+                            break;
+                        }
+                    case 8: {
+                            m.mix = $root.yuhaiin.listener.mixed.decode(r, r.uint32());
                             break;
                         }
                     default:
@@ -2170,6 +2185,11 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         throw TypeError(".yuhaiin.listener.protocol.yuubinsya: object expected");
                     m.yuubinsya = $root.yuhaiin.listener.yuubinsya.fromObject(d.yuubinsya);
                 }
+                if (d.mix != null) {
+                    if (typeof d.mix !== "object")
+                        throw TypeError(".yuhaiin.listener.protocol.mix: object expected");
+                    m.mix = $root.yuhaiin.listener.mixed.fromObject(d.mix);
+                }
                 return m;
             };
 
@@ -2220,6 +2240,11 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.yuubinsya = $root.yuhaiin.listener.yuubinsya.toObject(m.yuubinsya, o);
                     if (o.oneofs)
                         d.protocol = "yuubinsya";
+                }
+                if (m.mix != null && m.hasOwnProperty("mix")) {
+                    d.mix = $root.yuhaiin.listener.mixed.toObject(m.mix, o);
+                    if (o.oneofs)
+                        d.protocol = "mix";
                 }
                 return d;
             };
@@ -2794,6 +2819,195 @@ export const yuhaiin = $root.yuhaiin = (() => {
             };
 
             return socks5;
+        })();
+
+        listener.mixed = (function() {
+
+            /**
+             * Properties of a mixed.
+             * @memberof yuhaiin.listener
+             * @interface Imixed
+             * @property {string|null} [host] mixed host
+             * @property {string|null} [username] mixed username
+             * @property {string|null} [password] mixed password
+             */
+
+            /**
+             * Constructs a new mixed.
+             * @memberof yuhaiin.listener
+             * @classdesc Represents a mixed.
+             * @implements Imixed
+             * @constructor
+             * @param {yuhaiin.listener.Imixed=} [p] Properties to set
+             */
+            function mixed(p) {
+                if (p)
+                    for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                        if (p[ks[i]] != null)
+                            this[ks[i]] = p[ks[i]];
+            }
+
+            /**
+             * mixed host.
+             * @member {string} host
+             * @memberof yuhaiin.listener.mixed
+             * @instance
+             */
+            mixed.prototype.host = "";
+
+            /**
+             * mixed username.
+             * @member {string} username
+             * @memberof yuhaiin.listener.mixed
+             * @instance
+             */
+            mixed.prototype.username = "";
+
+            /**
+             * mixed password.
+             * @member {string} password
+             * @memberof yuhaiin.listener.mixed
+             * @instance
+             */
+            mixed.prototype.password = "";
+
+            /**
+             * Creates a new mixed instance using the specified properties.
+             * @function create
+             * @memberof yuhaiin.listener.mixed
+             * @static
+             * @param {yuhaiin.listener.Imixed=} [properties] Properties to set
+             * @returns {yuhaiin.listener.mixed} mixed instance
+             */
+            mixed.create = function create(properties) {
+                return new mixed(properties);
+            };
+
+            /**
+             * Encodes the specified mixed message. Does not implicitly {@link yuhaiin.listener.mixed.verify|verify} messages.
+             * @function encode
+             * @memberof yuhaiin.listener.mixed
+             * @static
+             * @param {yuhaiin.listener.Imixed} m mixed message or plain object to encode
+             * @param {$protobuf.Writer} [w] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            mixed.encode = function encode(m, w) {
+                if (!w)
+                    w = $Writer.create();
+                if (m.host != null && Object.hasOwnProperty.call(m, "host"))
+                    w.uint32(10).string(m.host);
+                if (m.username != null && Object.hasOwnProperty.call(m, "username"))
+                    w.uint32(26).string(m.username);
+                if (m.password != null && Object.hasOwnProperty.call(m, "password"))
+                    w.uint32(34).string(m.password);
+                return w;
+            };
+
+            /**
+             * Decodes a mixed message from the specified reader or buffer.
+             * @function decode
+             * @memberof yuhaiin.listener.mixed
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+             * @param {number} [l] Message length if known beforehand
+             * @returns {yuhaiin.listener.mixed} mixed
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            mixed.decode = function decode(r, l) {
+                if (!(r instanceof $Reader))
+                    r = $Reader.create(r);
+                var c = l === undefined ? r.len : r.pos + l, m = new $root.yuhaiin.listener.mixed();
+                while (r.pos < c) {
+                    var t = r.uint32();
+                    switch (t >>> 3) {
+                    case 1: {
+                            m.host = r.string();
+                            break;
+                        }
+                    case 3: {
+                            m.username = r.string();
+                            break;
+                        }
+                    case 4: {
+                            m.password = r.string();
+                            break;
+                        }
+                    default:
+                        r.skipType(t & 7);
+                        break;
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates a mixed message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof yuhaiin.listener.mixed
+             * @static
+             * @param {Object.<string,*>} d Plain object
+             * @returns {yuhaiin.listener.mixed} mixed
+             */
+            mixed.fromObject = function fromObject(d) {
+                if (d instanceof $root.yuhaiin.listener.mixed)
+                    return d;
+                var m = new $root.yuhaiin.listener.mixed();
+                if (d.host != null) {
+                    m.host = String(d.host);
+                }
+                if (d.username != null) {
+                    m.username = String(d.username);
+                }
+                if (d.password != null) {
+                    m.password = String(d.password);
+                }
+                return m;
+            };
+
+            /**
+             * Creates a plain object from a mixed message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof yuhaiin.listener.mixed
+             * @static
+             * @param {yuhaiin.listener.mixed} m mixed
+             * @param {$protobuf.IConversionOptions} [o] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            mixed.toObject = function toObject(m, o) {
+                if (!o)
+                    o = {};
+                var d = {};
+                if (o.defaults) {
+                    d.host = "";
+                    d.username = "";
+                    d.password = "";
+                }
+                if (m.host != null && m.hasOwnProperty("host")) {
+                    d.host = m.host;
+                }
+                if (m.username != null && m.hasOwnProperty("username")) {
+                    d.username = m.username;
+                }
+                if (m.password != null && m.hasOwnProperty("password")) {
+                    d.password = m.password;
+                }
+                return d;
+            };
+
+            /**
+             * Converts this mixed to JSON.
+             * @function toJSON
+             * @memberof yuhaiin.listener.mixed
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            mixed.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            return mixed;
         })();
 
         listener.redir = (function() {
