@@ -106,12 +106,9 @@ const TunComponents = React.memo((props: { tun: yuhaiin.listener.tun, onChange: 
 
 
 
-const IsTLSEmpty = (tls?: yuhaiin.listener.Itls_config | null) => {
-    if (tls === null || tls === undefined) {
-        return true
-    }
-    if (tls.certificates === undefined && tls.next_protos === undefined && tls.server_name_certificate === undefined) return true
-}
+const IsTLSEmpty = (tls?: yuhaiin.listener.Itls_config | null) =>
+    tls === null || tls === undefined || (tls.certificates === undefined && tls.next_protos === undefined && tls.server_name_certificate === undefined)
+
 
 const TLSCertificateComponents = React.memo((props: { cert: yuhaiin.listener.certificate, onChange: (x: yuhaiin.listener.certificate) => void }) => {
     const updateState = (x: (x: yuhaiin.listener.certificate) => void) => {
@@ -152,7 +149,7 @@ const TLSComponents = React.memo((props: { tls: yuhaiin.listener.tls_config, onC
 
 
                 {
-                    props.tls !== null && props.tls.next_protos.map((v, index) => {
+                    props.tls && props.tls.next_protos.map((v, index) => {
                         return (
                             <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
                                 <InputGroup className="mb-2" >
@@ -166,7 +163,7 @@ const TLSComponents = React.memo((props: { tls: yuhaiin.listener.tls_config, onC
                     })
                 }
 
-                <Col sm={{ span: 10, offset: props.tls !== null && props.tls.next_protos?.length !== 0 ? 2 : 0 }}>
+                <Col sm={{ span: 10, offset: props.tls && props.tls.next_protos?.length !== 0 ? 2 : 0 }}>
                     <InputGroup className="mb-2" >
                         <Form.Control value={newNextProtos.value} onChange={(e) => setNewNextProtos({ value: e.target.value })} />
                         <Button variant='outline-success' onClick={() => updateState((x) => { x.next_protos.push(newNextProtos.value) })} >
@@ -177,7 +174,7 @@ const TLSComponents = React.memo((props: { tls: yuhaiin.listener.tls_config, onC
             </Form.Group>
 
             {
-                props.tls !== null && props.tls.certificates.map((v, index) => {
+                props.tls && props.tls.certificates.map((v, index) => {
                     return <Card className='mb-2' key={"tls_certificates" + index}>
                         <Card.Body>
                             <Card.Title className='d-flex justify-content-end align-items-center'>
@@ -213,8 +210,7 @@ const TLSComponents = React.memo((props: { tls: yuhaiin.listener.tls_config, onC
 
 
             {
-                props.tls !== null
-                && props.tls.server_name_certificate !== undefined
+                props.tls && props.tls.server_name_certificate
                 && Object.entries(props.tls.server_name_certificate).map(([k, v]) => {
                     return (
                         <Card className='mb-2' key={"server_name_certificate" + k}>
@@ -262,7 +258,7 @@ const WebsocketComponents = React.memo((props: { websocket: yuhaiin.listener.web
             <SettingInputText plaintext={true} label='Protocol' value={"Websocket"} />
 
             {
-                props.websocket.tls !== undefined && <TLSComponents tls={new yuhaiin.listener.tls_config(props.websocket.tls !== null ? props.websocket.tls : undefined)} onChange={(e) => updateState((x) => x.tls = e)} />
+                props.websocket.tls && <TLSComponents tls={new yuhaiin.listener.tls_config(props.websocket.tls ?? undefined)} onChange={(e) => updateState((x) => x.tls = e)} />
             }
         </>
     )
@@ -280,7 +276,7 @@ const QuicComponents = React.memo((props: { quic: yuhaiin.listener.quic, onChang
             <SettingInputText plaintext={true} label='Protocol' value={"QUIC"} />
 
             {
-                props.quic.tls !== undefined && <TLSComponents tls={new yuhaiin.listener.tls_config(props.quic.tls !== null ? props.quic.tls : undefined)} onChange={(e) => updateState((x) => x.tls = e)} />
+                props.quic.tls && <TLSComponents tls={new yuhaiin.listener.tls_config(props.quic.tls !== null ? props.quic.tls : undefined)} onChange={(e) => updateState((x) => x.tls = e)} />
             }
 
         </>
@@ -298,7 +294,7 @@ const GrpcComponents = React.memo((props: { grpc: yuhaiin.listener.grpc, onChang
         <>
             <SettingInputText plaintext={true} label='Protocol' value={"GRPC"} />
             {
-                props.grpc.tls !== null && props.grpc.tls !== undefined && <TLSComponents tls={new yuhaiin.listener.tls_config(props.grpc.tls)} onChange={(e) => updateState((x) => x.tls = e)} />
+                props.grpc.tls && <TLSComponents tls={new yuhaiin.listener.tls_config(props.grpc.tls)} onChange={(e) => updateState((x) => x.tls = e)} />
             }
         </>
     )
@@ -315,7 +311,7 @@ const TlsComponents = React.memo((props: { tls: yuhaiin.listener.tls, onChange: 
         <>
             <SettingInputText plaintext={true} label='Protocol' value={"TLS"} />
             {
-                props.tls.tls !== null && <TLSComponents tls={new yuhaiin.listener.tls_config(props.tls.tls)} onChange={(e) => updateState((x) => x.tls = e)} />
+                props.tls.tls && <TLSComponents tls={new yuhaiin.listener.tls_config(props.tls.tls)} onChange={(e) => updateState((x) => x.tls = e)} />
             }
         </>
     )
@@ -332,7 +328,7 @@ const Http2Components = React.memo((props: { http2: yuhaiin.listener.http2, onCh
         <>
             <SettingInputText plaintext={true} label='Protocol' value={"HTTP2"} />
             {
-                props.http2.tls !== null && <TLSComponents tls={new yuhaiin.listener.tls_config(props.http2.tls)} onChange={(e) => updateState((x) => x.tls = e)} />
+                props.http2.tls && <TLSComponents tls={new yuhaiin.listener.tls_config(props.http2.tls)} onChange={(e) => updateState((x) => x.tls = e)} />
             }
         </>
     )

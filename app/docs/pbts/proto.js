@@ -1946,6 +1946,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {yuhaiin.listener.Itun|null} [tun] protocol tun
              * @property {yuhaiin.listener.Iyuubinsya|null} [yuubinsya] protocol yuubinsya
              * @property {yuhaiin.listener.Imixed|null} [mix] protocol mix
+             * @property {yuhaiin.listener.Isocks4a|null} [socks4a] protocol socks4a
              */
 
             /**
@@ -2027,17 +2028,25 @@ export const yuhaiin = $root.yuhaiin = (() => {
              */
             protocol.prototype.mix = null;
 
+            /**
+             * protocol socks4a.
+             * @member {yuhaiin.listener.Isocks4a|null|undefined} socks4a
+             * @memberof yuhaiin.listener.protocol
+             * @instance
+             */
+            protocol.prototype.socks4a = null;
+
             // OneOf field names bound to virtual getters and setters
             let $oneOfFields;
 
             /**
              * protocol protocol.
-             * @member {"http"|"socks5"|"redir"|"tun"|"yuubinsya"|"mix"|undefined} protocol
+             * @member {"http"|"socks5"|"redir"|"tun"|"yuubinsya"|"mix"|"socks4a"|undefined} protocol
              * @memberof yuhaiin.listener.protocol
              * @instance
              */
             Object.defineProperty(protocol.prototype, "protocol", {
-                get: $util.oneOfGetter($oneOfFields = ["http", "socks5", "redir", "tun", "yuubinsya", "mix"]),
+                get: $util.oneOfGetter($oneOfFields = ["http", "socks5", "redir", "tun", "yuubinsya", "mix", "socks4a"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
 
@@ -2081,6 +2090,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     $root.yuhaiin.listener.yuubinsya.encode(m.yuubinsya, w.uint32(58).fork()).ldelim();
                 if (m.mix != null && Object.hasOwnProperty.call(m, "mix"))
                     $root.yuhaiin.listener.mixed.encode(m.mix, w.uint32(66).fork()).ldelim();
+                if (m.socks4a != null && Object.hasOwnProperty.call(m, "socks4a"))
+                    $root.yuhaiin.listener.socks4a.encode(m.socks4a, w.uint32(74).fork()).ldelim();
                 return w;
             };
 
@@ -2132,6 +2143,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         }
                     case 8: {
                             m.mix = $root.yuhaiin.listener.mixed.decode(r, r.uint32());
+                            break;
+                        }
+                    case 9: {
+                            m.socks4a = $root.yuhaiin.listener.socks4a.decode(r, r.uint32());
                             break;
                         }
                     default:
@@ -2190,6 +2205,11 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         throw TypeError(".yuhaiin.listener.protocol.mix: object expected");
                     m.mix = $root.yuhaiin.listener.mixed.fromObject(d.mix);
                 }
+                if (d.socks4a != null) {
+                    if (typeof d.socks4a !== "object")
+                        throw TypeError(".yuhaiin.listener.protocol.socks4a: object expected");
+                    m.socks4a = $root.yuhaiin.listener.socks4a.fromObject(d.socks4a);
+                }
                 return m;
             };
 
@@ -2245,6 +2265,11 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.mix = $root.yuhaiin.listener.mixed.toObject(m.mix, o);
                     if (o.oneofs)
                         d.protocol = "mix";
+                }
+                if (m.socks4a != null && m.hasOwnProperty("socks4a")) {
+                    d.socks4a = $root.yuhaiin.listener.socks4a.toObject(m.socks4a, o);
+                    if (o.oneofs)
+                        d.protocol = "socks4a";
                 }
                 return d;
             };
@@ -2819,6 +2844,173 @@ export const yuhaiin = $root.yuhaiin = (() => {
             };
 
             return socks5;
+        })();
+
+        listener.socks4a = (function() {
+
+            /**
+             * Properties of a socks4a.
+             * @memberof yuhaiin.listener
+             * @interface Isocks4a
+             * @property {string|null} [host] socks4a host
+             * @property {string|null} [username] socks4a username
+             */
+
+            /**
+             * Constructs a new socks4a.
+             * @memberof yuhaiin.listener
+             * @classdesc Represents a socks4a.
+             * @implements Isocks4a
+             * @constructor
+             * @param {yuhaiin.listener.Isocks4a=} [p] Properties to set
+             */
+            function socks4a(p) {
+                if (p)
+                    for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                        if (p[ks[i]] != null)
+                            this[ks[i]] = p[ks[i]];
+            }
+
+            /**
+             * socks4a host.
+             * @member {string} host
+             * @memberof yuhaiin.listener.socks4a
+             * @instance
+             */
+            socks4a.prototype.host = "";
+
+            /**
+             * socks4a username.
+             * @member {string} username
+             * @memberof yuhaiin.listener.socks4a
+             * @instance
+             */
+            socks4a.prototype.username = "";
+
+            /**
+             * Creates a new socks4a instance using the specified properties.
+             * @function create
+             * @memberof yuhaiin.listener.socks4a
+             * @static
+             * @param {yuhaiin.listener.Isocks4a=} [properties] Properties to set
+             * @returns {yuhaiin.listener.socks4a} socks4a instance
+             */
+            socks4a.create = function create(properties) {
+                return new socks4a(properties);
+            };
+
+            /**
+             * Encodes the specified socks4a message. Does not implicitly {@link yuhaiin.listener.socks4a.verify|verify} messages.
+             * @function encode
+             * @memberof yuhaiin.listener.socks4a
+             * @static
+             * @param {yuhaiin.listener.Isocks4a} m socks4a message or plain object to encode
+             * @param {$protobuf.Writer} [w] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            socks4a.encode = function encode(m, w) {
+                if (!w)
+                    w = $Writer.create();
+                if (m.host != null && Object.hasOwnProperty.call(m, "host"))
+                    w.uint32(10).string(m.host);
+                if (m.username != null && Object.hasOwnProperty.call(m, "username"))
+                    w.uint32(18).string(m.username);
+                return w;
+            };
+
+            /**
+             * Decodes a socks4a message from the specified reader or buffer.
+             * @function decode
+             * @memberof yuhaiin.listener.socks4a
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+             * @param {number} [l] Message length if known beforehand
+             * @returns {yuhaiin.listener.socks4a} socks4a
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            socks4a.decode = function decode(r, l) {
+                if (!(r instanceof $Reader))
+                    r = $Reader.create(r);
+                var c = l === undefined ? r.len : r.pos + l, m = new $root.yuhaiin.listener.socks4a();
+                while (r.pos < c) {
+                    var t = r.uint32();
+                    switch (t >>> 3) {
+                    case 1: {
+                            m.host = r.string();
+                            break;
+                        }
+                    case 2: {
+                            m.username = r.string();
+                            break;
+                        }
+                    default:
+                        r.skipType(t & 7);
+                        break;
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates a socks4a message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof yuhaiin.listener.socks4a
+             * @static
+             * @param {Object.<string,*>} d Plain object
+             * @returns {yuhaiin.listener.socks4a} socks4a
+             */
+            socks4a.fromObject = function fromObject(d) {
+                if (d instanceof $root.yuhaiin.listener.socks4a)
+                    return d;
+                var m = new $root.yuhaiin.listener.socks4a();
+                if (d.host != null) {
+                    m.host = String(d.host);
+                }
+                if (d.username != null) {
+                    m.username = String(d.username);
+                }
+                return m;
+            };
+
+            /**
+             * Creates a plain object from a socks4a message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof yuhaiin.listener.socks4a
+             * @static
+             * @param {yuhaiin.listener.socks4a} m socks4a
+             * @param {$protobuf.IConversionOptions} [o] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            socks4a.toObject = function toObject(m, o) {
+                if (!o)
+                    o = {};
+                var d = {};
+                if (o.defaults) {
+                    d.host = "";
+                    d.username = "";
+                }
+                if (m.host != null && m.hasOwnProperty("host")) {
+                    d.host = m.host;
+                }
+                if (m.username != null && m.hasOwnProperty("username")) {
+                    d.username = m.username;
+                }
+                return d;
+            };
+
+            /**
+             * Converts this socks4a to JSON.
+             * @function toJSON
+             * @memberof yuhaiin.listener.socks4a
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            socks4a.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            return socks4a;
         })();
 
         listener.mixed = (function() {
@@ -6621,6 +6813,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {yuhaiin.protocol.Igrpc|null} [grpc] protocol grpc
              * @property {yuhaiin.protocol.Ihttp2|null} [http2] protocol http2
              * @property {yuhaiin.protocol.Ireality|null} [reality] protocol reality
+             * @property {yuhaiin.protocol.Itls_config|null} [tls] protocol tls
+             * @property {yuhaiin.protocol.Iwireguard|null} [wireguard] protocol wireguard
              */
 
             /**
@@ -6774,17 +6968,33 @@ export const yuhaiin = $root.yuhaiin = (() => {
              */
             protocol.prototype.reality = null;
 
+            /**
+             * protocol tls.
+             * @member {yuhaiin.protocol.Itls_config|null|undefined} tls
+             * @memberof yuhaiin.protocol.protocol
+             * @instance
+             */
+            protocol.prototype.tls = null;
+
+            /**
+             * protocol wireguard.
+             * @member {yuhaiin.protocol.Iwireguard|null|undefined} wireguard
+             * @memberof yuhaiin.protocol.protocol
+             * @instance
+             */
+            protocol.prototype.wireguard = null;
+
             // OneOf field names bound to virtual getters and setters
             let $oneOfFields;
 
             /**
              * protocol protocol.
-             * @member {"shadowsocks"|"shadowsocksr"|"vmess"|"websocket"|"quic"|"obfs_http"|"trojan"|"simple"|"none"|"socks5"|"http"|"direct"|"reject"|"yuubinsya"|"grpc"|"http2"|"reality"|undefined} protocol
+             * @member {"shadowsocks"|"shadowsocksr"|"vmess"|"websocket"|"quic"|"obfs_http"|"trojan"|"simple"|"none"|"socks5"|"http"|"direct"|"reject"|"yuubinsya"|"grpc"|"http2"|"reality"|"tls"|"wireguard"|undefined} protocol
              * @memberof yuhaiin.protocol.protocol
              * @instance
              */
             Object.defineProperty(protocol.prototype, "protocol", {
-                get: $util.oneOfGetter($oneOfFields = ["shadowsocks", "shadowsocksr", "vmess", "websocket", "quic", "obfs_http", "trojan", "simple", "none", "socks5", "http", "direct", "reject", "yuubinsya", "grpc", "http2", "reality"]),
+                get: $util.oneOfGetter($oneOfFields = ["shadowsocks", "shadowsocksr", "vmess", "websocket", "quic", "obfs_http", "trojan", "simple", "none", "socks5", "http", "direct", "reject", "yuubinsya", "grpc", "http2", "reality", "tls", "wireguard"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
 
@@ -6846,6 +7056,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     $root.yuhaiin.protocol.http2.encode(m.http2, w.uint32(130).fork()).ldelim();
                 if (m.reality != null && Object.hasOwnProperty.call(m, "reality"))
                     $root.yuhaiin.protocol.reality.encode(m.reality, w.uint32(138).fork()).ldelim();
+                if (m.tls != null && Object.hasOwnProperty.call(m, "tls"))
+                    $root.yuhaiin.protocol.tls_config.encode(m.tls, w.uint32(146).fork()).ldelim();
+                if (m.wireguard != null && Object.hasOwnProperty.call(m, "wireguard"))
+                    $root.yuhaiin.protocol.wireguard.encode(m.wireguard, w.uint32(154).fork()).ldelim();
                 return w;
             };
 
@@ -6933,6 +7147,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         }
                     case 17: {
                             m.reality = $root.yuhaiin.protocol.reality.decode(r, r.uint32());
+                            break;
+                        }
+                    case 18: {
+                            m.tls = $root.yuhaiin.protocol.tls_config.decode(r, r.uint32());
+                            break;
+                        }
+                    case 19: {
+                            m.wireguard = $root.yuhaiin.protocol.wireguard.decode(r, r.uint32());
                             break;
                         }
                     default:
@@ -7040,6 +7262,16 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         throw TypeError(".yuhaiin.protocol.protocol.reality: object expected");
                     m.reality = $root.yuhaiin.protocol.reality.fromObject(d.reality);
                 }
+                if (d.tls != null) {
+                    if (typeof d.tls !== "object")
+                        throw TypeError(".yuhaiin.protocol.protocol.tls: object expected");
+                    m.tls = $root.yuhaiin.protocol.tls_config.fromObject(d.tls);
+                }
+                if (d.wireguard != null) {
+                    if (typeof d.wireguard !== "object")
+                        throw TypeError(".yuhaiin.protocol.protocol.wireguard: object expected");
+                    m.wireguard = $root.yuhaiin.protocol.wireguard.fromObject(d.wireguard);
+                }
                 return m;
             };
 
@@ -7140,6 +7372,16 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.reality = $root.yuhaiin.protocol.reality.toObject(m.reality, o);
                     if (o.oneofs)
                         d.protocol = "reality";
+                }
+                if (m.tls != null && m.hasOwnProperty("tls")) {
+                    d.tls = $root.yuhaiin.protocol.tls_config.toObject(m.tls, o);
+                    if (o.oneofs)
+                        d.protocol = "tls";
+                }
+                if (m.wireguard != null && m.hasOwnProperty("wireguard")) {
+                    d.wireguard = $root.yuhaiin.protocol.wireguard.toObject(m.wireguard, o);
+                    if (o.oneofs)
+                        d.protocol = "wireguard";
                 }
                 return d;
             };
@@ -10590,6 +10832,548 @@ export const yuhaiin = $root.yuhaiin = (() => {
             };
 
             return host;
+        })();
+
+        protocol.wireguard_peer_config = (function() {
+
+            /**
+             * Properties of a wireguard_peer_config.
+             * @memberof yuhaiin.protocol
+             * @interface Iwireguard_peer_config
+             * @property {string|null} [public_key] wireguard_peer_config public_key
+             * @property {string|null} [pre_shared_key] wireguard_peer_config pre_shared_key
+             * @property {string|null} [endpoint] wireguard_peer_config endpoint
+             * @property {number|null} [keep_alive] wireguard_peer_config keep_alive
+             * @property {Array.<string>|null} [allowed_ips] wireguard_peer_config allowed_ips
+             */
+
+            /**
+             * Constructs a new wireguard_peer_config.
+             * @memberof yuhaiin.protocol
+             * @classdesc Represents a wireguard_peer_config.
+             * @implements Iwireguard_peer_config
+             * @constructor
+             * @param {yuhaiin.protocol.Iwireguard_peer_config=} [p] Properties to set
+             */
+            function wireguard_peer_config(p) {
+                this.allowed_ips = [];
+                if (p)
+                    for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                        if (p[ks[i]] != null)
+                            this[ks[i]] = p[ks[i]];
+            }
+
+            /**
+             * wireguard_peer_config public_key.
+             * @member {string} public_key
+             * @memberof yuhaiin.protocol.wireguard_peer_config
+             * @instance
+             */
+            wireguard_peer_config.prototype.public_key = "";
+
+            /**
+             * wireguard_peer_config pre_shared_key.
+             * @member {string} pre_shared_key
+             * @memberof yuhaiin.protocol.wireguard_peer_config
+             * @instance
+             */
+            wireguard_peer_config.prototype.pre_shared_key = "";
+
+            /**
+             * wireguard_peer_config endpoint.
+             * @member {string} endpoint
+             * @memberof yuhaiin.protocol.wireguard_peer_config
+             * @instance
+             */
+            wireguard_peer_config.prototype.endpoint = "";
+
+            /**
+             * wireguard_peer_config keep_alive.
+             * @member {number} keep_alive
+             * @memberof yuhaiin.protocol.wireguard_peer_config
+             * @instance
+             */
+            wireguard_peer_config.prototype.keep_alive = 0;
+
+            /**
+             * wireguard_peer_config allowed_ips.
+             * @member {Array.<string>} allowed_ips
+             * @memberof yuhaiin.protocol.wireguard_peer_config
+             * @instance
+             */
+            wireguard_peer_config.prototype.allowed_ips = $util.emptyArray;
+
+            /**
+             * Creates a new wireguard_peer_config instance using the specified properties.
+             * @function create
+             * @memberof yuhaiin.protocol.wireguard_peer_config
+             * @static
+             * @param {yuhaiin.protocol.Iwireguard_peer_config=} [properties] Properties to set
+             * @returns {yuhaiin.protocol.wireguard_peer_config} wireguard_peer_config instance
+             */
+            wireguard_peer_config.create = function create(properties) {
+                return new wireguard_peer_config(properties);
+            };
+
+            /**
+             * Encodes the specified wireguard_peer_config message. Does not implicitly {@link yuhaiin.protocol.wireguard_peer_config.verify|verify} messages.
+             * @function encode
+             * @memberof yuhaiin.protocol.wireguard_peer_config
+             * @static
+             * @param {yuhaiin.protocol.Iwireguard_peer_config} m wireguard_peer_config message or plain object to encode
+             * @param {$protobuf.Writer} [w] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            wireguard_peer_config.encode = function encode(m, w) {
+                if (!w)
+                    w = $Writer.create();
+                if (m.public_key != null && Object.hasOwnProperty.call(m, "public_key"))
+                    w.uint32(10).string(m.public_key);
+                if (m.pre_shared_key != null && Object.hasOwnProperty.call(m, "pre_shared_key"))
+                    w.uint32(18).string(m.pre_shared_key);
+                if (m.endpoint != null && Object.hasOwnProperty.call(m, "endpoint"))
+                    w.uint32(26).string(m.endpoint);
+                if (m.keep_alive != null && Object.hasOwnProperty.call(m, "keep_alive"))
+                    w.uint32(32).int32(m.keep_alive);
+                if (m.allowed_ips != null && m.allowed_ips.length) {
+                    for (var i = 0; i < m.allowed_ips.length; ++i)
+                        w.uint32(42).string(m.allowed_ips[i]);
+                }
+                return w;
+            };
+
+            /**
+             * Decodes a wireguard_peer_config message from the specified reader or buffer.
+             * @function decode
+             * @memberof yuhaiin.protocol.wireguard_peer_config
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+             * @param {number} [l] Message length if known beforehand
+             * @returns {yuhaiin.protocol.wireguard_peer_config} wireguard_peer_config
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            wireguard_peer_config.decode = function decode(r, l) {
+                if (!(r instanceof $Reader))
+                    r = $Reader.create(r);
+                var c = l === undefined ? r.len : r.pos + l, m = new $root.yuhaiin.protocol.wireguard_peer_config();
+                while (r.pos < c) {
+                    var t = r.uint32();
+                    switch (t >>> 3) {
+                    case 1: {
+                            m.public_key = r.string();
+                            break;
+                        }
+                    case 2: {
+                            m.pre_shared_key = r.string();
+                            break;
+                        }
+                    case 3: {
+                            m.endpoint = r.string();
+                            break;
+                        }
+                    case 4: {
+                            m.keep_alive = r.int32();
+                            break;
+                        }
+                    case 5: {
+                            if (!(m.allowed_ips && m.allowed_ips.length))
+                                m.allowed_ips = [];
+                            m.allowed_ips.push(r.string());
+                            break;
+                        }
+                    default:
+                        r.skipType(t & 7);
+                        break;
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates a wireguard_peer_config message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof yuhaiin.protocol.wireguard_peer_config
+             * @static
+             * @param {Object.<string,*>} d Plain object
+             * @returns {yuhaiin.protocol.wireguard_peer_config} wireguard_peer_config
+             */
+            wireguard_peer_config.fromObject = function fromObject(d) {
+                if (d instanceof $root.yuhaiin.protocol.wireguard_peer_config)
+                    return d;
+                var m = new $root.yuhaiin.protocol.wireguard_peer_config();
+                if (d.public_key != null) {
+                    m.public_key = String(d.public_key);
+                }
+                if (d.pre_shared_key != null) {
+                    m.pre_shared_key = String(d.pre_shared_key);
+                }
+                if (d.endpoint != null) {
+                    m.endpoint = String(d.endpoint);
+                }
+                if (d.keep_alive != null) {
+                    m.keep_alive = d.keep_alive | 0;
+                }
+                if (d.allowed_ips) {
+                    if (!Array.isArray(d.allowed_ips))
+                        throw TypeError(".yuhaiin.protocol.wireguard_peer_config.allowed_ips: array expected");
+                    m.allowed_ips = [];
+                    for (var i = 0; i < d.allowed_ips.length; ++i) {
+                        m.allowed_ips[i] = String(d.allowed_ips[i]);
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates a plain object from a wireguard_peer_config message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof yuhaiin.protocol.wireguard_peer_config
+             * @static
+             * @param {yuhaiin.protocol.wireguard_peer_config} m wireguard_peer_config
+             * @param {$protobuf.IConversionOptions} [o] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            wireguard_peer_config.toObject = function toObject(m, o) {
+                if (!o)
+                    o = {};
+                var d = {};
+                if (o.arrays || o.defaults) {
+                    d.allowed_ips = [];
+                }
+                if (o.defaults) {
+                    d.public_key = "";
+                    d.pre_shared_key = "";
+                    d.endpoint = "";
+                    d.keep_alive = 0;
+                }
+                if (m.public_key != null && m.hasOwnProperty("public_key")) {
+                    d.public_key = m.public_key;
+                }
+                if (m.pre_shared_key != null && m.hasOwnProperty("pre_shared_key")) {
+                    d.pre_shared_key = m.pre_shared_key;
+                }
+                if (m.endpoint != null && m.hasOwnProperty("endpoint")) {
+                    d.endpoint = m.endpoint;
+                }
+                if (m.keep_alive != null && m.hasOwnProperty("keep_alive")) {
+                    d.keep_alive = m.keep_alive;
+                }
+                if (m.allowed_ips && m.allowed_ips.length) {
+                    d.allowed_ips = [];
+                    for (var j = 0; j < m.allowed_ips.length; ++j) {
+                        d.allowed_ips[j] = m.allowed_ips[j];
+                    }
+                }
+                return d;
+            };
+
+            /**
+             * Converts this wireguard_peer_config to JSON.
+             * @function toJSON
+             * @memberof yuhaiin.protocol.wireguard_peer_config
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            wireguard_peer_config.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            return wireguard_peer_config;
+        })();
+
+        protocol.wireguard = (function() {
+
+            /**
+             * Properties of a wireguard.
+             * @memberof yuhaiin.protocol
+             * @interface Iwireguard
+             * @property {string|null} [secret_key] wireguard secret_key
+             * @property {Array.<string>|null} [endpoint] wireguard endpoint
+             * @property {Array.<yuhaiin.protocol.Iwireguard_peer_config>|null} [peers] wireguard peers
+             * @property {number|null} [mtu] wireguard mtu
+             * @property {number|null} [num_workers] wireguard num_workers
+             * @property {Uint8Array|null} [reserved] wireguard reserved
+             */
+
+            /**
+             * Constructs a new wireguard.
+             * @memberof yuhaiin.protocol
+             * @classdesc Represents a wireguard.
+             * @implements Iwireguard
+             * @constructor
+             * @param {yuhaiin.protocol.Iwireguard=} [p] Properties to set
+             */
+            function wireguard(p) {
+                this.endpoint = [];
+                this.peers = [];
+                if (p)
+                    for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                        if (p[ks[i]] != null)
+                            this[ks[i]] = p[ks[i]];
+            }
+
+            /**
+             * wireguard secret_key.
+             * @member {string} secret_key
+             * @memberof yuhaiin.protocol.wireguard
+             * @instance
+             */
+            wireguard.prototype.secret_key = "";
+
+            /**
+             * wireguard endpoint.
+             * @member {Array.<string>} endpoint
+             * @memberof yuhaiin.protocol.wireguard
+             * @instance
+             */
+            wireguard.prototype.endpoint = $util.emptyArray;
+
+            /**
+             * wireguard peers.
+             * @member {Array.<yuhaiin.protocol.Iwireguard_peer_config>} peers
+             * @memberof yuhaiin.protocol.wireguard
+             * @instance
+             */
+            wireguard.prototype.peers = $util.emptyArray;
+
+            /**
+             * wireguard mtu.
+             * @member {number} mtu
+             * @memberof yuhaiin.protocol.wireguard
+             * @instance
+             */
+            wireguard.prototype.mtu = 0;
+
+            /**
+             * wireguard num_workers.
+             * @member {number} num_workers
+             * @memberof yuhaiin.protocol.wireguard
+             * @instance
+             */
+            wireguard.prototype.num_workers = 0;
+
+            /**
+             * wireguard reserved.
+             * @member {Uint8Array} reserved
+             * @memberof yuhaiin.protocol.wireguard
+             * @instance
+             */
+            wireguard.prototype.reserved = $util.newBuffer([]);
+
+            /**
+             * Creates a new wireguard instance using the specified properties.
+             * @function create
+             * @memberof yuhaiin.protocol.wireguard
+             * @static
+             * @param {yuhaiin.protocol.Iwireguard=} [properties] Properties to set
+             * @returns {yuhaiin.protocol.wireguard} wireguard instance
+             */
+            wireguard.create = function create(properties) {
+                return new wireguard(properties);
+            };
+
+            /**
+             * Encodes the specified wireguard message. Does not implicitly {@link yuhaiin.protocol.wireguard.verify|verify} messages.
+             * @function encode
+             * @memberof yuhaiin.protocol.wireguard
+             * @static
+             * @param {yuhaiin.protocol.Iwireguard} m wireguard message or plain object to encode
+             * @param {$protobuf.Writer} [w] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            wireguard.encode = function encode(m, w) {
+                if (!w)
+                    w = $Writer.create();
+                if (m.secret_key != null && Object.hasOwnProperty.call(m, "secret_key"))
+                    w.uint32(10).string(m.secret_key);
+                if (m.endpoint != null && m.endpoint.length) {
+                    for (var i = 0; i < m.endpoint.length; ++i)
+                        w.uint32(18).string(m.endpoint[i]);
+                }
+                if (m.peers != null && m.peers.length) {
+                    for (var i = 0; i < m.peers.length; ++i)
+                        $root.yuhaiin.protocol.wireguard_peer_config.encode(m.peers[i], w.uint32(26).fork()).ldelim();
+                }
+                if (m.mtu != null && Object.hasOwnProperty.call(m, "mtu"))
+                    w.uint32(32).int32(m.mtu);
+                if (m.num_workers != null && Object.hasOwnProperty.call(m, "num_workers"))
+                    w.uint32(40).int32(m.num_workers);
+                if (m.reserved != null && Object.hasOwnProperty.call(m, "reserved"))
+                    w.uint32(50).bytes(m.reserved);
+                return w;
+            };
+
+            /**
+             * Decodes a wireguard message from the specified reader or buffer.
+             * @function decode
+             * @memberof yuhaiin.protocol.wireguard
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+             * @param {number} [l] Message length if known beforehand
+             * @returns {yuhaiin.protocol.wireguard} wireguard
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            wireguard.decode = function decode(r, l) {
+                if (!(r instanceof $Reader))
+                    r = $Reader.create(r);
+                var c = l === undefined ? r.len : r.pos + l, m = new $root.yuhaiin.protocol.wireguard();
+                while (r.pos < c) {
+                    var t = r.uint32();
+                    switch (t >>> 3) {
+                    case 1: {
+                            m.secret_key = r.string();
+                            break;
+                        }
+                    case 2: {
+                            if (!(m.endpoint && m.endpoint.length))
+                                m.endpoint = [];
+                            m.endpoint.push(r.string());
+                            break;
+                        }
+                    case 3: {
+                            if (!(m.peers && m.peers.length))
+                                m.peers = [];
+                            m.peers.push($root.yuhaiin.protocol.wireguard_peer_config.decode(r, r.uint32()));
+                            break;
+                        }
+                    case 4: {
+                            m.mtu = r.int32();
+                            break;
+                        }
+                    case 5: {
+                            m.num_workers = r.int32();
+                            break;
+                        }
+                    case 6: {
+                            m.reserved = r.bytes();
+                            break;
+                        }
+                    default:
+                        r.skipType(t & 7);
+                        break;
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates a wireguard message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof yuhaiin.protocol.wireguard
+             * @static
+             * @param {Object.<string,*>} d Plain object
+             * @returns {yuhaiin.protocol.wireguard} wireguard
+             */
+            wireguard.fromObject = function fromObject(d) {
+                if (d instanceof $root.yuhaiin.protocol.wireguard)
+                    return d;
+                var m = new $root.yuhaiin.protocol.wireguard();
+                if (d.secret_key != null) {
+                    m.secret_key = String(d.secret_key);
+                }
+                if (d.endpoint) {
+                    if (!Array.isArray(d.endpoint))
+                        throw TypeError(".yuhaiin.protocol.wireguard.endpoint: array expected");
+                    m.endpoint = [];
+                    for (var i = 0; i < d.endpoint.length; ++i) {
+                        m.endpoint[i] = String(d.endpoint[i]);
+                    }
+                }
+                if (d.peers) {
+                    if (!Array.isArray(d.peers))
+                        throw TypeError(".yuhaiin.protocol.wireguard.peers: array expected");
+                    m.peers = [];
+                    for (var i = 0; i < d.peers.length; ++i) {
+                        if (typeof d.peers[i] !== "object")
+                            throw TypeError(".yuhaiin.protocol.wireguard.peers: object expected");
+                        m.peers[i] = $root.yuhaiin.protocol.wireguard_peer_config.fromObject(d.peers[i]);
+                    }
+                }
+                if (d.mtu != null) {
+                    m.mtu = d.mtu | 0;
+                }
+                if (d.num_workers != null) {
+                    m.num_workers = d.num_workers | 0;
+                }
+                if (d.reserved != null) {
+                    if (typeof d.reserved === "string")
+                        $util.base64.decode(d.reserved, m.reserved = $util.newBuffer($util.base64.length(d.reserved)), 0);
+                    else if (d.reserved.length >= 0)
+                        m.reserved = d.reserved;
+                }
+                return m;
+            };
+
+            /**
+             * Creates a plain object from a wireguard message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof yuhaiin.protocol.wireguard
+             * @static
+             * @param {yuhaiin.protocol.wireguard} m wireguard
+             * @param {$protobuf.IConversionOptions} [o] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            wireguard.toObject = function toObject(m, o) {
+                if (!o)
+                    o = {};
+                var d = {};
+                if (o.arrays || o.defaults) {
+                    d.endpoint = [];
+                    d.peers = [];
+                }
+                if (o.defaults) {
+                    d.secret_key = "";
+                    d.mtu = 0;
+                    d.num_workers = 0;
+                    if (o.bytes === String)
+                        d.reserved = "";
+                    else {
+                        d.reserved = [];
+                        if (o.bytes !== Array)
+                            d.reserved = $util.newBuffer(d.reserved);
+                    }
+                }
+                if (m.secret_key != null && m.hasOwnProperty("secret_key")) {
+                    d.secret_key = m.secret_key;
+                }
+                if (m.endpoint && m.endpoint.length) {
+                    d.endpoint = [];
+                    for (var j = 0; j < m.endpoint.length; ++j) {
+                        d.endpoint[j] = m.endpoint[j];
+                    }
+                }
+                if (m.peers && m.peers.length) {
+                    d.peers = [];
+                    for (var j = 0; j < m.peers.length; ++j) {
+                        d.peers[j] = $root.yuhaiin.protocol.wireguard_peer_config.toObject(m.peers[j], o);
+                    }
+                }
+                if (m.mtu != null && m.hasOwnProperty("mtu")) {
+                    d.mtu = m.mtu;
+                }
+                if (m.num_workers != null && m.hasOwnProperty("num_workers")) {
+                    d.num_workers = m.num_workers;
+                }
+                if (m.reserved != null && m.hasOwnProperty("reserved")) {
+                    d.reserved = o.bytes === String ? $util.base64.encode(m.reserved, 0, m.reserved.length) : o.bytes === Array ? Array.prototype.slice.call(m.reserved) : m.reserved;
+                }
+                return d;
+            };
+
+            /**
+             * Converts this wireguard to JSON.
+             * @function toJSON
+             * @memberof yuhaiin.protocol.wireguard
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            wireguard.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            return wireguard;
         })();
 
         return protocol;
