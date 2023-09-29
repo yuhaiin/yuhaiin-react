@@ -78,12 +78,12 @@ function Group() {
                 process: async (r) => {
                     let resp = LatencyResponse.decode(new Uint8Array(await r.arrayBuffer()));
                     const t = new google.protobuf.Duration(resp.id_latency_map["latency"])
-                    if (t !== undefined && (t.nanos !== 0 || t.seconds !== 0)) return durationToStroing(t.seconds, t.nanos)
+                    if (t && (t.nanos !== 0 || t.seconds !== 0)) return durationToStroing(t.seconds, t.nanos)
                     return "timeout"
                 }
             }).then(async ({ data, error }) => {
                 let duration = "timeout";
-                if (error === undefined && data !== undefined) duration = await data;
+                if (!error && data) duration = await data;
                 onFinish(duration)
             })
         }
@@ -154,14 +154,11 @@ function Group() {
                             <a href="#"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    if (data.nodes === null || data.nodes === undefined) return
+                                    if (!data.nodes) return
                                     let node = data.nodes[v];
 
-                                    let point =
-                                        node !== undefined ?
-                                            JSON.stringify(Point.toObject(Point.create(node), ToObjectOption), null, "  ")
-                                            :
-                                            ""
+                                    let point = node ?
+                                        JSON.stringify(Point.toObject(Point.create(node), ToObjectOption), null, "  ") : ""
                                     setModalData({ point: point, hash: v })
                                 }}
                             >
@@ -191,14 +188,12 @@ function Group() {
                 <Row>
                     <Col className="mb-4 d-flex">
                         <Dropdown onSelect={(e) => { setCurrentGroup(e != null ? e : "") }}>
-                            <Dropdown.Toggle variant="light">{currentGroup !== "" ? currentGroup : "GROUP"}</Dropdown.Toggle>
+                            <Dropdown.Toggle variant="light">{currentGroup ?? "GROUP"}</Dropdown.Toggle>
                             <Dropdown.Menu>
                                 <Dropdown.Item eventKey={""}>Select...</Dropdown.Item>
 
                                 {
-                                    data.groupsV2 !== null
-                                    && data.groupsV2 !== undefined
-                                    && Object
+                                    data.groupsV2 && Object
                                         .keys(data.groupsV2)
                                         .sort((a, b) => { return a <= b ? -1 : 1 })
                                         .map((k) => {
@@ -211,14 +206,7 @@ function Group() {
                 </Row>
 
                 <Card className="mb-3">
-                    <Nodes nodes={
-                        currentGroup !== ""
-                            && data.groupsV2 !== null
-                            && data.groupsV2 !== undefined
-                            ? data.groupsV2[currentGroup]?.nodesV2 : undefined
-                    }
-                    />
-
+                    <Nodes nodes={(currentGroup && data.groupsV2) ? data.groupsV2[currentGroup]?.nodesV2 : undefined} />
                     <Card.Header>
                         <Dropdown
                             onSelect={

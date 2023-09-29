@@ -51,7 +51,7 @@ export default function NewNode() {
 
                                     templateProtocols.value.map((v) => {
                                         let protocol = protocolMapping[v];
-                                        if (protocol !== undefined) point.protocols.push(protocolMapping[v])
+                                        if (protocol) point.protocols.push(protocol)
                                     })
 
                                     setNewNode({ value: JSON.stringify(Point.toObject(point, ToObjectOption), null, "   ") })
@@ -103,7 +103,7 @@ export default function NewNode() {
                         className="outline-primary me-2"
                         onClick={async () => {
                             const { error } = await Fetch("/node", { method: "PATCH", body: Point.encode(Point.fromObject(JSON.parse(newNode.value))).finish() })
-                            if (error !== undefined) ctx.Error(`Add new node failed ${error.code}| ${await error.msg}.`)
+                            if (error) ctx.Error(`Add new node failed ${error.code}| ${await error.msg}.`)
                             else ctx.Info(`Add New Node Successful`)
                         }}
                     >
@@ -207,6 +207,22 @@ let protocolMapping: { [key: string]: yuhaiin.protocol.Iprotocol } = {
         yuubinsya: {
             encrypted: true,
             password: "password"
+        }
+    },
+    "wireguard": {
+        wireguard: {
+            endpoint: ["10.0.0.2/32"],
+            mtu: 1500,
+            num_workers: 6,
+            reserved: new Uint8Array([0, 0, 0]),
+            secret_key: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
+            peers: [
+                {
+                    allowed_ips: ["0.0.0.0/0"],
+                    endpoint: "127.0.0.1:51820",
+                    public_key: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
+                },
+            ]
         }
     }
 }

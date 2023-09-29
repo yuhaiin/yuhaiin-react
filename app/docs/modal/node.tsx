@@ -22,18 +22,18 @@ function NodeModal(props: {
     const ctx = useContext(GlobalToastContext);
 
     const { data: node, error, isLoading, mutate } = useSWR(
-        props.point === undefined && props.hash !== "" && props.hash !== undefined ? `/node` : null,
+        props.point && props.hash ? `/node` : null,
         ProtoTSStrFetcher<yuhaiin.point.point>(Point, "POST", StringValue.encode({ value: props.hash }).finish()))
     const [errmsg, setErrmsg] = useState({ msg: "", code: 0 });
 
     const Footer = () => {
-        if (props.editable === undefined || !props.editable) return <></>
-        return <Button variant="primary" active={!isLoading && error === undefined}
+        if (!props.editable) return <></>
+        return <Button variant="primary" active={!isLoading && !error}
             onClick={() => {
                 Fetch("/node",
                     {
                         method: "PATCH",
-                        body: Point.encode(Point.fromObject(JSON.parse(node !== undefined ? node : props.point !== undefined ? props.point : "{}"))).finish(),
+                        body: Point.encode(Point.fromObject(JSON.parse(node ?? props.point ?? "{}"))).finish(),
                     })
                     .then(async ({ error }) => {
                         if (error === undefined) {
@@ -69,16 +69,15 @@ function NodeModal(props: {
                 </Modal.Header>
 
                 <Modal.Body>
-                    {error !== undefined ? <Error statusCode={error.code} title={error.msg} /> : isLoading ? <Loading /> :
+                    {error ? <Error statusCode={error.code} title={error.msg} /> : isLoading ? <Loading /> :
                         <Form.Control
                             as="textarea"
-                            value={node !== undefined ? node : props.point}
+                            value={node ?? props.point}
                             style={{ height: "65vh", fontFamily: "monospace" }}
                             readOnly={!props.editable}
                             onChange={(e) => {
-                                if (props.hash !== undefined)
-                                    mutate(e.target.value, false)
-                                if (props.point !== undefined && props.onChangePoint !== undefined) props.onChangePoint(e.target.value)
+                                if (props.hash) mutate(e.target.value, false)
+                                if (props.point && props.onChangePoint) props.onChangePoint(e.target.value)
                             }
                             }
                         />
@@ -86,7 +85,7 @@ function NodeModal(props: {
                 </Modal.Body>
 
                 <Modal.Footer>
-                    {errmsg.msg !== "" && <Badge bg="danger">{errmsg.code} | {errmsg.msg}</Badge>}
+                    {errmsg.msg && <Badge bg="danger">{errmsg.code} | {errmsg.msg}</Badge>}
                     <Button variant="secondary" onClick={() => { props.onHide() }}>Close</Button>
                     <Footer />
                 </Modal.Footer>

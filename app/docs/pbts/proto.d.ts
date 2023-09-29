@@ -692,6 +692,9 @@ export namespace yuhaiin {
 
             /** protocol mix */
             mix?: (yuhaiin.listener.Imixed|null);
+
+            /** protocol socks4a */
+            socks4a?: (yuhaiin.listener.Isocks4a|null);
         }
 
         /** Represents a protocol. */
@@ -727,8 +730,11 @@ export namespace yuhaiin {
             /** protocol mix. */
             public mix?: (yuhaiin.listener.Imixed|null);
 
+            /** protocol socks4a. */
+            public socks4a?: (yuhaiin.listener.Isocks4a|null);
+
             /** protocol protocol. */
-            public protocol?: ("http"|"socks5"|"redir"|"tun"|"yuubinsya"|"mix");
+            public protocol?: ("http"|"socks5"|"redir"|"tun"|"yuubinsya"|"mix"|"socks4a");
 
             /**
              * Creates a new protocol instance using the specified properties.
@@ -994,6 +1000,78 @@ export namespace yuhaiin {
 
             /**
              * Converts this socks5 to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a socks4a. */
+        interface Isocks4a {
+
+            /** socks4a host */
+            host?: (string|null);
+
+            /** socks4a username */
+            username?: (string|null);
+        }
+
+        /** Represents a socks4a. */
+        class socks4a implements Isocks4a {
+
+            /**
+             * Constructs a new socks4a.
+             * @param [p] Properties to set
+             */
+            constructor(p?: yuhaiin.listener.Isocks4a);
+
+            /** socks4a host. */
+            public host: string;
+
+            /** socks4a username. */
+            public username: string;
+
+            /**
+             * Creates a new socks4a instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns socks4a instance
+             */
+            public static create(properties?: yuhaiin.listener.Isocks4a): yuhaiin.listener.socks4a;
+
+            /**
+             * Encodes the specified socks4a message. Does not implicitly {@link yuhaiin.listener.socks4a.verify|verify} messages.
+             * @param m socks4a message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: yuhaiin.listener.Isocks4a, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a socks4a message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns socks4a
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): yuhaiin.listener.socks4a;
+
+            /**
+             * Creates a socks4a message from a plain object. Also converts values to their respective internal types.
+             * @param d Plain object
+             * @returns socks4a
+             */
+            public static fromObject(d: { [k: string]: any }): yuhaiin.listener.socks4a;
+
+            /**
+             * Creates a plain object from a socks4a message. Also converts values to other types if specified.
+             * @param m socks4a
+             * @param [o] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(m: yuhaiin.listener.socks4a, o?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this socks4a to JSON.
              * @returns JSON object
              */
             public toJSON(): { [k: string]: any };
@@ -2473,6 +2551,12 @@ export namespace yuhaiin {
 
             /** protocol reality */
             reality?: (yuhaiin.protocol.Ireality|null);
+
+            /** protocol tls */
+            tls?: (yuhaiin.protocol.Itls_config|null);
+
+            /** protocol wireguard */
+            wireguard?: (yuhaiin.protocol.Iwireguard|null);
         }
 
         /** Represents a protocol. */
@@ -2535,8 +2619,14 @@ export namespace yuhaiin {
             /** protocol reality. */
             public reality?: (yuhaiin.protocol.Ireality|null);
 
+            /** protocol tls. */
+            public tls?: (yuhaiin.protocol.Itls_config|null);
+
+            /** protocol wireguard. */
+            public wireguard?: (yuhaiin.protocol.Iwireguard|null);
+
             /** protocol protocol. */
-            public protocol?: ("shadowsocks"|"shadowsocksr"|"vmess"|"websocket"|"quic"|"obfs_http"|"trojan"|"simple"|"none"|"socks5"|"http"|"direct"|"reject"|"yuubinsya"|"grpc"|"http2"|"reality");
+            public protocol?: ("shadowsocks"|"shadowsocksr"|"vmess"|"websocket"|"quic"|"obfs_http"|"trojan"|"simple"|"none"|"socks5"|"http"|"direct"|"reject"|"yuubinsya"|"grpc"|"http2"|"reality"|"tls"|"wireguard");
 
             /**
              * Creates a new protocol instance using the specified properties.
@@ -4002,6 +4092,192 @@ export namespace yuhaiin {
 
             /**
              * Converts this host to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a wireguard_peer_config. */
+        interface Iwireguard_peer_config {
+
+            /** wireguard_peer_config public_key */
+            public_key?: (string|null);
+
+            /** wireguard_peer_config pre_shared_key */
+            pre_shared_key?: (string|null);
+
+            /** wireguard_peer_config endpoint */
+            endpoint?: (string|null);
+
+            /** wireguard_peer_config keep_alive */
+            keep_alive?: (number|null);
+
+            /** wireguard_peer_config allowed_ips */
+            allowed_ips?: (string[]|null);
+        }
+
+        /** Represents a wireguard_peer_config. */
+        class wireguard_peer_config implements Iwireguard_peer_config {
+
+            /**
+             * Constructs a new wireguard_peer_config.
+             * @param [p] Properties to set
+             */
+            constructor(p?: yuhaiin.protocol.Iwireguard_peer_config);
+
+            /** wireguard_peer_config public_key. */
+            public public_key: string;
+
+            /** wireguard_peer_config pre_shared_key. */
+            public pre_shared_key: string;
+
+            /** wireguard_peer_config endpoint. */
+            public endpoint: string;
+
+            /** wireguard_peer_config keep_alive. */
+            public keep_alive: number;
+
+            /** wireguard_peer_config allowed_ips. */
+            public allowed_ips: string[];
+
+            /**
+             * Creates a new wireguard_peer_config instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns wireguard_peer_config instance
+             */
+            public static create(properties?: yuhaiin.protocol.Iwireguard_peer_config): yuhaiin.protocol.wireguard_peer_config;
+
+            /**
+             * Encodes the specified wireguard_peer_config message. Does not implicitly {@link yuhaiin.protocol.wireguard_peer_config.verify|verify} messages.
+             * @param m wireguard_peer_config message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: yuhaiin.protocol.Iwireguard_peer_config, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a wireguard_peer_config message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns wireguard_peer_config
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): yuhaiin.protocol.wireguard_peer_config;
+
+            /**
+             * Creates a wireguard_peer_config message from a plain object. Also converts values to their respective internal types.
+             * @param d Plain object
+             * @returns wireguard_peer_config
+             */
+            public static fromObject(d: { [k: string]: any }): yuhaiin.protocol.wireguard_peer_config;
+
+            /**
+             * Creates a plain object from a wireguard_peer_config message. Also converts values to other types if specified.
+             * @param m wireguard_peer_config
+             * @param [o] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(m: yuhaiin.protocol.wireguard_peer_config, o?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this wireguard_peer_config to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a wireguard. */
+        interface Iwireguard {
+
+            /** wireguard secret_key */
+            secret_key?: (string|null);
+
+            /** wireguard endpoint */
+            endpoint?: (string[]|null);
+
+            /** wireguard peers */
+            peers?: (yuhaiin.protocol.Iwireguard_peer_config[]|null);
+
+            /** wireguard mtu */
+            mtu?: (number|null);
+
+            /** wireguard num_workers */
+            num_workers?: (number|null);
+
+            /** wireguard reserved */
+            reserved?: (Uint8Array|null);
+        }
+
+        /** Represents a wireguard. */
+        class wireguard implements Iwireguard {
+
+            /**
+             * Constructs a new wireguard.
+             * @param [p] Properties to set
+             */
+            constructor(p?: yuhaiin.protocol.Iwireguard);
+
+            /** wireguard secret_key. */
+            public secret_key: string;
+
+            /** wireguard endpoint. */
+            public endpoint: string[];
+
+            /** wireguard peers. */
+            public peers: yuhaiin.protocol.Iwireguard_peer_config[];
+
+            /** wireguard mtu. */
+            public mtu: number;
+
+            /** wireguard num_workers. */
+            public num_workers: number;
+
+            /** wireguard reserved. */
+            public reserved: Uint8Array;
+
+            /**
+             * Creates a new wireguard instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns wireguard instance
+             */
+            public static create(properties?: yuhaiin.protocol.Iwireguard): yuhaiin.protocol.wireguard;
+
+            /**
+             * Encodes the specified wireguard message. Does not implicitly {@link yuhaiin.protocol.wireguard.verify|verify} messages.
+             * @param m wireguard message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: yuhaiin.protocol.Iwireguard, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a wireguard message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns wireguard
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): yuhaiin.protocol.wireguard;
+
+            /**
+             * Creates a wireguard message from a plain object. Also converts values to their respective internal types.
+             * @param d Plain object
+             * @returns wireguard
+             */
+            public static fromObject(d: { [k: string]: any }): yuhaiin.protocol.wireguard;
+
+            /**
+             * Creates a plain object from a wireguard message. Also converts values to other types if specified.
+             * @param m wireguard
+             * @param [o] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(m: yuhaiin.protocol.wireguard, o?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this wireguard to JSON.
              * @returns JSON object
              */
             public toJSON(): { [k: string]: any };

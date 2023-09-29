@@ -73,7 +73,7 @@ function Connections() {
                 socket.addEventListener('message', (event) => {
                     const raw = notify_data.decode(new Uint8Array(event.data));
                     next(null, pre => {
-                        let prev: Statistic = pre !== undefined ?
+                        let prev: Statistic = pre ?
                             {
                                 flow: pre.flow,
                                 conns: { ...pre.conns }
@@ -85,7 +85,7 @@ function Connections() {
                             };
                         switch (raw.data) {
                             case "total_flow":
-                                let xfw = new yuhaiin.protos.statistic.service.total_flow(raw.total_flow !== null ? raw.total_flow : undefined);
+                                let xfw = new yuhaiin.protos.statistic.service.total_flow(raw.total_flow ?? undefined);
                                 prev.flow = generateFlow(xfw, prev.flow)
                                 return prev
                             case "notify_new_connections":
@@ -93,7 +93,7 @@ function Connections() {
                                     .protos
                                     .statistic
                                     .service
-                                    .notify_new_connections(raw.notify_new_connections !== null ? raw.notify_new_connections : undefined)
+                                    .notify_new_connections(raw.notify_new_connections ?? undefined)
                                     .connections;
 
                                 conns.forEach((e: yuhaiin.statistic.connection) => { prev.conns[e.id] = e })
@@ -103,7 +103,7 @@ function Connections() {
                                     .protos
                                     .statistic
                                     .service
-                                    .notify_remove_connections(raw.notify_remove_connections !== null ? raw.notify_remove_connections : {})
+                                    .notify_remove_connections(raw.notify_remove_connections ?? undefined)
                                     .ids;
                                 ids.forEach((e: number) => { delete prev.conns[e] })
                                 return prev
