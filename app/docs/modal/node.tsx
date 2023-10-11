@@ -22,7 +22,7 @@ function NodeModal(props: {
     const ctx = useContext(GlobalToastContext);
 
     const { data: node, error, isLoading, mutate } = useSWR(
-        props.point && props.hash ? `/node` : null,
+        (!props.point && props.hash) ? `/node` : null,
         ProtoTSStrFetcher<yuhaiin.point.point>(Point, "POST", StringValue.encode({ value: props.hash }).finish()))
     const [errmsg, setErrmsg] = useState({ msg: "", code: 0 });
 

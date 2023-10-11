@@ -236,7 +236,7 @@ const TLSComponents = React.memo((props: { tls: yuhaiin.listener.tls_config, onC
                 <Button variant='outline-success'
                     onClick={() => updateState((x) => {
                         if (newSni === "") return
-                        if (x?.server_name_certificate === undefined) x.server_name_certificate = {}
+                        x.server_name_certificate[newSni] = {}
                     })} >
                     <i className="bi bi-plus-lg" />New SNI Certificate
                 </Button>
