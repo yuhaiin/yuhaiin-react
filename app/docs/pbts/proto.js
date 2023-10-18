@@ -1947,6 +1947,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {yuhaiin.listener.Iyuubinsya|null} [yuubinsya] protocol yuubinsya
              * @property {yuhaiin.listener.Imixed|null} [mix] protocol mix
              * @property {yuhaiin.listener.Isocks4a|null} [socks4a] protocol socks4a
+             * @property {yuhaiin.listener.Itproxy|null} [tproxy] protocol tproxy
              */
 
             /**
@@ -2036,17 +2037,25 @@ export const yuhaiin = $root.yuhaiin = (() => {
              */
             protocol.prototype.socks4a = null;
 
+            /**
+             * protocol tproxy.
+             * @member {yuhaiin.listener.Itproxy|null|undefined} tproxy
+             * @memberof yuhaiin.listener.protocol
+             * @instance
+             */
+            protocol.prototype.tproxy = null;
+
             // OneOf field names bound to virtual getters and setters
             let $oneOfFields;
 
             /**
              * protocol protocol.
-             * @member {"http"|"socks5"|"redir"|"tun"|"yuubinsya"|"mix"|"socks4a"|undefined} protocol
+             * @member {"http"|"socks5"|"redir"|"tun"|"yuubinsya"|"mix"|"socks4a"|"tproxy"|undefined} protocol
              * @memberof yuhaiin.listener.protocol
              * @instance
              */
             Object.defineProperty(protocol.prototype, "protocol", {
-                get: $util.oneOfGetter($oneOfFields = ["http", "socks5", "redir", "tun", "yuubinsya", "mix", "socks4a"]),
+                get: $util.oneOfGetter($oneOfFields = ["http", "socks5", "redir", "tun", "yuubinsya", "mix", "socks4a", "tproxy"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
 
@@ -2092,6 +2101,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     $root.yuhaiin.listener.mixed.encode(m.mix, w.uint32(66).fork()).ldelim();
                 if (m.socks4a != null && Object.hasOwnProperty.call(m, "socks4a"))
                     $root.yuhaiin.listener.socks4a.encode(m.socks4a, w.uint32(74).fork()).ldelim();
+                if (m.tproxy != null && Object.hasOwnProperty.call(m, "tproxy"))
+                    $root.yuhaiin.listener.tproxy.encode(m.tproxy, w.uint32(82).fork()).ldelim();
                 return w;
             };
 
@@ -2147,6 +2158,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         }
                     case 9: {
                             m.socks4a = $root.yuhaiin.listener.socks4a.decode(r, r.uint32());
+                            break;
+                        }
+                    case 10: {
+                            m.tproxy = $root.yuhaiin.listener.tproxy.decode(r, r.uint32());
                             break;
                         }
                     default:
@@ -2210,6 +2225,11 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         throw TypeError(".yuhaiin.listener.protocol.socks4a: object expected");
                     m.socks4a = $root.yuhaiin.listener.socks4a.fromObject(d.socks4a);
                 }
+                if (d.tproxy != null) {
+                    if (typeof d.tproxy !== "object")
+                        throw TypeError(".yuhaiin.listener.protocol.tproxy: object expected");
+                    m.tproxy = $root.yuhaiin.listener.tproxy.fromObject(d.tproxy);
+                }
                 return m;
             };
 
@@ -2270,6 +2290,11 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.socks4a = $root.yuhaiin.listener.socks4a.toObject(m.socks4a, o);
                     if (o.oneofs)
                         d.protocol = "socks4a";
+                }
+                if (m.tproxy != null && m.hasOwnProperty("tproxy")) {
+                    d.tproxy = $root.yuhaiin.listener.tproxy.toObject(m.tproxy, o);
+                    if (o.oneofs)
+                        d.protocol = "tproxy";
                 }
                 return d;
             };
@@ -3345,6 +3370,151 @@ export const yuhaiin = $root.yuhaiin = (() => {
             };
 
             return redir;
+        })();
+
+        listener.tproxy = (function() {
+
+            /**
+             * Properties of a tproxy.
+             * @memberof yuhaiin.listener
+             * @interface Itproxy
+             * @property {string|null} [host] tproxy host
+             */
+
+            /**
+             * Constructs a new tproxy.
+             * @memberof yuhaiin.listener
+             * @classdesc Represents a tproxy.
+             * @implements Itproxy
+             * @constructor
+             * @param {yuhaiin.listener.Itproxy=} [p] Properties to set
+             */
+            function tproxy(p) {
+                if (p)
+                    for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                        if (p[ks[i]] != null)
+                            this[ks[i]] = p[ks[i]];
+            }
+
+            /**
+             * tproxy host.
+             * @member {string} host
+             * @memberof yuhaiin.listener.tproxy
+             * @instance
+             */
+            tproxy.prototype.host = "";
+
+            /**
+             * Creates a new tproxy instance using the specified properties.
+             * @function create
+             * @memberof yuhaiin.listener.tproxy
+             * @static
+             * @param {yuhaiin.listener.Itproxy=} [properties] Properties to set
+             * @returns {yuhaiin.listener.tproxy} tproxy instance
+             */
+            tproxy.create = function create(properties) {
+                return new tproxy(properties);
+            };
+
+            /**
+             * Encodes the specified tproxy message. Does not implicitly {@link yuhaiin.listener.tproxy.verify|verify} messages.
+             * @function encode
+             * @memberof yuhaiin.listener.tproxy
+             * @static
+             * @param {yuhaiin.listener.Itproxy} m tproxy message or plain object to encode
+             * @param {$protobuf.Writer} [w] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            tproxy.encode = function encode(m, w) {
+                if (!w)
+                    w = $Writer.create();
+                if (m.host != null && Object.hasOwnProperty.call(m, "host"))
+                    w.uint32(10).string(m.host);
+                return w;
+            };
+
+            /**
+             * Decodes a tproxy message from the specified reader or buffer.
+             * @function decode
+             * @memberof yuhaiin.listener.tproxy
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+             * @param {number} [l] Message length if known beforehand
+             * @returns {yuhaiin.listener.tproxy} tproxy
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            tproxy.decode = function decode(r, l) {
+                if (!(r instanceof $Reader))
+                    r = $Reader.create(r);
+                var c = l === undefined ? r.len : r.pos + l, m = new $root.yuhaiin.listener.tproxy();
+                while (r.pos < c) {
+                    var t = r.uint32();
+                    switch (t >>> 3) {
+                    case 1: {
+                            m.host = r.string();
+                            break;
+                        }
+                    default:
+                        r.skipType(t & 7);
+                        break;
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates a tproxy message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof yuhaiin.listener.tproxy
+             * @static
+             * @param {Object.<string,*>} d Plain object
+             * @returns {yuhaiin.listener.tproxy} tproxy
+             */
+            tproxy.fromObject = function fromObject(d) {
+                if (d instanceof $root.yuhaiin.listener.tproxy)
+                    return d;
+                var m = new $root.yuhaiin.listener.tproxy();
+                if (d.host != null) {
+                    m.host = String(d.host);
+                }
+                return m;
+            };
+
+            /**
+             * Creates a plain object from a tproxy message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof yuhaiin.listener.tproxy
+             * @static
+             * @param {yuhaiin.listener.tproxy} m tproxy
+             * @param {$protobuf.IConversionOptions} [o] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            tproxy.toObject = function toObject(m, o) {
+                if (!o)
+                    o = {};
+                var d = {};
+                if (o.defaults) {
+                    d.host = "";
+                }
+                if (m.host != null && m.hasOwnProperty("host")) {
+                    d.host = m.host;
+                }
+                return d;
+            };
+
+            /**
+             * Converts this tproxy to JSON.
+             * @function toJSON
+             * @memberof yuhaiin.listener.tproxy
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            tproxy.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            return tproxy;
         })();
 
         listener.tun = (function() {

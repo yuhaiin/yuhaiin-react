@@ -32,6 +32,20 @@ const RedirComponents = React.memo((props: { redir: yuhaiin.listener.redir, onCh
     )
 })
 
+
+const TProxyComponents = React.memo((props: { tproxy: yuhaiin.listener.tproxy, onChange: (x: yuhaiin.listener.tproxy) => void }) => {
+    const updateState = (x: (x: yuhaiin.listener.tproxy) => void) => {
+        x(props.tproxy)
+        props.onChange(props.tproxy)
+    }
+
+    return (
+        <>
+            <SettingInputText label='Host' value={props.tproxy.host} onChange={(e) => updateState((x) => x.host = e)} />
+        </>
+    )
+})
+
 const Socks5Components = React.memo((props: { socks5: yuhaiin.listener.socks5, onChange: (x: yuhaiin.listener.socks5) => void }) => {
     const updateState = (x: (x: yuhaiin.listener.socks5) => void) => {
         x(props.socks5)
@@ -471,6 +485,8 @@ const Protocol = React.memo((props: { protocol: yuhaiin.listener.protocol, onCha
             return <TunComponents tun={new yuhaiin.listener.tun(props.protocol.tun!!)} onChange={(e) => updateState((x) => x.tun = e)} />
         case "yuubinsya":
             return <YuubinsyaComponents yuubinsya={new yuhaiin.listener.yuubinsya(props.protocol.yuubinsya!!)} onChange={(e) => updateState((x) => x.yuubinsya = e)} />
+        case "tproxy":
+            return <TProxyComponents tproxy={new yuhaiin.listener.tproxy(props.protocol.tproxy!!)} onChange={(e) => updateState((x) => x.tproxy = e)} />
     }
     return <></>
 })
@@ -521,6 +537,7 @@ const Inbound = React.memo((props: { server: { [key: string]: yuhaiin.listener.I
                             <option value="socks5">SOCKS5</option>
                             <option value="tun">TUN</option>
                             <option value="redir">Redir</option>
+                            <option value="tproxy">TProxy</option>
                             <option value="yuubinsya">Yuubinsya</option>
                             <option value="yuubinsya-websocket">Yuubinsya Websocket</option>
                             <option value="yuubinsya-tls">Yuubinsya TLS</option>
@@ -654,6 +671,11 @@ const defaultProtocol = (x: { [key: string]: yuhaiin.listener.Iprotocol }, name:
                     dest: "dl.google.com:443",
                     debug: false,
                 }
+            }
+            break
+        case "tproxy":
+            sc.tproxy = {
+                host: "0.0.0.0:8083",
             }
             break
 

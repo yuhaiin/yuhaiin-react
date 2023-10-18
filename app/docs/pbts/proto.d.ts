@@ -695,6 +695,9 @@ export namespace yuhaiin {
 
             /** protocol socks4a */
             socks4a?: (yuhaiin.listener.Isocks4a|null);
+
+            /** protocol tproxy */
+            tproxy?: (yuhaiin.listener.Itproxy|null);
         }
 
         /** Represents a protocol. */
@@ -733,8 +736,11 @@ export namespace yuhaiin {
             /** protocol socks4a. */
             public socks4a?: (yuhaiin.listener.Isocks4a|null);
 
+            /** protocol tproxy. */
+            public tproxy?: (yuhaiin.listener.Itproxy|null);
+
             /** protocol protocol. */
-            public protocol?: ("http"|"socks5"|"redir"|"tun"|"yuubinsya"|"mix"|"socks4a");
+            public protocol?: ("http"|"socks5"|"redir"|"tun"|"yuubinsya"|"mix"|"socks4a"|"tproxy");
 
             /**
              * Creates a new protocol instance using the specified properties.
@@ -1216,6 +1222,72 @@ export namespace yuhaiin {
 
             /**
              * Converts this redir to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a tproxy. */
+        interface Itproxy {
+
+            /** tproxy host */
+            host?: (string|null);
+        }
+
+        /** Represents a tproxy. */
+        class tproxy implements Itproxy {
+
+            /**
+             * Constructs a new tproxy.
+             * @param [p] Properties to set
+             */
+            constructor(p?: yuhaiin.listener.Itproxy);
+
+            /** tproxy host. */
+            public host: string;
+
+            /**
+             * Creates a new tproxy instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns tproxy instance
+             */
+            public static create(properties?: yuhaiin.listener.Itproxy): yuhaiin.listener.tproxy;
+
+            /**
+             * Encodes the specified tproxy message. Does not implicitly {@link yuhaiin.listener.tproxy.verify|verify} messages.
+             * @param m tproxy message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: yuhaiin.listener.Itproxy, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a tproxy message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns tproxy
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): yuhaiin.listener.tproxy;
+
+            /**
+             * Creates a tproxy message from a plain object. Also converts values to their respective internal types.
+             * @param d Plain object
+             * @returns tproxy
+             */
+            public static fromObject(d: { [k: string]: any }): yuhaiin.listener.tproxy;
+
+            /**
+             * Creates a plain object from a tproxy message. Also converts values to other types if specified.
+             * @param m tproxy
+             * @param [o] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(m: yuhaiin.listener.tproxy, o?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this tproxy to JSON.
              * @returns JSON object
              */
             public toJSON(): { [k: string]: any };
