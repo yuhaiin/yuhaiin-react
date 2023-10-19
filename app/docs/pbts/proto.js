@@ -3379,6 +3379,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @memberof yuhaiin.listener
              * @interface Itproxy
              * @property {string|null} [host] tproxy host
+             * @property {boolean|null} [dns_hijacking] tproxy dns_hijacking
              */
 
             /**
@@ -3403,6 +3404,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @instance
              */
             tproxy.prototype.host = "";
+
+            /**
+             * tproxy dns_hijacking.
+             * @member {boolean} dns_hijacking
+             * @memberof yuhaiin.listener.tproxy
+             * @instance
+             */
+            tproxy.prototype.dns_hijacking = false;
 
             /**
              * Creates a new tproxy instance using the specified properties.
@@ -3430,6 +3439,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     w = $Writer.create();
                 if (m.host != null && Object.hasOwnProperty.call(m, "host"))
                     w.uint32(10).string(m.host);
+                if (m.dns_hijacking != null && Object.hasOwnProperty.call(m, "dns_hijacking"))
+                    w.uint32(16).bool(m.dns_hijacking);
                 return w;
             };
 
@@ -3455,6 +3466,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                             m.host = r.string();
                             break;
                         }
+                    case 2: {
+                            m.dns_hijacking = r.bool();
+                            break;
+                        }
                     default:
                         r.skipType(t & 7);
                         break;
@@ -3478,6 +3493,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (d.host != null) {
                     m.host = String(d.host);
                 }
+                if (d.dns_hijacking != null) {
+                    m.dns_hijacking = Boolean(d.dns_hijacking);
+                }
                 return m;
             };
 
@@ -3496,9 +3514,13 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 var d = {};
                 if (o.defaults) {
                     d.host = "";
+                    d.dns_hijacking = false;
                 }
                 if (m.host != null && m.hasOwnProperty("host")) {
                     d.host = m.host;
+                }
+                if (m.dns_hijacking != null && m.hasOwnProperty("dns_hijacking")) {
+                    d.dns_hijacking = m.dns_hijacking;
                 }
                 return d;
             };
