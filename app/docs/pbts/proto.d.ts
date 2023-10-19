@@ -1232,6 +1232,9 @@ export namespace yuhaiin {
 
             /** tproxy host */
             host?: (string|null);
+
+            /** tproxy dns_hijacking */
+            dns_hijacking?: (boolean|null);
         }
 
         /** Represents a tproxy. */
@@ -1245,6 +1248,9 @@ export namespace yuhaiin {
 
             /** tproxy host. */
             public host: string;
+
+            /** tproxy dns_hijacking. */
+            public dns_hijacking: boolean;
 
             /**
              * Creates a new tproxy instance using the specified properties.
