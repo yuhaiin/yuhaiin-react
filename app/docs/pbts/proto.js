@@ -3380,6 +3380,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @interface Itproxy
              * @property {string|null} [host] tproxy host
              * @property {boolean|null} [dns_hijacking] tproxy dns_hijacking
+             * @property {boolean|null} [force_fakeip] tproxy force_fakeip
              */
 
             /**
@@ -3414,6 +3415,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
             tproxy.prototype.dns_hijacking = false;
 
             /**
+             * tproxy force_fakeip.
+             * @member {boolean} force_fakeip
+             * @memberof yuhaiin.listener.tproxy
+             * @instance
+             */
+            tproxy.prototype.force_fakeip = false;
+
+            /**
              * Creates a new tproxy instance using the specified properties.
              * @function create
              * @memberof yuhaiin.listener.tproxy
@@ -3441,6 +3450,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     w.uint32(10).string(m.host);
                 if (m.dns_hijacking != null && Object.hasOwnProperty.call(m, "dns_hijacking"))
                     w.uint32(16).bool(m.dns_hijacking);
+                if (m.force_fakeip != null && Object.hasOwnProperty.call(m, "force_fakeip"))
+                    w.uint32(24).bool(m.force_fakeip);
                 return w;
             };
 
@@ -3470,6 +3481,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                             m.dns_hijacking = r.bool();
                             break;
                         }
+                    case 3: {
+                            m.force_fakeip = r.bool();
+                            break;
+                        }
                     default:
                         r.skipType(t & 7);
                         break;
@@ -3496,6 +3511,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (d.dns_hijacking != null) {
                     m.dns_hijacking = Boolean(d.dns_hijacking);
                 }
+                if (d.force_fakeip != null) {
+                    m.force_fakeip = Boolean(d.force_fakeip);
+                }
                 return m;
             };
 
@@ -3515,12 +3533,16 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (o.defaults) {
                     d.host = "";
                     d.dns_hijacking = false;
+                    d.force_fakeip = false;
                 }
                 if (m.host != null && m.hasOwnProperty("host")) {
                     d.host = m.host;
                 }
                 if (m.dns_hijacking != null && m.hasOwnProperty("dns_hijacking")) {
                     d.dns_hijacking = m.dns_hijacking;
+                }
+                if (m.force_fakeip != null && m.hasOwnProperty("force_fakeip")) {
+                    d.force_fakeip = m.force_fakeip;
                 }
                 return d;
             };
@@ -3549,6 +3571,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {number|null} [mtu] tun mtu
              * @property {string|null} [gateway] tun gateway
              * @property {boolean|null} [dns_hijacking] tun dns_hijacking
+             * @property {boolean|null} [force_fakeip] tun force_fakeip
              * @property {boolean|null} [skip_multicast] tun skip_multicast
              * @property {yuhaiin.listener.tun.endpoint_driver|null} [driver] tun driver
              * @property {string|null} [portal] tun portal
@@ -3600,6 +3623,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @instance
              */
             tun.prototype.dns_hijacking = false;
+
+            /**
+             * tun force_fakeip.
+             * @member {boolean} force_fakeip
+             * @memberof yuhaiin.listener.tun
+             * @instance
+             */
+            tun.prototype.force_fakeip = false;
 
             /**
              * tun skip_multicast.
@@ -3663,6 +3694,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     w.uint32(56).int32(m.driver);
                 if (m.portal != null && Object.hasOwnProperty.call(m, "portal"))
                     w.uint32(66).string(m.portal);
+                if (m.force_fakeip != null && Object.hasOwnProperty.call(m, "force_fakeip"))
+                    w.uint32(72).bool(m.force_fakeip);
                 return w;
             };
 
@@ -3698,6 +3731,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         }
                     case 4: {
                             m.dns_hijacking = r.bool();
+                            break;
+                        }
+                    case 9: {
+                            m.force_fakeip = r.bool();
                             break;
                         }
                     case 6: {
@@ -3743,6 +3780,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 }
                 if (d.dns_hijacking != null) {
                     m.dns_hijacking = Boolean(d.dns_hijacking);
+                }
+                if (d.force_fakeip != null) {
+                    m.force_fakeip = Boolean(d.force_fakeip);
                 }
                 if (d.skip_multicast != null) {
                     m.skip_multicast = Boolean(d.skip_multicast);
@@ -3794,6 +3834,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.skip_multicast = false;
                     d.driver = o.enums === String ? "fdbased" : 0;
                     d.portal = "";
+                    d.force_fakeip = false;
                 }
                 if (m.name != null && m.hasOwnProperty("name")) {
                     d.name = m.name;
@@ -3815,6 +3856,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 }
                 if (m.portal != null && m.hasOwnProperty("portal")) {
                     d.portal = m.portal;
+                }
+                if (m.force_fakeip != null && m.hasOwnProperty("force_fakeip")) {
+                    d.force_fakeip = m.force_fakeip;
                 }
                 return d;
             };

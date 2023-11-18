@@ -42,7 +42,7 @@ function ConfigComponent() {
                     >
                         <Tab eventKey="home" title="Home">
 
-                            <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting({ ...setting, ipv6: !setting.ipv6 }, false)} />
+                            <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting(yuhaiin.config.setting.create({ ...setting, ipv6: !setting.ipv6 }), false)} />
                             <SettingInputText label='Network Interface' value={setting.net_interface} onChange={(v) => updateState((x) => x.net_interface = v)} />
 
                             <hr />

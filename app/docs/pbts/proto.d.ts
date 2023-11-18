@@ -1235,6 +1235,9 @@ export namespace yuhaiin {
 
             /** tproxy dns_hijacking */
             dns_hijacking?: (boolean|null);
+
+            /** tproxy force_fakeip */
+            force_fakeip?: (boolean|null);
         }
 
         /** Represents a tproxy. */
@@ -1251,6 +1254,9 @@ export namespace yuhaiin {
 
             /** tproxy dns_hijacking. */
             public dns_hijacking: boolean;
+
+            /** tproxy force_fakeip. */
+            public force_fakeip: boolean;
 
             /**
              * Creates a new tproxy instance using the specified properties.
@@ -1314,6 +1320,9 @@ export namespace yuhaiin {
             /** tun dns_hijacking */
             dns_hijacking?: (boolean|null);
 
+            /** tun force_fakeip */
+            force_fakeip?: (boolean|null);
+
             /** tun skip_multicast */
             skip_multicast?: (boolean|null);
 
@@ -1344,6 +1353,9 @@ export namespace yuhaiin {
 
             /** tun dns_hijacking. */
             public dns_hijacking: boolean;
+
+            /** tun force_fakeip. */
+            public force_fakeip: boolean;
 
             /** tun skip_multicast. */
             public skip_multicast: boolean;
