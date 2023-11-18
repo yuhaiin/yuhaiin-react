@@ -44,7 +44,9 @@ const TProxyComponents = React.memo((props: { tproxy: yuhaiin.listener.tproxy, o
             <SettingCheck label='DNS Hijacking'
                 checked={props.tproxy.dns_hijacking}
                 onChange={() => updateState((x) => x.dns_hijacking = !x.dns_hijacking)} />
-
+            <SettingCheck label='Force Fake IP'
+                checked={props.tproxy.force_fakeip}
+                onChange={() => updateState((x) => x.force_fakeip = !x.force_fakeip)} />
             <SettingInputText label='Host' value={props.tproxy.host} onChange={(e) => updateState((x) => x.host = e)} />
         </>
     )
