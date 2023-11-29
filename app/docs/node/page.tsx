@@ -224,5 +224,10 @@ let protocolMapping: { [key: string]: yuhaiin.protocol.Iprotocol } = {
                 },
             ]
         }
+    },
+    "mux": {
+        mux: {
+            concurrency: 8,
+        }
     }
 }
