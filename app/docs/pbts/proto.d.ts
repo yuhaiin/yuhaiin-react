@@ -1435,6 +1435,9 @@ export namespace yuhaiin {
             /** yuubinsya force_disable_encrypt */
             force_disable_encrypt?: (boolean|null);
 
+            /** yuubinsya mux */
+            mux?: (boolean|null);
+
             /** yuubinsya normal */
             normal?: (yuhaiin.listener.Inormal|null);
 
@@ -1474,6 +1477,9 @@ export namespace yuhaiin {
 
             /** yuubinsya force_disable_encrypt. */
             public force_disable_encrypt: boolean;
+
+            /** yuubinsya mux. */
+            public mux: boolean;
 
             /** yuubinsya normal. */
             public normal?: (yuhaiin.listener.Inormal|null);
@@ -2647,6 +2653,9 @@ export namespace yuhaiin {
 
             /** protocol wireguard */
             wireguard?: (yuhaiin.protocol.Iwireguard|null);
+
+            /** protocol mux */
+            mux?: (yuhaiin.protocol.Imux|null);
         }
 
         /** Represents a protocol. */
@@ -2715,8 +2724,11 @@ export namespace yuhaiin {
             /** protocol wireguard. */
             public wireguard?: (yuhaiin.protocol.Iwireguard|null);
 
+            /** protocol mux. */
+            public mux?: (yuhaiin.protocol.Imux|null);
+
             /** protocol protocol. */
-            public protocol?: ("shadowsocks"|"shadowsocksr"|"vmess"|"websocket"|"quic"|"obfs_http"|"trojan"|"simple"|"none"|"socks5"|"http"|"direct"|"reject"|"yuubinsya"|"grpc"|"http2"|"reality"|"tls"|"wireguard");
+            public protocol?: ("shadowsocks"|"shadowsocksr"|"vmess"|"websocket"|"quic"|"obfs_http"|"trojan"|"simple"|"none"|"socks5"|"http"|"direct"|"reject"|"yuubinsya"|"grpc"|"http2"|"reality"|"tls"|"wireguard"|"mux");
 
             /**
              * Creates a new protocol instance using the specified properties.
@@ -4368,6 +4380,72 @@ export namespace yuhaiin {
 
             /**
              * Converts this wireguard to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a mux. */
+        interface Imux {
+
+            /** mux concurrency */
+            concurrency?: (number|null);
+        }
+
+        /** Represents a mux. */
+        class mux implements Imux {
+
+            /**
+             * Constructs a new mux.
+             * @param [p] Properties to set
+             */
+            constructor(p?: yuhaiin.protocol.Imux);
+
+            /** mux concurrency. */
+            public concurrency: number;
+
+            /**
+             * Creates a new mux instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns mux instance
+             */
+            public static create(properties?: yuhaiin.protocol.Imux): yuhaiin.protocol.mux;
+
+            /**
+             * Encodes the specified mux message. Does not implicitly {@link yuhaiin.protocol.mux.verify|verify} messages.
+             * @param m mux message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: yuhaiin.protocol.Imux, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a mux message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns mux
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): yuhaiin.protocol.mux;
+
+            /**
+             * Creates a mux message from a plain object. Also converts values to their respective internal types.
+             * @param d Plain object
+             * @returns mux
+             */
+            public static fromObject(d: { [k: string]: any }): yuhaiin.protocol.mux;
+
+            /**
+             * Creates a plain object from a mux message. Also converts values to other types if specified.
+             * @param m mux
+             * @param [o] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(m: yuhaiin.protocol.mux, o?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this mux to JSON.
              * @returns JSON object
              */
             public toJSON(): { [k: string]: any };

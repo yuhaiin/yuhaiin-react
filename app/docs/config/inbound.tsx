@@ -461,6 +461,9 @@ const YuubinsyaComponents = React.memo((props: { yuubinsya: yuhaiin.listener.yuu
             <SettingCheck label='Force Disable Encrypt'
                 checked={props.yuubinsya.force_disable_encrypt}
                 onChange={() => updateState((x) => x.force_disable_encrypt = !x.force_disable_encrypt)} />
+            <SettingCheck label='Mux'
+                checked={props.yuubinsya.mux}
+                onChange={() => updateState((x) => x.mux = !x.mux)} />
 
             <SettingInputText label='Host' value={props.yuubinsya.host} onChange={(e) => updateState((x) => x.host = e)} />
             <SettingInputText label='Password' value={props.yuubinsya.password} onChange={(e) => updateState((x) => x.password = e)} />

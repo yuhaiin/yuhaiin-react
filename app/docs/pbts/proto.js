@@ -3902,6 +3902,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {string|null} [host] yuubinsya host
              * @property {string|null} [password] yuubinsya password
              * @property {boolean|null} [force_disable_encrypt] yuubinsya force_disable_encrypt
+             * @property {boolean|null} [mux] yuubinsya mux
              * @property {yuhaiin.listener.Inormal|null} [normal] yuubinsya normal
              * @property {yuhaiin.listener.Itls|null} [tls] yuubinsya tls
              * @property {yuhaiin.listener.Iquic|null} [quic] yuubinsya quic
@@ -3949,6 +3950,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @instance
              */
             yuubinsya.prototype.force_disable_encrypt = false;
+
+            /**
+             * yuubinsya mux.
+             * @member {boolean} mux
+             * @memberof yuhaiin.listener.yuubinsya
+             * @instance
+             */
+            yuubinsya.prototype.mux = false;
 
             /**
              * yuubinsya normal.
@@ -4064,6 +4073,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     $root.yuhaiin.listener.http2.encode(m.http2, w.uint32(74).fork()).ldelim();
                 if (m.reality != null && Object.hasOwnProperty.call(m, "reality"))
                     $root.yuhaiin.listener.reality.encode(m.reality, w.uint32(82).fork()).ldelim();
+                if (m.mux != null && Object.hasOwnProperty.call(m, "mux"))
+                    w.uint32(88).bool(m.mux);
                 return w;
             };
 
@@ -4095,6 +4106,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         }
                     case 8: {
                             m.force_disable_encrypt = r.bool();
+                            break;
+                        }
+                    case 11: {
+                            m.mux = r.bool();
                             break;
                         }
                     case 3: {
@@ -4154,6 +4169,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (d.force_disable_encrypt != null) {
                     m.force_disable_encrypt = Boolean(d.force_disable_encrypt);
                 }
+                if (d.mux != null) {
+                    m.mux = Boolean(d.mux);
+                }
                 if (d.normal != null) {
                     if (typeof d.normal !== "object")
                         throw TypeError(".yuhaiin.listener.yuubinsya.normal: object expected");
@@ -4209,6 +4227,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.host = "";
                     d.password = "";
                     d.force_disable_encrypt = false;
+                    d.mux = false;
                 }
                 if (m.host != null && m.hasOwnProperty("host")) {
                     d.host = m.host;
@@ -4253,6 +4272,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.reality = $root.yuhaiin.listener.reality.toObject(m.reality, o);
                     if (o.oneofs)
                         d.protocol = "reality";
+                }
+                if (m.mux != null && m.hasOwnProperty("mux")) {
+                    d.mux = m.mux;
                 }
                 return d;
             };
@@ -7051,6 +7073,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {yuhaiin.protocol.Ireality|null} [reality] protocol reality
              * @property {yuhaiin.protocol.Itls_config|null} [tls] protocol tls
              * @property {yuhaiin.protocol.Iwireguard|null} [wireguard] protocol wireguard
+             * @property {yuhaiin.protocol.Imux|null} [mux] protocol mux
              */
 
             /**
@@ -7220,17 +7243,25 @@ export const yuhaiin = $root.yuhaiin = (() => {
              */
             protocol.prototype.wireguard = null;
 
+            /**
+             * protocol mux.
+             * @member {yuhaiin.protocol.Imux|null|undefined} mux
+             * @memberof yuhaiin.protocol.protocol
+             * @instance
+             */
+            protocol.prototype.mux = null;
+
             // OneOf field names bound to virtual getters and setters
             let $oneOfFields;
 
             /**
              * protocol protocol.
-             * @member {"shadowsocks"|"shadowsocksr"|"vmess"|"websocket"|"quic"|"obfs_http"|"trojan"|"simple"|"none"|"socks5"|"http"|"direct"|"reject"|"yuubinsya"|"grpc"|"http2"|"reality"|"tls"|"wireguard"|undefined} protocol
+             * @member {"shadowsocks"|"shadowsocksr"|"vmess"|"websocket"|"quic"|"obfs_http"|"trojan"|"simple"|"none"|"socks5"|"http"|"direct"|"reject"|"yuubinsya"|"grpc"|"http2"|"reality"|"tls"|"wireguard"|"mux"|undefined} protocol
              * @memberof yuhaiin.protocol.protocol
              * @instance
              */
             Object.defineProperty(protocol.prototype, "protocol", {
-                get: $util.oneOfGetter($oneOfFields = ["shadowsocks", "shadowsocksr", "vmess", "websocket", "quic", "obfs_http", "trojan", "simple", "none", "socks5", "http", "direct", "reject", "yuubinsya", "grpc", "http2", "reality", "tls", "wireguard"]),
+                get: $util.oneOfGetter($oneOfFields = ["shadowsocks", "shadowsocksr", "vmess", "websocket", "quic", "obfs_http", "trojan", "simple", "none", "socks5", "http", "direct", "reject", "yuubinsya", "grpc", "http2", "reality", "tls", "wireguard", "mux"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
 
@@ -7296,6 +7327,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     $root.yuhaiin.protocol.tls_config.encode(m.tls, w.uint32(146).fork()).ldelim();
                 if (m.wireguard != null && Object.hasOwnProperty.call(m, "wireguard"))
                     $root.yuhaiin.protocol.wireguard.encode(m.wireguard, w.uint32(154).fork()).ldelim();
+                if (m.mux != null && Object.hasOwnProperty.call(m, "mux"))
+                    $root.yuhaiin.protocol.mux.encode(m.mux, w.uint32(162).fork()).ldelim();
                 return w;
             };
 
@@ -7391,6 +7424,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         }
                     case 19: {
                             m.wireguard = $root.yuhaiin.protocol.wireguard.decode(r, r.uint32());
+                            break;
+                        }
+                    case 20: {
+                            m.mux = $root.yuhaiin.protocol.mux.decode(r, r.uint32());
                             break;
                         }
                     default:
@@ -7508,6 +7545,11 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         throw TypeError(".yuhaiin.protocol.protocol.wireguard: object expected");
                     m.wireguard = $root.yuhaiin.protocol.wireguard.fromObject(d.wireguard);
                 }
+                if (d.mux != null) {
+                    if (typeof d.mux !== "object")
+                        throw TypeError(".yuhaiin.protocol.protocol.mux: object expected");
+                    m.mux = $root.yuhaiin.protocol.mux.fromObject(d.mux);
+                }
                 return m;
             };
 
@@ -7618,6 +7660,11 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.wireguard = $root.yuhaiin.protocol.wireguard.toObject(m.wireguard, o);
                     if (o.oneofs)
                         d.protocol = "wireguard";
+                }
+                if (m.mux != null && m.hasOwnProperty("mux")) {
+                    d.mux = $root.yuhaiin.protocol.mux.toObject(m.mux, o);
+                    if (o.oneofs)
+                        d.protocol = "mux";
                 }
                 return d;
             };
@@ -11610,6 +11657,151 @@ export const yuhaiin = $root.yuhaiin = (() => {
             };
 
             return wireguard;
+        })();
+
+        protocol.mux = (function() {
+
+            /**
+             * Properties of a mux.
+             * @memberof yuhaiin.protocol
+             * @interface Imux
+             * @property {number|null} [concurrency] mux concurrency
+             */
+
+            /**
+             * Constructs a new mux.
+             * @memberof yuhaiin.protocol
+             * @classdesc Represents a mux.
+             * @implements Imux
+             * @constructor
+             * @param {yuhaiin.protocol.Imux=} [p] Properties to set
+             */
+            function mux(p) {
+                if (p)
+                    for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                        if (p[ks[i]] != null)
+                            this[ks[i]] = p[ks[i]];
+            }
+
+            /**
+             * mux concurrency.
+             * @member {number} concurrency
+             * @memberof yuhaiin.protocol.mux
+             * @instance
+             */
+            mux.prototype.concurrency = 0;
+
+            /**
+             * Creates a new mux instance using the specified properties.
+             * @function create
+             * @memberof yuhaiin.protocol.mux
+             * @static
+             * @param {yuhaiin.protocol.Imux=} [properties] Properties to set
+             * @returns {yuhaiin.protocol.mux} mux instance
+             */
+            mux.create = function create(properties) {
+                return new mux(properties);
+            };
+
+            /**
+             * Encodes the specified mux message. Does not implicitly {@link yuhaiin.protocol.mux.verify|verify} messages.
+             * @function encode
+             * @memberof yuhaiin.protocol.mux
+             * @static
+             * @param {yuhaiin.protocol.Imux} m mux message or plain object to encode
+             * @param {$protobuf.Writer} [w] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            mux.encode = function encode(m, w) {
+                if (!w)
+                    w = $Writer.create();
+                if (m.concurrency != null && Object.hasOwnProperty.call(m, "concurrency"))
+                    w.uint32(8).int32(m.concurrency);
+                return w;
+            };
+
+            /**
+             * Decodes a mux message from the specified reader or buffer.
+             * @function decode
+             * @memberof yuhaiin.protocol.mux
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+             * @param {number} [l] Message length if known beforehand
+             * @returns {yuhaiin.protocol.mux} mux
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            mux.decode = function decode(r, l) {
+                if (!(r instanceof $Reader))
+                    r = $Reader.create(r);
+                var c = l === undefined ? r.len : r.pos + l, m = new $root.yuhaiin.protocol.mux();
+                while (r.pos < c) {
+                    var t = r.uint32();
+                    switch (t >>> 3) {
+                    case 1: {
+                            m.concurrency = r.int32();
+                            break;
+                        }
+                    default:
+                        r.skipType(t & 7);
+                        break;
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates a mux message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof yuhaiin.protocol.mux
+             * @static
+             * @param {Object.<string,*>} d Plain object
+             * @returns {yuhaiin.protocol.mux} mux
+             */
+            mux.fromObject = function fromObject(d) {
+                if (d instanceof $root.yuhaiin.protocol.mux)
+                    return d;
+                var m = new $root.yuhaiin.protocol.mux();
+                if (d.concurrency != null) {
+                    m.concurrency = d.concurrency | 0;
+                }
+                return m;
+            };
+
+            /**
+             * Creates a plain object from a mux message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof yuhaiin.protocol.mux
+             * @static
+             * @param {yuhaiin.protocol.mux} m mux
+             * @param {$protobuf.IConversionOptions} [o] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            mux.toObject = function toObject(m, o) {
+                if (!o)
+                    o = {};
+                var d = {};
+                if (o.defaults) {
+                    d.concurrency = 0;
+                }
+                if (m.concurrency != null && m.hasOwnProperty("concurrency")) {
+                    d.concurrency = m.concurrency;
+                }
+                return d;
+            };
+
+            /**
+             * Converts this mux to JSON.
+             * @function toJSON
+             * @memberof yuhaiin.protocol.mux
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            mux.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            return mux;
         })();
 
         return protocol;
