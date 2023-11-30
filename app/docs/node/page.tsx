@@ -132,7 +132,7 @@ let protocolMapping: { [key: string]: yuhaiin.protocol.Iprotocol } = {
             port: 1080,
             packet_conn_direct: false,
             timeout: 0,
-            tls: tlsConfig
+            tls: undefined
         }
     },
     "none": {
@@ -208,6 +208,9 @@ let protocolMapping: { [key: string]: yuhaiin.protocol.Iprotocol } = {
             encrypted: true,
             password: "password"
         }
+    },
+    "tls": {
+        tls: tlsConfig,
     },
     "wireguard": {
         wireguard: {
