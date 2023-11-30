@@ -633,7 +633,7 @@ const defaultProtocol = (x: { [key: string]: yuhaiin.listener.Iprotocol }, name:
                 host: ":2096",
                 force_disable_encrypt: false,
                 password: "password",
-                websocket: { tls: undefined }
+                websocket: { tls: {} }
             }
             break
         case "yuubinsya-tls":
@@ -641,7 +641,7 @@ const defaultProtocol = (x: { [key: string]: yuhaiin.listener.Iprotocol }, name:
                 host: ":2096",
                 force_disable_encrypt: false,
                 password: "password",
-                tls: { tls: undefined }
+                tls: { tls: {} }
             }
             break
         case "yuubinsya-grpc":
@@ -649,7 +649,7 @@ const defaultProtocol = (x: { [key: string]: yuhaiin.listener.Iprotocol }, name:
                 host: ":2096",
                 force_disable_encrypt: false,
                 password: "password",
-                grpc: { tls: undefined }
+                grpc: { tls: {} }
             }
             break
         case "yuubinsya-quic":
@@ -657,7 +657,7 @@ const defaultProtocol = (x: { [key: string]: yuhaiin.listener.Iprotocol }, name:
                 host: ":2096",
                 force_disable_encrypt: false,
                 password: "password",
-                quic: { tls: undefined }
+                quic: { tls: {} }
             }
             break
         case "yuubinsya-http2":
@@ -665,7 +665,7 @@ const defaultProtocol = (x: { [key: string]: yuhaiin.listener.Iprotocol }, name:
                 host: ":2096",
                 force_disable_encrypt: false,
                 password: "password",
-                http2: { tls: undefined }
+                http2: { tls: {} }
             }
             break
         case "yuubinsya-reality":

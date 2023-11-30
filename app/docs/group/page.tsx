@@ -44,7 +44,7 @@ type Latency = {
 function Group() {
     const ctx = useContext(GlobalToastContext);
     const [selectNode, setSelectNode] = useState("");
-    const [currentGroup, setCurrentGroup] = useState("");
+    const [currentGroup, setCurrentGroup] = useState("Select...");
     const [modalData, setModalData] = useState({ point: "", hash: "" });
     const [latency, setLatency] = useState<{ [key: string]: Latency }>({})
 
@@ -187,10 +187,10 @@ function Group() {
             <div>
                 <Row>
                     <Col className="mb-4 d-flex">
-                        <Dropdown onSelect={(e) => { setCurrentGroup(e != null ? e : "") }}>
+                        <Dropdown onSelect={(e) => { setCurrentGroup(e != null ? e : "Select...") }}>
                             <Dropdown.Toggle variant="light">{currentGroup ?? "GROUP"}</Dropdown.Toggle>
                             <Dropdown.Menu>
-                                <Dropdown.Item eventKey={""}>Select...</Dropdown.Item>
+                                <Dropdown.Item eventKey={"Select..."}>Select...</Dropdown.Item>
 
                                 {
                                     data.groupsV2 && Object
