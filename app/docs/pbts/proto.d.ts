@@ -3110,8 +3110,8 @@ export namespace yuhaiin {
         /** Properties of a http2. */
         interface Ihttp2 {
 
-            /** http2 host */
-            host?: (string|null);
+            /** http2 concurrency */
+            concurrency?: (number|null);
         }
 
         /** Represents a http2. */
@@ -3123,8 +3123,8 @@ export namespace yuhaiin {
              */
             constructor(p?: yuhaiin.protocol.Ihttp2);
 
-            /** http2 host. */
-            public host: string;
+            /** http2 concurrency. */
+            public concurrency: number;
 
             /**
              * Creates a new http2 instance using the specified properties.

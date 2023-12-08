@@ -8511,7 +8511,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * Properties of a http2.
              * @memberof yuhaiin.protocol
              * @interface Ihttp2
-             * @property {string|null} [host] http2 host
+             * @property {number|null} [concurrency] http2 concurrency
              */
 
             /**
@@ -8530,12 +8530,12 @@ export const yuhaiin = $root.yuhaiin = (() => {
             }
 
             /**
-             * http2 host.
-             * @member {string} host
+             * http2 concurrency.
+             * @member {number} concurrency
              * @memberof yuhaiin.protocol.http2
              * @instance
              */
-            http2.prototype.host = "";
+            http2.prototype.concurrency = 0;
 
             /**
              * Creates a new http2 instance using the specified properties.
@@ -8561,8 +8561,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
             http2.encode = function encode(m, w) {
                 if (!w)
                     w = $Writer.create();
-                if (m.host != null && Object.hasOwnProperty.call(m, "host"))
-                    w.uint32(10).string(m.host);
+                if (m.concurrency != null && Object.hasOwnProperty.call(m, "concurrency"))
+                    w.uint32(8).int32(m.concurrency);
                 return w;
             };
 
@@ -8585,7 +8585,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     var t = r.uint32();
                     switch (t >>> 3) {
                     case 1: {
-                            m.host = r.string();
+                            m.concurrency = r.int32();
                             break;
                         }
                     default:
@@ -8608,8 +8608,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (d instanceof $root.yuhaiin.protocol.http2)
                     return d;
                 var m = new $root.yuhaiin.protocol.http2();
-                if (d.host != null) {
-                    m.host = String(d.host);
+                if (d.concurrency != null) {
+                    m.concurrency = d.concurrency | 0;
                 }
                 return m;
             };
@@ -8628,10 +8628,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     o = {};
                 var d = {};
                 if (o.defaults) {
-                    d.host = "";
+                    d.concurrency = 0;
                 }
-                if (m.host != null && m.hasOwnProperty("host")) {
-                    d.host = m.host;
+                if (m.concurrency != null && m.hasOwnProperty("concurrency")) {
+                    d.concurrency = m.concurrency;
                 }
                 return d;
             };
