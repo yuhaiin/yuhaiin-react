@@ -163,9 +163,11 @@ function Connections() {
 
             <Accordion className="mb-3" alwaysOpen id="connections">
                 {
-                    Object.entries(data.conns).map(([k, e]) => {
-                        return <AccordionItem data={e} key={e.id} />
-                    })
+                    Object.entries(data.conns)
+                        .sort(([, a], [, b]) => { return a.id > b.id ? -1 : 1 })
+                        .map(([, e]) => {
+                            return <AccordionItem data={e} key={e.id} />
+                        })
                 }
             </Accordion>
 
