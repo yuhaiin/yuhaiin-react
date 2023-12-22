@@ -7074,6 +7074,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {yuhaiin.protocol.Itls_config|null} [tls] protocol tls
              * @property {yuhaiin.protocol.Iwireguard|null} [wireguard] protocol wireguard
              * @property {yuhaiin.protocol.Imux|null} [mux] protocol mux
+             * @property {yuhaiin.protocol.Idrop|null} [drop] protocol drop
              */
 
             /**
@@ -7251,17 +7252,25 @@ export const yuhaiin = $root.yuhaiin = (() => {
              */
             protocol.prototype.mux = null;
 
+            /**
+             * protocol drop.
+             * @member {yuhaiin.protocol.Idrop|null|undefined} drop
+             * @memberof yuhaiin.protocol.protocol
+             * @instance
+             */
+            protocol.prototype.drop = null;
+
             // OneOf field names bound to virtual getters and setters
             let $oneOfFields;
 
             /**
              * protocol protocol.
-             * @member {"shadowsocks"|"shadowsocksr"|"vmess"|"websocket"|"quic"|"obfs_http"|"trojan"|"simple"|"none"|"socks5"|"http"|"direct"|"reject"|"yuubinsya"|"grpc"|"http2"|"reality"|"tls"|"wireguard"|"mux"|undefined} protocol
+             * @member {"shadowsocks"|"shadowsocksr"|"vmess"|"websocket"|"quic"|"obfs_http"|"trojan"|"simple"|"none"|"socks5"|"http"|"direct"|"reject"|"yuubinsya"|"grpc"|"http2"|"reality"|"tls"|"wireguard"|"mux"|"drop"|undefined} protocol
              * @memberof yuhaiin.protocol.protocol
              * @instance
              */
             Object.defineProperty(protocol.prototype, "protocol", {
-                get: $util.oneOfGetter($oneOfFields = ["shadowsocks", "shadowsocksr", "vmess", "websocket", "quic", "obfs_http", "trojan", "simple", "none", "socks5", "http", "direct", "reject", "yuubinsya", "grpc", "http2", "reality", "tls", "wireguard", "mux"]),
+                get: $util.oneOfGetter($oneOfFields = ["shadowsocks", "shadowsocksr", "vmess", "websocket", "quic", "obfs_http", "trojan", "simple", "none", "socks5", "http", "direct", "reject", "yuubinsya", "grpc", "http2", "reality", "tls", "wireguard", "mux", "drop"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
 
@@ -7329,6 +7338,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     $root.yuhaiin.protocol.wireguard.encode(m.wireguard, w.uint32(154).fork()).ldelim();
                 if (m.mux != null && Object.hasOwnProperty.call(m, "mux"))
                     $root.yuhaiin.protocol.mux.encode(m.mux, w.uint32(162).fork()).ldelim();
+                if (m.drop != null && Object.hasOwnProperty.call(m, "drop"))
+                    $root.yuhaiin.protocol.drop.encode(m.drop, w.uint32(170).fork()).ldelim();
                 return w;
             };
 
@@ -7428,6 +7439,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         }
                     case 20: {
                             m.mux = $root.yuhaiin.protocol.mux.decode(r, r.uint32());
+                            break;
+                        }
+                    case 21: {
+                            m.drop = $root.yuhaiin.protocol.drop.decode(r, r.uint32());
                             break;
                         }
                     default:
@@ -7550,6 +7565,11 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         throw TypeError(".yuhaiin.protocol.protocol.mux: object expected");
                     m.mux = $root.yuhaiin.protocol.mux.fromObject(d.mux);
                 }
+                if (d.drop != null) {
+                    if (typeof d.drop !== "object")
+                        throw TypeError(".yuhaiin.protocol.protocol.drop: object expected");
+                    m.drop = $root.yuhaiin.protocol.drop.fromObject(d.drop);
+                }
                 return m;
             };
 
@@ -7665,6 +7685,11 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.mux = $root.yuhaiin.protocol.mux.toObject(m.mux, o);
                     if (o.oneofs)
                         d.protocol = "mux";
+                }
+                if (m.drop != null && m.hasOwnProperty("drop")) {
+                    d.drop = $root.yuhaiin.protocol.drop.toObject(m.drop, o);
+                    if (o.oneofs)
+                        d.protocol = "drop";
                 }
                 return d;
             };
@@ -10948,6 +10973,123 @@ export const yuhaiin = $root.yuhaiin = (() => {
             };
 
             return reject;
+        })();
+
+        protocol.drop = (function() {
+
+            /**
+             * Properties of a drop.
+             * @memberof yuhaiin.protocol
+             * @interface Idrop
+             */
+
+            /**
+             * Constructs a new drop.
+             * @memberof yuhaiin.protocol
+             * @classdesc Represents a drop.
+             * @implements Idrop
+             * @constructor
+             * @param {yuhaiin.protocol.Idrop=} [p] Properties to set
+             */
+            function drop(p) {
+                if (p)
+                    for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                        if (p[ks[i]] != null)
+                            this[ks[i]] = p[ks[i]];
+            }
+
+            /**
+             * Creates a new drop instance using the specified properties.
+             * @function create
+             * @memberof yuhaiin.protocol.drop
+             * @static
+             * @param {yuhaiin.protocol.Idrop=} [properties] Properties to set
+             * @returns {yuhaiin.protocol.drop} drop instance
+             */
+            drop.create = function create(properties) {
+                return new drop(properties);
+            };
+
+            /**
+             * Encodes the specified drop message. Does not implicitly {@link yuhaiin.protocol.drop.verify|verify} messages.
+             * @function encode
+             * @memberof yuhaiin.protocol.drop
+             * @static
+             * @param {yuhaiin.protocol.Idrop} m drop message or plain object to encode
+             * @param {$protobuf.Writer} [w] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            drop.encode = function encode(m, w) {
+                if (!w)
+                    w = $Writer.create();
+                return w;
+            };
+
+            /**
+             * Decodes a drop message from the specified reader or buffer.
+             * @function decode
+             * @memberof yuhaiin.protocol.drop
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+             * @param {number} [l] Message length if known beforehand
+             * @returns {yuhaiin.protocol.drop} drop
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            drop.decode = function decode(r, l) {
+                if (!(r instanceof $Reader))
+                    r = $Reader.create(r);
+                var c = l === undefined ? r.len : r.pos + l, m = new $root.yuhaiin.protocol.drop();
+                while (r.pos < c) {
+                    var t = r.uint32();
+                    switch (t >>> 3) {
+                    default:
+                        r.skipType(t & 7);
+                        break;
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates a drop message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof yuhaiin.protocol.drop
+             * @static
+             * @param {Object.<string,*>} d Plain object
+             * @returns {yuhaiin.protocol.drop} drop
+             */
+            drop.fromObject = function fromObject(d) {
+                if (d instanceof $root.yuhaiin.protocol.drop)
+                    return d;
+                return new $root.yuhaiin.protocol.drop();
+            };
+
+            /**
+             * Creates a plain object from a drop message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof yuhaiin.protocol.drop
+             * @static
+             * @param {yuhaiin.protocol.drop} m drop
+             * @param {$protobuf.IConversionOptions} [o] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            drop.toObject = function toObject() {
+                return {};
+            };
+
+            /**
+             * Converts this drop to JSON.
+             * @function toJSON
+             * @memberof yuhaiin.protocol.drop
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            drop.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            return drop;
         })();
 
         protocol.host = (function() {
