@@ -789,11 +789,539 @@ export namespace yuhaiin {
             public toJSON(): { [k: string]: any };
         }
 
+        /** Properties of an inbound. */
+        interface Iinbound {
+
+            /** inbound name */
+            name?: (string|null);
+
+            /** inbound enabled */
+            enabled?: (boolean|null);
+
+            /** inbound IPv6 */
+            IPv6?: (boolean|null);
+
+            /** inbound empty */
+            empty?: (yuhaiin.listener.Iempty|null);
+
+            /** inbound tcpudp */
+            tcpudp?: (yuhaiin.listener.Itcpudp|null);
+
+            /** inbound quic */
+            quic?: (yuhaiin.listener.Iquic2|null);
+
+            /** inbound transport */
+            transport?: (yuhaiin.listener.Itransport[]|null);
+
+            /** inbound http */
+            http?: (yuhaiin.listener.Ihttp|null);
+
+            /** inbound socks5 */
+            socks5?: (yuhaiin.listener.Isocks5|null);
+
+            /** inbound yuubinsya */
+            yuubinsya?: (yuhaiin.listener.Iyuubinsya|null);
+
+            /** inbound mix */
+            mix?: (yuhaiin.listener.Imixed|null);
+
+            /** inbound socks4a */
+            socks4a?: (yuhaiin.listener.Isocks4a|null);
+
+            /** inbound tproxy */
+            tproxy?: (yuhaiin.listener.Itproxy|null);
+
+            /** inbound redir */
+            redir?: (yuhaiin.listener.Iredir|null);
+
+            /** inbound tun */
+            tun?: (yuhaiin.listener.Itun|null);
+        }
+
+        /** Represents an inbound. */
+        class inbound implements Iinbound {
+
+            /**
+             * Constructs a new inbound.
+             * @param [p] Properties to set
+             */
+            constructor(p?: yuhaiin.listener.Iinbound);
+
+            /** inbound name. */
+            public name: string;
+
+            /** inbound enabled. */
+            public enabled: boolean;
+
+            /** inbound IPv6. */
+            public IPv6: boolean;
+
+            /** inbound empty. */
+            public empty?: (yuhaiin.listener.Iempty|null);
+
+            /** inbound tcpudp. */
+            public tcpudp?: (yuhaiin.listener.Itcpudp|null);
+
+            /** inbound quic. */
+            public quic?: (yuhaiin.listener.Iquic2|null);
+
+            /** inbound transport. */
+            public transport: yuhaiin.listener.Itransport[];
+
+            /** inbound http. */
+            public http?: (yuhaiin.listener.Ihttp|null);
+
+            /** inbound socks5. */
+            public socks5?: (yuhaiin.listener.Isocks5|null);
+
+            /** inbound yuubinsya. */
+            public yuubinsya?: (yuhaiin.listener.Iyuubinsya|null);
+
+            /** inbound mix. */
+            public mix?: (yuhaiin.listener.Imixed|null);
+
+            /** inbound socks4a. */
+            public socks4a?: (yuhaiin.listener.Isocks4a|null);
+
+            /** inbound tproxy. */
+            public tproxy?: (yuhaiin.listener.Itproxy|null);
+
+            /** inbound redir. */
+            public redir?: (yuhaiin.listener.Iredir|null);
+
+            /** inbound tun. */
+            public tun?: (yuhaiin.listener.Itun|null);
+
+            /** inbound network. */
+            public network?: ("empty"|"tcpudp"|"quic");
+
+            /** inbound protocol. */
+            public protocol?: ("http"|"socks5"|"yuubinsya"|"mix"|"socks4a"|"tproxy"|"redir"|"tun");
+
+            /**
+             * Creates a new inbound instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns inbound instance
+             */
+            public static create(properties?: yuhaiin.listener.Iinbound): yuhaiin.listener.inbound;
+
+            /**
+             * Encodes the specified inbound message. Does not implicitly {@link yuhaiin.listener.inbound.verify|verify} messages.
+             * @param m inbound message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: yuhaiin.listener.Iinbound, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes an inbound message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns inbound
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): yuhaiin.listener.inbound;
+
+            /**
+             * Creates an inbound message from a plain object. Also converts values to their respective internal types.
+             * @param d Plain object
+             * @returns inbound
+             */
+            public static fromObject(d: { [k: string]: any }): yuhaiin.listener.inbound;
+
+            /**
+             * Creates a plain object from an inbound message. Also converts values to other types if specified.
+             * @param m inbound
+             * @param [o] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(m: yuhaiin.listener.inbound, o?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this inbound to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a transport. */
+        interface Itransport {
+
+            /** transport normal */
+            normal?: (yuhaiin.listener.Inormal|null);
+
+            /** transport tls */
+            tls?: (yuhaiin.listener.Itls|null);
+
+            /** transport mux */
+            mux?: (yuhaiin.listener.Imux|null);
+
+            /** transport http2 */
+            http2?: (yuhaiin.listener.Ihttp2|null);
+
+            /** transport websocket */
+            websocket?: (yuhaiin.listener.Iwebsocket|null);
+
+            /** transport grpc */
+            grpc?: (yuhaiin.listener.Igrpc|null);
+
+            /** transport reality */
+            reality?: (yuhaiin.listener.Ireality|null);
+        }
+
+        /** Represents a transport. */
+        class transport implements Itransport {
+
+            /**
+             * Constructs a new transport.
+             * @param [p] Properties to set
+             */
+            constructor(p?: yuhaiin.listener.Itransport);
+
+            /** transport normal. */
+            public normal?: (yuhaiin.listener.Inormal|null);
+
+            /** transport tls. */
+            public tls?: (yuhaiin.listener.Itls|null);
+
+            /** transport mux. */
+            public mux?: (yuhaiin.listener.Imux|null);
+
+            /** transport http2. */
+            public http2?: (yuhaiin.listener.Ihttp2|null);
+
+            /** transport websocket. */
+            public websocket?: (yuhaiin.listener.Iwebsocket|null);
+
+            /** transport grpc. */
+            public grpc?: (yuhaiin.listener.Igrpc|null);
+
+            /** transport reality. */
+            public reality?: (yuhaiin.listener.Ireality|null);
+
+            /** transport transport. */
+            public transport?: ("normal"|"tls"|"mux"|"http2"|"websocket"|"grpc"|"reality");
+
+            /**
+             * Creates a new transport instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns transport instance
+             */
+            public static create(properties?: yuhaiin.listener.Itransport): yuhaiin.listener.transport;
+
+            /**
+             * Encodes the specified transport message. Does not implicitly {@link yuhaiin.listener.transport.verify|verify} messages.
+             * @param m transport message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: yuhaiin.listener.Itransport, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a transport message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns transport
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): yuhaiin.listener.transport;
+
+            /**
+             * Creates a transport message from a plain object. Also converts values to their respective internal types.
+             * @param d Plain object
+             * @returns transport
+             */
+            public static fromObject(d: { [k: string]: any }): yuhaiin.listener.transport;
+
+            /**
+             * Creates a plain object from a transport message. Also converts values to other types if specified.
+             * @param m transport
+             * @param [o] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(m: yuhaiin.listener.transport, o?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this transport to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of an empty. */
+        interface Iempty {
+        }
+
+        /** Represents an empty. */
+        class empty implements Iempty {
+
+            /**
+             * Constructs a new empty.
+             * @param [p] Properties to set
+             */
+            constructor(p?: yuhaiin.listener.Iempty);
+
+            /**
+             * Creates a new empty instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns empty instance
+             */
+            public static create(properties?: yuhaiin.listener.Iempty): yuhaiin.listener.empty;
+
+            /**
+             * Encodes the specified empty message. Does not implicitly {@link yuhaiin.listener.empty.verify|verify} messages.
+             * @param m empty message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: yuhaiin.listener.Iempty, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes an empty message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns empty
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): yuhaiin.listener.empty;
+
+            /**
+             * Creates an empty message from a plain object. Also converts values to their respective internal types.
+             * @param d Plain object
+             * @returns empty
+             */
+            public static fromObject(d: { [k: string]: any }): yuhaiin.listener.empty;
+
+            /**
+             * Creates a plain object from an empty message. Also converts values to other types if specified.
+             * @param m empty
+             * @param [o] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(m: yuhaiin.listener.empty, o?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this empty to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a mux. */
+        interface Imux {
+        }
+
+        /** Represents a mux. */
+        class mux implements Imux {
+
+            /**
+             * Constructs a new mux.
+             * @param [p] Properties to set
+             */
+            constructor(p?: yuhaiin.listener.Imux);
+
+            /**
+             * Creates a new mux instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns mux instance
+             */
+            public static create(properties?: yuhaiin.listener.Imux): yuhaiin.listener.mux;
+
+            /**
+             * Encodes the specified mux message. Does not implicitly {@link yuhaiin.listener.mux.verify|verify} messages.
+             * @param m mux message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: yuhaiin.listener.Imux, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a mux message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns mux
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): yuhaiin.listener.mux;
+
+            /**
+             * Creates a mux message from a plain object. Also converts values to their respective internal types.
+             * @param d Plain object
+             * @returns mux
+             */
+            public static fromObject(d: { [k: string]: any }): yuhaiin.listener.mux;
+
+            /**
+             * Creates a plain object from a mux message. Also converts values to other types if specified.
+             * @param m mux
+             * @param [o] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(m: yuhaiin.listener.mux, o?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this mux to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a tcpudp. */
+        interface Itcpudp {
+
+            /** tcpudp host */
+            host?: (string|null);
+        }
+
+        /** Represents a tcpudp. */
+        class tcpudp implements Itcpudp {
+
+            /**
+             * Constructs a new tcpudp.
+             * @param [p] Properties to set
+             */
+            constructor(p?: yuhaiin.listener.Itcpudp);
+
+            /** tcpudp host. */
+            public host: string;
+
+            /**
+             * Creates a new tcpudp instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns tcpudp instance
+             */
+            public static create(properties?: yuhaiin.listener.Itcpudp): yuhaiin.listener.tcpudp;
+
+            /**
+             * Encodes the specified tcpudp message. Does not implicitly {@link yuhaiin.listener.tcpudp.verify|verify} messages.
+             * @param m tcpudp message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: yuhaiin.listener.Itcpudp, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a tcpudp message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns tcpudp
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): yuhaiin.listener.tcpudp;
+
+            /**
+             * Creates a tcpudp message from a plain object. Also converts values to their respective internal types.
+             * @param d Plain object
+             * @returns tcpudp
+             */
+            public static fromObject(d: { [k: string]: any }): yuhaiin.listener.tcpudp;
+
+            /**
+             * Creates a plain object from a tcpudp message. Also converts values to other types if specified.
+             * @param m tcpudp
+             * @param [o] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(m: yuhaiin.listener.tcpudp, o?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this tcpudp to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a quic2. */
+        interface Iquic2 {
+
+            /** quic2 host */
+            host?: (string|null);
+
+            /** quic2 tls */
+            tls?: (yuhaiin.listener.Itls_config|null);
+        }
+
+        /** Represents a quic2. */
+        class quic2 implements Iquic2 {
+
+            /**
+             * Constructs a new quic2.
+             * @param [p] Properties to set
+             */
+            constructor(p?: yuhaiin.listener.Iquic2);
+
+            /** quic2 host. */
+            public host: string;
+
+            /** quic2 tls. */
+            public tls?: (yuhaiin.listener.Itls_config|null);
+
+            /**
+             * Creates a new quic2 instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns quic2 instance
+             */
+            public static create(properties?: yuhaiin.listener.Iquic2): yuhaiin.listener.quic2;
+
+            /**
+             * Encodes the specified quic2 message. Does not implicitly {@link yuhaiin.listener.quic2.verify|verify} messages.
+             * @param m quic2 message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: yuhaiin.listener.Iquic2, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a quic2 message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns quic2
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): yuhaiin.listener.quic2;
+
+            /**
+             * Creates a quic2 message from a plain object. Also converts values to their respective internal types.
+             * @param d Plain object
+             * @returns quic2
+             */
+            public static fromObject(d: { [k: string]: any }): yuhaiin.listener.quic2;
+
+            /**
+             * Creates a plain object from a quic2 message. Also converts values to other types if specified.
+             * @param m quic2
+             * @param [o] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(m: yuhaiin.listener.quic2, o?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this quic2 to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
         /** Properties of an inbound_config. */
         interface Iinbound_config {
 
+            /** inbound_config hijack_dns */
+            hijack_dns?: (boolean|null);
+
+            /** inbound_config hijack_dns_fakeip */
+            hijack_dns_fakeip?: (boolean|null);
+
             /** inbound_config servers */
             servers?: ({ [k: string]: yuhaiin.listener.Iprotocol }|null);
+
+            /** inbound_config inbounds */
+            inbounds?: ({ [k: string]: yuhaiin.listener.Iinbound }|null);
         }
 
         /** Represents an inbound_config. */
@@ -805,8 +1333,17 @@ export namespace yuhaiin {
              */
             constructor(p?: yuhaiin.listener.Iinbound_config);
 
+            /** inbound_config hijack_dns. */
+            public hijack_dns: boolean;
+
+            /** inbound_config hijack_dns_fakeip. */
+            public hijack_dns_fakeip: boolean;
+
             /** inbound_config servers. */
             public servers: { [k: string]: yuhaiin.listener.Iprotocol };
+
+            /** inbound_config inbounds. */
+            public inbounds: { [k: string]: yuhaiin.listener.Iinbound };
 
             /**
              * Creates a new inbound_config instance using the specified properties.
@@ -944,6 +1481,9 @@ export namespace yuhaiin {
 
             /** socks5 password */
             password?: (string|null);
+
+            /** socks5 udp */
+            udp?: (boolean|null);
         }
 
         /** Represents a socks5. */
@@ -963,6 +1503,9 @@ export namespace yuhaiin {
 
             /** socks5 password. */
             public password: string;
+
+            /** socks5 udp. */
+            public udp: boolean;
 
             /**
              * Creates a new socks5 instance using the specified properties.

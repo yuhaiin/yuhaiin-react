@@ -2313,13 +2313,1402 @@ export const yuhaiin = $root.yuhaiin = (() => {
             return protocol;
         })();
 
+        listener.inbound = (function() {
+
+            /**
+             * Properties of an inbound.
+             * @memberof yuhaiin.listener
+             * @interface Iinbound
+             * @property {string|null} [name] inbound name
+             * @property {boolean|null} [enabled] inbound enabled
+             * @property {boolean|null} [IPv6] inbound IPv6
+             * @property {yuhaiin.listener.Iempty|null} [empty] inbound empty
+             * @property {yuhaiin.listener.Itcpudp|null} [tcpudp] inbound tcpudp
+             * @property {yuhaiin.listener.Iquic2|null} [quic] inbound quic
+             * @property {Array.<yuhaiin.listener.Itransport>|null} [transport] inbound transport
+             * @property {yuhaiin.listener.Ihttp|null} [http] inbound http
+             * @property {yuhaiin.listener.Isocks5|null} [socks5] inbound socks5
+             * @property {yuhaiin.listener.Iyuubinsya|null} [yuubinsya] inbound yuubinsya
+             * @property {yuhaiin.listener.Imixed|null} [mix] inbound mix
+             * @property {yuhaiin.listener.Isocks4a|null} [socks4a] inbound socks4a
+             * @property {yuhaiin.listener.Itproxy|null} [tproxy] inbound tproxy
+             * @property {yuhaiin.listener.Iredir|null} [redir] inbound redir
+             * @property {yuhaiin.listener.Itun|null} [tun] inbound tun
+             */
+
+            /**
+             * Constructs a new inbound.
+             * @memberof yuhaiin.listener
+             * @classdesc Represents an inbound.
+             * @implements Iinbound
+             * @constructor
+             * @param {yuhaiin.listener.Iinbound=} [p] Properties to set
+             */
+            function inbound(p) {
+                this.transport = [];
+                if (p)
+                    for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                        if (p[ks[i]] != null)
+                            this[ks[i]] = p[ks[i]];
+            }
+
+            /**
+             * inbound name.
+             * @member {string} name
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            inbound.prototype.name = "";
+
+            /**
+             * inbound enabled.
+             * @member {boolean} enabled
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            inbound.prototype.enabled = false;
+
+            /**
+             * inbound IPv6.
+             * @member {boolean} IPv6
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            inbound.prototype.IPv6 = false;
+
+            /**
+             * inbound empty.
+             * @member {yuhaiin.listener.Iempty|null|undefined} empty
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            inbound.prototype.empty = null;
+
+            /**
+             * inbound tcpudp.
+             * @member {yuhaiin.listener.Itcpudp|null|undefined} tcpudp
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            inbound.prototype.tcpudp = null;
+
+            /**
+             * inbound quic.
+             * @member {yuhaiin.listener.Iquic2|null|undefined} quic
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            inbound.prototype.quic = null;
+
+            /**
+             * inbound transport.
+             * @member {Array.<yuhaiin.listener.Itransport>} transport
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            inbound.prototype.transport = $util.emptyArray;
+
+            /**
+             * inbound http.
+             * @member {yuhaiin.listener.Ihttp|null|undefined} http
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            inbound.prototype.http = null;
+
+            /**
+             * inbound socks5.
+             * @member {yuhaiin.listener.Isocks5|null|undefined} socks5
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            inbound.prototype.socks5 = null;
+
+            /**
+             * inbound yuubinsya.
+             * @member {yuhaiin.listener.Iyuubinsya|null|undefined} yuubinsya
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            inbound.prototype.yuubinsya = null;
+
+            /**
+             * inbound mix.
+             * @member {yuhaiin.listener.Imixed|null|undefined} mix
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            inbound.prototype.mix = null;
+
+            /**
+             * inbound socks4a.
+             * @member {yuhaiin.listener.Isocks4a|null|undefined} socks4a
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            inbound.prototype.socks4a = null;
+
+            /**
+             * inbound tproxy.
+             * @member {yuhaiin.listener.Itproxy|null|undefined} tproxy
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            inbound.prototype.tproxy = null;
+
+            /**
+             * inbound redir.
+             * @member {yuhaiin.listener.Iredir|null|undefined} redir
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            inbound.prototype.redir = null;
+
+            /**
+             * inbound tun.
+             * @member {yuhaiin.listener.Itun|null|undefined} tun
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            inbound.prototype.tun = null;
+
+            // OneOf field names bound to virtual getters and setters
+            let $oneOfFields;
+
+            /**
+             * inbound network.
+             * @member {"empty"|"tcpudp"|"quic"|undefined} network
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            Object.defineProperty(inbound.prototype, "network", {
+                get: $util.oneOfGetter($oneOfFields = ["empty", "tcpudp", "quic"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * inbound protocol.
+             * @member {"http"|"socks5"|"yuubinsya"|"mix"|"socks4a"|"tproxy"|"redir"|"tun"|undefined} protocol
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             */
+            Object.defineProperty(inbound.prototype, "protocol", {
+                get: $util.oneOfGetter($oneOfFields = ["http", "socks5", "yuubinsya", "mix", "socks4a", "tproxy", "redir", "tun"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Creates a new inbound instance using the specified properties.
+             * @function create
+             * @memberof yuhaiin.listener.inbound
+             * @static
+             * @param {yuhaiin.listener.Iinbound=} [properties] Properties to set
+             * @returns {yuhaiin.listener.inbound} inbound instance
+             */
+            inbound.create = function create(properties) {
+                return new inbound(properties);
+            };
+
+            /**
+             * Encodes the specified inbound message. Does not implicitly {@link yuhaiin.listener.inbound.verify|verify} messages.
+             * @function encode
+             * @memberof yuhaiin.listener.inbound
+             * @static
+             * @param {yuhaiin.listener.Iinbound} m inbound message or plain object to encode
+             * @param {$protobuf.Writer} [w] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            inbound.encode = function encode(m, w) {
+                if (!w)
+                    w = $Writer.create();
+                if (m.transport != null && m.transport.length) {
+                    for (var i = 0; i < m.transport.length; ++i)
+                        $root.yuhaiin.listener.transport.encode(m.transport[i], w.uint32(18).fork()).ldelim();
+                }
+                if (m.http != null && Object.hasOwnProperty.call(m, "http"))
+                    $root.yuhaiin.listener.http.encode(m.http, w.uint32(26).fork()).ldelim();
+                if (m.socks5 != null && Object.hasOwnProperty.call(m, "socks5"))
+                    $root.yuhaiin.listener.socks5.encode(m.socks5, w.uint32(34).fork()).ldelim();
+                if (m.yuubinsya != null && Object.hasOwnProperty.call(m, "yuubinsya"))
+                    $root.yuhaiin.listener.yuubinsya.encode(m.yuubinsya, w.uint32(58).fork()).ldelim();
+                if (m.mix != null && Object.hasOwnProperty.call(m, "mix"))
+                    $root.yuhaiin.listener.mixed.encode(m.mix, w.uint32(66).fork()).ldelim();
+                if (m.socks4a != null && Object.hasOwnProperty.call(m, "socks4a"))
+                    $root.yuhaiin.listener.socks4a.encode(m.socks4a, w.uint32(74).fork()).ldelim();
+                if (m.name != null && Object.hasOwnProperty.call(m, "name"))
+                    w.uint32(106).string(m.name);
+                if (m.enabled != null && Object.hasOwnProperty.call(m, "enabled"))
+                    w.uint32(112).bool(m.enabled);
+                if (m.tcpudp != null && Object.hasOwnProperty.call(m, "tcpudp"))
+                    $root.yuhaiin.listener.tcpudp.encode(m.tcpudp, w.uint32(122).fork()).ldelim();
+                if (m.quic != null && Object.hasOwnProperty.call(m, "quic"))
+                    $root.yuhaiin.listener.quic2.encode(m.quic, w.uint32(130).fork()).ldelim();
+                if (m.IPv6 != null && Object.hasOwnProperty.call(m, "IPv6"))
+                    w.uint32(136).bool(m.IPv6);
+                if (m.redir != null && Object.hasOwnProperty.call(m, "redir"))
+                    $root.yuhaiin.listener.redir.encode(m.redir, w.uint32(146).fork()).ldelim();
+                if (m.tun != null && Object.hasOwnProperty.call(m, "tun"))
+                    $root.yuhaiin.listener.tun.encode(m.tun, w.uint32(154).fork()).ldelim();
+                if (m.tproxy != null && Object.hasOwnProperty.call(m, "tproxy"))
+                    $root.yuhaiin.listener.tproxy.encode(m.tproxy, w.uint32(162).fork()).ldelim();
+                if (m.empty != null && Object.hasOwnProperty.call(m, "empty"))
+                    $root.yuhaiin.listener.empty.encode(m.empty, w.uint32(170).fork()).ldelim();
+                return w;
+            };
+
+            /**
+             * Decodes an inbound message from the specified reader or buffer.
+             * @function decode
+             * @memberof yuhaiin.listener.inbound
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+             * @param {number} [l] Message length if known beforehand
+             * @returns {yuhaiin.listener.inbound} inbound
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            inbound.decode = function decode(r, l) {
+                if (!(r instanceof $Reader))
+                    r = $Reader.create(r);
+                var c = l === undefined ? r.len : r.pos + l, m = new $root.yuhaiin.listener.inbound();
+                while (r.pos < c) {
+                    var t = r.uint32();
+                    switch (t >>> 3) {
+                    case 13: {
+                            m.name = r.string();
+                            break;
+                        }
+                    case 14: {
+                            m.enabled = r.bool();
+                            break;
+                        }
+                    case 17: {
+                            m.IPv6 = r.bool();
+                            break;
+                        }
+                    case 21: {
+                            m.empty = $root.yuhaiin.listener.empty.decode(r, r.uint32());
+                            break;
+                        }
+                    case 15: {
+                            m.tcpudp = $root.yuhaiin.listener.tcpudp.decode(r, r.uint32());
+                            break;
+                        }
+                    case 16: {
+                            m.quic = $root.yuhaiin.listener.quic2.decode(r, r.uint32());
+                            break;
+                        }
+                    case 2: {
+                            if (!(m.transport && m.transport.length))
+                                m.transport = [];
+                            m.transport.push($root.yuhaiin.listener.transport.decode(r, r.uint32()));
+                            break;
+                        }
+                    case 3: {
+                            m.http = $root.yuhaiin.listener.http.decode(r, r.uint32());
+                            break;
+                        }
+                    case 4: {
+                            m.socks5 = $root.yuhaiin.listener.socks5.decode(r, r.uint32());
+                            break;
+                        }
+                    case 7: {
+                            m.yuubinsya = $root.yuhaiin.listener.yuubinsya.decode(r, r.uint32());
+                            break;
+                        }
+                    case 8: {
+                            m.mix = $root.yuhaiin.listener.mixed.decode(r, r.uint32());
+                            break;
+                        }
+                    case 9: {
+                            m.socks4a = $root.yuhaiin.listener.socks4a.decode(r, r.uint32());
+                            break;
+                        }
+                    case 20: {
+                            m.tproxy = $root.yuhaiin.listener.tproxy.decode(r, r.uint32());
+                            break;
+                        }
+                    case 18: {
+                            m.redir = $root.yuhaiin.listener.redir.decode(r, r.uint32());
+                            break;
+                        }
+                    case 19: {
+                            m.tun = $root.yuhaiin.listener.tun.decode(r, r.uint32());
+                            break;
+                        }
+                    default:
+                        r.skipType(t & 7);
+                        break;
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates an inbound message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof yuhaiin.listener.inbound
+             * @static
+             * @param {Object.<string,*>} d Plain object
+             * @returns {yuhaiin.listener.inbound} inbound
+             */
+            inbound.fromObject = function fromObject(d) {
+                if (d instanceof $root.yuhaiin.listener.inbound)
+                    return d;
+                var m = new $root.yuhaiin.listener.inbound();
+                if (d.name != null) {
+                    m.name = String(d.name);
+                }
+                if (d.enabled != null) {
+                    m.enabled = Boolean(d.enabled);
+                }
+                if (d.IPv6 != null) {
+                    m.IPv6 = Boolean(d.IPv6);
+                }
+                if (d.empty != null) {
+                    if (typeof d.empty !== "object")
+                        throw TypeError(".yuhaiin.listener.inbound.empty: object expected");
+                    m.empty = $root.yuhaiin.listener.empty.fromObject(d.empty);
+                }
+                if (d.tcpudp != null) {
+                    if (typeof d.tcpudp !== "object")
+                        throw TypeError(".yuhaiin.listener.inbound.tcpudp: object expected");
+                    m.tcpudp = $root.yuhaiin.listener.tcpudp.fromObject(d.tcpudp);
+                }
+                if (d.quic != null) {
+                    if (typeof d.quic !== "object")
+                        throw TypeError(".yuhaiin.listener.inbound.quic: object expected");
+                    m.quic = $root.yuhaiin.listener.quic2.fromObject(d.quic);
+                }
+                if (d.transport) {
+                    if (!Array.isArray(d.transport))
+                        throw TypeError(".yuhaiin.listener.inbound.transport: array expected");
+                    m.transport = [];
+                    for (var i = 0; i < d.transport.length; ++i) {
+                        if (typeof d.transport[i] !== "object")
+                            throw TypeError(".yuhaiin.listener.inbound.transport: object expected");
+                        m.transport[i] = $root.yuhaiin.listener.transport.fromObject(d.transport[i]);
+                    }
+                }
+                if (d.http != null) {
+                    if (typeof d.http !== "object")
+                        throw TypeError(".yuhaiin.listener.inbound.http: object expected");
+                    m.http = $root.yuhaiin.listener.http.fromObject(d.http);
+                }
+                if (d.socks5 != null) {
+                    if (typeof d.socks5 !== "object")
+                        throw TypeError(".yuhaiin.listener.inbound.socks5: object expected");
+                    m.socks5 = $root.yuhaiin.listener.socks5.fromObject(d.socks5);
+                }
+                if (d.yuubinsya != null) {
+                    if (typeof d.yuubinsya !== "object")
+                        throw TypeError(".yuhaiin.listener.inbound.yuubinsya: object expected");
+                    m.yuubinsya = $root.yuhaiin.listener.yuubinsya.fromObject(d.yuubinsya);
+                }
+                if (d.mix != null) {
+                    if (typeof d.mix !== "object")
+                        throw TypeError(".yuhaiin.listener.inbound.mix: object expected");
+                    m.mix = $root.yuhaiin.listener.mixed.fromObject(d.mix);
+                }
+                if (d.socks4a != null) {
+                    if (typeof d.socks4a !== "object")
+                        throw TypeError(".yuhaiin.listener.inbound.socks4a: object expected");
+                    m.socks4a = $root.yuhaiin.listener.socks4a.fromObject(d.socks4a);
+                }
+                if (d.tproxy != null) {
+                    if (typeof d.tproxy !== "object")
+                        throw TypeError(".yuhaiin.listener.inbound.tproxy: object expected");
+                    m.tproxy = $root.yuhaiin.listener.tproxy.fromObject(d.tproxy);
+                }
+                if (d.redir != null) {
+                    if (typeof d.redir !== "object")
+                        throw TypeError(".yuhaiin.listener.inbound.redir: object expected");
+                    m.redir = $root.yuhaiin.listener.redir.fromObject(d.redir);
+                }
+                if (d.tun != null) {
+                    if (typeof d.tun !== "object")
+                        throw TypeError(".yuhaiin.listener.inbound.tun: object expected");
+                    m.tun = $root.yuhaiin.listener.tun.fromObject(d.tun);
+                }
+                return m;
+            };
+
+            /**
+             * Creates a plain object from an inbound message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof yuhaiin.listener.inbound
+             * @static
+             * @param {yuhaiin.listener.inbound} m inbound
+             * @param {$protobuf.IConversionOptions} [o] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            inbound.toObject = function toObject(m, o) {
+                if (!o)
+                    o = {};
+                var d = {};
+                if (o.arrays || o.defaults) {
+                    d.transport = [];
+                }
+                if (o.defaults) {
+                    d.name = "";
+                    d.enabled = false;
+                    d.IPv6 = false;
+                }
+                if (m.transport && m.transport.length) {
+                    d.transport = [];
+                    for (var j = 0; j < m.transport.length; ++j) {
+                        d.transport[j] = $root.yuhaiin.listener.transport.toObject(m.transport[j], o);
+                    }
+                }
+                if (m.http != null && m.hasOwnProperty("http")) {
+                    d.http = $root.yuhaiin.listener.http.toObject(m.http, o);
+                    if (o.oneofs)
+                        d.protocol = "http";
+                }
+                if (m.socks5 != null && m.hasOwnProperty("socks5")) {
+                    d.socks5 = $root.yuhaiin.listener.socks5.toObject(m.socks5, o);
+                    if (o.oneofs)
+                        d.protocol = "socks5";
+                }
+                if (m.yuubinsya != null && m.hasOwnProperty("yuubinsya")) {
+                    d.yuubinsya = $root.yuhaiin.listener.yuubinsya.toObject(m.yuubinsya, o);
+                    if (o.oneofs)
+                        d.protocol = "yuubinsya";
+                }
+                if (m.mix != null && m.hasOwnProperty("mix")) {
+                    d.mix = $root.yuhaiin.listener.mixed.toObject(m.mix, o);
+                    if (o.oneofs)
+                        d.protocol = "mix";
+                }
+                if (m.socks4a != null && m.hasOwnProperty("socks4a")) {
+                    d.socks4a = $root.yuhaiin.listener.socks4a.toObject(m.socks4a, o);
+                    if (o.oneofs)
+                        d.protocol = "socks4a";
+                }
+                if (m.name != null && m.hasOwnProperty("name")) {
+                    d.name = m.name;
+                }
+                if (m.enabled != null && m.hasOwnProperty("enabled")) {
+                    d.enabled = m.enabled;
+                }
+                if (m.tcpudp != null && m.hasOwnProperty("tcpudp")) {
+                    d.tcpudp = $root.yuhaiin.listener.tcpudp.toObject(m.tcpudp, o);
+                    if (o.oneofs)
+                        d.network = "tcpudp";
+                }
+                if (m.quic != null && m.hasOwnProperty("quic")) {
+                    d.quic = $root.yuhaiin.listener.quic2.toObject(m.quic, o);
+                    if (o.oneofs)
+                        d.network = "quic";
+                }
+                if (m.IPv6 != null && m.hasOwnProperty("IPv6")) {
+                    d.IPv6 = m.IPv6;
+                }
+                if (m.redir != null && m.hasOwnProperty("redir")) {
+                    d.redir = $root.yuhaiin.listener.redir.toObject(m.redir, o);
+                    if (o.oneofs)
+                        d.protocol = "redir";
+                }
+                if (m.tun != null && m.hasOwnProperty("tun")) {
+                    d.tun = $root.yuhaiin.listener.tun.toObject(m.tun, o);
+                    if (o.oneofs)
+                        d.protocol = "tun";
+                }
+                if (m.tproxy != null && m.hasOwnProperty("tproxy")) {
+                    d.tproxy = $root.yuhaiin.listener.tproxy.toObject(m.tproxy, o);
+                    if (o.oneofs)
+                        d.protocol = "tproxy";
+                }
+                if (m.empty != null && m.hasOwnProperty("empty")) {
+                    d.empty = $root.yuhaiin.listener.empty.toObject(m.empty, o);
+                    if (o.oneofs)
+                        d.network = "empty";
+                }
+                return d;
+            };
+
+            /**
+             * Converts this inbound to JSON.
+             * @function toJSON
+             * @memberof yuhaiin.listener.inbound
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            inbound.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            return inbound;
+        })();
+
+        listener.transport = (function() {
+
+            /**
+             * Properties of a transport.
+             * @memberof yuhaiin.listener
+             * @interface Itransport
+             * @property {yuhaiin.listener.Inormal|null} [normal] transport normal
+             * @property {yuhaiin.listener.Itls|null} [tls] transport tls
+             * @property {yuhaiin.listener.Imux|null} [mux] transport mux
+             * @property {yuhaiin.listener.Ihttp2|null} [http2] transport http2
+             * @property {yuhaiin.listener.Iwebsocket|null} [websocket] transport websocket
+             * @property {yuhaiin.listener.Igrpc|null} [grpc] transport grpc
+             * @property {yuhaiin.listener.Ireality|null} [reality] transport reality
+             */
+
+            /**
+             * Constructs a new transport.
+             * @memberof yuhaiin.listener
+             * @classdesc Represents a transport.
+             * @implements Itransport
+             * @constructor
+             * @param {yuhaiin.listener.Itransport=} [p] Properties to set
+             */
+            function transport(p) {
+                if (p)
+                    for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                        if (p[ks[i]] != null)
+                            this[ks[i]] = p[ks[i]];
+            }
+
+            /**
+             * transport normal.
+             * @member {yuhaiin.listener.Inormal|null|undefined} normal
+             * @memberof yuhaiin.listener.transport
+             * @instance
+             */
+            transport.prototype.normal = null;
+
+            /**
+             * transport tls.
+             * @member {yuhaiin.listener.Itls|null|undefined} tls
+             * @memberof yuhaiin.listener.transport
+             * @instance
+             */
+            transport.prototype.tls = null;
+
+            /**
+             * transport mux.
+             * @member {yuhaiin.listener.Imux|null|undefined} mux
+             * @memberof yuhaiin.listener.transport
+             * @instance
+             */
+            transport.prototype.mux = null;
+
+            /**
+             * transport http2.
+             * @member {yuhaiin.listener.Ihttp2|null|undefined} http2
+             * @memberof yuhaiin.listener.transport
+             * @instance
+             */
+            transport.prototype.http2 = null;
+
+            /**
+             * transport websocket.
+             * @member {yuhaiin.listener.Iwebsocket|null|undefined} websocket
+             * @memberof yuhaiin.listener.transport
+             * @instance
+             */
+            transport.prototype.websocket = null;
+
+            /**
+             * transport grpc.
+             * @member {yuhaiin.listener.Igrpc|null|undefined} grpc
+             * @memberof yuhaiin.listener.transport
+             * @instance
+             */
+            transport.prototype.grpc = null;
+
+            /**
+             * transport reality.
+             * @member {yuhaiin.listener.Ireality|null|undefined} reality
+             * @memberof yuhaiin.listener.transport
+             * @instance
+             */
+            transport.prototype.reality = null;
+
+            // OneOf field names bound to virtual getters and setters
+            let $oneOfFields;
+
+            /**
+             * transport transport.
+             * @member {"normal"|"tls"|"mux"|"http2"|"websocket"|"grpc"|"reality"|undefined} transport
+             * @memberof yuhaiin.listener.transport
+             * @instance
+             */
+            Object.defineProperty(transport.prototype, "transport", {
+                get: $util.oneOfGetter($oneOfFields = ["normal", "tls", "mux", "http2", "websocket", "grpc", "reality"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Creates a new transport instance using the specified properties.
+             * @function create
+             * @memberof yuhaiin.listener.transport
+             * @static
+             * @param {yuhaiin.listener.Itransport=} [properties] Properties to set
+             * @returns {yuhaiin.listener.transport} transport instance
+             */
+            transport.create = function create(properties) {
+                return new transport(properties);
+            };
+
+            /**
+             * Encodes the specified transport message. Does not implicitly {@link yuhaiin.listener.transport.verify|verify} messages.
+             * @function encode
+             * @memberof yuhaiin.listener.transport
+             * @static
+             * @param {yuhaiin.listener.Itransport} m transport message or plain object to encode
+             * @param {$protobuf.Writer} [w] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            transport.encode = function encode(m, w) {
+                if (!w)
+                    w = $Writer.create();
+                if (m.tls != null && Object.hasOwnProperty.call(m, "tls"))
+                    $root.yuhaiin.listener.tls.encode(m.tls, w.uint32(10).fork()).ldelim();
+                if (m.mux != null && Object.hasOwnProperty.call(m, "mux"))
+                    $root.yuhaiin.listener.mux.encode(m.mux, w.uint32(18).fork()).ldelim();
+                if (m.http2 != null && Object.hasOwnProperty.call(m, "http2"))
+                    $root.yuhaiin.listener.http2.encode(m.http2, w.uint32(42).fork()).ldelim();
+                if (m.websocket != null && Object.hasOwnProperty.call(m, "websocket"))
+                    $root.yuhaiin.listener.websocket.encode(m.websocket, w.uint32(50).fork()).ldelim();
+                if (m.reality != null && Object.hasOwnProperty.call(m, "reality"))
+                    $root.yuhaiin.listener.reality.encode(m.reality, w.uint32(82).fork()).ldelim();
+                if (m.grpc != null && Object.hasOwnProperty.call(m, "grpc"))
+                    $root.yuhaiin.listener.grpc.encode(m.grpc, w.uint32(90).fork()).ldelim();
+                if (m.normal != null && Object.hasOwnProperty.call(m, "normal"))
+                    $root.yuhaiin.listener.normal.encode(m.normal, w.uint32(98).fork()).ldelim();
+                return w;
+            };
+
+            /**
+             * Decodes a transport message from the specified reader or buffer.
+             * @function decode
+             * @memberof yuhaiin.listener.transport
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+             * @param {number} [l] Message length if known beforehand
+             * @returns {yuhaiin.listener.transport} transport
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            transport.decode = function decode(r, l) {
+                if (!(r instanceof $Reader))
+                    r = $Reader.create(r);
+                var c = l === undefined ? r.len : r.pos + l, m = new $root.yuhaiin.listener.transport();
+                while (r.pos < c) {
+                    var t = r.uint32();
+                    switch (t >>> 3) {
+                    case 12: {
+                            m.normal = $root.yuhaiin.listener.normal.decode(r, r.uint32());
+                            break;
+                        }
+                    case 1: {
+                            m.tls = $root.yuhaiin.listener.tls.decode(r, r.uint32());
+                            break;
+                        }
+                    case 2: {
+                            m.mux = $root.yuhaiin.listener.mux.decode(r, r.uint32());
+                            break;
+                        }
+                    case 5: {
+                            m.http2 = $root.yuhaiin.listener.http2.decode(r, r.uint32());
+                            break;
+                        }
+                    case 6: {
+                            m.websocket = $root.yuhaiin.listener.websocket.decode(r, r.uint32());
+                            break;
+                        }
+                    case 11: {
+                            m.grpc = $root.yuhaiin.listener.grpc.decode(r, r.uint32());
+                            break;
+                        }
+                    case 10: {
+                            m.reality = $root.yuhaiin.listener.reality.decode(r, r.uint32());
+                            break;
+                        }
+                    default:
+                        r.skipType(t & 7);
+                        break;
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates a transport message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof yuhaiin.listener.transport
+             * @static
+             * @param {Object.<string,*>} d Plain object
+             * @returns {yuhaiin.listener.transport} transport
+             */
+            transport.fromObject = function fromObject(d) {
+                if (d instanceof $root.yuhaiin.listener.transport)
+                    return d;
+                var m = new $root.yuhaiin.listener.transport();
+                if (d.normal != null) {
+                    if (typeof d.normal !== "object")
+                        throw TypeError(".yuhaiin.listener.transport.normal: object expected");
+                    m.normal = $root.yuhaiin.listener.normal.fromObject(d.normal);
+                }
+                if (d.tls != null) {
+                    if (typeof d.tls !== "object")
+                        throw TypeError(".yuhaiin.listener.transport.tls: object expected");
+                    m.tls = $root.yuhaiin.listener.tls.fromObject(d.tls);
+                }
+                if (d.mux != null) {
+                    if (typeof d.mux !== "object")
+                        throw TypeError(".yuhaiin.listener.transport.mux: object expected");
+                    m.mux = $root.yuhaiin.listener.mux.fromObject(d.mux);
+                }
+                if (d.http2 != null) {
+                    if (typeof d.http2 !== "object")
+                        throw TypeError(".yuhaiin.listener.transport.http2: object expected");
+                    m.http2 = $root.yuhaiin.listener.http2.fromObject(d.http2);
+                }
+                if (d.websocket != null) {
+                    if (typeof d.websocket !== "object")
+                        throw TypeError(".yuhaiin.listener.transport.websocket: object expected");
+                    m.websocket = $root.yuhaiin.listener.websocket.fromObject(d.websocket);
+                }
+                if (d.grpc != null) {
+                    if (typeof d.grpc !== "object")
+                        throw TypeError(".yuhaiin.listener.transport.grpc: object expected");
+                    m.grpc = $root.yuhaiin.listener.grpc.fromObject(d.grpc);
+                }
+                if (d.reality != null) {
+                    if (typeof d.reality !== "object")
+                        throw TypeError(".yuhaiin.listener.transport.reality: object expected");
+                    m.reality = $root.yuhaiin.listener.reality.fromObject(d.reality);
+                }
+                return m;
+            };
+
+            /**
+             * Creates a plain object from a transport message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof yuhaiin.listener.transport
+             * @static
+             * @param {yuhaiin.listener.transport} m transport
+             * @param {$protobuf.IConversionOptions} [o] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            transport.toObject = function toObject(m, o) {
+                if (!o)
+                    o = {};
+                var d = {};
+                if (m.tls != null && m.hasOwnProperty("tls")) {
+                    d.tls = $root.yuhaiin.listener.tls.toObject(m.tls, o);
+                    if (o.oneofs)
+                        d.transport = "tls";
+                }
+                if (m.mux != null && m.hasOwnProperty("mux")) {
+                    d.mux = $root.yuhaiin.listener.mux.toObject(m.mux, o);
+                    if (o.oneofs)
+                        d.transport = "mux";
+                }
+                if (m.http2 != null && m.hasOwnProperty("http2")) {
+                    d.http2 = $root.yuhaiin.listener.http2.toObject(m.http2, o);
+                    if (o.oneofs)
+                        d.transport = "http2";
+                }
+                if (m.websocket != null && m.hasOwnProperty("websocket")) {
+                    d.websocket = $root.yuhaiin.listener.websocket.toObject(m.websocket, o);
+                    if (o.oneofs)
+                        d.transport = "websocket";
+                }
+                if (m.reality != null && m.hasOwnProperty("reality")) {
+                    d.reality = $root.yuhaiin.listener.reality.toObject(m.reality, o);
+                    if (o.oneofs)
+                        d.transport = "reality";
+                }
+                if (m.grpc != null && m.hasOwnProperty("grpc")) {
+                    d.grpc = $root.yuhaiin.listener.grpc.toObject(m.grpc, o);
+                    if (o.oneofs)
+                        d.transport = "grpc";
+                }
+                if (m.normal != null && m.hasOwnProperty("normal")) {
+                    d.normal = $root.yuhaiin.listener.normal.toObject(m.normal, o);
+                    if (o.oneofs)
+                        d.transport = "normal";
+                }
+                return d;
+            };
+
+            /**
+             * Converts this transport to JSON.
+             * @function toJSON
+             * @memberof yuhaiin.listener.transport
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            transport.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            return transport;
+        })();
+
+        listener.empty = (function() {
+
+            /**
+             * Properties of an empty.
+             * @memberof yuhaiin.listener
+             * @interface Iempty
+             */
+
+            /**
+             * Constructs a new empty.
+             * @memberof yuhaiin.listener
+             * @classdesc Represents an empty.
+             * @implements Iempty
+             * @constructor
+             * @param {yuhaiin.listener.Iempty=} [p] Properties to set
+             */
+            function empty(p) {
+                if (p)
+                    for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                        if (p[ks[i]] != null)
+                            this[ks[i]] = p[ks[i]];
+            }
+
+            /**
+             * Creates a new empty instance using the specified properties.
+             * @function create
+             * @memberof yuhaiin.listener.empty
+             * @static
+             * @param {yuhaiin.listener.Iempty=} [properties] Properties to set
+             * @returns {yuhaiin.listener.empty} empty instance
+             */
+            empty.create = function create(properties) {
+                return new empty(properties);
+            };
+
+            /**
+             * Encodes the specified empty message. Does not implicitly {@link yuhaiin.listener.empty.verify|verify} messages.
+             * @function encode
+             * @memberof yuhaiin.listener.empty
+             * @static
+             * @param {yuhaiin.listener.Iempty} m empty message or plain object to encode
+             * @param {$protobuf.Writer} [w] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            empty.encode = function encode(m, w) {
+                if (!w)
+                    w = $Writer.create();
+                return w;
+            };
+
+            /**
+             * Decodes an empty message from the specified reader or buffer.
+             * @function decode
+             * @memberof yuhaiin.listener.empty
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+             * @param {number} [l] Message length if known beforehand
+             * @returns {yuhaiin.listener.empty} empty
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            empty.decode = function decode(r, l) {
+                if (!(r instanceof $Reader))
+                    r = $Reader.create(r);
+                var c = l === undefined ? r.len : r.pos + l, m = new $root.yuhaiin.listener.empty();
+                while (r.pos < c) {
+                    var t = r.uint32();
+                    switch (t >>> 3) {
+                    default:
+                        r.skipType(t & 7);
+                        break;
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates an empty message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof yuhaiin.listener.empty
+             * @static
+             * @param {Object.<string,*>} d Plain object
+             * @returns {yuhaiin.listener.empty} empty
+             */
+            empty.fromObject = function fromObject(d) {
+                if (d instanceof $root.yuhaiin.listener.empty)
+                    return d;
+                return new $root.yuhaiin.listener.empty();
+            };
+
+            /**
+             * Creates a plain object from an empty message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof yuhaiin.listener.empty
+             * @static
+             * @param {yuhaiin.listener.empty} m empty
+             * @param {$protobuf.IConversionOptions} [o] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            empty.toObject = function toObject() {
+                return {};
+            };
+
+            /**
+             * Converts this empty to JSON.
+             * @function toJSON
+             * @memberof yuhaiin.listener.empty
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            empty.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            return empty;
+        })();
+
+        listener.mux = (function() {
+
+            /**
+             * Properties of a mux.
+             * @memberof yuhaiin.listener
+             * @interface Imux
+             */
+
+            /**
+             * Constructs a new mux.
+             * @memberof yuhaiin.listener
+             * @classdesc Represents a mux.
+             * @implements Imux
+             * @constructor
+             * @param {yuhaiin.listener.Imux=} [p] Properties to set
+             */
+            function mux(p) {
+                if (p)
+                    for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                        if (p[ks[i]] != null)
+                            this[ks[i]] = p[ks[i]];
+            }
+
+            /**
+             * Creates a new mux instance using the specified properties.
+             * @function create
+             * @memberof yuhaiin.listener.mux
+             * @static
+             * @param {yuhaiin.listener.Imux=} [properties] Properties to set
+             * @returns {yuhaiin.listener.mux} mux instance
+             */
+            mux.create = function create(properties) {
+                return new mux(properties);
+            };
+
+            /**
+             * Encodes the specified mux message. Does not implicitly {@link yuhaiin.listener.mux.verify|verify} messages.
+             * @function encode
+             * @memberof yuhaiin.listener.mux
+             * @static
+             * @param {yuhaiin.listener.Imux} m mux message or plain object to encode
+             * @param {$protobuf.Writer} [w] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            mux.encode = function encode(m, w) {
+                if (!w)
+                    w = $Writer.create();
+                return w;
+            };
+
+            /**
+             * Decodes a mux message from the specified reader or buffer.
+             * @function decode
+             * @memberof yuhaiin.listener.mux
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+             * @param {number} [l] Message length if known beforehand
+             * @returns {yuhaiin.listener.mux} mux
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            mux.decode = function decode(r, l) {
+                if (!(r instanceof $Reader))
+                    r = $Reader.create(r);
+                var c = l === undefined ? r.len : r.pos + l, m = new $root.yuhaiin.listener.mux();
+                while (r.pos < c) {
+                    var t = r.uint32();
+                    switch (t >>> 3) {
+                    default:
+                        r.skipType(t & 7);
+                        break;
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates a mux message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof yuhaiin.listener.mux
+             * @static
+             * @param {Object.<string,*>} d Plain object
+             * @returns {yuhaiin.listener.mux} mux
+             */
+            mux.fromObject = function fromObject(d) {
+                if (d instanceof $root.yuhaiin.listener.mux)
+                    return d;
+                return new $root.yuhaiin.listener.mux();
+            };
+
+            /**
+             * Creates a plain object from a mux message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof yuhaiin.listener.mux
+             * @static
+             * @param {yuhaiin.listener.mux} m mux
+             * @param {$protobuf.IConversionOptions} [o] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            mux.toObject = function toObject() {
+                return {};
+            };
+
+            /**
+             * Converts this mux to JSON.
+             * @function toJSON
+             * @memberof yuhaiin.listener.mux
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            mux.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            return mux;
+        })();
+
+        listener.tcpudp = (function() {
+
+            /**
+             * Properties of a tcpudp.
+             * @memberof yuhaiin.listener
+             * @interface Itcpudp
+             * @property {string|null} [host] tcpudp host
+             */
+
+            /**
+             * Constructs a new tcpudp.
+             * @memberof yuhaiin.listener
+             * @classdesc Represents a tcpudp.
+             * @implements Itcpudp
+             * @constructor
+             * @param {yuhaiin.listener.Itcpudp=} [p] Properties to set
+             */
+            function tcpudp(p) {
+                if (p)
+                    for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                        if (p[ks[i]] != null)
+                            this[ks[i]] = p[ks[i]];
+            }
+
+            /**
+             * tcpudp host.
+             * @member {string} host
+             * @memberof yuhaiin.listener.tcpudp
+             * @instance
+             */
+            tcpudp.prototype.host = "";
+
+            /**
+             * Creates a new tcpudp instance using the specified properties.
+             * @function create
+             * @memberof yuhaiin.listener.tcpudp
+             * @static
+             * @param {yuhaiin.listener.Itcpudp=} [properties] Properties to set
+             * @returns {yuhaiin.listener.tcpudp} tcpudp instance
+             */
+            tcpudp.create = function create(properties) {
+                return new tcpudp(properties);
+            };
+
+            /**
+             * Encodes the specified tcpudp message. Does not implicitly {@link yuhaiin.listener.tcpudp.verify|verify} messages.
+             * @function encode
+             * @memberof yuhaiin.listener.tcpudp
+             * @static
+             * @param {yuhaiin.listener.Itcpudp} m tcpudp message or plain object to encode
+             * @param {$protobuf.Writer} [w] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            tcpudp.encode = function encode(m, w) {
+                if (!w)
+                    w = $Writer.create();
+                if (m.host != null && Object.hasOwnProperty.call(m, "host"))
+                    w.uint32(10).string(m.host);
+                return w;
+            };
+
+            /**
+             * Decodes a tcpudp message from the specified reader or buffer.
+             * @function decode
+             * @memberof yuhaiin.listener.tcpudp
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+             * @param {number} [l] Message length if known beforehand
+             * @returns {yuhaiin.listener.tcpudp} tcpudp
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            tcpudp.decode = function decode(r, l) {
+                if (!(r instanceof $Reader))
+                    r = $Reader.create(r);
+                var c = l === undefined ? r.len : r.pos + l, m = new $root.yuhaiin.listener.tcpudp();
+                while (r.pos < c) {
+                    var t = r.uint32();
+                    switch (t >>> 3) {
+                    case 1: {
+                            m.host = r.string();
+                            break;
+                        }
+                    default:
+                        r.skipType(t & 7);
+                        break;
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates a tcpudp message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof yuhaiin.listener.tcpudp
+             * @static
+             * @param {Object.<string,*>} d Plain object
+             * @returns {yuhaiin.listener.tcpudp} tcpudp
+             */
+            tcpudp.fromObject = function fromObject(d) {
+                if (d instanceof $root.yuhaiin.listener.tcpudp)
+                    return d;
+                var m = new $root.yuhaiin.listener.tcpudp();
+                if (d.host != null) {
+                    m.host = String(d.host);
+                }
+                return m;
+            };
+
+            /**
+             * Creates a plain object from a tcpudp message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof yuhaiin.listener.tcpudp
+             * @static
+             * @param {yuhaiin.listener.tcpudp} m tcpudp
+             * @param {$protobuf.IConversionOptions} [o] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            tcpudp.toObject = function toObject(m, o) {
+                if (!o)
+                    o = {};
+                var d = {};
+                if (o.defaults) {
+                    d.host = "";
+                }
+                if (m.host != null && m.hasOwnProperty("host")) {
+                    d.host = m.host;
+                }
+                return d;
+            };
+
+            /**
+             * Converts this tcpudp to JSON.
+             * @function toJSON
+             * @memberof yuhaiin.listener.tcpudp
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            tcpudp.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            return tcpudp;
+        })();
+
+        listener.quic2 = (function() {
+
+            /**
+             * Properties of a quic2.
+             * @memberof yuhaiin.listener
+             * @interface Iquic2
+             * @property {string|null} [host] quic2 host
+             * @property {yuhaiin.listener.Itls_config|null} [tls] quic2 tls
+             */
+
+            /**
+             * Constructs a new quic2.
+             * @memberof yuhaiin.listener
+             * @classdesc Represents a quic2.
+             * @implements Iquic2
+             * @constructor
+             * @param {yuhaiin.listener.Iquic2=} [p] Properties to set
+             */
+            function quic2(p) {
+                if (p)
+                    for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                        if (p[ks[i]] != null)
+                            this[ks[i]] = p[ks[i]];
+            }
+
+            /**
+             * quic2 host.
+             * @member {string} host
+             * @memberof yuhaiin.listener.quic2
+             * @instance
+             */
+            quic2.prototype.host = "";
+
+            /**
+             * quic2 tls.
+             * @member {yuhaiin.listener.Itls_config|null|undefined} tls
+             * @memberof yuhaiin.listener.quic2
+             * @instance
+             */
+            quic2.prototype.tls = null;
+
+            /**
+             * Creates a new quic2 instance using the specified properties.
+             * @function create
+             * @memberof yuhaiin.listener.quic2
+             * @static
+             * @param {yuhaiin.listener.Iquic2=} [properties] Properties to set
+             * @returns {yuhaiin.listener.quic2} quic2 instance
+             */
+            quic2.create = function create(properties) {
+                return new quic2(properties);
+            };
+
+            /**
+             * Encodes the specified quic2 message. Does not implicitly {@link yuhaiin.listener.quic2.verify|verify} messages.
+             * @function encode
+             * @memberof yuhaiin.listener.quic2
+             * @static
+             * @param {yuhaiin.listener.Iquic2} m quic2 message or plain object to encode
+             * @param {$protobuf.Writer} [w] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            quic2.encode = function encode(m, w) {
+                if (!w)
+                    w = $Writer.create();
+                if (m.host != null && Object.hasOwnProperty.call(m, "host"))
+                    w.uint32(10).string(m.host);
+                if (m.tls != null && Object.hasOwnProperty.call(m, "tls"))
+                    $root.yuhaiin.listener.tls_config.encode(m.tls, w.uint32(26).fork()).ldelim();
+                return w;
+            };
+
+            /**
+             * Decodes a quic2 message from the specified reader or buffer.
+             * @function decode
+             * @memberof yuhaiin.listener.quic2
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+             * @param {number} [l] Message length if known beforehand
+             * @returns {yuhaiin.listener.quic2} quic2
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            quic2.decode = function decode(r, l) {
+                if (!(r instanceof $Reader))
+                    r = $Reader.create(r);
+                var c = l === undefined ? r.len : r.pos + l, m = new $root.yuhaiin.listener.quic2();
+                while (r.pos < c) {
+                    var t = r.uint32();
+                    switch (t >>> 3) {
+                    case 1: {
+                            m.host = r.string();
+                            break;
+                        }
+                    case 3: {
+                            m.tls = $root.yuhaiin.listener.tls_config.decode(r, r.uint32());
+                            break;
+                        }
+                    default:
+                        r.skipType(t & 7);
+                        break;
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates a quic2 message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof yuhaiin.listener.quic2
+             * @static
+             * @param {Object.<string,*>} d Plain object
+             * @returns {yuhaiin.listener.quic2} quic2
+             */
+            quic2.fromObject = function fromObject(d) {
+                if (d instanceof $root.yuhaiin.listener.quic2)
+                    return d;
+                var m = new $root.yuhaiin.listener.quic2();
+                if (d.host != null) {
+                    m.host = String(d.host);
+                }
+                if (d.tls != null) {
+                    if (typeof d.tls !== "object")
+                        throw TypeError(".yuhaiin.listener.quic2.tls: object expected");
+                    m.tls = $root.yuhaiin.listener.tls_config.fromObject(d.tls);
+                }
+                return m;
+            };
+
+            /**
+             * Creates a plain object from a quic2 message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof yuhaiin.listener.quic2
+             * @static
+             * @param {yuhaiin.listener.quic2} m quic2
+             * @param {$protobuf.IConversionOptions} [o] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            quic2.toObject = function toObject(m, o) {
+                if (!o)
+                    o = {};
+                var d = {};
+                if (o.defaults) {
+                    d.host = "";
+                    d.tls = null;
+                }
+                if (m.host != null && m.hasOwnProperty("host")) {
+                    d.host = m.host;
+                }
+                if (m.tls != null && m.hasOwnProperty("tls")) {
+                    d.tls = $root.yuhaiin.listener.tls_config.toObject(m.tls, o);
+                }
+                return d;
+            };
+
+            /**
+             * Converts this quic2 to JSON.
+             * @function toJSON
+             * @memberof yuhaiin.listener.quic2
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            quic2.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            return quic2;
+        })();
+
         listener.inbound_config = (function() {
 
             /**
              * Properties of an inbound_config.
              * @memberof yuhaiin.listener
              * @interface Iinbound_config
+             * @property {boolean|null} [hijack_dns] inbound_config hijack_dns
+             * @property {boolean|null} [hijack_dns_fakeip] inbound_config hijack_dns_fakeip
              * @property {Object.<string,yuhaiin.listener.Iprotocol>|null} [servers] inbound_config servers
+             * @property {Object.<string,yuhaiin.listener.Iinbound>|null} [inbounds] inbound_config inbounds
              */
 
             /**
@@ -2332,11 +3721,28 @@ export const yuhaiin = $root.yuhaiin = (() => {
              */
             function inbound_config(p) {
                 this.servers = {};
+                this.inbounds = {};
                 if (p)
                     for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
                         if (p[ks[i]] != null)
                             this[ks[i]] = p[ks[i]];
             }
+
+            /**
+             * inbound_config hijack_dns.
+             * @member {boolean} hijack_dns
+             * @memberof yuhaiin.listener.inbound_config
+             * @instance
+             */
+            inbound_config.prototype.hijack_dns = false;
+
+            /**
+             * inbound_config hijack_dns_fakeip.
+             * @member {boolean} hijack_dns_fakeip
+             * @memberof yuhaiin.listener.inbound_config
+             * @instance
+             */
+            inbound_config.prototype.hijack_dns_fakeip = false;
 
             /**
              * inbound_config servers.
@@ -2345,6 +3751,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @instance
              */
             inbound_config.prototype.servers = $util.emptyObject;
+
+            /**
+             * inbound_config inbounds.
+             * @member {Object.<string,yuhaiin.listener.Iinbound>} inbounds
+             * @memberof yuhaiin.listener.inbound_config
+             * @instance
+             */
+            inbound_config.prototype.inbounds = $util.emptyObject;
 
             /**
              * Creates a new inbound_config instance using the specified properties.
@@ -2370,6 +3784,16 @@ export const yuhaiin = $root.yuhaiin = (() => {
             inbound_config.encode = function encode(m, w) {
                 if (!w)
                     w = $Writer.create();
+                if (m.inbounds != null && Object.hasOwnProperty.call(m, "inbounds")) {
+                    for (var ks = Object.keys(m.inbounds), i = 0; i < ks.length; ++i) {
+                        w.uint32(10).fork().uint32(10).string(ks[i]);
+                        $root.yuhaiin.listener.inbound.encode(m.inbounds[ks[i]], w.uint32(18).fork()).ldelim().ldelim();
+                    }
+                }
+                if (m.hijack_dns != null && Object.hasOwnProperty.call(m, "hijack_dns"))
+                    w.uint32(16).bool(m.hijack_dns);
+                if (m.hijack_dns_fakeip != null && Object.hasOwnProperty.call(m, "hijack_dns_fakeip"))
+                    w.uint32(24).bool(m.hijack_dns_fakeip);
                 if (m.servers != null && Object.hasOwnProperty.call(m, "servers")) {
                     for (var ks = Object.keys(m.servers), i = 0; i < ks.length; ++i) {
                         w.uint32(42).fork().uint32(10).string(ks[i]);
@@ -2397,6 +3821,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 while (r.pos < c) {
                     var t = r.uint32();
                     switch (t >>> 3) {
+                    case 2: {
+                            m.hijack_dns = r.bool();
+                            break;
+                        }
+                    case 3: {
+                            m.hijack_dns_fakeip = r.bool();
+                            break;
+                        }
                     case 5: {
                             if (m.servers === $util.emptyObject)
                                 m.servers = {};
@@ -2420,6 +3852,29 @@ export const yuhaiin = $root.yuhaiin = (() => {
                             m.servers[k] = value;
                             break;
                         }
+                    case 1: {
+                            if (m.inbounds === $util.emptyObject)
+                                m.inbounds = {};
+                            var c2 = r.uint32() + r.pos;
+                            k = "";
+                            value = null;
+                            while (r.pos < c2) {
+                                var tag2 = r.uint32();
+                                switch (tag2 >>> 3) {
+                                case 1:
+                                    k = r.string();
+                                    break;
+                                case 2:
+                                    value = $root.yuhaiin.listener.inbound.decode(r, r.uint32());
+                                    break;
+                                default:
+                                    r.skipType(tag2 & 7);
+                                    break;
+                                }
+                            }
+                            m.inbounds[k] = value;
+                            break;
+                        }
                     default:
                         r.skipType(t & 7);
                         break;
@@ -2440,6 +3895,12 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (d instanceof $root.yuhaiin.listener.inbound_config)
                     return d;
                 var m = new $root.yuhaiin.listener.inbound_config();
+                if (d.hijack_dns != null) {
+                    m.hijack_dns = Boolean(d.hijack_dns);
+                }
+                if (d.hijack_dns_fakeip != null) {
+                    m.hijack_dns_fakeip = Boolean(d.hijack_dns_fakeip);
+                }
                 if (d.servers) {
                     if (typeof d.servers !== "object")
                         throw TypeError(".yuhaiin.listener.inbound_config.servers: object expected");
@@ -2448,6 +3909,16 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         if (typeof d.servers[ks[i]] !== "object")
                             throw TypeError(".yuhaiin.listener.inbound_config.servers: object expected");
                         m.servers[ks[i]] = $root.yuhaiin.listener.protocol.fromObject(d.servers[ks[i]]);
+                    }
+                }
+                if (d.inbounds) {
+                    if (typeof d.inbounds !== "object")
+                        throw TypeError(".yuhaiin.listener.inbound_config.inbounds: object expected");
+                    m.inbounds = {};
+                    for (var ks = Object.keys(d.inbounds), i = 0; i < ks.length; ++i) {
+                        if (typeof d.inbounds[ks[i]] !== "object")
+                            throw TypeError(".yuhaiin.listener.inbound_config.inbounds: object expected");
+                        m.inbounds[ks[i]] = $root.yuhaiin.listener.inbound.fromObject(d.inbounds[ks[i]]);
                     }
                 }
                 return m;
@@ -2467,9 +3938,26 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     o = {};
                 var d = {};
                 if (o.objects || o.defaults) {
+                    d.inbounds = {};
                     d.servers = {};
                 }
+                if (o.defaults) {
+                    d.hijack_dns = false;
+                    d.hijack_dns_fakeip = false;
+                }
                 var ks2;
+                if (m.inbounds && (ks2 = Object.keys(m.inbounds)).length) {
+                    d.inbounds = {};
+                    for (var j = 0; j < ks2.length; ++j) {
+                        d.inbounds[ks2[j]] = $root.yuhaiin.listener.inbound.toObject(m.inbounds[ks2[j]], o);
+                    }
+                }
+                if (m.hijack_dns != null && m.hasOwnProperty("hijack_dns")) {
+                    d.hijack_dns = m.hijack_dns;
+                }
+                if (m.hijack_dns_fakeip != null && m.hasOwnProperty("hijack_dns_fakeip")) {
+                    d.hijack_dns_fakeip = m.hijack_dns_fakeip;
+                }
                 if (m.servers && (ks2 = Object.keys(m.servers)).length) {
                     d.servers = {};
                     for (var j = 0; j < ks2.length; ++j) {
@@ -2691,6 +4179,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {string|null} [host] socks5 host
              * @property {string|null} [username] socks5 username
              * @property {string|null} [password] socks5 password
+             * @property {boolean|null} [udp] socks5 udp
              */
 
             /**
@@ -2733,6 +4222,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
             socks5.prototype.password = "";
 
             /**
+             * socks5 udp.
+             * @member {boolean} udp
+             * @memberof yuhaiin.listener.socks5
+             * @instance
+             */
+            socks5.prototype.udp = false;
+
+            /**
              * Creates a new socks5 instance using the specified properties.
              * @function create
              * @memberof yuhaiin.listener.socks5
@@ -2762,6 +4259,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     w.uint32(26).string(m.username);
                 if (m.password != null && Object.hasOwnProperty.call(m, "password"))
                     w.uint32(34).string(m.password);
+                if (m.udp != null && Object.hasOwnProperty.call(m, "udp"))
+                    w.uint32(40).bool(m.udp);
                 return w;
             };
 
@@ -2795,6 +4294,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                             m.password = r.string();
                             break;
                         }
+                    case 5: {
+                            m.udp = r.bool();
+                            break;
+                        }
                     default:
                         r.skipType(t & 7);
                         break;
@@ -2824,6 +4327,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (d.password != null) {
                     m.password = String(d.password);
                 }
+                if (d.udp != null) {
+                    m.udp = Boolean(d.udp);
+                }
                 return m;
             };
 
@@ -2844,6 +4350,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.host = "";
                     d.username = "";
                     d.password = "";
+                    d.udp = false;
                 }
                 if (m.host != null && m.hasOwnProperty("host")) {
                     d.host = m.host;
@@ -2853,6 +4360,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 }
                 if (m.password != null && m.hasOwnProperty("password")) {
                     d.password = m.password;
+                }
+                if (m.udp != null && m.hasOwnProperty("udp")) {
+                    d.udp = m.udp;
                 }
                 return d;
             };
