@@ -3880,6 +3880,9 @@ export namespace yuhaiin {
 
             /** yuubinsya encrypted */
             encrypted?: (boolean|null);
+
+            /** yuubinsya udp_over_stream */
+            udp_over_stream?: (boolean|null);
         }
 
         /** Represents a yuubinsya. */
@@ -3896,6 +3899,9 @@ export namespace yuhaiin {
 
             /** yuubinsya encrypted. */
             public encrypted: boolean;
+
+            /** yuubinsya udp_over_stream. */
+            public udp_over_stream: boolean;
 
             /**
              * Creates a new yuubinsya instance using the specified properties.
