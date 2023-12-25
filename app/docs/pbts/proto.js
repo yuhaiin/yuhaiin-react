@@ -10549,6 +10549,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @interface Iyuubinsya
              * @property {string|null} [password] yuubinsya password
              * @property {boolean|null} [encrypted] yuubinsya encrypted
+             * @property {boolean|null} [udp_over_stream] yuubinsya udp_over_stream
              */
 
             /**
@@ -10583,6 +10584,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
             yuubinsya.prototype.encrypted = false;
 
             /**
+             * yuubinsya udp_over_stream.
+             * @member {boolean} udp_over_stream
+             * @memberof yuhaiin.protocol.yuubinsya
+             * @instance
+             */
+            yuubinsya.prototype.udp_over_stream = false;
+
+            /**
              * Creates a new yuubinsya instance using the specified properties.
              * @function create
              * @memberof yuhaiin.protocol.yuubinsya
@@ -10610,6 +10619,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     w.uint32(10).string(m.password);
                 if (m.encrypted != null && Object.hasOwnProperty.call(m, "encrypted"))
                     w.uint32(16).bool(m.encrypted);
+                if (m.udp_over_stream != null && Object.hasOwnProperty.call(m, "udp_over_stream"))
+                    w.uint32(24).bool(m.udp_over_stream);
                 return w;
             };
 
@@ -10639,6 +10650,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                             m.encrypted = r.bool();
                             break;
                         }
+                    case 3: {
+                            m.udp_over_stream = r.bool();
+                            break;
+                        }
                     default:
                         r.skipType(t & 7);
                         break;
@@ -10665,6 +10680,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (d.encrypted != null) {
                     m.encrypted = Boolean(d.encrypted);
                 }
+                if (d.udp_over_stream != null) {
+                    m.udp_over_stream = Boolean(d.udp_over_stream);
+                }
                 return m;
             };
 
@@ -10684,12 +10702,16 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (o.defaults) {
                     d.password = "";
                     d.encrypted = false;
+                    d.udp_over_stream = false;
                 }
                 if (m.password != null && m.hasOwnProperty("password")) {
                     d.password = m.password;
                 }
                 if (m.encrypted != null && m.hasOwnProperty("encrypted")) {
                     d.encrypted = m.encrypted;
+                }
+                if (m.udp_over_stream != null && m.hasOwnProperty("udp_over_stream")) {
+                    d.udp_over_stream = m.udp_over_stream;
                 }
                 return d;
             };
