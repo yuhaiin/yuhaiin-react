@@ -4097,8 +4097,14 @@ export namespace yuhaiin {
         /** Properties of a quic. */
         interface Iquic {
 
+            /** quic host */
+            host?: (string|null);
+
             /** quic tls */
             tls?: (yuhaiin.protocol.Itls_config|null);
+
+            /** quic as_network */
+            as_network?: (boolean|null);
         }
 
         /** Represents a quic. */
@@ -4110,8 +4116,14 @@ export namespace yuhaiin {
              */
             constructor(p?: yuhaiin.protocol.Iquic);
 
+            /** quic host. */
+            public host: string;
+
             /** quic tls. */
             public tls?: (yuhaiin.protocol.Itls_config|null);
+
+            /** quic as_network. */
+            public as_network: boolean;
 
             /**
              * Creates a new quic instance using the specified properties.
