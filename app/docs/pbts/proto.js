@@ -11072,7 +11072,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * Properties of a quic.
              * @memberof yuhaiin.protocol
              * @interface Iquic
+             * @property {string|null} [host] quic host
              * @property {yuhaiin.protocol.Itls_config|null} [tls] quic tls
+             * @property {boolean|null} [as_network] quic as_network
              */
 
             /**
@@ -11091,12 +11093,28 @@ export const yuhaiin = $root.yuhaiin = (() => {
             }
 
             /**
+             * quic host.
+             * @member {string} host
+             * @memberof yuhaiin.protocol.quic
+             * @instance
+             */
+            quic.prototype.host = "";
+
+            /**
              * quic tls.
              * @member {yuhaiin.protocol.Itls_config|null|undefined} tls
              * @memberof yuhaiin.protocol.quic
              * @instance
              */
             quic.prototype.tls = null;
+
+            /**
+             * quic as_network.
+             * @member {boolean} as_network
+             * @memberof yuhaiin.protocol.quic
+             * @instance
+             */
+            quic.prototype.as_network = false;
 
             /**
              * Creates a new quic instance using the specified properties.
@@ -11124,6 +11142,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     w = $Writer.create();
                 if (m.tls != null && Object.hasOwnProperty.call(m, "tls"))
                     $root.yuhaiin.protocol.tls_config.encode(m.tls, w.uint32(10).fork()).ldelim();
+                if (m.host != null && Object.hasOwnProperty.call(m, "host"))
+                    w.uint32(18).string(m.host);
+                if (m.as_network != null && Object.hasOwnProperty.call(m, "as_network"))
+                    w.uint32(24).bool(m.as_network);
                 return w;
             };
 
@@ -11145,8 +11167,16 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 while (r.pos < c) {
                     var t = r.uint32();
                     switch (t >>> 3) {
+                    case 2: {
+                            m.host = r.string();
+                            break;
+                        }
                     case 1: {
                             m.tls = $root.yuhaiin.protocol.tls_config.decode(r, r.uint32());
+                            break;
+                        }
+                    case 3: {
+                            m.as_network = r.bool();
                             break;
                         }
                     default:
@@ -11169,10 +11199,16 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (d instanceof $root.yuhaiin.protocol.quic)
                     return d;
                 var m = new $root.yuhaiin.protocol.quic();
+                if (d.host != null) {
+                    m.host = String(d.host);
+                }
                 if (d.tls != null) {
                     if (typeof d.tls !== "object")
                         throw TypeError(".yuhaiin.protocol.quic.tls: object expected");
                     m.tls = $root.yuhaiin.protocol.tls_config.fromObject(d.tls);
+                }
+                if (d.as_network != null) {
+                    m.as_network = Boolean(d.as_network);
                 }
                 return m;
             };
@@ -11192,9 +11228,17 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 var d = {};
                 if (o.defaults) {
                     d.tls = null;
+                    d.host = "";
+                    d.as_network = false;
                 }
                 if (m.tls != null && m.hasOwnProperty("tls")) {
                     d.tls = $root.yuhaiin.protocol.tls_config.toObject(m.tls, o);
+                }
+                if (m.host != null && m.hasOwnProperty("host")) {
+                    d.host = m.host;
+                }
+                if (m.as_network != null && m.hasOwnProperty("as_network")) {
+                    d.as_network = m.as_network;
                 }
                 return d;
             };
