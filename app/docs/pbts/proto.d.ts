@@ -4102,9 +4102,6 @@ export namespace yuhaiin {
 
             /** quic tls */
             tls?: (yuhaiin.protocol.Itls_config|null);
-
-            /** quic as_network */
-            as_network?: (boolean|null);
         }
 
         /** Represents a quic. */
@@ -4121,9 +4118,6 @@ export namespace yuhaiin {
 
             /** quic tls. */
             public tls?: (yuhaiin.protocol.Itls_config|null);
-
-            /** quic as_network. */
-            public as_network: boolean;
 
             /**
              * Creates a new quic instance using the specified properties.
@@ -4403,9 +4397,6 @@ export namespace yuhaiin {
             /** simple alternate_host */
             alternate_host?: (yuhaiin.protocol.Ihost[]|null);
 
-            /** simple packet_conn_direct */
-            packet_conn_direct?: (boolean|null);
-
             /** simple tls */
             tls?: (yuhaiin.protocol.Itls_config|null);
         }
@@ -4430,9 +4421,6 @@ export namespace yuhaiin {
 
             /** simple alternate_host. */
             public alternate_host: yuhaiin.protocol.Ihost[];
-
-            /** simple packet_conn_direct. */
-            public packet_conn_direct: boolean;
 
             /** simple tls. */
             public tls?: (yuhaiin.protocol.Itls_config|null);
