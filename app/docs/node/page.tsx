@@ -130,7 +130,6 @@ let protocolMapping: { [key: string]: yuhaiin.protocol.Iprotocol } = {
             host: "",
             alternate_host: [],
             port: 1080,
-            packet_conn_direct: false,
             timeout: 0,
             tls: undefined
         }
