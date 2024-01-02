@@ -11074,7 +11074,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @interface Iquic
              * @property {string|null} [host] quic host
              * @property {yuhaiin.protocol.Itls_config|null} [tls] quic tls
-             * @property {boolean|null} [as_network] quic as_network
              */
 
             /**
@@ -11109,14 +11108,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
             quic.prototype.tls = null;
 
             /**
-             * quic as_network.
-             * @member {boolean} as_network
-             * @memberof yuhaiin.protocol.quic
-             * @instance
-             */
-            quic.prototype.as_network = false;
-
-            /**
              * Creates a new quic instance using the specified properties.
              * @function create
              * @memberof yuhaiin.protocol.quic
@@ -11144,8 +11135,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     $root.yuhaiin.protocol.tls_config.encode(m.tls, w.uint32(10).fork()).ldelim();
                 if (m.host != null && Object.hasOwnProperty.call(m, "host"))
                     w.uint32(18).string(m.host);
-                if (m.as_network != null && Object.hasOwnProperty.call(m, "as_network"))
-                    w.uint32(24).bool(m.as_network);
                 return w;
             };
 
@@ -11173,10 +11162,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         }
                     case 1: {
                             m.tls = $root.yuhaiin.protocol.tls_config.decode(r, r.uint32());
-                            break;
-                        }
-                    case 3: {
-                            m.as_network = r.bool();
                             break;
                         }
                     default:
@@ -11207,9 +11192,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         throw TypeError(".yuhaiin.protocol.quic.tls: object expected");
                     m.tls = $root.yuhaiin.protocol.tls_config.fromObject(d.tls);
                 }
-                if (d.as_network != null) {
-                    m.as_network = Boolean(d.as_network);
-                }
                 return m;
             };
 
@@ -11229,16 +11211,12 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (o.defaults) {
                     d.tls = null;
                     d.host = "";
-                    d.as_network = false;
                 }
                 if (m.tls != null && m.hasOwnProperty("tls")) {
                     d.tls = $root.yuhaiin.protocol.tls_config.toObject(m.tls, o);
                 }
                 if (m.host != null && m.hasOwnProperty("host")) {
                     d.host = m.host;
-                }
-                if (m.as_network != null && m.hasOwnProperty("as_network")) {
-                    d.as_network = m.as_network;
                 }
                 return d;
             };
@@ -11762,7 +11740,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {number|null} [port] simple port
              * @property {number|Long|null} [timeout] simple timeout
              * @property {Array.<yuhaiin.protocol.Ihost>|null} [alternate_host] simple alternate_host
-             * @property {boolean|null} [packet_conn_direct] simple packet_conn_direct
              * @property {yuhaiin.protocol.Itls_config|null} [tls] simple tls
              */
 
@@ -11815,14 +11792,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
             simple.prototype.alternate_host = $util.emptyArray;
 
             /**
-             * simple packet_conn_direct.
-             * @member {boolean} packet_conn_direct
-             * @memberof yuhaiin.protocol.simple
-             * @instance
-             */
-            simple.prototype.packet_conn_direct = false;
-
-            /**
              * simple tls.
              * @member {yuhaiin.protocol.Itls_config|null|undefined} tls
              * @memberof yuhaiin.protocol.simple
@@ -11858,8 +11827,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     w.uint32(10).string(m.host);
                 if (m.port != null && Object.hasOwnProperty.call(m, "port"))
                     w.uint32(16).int32(m.port);
-                if (m.packet_conn_direct != null && Object.hasOwnProperty.call(m, "packet_conn_direct"))
-                    w.uint32(24).bool(m.packet_conn_direct);
                 if (m.tls != null && Object.hasOwnProperty.call(m, "tls"))
                     $root.yuhaiin.protocol.tls_config.encode(m.tls, w.uint32(34).fork()).ldelim();
                 if (m.alternate_host != null && m.alternate_host.length) {
@@ -11905,10 +11872,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                             if (!(m.alternate_host && m.alternate_host.length))
                                 m.alternate_host = [];
                             m.alternate_host.push($root.yuhaiin.protocol.host.decode(r, r.uint32()));
-                            break;
-                        }
-                    case 3: {
-                            m.packet_conn_direct = r.bool();
                             break;
                         }
                     case 4: {
@@ -11961,9 +11924,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         m.alternate_host[i] = $root.yuhaiin.protocol.host.fromObject(d.alternate_host[i]);
                     }
                 }
-                if (d.packet_conn_direct != null) {
-                    m.packet_conn_direct = Boolean(d.packet_conn_direct);
-                }
                 if (d.tls != null) {
                     if (typeof d.tls !== "object")
                         throw TypeError(".yuhaiin.protocol.simple.tls: object expected");
@@ -11991,7 +11951,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (o.defaults) {
                     d.host = "";
                     d.port = 0;
-                    d.packet_conn_direct = false;
                     d.tls = null;
                     if ($util.Long) {
                         var n = new $util.Long(0, 0, true);
@@ -12004,9 +11963,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 }
                 if (m.port != null && m.hasOwnProperty("port")) {
                     d.port = m.port;
-                }
-                if (m.packet_conn_direct != null && m.hasOwnProperty("packet_conn_direct")) {
-                    d.packet_conn_direct = m.packet_conn_direct;
                 }
                 if (m.tls != null && m.hasOwnProperty("tls")) {
                     d.tls = $root.yuhaiin.protocol.tls_config.toObject(m.tls, o);
