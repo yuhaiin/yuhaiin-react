@@ -64,19 +64,21 @@ const DNS = React.memo((props: DNSProps) => {
 
             <Card.Title>Hosts</Card.Title>
             {
-                Object.entries(props.data.hosts).map(([k, v]) =>
-                    <InputGroup className="mb-2" key={"hosts" + k}>
-                        <Form.Control readOnly value={k} />
-                        <InputGroup.Text><i className="bi bi-arrow-right"></i></InputGroup.Text>
-                        <Form.Control
-                            value={v}
-                            onChange={(e) => updateDNS((x) => x.hosts[k] = e.target.value)}
-                        />
-                        <Button variant='outline-danger' onClick={() => updateDNS((x) => delete x.hosts[k])}>
-                            <i className="bi bi-x-lg"></i>
-                        </Button>
-                    </InputGroup>
-                )
+                Object.entries(props.data.hosts)
+                    .sort(([a], [b]) => { return a > b ? -1 : 1 })
+                    .map(([k, v]) =>
+                        <InputGroup className="mb-2" key={"hosts" + k}>
+                            <Form.Control readOnly value={k} />
+                            <InputGroup.Text><i className="bi bi-arrow-right"></i></InputGroup.Text>
+                            <Form.Control
+                                value={v}
+                                onChange={(e) => updateDNS((x) => x.hosts[k] = e.target.value)}
+                            />
+                            <Button variant='outline-danger' onClick={() => updateDNS((x) => delete x.hosts[k])}>
+                                <i className="bi bi-x-lg"></i>
+                            </Button>
+                        </InputGroup>
+                    )
             }
             <InputGroup className="mb-2" >
                 <Form.Control value={newHosts.key} onChange={(e) => setNewHosts({ ...newHosts, key: e.target.value })} />

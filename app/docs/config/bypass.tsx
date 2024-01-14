@@ -88,18 +88,20 @@ const BypassSingleComponents = (props: { config: yuhaiin.bypass.mode_config, onC
 
 
                 {
-                    props.config.hostname.map((v, index) => {
-                        return (
-                            <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
-                                <InputGroup className="mb-2" >
-                                    <Form.Control value={v} onChange={(e) => updateState((x) => x.hostname[index] = e.target.value)} />
-                                    <Button variant='outline-danger' onClick={() => updateState((x) => x.hostname.splice(index, 1))}>
-                                        <i className="bi bi-x-lg" ></i>
-                                    </Button>
-                                </InputGroup>
-                            </Col>
-                        )
-                    })
+                    props.config.hostname
+                        .sort((a, b) => { return a > b ? -1 : 1 })
+                        .map((v, index) => {
+                            return (
+                                <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
+                                    <InputGroup className="mb-2" >
+                                        <Form.Control value={v} onChange={(e) => updateState((x) => x.hostname[index] = e.target.value)} />
+                                        <Button variant='outline-danger' onClick={() => updateState((x) => x.hostname.splice(index, 1))}>
+                                            <i className="bi bi-x-lg" ></i>
+                                        </Button>
+                                    </InputGroup>
+                                </Col>
+                            )
+                        })
                 }
 
                 <Col sm={{ span: 10, offset: props.config.hostname.length !== 0 ? 2 : 0 }}>
