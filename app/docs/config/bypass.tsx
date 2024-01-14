@@ -89,7 +89,6 @@ const BypassSingleComponents = (props: { config: yuhaiin.bypass.mode_config, onC
 
                 {
                     props.config.hostname
-                        .sort((a, b) => { return a > b ? -1 : 1 })
                         .map((v, index) => {
                             return (
                                 <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
