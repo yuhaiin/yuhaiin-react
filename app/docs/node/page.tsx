@@ -215,7 +215,7 @@ let protocolMapping: { [key: string]: yuhaiin.protocol.Iprotocol } = {
         wireguard: {
             endpoint: ["10.0.0.2/32"],
             mtu: 1500,
-            num_workers: 6,
+            idle_timeout: 3,
             reserved: new Uint8Array([0, 0, 0]),
             secret_key: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
             peers: [
