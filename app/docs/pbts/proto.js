@@ -13049,8 +13049,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {Array.<string>|null} [endpoint] wireguard endpoint
              * @property {Array.<yuhaiin.protocol.Iwireguard_peer_config>|null} [peers] wireguard peers
              * @property {number|null} [mtu] wireguard mtu
-             * @property {number|null} [num_workers] wireguard num_workers
              * @property {Uint8Array|null} [reserved] wireguard reserved
+             * @property {number|null} [idle_timeout] wireguard idle_timeout
              */
 
             /**
@@ -13103,20 +13103,20 @@ export const yuhaiin = $root.yuhaiin = (() => {
             wireguard.prototype.mtu = 0;
 
             /**
-             * wireguard num_workers.
-             * @member {number} num_workers
-             * @memberof yuhaiin.protocol.wireguard
-             * @instance
-             */
-            wireguard.prototype.num_workers = 0;
-
-            /**
              * wireguard reserved.
              * @member {Uint8Array} reserved
              * @memberof yuhaiin.protocol.wireguard
              * @instance
              */
             wireguard.prototype.reserved = $util.newBuffer([]);
+
+            /**
+             * wireguard idle_timeout.
+             * @member {number} idle_timeout
+             * @memberof yuhaiin.protocol.wireguard
+             * @instance
+             */
+            wireguard.prototype.idle_timeout = 0;
 
             /**
              * Creates a new wireguard instance using the specified properties.
@@ -13154,10 +13154,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 }
                 if (m.mtu != null && Object.hasOwnProperty.call(m, "mtu"))
                     w.uint32(32).int32(m.mtu);
-                if (m.num_workers != null && Object.hasOwnProperty.call(m, "num_workers"))
-                    w.uint32(40).int32(m.num_workers);
                 if (m.reserved != null && Object.hasOwnProperty.call(m, "reserved"))
                     w.uint32(50).bytes(m.reserved);
+                if (m.idle_timeout != null && Object.hasOwnProperty.call(m, "idle_timeout"))
+                    w.uint32(56).int32(m.idle_timeout);
                 return w;
             };
 
@@ -13199,12 +13199,12 @@ export const yuhaiin = $root.yuhaiin = (() => {
                             m.mtu = r.int32();
                             break;
                         }
-                    case 5: {
-                            m.num_workers = r.int32();
-                            break;
-                        }
                     case 6: {
                             m.reserved = r.bytes();
+                            break;
+                        }
+                    case 7: {
+                            m.idle_timeout = r.int32();
                             break;
                         }
                     default:
@@ -13251,14 +13251,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (d.mtu != null) {
                     m.mtu = d.mtu | 0;
                 }
-                if (d.num_workers != null) {
-                    m.num_workers = d.num_workers | 0;
-                }
                 if (d.reserved != null) {
                     if (typeof d.reserved === "string")
                         $util.base64.decode(d.reserved, m.reserved = $util.newBuffer($util.base64.length(d.reserved)), 0);
                     else if (d.reserved.length >= 0)
                         m.reserved = d.reserved;
+                }
+                if (d.idle_timeout != null) {
+                    m.idle_timeout = d.idle_timeout | 0;
                 }
                 return m;
             };
@@ -13283,7 +13283,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (o.defaults) {
                     d.secret_key = "";
                     d.mtu = 0;
-                    d.num_workers = 0;
                     if (o.bytes === String)
                         d.reserved = "";
                     else {
@@ -13291,6 +13290,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         if (o.bytes !== Array)
                             d.reserved = $util.newBuffer(d.reserved);
                     }
+                    d.idle_timeout = 0;
                 }
                 if (m.secret_key != null && m.hasOwnProperty("secret_key")) {
                     d.secret_key = m.secret_key;
@@ -13310,11 +13310,11 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (m.mtu != null && m.hasOwnProperty("mtu")) {
                     d.mtu = m.mtu;
                 }
-                if (m.num_workers != null && m.hasOwnProperty("num_workers")) {
-                    d.num_workers = m.num_workers;
-                }
                 if (m.reserved != null && m.hasOwnProperty("reserved")) {
                     d.reserved = o.bytes === String ? $util.base64.encode(m.reserved, 0, m.reserved.length) : o.bytes === Array ? Array.prototype.slice.call(m.reserved) : m.reserved;
+                }
+                if (m.idle_timeout != null && m.hasOwnProperty("idle_timeout")) {
+                    d.idle_timeout = m.idle_timeout;
                 }
                 return d;
             };

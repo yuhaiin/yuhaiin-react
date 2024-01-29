@@ -4919,11 +4919,11 @@ export namespace yuhaiin {
             /** wireguard mtu */
             mtu?: (number|null);
 
-            /** wireguard num_workers */
-            num_workers?: (number|null);
-
             /** wireguard reserved */
             reserved?: (Uint8Array|null);
+
+            /** wireguard idle_timeout */
+            idle_timeout?: (number|null);
         }
 
         /** Represents a wireguard. */
@@ -4947,11 +4947,11 @@ export namespace yuhaiin {
             /** wireguard mtu. */
             public mtu: number;
 
-            /** wireguard num_workers. */
-            public num_workers: number;
-
             /** wireguard reserved. */
             public reserved: Uint8Array;
+
+            /** wireguard idle_timeout. */
+            public idle_timeout: number;
 
             /**
              * Creates a new wireguard instance using the specified properties.
