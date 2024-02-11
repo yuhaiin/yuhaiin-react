@@ -15,7 +15,7 @@
     "swr": "^2.2.4",
     "ts-proto": "^1.167.3",
     "typescript": "^5.3.3",
-    "protobufjs": "^7.2.5"
+    "protobufjs": "^7.2.6"
   },
   "scripts": {
     "dev": "next dev",
