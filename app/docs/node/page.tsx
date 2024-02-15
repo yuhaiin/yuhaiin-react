@@ -231,5 +231,13 @@ let protocolMapping: { [key: string]: yuhaiin.protocol.Iprotocol } = {
         mux: {
             concurrency: 8,
         }
+    },
+    "drop": {
+        drop: {}
+    },
+    "vless": {
+        vless: {
+            uuid: "c48619fe-8f02-49e0-b9e9-edf763e17e21",
+        }
     }
 }

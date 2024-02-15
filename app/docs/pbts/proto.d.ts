@@ -1170,11 +1170,21 @@ export namespace yuhaiin {
             public toJSON(): { [k: string]: any };
         }
 
+        /** tcp_udp_control enum. */
+        enum tcp_udp_control {
+            tcp_udp_control_all = 0,
+            disable_tcp = 1,
+            disable_udp = 2
+        }
+
         /** Properties of a tcpudp. */
         interface Itcpudp {
 
             /** tcpudp host */
             host?: (string|null);
+
+            /** tcpudp control */
+            control?: (yuhaiin.listener.tcp_udp_control|null);
         }
 
         /** Represents a tcpudp. */
@@ -1188,6 +1198,9 @@ export namespace yuhaiin {
 
             /** tcpudp host. */
             public host: string;
+
+            /** tcpudp control. */
+            public control: yuhaiin.listener.tcp_udp_control;
 
             /**
              * Creates a new tcpudp instance using the specified properties.
@@ -3202,6 +3215,9 @@ export namespace yuhaiin {
 
             /** protocol drop */
             drop?: (yuhaiin.protocol.Idrop|null);
+
+            /** protocol vless */
+            vless?: (yuhaiin.protocol.Ivless|null);
         }
 
         /** Represents a protocol. */
@@ -3276,8 +3292,11 @@ export namespace yuhaiin {
             /** protocol drop. */
             public drop?: (yuhaiin.protocol.Idrop|null);
 
+            /** protocol vless. */
+            public vless?: (yuhaiin.protocol.Ivless|null);
+
             /** protocol protocol. */
-            public protocol?: ("shadowsocks"|"shadowsocksr"|"vmess"|"websocket"|"quic"|"obfs_http"|"trojan"|"simple"|"none"|"socks5"|"http"|"direct"|"reject"|"yuubinsya"|"grpc"|"http2"|"reality"|"tls"|"wireguard"|"mux"|"drop");
+            public protocol?: ("shadowsocks"|"shadowsocksr"|"vmess"|"websocket"|"quic"|"obfs_http"|"trojan"|"simple"|"none"|"socks5"|"http"|"direct"|"reject"|"yuubinsya"|"grpc"|"http2"|"reality"|"tls"|"wireguard"|"mux"|"drop"|"vless");
 
             /**
              * Creates a new protocol instance using the specified properties.
@@ -3795,6 +3814,72 @@ export namespace yuhaiin {
 
             /**
              * Converts this vmess to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a vless. */
+        interface Ivless {
+
+            /** vless uuid */
+            uuid?: (string|null);
+        }
+
+        /** Represents a vless. */
+        class vless implements Ivless {
+
+            /**
+             * Constructs a new vless.
+             * @param [p] Properties to set
+             */
+            constructor(p?: yuhaiin.protocol.Ivless);
+
+            /** vless uuid. */
+            public uuid: string;
+
+            /**
+             * Creates a new vless instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns vless instance
+             */
+            public static create(properties?: yuhaiin.protocol.Ivless): yuhaiin.protocol.vless;
+
+            /**
+             * Encodes the specified vless message. Does not implicitly {@link yuhaiin.protocol.vless.verify|verify} messages.
+             * @param m vless message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: yuhaiin.protocol.Ivless, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a vless message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns vless
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): yuhaiin.protocol.vless;
+
+            /**
+             * Creates a vless message from a plain object. Also converts values to their respective internal types.
+             * @param d Plain object
+             * @returns vless
+             */
+            public static fromObject(d: { [k: string]: any }): yuhaiin.protocol.vless;
+
+            /**
+             * Creates a plain object from a vless message. Also converts values to other types if specified.
+             * @param m vless
+             * @param [o] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(m: yuhaiin.protocol.vless, o?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this vless to JSON.
              * @returns JSON object
              */
             public toJSON(): { [k: string]: any };

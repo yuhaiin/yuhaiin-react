@@ -3385,6 +3385,22 @@ export const yuhaiin = $root.yuhaiin = (() => {
             return mux;
         })();
 
+        /**
+         * tcp_udp_control enum.
+         * @name yuhaiin.listener.tcp_udp_control
+         * @enum {number}
+         * @property {number} tcp_udp_control_all=0 tcp_udp_control_all value
+         * @property {number} disable_tcp=1 disable_tcp value
+         * @property {number} disable_udp=2 disable_udp value
+         */
+        listener.tcp_udp_control = (function() {
+            const valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "tcp_udp_control_all"] = 0;
+            values[valuesById[1] = "disable_tcp"] = 1;
+            values[valuesById[2] = "disable_udp"] = 2;
+            return values;
+        })();
+
         listener.tcpudp = (function() {
 
             /**
@@ -3392,6 +3408,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @memberof yuhaiin.listener
              * @interface Itcpudp
              * @property {string|null} [host] tcpudp host
+             * @property {yuhaiin.listener.tcp_udp_control|null} [control] tcpudp control
              */
 
             /**
@@ -3416,6 +3433,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @instance
              */
             tcpudp.prototype.host = "";
+
+            /**
+             * tcpudp control.
+             * @member {yuhaiin.listener.tcp_udp_control} control
+             * @memberof yuhaiin.listener.tcpudp
+             * @instance
+             */
+            tcpudp.prototype.control = 0;
 
             /**
              * Creates a new tcpudp instance using the specified properties.
@@ -3443,6 +3468,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     w = $Writer.create();
                 if (m.host != null && Object.hasOwnProperty.call(m, "host"))
                     w.uint32(10).string(m.host);
+                if (m.control != null && Object.hasOwnProperty.call(m, "control"))
+                    w.uint32(16).int32(m.control);
                 return w;
             };
 
@@ -3468,6 +3495,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                             m.host = r.string();
                             break;
                         }
+                    case 2: {
+                            m.control = r.int32();
+                            break;
+                        }
                     default:
                         r.skipType(t & 7);
                         break;
@@ -3491,6 +3522,26 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (d.host != null) {
                     m.host = String(d.host);
                 }
+                switch (d.control) {
+                default:
+                    if (typeof d.control === "number") {
+                        m.control = d.control;
+                        break;
+                    }
+                    break;
+                case "tcp_udp_control_all":
+                case 0:
+                    m.control = 0;
+                    break;
+                case "disable_tcp":
+                case 1:
+                    m.control = 1;
+                    break;
+                case "disable_udp":
+                case 2:
+                    m.control = 2;
+                    break;
+                }
                 return m;
             };
 
@@ -3509,9 +3560,13 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 var d = {};
                 if (o.defaults) {
                     d.host = "";
+                    d.control = o.enums === String ? "tcp_udp_control_all" : 0;
                 }
                 if (m.host != null && m.hasOwnProperty("host")) {
                     d.host = m.host;
+                }
+                if (m.control != null && m.hasOwnProperty("control")) {
+                    d.control = o.enums === String ? $root.yuhaiin.listener.tcp_udp_control[m.control] === undefined ? m.control : $root.yuhaiin.listener.tcp_udp_control[m.control] : m.control;
                 }
                 return d;
             };
@@ -8585,6 +8640,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {yuhaiin.protocol.Iwireguard|null} [wireguard] protocol wireguard
              * @property {yuhaiin.protocol.Imux|null} [mux] protocol mux
              * @property {yuhaiin.protocol.Idrop|null} [drop] protocol drop
+             * @property {yuhaiin.protocol.Ivless|null} [vless] protocol vless
              */
 
             /**
@@ -8770,17 +8826,25 @@ export const yuhaiin = $root.yuhaiin = (() => {
              */
             protocol.prototype.drop = null;
 
+            /**
+             * protocol vless.
+             * @member {yuhaiin.protocol.Ivless|null|undefined} vless
+             * @memberof yuhaiin.protocol.protocol
+             * @instance
+             */
+            protocol.prototype.vless = null;
+
             // OneOf field names bound to virtual getters and setters
             let $oneOfFields;
 
             /**
              * protocol protocol.
-             * @member {"shadowsocks"|"shadowsocksr"|"vmess"|"websocket"|"quic"|"obfs_http"|"trojan"|"simple"|"none"|"socks5"|"http"|"direct"|"reject"|"yuubinsya"|"grpc"|"http2"|"reality"|"tls"|"wireguard"|"mux"|"drop"|undefined} protocol
+             * @member {"shadowsocks"|"shadowsocksr"|"vmess"|"websocket"|"quic"|"obfs_http"|"trojan"|"simple"|"none"|"socks5"|"http"|"direct"|"reject"|"yuubinsya"|"grpc"|"http2"|"reality"|"tls"|"wireguard"|"mux"|"drop"|"vless"|undefined} protocol
              * @memberof yuhaiin.protocol.protocol
              * @instance
              */
             Object.defineProperty(protocol.prototype, "protocol", {
-                get: $util.oneOfGetter($oneOfFields = ["shadowsocks", "shadowsocksr", "vmess", "websocket", "quic", "obfs_http", "trojan", "simple", "none", "socks5", "http", "direct", "reject", "yuubinsya", "grpc", "http2", "reality", "tls", "wireguard", "mux", "drop"]),
+                get: $util.oneOfGetter($oneOfFields = ["shadowsocks", "shadowsocksr", "vmess", "websocket", "quic", "obfs_http", "trojan", "simple", "none", "socks5", "http", "direct", "reject", "yuubinsya", "grpc", "http2", "reality", "tls", "wireguard", "mux", "drop", "vless"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
 
@@ -8850,6 +8914,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     $root.yuhaiin.protocol.mux.encode(m.mux, w.uint32(162).fork()).ldelim();
                 if (m.drop != null && Object.hasOwnProperty.call(m, "drop"))
                     $root.yuhaiin.protocol.drop.encode(m.drop, w.uint32(170).fork()).ldelim();
+                if (m.vless != null && Object.hasOwnProperty.call(m, "vless"))
+                    $root.yuhaiin.protocol.vless.encode(m.vless, w.uint32(178).fork()).ldelim();
                 return w;
             };
 
@@ -8953,6 +9019,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         }
                     case 21: {
                             m.drop = $root.yuhaiin.protocol.drop.decode(r, r.uint32());
+                            break;
+                        }
+                    case 22: {
+                            m.vless = $root.yuhaiin.protocol.vless.decode(r, r.uint32());
                             break;
                         }
                     default:
@@ -9080,6 +9150,11 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         throw TypeError(".yuhaiin.protocol.protocol.drop: object expected");
                     m.drop = $root.yuhaiin.protocol.drop.fromObject(d.drop);
                 }
+                if (d.vless != null) {
+                    if (typeof d.vless !== "object")
+                        throw TypeError(".yuhaiin.protocol.protocol.vless: object expected");
+                    m.vless = $root.yuhaiin.protocol.vless.fromObject(d.vless);
+                }
                 return m;
             };
 
@@ -9200,6 +9275,11 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.drop = $root.yuhaiin.protocol.drop.toObject(m.drop, o);
                     if (o.oneofs)
                         d.protocol = "drop";
+                }
+                if (m.vless != null && m.hasOwnProperty("vless")) {
+                    d.vless = $root.yuhaiin.protocol.vless.toObject(m.vless, o);
+                    if (o.oneofs)
+                        d.protocol = "vless";
                 }
                 return d;
             };
@@ -10372,6 +10452,151 @@ export const yuhaiin = $root.yuhaiin = (() => {
             };
 
             return vmess;
+        })();
+
+        protocol.vless = (function() {
+
+            /**
+             * Properties of a vless.
+             * @memberof yuhaiin.protocol
+             * @interface Ivless
+             * @property {string|null} [uuid] vless uuid
+             */
+
+            /**
+             * Constructs a new vless.
+             * @memberof yuhaiin.protocol
+             * @classdesc Represents a vless.
+             * @implements Ivless
+             * @constructor
+             * @param {yuhaiin.protocol.Ivless=} [p] Properties to set
+             */
+            function vless(p) {
+                if (p)
+                    for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                        if (p[ks[i]] != null)
+                            this[ks[i]] = p[ks[i]];
+            }
+
+            /**
+             * vless uuid.
+             * @member {string} uuid
+             * @memberof yuhaiin.protocol.vless
+             * @instance
+             */
+            vless.prototype.uuid = "";
+
+            /**
+             * Creates a new vless instance using the specified properties.
+             * @function create
+             * @memberof yuhaiin.protocol.vless
+             * @static
+             * @param {yuhaiin.protocol.Ivless=} [properties] Properties to set
+             * @returns {yuhaiin.protocol.vless} vless instance
+             */
+            vless.create = function create(properties) {
+                return new vless(properties);
+            };
+
+            /**
+             * Encodes the specified vless message. Does not implicitly {@link yuhaiin.protocol.vless.verify|verify} messages.
+             * @function encode
+             * @memberof yuhaiin.protocol.vless
+             * @static
+             * @param {yuhaiin.protocol.Ivless} m vless message or plain object to encode
+             * @param {$protobuf.Writer} [w] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            vless.encode = function encode(m, w) {
+                if (!w)
+                    w = $Writer.create();
+                if (m.uuid != null && Object.hasOwnProperty.call(m, "uuid"))
+                    w.uint32(10).string(m.uuid);
+                return w;
+            };
+
+            /**
+             * Decodes a vless message from the specified reader or buffer.
+             * @function decode
+             * @memberof yuhaiin.protocol.vless
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+             * @param {number} [l] Message length if known beforehand
+             * @returns {yuhaiin.protocol.vless} vless
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            vless.decode = function decode(r, l) {
+                if (!(r instanceof $Reader))
+                    r = $Reader.create(r);
+                var c = l === undefined ? r.len : r.pos + l, m = new $root.yuhaiin.protocol.vless();
+                while (r.pos < c) {
+                    var t = r.uint32();
+                    switch (t >>> 3) {
+                    case 1: {
+                            m.uuid = r.string();
+                            break;
+                        }
+                    default:
+                        r.skipType(t & 7);
+                        break;
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates a vless message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof yuhaiin.protocol.vless
+             * @static
+             * @param {Object.<string,*>} d Plain object
+             * @returns {yuhaiin.protocol.vless} vless
+             */
+            vless.fromObject = function fromObject(d) {
+                if (d instanceof $root.yuhaiin.protocol.vless)
+                    return d;
+                var m = new $root.yuhaiin.protocol.vless();
+                if (d.uuid != null) {
+                    m.uuid = String(d.uuid);
+                }
+                return m;
+            };
+
+            /**
+             * Creates a plain object from a vless message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof yuhaiin.protocol.vless
+             * @static
+             * @param {yuhaiin.protocol.vless} m vless
+             * @param {$protobuf.IConversionOptions} [o] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            vless.toObject = function toObject(m, o) {
+                if (!o)
+                    o = {};
+                var d = {};
+                if (o.defaults) {
+                    d.uuid = "";
+                }
+                if (m.uuid != null && m.hasOwnProperty("uuid")) {
+                    d.uuid = m.uuid;
+                }
+                return d;
+            };
+
+            /**
+             * Converts this vless to JSON.
+             * @function toJSON
+             * @memberof yuhaiin.protocol.vless
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            vless.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            return vless;
         })();
 
         protocol.trojan = (function() {
