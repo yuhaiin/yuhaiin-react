@@ -92,6 +92,30 @@ const TunComponents = React.memo((props: { tun: yuhaiin.listener.tun, onChange: 
     }
 
 
+
+    const TunType = yuhaiin.listener.tun.endpoint_driver;
+
+    function SettingTunTypeSelect(props: {
+        label: string, value?: yuhaiin.listener.tun.endpoint_driver | null,
+        onChange: (value: yuhaiin.listener.tun.endpoint_driver) => void
+    }) {
+        return (
+            <Form.Group as={Row} className='mb-3'>
+                <Form.Label column sm={2}>{props.label}</Form.Label>
+                <Col sm={10}>
+                    <Form.Select
+                        value={TunType[(props.value === undefined || props.value === null) ? TunType.fdbased : props.value]}
+                        onChange={(e) => props.onChange(TunType[e.target.value])}
+                    >
+                        <option value={TunType[TunType.fdbased]}>Fdbased</option>
+                        <option value={TunType[TunType.channel]}>Channel</option>
+                        <option value={TunType[TunType.system_gvisor]}>System</option>
+                    </Form.Select>
+                </Col>
+            </Form.Group>
+        )
+    }
+
     return (
         <>
             <SettingCheck label='DNS Hijacking'
@@ -108,17 +132,7 @@ const TunComponents = React.memo((props: { tun: yuhaiin.listener.tun, onChange: 
             <SettingInputText label='Mtu' value={props.tun.mtu} onChange={(e) => updateState((x) => x.mtu = !isNaN(Number(e)) ? Number(e) : x.mtu)} />
             <SettingInputText label='Gateway' value={props.tun.gateway} onChange={(e) => updateState((x) => x.gateway = e)} />
             <SettingInputText label='Portal' value={props.tun.portal} onChange={(e) => updateState((x) => x.portal = e)} />
-
-            <Form.Group as={Row} className='mb-3'>
-                <Form.Label column sm={2}>Driver</Form.Label>
-                <Col sm={10}>
-                    <Form.Select value={props.tun.driver} onChange={(e) => updateState((x) => x.driver = yuhaiin.listener.tun.endpoint_driver[e.target.value])}>
-                        <option value={yuhaiin.listener.tun.endpoint_driver[yuhaiin.listener.tun.endpoint_driver.fdbased]}>Fdbased</option>
-                        <option value={yuhaiin.listener.tun.endpoint_driver[yuhaiin.listener.tun.endpoint_driver.channel]}>Channel</option>
-                        <option value={yuhaiin.listener.tun.endpoint_driver[yuhaiin.listener.tun.endpoint_driver.system_gvisor]}>System</option>
-                    </Form.Select>
-                </Col>
-            </Form.Group>
+            <SettingTunTypeSelect label='Driver' value={props.tun.driver} onChange={(e) => updateState((x) => x.driver = e)} />
         </>
     )
 })

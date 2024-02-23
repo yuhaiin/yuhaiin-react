@@ -566,6 +566,9 @@ export namespace yuhaiin {
             /** dns_config fakedns_ip_range */
             fakedns_ip_range?: (string|null);
 
+            /** dns_config fakedns_whitelist */
+            fakedns_whitelist?: (string[]|null);
+
             /** dns_config resolve_remote_domain */
             resolve_remote_domain?: (boolean|null);
 
@@ -599,6 +602,9 @@ export namespace yuhaiin {
 
             /** dns_config fakedns_ip_range. */
             public fakedns_ip_range: string;
+
+            /** dns_config fakedns_whitelist. */
+            public fakedns_whitelist: string[];
 
             /** dns_config resolve_remote_domain. */
             public resolve_remote_domain: boolean;

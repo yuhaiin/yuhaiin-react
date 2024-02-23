@@ -11,7 +11,7 @@ type DNSProps = {
 const DNS = React.memo((props: DNSProps) => {
 
     const [newHosts, setNewHosts] = useState({ key: "", value: "" })
-
+    const [newDomain, setNewDomain] = useState({ value: "" });
 
     const updateDNS = (x: (x: yuhaiin.dns.dns_config) => void) => {
         x(props.data)
@@ -31,6 +31,37 @@ const DNS = React.memo((props: DNSProps) => {
                 onChange={() => updateDNS((x) => x.fakedns = !x.fakedns)} />
             <SettingInputText label='Fake IP Range' value={props.data.fakedns_ip_range} onChange={(v) => updateDNS((x) => x.fakedns_ip_range = v)} />
 
+
+            <Form.Group as={Row} className='mb-3'>
+                <Form.Label column sm={2} className="nowrap">Whitelist</Form.Label>
+
+
+                {
+                    props.data.fakedns_whitelist
+                        .map((v, index) => {
+                            return (
+                                <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
+                                    <InputGroup className="mb-2" >
+                                        <Form.Control value={v} onChange={(e) => updateDNS((x) => x.fakedns_whitelist[index] = e.target.value)} />
+                                        <Button variant='outline-danger' onClick={() => updateDNS((x) => x.fakedns_whitelist.splice(index, 1))}>
+                                            <i className="bi bi-x-lg" ></i>
+                                        </Button>
+                                    </InputGroup>
+                                </Col>
+                            )
+                        })
+                }
+
+                <Col sm={{ span: 10, offset: props.data.fakedns_whitelist.length !== 0 ? 2 : 0 }}>
+                    <InputGroup className="mb-2" >
+                        <Form.Control value={newDomain.value} onChange={(e) => setNewDomain({ value: e.target.value })} />
+                        <Button variant='outline-success' onClick={() => updateDNS((x) => x.fakedns_whitelist.push(newDomain.value))} >
+                            <i className="bi bi-plus-lg" />
+                        </Button>
+                    </InputGroup>
+                </Col>
+
+            </Form.Group>
 
             <hr />
 

@@ -1590,6 +1590,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {string|null} [server] dns_config server
              * @property {boolean|null} [fakedns] dns_config fakedns
              * @property {string|null} [fakedns_ip_range] dns_config fakedns_ip_range
+             * @property {Array.<string>|null} [fakedns_whitelist] dns_config fakedns_whitelist
              * @property {boolean|null} [resolve_remote_domain] dns_config resolve_remote_domain
              * @property {yuhaiin.dns.Idns|null} [remote] dns_config remote
              * @property {yuhaiin.dns.Idns|null} [local] dns_config local
@@ -1606,6 +1607,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @param {yuhaiin.dns.Idns_config=} [p] Properties to set
              */
             function dns_config(p) {
+                this.fakedns_whitelist = [];
                 this.hosts = {};
                 if (p)
                     for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
@@ -1636,6 +1638,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @instance
              */
             dns_config.prototype.fakedns_ip_range = "";
+
+            /**
+             * dns_config fakedns_whitelist.
+             * @member {Array.<string>} fakedns_whitelist
+             * @memberof yuhaiin.dns.dns_config
+             * @instance
+             */
+            dns_config.prototype.fakedns_whitelist = $util.emptyArray;
 
             /**
              * dns_config resolve_remote_domain.
@@ -1720,6 +1730,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         w.uint32(66).fork().uint32(10).string(ks[i]).uint32(18).string(m.hosts[ks[i]]).ldelim();
                     }
                 }
+                if (m.fakedns_whitelist != null && m.fakedns_whitelist.length) {
+                    for (var i = 0; i < m.fakedns_whitelist.length; ++i)
+                        w.uint32(74).string(m.fakedns_whitelist[i]);
+                }
                 return w;
             };
 
@@ -1751,6 +1765,12 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         }
                     case 6: {
                             m.fakedns_ip_range = r.string();
+                            break;
+                        }
+                    case 9: {
+                            if (!(m.fakedns_whitelist && m.fakedns_whitelist.length))
+                                m.fakedns_whitelist = [];
+                            m.fakedns_whitelist.push(r.string());
                             break;
                         }
                     case 7: {
@@ -1821,6 +1841,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (d.fakedns_ip_range != null) {
                     m.fakedns_ip_range = String(d.fakedns_ip_range);
                 }
+                if (d.fakedns_whitelist) {
+                    if (!Array.isArray(d.fakedns_whitelist))
+                        throw TypeError(".yuhaiin.dns.dns_config.fakedns_whitelist: array expected");
+                    m.fakedns_whitelist = [];
+                    for (var i = 0; i < d.fakedns_whitelist.length; ++i) {
+                        m.fakedns_whitelist[i] = String(d.fakedns_whitelist[i]);
+                    }
+                }
                 if (d.resolve_remote_domain != null) {
                     m.resolve_remote_domain = Boolean(d.resolve_remote_domain);
                 }
@@ -1863,6 +1891,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (!o)
                     o = {};
                 var d = {};
+                if (o.arrays || o.defaults) {
+                    d.fakedns_whitelist = [];
+                }
                 if (o.objects || o.defaults) {
                     d.hosts = {};
                 }
@@ -1901,6 +1932,12 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.hosts = {};
                     for (var j = 0; j < ks2.length; ++j) {
                         d.hosts[ks2[j]] = m.hosts[ks2[j]];
+                    }
+                }
+                if (m.fakedns_whitelist && m.fakedns_whitelist.length) {
+                    d.fakedns_whitelist = [];
+                    for (var j = 0; j < m.fakedns_whitelist.length; ++j) {
+                        d.fakedns_whitelist[j] = m.fakedns_whitelist[j];
                     }
                 }
                 return d;
