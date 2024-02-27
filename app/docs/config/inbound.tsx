@@ -92,6 +92,7 @@ const TunComponents = React.memo((props: { tun: yuhaiin.listener.tun, onChange: 
     }
 
 
+    const [newRoute, setNewRoute] = useState({ value: "" });
 
     const TunType = yuhaiin.listener.tun.endpoint_driver;
 
@@ -130,9 +131,50 @@ const TunComponents = React.memo((props: { tun: yuhaiin.listener.tun, onChange: 
 
             <SettingInputText label='Name' value={props.tun.name} onChange={(e) => updateState((x) => x.name = e)} />
             <SettingInputText label='Mtu' value={props.tun.mtu} onChange={(e) => updateState((x) => x.mtu = !isNaN(Number(e)) ? Number(e) : x.mtu)} />
-            <SettingInputText label='Gateway' value={props.tun.gateway} onChange={(e) => updateState((x) => x.gateway = e)} />
             <SettingInputText label='Portal' value={props.tun.portal} onChange={(e) => updateState((x) => x.portal = e)} />
             <SettingTunTypeSelect label='Driver' value={props.tun.driver} onChange={(e) => updateState((x) => x.driver = e)} />
+
+
+            <Form.Group as={Row} className='mb-3'>
+                <Form.Label column sm={2} className="nowrap">Routes</Form.Label>
+
+
+                {
+                    props.tun.route?.routes && props.tun.route?.routes
+                        .map((v, index) => {
+                            return (
+                                <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
+                                    <InputGroup className="mb-2" >
+                                        <Form.Control value={v} onChange={(e) => updateState((x) => {
+                                            if (x.route && x.route.routes)
+                                                x.route.routes[index] = e.target.value
+                                        })} />
+                                        <Button variant='outline-danger' onClick={() =>
+                                            updateState((x) => {
+                                                if (x.route && x.route.routes) x.route?.routes.splice(index, 1)
+                                            })}>
+                                            <i className="bi bi-x-lg" ></i>
+                                        </Button>
+                                    </InputGroup>
+                                </Col>
+                            )
+                        })
+                }
+
+                <Col sm={{ span: 10, offset: props.tun.route?.routes?.length !== 0 ? 2 : 0 }}>
+                    <InputGroup className="mb-2" >
+                        <Form.Control value={newRoute.value} onChange={(e) => setNewRoute({ value: e.target.value })} />
+                        <Button variant='outline-success' onClick={() => updateState((x) => {
+                            if (!x.route) x.route = {}
+                            if (!x.route.routes) x.route.routes = []
+                            x.route.routes.push(newRoute.value)
+                        })} >
+                            <i className="bi bi-plus-lg" />
+                        </Button>
+                    </InputGroup>
+                </Col>
+
+            </Form.Group>
         </>
     )
 })

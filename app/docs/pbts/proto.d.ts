@@ -1893,6 +1893,9 @@ export namespace yuhaiin {
 
             /** tun portal */
             portal?: (string|null);
+
+            /** tun route */
+            route?: (yuhaiin.listener.Iroute|null);
         }
 
         /** Represents a tun. */
@@ -1927,6 +1930,9 @@ export namespace yuhaiin {
 
             /** tun portal. */
             public portal: string;
+
+            /** tun route. */
+            public route?: (yuhaiin.listener.Iroute|null);
 
             /**
              * Creates a new tun instance using the specified properties.
@@ -1983,6 +1989,78 @@ export namespace yuhaiin {
                 channel = 1,
                 system_gvisor = 2
             }
+        }
+
+        /** Properties of a route. */
+        interface Iroute {
+
+            /** route routes */
+            routes?: (string[]|null);
+
+            /** route excludes */
+            excludes?: (string[]|null);
+        }
+
+        /** Represents a route. */
+        class route implements Iroute {
+
+            /**
+             * Constructs a new route.
+             * @param [p] Properties to set
+             */
+            constructor(p?: yuhaiin.listener.Iroute);
+
+            /** route routes. */
+            public routes: string[];
+
+            /** route excludes. */
+            public excludes: string[];
+
+            /**
+             * Creates a new route instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns route instance
+             */
+            public static create(properties?: yuhaiin.listener.Iroute): yuhaiin.listener.route;
+
+            /**
+             * Encodes the specified route message. Does not implicitly {@link yuhaiin.listener.route.verify|verify} messages.
+             * @param m route message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: yuhaiin.listener.Iroute, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a route message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns route
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): yuhaiin.listener.route;
+
+            /**
+             * Creates a route message from a plain object. Also converts values to their respective internal types.
+             * @param d Plain object
+             * @returns route
+             */
+            public static fromObject(d: { [k: string]: any }): yuhaiin.listener.route;
+
+            /**
+             * Creates a plain object from a route message. Also converts values to other types if specified.
+             * @param m route
+             * @param [o] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(m: yuhaiin.listener.route, o?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this route to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
         }
 
         /** Properties of a yuubinsya. */

@@ -5177,6 +5177,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {boolean|null} [skip_multicast] tun skip_multicast
              * @property {yuhaiin.listener.tun.endpoint_driver|null} [driver] tun driver
              * @property {string|null} [portal] tun portal
+             * @property {yuhaiin.listener.Iroute|null} [route] tun route
              */
 
             /**
@@ -5259,6 +5260,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
             tun.prototype.portal = "";
 
             /**
+             * tun route.
+             * @member {yuhaiin.listener.Iroute|null|undefined} route
+             * @memberof yuhaiin.listener.tun
+             * @instance
+             */
+            tun.prototype.route = null;
+
+            /**
              * Creates a new tun instance using the specified properties.
              * @function create
              * @memberof yuhaiin.listener.tun
@@ -5298,6 +5307,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     w.uint32(66).string(m.portal);
                 if (m.force_fakeip != null && Object.hasOwnProperty.call(m, "force_fakeip"))
                     w.uint32(72).bool(m.force_fakeip);
+                if (m.route != null && Object.hasOwnProperty.call(m, "route"))
+                    $root.yuhaiin.listener.route.encode(m.route, w.uint32(82).fork()).ldelim();
                 return w;
             };
 
@@ -5349,6 +5360,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         }
                     case 8: {
                             m.portal = r.string();
+                            break;
+                        }
+                    case 10: {
+                            m.route = $root.yuhaiin.listener.route.decode(r, r.uint32());
                             break;
                         }
                     default:
@@ -5412,6 +5427,11 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (d.portal != null) {
                     m.portal = String(d.portal);
                 }
+                if (d.route != null) {
+                    if (typeof d.route !== "object")
+                        throw TypeError(".yuhaiin.listener.tun.route: object expected");
+                    m.route = $root.yuhaiin.listener.route.fromObject(d.route);
+                }
                 return m;
             };
 
@@ -5437,6 +5457,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.driver = o.enums === String ? "fdbased" : 0;
                     d.portal = "";
                     d.force_fakeip = false;
+                    d.route = null;
                 }
                 if (m.name != null && m.hasOwnProperty("name")) {
                     d.name = m.name;
@@ -5461,6 +5482,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 }
                 if (m.force_fakeip != null && m.hasOwnProperty("force_fakeip")) {
                     d.force_fakeip = m.force_fakeip;
+                }
+                if (m.route != null && m.hasOwnProperty("route")) {
+                    d.route = $root.yuhaiin.listener.route.toObject(m.route, o);
                 }
                 return d;
             };
@@ -5493,6 +5517,199 @@ export const yuhaiin = $root.yuhaiin = (() => {
             })();
 
             return tun;
+        })();
+
+        listener.route = (function() {
+
+            /**
+             * Properties of a route.
+             * @memberof yuhaiin.listener
+             * @interface Iroute
+             * @property {Array.<string>|null} [routes] route routes
+             * @property {Array.<string>|null} [excludes] route excludes
+             */
+
+            /**
+             * Constructs a new route.
+             * @memberof yuhaiin.listener
+             * @classdesc Represents a route.
+             * @implements Iroute
+             * @constructor
+             * @param {yuhaiin.listener.Iroute=} [p] Properties to set
+             */
+            function route(p) {
+                this.routes = [];
+                this.excludes = [];
+                if (p)
+                    for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                        if (p[ks[i]] != null)
+                            this[ks[i]] = p[ks[i]];
+            }
+
+            /**
+             * route routes.
+             * @member {Array.<string>} routes
+             * @memberof yuhaiin.listener.route
+             * @instance
+             */
+            route.prototype.routes = $util.emptyArray;
+
+            /**
+             * route excludes.
+             * @member {Array.<string>} excludes
+             * @memberof yuhaiin.listener.route
+             * @instance
+             */
+            route.prototype.excludes = $util.emptyArray;
+
+            /**
+             * Creates a new route instance using the specified properties.
+             * @function create
+             * @memberof yuhaiin.listener.route
+             * @static
+             * @param {yuhaiin.listener.Iroute=} [properties] Properties to set
+             * @returns {yuhaiin.listener.route} route instance
+             */
+            route.create = function create(properties) {
+                return new route(properties);
+            };
+
+            /**
+             * Encodes the specified route message. Does not implicitly {@link yuhaiin.listener.route.verify|verify} messages.
+             * @function encode
+             * @memberof yuhaiin.listener.route
+             * @static
+             * @param {yuhaiin.listener.Iroute} m route message or plain object to encode
+             * @param {$protobuf.Writer} [w] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            route.encode = function encode(m, w) {
+                if (!w)
+                    w = $Writer.create();
+                if (m.routes != null && m.routes.length) {
+                    for (var i = 0; i < m.routes.length; ++i)
+                        w.uint32(10).string(m.routes[i]);
+                }
+                if (m.excludes != null && m.excludes.length) {
+                    for (var i = 0; i < m.excludes.length; ++i)
+                        w.uint32(18).string(m.excludes[i]);
+                }
+                return w;
+            };
+
+            /**
+             * Decodes a route message from the specified reader or buffer.
+             * @function decode
+             * @memberof yuhaiin.listener.route
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+             * @param {number} [l] Message length if known beforehand
+             * @returns {yuhaiin.listener.route} route
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            route.decode = function decode(r, l) {
+                if (!(r instanceof $Reader))
+                    r = $Reader.create(r);
+                var c = l === undefined ? r.len : r.pos + l, m = new $root.yuhaiin.listener.route();
+                while (r.pos < c) {
+                    var t = r.uint32();
+                    switch (t >>> 3) {
+                    case 1: {
+                            if (!(m.routes && m.routes.length))
+                                m.routes = [];
+                            m.routes.push(r.string());
+                            break;
+                        }
+                    case 2: {
+                            if (!(m.excludes && m.excludes.length))
+                                m.excludes = [];
+                            m.excludes.push(r.string());
+                            break;
+                        }
+                    default:
+                        r.skipType(t & 7);
+                        break;
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates a route message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof yuhaiin.listener.route
+             * @static
+             * @param {Object.<string,*>} d Plain object
+             * @returns {yuhaiin.listener.route} route
+             */
+            route.fromObject = function fromObject(d) {
+                if (d instanceof $root.yuhaiin.listener.route)
+                    return d;
+                var m = new $root.yuhaiin.listener.route();
+                if (d.routes) {
+                    if (!Array.isArray(d.routes))
+                        throw TypeError(".yuhaiin.listener.route.routes: array expected");
+                    m.routes = [];
+                    for (var i = 0; i < d.routes.length; ++i) {
+                        m.routes[i] = String(d.routes[i]);
+                    }
+                }
+                if (d.excludes) {
+                    if (!Array.isArray(d.excludes))
+                        throw TypeError(".yuhaiin.listener.route.excludes: array expected");
+                    m.excludes = [];
+                    for (var i = 0; i < d.excludes.length; ++i) {
+                        m.excludes[i] = String(d.excludes[i]);
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates a plain object from a route message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof yuhaiin.listener.route
+             * @static
+             * @param {yuhaiin.listener.route} m route
+             * @param {$protobuf.IConversionOptions} [o] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            route.toObject = function toObject(m, o) {
+                if (!o)
+                    o = {};
+                var d = {};
+                if (o.arrays || o.defaults) {
+                    d.routes = [];
+                    d.excludes = [];
+                }
+                if (m.routes && m.routes.length) {
+                    d.routes = [];
+                    for (var j = 0; j < m.routes.length; ++j) {
+                        d.routes[j] = m.routes[j];
+                    }
+                }
+                if (m.excludes && m.excludes.length) {
+                    d.excludes = [];
+                    for (var j = 0; j < m.excludes.length; ++j) {
+                        d.excludes[j] = m.excludes[j];
+                    }
+                }
+                return d;
+            };
+
+            /**
+             * Converts this route to JSON.
+             * @function toJSON
+             * @memberof yuhaiin.listener.route
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            route.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            return route;
         })();
 
         listener.yuubinsya = (function() {
