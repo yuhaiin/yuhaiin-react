@@ -1894,6 +1894,9 @@ export namespace yuhaiin {
             /** tun portal */
             portal?: (string|null);
 
+            /** tun portal_v6 */
+            portal_v6?: (string|null);
+
             /** tun route */
             route?: (yuhaiin.listener.Iroute|null);
         }
@@ -1930,6 +1933,9 @@ export namespace yuhaiin {
 
             /** tun portal. */
             public portal: string;
+
+            /** tun portal_v6. */
+            public portal_v6: string;
 
             /** tun route. */
             public route?: (yuhaiin.listener.Iroute|null);

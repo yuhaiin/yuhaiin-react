@@ -5177,6 +5177,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {boolean|null} [skip_multicast] tun skip_multicast
              * @property {yuhaiin.listener.tun.endpoint_driver|null} [driver] tun driver
              * @property {string|null} [portal] tun portal
+             * @property {string|null} [portal_v6] tun portal_v6
              * @property {yuhaiin.listener.Iroute|null} [route] tun route
              */
 
@@ -5260,6 +5261,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
             tun.prototype.portal = "";
 
             /**
+             * tun portal_v6.
+             * @member {string} portal_v6
+             * @memberof yuhaiin.listener.tun
+             * @instance
+             */
+            tun.prototype.portal_v6 = "";
+
+            /**
              * tun route.
              * @member {yuhaiin.listener.Iroute|null|undefined} route
              * @memberof yuhaiin.listener.tun
@@ -5309,6 +5318,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     w.uint32(72).bool(m.force_fakeip);
                 if (m.route != null && Object.hasOwnProperty.call(m, "route"))
                     $root.yuhaiin.listener.route.encode(m.route, w.uint32(82).fork()).ldelim();
+                if (m.portal_v6 != null && Object.hasOwnProperty.call(m, "portal_v6"))
+                    w.uint32(90).string(m.portal_v6);
                 return w;
             };
 
@@ -5360,6 +5371,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         }
                     case 8: {
                             m.portal = r.string();
+                            break;
+                        }
+                    case 11: {
+                            m.portal_v6 = r.string();
                             break;
                         }
                     case 10: {
@@ -5427,6 +5442,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (d.portal != null) {
                     m.portal = String(d.portal);
                 }
+                if (d.portal_v6 != null) {
+                    m.portal_v6 = String(d.portal_v6);
+                }
                 if (d.route != null) {
                     if (typeof d.route !== "object")
                         throw TypeError(".yuhaiin.listener.tun.route: object expected");
@@ -5458,6 +5476,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.portal = "";
                     d.force_fakeip = false;
                     d.route = null;
+                    d.portal_v6 = "";
                 }
                 if (m.name != null && m.hasOwnProperty("name")) {
                     d.name = m.name;
@@ -5485,6 +5504,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 }
                 if (m.route != null && m.hasOwnProperty("route")) {
                     d.route = $root.yuhaiin.listener.route.toObject(m.route, o);
+                }
+                if (m.portal_v6 != null && m.hasOwnProperty("portal_v6")) {
+                    d.portal_v6 = m.portal_v6;
                 }
                 return d;
             };

@@ -131,7 +131,8 @@ const TunComponents = React.memo((props: { tun: yuhaiin.listener.tun, onChange: 
 
             <SettingInputText label='Name' value={props.tun.name} onChange={(e) => updateState((x) => x.name = e)} />
             <SettingInputText label='Mtu' value={props.tun.mtu} onChange={(e) => updateState((x) => x.mtu = !isNaN(Number(e)) ? Number(e) : x.mtu)} />
-            <SettingInputText label='Portal' value={props.tun.portal} onChange={(e) => updateState((x) => x.portal = e)} />
+            <SettingInputText label='IPv4 Portal' value={props.tun.portal} onChange={(e) => updateState((x) => x.portal = e)} />
+            <SettingInputText label='IPv6 Portal' value={props.tun.portal_v6} onChange={(e) => updateState((x) => x.portal_v6 = e)} />
             <SettingTunTypeSelect label='Driver' value={props.tun.driver} onChange={(e) => updateState((x) => x.driver = e)} />
 
 
