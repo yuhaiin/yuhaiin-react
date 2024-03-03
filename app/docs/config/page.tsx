@@ -11,21 +11,21 @@ import { GlobalToastContext } from '../common/toast';
 import useSWR from "swr";
 import { ProtoTSFetcher, Fetch } from '../common/proto';
 import Error from 'next/error';
-import { yuhaiin } from '../pbts/proto';
+import { yuhaiin as cp } from '../pbts/config';
 
 function ConfigComponent() {
     const ctx = useContext(GlobalToastContext);
 
-    const { data: setting, error, isLoading, mutate: setSetting } = useSWR("/config", ProtoTSFetcher<yuhaiin.config.setting>(yuhaiin.config.setting), { revalidateOnFocus: false })
+    const { data: setting, error, isLoading, mutate: setSetting } = useSWR("/config", ProtoTSFetcher<cp.config.setting>(cp.config.setting), { revalidateOnFocus: false })
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || setting === undefined) return <Loading />
 
     // const [isAndroid, setIsAndroid] = useState({ value: false })
 
-    const updateState = (modify: (x: yuhaiin.config.setting) => void) => {
-        setSetting((x: yuhaiin.config.setting) => {
-            let y = yuhaiin.config.setting.create(x)
+    const updateState = (modify: (x: cp.config.setting) => void) => {
+        setSetting((x: cp.config.setting) => {
+            let y = cp.config.setting.create(x)
             modify(y)
             return y
         }, false)
@@ -42,7 +42,7 @@ function ConfigComponent() {
                     >
                         <Tab eventKey="home" title="Home">
 
-                            <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting(yuhaiin.config.setting.create({ ...setting, ipv6: !setting.ipv6 }), false)} />
+                            <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting(cp.config.setting.create({ ...setting, ipv6: !setting.ipv6 }), false)} />
                             <SettingInputText label='Network Interface' value={setting.net_interface} onChange={(v) => updateState((x) => x.net_interface = v)} />
 
                             <hr />
@@ -51,7 +51,7 @@ function ConfigComponent() {
 
                             <SettingCheck label='SOCKS5'
                                 checked={setting.system_proxy!!.socks5!!}
-                                onChange={() => updateState((x: yuhaiin.config.setting) => x.system_proxy!!.socks5 = !x.system_proxy?.socks5)} />
+                                onChange={() => updateState((x: cp.config.setting) => x.system_proxy!!.socks5 = !x.system_proxy?.socks5)} />
 
                             <SettingCheck label='HTTP'
                                 checked={setting.system_proxy!!.http!!}
@@ -69,10 +69,10 @@ function ConfigComponent() {
 
                         </Tab>
                         <Tab eventKey="bypass" title="Bypass">
-                            <Bypass bypass={new yuhaiin.bypass.bypass_config(setting.bypass!!)} onChange={(e) => updateState((x) => x.bypass = e)} />
+                            <Bypass bypass={new cp.bypass.bypass_config(setting.bypass!!)} onChange={(e) => updateState((x) => x.bypass = e)} />
                         </Tab>
                         <Tab eventKey="dns" title="DNS">
-                            <DNS data={new yuhaiin.dns.dns_config(setting.dns!!)} onChange={(e) => updateState((x) => x.dns = e)} />
+                            <DNS data={new cp.dns.dns_config(setting.dns!!)} onChange={(e) => updateState((x) => x.dns = e)} />
                         </Tab>
                         <Tab eventKey="inbound" title="Inbound">
                             <Inbound server={setting.server!!.servers!!} onChange={(e) => updateState((x) => x.server!!.servers = e)} />
@@ -86,7 +86,7 @@ function ConfigComponent() {
                         <hr />
                         <Button
                             onClick={() => {
-                                Fetch("/config", { body: yuhaiin.config.setting.encode(setting).finish() })
+                                Fetch("/config", { body: cp.config.setting.encode(setting).finish() })
                                     .then(async ({ error }) => {
                                         if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${await error.msg}`)
                                         else {
@@ -108,11 +108,11 @@ function ConfigComponent() {
 
 
 
-const LogLevel = yuhaiin.log.log_level;
+const LogLevel = cp.log.log_level;
 
 export default ConfigComponent;
 
-function SettingLogcatLevelSelect(props: { label: string, value: yuhaiin.log.log_level, onChange: (value: yuhaiin.log.log_level) => void }) {
+function SettingLogcatLevelSelect(props: { label: string, value: cp.log.log_level, onChange: (value: cp.log.log_level) => void }) {
     return (
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2}>{props.label}</Form.Label>

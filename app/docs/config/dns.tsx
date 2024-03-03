@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import { Form, InputGroup, Card, Row, Col, Button } from 'react-bootstrap';
-import { SettingInputText, SettingCheck } from './components';
-import { yuhaiin } from '../pbts/proto';
+import { SettingInputText, SettingCheck, NewItemList } from './components';
+import { yuhaiin as cp } from '../pbts/config';
 
 type DNSProps = {
-    data: yuhaiin.dns.dns_config,
-    onChange: (x: yuhaiin.dns.dns_config) => void,
+    data: cp.dns.dns_config,
+    onChange: (x: cp.dns.dns_config) => void,
 }
 
 const DNS = React.memo((props: DNSProps) => {
 
     const [newHosts, setNewHosts] = useState({ key: "", value: "" })
-    const [newDomain, setNewDomain] = useState({ value: "" });
 
-    const updateDNS = (x: (x: yuhaiin.dns.dns_config) => void) => {
+    const updateDNS = (x: (x: cp.dns.dns_config) => void) => {
         x(props.data)
         props.onChange(props.data)
     }
@@ -32,36 +31,14 @@ const DNS = React.memo((props: DNSProps) => {
             <SettingInputText label='Fake IP Range' value={props.data.fakedns_ip_range} onChange={(v) => updateDNS((x) => x.fakedns_ip_range = v)} />
 
 
-            <Form.Group as={Row} className='mb-3'>
-                <Form.Label column sm={2} className="nowrap">Whitelist</Form.Label>
-
-
-                {
-                    props.data.fakedns_whitelist
-                        .map((v, index) => {
-                            return (
-                                <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
-                                    <InputGroup className="mb-2" >
-                                        <Form.Control value={v} onChange={(e) => updateDNS((x) => x.fakedns_whitelist[index] = e.target.value)} />
-                                        <Button variant='outline-danger' onClick={() => updateDNS((x) => x.fakedns_whitelist.splice(index, 1))}>
-                                            <i className="bi bi-x-lg" ></i>
-                                        </Button>
-                                    </InputGroup>
-                                </Col>
-                            )
-                        })
-                }
-
-                <Col sm={{ span: 10, offset: props.data.fakedns_whitelist.length !== 0 ? 2 : 0 }}>
-                    <InputGroup className="mb-2" >
-                        <Form.Control value={newDomain.value} onChange={(e) => setNewDomain({ value: e.target.value })} />
-                        <Button variant='outline-success' onClick={() => updateDNS((x) => x.fakedns_whitelist.push(newDomain.value))} >
-                            <i className="bi bi-plus-lg" />
-                        </Button>
-                    </InputGroup>
-                </Col>
-
-            </Form.Group>
+            <NewItemList
+                title="Whitelist"
+                data={props.data.fakedns_whitelist}
+                onChange={(v) => updateDNS((x) => {
+                    if (!v) return
+                    x.fakedns_whitelist = v
+                })}
+            />
 
             <hr />
 
@@ -131,9 +108,9 @@ const DNS = React.memo((props: DNSProps) => {
         </>)
 })
 
-const DnsType = yuhaiin.dns.type;
+const DnsType = cp.dns.type;
 
-function SettingDNSTypeSelect(props: { label: string, value?: yuhaiin.dns.type | null, onChange: (value: yuhaiin.dns.type) => void }) {
+function SettingDNSTypeSelect(props: { label: string, value?: cp.dns.type | null, onChange: (value: cp.dns.type) => void }) {
     return (
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2}>{props.label}</Form.Label>

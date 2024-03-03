@@ -1,28 +1,28 @@
 import React, { useState } from 'react';
 import { Form, InputGroup, Row, Col, Button, } from 'react-bootstrap';
-import { SettingInputText } from './components';
-import { yuhaiin } from '../pbts/proto';
+import { SettingInputText, NewItemList } from './components';
+import { yuhaiin as cp } from '../pbts/config';
 
-const BypassMode = yuhaiin.bypass.mode;
-const ResolveStrategy = yuhaiin.bypass.resolve_strategy;
+const BypassMode = cp.bypass.mode;
+const ResolveStrategy = cp.bypass.resolve_strategy;
 
-export const defaultBypassConfig: yuhaiin.bypass.Ibypass_config = {
+export const defaultBypassConfig: cp.bypass.Ibypass_config = {
     tcp: BypassMode.bypass,
     udp: BypassMode.bypass,
     bypass_file: "yuhaiin.conf",
     custom_rule_v3: []
 }
 
-const Bypass = React.memo((props: { bypass: yuhaiin.bypass.bypass_config, onChange: (x: yuhaiin.bypass.bypass_config) => void, }) => {
+const Bypass = React.memo((props: { bypass: cp.bypass.bypass_config, onChange: (x: cp.bypass.bypass_config) => void, }) => {
 
-    const defaultRule: yuhaiin.bypass.Imode_config = {
+    const defaultRule: cp.bypass.Imode_config = {
         hostname: ["www.example.com"],
         mode: BypassMode.proxy,
         tag: "",
         resolve_strategy: ResolveStrategy.default
     }
 
-    const updateState = (x: (x: yuhaiin.bypass.bypass_config) => void) => {
+    const updateState = (x: (x: cp.bypass.bypass_config) => void) => {
         x(props.bypass)
         props.onChange(props.bypass)
     }
@@ -46,7 +46,7 @@ const Bypass = React.memo((props: { bypass: yuhaiin.bypass.bypass_config, onChan
 
                         <hr />
 
-                        <BypassSingleComponents config={new yuhaiin.bypass.mode_config(value)} onChange={(e) => updateState((x) => x.custom_rule_v3[index] = e)} />
+                        <BypassSingleComponents config={new cp.bypass.mode_config(value)} onChange={(e) => updateState((x) => x.custom_rule_v3[index] = e)} />
 
 
                         <Button variant='outline-danger' onClick={() => updateState((x) => x.custom_rule_v3.splice(index, 1))} >
@@ -68,13 +68,11 @@ const Bypass = React.memo((props: { bypass: yuhaiin.bypass.bypass_config, onChan
     )
 })
 
-const BypassSingleComponents = (props: { config: yuhaiin.bypass.mode_config, onChange: (x: yuhaiin.bypass.mode_config) => void }) => {
-    const updateState = (x: (v: yuhaiin.bypass.mode_config) => void) => {
+const BypassSingleComponents = (props: { config: cp.bypass.mode_config, onChange: (x: cp.bypass.mode_config) => void }) => {
+    const updateState = (x: (v: cp.bypass.mode_config) => void) => {
         x(props.config)
         props.onChange(props.config)
     }
-
-    const [newDomain, setNewDomain] = useState({ value: "" });
 
     return (
         <>
@@ -83,41 +81,16 @@ const BypassSingleComponents = (props: { config: yuhaiin.bypass.mode_config, onC
             <SettingInputText label='Tag' value={props.config.tag} onChange={(e) => updateState((x) => x.tag = e)} />
             <SettingResolveStrategySelect label='Resolve Strategy' value={props.config.resolve_strategy} onChange={(e) => updateState((x) => x.resolve_strategy = e)} />
 
-            <Form.Group as={Row} className='mb-3'>
-                <Form.Label column sm={2} className="nowrap">IP/DOMAIN</Form.Label>
-
-
-                {
-                    props.config.hostname
-                        .map((v, index) => {
-                            return (
-                                <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
-                                    <InputGroup className="mb-2" >
-                                        <Form.Control value={v} onChange={(e) => updateState((x) => x.hostname[index] = e.target.value)} />
-                                        <Button variant='outline-danger' onClick={() => updateState((x) => x.hostname.splice(index, 1))}>
-                                            <i className="bi bi-x-lg" ></i>
-                                        </Button>
-                                    </InputGroup>
-                                </Col>
-                            )
-                        })
-                }
-
-                <Col sm={{ span: 10, offset: props.config.hostname.length !== 0 ? 2 : 0 }}>
-                    <InputGroup className="mb-2" >
-                        <Form.Control value={newDomain.value} onChange={(e) => setNewDomain({ value: e.target.value })} />
-                        <Button variant='outline-success' onClick={() => updateState((x) => x.hostname.push(newDomain.value))} >
-                            <i className="bi bi-plus-lg" />
-                        </Button>
-                    </InputGroup>
-                </Col>
-
-            </Form.Group>
+            <NewItemList
+                title='IP/DOMAIN'
+                data={props.config.hostname}
+                onChange={(v) => updateState((x) => { if (v) x.hostname = v })}
+            />
         </>
     )
 }
 
-function SettingModeSelect(props: { label: string, network: boolean, value: yuhaiin.bypass.mode, onChange: (value: yuhaiin.bypass.mode) => void }) {
+function SettingModeSelect(props: { label: string, network: boolean, value: cp.bypass.mode, onChange: (value: cp.bypass.mode) => void }) {
     return (
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2}>{props.label}</Form.Label>
@@ -134,7 +107,7 @@ function SettingModeSelect(props: { label: string, network: boolean, value: yuha
 }
 
 
-function SettingResolveStrategySelect(props: { label: string, value: yuhaiin.bypass.resolve_strategy, onChange: (value: yuhaiin.bypass.resolve_strategy) => void }) {
+function SettingResolveStrategySelect(props: { label: string, value: cp.bypass.resolve_strategy, onChange: (value: cp.bypass.resolve_strategy) => void }) {
     return (
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2}>{props.label}</Form.Label>
