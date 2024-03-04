@@ -75,7 +75,7 @@ function ConfigComponent() {
                             <DNS data={new cp.dns.dns_config(setting.dns!!)} onChange={(e) => updateState((x) => x.dns = e)} />
                         </Tab>
                         <Tab eventKey="inbound" title="Inbound">
-                            <Inbound server={setting.server!!.servers!!} onChange={(e) => updateState((x) => x.server!!.servers = e)} />
+                            <Inbound server={setting.server!!} onChange={(e) => updateState((x) => x.server = e)} />
                         </Tab>
 
                     </Tabs>

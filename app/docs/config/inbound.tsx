@@ -116,10 +116,6 @@ const TunComponents = React.memo((props: { tun: cp.listener.tun, onChange: (x: c
 
     return (
         <>
-            <SettingCheck label='DNS Hijacking'
-                checked={props.tun.dns_hijacking}
-                onChange={() => updateState((x) => x.dns_hijacking = !x.dns_hijacking)} />
-
             <SettingCheck
                 checked={props.tun.skip_multicast}
                 onChange={() => updateState((x) => x.skip_multicast = !x.skip_multicast)}
@@ -127,10 +123,10 @@ const TunComponents = React.memo((props: { tun: cp.listener.tun, onChange: (x: c
             />
 
             <SettingInputText label='Name' value={props.tun.name} onChange={(e) => updateState((x) => x.name = e)} />
-            <SettingInputText label='Mtu' value={props.tun.mtu} onChange={(e) => updateState((x) => x.mtu = !isNaN(Number(e)) ? Number(e) : x.mtu)} />
-            <SettingInputText label='IPv4 Portal' value={props.tun.portal} onChange={(e) => updateState((x) => x.portal = e)} />
-            <SettingInputText label='IPv6 Portal' value={props.tun.portal_v6} onChange={(e) => updateState((x) => x.portal_v6 = e)} />
-            <SettingTunTypeSelect label='Driver' value={props.tun.driver} onChange={(e) => updateState((x) => x.driver = e)} />
+            <SettingInputText label='MTU' value={props.tun.mtu} onChange={(e) => updateState((x) => x.mtu = !isNaN(Number(e)) ? Number(e) : x.mtu)} />
+            <SettingInputText label='IPv4' value={props.tun.portal} onChange={(e) => updateState((x) => x.portal = e)} />
+            <SettingInputText label='IPv6' value={props.tun.portal_v6} onChange={(e) => updateState((x) => x.portal_v6 = e)} />
+            <SettingTunTypeSelect label='Stack' value={props.tun.driver} onChange={(e) => updateState((x) => x.driver = e)} />
 
 
             <NewItemList
@@ -498,19 +494,32 @@ const Protocol = React.memo((props: { protocol: cp.listener.protocol, onChange: 
 })
 
 
-const Inbound = React.memo((props: { server: { [key: string]: cp.listener.Iprotocol }, onChange: (x: { [key: string]: cp.listener.Iprotocol }) => void, }) => {
+const Inbound = React.memo((props: {
+    server: cp.listener.Iinbound_config,
+    onChange: (x: cp.listener.Iinbound_config) => void,
+}) => {
 
     const [newProtocol, setNewProtocol] = useState({ value: "http", name: "" });
 
-    const updateState = (x: (x: { [key: string]: cp.listener.Iprotocol }) => void) => {
+    const updateState = (x: (x: cp.listener.Iinbound_config) => void) => {
         x(props.server)
         props.onChange(props.server)
     }
 
     return (
         <>
+
+            <SettingCheck label='DNS Hijack'
+                checked={!props.server.hijack_dns ? false : true}
+                onChange={() => updateState((x) => x.hijack_dns = !x.hijack_dns)} />
+
+            <SettingCheck label='Fakedns'
+                checked={!props.server.hijack_dns_fakeip ? false : true}
+                onChange={() => updateState((x) => x.hijack_dns_fakeip = !x.hijack_dns_fakeip)} />
+
+            <hr />
             {
-                Object.entries(props.server)
+                Object.entries(props.server!.servers!)
                     .sort((a, b) => { return a[0] <= b[0] ? -1 : 1 })
                     .map(([k, v]) => {
                         return (
@@ -532,40 +541,32 @@ const Inbound = React.memo((props: { server: { [key: string]: cp.listener.Iproto
             }
 
 
-            <Card className='mb-2'>
-                <Card.Body>
-                    <Card.Title>New Inbound</Card.Title>
+            <InputGroup className="d-flex justify-content-end">
+                <Form.Control value={newProtocol.name} onChange={(e) => setNewProtocol({ ...newProtocol, name: e.target.value })} />
+                <Form.Select value={newProtocol.value} onChange={(e) => setNewProtocol({ ...newProtocol, value: e.target.value })}>
+                    <option value="mix">Mixed</option>
+                    <option value="http">HTTP</option>
+                    <option value="socks5">SOCKS5</option>
+                    <option value="tun">TUN</option>
+                    <option value="redir">Redir</option>
+                    <option value="tproxy">TProxy</option>
+                    <option value="yuubinsya">Yuubinsya</option>
+                    <option value="yuubinsya-websocket">Yuubinsya Websocket</option>
+                    <option value="yuubinsya-tls">Yuubinsya TLS</option>
+                    <option value="yuubinsya-grpc">Yuubinsya GRPC</option>
+                    <option value="yuubinsya-quic">Yuubinsya QUIC</option>
+                    <option value="yuubinsya-http2">Yuubinsya HTTP2</option>
+                    <option value="yuubinsya-reality">Yuubinsya Reality</option>
+                </Form.Select>
+                <Button variant='outline-success'
+                    onClick={() => updateState((x) => {
+                        console.log(newProtocol)
+                        defaultProtocol(x.servers!, newProtocol.name, newProtocol.value)
+                    })} >
+                    <i className="bi bi-plus-lg" />New Inbound
+                </Button>
+            </InputGroup>
 
-                    <FloatingLabel label="Protocol" className='mb-2'>
-                        <Form.Select value={newProtocol.value} onChange={(e) => setNewProtocol({ ...newProtocol, value: e.target.value })}>
-                            <option value="mix">Mixed</option>
-                            <option value="http">HTTP</option>
-                            <option value="socks5">SOCKS5</option>
-                            <option value="tun">TUN</option>
-                            <option value="redir">Redir</option>
-                            <option value="tproxy">TProxy</option>
-                            <option value="yuubinsya">Yuubinsya</option>
-                            <option value="yuubinsya-websocket">Yuubinsya Websocket</option>
-                            <option value="yuubinsya-tls">Yuubinsya TLS</option>
-                            <option value="yuubinsya-grpc">Yuubinsya GRPC</option>
-                            <option value="yuubinsya-quic">Yuubinsya QUIC</option>
-                            <option value="yuubinsya-http2">Yuubinsya HTTP2</option>
-                            <option value="yuubinsya-reality">Yuubinsya Reality</option>
-                        </Form.Select>
-                    </FloatingLabel>
-
-                    <InputGroup className="d-flex justify-content-end">
-                        <Form.Control value={newProtocol.name} onChange={(e) => setNewProtocol({ ...newProtocol, name: e.target.value })} />
-                        <Button variant='outline-success'
-                            onClick={() => updateState((x) => {
-                                console.log(newProtocol)
-                                defaultProtocol(x, newProtocol.name, newProtocol.value)
-                            })} >
-                            <i className="bi bi-plus-lg" />New Inbound
-                        </Button>
-                    </InputGroup>
-                </Card.Body>
-            </Card>
         </>
     )
 })
