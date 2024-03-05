@@ -531,8 +531,8 @@ const Inbound = React.memo((props: {
                                     </Button>
                                 </Card.Title>
 
-                                <SettingCheck label='Enabled' checked={v.enabled!!} onChange={() => updateState((x) => x[k].enabled = !x[k].enabled)} />
-                                <Protocol protocol={new cp.listener.protocol(v)} onChange={(e) => updateState((x) => x[k] = e)} />
+                                <SettingCheck label='Enabled' checked={v.enabled!!} onChange={() => updateState((x) => x.servers![k].enabled = !x.servers![k].enabled)} />
+                                <Protocol protocol={new cp.listener.protocol(v)} onChange={(e) => updateState((x) => x.servers![k] = e)} />
 
                                 <hr />
                             </div>
