@@ -14,7 +14,7 @@
     "react-dom": "^18.2.0",
     "swr": "^2.2.5",
     "ts-proto": "^1.167.9",
-    "typescript": "^5.3.3",
+    "typescript": "^5.4.2",
     "protobufjs": "^7.2.6"
   },
   "scripts": {
