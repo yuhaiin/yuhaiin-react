@@ -16,7 +16,7 @@ function Setting() {
         <Card.Body>
             <Form.Group as={Row} className='mb-1 ms-1'>
                 <Row className="g-2">
-                    <Form.Label column sm={2} class="nowrap">API Url</Form.Label>
+                    <Form.Label column sm={2} className="nowrap">API Url</Form.Label>
                     <Col sm={6}>
                         <Form.Control value={url} onChange={(v) => setUrl(v.target.value)} />
                     </Col>
@@ -36,7 +36,7 @@ function Setting() {
 
             <Form.Group as={Row} className='mb-1 ms-1'>
                 <Row className="g-2">
-                    <Form.Label column sm={2} class="nowrap">Remote Rule</Form.Label>
+                    <Form.Label column sm={2} className="nowrap">Remote Rule</Form.Label>
                     <Col sm={6}>
                         <Form.Control value={remote} onChange={(v) => setRemote(v.target.value)} />
                     </Col>

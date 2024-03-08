@@ -1,15 +1,57 @@
-import { Row, Form, Col, InputGroup, Button } from "react-bootstrap"
+import { Row, Form, Col, InputGroup, Button, DropdownMenu, DropdownItem, DropdownButton } from "react-bootstrap"
 import { useState } from "react";
 
 
-export const SettingInputText = (props: { label: string, value?: string | number | null, plaintext?: boolean, onChange?: (x: string) => void }) => {
+
+
+export class Remind {
+    label: string
+    label_children?: (string[] | null)
+    value: string
+}
+
+export const SettingInputText = (props: {
+    label: string,
+    value?: string | number | null,
+    plaintext?: boolean,
+    onChange?: (x: string) => void,
+    reminds?: Remind[] | null,
+}) => {
+
+    const dropdown = () => {
+        if (!props.reminds || !props.reminds.length) return <></>
+
+        return <DropdownButton variant='outline-secondary' title={""} >
+            {
+                props.reminds.map((v) => {
+                    return <DropdownItem
+                        key={v.value}
+                        onClick={() => props.onChange && props.onChange(v.value)}>
+                        <b>{v.label}</b>
+                        {
+                            v.label_children &&
+                            v.label_children.map((vv) => { return <div key={vv}><span className="text-body-secondary">{vv}</span></div> })
+                        }
+                    </DropdownItem>
+                })
+            }
+        </DropdownButton>
+
+    }
     return (
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2} className="nowrap">{props.label}</Form.Label>
             <Col sm={10}>
-                <Form.Control value={props.value !== null ? props.value : ""} plaintext={props.plaintext} onChange={(v) => props.onChange !== undefined && props.onChange(v.target.value)} />
+                <InputGroup className="mb-2" >
+                    {dropdown()}
+                    <Form.Control
+                        value={props.value !== null ? props.value : ""}
+                        plaintext={props.plaintext}
+                        onChange={(v) => props.onChange !== undefined && props.onChange(v.target.value)}
+                    />
+                </InputGroup>
             </Col>
-        </Form.Group>
+        </Form.Group >
     )
 }
 

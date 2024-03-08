@@ -18,6 +18,14 @@ npx pbjs -t static-module --no-typeurl \
     ${proto_dir}/config/config.proto
 npx pbts -o ./app/docs/pbts/config.d.ts ./app/docs/pbts/config.js
 
+npx pbjs -t static-module --no-typeurl \
+    --keep-case --no-verify --no-delimited --no-beautify \
+    --no-service --null-defaults false --es6 -w es6 -p ${proto_dir} \
+    -r tools \
+    -o ./app/docs/pbts/tools.js \
+    ${proto_dir}/tools/tools.proto
+npx pbts -o ./app/docs/pbts/tools.d.ts ./app/docs/pbts/tools.js
+
 
 npx pbjs -t static-module --no-typeurl \
     --keep-case --no-verify --no-delimited --no-beautify \

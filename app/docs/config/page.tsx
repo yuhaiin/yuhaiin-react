@@ -6,17 +6,25 @@ import DNS from './dns';
 import Bypass from './bypass';
 import Inbound from './inbound';
 import Loading from '../common/loading';
-import { SettingCheck, SettingInputText } from './components';
+import { SettingCheck, SettingInputText, Remind } from './components';
 import { GlobalToastContext } from '../common/toast';
 import useSWR from "swr";
 import { ProtoTSFetcher, Fetch } from '../common/proto';
 import Error from 'next/error';
 import { yuhaiin as cp } from '../pbts/config';
+import { yuhaiin as tp } from '../pbts/tools';
 
 function ConfigComponent() {
     const ctx = useContext(GlobalToastContext);
 
-    const { data: setting, error, isLoading, mutate: setSetting } = useSWR("/config", ProtoTSFetcher<cp.config.setting>(cp.config.setting), { revalidateOnFocus: false })
+    const { data: setting, error, isLoading, mutate: setSetting } =
+        useSWR("/config", ProtoTSFetcher<cp.config.setting>(cp.config.setting),
+            { revalidateOnFocus: false })
+
+    const { data: iffs } =
+        useSWR("/interfaces", ProtoTSFetcher<tp.tools.Interfaces>(tp.tools.Interfaces),
+            { revalidateOnFocus: true })
+
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || setting === undefined) return <Loading />
@@ -43,7 +51,25 @@ function ConfigComponent() {
                         <Tab eventKey="home" title="Home">
 
                             <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting(cp.config.setting.create({ ...setting, ipv6: !setting.ipv6 }), false)} />
-                            <SettingInputText label='Network Interface' value={setting.net_interface} onChange={(v) => updateState((x) => x.net_interface = v)} />
+                            <SettingInputText
+                                label='Network Interface'
+                                value={setting.net_interface}
+                                onChange={(v) => updateState((x) => x.net_interface = v)}
+                                reminds={
+                                    iffs?.
+                                        interfaces.
+                                        map((v) => {
+                                            if (!v.name) return undefined
+                                            var r: Remind = {
+                                                label: v.name,
+                                                value: v.name,
+                                                label_children: v.addresses?.map((vv) => !vv ? "" : vv)
+                                            }
+                                            return r
+                                        }).
+                                        filter((e): e is Exclude<Remind, null | undefined> => !!e)
+                                }
+                            />
 
                             <hr />
 

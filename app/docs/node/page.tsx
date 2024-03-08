@@ -27,7 +27,7 @@ export default function NewNode() {
                             <Form.Select value={currentProtocol.value} onChange={(e) => setCurrentProtocol({ value: e.target.value })}>
                                 {
                                     Object.keys(protocolMapping).map((v) => {
-                                        return <option value={v}>{v}</option>
+                                        return <option value={v} key={v}>{v}</option>
                                     })
                                 }
                             </Form.Select>
