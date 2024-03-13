@@ -13,7 +13,7 @@
     "react-bootstrap": "^2.10.1",
     "react-dom": "^18.2.0",
     "swr": "^2.2.5",
-    "ts-proto": "^1.168.0",
+    "ts-proto": "^1.169.0",
     "typescript": "^5.4.2",
     "protobufjs": "^7.2.6"
   },
