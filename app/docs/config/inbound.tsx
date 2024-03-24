@@ -526,7 +526,7 @@ const Inbound = React.memo((props: {
                             <div key={k}>
                                 <Card.Title className='d-flex justify-content-between align-items-center'>
                                     {k}
-                                    <Button variant='outline-danger' onClick={() => updateState((x) => { delete x[k] })}>
+                                    <Button variant='outline-danger' onClick={() => updateState((x) => { x.servers && delete x.servers[k] })}>
                                         <i className="bi bi-x-lg"></i>
                                     </Button>
                                 </Card.Title>

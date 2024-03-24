@@ -179,6 +179,120 @@ export namespace yuhaiin {
              */
             public toJSON(): { [k: string]: any };
         }
+
+        /** Properties of an info. */
+        interface Iinfo {
+
+            /** info version */
+            version?: (string|null);
+
+            /** info commit */
+            commit?: (string|null);
+
+            /** info build_time */
+            build_time?: (string|null);
+
+            /** info go_version */
+            go_version?: (string|null);
+
+            /** info arch */
+            arch?: (string|null);
+
+            /** info platform */
+            platform?: (string|null);
+
+            /** info os */
+            os?: (string|null);
+
+            /** info compiler */
+            compiler?: (string|null);
+
+            /** info build */
+            build?: (string[]|null);
+        }
+
+        /** Represents an info. */
+        class info implements Iinfo {
+
+            /**
+             * Constructs a new info.
+             * @param [p] Properties to set
+             */
+            constructor(p?: yuhaiin.config.Iinfo);
+
+            /** info version. */
+            public version: string;
+
+            /** info commit. */
+            public commit: string;
+
+            /** info build_time. */
+            public build_time: string;
+
+            /** info go_version. */
+            public go_version: string;
+
+            /** info arch. */
+            public arch: string;
+
+            /** info platform. */
+            public platform: string;
+
+            /** info os. */
+            public os: string;
+
+            /** info compiler. */
+            public compiler: string;
+
+            /** info build. */
+            public build: string[];
+
+            /**
+             * Creates a new info instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns info instance
+             */
+            public static create(properties?: yuhaiin.config.Iinfo): yuhaiin.config.info;
+
+            /**
+             * Encodes the specified info message. Does not implicitly {@link yuhaiin.config.info.verify|verify} messages.
+             * @param m info message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: yuhaiin.config.Iinfo, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes an info message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns info
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): yuhaiin.config.info;
+
+            /**
+             * Creates an info message from a plain object. Also converts values to their respective internal types.
+             * @param d Plain object
+             * @returns info
+             */
+            public static fromObject(d: { [k: string]: any }): yuhaiin.config.info;
+
+            /**
+             * Creates a plain object from an info message. Also converts values to other types if specified.
+             * @param m info
+             * @param [o] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(m: yuhaiin.config.info, o?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this info to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
     }
 
     /** Namespace log. */

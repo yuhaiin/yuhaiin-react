@@ -6,7 +6,7 @@ import DNS from './dns';
 import Bypass from './bypass';
 import Inbound from './inbound';
 import Loading from '../common/loading';
-import { SettingCheck, SettingInputText, Remind } from './components';
+import { SettingCheck, SettingInputText, Remind, ItemList } from './components';
 import { GlobalToastContext } from '../common/toast';
 import useSWR from "swr";
 import { ProtoTSFetcher, Fetch } from '../common/proto';
@@ -20,6 +20,9 @@ function ConfigComponent() {
     const { data: setting, error, isLoading, mutate: setSetting } =
         useSWR("/config", ProtoTSFetcher<cp.config.setting>(cp.config.setting),
             { revalidateOnFocus: false })
+    const { data: info } =
+        useSWR("/info", ProtoTSFetcher<cp.config.info>(cp.config.info),
+            {})
 
     const { data: iffs } =
         useSWR("/interfaces", ProtoTSFetcher<tp.tools.Interfaces>(tp.tools.Interfaces),
@@ -103,29 +106,45 @@ function ConfigComponent() {
                         <Tab eventKey="inbound" title="Inbound">
                             <Inbound server={setting.server!!} onChange={(e) => updateState((x) => x.server = e)} />
                         </Tab>
-
+                        <Tab eventKey="info" title="Info">
+                            <SettingInputText plaintext mb='mb-0' label='Version' value={info?.version} />
+                            <SettingInputText url={"https://github.com/yuhaiin/yuhaiin/commit/" + info?.commit} plaintext mb='mb-0' label='Commit' value={info?.commit} />
+                            <SettingInputText plaintext mb='mb-0' label='Build Time' value={info?.build_time} />
+                            <SettingInputText plaintext mb='mb-0' label='Go Version' value={info?.go_version} />
+                            <SettingInputText
+                                url="https://github.com/yuhaiin/yuhaiin"
+                                plaintext mb='mb-0'
+                                label='Github'
+                                value={"yuhaiin/yuhaiin"}
+                            />
+                            <SettingInputText plaintext mb='mb-0' label='OS' value={info?.os} />
+                            <SettingInputText plaintext mb='mb-0' label='Arch' value={info?.arch} />
+                            <SettingInputText plaintext mb='mb-0' label='Compiler' value={info?.compiler} />
+                            <SettingInputText plaintext mb='mb-0' label='Platform' value={info?.platform} />
+                            <ItemList title='Build' data={info?.build} mb='mb-0' />
+                        </Tab>
                     </Tabs>
 
 
-                    {/* {!isAndroid.value && */}
-                    <>
-                        <hr />
-                        <Button
-                            onClick={() => {
-                                Fetch("/config", { body: cp.config.setting.encode(setting).finish() })
-                                    .then(async ({ error }) => {
-                                        if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${await error.msg}`)
-                                        else {
-                                            ctx.Info("Save Config Successfully");
-                                            setSetting()
-                                        }
-                                    })
-                            }}
-                        >
-                            Save
-                        </Button>
-                    </>
-                    {/* } */}
+                    {info?.os != "android" &&
+                        <>
+                            <hr />
+                            <Button
+                                onClick={() => {
+                                    Fetch("/config", { body: cp.config.setting.encode(setting).finish() })
+                                        .then(async ({ error }) => {
+                                            if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${await error.msg}`)
+                                            else {
+                                                ctx.Info("Save Config Successfully");
+                                                setSetting()
+                                            }
+                                        })
+                                }}
+                            >
+                                Save
+                            </Button>
+                        </>
+                    }
                 </Card.Body>
             </Card >
         </>

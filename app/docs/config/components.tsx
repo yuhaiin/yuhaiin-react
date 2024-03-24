@@ -13,9 +13,11 @@ export class Remind {
 export const SettingInputText = (props: {
     label: string,
     value?: string | number | null,
+    url?: string,
     plaintext?: boolean,
     onChange?: (x: string) => void,
     reminds?: Remind[] | null,
+    mb?: string,
 }) => {
 
     const dropdown = () => {
@@ -39,16 +41,23 @@ export const SettingInputText = (props: {
 
     }
     return (
-        <Form.Group as={Row} className='mb-3'>
+        <Form.Group as={Row} className={props.mb ? props.mb : "mb-2"}>
             <Form.Label column sm={2} className="nowrap">{props.label}</Form.Label>
             <Col sm={10}>
-                <InputGroup className="mb-2" >
+                <InputGroup className={props.mb ? props.mb : "mb-2"}>
                     {dropdown()}
-                    <Form.Control
-                        value={props.value !== null ? props.value : ""}
-                        plaintext={props.plaintext}
-                        onChange={(v) => props.onChange !== undefined && props.onChange(v.target.value)}
-                    />
+                    {props.url
+                        ?
+                        <a className="mt-1" href={props.url} target="_blank">{props.value}</a>
+                        :
+                        <>
+                            <Form.Control
+                                value={props.value !== null ? props.value : ""}
+                                plaintext={props.plaintext}
+                                onChange={(v) => props.onChange !== undefined && props.onChange(v.target.value)}
+                            />
+                        </>}
+
                 </InputGroup>
             </Col>
         </Form.Group >
@@ -57,7 +66,7 @@ export const SettingInputText = (props: {
 
 export const SettingInputTextarea = (props: { label: string, value: string | number | undefined, onChange: (x: string) => void }) => {
     return (
-        <Form.Group as={Row} className='mb-3'>
+        <Form.Group as={Row} className='mb-2'>
             <Form.Label column sm={2} className="nowrap">{props.label}</Form.Label>
             <Col sm={10}>
                 <Form.Control as="textarea" rows={5} value={props.value} onChange={(v) => props.onChange(v.target.value)} />
@@ -68,7 +77,7 @@ export const SettingInputTextarea = (props: { label: string, value: string | num
 
 export const SettingCheck = (props: { label: string, checked: boolean, onChange: () => void }) => {
     return (
-        <Form.Group as={Row} className='mb-3'>
+        <Form.Group as={Row} className='mb-2'>
             <Form.Label column sm={2}>{props.label}</Form.Label>
             <Col sm={10} className='d-flex align-items-center'>
                 <Form.Check className='d-flex align-items-center' type='switch' checked={props.checked} onChange={() => props.onChange()} />
@@ -127,6 +136,36 @@ export function NewItemList(props: {
                 </Button>
             </InputGroup>
         </Col>
+
+    </Form.Group>)
+}
+
+
+export function ItemList(props: {
+    title: string,
+    mb?: string,
+    data: string[] | null | undefined,
+}) {
+
+    return (<Form.Group as={Row} className={props.mb ? props.mb : "mb-2"}>
+        <Form.Label column sm={2} className="nowrap">{props.title}</Form.Label>
+
+        <Col sm={{ span: 10, offset: 0 }}>
+            <InputGroup className={props.mb ? props.mb : "mb-2"} ></InputGroup>
+        </Col>
+
+        {
+            props.data && props.data
+                .map((v, index) => {
+                    return (
+                        <Col sm={{ span: 10, offset: 2 }} className="mt-0" key={index} >
+                            <InputGroup className={props.mb ? props.mb : "mb-2"} >
+                                {v}
+                            </InputGroup>
+                        </Col>
+                    )
+                })
+        }
 
     </Form.Group>)
 }

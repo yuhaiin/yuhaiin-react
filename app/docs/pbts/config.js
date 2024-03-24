@@ -479,6 +479,342 @@ export const yuhaiin = $root.yuhaiin = (() => {
             return system_proxy;
         })();
 
+        config.info = (function() {
+
+            /**
+             * Properties of an info.
+             * @memberof yuhaiin.config
+             * @interface Iinfo
+             * @property {string|null} [version] info version
+             * @property {string|null} [commit] info commit
+             * @property {string|null} [build_time] info build_time
+             * @property {string|null} [go_version] info go_version
+             * @property {string|null} [arch] info arch
+             * @property {string|null} [platform] info platform
+             * @property {string|null} [os] info os
+             * @property {string|null} [compiler] info compiler
+             * @property {Array.<string>|null} [build] info build
+             */
+
+            /**
+             * Constructs a new info.
+             * @memberof yuhaiin.config
+             * @classdesc Represents an info.
+             * @implements Iinfo
+             * @constructor
+             * @param {yuhaiin.config.Iinfo=} [p] Properties to set
+             */
+            function info(p) {
+                this.build = [];
+                if (p)
+                    for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                        if (p[ks[i]] != null)
+                            this[ks[i]] = p[ks[i]];
+            }
+
+            /**
+             * info version.
+             * @member {string} version
+             * @memberof yuhaiin.config.info
+             * @instance
+             */
+            info.prototype.version = "";
+
+            /**
+             * info commit.
+             * @member {string} commit
+             * @memberof yuhaiin.config.info
+             * @instance
+             */
+            info.prototype.commit = "";
+
+            /**
+             * info build_time.
+             * @member {string} build_time
+             * @memberof yuhaiin.config.info
+             * @instance
+             */
+            info.prototype.build_time = "";
+
+            /**
+             * info go_version.
+             * @member {string} go_version
+             * @memberof yuhaiin.config.info
+             * @instance
+             */
+            info.prototype.go_version = "";
+
+            /**
+             * info arch.
+             * @member {string} arch
+             * @memberof yuhaiin.config.info
+             * @instance
+             */
+            info.prototype.arch = "";
+
+            /**
+             * info platform.
+             * @member {string} platform
+             * @memberof yuhaiin.config.info
+             * @instance
+             */
+            info.prototype.platform = "";
+
+            /**
+             * info os.
+             * @member {string} os
+             * @memberof yuhaiin.config.info
+             * @instance
+             */
+            info.prototype.os = "";
+
+            /**
+             * info compiler.
+             * @member {string} compiler
+             * @memberof yuhaiin.config.info
+             * @instance
+             */
+            info.prototype.compiler = "";
+
+            /**
+             * info build.
+             * @member {Array.<string>} build
+             * @memberof yuhaiin.config.info
+             * @instance
+             */
+            info.prototype.build = $util.emptyArray;
+
+            /**
+             * Creates a new info instance using the specified properties.
+             * @function create
+             * @memberof yuhaiin.config.info
+             * @static
+             * @param {yuhaiin.config.Iinfo=} [properties] Properties to set
+             * @returns {yuhaiin.config.info} info instance
+             */
+            info.create = function create(properties) {
+                return new info(properties);
+            };
+
+            /**
+             * Encodes the specified info message. Does not implicitly {@link yuhaiin.config.info.verify|verify} messages.
+             * @function encode
+             * @memberof yuhaiin.config.info
+             * @static
+             * @param {yuhaiin.config.Iinfo} m info message or plain object to encode
+             * @param {$protobuf.Writer} [w] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            info.encode = function encode(m, w) {
+                if (!w)
+                    w = $Writer.create();
+                if (m.version != null && Object.hasOwnProperty.call(m, "version"))
+                    w.uint32(10).string(m.version);
+                if (m.commit != null && Object.hasOwnProperty.call(m, "commit"))
+                    w.uint32(18).string(m.commit);
+                if (m.build_time != null && Object.hasOwnProperty.call(m, "build_time"))
+                    w.uint32(26).string(m.build_time);
+                if (m.go_version != null && Object.hasOwnProperty.call(m, "go_version"))
+                    w.uint32(34).string(m.go_version);
+                if (m.arch != null && Object.hasOwnProperty.call(m, "arch"))
+                    w.uint32(42).string(m.arch);
+                if (m.platform != null && Object.hasOwnProperty.call(m, "platform"))
+                    w.uint32(50).string(m.platform);
+                if (m.os != null && Object.hasOwnProperty.call(m, "os"))
+                    w.uint32(58).string(m.os);
+                if (m.compiler != null && Object.hasOwnProperty.call(m, "compiler"))
+                    w.uint32(66).string(m.compiler);
+                if (m.build != null && m.build.length) {
+                    for (var i = 0; i < m.build.length; ++i)
+                        w.uint32(74).string(m.build[i]);
+                }
+                return w;
+            };
+
+            /**
+             * Decodes an info message from the specified reader or buffer.
+             * @function decode
+             * @memberof yuhaiin.config.info
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+             * @param {number} [l] Message length if known beforehand
+             * @returns {yuhaiin.config.info} info
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            info.decode = function decode(r, l) {
+                if (!(r instanceof $Reader))
+                    r = $Reader.create(r);
+                var c = l === undefined ? r.len : r.pos + l, m = new $root.yuhaiin.config.info();
+                while (r.pos < c) {
+                    var t = r.uint32();
+                    switch (t >>> 3) {
+                    case 1: {
+                            m.version = r.string();
+                            break;
+                        }
+                    case 2: {
+                            m.commit = r.string();
+                            break;
+                        }
+                    case 3: {
+                            m.build_time = r.string();
+                            break;
+                        }
+                    case 4: {
+                            m.go_version = r.string();
+                            break;
+                        }
+                    case 5: {
+                            m.arch = r.string();
+                            break;
+                        }
+                    case 6: {
+                            m.platform = r.string();
+                            break;
+                        }
+                    case 7: {
+                            m.os = r.string();
+                            break;
+                        }
+                    case 8: {
+                            m.compiler = r.string();
+                            break;
+                        }
+                    case 9: {
+                            if (!(m.build && m.build.length))
+                                m.build = [];
+                            m.build.push(r.string());
+                            break;
+                        }
+                    default:
+                        r.skipType(t & 7);
+                        break;
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates an info message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof yuhaiin.config.info
+             * @static
+             * @param {Object.<string,*>} d Plain object
+             * @returns {yuhaiin.config.info} info
+             */
+            info.fromObject = function fromObject(d) {
+                if (d instanceof $root.yuhaiin.config.info)
+                    return d;
+                var m = new $root.yuhaiin.config.info();
+                if (d.version != null) {
+                    m.version = String(d.version);
+                }
+                if (d.commit != null) {
+                    m.commit = String(d.commit);
+                }
+                if (d.build_time != null) {
+                    m.build_time = String(d.build_time);
+                }
+                if (d.go_version != null) {
+                    m.go_version = String(d.go_version);
+                }
+                if (d.arch != null) {
+                    m.arch = String(d.arch);
+                }
+                if (d.platform != null) {
+                    m.platform = String(d.platform);
+                }
+                if (d.os != null) {
+                    m.os = String(d.os);
+                }
+                if (d.compiler != null) {
+                    m.compiler = String(d.compiler);
+                }
+                if (d.build) {
+                    if (!Array.isArray(d.build))
+                        throw TypeError(".yuhaiin.config.info.build: array expected");
+                    m.build = [];
+                    for (var i = 0; i < d.build.length; ++i) {
+                        m.build[i] = String(d.build[i]);
+                    }
+                }
+                return m;
+            };
+
+            /**
+             * Creates a plain object from an info message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof yuhaiin.config.info
+             * @static
+             * @param {yuhaiin.config.info} m info
+             * @param {$protobuf.IConversionOptions} [o] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            info.toObject = function toObject(m, o) {
+                if (!o)
+                    o = {};
+                var d = {};
+                if (o.arrays || o.defaults) {
+                    d.build = [];
+                }
+                if (o.defaults) {
+                    d.version = "";
+                    d.commit = "";
+                    d.build_time = "";
+                    d.go_version = "";
+                    d.arch = "";
+                    d.platform = "";
+                    d.os = "";
+                    d.compiler = "";
+                }
+                if (m.version != null && m.hasOwnProperty("version")) {
+                    d.version = m.version;
+                }
+                if (m.commit != null && m.hasOwnProperty("commit")) {
+                    d.commit = m.commit;
+                }
+                if (m.build_time != null && m.hasOwnProperty("build_time")) {
+                    d.build_time = m.build_time;
+                }
+                if (m.go_version != null && m.hasOwnProperty("go_version")) {
+                    d.go_version = m.go_version;
+                }
+                if (m.arch != null && m.hasOwnProperty("arch")) {
+                    d.arch = m.arch;
+                }
+                if (m.platform != null && m.hasOwnProperty("platform")) {
+                    d.platform = m.platform;
+                }
+                if (m.os != null && m.hasOwnProperty("os")) {
+                    d.os = m.os;
+                }
+                if (m.compiler != null && m.hasOwnProperty("compiler")) {
+                    d.compiler = m.compiler;
+                }
+                if (m.build && m.build.length) {
+                    d.build = [];
+                    for (var j = 0; j < m.build.length; ++j) {
+                        d.build[j] = m.build[j];
+                    }
+                }
+                return d;
+            };
+
+            /**
+             * Converts this info to JSON.
+             * @function toJSON
+             * @memberof yuhaiin.config.info
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            info.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            return info;
+        })();
+
         return config;
     })();
 
