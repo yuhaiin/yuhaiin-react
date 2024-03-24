@@ -28,7 +28,8 @@ const DNS = React.memo((props: DNSProps) => {
             <SettingCheck label="Enabled"
                 checked={props.data.fakedns}
                 onChange={() => updateDNS((x) => x.fakedns = !x.fakedns)} />
-            <SettingInputText label='Fake IP Range' value={props.data.fakedns_ip_range} onChange={(v) => updateDNS((x) => x.fakedns_ip_range = v)} />
+            <SettingInputText label='IPv4 Range' value={props.data.fakedns_ip_range} onChange={(v) => updateDNS((x) => x.fakedns_ip_range = v)} />
+            <SettingInputText label='IPv6 Range' value={props.data.fakedns_ipv6_range} onChange={(v) => updateDNS((x) => x.fakedns_ipv6_range = v)} />
 
 
             <NewItemList

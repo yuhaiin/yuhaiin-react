@@ -566,6 +566,9 @@ export namespace yuhaiin {
             /** dns_config fakedns_ip_range */
             fakedns_ip_range?: (string|null);
 
+            /** dns_config fakedns_ipv6_range */
+            fakedns_ipv6_range?: (string|null);
+
             /** dns_config fakedns_whitelist */
             fakedns_whitelist?: (string[]|null);
 
@@ -583,6 +586,15 @@ export namespace yuhaiin {
 
             /** dns_config hosts */
             hosts?: ({ [k: string]: string }|null);
+
+            /** dns_config resolver */
+            resolver?: ({ [k: string]: yuhaiin.dns.Idns }|null);
+
+            /** dns_config local_v2 */
+            local_v2?: (string|null);
+
+            /** dns_config remote_v2 */
+            remote_v2?: (string|null);
         }
 
         /** Represents a dns_config. */
@@ -603,6 +615,9 @@ export namespace yuhaiin {
             /** dns_config fakedns_ip_range. */
             public fakedns_ip_range: string;
 
+            /** dns_config fakedns_ipv6_range. */
+            public fakedns_ipv6_range: string;
+
             /** dns_config fakedns_whitelist. */
             public fakedns_whitelist: string[];
 
@@ -620,6 +635,15 @@ export namespace yuhaiin {
 
             /** dns_config hosts. */
             public hosts: { [k: string]: string };
+
+            /** dns_config resolver. */
+            public resolver: { [k: string]: yuhaiin.dns.Idns };
+
+            /** dns_config local_v2. */
+            public local_v2: string;
+
+            /** dns_config remote_v2. */
+            public remote_v2: string;
 
             /**
              * Creates a new dns_config instance using the specified properties.

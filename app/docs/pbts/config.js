@@ -1590,12 +1590,16 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {string|null} [server] dns_config server
              * @property {boolean|null} [fakedns] dns_config fakedns
              * @property {string|null} [fakedns_ip_range] dns_config fakedns_ip_range
+             * @property {string|null} [fakedns_ipv6_range] dns_config fakedns_ipv6_range
              * @property {Array.<string>|null} [fakedns_whitelist] dns_config fakedns_whitelist
              * @property {boolean|null} [resolve_remote_domain] dns_config resolve_remote_domain
              * @property {yuhaiin.dns.Idns|null} [remote] dns_config remote
              * @property {yuhaiin.dns.Idns|null} [local] dns_config local
              * @property {yuhaiin.dns.Idns|null} [bootstrap] dns_config bootstrap
              * @property {Object.<string,string>|null} [hosts] dns_config hosts
+             * @property {Object.<string,yuhaiin.dns.Idns>|null} [resolver] dns_config resolver
+             * @property {string|null} [local_v2] dns_config local_v2
+             * @property {string|null} [remote_v2] dns_config remote_v2
              */
 
             /**
@@ -1609,6 +1613,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
             function dns_config(p) {
                 this.fakedns_whitelist = [];
                 this.hosts = {};
+                this.resolver = {};
                 if (p)
                     for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
                         if (p[ks[i]] != null)
@@ -1638,6 +1643,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @instance
              */
             dns_config.prototype.fakedns_ip_range = "";
+
+            /**
+             * dns_config fakedns_ipv6_range.
+             * @member {string} fakedns_ipv6_range
+             * @memberof yuhaiin.dns.dns_config
+             * @instance
+             */
+            dns_config.prototype.fakedns_ipv6_range = "";
 
             /**
              * dns_config fakedns_whitelist.
@@ -1688,6 +1701,30 @@ export const yuhaiin = $root.yuhaiin = (() => {
             dns_config.prototype.hosts = $util.emptyObject;
 
             /**
+             * dns_config resolver.
+             * @member {Object.<string,yuhaiin.dns.Idns>} resolver
+             * @memberof yuhaiin.dns.dns_config
+             * @instance
+             */
+            dns_config.prototype.resolver = $util.emptyObject;
+
+            /**
+             * dns_config local_v2.
+             * @member {string} local_v2
+             * @memberof yuhaiin.dns.dns_config
+             * @instance
+             */
+            dns_config.prototype.local_v2 = "";
+
+            /**
+             * dns_config remote_v2.
+             * @member {string} remote_v2
+             * @memberof yuhaiin.dns.dns_config
+             * @instance
+             */
+            dns_config.prototype.remote_v2 = "";
+
+            /**
              * Creates a new dns_config instance using the specified properties.
              * @function create
              * @memberof yuhaiin.dns.dns_config
@@ -1734,6 +1771,18 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     for (var i = 0; i < m.fakedns_whitelist.length; ++i)
                         w.uint32(74).string(m.fakedns_whitelist[i]);
                 }
+                if (m.resolver != null && Object.hasOwnProperty.call(m, "resolver")) {
+                    for (var ks = Object.keys(m.resolver), i = 0; i < ks.length; ++i) {
+                        w.uint32(82).fork().uint32(10).string(ks[i]);
+                        $root.yuhaiin.dns.dns.encode(m.resolver[ks[i]], w.uint32(18).fork()).ldelim().ldelim();
+                    }
+                }
+                if (m.local_v2 != null && Object.hasOwnProperty.call(m, "local_v2"))
+                    w.uint32(90).string(m.local_v2);
+                if (m.remote_v2 != null && Object.hasOwnProperty.call(m, "remote_v2"))
+                    w.uint32(98).string(m.remote_v2);
+                if (m.fakedns_ipv6_range != null && Object.hasOwnProperty.call(m, "fakedns_ipv6_range"))
+                    w.uint32(106).string(m.fakedns_ipv6_range);
                 return w;
             };
 
@@ -1765,6 +1814,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         }
                     case 6: {
                             m.fakedns_ip_range = r.string();
+                            break;
+                        }
+                    case 13: {
+                            m.fakedns_ipv6_range = r.string();
                             break;
                         }
                     case 9: {
@@ -1812,6 +1865,37 @@ export const yuhaiin = $root.yuhaiin = (() => {
                             m.hosts[k] = value;
                             break;
                         }
+                    case 10: {
+                            if (m.resolver === $util.emptyObject)
+                                m.resolver = {};
+                            var c2 = r.uint32() + r.pos;
+                            k = "";
+                            value = null;
+                            while (r.pos < c2) {
+                                var tag2 = r.uint32();
+                                switch (tag2 >>> 3) {
+                                case 1:
+                                    k = r.string();
+                                    break;
+                                case 2:
+                                    value = $root.yuhaiin.dns.dns.decode(r, r.uint32());
+                                    break;
+                                default:
+                                    r.skipType(tag2 & 7);
+                                    break;
+                                }
+                            }
+                            m.resolver[k] = value;
+                            break;
+                        }
+                    case 11: {
+                            m.local_v2 = r.string();
+                            break;
+                        }
+                    case 12: {
+                            m.remote_v2 = r.string();
+                            break;
+                        }
                     default:
                         r.skipType(t & 7);
                         break;
@@ -1840,6 +1924,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 }
                 if (d.fakedns_ip_range != null) {
                     m.fakedns_ip_range = String(d.fakedns_ip_range);
+                }
+                if (d.fakedns_ipv6_range != null) {
+                    m.fakedns_ipv6_range = String(d.fakedns_ipv6_range);
                 }
                 if (d.fakedns_whitelist) {
                     if (!Array.isArray(d.fakedns_whitelist))
@@ -1875,6 +1962,22 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         m.hosts[ks[i]] = String(d.hosts[ks[i]]);
                     }
                 }
+                if (d.resolver) {
+                    if (typeof d.resolver !== "object")
+                        throw TypeError(".yuhaiin.dns.dns_config.resolver: object expected");
+                    m.resolver = {};
+                    for (var ks = Object.keys(d.resolver), i = 0; i < ks.length; ++i) {
+                        if (typeof d.resolver[ks[i]] !== "object")
+                            throw TypeError(".yuhaiin.dns.dns_config.resolver: object expected");
+                        m.resolver[ks[i]] = $root.yuhaiin.dns.dns.fromObject(d.resolver[ks[i]]);
+                    }
+                }
+                if (d.local_v2 != null) {
+                    m.local_v2 = String(d.local_v2);
+                }
+                if (d.remote_v2 != null) {
+                    m.remote_v2 = String(d.remote_v2);
+                }
                 return m;
             };
 
@@ -1896,6 +1999,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 }
                 if (o.objects || o.defaults) {
                     d.hosts = {};
+                    d.resolver = {};
                 }
                 if (o.defaults) {
                     d.remote = null;
@@ -1905,6 +2009,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.fakedns = false;
                     d.fakedns_ip_range = "";
                     d.resolve_remote_domain = false;
+                    d.local_v2 = "";
+                    d.remote_v2 = "";
+                    d.fakedns_ipv6_range = "";
                 }
                 if (m.remote != null && m.hasOwnProperty("remote")) {
                     d.remote = $root.yuhaiin.dns.dns.toObject(m.remote, o);
@@ -1939,6 +2046,21 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     for (var j = 0; j < m.fakedns_whitelist.length; ++j) {
                         d.fakedns_whitelist[j] = m.fakedns_whitelist[j];
                     }
+                }
+                if (m.resolver && (ks2 = Object.keys(m.resolver)).length) {
+                    d.resolver = {};
+                    for (var j = 0; j < ks2.length; ++j) {
+                        d.resolver[ks2[j]] = $root.yuhaiin.dns.dns.toObject(m.resolver[ks2[j]], o);
+                    }
+                }
+                if (m.local_v2 != null && m.hasOwnProperty("local_v2")) {
+                    d.local_v2 = m.local_v2;
+                }
+                if (m.remote_v2 != null && m.hasOwnProperty("remote_v2")) {
+                    d.remote_v2 = m.remote_v2;
+                }
+                if (m.fakedns_ipv6_range != null && m.hasOwnProperty("fakedns_ipv6_range")) {
+                    d.fakedns_ipv6_range = m.fakedns_ipv6_range;
                 }
                 return d;
             };
