@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Form, InputGroup, Row, Col, Button, } from 'react-bootstrap';
+import React from 'react';
+import { Form, Row, Col, Button, } from 'react-bootstrap';
 import { SettingInputText, NewItemList } from './components';
 import { yuhaiin as cp } from '../pbts/config';
 
@@ -26,8 +26,6 @@ const Bypass = React.memo((props: { bypass: cp.bypass.bypass_config, onChange: (
         x(props.bypass)
         props.onChange(props.bypass)
     }
-
-
 
     return (
         <>

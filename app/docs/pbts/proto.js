@@ -8439,6 +8439,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @interface Irequest
              * @property {string|null} [id] request id
              * @property {string|null} [hash] request hash
+             * @property {boolean|null} [ipv6] request ipv6
              * @property {yuhaiin.latency.Iprotocol|null} [protocol] request protocol
              */
 
@@ -8472,6 +8473,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @instance
              */
             request.prototype.hash = "";
+
+            /**
+             * request ipv6.
+             * @member {boolean} ipv6
+             * @memberof yuhaiin.latency.request
+             * @instance
+             */
+            request.prototype.ipv6 = false;
 
             /**
              * request protocol.
@@ -8511,6 +8520,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     $root.yuhaiin.latency.protocol.encode(m.protocol, w.uint32(18).fork()).ldelim();
                 if (m.id != null && Object.hasOwnProperty.call(m, "id"))
                     w.uint32(26).string(m.id);
+                if (m.ipv6 != null && Object.hasOwnProperty.call(m, "ipv6"))
+                    w.uint32(32).bool(m.ipv6);
                 return w;
             };
 
@@ -8538,6 +8549,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         }
                     case 1: {
                             m.hash = r.string();
+                            break;
+                        }
+                    case 4: {
+                            m.ipv6 = r.bool();
                             break;
                         }
                     case 2: {
@@ -8570,6 +8585,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (d.hash != null) {
                     m.hash = String(d.hash);
                 }
+                if (d.ipv6 != null) {
+                    m.ipv6 = Boolean(d.ipv6);
+                }
                 if (d.protocol != null) {
                     if (typeof d.protocol !== "object")
                         throw TypeError(".yuhaiin.latency.request.protocol: object expected");
@@ -8595,6 +8613,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.hash = "";
                     d.protocol = null;
                     d.id = "";
+                    d.ipv6 = false;
                 }
                 if (m.hash != null && m.hasOwnProperty("hash")) {
                     d.hash = m.hash;
@@ -8604,6 +8623,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 }
                 if (m.id != null && m.hasOwnProperty("id")) {
                     d.id = m.id;
+                }
+                if (m.ipv6 != null && m.hasOwnProperty("ipv6")) {
+                    d.ipv6 = m.ipv6;
                 }
                 return d;
             };

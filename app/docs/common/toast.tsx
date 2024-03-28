@@ -12,13 +12,8 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const [texts, setTexts] =
         useState<{ value: { [key: string]: { text: string, type: string } }, index: number }>({ value: {}, index: 0 });
 
-    const msg = (text: string, type: string) => {
-        setTexts(prev => {
-            prev.value[prev.index] = { text: text, type: type };
-            prev.index++
-            return { ...prev }
-        })
-    };
+    const msg = (text: string, type: string) =>
+        setTexts(prev => { return { value: { ...prev.value, [prev.index]: { text: text, type: type } }, index: prev.index + 1 } });
 
     const info = (text: string) => {
         console.log(text);

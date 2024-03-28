@@ -1,9 +1,6 @@
 import { Row, Form, Col, InputGroup, Button, DropdownMenu, DropdownItem, DropdownButton } from "react-bootstrap"
 import { useState } from "react";
 
-
-
-
 export class Remind {
     label: string
     label_children?: (string[] | null)
@@ -70,17 +67,6 @@ export const SettingInputTextarea = (props: { label: string, value: string | num
             <Form.Label column sm={2} className="nowrap">{props.label}</Form.Label>
             <Col sm={10}>
                 <Form.Control as="textarea" rows={5} value={props.value} onChange={(v) => props.onChange(v.target.value)} />
-            </Col>
-        </Form.Group>
-    )
-}
-
-export const SettingCheck = (props: { label: string, checked: boolean, onChange: () => void }) => {
-    return (
-        <Form.Group as={Row} className='mb-2'>
-            <Form.Label column sm={2}>{props.label}</Form.Label>
-            <Col sm={10} className='d-flex align-items-center'>
-                <Form.Check className='d-flex align-items-center' type='switch' checked={props.checked} onChange={() => props.onChange()} />
             </Col>
         </Form.Group>
     )

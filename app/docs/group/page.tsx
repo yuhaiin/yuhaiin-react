@@ -9,6 +9,7 @@ import useSWR from 'swr'
 import { ProtoTSFetcher, Fetch, ToObjectOption } from '../common/proto';
 import Error from 'next/error';
 import { yuhaiin, google } from "../pbts/proto";
+import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPv6 } from "../apiurl";
 
 
 const Point = yuhaiin.point.point;
@@ -72,6 +73,7 @@ function Group() {
                     requests: [{
                         hash: props.hash,
                         id: "latency",
+                        ipv6: LatencyIPv6,
                         protocol: protocol
                     }]
                 }).finish(),
@@ -97,14 +99,14 @@ function Group() {
                     latency(
                         {
                             http: {
-                                url: "https://clients3.google.com/generate_204"
+                                url: LatencyHTTPUrl
                             }
                         },
                         (r) => { updateTestingStatus(async (v) => { v.tcpOnLoading = false; v.tcp = r }) })
                     latency(
                         {
                             dns_over_quic: {
-                                host: "dns.nextdns.io:853",
+                                host: LatencyDNSUrl,
                                 target_domain: "www.google.com"
                             }
                         },

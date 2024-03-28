@@ -3261,6 +3261,9 @@ export namespace yuhaiin {
             /** request hash */
             hash?: (string|null);
 
+            /** request ipv6 */
+            ipv6?: (boolean|null);
+
             /** request protocol */
             protocol?: (yuhaiin.latency.Iprotocol|null);
         }
@@ -3279,6 +3282,9 @@ export namespace yuhaiin {
 
             /** request hash. */
             public hash: string;
+
+            /** request ipv6. */
+            public ipv6: boolean;
 
             /** request protocol. */
             public protocol?: (yuhaiin.latency.Iprotocol|null);

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Form, InputGroup, Card, Row, Col, Button, FloatingLabel } from 'react-bootstrap';
-import { SettingCheck, SettingInputText, SettingInputTextarea, NewItemList } from './components';
+import {  SettingInputText, SettingInputTextarea, NewItemList } from './components';
 import { yuhaiin as cp } from '../pbts/config';
+import {SettingCheck} from "../common/switch";
 
 const HTTPComponents = React.memo((props: { http: cp.listener.http, onChange: (x: cp.listener.http) => void }) => {
     const updateState = (x: (x: cp.listener.http) => void) => {

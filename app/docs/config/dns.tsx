@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Form, InputGroup, Card, Row, Col, Button } from 'react-bootstrap';
-import { SettingInputText, SettingCheck, NewItemList } from './components';
+import { SettingInputText, NewItemList } from './components';
 import { yuhaiin as cp } from '../pbts/config';
+import {SettingCheck} from "../common/switch";
 
 type DNSProps = {
     data: cp.dns.dns_config,
