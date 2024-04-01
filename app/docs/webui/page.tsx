@@ -6,7 +6,7 @@ import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPv6, RemoteBypass, SetLa
 import { GlobalToastContext } from "../common/toast";
 import { SettingCheck } from "../common/switch";
 import { Fetch } from '../common/proto';
-import { google } from "../pbts/proto";
+import { StringValue } from "@bufbuild/protobuf";
 
 
 
@@ -65,7 +65,7 @@ function Setting() {
                     SetRemoteBypass(remote)
                     if (remote !== "") {
                         Fetch(`/bypass`,
-                            { body: google.protobuf.StringValue.encode({ value: remote }).finish(), })
+                            { body: new StringValue({ value: remote }).toBinary(), })
                             .then(async ({ error }) => {
                                 if (error !== undefined) ctx.Error(`update remote rule ${remote} failed, ${error.code}| ${await error.msg}`)
                                 else ctx.Info(`update remote rule ${remote} success`)

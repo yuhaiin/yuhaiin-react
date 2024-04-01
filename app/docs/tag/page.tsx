@@ -4,31 +4,27 @@ import { useState, useContext } from "react";
 import { Badge, Button, Card, FloatingLabel, Form, InputGroup, ListGroup } from "react-bootstrap";
 import Loading from "../common/loading";
 import useSWR from 'swr'
-import { Fetch, ProtoTSFetcher, NewObject } from '../common/proto';
+import { Fetch, NewObject, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
 import NodeModal from "../modal/node";
 import { GlobalToastContext } from "../common/toast";
-import { yuhaiin, google } from "../pbts/proto";
-
-const StringValue = google.protobuf.StringValue;
-const Manager = yuhaiin.node.manager;
-const TagType = yuhaiin.tag.tag_type;
-const Tag = yuhaiin.tag.tags;
-const SaveTag = yuhaiin.protos.node.service.save_tag_req;
-
+import { save_tag_req } from "../pbes/node/grpc/node_pb";
+import { tag_type, tags } from "../pbes/node/tag/tag_pb";
+import { manager } from "../pbes/node/node_pb";
+import { StringValue } from "@bufbuild/protobuf";
 
 function Tags() {
     const ctx = useContext(GlobalToastContext);
     const [currentGroup, setCurrentGroup] = useState("");
-    const [saveTag, setSaveTag] = useState<yuhaiin.protos.node.service.save_tag_req>(new yuhaiin.protos.node.service.save_tag_req({ tag: "", hash: "", type: TagType.node }));
-    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoTSFetcher<yuhaiin.node.manager>(Manager))
+    const [saveTag, setSaveTag] = useState<save_tag_req>(new save_tag_req({ tag: "", hash: "", type: tag_type.node }));
+    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoESFetcher<manager>(new manager()))
     const [modalHash, setModalHash] = useState({ hash: "" });
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
 
     if (isLoading || data == undefined) return <Loading />
 
-    const TagItem = (k: string, v: yuhaiin.tag.tags) => {
+    const TagItem = (k: string, v: tags) => {
         return (
             <ListGroup.Item style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }} key={k}>
                 <div className="d-flex flex-wrap">
@@ -36,7 +32,7 @@ function Tags() {
                         href="#empty"
                         onClick={(e) => {
                             e.preventDefault();
-                            setSaveTag((x) => { return new yuhaiin.protos.node.service.save_tag_req({ ...x, tag: k }) })
+                            setSaveTag((x) => { return new save_tag_req({ ...x, tag: k }) })
                         }}
                     >{k}</a>
                     <Badge className="rounded-pill bg-light text-dark text-truncate ms-1">
@@ -44,7 +40,7 @@ function Tags() {
                             ?
                             <>Fallback <i className="bi bi-heart-arrow"></i> Global</>
                             :
-                            v.type === TagType.mirror
+                            v.type === tag_type.mirror
                                 ?
                                 <>Mirror <i className="bi bi-arrow-right"></i> {v.hash}</>
                                 :
@@ -60,7 +56,7 @@ function Tags() {
                             e.preventDefault();
                             Fetch("/tag", {
                                 method: "DELETE",
-                                body: StringValue.encode({ value: k }).finish()
+                                body: new StringValue({ value: k }).toBinary()
                             })
                                 .then(async ({ error }) => {
                                     if (error !== undefined) ctx.Error(`delete tag ${k} failed, ${error.code}| ${await error.msg}`)
@@ -93,7 +89,7 @@ function Tags() {
                         Object
                             .entries(data.tags)
                             .sort((a, b) => { return a <= b ? -1 : 1 })
-                            .map(([k, v]) => { return TagItem(k, new yuhaiin.tag.tags(v)) })
+                            .map(([k, v]) => { return TagItem(k, new tags(v)) })
                     }
                 </ListGroup>
             </Card >
@@ -103,14 +99,14 @@ function Tags() {
                     <InputGroup className="mb-3">
                         <Form.Check inline
                             type="radio"
-                            onChange={() => { setSaveTag((x) => { return new yuhaiin.protos.node.service.save_tag_req({ ...x, type: TagType.node, hash: "" }) }) }}
-                            checked={saveTag.type === TagType.node}
+                            onChange={() => { setSaveTag((x) => { return new save_tag_req({ ...x, type: tag_type.node, hash: "" }) }) }}
+                            checked={saveTag.type === tag_type.node}
                             label="Node"
                         />
                         <Form.Check inline
                             type="radio"
-                            onChange={() => { setSaveTag((x) => { return new yuhaiin.protos.node.service.save_tag_req({ ...x, type: TagType.mirror, hash: "" }) }) }}
-                            checked={saveTag.type === TagType.mirror}
+                            onChange={() => { setSaveTag((x) => { return new save_tag_req({ ...x, type: tag_type.mirror, hash: "" }) }) }}
+                            checked={saveTag.type === tag_type.mirror}
                             label="Mirror"
                         />
                     </InputGroup>
@@ -118,11 +114,11 @@ function Tags() {
                     <FloatingLabel label="Tag" className="mb-2" >
                         <Form.Control placeholder="Tag" aria-label="Tag" aria-describedby="basic-addon1"
                             value={saveTag.tag}
-                            onChange={(e) => { setSaveTag((x) => { return new yuhaiin.protos.node.service.save_tag_req({ ...x, tag: e.target.value }) }) }}
+                            onChange={(e) => { setSaveTag((x) => { return new save_tag_req({ ...x, tag: e.target.value }) }) }}
                         ></Form.Control>
                     </FloatingLabel>
 
-                    {saveTag.type === TagType.node ?
+                    {saveTag.type === tag_type.node ?
                         <>
                             <FloatingLabel label="Group" className="mb-2" >
                                 <Form.Select defaultValue={""}
@@ -141,7 +137,7 @@ function Tags() {
 
                             <FloatingLabel label="Node" className="mb-2" >
                                 <Form.Select defaultValue={""}
-                                    onChange={(e) => { setSaveTag((x) => { return new yuhaiin.protos.node.service.save_tag_req({ ...x, hash: e.target.value }) }) }}>
+                                    onChange={(e) => { setSaveTag((x) => { return new save_tag_req({ ...x, hash: e.target.value }) }) }}>
                                     <option value="">Choose...</option>
                                     {
                                         Object
@@ -157,7 +153,7 @@ function Tags() {
                         :
                         <FloatingLabel label="Mirror" className="mb-2" >
                             <Form.Select defaultValue={""}
-                                onChange={(e) => { setSaveTag((x) => { return new yuhaiin.protos.node.service.save_tag_req({ ...x, hash: e.target.value }) }) }}
+                                onChange={(e) => { setSaveTag((x) => { return new save_tag_req({ ...x, hash: e.target.value }) }) }}
                             >
                                 <option value="">Choose...</option>
                                 {
@@ -175,7 +171,7 @@ function Tags() {
                         variant="outline-primary"
                         onClick={() => {
                             if (saveTag.tag === "" || saveTag.hash === "") return
-                            Fetch("/tag", { body: SaveTag.encode(saveTag).finish() })
+                            Fetch("/tag", { body: saveTag.toBinary() })
                                 .then(async ({ error }) => {
                                     if (error !== undefined) ctx.Error(`save tag ${saveTag.tag} failed, ${error.code}| ${await error.msg}`)
                                     else {

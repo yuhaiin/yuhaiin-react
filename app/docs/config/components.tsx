@@ -74,8 +74,8 @@ export const SettingInputTextarea = (props: { label: string, value: string | num
 
 export function NewItemList(props: {
     title: string,
-    data: string[] | null | undefined,
-    onChange: (x: string[] | null | undefined) => void
+    data: string[] | undefined,
+    onChange: (x: string[]) => void
 }) {
     const [newData, setNewData] = useState({ value: "" });
 
@@ -91,7 +91,7 @@ export function NewItemList(props: {
                             <InputGroup className="mb-2" >
                                 <Form.Control value={v} onChange={(e) => {
                                     props.data![index] = e.target.value
-                                    props.onChange(props.data)
+                                    props.onChange(props.data ? props.data : [])
                                 }} />
                                 <Button variant='outline-danger' onClick={() => {
                                     if (props.data) {

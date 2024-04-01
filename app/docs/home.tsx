@@ -1,12 +1,12 @@
 import { Card } from 'react-bootstrap';
 import Loading from './common/loading';
 import useSWR from 'swr'
-import { ProtoTSFetcher, ToObjectOption } from './common/proto';
+import { ProtoESFetcher } from './common/proto';
 import Error from 'next/error';
-import { yuhaiin } from './pbts/proto';
+import { now_resp } from './pbes/node/grpc/node_pb';
 
 function Index() {
-    const { data, error, isLoading, } = useSWR("/node/now", ProtoTSFetcher<yuhaiin.protos.node.service.now_resp>(yuhaiin.protos.node.service.now_resp))
+    const { data, error, isLoading, } = useSWR("/node/now", ProtoESFetcher<now_resp>(new now_resp()))
 
 
     if (error != undefined) return <Error statusCode={error.code} title={error.msg} />
@@ -17,14 +17,14 @@ function Index() {
         <Card className='mb-3'>
             <Card.Header>TCP</Card.Header>
             <Card.Body>
-                <pre>{JSON.stringify(yuhaiin.point.point.toObject(new yuhaiin.point.point(data?.tcp!!), ToObjectOption), null, "  ")}</pre>
+                <pre>{data.tcp?.toJsonString({ prettySpaces: 2 })}</pre>
             </Card.Body>
         </Card>
 
         <Card className='mb-3'>
             <Card.Header>UDP</Card.Header>
             <Card.Body>
-                <pre>{JSON.stringify(yuhaiin.point.point.toObject(new yuhaiin.point.point(data?.udp!!), ToObjectOption), null, "  ")}</pre>
+                <pre>{data.udp?.toJsonString({ prettySpaces: 2 })}</pre>
             </Card.Body>
         </Card>
     </div>

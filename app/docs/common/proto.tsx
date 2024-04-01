@@ -1,25 +1,14 @@
 import { Fetcher } from 'swr'
-import * as $protobuf from "protobufjs/minimal";
 import { APIUrl } from '../apiurl';
+import { Message, proto3 } from "@bufbuild/protobuf";
 
 export function NewObject<V>(d?: { [k: string]: V } | null): { [k: string]: V } {
     if (d === undefined || d === null) return {}
     return d
 }
 
-interface Proto<T> {
-    decode(input: $protobuf.Reader | Uint8Array, length?: number): T
-    encode(message: T, writer?: $protobuf.Writer): $protobuf.Writer
-    toJSON(message: T): unknown | { [key: string]: any }
-}
 
-interface PBTS<T> {
-    decode(input: $protobuf.Reader | Uint8Array, length?: number): T
-    encode(message: T, writer?: $protobuf.Writer): $protobuf.Writer
-    toObject(message: T, options?: $protobuf.IConversionOptions): { [k: string]: any }
-}
-
-export function ProtoFetcher<T>(d: Proto<T>, method?: string, body?: BodyInit): Fetcher<T, string> {
+export function ProtoESFetcher<T extends Message>(d: T, method?: string, body?: BodyInit): Fetcher<T, string> {
     return (url) => fetch(
         `${APIUrl}${url}`,
         {
@@ -28,11 +17,12 @@ export function ProtoFetcher<T>(d: Proto<T>, method?: string, body?: BodyInit): 
         },
     ).then(async r => {
         if (!r.ok) throw { code: r.status, msg: r.statusText, raw: r.text() }
-        return d.decode(new Uint8Array(await r.arrayBuffer()))
+        return d.fromBinary(new Uint8Array(await r.arrayBuffer()))
     })
 }
 
-export function ProtoStrFetcher<T>(d: Proto<T>, method?: string, body?: BodyInit): Fetcher<string, string> {
+
+export function ProtoESStrFetcher(d: Message, method?: string, body?: BodyInit): Fetcher<string, string> {
     return (url) => fetch(
         `${APIUrl}${url}`,
         {
@@ -41,42 +31,7 @@ export function ProtoStrFetcher<T>(d: Proto<T>, method?: string, body?: BodyInit
         },
     ).then(async r => {
         if (!r.ok) throw { code: r.status, msg: r.statusText, raw: r.text() }
-        return JSON.stringify(d.toJSON(d.decode(new Uint8Array(await r.arrayBuffer()))), null, "  ")
-    })
-}
-
-export function ProtoTSFetcher<T>(d: PBTS<T>, method?: string, body?: BodyInit): Fetcher<T, string> {
-    return (url) => fetch(
-        `${APIUrl}${url}`,
-        {
-            method: method,
-            body: body,
-        },
-    ).then(async r => {
-        if (!r.ok) throw { code: r.status, msg: r.statusText, raw: r.text() }
-        return d.decode(new Uint8Array(await r.arrayBuffer()))
-    })
-}
-
-export const ToObjectOption: $protobuf.IConversionOptions = {
-    longs: Number,
-    enums: String,
-    defaults: true,
-    json: true,
-    bytes: String,
-}
-
-export function ProtoTSStrFetcher<T>(d: PBTS<T>, method?: string, body?: BodyInit): Fetcher<string, string> {
-    return (url) => fetch(
-        `${APIUrl}${url}`,
-        {
-            method: method,
-            body: body,
-        },
-    ).then(async r => {
-        if (!r.ok) throw { code: r.status, msg: r.statusText, raw: r.text() }
-        return JSON.stringify(d.toObject(
-            d.decode(new Uint8Array(await r.arrayBuffer())), ToObjectOption,), null, "  ")
+        return d.fromBinary(new Uint8Array(await r.arrayBuffer())).toJsonString({ prettySpaces: 2 })
     })
 }
 

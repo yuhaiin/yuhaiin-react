@@ -6,27 +6,30 @@ import DNS from './dns';
 import Bypass from './bypass';
 import Inbound from './inbound';
 import Loading from '../common/loading';
-import {  SettingInputText, Remind, ItemList } from './components';
-import {SettingCheck} from "../common/switch";
+import { SettingInputText, Remind, ItemList } from './components';
+import { SettingCheck } from "../common/switch";
 import { GlobalToastContext } from '../common/toast';
 import useSWR from "swr";
-import { ProtoTSFetcher, Fetch } from '../common/proto';
+import { Fetch, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
-import { yuhaiin as cp } from '../pbts/config';
-import { yuhaiin as tp } from '../pbts/tools';
+import { setting as SettingType, info as InfoType } from '../pbes/config/config_pb';
+import { Interfaces } from '../pbes/tools/tools_pb';
+import { dns_config } from '../pbes/config/dns/dns_pb';
+import { bypass_config } from '../pbes/config/bypass/bypass_pb';
+import { log_level } from '../pbes/config/log/log_pb';
 
 function ConfigComponent() {
     const ctx = useContext(GlobalToastContext);
 
     const { data: setting, error, isLoading, mutate: setSetting } =
-        useSWR("/config", ProtoTSFetcher<cp.config.setting>(cp.config.setting),
+        useSWR("/config", ProtoESFetcher<SettingType>(new SettingType()),
             { revalidateOnFocus: false })
     const { data: info } =
-        useSWR("/info", ProtoTSFetcher<cp.config.info>(cp.config.info),
+        useSWR("/info", ProtoESFetcher<InfoType>(new InfoType()),
             {})
 
     const { data: iffs } =
-        useSWR("/interfaces", ProtoTSFetcher<tp.tools.Interfaces>(tp.tools.Interfaces),
+        useSWR("/interfaces", ProtoESFetcher<Interfaces>(new Interfaces()),
             { revalidateOnFocus: true })
 
 
@@ -35,9 +38,9 @@ function ConfigComponent() {
 
     // const [isAndroid, setIsAndroid] = useState({ value: false })
 
-    const updateState = (modify: (x: cp.config.setting) => void) => {
-        setSetting((x: cp.config.setting) => {
-            let y = cp.config.setting.create(x)
+    const updateState = (modify: (x: SettingType) => void) => {
+        setSetting((x: SettingType) => {
+            let y = new SettingType(x)
             modify(y)
             return y
         }, false)
@@ -54,11 +57,11 @@ function ConfigComponent() {
                     >
                         <Tab eventKey="home" title="Home">
 
-                            <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting(cp.config.setting.create({ ...setting, ipv6: !setting.ipv6 }), false)} />
+                            <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting(new SettingType({ ...setting, ipv6: !setting.ipv6 }), false)} />
                             <SettingInputText
                                 label='Network Interface'
-                                value={setting.net_interface}
-                                onChange={(v) => updateState((x) => x.net_interface = v)}
+                                value={setting.netInterface}
+                                onChange={(v) => updateState((x) => x.netInterface = v)}
                                 reminds={
                                     iffs?.
                                         interfaces.
@@ -80,12 +83,12 @@ function ConfigComponent() {
                             <Card.Title className='mb-2'>System Proxy</Card.Title>
 
                             <SettingCheck label='SOCKS5'
-                                checked={setting.system_proxy!!.socks5!!}
-                                onChange={() => updateState((x: cp.config.setting) => x.system_proxy!!.socks5 = !x.system_proxy?.socks5)} />
+                                checked={setting.systemProxy!!.socks5!!}
+                                onChange={() => updateState((x) => x.systemProxy!!.socks5 = !x.systemProxy?.socks5)} />
 
                             <SettingCheck label='HTTP'
-                                checked={setting.system_proxy!!.http!!}
-                                onChange={() => updateState((x) => x.system_proxy!!.http = !x.system_proxy!!.http)} />
+                                checked={setting.systemProxy!!.http!!}
+                                onChange={() => updateState((x) => x.systemProxy!!.http = !x.systemProxy!!.http)} />
 
 
                             <hr />
@@ -99,10 +102,10 @@ function ConfigComponent() {
 
                         </Tab>
                         <Tab eventKey="bypass" title="Bypass">
-                            <Bypass bypass={new cp.bypass.bypass_config(setting.bypass!!)} onChange={(e) => updateState((x) => x.bypass = e)} />
+                            <Bypass bypass={new bypass_config(setting.bypass!!)} onChange={(e) => updateState((x) => x.bypass = e)} />
                         </Tab>
                         <Tab eventKey="dns" title="DNS">
-                            <DNS data={new cp.dns.dns_config(setting.dns!!)} onChange={(e) => updateState((x) => x.dns = e)} />
+                            <DNS data={new dns_config(setting.dns!!)} onChange={(e) => updateState((x) => x.dns = e)} />
                         </Tab>
                         <Tab eventKey="inbound" title="Inbound">
                             <Inbound server={setting.server!!} onChange={(e) => updateState((x) => x.server = e)} />
@@ -110,8 +113,8 @@ function ConfigComponent() {
                         <Tab eventKey="info" title="Info">
                             <SettingInputText plaintext mb='mb-0' label='Version' value={info?.version} />
                             <SettingInputText url={"https://github.com/yuhaiin/yuhaiin/commit/" + info?.commit} plaintext mb='mb-0' label='Commit' value={info?.commit} />
-                            <SettingInputText plaintext mb='mb-0' label='Build Time' value={info?.build_time} />
-                            <SettingInputText plaintext mb='mb-0' label='Go Version' value={info?.go_version} />
+                            <SettingInputText plaintext mb='mb-0' label='Build Time' value={info?.buildTime} />
+                            <SettingInputText plaintext mb='mb-0' label='Go Version' value={info?.goVersion} />
                             <SettingInputText
                                 url="https://github.com/yuhaiin/yuhaiin"
                                 plaintext mb='mb-0'
@@ -132,7 +135,7 @@ function ConfigComponent() {
                             <hr />
                             <Button
                                 onClick={() => {
-                                    Fetch("/config", { body: cp.config.setting.encode(setting).finish() })
+                                    Fetch("/config", { body: setting.toBinary() })
                                         .then(async ({ error }) => {
                                             if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${await error.msg}`)
                                             else {
@@ -154,20 +157,19 @@ function ConfigComponent() {
 
 
 
-const LogLevel = cp.log.log_level;
 
 export default ConfigComponent;
 
-function SettingLogcatLevelSelect(props: { label: string, value: cp.log.log_level, onChange: (value: cp.log.log_level) => void }) {
+function SettingLogcatLevelSelect(props: { label: string, value: log_level, onChange: (value: log_level) => void }) {
     return (
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2}>{props.label}</Form.Label>
             <Col sm={10}>
-                <Form.Select value={LogLevel[props.value]} onChange={(e) => props.onChange(LogLevel[e.target.value])}>
-                    <option value={LogLevel[LogLevel.debug]}>DEBUG</option>
-                    <option value={LogLevel[LogLevel.info]}>INFO</option>
-                    <option value={LogLevel[LogLevel.warning]}>WARN</option>
-                    <option value={LogLevel[LogLevel.error]}>ERROR</option>
+                <Form.Select value={log_level[props.value]} onChange={(e) => props.onChange(log_level[e.target.value])}>
+                    <option value={log_level[log_level.debug]}>DEBUG</option>
+                    <option value={log_level[log_level.info]}>INFO</option>
+                    <option value={log_level[log_level.warning]}>WARN</option>
+                    <option value={log_level[log_level.error]}>ERROR</option>
                 </Form.Select>
             </Col>
         </Form.Group>

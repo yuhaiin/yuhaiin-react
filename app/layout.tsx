@@ -15,7 +15,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
-        <title>ユハイイン</title>
+        <title>Yuhaiin</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/docs/favicon.ico" />
         <meta name="theme-color" content="#000000" />
