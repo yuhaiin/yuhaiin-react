@@ -488,14 +488,14 @@ export namespace yuhaiin {
         /** Properties of a mode_config. */
         interface Imode_config {
 
-            /** mode_config hostname */
-            hostname?: (string[]|null);
-
             /** mode_config mode */
             mode?: (yuhaiin.bypass.mode|null);
 
             /** mode_config tag */
             tag?: (string|null);
+
+            /** mode_config hostname */
+            hostname?: (string[]|null);
 
             /** mode_config resolve_strategy */
             resolve_strategy?: (yuhaiin.bypass.resolve_strategy|null);
@@ -510,14 +510,14 @@ export namespace yuhaiin {
              */
             constructor(p?: yuhaiin.bypass.Imode_config);
 
-            /** mode_config hostname. */
-            public hostname: string[];
-
             /** mode_config mode. */
             public mode: yuhaiin.bypass.mode;
 
             /** mode_config tag. */
             public tag: string;
+
+            /** mode_config hostname. */
+            public hostname: string[];
 
             /** mode_config resolve_strategy. */
             public resolve_strategy: yuhaiin.bypass.resolve_strategy;
@@ -703,12 +703,6 @@ export namespace yuhaiin {
 
             /** dns_config resolver */
             resolver?: ({ [k: string]: yuhaiin.dns.Idns }|null);
-
-            /** dns_config local_v2 */
-            local_v2?: (string|null);
-
-            /** dns_config remote_v2 */
-            remote_v2?: (string|null);
         }
 
         /** Represents a dns_config. */
@@ -752,12 +746,6 @@ export namespace yuhaiin {
 
             /** dns_config resolver. */
             public resolver: { [k: string]: yuhaiin.dns.Idns };
-
-            /** dns_config local_v2. */
-            public local_v2: string;
-
-            /** dns_config remote_v2. */
-            public remote_v2: string;
 
             /**
              * Creates a new dns_config instance using the specified properties.

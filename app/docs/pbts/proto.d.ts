@@ -1232,9 +1232,6 @@ export namespace yuhaiin {
 
             /** websocket path */
             path?: (string|null);
-
-            /** websocket tls_enabled */
-            tls_enabled?: (boolean|null);
         }
 
         /** Represents a websocket. */
@@ -1251,9 +1248,6 @@ export namespace yuhaiin {
 
             /** websocket path. */
             public path: string;
-
-            /** websocket tls_enabled. */
-            public tls_enabled: boolean;
 
             /**
              * Creates a new websocket instance using the specified properties.
@@ -1670,9 +1664,6 @@ export namespace yuhaiin {
 
             /** simple alternate_host */
             alternate_host?: (yuhaiin.protocol.Ihost[]|null);
-
-            /** simple tls */
-            tls?: (yuhaiin.protocol.Itls_config|null);
         }
 
         /** Represents a simple. */
@@ -1695,9 +1686,6 @@ export namespace yuhaiin {
 
             /** simple alternate_host. */
             public alternate_host: yuhaiin.protocol.Ihost[];
-
-            /** simple tls. */
-            public tls?: (yuhaiin.protocol.Itls_config|null);
 
             /**
              * Creates a new simple instance using the specified properties.
@@ -1838,6 +1826,9 @@ export namespace yuhaiin {
 
         /** Properties of a direct. */
         interface Idirect {
+
+            /** direct timeout */
+            timeout?: (number|Long|null);
         }
 
         /** Represents a direct. */
@@ -1848,6 +1839,9 @@ export namespace yuhaiin {
              * @param [p] Properties to set
              */
             constructor(p?: yuhaiin.protocol.Idirect);
+
+            /** direct timeout. */
+            public timeout: (number|Long);
 
             /**
              * Creates a new direct instance using the specified properties.

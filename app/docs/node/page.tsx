@@ -131,7 +131,6 @@ let protocolMapping: { [key: string]: yuhaiin.protocol.Iprotocol } = {
             alternate_host: [],
             port: 1080,
             timeout: 0,
-            tls: undefined
         }
     },
     "none": {
@@ -141,7 +140,6 @@ let protocolMapping: { [key: string]: yuhaiin.protocol.Iprotocol } = {
         websocket: {
             host: "www.example.com",
             path: "/msg",
-            tls_enabled: false,
         }
     },
     "quic": {

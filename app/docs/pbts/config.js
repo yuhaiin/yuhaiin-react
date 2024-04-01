@@ -1371,9 +1371,9 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * Properties of a mode_config.
              * @memberof yuhaiin.bypass
              * @interface Imode_config
-             * @property {Array.<string>|null} [hostname] mode_config hostname
              * @property {yuhaiin.bypass.mode|null} [mode] mode_config mode
              * @property {string|null} [tag] mode_config tag
+             * @property {Array.<string>|null} [hostname] mode_config hostname
              * @property {yuhaiin.bypass.resolve_strategy|null} [resolve_strategy] mode_config resolve_strategy
              */
 
@@ -1394,14 +1394,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
             }
 
             /**
-             * mode_config hostname.
-             * @member {Array.<string>} hostname
-             * @memberof yuhaiin.bypass.mode_config
-             * @instance
-             */
-            mode_config.prototype.hostname = $util.emptyArray;
-
-            /**
              * mode_config mode.
              * @member {yuhaiin.bypass.mode} mode
              * @memberof yuhaiin.bypass.mode_config
@@ -1416,6 +1408,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @instance
              */
             mode_config.prototype.tag = "";
+
+            /**
+             * mode_config hostname.
+             * @member {Array.<string>} hostname
+             * @memberof yuhaiin.bypass.mode_config
+             * @instance
+             */
+            mode_config.prototype.hostname = $util.emptyArray;
 
             /**
              * mode_config resolve_strategy.
@@ -1480,18 +1480,18 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 while (r.pos < c) {
                     var t = r.uint32();
                     switch (t >>> 3) {
-                    case 3: {
-                            if (!(m.hostname && m.hostname.length))
-                                m.hostname = [];
-                            m.hostname.push(r.string());
-                            break;
-                        }
                     case 1: {
                             m.mode = r.int32();
                             break;
                         }
                     case 2: {
                             m.tag = r.string();
+                            break;
+                        }
+                    case 3: {
+                            if (!(m.hostname && m.hostname.length))
+                                m.hostname = [];
+                            m.hostname.push(r.string());
                             break;
                         }
                     case 4: {
@@ -1518,14 +1518,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (d instanceof $root.yuhaiin.bypass.mode_config)
                     return d;
                 var m = new $root.yuhaiin.bypass.mode_config();
-                if (d.hostname) {
-                    if (!Array.isArray(d.hostname))
-                        throw TypeError(".yuhaiin.bypass.mode_config.hostname: array expected");
-                    m.hostname = [];
-                    for (var i = 0; i < d.hostname.length; ++i) {
-                        m.hostname[i] = String(d.hostname[i]);
-                    }
-                }
                 switch (d.mode) {
                 default:
                     if (typeof d.mode === "number") {
@@ -1552,6 +1544,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 }
                 if (d.tag != null) {
                     m.tag = String(d.tag);
+                }
+                if (d.hostname) {
+                    if (!Array.isArray(d.hostname))
+                        throw TypeError(".yuhaiin.bypass.mode_config.hostname: array expected");
+                    m.hostname = [];
+                    for (var i = 0; i < d.hostname.length; ++i) {
+                        m.hostname[i] = String(d.hostname[i]);
+                    }
                 }
                 switch (d.resolve_strategy) {
                 default:
@@ -1934,8 +1934,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {yuhaiin.dns.Idns|null} [bootstrap] dns_config bootstrap
              * @property {Object.<string,string>|null} [hosts] dns_config hosts
              * @property {Object.<string,yuhaiin.dns.Idns>|null} [resolver] dns_config resolver
-             * @property {string|null} [local_v2] dns_config local_v2
-             * @property {string|null} [remote_v2] dns_config remote_v2
              */
 
             /**
@@ -2045,22 +2043,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
             dns_config.prototype.resolver = $util.emptyObject;
 
             /**
-             * dns_config local_v2.
-             * @member {string} local_v2
-             * @memberof yuhaiin.dns.dns_config
-             * @instance
-             */
-            dns_config.prototype.local_v2 = "";
-
-            /**
-             * dns_config remote_v2.
-             * @member {string} remote_v2
-             * @memberof yuhaiin.dns.dns_config
-             * @instance
-             */
-            dns_config.prototype.remote_v2 = "";
-
-            /**
              * Creates a new dns_config instance using the specified properties.
              * @function create
              * @memberof yuhaiin.dns.dns_config
@@ -2113,10 +2095,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         $root.yuhaiin.dns.dns.encode(m.resolver[ks[i]], w.uint32(18).fork()).ldelim().ldelim();
                     }
                 }
-                if (m.local_v2 != null && Object.hasOwnProperty.call(m, "local_v2"))
-                    w.uint32(90).string(m.local_v2);
-                if (m.remote_v2 != null && Object.hasOwnProperty.call(m, "remote_v2"))
-                    w.uint32(98).string(m.remote_v2);
                 if (m.fakedns_ipv6_range != null && Object.hasOwnProperty.call(m, "fakedns_ipv6_range"))
                     w.uint32(106).string(m.fakedns_ipv6_range);
                 return w;
@@ -2224,14 +2202,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                             m.resolver[k] = value;
                             break;
                         }
-                    case 11: {
-                            m.local_v2 = r.string();
-                            break;
-                        }
-                    case 12: {
-                            m.remote_v2 = r.string();
-                            break;
-                        }
                     default:
                         r.skipType(t & 7);
                         break;
@@ -2308,12 +2278,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         m.resolver[ks[i]] = $root.yuhaiin.dns.dns.fromObject(d.resolver[ks[i]]);
                     }
                 }
-                if (d.local_v2 != null) {
-                    m.local_v2 = String(d.local_v2);
-                }
-                if (d.remote_v2 != null) {
-                    m.remote_v2 = String(d.remote_v2);
-                }
                 return m;
             };
 
@@ -2345,8 +2309,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     d.fakedns = false;
                     d.fakedns_ip_range = "";
                     d.resolve_remote_domain = false;
-                    d.local_v2 = "";
-                    d.remote_v2 = "";
                     d.fakedns_ipv6_range = "";
                 }
                 if (m.remote != null && m.hasOwnProperty("remote")) {
@@ -2388,12 +2350,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     for (var j = 0; j < ks2.length; ++j) {
                         d.resolver[ks2[j]] = $root.yuhaiin.dns.dns.toObject(m.resolver[ks2[j]], o);
                     }
-                }
-                if (m.local_v2 != null && m.hasOwnProperty("local_v2")) {
-                    d.local_v2 = m.local_v2;
-                }
-                if (m.remote_v2 != null && m.hasOwnProperty("remote_v2")) {
-                    d.remote_v2 = m.remote_v2;
                 }
                 if (m.fakedns_ipv6_range != null && m.hasOwnProperty("fakedns_ipv6_range")) {
                     d.fakedns_ipv6_range = m.fakedns_ipv6_range;

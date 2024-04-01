@@ -3405,7 +3405,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @interface Iwebsocket
              * @property {string|null} [host] websocket host
              * @property {string|null} [path] websocket path
-             * @property {boolean|null} [tls_enabled] websocket tls_enabled
              */
 
             /**
@@ -3440,14 +3439,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
             websocket.prototype.path = "";
 
             /**
-             * websocket tls_enabled.
-             * @member {boolean} tls_enabled
-             * @memberof yuhaiin.protocol.websocket
-             * @instance
-             */
-            websocket.prototype.tls_enabled = false;
-
-            /**
              * Creates a new websocket instance using the specified properties.
              * @function create
              * @memberof yuhaiin.protocol.websocket
@@ -3475,8 +3466,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     w.uint32(10).string(m.host);
                 if (m.path != null && Object.hasOwnProperty.call(m, "path"))
                     w.uint32(18).string(m.path);
-                if (m.tls_enabled != null && Object.hasOwnProperty.call(m, "tls_enabled"))
-                    w.uint32(32).bool(m.tls_enabled);
                 return w;
             };
 
@@ -3506,10 +3495,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                             m.path = r.string();
                             break;
                         }
-                    case 4: {
-                            m.tls_enabled = r.bool();
-                            break;
-                        }
                     default:
                         r.skipType(t & 7);
                         break;
@@ -3536,9 +3521,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (d.path != null) {
                     m.path = String(d.path);
                 }
-                if (d.tls_enabled != null) {
-                    m.tls_enabled = Boolean(d.tls_enabled);
-                }
                 return m;
             };
 
@@ -3558,16 +3540,12 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (o.defaults) {
                     d.host = "";
                     d.path = "";
-                    d.tls_enabled = false;
                 }
                 if (m.host != null && m.hasOwnProperty("host")) {
                     d.host = m.host;
                 }
                 if (m.path != null && m.hasOwnProperty("path")) {
                     d.path = m.path;
-                }
-                if (m.tls_enabled != null && m.hasOwnProperty("tls_enabled")) {
-                    d.tls_enabled = m.tls_enabled;
                 }
                 return d;
             };
@@ -4407,7 +4385,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @property {number|null} [port] simple port
              * @property {number|Long|null} [timeout] simple timeout
              * @property {Array.<yuhaiin.protocol.Ihost>|null} [alternate_host] simple alternate_host
-             * @property {yuhaiin.protocol.Itls_config|null} [tls] simple tls
              */
 
             /**
@@ -4459,14 +4436,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
             simple.prototype.alternate_host = $util.emptyArray;
 
             /**
-             * simple tls.
-             * @member {yuhaiin.protocol.Itls_config|null|undefined} tls
-             * @memberof yuhaiin.protocol.simple
-             * @instance
-             */
-            simple.prototype.tls = null;
-
-            /**
              * Creates a new simple instance using the specified properties.
              * @function create
              * @memberof yuhaiin.protocol.simple
@@ -4494,8 +4463,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                     w.uint32(10).string(m.host);
                 if (m.port != null && Object.hasOwnProperty.call(m, "port"))
                     w.uint32(16).int32(m.port);
-                if (m.tls != null && Object.hasOwnProperty.call(m, "tls"))
-                    $root.yuhaiin.protocol.tls_config.encode(m.tls, w.uint32(34).fork()).ldelim();
                 if (m.alternate_host != null && m.alternate_host.length) {
                     for (var i = 0; i < m.alternate_host.length; ++i)
                         $root.yuhaiin.protocol.host.encode(m.alternate_host[i], w.uint32(42).fork()).ldelim();
@@ -4539,10 +4506,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                             if (!(m.alternate_host && m.alternate_host.length))
                                 m.alternate_host = [];
                             m.alternate_host.push($root.yuhaiin.protocol.host.decode(r, r.uint32()));
-                            break;
-                        }
-                    case 4: {
-                            m.tls = $root.yuhaiin.protocol.tls_config.decode(r, r.uint32());
                             break;
                         }
                     default:
@@ -4591,11 +4554,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         m.alternate_host[i] = $root.yuhaiin.protocol.host.fromObject(d.alternate_host[i]);
                     }
                 }
-                if (d.tls != null) {
-                    if (typeof d.tls !== "object")
-                        throw TypeError(".yuhaiin.protocol.simple.tls: object expected");
-                    m.tls = $root.yuhaiin.protocol.tls_config.fromObject(d.tls);
-                }
                 return m;
             };
 
@@ -4618,7 +4576,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 if (o.defaults) {
                     d.host = "";
                     d.port = 0;
-                    d.tls = null;
                     if ($util.Long) {
                         var n = new $util.Long(0, 0, true);
                         d.timeout = o.longs === String ? n.toString() : o.longs === Number ? n.toNumber() : n;
@@ -4630,9 +4587,6 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 }
                 if (m.port != null && m.hasOwnProperty("port")) {
                     d.port = m.port;
-                }
-                if (m.tls != null && m.hasOwnProperty("tls")) {
-                    d.tls = $root.yuhaiin.protocol.tls_config.toObject(m.tls, o);
                 }
                 if (m.alternate_host && m.alternate_host.length) {
                     d.alternate_host = [];
@@ -4946,6 +4900,7 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * Properties of a direct.
              * @memberof yuhaiin.protocol
              * @interface Idirect
+             * @property {number|Long|null} [timeout] direct timeout
              */
 
             /**
@@ -4962,6 +4917,14 @@ export const yuhaiin = $root.yuhaiin = (() => {
                         if (p[ks[i]] != null)
                             this[ks[i]] = p[ks[i]];
             }
+
+            /**
+             * direct timeout.
+             * @member {number|Long} timeout
+             * @memberof yuhaiin.protocol.direct
+             * @instance
+             */
+            direct.prototype.timeout = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
 
             /**
              * Creates a new direct instance using the specified properties.
@@ -4987,6 +4950,8 @@ export const yuhaiin = $root.yuhaiin = (() => {
             direct.encode = function encode(m, w) {
                 if (!w)
                     w = $Writer.create();
+                if (m.timeout != null && Object.hasOwnProperty.call(m, "timeout"))
+                    w.uint32(8).uint64(m.timeout);
                 return w;
             };
 
@@ -5008,6 +4973,10 @@ export const yuhaiin = $root.yuhaiin = (() => {
                 while (r.pos < c) {
                     var t = r.uint32();
                     switch (t >>> 3) {
+                    case 1: {
+                            m.timeout = r.uint64();
+                            break;
+                        }
                     default:
                         r.skipType(t & 7);
                         break;
@@ -5027,7 +4996,18 @@ export const yuhaiin = $root.yuhaiin = (() => {
             direct.fromObject = function fromObject(d) {
                 if (d instanceof $root.yuhaiin.protocol.direct)
                     return d;
-                return new $root.yuhaiin.protocol.direct();
+                var m = new $root.yuhaiin.protocol.direct();
+                if (d.timeout != null) {
+                    if ($util.Long)
+                        (m.timeout = $util.Long.fromValue(d.timeout)).unsigned = true;
+                    else if (typeof d.timeout === "string")
+                        m.timeout = parseInt(d.timeout, 10);
+                    else if (typeof d.timeout === "number")
+                        m.timeout = d.timeout;
+                    else if (typeof d.timeout === "object")
+                        m.timeout = new $util.LongBits(d.timeout.low >>> 0, d.timeout.high >>> 0).toNumber(true);
+                }
+                return m;
             };
 
             /**
@@ -5039,8 +5019,24 @@ export const yuhaiin = $root.yuhaiin = (() => {
              * @param {$protobuf.IConversionOptions} [o] Conversion options
              * @returns {Object.<string,*>} Plain object
              */
-            direct.toObject = function toObject() {
-                return {};
+            direct.toObject = function toObject(m, o) {
+                if (!o)
+                    o = {};
+                var d = {};
+                if (o.defaults) {
+                    if ($util.Long) {
+                        var n = new $util.Long(0, 0, true);
+                        d.timeout = o.longs === String ? n.toString() : o.longs === Number ? n.toNumber() : n;
+                    } else
+                        d.timeout = o.longs === String ? "0" : 0;
+                }
+                if (m.timeout != null && m.hasOwnProperty("timeout")) {
+                    if (typeof m.timeout === "number")
+                        d.timeout = o.longs === String ? String(m.timeout) : m.timeout;
+                    else
+                        d.timeout = o.longs === String ? $util.Long.prototype.toString.call(m.timeout) : o.longs === Number ? new $util.LongBits(m.timeout.low >>> 0, m.timeout.high >>> 0).toNumber(true) : m.timeout;
+                }
+                return d;
             };
 
             /**
