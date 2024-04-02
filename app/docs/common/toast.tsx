@@ -30,7 +30,7 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 className="p-3"
                 position={"top-center"}
                 containerPosition='fixed'
-                style={{ zIndex: 1 }}
+                style={{ zIndex: 999999 }}
             >
                 {
                     Object.entries(texts.value).map(([key, v]) => {

@@ -1,18 +1,19 @@
 import { useContext, useState } from "react";
 import { Button, Modal, Form, Badge } from "react-bootstrap";
 import useSWR from 'swr'
-import { Fetch, ProtoESStrFetcher } from '../common/proto';
+import { Fetch, ProtoESFetcher, ProtoESStrFetcher } from '../common/proto';
 import Loading from "../common/loading";
 import Error from 'next/error';
 import { GlobalToastContext } from "../common/toast";
 import { point } from "../pbes/node/point/point_pb";
 import { StringValue } from "@bufbuild/protobuf";
+import { Point } from "../node/protocol";
 
 
 function NodeModal(props: {
     hash: string,
-    point?: string,
-    onChangePoint?: (v: string) => void,
+    point?: point,
+    onChangePoint?: (v: point) => void,
     editable?: boolean,
     show: boolean,
     onHide: () => void,
@@ -22,23 +23,25 @@ function NodeModal(props: {
 
     const { data: node, error, isLoading, mutate } = useSWR(
         (!props.point && props.hash) ? `/node` : null,
-        ProtoESStrFetcher(new point(), "POST", new StringValue({ value: props.hash }).toBinary()))
+        ProtoESFetcher(new point(), "POST", new StringValue({ value: props.hash }).toBinary()))
     const [errmsg, setErrmsg] = useState({ msg: "", code: 0 });
 
     const Footer = () => {
         if (!props.editable) return <></>
-        return <Button variant="primary" active={!isLoading && !error}
+        return <Button
+            variant="outline-primary"
+            disabled={isLoading || error || !props.editable}
             onClick={() => {
                 Fetch("/node",
                     {
                         method: "PATCH",
-                        body: new point().fromJson(JSON.parse(node ?? props.point ?? "{}")).toBinary(),
+                        body: (node ?? props.point ?? new point({})).toBinary(),
                     })
                     .then(async ({ error }) => {
                         if (error === undefined) {
                             ctx.Info("save successful")
                             if (props.onSave !== undefined) props.onSave();
-                            props.onHide();
+                            // props.onHide();
                         } else {
                             let msg = await error.msg;
                             ctx.Error(msg)
@@ -69,15 +72,15 @@ function NodeModal(props: {
 
                 <Modal.Body>
                     {error ? <Error statusCode={error.code} title={error.msg} /> : isLoading ? <Loading /> :
-                        <Form.Control
-                            as="textarea"
-                            value={node ?? props.point}
-                            style={{ height: "65vh", fontFamily: "monospace" }}
-                            readOnly={!props.editable}
-                            onChange={(e) => {
-                                if (props.hash) mutate(e.target.value, false)
-                                if (props.point && props.onChangePoint) props.onChangePoint(e.target.value)
-                            }
+                        <Point
+                            point={node ?? props.point ?? new point({})}
+                            onChange={
+                                (props.editable) ?
+                                    (e) => {
+                                        if (!props.editable) return
+                                        if (props.hash) mutate(e, false)
+                                        if (props.point && props.onChangePoint) props.onChangePoint(e)
+                                    } : undefined
                             }
                         />
                     }
@@ -85,7 +88,22 @@ function NodeModal(props: {
 
                 <Modal.Footer>
                     {errmsg.msg && <Badge bg="danger">{errmsg.code} | {errmsg.msg}</Badge>}
-                    <Button variant="secondary" onClick={() => { props.onHide() }}>Close</Button>
+                    <Button
+                        variant="outline-info"
+                        onClick={() => {
+                            try {
+                                let po = node?.clone() ?? props.point?.clone() ?? new point({});
+                                po.hash = "";
+                                navigator.clipboard.writeText(JSON.stringify(po.toJson({ emitDefaultValues: true }), null, 2));
+                                ctx.Info("copy successful")
+                            } catch (e) {
+                                ctx.Error("copy failed")
+                            }
+                        }}
+                    >
+                        Copy
+                    </Button>
+                    <Button variant="outline-secondary" onClick={() => { props.onHide() }}>Close</Button>
                     <Footer />
                 </Modal.Footer>
             </Modal>
@@ -93,4 +111,67 @@ function NodeModal(props: {
     );
 }
 
+export const NodeJsonModal = (
+    props: {
+        show: boolean,
+        onSave?: () => void
+        onHide: () => void,
+    },
+) => {
+    const ctx = useContext(GlobalToastContext);
+    const [nodeJson, setNodeJson] = useState({ data: "" });
+    const Footer = () => {
+        return <Button variant="outline-primary"
+            onClick={() => {
+                Fetch("/node",
+                    {
+                        method: "PATCH",
+                        body: (new point().fromJson(JSON.parse(nodeJson.data))).toBinary(),
+                    })
+                    .then(async ({ error }) => {
+                        if (error === undefined) {
+                            ctx.Info("save successful")
+                            if (props.onSave !== undefined) props.onSave();
+                        } else {
+                            let msg = await error.msg;
+                            ctx.Error(msg)
+                        }
+                    })
+            }}
+        >
+            Save
+        </Button>
+    }
+    return (
+        <>
+            <Modal
+                show={props.show}
+                aria-labelledby="contained-modal-title-vcenter"
+                size='xl'
+                onHide={() => { props.onHide() }}
+                centered
+            >
+                <Modal.Header closeButton>
+                    <Modal.Title id="contained-modal-title-vcenter">
+                        Import JSON
+                    </Modal.Title>
+                </Modal.Header>
+
+                <Modal.Body>
+                    <Form.Control
+                        as="textarea"
+                        value={nodeJson.data}
+                        style={{ height: "65vh", fontFamily: "monospace" }}
+                        onChange={(e) => { setNodeJson({ data: e.target.value }); }}
+                    />
+                </Modal.Body>
+
+                <Modal.Footer>
+                    <Button variant="outline-secondary" onClick={() => { props.onHide() }}>Close</Button>
+                    <Footer />
+                </Modal.Footer>
+            </Modal>
+        </>
+    );
+}
 export default NodeModal;

@@ -15,6 +15,7 @@ export const SettingInputText = (props: {
     onChange?: (x: string) => void,
     reminds?: Remind[] | null,
     mb?: string,
+    placeholder?: string
 }) => {
 
     const dropdown = () => {
@@ -51,6 +52,7 @@ export const SettingInputText = (props: {
                             <Form.Control
                                 value={props.value !== null ? props.value : ""}
                                 plaintext={props.plaintext}
+                                placeholder={props.placeholder}
                                 onChange={(v) => props.onChange !== undefined && props.onChange(v.target.value)}
                             />
                         </>}
@@ -125,6 +127,69 @@ export function NewItemList(props: {
 
     </Form.Group>)
 }
+
+
+export function NewBytesItemList(props: {
+    title: string,
+    data: Uint8Array[] | undefined,
+    onChange: (x: Uint8Array[]) => void,
+    textarea?: boolean
+}) {
+    const [newData, setNewData] = useState({ value: "" });
+
+    return (<Form.Group as={Row} className='mb-3'>
+        <Form.Label column sm={2} className="nowrap">{props.title}</Form.Label>
+
+
+        {
+            props.data && props.data
+                .map((v, index) => {
+                    return (
+                        <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
+                            <InputGroup className="mb-2" >
+                                <Form.Control
+                                    value={new TextDecoder().decode(v)}
+                                    as={props.textarea ? "textarea" : undefined}
+                                    onChange={(e) => {
+                                        props.data![index] = new TextEncoder().encode(e.target.value)
+                                        props.onChange(props.data ? props.data : [])
+                                    }}
+                                />
+                                <Button
+                                    variant='outline-danger'
+                                    onClick={() => {
+                                        if (props.data) {
+                                            props.data.splice(index, 1)
+                                            props.onChange(props.data)
+                                        }
+                                    }}>
+                                    <i className="bi bi-x-lg" ></i>
+                                </Button>
+                            </InputGroup>
+                        </Col>
+                    )
+                })
+        }
+
+        <Col sm={{ span: 10, offset: props.data?.length !== 0 ? 2 : 0 }}>
+            <InputGroup className="mb-2" >
+                <Form.Control as={props.textarea ? "textarea" : undefined} value={newData.value} onChange={(e) => setNewData({ value: e.target.value })} />
+                <Button variant='outline-success' onClick={() => {
+                    if (!props.data)
+                        props.onChange([new TextEncoder().encode(newData.value)])
+                    else {
+                        props.data.push(new TextEncoder().encode(newData.value))
+                        props.onChange(props.data)
+                    }
+                }} >
+                    <i className="bi bi-plus-lg" />
+                </Button>
+            </InputGroup>
+        </Col>
+
+    </Form.Group>)
+}
+
 
 
 export function ItemList(props: {

@@ -2,7 +2,7 @@
 
 import React, { useContext, useState } from "react";
 import { Row, Col, ButtonGroup, Button, Dropdown, Card, ListGroup, Badge, Spinner } from "react-bootstrap";
-import NodeModal from "../modal/node";
+import NodeModal, { NodeJsonModal } from "../modal/node";
 import Loading from "../common/loading";
 import { GlobalToastContext } from "../common/toast";
 import useSWR from 'swr'
@@ -13,13 +13,7 @@ import { manager } from "../pbes/node/node_pb";
 import { dns_over_quic, http, protocol, requests, response } from "../pbes/node/latency/latency_pb";
 import { use_req } from "../pbes/node/grpc/node_pb";
 import { StringValue } from "@bufbuild/protobuf";
-
-
-// const Point = yuhaiin.point.point;
-// const UseRequest = yuhaiin.protos.node.service.use_req;
-// const StringValue = google.protobuf.StringValue;
-// const LatencyRequest = yuhaiin.latency.requests;
-// const LatencyResponse = yuhaiin.latency.response;
+import { origin, point } from "../pbes/node/point/point_pb";
 
 const Nanosecond = 1
 const Microsecond = 1000 * Nanosecond
@@ -49,7 +43,8 @@ function Group() {
     const ctx = useContext(GlobalToastContext);
     const [selectNode, setSelectNode] = useState("");
     const [currentGroup, setCurrentGroup] = useState("Select...");
-    const [modalData, setModalData] = useState({ point: "", hash: "" });
+    const [modalData, setModalData] = useState({ point: new point({}), hash: "" });
+    const [importJson, setImportJson] = useState({ data: false });
     const [latency, setLatency] = useState<{ [key: string]: Latency }>({})
 
     const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoESFetcher(new manager()))
@@ -164,7 +159,7 @@ function Group() {
                                 onClick={(e) => {
                                     e.preventDefault();
                                     if (!data.nodes) return
-                                    setModalData({ point: JSON.stringify(data.nodes[v].toJson({ emitDefaultValues: true }), null, "   "), hash: v })
+                                    setModalData({ point: data.nodes[v], hash: v })
                                 }}
                             >
                                 {k}
@@ -180,14 +175,22 @@ function Group() {
     return (
         <>
             <NodeModal
-                show={modalData.point !== "" && modalData.hash !== ""}
+                show={modalData.point && modalData.hash !== ""}
                 hash={modalData.hash}
                 point={modalData.point}
                 onChangePoint={(v) => { setModalData(prev => { return { ...prev, point: v } }) }}
                 editable
-                onHide={() => setModalData({ point: "", hash: "" })}
+                onHide={() => setModalData({ point: new point({}), hash: "" })}
                 onSave={() => mutate()}
             />
+
+            <NodeJsonModal
+                show={importJson.data}
+                onSave={() => mutate()}
+                onHide={() => setImportJson({ data: false })}
+            />
+
+
 
             <div>
                 <Row>
@@ -242,6 +245,26 @@ function Group() {
                                         <Dropdown.Item eventKey={"udp"}>UDP</Dropdown.Item>
                                     </Dropdown.Menu>
                                 </ButtonGroup>
+                                <Button
+                                    variant="outline-success"
+                                    onClick={() => {
+                                        setModalData({
+                                            point: new point({
+                                                group: "template_group",
+                                                name: "template_name",
+                                                origin: origin.manual,
+                                            }), hash: "new node"
+                                        })
+                                    }}
+                                >
+                                    New
+                                </Button>
+
+                                <Button
+                                    variant="outline-success"
+                                    onClick={() => { setImportJson({ data: true }) }}
+                                >Import</Button>
+
                                 <Button
                                     variant="outline-danger"
                                     onClick={() => {
