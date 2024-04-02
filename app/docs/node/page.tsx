@@ -3,11 +3,12 @@
 import { useContext, useState } from "react";
 import { Button, Form, Card, ListGroup, InputGroup } from "react-bootstrap";
 import { GlobalToastContext } from "../common/toast";
-import { Fetch, ToObjectOption } from "../common/proto";
-import { yuhaiin } from "../pbts/proto";
+import { Fetch } from "../common/proto";
+import { origin, point } from "../pbes/node/point/point_pb";
+import { direct, drop, http, mux, none, obfs_http, protocol, quic, shadowsocks, shadowsocksr, simple, socks5, tls_config, trojan, vless, vmess, websocket, wireguard, yuubinsya } from "../pbes/node/protocol/protocol_pb";
 
-const Point = yuhaiin.point.point;
-const Oringin = yuhaiin.point.origin;
+// const Point = yuhaiin.point.point;
+// const Oringin = yuhaiin.point.origin;
 
 export default function NewNode() {
     const [templateProtocols, setTemplateProtocols] = useState({ value: ["simple"] });
@@ -44,17 +45,17 @@ export default function NewNode() {
                             <Button
                                 variant="outline-secondary"
                                 onClick={async () => {
-                                    let point = new yuhaiin.point.point({
+                                    let po = new point({
                                         group: "template_group",
-                                        name: "template_name", origin: Oringin.manual,
+                                        name: "template_name", origin: origin.manual,
                                     })
 
                                     templateProtocols.value.map((v) => {
                                         let protocol = protocolMapping[v];
-                                        if (protocol) point.protocols.push(protocol)
+                                        if (protocol) po.protocols.push(protocol)
                                     })
 
-                                    setNewNode({ value: JSON.stringify(Point.toObject(point, ToObjectOption), null, "   ") })
+                                    setNewNode({ value: JSON.stringify(po.toJson({ emitDefaultValues: true }), null, "   ") })
                                 }}
                             >
                                 Generate
@@ -102,7 +103,7 @@ export default function NewNode() {
                     <Button
                         className="outline-primary me-2"
                         onClick={async () => {
-                            const { error } = await Fetch("/node", { method: "PATCH", body: Point.encode(Point.fromObject(JSON.parse(newNode.value))).finish() })
+                            const { error } = await Fetch("/node", { method: "PATCH", body: new point().fromJson(newNode.value).toBinary() })
                             if (error) ctx.Error(`Add new node failed ${error.code}| ${await error.msg}.`)
                             else ctx.Info(`Add New Node Successful`)
                         }}
@@ -116,126 +117,180 @@ export default function NewNode() {
     )
 }
 
-let tlsConfig = new yuhaiin.protocol.tls_config({
+let tlsConfig = new tls_config({
     enable: false,
-    ca_cert: [new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0])],
-    insecure_skip_verify: false,
-    next_protos: ["h2"],
-    server_names: ["www.example.com"]
+    caCert: [new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0])],
+    insecureSkipVerify: false,
+    nextProtos: ["h2"],
+    serverNames: ["www.example.com"]
 })
 
-let protocolMapping: { [key: string]: yuhaiin.protocol.Iprotocol } = {
-    "simple": {
-        simple: {
-            host: "",
-            alternate_host: [],
-            port: 1080,
-            timeout: 0,
+let protocolMapping: { [key: string]: protocol } = {
+    "simple": new protocol({
+        protocol: {
+            case: "simple",
+            value: new simple({
+                host: "",
+                alternateHost: [],
+                port: 1080,
+                timeout: BigInt(0),
+            })
         }
-    },
-    "none": {
-        none: {},
-    },
-    "websocket": {
-        websocket: {
-            host: "www.example.com",
-            path: "/msg",
+    }),
+    "none": new protocol({
+        protocol: {
+            case: "none",
+            value: new none({}),
         }
-    },
-    "quic": {
-        quic: {
-            tls: tlsConfig
+    }),
+    "websocket": new protocol({
+        protocol: {
+            case: "websocket",
+            value: new websocket({
+                host: "www.example.com",
+                path: "/msg",
+            })
         }
-    },
-    "shadowsocks": {
-        shadowsocks: {
-            method: "CHACHA20-IETF-POLY1305",
-            password: "password"
+    }),
+    "quic": new protocol({
+        protocol: {
+            case: "quic",
+            value: new quic({
+                tls: tlsConfig
+            })
         }
-    },
-    "obfshttp": {
-        obfs_http: {
-            host: "www.example.com",
-            port: "443"
+    }),
+    "shadowsocks": new protocol({
+        protocol: {
+            case: "shadowsocks",
+            value: new shadowsocks({
+                method: "CHACHA20-IETF-POLY1305",
+                password: "password"
+            })
         }
-    },
-    "shadowsocksr": {
-        shadowsocksr: {
-            method: "chacha20-ietf",
-            obfs: "http_post",
-            obfsparam: "#name=v",
-            password: "password",
-            port: "1080",
-            protocol: "auth_aes128_sha1",
-            protoparam: "",
-            server: "127.0.0.1"
+    }),
+    "obfshttp": new protocol({
+        protocol: {
+            case: "obfsHttp",
+            value: new obfs_http({
+                host: "www.example.com",
+                port: "443"
+            })
         }
-    },
-    "vmess": {
-        vmess: {
-            alter_id: "0",
-            security: "chacha20-poly1305",
-            uuid: "9d5031b6-4ef5-11ee-be56-0242ac120002"
+    }),
+    "shadowsocksr": new protocol({
+        protocol: {
+            case: "shadowsocksr",
+            value: new shadowsocksr({
+                method: "chacha20-ietf",
+                obfs: "http_post",
+                obfsparam: "#name=v",
+                password: "password",
+                port: "1080",
+                protocol: "auth_aes128_sha1",
+                protoparam: "",
+                server: "127.0.0.1"
+            })
         }
-    },
-    "trojan": {
-        trojan: {
-            password: "password",
-            peer: "peer"
+    }),
+    "vmess": new protocol({
+        protocol: {
+            case: "vmess",
+            value: new vmess({
+                alterId: "0",
+                security: "chacha20-poly1305",
+                uuid: "9d5031b6-4ef5-11ee-be56-0242ac120002"
+            })
         }
-    },
-    "socks5": {
-        socks5: {
-            hostname: "127.0.0.1:1080",
-            password: "password",
-            user: "username"
+    }),
+    "trojan": new protocol({
+        protocol: {
+            case: "trojan",
+            value: new trojan({
+                password: "password",
+                peer: "peer"
+            })
         }
-    },
-    "http": {
-        http: {
-            password: "password",
-            user: "username"
+    }),
+    "socks5": new protocol({
+        protocol: {
+            case: "socks5",
+            value: new socks5({
+                hostname: "127.0.0.1:1080",
+                password: "password",
+                user: "username"
+            })
         }
-    },
-    "direct": {
-        direct: {}
-    },
-    "yuubinsya": {
-        yuubinsya: {
-            encrypted: true,
-            password: "password"
+    }),
+    "http": new protocol({
+        protocol: {
+            case: "http",
+            value: new http({
+                password: "password",
+                user: "username"
+            })
         }
-    },
-    "tls": {
-        tls: tlsConfig,
-    },
-    "wireguard": {
-        wireguard: {
-            endpoint: ["10.0.0.2/32"],
-            mtu: 1500,
-            idle_timeout: 3,
-            reserved: new Uint8Array([0, 0, 0]),
-            secret_key: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
-            peers: [
-                {
-                    allowed_ips: ["0.0.0.0/0"],
-                    endpoint: "127.0.0.1:51820",
-                    public_key: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
-                },
-            ]
+    }),
+    "direct": new protocol({
+        protocol: {
+            case: "direct",
+            value: new direct({})
         }
-    },
-    "mux": {
-        mux: {
-            concurrency: 8,
+    }),
+    "yuubinsya": new protocol({
+        protocol: {
+            case: "yuubinsya",
+            value: new yuubinsya({
+                encrypted: true,
+                password: "password"
+            })
         }
-    },
-    "drop": {
-        drop: {}
-    },
-    "vless": {
-        vless: {
-            uuid: "c48619fe-8f02-49e0-b9e9-edf763e17e21",
+    }),
+    "tls": new protocol({
+        protocol: {
+            case: "tls",
+            value: new tls_config(tlsConfig),
         }
-    }
+    }),
+    "wireguard": new protocol({
+        protocol: {
+            case: "wireguard",
+            value: new wireguard({
+                endpoint: ["10.0.0.2/32"],
+                mtu: 1500,
+                idleTimeout: 3,
+                reserved: new Uint8Array([0, 0, 0]),
+                secretKey: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
+                peers: [
+                    {
+                        allowedIps: ["0.0.0.0/0"],
+                        endpoint: "127.0.0.1:51820",
+                        publicKey: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
+                    },
+                ]
+            })
+        }
+    }),
+    "mux": new protocol({
+        protocol: {
+            case: "mux",
+            value: new mux({
+                concurrency: 8,
+            })
+        }
+    }),
+    "drop": new protocol({
+        protocol: {
+            case: "drop",
+            value: new drop({})
+        }
+    }),
+    "vless": new protocol({
+        protocol: {
+            case: "vless",
+            value: new vless({
+                uuid: "c48619fe-8f02-49e0-b9e9-edf763e17e21",
+            })
+        }
+    })
 }

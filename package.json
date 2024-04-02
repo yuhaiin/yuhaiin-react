@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@bufbuild/buf": "^1.30.0",
+    "@bufbuild/protobuf": "^1.8.0",
+    "@bufbuild/protoc-gen-es": "^1.8.0",
     "@types/node": "^20.11.30",
     "@types/react": "^18.2.70",
     "@types/react-dom": "^18.2.22",
@@ -13,9 +16,7 @@
     "react-bootstrap": "^2.10.2",
     "react-dom": "^18.2.0",
     "swr": "^2.2.5",
-    "ts-proto": "^1.169.1",
-    "typescript": "^5.4.3",
-    "protobufjs": "^7.2.6"
+    "typescript": "^5.4.3"
   },
   "scripts": {
     "dev": "next dev",
@@ -24,7 +25,6 @@
   },
   "devDependencies": {
     "eslint": "^8.57.0",
-    "eslint-config-next": "^14.1.4",
-    "protobufjs-cli": "^1.1.2"
+    "eslint-config-next": "^14.1.4"
   }
 }

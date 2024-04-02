@@ -9,11 +9,9 @@ import type { SWRSubscriptionOptions } from 'swr/subscription'
 import Loading from "../common/loading";
 import { Fetch } from "../common/proto";
 import { GlobalToastContext } from "../common/toast";
-import { yuhaiin as sp } from "../pbts/statistic";
+import { connection, type } from "../pbes/statistic/config_pb";
+import { notify_data, notify_remove_connections, total_flow } from "../pbes/statistic/grpc/config_pb";
 
-const netType = sp.statistic.type;
-const notify_remove_connections = sp.protos.statistic.service.notify_remove_connections;
-const notify_data = sp.protos.statistic.service.notify_data;
 
 const formatBytes =
     (a = 0, b = 2) => {
@@ -28,22 +26,22 @@ const formatBytes =
 
 function Connections() {
     type Flow = {
-        download: number,
-        upload: number,
+        download: bigint,
+        upload: bigint,
         dstr: string,
         ustr: string
     }
 
     type Statistic = {
         flow: Flow,
-        conns: { [key: number]: sp.statistic.connection }
+        conns: { [key: number]: connection }
     }
 
-    const generateFlow = (flow: sp.protos.statistic.service.total_flow, prev: Flow): Flow => {
-        let drate = (flow.download - (prev.download !== 0 ? prev.download : flow.download)) / 2
-        let urate = (flow.upload - (prev.upload !== 0 ? prev.upload : flow.upload)) / 2
-        let dstr = `(${formatBytes(flow.download)}): ${formatBytes(drate)}/S`
-        let ustr = `(${formatBytes(flow.upload)}): ${formatBytes(urate)}/S`
+    const generateFlow = (flow: total_flow, prev: Flow): Flow => {
+        let drate = (flow.download - (prev.download !== BigInt(0) ? prev.download : flow.download)) / BigInt(2)
+        let urate = (flow.upload - (prev.upload !== BigInt(0) ? prev.upload : flow.upload)) / BigInt(2)
+        let dstr = `(${formatBytes(Number(flow.download))}): ${formatBytes(Number(drate))}/S`
+        let ustr = `(${formatBytes(Number(flow.upload))}): ${formatBytes(Number(urate))}/S`
         return { download: flow.download, upload: flow.upload, dstr: dstr, ustr: ustr }
     }
 
@@ -71,7 +69,7 @@ function Connections() {
                 })
 
                 socket.addEventListener('message', (event) => {
-                    const raw = notify_data.decode(new Uint8Array(event.data));
+                    const raw = notify_data.fromBinary(new Uint8Array(event.data));
                     next(null, pre => {
                         let prev: Statistic = pre ?
                             {
@@ -80,32 +78,18 @@ function Connections() {
                             }
                             :
                             {
-                                flow: { download: 0, upload: 0, dstr: "Loading...", ustr: "Loading..." },
+                                flow: { download: BigInt(0), upload: BigInt(0), dstr: "Loading...", ustr: "Loading..." },
                                 conns: {}
                             };
-                        switch (raw.data) {
-                            case "total_flow":
-                                let xfw = new sp.protos.statistic.service.total_flow(raw.total_flow ?? undefined);
-                                prev.flow = generateFlow(xfw, prev.flow)
+                        switch (raw.data.case) {
+                            case "totalFlow":
+                                prev.flow = generateFlow(new total_flow(raw.data.value), prev.flow)
                                 return prev
-                            case "notify_new_connections":
-                                let conns = new sp
-                                    .protos
-                                    .statistic
-                                    .service
-                                    .notify_new_connections(raw.notify_new_connections ?? undefined)
-                                    .connections;
-
-                                conns.forEach((e: sp.statistic.connection) => { prev.conns[e.id] = e })
+                            case "notifyNewConnections":
+                                raw.data.value.connections.forEach((e: connection) => { prev.conns[Number(e.id)] = e })
                                 return prev;
-                            case "notify_remove_connections":
-                                let ids = new sp
-                                    .protos
-                                    .statistic
-                                    .service
-                                    .notify_remove_connections(raw.notify_remove_connections ?? undefined)
-                                    .ids;
-                                ids.forEach((e: number) => { delete prev.conns[e] })
+                            case "notifyRemoveConnections":
+                                raw.data.value.ids.forEach((e: bigint) => { delete prev.conns[Number(e)] })
                                 return prev
                         }
                     })
@@ -209,7 +193,7 @@ const ListGroupItem = React.memo((props: { itemKey: string, itemValue: string, }
     )
 })
 
-const AccordionItem = React.memo((props: { data: sp.statistic.connection }) => {
+const AccordionItem = React.memo((props: { data: connection }) => {
     const ctx = useContext(GlobalToastContext);
 
     return (
@@ -217,10 +201,10 @@ const AccordionItem = React.memo((props: { data: sp.statistic.connection }) => {
 
             <Accordion.Header>
                 <div className="d-line">
-                    <code className="ms-2">{props.data.id}</code>
+                    <code className="ms-2">{props.data.id.toString()}</code>
                     <span className="ms-2">{props.data.addr}</span>
                     <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{props.data.extra.MODE}</Badge>
-                    <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{netType[new sp.statistic.net_type(props.data.type!!).conn_type]}</Badge>
+                    <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{type[props.data.type?.connType ?? 0]}</Badge>
                     {
                         props.data.extra.Tag !== undefined &&
                         <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{props.data.extra.Tag}</Badge>
@@ -230,8 +214,8 @@ const AccordionItem = React.memo((props: { data: sp.statistic.connection }) => {
 
             <Accordion.Body>
                 <ListGroup variant="flush">
-                    <ListGroupItem itemKey="Type" itemValue={netType[new sp.statistic.net_type(props.data.type!!).conn_type]} />
-                    <ListGroupItem itemKey="Underlying" itemValue={netType[new sp.statistic.net_type(props.data.type!!).underlying_type]} />
+                    <ListGroupItem itemKey="Type" itemValue={type[props.data.type?.connType ?? 0]} />
+                    <ListGroupItem itemKey="Underlying" itemValue={type[props.data.type?.underlyingType ?? 0]} />
 
                     {
                         Object.entries(props.data.extra)
@@ -249,7 +233,7 @@ const AccordionItem = React.memo((props: { data: sp.statistic.connection }) => {
                                     Fetch("/conn",
                                         {
                                             method: "DELETE",
-                                            body: notify_remove_connections.encode({ ids: [props.data.id] }).finish()
+                                            body: new notify_remove_connections({ ids: [props.data.id] }).toBinary()
                                         })
                                         .then(async ({ error }) => {
                                             if (error !== undefined)

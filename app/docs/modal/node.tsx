@@ -1,14 +1,13 @@
 import { useContext, useState } from "react";
 import { Button, Modal, Form, Badge } from "react-bootstrap";
 import useSWR from 'swr'
-import { Fetch, ProtoTSStrFetcher } from '../common/proto';
+import { Fetch, ProtoESStrFetcher } from '../common/proto';
 import Loading from "../common/loading";
 import Error from 'next/error';
 import { GlobalToastContext } from "../common/toast";
-import { yuhaiin, google } from "../pbts/proto";
+import { point } from "../pbes/node/point/point_pb";
+import { StringValue } from "@bufbuild/protobuf";
 
-const StringValue = google.protobuf.StringValue
-const Point = yuhaiin.point.point
 
 function NodeModal(props: {
     hash: string,
@@ -23,7 +22,7 @@ function NodeModal(props: {
 
     const { data: node, error, isLoading, mutate } = useSWR(
         (!props.point && props.hash) ? `/node` : null,
-        ProtoTSStrFetcher<yuhaiin.point.point>(Point, "POST", StringValue.encode({ value: props.hash }).finish()))
+        ProtoESStrFetcher(new point(), "POST", new StringValue({ value: props.hash }).toBinary()))
     const [errmsg, setErrmsg] = useState({ msg: "", code: 0 });
 
     const Footer = () => {
@@ -33,7 +32,7 @@ function NodeModal(props: {
                 Fetch("/node",
                     {
                         method: "PATCH",
-                        body: Point.encode(Point.fromObject(JSON.parse(node ?? props.point ?? "{}"))).finish(),
+                        body: new point().fromJson(JSON.parse(node ?? props.point ?? "{}")).toBinary(),
                     })
                     .then(async ({ error }) => {
                         if (error === undefined) {

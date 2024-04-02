@@ -6,17 +6,20 @@ import NodeModal from "../modal/node";
 import Loading from "../common/loading";
 import { GlobalToastContext } from "../common/toast";
 import useSWR from 'swr'
-import { ProtoTSFetcher, Fetch, ToObjectOption } from '../common/proto';
+import { Fetch, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
-import { yuhaiin, google } from "../pbts/proto";
-import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPv6 } from "../apiurl";
+import { LatencyDNSUrl, LatencyHTTPUrl, LatencyIPv6 } from "../apiurl";
+import { manager } from "../pbes/node/node_pb";
+import { dns_over_quic, http, protocol, requests, response } from "../pbes/node/latency/latency_pb";
+import { use_req } from "../pbes/node/grpc/node_pb";
+import { StringValue } from "@bufbuild/protobuf";
 
 
-const Point = yuhaiin.point.point;
-const UseRequest = yuhaiin.protos.node.service.use_req;
-const StringValue = google.protobuf.StringValue;
-const LatencyRequest = yuhaiin.latency.requests;
-const LatencyResponse = yuhaiin.latency.response;
+// const Point = yuhaiin.point.point;
+// const UseRequest = yuhaiin.protos.node.service.use_req;
+// const StringValue = google.protobuf.StringValue;
+// const LatencyRequest = yuhaiin.latency.requests;
+// const LatencyResponse = yuhaiin.latency.response;
 
 const Nanosecond = 1
 const Microsecond = 1000 * Nanosecond
@@ -49,7 +52,7 @@ function Group() {
     const [modalData, setModalData] = useState({ point: "", hash: "" });
     const [latency, setLatency] = useState<{ [key: string]: Latency }>({})
 
-    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoTSFetcher(yuhaiin.node.manager))
+    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoESFetcher(new manager()))
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || data === undefined) return <Loading />
@@ -67,20 +70,20 @@ function Group() {
             })
         }
 
-        const latency = (protocol: yuhaiin.latency.Iprotocol, onFinish: (r: string) => void) => {
+        const latency = (protocol: protocol, onFinish: (r: string) => void) => {
             Fetch<string>("/latency", {
-                body: LatencyRequest.encode({
+                body: new requests({
                     requests: [{
                         hash: props.hash,
                         id: "latency",
                         ipv6: LatencyIPv6,
                         protocol: protocol
                     }]
-                }).finish(),
+                }).toBinary(),
                 process: async (r) => {
-                    let resp = LatencyResponse.decode(new Uint8Array(await r.arrayBuffer()));
-                    const t = new google.protobuf.Duration(resp.id_latency_map["latency"])
-                    if (t && (t.nanos !== 0 || t.seconds !== 0)) return durationToStroing(t.seconds, t.nanos)
+                    let resp = new response().fromBinary(new Uint8Array(await r.arrayBuffer()));
+                    const t = resp.idLatencyMap["latency"]
+                    if (t && (t.nanos !== 0 || t.seconds !== BigInt(0))) return durationToStroing(Number(t.seconds), t.nanos)
                     return "timeout"
                 }
             }).then(async ({ data, error }) => {
@@ -97,19 +100,23 @@ function Group() {
                 onClick={async () => {
                     updateTestingStatus((v) => { v.tcpOnLoading = true; v.udpOnLoading = true })
                     latency(
-                        {
-                            http: {
-                                url: LatencyHTTPUrl
+                        new protocol({
+                            protocol: {
+                                case: "http",
+                                value: new http({ url: LatencyHTTPUrl })
                             }
-                        },
+                        }),
                         (r) => { updateTestingStatus(async (v) => { v.tcpOnLoading = false; v.tcp = r }) })
                     latency(
-                        {
-                            dns_over_quic: {
-                                host: LatencyDNSUrl,
-                                target_domain: "www.google.com"
+                        new protocol({
+                            protocol: {
+                                case: "dnsOverQuic",
+                                value: new dns_over_quic({
+                                    host: LatencyDNSUrl,
+                                    targetDomain: "www.google.com"
+                                })
                             }
-                        },
+                        }),
                         (r) => { updateTestingStatus(async (v) => { v.udpOnLoading = false; v.udp = r }) })
                 }}>
                 Test
@@ -157,11 +164,7 @@ function Group() {
                                 onClick={(e) => {
                                     e.preventDefault();
                                     if (!data.nodes) return
-                                    let node = data.nodes[v];
-
-                                    let point = node ?
-                                        JSON.stringify(Point.toObject(Point.create(node), ToObjectOption), null, "  ") : ""
-                                    setModalData({ point: point, hash: v })
+                                    setModalData({ point: JSON.stringify(data.nodes[v].toJson({ emitDefaultValues: true }), null, "   "), hash: v })
                                 }}
                             >
                                 {k}
@@ -217,11 +220,11 @@ function Group() {
                                         `/node`,
                                         {
                                             method: "PUT",
-                                            body: UseRequest.encode({
+                                            body: new use_req({
                                                 tcp: key === "tcp" || key === "tcpudp",
                                                 udp: key === "udp" || key === "tcpudp",
                                                 hash: selectNode,
-                                            }).finish()
+                                            }).toBinary()
                                         }
                                     ).then(async ({ error }) => {
                                         if (error !== undefined) ctx.Error(`change node failed, ${error.code}| ${await error.msg}`)
@@ -246,7 +249,7 @@ function Group() {
                                             `/node`,
                                             {
                                                 method: "DELETE",
-                                                body: StringValue.encode({ value: selectNode }).finish()
+                                                body: new StringValue({ value: selectNode }).toBinary()
                                             }
                                         ).then(async ({ error }) => {
                                             if (error !== undefined) {
