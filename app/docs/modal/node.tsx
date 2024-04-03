@@ -1,14 +1,13 @@
 import { useContext, useState } from "react";
 import { Button, Modal, Form, Badge } from "react-bootstrap";
 import useSWR from 'swr'
-import { Fetch, ProtoESFetcher, ProtoESStrFetcher } from '../common/proto';
+import { Fetch, ProtoESFetcher } from '../common/proto';
 import Loading from "../common/loading";
 import Error from 'next/error';
 import { GlobalToastContext } from "../common/toast";
 import { point } from "../pbes/node/point/point_pb";
 import { StringValue } from "@bufbuild/protobuf";
 import { Point } from "../node/protocol";
-
 
 function NodeModal(props: {
     hash: string,
