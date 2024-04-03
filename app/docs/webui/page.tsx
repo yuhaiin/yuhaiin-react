@@ -8,7 +8,28 @@ import { SettingCheck } from "../common/switch";
 import { Fetch } from '../common/proto';
 import { StringValue } from "@bufbuild/protobuf";
 
-
+const OnelineEdit = (props: {
+    title: string,
+    value: string,
+    onChange: (v: string) => void,
+    onClick: () => void,
+    buttonText?: string,
+    placeholder?: string
+}) => {
+    return <>
+        <Form.Group as={Row} className='mb-1 ms-1'>
+            <Row className="g-2">
+                <Form.Label column sm={2} className="nowrap">{props.title}</Form.Label>
+                <Col sm={6}>
+                    <Form.Control value={props.value} onChange={(v) => props.onChange(v.target.value)} placeholder={props.placeholder} />
+                </Col>
+                <Col sm={2}>
+                    <Button onClick={() => props.onClick()} >{props.buttonText ? props.buttonText : "Save"}</Button>
+                </Col>
+            </Row>
+        </Form.Group>
+    </>
+}
 
 function Setting() {
     const ctx = useContext(GlobalToastContext);
@@ -18,28 +39,7 @@ function Setting() {
     const [latencyDNS, setLatencyDNS] = useState(LatencyDNSUrl);
     const [latencyIPv6, setLatencyIPv6] = useState(LatencyIPv6);
 
-    const OnelineEdit = (props: {
-        title: string,
-        value: string,
-        onChange: (v: string) => void,
-        onClick: () => void,
-        buttonText?: string,
-        placeholder?: string
-    }) => {
-        return <>
-            <Form.Group as={Row} className='mb-1 ms-1'>
-                <Row className="g-2">
-                    <Form.Label column sm={2} className="nowrap">{props.title}</Form.Label>
-                    <Col sm={6}>
-                        <Form.Control value={props.value} onChange={(v) => props.onChange(v.target.value)} placeholder={props.placeholder} />
-                    </Col>
-                    <Col sm={2}>
-                        <Button onClick={() => props.onClick()} >{props.buttonText ? props.buttonText : "Save"}</Button>
-                    </Col>
-                </Row>
-            </Form.Group>
-        </>
-    }
+
 
     return <> <Card className="mb-3">
         <Card.Body>
