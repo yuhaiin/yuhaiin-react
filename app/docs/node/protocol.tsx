@@ -2,7 +2,7 @@
 
 import { Button, Form, Row, Col, Card, ListGroup, InputGroup } from "react-bootstrap";
 import { point } from "../pbes/node/point/point_pb";
-import { direct, drop, grpc, http, http2, mux, none, obfs_http, protocol, quic, reality, reject, shadowsocks, shadowsocksr, simple, socks5, tls_config, trojan, vless, vmess, websocket, wireguard, wireguard_peer_config, yuubinsya } from "../pbes/node/protocol/protocol_pb";
+import { direct, drop, grpc, host, http, http2, mux, none, obfs_http, protocol, quic, reality, reject, shadowsocks, shadowsocksr, simple, socks5, tls_config, trojan, vless, vmess, websocket, wireguard, wireguard_peer_config, yuubinsya } from "../pbes/node/protocol/protocol_pb";
 import { NewBytesItemList, NewItemList, SettingInputText } from "../config/components";
 import { SettingCheck } from "../common/switch";
 import { Message } from "@bufbuild/protobuf";
@@ -126,7 +126,7 @@ export const Point = (props: { point: point, onChange?: (x: point) => void, onCl
 
 const Protocol = (props: { title: string, onClose?: () => void, children: JSX.Element }) => {
     return <>
-        <Card>
+        <Card className="flex-grow-1 form-floating">
             <Card.Header className="d-flex justify-content-between">
                 {props.title}
                 <Button variant='outline-danger' size="sm" onClick={props.onClose}><i className="bi bi-x-lg"></i> </Button>
@@ -290,7 +290,7 @@ const Wireguard = (props: { protocol: wireguard, onChange: (e: wireguard) => voi
             }
 
             <Col sm={{ span: 10, offset: props.data?.length !== 0 ? 2 : 0 }}>
-                <InputGroup className="mb-2" >
+                <InputGroup className="mb-2 justify-content-md-end" >
                     <Button variant='outline-success' onClick={() => {
                         let data = new wireguard_peer_config({
                             allowedIps: ["0.0.0.0/0"],
@@ -378,7 +378,78 @@ const Wireguard = (props: { protocol: wireguard, onChange: (e: wireguard) => voi
 
 const Simple = (props: { protocol: simple, onChange: (e: simple) => void, onClose?: () => void }) => {
     const cc = change(props.protocol, props.onChange)
+    function NewAlternateHostList(props: {
+        title: string,
+        data: host[],
+        onChange: (x: host[]) => void
+    }) {
+        return (
+            <Form.Group as={Row} className='mb-3 flex-grow-1 overflow-auto'>
+                <Form.Label column sm={2} className="nowrap">{props.title}</Form.Label>
+                {
+                    props.data && props.data
+                        .map((v, index) => {
+                            return (
+                                <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
+                                    <InputGroup className="mb-2" >
+                                        <Protocol
+                                            title="Host"
+                                            onClose={() => {
+                                                if (props.data) {
+                                                    props.data.splice(index, 1)
+                                                    props.onChange(props.data)
+                                                }
+                                            }}>
+                                            <>
+                                                <SettingInputText
+                                                    label="Host"
+                                                    value={v.host}
+                                                    onChange={(e) => {
+                                                        if (props.data) {
+                                                            props.data[index].host = e
+                                                            props.onChange(props.data)
+                                                        }
+                                                    }}
+                                                />
 
+                                                <SettingInputText
+                                                    label="Port"
+                                                    value={v.port}
+                                                    onChange={(e) => {
+                                                        if (isNaN(Number(e))) return
+                                                        if (props.data) {
+                                                            props.data[index].port = Number(e)
+                                                            props.onChange(props.data)
+                                                        }
+                                                    }}
+                                                />
+
+                                            </>
+                                        </Protocol>
+                                    </InputGroup>
+                                </Col>
+                            )
+                        })
+                }
+
+                <Col sm={{ span: 10, offset: props.data?.length !== 0 ? 2 : 0 }}>
+                    <InputGroup className="mb-2 justify-content-md-end" >
+                        <Button variant='outline-success' onClick={() => {
+                            let data = new host({});
+                            if (!props.data)
+                                props.onChange([data])
+                            else {
+                                props.data.push(data)
+                                props.onChange(props.data)
+                            }
+                        }} >
+                            <i className="bi bi-plus-lg" />
+                        </Button>
+                    </InputGroup>
+                </Col>
+
+            </Form.Group>)
+    }
     return <Protocol title="Simple" onClose={props.onClose}>
         <>
             <SettingInputText
@@ -400,6 +471,12 @@ const Simple = (props: { protocol: simple, onChange: (e: simple) => void, onClos
                     if (isNaN(timeout)) return
                     cc((x) => x.timeout = BigInt(timeout))
                 }}
+            />
+
+            <NewAlternateHostList
+                title="AlternateHost"
+                data={props.protocol.alternateHost}
+                onChange={(e) => { cc((x) => x.alternateHost = e) }}
             />
         </>
     </Protocol>
