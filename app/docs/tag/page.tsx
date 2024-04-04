@@ -18,7 +18,7 @@ function Tags() {
     const [currentGroup, setCurrentGroup] = useState("");
     const [saveTag, setSaveTag] = useState<save_tag_req>(new save_tag_req({ tag: "", hash: "", type: tag_type.node }));
     const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoESFetcher<manager>(new manager()))
-    const [modalHash, setModalHash] = useState({ hash: "" });
+    const [modalHash, setModalHash] = useState({ hash: "", show: false });
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
 
@@ -45,7 +45,7 @@ function Tags() {
                                 <>Mirror <i className="bi bi-arrow-right"></i> {v.hash}</>
                                 :
                                 <>Target <i className="bi bi-arrow-right"></i>
-                                    <a className="text-truncate" href="#" onClick={(e) => { e.preventDefault(); setModalHash({ hash: v.hash[0] }) }} >{v.hash}</a></>
+                                    <a className="text-truncate" href="#" onClick={(e) => { e.preventDefault(); setModalHash({ hash: v.hash[0], show: true }) }} >{v.hash}</a></>
                         }
                     </Badge>
 
@@ -78,9 +78,9 @@ function Tags() {
     return (
         <>
             <NodeModal
-                show={modalHash.hash !== ""}
+                show={modalHash.show}
                 hash={modalHash.hash}
-                onHide={() => setModalHash({ hash: "" })}
+                onHide={() => setModalHash({ ...modalHash, show: false })}
             />
             <Card className="mb-3">
 

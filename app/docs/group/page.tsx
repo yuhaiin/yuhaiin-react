@@ -43,7 +43,7 @@ function Group() {
     const ctx = useContext(GlobalToastContext);
     const [selectNode, setSelectNode] = useState("");
     const [currentGroup, setCurrentGroup] = useState("Select...");
-    const [modalData, setModalData] = useState({ point: new point({}), hash: "" });
+    const [modalData, setModalData] = useState({ point: new point({}), hash: "", show: false });
     const [importJson, setImportJson] = useState({ data: false });
     const [latency, setLatency] = useState<{ [key: string]: Latency }>({})
 
@@ -159,7 +159,7 @@ function Group() {
                                 onClick={(e) => {
                                     e.preventDefault();
                                     if (!data.nodes) return
-                                    setModalData({ point: data.nodes[v], hash: v })
+                                    setModalData({ point: data.nodes[v], hash: v, show: true })
                                 }}
                             >
                                 {k}
@@ -175,13 +175,14 @@ function Group() {
     return (
         <>
             <NodeModal
-                show={modalData.point && modalData.hash !== ""}
+                show={modalData.show}
                 hash={modalData.hash}
                 point={modalData.point}
                 onChangePoint={(v) => { setModalData(prev => { return { ...prev, point: v } }) }}
                 editable
-                onHide={() => setModalData({ point: new point({}), hash: "" })}
+                onHide={() => setModalData({ ...modalData, show: false })}
                 onSave={() => mutate()}
+                groups={Object.keys(data.groupsV2).sort((a, b) => { return a <= b ? -1 : 1 })}
             />
 
             <NodeJsonModal
@@ -253,7 +254,9 @@ function Group() {
                                                 group: "template_group",
                                                 name: "template_name",
                                                 origin: origin.manual,
-                                            }), hash: "new node"
+                                            }),
+                                            hash: "new node",
+                                            show: true
                                         })
                                     }}
                                 >

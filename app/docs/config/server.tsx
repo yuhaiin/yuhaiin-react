@@ -4,7 +4,7 @@ import { SettingInputText, SettingInputTextarea, NewItemList } from './component
 import { SettingCheck } from "../common/switch";
 import { http, redir, tproxy, tun, yuubinsya, mixed, socks5, socks4a, tun_endpoint_driver, route, tls_config, certificate, websocket, quic, grpc, tls, http2, reality, protocol, inbound_config, normal } from '../pbes/config/listener/listener_pb';
 
-const HTTPComponents = React.memo((props: { http: http, onChange: (x: http) => void }) => {
+export const HTTPComponents = React.memo((props: { http: http, onChange: (x: http) => void }) => {
     const updateState = (x: (x: http) => void) => {
         x(props.http)
         props.onChange(props.http)
@@ -20,7 +20,7 @@ const HTTPComponents = React.memo((props: { http: http, onChange: (x: http) => v
 })
 
 
-const RedirComponents = React.memo((props: { redir: redir, onChange: (x: redir) => void }) => {
+export const RedirComponents = React.memo((props: { redir: redir, onChange: (x: redir) => void }) => {
     const updateState = (x: (x: redir) => void) => {
         x(props.redir)
         props.onChange(props.redir)
@@ -34,7 +34,7 @@ const RedirComponents = React.memo((props: { redir: redir, onChange: (x: redir) 
 })
 
 
-const TProxyComponents = React.memo((props: { tproxy: tproxy, onChange: (x: tproxy) => void }) => {
+export const TProxyComponents = React.memo((props: { tproxy: tproxy, onChange: (x: tproxy) => void }) => {
     const updateState = (x: (x: tproxy) => void) => {
         x(props.tproxy)
         props.onChange(props.tproxy)
@@ -53,7 +53,7 @@ const TProxyComponents = React.memo((props: { tproxy: tproxy, onChange: (x: tpro
     )
 })
 
-const Socks5Components = React.memo((props: { socks5: socks5, onChange: (x: socks5) => void }) => {
+export const Socks5Components = React.memo((props: { socks5: socks5, onChange: (x: socks5) => void }) => {
     const updateState = (x: (x: socks5) => void) => {
         x(props.socks5)
         props.onChange(props.socks5)
@@ -70,7 +70,7 @@ const Socks5Components = React.memo((props: { socks5: socks5, onChange: (x: sock
 })
 
 
-const MixedComponents = React.memo((props: { mixed: mixed, onChange: (x: mixed) => void }) => {
+export const MixedComponents = React.memo((props: { mixed: mixed, onChange: (x: mixed) => void }) => {
     const updateState = (x: (x: mixed) => void) => {
         x(props.mixed)
         props.onChange(props.mixed)
@@ -86,7 +86,7 @@ const MixedComponents = React.memo((props: { mixed: mixed, onChange: (x: mixed) 
     )
 })
 
-const TunComponents = React.memo((props: { tun: tun, onChange: (x: tun) => void }) => {
+export const TunComponents = React.memo((props: { tun: tun, onChange: (x: tun) => void }) => {
     const updateState = (x: (x: tun) => void) => {
         x(props.tun)
         props.onChange(props.tun)
@@ -275,7 +275,7 @@ const WebsocketComponents = React.memo((props: { websocket: websocket, onChange:
     )
 })
 
-const QuicComponents = React.memo((props: { quic: quic, onChange: (x: quic) => void }) => {
+export const QuicComponents = React.memo((props: { quic: quic, onChange: (x: quic) => void }) => {
     const updateState = (x: (x: quic) => void) => {
         if (IsTLSEmpty(props.quic.tls)) props.quic.tls = undefined
         x(props.quic)
@@ -294,7 +294,7 @@ const QuicComponents = React.memo((props: { quic: quic, onChange: (x: quic) => v
     )
 })
 
-const GrpcComponents = React.memo((props: { grpc: grpc, onChange: (x: grpc) => void }) => {
+export const GrpcComponents = React.memo((props: { grpc: grpc, onChange: (x: grpc) => void }) => {
     const updateState = (x: (x: grpc) => void) => {
         if (IsTLSEmpty(props.grpc.tls)) props.grpc.tls = undefined
         x(props.grpc)
@@ -311,7 +311,7 @@ const GrpcComponents = React.memo((props: { grpc: grpc, onChange: (x: grpc) => v
     )
 })
 
-const TlsComponents = React.memo((props: { tls: tls, onChange: (x: tls) => void }) => {
+export const TlsComponents = React.memo((props: { tls: tls, onChange: (x: tls) => void }) => {
     const updateState = (x: (x: tls) => void) => {
         if (IsTLSEmpty(props.tls.tls)) props.tls.tls = undefined
         x(props.tls)
@@ -328,7 +328,7 @@ const TlsComponents = React.memo((props: { tls: tls, onChange: (x: tls) => void 
     )
 })
 
-const Http2Components = React.memo((props: { http2: http2, onChange: (x: http2) => void }) => {
+export const Http2Components = React.memo((props: { http2: http2, onChange: (x: http2) => void }) => {
     const updateState = (x: (x: http2) => void) => {
         if (IsTLSEmpty(props.http2.tls)) props.http2.tls = undefined
         x(props.http2)
@@ -345,7 +345,7 @@ const Http2Components = React.memo((props: { http2: http2, onChange: (x: http2) 
     )
 })
 
-const RealityComponents = React.memo((props: { reality: reality, onChange: (x: reality) => void }) => {
+export const RealityComponents = React.memo((props: { reality: reality, onChange: (x: reality) => void }) => {
     const updateState = (x: (x: reality) => void) => {
         x(props.reality)
         props.onChange(props.reality)
@@ -425,7 +425,7 @@ const RealityComponents = React.memo((props: { reality: reality, onChange: (x: r
     )
 })
 
-const YuubinsyaComponents = React.memo((props: { yuubinsya: yuubinsya, onChange: (x: yuubinsya) => void }) => {
+export const YuubinsyaComponents = React.memo((props: { yuubinsya: yuubinsya, onChange: (x: yuubinsya) => void }) => {
     const updateState = (x: (x: yuubinsya) => void) => {
         x(props.yuubinsya)
         props.onChange(props.yuubinsya)
@@ -595,6 +595,15 @@ const defaultProtocol = (x: { [key: string]: protocol }, name: string, proto: st
                     host: ":1080",
                     password: "",
                     username: ""
+                })
+            }
+            break
+        case "socks4a":
+            sc.protocol = {
+                case: "socks4a",
+                value: new socks4a({
+                    host: ":1080",
+                    username: "",
                 })
             }
             break

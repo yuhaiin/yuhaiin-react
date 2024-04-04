@@ -160,15 +160,15 @@ function Connections() {
 }
 
 const ListGroupItem = React.memo((props: { itemKey: string, itemValue: string, }) => {
-    const [modalHash, setModalHash] = useState({ hash: "" });
+    const [modalHash, setModalHash] = useState({ show: false, hash: "" });
 
     return (
         <>
             <NodeModal
-                show={modalHash.hash !== ""}
+                show={modalHash.show}
                 hash={modalHash.hash}
                 editable={false}
-                onHide={() => setModalHash({ hash: "" })}
+                onHide={() => setModalHash({ ...modalHash, show: false })}
             />
 
             <ListGroup.Item>
@@ -182,7 +182,7 @@ const ListGroupItem = React.memo((props: { itemKey: string, itemValue: string, }
                                     href="#"
                                     onClick={(e) => {
                                         e.preventDefault()
-                                        setModalHash({ hash: props.itemValue })
+                                        setModalHash({ hash: props.itemValue, show: true })
                                     }}>
                                     {props.itemValue}
                                 </a>}

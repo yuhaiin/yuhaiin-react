@@ -16,14 +16,14 @@ function NodeModal(props: {
     editable?: boolean,
     show: boolean,
     onHide: () => void,
-    onSave?: () => void
+    onSave?: () => void,
+    groups?: string[],
 }) {
     const ctx = useContext(GlobalToastContext);
 
     const { data: node, error, isLoading, mutate } = useSWR(
         (!props.point && props.hash) ? `/node` : null,
         ProtoESFetcher(new point(), "POST", new StringValue({ value: props.hash }).toBinary()))
-    const [errmsg, setErrmsg] = useState({ msg: "", code: 0 });
 
     const Footer = () => {
         if (!props.editable) return <></>
@@ -44,8 +44,6 @@ function NodeModal(props: {
                         } else {
                             let msg = await error.msg;
                             ctx.Error(msg)
-                            setErrmsg({ msg: msg, code: error.code })
-                            setTimeout(() => { setErrmsg({ msg: "", code: 0 }) }, 5000)
                         }
                     })
             }}
@@ -70,38 +68,45 @@ function NodeModal(props: {
                 </Modal.Header>
 
                 <Modal.Body>
-                    {error ? <Error statusCode={error.code} title={error.msg} /> : isLoading ? <Loading /> :
-                        <Point
-                            point={node ?? props.point ?? new point({})}
-                            onChange={
-                                (props.editable) ?
-                                    (e) => {
-                                        if (!props.editable) return
-                                        if (props.hash) mutate(e, false)
-                                        if (props.point && props.onChangePoint) props.onChangePoint(e)
-                                    } : undefined
-                            }
-                        />
+                    {error ?
+                        <>
+                            <h4 className="text-center my-2">{error.code} - {error.msg}</h4>
+                            <pre className="text-center my-2 text-danger lead">{error.raw}</pre>
+                        </> :
+                        isLoading ? <Loading /> :
+                            <Point
+                                point={node ?? props.point ?? new point({})}
+                                groups={props.groups}
+                                onChange={
+                                    (props.editable) ?
+                                        (e) => {
+                                            if (!props.editable) return
+                                            if (props.hash) mutate(e, false)
+                                            if (props.point && props.onChangePoint) props.onChangePoint(e)
+                                        } : undefined
+                                }
+                            />
                     }
                 </Modal.Body>
 
                 <Modal.Footer>
-                    {errmsg.msg && <Badge bg="danger">{errmsg.code} | {errmsg.msg}</Badge>}
-                    <Button
-                        variant="outline-info"
-                        onClick={() => {
-                            try {
-                                let po = node?.clone() ?? props.point?.clone() ?? new point({});
-                                po.hash = "";
-                                navigator.clipboard.writeText(JSON.stringify(po.toJson({ emitDefaultValues: true }), null, 2));
-                                ctx.Info("copy successful")
-                            } catch (e) {
-                                ctx.Error("copy failed")
-                            }
-                        }}
-                    >
-                        Copy
-                    </Button>
+                    {(!error && !isLoading) &&
+                        <Button
+                            variant="outline-info"
+                            onClick={() => {
+                                try {
+                                    let po = node?.clone() ?? props.point?.clone() ?? new point({});
+                                    po.hash = "";
+                                    navigator.clipboard.writeText(JSON.stringify(po.toJson({ emitDefaultValues: true }), null, 2));
+                                    ctx.Info("copy successful")
+                                } catch (e) {
+                                    ctx.Error("copy failed")
+                                }
+                            }}
+                        >
+                            Copy
+                        </Button>
+                    }
                     <Button variant="outline-secondary" onClick={() => { props.onHide() }}>Close</Button>
                     <Footer />
                 </Modal.Footer>
