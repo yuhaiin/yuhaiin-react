@@ -496,9 +496,6 @@ const Inbound = React.memo((props: {
     server: inbound_config,
     onChange: (x: inbound_config) => void,
 }) => {
-
-    const [newProtocol, setNewProtocol] = useState({ value: "http", name: "" });
-
     const updateState = (x: (x: inbound_config) => void) => {
         x(props.server)
         props.onChange(props.server)
@@ -506,16 +503,6 @@ const Inbound = React.memo((props: {
 
     return (
         <>
-
-            <SettingCheck label='DNS Hijack'
-                checked={!props.server.hijackDns ? false : true}
-                onChange={() => updateState((x) => x.hijackDns = !x.hijackDns)} />
-
-            <SettingCheck label='Fakedns'
-                checked={!props.server.hijackDnsFakeip ? false : true}
-                onChange={() => updateState((x) => x.hijackDnsFakeip = !x.hijackDnsFakeip)} />
-
-            <hr />
             {
                 Object.entries(props.server!.servers!)
                     .sort((a, b) => { return a[0] <= b[0] ? -1 : 1 })
@@ -531,234 +518,12 @@ const Inbound = React.memo((props: {
 
                                 <SettingCheck label='Enabled' checked={v.enabled!!} onChange={() => updateState((x) => x.servers![k].enabled = !x.servers![k].enabled)} />
                                 <Protocol protocol={new protocol(v)} onChange={(e) => updateState((x) => x.servers![k] = e)} />
-
-                                <hr />
                             </div>
                         )
                     })
             }
-
-
-            <InputGroup className="d-flex justify-content-end">
-                <Form.Control value={newProtocol.name} onChange={(e) => setNewProtocol({ ...newProtocol, name: e.target.value })} />
-                <Form.Select value={newProtocol.value} onChange={(e) => setNewProtocol({ ...newProtocol, value: e.target.value })}>
-                    <option value="mix">Mixed</option>
-                    <option value="http">HTTP</option>
-                    <option value="socks5">SOCKS5</option>
-                    <option value="tun">TUN</option>
-                    <option value="redir">Redir</option>
-                    <option value="tproxy">TProxy</option>
-                    <option value="yuubinsya">Yuubinsya</option>
-                    <option value="yuubinsya-websocket">Yuubinsya Websocket</option>
-                    <option value="yuubinsya-tls">Yuubinsya TLS</option>
-                    <option value="yuubinsya-grpc">Yuubinsya GRPC</option>
-                    <option value="yuubinsya-quic">Yuubinsya QUIC</option>
-                    <option value="yuubinsya-http2">Yuubinsya HTTP2</option>
-                    <option value="yuubinsya-reality">Yuubinsya Reality</option>
-                </Form.Select>
-                <Button variant='outline-success'
-                    onClick={() => updateState((x) => {
-                        console.log(newProtocol)
-                        defaultProtocol(x.servers!, newProtocol.name, newProtocol.value)
-                    })} >
-                    <i className="bi bi-plus-lg" />New Inbound
-                </Button>
-            </InputGroup>
-
         </>
     )
 })
-
-const defaultProtocol = (x: { [key: string]: protocol }, name: string, proto: string) => {
-    if (name === "" || x[name] !== undefined) return
-
-    let sc: protocol = new protocol({
-        name: name,
-        enabled: false,
-    })
-
-    switch (proto) {
-        case "http":
-            sc.protocol = {
-                case: "http",
-                value: new http({
-                    host: ":8188",
-                    username: "",
-                    password: ""
-                })
-            }
-            break
-        case "socks5":
-            sc.protocol = {
-                case: "socks5",
-                value: new socks5({
-                    host: ":1080",
-                    password: "",
-                    username: ""
-                })
-            }
-            break
-        case "socks4a":
-            sc.protocol = {
-                case: "socks4a",
-                value: new socks4a({
-                    host: ":1080",
-                    username: "",
-                })
-            }
-            break
-        case "mix":
-            sc.protocol = {
-                case: "mix",
-                value: new mixed({
-                    host: ":1080",
-                    password: "",
-                    username: ""
-                })
-            }
-            break
-        case "tun":
-            sc.protocol = {
-                case: "tun",
-                value: new tun({
-                    name: "tun://tun0",
-                    mtu: 1500,
-                    gateway: "172.16.0.1",
-                    dnsHijacking: true,
-                    skipMulticast: false,
-                    driver: tun_endpoint_driver.system_gvisor,
-                    portal: "172.16.0.2"
-                })
-            }
-            break
-
-        case "redir":
-            sc.protocol = {
-                case: "redir",
-                value: new redir({
-                    host: ":8088"
-                })
-            }
-            break
-        case "yuubinsya":
-            sc.protocol = {
-                case: "yuubinsya",
-                value: new yuubinsya({
-                    host: ":2096",
-                    forceDisableEncrypt: false,
-                    password: "password",
-                    protocol: {
-                        case: "normal",
-                        value: new normal({})
-                    }
-                })
-            }
-            break
-        case "yuubinsya-websocket":
-            sc.protocol = {
-                case: "yuubinsya",
-                value: new yuubinsya({
-                    host: ":2096",
-                    forceDisableEncrypt: false,
-                    password: "password",
-                    protocol: {
-                        case: "websocket",
-                        value: new websocket({ tls: {} })
-                    }
-                })
-            }
-
-            break
-        case "yuubinsya-tls":
-            sc.protocol = {
-                case: "yuubinsya",
-                value: new yuubinsya({
-                    host: ":2096",
-                    forceDisableEncrypt: false,
-                    password: "password",
-                    protocol: {
-                        case: "tls",
-                        value: new tls({ tls: {} })
-                    }
-                })
-            }
-            break
-        case "yuubinsya-grpc":
-            sc.protocol = {
-                case: "yuubinsya",
-                value: new yuubinsya({
-                    host: ":2096",
-                    forceDisableEncrypt: false,
-                    password: "password",
-                    protocol: {
-                        case: "grpc",
-                        value: new grpc({ tls: {} })
-                    }
-                })
-            }
-            break
-        case "yuubinsya-quic":
-            sc.protocol = {
-                case: "yuubinsya",
-                value: new yuubinsya({
-                    host: ":2096",
-                    forceDisableEncrypt: false,
-                    password: "password",
-                    protocol: {
-                        case: "quic",
-                        value: new quic({ tls: {} })
-                    }
-                })
-            }
-            break
-        case "yuubinsya-http2":
-            sc.protocol = {
-                case: "yuubinsya",
-                value: new yuubinsya({
-                    host: ":2096",
-                    forceDisableEncrypt: false,
-                    password: "password",
-                    protocol: {
-                        case: "http2",
-                        value: new http2({ tls: {} })
-                    }
-                })
-            }
-            break
-        case "yuubinsya-reality":
-            sc.protocol = {
-                case: "yuubinsya",
-                value: new yuubinsya({
-                    host: ":2096",
-                    forceDisableEncrypt: false,
-                    password: "password",
-                    protocol: {
-                        case: "reality",
-                        value: new reality({
-                            shortId: ["123456"],
-                            serverName: ["www.example.com"],
-                            privateKey: "",
-                            dest: "dl.google.com:443",
-                            debug: false,
-                        })
-                    }
-                })
-            }
-            break
-        case "tproxy":
-            sc.protocol = {
-                case: "tproxy",
-                value: new tproxy({
-                    host: "0.0.0.0:8083",
-                })
-            }
-            break
-
-        default:
-            return
-    }
-
-    x[name] = new protocol(sc)
-}
 
 export default Inbound;

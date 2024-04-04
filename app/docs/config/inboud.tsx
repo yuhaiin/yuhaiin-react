@@ -83,36 +83,38 @@ export const Inbounds = (props: { inbounds: inbound_config, onChange: (x: inboun
                     :
                     <ListGroup variant="flush">
                         {
-                            Object.entries(props.inbounds.inbounds).map(([k, v]) => {
-                                return <>
-                                    <ListGroup.Item
-                                        key={k}
-                                        as={"label"}
-                                        className="d-flex justify-content-between align-items-center"
-                                        style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
-                                    >
-                                        <Button
-                                            variant="link"
-                                            onClick={() => {
-                                                setModalData({
-                                                    show: true,
-                                                    inbound: v,
-                                                    onChange: (e: inbound) => { cc((x) => x.inbounds[k] = e) }
-                                                })
-                                            }}
+                            Object.entries(props.inbounds.inbounds).
+                                sort((a, b) => { return a[0] <= b[0] ? -1 : 1 }).
+                                map(([k, v]) => {
+                                    return <>
+                                        <ListGroup.Item
+                                            key={k}
+                                            as={"label"}
+                                            className="d-flex justify-content-between align-items-center"
+                                            style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
                                         >
-                                            {k}
-                                        </Button>
-                                        <Button
-                                            variant='outline-danger'
-                                            size="sm"
-                                            onClick={() => { cc((x) => { delete x.inbounds[k] }) }}
-                                        >
-                                            <i className="bi bi-x-lg"></i>
-                                        </Button>
-                                    </ListGroup.Item>
-                                </>
-                            })
+                                            <Button
+                                                variant="link"
+                                                onClick={() => {
+                                                    setModalData({
+                                                        show: true,
+                                                        inbound: v,
+                                                        onChange: (e: inbound) => { cc((x) => x.inbounds[k] = e) }
+                                                    })
+                                                }}
+                                            >
+                                                {k}
+                                            </Button>
+                                            <Button
+                                                variant='outline-danger'
+                                                size="sm"
+                                                onClick={() => { cc((x) => { delete x.inbounds[k] }) }}
+                                            >
+                                                <i className="bi bi-x-lg"></i>
+                                            </Button>
+                                        </ListGroup.Item>
+                                    </>
+                                })
                         }
                     </ListGroup>
             }
