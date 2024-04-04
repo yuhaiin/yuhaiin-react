@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import { Form, Card, Row, Col, Button, Tabs, Tab } from 'react-bootstrap';
 import DNS from './dns';
 import Bypass from './bypass';
-import Inbound from './inbound';
+import Inbound from './server';
 import Loading from '../common/loading';
 import { SettingInputText, Remind, ItemList } from './components';
 import { SettingCheck } from "../common/switch";
@@ -12,20 +12,21 @@ import { GlobalToastContext } from '../common/toast';
 import useSWR from "swr";
 import { Fetch, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
-import { setting as SettingType, info as InfoType } from '../pbes/config/config_pb';
+import { setting as Setting, info as Info } from '../pbes/config/config_pb';
 import { Interfaces } from '../pbes/tools/tools_pb';
 import { dns_config } from '../pbes/config/dns/dns_pb';
 import { bypass_config } from '../pbes/config/bypass/bypass_pb';
 import { log_level } from '../pbes/config/log/log_pb';
+import { Inbounds } from './inboud';
 
 function ConfigComponent() {
     const ctx = useContext(GlobalToastContext);
 
     const { data: setting, error, isLoading, mutate: setSetting } =
-        useSWR("/config", ProtoESFetcher<SettingType>(new SettingType()),
+        useSWR("/config", ProtoESFetcher<Setting>(new Setting()),
             { revalidateOnFocus: false })
     const { data: info } =
-        useSWR("/info", ProtoESFetcher<InfoType>(new InfoType()),
+        useSWR("/info", ProtoESFetcher<Info>(new Info()),
             {})
 
     const { data: iffs } =
@@ -36,11 +37,9 @@ function ConfigComponent() {
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || setting === undefined) return <Loading />
 
-    // const [isAndroid, setIsAndroid] = useState({ value: false })
-
-    const updateState = (modify: (x: SettingType) => void) => {
-        setSetting((x: SettingType) => {
-            let y = new SettingType(x)
+    const updateState = (modify: (x: Setting) => void) => {
+        setSetting((x: Setting) => {
+            let y = new Setting(x)
             modify(y)
             return y
         }, false)
@@ -53,11 +52,12 @@ function ConfigComponent() {
                 <Card.Body>
                     <Tabs
                         defaultActiveKey="home"
-                        className="mb-3"
+                        className='mb-2'
+                        style={{ flexWrap: 'nowrap', overflow: 'auto hidden', height: '40px' }}
                     >
                         <Tab eventKey="home" title="Home">
 
-                            <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting(new SettingType({ ...setting, ipv6: !setting.ipv6 }), false)} />
+                            <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting(new Setting({ ...setting, ipv6: !setting.ipv6 }), false)} />
                             <SettingInputText
                                 label='Network Interface'
                                 value={setting.netInterface}
@@ -98,18 +98,28 @@ function ConfigComponent() {
                                 checked={setting.logcat!!.save!!}
                                 onChange={() => updateState((x) => x.logcat!!.save = !x.logcat!!.save)} />
                             <SettingLogcatLevelSelect label='Level' value={setting.logcat!!.level!!} onChange={(e) => updateState((x) => { x.logcat!!.level = e })} />
-
-
                         </Tab>
+
                         <Tab eventKey="bypass" title="Bypass">
                             <Bypass bypass={new bypass_config(setting.bypass!!)} onChange={(e) => updateState((x) => x.bypass = e)} />
                         </Tab>
+
                         <Tab eventKey="dns" title="DNS">
                             <DNS data={new dns_config(setting.dns!!)} onChange={(e) => updateState((x) => x.dns = e)} />
                         </Tab>
+
+
                         <Tab eventKey="inbound" title="Inbound">
+                            <Inbounds
+                                inbounds={setting.server!!}
+                                onChange={(x) => { updateState((y) => y.server = x) }}
+                            />
+                        </Tab>
+
+                        <Tab eventKey="inbound_old" title="Inbound(Deprecated)">
                             <Inbound server={setting.server!!} onChange={(e) => updateState((x) => x.server = e)} />
                         </Tab>
+
                         <Tab eventKey="info" title="Info">
                             <SettingInputText plaintext mb='mb-0' label='Version' value={info?.version} />
                             <SettingInputText url={"https://github.com/yuhaiin/yuhaiin/commit/" + info?.commit} plaintext mb='mb-0' label='Commit' value={info?.commit} />
@@ -129,34 +139,32 @@ function ConfigComponent() {
                         </Tab>
                     </Tabs>
 
-
-                    {info?.os != "android" &&
-                        <>
-                            <hr />
-                            <Button
-                                onClick={() => {
-                                    Fetch("/config", { body: setting.toBinary() })
-                                        .then(async ({ error }) => {
-                                            if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${await error.msg}`)
-                                            else {
-                                                ctx.Info("Save Config Successfully");
-                                                setSetting()
-                                            }
-                                        })
-                                }}
-                            >
-                                Save
-                            </Button>
-                        </>
-                    }
                 </Card.Body>
+
+
+                {info?.os != "android" &&
+                    <Card.Footer className='d-flex justify-content-md-end'>
+                        <Button
+                            variant="outline-primary"
+                            onClick={() => {
+                                Fetch("/config", { body: setting.toBinary() })
+                                    .then(async ({ error }) => {
+                                        if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${await error.msg}`)
+                                        else {
+                                            ctx.Info("Save Config Successfully");
+                                            setSetting()
+                                        }
+                                    })
+                            }}
+                        >
+                            Save
+                        </Button>
+                    </Card.Footer>
+                }
             </Card >
         </>
     );
 }
-
-
-
 
 export default ConfigComponent;
 

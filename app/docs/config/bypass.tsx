@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form, Row, Col, Button, } from 'react-bootstrap';
-import { SettingInputText, NewItemList } from './components';
+import { SettingInputText, NewItemList, Container } from './components';
 import { bypass_config, mode, mode_config, resolve_strategy } from '../pbes/config/bypass/bypass_pb';
 
 
@@ -27,32 +27,23 @@ const Bypass = React.memo((props: { bypass: bypass_config, onChange: (x: bypass_
 
     return (
         <>
-
             <SettingModeSelect label='TCP' network={true} value={props.bypass.tcp} onChange={(v) => updateState((x) => x.tcp = v)} />
             <SettingModeSelect label='UDP' network={true} value={props.bypass.udp} onChange={(v) => updateState((x) => x.udp = v)} />
             <SettingInputText label='Bypass File' value={props.bypass.bypassFile} onChange={(e) => updateState((x) => x.bypassFile = e)} />
 
             <hr />
 
-            Custom Rules
             {
                 props.bypass.customRuleV3.map((value, index) => (
-
-                    <div className='mb-3' key={"custom_rule_v3" + index}>
-
-                        <hr />
-
-                        <BypassSingleComponents config={new mode_config(value)} onChange={(e) => updateState((x) => x.customRuleV3[index] = e)} />
-
-
-                        <Button variant='outline-danger' onClick={() => updateState((x) => x.customRuleV3.splice(index, 1))} >
-                            <i className="bi bi-x-lg" />Remove Current Rule
-                        </Button>
-                    </div>
+                    <Container
+                        key={index}
+                        title={value.tag !== "" ? value.tag : mode[value.mode]}
+                        onClose={() => updateState((x) => x.customRuleV3.splice(index, 1))}
+                    >
+                        <BypassSingleComponents config={value} onChange={(e) => updateState((x) => x.customRuleV3[index] = e)} />
+                    </Container>
                 ))
             }
-
-            <hr />
 
             <div className='d-flex mb-2'>
                 <Button className='flex-grow-1' variant='outline-success'
@@ -72,7 +63,6 @@ const BypassSingleComponents = (props: { config: mode_config, onChange: (x: mode
 
     return (
         <>
-
             <SettingModeSelect label='Mode' network={false} value={props.config.mode} onChange={(v) => updateState((x) => x.mode = v)} />
             <SettingInputText label='Tag' value={props.config.tag} onChange={(e) => updateState((x) => x.tag = e)} />
             <SettingResolveStrategySelect label='Resolve Strategy' value={props.config.resolveStrategy} onChange={(e) => updateState((x) => x.resolveStrategy = e)} />

@@ -1,15 +1,21 @@
-import { Row, Form, Col, InputGroup, Button, DropdownMenu, DropdownItem, DropdownButton } from "react-bootstrap"
+import { Row, Form, Card, Col, InputGroup, Button, DropdownItem, DropdownButton } from "react-bootstrap"
 import { useState } from "react";
 
 export class Remind {
     label: string
     label_children?: (string[] | null)
     value: string
+
+    constructor(data: { label: string, label_children?: (string[] | null), value: string }) {
+        this.label = data.label;
+        this.value = data.value;
+        this.label_children = data.label_children
+    }
 }
 
 export const SettingInputText = (props: {
     label: string,
-    value?: string | number | null,
+    value?: string | number,
     url?: string,
     plaintext?: boolean,
     onChange?: (x: string) => void,
@@ -30,7 +36,9 @@ export const SettingInputText = (props: {
                         <b>{v.label}</b>
                         {
                             v.label_children &&
-                            v.label_children.map((vv) => { return <div key={vv}><span className="text-body-secondary">{vv}</span></div> })
+                            v.label_children.map((vv) => {
+                                return <div key={vv}><span className="text-body-secondary">{vv}</span></div>
+                            })
                         }
                     </DropdownItem>
                 })
@@ -50,10 +58,10 @@ export const SettingInputText = (props: {
                         :
                         <>
                             <Form.Control
-                                value={props.value !== null ? props.value : ""}
+                                value={props.value}
                                 plaintext={props.plaintext}
                                 placeholder={props.placeholder}
-                                onChange={(v) => props.onChange !== undefined && props.onChange(v.target.value)}
+                                onChange={props.onChange ? (v) => { props.onChange!(v.target.value) } : undefined}
                             />
                         </>}
 
@@ -76,7 +84,7 @@ export const SettingInputTextarea = (props: { label: string, value: string | num
 
 export function NewItemList(props: {
     title: string,
-    data: string[] | undefined,
+    data?: string[],
     onChange: (x: string[]) => void
 }) {
     const [newData, setNewData] = useState({ value: "" });
@@ -173,14 +181,18 @@ export function NewBytesItemList(props: {
 
         <Col sm={{ span: 10, offset: props.data?.length !== 0 ? 2 : 0 }}>
             <InputGroup className="mb-2" >
-                <Form.Control as={props.textarea ? "textarea" : undefined} value={newData.value} onChange={(e) => setNewData({ value: e.target.value })} />
+                <Form.Control
+                    as={props.textarea ? "textarea" : undefined}
+                    value={newData.value}
+                    onChange={(e) => setNewData({ value: e.target.value })}
+                />
                 <Button variant='outline-success' onClick={() => {
-                    if (!props.data)
-                        props.onChange([new TextEncoder().encode(newData.value)])
-                    else {
-                        props.data.push(new TextEncoder().encode(newData.value))
-                        props.onChange(props.data)
-                    }
+                    let data = new TextEncoder().encode(newData.value);
+
+                    if (!props.data) props.data = [data]
+                    else props.data.push(data)
+
+                    props.onChange(props.data);
                 }} >
                     <i className="bi bi-plus-lg" />
                 </Button>
@@ -190,15 +202,14 @@ export function NewBytesItemList(props: {
     </Form.Group>)
 }
 
-
-
 export function ItemList(props: {
     title: string,
     mb?: string,
     data: string[] | null | undefined,
 }) {
 
-    return (<Form.Group as={Row} className={props.mb ? props.mb : "mb-2"}>
+    return <Form.Group as={Row} lassName={props.mb ? props.mb : "mb-2"}>
+
         <Form.Label column sm={2} className="nowrap">{props.title}</Form.Label>
 
         <Col sm={{ span: 10, offset: 0 }}>
@@ -218,5 +229,25 @@ export function ItemList(props: {
                 })
         }
 
-    </Form.Group>)
+    </Form.Group>
+}
+
+export const Container = (props: {
+    title: string,
+    onClose?: () => void,
+    hideClose?: boolean,
+    children: JSX.Element
+}) => {
+    return <>
+        <Card className="flex-grow-1 form-floating">
+            <Card.Header className="d-flex justify-content-between">
+                {props.title}
+                {!props.hideClose && <Button variant='outline-danger' size="sm" onClick={props.onClose}><i className="bi bi-x-lg"></i> </Button>}
+            </Card.Header>
+            <Card.Body>
+                {props.children}
+            </Card.Body>
+        </Card>
+        <br />
+    </>
 }
