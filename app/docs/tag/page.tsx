@@ -23,27 +23,27 @@ function Tags() {
 
     if (isLoading || data == undefined) return <Loading />
 
-    const TagItem = (k: string, v: tags) => {
+    const TagItem = (props: { k: string, v: tags }) => {
         return (
             <ListGroup.Item
                 className="align-items-center d-flex justify-content-between"
                 style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
-                key={k}
+                key={props.k}
                 action
                 onClick={(e) => {
-                    setTagModalData({ show: true, tag: new save_tag_req({ tag: k, hash: v.hash[0], type: v.type }), new: false })
+                    setTagModalData({ show: true, tag: new save_tag_req({ tag: props.k, hash: props.v.hash[0], type: props.v.type }), new: false })
                 }}
             >
                 <div>
-                    {k}
+                    {props.k}
                     <Badge className="rounded-pill bg-light text-dark ms-1">
-                        {v.hash.length === 0 || v.hash[0] === ""
+                        {props.v.hash.length === 0 || props.v.hash[0] === ""
                             ?
                             <>Fallback <i className="bi bi-heart-arrow"></i> Global</>
                             :
-                            v.type === tag_type.mirror
+                            props.v.type === tag_type.mirror
                                 ?
-                                <>Mirror <i className="bi bi-arrow-right"></i> {v.hash}</>
+                                <>Mirror <i className="bi bi-arrow-right"></i> {props.v.hash}</>
                                 :
                                 <>Target <i className="bi bi-arrow-right"></i>
                                     <a
@@ -52,9 +52,9 @@ function Tags() {
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
-                                            setModalHash({ hash: v.hash[0], show: true })
+                                            setModalHash({ hash: props.v.hash[0], show: true })
                                         }} >
-                                        {v.hash}
+                                        {props.v.hash}
                                     </a>
                                 </>
                         }
@@ -63,18 +63,19 @@ function Tags() {
 
                 <Button
                     variant="outline-danger"
+                    as="span"
                     size="sm"
                     onClick={(e) => {
                         e.stopPropagation();
 
                         Fetch("/tag", {
                             method: "DELETE",
-                            body: new StringValue({ value: k }).toBinary()
+                            body: new StringValue({ value: props.k }).toBinary()
                         })
                             .then(async ({ error }) => {
-                                if (error !== undefined) ctx.Error(`delete tag ${k} failed, ${error.code}| ${await error.msg}`)
+                                if (error !== undefined) ctx.Error(`delete tag ${props.k} failed, ${error.code}| ${await error.msg}`)
                                 else {
-                                    ctx.Info(`delete tag ${k} success`);
+                                    ctx.Info(`delete tag ${props.k} success`);
                                     await mutate();
                                 }
                             })
@@ -122,7 +123,7 @@ function Tags() {
                         Object
                             .entries(data.tags)
                             .sort((a, b) => { return a <= b ? -1 : 1 })
-                            .map(([k, v]) => { return TagItem(k, new tags(v)) })
+                            .map(([k, v]) => { return <TagItem key={k} k={k} v={new tags(v)} /> })
                     }
 
                     <ListGroup.Item className="d-sm-flex">

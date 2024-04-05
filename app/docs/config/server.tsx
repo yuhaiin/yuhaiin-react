@@ -131,7 +131,7 @@ export const TunComponents = React.memo((props: { tun: tun, onChange: (x: tun) =
 
             <NewItemList
                 title='Routes'
-                data={props.tun.route?.routes}
+                data={props.tun.route?.routes ?? []}
                 onChange={(e) => updateState((x) => {
                     if (!x.route) x.route = new route()
                     if (!e) e = []
@@ -180,7 +180,7 @@ const TLSComponents = React.memo((props: { tls: tls_config, onChange: (x: tls_co
         <>
             <NewItemList
                 title='Next Protos'
-                data={props.tls?.nextProtos}
+                data={props.tls?.nextProtos ?? []}
                 onChange={(e) => updateState((x) => { if (e) x.nextProtos = e })}
             />
 

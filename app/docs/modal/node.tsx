@@ -74,25 +74,27 @@ function NodeModal(props: {
                 </Modal.Header>
 
                 <Modal.Body>
-                    {error ?
-                        <>
-                            <h4 className="text-center my-2">{error.code} - {error.msg}</h4>
-                            <pre className="text-center my-2 text-danger lead">{error.raw}</pre>
-                        </> :
-                        isLoading ? <Loading /> :
-                            <Point
-                                point={node ?? props.point ?? new point({})}
-                                groups={props.groups}
-                                onChange={
-                                    (props.editable) ?
-                                        (e) => {
-                                            if (!props.editable) return
-                                            if (props.hash) mutate(e, false)
-                                            if (props.point && props.onChangePoint) props.onChangePoint(e)
-                                        } : undefined
-                                }
-                            />
-                    }
+                    <fieldset disabled={!props.editable}>
+                        {error ?
+                            <>
+                                <h4 className="text-center my-2">{error.code} - {error.msg}</h4>
+                                <pre className="text-center my-2 text-danger lead">{error.raw}</pre>
+                            </> :
+                            isLoading ? <Loading /> :
+                                <Point
+                                    point={node ?? props.point ?? new point({})}
+                                    groups={props.groups}
+                                    onChange={
+                                        (props.editable) ?
+                                            (e) => {
+                                                if (!props.editable) return
+                                                if (props.hash) mutate(e, false)
+                                                if (props.point && props.onChangePoint) props.onChangePoint(e)
+                                            } : undefined
+                                    }
+                                />
+                        }
+                    </fieldset>
                 </Modal.Body>
 
                 <Modal.Footer>

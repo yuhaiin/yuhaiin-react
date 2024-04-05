@@ -36,7 +36,7 @@ const Bypass = React.memo((props: { bypass: bypass_config, onChange: (x: bypass_
             {
                 props.bypass.customRuleV3.map((value, index) => (
                     <Container
-                        key={index}
+                        key={"rule" + index}
                         title={value.tag !== "" ? value.tag : mode[value.mode]}
                         onClose={() => updateState((x) => x.customRuleV3.splice(index, 1))}
                     >

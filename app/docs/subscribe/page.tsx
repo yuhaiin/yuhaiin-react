@@ -2,9 +2,7 @@
 
 import { useContext, useState } from "react";
 import { Button, Card, Form, Row, Col, FloatingLabel, DropdownButton, Dropdown, Spinner, ButtonGroup, ButtonToolbar } from "react-bootstrap";
-import CardHeader from "react-bootstrap/esm/CardHeader";
 import Loading from "../common/loading";
-import { SettingInputText } from "../config/components";
 import { GlobalToastContext } from "../common/toast";
 import useSWR from 'swr'
 import { Fetch, ProtoESFetcher, } from '../common/proto';
@@ -54,7 +52,7 @@ function Subscribe() {
                     links.links && Object.entries(links.links)
                         .sort((a, b) => { return a <= b ? -1 : 1 })
                         .map(([k, vv]) => {
-                            return <Col className="mb-3">
+                            return <Col className="mb-3" key={k}>
                                 <Card className="h-100">
                                     <Card.Header>{vv.name}</Card.Header>
                                     <Card.Body>

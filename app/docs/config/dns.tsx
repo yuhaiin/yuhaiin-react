@@ -45,29 +45,29 @@ const DNS = React.memo((props: DNSProps) => {
 
             <Container title="Local DNS" hideClose>
                 <>
-                    <SettingInputText label='Host' value={props.data.local?.host} onChange={(v) => updateDNS((x) => { if (x.local !== undefined) x.local!!.host = v })} />
+                    <SettingInputText label='Host' value={props.data.local?.host ?? ""} onChange={(v) => updateDNS((x) => { if (x.local !== undefined) x.local!!.host = v })} />
                     <SettingDNSTypeSelect label='Type' value={props.data.local?.type} onChange={(v) => updateDNS((x) => { if (x.local !== undefined) x.local!!.type = v })} />
-                    <SettingInputText label='Subnet' value={props.data.local?.subnet} onChange={(v) => updateDNS((x) => { if (x.local !== undefined) x.local!!.subnet = v })} />
-                    <SettingInputText label='SNI' value={props.data.local?.tlsServername} onChange={(v) => updateDNS((x) => { if (x.local !== undefined) x.local!!.tlsServername = v })} />
+                    <SettingInputText label='Subnet' value={props.data.local?.subnet ?? ""} onChange={(v) => updateDNS((x) => { if (x.local !== undefined) x.local!!.subnet = v })} />
+                    <SettingInputText label='SNI' value={props.data.local?.tlsServername ?? ""} onChange={(v) => updateDNS((x) => { if (x.local !== undefined) x.local!!.tlsServername = v })} />
                 </>
             </Container>
 
             <Container title="Remote DNS" hideClose>
                 <>
                     <SettingCheck label="Use IP" checked={props.data.resolveRemoteDomain} onChange={() => updateDNS((x) => x.resolveRemoteDomain = !x.resolveRemoteDomain)} />
-                    <SettingInputText label='Host' value={props.data.remote?.host} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote!!.host = v })} />
+                    <SettingInputText label='Host' value={props.data.remote?.host ?? ""} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote!!.host = v })} />
                     <SettingDNSTypeSelect label='Type' value={props.data.remote?.type} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote!!.type = v })} />
-                    <SettingInputText label='Subnet' value={props.data.remote?.subnet} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote!!.subnet = v })} />
-                    <SettingInputText label='SNI' value={props.data.remote?.tlsServername} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote!!.tlsServername = v })} />
+                    <SettingInputText label='Subnet' value={props.data.remote?.subnet ?? ""} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote!!.subnet = v })} />
+                    <SettingInputText label='SNI' value={props.data.remote?.tlsServername ?? ""} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote!!.tlsServername = v })} />
                 </>
             </Container>
 
             <Container title="Remote DNS" hideClose>
                 <>
-                    <SettingInputText label='Host' value={props.data.bootstrap?.host} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap!!.host = v })} />
+                    <SettingInputText label='Host' value={props.data.bootstrap?.host ?? ""} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap!!.host = v })} />
                     <SettingDNSTypeSelect label='Type' value={props.data.bootstrap?.type} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap!!.type = v })} />
-                    <SettingInputText label='Subnet' value={props.data.bootstrap?.subnet} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap!!.subnet = v })} />
-                    <SettingInputText label='SNI' value={props.data.bootstrap?.tlsServername} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap!!.tlsServername = v })} />
+                    <SettingInputText label='Subnet' value={props.data.bootstrap?.subnet ?? ""} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap!!.subnet = v })} />
+                    <SettingInputText label='SNI' value={props.data.bootstrap?.tlsServername ?? ""} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap!!.tlsServername = v })} />
                 </>
             </Container>
 

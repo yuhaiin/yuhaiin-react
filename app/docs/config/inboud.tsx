@@ -6,6 +6,7 @@ import { EnumType } from "@bufbuild/protobuf";
 import { Form, Row, Col, Modal, ListGroup, InputGroup, Button, Card } from "react-bootstrap";
 import { HTTPComponents, Http2Components, MixedComponents, QuicComponents, RealityComponents, RedirComponents, Socks5Components, TProxyComponents, TlsComponents, TunComponents } from "./server";
 import { useState } from "react";
+import React from "react";
 
 function change<T>(e: T, apply?: (x: T) => void): (f: (x: T) => void) => void {
     if (!apply) return function (_: (x: T) => void) { }
@@ -87,9 +88,8 @@ export const Inbounds = (props: { inbounds: inbound_config, onChange: (x: inboun
                             Object.entries(props.inbounds.inbounds).
                                 sort((a, b) => { return a[0] <= b[0] ? -1 : 1 }).
                                 map(([k, v]) => {
-                                    return <>
+                                    return <React.Fragment key={"inbounds-" + k}>
                                         <ListGroup.Item
-                                            key={k}
                                             action
                                             className="d-flex justify-content-between align-items-center"
                                             style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
@@ -106,6 +106,8 @@ export const Inbounds = (props: { inbounds: inbound_config, onChange: (x: inboun
                                             <Button
                                                 variant='outline-danger'
                                                 size="sm"
+                                                as={"span"}
+                                                key={k + "span-button"}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     cc((x) => { delete x.inbounds[k] })
@@ -114,7 +116,7 @@ export const Inbounds = (props: { inbounds: inbound_config, onChange: (x: inboun
                                                 <i className="bi bi-x-lg"></i>
                                             </Button>
                                         </ListGroup.Item>
-                                    </>
+                                    </React.Fragment>
                                 })
                         }
                     </ListGroup>
@@ -124,18 +126,15 @@ export const Inbounds = (props: { inbounds: inbound_config, onChange: (x: inboun
                     <Form.Control value={newInbound.value} onChange={(e) => setNewInbound({ value: e.target.value })} />
                     <Button
                         variant='outline-success'
-                        onClick={
-                            (newInbound.value !== "" && props.inbounds.inbounds[newInbound.value] === undefined) ?
-                                () => {
-                                    cc((x) => x.inbounds[newInbound.value] = new inbound({ name: newInbound.value }))
-                                } : undefined
-                        }
+                        onClick={() => {
+                            if (newInbound.value !== "" && props.inbounds.inbounds[newInbound.value] === undefined)
+                                cc((x) => x.inbounds[newInbound.value] = new inbound({ name: newInbound.value }))
+                        }}
                     >
                         <i className="bi bi-plus-lg" />New </Button>
                 </InputGroup>
             </Card.Footer>
         </Card>
-
     </>
 }
 

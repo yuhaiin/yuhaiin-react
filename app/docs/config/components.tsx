@@ -15,7 +15,7 @@ export class Remind {
 
 export const SettingInputText = (props: {
     label: string,
-    value?: string | number,
+    value: string | number,
     url?: string,
     plaintext?: boolean,
     onChange?: (x: string) => void,
@@ -64,7 +64,7 @@ export const SettingInputText = (props: {
                                 value={props.value}
                                 plaintext={props.plaintext}
                                 placeholder={props.placeholder}
-                                onChange={props.onChange ? (v) => { props.onChange!(v.target.value) } : undefined}
+                                onChange={(v) => { if (props.onChange) props.onChange(v.target.value) }}
                             />
                         </>}
 
@@ -87,7 +87,7 @@ export const SettingInputTextarea = (props: { label: string, value: string | num
 
 export function NewItemList(props: {
     title: string,
-    data?: string[],
+    data: string[],
     onChange: (x: string[]) => void
 }) {
     const [newData, setNewData] = useState({ value: "" });
@@ -97,46 +97,45 @@ export function NewItemList(props: {
 
 
         {
-            props.data && props.data
-                .map((v, index) => {
-                    return (
-                        <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
-                            <InputGroup className="mb-2" >
-                                <Form.Control value={v} onChange={(e) => {
-                                    props.data![index] = e.target.value
-                                    props.onChange(props.data ? props.data : [])
-                                }} />
-                                <Button variant='outline-danger' onClick={() => {
-                                    if (props.data) {
-                                        props.data.splice(index, 1)
-                                        props.onChange(props.data)
-                                    }
-                                }}>
-                                    <i className="bi bi-x-lg" ></i>
-                                </Button>
-                            </InputGroup>
-                        </Col>
-                    )
-                })
+            props.data &&
+            props.data.map((v, index) => {
+                return (
+                    <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
+                        <InputGroup className="mb-2" >
+                            <Form.Control
+                                onChange={(e) => {
+                                    if (!props.data) return
+                                    props.data[index] = e.target.value
+                                    props.onChange(props.data)
+                                }}
+                                value={v}
+                            />
+                            <Button variant='outline-danger' onClick={() => {
+                                if (!props.data) return
+                                props.data.splice(index, 1)
+                                props.onChange(props.data)
+                            }}>
+                                <i className="bi bi-x-lg" ></i>
+                            </Button>
+                        </InputGroup>
+                    </Col>
+                )
+            })
         }
 
         <Col sm={{ span: 10, offset: props.data?.length !== 0 ? 2 : 0 }}>
             <InputGroup className="mb-2" >
                 <Form.Control value={newData.value} onChange={(e) => setNewData({ value: e.target.value })} />
                 <Button variant='outline-success' onClick={() => {
-                    if (!props.data)
-                        props.onChange([newData.value])
-                    else {
-                        props.data.push(newData.value)
-                        props.onChange(props.data)
-                    }
+                    props.data.push(newData.value)
+                    props.onChange(props.data)
                 }} >
                     <i className="bi bi-plus-lg" />
                 </Button>
             </InputGroup>
         </Col>
 
-    </Form.Group>)
+    </Form.Group >)
 }
 
 
@@ -156,7 +155,7 @@ export function NewBytesItemList(props: {
             props.data && props.data
                 .map((v, index) => {
                     return (
-                        <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
+                        <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={"bi-" + index} >
                             <InputGroup className="mb-2" >
                                 <Form.Control
                                     value={new TextDecoder().decode(v)}
