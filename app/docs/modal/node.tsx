@@ -21,9 +21,12 @@ function NodeModal(props: {
 }) {
     const ctx = useContext(GlobalToastContext);
 
+
     const { data: node, error, isLoading, mutate } = useSWR(
         (!props.point && props.hash) ? `/node` : null,
         ProtoESFetcher(new point(), "POST", new StringValue({ value: props.hash }).toBinary()))
+
+    if (props.hash === "") mutate(undefined)
 
     const Footer = () => {
         if (!props.editable) return <></>
@@ -59,7 +62,9 @@ function NodeModal(props: {
                 scrollable
                 aria-labelledby="contained-modal-title-vcenter"
                 size='xl'
-                onHide={() => { props.onHide() }}
+                onHide={() => {
+                    props.onHide()
+                }}
                 centered
             >
                 <Modal.Header closeButton>

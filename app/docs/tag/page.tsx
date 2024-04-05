@@ -91,8 +91,9 @@ function Tags() {
             <NodeModal
                 show={modalHash.show}
                 hash={modalHash.hash}
-                onHide={() => setModalHash({ ...modalHash, show: false })}
+                onHide={() => setModalHash({ ...modalHash, hash: "", show: false })}
             />
+
             <TagModal
                 show={tagModalData.show}
                 data={data}
@@ -128,7 +129,10 @@ function Tags() {
                         <Button
                             variant="outline-success"
                             className="flex-grow-1"
-                            onClick={() => setTagModalData({ show: true, tag: new save_tag_req({ tag: "new tag", hash: "", type: tag_type.node }), new: true })}
+                            onClick={() => setTagModalData({
+                                show: true,
+                                tag: new save_tag_req({ tag: "new tag", hash: "", type: tag_type.node }), new: true
+                            })}
                         >
                             <i className="bi bi-plus-lg" />New
                         </Button>

@@ -168,7 +168,7 @@ const ListGroupItem = React.memo((props: { itemKey: string, itemValue: string, }
                 show={modalHash.show}
                 hash={modalHash.hash}
                 editable={false}
-                onHide={() => setModalHash({ ...modalHash, show: false })}
+                onHide={() => setModalHash({ ...modalHash, hash: "", show: false })}
             />
 
             <ListGroup.Item>

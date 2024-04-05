@@ -33,8 +33,6 @@ export const Point = (props: {
 
     const [newProtocol, setNewProtocol] = useState({ value: "simple" });
 
-    console.log(props.groups)
-
     return <>
         <SettingInputText
             label="Name"
