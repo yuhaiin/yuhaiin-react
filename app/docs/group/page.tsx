@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useContext, useState } from "react";
-import { Row, Col, ButtonGroup, Button, Dropdown, Card, ListGroup, Badge, Spinner } from "react-bootstrap";
+import { Row, Col, ButtonGroup, Button, Dropdown, Card, ListGroup, Badge, Spinner, DropdownButton } from "react-bootstrap";
 import NodeModal, { NodeJsonModal } from "../modal/node";
 import Loading from "../common/loading";
 import { GlobalToastContext } from "../common/toast";
@@ -39,11 +39,140 @@ type Latency = {
     udpOnLoading?: boolean
 }
 
+const Item = React.memo((props: {
+    title: string,
+    hash: string,
+    latency: Latency,
+    onChangeLatency: (x: Latency) => void
+    onClickEdit: () => void
+}) => {
+    const ctx = useContext(GlobalToastContext);
+    const updateTestingStatus = (modify: (x: Latency) => void) => {
+        modify(props.latency)
+        props.onChangeLatency(props.latency)
+    }
+
+    const latency = (protocol: protocol, onFinish: (r: string) => void) => {
+        Fetch<string>("/latency", {
+            body: new requests({
+                requests: [{
+                    hash: props.hash,
+                    id: "latency",
+                    ipv6: LatencyIPv6,
+                    protocol: protocol
+                }]
+            }).toBinary(),
+            process: async (r) => {
+                let resp = new response().fromBinary(new Uint8Array(await r.arrayBuffer()));
+                const t = resp.idLatencyMap["latency"]
+                if (t && (t.nanos !== 0 || t.seconds !== BigInt(0))) return durationToStroing(Number(t.seconds), t.nanos)
+                return "timeout"
+            }
+        }).then(async ({ data, error }) => {
+            let duration = "timeout";
+            if (!error && data) duration = await data;
+            onFinish(duration)
+        })
+    }
+
+    return <Col className="mb-3">
+        <Card className="h-100">
+            <Card.Header>
+                {props.title}
+            </Card.Header>
+            <Card.Body>
+                <ListGroup variant="flush">
+
+                    <ListGroup.Item>
+
+                        <div className="d-sm-flex">
+                            <div className="endpoint-name flex-grow-1 notranslate">TCP</div>
+                            <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-download">{props.latency.tcp ?? "N/A"}</div>
+                        </div>
+                    </ListGroup.Item>
+
+
+                    <ListGroup.Item>
+                        <div className="d-sm-flex">
+                            <div className="endpoint-name flex-grow-1 notranslate">UDP</div>
+                            <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.udp ?? "N/A"}</div>
+                        </div>
+                    </ListGroup.Item>
+
+                    <ListGroup.Item>
+                        <ButtonGroup className="d-sm-flex">
+                            <DropdownButton
+                                onSelect={
+                                    async (key) => {
+                                        Fetch(
+                                            `/node`,
+                                            {
+                                                method: "PUT",
+                                                body: new use_req({
+                                                    tcp: key === "tcp" || key === "tcpudp",
+                                                    udp: key === "udp" || key === "tcpudp",
+                                                    hash: props.hash,
+                                                }).toBinary()
+                                            }
+                                        ).then(async ({ error }) => {
+                                            if (error !== undefined) ctx.Error(`change node failed, ${error.code}| ${await error.msg}`)
+                                            else ctx.Info(`Change ${key} Node To ${props.hash} Successful`)
+                                        })
+                                    }
+                                }
+                                as={ButtonGroup}
+                                variant="outline-primary"
+                                title="USE"
+                            >
+                                <Dropdown.Item eventKey={"tcpudp"}>TCP&UDP</Dropdown.Item>
+                                <Dropdown.Item eventKey={"tcp"}>TCP</Dropdown.Item>
+                                <Dropdown.Item eventKey={"udp"}>UDP</Dropdown.Item>
+                            </DropdownButton>
+                            <Button variant="outline-primary" onClick={props.onClickEdit}>Edit</Button>
+                            <Button
+                                variant="outline-success"
+                                disabled={props.latency.tcpOnLoading || props.latency.udpOnLoading}
+                                onClick={async () => {
+                                    updateTestingStatus((v) => { v.tcpOnLoading = true; v.udpOnLoading = true })
+                                    latency(
+                                        new protocol({ protocol: { case: "http", value: new http({ url: LatencyHTTPUrl }) } }),
+                                        (r) => { updateTestingStatus(async (v) => { v.tcpOnLoading = false; v.tcp = r }) })
+                                    latency(
+                                        new protocol({ protocol: { case: "dnsOverQuic", value: new dns_over_quic({ host: LatencyDNSUrl, targetDomain: "www.google.com" }) } }),
+                                        (r) => { updateTestingStatus(async (v) => { v.udpOnLoading = false; v.udp = r }) })
+                                }
+                                }
+                            >
+
+                                {(props.latency.tcpOnLoading || props.latency.udpOnLoading) &&
+                                    <Spinner size="sm" animation="border" variant="success" />}
+                                Test
+                            </Button>
+                        </ButtonGroup>
+                    </ListGroup.Item>
+                </ListGroup>
+            </Card.Body>
+        </Card>
+    </Col>
+})
+
+class ModalData {
+    point: point
+    hash: string
+    show: boolean
+    onDelete?: () => void
+
+    constructor(data?: Partial<ModalData>) {
+        this.point = data?.point ?? new point({})
+        this.hash = data?.hash ?? ""
+        this.show = data?.show ?? false
+        this.onDelete = data?.onDelete
+    }
+}
 function Group() {
     const ctx = useContext(GlobalToastContext);
-    const [selectNode, setSelectNode] = useState("");
     const [currentGroup, setCurrentGroup] = useState("Select...");
-    const [modalData, setModalData] = useState({ point: new point({}), hash: "", show: false });
+    const [modalData, setModalData] = useState(new ModalData());
     const [importJson, setImportJson] = useState({ data: false });
     const [latency, setLatency] = useState<{ [key: string]: Latency }>({})
 
@@ -52,125 +181,6 @@ function Group() {
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || data === undefined) return <Loading />
 
-    const NodeItem = React.memo((props: { hash: string, latency: Latency | undefined }) => {
-        const getStr = (s: string | undefined) => s === undefined ? "N/A" : s
-
-        const updateTestingStatus = (modify: (x: Latency) => void) => {
-            setLatency((latency) => {
-                let data = latency[props.hash]
-                if (data === undefined || data === null) data = { tcp: "N/A", udp: "N/A", }
-                modify(data)
-                latency[props.hash] = data
-                return { ...latency }
-            })
-        }
-
-        const latency = (protocol: protocol, onFinish: (r: string) => void) => {
-            Fetch<string>("/latency", {
-                body: new requests({
-                    requests: [{
-                        hash: props.hash,
-                        id: "latency",
-                        ipv6: LatencyIPv6,
-                        protocol: protocol
-                    }]
-                }).toBinary(),
-                process: async (r) => {
-                    let resp = new response().fromBinary(new Uint8Array(await r.arrayBuffer()));
-                    const t = resp.idLatencyMap["latency"]
-                    if (t && (t.nanos !== 0 || t.seconds !== BigInt(0))) return durationToStroing(Number(t.seconds), t.nanos)
-                    return "timeout"
-                }
-            }).then(async ({ data, error }) => {
-                let duration = "timeout";
-                if (!error && data) duration = await data;
-                onFinish(duration)
-            })
-        }
-
-        const TestButton = () => {
-            if (props.latency?.tcpOnLoading || props.latency?.udpOnLoading)
-                return <Spinner animation="border" size="sm" />
-            return <a href="#empty"
-                onClick={async () => {
-                    updateTestingStatus((v) => { v.tcpOnLoading = true; v.udpOnLoading = true })
-                    latency(
-                        new protocol({
-                            protocol: {
-                                case: "http",
-                                value: new http({ url: LatencyHTTPUrl })
-                            }
-                        }),
-                        (r) => { updateTestingStatus(async (v) => { v.tcpOnLoading = false; v.tcp = r }) })
-                    latency(
-                        new protocol({
-                            protocol: {
-                                case: "dnsOverQuic",
-                                value: new dns_over_quic({
-                                    host: LatencyDNSUrl,
-                                    targetDomain: "www.google.com"
-                                })
-                            }
-                        }),
-                        (r) => { updateTestingStatus(async (v) => { v.udpOnLoading = false; v.udp = r }) })
-                }}>
-                Test
-            </a>
-        }
-
-        return <>
-            <Badge className="rounded-pill bg-light text-dark ms-1 text-uppercase">
-                tcp: {getStr(props.latency?.tcp)}
-            </Badge>
-            <Badge className="rounded-pill bg-light text-dark ms-1 me-1 text-uppercase">
-                udp:{getStr(props.latency?.udp)}
-            </Badge>
-            <TestButton />
-        </>
-    })
-
-    const Nodes = React.memo((props: { nodes?: { [key: string]: string } | null }) => {
-        let entries = Object.entries((props.nodes !== undefined && props.nodes !== null) ? props.nodes : {});
-
-        if (entries.length === 0)
-            return <Card.Body>
-                <div className="text-center my-2" style={{ opacity: '0.4' }}>グールプはまだ指定されていません。</div>
-            </Card.Body>
-
-        return <ListGroup variant="flush">
-            {
-                entries
-                    .sort((a, b) => { return a <= b ? -1 : 1 })
-                    .map(([k, v]) => {
-                        return <ListGroup.Item
-                            key={v}
-                            as={"label"}
-                            style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
-                        >
-                            <input
-                                className="form-check-input me-1"
-                                type="radio"
-                                name="select_node"
-                                value={v}
-                                onChange={(e) => { setSelectNode(e.target.value) }}
-                                checked={selectNode === v}
-                            />
-                            <a href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    if (!data.nodes) return
-                                    setModalData({ point: data.nodes[v], hash: v, show: true })
-                                }}
-                            >
-                                {k}
-                            </a>
-                            <NodeItem hash={v} latency={latency[v]} />
-                        </ListGroup.Item>
-                    })
-            }
-        </ListGroup>
-    })
-
 
     return (
         <>
@@ -178,6 +188,7 @@ function Group() {
                 show={modalData.show}
                 hash={modalData.hash}
                 point={modalData.point}
+                onDelete={modalData.onDelete}
                 onChangePoint={(v) => { setModalData(prev => { return { ...prev, point: v } }) }}
                 editable
                 onHide={() => setModalData({ ...modalData, show: false })}
@@ -211,89 +222,82 @@ function Group() {
                                 }
                             </Dropdown.Menu>
                         </Dropdown>
+
+
+                        <ButtonGroup className="ms-2">
+                            <Button
+                                variant="outline-success"
+                                onClick={() => {
+                                    setModalData({
+                                        point: new point({
+                                            group: "template_group",
+                                            name: "template_name",
+                                            origin: origin.manual,
+                                        }),
+                                        hash: "new node",
+                                        show: true,
+                                        onDelete: undefined
+                                    })
+                                }}
+                            >
+                                New
+                            </Button>
+
+                            <Button
+                                variant="outline-success"
+                                onClick={() => { setImportJson({ data: true }) }}
+                            >Import</Button>
+
+                        </ButtonGroup>
                     </Col>
                 </Row>
 
-                <Card className="mb-3">
-                    <Nodes nodes={(currentGroup && data.groupsV2) ? data.groupsV2[currentGroup]?.nodesV2 : undefined} />
-                    <Card.Header>
-                        <Dropdown
-                            onSelect={
-                                async (key) => {
-                                    Fetch(
-                                        `/node`,
-                                        {
-                                            method: "PUT",
-                                            body: new use_req({
-                                                tcp: key === "tcp" || key === "tcpudp",
-                                                udp: key === "udp" || key === "tcpudp",
-                                                hash: selectNode,
-                                            }).toBinary()
-                                        }
-                                    ).then(async ({ error }) => {
-                                        if (error !== undefined) ctx.Error(`change node failed, ${error.code}| ${await error.msg}`)
-                                        else ctx.Info(`Change${key} Node To ${selectNode} Successful`)
-                                    })
+                {
+                    (currentGroup && data.groupsV2 && data.groupsV2[currentGroup]) ?
+                        <>
+                            <Row className="row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
+                                {
+                                    Object.entries(data.groupsV2[currentGroup].nodesV2).
+                                        sort((a, b) => { return a <= b ? -1 : 1 }).
+                                        map(([k, v]) => {
+                                            return <Item
+                                                hash={v}
+                                                title={k}
+                                                key={k}
+                                                latency={latency[v] ?? {}}
+                                                onChangeLatency={(e) => { setLatency(prev => { return { ...prev, [v]: e } }) }}
+                                                onClickEdit={() => {
+                                                    if (data.nodes)
+                                                        setModalData({
+                                                            point: data.nodes[v],
+                                                            hash: v,
+                                                            show: true,
+                                                            onDelete: () => {
+                                                                Fetch(
+                                                                    `/node`,
+                                                                    {
+                                                                        method: "DELETE",
+                                                                        body: new StringValue({ value: v }).toBinary()
+                                                                    }
+                                                                ).then(async ({ error }) => {
+                                                                    if (error !== undefined) {
+                                                                        ctx.Error(`Delete Node ${v} Failed ${error.code}| ${await error.msg}`)
+                                                                    } else {
+                                                                        ctx.Info(`Delete Node ${v} Successful.`)
+                                                                        mutate()
+                                                                    }
+                                                                })
+                                                            }
+                                                        })
+                                                }}
+                                            />
+                                        })
                                 }
-                            }
-                        >
-                            <ButtonGroup>
-                                <ButtonGroup>
-                                    <Dropdown.Toggle variant="outline-primary">USE</Dropdown.Toggle>
-                                    <Dropdown.Menu>
-                                        <Dropdown.Item eventKey={"tcpudp"}>TCP&UDP</Dropdown.Item>
-                                        <Dropdown.Item eventKey={"tcp"}>TCP</Dropdown.Item>
-                                        <Dropdown.Item eventKey={"udp"}>UDP</Dropdown.Item>
-                                    </Dropdown.Menu>
-                                </ButtonGroup>
-                                <Button
-                                    variant="outline-success"
-                                    onClick={() => {
-                                        setModalData({
-                                            point: new point({
-                                                group: "template_group",
-                                                name: "template_name",
-                                                origin: origin.manual,
-                                            }),
-                                            hash: "new node",
-                                            show: true
-                                        })
-                                    }}
-                                >
-                                    New
-                                </Button>
+                            </Row>
+                        </>
+                        : <></>
+                }
 
-                                <Button
-                                    variant="outline-success"
-                                    onClick={() => { setImportJson({ data: true }) }}
-                                >Import</Button>
-
-                                <Button
-                                    variant="outline-danger"
-                                    onClick={() => {
-                                        Fetch(
-                                            `/node`,
-                                            {
-                                                method: "DELETE",
-                                                body: new StringValue({ value: selectNode }).toBinary()
-                                            }
-                                        ).then(async ({ error }) => {
-                                            if (error !== undefined) {
-                                                ctx.Error(`Delete Node ${selectNode} Failed ${error.code}| ${await error.msg}`)
-                                            } else {
-                                                ctx.Info(`Delete Node ${selectNode} Successful.`)
-                                                mutate()
-                                            }
-                                        })
-                                    }}
-                                >
-                                    DELETE
-                                </Button>
-                                {/* <Button variant="outline-primary" onClick={() => console.log("add new node")}>Add New Node</Button> */}
-                            </ButtonGroup>
-                        </Dropdown>
-                    </Card.Header>
-                </Card>
             </div >
         </>
     );

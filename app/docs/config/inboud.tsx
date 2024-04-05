@@ -28,6 +28,7 @@ export const InboundModal = (
         <>
             <Modal
                 show={props.show}
+                scrollable
                 aria-labelledby="contained-modal-title-vcenter"
                 size='xl'
                 onHide={() => { props.onHide() }}
@@ -89,26 +90,26 @@ export const Inbounds = (props: { inbounds: inbound_config, onChange: (x: inboun
                                     return <>
                                         <ListGroup.Item
                                             key={k}
-                                            as={"label"}
+                                            action
                                             className="d-flex justify-content-between align-items-center"
                                             style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setModalData({
+                                                    show: true,
+                                                    inbound: v,
+                                                    onChange: (e: inbound) => { cc((x) => x.inbounds[k] = e) }
+                                                })
+                                            }}
                                         >
-                                            <Button
-                                                variant="link"
-                                                onClick={() => {
-                                                    setModalData({
-                                                        show: true,
-                                                        inbound: v,
-                                                        onChange: (e: inbound) => { cc((x) => x.inbounds[k] = e) }
-                                                    })
-                                                }}
-                                            >
-                                                {k}
-                                            </Button>
+                                            {k}
                                             <Button
                                                 variant='outline-danger'
                                                 size="sm"
-                                                onClick={() => { cc((x) => { delete x.inbounds[k] }) }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    cc((x) => { delete x.inbounds[k] })
+                                                }}
                                             >
                                                 <i className="bi bi-x-lg"></i>
                                             </Button>

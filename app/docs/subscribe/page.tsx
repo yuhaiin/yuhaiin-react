@@ -34,17 +34,20 @@ function Subscribe() {
                             .map(([k, vv]) => {
                                 const v = new link(vv);
                                 return (
-                                    <ListGroup.Item as={"label"} style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }} key={v.name}>
+                                    <ListGroup.Item
+                                        style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
+                                        key={v.name}
+                                        action
+                                        as={"button"}
+                                        onClick={() => {
+                                            checked[v.name] = !checked[v.name]
+                                            setChecked({ ...checked })
+                                        }}
+                                    >
                                         <Form.Check
                                             inline
                                             type="checkbox"
-                                            checked={checked[v.name] !== undefined && checked[v.name]}
-                                            onChange={(e) => {
-                                                setChecked((c) => {
-                                                    c[v.name] = e.target.checked
-                                                    return { ...c }
-                                                });
-                                            }}
+                                            checked={checked[v.name]}
                                         />
 
                                         <OverlayTrigger trigger="click" placement="auto-end" overlay={<Popover><Popover.Body>{v.url}</Popover.Body></Popover>}>

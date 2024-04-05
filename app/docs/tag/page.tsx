@@ -26,16 +26,18 @@ function Tags() {
 
     const TagItem = (k: string, v: tags) => {
         return (
-            <ListGroup.Item style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }} key={k}>
-                <div className="d-flex flex-wrap">
-                    <a className="text-decoration-none"
-                        href="#empty"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            setSaveTag((x) => { return new save_tag_req({ ...x, tag: k }) })
-                        }}
-                    >{k}</a>
-                    <Badge className="rounded-pill bg-light text-dark text-truncate ms-1">
+            <ListGroup.Item
+                className="align-items-center d-flex justify-content-between"
+                style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
+                key={k}
+                action
+                onClick={(e) => {
+                    setSaveTag((x) => { return new save_tag_req({ ...x, tag: k }) })
+                }}
+            >
+                <div>
+                    {k}
+                    <Badge className="rounded-pill bg-light text-dark ms-1">
                         {v.hash.length === 0 || v.hash[0] === ""
                             ?
                             <>Fallback <i className="bi bi-heart-arrow"></i> Global</>
@@ -45,31 +47,41 @@ function Tags() {
                                 <>Mirror <i className="bi bi-arrow-right"></i> {v.hash}</>
                                 :
                                 <>Target <i className="bi bi-arrow-right"></i>
-                                    <a className="text-truncate" href="#" onClick={(e) => { e.preventDefault(); setModalHash({ hash: v.hash[0], show: true }) }} >{v.hash}</a></>
+                                    <a
+                                        className="text-truncate"
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setModalHash({ hash: v.hash[0], show: true })
+                                        }} >
+                                        {v.hash}
+                                    </a>
+                                </>
                         }
                     </Badge>
-
-                    <a
-                        className="text-decoration-none ms-auto text-truncate"
-                        href='#empty'
-                        onClick={(e) => {
-                            e.preventDefault();
-                            Fetch("/tag", {
-                                method: "DELETE",
-                                body: new StringValue({ value: k }).toBinary()
-                            })
-                                .then(async ({ error }) => {
-                                    if (error !== undefined) ctx.Error(`delete tag ${k} failed, ${error.code}| ${await error.msg}`)
-                                    else {
-                                        ctx.Info(`delete tag ${k} success`);
-                                        await mutate();
-                                    }
-                                })
-                        }}
-                    >
-                        <i className="bi-trash"></i>DELETE
-                    </a>
                 </div>
+
+                <Button
+                    variant="outline-danger"
+                    size="sm"
+                    onClick={(e) => {
+                        e.stopPropagation();
+
+                        Fetch("/tag", {
+                            method: "DELETE",
+                            body: new StringValue({ value: k }).toBinary()
+                        })
+                            .then(async ({ error }) => {
+                                if (error !== undefined) ctx.Error(`delete tag ${k} failed, ${error.code}| ${await error.msg}`)
+                                else {
+                                    ctx.Info(`delete tag ${k} success`);
+                                    await mutate();
+                                }
+                            })
+                    }}
+                >
+                    <i className="bi-trash"></i></Button>
             </ListGroup.Item>
         )
     }

@@ -1,9 +1,8 @@
 import { useContext, useState } from "react";
-import { Button, Modal, Form, Badge } from "react-bootstrap";
+import { Button, Modal, Form, DropdownButton, Dropdown, ButtonGroup } from "react-bootstrap";
 import useSWR from 'swr'
 import { Fetch, ProtoESFetcher } from '../common/proto';
 import Loading from "../common/loading";
-import Error from 'next/error';
 import { GlobalToastContext } from "../common/toast";
 import { point } from "../pbes/node/point/point_pb";
 import { StringValue } from "@bufbuild/protobuf";
@@ -18,6 +17,7 @@ function NodeModal(props: {
     onHide: () => void,
     onSave?: () => void,
     groups?: string[],
+    onDelete?: () => void
 }) {
     const ctx = useContext(GlobalToastContext);
 
@@ -56,6 +56,7 @@ function NodeModal(props: {
         <>
             <Modal
                 show={props.show}
+                scrollable
                 aria-labelledby="contained-modal-title-vcenter"
                 size='xl'
                 onHide={() => { props.onHide() }}
@@ -90,6 +91,22 @@ function NodeModal(props: {
                 </Modal.Body>
 
                 <Modal.Footer>
+                    {props.onDelete &&
+                        <DropdownButton
+                            onSelect={(event) => {
+                                if (event === "ok" && props.onDelete) {
+                                    props.onHide();
+                                    props.onDelete();
+                                }
+                            }}
+                            as={ButtonGroup}
+                            variant="outline-danger"
+                            title="Remove"
+                        >
+                            <Dropdown.Item eventKey={"ok"}>OK</Dropdown.Item>
+                            <Dropdown.Item eventKey={"cancel"}>Cancel</Dropdown.Item>
+                        </DropdownButton>
+                    }
                     {(!error && !isLoading) &&
                         <Button
                             variant="outline-info"

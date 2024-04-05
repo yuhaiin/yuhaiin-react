@@ -1,4 +1,4 @@
-import { Row, Form, Card, Col, InputGroup, Button, DropdownItem, DropdownButton } from "react-bootstrap"
+import { Row, Form, Card, Col, InputGroup, Button, DropdownItem, DropdownButton, DropdownMenu, Dropdown } from "react-bootstrap"
 import { useState } from "react";
 
 export class Remind {
@@ -27,23 +27,26 @@ export const SettingInputText = (props: {
     const dropdown = () => {
         if (!props.reminds || !props.reminds.length) return <></>
 
-        return <DropdownButton variant='outline-secondary' title={""} >
-            {
-                props.reminds.map((v) => {
-                    return <DropdownItem
-                        key={v.value}
-                        onClick={() => props.onChange && props.onChange(v.value)}>
-                        <b>{v.label}</b>
-                        {
-                            v.label_children &&
-                            v.label_children.map((vv) => {
-                                return <div key={vv}><span className="text-body-secondary">{vv}</span></div>
-                            })
-                        }
-                    </DropdownItem>
-                })
-            }
-        </DropdownButton>
+        return <Dropdown>
+            <Dropdown.Toggle variant='outline-secondary' id="dropdown-basic" />
+            <DropdownMenu style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                {
+                    props.reminds.map((v) => {
+                        return <DropdownItem
+                            key={v.value}
+                            onClick={() => props.onChange && props.onChange(v.value)}>
+                            <b>{v.label}</b>
+                            {
+                                v.label_children &&
+                                v.label_children.map((vv) => {
+                                    return <div key={vv}><span className="text-body-secondary">{vv}</span></div>
+                                })
+                            }
+                        </DropdownItem>
+                    })
+                }
+            </DropdownMenu>
+        </Dropdown>
 
     }
     return (
@@ -208,7 +211,7 @@ export function ItemList(props: {
     data: string[] | null | undefined,
 }) {
 
-    return <Form.Group as={Row} lassName={props.mb ? props.mb : "mb-2"}>
+    return <Form.Group as={Row} className={props.mb ? props.mb : "mb-2"}>
 
         <Form.Label column sm={2} className="nowrap">{props.title}</Form.Label>
 
