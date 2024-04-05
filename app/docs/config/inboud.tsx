@@ -231,7 +231,7 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
                                     }
                                 })}
                             >
-                                Add
+                                <i className="bi bi-plus-lg" />Add
                             </Button>
                         </InputGroup>
                     </ListGroup.Item>

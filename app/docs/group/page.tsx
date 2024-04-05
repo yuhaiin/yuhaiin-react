@@ -85,7 +85,7 @@ const NodeItem = React.memo((props: {
 
 
     return <Col className="mb-3">
-        <Card className="h-100 shadow">
+        <Card className="h-100 shadow-sm">
             <Card.Header>
                 {props.title}
             </Card.Header>

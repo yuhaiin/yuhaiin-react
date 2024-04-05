@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useContext } from "react";
-import { Badge, Button, Card, FloatingLabel, Form, InputGroup, ListGroup } from "react-bootstrap";
+import { Badge, Button, ButtonGroup, Card, FloatingLabel, Form, ListGroup, Modal, ToggleButton } from "react-bootstrap";
 import Loading from "../common/loading";
 import useSWR from 'swr'
 import { Fetch, NewObject, ProtoESFetcher } from '../common/proto';
@@ -15,10 +15,9 @@ import { StringValue } from "@bufbuild/protobuf";
 
 function Tags() {
     const ctx = useContext(GlobalToastContext);
-    const [currentGroup, setCurrentGroup] = useState("");
-    const [saveTag, setSaveTag] = useState<save_tag_req>(new save_tag_req({ tag: "", hash: "", type: tag_type.node }));
     const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoESFetcher<manager>(new manager()))
     const [modalHash, setModalHash] = useState({ hash: "", show: false });
+    const [tagModalData, setTagModalData] = useState({ show: false, tag: new save_tag_req({ tag: "", hash: "", type: tag_type.node }), new: true });
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
 
@@ -32,7 +31,7 @@ function Tags() {
                 key={k}
                 action
                 onClick={(e) => {
-                    setSaveTag((x) => { return new save_tag_req({ ...x, tag: k }) })
+                    setTagModalData({ show: true, tag: new save_tag_req({ tag: k, hash: v.hash[0], type: v.type }), new: false })
                 }}
             >
                 <div>
@@ -94,6 +93,27 @@ function Tags() {
                 hash={modalHash.hash}
                 onHide={() => setModalHash({ ...modalHash, show: false })}
             />
+            <TagModal
+                show={tagModalData.show}
+                data={data}
+                tag={tagModalData.tag}
+                onChangeTag={(x) => setTagModalData({ ...tagModalData, tag: x })}
+                new={tagModalData.new}
+                onHide={() => setTagModalData({ ...tagModalData, show: false })}
+                onSave={() => {
+                    if (tagModalData.tag.tag === "" || tagModalData.tag.hash === "") return
+                    Fetch("/tag", { body: tagModalData.tag.toBinary() })
+                        .then(async ({ error }) => {
+                            if (error !== undefined) ctx.Error(`save tag ${tagModalData.tag.tag} failed, ${error.code}| ${await error.msg}`)
+                            else {
+                                ctx.Info(`Set tag ${tagModalData.tag.tag} to ${tagModalData.tag.hash} successful`);
+                                await mutate();
+                            }
+                            setTagModalData({ ...tagModalData, show: false })
+                        })
+                }}
+            />
+
             <Card className="mb-3">
 
                 <ListGroup variant="flush">
@@ -103,104 +123,155 @@ function Tags() {
                             .sort((a, b) => { return a <= b ? -1 : 1 })
                             .map(([k, v]) => { return TagItem(k, new tags(v)) })
                     }
+
+                    <ListGroup.Item className="d-sm-flex">
+                        <Button
+                            variant="outline-success"
+                            className="flex-grow-1"
+                            onClick={() => setTagModalData({ show: true, tag: new save_tag_req({ tag: "new tag", hash: "", type: tag_type.node }), new: true })}
+                        >
+                            <i className="bi bi-plus-lg" />New
+                        </Button>
+                    </ListGroup.Item>
+
                 </ListGroup>
             </Card >
 
-            < Card className="mb-3" >
-                <Card.Body>
-                    <InputGroup className="mb-3">
-                        <Form.Check inline
-                            type="radio"
-                            onChange={() => { setSaveTag((x) => { return new save_tag_req({ ...x, type: tag_type.node, hash: "" }) }) }}
-                            checked={saveTag.type === tag_type.node}
-                            label="Node"
-                        />
-                        <Form.Check inline
-                            type="radio"
-                            onChange={() => { setSaveTag((x) => { return new save_tag_req({ ...x, type: tag_type.mirror, hash: "" }) }) }}
-                            checked={saveTag.type === tag_type.mirror}
-                            label="Mirror"
-                        />
-                    </InputGroup>
-
-                    <FloatingLabel label="Tag" className="mb-2" >
-                        <Form.Control placeholder="Tag" aria-label="Tag" aria-describedby="basic-addon1"
-                            value={saveTag.tag}
-                            onChange={(e) => { setSaveTag((x) => { return new save_tag_req({ ...x, tag: e.target.value }) }) }}
-                        ></Form.Control>
-                    </FloatingLabel>
-
-                    {saveTag.type === tag_type.node ?
-                        <>
-                            <FloatingLabel label="Group" className="mb-2" >
-                                <Form.Select defaultValue={""}
-                                    onChange={(e) => setCurrentGroup(e.target.value)}>
-                                    <option>Choose...</option>
-                                    {
-                                        Object
-                                            .keys(data.groupsV2)
-                                            .sort((a, b) => { return a <= b ? -1 : 1 })
-                                            .map((k) => {
-                                                return (<option value={k} key={k}>{k}</option>)
-                                            })
-                                    }
-                                </Form.Select>
-                            </FloatingLabel>
-
-                            <FloatingLabel label="Node" className="mb-2" >
-                                <Form.Select defaultValue={""}
-                                    onChange={(e) => { setSaveTag((x) => { return new save_tag_req({ ...x, hash: e.target.value }) }) }}>
-                                    <option value="">Choose...</option>
-                                    {
-                                        Object
-                                            .entries(NewObject(data.groupsV2[currentGroup]?.nodesV2))
-                                            .sort((a, b) => { return a <= b ? -1 : 1 })
-                                            .map(([k, v]) => {
-                                                return (<option value={v} key={k}>{k}</option>)
-                                            })
-                                    }
-                                </Form.Select>
-                            </FloatingLabel>
-                        </>
-                        :
-                        <FloatingLabel label="Mirror" className="mb-2" >
-                            <Form.Select defaultValue={""}
-                                onChange={(e) => { setSaveTag((x) => { return new save_tag_req({ ...x, hash: e.target.value }) }) }}
-                            >
-                                <option value="">Choose...</option>
-                                {
-                                    Object
-                                        .keys(data.tags)
-                                        .sort((a, b) => { return a <= b ? -1 : 1 })
-                                        .map((k) => {
-                                            return (<option value={k} key={k}>{k}</option>)
-                                        })
-                                }
-                            </Form.Select>
-                        </FloatingLabel>
-                    }
-                    <Button
-                        variant="outline-primary"
-                        onClick={() => {
-                            if (saveTag.tag === "" || saveTag.hash === "") return
-                            Fetch("/tag", { body: saveTag.toBinary() })
-                                .then(async ({ error }) => {
-                                    if (error !== undefined) ctx.Error(`save tag ${saveTag.tag} failed, ${error.code}| ${await error.msg}`)
-                                    else {
-                                        ctx.Info(`Set tag ${saveTag.tag} to ${saveTag.hash} successful`);
-                                        await mutate();
-                                    }
-                                })
-
-                        }}
-                    >
-                        Save
-                    </Button>
-
-                </Card.Body>
-            </Card >
         </>
     )
+}
+
+
+const TagModal = (props: {
+    show: boolean,
+    data: manager,
+    tag: save_tag_req,
+    new?: boolean,
+    onHide: () => void,
+    onSave: () => void,
+    onChangeTag: (x: save_tag_req) => void
+}) => {
+    return <>
+        <Modal show={props.show} onHide={() => { props.onHide() }}>
+            <Modal.Header closeButton>{props.tag.tag}</Modal.Header>
+            <Modal.Body>
+                <ButtonGroup className="mb-3 d-flex">
+                    <ToggleButton
+                        id="toggle-node"
+                        type="radio"
+                        variant="outline-primary"
+                        value={tag_type.node}
+                        onChange={() => { props.tag.type = tag_type.node; props.onChangeTag(props.tag) }}
+                        checked={props.tag.type === tag_type.node}
+                    >
+                        Node
+                    </ToggleButton>
+                    <ToggleButton
+                        id="toggle-mirror"
+                        type="radio"
+                        variant="outline-primary"
+                        value={tag_type.mirror}
+                        onChange={() => { props.tag.type = tag_type.mirror; props.onChangeTag(props.tag) }}
+                        checked={props.tag.type === tag_type.mirror}
+                    >
+                        Mirror
+                    </ToggleButton>
+                </ButtonGroup>
+
+                {props.new &&
+                    <FloatingLabel label="Tag" className="mb-2" >
+                        <Form.Control placeholder="Tag" aria-label="Tag" aria-describedby="basic-addon1"
+                            value={props.tag.tag}
+                            onChange={(e) => { props.tag.tag = e.target.value; props.onChangeTag(props.tag) }}
+                        ></Form.Control>
+                    </FloatingLabel>
+                }
+                {
+                    props.tag.type == tag_type.mirror ?
+                        <>
+                            <Mirror data={props.data} value={props.tag.hash} onChangeMirror={(x) => { props.tag.hash = x; props.onChangeTag(props.tag) }} />
+                        </> :
+                        <>
+                            <Node data={props.data}
+                                hash={props.tag.hash}
+                                onChangeNode={(x) => { props.tag.hash = x; props.onChangeTag(props.tag) }}
+                            />
+                        </>
+                }
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="outline-secondary" onClick={() => { props.onHide() }}>Close</Button>
+                <Button
+                    variant="outline-primary"
+                    onClick={() => { props.onSave() }}
+                >
+                    Save
+                </Button>
+            </Modal.Footer>
+        </Modal>
+    </>
+}
+
+const Node = (props: {
+    hash: string,
+    data: manager,
+    onChangeNode: (x: string) => void
+}) => {
+    const [group, setGroup] = useState({ data: props.data.nodes[props.hash]?.group ?? "" })
+
+    return <>
+        <FloatingLabel label="Group" className="mb-2" >
+            <Form.Select defaultValue={group.data}
+                onChange={(e) => setGroup({ data: e.target.value })}>
+                <option>Choose...</option>
+                {
+                    Object
+                        .keys(props.data.groupsV2)
+                        .sort((a, b) => { return a <= b ? -1 : 1 })
+                        .map((k) => {
+                            return (<option value={k} key={k}>{k}</option>)
+                        })
+                }
+            </Form.Select>
+        </FloatingLabel>
+
+        <FloatingLabel label="Node" className="mb-2" >
+            <Form.Select defaultValue={props.hash}
+                onChange={(e) => { props.onChangeNode(e.target.value) }}>
+                <option value="">Choose...</option>
+                {
+                    Object
+                        .entries(NewObject(props.data.groupsV2[group.data]?.nodesV2))
+                        .sort((a, b) => { return a <= b ? -1 : 1 })
+                        .map(([k, v]) => {
+                            return (<option value={v} key={k}>{k}</option>)
+                        })
+                }
+            </Form.Select>
+        </FloatingLabel>
+    </>
+}
+
+const Mirror = (props: {
+    value: string,
+    data: manager,
+    onChangeMirror: (x: string) => void
+}) => {
+    return <FloatingLabel label="Mirror" className="mb-2" >
+        <Form.Select defaultValue={props.value}
+            onChange={(e) => { props.onChangeMirror(e.target.value) }}
+        >
+            <option value="">Choose...</option>
+            {
+                Object
+                    .keys(props.data.tags)
+                    .sort((a, b) => { return a <= b ? -1 : 1 })
+                    .map((k) => {
+                        return (<option value={k} key={k}>{k}</option>)
+                    })
+            }
+        </Form.Select>
+    </FloatingLabel>
 }
 
 export default Tags;
