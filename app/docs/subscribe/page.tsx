@@ -1,7 +1,7 @@
 "use client"
 
 import { useContext, useState } from "react";
-import { Button, Card, Form, ListGroup, OverlayTrigger, Popover, Spinner } from "react-bootstrap";
+import { Button, Card, Form, Row, Col, FloatingLabel, DropdownButton, Dropdown, Spinner, ButtonGroup, ButtonToolbar } from "react-bootstrap";
 import CardHeader from "react-bootstrap/esm/CardHeader";
 import Loading from "../common/loading";
 import { SettingInputText } from "../config/components";
@@ -13,8 +13,7 @@ import { link, type } from "../pbes/node/subscribe/subscribe_pb";
 import { get_links_resp, link_req, save_link_req } from "../pbes/node/grpc/node_pb";
 
 function Subscribe() {
-    const [checked, setChecked] = useState<{ [key: string]: boolean }>({});
-    const [updating, setUpdating] = useState({ value: false });
+    const [updating, setUpdating] = useState<{ [key: string]: boolean }>({});
     const [addItem, setAddItem] = useState<link>(new link({ name: "", url: "", type: type.reserve }));
     const { data: links, error, isLoading, mutate } = useSWR("/sublist", ProtoESFetcher<get_links_resp>(new get_links_resp()))
     const ctx = useContext(GlobalToastContext);
@@ -22,110 +21,113 @@ function Subscribe() {
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || links === undefined) return <Loading />
 
-
+    const Update = (name: string) => {
+        setUpdating({ ...updating, [name]: true });
+        Fetch(
+            `/sub`,
+            {
+                method: "PATCH",
+                body: new link_req({ names: [name] }).toBinary()
+            }
+        ).then(async ({ error }) => {
+            if (error !== undefined) ctx.Error(`Update failed ${error.code}| ${await error.msg}`)
+            else ctx.Info(`Update successfully`);
+            setUpdating({ ...updating, [name]: false });
+        })
+    }
+    const Delete = (name: string) => {
+        Fetch(`/sub`,
+            {
+                method: "DELETE",
+                body: new link_req({ names: [name] }).toBinary()
+            }
+        ).then(async ({ error }) => {
+            if (error !== undefined) ctx.Error(`delete ${name} failed, ${error.code}| ${await error.msg}`)
+            else mutate()
+        })
+    }
     return (
         <>
-            <Card className="mb-3">
 
-                <ListGroup variant="flush">
-                    {
-                        links.links !== null && Object.entries(links.links)
-                            .sort((a, b) => { return a <= b ? -1 : 1 })
-                            .map(([k, vv]) => {
-                                const v = new link(vv);
-                                return (
-                                    <ListGroup.Item
-                                        style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
-                                        key={v.name}
-                                        action
-                                        as={"button"}
-                                        onClick={() => {
-                                            checked[v.name] = !checked[v.name]
-                                            setChecked({ ...checked })
-                                        }}
-                                    >
-                                        <Form.Check
-                                            inline
-                                            type="checkbox"
-                                            checked={checked[v.name]}
-                                        />
+            <Row className="row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
+                {
+                    links.links && Object.entries(links.links)
+                        .sort((a, b) => { return a <= b ? -1 : 1 })
+                        .map(([k, vv]) => {
+                            return <Col className="mb-3">
+                                <Card className="h-100">
+                                    <Card.Header>{vv.name}</Card.Header>
+                                    <Card.Body>
+                                        {vv.url}
+                                    </Card.Body>
+                                    <ButtonGroup as={Card.Footer} className="d-flex">
+                                        <Button variant="outline-primary"
+                                            onClick={() => Update(vv.name)}
+                                            disabled={updating[vv.name]}
+                                            className="w-100"
+                                        >
+                                            {updating[vv.name] &&
+                                                <Spinner size="sm" animation="border" variant="success" />}
+                                            Update
+                                        </Button>
+                                        <DropdownButton
+                                            onSelect={(event) => { if (event === "ok") Delete(vv.name) }}
+                                            as={ButtonGroup}
+                                            variant="outline-danger"
+                                            title="Remove"
+                                            className="w-100"
+                                        >
+                                            <Dropdown.Item eventKey={"ok"}>OK</Dropdown.Item>
+                                            <Dropdown.Item eventKey={"cancel"}>Cancel</Dropdown.Item>
+                                        </DropdownButton>
+                                    </ButtonGroup>
+                                </Card>
+                            </Col>
+                        })
+                }
+                <Col className="mb-3">
+                    <Card className="h-100">
+                        <Card.Header>Add</Card.Header>
+                        <Card.Body>
 
-                                        <OverlayTrigger trigger="click" placement="auto-end" overlay={<Popover><Popover.Body>{v.url}</Popover.Body></Popover>}>
-                                            <span>{v.name}</span>
-                                        </OverlayTrigger>
-                                    </ListGroup.Item>
-                                )
-                            })
-                    }
-                </ListGroup>
-                <CardHeader>
-                    <Button
-                        variant="outline-primary"
-                        className="me-1"
-                        disabled={updating.value}
-                        onClick={() => {
-                            setUpdating({ value: true });
-                            Fetch(
-                                `/sub`,
-                                {
-                                    method: "PATCH",
-                                    body: new link_req({ names: Object.keys(checked).filter((i) => checked[i]) }).toBinary()
-                                }
-                            ).then(async ({ error }) => {
-                                if (error !== undefined) ctx.Error(`Update failed ${error.code}| ${await error.msg}`)
-                                else ctx.Info(`Update successfully`);
-                                setUpdating({ value: false });
-                            })
-                        }}
-                    >
-                        {updating.value && <Spinner animation="border" size="sm" />}UPDATE
-                    </Button>
-                    <Button
-                        variant="outline-danger"
-                        onClick={() => {
-                            Fetch(`/sub`,
-                                {
-                                    method: "DELETE",
-                                    body: new link_req({ names: Object.keys(checked).filter((i) => checked[i]) }).toBinary()
-                                }
-                            ).then(async ({ error }) => {
-                                if (error !== undefined) ctx.Error(`delete ${Object.keys(checked)} failed, ${error.code}| ${await error.msg}`)
-                                else mutate()
-                            })
-                        }}
-                    >
-                        DELETE
-                    </Button>
-                </CardHeader>
-            </Card>
 
-            <Card>
-                <Card.Body>
-                    <SettingInputText label="Name"
-                        value={addItem.name}
-                        onChange={(e) => setAddItem(new link({ ...addItem, name: e }))}
-                    />
-                    <SettingInputText label="Link"
-                        value={addItem.url}
-                        onChange={(e) => setAddItem(new link({ ...addItem, url: e }))}
-                    />
+                            <FloatingLabel label="Name" className="mb-3">
+                                <Form.Control
+                                    placeholder="group1"
+                                    value={addItem.name}
+                                    onChange={(e) => setAddItem(new link({ ...addItem, name: e.target.value }))}
+                                />
+                            </FloatingLabel>
 
-                    <Button
-                        variant="outline-primary"
-                        onClick={async () => {
-                            if (addItem.name === "" || addItem.url === "") return
-                            Fetch(`/sub`, { body: new save_link_req({ links: [addItem] }).toBinary(), })
-                                .then(async ({ error }) => {
-                                    if (error !== undefined) ctx.Error(`save link ${addItem.url} failed, ${error.code}| ${await error.msg}`)
-                                    else mutate()
-                                })
+                            <FloatingLabel label="Link" className="mb-3">
+                                <Form.Control
+                                    placeholder="https://www.example.com"
+                                    value={addItem.url}
+                                    onChange={(e) => setAddItem(new link({ ...addItem, url: e.target.value }))}
+                                />
+                            </FloatingLabel>
 
-                        }}
-                    >
-                        ADD
-                    </Button>
-                </Card.Body>
-            </Card>
+                        </Card.Body>
+                        <ButtonGroup as={Card.Footer}>
+                            <Button
+                                variant="outline-primary"
+                                onClick={async () => {
+                                    if (addItem.name === "" || addItem.url === "") return
+                                    Fetch(`/sub`, { body: new save_link_req({ links: [addItem] }).toBinary(), })
+                                        .then(async ({ error }) => {
+                                            if (error !== undefined) ctx.Error(`save link ${addItem.url} failed, ${error.code}| ${await error.msg}`)
+                                            else mutate()
+                                        })
+
+                                }}
+                            >
+                                ADD
+                            </Button>
+                        </ButtonGroup>
+                    </Card>
+                </Col>
+            </Row>
+
         </>
     )
 }

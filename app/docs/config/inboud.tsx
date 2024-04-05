@@ -188,7 +188,7 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
                                 }
                             </Form.Select>
                             <Button
-                                variant="outline-secondary"
+                                variant="outline-success"
                                 onClick={() => cc((x) => {
                                     switch (newProtocol.value) {
                                         case "normal":
@@ -263,7 +263,7 @@ const Network = (props: { inbound: inbound, onChange: (x: inbound) => void }) =>
                         }
                     </Form.Select>
                     <Button
-                        variant="outline-secondary"
+                        variant="outline-success"
                         onClick={() => cc((x) => {
                             switch (newProtocol.value) {
                                 case "tcpudp":
@@ -395,7 +395,7 @@ const Protocol = (props: { inbound: inbound, onChange: (x: inbound) => void }) =
                         }
                     </Form.Select>
                     <Button
-                        variant="outline-secondary"
+                        variant="outline-success"
                         onClick={() => cc((x) => {
                             switch (newProtocol.value) {
                                 case "http":

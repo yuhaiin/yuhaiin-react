@@ -39,7 +39,7 @@ type Latency = {
     udpOnLoading?: boolean
 }
 
-const Item = React.memo((props: {
+const NodeItem = React.memo((props: {
     title: string,
     hash: string,
     latency: Latency,
@@ -50,6 +50,14 @@ const Item = React.memo((props: {
     const updateTestingStatus = (modify: (x: Latency) => void) => {
         modify(props.latency)
         props.onChangeLatency(props.latency)
+    }
+
+    const latencyButtonVar = (latency: Latency) => {
+        if (!latency.tcp && !latency.udp)
+            return "secondary"
+        if (latency.tcp === "timeout" && latency.udp === "timeout")
+            return "danger"
+        return "success"
     }
 
     const latency = (protocol: protocol, onFinish: (r: string) => void) => {
@@ -75,8 +83,9 @@ const Item = React.memo((props: {
         })
     }
 
+
     return <Col className="mb-3">
-        <Card className="h-100">
+        <Card className="h-100 shadow">
             <Card.Header>
                 {props.title}
             </Card.Header>
@@ -123,14 +132,17 @@ const Item = React.memo((props: {
                                 as={ButtonGroup}
                                 variant="outline-primary"
                                 title="USE"
+                                className="w-100"
                             >
                                 <Dropdown.Item eventKey={"tcpudp"}>TCP&UDP</Dropdown.Item>
                                 <Dropdown.Item eventKey={"tcp"}>TCP</Dropdown.Item>
                                 <Dropdown.Item eventKey={"udp"}>UDP</Dropdown.Item>
                             </DropdownButton>
-                            <Button variant="outline-primary" onClick={props.onClickEdit}>Edit</Button>
+                            <Button variant="outline-primary" className="w-100" onClick={props.onClickEdit}>Edit</Button>
+
                             <Button
-                                variant="outline-success"
+                                variant={"outline-" + latencyButtonVar(props.latency)}
+                                className="w-100"
                                 disabled={props.latency.tcpOnLoading || props.latency.udpOnLoading}
                                 onClick={async () => {
                                     updateTestingStatus((v) => { v.tcpOnLoading = true; v.udpOnLoading = true })
@@ -145,7 +157,7 @@ const Item = React.memo((props: {
                             >
 
                                 {(props.latency.tcpOnLoading || props.latency.udpOnLoading) &&
-                                    <Spinner size="sm" animation="border" variant="success" />}
+                                    <Spinner size="sm" animation="border" variant={latencyButtonVar(props.latency)} />}
                                 Test
                             </Button>
                         </ButtonGroup>
@@ -224,9 +236,10 @@ function Group() {
                         </Dropdown>
 
 
-                        <ButtonGroup className="ms-2">
+                        <ButtonGroup className="ms-2 d-flex">
                             <Button
                                 variant="outline-success"
+                                className="w-100"
                                 onClick={() => {
                                     setModalData({
                                         point: new point({
@@ -245,6 +258,7 @@ function Group() {
 
                             <Button
                                 variant="outline-success"
+                                className="w-100"
                                 onClick={() => { setImportJson({ data: true }) }}
                             >Import</Button>
 
@@ -260,35 +274,35 @@ function Group() {
                                     Object.entries(data.groupsV2[currentGroup].nodesV2).
                                         sort((a, b) => { return a <= b ? -1 : 1 }).
                                         map(([k, v]) => {
-                                            return <Item
+                                            return <NodeItem
                                                 hash={v}
                                                 title={k}
                                                 key={k}
                                                 latency={latency[v] ?? {}}
                                                 onChangeLatency={(e) => { setLatency(prev => { return { ...prev, [v]: e } }) }}
                                                 onClickEdit={() => {
-                                                    if (data.nodes)
-                                                        setModalData({
-                                                            point: data.nodes[v],
-                                                            hash: v,
-                                                            show: true,
-                                                            onDelete: () => {
-                                                                Fetch(
-                                                                    `/node`,
-                                                                    {
-                                                                        method: "DELETE",
-                                                                        body: new StringValue({ value: v }).toBinary()
-                                                                    }
-                                                                ).then(async ({ error }) => {
-                                                                    if (error !== undefined) {
-                                                                        ctx.Error(`Delete Node ${v} Failed ${error.code}| ${await error.msg}`)
-                                                                    } else {
-                                                                        ctx.Info(`Delete Node ${v} Successful.`)
-                                                                        mutate()
-                                                                    }
-                                                                })
-                                                            }
-                                                        })
+                                                    if (!data.nodes) return
+                                                    setModalData({
+                                                        point: data.nodes[v],
+                                                        hash: v,
+                                                        show: true,
+                                                        onDelete: () => {
+                                                            Fetch(
+                                                                `/node`,
+                                                                {
+                                                                    method: "DELETE",
+                                                                    body: new StringValue({ value: v }).toBinary()
+                                                                }
+                                                            ).then(async ({ error }) => {
+                                                                if (error !== undefined) {
+                                                                    ctx.Error(`Delete Node ${v} Failed ${error.code}| ${await error.msg}`)
+                                                                } else {
+                                                                    ctx.Info(`Delete Node ${v} Successful.`)
+                                                                    mutate()
+                                                                }
+                                                            })
+                                                        }
+                                                    })
                                                 }}
                                             />
                                         })
