@@ -4,7 +4,7 @@ import { empty, grpc, http, http2, inbound, inbound_config, mixed, mux, normal, 
 import { SettingInputText, Container } from "./components";
 import { EnumType } from "@bufbuild/protobuf";
 import { Form, Row, Col, Modal, ListGroup, InputGroup, Button, Card } from "react-bootstrap";
-import { HTTPComponents, Http2Components, MixedComponents, QuicComponents, RealityComponents, RedirComponents, Socks5Components, TProxyComponents, TlsComponents, TunComponents } from "./server";
+import { HTTPComponents, MixedComponents, Quic2Components, RealityComponents, RedirComponents, Socks5Components, TProxyComponents, TlsComponents, TunComponents } from "./server";
 import { useState } from "react";
 import React from "react";
 
@@ -295,7 +295,7 @@ const NetworkBase = (props: { inbound: inbound, onChange: (x: inbound) => void }
         case "tcpudp":
             return <TcpUdp protocol={props.inbound.network.value} onChange={(x) => { cc((y) => y.network.value = x) }}></TcpUdp>
         case "quic":
-            return <QuicComponents
+            return <Quic2Components
                 quic={props.inbound.network.value}
                 onChange={(x) => { cc((y) => y.network.value = x) }}
             />

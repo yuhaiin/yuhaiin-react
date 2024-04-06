@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Form, InputGroup, Card, Row, Col, Button, FloatingLabel } from 'react-bootstrap';
 import { SettingInputText, SettingInputTextarea, NewItemList } from './components';
 import { SettingCheck } from "../common/switch";
-import { http, redir, tproxy, tun, yuubinsya, mixed, socks5, socks4a, tun_endpoint_driver, route, tls_config, certificate, websocket, quic, grpc, tls, http2, reality, protocol, inbound_config, normal } from '../pbes/config/listener/listener_pb';
+import { http, redir, tproxy, tun, yuubinsya, mixed, socks5, socks4a, tun_endpoint_driver, route, tls_config, certificate, websocket, quic, grpc, tls, http2, reality, protocol, inbound_config, normal, quic2 } from '../pbes/config/listener/listener_pb';
 
 export const HTTPComponents = React.memo((props: { http: http, onChange: (x: http) => void }) => {
     const updateState = (x: (x: http) => void) => {
@@ -285,6 +285,28 @@ export const QuicComponents = React.memo((props: { quic: quic, onChange: (x: qui
     return (
         <>
             <SettingInputText plaintext={true} label='Protocol' value={"QUIC"} />
+
+            {
+                props.quic.tls && <TLSComponents tls={new tls_config(props.quic.tls !== null ? props.quic.tls : undefined)} onChange={(e) => updateState((x) => x.tls = e)} />
+            }
+
+        </>
+    )
+})
+export const Quic2Components = React.memo((props: { quic: quic2, onChange: (x: quic2) => void }) => {
+    const updateState = (x: (x: quic2) => void) => {
+        if (IsTLSEmpty(props.quic.tls)) props.quic.tls = undefined
+        x(props.quic)
+        props.onChange(props.quic)
+    }
+
+    return (
+        <>
+            <SettingInputText
+                label='Host'
+                onChange={(e) => updateState((x) => x.host = e)}
+                value={props.quic.host}
+            />
 
             {
                 props.quic.tls && <TLSComponents tls={new tls_config(props.quic.tls !== null ? props.quic.tls : undefined)} onChange={(e) => updateState((x) => x.tls = e)} />
