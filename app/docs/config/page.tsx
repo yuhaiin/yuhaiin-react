@@ -1,7 +1,7 @@
 "use client"
 
 import { useContext, useState } from 'react';
-import { Form, Card, Row, Col, Button, Tabs, Tab, ToggleButtonGroup, ToggleButton, Nav } from 'react-bootstrap';
+import { Form, Card, Row, Col, Button, Tab, ToggleButtonGroup, ToggleButton, Nav } from 'react-bootstrap';
 import DNS from './dns';
 import Bypass from './bypass';
 import Inbound from './server';

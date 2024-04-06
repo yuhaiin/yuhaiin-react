@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, InputGroup, Card, Row, Col, Button, FloatingLabel } from 'react-bootstrap';
+import { Form, InputGroup, Card, Row, Col, Button } from 'react-bootstrap';
 import { SettingInputText, SettingInputTextarea, NewItemList } from './components';
 import { SettingCheck } from "../common/switch";
 import { http, redir, tproxy, tun, yuubinsya, mixed, socks5, socks4a, tun_endpoint_driver, route, tls_config, certificate, websocket, quic, grpc, tls, http2, reality, protocol, inbound_config, normal, quic2 } from '../pbes/config/listener/listener_pb';

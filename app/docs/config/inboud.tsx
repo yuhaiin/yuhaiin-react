@@ -1,4 +1,4 @@
-import { Enum, EnumDescriptorProto, EnumValue, EnumValueInfo, proto3 } from "@bufbuild/protobuf";
+import { EnumValueInfo, proto3 } from "@bufbuild/protobuf";
 import { SettingCheck } from "../common/switch";
 import { empty, grpc, http, http2, inbound, inbound_config, mixed, mux, normal, reality, redir, socks5, tcp_udp_control, tcpudp, tls, tls_config, tproxy, transport, tun, websocket, yuubinsya } from "../pbes/config/listener/listener_pb";
 import { SettingInputText, Container } from "./components";

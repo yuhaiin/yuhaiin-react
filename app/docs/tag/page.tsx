@@ -4,7 +4,7 @@ import { useState, useContext } from "react";
 import { Badge, Button, ButtonGroup, Card, FloatingLabel, Form, ListGroup, Modal, ToggleButton } from "react-bootstrap";
 import Loading from "../common/loading";
 import useSWR from 'swr'
-import { Fetch, NewObject, ProtoESFetcher } from '../common/proto';
+import { Fetch, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
 import NodeModal from "../modal/node";
 import { GlobalToastContext } from "../common/toast";
@@ -250,7 +250,7 @@ const Node = (props: {
                 <option value="">Choose...</option>
                 {
                     Object
-                        .entries(NewObject(props.data.groupsV2[group.data]?.nodesV2))
+                        .entries(props.data.groupsV2[group.data]?.nodesV2 ?? {})
                         .sort((a, b) => { return a <= b ? -1 : 1 })
                         .map(([k, v]) => {
                             return (<option value={v} key={k}>{k}</option>)

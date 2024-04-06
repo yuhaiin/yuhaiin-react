@@ -119,11 +119,20 @@ function Connections() {
             return connect()
         })
 
+    const [modalHash, setModalHash] = useState({ show: false, hash: "" });
+
     if (error !== undefined) return <Loading code={error.code}>{error.msg}</Loading>
     if (data === undefined) return <Loading />
 
     return (
         <>
+            <NodeModal
+                show={modalHash.show}
+                hash={modalHash.hash}
+                editable={false}
+                onHide={() => setModalHash({ hash: "", show: false })}
+            />
+
             <Card className="mb-3">
                 <ListGroup variant="flush">
 
@@ -150,7 +159,7 @@ function Connections() {
                     Object.entries(data.conns)
                         .sort(([, a], [, b]) => { return a.id > b.id ? -1 : 1 })
                         .map(([, e]) => {
-                            return <AccordionItem data={e} key={e.id} />
+                            return <AccordionItem data={e} key={e.id} showModal={(hash) => setModalHash({ show: true, hash: hash })} />
                         })
                 }
             </Accordion>
@@ -159,18 +168,9 @@ function Connections() {
     );
 }
 
-const ListGroupItem = React.memo((props: { itemKey: string, itemValue: string, }) => {
-    const [modalHash, setModalHash] = useState({ show: false, hash: "" });
-
+const ListGroupItem = React.memo((props: { itemKey: string, itemValue: string, showModal: (hash: string) => void }) => {
     return (
         <>
-            <NodeModal
-                show={modalHash.show}
-                hash={modalHash.hash}
-                editable={false}
-                onHide={() => setModalHash({ ...modalHash, hash: "", show: false })}
-            />
-
             <ListGroup.Item>
                 <div className="d-sm-flex">
                     <div className="endpoint-name flex-grow-1 notranslate">{props.itemKey}</div>
@@ -180,12 +180,11 @@ const ListGroupItem = React.memo((props: { itemKey: string, itemValue: string, }
                             props.itemKey !== "Hash" ? props.itemValue :
                                 <a
                                     href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        setModalHash({ hash: props.itemValue, show: true })
-                                    }}>
+                                    onClick={(e) => { e.preventDefault(); props.showModal(props.itemValue) }}
+                                >
                                     {props.itemValue}
-                                </a>}
+                                </a>
+                        }
                     </div>
                 </div>
             </ListGroup.Item>
@@ -193,7 +192,7 @@ const ListGroupItem = React.memo((props: { itemKey: string, itemValue: string, }
     )
 })
 
-const AccordionItem = React.memo((props: { data: connection }) => {
+const AccordionItem = React.memo((props: { data: connection, showModal: (hash: string) => void }) => {
     const ctx = useContext(GlobalToastContext);
 
     return (
@@ -214,14 +213,14 @@ const AccordionItem = React.memo((props: { data: connection }) => {
 
             <Accordion.Body>
                 <ListGroup variant="flush">
-                    <ListGroupItem itemKey="Type" itemValue={type[props.data.type?.connType ?? 0]} />
-                    <ListGroupItem itemKey="Underlying" itemValue={type[props.data.type?.underlyingType ?? 0]} />
+                    <ListGroupItem itemKey="Type" itemValue={type[props.data.type?.connType ?? 0]} showModal={props.showModal} />
+                    <ListGroupItem itemKey="Underlying" itemValue={type[props.data.type?.underlyingType ?? 0]} showModal={props.showModal} />
 
                     {
                         Object.entries(props.data.extra)
                             .sort((a, b) => { return a <= b ? -1 : 1 })
                             .map(([k, v]) => {
-                                return <ListGroupItem itemKey={k} itemValue={v} key={k} />
+                                return <ListGroupItem itemKey={k} itemValue={v} key={k} showModal={props.showModal} />
                             })
                     }
                     <ListGroup.Item>
