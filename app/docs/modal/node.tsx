@@ -22,6 +22,8 @@ function NodeModal(props: {
     const ctx = useContext(GlobalToastContext);
 
 
+    const [jsonShow, setJsonShow] = useState({ show: false, data: "" })
+
     const { data: node, error, isLoading, mutate } = useSWR(
         (!props.point && props.hash) ? `/node` : null,
         ProtoESFetcher(new point(), "POST", new StringValue({ value: props.hash }).toBinary()))
@@ -57,6 +59,13 @@ function NodeModal(props: {
 
     return (
         <>
+            <NodeJsonModal
+                show={jsonShow.show}
+                data={jsonShow.data}
+                plaintext
+                onHide={() => setJsonShow({ ...jsonShow, show: false })}
+            />
+
             <Modal
                 show={props.show}
                 scrollable
@@ -116,19 +125,14 @@ function NodeModal(props: {
                     }
                     {(!error && !isLoading) &&
                         <Button
-                            variant="outline-info"
+                            variant="outline-primary"
                             onClick={() => {
-                                try {
-                                    let po = node?.clone() ?? props.point?.clone() ?? new point({});
-                                    po.hash = "";
-                                    navigator.clipboard.writeText(JSON.stringify(po.toJson({ emitDefaultValues: true }), null, 2));
-                                    ctx.Info("copy successful")
-                                } catch (e) {
-                                    ctx.Error("copy failed")
-                                }
+                                let po = node?.clone() ?? props.point?.clone() ?? new point({});
+                                setJsonShow({ show: true, data: po.toJsonString({ prettySpaces: 2 }) });
+                                // navigator.clipboard.writeText(JSON.stringify(po.toJson({ emitDefaultValues: true }), null, 2));
                             }}
                         >
-                            Copy
+                            JSON
                         </Button>
                     }
                     <Button variant="outline-secondary" onClick={() => { props.onHide() }}>Close</Button>
@@ -142,6 +146,8 @@ function NodeModal(props: {
 export const NodeJsonModal = (
     props: {
         show: boolean,
+        plaintext?: boolean,
+        data?: string,
         onSave?: () => void
         onHide: () => void,
     },
@@ -149,12 +155,13 @@ export const NodeJsonModal = (
     const ctx = useContext(GlobalToastContext);
     const [nodeJson, setNodeJson] = useState({ data: "" });
     const Footer = () => {
+        if (!props.onSave) return <></>
         return <Button variant="outline-primary"
             onClick={() => {
                 Fetch("/node",
                     {
                         method: "PATCH",
-                        body: (new point().fromJson(JSON.parse(nodeJson.data))).toBinary(),
+                        body: (new point().fromJsonString(nodeJson.data)).toBinary(),
                     })
                     .then(async ({ error }) => {
                         if (error === undefined) {
@@ -179,20 +186,24 @@ export const NodeJsonModal = (
                 onHide={() => { props.onHide() }}
                 centered
             >
-                <Modal.Header closeButton>
-                    <Modal.Title id="contained-modal-title-vcenter">
-                        Import JSON
-                    </Modal.Title>
-                </Modal.Header>
+                {!props.plaintext &&
+                    <Modal.Header closeButton>
+                        <Modal.Title id="contained-modal-title-vcenter">
+                            Import JSON
+                        </Modal.Title>
+                    </Modal.Header>
+                }
 
                 <Modal.Body>
                     <Form.Control
                         as="textarea"
-                        value={nodeJson.data}
+                        readOnly={props.plaintext}
+                        value={props.data ? props.data : nodeJson.data}
                         style={{ height: "65vh", fontFamily: "monospace" }}
                         onChange={(e) => { setNodeJson({ data: e.target.value }); }}
                     />
                 </Modal.Body>
+
 
                 <Modal.Footer>
                     <Button variant="outline-secondary" onClick={() => { props.onHide() }}>Close</Button>

@@ -31,7 +31,11 @@ function Tags() {
                 key={props.k}
                 action
                 onClick={(e) => {
-                    setTagModalData({ show: true, tag: new save_tag_req({ tag: props.k, hash: props.v.hash[0], type: props.v.type }), new: false })
+                    setTagModalData({
+                        show: true,
+                        tag: new save_tag_req({ tag: props.k, hash: props.v.hash[0], type: props.v.type }),
+                        new: false
+                    })
                 }}
             >
                 <div>

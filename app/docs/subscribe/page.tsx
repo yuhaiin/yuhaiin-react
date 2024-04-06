@@ -65,7 +65,7 @@ function Subscribe() {
                                             className="w-100"
                                         >
                                             {updating[vv.name] &&
-                                                <Spinner size="sm" animation="border" variant="success" />}
+                                                <Spinner size="sm" animation="border" variant="primary" />}
                                             Update
                                         </Button>
                                         <DropdownButton
