@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { Button, Modal, Form, DropdownButton, Dropdown, ButtonGroup } from "react-bootstrap";
+import { Button, Modal, Form, DropdownButton, Dropdown, ButtonGroup, Collapse } from "react-bootstrap";
 import useSWR from 'swr'
 import { Fetch, ProtoESFetcher } from '../common/proto';
 import Loading from "../common/loading";
@@ -28,7 +28,7 @@ function NodeModal(props: {
         (!props.point && props.hash) ? `/node` : null,
         ProtoESFetcher(new point(), "POST", new StringValue({ value: props.hash }).toBinary()))
 
-    if (props.hash === "") mutate(undefined)
+    if (!props.show && props.hash === "") mutate(undefined)
 
     const Footer = () => {
         if (!props.editable) return <></>
@@ -67,7 +67,7 @@ function NodeModal(props: {
             />
 
             <Modal
-                show={props.show}
+                show={jsonShow.show ? false : props.show}
                 scrollable
                 aria-labelledby="contained-modal-title-vcenter"
                 size='xl'
@@ -90,18 +90,20 @@ function NodeModal(props: {
                                 <pre className="text-center my-2 text-danger lead">{error.raw}</pre>
                             </> :
                             isLoading ? <Loading /> :
-                                <Point
-                                    point={node ?? props.point ?? new point({})}
-                                    groups={props.groups}
-                                    onChange={
-                                        (props.editable) ?
-                                            (e) => {
-                                                if (!props.editable) return
-                                                if (props.hash) mutate(e, false)
-                                                if (props.point && props.onChangePoint) props.onChangePoint(e)
-                                            } : undefined
-                                    }
-                                />
+                                <Collapse in={!error && !isLoading}>
+                                    <Point
+                                        point={node ?? props.point ?? new point({})}
+                                        groups={props.groups}
+                                        onChange={
+                                            (props.editable) ?
+                                                (e) => {
+                                                    if (!props.editable) return
+                                                    if (props.hash) mutate(e, false)
+                                                    if (props.point && props.onChangePoint) props.onChangePoint(e)
+                                                } : undefined
+                                        }
+                                    />
+                                </Collapse>
                         }
                     </fieldset>
                 </Modal.Body>
