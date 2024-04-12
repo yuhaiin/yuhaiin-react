@@ -7,7 +7,7 @@
     "@bufbuild/protobuf": "^1.8.0",
     "@bufbuild/protoc-gen-es": "^1.8.0",
     "@types/node": "^20.12.4",
-    "@types/react": "^18.2.74",
+    "@types/react": "^18.2.77",
     "@types/react-dom": "^18.2.24",
     "bootstrap": "^v5.3.3",
     "bootstrap-icons": "^1.11.3",
