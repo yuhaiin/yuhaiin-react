@@ -438,12 +438,12 @@ const Yuubinsya = (props: { yuubinsya: yuubinsya, onChange: (x: yuubinsya) => vo
     return <>
         <SettingCheck
             label="TCP Encrypt"
-            checked={!props.yuubinsya.tcpEncrypt}
+            checked={props.yuubinsya.tcpEncrypt}
             onChange={() => { cc((x) => x.tcpEncrypt = !x.tcpEncrypt) }}
         />
         <SettingCheck
             label="UDP Encrypt"
-            checked={!props.yuubinsya.udpEncrypt}
+            checked={props.yuubinsya.udpEncrypt}
             onChange={() => { cc((x) => x.udpEncrypt = !x.udpEncrypt) }}
         />
         <SettingInputText

@@ -720,6 +720,11 @@ const Yuubinsya = (props: { protocol: yuubinsya, onChange: (x: yuubinsya) => voi
                 checked={props.protocol.tcpEncrypt}
                 onChange={() => { cc((x) => x.tcpEncrypt = !x.tcpEncrypt) }}
             />
+            <SettingCheck
+                label="UDP Encrypt"
+                checked={props.protocol.udpEncrypt}
+                onChange={() => { cc((x) => x.udpEncrypt = !x.udpEncrypt) }}
+            />
 
             <SettingCheck
                 label="UdpOverStream"
