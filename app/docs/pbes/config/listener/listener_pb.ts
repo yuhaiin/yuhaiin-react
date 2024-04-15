@@ -151,11 +151,6 @@ export class inbound extends Message<inbound> {
   enabled = false;
 
   /**
-   * @generated from field: bool IPv6 = 17;
-   */
-  IPv6 = false;
-
-  /**
    * @generated from oneof yuhaiin.listener.inbound.network
    */
   network: {
@@ -246,7 +241,6 @@ export class inbound extends Message<inbound> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 13, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 14, name: "enabled", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 17, name: "IPv6", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 21, name: "empty", kind: "message", T: empty, oneof: "network" },
     { no: 15, name: "tcpudp", kind: "message", T: tcpudp, oneof: "network" },
     { no: 16, name: "quic", kind: "message", T: quic2, oneof: "network" },
@@ -1034,9 +1028,14 @@ export class yuubinsya extends Message<yuubinsya> {
   password = "";
 
   /**
-   * @generated from field: bool force_disable_encrypt = 8 [json_name = "force_disable_encrypt"];
+   * @generated from field: bool tcp_encrypt = 12 [json_name = "tcp_encrypt"];
    */
-  forceDisableEncrypt = false;
+  tcpEncrypt = false;
+
+  /**
+   * @generated from field: bool udp_encrypt = 13 [json_name = "udp_encrypt"];
+   */
+  udpEncrypt = false;
 
   /**
    * @generated from field: bool mux = 11;
@@ -1107,7 +1106,8 @@ export class yuubinsya extends Message<yuubinsya> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "host", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "password", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 8, name: "force_disable_encrypt", jsonName: "force_disable_encrypt", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 12, name: "tcp_encrypt", jsonName: "tcp_encrypt", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 13, name: "udp_encrypt", jsonName: "udp_encrypt", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 11, name: "mux", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 3, name: "normal", kind: "message", T: normal, oneof: "protocol" },
     { no: 4, name: "tls", kind: "message", T: tls, oneof: "protocol" },

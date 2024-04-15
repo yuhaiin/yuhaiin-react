@@ -594,9 +594,14 @@ export class yuubinsya extends Message<yuubinsya> {
   password = "";
 
   /**
-   * @generated from field: bool encrypted = 2;
+   * @generated from field: bool tcp_encrypt = 4 [json_name = "tcp_encrypt"];
    */
-  encrypted = false;
+  tcpEncrypt = false;
+
+  /**
+   * @generated from field: bool udp_encrypt = 5 [json_name = "udp_encrypt"];
+   */
+  udpEncrypt = false;
 
   /**
    * @generated from field: bool udp_over_stream = 3 [json_name = "udp_over_stream"];
@@ -612,7 +617,8 @@ export class yuubinsya extends Message<yuubinsya> {
   static readonly typeName = "yuhaiin.protocol.yuubinsya";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "password", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "encrypted", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 4, name: "tcp_encrypt", jsonName: "tcp_encrypt", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 5, name: "udp_encrypt", jsonName: "udp_encrypt", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 3, name: "udp_over_stream", jsonName: "udp_over_stream", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 

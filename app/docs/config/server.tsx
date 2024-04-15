@@ -471,9 +471,12 @@ export const YuubinsyaComponents = React.memo((props: { yuubinsya: yuubinsya, on
     }
     return (
         <>
-            <SettingCheck label='Force Disable Encrypt'
-                checked={props.yuubinsya.forceDisableEncrypt}
-                onChange={() => updateState((x) => x.forceDisableEncrypt = !x.forceDisableEncrypt)} />
+            <SettingCheck label='TCP Encrypt'
+                checked={props.yuubinsya.tcpEncrypt}
+                onChange={() => updateState((x) => x.tcpEncrypt = !x.tcpEncrypt)} />
+            <SettingCheck label='UDP Encrypt'
+                checked={props.yuubinsya.udpEncrypt}
+                onChange={() => updateState((x) => x.udpEncrypt = !x.udpEncrypt)} />
             <SettingCheck label='Mux'
                 checked={props.yuubinsya.mux}
                 onChange={() => updateState((x) => x.mux = !x.mux)} />

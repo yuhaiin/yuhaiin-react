@@ -437,9 +437,14 @@ const Yuubinsya = (props: { yuubinsya: yuubinsya, onChange: (x: yuubinsya) => vo
     const cc = change(props.yuubinsya, props.onChange)
     return <>
         <SettingCheck
-            label="Encrypted"
-            checked={!props.yuubinsya.forceDisableEncrypt}
-            onChange={() => { cc((x) => x.forceDisableEncrypt = !x.forceDisableEncrypt) }}
+            label="TCP Encrypt"
+            checked={!props.yuubinsya.tcpEncrypt}
+            onChange={() => { cc((x) => x.tcpEncrypt = !x.tcpEncrypt) }}
+        />
+        <SettingCheck
+            label="UDP Encrypt"
+            checked={!props.yuubinsya.udpEncrypt}
+            onChange={() => { cc((x) => x.udpEncrypt = !x.udpEncrypt) }}
         />
         <SettingInputText
             label="Password"

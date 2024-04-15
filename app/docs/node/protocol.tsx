@@ -716,9 +716,9 @@ const Yuubinsya = (props: { protocol: yuubinsya, onChange: (x: yuubinsya) => voi
     return <Container title="Yuubinsya" onClose={props.onClose}>
         <>
             <SettingCheck
-                label="Encrypted"
-                checked={props.protocol.encrypted}
-                onChange={() => { cc((x) => x.encrypted = !x.encrypted) }}
+                label="TCP Encrypt"
+                checked={props.protocol.tcpEncrypt}
+                onChange={() => { cc((x) => x.tcpEncrypt = !x.tcpEncrypt) }}
             />
 
             <SettingCheck
@@ -1015,7 +1015,8 @@ export const protocols: { [key: string]: protocol } = {
         protocol: {
             case: "yuubinsya",
             value: new yuubinsya({
-                encrypted: true,
+                tcpEncrypt: true,
+                udpEncrypt: true,
                 password: "password",
                 udpOverStream: false,
             })
