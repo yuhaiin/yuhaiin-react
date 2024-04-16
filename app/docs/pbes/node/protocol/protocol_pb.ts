@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
-import { Message, proto3, protoInt64 } from "@bufbuild/protobuf";
+import { Message, proto3 } from "@bufbuild/protobuf";
 
 /**
  * @generated from message yuhaiin.protocol.protocol
@@ -906,14 +906,6 @@ export class simple extends Message<simple> {
   port = 0;
 
   /**
-   * @generated from field: uint64 timeout = 6;
-   */
-  timeout = protoInt64.zero;
-
-  /**
-   * udp will write to every packet target instead of only write to host:port
-   * bool packet_conn_direct = 3 [ json_name = "packet_conn_direct" ];
-   *
    * @generated from field: repeated yuhaiin.protocol.host alternate_host = 5 [json_name = "alternate_host"];
    */
   alternateHost: host[] = [];
@@ -928,7 +920,6 @@ export class simple extends Message<simple> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "host", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 6, name: "timeout", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
     { no: 5, name: "alternate_host", jsonName: "alternate_host", kind: "message", T: host, repeated: true },
   ]);
 
@@ -1017,11 +1008,6 @@ export class tls_config extends Message<tls_config> {
  * @generated from message yuhaiin.protocol.direct
  */
 export class direct extends Message<direct> {
-  /**
-   * @generated from field: uint64 timeout = 1;
-   */
-  timeout = protoInt64.zero;
-
   constructor(data?: PartialMessage<direct>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1030,7 +1016,6 @@ export class direct extends Message<direct> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "yuhaiin.protocol.direct";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "timeout", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): direct {

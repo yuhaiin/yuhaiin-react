@@ -377,16 +377,6 @@ const Simple = (props: { protocol: simple, onChange: (e: simple) => void, onClos
                 cc((x) => x.port = port)
             }} />
 
-            <SettingInputText
-                label="Timeout"
-                value={Number(props.protocol.timeout)}
-                onChange={(e) => {
-                    let timeout = Number(e)
-                    if (isNaN(timeout)) return
-                    cc((x) => x.timeout = BigInt(timeout))
-                }}
-            />
-
             <NewAlternateHostList
                 title="AlternateHost"
                 data={props.protocol.alternateHost}
@@ -681,11 +671,6 @@ const Direct = (props: { protocol: direct, onChange: (x: direct) => void, onClos
     let cc = change(props.protocol, props.onChange)
     return <Container title="Direct" onClose={props.onClose}>
         <>
-            <SettingInputText
-                label="Timeout"
-                value={Number(props.protocol.timeout)}
-                onChange={(e) => { cc((x) => { if (!isNaN(Number(e))) x.timeout = BigInt(e) }) }}
-            />
         </>
     </Container>
 }
@@ -912,7 +897,6 @@ export const protocols: { [key: string]: protocol } = {
                 host: "",
                 alternateHost: [],
                 port: 1080,
-                timeout: BigInt(0),
             })
         }
     }),
