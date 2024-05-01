@@ -5,13 +5,12 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -20,30 +19,44 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm install
-    - run: npm run build
-      env:
-        CI: false
-    
-    
-    - name: Deploy
-      uses: peaceiris/actions-gh-pages@v4
-      with:
-        personal_token: ${{ secrets.PERSONAL_TOKEN }}
-        publish_dir: ./out
-        external_repository: yuhaiin/yuhaiin.github.io
-        publish_branch: main  # default: gh-pages
-        enable_jekyll: false
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+      - run: npm install
+      - run: npm run build
+        env:
+          CI: false
+      - run: |
+          cat <<EOF > out/go.mod
+          module github.com/yuhaiin/yuhaiin.github.io
 
-    - name: upload_static
-      uses: actions/upload-artifact@v4
-      with:
-        name: statics
-        path: |
-          out
+          go 1.22.0
+          EOF
+      - run: |
+          cat <<EOF > out/yuhaiin.go
+          package yuhaiin_github_io
+
+          import "embed"
+
+          //go:embed *
+          var Content embed.FS
+          EOF
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          personal_token: ${{ secrets.PERSONAL_TOKEN }}
+          publish_dir: ./out
+          external_repository: yuhaiin/yuhaiin.github.io
+          publish_branch: main # default: gh-pages
+          enable_jekyll: false
+
+      - name: upload_static
+        uses: actions/upload-artifact@v4
+        with:
+          name: statics
+          path: |
+            out
