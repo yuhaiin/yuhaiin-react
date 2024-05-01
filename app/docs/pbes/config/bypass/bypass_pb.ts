@@ -91,6 +91,11 @@ export class bypass_config extends Message<bypass_config> {
   udp = mode.bypass;
 
   /**
+   * @generated from field: bool sniffy = 5;
+   */
+  sniffy = false;
+
+  /**
    * @generated from field: string bypass_file = 2 [json_name = "bypass_file"];
    */
   bypassFile = "";
@@ -110,6 +115,7 @@ export class bypass_config extends Message<bypass_config> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 3, name: "tcp", kind: "enum", T: proto3.getEnumType(mode) },
     { no: 4, name: "udp", kind: "enum", T: proto3.getEnumType(mode) },
+    { no: 5, name: "sniffy", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 2, name: "bypass_file", jsonName: "bypass_file", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 7, name: "custom_rule_v3", jsonName: "custom_rule_v3", kind: "message", T: mode_config, repeated: true },
   ]);

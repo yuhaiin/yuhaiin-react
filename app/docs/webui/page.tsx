@@ -101,7 +101,7 @@ function Setting() {
 
             <OnelineEdit
                 title="DOQ(udp)"
-                placeholder="dns.nextdns.io:853"
+                placeholder="dns.adguard.com:853"
                 value={latencyDNS}
                 onChange={setLatencyDNS}
                 onClick={() => {

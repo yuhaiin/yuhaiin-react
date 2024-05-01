@@ -33,106 +33,58 @@ proto3.util.setEnumType(tcp_udp_control, "yuhaiin.listener.tcp_udp_control", [
 ]);
 
 /**
- * @generated from message yuhaiin.listener.protocol
+ * @generated from message yuhaiin.listener.inbound_config
  */
-export class protocol extends Message<protocol> {
+export class inbound_config extends Message<inbound_config> {
   /**
-   * @generated from field: string name = 1;
+   * @generated from field: bool hijack_dns = 2 [json_name = "hijack_dns"];
    */
-  name = "";
+  hijackDns = false;
 
   /**
-   * @generated from field: bool enabled = 2;
+   * @generated from field: bool hijack_dns_fakeip = 3 [json_name = "hijack_dns_fakeip"];
    */
-  enabled = false;
+  hijackDnsFakeip = false;
 
   /**
-   * @generated from oneof yuhaiin.listener.protocol.protocol
+   * @generated from field: map<string, yuhaiin.listener.protocol> servers = 5 [deprecated = true];
+   * @deprecated
    */
-  protocol: {
-    /**
-     * @generated from field: yuhaiin.listener.http http = 3;
-     */
-    value: http;
-    case: "http";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.socks5 socks5 = 4;
-     */
-    value: socks5;
-    case: "socks5";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.redir redir = 5;
-     */
-    value: redir;
-    case: "redir";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.tun tun = 6;
-     */
-    value: tun;
-    case: "tun";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.yuubinsya yuubinsya = 7;
-     */
-    value: yuubinsya;
-    case: "yuubinsya";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.mixed mix = 8 [json_name = "mixed"];
-     */
-    value: mixed;
-    case: "mix";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.socks4a socks4a = 9;
-     */
-    value: socks4a;
-    case: "socks4a";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.tproxy tproxy = 10;
-     */
-    value: tproxy;
-    case: "tproxy";
-  } | { case: undefined; value?: undefined } = { case: undefined };
+  servers: { [key: string]: protocol } = {};
 
-  constructor(data?: PartialMessage<protocol>) {
+  /**
+   * @generated from field: map<string, yuhaiin.listener.inbound> inbounds = 1;
+   */
+  inbounds: { [key: string]: inbound } = {};
+
+  constructor(data?: PartialMessage<inbound_config>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "yuhaiin.listener.protocol";
+  static readonly typeName = "yuhaiin.listener.inbound_config";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "enabled", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 3, name: "http", kind: "message", T: http, oneof: "protocol" },
-    { no: 4, name: "socks5", kind: "message", T: socks5, oneof: "protocol" },
-    { no: 5, name: "redir", kind: "message", T: redir, oneof: "protocol" },
-    { no: 6, name: "tun", kind: "message", T: tun, oneof: "protocol" },
-    { no: 7, name: "yuubinsya", kind: "message", T: yuubinsya, oneof: "protocol" },
-    { no: 8, name: "mix", jsonName: "mixed", kind: "message", T: mixed, oneof: "protocol" },
-    { no: 9, name: "socks4a", kind: "message", T: socks4a, oneof: "protocol" },
-    { no: 10, name: "tproxy", kind: "message", T: tproxy, oneof: "protocol" },
+    { no: 2, name: "hijack_dns", jsonName: "hijack_dns", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 3, name: "hijack_dns_fakeip", jsonName: "hijack_dns_fakeip", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 5, name: "servers", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: protocol} },
+    { no: 1, name: "inbounds", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: inbound} },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): protocol {
-    return new protocol().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): inbound_config {
+    return new inbound_config().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): protocol {
-    return new protocol().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): inbound_config {
+    return new inbound_config().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): protocol {
-    return new protocol().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): inbound_config {
+    return new inbound_config().fromJsonString(jsonString, options);
   }
 
-  static equals(a: protocol | PlainMessage<protocol> | undefined, b: protocol | PlainMessage<protocol> | undefined): boolean {
-    return proto3.util.equals(protocol, a, b);
+  static equals(a: inbound_config | PlainMessage<inbound_config> | undefined, b: inbound_config | PlainMessage<inbound_config> | undefined): boolean {
+    return proto3.util.equals(inbound_config, a, b);
   }
 }
 
@@ -358,6 +310,110 @@ export class transport extends Message<transport> {
 }
 
 /**
+ * @generated from message yuhaiin.listener.protocol
+ */
+export class protocol extends Message<protocol> {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name = "";
+
+  /**
+   * @generated from field: bool enabled = 2;
+   */
+  enabled = false;
+
+  /**
+   * @generated from oneof yuhaiin.listener.protocol.protocol
+   */
+  protocol: {
+    /**
+     * @generated from field: yuhaiin.listener.http http = 3;
+     */
+    value: http;
+    case: "http";
+  } | {
+    /**
+     * @generated from field: yuhaiin.listener.socks5 socks5 = 4;
+     */
+    value: socks5;
+    case: "socks5";
+  } | {
+    /**
+     * @generated from field: yuhaiin.listener.redir redir = 5;
+     */
+    value: redir;
+    case: "redir";
+  } | {
+    /**
+     * @generated from field: yuhaiin.listener.tun tun = 6;
+     */
+    value: tun;
+    case: "tun";
+  } | {
+    /**
+     * @generated from field: yuhaiin.listener.yuubinsya yuubinsya = 7;
+     */
+    value: yuubinsya;
+    case: "yuubinsya";
+  } | {
+    /**
+     * @generated from field: yuhaiin.listener.mixed mix = 8 [json_name = "mixed"];
+     */
+    value: mixed;
+    case: "mix";
+  } | {
+    /**
+     * @generated from field: yuhaiin.listener.socks4a socks4a = 9;
+     */
+    value: socks4a;
+    case: "socks4a";
+  } | {
+    /**
+     * @generated from field: yuhaiin.listener.tproxy tproxy = 10;
+     */
+    value: tproxy;
+    case: "tproxy";
+  } | { case: undefined; value?: undefined } = { case: undefined };
+
+  constructor(data?: PartialMessage<protocol>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "yuhaiin.listener.protocol";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "enabled", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 3, name: "http", kind: "message", T: http, oneof: "protocol" },
+    { no: 4, name: "socks5", kind: "message", T: socks5, oneof: "protocol" },
+    { no: 5, name: "redir", kind: "message", T: redir, oneof: "protocol" },
+    { no: 6, name: "tun", kind: "message", T: tun, oneof: "protocol" },
+    { no: 7, name: "yuubinsya", kind: "message", T: yuubinsya, oneof: "protocol" },
+    { no: 8, name: "mix", jsonName: "mixed", kind: "message", T: mixed, oneof: "protocol" },
+    { no: 9, name: "socks4a", kind: "message", T: socks4a, oneof: "protocol" },
+    { no: 10, name: "tproxy", kind: "message", T: tproxy, oneof: "protocol" },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): protocol {
+    return new protocol().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): protocol {
+    return new protocol().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): protocol {
+    return new protocol().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: protocol | PlainMessage<protocol> | undefined, b: protocol | PlainMessage<protocol> | undefined): boolean {
+    return proto3.util.equals(protocol, a, b);
+  }
+}
+
+/**
  * @generated from message yuhaiin.listener.empty
  */
 export class empty extends Message<empty> {
@@ -502,62 +558,6 @@ export class quic2 extends Message<quic2> {
 
   static equals(a: quic2 | PlainMessage<quic2> | undefined, b: quic2 | PlainMessage<quic2> | undefined): boolean {
     return proto3.util.equals(quic2, a, b);
-  }
-}
-
-/**
- * @generated from message yuhaiin.listener.inbound_config
- */
-export class inbound_config extends Message<inbound_config> {
-  /**
-   * @generated from field: bool hijack_dns = 2 [json_name = "hijack_dns"];
-   */
-  hijackDns = false;
-
-  /**
-   * @generated from field: bool hijack_dns_fakeip = 3 [json_name = "hijack_dns_fakeip"];
-   */
-  hijackDnsFakeip = false;
-
-  /**
-   * @generated from field: map<string, yuhaiin.listener.protocol> servers = 5 [deprecated = true];
-   * @deprecated
-   */
-  servers: { [key: string]: protocol } = {};
-
-  /**
-   * @generated from field: map<string, yuhaiin.listener.inbound> inbounds = 1;
-   */
-  inbounds: { [key: string]: inbound } = {};
-
-  constructor(data?: PartialMessage<inbound_config>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "yuhaiin.listener.inbound_config";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 2, name: "hijack_dns", jsonName: "hijack_dns", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 3, name: "hijack_dns_fakeip", jsonName: "hijack_dns_fakeip", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 5, name: "servers", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: protocol} },
-    { no: 1, name: "inbounds", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: inbound} },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): inbound_config {
-    return new inbound_config().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): inbound_config {
-    return new inbound_config().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): inbound_config {
-    return new inbound_config().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: inbound_config | PlainMessage<inbound_config> | undefined, b: inbound_config | PlainMessage<inbound_config> | undefined): boolean {
-    return proto3.util.equals(inbound_config, a, b);
   }
 }
 
