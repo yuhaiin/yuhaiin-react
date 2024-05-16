@@ -1,12 +1,11 @@
 "use client"
-
-import { Button, Form, Row, Col, Card, ListGroup, InputGroup } from "react-bootstrap";
+import React, { useState } from 'react';
+import { Button, Form, Row, Col, ListGroup, InputGroup } from "react-bootstrap";
 import { point } from "../pbes/node/point/point_pb";
 import { direct, drop, grpc, host, http, http2, mux, none, obfs_http, protocol, quic, reality, reject, shadowsocks, shadowsocksr, simple, socks5, tls_config, trojan, vless, vmess, websocket, wireguard, wireguard_peer_config, yuubinsya } from "../pbes/node/protocol/protocol_pb";
 import { NewBytesItemList, NewItemList, Remind, SettingInputText, Container } from "../config/components";
 import { SettingCheck } from "../common/switch";
 import { Message } from "@bufbuild/protobuf";
-import { useState } from "react";
 
 function change<T>(e: T, apply?: (x: T) => void): (f: (x: T) => void) => void {
     if (!apply) return function (_: (x: T) => void) { }
@@ -291,79 +290,81 @@ const Wireguard = (props: { protocol: wireguard, onChange: (e: wireguard) => voi
     </Container>
 }
 
+function NewAlternateHostList(props: {
+    title: string,
+    data: host[],
+    onChange: (x: host[]) => void
+}) {
+    return (
+        <Form.Group as={Row} className='mb-3 flex-grow-1 overflow-auto'>
+            <Form.Label column sm={2} className="nowrap">{props.title}</Form.Label>
+            {
+                props.data && props.data.map((v, index) => {
+                    return (
+                        <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
+                            <InputGroup className="mb-2" >
+                                <Container
+                                    title="Host"
+                                    onClose={() => {
+                                        if (props.data) {
+                                            props.data.splice(index, 1)
+                                            props.onChange(props.data)
+                                        }
+                                    }}>
+                                    <>
+                                        <SettingInputText
+                                            label="Host"
+                                            value={v.host}
+                                            onChange={(e) => {
+                                                if (props.data) {
+                                                    props.data[index].host = e
+                                                    props.onChange(props.data)
+                                                }
+                                            }}
+                                        />
+
+                                        <SettingInputText
+                                            label="Port"
+                                            value={v.port}
+                                            onChange={(e) => {
+                                                if (isNaN(Number(e))) return
+                                                if (props.data) {
+                                                    props.data[index].port = Number(e)
+                                                    props.onChange(props.data)
+                                                }
+                                            }}
+                                        />
+
+                                    </>
+                                </Container>
+                            </InputGroup>
+                        </Col>
+                    )
+                })
+            }
+
+            <Col sm={{ span: 10, offset: props.data?.length !== 0 ? 2 : 0 }}>
+                <InputGroup className="mb-2 justify-content-md-end" >
+                    <Button variant='outline-success' onClick={() => {
+                        let data = new host({});
+                        if (!props.data)
+                            props.onChange([data])
+                        else {
+                            props.data.push(data)
+                            props.onChange(props.data)
+                        }
+                    }} >
+                        <i className="bi bi-plus-lg" />
+                    </Button>
+                </InputGroup>
+            </Col>
+
+        </Form.Group>)
+}
+
 const Simple = (props: { protocol: simple, onChange: (e: simple) => void, onClose?: () => void }) => {
     const cc = change(props.protocol, props.onChange)
-    function NewAlternateHostList(props: {
-        title: string,
-        data: host[],
-        onChange: (x: host[]) => void
-    }) {
-        return (
-            <Form.Group as={Row} className='mb-3 flex-grow-1 overflow-auto'>
-                <Form.Label column sm={2} className="nowrap">{props.title}</Form.Label>
-                {
-                    props.data && props.data.map((v, index) => {
-                        return (
-                            <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
-                                <InputGroup className="mb-2" >
-                                    <Container
-                                        title="Host"
-                                        onClose={() => {
-                                            if (props.data) {
-                                                props.data.splice(index, 1)
-                                                props.onChange(props.data)
-                                            }
-                                        }}>
-                                        <>
-                                            <SettingInputText
-                                                label="Host"
-                                                value={v.host}
-                                                onChange={(e) => {
-                                                    if (props.data) {
-                                                        props.data[index].host = e
-                                                        props.onChange(props.data)
-                                                    }
-                                                }}
-                                            />
 
-                                            <SettingInputText
-                                                label="Port"
-                                                value={v.port}
-                                                onChange={(e) => {
-                                                    if (isNaN(Number(e))) return
-                                                    if (props.data) {
-                                                        props.data[index].port = Number(e)
-                                                        props.onChange(props.data)
-                                                    }
-                                                }}
-                                            />
-
-                                        </>
-                                    </Container>
-                                </InputGroup>
-                            </Col>
-                        )
-                    })
-                }
-
-                <Col sm={{ span: 10, offset: props.data?.length !== 0 ? 2 : 0 }}>
-                    <InputGroup className="mb-2 justify-content-md-end" >
-                        <Button variant='outline-success' onClick={() => {
-                            let data = new host({});
-                            if (!props.data)
-                                props.onChange([data])
-                            else {
-                                props.data.push(data)
-                                props.onChange(props.data)
-                            }
-                        }} >
-                            <i className="bi bi-plus-lg" />
-                        </Button>
-                    </InputGroup>
-                </Col>
-
-            </Form.Group>)
-    }
     return <Container title="Simple" onClose={props.onClose}>
         <>
             <SettingInputText
