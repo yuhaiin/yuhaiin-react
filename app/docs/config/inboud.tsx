@@ -1,7 +1,7 @@
 import { EnumValueInfo, proto3 } from "@bufbuild/protobuf";
 import { SettingCheck } from "../common/switch";
 import { empty, grpc, http, http2, inbound, inbound_config, mixed, mux, normal, reality, redir, socks5, tcp_udp_control, tcpudp, tls, tls_config, tproxy, transport, tun, websocket, yuubinsya } from "../pbes/config/listener/listener_pb";
-import { SettingInputText, Container } from "./components";
+import { SettingInputText, Container, MoveUpDown } from "./components";
 import { EnumType } from "@bufbuild/protobuf";
 import { Form, Row, Col, Modal, ListGroup, InputGroup, Button, Card } from "react-bootstrap";
 import { HTTPComponents, MixedComponents, Quic2Components, RealityComponents, RedirComponents, Socks5Components, TProxyComponents, TlsComponents, TunComponents } from "./server";
@@ -141,6 +141,16 @@ export const Inbounds = (props: { inbounds: inbound_config, onChange: (x: inboun
 export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
     const cc = change(props.inbound, props.onChange)
 
+    const onMove = (up: boolean, current: number) => {
+        if (props.inbound.transport.length <= 1) return
+        if (up && current === 0) return
+        if (!up && current === props.inbound.transport.length - 1) return
+        cc((x) => {
+            let tmp = x.transport[current]
+            x.transport[current] = x.transport[current + (up ? -1 : 1)]
+            x.transport[current + (up ? -1 : 1)] = tmp
+        })
+    }
     const [newProtocol, setNewProtocol] = useState({ value: "normal" });
 
     return <>
@@ -168,6 +178,7 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
                             key={i}
                             title={x.transport.case?.toString() ?? ""}
                             onClose={() => { cc((y) => y.transport.splice(i, 1)) }}
+                            moveUpDown={new MoveUpDown(props.inbound.transport.length, i, (x) => onMove(x, i))}
                         >
                             <Transport key={i} transport={x} onChange={(x) => { cc((y) => y.transport[i] = x) }} />
                         </Container>

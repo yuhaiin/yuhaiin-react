@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button, Form, Row, Col, ListGroup, InputGroup } from "react-bootstrap";
 import { point } from "../pbes/node/point/point_pb";
 import { direct, drop, grpc, host, http, http2, mux, none, obfs_http, protocol, quic, reality, reject, shadowsocks, shadowsocksr, simple, socks5, tls_config, trojan, vless, vmess, websocket, wireguard, wireguard_peer_config, yuubinsya } from "../pbes/node/protocol/protocol_pb";
-import { NewBytesItemList, NewItemList, Remind, SettingInputText, Container } from "../config/components";
+import { NewBytesItemList, NewItemList, Remind, SettingInputText, Container, MoveUpDown } from "../config/components";
 import { SettingCheck } from "../common/switch";
 import { Message } from "@bufbuild/protobuf";
 
@@ -28,6 +28,17 @@ export const Point = (props: {
     const onChange = (i: number, e: Message) => {
         if (!props.onChange) return
         cc((x) => { x.protocols[i].protocol.value = e })
+    }
+
+    const onMove = (up: boolean, current: number) => {
+        if (props.point.protocols.length <= 1) return
+        if (up && current === 0) return
+        if (!up && current === props.point.protocols.length - 1) return
+        cc((x) => {
+            let tmp = x.protocols[current]
+            x.protocols[current] = x.protocols[current + (up ? -1 : 1)]
+            x.protocols[current + (up ? -1 : 1)] = tmp
+        })
     }
 
     const [newProtocol, setNewProtocol] = useState({ value: "simple" });
@@ -56,51 +67,72 @@ export const Point = (props: {
             props.point.protocols.map((x, i) => {
                 switch (x.protocol.case) {
                     case "simple":
-                        return <Simple key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Simple key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "websocket":
-                        return <Websocket key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Websocket key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "shadowsocks":
-                        return <Shadowsocks key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Shadowsocks key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "quic":
-                        return <Quic key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Quic key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "vless":
-                        return <Vless key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Vless key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "vmess":
-                        return <Vmess key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Vmess key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "trojan":
-                        return <Trojan key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Trojan key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "shadowsocksr":
-                        return <Shadowsocksr key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Shadowsocksr key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "obfsHttp":
-                        return <ObfsHttp key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <ObfsHttp key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "none":
-                        return <None key={i} onClose={() => onClose(i)} />
+                        return <None key={i} onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "socks5":
-                        return <Socks5 key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Socks5 key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "http":
-                        return <HTTP key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <HTTP key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "direct":
-                        return <Direct key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Direct key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "reject":
-                        return <Reject key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Reject key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "yuubinsya":
-                        return <Yuubinsya key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Yuubinsya key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "grpc":
-                        return <Grpc key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Grpc key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "http2":
-                        return <HTTP2 key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <HTTP2 key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "reality":
-                        return <Reality key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Reality key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "tls":
-                        return <Tls key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Tls key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "wireguard":
-                        return <Wireguard key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Wireguard key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "mux":
-                        return <Mux key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Mux key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     case "drop":
-                        return <Drop key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)} onClose={() => onClose(i)} />
+                        return <Drop key={i} protocol={x.protocol.value} onChange={(e) => onChange(i, e)}
+                            onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                     default:
-                        return <Unknown key={i} onClose={() => onClose(i)} />
+                        return <Unknown key={i} onClose={() => onClose(i)} moveUpDown={new MoveUpDown(props.point.protocols.length, i, (x) => { onMove(x, i) })} />
                 }
             })
         }
@@ -128,103 +160,101 @@ export const Point = (props: {
     </>
 }
 
-const Wireguard = (props: { protocol: wireguard, onChange: (e: wireguard) => void, onClose?: () => void }) => {
+function NewPeersList(props: {
+    title: string,
+    data: wireguard_peer_config[],
+    onChange: (x: wireguard_peer_config[]) => void
+}) {
+    /*
+    
+                        allowedIps: ["0.0.0.0/0"],
+                        endpoint: "127.0.0.1:51820",
+                        publicKey: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
+     */
+    return (<Form.Group as={Row} className='mb-3'>
+        <Form.Label column sm={2} className="nowrap">{props.title}</Form.Label>
+
+
+        {
+            props.data && props.data
+                .map((v, index) => {
+                    return (
+                        <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
+                            <InputGroup className="mb-2" >
+                                <Container
+                                    title="Peer"
+                                    onClose={() => {
+                                        if (props.data) {
+                                            props.data.splice(index, 1)
+                                            props.onChange(props.data)
+                                        }
+                                    }}>
+                                    <>
+                                        <SettingInputText
+                                            label="Endpoint"
+                                            value={v.endpoint}
+                                            onChange={(e) => {
+                                                if (props.data) {
+                                                    props.data[index].endpoint = e
+                                                    props.onChange(props.data)
+                                                }
+                                            }}
+                                        />
+
+                                        <SettingInputText
+                                            label="PublicKey"
+                                            value={v.publicKey}
+                                            onChange={(e) => {
+                                                if (props.data) {
+                                                    props.data[index].publicKey = e
+                                                    props.onChange(props.data)
+                                                }
+                                            }}
+                                        />
+
+                                        <NewItemList
+                                            title="AllowedIps"
+                                            data={v.allowedIps}
+                                            onChange={(e) => {
+                                                if (props.data) {
+                                                    props.data[index].allowedIps = e
+                                                    props.onChange(props.data)
+                                                }
+                                            }}
+                                        />
+                                    </>
+                                </Container>
+                            </InputGroup>
+                        </Col>
+                    )
+                })
+        }
+
+        <Col sm={{ span: 10, offset: props.data?.length !== 0 ? 2 : 0 }}>
+            <InputGroup className="mb-2 justify-content-md-end" >
+                <Button variant='outline-success' onClick={() => {
+                    let data = new wireguard_peer_config({
+                        allowedIps: ["0.0.0.0/0"],
+                        endpoint: "127.0.0.1:51820",
+                        publicKey: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
+                    });
+                    if (!props.data)
+                        props.onChange([data])
+                    else {
+                        props.data.push(data)
+                        props.onChange(props.data)
+                    }
+                }} >
+                    <i className="bi bi-plus-lg" />
+                </Button>
+            </InputGroup>
+        </Col>
+
+    </Form.Group>)
+}
+
+const Wireguard = (props: { protocol: wireguard, onChange: (e: wireguard) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
-
-    function NewPeersList(props: {
-        title: string,
-        data: wireguard_peer_config[],
-        onChange: (x: wireguard_peer_config[]) => void
-    }) {
-
-
-        /*
-        
-                            allowedIps: ["0.0.0.0/0"],
-                            endpoint: "127.0.0.1:51820",
-                            publicKey: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
-         */
-        return (<Form.Group as={Row} className='mb-3'>
-            <Form.Label column sm={2} className="nowrap">{props.title}</Form.Label>
-
-
-            {
-                props.data && props.data
-                    .map((v, index) => {
-                        return (
-                            <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
-                                <InputGroup className="mb-2" >
-                                    <Container
-                                        title="Peer"
-                                        onClose={() => {
-                                            if (props.data) {
-                                                props.data.splice(index, 1)
-                                                props.onChange(props.data)
-                                            }
-                                        }}>
-                                        <>
-                                            <SettingInputText
-                                                label="Endpoint"
-                                                value={v.endpoint}
-                                                onChange={(e) => {
-                                                    if (props.data) {
-                                                        props.data[index].endpoint = e
-                                                        props.onChange(props.data)
-                                                    }
-                                                }}
-                                            />
-
-                                            <SettingInputText
-                                                label="PublicKey"
-                                                value={v.publicKey}
-                                                onChange={(e) => {
-                                                    if (props.data) {
-                                                        props.data[index].publicKey = e
-                                                        props.onChange(props.data)
-                                                    }
-                                                }}
-                                            />
-
-                                            <NewItemList
-                                                title="AllowedIps"
-                                                data={v.allowedIps}
-                                                onChange={(e) => {
-                                                    if (props.data) {
-                                                        props.data[index].allowedIps = e
-                                                        props.onChange(props.data)
-                                                    }
-                                                }}
-                                            />
-                                        </>
-                                    </Container>
-                                </InputGroup>
-                            </Col>
-                        )
-                    })
-            }
-
-            <Col sm={{ span: 10, offset: props.data?.length !== 0 ? 2 : 0 }}>
-                <InputGroup className="mb-2 justify-content-md-end" >
-                    <Button variant='outline-success' onClick={() => {
-                        let data = new wireguard_peer_config({
-                            allowedIps: ["0.0.0.0/0"],
-                            endpoint: "127.0.0.1:51820",
-                            publicKey: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
-                        });
-                        if (!props.data)
-                            props.onChange([data])
-                        else {
-                            props.data.push(data)
-                            props.onChange(props.data)
-                        }
-                    }} >
-                        <i className="bi bi-plus-lg" />
-                    </Button>
-                </InputGroup>
-            </Col>
-
-        </Form.Group>)
-    }
 
     /*
     "wireguard": new protocol({
@@ -248,7 +278,7 @@ const Wireguard = (props: { protocol: wireguard, onChange: (e: wireguard) => voi
     }),
      */
 
-    return <Container title="Wireguard" onClose={props.onClose}>
+    return <Container title="Wireguard" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <SettingInputText
                 label="SecretKey"
@@ -362,10 +392,10 @@ function NewAlternateHostList(props: {
         </Form.Group>)
 }
 
-const Simple = (props: { protocol: simple, onChange: (e: simple) => void, onClose?: () => void }) => {
+const Simple = (props: { protocol: simple, onChange: (e: simple) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
 
-    return <Container title="Simple" onClose={props.onClose}>
+    return <Container title="Simple" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <SettingInputText
                 label="Host"
@@ -387,21 +417,21 @@ const Simple = (props: { protocol: simple, onChange: (e: simple) => void, onClos
     </Container>
 }
 
-const None = (props: { onClose?: () => void }) => {
-    return <Container title="None" onClose={props.onClose}>
+const None = (props: { onClose?: () => void, moveUpDown?: MoveUpDown }) => {
+    return <Container title="None" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <div className="text-center my-2" style={{ opacity: '0.4' }}>None</div>
     </Container>
 }
-const Unknown = (props: { onClose?: () => void }) => {
-    return <Container title="Unknown" onClose={props.onClose}>
+const Unknown = (props: { onClose?: () => void, moveUpDown?: MoveUpDown }) => {
+    return <Container title="Unknown" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <div className="text-center my-2" style={{ opacity: '0.4' }}>Unknown</div>
     </Container>
 }
 
-const Websocket = (props: { protocol: websocket, onChange: (x: websocket) => void, onClose?: () => void }) => {
+const Websocket = (props: { protocol: websocket, onChange: (x: websocket) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
 
-    return <Container title="Websocket" onClose={props.onClose}>
+    return <Container title="Websocket" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <SettingInputText
                 label="Host"
@@ -418,10 +448,10 @@ const Websocket = (props: { protocol: websocket, onChange: (x: websocket) => voi
     </Container>
 }
 
-const Shadowsocks = (props: { protocol: shadowsocks, onChange: (e: shadowsocks) => void, onClose?: () => void }) => {
+const Shadowsocks = (props: { protocol: shadowsocks, onChange: (e: shadowsocks) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
 
-    return <Container title="Shadowsocks" onClose={props.onClose}>
+    return <Container title="Shadowsocks" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <SettingInputText
                 label="Method"
@@ -449,10 +479,10 @@ const TlsConfig = (props: { tls: tls_config, onChange: (x: tls_config) => void, 
     </>
 }
 
-const Quic = (props: { protocol: quic, onChange: (x: quic) => void, onClose?: () => void }) => {
+const Quic = (props: { protocol: quic, onChange: (x: quic) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     let cc = change(props.protocol, props.onChange)
     return <>
-        <Container title="Quic" onClose={props.onClose} >
+        <Container title="Quic" onClose={props.onClose} moveUpDown={props.moveUpDown}>
             <>
                 <SettingInputText label="Host" value={props.protocol.host} onChange={(e) => { cc((x) => x.host = e) }} />
                 <TlsConfig showEnabled={false} tls={props.protocol.tls ?? new tls_config({})} onChange={(x) => { cc((y) => y.tls = x) }} />
@@ -461,7 +491,7 @@ const Quic = (props: { protocol: quic, onChange: (x: quic) => void, onClose?: ()
     </>
 }
 
-const Shadowsocksr = (props: { protocol: shadowsocksr, onChange: (x: shadowsocksr) => void, onClose?: () => void }) => {
+const Shadowsocksr = (props: { protocol: shadowsocksr, onChange: (x: shadowsocksr) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     let cc = change(props.protocol, props.onChange);
     /*
      {
@@ -478,7 +508,7 @@ const Shadowsocksr = (props: { protocol: shadowsocksr, onChange: (x: shadowsocks
             })
         }
      */
-    return <Container title="Shadowsocksr" onClose={props.onClose}>
+    return <Container title="Shadowsocksr" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <SettingInputText
                 label="Server"
@@ -529,7 +559,7 @@ const Shadowsocksr = (props: { protocol: shadowsocksr, onChange: (x: shadowsocks
     </Container>
 }
 
-const Vmess = (props: { protocol: vmess, onChange: (e: vmess) => void, onClose?: () => void }) => {
+const Vmess = (props: { protocol: vmess, onChange: (e: vmess) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     let cc = change(props.protocol, props.onChange)
     /*
     "vmess": new protocol({
@@ -544,7 +574,7 @@ const Vmess = (props: { protocol: vmess, onChange: (e: vmess) => void, onClose?:
         })
          */
 
-    return <Container title="Vmess" onClose={props.onClose}>
+    return <Container title="Vmess" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <SettingInputText
                 label="AlterId"
@@ -569,7 +599,7 @@ const Vmess = (props: { protocol: vmess, onChange: (e: vmess) => void, onClose?:
     </Container>
 }
 
-const Trojan = (props: { protocol: trojan, onChange: (e: trojan) => void, onClose?: () => void }) => {
+const Trojan = (props: { protocol: trojan, onChange: (e: trojan) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
     /*
         "trojan": new protocol({
@@ -582,7 +612,7 @@ const Trojan = (props: { protocol: trojan, onChange: (e: trojan) => void, onClos
             }
         }),
      */
-    return <Container title="Trojan" onClose={props.onClose}>
+    return <Container title="Trojan" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <SettingInputText
                 label="Password"
@@ -600,7 +630,7 @@ const Trojan = (props: { protocol: trojan, onChange: (e: trojan) => void, onClos
 }
 
 
-const Socks5 = (props: { protocol: socks5, onChange: (e: socks5) => void, onClose?: () => void }) => {
+const Socks5 = (props: { protocol: socks5, onChange: (e: socks5) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
     /*
     "socks5": new protocol({
@@ -614,7 +644,7 @@ const Socks5 = (props: { protocol: socks5, onChange: (e: socks5) => void, onClos
         }
     }),
      */
-    return <Container title="Socks5" onClose={props.onClose}>
+    return <Container title="Socks5" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <SettingInputText
                 label="Hostname"
@@ -638,7 +668,7 @@ const Socks5 = (props: { protocol: socks5, onChange: (e: socks5) => void, onClos
     </Container>
 }
 
-const HTTP = (props: { protocol: http, onChange: (x: http) => void, onClose?: () => void }) => {
+const HTTP = (props: { protocol: http, onChange: (x: http) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
     /*
     "http": new protocol({
@@ -651,7 +681,7 @@ const HTTP = (props: { protocol: http, onChange: (x: http) => void, onClose?: ()
         }
     }),
      */
-    return <Container title="HTTP" onClose={props.onClose}>
+    return <Container title="HTTP" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <SettingInputText
                 label="User"
@@ -668,16 +698,16 @@ const HTTP = (props: { protocol: http, onChange: (x: http) => void, onClose?: ()
     </Container>
 }
 
-const Direct = (props: { protocol: direct, onChange: (x: direct) => void, onClose?: () => void }) => {
+const Direct = (props: { protocol: direct, onChange: (x: direct) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     let cc = change(props.protocol, props.onChange)
-    return <Container title="Direct" onClose={props.onClose}>
+    return <Container title="Direct" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
         </>
     </Container>
 }
 
-const Reject = (props: { protocol: reject, onChange: (x: reject) => void, onClose?: () => void }) => {
-    return <Container title="Reject" onClose={props.onClose}>
+const Reject = (props: { protocol: reject, onChange: (x: reject) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
+    return <Container title="Reject" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <div className="text-center my-2" style={{ opacity: '0.4' }}>Reject</div>
         </>
@@ -685,7 +715,7 @@ const Reject = (props: { protocol: reject, onChange: (x: reject) => void, onClos
 }
 
 
-const Yuubinsya = (props: { protocol: yuubinsya, onChange: (x: yuubinsya) => void, onClose?: () => void }) => {
+const Yuubinsya = (props: { protocol: yuubinsya, onChange: (x: yuubinsya) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     let cc = change(props.protocol, props.onChange)
     /*
     "yuubinsya": new protocol({
@@ -699,7 +729,7 @@ const Yuubinsya = (props: { protocol: yuubinsya, onChange: (x: yuubinsya) => voi
         }
     })
      */
-    return <Container title="Yuubinsya" onClose={props.onClose}>
+    return <Container title="Yuubinsya" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <SettingCheck
                 label="TCP Encrypt"
@@ -727,8 +757,8 @@ const Yuubinsya = (props: { protocol: yuubinsya, onChange: (x: yuubinsya) => voi
     </Container>
 }
 
-const Tls = (props: { protocol: tls_config, onChange: (x: tls_config) => void, onClose?: () => void }) => {
-    return <Container title="Tls" onClose={props.onClose}>
+const Tls = (props: { protocol: tls_config, onChange: (x: tls_config) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
+    return <Container title="Tls" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <TlsConfig
             tls={props.protocol}
             onChange={props.onChange}
@@ -736,9 +766,9 @@ const Tls = (props: { protocol: tls_config, onChange: (x: tls_config) => void, o
     </Container>
 }
 
-const Mux = (props: { protocol: mux, onChange: (e: mux) => void, onClose?: () => void }) => {
+const Mux = (props: { protocol: mux, onChange: (e: mux) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
-    return <Container title="Mux" onClose={props.onClose}>
+    return <Container title="Mux" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <SettingInputText
                 label="Concurrency"
@@ -749,15 +779,15 @@ const Mux = (props: { protocol: mux, onChange: (e: mux) => void, onClose?: () =>
     </Container>
 }
 
-const Drop = (props: { protocol: drop, onChange: (e: drop) => void, onClose?: () => void }) => {
-    return <Container title="Drop" onClose={props.onClose}>
+const Drop = (props: { protocol: drop, onChange: (e: drop) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
+    return <Container title="Drop" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <div className="text-center my-2" style={{ opacity: '0.4' }}>Drop</div>
     </Container>
 }
 
-const Vless = (props: { protocol: vless, onChange: (e: vless) => void, onClose?: () => void }) => {
+const Vless = (props: { protocol: vless, onChange: (e: vless) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
-    return <Container title="Vless" onClose={props.onClose}>
+    return <Container title="Vless" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <SettingInputText
                 label="UUID"
@@ -768,9 +798,9 @@ const Vless = (props: { protocol: vless, onChange: (e: vless) => void, onClose?:
     </Container>
 }
 
-const ObfsHttp = (props: { protocol: obfs_http, onChange: (e: obfs_http) => void, onClose?: () => void }) => {
+const ObfsHttp = (props: { protocol: obfs_http, onChange: (e: obfs_http) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
-    return <Container title="ObfsHttp" onClose={props.onClose}>
+    return <Container title="ObfsHttp" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <SettingInputText
                 label="Host"
@@ -788,16 +818,16 @@ const ObfsHttp = (props: { protocol: obfs_http, onChange: (e: obfs_http) => void
 }
 
 
-const Grpc = (props: { protocol: grpc, onChange: (e: grpc) => void, onClose?: () => void }) => {
+const Grpc = (props: { protocol: grpc, onChange: (e: grpc) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
-    return <Container title="Grpc" onClose={props.onClose}>
+    return <Container title="Grpc" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <TlsConfig tls={props.protocol.tls ?? new tls_config({})} onChange={(x) => { cc((y) => y.tls = x) }} />
     </Container>
 }
 
-const HTTP2 = (props: { protocol: http2, onChange: (e: http2) => void, onClose?: () => void }) => {
+const HTTP2 = (props: { protocol: http2, onChange: (e: http2) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
-    return <Container title="Http2" onClose={props.onClose}>
+    return <Container title="Http2" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <SettingInputText
                 label="Concurrency"
@@ -808,7 +838,7 @@ const HTTP2 = (props: { protocol: http2, onChange: (e: http2) => void, onClose?:
     </Container>
 }
 
-const Reality = (props: { protocol: reality, onChange: (e: reality) => void, onClose?: () => void }) => {
+const Reality = (props: { protocol: reality, onChange: (e: reality) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
     /*
         "reality": new protocol({
@@ -823,7 +853,7 @@ const Reality = (props: { protocol: reality, onChange: (e: reality) => void, onC
             }
         }
      */
-    return <Container title="Reality" onClose={props.onClose}>
+    return <Container title="Reality" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <SettingCheck
                 label="Debug"

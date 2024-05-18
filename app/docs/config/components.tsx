@@ -1,4 +1,4 @@
-import { Row, Form, Card, Col, InputGroup, Button, DropdownItem, DropdownButton, DropdownMenu, Dropdown } from "react-bootstrap"
+import { Row, Form, Card, Col, InputGroup, Button, DropdownItem, ButtonGroup, DropdownMenu, Dropdown } from "react-bootstrap"
 import { useState } from "react";
 
 export class Remind {
@@ -234,17 +234,50 @@ export function ItemList(props: {
     </Form.Group>
 }
 
+
+export class MoveUpDown {
+    length: number
+    current: number
+    onmove: (up: boolean) => void
+
+
+    constructor(length: number, current: number, onmove: (up: boolean) => void) {
+        this.length = length
+        this.current = current
+        this.onmove = onmove
+    }
+}
+
 export const Container = (props: {
     title: string,
     onClose?: () => void,
     hideClose?: boolean,
+    moveUpDown?: MoveUpDown,
     children: JSX.Element
 }) => {
     return <>
         <Card className="flex-grow-1 form-floating">
             <Card.Header className="d-flex justify-content-between">
                 {props.title}
-                {!props.hideClose && <Button variant='outline-danger' size="sm" onClick={props.onClose}><i className="bi bi-x-lg"></i> </Button>}
+
+                {
+                    (!props.hideClose || (props.moveUpDown?.length ?? 0) > 1) &&
+                    <ButtonGroup>
+                        {
+                            ((props.moveUpDown?.length ?? 0) > 1) &&
+                            <>
+                                {props.moveUpDown?.current != 0 &&
+                                    <Button variant="outline-primary" size="sm" onClick={() => props.moveUpDown!!.onmove(true)}><i className="bi bi-arrow-up"></i></Button>}
+                                {props.moveUpDown?.current != props.moveUpDown!!.length - 1 &&
+                                    <Button variant="outline-primary" size="sm" onClick={() => props.moveUpDown!!.onmove(false)}><i className="bi bi-arrow-down"></i></Button>}
+
+                            </>
+                        }
+                        {!props.hideClose &&
+                            <Button variant='outline-danger' size="sm" onClick={props.onClose}><i className="bi bi-x-lg"></i></Button>
+                        }
+                    </ButtonGroup>
+                }
             </Card.Header>
             <Card.Body>
                 {props.children}
