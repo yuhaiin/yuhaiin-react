@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@bufbuild/buf": "^1.32.1",
+    "@bufbuild/buf": "^1.32.2",
     "@bufbuild/protobuf": "^1.9.0",
     "@bufbuild/protoc-gen-es": "^1.9.0",
     "@types/node": "^20.12.12",
