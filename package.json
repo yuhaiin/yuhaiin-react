@@ -6,7 +6,7 @@
     "@bufbuild/buf": "^1.32.2",
     "@bufbuild/protobuf": "^1.9.0",
     "@bufbuild/protoc-gen-es": "^1.10.0",
-    "@types/node": "^20.12.13",
+    "@types/node": "^20.14.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "bootstrap": "^v5.3.3",
