@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Form, InputGroup, Card, Row, Col, Button } from 'react-bootstrap';
 import { SettingInputText, SettingInputTextarea, NewItemList } from './components';
 import { SettingCheck } from "../common/switch";
+import { split as shlexSplit, join as shlexJoin } from 'shlex';
 import { http, redir, tproxy, tun, yuubinsya, mixed, socks5, socks4a, tun_endpoint_driver, route, tls_config, certificate, websocket, quic, grpc, tls, http2, reality, protocol, inbound_config, normal, quic2 } from '../pbes/config/listener/listener_pb';
 
 export const HTTPComponents = React.memo((props: { http: http, onChange: (x: http) => void }) => {
@@ -92,6 +93,8 @@ export const TunComponents = React.memo((props: { tun: tun, onChange: (x: tun) =
         props.onChange(props.tun)
     }
 
+    const [postUp, setPostUp] = useState(shlexJoin(props.tun.postUp))
+    const [postDown, setPostDown] = useState(shlexJoin(props.tun.postDown))
 
     function SettingTunTypeSelect(props: {
         label: string, value?: tun_endpoint_driver | null,
@@ -126,8 +129,29 @@ export const TunComponents = React.memo((props: { tun: tun, onChange: (x: tun) =
             <SettingInputText label='MTU' value={props.tun.mtu} onChange={(e) => updateState((x) => x.mtu = !isNaN(Number(e)) ? Number(e) : x.mtu)} />
             <SettingInputText label='IPv4' value={props.tun.portal} onChange={(e) => updateState((x) => x.portal = e)} />
             <SettingInputText label='IPv6' value={props.tun.portalV6} onChange={(e) => updateState((x) => x.portalV6 = e)} />
+            <SettingInputText label='Post Up' value={postUp}
+                onChange={(e) => {
+                    setPostUp(e)
+                    try {
+                        let cmds = shlexSplit(e)
+                        updateState((x) => x.postUp = cmds)
+                    } catch (e) {
+                        console.log(e)
+                    }
+                }
+                } />
+            <SettingInputText label='Post Down' value={postDown}
+                onChange={(e) => {
+                    setPostDown(e)
+                    try {
+                        let cmds = shlexSplit(e)
+                        updateState((x) => x.postDown = cmds)
+                    } catch (e) {
+                        console.log(e)
+                    }
+                }
+                } />
             <SettingTunTypeSelect label='Stack' value={props.tun.driver} onChange={(e) => updateState((x) => x.driver = e)} />
-
 
             <NewItemList
                 title='Routes'
