@@ -1,7 +1,8 @@
 import React from 'react';
 import { Form, Row, Col, Button, } from 'react-bootstrap';
 import { SettingInputText, NewItemList, Container } from './components';
-import { bypass_config, mode, mode_config, resolve_strategy } from '../pbes/config/bypass/bypass_pb';
+import { bypass_config, mode, mode_config, resolve_strategy, udp_proxy_fqdn_strategy } from '../pbes/config/bypass/bypass_pb';
+import { SettingCheck } from '../common/switch';
 
 
 export const defaultBypassConfig: bypass_config = new bypass_config({
@@ -30,7 +31,9 @@ const Bypass = React.memo((props: { bypass: bypass_config, onChange: (x: bypass_
             <SettingModeSelect label='TCP' network={true} value={props.bypass.tcp} onChange={(v) => updateState((x) => x.tcp = v)} />
             <SettingModeSelect label='UDP' network={true} value={props.bypass.udp} onChange={(v) => updateState((x) => x.udp = v)} />
             <SettingInputText label='Bypass File' value={props.bypass.bypassFile} onChange={(e) => updateState((x) => x.bypassFile = e)} />
-
+            <SettingCheck label='Udp proxy Fqdn'
+                checked={props.bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve}
+                onChange={() => updateState((x) => x.udpProxyFqdn = x.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve ? udp_proxy_fqdn_strategy.resolve : udp_proxy_fqdn_strategy.skip_resolve)} />
             <hr />
 
             {
@@ -66,7 +69,7 @@ const BypassSingleComponents = (props: { config: mode_config, onChange: (x: mode
             <SettingModeSelect label='Mode' network={false} value={props.config.mode} onChange={(v) => updateState((x) => x.mode = v)} />
             <SettingInputText label='Tag' value={props.config.tag} onChange={(e) => updateState((x) => x.tag = e)} />
             <SettingResolveStrategySelect label='Resolve Strategy' value={props.config.resolveStrategy} onChange={(e) => updateState((x) => x.resolveStrategy = e)} />
-
+            <SettingUdpProxyFqdnSelect label='UDP proxy Fqdn' value={props.config.udpProxyFqdnStrategy} onChange={(e) => updateState((x) => x.udpProxyFqdnStrategy = e)} />
             <NewItemList
                 title='IP/DOMAIN'
                 data={props.config.hostname}
@@ -86,6 +89,21 @@ function SettingModeSelect(props: { label: string, network: boolean, value: mode
                     <option value={mode[mode.direct]}>DIRECT</option>
                     <option value={mode[mode.proxy]}>PROXY</option>
                     <option value={mode[mode.block]}>BLOCK</option>
+                </Form.Select>
+            </Col>
+        </Form.Group>
+    )
+}
+
+function SettingUdpProxyFqdnSelect(props: { label: string, value: udp_proxy_fqdn_strategy, onChange: (value: udp_proxy_fqdn_strategy) => void }) {
+    return (
+        <Form.Group as={Row} className='mb-3'>
+            <Form.Label column sm={2}>{props.label}</Form.Label>
+            <Col sm={10}>
+                <Form.Select value={udp_proxy_fqdn_strategy[props.value]} onChange={(e) => props.onChange(udp_proxy_fqdn_strategy[e.target.value])}>
+                    <option value={udp_proxy_fqdn_strategy[udp_proxy_fqdn_strategy.udp_proxy_fqdn_strategy_default]}>Global</option>
+                    <option value={udp_proxy_fqdn_strategy[udp_proxy_fqdn_strategy.resolve]}>Resolve</option>
+                    <option value={udp_proxy_fqdn_strategy[udp_proxy_fqdn_strategy.skip_resolve]}>Skip</option>
                 </Form.Select>
             </Col>
         </Form.Group>

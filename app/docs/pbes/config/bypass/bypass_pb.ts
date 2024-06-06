@@ -77,6 +77,32 @@ proto3.util.setEnumType(resolve_strategy, "yuhaiin.bypass.resolve_strategy", [
 ]);
 
 /**
+ * @generated from enum yuhaiin.bypass.udp_proxy_fqdn_strategy
+ */
+export enum udp_proxy_fqdn_strategy {
+  /**
+   * @generated from enum value: udp_proxy_fqdn_strategy_default = 0;
+   */
+  udp_proxy_fqdn_strategy_default = 0,
+
+  /**
+   * @generated from enum value: resolve = 1;
+   */
+  resolve = 1,
+
+  /**
+   * @generated from enum value: skip_resolve = 2;
+   */
+  skip_resolve = 2,
+}
+// Retrieve enum metadata with: proto3.getEnumType(udp_proxy_fqdn_strategy)
+proto3.util.setEnumType(udp_proxy_fqdn_strategy, "yuhaiin.bypass.udp_proxy_fqdn_strategy", [
+  { no: 0, name: "udp_proxy_fqdn_strategy_default" },
+  { no: 1, name: "resolve" },
+  { no: 2, name: "skip_resolve" },
+]);
+
+/**
  * @generated from message yuhaiin.bypass.bypass_config
  */
 export class bypass_config extends Message<bypass_config> {
@@ -101,6 +127,11 @@ export class bypass_config extends Message<bypass_config> {
   bypassFile = "";
 
   /**
+   * @generated from field: yuhaiin.bypass.udp_proxy_fqdn_strategy udp_proxy_fqdn = 6 [json_name = "udp_proxy_fqdn"];
+   */
+  udpProxyFqdn = udp_proxy_fqdn_strategy.udp_proxy_fqdn_strategy_default;
+
+  /**
    * @generated from field: repeated yuhaiin.bypass.mode_config custom_rule_v3 = 7 [json_name = "custom_rule_v3"];
    */
   customRuleV3: mode_config[] = [];
@@ -117,6 +148,7 @@ export class bypass_config extends Message<bypass_config> {
     { no: 4, name: "udp", kind: "enum", T: proto3.getEnumType(mode) },
     { no: 5, name: "sniffy", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 2, name: "bypass_file", jsonName: "bypass_file", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "udp_proxy_fqdn", jsonName: "udp_proxy_fqdn", kind: "enum", T: proto3.getEnumType(udp_proxy_fqdn_strategy) },
     { no: 7, name: "custom_rule_v3", jsonName: "custom_rule_v3", kind: "message", T: mode_config, repeated: true },
   ]);
 
@@ -161,6 +193,11 @@ export class mode_config extends Message<mode_config> {
    */
   resolveStrategy = resolve_strategy.default;
 
+  /**
+   * @generated from field: yuhaiin.bypass.udp_proxy_fqdn_strategy udp_proxy_fqdn_strategy = 6 [json_name = "udp_proxy_fqdn_strategy"];
+   */
+  udpProxyFqdnStrategy = udp_proxy_fqdn_strategy.udp_proxy_fqdn_strategy_default;
+
   constructor(data?: PartialMessage<mode_config>) {
     super();
     proto3.util.initPartial(data, this);
@@ -173,6 +210,7 @@ export class mode_config extends Message<mode_config> {
     { no: 2, name: "tag", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "hostname", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 4, name: "resolve_strategy", jsonName: "resolve_strategy", kind: "enum", T: proto3.getEnumType(resolve_strategy) },
+    { no: 6, name: "udp_proxy_fqdn_strategy", jsonName: "udp_proxy_fqdn_strategy", kind: "enum", T: proto3.getEnumType(udp_proxy_fqdn_strategy) },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): mode_config {
