@@ -57,11 +57,11 @@ export const Point = (props: {
             reminds={props.groups ? props.groups.map(x => new Remind({ label: x, value: x })) : undefined}
         />
 
-        <SettingInputText
+        {/* <SettingInputText
             label="Hash"
             value={props.point.hash}
             onChange={(e) => { cc((x) => x.hash = e) }}
-        />
+        /> */}
 
         {
             props.point.protocols.map((x, i) => {

@@ -17,7 +17,8 @@ function NodeModal(props: {
     onHide: () => void,
     onSave?: () => void,
     groups?: string[],
-    onDelete?: () => void
+    onDelete?: () => void,
+    isNew?: boolean
 }) {
     const ctx = useContext(GlobalToastContext);
 
@@ -36,10 +37,12 @@ function NodeModal(props: {
             variant="outline-primary"
             disabled={isLoading || error || !props.editable}
             onClick={() => {
+                let p = node ?? props.point ?? new point({});
+                if (props.isNew) p.hash = ""
                 Fetch("/node",
                     {
                         method: "PATCH",
-                        body: (node ?? props.point ?? new point({})).toBinary(),
+                        body: p.toBinary(),
                     })
                     .then(async ({ error }) => {
                         if (error === undefined) {
@@ -54,7 +57,7 @@ function NodeModal(props: {
             }}
         >
             Save
-        </Button>
+        </Button >
     }
 
     return (
@@ -152,6 +155,7 @@ export const NodeJsonModal = (
         data?: string,
         onSave?: () => void
         onHide: () => void,
+        isNew?: boolean
     },
 ) => {
     const ctx = useContext(GlobalToastContext);
@@ -160,10 +164,12 @@ export const NodeJsonModal = (
         if (!props.onSave) return <></>
         return <Button variant="outline-primary"
             onClick={() => {
+                let p = new point().fromJsonString(nodeJson.data);
+                if (props.isNew) p.hash = ""
                 Fetch("/node",
                     {
                         method: "PATCH",
-                        body: (new point().fromJsonString(nodeJson.data)).toBinary(),
+                        body: p.toBinary(),
                     })
                     .then(async ({ error }) => {
                         if (error === undefined) {

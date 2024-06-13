@@ -173,6 +173,7 @@ class ModalData {
     hash: string
     show: boolean
     onDelete?: () => void
+    isNew?: boolean
 
     constructor(data?: Partial<ModalData>) {
         this.point = data?.point ?? new point({})
@@ -200,6 +201,7 @@ function Group() {
                 show={modalData.show}
                 hash={modalData.hash}
                 point={modalData.point}
+                isNew={modalData.isNew}
                 onDelete={modalData.onDelete}
                 onChangePoint={(v) => { setModalData(prev => { return { ...prev, point: v } }) }}
                 editable
@@ -212,6 +214,7 @@ function Group() {
                 show={importJson.data}
                 onSave={() => mutate()}
                 onHide={() => setImportJson({ data: false })}
+                isNew
             />
 
 
@@ -249,7 +252,8 @@ function Group() {
                                         }),
                                         hash: "new node",
                                         show: true,
-                                        onDelete: undefined
+                                        onDelete: undefined,
+                                        isNew: true
                                     })
                                 }}
                             >
