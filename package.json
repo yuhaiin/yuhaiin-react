@@ -15,7 +15,7 @@
     "react-bootstrap": "^2.10.3",
     "shlex": "^2.1.2",
     "swr": "^2.2.5",
-    "typescript": "^5.4.5"
+    "typescript": "^5.5.2"
   },
   "scripts": {
     "dev": "next dev",
