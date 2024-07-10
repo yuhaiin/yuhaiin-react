@@ -1,6 +1,6 @@
 import { EnumValueInfo, proto3 } from "@bufbuild/protobuf";
 import { SettingCheck } from "../common/switch";
-import { empty, grpc, http, http2, inbound, inbound_config, mixed, mux, normal, reality, redir, socks5, tcp_udp_control, tcpudp, tls, tls_config, tproxy, transport, tun, websocket, yuubinsya } from "../pbes/config/listener/listener_pb";
+import { empty, grpc, http, http2, inbound, inbound_config, mixed, mux, normal, reality, redir, sniff, socks5, tcp_udp_control, tcpudp, tls, tls_config, tproxy, transport, tun, websocket, yuubinsya } from "../pbes/config/listener/listener_pb";
 import { SettingInputText, Container, MoveUpDown } from "./components";
 import { EnumType } from "@bufbuild/protobuf";
 import { Form, Row, Col, Modal, ListGroup, InputGroup, Button, Card } from "react-bootstrap";
@@ -71,6 +71,10 @@ export const Inbounds = (props: { inbounds: inbound_config, onChange: (x: inboun
         <SettingCheck label='Fakedns'
             checked={!props.inbounds.hijackDnsFakeip ? false : true}
             onChange={() => cc((x) => x.hijackDnsFakeip = !x.hijackDnsFakeip)} />
+
+        <SettingCheck label='Sniff'
+            checked={!props.inbounds.sniff?.enabled ? false : true}
+            onChange={() => cc((x) => x.sniff = new sniff({ enabled: !x.sniff?.enabled }))} />
 
         <hr />
 

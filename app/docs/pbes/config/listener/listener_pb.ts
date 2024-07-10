@@ -57,6 +57,11 @@ export class inbound_config extends Message<inbound_config> {
    */
   inbounds: { [key: string]: inbound } = {};
 
+  /**
+   * @generated from field: yuhaiin.listener.sniff sniff = 4;
+   */
+  sniff?: sniff;
+
   constructor(data?: PartialMessage<inbound_config>) {
     super();
     proto3.util.initPartial(data, this);
@@ -69,6 +74,7 @@ export class inbound_config extends Message<inbound_config> {
     { no: 3, name: "hijack_dns_fakeip", jsonName: "hijack_dns_fakeip", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 5, name: "servers", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: protocol} },
     { no: 1, name: "inbounds", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: inbound} },
+    { no: 4, name: "sniff", kind: "message", T: sniff },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): inbound_config {
@@ -1559,6 +1565,43 @@ export class certificate extends Message<certificate> {
 
   static equals(a: certificate | PlainMessage<certificate> | undefined, b: certificate | PlainMessage<certificate> | undefined): boolean {
     return proto3.util.equals(certificate, a, b);
+  }
+}
+
+/**
+ * @generated from message yuhaiin.listener.sniff
+ */
+export class sniff extends Message<sniff> {
+  /**
+   * @generated from field: bool enabled = 1;
+   */
+  enabled = false;
+
+  constructor(data?: PartialMessage<sniff>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "yuhaiin.listener.sniff";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "enabled", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): sniff {
+    return new sniff().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): sniff {
+    return new sniff().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): sniff {
+    return new sniff().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: sniff | PlainMessage<sniff> | undefined, b: sniff | PlainMessage<sniff> | undefined): boolean {
+    return proto3.util.equals(sniff, a, b);
   }
 }
 
