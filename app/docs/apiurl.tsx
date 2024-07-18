@@ -1,5 +1,5 @@
 export var APIUrl = ""
-export var RemoteBypass = "https://raw.githubusercontent.com/yuhaiin/kitte/main/yuhaiin/yuhaiin.conf"
+export var RemoteBypass = "https://raw.githubusercontent.com/yuhaiin/kitte/main/yuhaiin/remote.conf"
 export var LatencyHTTPUrl = "https://clients3.google.com/generate_204"
 export var LatencyDNSUrl = "dns.nextdns.io:853"
 export var LatencyIPv6 = true
