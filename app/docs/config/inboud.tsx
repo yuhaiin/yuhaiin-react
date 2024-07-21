@@ -1,10 +1,10 @@
 import { EnumValueInfo, proto3 } from "@bufbuild/protobuf";
 import { SettingCheck } from "../common/switch";
-import { empty, grpc, http, http2, inbound, inbound_config, mixed, mux, normal, reality, redir, sniff, socks5, tcp_udp_control, tcpudp, tls, tls_config, tproxy, transport, tun, websocket, yuubinsya } from "../pbes/config/listener/listener_pb";
+import { empty, grpc, http, http2, inbound, inbound_config, mixed, mux, normal, quic, reality, redir, sniff, socks5, tcp_udp_control, tcpudp, tls, tls_config, tproxy, transport, tun, websocket, yuubinsya } from "../pbes/config/listener/listener_pb";
 import { SettingInputText, Container, MoveUpDown } from "./components";
 import { EnumType } from "@bufbuild/protobuf";
 import { Form, Row, Col, Modal, ListGroup, InputGroup, Button, Card } from "react-bootstrap";
-import { HTTPComponents, MixedComponents, Quic2Components, RealityComponents, RedirComponents, Socks5Components, TProxyComponents, TlsComponents, TunComponents } from "./server";
+import { HTTPComponents, MixedComponents, QuicComponents, RealityComponents, RedirComponents, Socks5Components, TProxyComponents, TlsComponents, TunComponents } from "./server";
 import { useState } from "react";
 import React from "react";
 
@@ -284,7 +284,7 @@ const Network = (props: { inbound: inbound, onChange: (x: inbound) => void }) =>
                                     x.network = { case: "tcpudp", value: new tcpudp({}) }
                                     break
                                 case "quic":
-                                    x.network = { case: "quic", value: new yuubinsya({}) }
+                                    x.network = { case: "quic", value: new quic({}) }
                                     break
                                 case "empty":
                                     x.network = { case: "empty", value: new empty({}) }
@@ -310,7 +310,7 @@ const NetworkBase = (props: { inbound: inbound, onChange: (x: inbound) => void }
         case "tcpudp":
             return <TcpUdp protocol={props.inbound.network.value} onChange={(x) => { cc((y) => y.network.value = x) }}></TcpUdp>
         case "quic":
-            return <Quic2Components
+            return <QuicComponents
                 quic={props.inbound.network.value}
                 onChange={(x) => { cc((y) => y.network.value = x) }}
             />

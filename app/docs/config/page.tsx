@@ -4,7 +4,6 @@ import { useContext, useState } from 'react';
 import { Form, Card, Row, Col, Button, Tab, ToggleButtonGroup, ToggleButton, Nav } from 'react-bootstrap';
 import DNS from './dns';
 import Bypass from './bypass';
-import Inbound from './server';
 import Loading from '../common/loading';
 import { SettingInputText, Remind, ItemList } from './components';
 import { SettingCheck } from "../common/switch";
@@ -74,7 +73,6 @@ function ConfigComponent() {
                             <Nav.Item><Nav.Link eventKey="dns">DNS</Nav.Link></Nav.Item>
                             <Nav.Item><Nav.Link eventKey="bypass">Bypass</Nav.Link></Nav.Item>
                             <Nav.Item><Nav.Link eventKey="inbound">Inbound</Nav.Link></Nav.Item>
-                            <Nav.Item><Nav.Link eventKey="inbound_old">Inbound(Deprecated)</Nav.Link></Nav.Item>
                             <Nav.Item><Nav.Link eventKey="info">Info</Nav.Link></Nav.Item>
                         </Nav>
                     </Card.Header>
@@ -146,12 +144,6 @@ function ConfigComponent() {
                                         inbounds={setting.server!!}
                                         onChange={(x) => { updateState((y) => y.server = x) }}
                                     />
-                                </fieldset>
-                            </Tab.Pane>
-
-                            <Tab.Pane eventKey="inbound_old">
-                                <fieldset disabled={info?.os === "android"}>
-                                    <Inbound server={setting.server!!} onChange={(e) => updateState((x) => x.server = e)} />
                                 </fieldset>
                             </Tab.Pane>
 

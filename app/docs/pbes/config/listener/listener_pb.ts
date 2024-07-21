@@ -47,12 +47,6 @@ export class inbound_config extends Message<inbound_config> {
   hijackDnsFakeip = false;
 
   /**
-   * @generated from field: map<string, yuhaiin.listener.protocol> servers = 5 [deprecated = true];
-   * @deprecated
-   */
-  servers: { [key: string]: protocol } = {};
-
-  /**
    * @generated from field: map<string, yuhaiin.listener.inbound> inbounds = 1;
    */
   inbounds: { [key: string]: inbound } = {};
@@ -72,7 +66,6 @@ export class inbound_config extends Message<inbound_config> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 2, name: "hijack_dns", jsonName: "hijack_dns", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 3, name: "hijack_dns_fakeip", jsonName: "hijack_dns_fakeip", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 5, name: "servers", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: protocol} },
     { no: 1, name: "inbounds", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: inbound} },
     { no: 4, name: "sniff", kind: "message", T: sniff },
   ]);
@@ -125,9 +118,9 @@ export class inbound extends Message<inbound> {
     case: "tcpudp";
   } | {
     /**
-     * @generated from field: yuhaiin.listener.quic2 quic = 16;
+     * @generated from field: yuhaiin.listener.quic quic = 16;
      */
-    value: quic2;
+    value: quic;
     case: "quic";
   } | { case: undefined; value?: undefined } = { case: undefined };
 
@@ -201,7 +194,7 @@ export class inbound extends Message<inbound> {
     { no: 14, name: "enabled", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 21, name: "empty", kind: "message", T: empty, oneof: "network" },
     { no: 15, name: "tcpudp", kind: "message", T: tcpudp, oneof: "network" },
-    { no: 16, name: "quic", kind: "message", T: quic2, oneof: "network" },
+    { no: 16, name: "quic", kind: "message", T: quic, oneof: "network" },
     { no: 2, name: "transport", kind: "message", T: transport, repeated: true },
     { no: 3, name: "http", kind: "message", T: http, oneof: "protocol" },
     { no: 4, name: "socks5", kind: "message", T: socks5, oneof: "protocol" },
@@ -525,9 +518,9 @@ export class tcpudp extends Message<tcpudp> {
 }
 
 /**
- * @generated from message yuhaiin.listener.quic2
+ * @generated from message yuhaiin.listener.quic
  */
-export class quic2 extends Message<quic2> {
+export class quic extends Message<quic> {
   /**
    * @generated from field: string host = 1;
    */
@@ -538,32 +531,32 @@ export class quic2 extends Message<quic2> {
    */
   tls?: tls_config;
 
-  constructor(data?: PartialMessage<quic2>) {
+  constructor(data?: PartialMessage<quic>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "yuhaiin.listener.quic2";
+  static readonly typeName = "yuhaiin.listener.quic";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "host", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "tls", kind: "message", T: tls_config },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): quic2 {
-    return new quic2().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): quic {
+    return new quic().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): quic2 {
-    return new quic2().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): quic {
+    return new quic().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): quic2 {
-    return new quic2().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): quic {
+    return new quic().fromJsonString(jsonString, options);
   }
 
-  static equals(a: quic2 | PlainMessage<quic2> | undefined, b: quic2 | PlainMessage<quic2> | undefined): boolean {
-    return proto3.util.equals(quic2, a, b);
+  static equals(a: quic | PlainMessage<quic> | undefined, b: quic | PlainMessage<quic> | undefined): boolean {
+    return proto3.util.equals(quic, a, b);
   }
 }
 
@@ -571,12 +564,6 @@ export class quic2 extends Message<quic2> {
  * @generated from message yuhaiin.listener.http
  */
 export class http extends Message<http> {
-  /**
-   * @generated from field: string host = 1 [deprecated = true];
-   * @deprecated
-   */
-  host = "";
-
   /**
    * @generated from field: string username = 3;
    */
@@ -595,7 +582,6 @@ export class http extends Message<http> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "yuhaiin.listener.http";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "host", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "username", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "password", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
@@ -622,12 +608,6 @@ export class http extends Message<http> {
  */
 export class socks5 extends Message<socks5> {
   /**
-   * @generated from field: string host = 1 [deprecated = true];
-   * @deprecated
-   */
-  host = "";
-
-  /**
    * @generated from field: string username = 3;
    */
   username = "";
@@ -650,7 +630,6 @@ export class socks5 extends Message<socks5> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "yuhaiin.listener.socks5";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "host", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "username", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "password", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "udp", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
@@ -678,12 +657,6 @@ export class socks5 extends Message<socks5> {
  */
 export class socks4a extends Message<socks4a> {
   /**
-   * @generated from field: string host = 1 [deprecated = true];
-   * @deprecated
-   */
-  host = "";
-
-  /**
    * @generated from field: string username = 2;
    */
   username = "";
@@ -696,7 +669,6 @@ export class socks4a extends Message<socks4a> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "yuhaiin.listener.socks4a";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "host", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "username", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
@@ -722,12 +694,6 @@ export class socks4a extends Message<socks4a> {
  */
 export class mixed extends Message<mixed> {
   /**
-   * @generated from field: string host = 1 [deprecated = true];
-   * @deprecated
-   */
-  host = "";
-
-  /**
    * @generated from field: string username = 3;
    */
   username = "";
@@ -745,7 +711,6 @@ export class mixed extends Message<mixed> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "yuhaiin.listener.mixed";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "host", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "username", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "password", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
@@ -871,18 +836,6 @@ export class tun extends Message<tun> {
   mtu = 0;
 
   /**
-   * @generated from field: string gateway = 3 [deprecated = true];
-   * @deprecated
-   */
-  gateway = "";
-
-  /**
-   * @generated from field: bool dns_hijacking = 4 [json_name = "dns_hijacking", deprecated = true];
-   * @deprecated
-   */
-  dnsHijacking = false;
-
-  /**
    * @generated from field: bool force_fakeip = 9 [json_name = "force_fakeip"];
    */
   forceFakeip = false;
@@ -932,8 +885,6 @@ export class tun extends Message<tun> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "mtu", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 3, name: "gateway", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "dns_hijacking", jsonName: "dns_hijacking", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 9, name: "force_fakeip", jsonName: "force_fakeip", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 6, name: "skip_multicast", jsonName: "skip_multicast", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 7, name: "driver", kind: "enum", T: proto3.getEnumType(tun_endpoint_driver) },
@@ -1035,12 +986,6 @@ export class route extends Message<route> {
  */
 export class yuubinsya extends Message<yuubinsya> {
   /**
-   * @generated from field: string host = 1 [deprecated = true];
-   * @deprecated
-   */
-  host = "";
-
-  /**
    * @generated from field: string password = 2;
    */
   password = "";
@@ -1060,60 +1005,6 @@ export class yuubinsya extends Message<yuubinsya> {
    */
   mux = false;
 
-  /**
-   * @generated from oneof yuhaiin.listener.yuubinsya.protocol
-   */
-  protocol: {
-    /**
-     * @generated from field: yuhaiin.listener.normal normal = 3 [deprecated = true];
-     * @deprecated
-     */
-    value: normal;
-    case: "normal";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.tls tls = 4 [deprecated = true];
-     * @deprecated
-     */
-    value: tls;
-    case: "tls";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.quic quic = 5 [deprecated = true];
-     * @deprecated
-     */
-    value: quic;
-    case: "quic";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.websocket websocket = 6 [deprecated = true];
-     * @deprecated
-     */
-    value: websocket;
-    case: "websocket";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.grpc grpc = 7 [deprecated = true];
-     * @deprecated
-     */
-    value: grpc;
-    case: "grpc";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.http2 http2 = 9 [deprecated = true];
-     * @deprecated
-     */
-    value: http2;
-    case: "http2";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.reality reality = 10 [deprecated = true];
-     * @deprecated
-     */
-    value: reality;
-    case: "reality";
-  } | { case: undefined; value?: undefined } = { case: undefined };
-
   constructor(data?: PartialMessage<yuubinsya>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1122,18 +1013,10 @@ export class yuubinsya extends Message<yuubinsya> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "yuhaiin.listener.yuubinsya";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "host", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "password", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 12, name: "tcp_encrypt", jsonName: "tcp_encrypt", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 13, name: "udp_encrypt", jsonName: "udp_encrypt", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 11, name: "mux", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 3, name: "normal", kind: "message", T: normal, oneof: "protocol" },
-    { no: 4, name: "tls", kind: "message", T: tls, oneof: "protocol" },
-    { no: 5, name: "quic", kind: "message", T: quic, oneof: "protocol" },
-    { no: 6, name: "websocket", kind: "message", T: websocket, oneof: "protocol" },
-    { no: 7, name: "grpc", kind: "message", T: grpc, oneof: "protocol" },
-    { no: 9, name: "http2", kind: "message", T: http2, oneof: "protocol" },
-    { no: 10, name: "reality", kind: "message", T: reality, oneof: "protocol" },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): yuubinsya {
@@ -1150,37 +1033,6 @@ export class yuubinsya extends Message<yuubinsya> {
 
   static equals(a: yuubinsya | PlainMessage<yuubinsya> | undefined, b: yuubinsya | PlainMessage<yuubinsya> | undefined): boolean {
     return proto3.util.equals(yuubinsya, a, b);
-  }
-}
-
-/**
- * @generated from message yuhaiin.listener.yuubinsya.protocol_normal
- */
-export class yuubinsya_protocol_normal extends Message<yuubinsya_protocol_normal> {
-  constructor(data?: PartialMessage<yuubinsya_protocol_normal>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "yuhaiin.listener.yuubinsya.protocol_normal";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): yuubinsya_protocol_normal {
-    return new yuubinsya_protocol_normal().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): yuubinsya_protocol_normal {
-    return new yuubinsya_protocol_normal().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): yuubinsya_protocol_normal {
-    return new yuubinsya_protocol_normal().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: yuubinsya_protocol_normal | PlainMessage<yuubinsya_protocol_normal> | undefined, b: yuubinsya_protocol_normal | PlainMessage<yuubinsya_protocol_normal> | undefined): boolean {
-    return proto3.util.equals(yuubinsya_protocol_normal, a, b);
   }
 }
 
@@ -1219,12 +1071,6 @@ export class normal extends Message<normal> {
  * @generated from message yuhaiin.listener.websocket
  */
 export class websocket extends Message<websocket> {
-  /**
-   * @generated from field: yuhaiin.listener.tls_config tls = 1 [deprecated = true];
-   * @deprecated
-   */
-  tls?: tls_config;
-
   constructor(data?: PartialMessage<websocket>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1233,7 +1079,6 @@ export class websocket extends Message<websocket> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "yuhaiin.listener.websocket";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "tls", kind: "message", T: tls_config },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): websocket {
@@ -1250,43 +1095,6 @@ export class websocket extends Message<websocket> {
 
   static equals(a: websocket | PlainMessage<websocket> | undefined, b: websocket | PlainMessage<websocket> | undefined): boolean {
     return proto3.util.equals(websocket, a, b);
-  }
-}
-
-/**
- * @generated from message yuhaiin.listener.quic
- */
-export class quic extends Message<quic> {
-  /**
-   * @generated from field: yuhaiin.listener.tls_config tls = 1;
-   */
-  tls?: tls_config;
-
-  constructor(data?: PartialMessage<quic>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "yuhaiin.listener.quic";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "tls", kind: "message", T: tls_config },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): quic {
-    return new quic().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): quic {
-    return new quic().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): quic {
-    return new quic().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: quic | PlainMessage<quic> | undefined, b: quic | PlainMessage<quic> | undefined): boolean {
-    return proto3.util.equals(quic, a, b);
   }
 }
 
@@ -1331,12 +1139,6 @@ export class tls extends Message<tls> {
  * @generated from message yuhaiin.listener.grpc
  */
 export class grpc extends Message<grpc> {
-  /**
-   * @generated from field: yuhaiin.listener.tls_config tls = 1 [deprecated = true];
-   * @deprecated
-   */
-  tls?: tls_config;
-
   constructor(data?: PartialMessage<grpc>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1345,7 +1147,6 @@ export class grpc extends Message<grpc> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "yuhaiin.listener.grpc";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "tls", kind: "message", T: tls_config },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): grpc {
@@ -1369,12 +1170,6 @@ export class grpc extends Message<grpc> {
  * @generated from message yuhaiin.listener.http2
  */
 export class http2 extends Message<http2> {
-  /**
-   * @generated from field: yuhaiin.listener.tls_config tls = 1 [deprecated = true];
-   * @deprecated
-   */
-  tls?: tls_config;
-
   constructor(data?: PartialMessage<http2>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1383,7 +1178,6 @@ export class http2 extends Message<http2> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "yuhaiin.listener.http2";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "tls", kind: "message", T: tls_config },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): http2 {
