@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useContext } from "react";
-import { Button, Card, Row, Form, Col } from "react-bootstrap";
+import { Button, Card, Row, Form, Col, Spinner } from "react-bootstrap";
 import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPv6, RemoteBypass, SetLatencyDNSUrl, SetLatencyHTTPUrl, SetLatencyIPv6, SetRemoteBypass, SetUrl } from "../apiurl";
 import { GlobalToastContext } from "../common/toast";
 import { SettingCheck } from "../common/switch";
@@ -14,7 +14,8 @@ const OnelineEdit = (props: {
     onChange: (v: string) => void,
     onClick: () => void,
     buttonText?: string,
-    placeholder?: string
+    placeholder?: string,
+    loading?: boolean
 }) => {
     return <>
         <Form.Group as={Row} className='mb-1 ms-1'>
@@ -24,7 +25,11 @@ const OnelineEdit = (props: {
                     <Form.Control value={props.value} onChange={(v) => props.onChange(v.target.value)} placeholder={props.placeholder} />
                 </Col>
                 <Col sm={2}>
-                    <Button onClick={() => props.onClick()} >{props.buttonText ? props.buttonText : "Save"}</Button>
+                    <Button disabled={props.loading} onClick={() => props.onClick()} variant="outline-primary">
+                        {props.buttonText ? props.buttonText : "Save"}
+                        {props.loading &&
+                            <Spinner size="sm" animation="border" variant='primary' />}
+                    </Button>
                 </Col>
             </Row>
         </Form.Group>
@@ -35,10 +40,10 @@ function Setting() {
     const ctx = useContext(GlobalToastContext);
     const [url, setUrl] = useState(APIUrl);
     const [remote, setRemote] = useState(RemoteBypass);
+    const [remoteLoading, setRemoteLoading] = useState(false);
     const [latencyHTTP, setLatencyHTTP] = useState(LatencyHTTPUrl);
     const [latencyDNS, setLatencyDNS] = useState(LatencyDNSUrl);
     const [latencyIPv6, setLatencyIPv6] = useState(LatencyIPv6);
-
 
 
     return <> <Card className="mb-3">
@@ -61,14 +66,17 @@ function Setting() {
                 value={remote}
                 onChange={setRemote}
                 buttonText="Update"
+                loading={remoteLoading}
                 onClick={() => {
                     SetRemoteBypass(remote)
                     if (remote !== "") {
+                        setRemoteLoading(true)
                         Fetch(`/bypass`,
                             { body: new StringValue({ value: remote }).toBinary(), })
                             .then(async ({ error }) => {
                                 if (error !== undefined) ctx.Error(`update remote rule ${remote} failed, ${error.code}| ${await error.msg}`)
                                 else ctx.Info(`update remote rule ${remote} success`)
+                                setRemoteLoading(false)
                             })
                     }
                 }}
