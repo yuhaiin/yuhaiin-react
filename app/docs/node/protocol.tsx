@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import { Button, Form, Row, Col, ListGroup, InputGroup } from "react-bootstrap";
 import { point } from "../pbes/node/point/point_pb";
-import { direct, drop, grpc, host, http, http2, mux, none, obfs_http, protocol, quic, reality, reject, shadowsocks, shadowsocksr, simple, socks5, tls_config, trojan, vless, vmess, websocket, wireguard, wireguard_peer_config, yuubinsya } from "../pbes/node/protocol/protocol_pb";
+import { direct, directSchema, drop, dropSchema, grpc, grpcSchema, host, hostSchema, http, http2, http2Schema, httpSchema, mux, muxSchema, none, noneSchema, obfs_http, obfs_httpSchema, protocol, protocolSchema, quic, quicSchema, reality, realitySchema, reject, shadowsocks, shadowsocksr, shadowsocksrSchema, shadowsocksSchema, simple, simpleSchema, socks5, socks5Schema, tls_config, tls_configSchema, trojan, trojanSchema, vless, vlessSchema, vmess, vmessSchema, websocket, websocketSchema, wireguard, wireguard_peer_config, wireguard_peer_configSchema, wireguardSchema, yuubinsya, yuubinsyaSchema } from "../pbes/node/protocol/protocol_pb";
 import { NewBytesItemList, NewItemList, Remind, SettingInputText, Container, MoveUpDown } from "../config/components";
 import { SettingCheck } from "../common/switch";
-import { Message } from "@bufbuild/protobuf";
+import { create, Message } from "@bufbuild/protobuf";
 
 function change<T>(e: T, apply?: (x: T) => void): (f: (x: T) => void) => void {
     if (!apply) return function (_: (x: T) => void) { }
@@ -25,7 +25,12 @@ export const Point = (props: {
 }) => {
     const cc = change(props.point, props.onChange)
     const onClose = (i: number) => { cc((x) => { x.protocols.splice(i, 1) }) }
-    const onChange = (i: number, e: Message) => {
+    function onChange(i: number, e:
+        shadowsocks |
+        shadowsocksr |
+        vmess | vless | websocket | quic | obfs_http | trojan |
+        grpc | mux | none | reality | tls_config | wireguard | drop |
+        simple | socks5 | http | http2 | direct | reject | yuubinsya | obfs_http | undefined) {
         if (!props.onChange) return
         cc((x) => { x.protocols[i].protocol.value = e })
     }
@@ -233,7 +238,7 @@ function NewPeersList(props: {
         <Col sm={{ span: 10, offset: props.data?.length !== 0 ? 2 : 0 }}>
             <InputGroup className="mb-2 justify-content-md-end" >
                 <Button variant='outline-success' onClick={() => {
-                    let data = new wireguard_peer_config({
+                    let data = create(wireguard_peer_configSchema, {
                         allowedIps: ["0.0.0.0/0"],
                         endpoint: "127.0.0.1:51820",
                         publicKey: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
@@ -257,7 +262,7 @@ const Wireguard = (props: { protocol: wireguard, onChange: (e: wireguard) => voi
     const cc = change(props.protocol, props.onChange)
 
     /*
-    "wireguard": new protocol({
+    "wireguard": create(protocolSchema,{
         protocol: {
             case: "wireguard",
             value: new wireguard({
@@ -301,8 +306,8 @@ const Wireguard = (props: { protocol: wireguard, onChange: (e: wireguard) => voi
 
             <SettingInputText
                 label="Reserved"
-                value={btoa(new TextDecoder().decode(props.protocol.reserved))}
-                onChange={(e) => { cc((x) => x.reserved = new TextEncoder().encode(atob(e))) }}
+                value={btoa(String.fromCharCode.apply(null, props.protocol.reserved))}
+                onChange={(e) => { cc((x) => x.reserved = Uint8Array.from(atob(e), c => c.charCodeAt(0))) }}
             />
 
             <NewItemList
@@ -376,7 +381,7 @@ function NewAlternateHostList(props: {
             <Col sm={{ span: 10, offset: props.data?.length !== 0 ? 2 : 0 }}>
                 <InputGroup className="mb-2 justify-content-md-end" >
                     <Button variant='outline-success' onClick={() => {
-                        let data = new host({});
+                        let data = create(hostSchema, {});
                         if (!props.data)
                             props.onChange([data])
                         else {
@@ -485,7 +490,7 @@ const Quic = (props: { protocol: quic, onChange: (x: quic) => void, onClose?: ()
         <Container title="Quic" onClose={props.onClose} moveUpDown={props.moveUpDown}>
             <>
                 <SettingInputText label="Host" value={props.protocol.host} onChange={(e) => { cc((x) => x.host = e) }} />
-                <TlsConfig showEnabled={false} tls={props.protocol.tls ?? new tls_config({})} onChange={(x) => { cc((y) => y.tls = x) }} />
+                <TlsConfig showEnabled={false} tls={props.protocol.tls ?? create(tls_configSchema, {})} onChange={(x) => { cc((y) => y.tls = x) }} />
             </>
         </Container>
     </>
@@ -562,7 +567,7 @@ const Shadowsocksr = (props: { protocol: shadowsocksr, onChange: (x: shadowsocks
 const Vmess = (props: { protocol: vmess, onChange: (e: vmess) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     let cc = change(props.protocol, props.onChange)
     /*
-    "vmess": new protocol({
+    "vmess": create(protocolSchema,{
             protocol: {
                 case: "vmess",
                 value: new vmess({
@@ -602,7 +607,7 @@ const Vmess = (props: { protocol: vmess, onChange: (e: vmess) => void, onClose?:
 const Trojan = (props: { protocol: trojan, onChange: (e: trojan) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
     /*
-        "trojan": new protocol({
+        "trojan": create(protocolSchema,{
             protocol: {
                 case: "trojan",
                 value: new trojan({
@@ -633,7 +638,7 @@ const Trojan = (props: { protocol: trojan, onChange: (e: trojan) => void, onClos
 const Socks5 = (props: { protocol: socks5, onChange: (e: socks5) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
     /*
-    "socks5": new protocol({
+    "socks5": create(protocolSchema,{
         protocol: {
             case: "socks5",
             value: new socks5({
@@ -671,7 +676,7 @@ const Socks5 = (props: { protocol: socks5, onChange: (e: socks5) => void, onClos
 const HTTP = (props: { protocol: http, onChange: (x: http) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
     /*
-    "http": new protocol({
+    "http": create(protocolSchema,{
         protocol: {
             case: "http",
             value: new http({
@@ -718,7 +723,7 @@ const Reject = (props: { protocol: reject, onChange: (x: reject) => void, onClos
 const Yuubinsya = (props: { protocol: yuubinsya, onChange: (x: yuubinsya) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     let cc = change(props.protocol, props.onChange)
     /*
-    "yuubinsya": new protocol({
+    "yuubinsya": create(protocolSchema,{
         protocol: {
             case: "yuubinsya",
             value: new yuubinsya({
@@ -821,7 +826,7 @@ const ObfsHttp = (props: { protocol: obfs_http, onChange: (e: obfs_http) => void
 const Grpc = (props: { protocol: grpc, onChange: (e: grpc) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
     return <Container title="Grpc" onClose={props.onClose} moveUpDown={props.moveUpDown}>
-        <TlsConfig tls={props.protocol.tls ?? new tls_config({})} onChange={(x) => { cc((y) => y.tls = x) }} />
+        <TlsConfig tls={props.protocol.tls ?? create(tls_configSchema, {})} onChange={(x) => { cc((y) => y.tls = x) }} />
     </Container>
 }
 
@@ -841,7 +846,7 @@ const HTTP2 = (props: { protocol: http2, onChange: (e: http2) => void, onClose?:
 const Reality = (props: { protocol: reality, onChange: (e: reality) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
     /*
-        "reality": new protocol({
+        "reality": create(protocolSchema,{
             protocol: {
                 case: "reality",
                 value: new reality({
@@ -884,7 +889,7 @@ const Reality = (props: { protocol: reality, onChange: (e: reality) => void, onC
 
 
 
-let tlsConfig = new tls_config({
+let tlsConfig = create(tls_configSchema, {
     enable: false,
     caCert: [new TextEncoder().encode(`-----CERTIFICATE-----
 MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQD4MVvq8SAOzdeE
@@ -921,61 +926,61 @@ pWZqcBJfEUP6uTLSp3CmyEPcfA==
 
 
 export const protocols: { [key: string]: protocol } = {
-    "simple": new protocol({
+    "simple": create(protocolSchema, {
         protocol: {
             case: "simple",
-            value: new simple({
+            value: create(simpleSchema, {
                 host: "",
                 alternateHost: [],
                 port: 1080,
             })
         }
     }),
-    "none": new protocol({
+    "none": create(protocolSchema, {
         protocol: {
             case: "none",
-            value: new none({}),
+            value: create(noneSchema, {}),
         }
     }),
-    "websocket": new protocol({
+    "websocket": create(protocolSchema, {
         protocol: {
             case: "websocket",
-            value: new websocket({
+            value: create(websocketSchema, {
                 host: "www.example.com",
                 path: "/msg",
             })
         }
     }),
-    "quic": new protocol({
+    "quic": create(protocolSchema, {
         protocol: {
             case: "quic",
-            value: new quic({
+            value: create(quicSchema, {
                 tls: tlsConfig
             })
         }
     }),
-    "shadowsocks": new protocol({
+    "shadowsocks": create(protocolSchema, {
         protocol: {
             case: "shadowsocks",
-            value: new shadowsocks({
+            value: create(shadowsocksSchema, {
                 method: "CHACHA20-IETF-POLY1305",
                 password: "password"
             })
         }
     }),
-    "obfshttp": new protocol({
+    "obfshttp": create(protocolSchema, {
         protocol: {
             case: "obfsHttp",
-            value: new obfs_http({
+            value: create(obfs_httpSchema, {
                 host: "www.example.com",
                 port: "443"
             })
         }
     }),
-    "shadowsocksr": new protocol({
+    "shadowsocksr": create(protocolSchema, {
         protocol: {
             case: "shadowsocksr",
-            value: new shadowsocksr({
+            value: create(shadowsocksrSchema, {
                 method: "chacha20-ietf",
                 obfs: "http_post",
                 obfsparam: "#name=v",
@@ -987,54 +992,54 @@ export const protocols: { [key: string]: protocol } = {
             })
         }
     }),
-    "vmess": new protocol({
+    "vmess": create(protocolSchema, {
         protocol: {
             case: "vmess",
-            value: new vmess({
+            value: create(vmessSchema, {
                 alterId: "0",
                 security: "chacha20-poly1305",
                 uuid: "9d5031b6-4ef5-11ee-be56-0242ac120002"
             })
         }
     }),
-    "trojan": new protocol({
+    "trojan": create(protocolSchema, {
         protocol: {
             case: "trojan",
-            value: new trojan({
+            value: create(trojanSchema, {
                 password: "password",
                 peer: "peer"
             })
         }
     }),
-    "socks5": new protocol({
+    "socks5": create(protocolSchema, {
         protocol: {
             case: "socks5",
-            value: new socks5({
-                hostname: "127.0.0.1",
+            value: create(socks5Schema, {
+                hostname: "127.0.0.1:1080",
                 password: "password",
                 user: "username"
             })
         }
     }),
-    "http": new protocol({
+    "http": create(protocolSchema, {
         protocol: {
             case: "http",
-            value: new http({
+            value: create(httpSchema, {
                 password: "password",
                 user: "username"
             })
         }
     }),
-    "direct": new protocol({
+    "direct": create(protocolSchema, {
         protocol: {
             case: "direct",
-            value: new direct({})
+            value: create(directSchema, {})
         }
     }),
-    "yuubinsya": new protocol({
+    "yuubinsya": create(protocolSchema, {
         protocol: {
             case: "yuubinsya",
-            value: new yuubinsya({
+            value: create(yuubinsyaSchema, {
                 tcpEncrypt: true,
                 udpEncrypt: true,
                 password: "password",
@@ -1042,16 +1047,16 @@ export const protocols: { [key: string]: protocol } = {
             })
         }
     }),
-    "tls": new protocol({
+    "tls": create(protocolSchema, {
         protocol: {
             case: "tls",
             value: tlsConfig,
         }
     }),
-    "wireguard": new protocol({
+    "wireguard": create(protocolSchema, {
         protocol: {
             case: "wireguard",
-            value: new wireguard({
+            value: create(wireguardSchema, {
                 endpoint: ["10.0.0.2/32"],
                 mtu: 1500,
                 idleTimeout: 3,
@@ -1067,44 +1072,44 @@ export const protocols: { [key: string]: protocol } = {
             })
         }
     }),
-    "mux": new protocol({
+    "mux": create(protocolSchema, {
         protocol: {
             case: "mux",
-            value: new mux({
+            value: create(muxSchema, {
                 concurrency: 8,
             })
         }
     }),
-    "drop": new protocol({
+    "drop": create(protocolSchema, {
         protocol: {
             case: "drop",
-            value: new drop({})
+            value: create(dropSchema, {})
         }
     }),
-    "vless": new protocol({
+    "vless": create(protocolSchema, {
         protocol: {
             case: "vless",
-            value: new vless({
+            value: create(vlessSchema, {
                 uuid: "c48619fe-8f02-49e0-b9e9-edf763e17e21",
             })
         }
     }),
-    "grpc": new protocol({
+    "grpc": create(protocolSchema, {
         protocol: {
             case: "grpc",
-            value: new grpc({ tls: tlsConfig })
+            value: create(grpcSchema, { tls: tlsConfig })
         }
     }),
-    "http2": new protocol({
+    "http2": create(protocolSchema, {
         protocol: {
             case: "http2",
-            value: new http2({ concurrency: 8, })
+            value: create(http2Schema, { concurrency: 8, })
         }
     }),
-    "reality": new protocol({
+    "reality": create(protocolSchema, {
         protocol: {
             case: "reality",
-            value: new reality({
+            value: create(realitySchema, {
                 debug: false,
                 publicKey: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
                 serverName: "127.0.0.1",

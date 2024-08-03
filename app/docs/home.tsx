@@ -3,10 +3,12 @@ import Loading from './common/loading';
 import useSWR from 'swr'
 import { ProtoESFetcher } from './common/proto';
 import Error from 'next/error';
-import { now_resp } from './pbes/node/grpc/node_pb';
+import { now_resp, now_respSchema } from './pbes/node/grpc/node_pb';
+import { create, toJsonString } from '@bufbuild/protobuf';
+import { pointSchema } from './pbes/node/point/point_pb';
 
 function Index() {
-    const { data, error, isLoading, } = useSWR("/node/now", ProtoESFetcher<now_resp>(new now_resp()))
+    const { data, error, isLoading, } = useSWR("/node/now", ProtoESFetcher(now_respSchema))
 
 
     if (error != undefined) return <Error statusCode={error.code} title={error.msg} />
@@ -17,14 +19,14 @@ function Index() {
         <Card className='mb-3'>
             <Card.Header>TCP</Card.Header>
             <Card.Body>
-                <pre>{data.tcp?.toJsonString({ prettySpaces: 2 })}</pre>
+                <pre>{toJsonString(pointSchema, data.tcp ?? create(pointSchema, {}), { prettySpaces: 2 })}</pre>
             </Card.Body>
         </Card>
 
         <Card className='mb-3'>
             <Card.Header>UDP</Card.Header>
             <Card.Body>
-                <pre>{data.udp?.toJsonString({ prettySpaces: 2 })}</pre>
+                <pre>{toJsonString(pointSchema, data.udp ?? create(pointSchema, {}), { prettySpaces: 2 })}</pre>
             </Card.Body>
         </Card>
     </div>

@@ -9,11 +9,12 @@ import useSWR from 'swr'
 import { Fetch, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
 import { LatencyDNSUrl, LatencyHTTPUrl, LatencyIPv6 } from "../apiurl";
-import { manager } from "../pbes/node/node_pb";
-import { dns_over_quic, http, protocol, requests, response } from "../pbes/node/latency/latency_pb";
-import { use_req } from "../pbes/node/grpc/node_pb";
-import { StringValue } from "@bufbuild/protobuf";
-import { origin, point } from "../pbes/node/point/point_pb";
+import { manager, managerSchema } from "../pbes/node/node_pb";
+import { dns_over_quic, dns_over_quicSchema, http, httpSchema, protocol, protocolSchema, requests, requestsSchema, response, responseSchema } from "../pbes/node/latency/latency_pb";
+import { use_req, use_reqSchema } from "../pbes/node/grpc/node_pb";
+import { origin, point, pointSchema } from "../pbes/node/point/point_pb";
+import { fromBinary, create, toBinary } from "@bufbuild/protobuf";
+import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 
 const Nanosecond = 1
 const Microsecond = 1000 * Nanosecond
@@ -62,16 +63,16 @@ const NodeItem = React.memo((props: {
 
     const latency = (protocol: protocol, onFinish: (r: string) => void) => {
         Fetch<string>("/latency", {
-            body: new requests({
+            body: toBinary(requestsSchema, create(requestsSchema, {
                 requests: [{
                     hash: props.hash,
                     id: "latency",
                     ipv6: LatencyIPv6,
                     protocol: protocol
                 }]
-            }).toBinary(),
+            })),
             process: async (r) => {
-                let resp = new response().fromBinary(new Uint8Array(await r.arrayBuffer()));
+                let resp = fromBinary(responseSchema, new Uint8Array(await r.arrayBuffer()));
                 const t = resp.idLatencyMap["latency"]
                 if (t && (t.nanos !== 0 || t.seconds !== BigInt(0))) return durationToStroing(Number(t.seconds), t.nanos)
                 return "timeout"
@@ -117,11 +118,11 @@ const NodeItem = React.memo((props: {
                                             `/node`,
                                             {
                                                 method: "PUT",
-                                                body: new use_req({
+                                                body: toBinary(use_reqSchema, create(use_reqSchema, {
                                                     tcp: key === "tcp" || key === "tcpudp",
                                                     udp: key === "udp" || key === "tcpudp",
                                                     hash: props.hash,
-                                                }).toBinary()
+                                                }))
                                             }
                                         ).then(async ({ error }) => {
                                             if (error !== undefined) ctx.Error(`change node failed, ${error.code}| ${await error.msg}`)
@@ -147,10 +148,10 @@ const NodeItem = React.memo((props: {
                                 onClick={async () => {
                                     updateTestingStatus((v) => { v.tcpOnLoading = true; v.udpOnLoading = true })
                                     latency(
-                                        new protocol({ protocol: { case: "http", value: new http({ url: LatencyHTTPUrl }) } }),
+                                        create(protocolSchema, { protocol: { case: "http", value: create(httpSchema, { url: LatencyHTTPUrl }) } }),
                                         (r) => { updateTestingStatus(async (v) => { v.tcpOnLoading = false; v.tcp = r }) })
                                     latency(
-                                        new protocol({ protocol: { case: "dnsOverQuic", value: new dns_over_quic({ host: LatencyDNSUrl, targetDomain: "www.google.com" }) } }),
+                                        create(protocolSchema, { protocol: { case: "dnsOverQuic", value: create(dns_over_quicSchema, { host: LatencyDNSUrl, targetDomain: "www.google.com" }) } }),
                                         (r) => { updateTestingStatus(async (v) => { v.udpOnLoading = false; v.udp = r }) })
                                 }
                                 }
@@ -176,7 +177,7 @@ class ModalData {
     isNew?: boolean
 
     constructor(data?: Partial<ModalData>) {
-        this.point = data?.point ?? new point({})
+        this.point = data?.point ?? create(pointSchema, {})
         this.hash = data?.hash ?? ""
         this.show = data?.show ?? false
         this.onDelete = data?.onDelete
@@ -189,7 +190,7 @@ function Group() {
     const [importJson, setImportJson] = useState({ data: false });
     const [latency, setLatency] = useState<{ [key: string]: Latency }>({})
 
-    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoESFetcher(new manager()))
+    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoESFetcher(managerSchema))
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || data === undefined) return <Loading />
@@ -245,7 +246,7 @@ function Group() {
                                 className="w-100"
                                 onClick={() => {
                                     setModalData({
-                                        point: new point({
+                                        point: create(pointSchema, {
                                             group: "template_group",
                                             name: "template_name",
                                             origin: origin.manual,
@@ -295,7 +296,7 @@ function Group() {
                                                                 `/node`,
                                                                 {
                                                                     method: "DELETE",
-                                                                    body: new StringValue({ value: v }).toBinary()
+                                                                    body: toBinary(StringValueSchema, create(StringValueSchema, { value: v }))
                                                                 }
                                                             ).then(async ({ error }) => {
                                                                 if (error !== undefined) {

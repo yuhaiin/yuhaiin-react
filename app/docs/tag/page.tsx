@@ -8,16 +8,17 @@ import { Fetch, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
 import NodeModal from "../modal/node";
 import { GlobalToastContext } from "../common/toast";
-import { save_tag_req } from "../pbes/node/grpc/node_pb";
-import { tag_type, tags } from "../pbes/node/tag/tag_pb";
-import { manager } from "../pbes/node/node_pb";
-import { StringValue } from "@bufbuild/protobuf";
+import { save_tag_req, save_tag_reqSchema } from "../pbes/node/grpc/node_pb";
+import { tag_type, tags, tagsSchema } from "../pbes/node/tag/tag_pb";
+import { manager, managerSchema } from "../pbes/node/node_pb";
+import { create, toBinary } from "@bufbuild/protobuf";
+import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 
 function Tags() {
     const ctx = useContext(GlobalToastContext);
-    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoESFetcher<manager>(new manager()))
+    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoESFetcher(managerSchema))
     const [modalHash, setModalHash] = useState({ hash: "", show: false });
-    const [tagModalData, setTagModalData] = useState({ show: false, tag: new save_tag_req({ tag: "", hash: "", type: tag_type.node }), new: true });
+    const [tagModalData, setTagModalData] = useState({ show: false, tag: create(save_tag_reqSchema, { tag: "", hash: "", type: tag_type.node }), new: true });
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
 
@@ -33,7 +34,7 @@ function Tags() {
                 onClick={(e) => {
                     setTagModalData({
                         show: true,
-                        tag: new save_tag_req({ tag: props.k, hash: props.v.hash[0], type: props.v.type }),
+                        tag: create(save_tag_reqSchema, { tag: props.k, hash: props.v.hash[0], type: props.v.type }),
                         new: false
                     })
                 }}
@@ -74,7 +75,7 @@ function Tags() {
 
                         Fetch("/tag", {
                             method: "DELETE",
-                            body: new StringValue({ value: props.k }).toBinary()
+                            body: toBinary(StringValueSchema, create(StringValueSchema, { value: props.k }))
                         })
                             .then(async ({ error }) => {
                                 if (error !== undefined) ctx.Error(`delete tag ${props.k} failed, ${error.code}| ${await error.msg}`)
@@ -108,7 +109,7 @@ function Tags() {
                 onHide={() => setTagModalData({ ...tagModalData, show: false })}
                 onSave={() => {
                     if (tagModalData.tag.tag === "" || tagModalData.tag.hash === "") return
-                    Fetch("/tag", { body: tagModalData.tag.toBinary() })
+                    Fetch("/tag", { body: toBinary(save_tag_reqSchema, tagModalData.tag) })
                         .then(async ({ error }) => {
                             if (error !== undefined) ctx.Error(`save tag ${tagModalData.tag.tag} failed, ${error.code}| ${await error.msg}`)
                             else {
@@ -127,7 +128,7 @@ function Tags() {
                         Object
                             .entries(data.tags)
                             .sort((a, b) => { return a <= b ? -1 : 1 })
-                            .map(([k, v]) => { return <TagItem key={k} k={k} v={new tags(v)} /> })
+                            .map(([k, v]) => { return <TagItem key={k} k={k} v={create(tagsSchema, v)} /> })
                     }
 
                     <ListGroup.Item className="d-sm-flex">
@@ -136,7 +137,7 @@ function Tags() {
                             className="flex-grow-1"
                             onClick={() => setTagModalData({
                                 show: true,
-                                tag: new save_tag_req({ tag: "new tag", hash: "", type: tag_type.node }), new: true
+                                tag: create(save_tag_reqSchema, { tag: "new tag", hash: "", type: tag_type.node }), new: true
                             })}
                         >
                             <i className="bi bi-plus-lg" />New

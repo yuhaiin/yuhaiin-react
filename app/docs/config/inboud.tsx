@@ -1,12 +1,13 @@
-import { EnumValueInfo, proto3 } from "@bufbuild/protobuf";
+import { create, DescEnum, DescEnumValue, EnumJsonType, } from "@bufbuild/protobuf";
 import { SettingCheck } from "../common/switch";
-import { empty, grpc, http, http2, inbound, inbound_config, mixed, mux, normal, quic, reality, redir, sniff, socks5, tcp_udp_control, tcpudp, tls, tls_config, tproxy, transport, tun, websocket, yuubinsya } from "../pbes/config/listener/listener_pb";
+import { empty, emptySchema, grpc, grpcSchema, http, http2, http2Schema, httpSchema, inbound, inbound_config, inboundSchema, mixed, mixedSchema, mux, muxSchema, normal, normalSchema, quic, quicSchema, reality, realitySchema, redir, redirSchema, sniff, sniffSchema, socks5, socks5Schema, tcp_udp_control, tcp_udp_controlSchema, tcpudp, tcpudpSchema, tls, tls_config, tls_configSchema, tlsSchema, tproxy, tproxySchema, transport, transportSchema, tun, tunSchema, websocket, websocketSchema, yuubinsya, yuubinsyaSchema } from "../pbes/config/listener/listener_pb";
 import { SettingInputText, Container, MoveUpDown } from "./components";
-import { EnumType } from "@bufbuild/protobuf";
 import { Form, Row, Col, Modal, ListGroup, InputGroup, Button, Card } from "react-bootstrap";
 import { HTTPComponents, MixedComponents, QuicComponents, RealityComponents, RedirComponents, Socks5Components, TProxyComponents, TlsComponents, TunComponents } from "./server";
 import { useState } from "react";
 import React from "react";
+import { GenEnum } from "@bufbuild/protobuf/codegenv1";
+import { Enum, EnumValue } from "@bufbuild/protobuf/wkt";
 
 function change<T>(e: T, apply?: (x: T) => void): (f: (x: T) => void) => void {
     if (!apply) return function (_: (x: T) => void) { }
@@ -53,7 +54,7 @@ export const InboundModal = (
 
 export const Inbounds = (props: { inbounds: inbound_config, onChange: (x: inbound_config) => void }) => {
     const cc = change(props.inbounds, props.onChange)
-    const [modalData, setModalData] = useState({ show: false, inbound: new inbound({}), onChange: (_: inbound) => { } });
+    const [modalData, setModalData] = useState({ show: false, inbound: create(inboundSchema, {}), onChange: (_: inbound) => { } });
     const [newInbound, setNewInbound] = useState({ value: "" });
 
     return <>
@@ -74,7 +75,7 @@ export const Inbounds = (props: { inbounds: inbound_config, onChange: (x: inboun
 
         <SettingCheck label='Sniff'
             checked={!props.inbounds.sniff?.enabled ? false : true}
-            onChange={() => cc((x) => x.sniff = new sniff({ enabled: !x.sniff?.enabled }))} />
+            onChange={() => cc((x) => x.sniff = create(sniffSchema, { enabled: !x.sniff?.enabled }))} />
 
         <hr />
 
@@ -132,7 +133,7 @@ export const Inbounds = (props: { inbounds: inbound_config, onChange: (x: inboun
                         variant='outline-success'
                         onClick={() => {
                             if (newInbound.value !== "" && props.inbounds.inbounds[newInbound.value] === undefined)
-                                cc((x) => x.inbounds[newInbound.value] = new inbound({ name: newInbound.value }))
+                                cc((x) => x.inbounds[newInbound.value] = create(inboundSchema, { name: newInbound.value }))
                         }}
                     >
                         <i className="bi bi-plus-lg" />New </Button>
@@ -206,40 +207,40 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
                                 onClick={() => cc((x) => {
                                     switch (newProtocol.value) {
                                         case "normal":
-                                            x.transport.push(new transport({
-                                                transport: { case: "normal", value: new normal({}) }
+                                            x.transport.push(create(transportSchema, {
+                                                transport: { case: "normal", value: create(normalSchema, {}) }
                                             }))
                                             break
                                         case "tls":
-                                            x.transport.push(new transport({
+                                            x.transport.push(create(transportSchema, {
                                                 transport: {
-                                                    case: "tls", value: new tls({ tls: new tls_config({}) })
+                                                    case: "tls", value: create(tlsSchema, { tls: create(tls_configSchema, {}) })
                                                 }
                                             }))
                                             break
                                         case "mux":
-                                            x.transport.push(new transport({
-                                                transport: { case: "mux", value: new mux({}) }
+                                            x.transport.push(create(transportSchema, {
+                                                transport: { case: "mux", value: create(muxSchema, {}) }
                                             }))
                                             break
                                         case "http2":
-                                            x.transport.push(new transport({
-                                                transport: { case: "http2", value: new http2({}) }
+                                            x.transport.push(create(transportSchema, {
+                                                transport: { case: "http2", value: create(http2Schema, {}) }
                                             }))
                                             break
                                         case "websocket":
-                                            x.transport.push(new transport({
-                                                transport: { case: "websocket", value: new websocket({}) }
+                                            x.transport.push(create(transportSchema, {
+                                                transport: { case: "websocket", value: create(websocketSchema, {}) }
                                             }))
                                             break
                                         case "grpc":
-                                            x.transport.push(new transport({
-                                                transport: { case: "grpc", value: new grpc({}) }
+                                            x.transport.push(create(transportSchema, {
+                                                transport: { case: "grpc", value: create(grpcSchema, {}) }
                                             }))
                                             break
                                         case "reality":
-                                            x.transport.push(new transport({
-                                                transport: { case: "reality", value: new reality({}) }
+                                            x.transport.push(create(transportSchema, {
+                                                transport: { case: "reality", value: create(realitySchema, {}) }
                                             }))
                                             break
                                     }
@@ -281,13 +282,13 @@ const Network = (props: { inbound: inbound, onChange: (x: inbound) => void }) =>
                         onClick={() => cc((x) => {
                             switch (newProtocol.value) {
                                 case "tcpudp":
-                                    x.network = { case: "tcpudp", value: new tcpudp({}) }
+                                    x.network = { case: "tcpudp", value: create(tcpudpSchema, {}) }
                                     break
                                 case "quic":
-                                    x.network = { case: "quic", value: new quic({}) }
+                                    x.network = { case: "quic", value: create(quicSchema, {}) }
                                     break
                                 case "empty":
-                                    x.network = { case: "empty", value: new empty({}) }
+                                    x.network = { case: "empty", value: create(emptySchema, {}) }
                                     break
                             }
                         })}
@@ -413,25 +414,25 @@ const Protocol = (props: { inbound: inbound, onChange: (x: inbound) => void }) =
                         onClick={() => cc((x) => {
                             switch (newProtocol.value) {
                                 case "http":
-                                    x.protocol = { case: "http", value: new http({}) }
+                                    x.protocol = { case: "http", value: create(httpSchema, {}) }
                                     break
                                 case "socks5":
-                                    x.protocol = { case: "socks5", value: new socks5({}) }
+                                    x.protocol = { case: "socks5", value: create(socks5Schema, {}) }
                                     break
                                 case "mix":
-                                    x.protocol = { case: "mix", value: new mixed({}) }
+                                    x.protocol = { case: "mix", value: create(mixedSchema, {}) }
                                     break
                                 case "redir":
-                                    x.protocol = { case: "redir", value: new redir({}) }
+                                    x.protocol = { case: "redir", value: create(redirSchema, {}) }
                                     break
                                 case "tun":
-                                    x.protocol = { case: "tun", value: new tun({}) }
+                                    x.protocol = { case: "tun", value: create(tunSchema, {}) }
                                     break
                                 case "yuubinsya":
-                                    x.protocol = { case: "yuubinsya", value: new yuubinsya({}) }
+                                    x.protocol = { case: "yuubinsya", value: create(yuubinsyaSchema, {}) }
                                     break
                                 case "tproxy":
-                                    x.protocol = { case: "tproxy", value: new tproxy({}) }
+                                    x.protocol = { case: "tproxy", value: create(tproxySchema, {}) }
                             }
                         })}
                     >
@@ -480,7 +481,7 @@ const TcpUdp = (props: { protocol: tcpudp, onChange: (x: tcpudp) => void }) => {
 
         <SettingTypeSelect
             label="Control"
-            type={proto3.getEnumType(tcp_udp_control)}
+            type={tcp_udp_controlSchema}
             value={props.protocol.control}
             onChange={(e) => { cc((x) => x.control = e) }}
         />
@@ -489,10 +490,10 @@ const TcpUdp = (props: { protocol: tcpudp, onChange: (x: tcpudp) => void }) => {
 
 function SettingTypeSelect(props: {
     label: string,
-    type: EnumType,
+    type: DescEnum,
     value: number,
     onChange: (no: number) => void,
-    filter?: (v: EnumValueInfo) => boolean
+    filter?: (v: DescEnumValue) => boolean
 }) {
     return <Form.Group as={Row} className='mb-3'>
         <Form.Label column sm={2}>{props.label}</Form.Label>
@@ -502,7 +503,7 @@ function SettingTypeSelect(props: {
                 {
                     props.type.values.
                         filter(props.filter ?? (() => true)).
-                        map((v) => <option key={v.no} value={v.no}>{v.name}</option>)
+                        map((v) => <option key={v.number} value={v.number}>{v.name}</option>)
                 }
             </Form.Select>
         </Col>

@@ -3,7 +3,8 @@ import { Form, InputGroup, Card, Row, Col, Button } from 'react-bootstrap';
 import { SettingInputText, SettingInputTextarea, NewItemList } from './components';
 import { SettingCheck } from "../common/switch";
 import { split as shlexSplit, join as shlexJoin } from 'shlex';
-import { http, redir, tproxy, tun, mixed, socks5, socks4a, tun_endpoint_driver, route, tls_config, certificate, websocket, grpc, tls, http2, reality, protocol, inbound_config, normal, quic } from '../pbes/config/listener/listener_pb';
+import { http, redir, tproxy, tun, mixed, socks5, socks4a, tun_endpoint_driver, route, tls_config, certificate, websocket, grpc, tls, http2, reality, protocol, inbound_config, normal, quic, routeSchema, certificateSchema, tls_configSchema } from '../pbes/config/listener/listener_pb';
+import { create } from '@bufbuild/protobuf';
 
 export const HTTPComponents = React.memo((props: { http: http, onChange: (x: http) => void }) => {
     const updateState = (x: (x: http) => void) => {
@@ -154,7 +155,7 @@ export const TunComponents = React.memo((props: { tun: tun, onChange: (x: tun) =
                 title='Routes'
                 data={props.tun.route?.routes ?? []}
                 onChange={(e) => updateState((x) => {
-                    if (!x.route) x.route = new route()
+                    if (!x.route) x.route = create(routeSchema, {})
                     if (!e) e = []
                     if (x.route) x.route.routes = e
                 })}
@@ -216,7 +217,7 @@ const TLSComponents = React.memo((props: { tls: tls_config, onChange: (x: tls_co
                                     <i className="bi bi-x-lg"></i>
                                 </Button>
                             </Card.Title>
-                            <TLSCertificateComponents cert={new certificate(v)}
+                            <TLSCertificateComponents cert={create(certificateSchema, v)}
                                 onChange={(e) => updateState((x) => {
                                     if (x?.certificates !== undefined) x.certificates[index] = e
                                 })} />
@@ -228,7 +229,7 @@ const TLSComponents = React.memo((props: { tls: tls_config, onChange: (x: tls_co
             <InputGroup className="d-flex justify-content-end mb-2">
                 <Button variant='outline-success'
                     onClick={() => updateState((x) => {
-                        x.certificates.push(new certificate({
+                        x.certificates.push(create(certificateSchema, {
                             cert: new Uint8Array(0),
                             key: new Uint8Array(0),
                             certFilePath: "",
@@ -255,7 +256,7 @@ const TLSComponents = React.memo((props: { tls: tls_config, onChange: (x: tls_co
                                         <i className="bi bi-x-lg"></i>
                                     </Button>
                                 </Card.Title>
-                                <TLSCertificateComponents cert={new certificate(v)} onChange={(e) => updateState((x) => {
+                                <TLSCertificateComponents cert={create(certificateSchema, v)} onChange={(e) => updateState((x) => {
                                     x.serverNameCertificate[k] = e
                                 })} />
                             </Card.Body>
@@ -268,7 +269,7 @@ const TLSComponents = React.memo((props: { tls: tls_config, onChange: (x: tls_co
                 <Button variant='outline-success'
                     onClick={() => updateState((x) => {
                         if (newSni === "") return
-                        x.serverNameCertificate[newSni] = new certificate({})
+                        x.serverNameCertificate[newSni] = create(certificateSchema, {})
                     })} >
                     <i className="bi bi-plus-lg" />New SNI Certificate
                 </Button>
@@ -293,7 +294,7 @@ export const QuicComponents = React.memo((props: { quic: quic, onChange: (x: qui
             />
 
             {
-                props.quic.tls && <TLSComponents tls={new tls_config(props.quic.tls !== null ? props.quic.tls : undefined)} onChange={(e) => updateState((x) => x.tls = e)} />
+                props.quic.tls && <TLSComponents tls={create(tls_configSchema, props.quic.tls !== null ? props.quic.tls : undefined)} onChange={(e) => updateState((x) => x.tls = e)} />
             }
 
         </>
@@ -311,7 +312,7 @@ export const TlsComponents = React.memo((props: { tls: tls, onChange: (x: tls) =
         <>
             <SettingInputText plaintext={true} label='Protocol' value={"TLS"} />
             {
-                props.tls.tls && <TLSComponents tls={new tls_config(props.tls.tls)} onChange={(e) => updateState((x) => x.tls = e)} />
+                props.tls.tls && <TLSComponents tls={create(tls_configSchema, props.tls.tls)} onChange={(e) => updateState((x) => x.tls = e)} />
             }
         </>
     )

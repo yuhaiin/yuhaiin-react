@@ -7,13 +7,14 @@ import { GlobalToastContext } from "../common/toast";
 import useSWR from 'swr'
 import { Fetch, ProtoESFetcher, } from '../common/proto';
 import Error from 'next/error';
-import { link, type } from "../pbes/node/subscribe/subscribe_pb";
-import { get_links_resp, link_req, save_link_req } from "../pbes/node/grpc/node_pb";
+import { link, linkSchema, type } from "../pbes/node/subscribe/subscribe_pb";
+import { get_links_resp, get_links_respSchema, link_req, link_reqSchema, save_link_req, save_link_reqSchema } from "../pbes/node/grpc/node_pb";
+import { create, toBinary } from "@bufbuild/protobuf";
 
 function Subscribe() {
     const [updating, setUpdating] = useState<{ [key: string]: boolean }>({});
-    const [addItem, setAddItem] = useState<link>(new link({ name: "", url: "", type: type.reserve }));
-    const { data: links, error, isLoading, mutate } = useSWR("/sublist", ProtoESFetcher<get_links_resp>(new get_links_resp()))
+    const [addItem, setAddItem] = useState<link>(create(linkSchema, { name: "", url: "", type: type.reserve }));
+    const { data: links, error, isLoading, mutate } = useSWR("/sublist", ProtoESFetcher(get_links_respSchema))
     const ctx = useContext(GlobalToastContext);
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
@@ -25,7 +26,7 @@ function Subscribe() {
             `/sub`,
             {
                 method: "PATCH",
-                body: new link_req({ names: [name] }).toBinary()
+                body: toBinary(link_reqSchema, create(link_reqSchema, { names: [name] }))
             }
         ).then(async ({ error }) => {
             if (error !== undefined) ctx.Error(`Update failed ${error.code}| ${await error.msg}`)
@@ -37,7 +38,7 @@ function Subscribe() {
         Fetch(`/sub`,
             {
                 method: "DELETE",
-                body: new link_req({ names: [name] }).toBinary()
+                body: toBinary(link_reqSchema, create(link_reqSchema, { names: [name] }))
             }
         ).then(async ({ error }) => {
             if (error !== undefined) ctx.Error(`delete ${name} failed, ${error.code}| ${await error.msg}`)
@@ -93,7 +94,7 @@ function Subscribe() {
                                 <Form.Control
                                     placeholder="group1"
                                     value={addItem.name}
-                                    onChange={(e) => setAddItem(new link({ ...addItem, name: e.target.value }))}
+                                    onChange={(e) => setAddItem(create(linkSchema, { ...addItem, name: e.target.value }))}
                                 />
                             </FloatingLabel>
 
@@ -101,7 +102,7 @@ function Subscribe() {
                                 <Form.Control
                                     placeholder="https://www.example.com"
                                     value={addItem.url}
-                                    onChange={(e) => setAddItem(new link({ ...addItem, url: e.target.value }))}
+                                    onChange={(e) => setAddItem(create(linkSchema, { ...addItem, url: e.target.value }))}
                                 />
                             </FloatingLabel>
 
@@ -111,7 +112,7 @@ function Subscribe() {
                                 variant="outline-primary"
                                 onClick={async () => {
                                     if (addItem.name === "" || addItem.url === "") return
-                                    Fetch(`/sub`, { body: new save_link_req({ links: [addItem] }).toBinary(), })
+                                    Fetch(`/sub`, { body: toBinary(save_link_reqSchema, create(save_link_reqSchema, { links: [addItem] })) })
                                         .then(async ({ error }) => {
                                             if (error !== undefined) ctx.Error(`save link ${addItem.url} failed, ${error.code}| ${await error.msg}`)
                                             else mutate()

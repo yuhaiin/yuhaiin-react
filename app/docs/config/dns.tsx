@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Form, InputGroup, Card, Row, Col, Button } from 'react-bootstrap';
 import { SettingInputText, NewItemList, Container } from './components';
 import { SettingCheck } from "../common/switch";
-import { dns_config, type } from '../pbes/config/dns/dns_pb';
-import { proto3 } from '@bufbuild/protobuf';
+import { dns_config, type, typeSchema } from '../pbes/config/dns/dns_pb';
+import { DescEnum } from '@bufbuild/protobuf';
 
 type DNSProps = {
     data: dns_config,
@@ -118,9 +118,9 @@ function SettingDNSTypeSelect(props: { label: string, value?: type | null, onCha
             <Col sm={10}>
                 <Form.Select value={type[props.value ?? type.udp]} onChange={(e) => props.onChange(type[e.target.value])}>
                     {
-                        proto3.getEnumType(type).values.
-                            filter((v) => v.no !== 0).
-                            map((v) => <option key={v.no} value={type[v.no]}>{v.name}</option>)
+                        typeSchema.values.
+                            filter((v) => v.number !== 0).
+                            map((v) => <option key={v.number} value={type[v.number]}>{v.name}</option>)
                     }
                 </Form.Select>
             </Col>

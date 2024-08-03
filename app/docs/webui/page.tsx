@@ -6,7 +6,8 @@ import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPv6, RemoteBypass, SetLa
 import { GlobalToastContext } from "../common/toast";
 import { SettingCheck } from "../common/switch";
 import { Fetch } from '../common/proto';
-import { StringValue } from "@bufbuild/protobuf";
+import { create, toBinary } from "@bufbuild/protobuf";
+import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 
 const OnelineEdit = (props: {
     title: string,
@@ -72,7 +73,7 @@ function Setting() {
                     if (remote !== "") {
                         setRemoteLoading(true)
                         Fetch(`/bypass`,
-                            { body: new StringValue({ value: remote }).toBinary(), })
+                            { body: toBinary(StringValueSchema, create(StringValueSchema, { value: remote })), })
                             .then(async ({ error }) => {
                                 if (error !== undefined) ctx.Error(`update remote rule ${remote} failed, ${error.code}| ${await error.msg}`)
                                 else ctx.Info(`update remote rule ${remote} success`)

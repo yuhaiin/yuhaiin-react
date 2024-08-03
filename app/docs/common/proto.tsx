@@ -1,8 +1,8 @@
 import { Fetcher } from 'swr'
 import { APIUrl } from '../apiurl';
-import { Message } from "@bufbuild/protobuf";
+import { DescMessage, fromBinary, Message, MessageShape } from "@bufbuild/protobuf";
 
-export function ProtoESFetcher<T extends Message>(d: T, method?: string, body?: BodyInit): Fetcher<T, string> {
+export function ProtoESFetcher<Desc extends DescMessage>(d: Desc, method?: string, body?: BodyInit): Fetcher<MessageShape<Desc>, string> {
     return (url) => fetch(
         `${APIUrl}${url}`,
         {
@@ -11,7 +11,7 @@ export function ProtoESFetcher<T extends Message>(d: T, method?: string, body?: 
         },
     ).then(async r => {
         if (!r.ok) throw { code: r.status, msg: r.statusText, raw: r.text() }
-        return d.fromBinary(new Uint8Array(await r.arrayBuffer()))
+        return fromBinary(d, new Uint8Array(await r.arrayBuffer()))
     })
 }
 

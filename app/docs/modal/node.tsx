@@ -4,9 +4,10 @@ import useSWR from 'swr'
 import { Fetch, ProtoESFetcher } from '../common/proto';
 import Loading from "../common/loading";
 import { GlobalToastContext } from "../common/toast";
-import { point } from "../pbes/node/point/point_pb";
-import { StringValue } from "@bufbuild/protobuf";
+import { pointSchema, point } from "../pbes/node/point/point_pb";
 import { Point } from "../node/protocol";
+import { create, clone, toJsonString, fromJsonString, toBinary } from "@bufbuild/protobuf";
+import { StringValueSchema, StringValue } from "@bufbuild/protobuf/wkt";
 
 function NodeModal(props: {
     hash: string,
@@ -27,7 +28,7 @@ function NodeModal(props: {
 
     const { data: node, error, isLoading, mutate } = useSWR(
         (!props.point && props.hash) ? `/node` : null,
-        ProtoESFetcher(new point(), "POST", new StringValue({ value: props.hash }).toBinary()))
+        ProtoESFetcher(pointSchema, "POST", toBinary(StringValueSchema, create(StringValueSchema, { value: props.hash }))))
 
     if (!props.show && props.hash === "") mutate(undefined)
 
@@ -37,12 +38,12 @@ function NodeModal(props: {
             variant="outline-primary"
             disabled={isLoading || error || !props.editable}
             onClick={() => {
-                let p = node ?? props.point ?? new point({});
+                let p = node ?? props.point ?? create(pointSchema, {});
                 if (props.isNew) p.hash = ""
                 Fetch("/node",
                     {
                         method: "PATCH",
-                        body: p.toBinary(),
+                        body: toBinary(pointSchema, p),
                     })
                     .then(async ({ error }) => {
                         if (error === undefined) {
@@ -95,7 +96,7 @@ function NodeModal(props: {
                             isLoading ? <Loading /> :
                                 <Collapse in={!error && !isLoading}>
                                     <Point
-                                        point={node ?? props.point ?? new point({})}
+                                        point={node ?? props.point ?? create(pointSchema, {})}
                                         groups={props.groups}
                                         onChange={
                                             (props.editable) ?
@@ -132,8 +133,8 @@ function NodeModal(props: {
                         <Button
                             variant="outline-primary"
                             onClick={() => {
-                                let po = node?.clone() ?? props.point?.clone() ?? new point({});
-                                setJsonShow({ show: true, data: po.toJsonString({ prettySpaces: 2 }) });
+                                let po = clone(pointSchema, node ?? props.point ?? create(pointSchema, {}));
+                                setJsonShow({ show: true, data: toJsonString(pointSchema, po, { prettySpaces: 2 }) });
                                 // navigator.clipboard.writeText(JSON.stringify(po.toJson({ emitDefaultValues: true }), null, 2));
                             }}
                         >
@@ -164,12 +165,12 @@ export const NodeJsonModal = (
         if (!props.onSave) return <></>
         return <Button variant="outline-primary"
             onClick={() => {
-                let p = new point().fromJsonString(nodeJson.data);
+                let p = fromJsonString(pointSchema, nodeJson.data);
                 if (props.isNew) p.hash = ""
                 Fetch("/node",
                     {
                         method: "PATCH",
-                        body: p.toBinary(),
+                        body: toBinary(pointSchema, p),
                     })
                     .then(async ({ error }) => {
                         if (error === undefined) {

@@ -10,7 +10,8 @@ import Loading from "../common/loading";
 import { Fetch } from "../common/proto";
 import { GlobalToastContext } from "../common/toast";
 import { connection, type } from "../pbes/statistic/config_pb";
-import { notify_data, notify_remove_connections, total_flow } from "../pbes/statistic/grpc/config_pb";
+import { notify_data, notify_dataSchema, notify_remove_connections, notify_remove_connectionsSchema, total_flow, total_flowSchema } from "../pbes/statistic/grpc/config_pb";
+import { toBinary, create, fromBinary } from "@bufbuild/protobuf";
 
 
 const formatBytes =
@@ -69,7 +70,7 @@ function Connections() {
                 })
 
                 socket.addEventListener('message', (event) => {
-                    const raw = notify_data.fromBinary(new Uint8Array(event.data));
+                    const raw = fromBinary(notify_dataSchema, new Uint8Array(event.data));
                     next(null, pre => {
                         let prev: Statistic = pre ?
                             {
@@ -83,7 +84,7 @@ function Connections() {
                             };
                         switch (raw.data.case) {
                             case "totalFlow":
-                                prev.flow = generateFlow(new total_flow(raw.data.value), prev.flow)
+                                prev.flow = generateFlow(create(total_flowSchema, raw.data.value), prev.flow)
                                 return prev
                             case "notifyNewConnections":
                                 raw.data.value.connections.forEach((e: connection) => { prev.conns[Number(e.id)] = e })
@@ -232,7 +233,7 @@ const AccordionItem = React.memo((props: { data: connection, showModal: (hash: s
                                     Fetch("/conn",
                                         {
                                             method: "DELETE",
-                                            body: new notify_remove_connections({ ids: [props.data.id] }).toBinary()
+                                            body: toBinary(notify_remove_connectionsSchema, create(notify_remove_connectionsSchema, { ids: [props.data.id] }))
                                         })
                                         .then(async ({ error }) => {
                                             if (error !== undefined)

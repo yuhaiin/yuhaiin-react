@@ -1,11 +1,12 @@
 import React from 'react';
 import { Form, Row, Col, Button, } from 'react-bootstrap';
 import { SettingInputText, NewItemList, Container } from './components';
-import { bypass_config, mode, mode_config, resolve_strategy, udp_proxy_fqdn_strategy } from '../pbes/config/bypass/bypass_pb';
+import { bypass_config, bypass_configSchema, mode, mode_config, mode_configSchema, resolve_strategy, udp_proxy_fqdn_strategy } from '../pbes/config/bypass/bypass_pb';
 import { SettingCheck } from '../common/switch';
+import { create } from '@bufbuild/protobuf';
 
 
-export const defaultBypassConfig: bypass_config = new bypass_config({
+export const defaultBypassConfig: bypass_config = create(bypass_configSchema, {
     tcp: mode.bypass,
     udp: mode.bypass,
     bypassFile: "yuhaiin.conf",
@@ -14,7 +15,7 @@ export const defaultBypassConfig: bypass_config = new bypass_config({
 
 const Bypass = React.memo((props: { bypass: bypass_config, onChange: (x: bypass_config) => void, }) => {
 
-    const defaultRule: mode_config = new mode_config({
+    const defaultRule: mode_config = create(mode_configSchema, {
         hostname: ["www.example.com"],
         mode: mode.proxy,
         tag: "",

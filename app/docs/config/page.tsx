@@ -11,25 +11,26 @@ import { GlobalToastContext } from '../common/toast';
 import useSWR from "swr";
 import { Fetch, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
-import { setting as Setting, info as Info, system_proxy } from '../pbes/config/config_pb';
-import { Interfaces } from '../pbes/tools/tools_pb';
-import { dns_config } from '../pbes/config/dns/dns_pb';
-import { bypass_config } from '../pbes/config/bypass/bypass_pb';
+import { setting as Setting, info as Info, system_proxy, settingSchema, infoSchema, system_proxySchema } from '../pbes/config/config_pb';
+import { Interfaces, InterfacesSchema } from '../pbes/tools/tools_pb';
+import { dns_config, dns_configSchema } from '../pbes/config/dns/dns_pb';
+import { bypass_config, bypass_configSchema } from '../pbes/config/bypass/bypass_pb';
 import { log_level } from '../pbes/config/log/log_pb';
 import { Inbounds } from './inboud';
+import { create, toBinary } from '@bufbuild/protobuf';
 
 function ConfigComponent() {
     const ctx = useContext(GlobalToastContext);
 
     const { data: setting, error, isLoading, mutate: setSetting } =
-        useSWR("/config", ProtoESFetcher<Setting>(new Setting()),
+        useSWR("/config", ProtoESFetcher(settingSchema),
             { revalidateOnFocus: false })
     const { data: info } =
-        useSWR("/info", ProtoESFetcher<Info>(new Info()),
+        useSWR("/info", ProtoESFetcher(infoSchema),
             {})
 
     const { data: iffs } =
-        useSWR("/interfaces", ProtoESFetcher<Interfaces>(new Interfaces()),
+        useSWR("/interfaces", ProtoESFetcher(InterfacesSchema),
             { revalidateOnFocus: true })
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
@@ -37,7 +38,7 @@ function ConfigComponent() {
 
     const updateState = (modify: (x: Setting) => void) => {
         setSetting((x: Setting) => {
-            let y = new Setting(x)
+            let y = create(settingSchema, x)
             modify(y)
             return y
         }, false)
@@ -58,7 +59,7 @@ function ConfigComponent() {
             if (y === 2) socks5 = true
         }
 
-        updateState((x) => { x.systemProxy = new system_proxy({ http: http, socks5: socks5 }) })
+        updateState((x) => { x.systemProxy = create(system_proxySchema, { http: http, socks5: socks5 }) })
     }
 
     return (
@@ -81,7 +82,7 @@ function ConfigComponent() {
                             <Tab.Pane eventKey="home">
                                 <fieldset disabled={info?.os === "android"}>
 
-                                    <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting(new Setting({ ...setting, ipv6: !setting.ipv6 }), false)} />
+                                    <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting(create(settingSchema, { ...setting, ipv6: !setting.ipv6 }), false)} />
                                     <SettingInputText
                                         label='Network Interface'
                                         value={setting.netInterface}
@@ -127,13 +128,13 @@ function ConfigComponent() {
 
                             <Tab.Pane eventKey="bypass">
                                 <fieldset disabled={info?.os === "android"}>
-                                    <Bypass bypass={new bypass_config(setting.bypass!!)} onChange={(e) => updateState((x) => x.bypass = e)} />
+                                    <Bypass bypass={create(bypass_configSchema, setting.bypass!!)} onChange={(e) => updateState((x) => x.bypass = e)} />
                                 </fieldset>
                             </Tab.Pane>
 
                             <Tab.Pane eventKey="dns" title="DNS">
                                 <fieldset disabled={info?.os === "android"}>
-                                    <DNS data={new dns_config(setting.dns!!)} onChange={(e) => updateState((x) => x.dns = e)} />
+                                    <DNS data={create(dns_configSchema, setting.dns!!)} onChange={(e) => updateState((x) => x.dns = e)} />
                                 </fieldset>
                             </Tab.Pane>
 
@@ -174,7 +175,7 @@ function ConfigComponent() {
                             <Button
                                 variant="outline-primary"
                                 onClick={() => {
-                                    Fetch("/config", { body: setting.toBinary() })
+                                    Fetch("/config", { body: toBinary(settingSchema, setting) })
                                         .then(async ({ error }) => {
                                             if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${await error.msg}`)
                                             else {
