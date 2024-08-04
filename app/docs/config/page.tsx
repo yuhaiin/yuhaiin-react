@@ -1,6 +1,6 @@
 "use client"
 
-import { useContext, useState } from 'react';
+import { useContext } from 'react';
 import { Form, Card, Row, Col, Button, Tab, ToggleButtonGroup, ToggleButton, Nav } from 'react-bootstrap';
 import DNS from './dns';
 import Bypass from './bypass';
@@ -11,13 +11,14 @@ import { GlobalToastContext } from '../common/toast';
 import useSWR from "swr";
 import { Fetch, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
-import { setting as Setting, info as Info, system_proxy, settingSchema, infoSchema, system_proxySchema } from '../pbes/config/config_pb';
-import { Interfaces, InterfacesSchema } from '../pbes/tools/tools_pb';
-import { dns_config, dns_configSchema } from '../pbes/config/dns/dns_pb';
-import { bypass_config, bypass_configSchema } from '../pbes/config/bypass/bypass_pb';
+import { setting as Setting, settingSchema, infoSchema, system_proxySchema } from '../pbes/config/config_pb';
+import { InterfacesSchema } from '../pbes/tools/tools_pb';
+import { dns_configSchema } from '../pbes/config/dns/dns_pb';
+import { bypass_configSchema } from '../pbes/config/bypass/bypass_pb';
 import { log_level } from '../pbes/config/log/log_pb';
 import { Inbounds } from './inboud';
-import { create, toBinary } from '@bufbuild/protobuf';
+import { clone, create, toBinary } from '@bufbuild/protobuf';
+import { inbound_configSchema } from '../pbes/config/listener/listener_pb';
 
 function ConfigComponent() {
     const ctx = useContext(GlobalToastContext);
@@ -38,7 +39,7 @@ function ConfigComponent() {
 
     const updateState = (modify: (x: Setting) => void) => {
         setSetting((x: Setting) => {
-            let y = create(settingSchema, x)
+            let y = clone(settingSchema, x)
             modify(y)
             return y
         }, false)
@@ -143,7 +144,7 @@ function ConfigComponent() {
                                 <fieldset disabled={info?.os === "android"}>
                                     <Inbounds
                                         inbounds={setting.server!!}
-                                        onChange={(x) => { updateState((y) => y.server = x) }}
+                                        onChange={(e) => { updateState((x) => x.server = clone(inbound_configSchema, e)) }}
                                     />
                                 </fieldset>
                             </Tab.Pane>

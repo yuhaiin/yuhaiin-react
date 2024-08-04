@@ -1,6 +1,6 @@
-import { create, DescEnum, DescEnumValue, EnumJsonType, } from "@bufbuild/protobuf";
+import { create, DescEnum, DescEnumValue, DescMessage, EnumJsonType, MessageShape, } from "@bufbuild/protobuf";
 import { SettingCheck } from "../common/switch";
-import { empty, emptySchema, grpc, grpcSchema, http, http2, http2Schema, httpSchema, inbound, inbound_config, inboundSchema, mixed, mixedSchema, mux, muxSchema, normal, normalSchema, quic, quicSchema, reality, realitySchema, redir, redirSchema, sniff, sniffSchema, socks5, socks5Schema, tcp_udp_control, tcp_udp_controlSchema, tcpudp, tcpudpSchema, tls, tls_config, tls_configSchema, tlsSchema, tproxy, tproxySchema, transport, transportSchema, tun, tunSchema, websocket, websocketSchema, yuubinsya, yuubinsyaSchema } from "../pbes/config/listener/listener_pb";
+import { empty, emptySchema, grpc, grpcSchema, http, http2, http2Schema, httpSchema, inbound, inbound_config, inbound_configSchema, inboundSchema, mixed, mixedSchema, mux, muxSchema, normal, normalSchema, protocolSchema, quic, quicSchema, reality, realitySchema, redir, redirSchema, sniff, sniffSchema, socks5, socks5Schema, tcp_udp_control, tcp_udp_controlSchema, tcpudp, tcpudpSchema, tls, tls_config, tls_configSchema, tlsSchema, tproxy, tproxySchema, transport, transportSchema, tun, tunSchema, websocket, websocketSchema, yuubinsya, yuubinsyaSchema } from "../pbes/config/listener/listener_pb";
 import { SettingInputText, Container, MoveUpDown } from "./components";
 import { Form, Row, Col, Modal, ListGroup, InputGroup, Button, Card } from "react-bootstrap";
 import { HTTPComponents, MixedComponents, QuicComponents, RealityComponents, RedirComponents, Socks5Components, TProxyComponents, TlsComponents, TunComponents } from "./server";
@@ -9,10 +9,10 @@ import React from "react";
 import { GenEnum } from "@bufbuild/protobuf/codegenv1";
 import { Enum, EnumValue } from "@bufbuild/protobuf/wkt";
 
-function change<T>(e: T, apply?: (x: T) => void): (f: (x: T) => void) => void {
-    if (!apply) return function (_: (x: T) => void) { }
+function change<T extends DescMessage>(scheme: T, e: MessageShape<T>, apply?: (x: MessageShape<T>) => void): (f: (x: MessageShape<T>) => void) => void {
+    if (!apply) return function (_: (x: MessageShape<T>) => void) { }
 
-    return function (f: (x: T) => void) {
+    return function (f: (x: MessageShape<T>) => void) {
         f(e)
         apply(e)
     }
@@ -53,7 +53,8 @@ export const InboundModal = (
 }
 
 export const Inbounds = (props: { inbounds: inbound_config, onChange: (x: inbound_config) => void }) => {
-    const cc = change(props.inbounds, props.onChange)
+    const cc = change(inbound_configSchema, props.inbounds, props.onChange)
+
     const [modalData, setModalData] = useState({ show: false, inbound: create(inboundSchema, {}), onChange: (_: inbound) => { } });
     const [newInbound, setNewInbound] = useState({ value: "" });
 
@@ -103,7 +104,7 @@ export const Inbounds = (props: { inbounds: inbound_config, onChange: (x: inboun
                                                 setModalData({
                                                     show: true,
                                                     inbound: v,
-                                                    onChange: (e: inbound) => { cc((x) => x.inbounds[k] = e) }
+                                                    onChange: (e: inbound) => { cc((x) => { x.inbounds[k] = e }) }
                                                 })
                                             }}
                                         >
@@ -144,7 +145,7 @@ export const Inbounds = (props: { inbounds: inbound_config, onChange: (x: inboun
 }
 
 export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
-    const cc = change(props.inbound, props.onChange)
+    const cc = change(inboundSchema, props.inbound, props.onChange)
 
     const onMove = (up: boolean, current: number) => {
         if (props.inbound.transport.length <= 1) return
@@ -262,7 +263,7 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
 }
 
 const Network = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
-    const cc = change(props.inbound, props.onChange)
+    const cc = change(inboundSchema, props.inbound, props.onChange)
 
     const [newProtocol, setNewProtocol] = useState({ value: props.inbound.network.case?.toString() ?? "tcpudp" });
     return <>
@@ -306,7 +307,7 @@ const Network = (props: { inbound: inbound, onChange: (x: inbound) => void }) =>
 }
 
 const NetworkBase = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
-    const cc = change(props.inbound, props.onChange)
+    const cc = change(inboundSchema, props.inbound, props.onChange)
     switch (props.inbound.network.case) {
         case "tcpudp":
             return <TcpUdp protocol={props.inbound.network.value} onChange={(x) => { cc((y) => y.network.value = x) }}></TcpUdp>
@@ -321,7 +322,7 @@ const NetworkBase = (props: { inbound: inbound, onChange: (x: inbound) => void }
 }
 
 const Transport = (props: { transport: transport, onChange: (x: transport) => void }) => {
-    const cc = change(props.transport, props.onChange)
+    const cc = change(transportSchema, props.transport, props.onChange)
 
     switch (props.transport.transport.case) {
         case "normal":
@@ -349,7 +350,7 @@ const Transport = (props: { transport: transport, onChange: (x: transport) => vo
 }
 
 const ProtocolBase = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
-    const cc = change(props.inbound, props.onChange)
+    const cc = change(inboundSchema, props.inbound, props.onChange)
 
     switch (props.inbound.protocol.case) {
         case "http":
@@ -393,7 +394,7 @@ const ProtocolBase = (props: { inbound: inbound, onChange: (x: inbound) => void 
 }
 
 const Protocol = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
-    const cc = change(props.inbound, props.onChange)
+    const cc = change(inboundSchema, props.inbound, props.onChange)
 
     const [newProtocol, setNewProtocol] = useState({ value: props.inbound.protocol.case?.toString() ?? "yuubinsya" });
 
@@ -450,7 +451,7 @@ const Protocol = (props: { inbound: inbound, onChange: (x: inbound) => void }) =
 
 
 const Yuubinsya = (props: { yuubinsya: yuubinsya, onChange: (x: yuubinsya) => void }) => {
-    const cc = change(props.yuubinsya, props.onChange)
+    const cc = change(yuubinsyaSchema, props.yuubinsya, props.onChange)
     return <>
         <SettingCheck
             label="TCP Encrypt"
@@ -471,7 +472,7 @@ const Yuubinsya = (props: { yuubinsya: yuubinsya, onChange: (x: yuubinsya) => vo
 }
 
 const TcpUdp = (props: { protocol: tcpudp, onChange: (x: tcpudp) => void }) => {
-    const cc = change(props.protocol, props.onChange)
+    const cc = change(tcpudpSchema, props.protocol, props.onChange)
     return <>
         <SettingInputText
             label="Host"
@@ -483,7 +484,7 @@ const TcpUdp = (props: { protocol: tcpudp, onChange: (x: tcpudp) => void }) => {
             label="Control"
             type={tcp_udp_controlSchema}
             value={props.protocol.control}
-            onChange={(e) => { cc((x) => x.control = e) }}
+            onChange={(e) => { cc((x) => { x.control = e }) }}
         />
     </>
 }
