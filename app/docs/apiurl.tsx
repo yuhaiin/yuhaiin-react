@@ -3,6 +3,7 @@ export var RemoteBypass = "https://raw.githubusercontent.com/yuhaiin/kitte/main/
 export var LatencyHTTPUrl = "https://clients3.google.com/generate_204"
 export var LatencyDNSUrl = "dns.nextdns.io:853"
 export var LatencyIPv6 = true
+export var LatencyIPUrl ="http://ip.sb"
 
 const RefreshUrl = () => {
     let url = localStorage.getItem("api_url")
@@ -21,6 +22,9 @@ const RefreshUrl = () => {
 
     url = localStorage.getItem("latency_ipv6")
     if (url !== null) LatencyIPv6 = url === "true"
+
+    url = localStorage.getItem("latency_ip_url")
+    if (url !== null) LatencyIPUrl = url
 }
 
 export const SetUrl = (url: string) => { save("api_url", url) }
@@ -28,6 +32,7 @@ export const SetRemoteBypass = (url: string) => { save("remote_bypass", url) }
 export const SetLatencyDNSUrl = (url: string) => { save("latency_dns_url", url) }
 export const SetLatencyHTTPUrl = (url: string) => { save("latency_http_url", url) }
 export const SetLatencyIPv6 = (url: boolean) => { save("latency_ipv6", url.toString()) }
+export const SetLatencyIPUrl = (url: string) => { save("latency_ip_url", url) }
 
 const save = (key: string, value: string) => {
     if (value === "") localStorage.removeItem(key)

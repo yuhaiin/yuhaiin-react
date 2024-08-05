@@ -143,8 +143,8 @@ function ConfigComponent() {
                             <Tab.Pane eventKey="inbound" title="Inbound">
                                 <fieldset disabled={info?.os === "android"}>
                                     <Inbounds
-                                        inbounds={setting.server!!}
-                                        onChange={(e) => { updateState((x) => x.server = clone(inbound_configSchema, e)) }}
+                                        inbounds={create(inbound_configSchema, setting.server!!)}
+                                        onChange={(e) =>  updateState((x) => x.server = clone(inbound_configSchema, e)) }
                                     />
                                 </fieldset>
                             </Tab.Pane>

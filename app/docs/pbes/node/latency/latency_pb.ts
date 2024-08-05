@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file node/latency/latency.proto.
  */
 export const file_node_latency_latency: GenFile = /*@__PURE__*/
-  fileDesc("Chpub2RlL2xhdGVuY3kvbGF0ZW5jeS5wcm90bxIPeXVoYWlpbi5sYXRlbmN5IhMKBGh0dHASCwoDdXJsGAEgASgJIjcKA2RucxIMCgRob3N0GAEgASgJEiIKDXRhcmdldF9kb21haW4YAiABKAlSC3RhcmdldF9uYW1lIkEKDWRuc19vdmVyX3F1aWMSDAoEaG9zdBgBIAEoCRIiCg10YXJnZXRfZG9tYWluGAIgASgJUgt0YXJnZXRfbmFtZSKqAQoIcHJvdG9jb2wSJQoEaHR0cBgBIAEoCzIVLnl1aGFpaW4ubGF0ZW5jeS5odHRwSAASIwoDZG5zGAIgASgLMhQueXVoYWlpbi5sYXRlbmN5LmRuc0gAEkYKDWRuc19vdmVyX3F1aWMYAyABKAsyHi55dWhhaWluLmxhdGVuY3kuZG5zX292ZXJfcXVpY0gAUg1kbnNfb3Zlcl9xdWljQgoKCHByb3RvY29sIl4KB3JlcXVlc3QSCgoCaWQYAyABKAkSDAoEaGFzaBgBIAEoCRIMCgRpcHY2GAQgASgIEisKCHByb3RvY29sGAIgASgLMhkueXVoYWlpbi5sYXRlbmN5LnByb3RvY29sIjYKCHJlcXVlc3RzEioKCHJlcXVlc3RzGAEgAygLMhgueXVoYWlpbi5sYXRlbmN5LnJlcXVlc3QirwEKCHJlc3BvbnNlElMKDmlkX2xhdGVuY3lfbWFwGAEgAygLMisueXVoYWlpbi5sYXRlbmN5LnJlc3BvbnNlLklkTGF0ZW5jeU1hcEVudHJ5Ug5pZF9sYXRlbmN5X21hcBpOChFJZExhdGVuY3lNYXBFbnRyeRILCgNrZXkYASABKAkSKAoFdmFsdWUYAiABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb246AjgBQjZaNGdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9ub2RlL2xhdGVuY3liBnByb3RvMw", [file_google_protobuf_duration]);
+  fileDesc("Chpub2RlL2xhdGVuY3kvbGF0ZW5jeS5wcm90bxIPeXVoYWlpbi5sYXRlbmN5IhMKBGh0dHASCwoDdXJsGAEgASgJIjcKA2RucxIMCgRob3N0GAEgASgJEiIKDXRhcmdldF9kb21haW4YAiABKAlSC3RhcmdldF9uYW1lIkEKDWRuc19vdmVyX3F1aWMSDAoEaG9zdBgBIAEoCRIiCg10YXJnZXRfZG9tYWluGAIgASgJUgt0YXJnZXRfbmFtZSIxCgJpcBILCgN1cmwYASABKAkSHgoKdXNlcl9hZ2VudBgCIAEoCVIKdXNlcl9hZ2VudCIpCgtpcF9yZXNwb25zZRIMCgRpcHY0GAEgASgJEgwKBGlwdjYYAiABKAkizQEKCHByb3RvY29sEiUKBGh0dHAYASABKAsyFS55dWhhaWluLmxhdGVuY3kuaHR0cEgAEiMKA2RucxgCIAEoCzIULnl1aGFpaW4ubGF0ZW5jeS5kbnNIABJGCg1kbnNfb3Zlcl9xdWljGAMgASgLMh4ueXVoYWlpbi5sYXRlbmN5LmRuc19vdmVyX3F1aWNIAFINZG5zX292ZXJfcXVpYxIhCgJpcBgEIAEoCzITLnl1aGFpaW4ubGF0ZW5jeS5pcEgAQgoKCHByb3RvY29sIl4KB3JlcXVlc3QSCgoCaWQYAyABKAkSDAoEaGFzaBgBIAEoCRIMCgRpcHY2GAQgASgIEisKCHByb3RvY29sGAIgASgLMhkueXVoYWlpbi5sYXRlbmN5LnByb3RvY29sIjYKCHJlcXVlc3RzEioKCHJlcXVlc3RzGAEgAygLMhgueXVoYWlpbi5sYXRlbmN5LnJlcXVlc3QirAEKCHJlc3BvbnNlElMKDmlkX2xhdGVuY3lfbWFwGAEgAygLMisueXVoYWlpbi5sYXRlbmN5LnJlc3BvbnNlLklkTGF0ZW5jeU1hcEVudHJ5Ug5pZF9sYXRlbmN5X21hcBpLChFJZExhdGVuY3lNYXBFbnRyeRILCgNrZXkYASABKAkSJQoFdmFsdWUYAiABKAsyFi55dWhhaWluLmxhdGVuY3kucmVwbHk6AjgBImoKBXJlcGx5EiwKB2xhdGVuY3kYASABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb25IABIqCgJpcBgCIAEoCzIcLnl1aGFpaW4ubGF0ZW5jeS5pcF9yZXNwb25zZUgAQgcKBXJlcGx5QjZaNGdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9ub2RlL2xhdGVuY3liBnByb3RvMw", [file_google_protobuf_duration]);
 
 /**
  * @generated from message yuhaiin.latency.http
@@ -76,6 +76,50 @@ export const dns_over_quicSchema: GenMessage<dns_over_quic> = /*@__PURE__*/
   messageDesc(file_node_latency_latency, 2);
 
 /**
+ * @generated from message yuhaiin.latency.ip
+ */
+export type ip = Message<"yuhaiin.latency.ip"> & {
+  /**
+   * @generated from field: string url = 1;
+   */
+  url: string;
+
+  /**
+   * @generated from field: string user_agent = 2 [json_name = "user_agent"];
+   */
+  userAgent: string;
+};
+
+/**
+ * Describes the message yuhaiin.latency.ip.
+ * Use `create(ipSchema)` to create a new message.
+ */
+export const ipSchema: GenMessage<ip> = /*@__PURE__*/
+  messageDesc(file_node_latency_latency, 3);
+
+/**
+ * @generated from message yuhaiin.latency.ip_response
+ */
+export type ip_response = Message<"yuhaiin.latency.ip_response"> & {
+  /**
+   * @generated from field: string ipv4 = 1;
+   */
+  ipv4: string;
+
+  /**
+   * @generated from field: string ipv6 = 2;
+   */
+  ipv6: string;
+};
+
+/**
+ * Describes the message yuhaiin.latency.ip_response.
+ * Use `create(ip_responseSchema)` to create a new message.
+ */
+export const ip_responseSchema: GenMessage<ip_response> = /*@__PURE__*/
+  messageDesc(file_node_latency_latency, 4);
+
+/**
  * @generated from message yuhaiin.latency.protocol
  */
 export type protocol = Message<"yuhaiin.latency.protocol"> & {
@@ -100,6 +144,12 @@ export type protocol = Message<"yuhaiin.latency.protocol"> & {
      */
     value: dns_over_quic;
     case: "dnsOverQuic";
+  } | {
+    /**
+     * @generated from field: yuhaiin.latency.ip ip = 4;
+     */
+    value: ip;
+    case: "ip";
   } | { case: undefined; value?: undefined };
 };
 
@@ -108,7 +158,7 @@ export type protocol = Message<"yuhaiin.latency.protocol"> & {
  * Use `create(protocolSchema)` to create a new message.
  */
 export const protocolSchema: GenMessage<protocol> = /*@__PURE__*/
-  messageDesc(file_node_latency_latency, 3);
+  messageDesc(file_node_latency_latency, 5);
 
 /**
  * @generated from message yuhaiin.latency.request
@@ -140,7 +190,7 @@ export type request = Message<"yuhaiin.latency.request"> & {
  * Use `create(requestSchema)` to create a new message.
  */
 export const requestSchema: GenMessage<request> = /*@__PURE__*/
-  messageDesc(file_node_latency_latency, 4);
+  messageDesc(file_node_latency_latency, 6);
 
 /**
  * @generated from message yuhaiin.latency.requests
@@ -157,16 +207,16 @@ export type requests = Message<"yuhaiin.latency.requests"> & {
  * Use `create(requestsSchema)` to create a new message.
  */
 export const requestsSchema: GenMessage<requests> = /*@__PURE__*/
-  messageDesc(file_node_latency_latency, 5);
+  messageDesc(file_node_latency_latency, 7);
 
 /**
  * @generated from message yuhaiin.latency.response
  */
 export type response = Message<"yuhaiin.latency.response"> & {
   /**
-   * @generated from field: map<string, google.protobuf.Duration> id_latency_map = 1 [json_name = "id_latency_map"];
+   * @generated from field: map<string, yuhaiin.latency.reply> id_latency_map = 1 [json_name = "id_latency_map"];
    */
-  idLatencyMap: { [key: string]: Duration };
+  idLatencyMap: { [key: string]: reply };
 };
 
 /**
@@ -174,5 +224,34 @@ export type response = Message<"yuhaiin.latency.response"> & {
  * Use `create(responseSchema)` to create a new message.
  */
 export const responseSchema: GenMessage<response> = /*@__PURE__*/
-  messageDesc(file_node_latency_latency, 6);
+  messageDesc(file_node_latency_latency, 8);
+
+/**
+ * @generated from message yuhaiin.latency.reply
+ */
+export type reply = Message<"yuhaiin.latency.reply"> & {
+  /**
+   * @generated from oneof yuhaiin.latency.reply.reply
+   */
+  reply: {
+    /**
+     * @generated from field: google.protobuf.Duration latency = 1;
+     */
+    value: Duration;
+    case: "latency";
+  } | {
+    /**
+     * @generated from field: yuhaiin.latency.ip_response ip = 2;
+     */
+    value: ip_response;
+    case: "ip";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message yuhaiin.latency.reply.
+ * Use `create(replySchema)` to create a new message.
+ */
+export const replySchema: GenMessage<reply> = /*@__PURE__*/
+  messageDesc(file_node_latency_latency, 9);
 

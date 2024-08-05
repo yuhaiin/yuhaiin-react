@@ -2,7 +2,7 @@
 
 import React, { useState, useContext } from "react";
 import { Button, Card, Row, Form, Col, Spinner } from "react-bootstrap";
-import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPv6, RemoteBypass, SetLatencyDNSUrl, SetLatencyHTTPUrl, SetLatencyIPv6, SetRemoteBypass, SetUrl } from "../apiurl";
+import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, RemoteBypass, SetLatencyDNSUrl, SetLatencyHTTPUrl, SetLatencyIPUrl, SetLatencyIPv6, SetRemoteBypass, SetUrl } from "../apiurl";
 import { GlobalToastContext } from "../common/toast";
 import { SettingCheck } from "../common/switch";
 import { Fetch } from '../common/proto';
@@ -45,7 +45,7 @@ function Setting() {
     const [latencyHTTP, setLatencyHTTP] = useState(LatencyHTTPUrl);
     const [latencyDNS, setLatencyDNS] = useState(LatencyDNSUrl);
     const [latencyIPv6, setLatencyIPv6] = useState(LatencyIPv6);
-
+    const [latencyIPUrl, setLatencyIPUrl] = useState(LatencyIPUrl);
 
     return <> <Card className="mb-3">
         <Card.Body>
@@ -117,6 +117,18 @@ function Setting() {
                     SetLatencyDNSUrl(latencyDNS)
                     if (latencyDNS !== "") ctx.Info(`Set Latency DNS: ${latencyDNS} success.`)
                     else ctx.Info(`Remove Latency DNS success.`)
+                }}
+            />
+
+            <OnelineEdit
+                title="IP"
+                placeholder="http://ip.sb"
+                value={latencyIPUrl}
+                onChange={setLatencyIPUrl}
+                onClick={() => {
+                    SetLatencyIPUrl(latencyIPUrl)
+                    if (latencyIPUrl !== "") ctx.Info(`Set Latency IP Url: ${latencyIPUrl} success.`)
+                    else ctx.Info(`Remove Latency IP Url success.`)
                 }}
             />
 

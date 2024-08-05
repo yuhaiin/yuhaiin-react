@@ -6,8 +6,6 @@ import { Form, Row, Col, Modal, ListGroup, InputGroup, Button, Card } from "reac
 import { HTTPComponents, MixedComponents, QuicComponents, RealityComponents, RedirComponents, Socks5Components, TProxyComponents, TlsComponents, TunComponents } from "./server";
 import { useState } from "react";
 import React from "react";
-import { GenEnum } from "@bufbuild/protobuf/codegenv1";
-import { Enum, EnumValue } from "@bufbuild/protobuf/wkt";
 
 function change<T extends DescMessage>(scheme: T, e: MessageShape<T>, apply?: (x: MessageShape<T>) => void): (f: (x: MessageShape<T>) => void) => void {
     if (!apply) return function (_: (x: MessageShape<T>) => void) { }
@@ -52,7 +50,7 @@ export const InboundModal = (
     );
 }
 
-export const Inbounds = (props: { inbounds: inbound_config, onChange: (x: inbound_config) => void }) => {
+export const Inbounds = React.memo((props: { inbounds: inbound_config, onChange: (x: inbound_config) => void }) => {
     const cc = change(inbound_configSchema, props.inbounds, props.onChange)
 
     const [modalData, setModalData] = useState({ show: false, inbound: create(inboundSchema, {}), onChange: (_: inbound) => { } });
@@ -142,7 +140,7 @@ export const Inbounds = (props: { inbounds: inbound_config, onChange: (x: inboun
             </Card.Footer>
         </Card>
     </>
-}
+})
 
 export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
     const cc = change(inboundSchema, props.inbound, props.onChange)

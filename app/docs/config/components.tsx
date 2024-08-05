@@ -1,5 +1,5 @@
 import { Row, Form, Card, Col, InputGroup, Button, DropdownItem, ButtonGroup, DropdownMenu, Dropdown } from "react-bootstrap"
-import { useState } from "react";
+import React, { useState } from "react";
 
 export class Remind {
     label: string
@@ -13,7 +13,7 @@ export class Remind {
     }
 }
 
-export const SettingInputText = (props: {
+export const SettingInputText = React.memo((props: {
     label: string,
     value: string | number,
     url?: string,
@@ -72,7 +72,7 @@ export const SettingInputText = (props: {
             </Col>
         </Form.Group >
     )
-}
+})
 
 export const SettingInputTextarea = (props: { label: string, value: string | number | undefined, onChange: (x: string) => void }) => {
     return (

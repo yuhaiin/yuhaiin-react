@@ -176,7 +176,7 @@ const ListGroupItem = React.memo((props: { itemKey: string, itemValue: string, s
                 <div className="d-sm-flex">
                     <div className="endpoint-name flex-grow-1 notranslate">{props.itemKey}</div>
 
-                    <div className="notranslate" style={{ opacity: 0.6 }}>
+                    <div className="notranslate text-break" style={{ opacity: 0.6 }}>
                         {
                             props.itemKey !== "Hash" ? props.itemValue :
                                 <a
