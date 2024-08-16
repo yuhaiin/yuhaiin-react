@@ -3,7 +3,6 @@ import { Form, InputGroup, Card, Row, Col, Button } from 'react-bootstrap';
 import { SettingInputText, NewItemList, Container } from './components';
 import { SettingCheck } from "../common/switch";
 import { dns_config, type, typeSchema } from '../pbes/config/dns/dns_pb';
-import { DescEnum } from '@bufbuild/protobuf';
 
 type DNSProps = {
     data: dns_config,

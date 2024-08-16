@@ -129,13 +129,13 @@ function ConfigComponent() {
 
                             <Tab.Pane eventKey="bypass">
                                 <fieldset disabled={info?.os === "android"}>
-                                    <Bypass bypass={create(bypass_configSchema, setting.bypass!!)} onChange={(e) => updateState((x) => x.bypass = e)} />
+                                    <Bypass bypass={create(bypass_configSchema, setting.bypass!!)} onChange={(e) => updateState((x) => x.bypass = clone(bypass_configSchema, e))} />
                                 </fieldset>
                             </Tab.Pane>
 
                             <Tab.Pane eventKey="dns" title="DNS">
                                 <fieldset disabled={info?.os === "android"}>
-                                    <DNS data={create(dns_configSchema, setting.dns!!)} onChange={(e) => updateState((x) => x.dns = e)} />
+                                    <DNS data={create(dns_configSchema, setting.dns!!)} onChange={(e) => updateState((x) => x.dns = clone(dns_configSchema, e))} />
                                 </fieldset>
                             </Tab.Pane>
 
@@ -144,7 +144,7 @@ function ConfigComponent() {
                                 <fieldset disabled={info?.os === "android"}>
                                     <Inbounds
                                         inbounds={create(inbound_configSchema, setting.server!!)}
-                                        onChange={(e) =>  updateState((x) => x.server = clone(inbound_configSchema, e)) }
+                                        onChange={(e) => updateState((x) => x.server = clone(inbound_configSchema, e))}
                                     />
                                 </fieldset>
                             </Tab.Pane>
