@@ -133,6 +133,7 @@ const NodeItem = React.memo((props: {
             })),
             process: async (r) => {
                 let resp = fromBinary(responseSchema, new Uint8Array(await r.arrayBuffer()));
+                if (!resp.idLatencyMap["latency"]) return { Latency: "timeout" }
                 const rr = resp.idLatencyMap["latency"].reply
                 switch (rr.case) {
                     case "latency": return { Latency: durationToStroing(rr.value) }
