@@ -1,17 +1,17 @@
 "use client"
 
 import React, { useContext, useState } from "react";
-import { Row, Col, ButtonGroup, Button, Dropdown, Card, ListGroup, Badge, Spinner, DropdownButton } from "react-bootstrap";
+import { Row, Col, ButtonGroup, Button, Dropdown, Card, ListGroup, Spinner, DropdownButton } from "react-bootstrap";
 import NodeModal, { NodeJsonModal } from "../modal/node";
 import Loading from "../common/loading";
 import { GlobalToastContext } from "../common/toast";
 import useSWR from 'swr'
 import { Fetch, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
-import { LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6 } from "../apiurl";
-import { manager, managerSchema } from "../pbes/node/node_pb";
-import { dns_over_quic, dns_over_quicSchema, http, httpSchema, ip_response, ipSchema, protocol, protocolSchema, requests, requestsSchema, response, responseSchema } from "../pbes/node/latency/latency_pb";
-import { use_req, use_reqSchema } from "../pbes/node/grpc/node_pb";
+import { LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunUrl } from "../apiurl";
+import { managerSchema } from "../pbes/node/node_pb";
+import { dns_over_quicSchema, httpSchema, ipSchema, nat_type, protocol, protocolSchema, requestsSchema, responseSchema, stunSchema } from "../pbes/node/latency/latency_pb";
+import { use_reqSchema } from "../pbes/node/grpc/node_pb";
 import { origin, point, pointSchema } from "../pbes/node/point/point_pb";
 import { fromBinary, create, toBinary } from "@bufbuild/protobuf";
 import { Duration, StringValueSchema } from "@bufbuild/protobuf/wkt";
@@ -34,91 +34,157 @@ function durationToStroing(x: Duration): string {
     return `${total / Nanosecond} ns`
 }
 
-type Latency = {
-    tcp?: string,
-    udp?: string,
-    ipv4?: string,
-    ipv6?: string,
-    onLoading: number
+enum LatencyType {
+    TCP = "tcp",
+    UDP = "udp",
+    IP = "ip",
+    STUN = "stun"
+}
+
+class LatencyClass {
+    tcp: {
+        loading: boolean,
+        value?: string
+    } = { loading: false, }
+    udp: {
+        loading: boolean,
+        value?: string
+    } = { loading: false, }
+    ip: {
+        loading: boolean,
+        ipv4?: string,
+        ipv6?: string
+    } = { loading: false, }
+    stun: {
+        loading: boolean,
+        mapping?: string,
+        filtering?: string,
+        mappedAddress?: string
+    } = { loading: false, }
+
+    constructor(data?: Partial<LatencyClass>) {
+        Object.assign(this, data)
+    }
+
+    haveLoading(): boolean {
+        return this.tcp.loading || this.udp.loading || this.ip.loading || this.stun.loading
+    }
+
+    allLoading(): boolean {
+        return this.tcp.loading && this.udp.loading && this.ip.loading && this.stun.loading
+    }
 }
 
 type LatencyProps = {
     Latency?: string,
     IPv4?: string,
-    IPv6?: string
+    IPv6?: string,
+    Stun?: {
+        mapping: string
+        filter: string
+        mappedAddress: string
+    }
+}
+
+const getNatTypeString = (x: nat_type): string => {
+    switch (x) {
+        case nat_type.NAT_UNKNOWN: return "unknown"
+        case nat_type.NAT_NO_RESULT: return "noresult"
+        case nat_type.NAT_AddressAndPortDependent: return "address-and-port-dependent"
+        case nat_type.NAT_AddressDependent: return "address-dependent"
+        case nat_type.NAT_EndpointIndependent: return "endpoint-independent"
+        case nat_type.NAT_EndpointIndependentNoNAT: return "endpoint-independent-no-nat"
+        default: return "unknown"
+    }
 }
 
 const NodeItem = React.memo((props: {
     title: string,
     hash: string,
-    latency: Latency,
-    onChangeLatency: (x: Latency) => void
+    latency: LatencyClass,
+    onChangeLatency: (x: LatencyClass) => void
     onClickEdit: () => void
 }) => {
     const ctx = useContext(GlobalToastContext);
-    const updateTestingStatus = (modify: (x: Latency) => void) => {
+    const updateTestingStatus = (modify: (x: LatencyClass) => void) => {
         modify(props.latency)
         props.onChangeLatency(props.latency)
     }
 
-    const latencyButtonVar = (latency: Latency) => {
-        if (!latency.tcp && !latency.udp)
-            return "secondary"
-        if (latency.tcp === "timeout" && latency.udp === "timeout")
-            return "danger"
-        return "success"
-    }
-
-    const test = () => {
-        updateTestingStatus((v) => {
-            v.onLoading = 2
-            if (!v.ipv4 && !v.ipv6) v.onLoading += 1
-        })
-        latency(
-            create(protocolSchema, {
-                protocol: {
-                    case: "http",
-                    value: create(httpSchema, { url: LatencyHTTPUrl })
-                }
-            }),
-            (r) => {
-                updateTestingStatus(async (v) => {
-                    v.onLoading--
-                    v.tcp = r.Latency
-                })
-            })
-        latency(
-            create(protocolSchema, {
-                protocol: {
-                    case: "dnsOverQuic",
-                    value: create(dns_over_quicSchema, {
-                        host: LatencyDNSUrl,
-                        targetDomain: "www.google.com"
+    const test = (type: LatencyType) => {
+        switch (type) {
+            case LatencyType.TCP:
+                updateTestingStatus((v) => { v.tcp.loading = true })
+                latency(
+                    create(protocolSchema, {
+                        protocol: {
+                            case: "http",
+                            value: create(httpSchema, { url: LatencyHTTPUrl })
+                        }
+                    }),
+                    (r) => {
+                        updateTestingStatus(async (v) => { v.tcp = { loading: false, value: r.Latency } })
                     })
-                }
-            }),
-            (r) => {
-                updateTestingStatus(async (v) => {
-                    v.onLoading--
-                    v.udp = r.Latency
-                })
-            })
 
-        if (!props.latency.ipv4 && !props.latency.ipv6)
-            latency(
-                create(protocolSchema, {
-                    protocol: {
-                        case: "ip",
-                        value: create(ipSchema, { url: LatencyIPUrl })
-                    }
-                }),
-                (r) => {
-                    updateTestingStatus(async (v) => {
-                        v.onLoading--
-                        v.ipv4 = r.IPv4
-                        v.ipv6 = r.IPv6
+                break
+
+            case LatencyType.UDP:
+                updateTestingStatus((v) => { v.udp.loading = true })
+                latency(
+                    create(protocolSchema, {
+                        protocol: {
+                            case: "dnsOverQuic",
+                            value: create(dns_over_quicSchema, {
+                                host: LatencyDNSUrl,
+                                targetDomain: "www.google.com"
+                            })
+                        }
+                    }),
+                    (r) => {
+                        updateTestingStatus(async (v) => { v.udp = { loading: false, value: r.Latency } })
                     })
-                })
+                break
+
+            case LatencyType.IP:
+                updateTestingStatus((v) => { v.ip.loading = true })
+                latency(
+                    create(protocolSchema, {
+                        protocol: {
+                            case: "ip",
+                            value: create(ipSchema, { url: LatencyIPUrl })
+                        }
+                    }),
+                    (r) => {
+                        updateTestingStatus(async (v) => {
+                            v.ip.loading = false
+                            v.ip.ipv4 = r.IPv4
+                            v.ip.ipv6 = r.IPv6
+                        })
+                    })
+
+                break
+
+            case LatencyType.STUN:
+                updateTestingStatus((v) => { v.stun.loading = true })
+                latency(
+                    create(protocolSchema, {
+                        protocol: {
+                            case: "stun",
+                            value: create(stunSchema, { host: LatencyStunUrl })
+                        }
+                    }),
+                    (r) => {
+                        updateTestingStatus(async (v) => {
+                            v.stun = {
+                                loading: false,
+                                mapping: r.Stun?.mapping,
+                                filtering: r.Stun?.filter,
+                                mappedAddress: r.Stun?.mappedAddress
+                            }
+                        })
+                    })
+                break
+        }
     }
 
     const latency = (protocol: protocol, onFinish: (r: LatencyProps) => void) => {
@@ -138,6 +204,13 @@ const NodeItem = React.memo((props: {
                 switch (rr.case) {
                     case "latency": return { Latency: durationToStroing(rr.value) }
                     case "ip": return { IPv4: rr.value.ipv4, IPv6: rr.value.ipv6 }
+                    case "stun": return {
+                        Stun: {
+                            mapping: getNatTypeString(rr.value.Mapping),
+                            filter: getNatTypeString(rr.value.Filtering),
+                            mappedAddress: rr.value.mappedAddress
+                        }
+                    }
                     default: return { Latency: "timeout" }
                 }
             }
@@ -161,7 +234,7 @@ const NodeItem = React.memo((props: {
 
                         <div className="d-sm-flex">
                             <div className="endpoint-name flex-grow-1 notranslate">TCP</div>
-                            <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-download">{props.latency.tcp ?? "N/A"}</div>
+                            <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-download">{props.latency.tcp.value ?? "N/A"}</div>
                         </div>
                     </ListGroup.Item>
 
@@ -169,31 +242,61 @@ const NodeItem = React.memo((props: {
                     <ListGroup.Item>
                         <div className="d-sm-flex">
                             <div className="endpoint-name flex-grow-1 notranslate">UDP</div>
-                            <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.udp ?? "N/A"}</div>
+                            <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.udp.value ?? "N/A"}</div>
                         </div>
                     </ListGroup.Item>
 
                     {
-                        props.latency.ipv4 &&
+                        props.latency.ip.ipv4 &&
                         <ListGroup.Item>
                             <div className="d-sm-flex">
                                 <div className="endpoint-name flex-grow-1 notranslate">IPv4</div>
-                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.ipv4}</div>
+                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.ip.ipv4}</div>
                             </div>
                         </ListGroup.Item>
                     }
 
                     {
-                        props.latency.ipv6 &&
+                        props.latency.ip.ipv6 &&
                         <ListGroup.Item>
                             <div className="d-sm-flex">
                                 <div className="endpoint-name flex-grow-1 notranslate">IPv6</div>
-                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.ipv6}</div>
+                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.ip.ipv6}</div>
                             </div>
                         </ListGroup.Item>
                     }
 
-                    <ListGroup.Item>
+                    {
+                        props.latency.stun.mapping &&
+                        <ListGroup.Item>
+                            <div className="d-sm-flex text-truncate">
+                                <div className="endpoint-name flex-grow-1 notranslate text-truncate">Mapping</div>
+                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.stun.mapping}</div>
+                            </div>
+                        </ListGroup.Item>
+                    }
+
+                    {
+                        props.latency.stun.filtering &&
+                        <ListGroup.Item>
+                            <div className="d-sm-flex text-truncate">
+                                <div className="endpoint-name flex-grow-1 notranslate text-truncate">Filtering</div>
+                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.stun.filtering}</div>
+                            </div>
+                        </ListGroup.Item>
+                    }
+
+                    {
+                        props.latency.stun.mappedAddress &&
+                        <ListGroup.Item>
+                            <div className="d-sm-flex text-truncate">
+                                <div className="endpoint-name flex-grow-1 notranslate text-truncate">MappedAddress</div>
+                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.stun.mappedAddress}</div>
+                            </div>
+                        </ListGroup.Item>
+                    }
+
+                    <ListGroup.Item className="text-center text-break">
                         <ButtonGroup className="d-sm-flex">
                             <DropdownButton
                                 onSelect={
@@ -217,7 +320,6 @@ const NodeItem = React.memo((props: {
                                 as={ButtonGroup}
                                 variant="outline-primary"
                                 title="USE"
-                                className="w-100"
                             >
                                 <Dropdown.Item eventKey={"tcpudp"}>TCP&UDP</Dropdown.Item>
                                 <Dropdown.Item eventKey={"tcp"}>TCP</Dropdown.Item>
@@ -225,24 +327,24 @@ const NodeItem = React.memo((props: {
                             </DropdownButton>
                             <Button variant="outline-primary" className="w-100" onClick={props.onClickEdit}>Edit</Button>
 
-                            <Button
-                                variant={"outline-" + latencyButtonVar(props.latency)}
-                                className="w-100"
-                                disabled={props.latency.onLoading !== 0}
-                                onClick={async () => { test() }
-                                }
-                            >
 
-                                {(props.latency.onLoading !== 0) &&
-                                    <Spinner size="sm" animation="border" variant={latencyButtonVar(props.latency)} />}
-                                Test
-                            </Button>
+                            <DropdownButton
+                                onSelect={async (key) => { test(key as LatencyType) }}
+                                as={ButtonGroup}
+                                variant="outline-primary"
+                                title={<>Test&nbsp;{props.latency.haveLoading() && <Spinner size="sm" animation="border" />}</>}
+                            >
+                                <Dropdown.Item disabled={props.latency.tcp.loading} eventKey={LatencyType.TCP}>TCP&nbsp;{props.latency.tcp.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
+                                <Dropdown.Item disabled={props.latency.udp.loading} eventKey={LatencyType.UDP}>UDP&nbsp;{props.latency.udp.loading && <Spinner size="sm" animation="border" />} </Dropdown.Item>
+                                <Dropdown.Item disabled={props.latency.ip.loading} eventKey={LatencyType.IP}>IP&nbsp;{props.latency.ip.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
+                                <Dropdown.Item disabled={props.latency.stun.loading} eventKey={LatencyType.STUN}>STUN&nbsp;{props.latency.stun.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
+                            </DropdownButton>
                         </ButtonGroup>
                     </ListGroup.Item>
                 </ListGroup>
             </Card.Body>
         </Card>
-    </Col>
+    </Col >
 })
 
 class ModalData {
@@ -264,7 +366,7 @@ function Group() {
     const [currentGroup, setCurrentGroup] = useState("Select...");
     const [modalData, setModalData] = useState(new ModalData());
     const [importJson, setImportJson] = useState({ data: false });
-    const [latency, setLatency] = useState<{ [key: string]: Latency }>({})
+    const [latency, setLatency] = useState<{ [key: string]: LatencyClass }>({})
 
     const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoESFetcher(managerSchema))
 
@@ -359,7 +461,7 @@ function Group() {
                                                 hash={v}
                                                 title={k}
                                                 key={k}
-                                                latency={latency[v] ?? { onLoading: 0 }}
+                                                latency={latency[v] ?? new LatencyClass({})}
                                                 onChangeLatency={(e) => { setLatency(prev => { return { ...prev, [v]: e } }) }}
                                                 onClickEdit={() => {
                                                     if (!data.nodes) return

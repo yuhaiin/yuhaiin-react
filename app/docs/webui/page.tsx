@@ -2,7 +2,7 @@
 
 import React, { useState, useContext } from "react";
 import { Button, Card, Row, Form, Col, Spinner } from "react-bootstrap";
-import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, RemoteBypass, SetLatencyDNSUrl, SetLatencyHTTPUrl, SetLatencyIPUrl, SetLatencyIPv6, SetRemoteBypass, SetUrl } from "../apiurl";
+import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunUrl, RemoteBypass, SetLatencyDNSUrl, SetLatencyHTTPUrl, SetLatencyIPUrl, SetLatencyIPv6, SetLatencyStunUrl, SetRemoteBypass, SetUrl } from "../apiurl";
 import { GlobalToastContext } from "../common/toast";
 import { SettingCheck } from "../common/switch";
 import { Fetch } from '../common/proto';
@@ -46,6 +46,7 @@ function Setting() {
     const [latencyDNS, setLatencyDNS] = useState(LatencyDNSUrl);
     const [latencyIPv6, setLatencyIPv6] = useState(LatencyIPv6);
     const [latencyIPUrl, setLatencyIPUrl] = useState(LatencyIPUrl);
+    const [latencyStunUrl, setLatencyStunUrl] = useState(LatencyStunUrl);
 
     return <> <Card className="mb-3">
         <Card.Body>
@@ -132,6 +133,17 @@ function Setting() {
                 }}
             />
 
+            <OnelineEdit
+                title="STUN"
+                placeholder="stun.syncthing.net:3478"
+                value={latencyStunUrl}
+                onChange={setLatencyStunUrl}
+                onClick={() => {
+                    SetLatencyStunUrl(latencyStunUrl)
+                    if (latencyStunUrl !== "") ctx.Info(`Set Latency STUN Url: ${latencyStunUrl} success.`)
+                    else ctx.Info(`Remove Latency STUN Url success.`)
+                }}
+            />
         </Card.Body>
     </Card>
     </>
