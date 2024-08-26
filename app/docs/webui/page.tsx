@@ -2,7 +2,7 @@
 
 import React, { useState, useContext } from "react";
 import { Button, Card, Row, Form, Col, Spinner } from "react-bootstrap";
-import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunUrl, RemoteBypass, SetLatencyDNSUrl, SetLatencyHTTPUrl, SetLatencyIPUrl, SetLatencyIPv6, SetLatencyStunUrl, SetRemoteBypass, SetUrl } from "../apiurl";
+import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunUrl, LatencyStunTCPUrl, RemoteBypass, SetLatencyDNSUrl, SetLatencyHTTPUrl, SetLatencyIPUrl, SetLatencyIPv6, SetLatencyStunUrl, SetRemoteBypass, SetUrl, SetLatencyStunTCPUrl } from "../apiurl";
 import { GlobalToastContext } from "../common/toast";
 import { SettingCheck } from "../common/switch";
 import { Fetch } from '../common/proto';
@@ -47,6 +47,7 @@ function Setting() {
     const [latencyIPv6, setLatencyIPv6] = useState(LatencyIPv6);
     const [latencyIPUrl, setLatencyIPUrl] = useState(LatencyIPUrl);
     const [latencyStunUrl, setLatencyStunUrl] = useState(LatencyStunUrl);
+    const [latencyStunTCPUrl, setLatencyStunTCPUrl] = useState(LatencyStunTCPUrl);
 
     return <> <Card className="mb-3">
         <Card.Body>
@@ -142,6 +143,18 @@ function Setting() {
                     SetLatencyStunUrl(latencyStunUrl)
                     if (latencyStunUrl !== "") ctx.Info(`Set Latency STUN Url: ${latencyStunUrl} success.`)
                     else ctx.Info(`Remove Latency STUN Url success.`)
+                }}
+            />
+
+            <OnelineEdit
+                title="STUN TCP"
+                placeholder="stun.syncthing.net:3478"
+                value={latencyStunTCPUrl}
+                onChange={setLatencyStunTCPUrl}
+                onClick={() => {
+                    SetLatencyStunTCPUrl(latencyStunTCPUrl)
+                    if (latencyStunTCPUrl !== "") ctx.Info(`Set Latency STUN TCP Url: ${latencyStunTCPUrl} success.`)
+                    else ctx.Info(`Remove Latency STUN TCP Url success.`)
                 }}
             />
         </Card.Body>

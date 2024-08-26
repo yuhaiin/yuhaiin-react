@@ -5,6 +5,7 @@ export var LatencyDNSUrl = "dns.nextdns.io:853"
 export var LatencyIPv6 = true
 export var LatencyIPUrl = "http://ip.sb"
 export var LatencyStunUrl = "stun.syncthing.net:3478"
+export var LatencyStunTCPUrl = "stun.nextcloud.com:443"
 
 const RefreshUrl = () => {
     let url = localStorage.getItem("api_url")
@@ -29,6 +30,9 @@ const RefreshUrl = () => {
 
     url = localStorage.getItem("latency_stun_url")
     if (url !== null) LatencyStunUrl = url
+
+    url = localStorage.getItem("latency_stun_tcp_url")
+    if (url !== null) LatencyStunTCPUrl = url
 }
 
 export const SetUrl = (url: string) => { save("api_url", url) }
@@ -38,6 +42,7 @@ export const SetLatencyHTTPUrl = (url: string) => { save("latency_http_url", url
 export const SetLatencyIPv6 = (url: boolean) => { save("latency_ipv6", url.toString()) }
 export const SetLatencyIPUrl = (url: string) => { save("latency_ip_url", url) }
 export const SetLatencyStunUrl = (url: string) => { save("latency_stun_url", url) }
+export const SetLatencyStunTCPUrl = (url: string) => { save("latency_stun_tcp_url", url) }
 
 const save = (key: string, value: string) => {
     if (value === "") localStorage.removeItem(key)

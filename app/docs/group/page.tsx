@@ -8,7 +8,7 @@ import { GlobalToastContext } from "../common/toast";
 import useSWR from 'swr'
 import { Fetch, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
-import { LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunUrl } from "../apiurl";
+import { LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunTCPUrl, LatencyStunUrl } from "../apiurl";
 import { managerSchema } from "../pbes/node/node_pb";
 import { dns_over_quicSchema, httpSchema, ipSchema, nat_type, protocol, protocolSchema, requestsSchema, responseSchema, stunSchema } from "../pbes/node/latency/latency_pb";
 import { use_reqSchema } from "../pbes/node/grpc/node_pb";
@@ -38,7 +38,8 @@ enum LatencyType {
     TCP = "tcp",
     UDP = "udp",
     IP = "ip",
-    STUN = "stun"
+    STUN = "stun",
+    STUNTCP = "stun-tcp",
 }
 
 class LatencyClass {
@@ -61,17 +62,21 @@ class LatencyClass {
         filtering?: string,
         mappedAddress?: string
     } = { loading: false, }
+    stun_tcp: {
+        loading: boolean,
+        ip?: string
+    } = { loading: false, }
 
     constructor(data?: Partial<LatencyClass>) {
         Object.assign(this, data)
     }
 
     haveLoading(): boolean {
-        return this.tcp.loading || this.udp.loading || this.ip.loading || this.stun.loading
+        return this.tcp.loading || this.udp.loading || this.ip.loading || this.stun.loading || this.stun_tcp.loading
     }
 
     allLoading(): boolean {
-        return this.tcp.loading && this.udp.loading && this.ip.loading && this.stun.loading
+        return this.tcp.loading && this.udp.loading && this.ip.loading && this.stun.loading && this.stun_tcp.loading
     }
 }
 
@@ -94,6 +99,7 @@ const getNatTypeString = (x: nat_type): string => {
         case nat_type.NAT_AddressDependent: return "address-dependent"
         case nat_type.NAT_EndpointIndependent: return "endpoint-independent"
         case nat_type.NAT_EndpointIndependentNoNAT: return "endpoint-independent-no-nat"
+        case nat_type.NAT_ServerNotSupportChangePort: return "server-not-support"
         default: return "unknown"
     }
 }
@@ -164,13 +170,38 @@ const NodeItem = React.memo((props: {
 
                 break
 
+            case LatencyType.STUNTCP:
+                updateTestingStatus((v) => { v.stun_tcp.loading = true })
+                latency(
+                    create(protocolSchema, {
+                        protocol: {
+                            case: "stun",
+                            value: create(stunSchema, {
+                                host: LatencyStunTCPUrl,
+                                tcp: true
+                            })
+                        }
+                    }),
+                    (r) => {
+                        updateTestingStatus(async (v) => {
+                            v.stun_tcp = {
+                                loading: false,
+                                ip: r.Stun?.mappedAddress
+                            }
+                        })
+                    })
+
+                break
+
             case LatencyType.STUN:
                 updateTestingStatus((v) => { v.stun.loading = true })
                 latency(
                     create(protocolSchema, {
                         protocol: {
                             case: "stun",
-                            value: create(stunSchema, { host: LatencyStunUrl })
+                            value: create(stunSchema, {
+                                host: LatencyStunUrl,
+                            })
                         }
                     }),
                     (r) => {
@@ -296,6 +327,16 @@ const NodeItem = React.memo((props: {
                         </ListGroup.Item>
                     }
 
+                    {
+                        props.latency.stun_tcp.ip &&
+                        <ListGroup.Item>
+                            <div className="d-sm-flex text-truncate">
+                                <div className="endpoint-name flex-grow-1 notranslate text-truncate">STUN IP</div>
+                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.stun_tcp.ip}</div>
+                            </div>
+                        </ListGroup.Item>
+                    }
+
                     <ListGroup.Item className="text-center text-break">
                         <ButtonGroup className="d-sm-flex">
                             <DropdownButton
@@ -321,7 +362,7 @@ const NodeItem = React.memo((props: {
                                 variant="outline-primary"
                                 title="USE"
                             >
-                                <Dropdown.Item eventKey={"tcpudp"}>TCP&UDP</Dropdown.Item>
+                                <Dropdown.Item eventKey={"tcpudp"}>TCP and UDP</Dropdown.Item>
                                 <Dropdown.Item eventKey={"tcp"}>TCP</Dropdown.Item>
                                 <Dropdown.Item eventKey={"udp"}>UDP</Dropdown.Item>
                             </DropdownButton>
@@ -336,8 +377,9 @@ const NodeItem = React.memo((props: {
                             >
                                 <Dropdown.Item disabled={props.latency.tcp.loading} eventKey={LatencyType.TCP}>TCP&nbsp;{props.latency.tcp.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
                                 <Dropdown.Item disabled={props.latency.udp.loading} eventKey={LatencyType.UDP}>UDP&nbsp;{props.latency.udp.loading && <Spinner size="sm" animation="border" />} </Dropdown.Item>
-                                <Dropdown.Item disabled={props.latency.ip.loading} eventKey={LatencyType.IP}>IP&nbsp;{props.latency.ip.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
                                 <Dropdown.Item disabled={props.latency.stun.loading} eventKey={LatencyType.STUN}>STUN&nbsp;{props.latency.stun.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
+                                <Dropdown.Item disabled={props.latency.stun_tcp.loading} eventKey={LatencyType.STUNTCP}>STUN TCP&nbsp;{props.latency.stun_tcp.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
+                                <Dropdown.Item disabled={props.latency.ip.loading} eventKey={LatencyType.IP}>IP&nbsp;{props.latency.ip.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
                             </DropdownButton>
                         </ButtonGroup>
                     </ListGroup.Item>
