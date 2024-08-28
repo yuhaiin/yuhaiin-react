@@ -11,7 +11,7 @@
     "@types/react-dom": "^18.3.0",
     "bootstrap": "^v5.3.3",
     "bootstrap-icons": "^1.11.3",
-    "next": "^14.2.6",
+    "next": "^14.2.7",
     "react-bootstrap": "^2.10.4",
     "shlex": "^2.1.2",
     "swr": "^2.2.5",
