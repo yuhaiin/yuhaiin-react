@@ -20,21 +20,26 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
+
       - run: npm install
+
       - run: npm run build
         env:
           CI: false
+
       - run: |
           cat <<EOF > out/go.mod
           module github.com/yuhaiin/yuhaiin.github.io
 
           go 1.22.0
           EOF
+          
       - run: |
           cat <<EOF > out/yuhaiin.go
           package yuhaiin_github_io
@@ -47,6 +52,7 @@ jobs:
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
+        if: github.event_name != 'pull_request'
         with:
           personal_token: ${{ secrets.PERSONAL_TOKEN }}
           publish_dir: ./out
