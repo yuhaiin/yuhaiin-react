@@ -1,4 +1,4 @@
-import { create, DescEnum, DescEnumValue, DescMessage, EnumJsonType, MessageShape, } from "@bufbuild/protobuf";
+import { clone, create, DescEnum, DescEnumValue, DescMessage, EnumJsonType, MessageShape, } from "@bufbuild/protobuf";
 import { SettingCheck } from "../common/switch";
 import { empty, emptySchema, grpc, grpcSchema, http, http2, http2Schema, httpSchema, inbound, inbound_config, inbound_configSchema, inboundSchema, mixed, mixedSchema, mux, muxSchema, normal, normalSchema, protocolSchema, quic, quicSchema, reality, realitySchema, redir, redirSchema, sniff, sniffSchema, socks5, socks5Schema, tcp_udp_control, tcp_udp_controlSchema, tcpudp, tcpudpSchema, tls, tls_config, tls_configSchema, tlsSchema, tproxy, tproxySchema, transport, transportSchema, tun, tunSchema, websocket, websocketSchema, yuubinsya, yuubinsyaSchema } from "../pbes/config/listener/listener_pb";
 import { SettingInputText, Container, MoveUpDown } from "./components";
@@ -24,6 +24,8 @@ export const InboundModal = (
         onChange: (x: inbound) => void
     },
 ) => {
+    const [inbound, setInbound] = useState(clone(inboundSchema, props.value));
+
     return (
         <>
             <Modal
@@ -32,6 +34,7 @@ export const InboundModal = (
                 aria-labelledby="contained-modal-title-vcenter"
                 size='xl'
                 onHide={() => { props.onHide() }}
+                onShow={() => { setInbound(clone(inboundSchema, props.value)) }}
                 centered
             >
                 <Modal.Header>
@@ -39,11 +42,20 @@ export const InboundModal = (
                 </Modal.Header>
 
                 <Modal.Body>
-                    <Inbound inbound={props.value} onChange={props.onChange}></Inbound>
+                    <Inbound inbound={inbound} onChange={(x) => { setInbound(clone(inboundSchema, x)) }}></Inbound>
                 </Modal.Body>
 
                 <Modal.Footer>
-                    <Button variant="outline-primary" onClick={() => { props.onHide() }}>Save</Button>
+                    <Button variant="outline-secondary" onClick={() => { props.onHide() }}>Close</Button>
+                    <Button
+                        variant="outline-primary"
+                        onClick={() => {
+                            props.onChange(inbound)
+                            props.onHide()
+                        }}
+                    >
+                        Save
+                    </Button>
                 </Modal.Footer>
             </Modal>
         </>

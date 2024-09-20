@@ -3,17 +3,15 @@ import Loading from './common/loading';
 import useSWR from 'swr'
 import { ProtoESFetcher } from './common/proto';
 import Error from 'next/error';
-import { now_resp, now_respSchema } from './pbes/node/grpc/node_pb';
+import { now_respSchema } from './pbes/node/grpc/node_pb';
 import { create, toJsonString } from '@bufbuild/protobuf';
 import { pointSchema } from './pbes/node/point/point_pb';
 
 function Index() {
     const { data, error, isLoading, } = useSWR("/node/now", ProtoESFetcher(now_respSchema))
 
-
-    if (error != undefined) return <Error statusCode={error.code} title={error.msg} />
+    if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || data === undefined) return <Loading />
-
 
     return <div>
         <Card className='mb-3'>

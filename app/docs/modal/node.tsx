@@ -7,12 +7,12 @@ import { GlobalToastContext } from "../common/toast";
 import { pointSchema, point } from "../pbes/node/point/point_pb";
 import { Point } from "../node/protocol";
 import { create, clone, toJsonString, fromJsonString, toBinary } from "@bufbuild/protobuf";
-import { StringValueSchema, StringValue } from "@bufbuild/protobuf/wkt";
+import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 
-function NodeModal(props: {
+
+export function NodeModal(props: {
     hash: string,
     point?: point,
-    onChangePoint?: (v: point) => void,
     editable?: boolean,
     show: boolean,
     onHide: () => void,
@@ -23,33 +23,35 @@ function NodeModal(props: {
 }) {
     const ctx = useContext(GlobalToastContext);
 
-
     const [jsonShow, setJsonShow] = useState({ show: false, data: "" })
 
-    const { data: node, error, isLoading, mutate } = useSWR(
-        (!props.point && props.hash) ? `/node` : null,
-        ProtoESFetcher(pointSchema, "POST", toBinary(StringValueSchema, create(StringValueSchema, { value: props.hash }))))
+    const { data: node, error, isLoading, mutate } = useSWR(props.show ? `/node` : null,
+        ProtoESFetcher(
+            pointSchema,
+            "POST",
+            toBinary(StringValueSchema, create(StringValueSchema, { value: props.hash })),
+            props.point,
+        )
+    )
 
-    if (!props.show && props.hash === "") mutate(undefined)
-
-    const Footer = () => {
+    const SaveButton = () => {
         if (!props.editable) return <></>
+
         return <Button
             variant="outline-primary"
             disabled={isLoading || error || !props.editable}
             onClick={() => {
-                let p = node ?? props.point ?? create(pointSchema, {});
-                if (props.isNew) p.hash = ""
+                if (!node) return
+                if (props.isNew) node.hash = ""
                 Fetch("/node",
                     {
                         method: "PATCH",
-                        body: toBinary(pointSchema, p),
+                        body: toBinary(pointSchema, node),
                     })
                     .then(async ({ error }) => {
-                        if (error === undefined) {
+                        if (!error) {
                             ctx.Info("save successful")
-                            if (props.onSave !== undefined) props.onSave();
-                            // props.onHide();
+                            if (props.onSave) props.onSave();
                         } else {
                             let msg = await error.msg;
                             ctx.Error(msg)
@@ -67,7 +69,7 @@ function NodeModal(props: {
                 show={jsonShow.show}
                 data={jsonShow.data}
                 plaintext
-                onHide={() => setJsonShow({ ...jsonShow, show: false })}
+                onHide={() => { setJsonShow({ ...jsonShow, show: false }) }}
             />
 
             <Modal
@@ -75,9 +77,7 @@ function NodeModal(props: {
                 scrollable
                 aria-labelledby="contained-modal-title-vcenter"
                 size='xl'
-                onHide={() => {
-                    props.onHide()
-                }}
+                onHide={() => { props.onHide() }}
                 centered
             >
                 <Modal.Header closeButton>
@@ -93,19 +93,15 @@ function NodeModal(props: {
                                 <h4 className="text-center my-2">{error.code} - {error.msg}</h4>
                                 <pre className="text-center my-2 text-danger lead">{error.raw}</pre>
                             </> :
-                            isLoading ? <Loading /> :
+                            isLoading || !node ? <Loading /> :
                                 <Collapse in={!error && !isLoading}>
                                     <Point
-                                        point={node ?? props.point ?? create(pointSchema, {})}
+                                        point={node}
                                         groups={props.groups}
-                                        onChange={
-                                            (props.editable) ?
-                                                (e) => {
-                                                    if (!props.editable) return
-                                                    if (props.hash) mutate(e, false)
-                                                    if (props.point && props.onChangePoint) props.onChangePoint(e)
-                                                } : undefined
-                                        }
+                                        onChange={(e) => {
+                                            if (!props.editable) return
+                                            mutate(clone(pointSchema, e), false)
+                                        }}
                                     />
                                 </Collapse>
                         }
@@ -129,12 +125,11 @@ function NodeModal(props: {
                             <Dropdown.Item eventKey={"cancel"}>Cancel</Dropdown.Item>
                         </DropdownButton>
                     }
-                    {(!error && !isLoading) &&
+                    {(!error && !isLoading && node) &&
                         <Button
                             variant="outline-primary"
                             onClick={() => {
-                                let po = clone(pointSchema, node ?? props.point ?? create(pointSchema, {}));
-                                setJsonShow({ show: true, data: toJsonString(pointSchema, po, { prettySpaces: 2 }) });
+                                setJsonShow({ show: true, data: toJsonString(pointSchema, node, { prettySpaces: 2 }) });
                                 // navigator.clipboard.writeText(JSON.stringify(po.toJson({ emitDefaultValues: true }), null, 2));
                             }}
                         >
@@ -142,7 +137,7 @@ function NodeModal(props: {
                         </Button>
                     }
                     <Button variant="outline-secondary" onClick={() => { props.onHide() }}>Close</Button>
-                    <Footer />
+                    <SaveButton />
                 </Modal.Footer>
             </Modal>
         </>
@@ -222,4 +217,3 @@ export const NodeJsonModal = (
         </>
     );
 }
-export default NodeModal;

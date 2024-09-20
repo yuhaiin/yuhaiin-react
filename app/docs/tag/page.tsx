@@ -6,7 +6,7 @@ import Loading from "../common/loading";
 import useSWR from 'swr'
 import { Fetch, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
-import NodeModal from "../modal/node";
+import { NodeModal } from "../modal/node";
 import { GlobalToastContext } from "../common/toast";
 import { save_tag_req, save_tag_reqSchema } from "../pbes/node/grpc/node_pb";
 import { tag_type, tags, tagsSchema } from "../pbes/node/tag/tag_pb";

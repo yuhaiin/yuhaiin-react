@@ -2,7 +2,7 @@
 
 import React, { useContext, useState } from "react";
 import { Row, Col, ButtonGroup, Button, Dropdown, Card, ListGroup, Spinner, DropdownButton } from "react-bootstrap";
-import NodeModal, { NodeJsonModal } from "../modal/node";
+import { NodeJsonModal, NodeModal } from "../modal/node";
 import Loading from "../common/loading";
 import { GlobalToastContext } from "../common/toast";
 import useSWR from 'swr'
@@ -373,7 +373,7 @@ const NodeItem = React.memo((props: {
                                 onSelect={async (key) => { test(key as LatencyType) }}
                                 as={ButtonGroup}
                                 variant="outline-primary"
-                                title={<>Test&nbsp;{props.latency.haveLoading() && <Spinner size="sm" animation="border" />}</>}
+                                title={<>Test{props.latency.haveLoading() && <>&nbsp;<Spinner size="sm" animation="border" /></>}</>}
                             >
                                 <Dropdown.Item disabled={props.latency.tcp.loading} eventKey={LatencyType.TCP}>TCP&nbsp;{props.latency.tcp.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
                                 <Dropdown.Item disabled={props.latency.udp.loading} eventKey={LatencyType.UDP}>UDP&nbsp;{props.latency.udp.loading && <Spinner size="sm" animation="border" />} </Dropdown.Item>
@@ -424,7 +424,7 @@ function Group() {
                 point={modalData.point}
                 isNew={modalData.isNew}
                 onDelete={modalData.onDelete}
-                onChangePoint={(v) => { setModalData(prev => { return { ...prev, point: v } }) }}
+                // onChangePoint={(v) => { setModalData(prev => { return { ...prev, point: v } }) }}
                 editable
                 onHide={() => setModalData({ ...modalData, show: false })}
                 onSave={() => mutate()}

@@ -17,14 +17,16 @@ function change<T>(e: T, apply?: (x: T) => void): (f: (x: T) => void) => void {
 }
 
 
-export const Point = (props: {
+export const Point = React.forwardRef((props: {
     point: point,
     onChange?: (x: point) => void,
     onClose?: () => void,
     groups?: string[],
-}) => {
+}, ref) => {
     const cc = change(props.point, props.onChange)
-    const onClose = (i: number) => { cc((x) => { x.protocols.splice(i, 1) }) }
+    const onClose = (i: number) => {
+        cc((x) => { x.protocols.splice(i, 1) })
+    }
     function onChange(i: number, e:
         shadowsocks |
         shadowsocksr |
@@ -52,21 +54,25 @@ export const Point = (props: {
         <SettingInputText
             label="Name"
             value={props.point.name}
-            onChange={(e) => { cc((x) => x.name = e) }}
+            onChange={(e) => {
+                cc((x) => x.name = e) 
+            }}
         />
 
         <SettingInputText
             label="Group"
             value={props.point.group}
-            onChange={(e) => { cc((x) => x.group = e) }}
+            onChange={(e) => {
+                cc((x) => x.group = e)
+            }}
             reminds={props.groups ? props.groups.map(x => new Remind({ label: x, value: x })) : undefined}
         />
 
-        {/* <SettingInputText
+        <SettingInputText
             label="Hash"
             value={props.point.hash}
             onChange={(e) => { cc((x) => x.hash = e) }}
-        /> */}
+        />
 
         {
             props.point.protocols.map((x, i) => {
@@ -146,7 +152,9 @@ export const Point = (props: {
         <ListGroup variant="flush">
             <ListGroup.Item>
                 <InputGroup>
-                    <Form.Select value={newProtocol.value} onChange={(e) => setNewProtocol({ value: e.target.value })}>
+                    <Form.Select value={newProtocol.value} onChange={(e) => {
+                        setNewProtocol({ value: e.target.value })}
+                    }>
                         {
                             Object.keys(protocols).map((v) => {
                                 return <option value={v} key={v}>{v}</option>
@@ -155,7 +163,9 @@ export const Point = (props: {
                     </Form.Select>
                     <Button
                         variant="outline-secondary"
-                        onClick={() => cc((x) => { x.protocols.push(protocols[newProtocol.value]) })}
+                        onClick={() => {
+                            cc((x) => { x.protocols.push(protocols[newProtocol.value]) })
+                        }}
                     >
                         Add
                     </Button>
@@ -163,7 +173,7 @@ export const Point = (props: {
             </ListGroup.Item>
         </ListGroup>
     </>
-}
+})
 
 function NewPeersList(props: {
     title: string,

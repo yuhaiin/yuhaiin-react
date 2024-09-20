@@ -19,6 +19,7 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode }> = ({ c
         console.log(text);
         msg(text, "success")
     }
+    
     const error = (text: string) => {
         console.error(text)
         msg(text, "danger")

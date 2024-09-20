@@ -11,7 +11,7 @@ function NavBar(props: { children: React.ReactNode }) {
                 <div style={{ overflow: 'auto hidden' }}>
                     <Nav variant="pills" style={{ paddingBottom: '100px', paddingLeft: '10px', flexWrap: 'nowrap' }}>
                         <Nav.Item><NavLink href='/'>HOME</NavLink></Nav.Item>
-                        <Nav.Item><NavLink href='/docs/group/'>GROUP</NavLink></Nav.Item>
+                        <Nav.Item><NavLink href='/docs/group/'>OUTBOUND</NavLink></Nav.Item>
                         <Nav.Item><NavLink href='/docs/tag/'>TAG</NavLink></Nav.Item>
                         <Nav.Item><NavLink href='/docs/subscribe/'>SUBSCRIBE</NavLink></Nav.Item>
                         <Nav.Item><NavLink href='/docs/connections/'>CONNECTIONS</NavLink></Nav.Item>
