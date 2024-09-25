@@ -263,7 +263,7 @@ const NodeItem = React.memo((props: {
 
                     <ListGroup.Item>
 
-                        <div className="d-sm-flex">
+                        <div className="d-xl-flex">
                             <div className="endpoint-name flex-grow-1 notranslate">TCP</div>
                             <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-download">{props.latency.tcp.value ?? "N/A"}</div>
                         </div>
@@ -271,7 +271,7 @@ const NodeItem = React.memo((props: {
 
 
                     <ListGroup.Item>
-                        <div className="d-sm-flex">
+                        <div className="d-xl-flex">
                             <div className="endpoint-name flex-grow-1 notranslate">UDP</div>
                             <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.udp.value ?? "N/A"}</div>
                         </div>
@@ -280,7 +280,7 @@ const NodeItem = React.memo((props: {
                     {
                         props.latency.ip.ipv4 &&
                         <ListGroup.Item>
-                            <div className="d-sm-flex">
+                            <div className="d-xl-flex">
                                 <div className="endpoint-name flex-grow-1 notranslate">IPv4</div>
                                 <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.ip.ipv4}</div>
                             </div>
@@ -290,7 +290,7 @@ const NodeItem = React.memo((props: {
                     {
                         props.latency.ip.ipv6 &&
                         <ListGroup.Item>
-                            <div className="d-sm-flex">
+                            <div className="d-xl-flex">
                                 <div className="endpoint-name flex-grow-1 notranslate">IPv6</div>
                                 <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.ip.ipv6}</div>
                             </div>
@@ -300,7 +300,7 @@ const NodeItem = React.memo((props: {
                     {
                         props.latency.stun.mapping &&
                         <ListGroup.Item>
-                            <div className="d-sm-flex text-truncate">
+                            <div className="d-xl-flex text-truncate">
                                 <div className="endpoint-name flex-grow-1 notranslate text-truncate">Mapping</div>
                                 <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.stun.mapping}</div>
                             </div>
@@ -310,7 +310,7 @@ const NodeItem = React.memo((props: {
                     {
                         props.latency.stun.filtering &&
                         <ListGroup.Item>
-                            <div className="d-sm-flex text-truncate">
+                            <div className="d-xl-flex text-truncate">
                                 <div className="endpoint-name flex-grow-1 notranslate text-truncate">Filtering</div>
                                 <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.stun.filtering}</div>
                             </div>
@@ -320,7 +320,7 @@ const NodeItem = React.memo((props: {
                     {
                         props.latency.stun.mappedAddress &&
                         <ListGroup.Item>
-                            <div className="d-sm-flex text-truncate">
+                            <div className="d-xl-flex text-truncate">
                                 <div className="endpoint-name flex-grow-1 notranslate text-truncate">MappedAddress</div>
                                 <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.stun.mappedAddress}</div>
                             </div>
@@ -330,7 +330,7 @@ const NodeItem = React.memo((props: {
                     {
                         props.latency.stun_tcp.ip &&
                         <ListGroup.Item>
-                            <div className="d-sm-flex text-truncate">
+                            <div className="d-xl-flex text-truncate">
                                 <div className="endpoint-name flex-grow-1 notranslate text-truncate">STUN IP</div>
                                 <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{props.latency.stun_tcp.ip}</div>
                             </div>
@@ -338,7 +338,7 @@ const NodeItem = React.memo((props: {
                     }
 
                     <ListGroup.Item className="text-center text-break">
-                        <ButtonGroup className="d-sm-flex">
+                        <ButtonGroup className="d-xl-flex">
                             <DropdownButton
                                 onSelect={
                                     async (key) => {
@@ -494,7 +494,7 @@ function Group() {
                 {
                     (currentGroup && data.groupsV2 && data.groupsV2[currentGroup]) ?
                         <>
-                            <Row className="row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
+                            <Row className="row-cols-sm-1 row-cols-md-2 row-cols-xl-3 justify-content-md-center">
                                 {
                                     Object.entries(data.groupsV2[currentGroup].nodesV2).
                                         sort((a, b) => { return a <= b ? -1 : 1 }).

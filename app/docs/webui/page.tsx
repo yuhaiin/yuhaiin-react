@@ -2,12 +2,9 @@
 
 import React, { useState, useContext } from "react";
 import { Button, Card, Row, Form, Col, Spinner } from "react-bootstrap";
-import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunUrl, LatencyStunTCPUrl, RemoteBypass, SetLatencyDNSUrl, SetLatencyHTTPUrl, SetLatencyIPUrl, SetLatencyIPv6, SetLatencyStunUrl, SetRemoteBypass, SetUrl, SetLatencyStunTCPUrl } from "../apiurl";
+import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunUrl, LatencyStunTCPUrl, SetLatencyDNSUrl, SetLatencyHTTPUrl, SetLatencyIPUrl, SetLatencyIPv6, SetLatencyStunUrl, SetUrl, SetLatencyStunTCPUrl } from "../apiurl";
 import { GlobalToastContext } from "../common/toast";
 import { SettingCheck } from "../common/switch";
-import { Fetch } from '../common/proto';
-import { create, toBinary } from "@bufbuild/protobuf";
-import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 
 const OnelineEdit = (props: {
     title: string,
@@ -40,8 +37,6 @@ const OnelineEdit = (props: {
 function Setting() {
     const ctx = useContext(GlobalToastContext);
     const [url, setUrl] = useState(APIUrl);
-    const [remote, setRemote] = useState(RemoteBypass);
-    const [remoteLoading, setRemoteLoading] = useState(false);
     const [latencyHTTP, setLatencyHTTP] = useState(LatencyHTTPUrl);
     const [latencyDNS, setLatencyDNS] = useState(LatencyDNSUrl);
     const [latencyIPv6, setLatencyIPv6] = useState(LatencyIPv6);
@@ -62,27 +57,6 @@ function Setting() {
                     else ctx.Info(`Remove API Url success.`)
                     console.log(url)
                 }} buttonText="Save"
-            />
-
-            <OnelineEdit
-                title="Remote Rule"
-                value={remote}
-                onChange={setRemote}
-                buttonText="Update"
-                loading={remoteLoading}
-                onClick={() => {
-                    SetRemoteBypass(remote)
-                    if (remote !== "") {
-                        setRemoteLoading(true)
-                        Fetch(`/bypass`,
-                            { body: toBinary(StringValueSchema, create(StringValueSchema, { value: remote })), })
-                            .then(async ({ error }) => {
-                                if (error !== undefined) ctx.Error(`update remote rule ${remote} failed, ${error.code}| ${await error.msg}`)
-                                else ctx.Info(`update remote rule ${remote} success`)
-                                setRemoteLoading(false)
-                            })
-                    }
-                }}
             />
 
             <hr />

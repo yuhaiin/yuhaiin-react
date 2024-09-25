@@ -520,4 +520,3 @@ function SettingTypeSelect(props: {
         </Col>
     </Form.Group >
 }
-
