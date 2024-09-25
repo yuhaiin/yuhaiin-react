@@ -1,3 +1,4 @@
+import { DescEnum, DescEnumValue } from '@bufbuild/protobuf';
 import React from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
 
@@ -20,5 +21,30 @@ export const SettingCheck = (props: { label: string, checked: boolean, onChange:
         </Form.Group>
     )
 }
+
+
+export function SettingTypeSelect(props: {
+    label: string,
+    type: DescEnum,
+    value: number,
+    onChange: (no: number) => void,
+    filter?: (v: DescEnumValue) => boolean
+}) {
+    return <Form.Group as={Row} className='mb-3'>
+        <Form.Label column sm={2}>{props.label}</Form.Label>
+        <Col sm={10}>
+            <Form.Select value={props.value}
+                onChange={(e) => props.onChange(Number(e.target.value))} >
+                {
+                    props.type.values.
+                        filter(props.filter ?? (() => true)).
+                        map((v) => <option key={v.number} value={v.number}>{v.name}</option>)
+                }
+            </Form.Select>
+        </Col>
+    </Form.Group >
+}
+
+
 
 export default SwitchSelect;

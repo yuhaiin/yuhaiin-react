@@ -3,7 +3,6 @@
 import { useContext } from 'react';
 import { Form, Card, Row, Col, Button, Tab, ToggleButtonGroup, ToggleButton, Nav } from 'react-bootstrap';
 import DNS from './dns';
-import Bypass from './bypass';
 import Loading from '../common/loading';
 import { SettingInputText, Remind, ItemList } from './components';
 import { SettingCheck } from "../common/switch";
@@ -14,7 +13,6 @@ import Error from 'next/error';
 import { setting as Setting, settingSchema, infoSchema, system_proxySchema } from '../pbes/config/config_pb';
 import { InterfacesSchema } from '../pbes/tools/tools_pb';
 import { dns_configSchema } from '../pbes/config/dns/dns_pb';
-import { bypass_configSchema } from '../pbes/config/bypass/bypass_pb';
 import { log_level } from '../pbes/config/log/log_pb';
 import { Inbounds } from './inboud';
 import { clone, create, toBinary } from '@bufbuild/protobuf';
@@ -73,7 +71,7 @@ function ConfigComponent() {
                         >
                             <Nav.Item><Nav.Link eventKey="home">Setting</Nav.Link></Nav.Item>
                             <Nav.Item><Nav.Link eventKey="dns">DNS</Nav.Link></Nav.Item>
-                            <Nav.Item><Nav.Link eventKey="bypass">Bypass</Nav.Link></Nav.Item>
+                            {/* <Nav.Item><Nav.Link eventKey="bypass">Bypass</Nav.Link></Nav.Item> */}
                             <Nav.Item><Nav.Link eventKey="inbound">Inbound</Nav.Link></Nav.Item>
                             <Nav.Item><Nav.Link eventKey="info">Info</Nav.Link></Nav.Item>
                         </Nav>
@@ -124,12 +122,6 @@ function ConfigComponent() {
                                         onChange={() => updateState((x) => x.logcat!!.save = !x.logcat!!.save)} />
                                     <SettingLogcatLevelSelect label='Level' value={setting.logcat!!.level!!} onChange={(e) => updateState((x) => { x.logcat!!.level = e })} />
 
-                                </fieldset>
-                            </Tab.Pane>
-
-                            <Tab.Pane eventKey="bypass">
-                                <fieldset disabled={info?.os === "android"}>
-                                    <Bypass bypass={create(bypass_configSchema, setting.bypass!!)} onChange={(e) => updateState((x) => x.bypass = clone(bypass_configSchema, e))} />
                                 </fieldset>
                             </Tab.Pane>
 

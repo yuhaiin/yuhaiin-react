@@ -24,7 +24,7 @@ export default function RootLayout({
       </head>
       <body>
         <NavBar>
-          <Container className="mt-3">
+          <Container className="mt-3 mb-3">
             <GlobalToastProvider>
               {children}
             </GlobalToastProvider>

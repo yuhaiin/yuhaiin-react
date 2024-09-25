@@ -15,6 +15,7 @@ function NavBar(props: { children: React.ReactNode }) {
                         <Nav.Item><NavLink href='/docs/tag/'>TAG</NavLink></Nav.Item>
                         <Nav.Item><NavLink href='/docs/subscribe/'>SUBSCRIBE</NavLink></Nav.Item>
                         <Nav.Item><NavLink href='/docs/connections/'>CONNECTIONS</NavLink></Nav.Item>
+                        <Nav.Item><NavLink href='/docs/bypass/'>BYPASS</NavLink></Nav.Item>
                         <Nav.Item><NavLink href='/docs/config/'>CONFIG</NavLink></Nav.Item>
                         <Nav.Item><NavLink href='/docs/webui/'>WEBUI</NavLink></Nav.Item>
                         <Nav.Item><a className='nav-link' href='/debug/pprof'>PPROF</a></Nav.Item>

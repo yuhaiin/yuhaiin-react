@@ -21,7 +21,8 @@ export const SettingInputText = React.memo((props: {
     onChange?: (x: string) => void,
     reminds?: Remind[] | null,
     mb?: string,
-    placeholder?: string
+    placeholder?: string,
+    errorMsg?: string,
 }) => {
 
     const dropdown = () => {
@@ -47,13 +48,13 @@ export const SettingInputText = React.memo((props: {
                 }
             </DropdownMenu>
         </Dropdown>
-
     }
+
     return (
         <Form.Group as={Row} className={props.mb ? props.mb : "mb-2"}>
             <Form.Label column sm={2} className="nowrap">{props.label}</Form.Label>
             <Col sm={10}>
-                <InputGroup className={props.mb ? props.mb : "mb-2"}>
+                <InputGroup className={props.mb ? props.mb : "mb-2"} hasValidation={props.errorMsg ? true : false}>
                     {dropdown()}
                     {props.url
                         ?
@@ -64,8 +65,12 @@ export const SettingInputText = React.memo((props: {
                                 value={props.value}
                                 plaintext={props.plaintext}
                                 placeholder={props.placeholder}
+                                isInvalid={props.errorMsg ? true : false}
                                 onChange={(v) => { if (props.onChange) props.onChange(v.target.value) }}
                             />
+                            {
+                                props.errorMsg && <Form.Control.Feedback type="invalid">{props.errorMsg}</Form.Control.Feedback>
+                            }
                         </>}
 
                 </InputGroup>
@@ -88,7 +93,8 @@ export const SettingInputTextarea = (props: { label: string, value: string | num
 export function NewItemList(props: {
     title: string,
     data: string[],
-    onChange: (x: string[]) => void
+    onChange: (x: string[]) => void,
+    errorMsgs?: { [key: string]: string }
 }) {
     const [newData, setNewData] = useState({ value: "" });
 
@@ -101,15 +107,18 @@ export function NewItemList(props: {
             props.data.map((v, index) => {
                 return (
                     <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
-                        <InputGroup className="mb-2" >
+                        <InputGroup className="mb-2" hasValidation={props.errorMsgs && props.errorMsgs[v] ? true : false}>
                             <Form.Control
                                 onChange={(e) => {
                                     if (!props.data) return
                                     props.data[index] = e.target.value
                                     props.onChange(props.data)
                                 }}
+                                isInvalid={props.errorMsgs && props.errorMsgs[v] ? true : false}
                                 value={v}
                             />
+
+
                             <Button variant='outline-danger' onClick={() => {
                                 if (!props.data) return
                                 props.data.splice(index, 1)
@@ -117,6 +126,8 @@ export function NewItemList(props: {
                             }}>
                                 <i className="bi bi-x-lg" ></i>
                             </Button>
+
+                            {props.errorMsgs && props.errorMsgs[v] && <Form.Control.Feedback type="invalid">{props.errorMsgs[v]}</Form.Control.Feedback>}
                         </InputGroup>
                     </Col>
                 )
