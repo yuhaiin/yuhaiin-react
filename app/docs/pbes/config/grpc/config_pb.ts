@@ -2,20 +2,102 @@
 // @generated from file config/grpc/config.proto (package yuhaiin.protos.config.service, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenService } from "@bufbuild/protobuf/codegenv1";
-import { fileDesc, serviceDesc } from "@bufbuild/protobuf/codegenv1";
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv1";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv1";
 import type { infoSchema, settingSchema } from "../config_pb";
 import { file_config_config } from "../config_pb";
-import type { configSchema } from "../bypass/bypass_pb";
+import type { configSchema, mode_config } from "../bypass/bypass_pb";
 import { file_config_bypass_bypass } from "../bypass/bypass_pb";
-import type { EmptySchema } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_empty } from "@bufbuild/protobuf/wkt";
+import type { EmptySchema, StringValueSchema, Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_empty, file_google_protobuf_timestamp, file_google_protobuf_wrappers } from "@bufbuild/protobuf/wkt";
+import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file config/grpc/config.proto.
  */
 export const file_config_grpc_config: GenFile = /*@__PURE__*/
-  fileDesc("Chhjb25maWcvZ3JwYy9jb25maWcucHJvdG8SHXl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlMrgBCg5jb25maWdfc2VydmljZRI3CgRsb2FkEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhcueXVoYWlpbi5jb25maWcuc2V0dGluZxI3CgRzYXZlEhcueXVoYWlpbi5jb25maWcuc2V0dGluZxoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI0CgRpbmZvEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhQueXVoYWlpbi5jb25maWcuaW5mbzKyAQoGYnlwYXNzEjYKBGxvYWQSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFi55dWhhaWluLmJ5cGFzcy5jb25maWcSNgoEc2F2ZRIWLnl1aGFpaW4uYnlwYXNzLmNvbmZpZxoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI4CgZyZWxvYWQSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFi5nb29nbGUucHJvdG9idWYuRW1wdHlCOFo2Z2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL2NvbmZpZy9zZXJ2aWNlYgZwcm90bzM", [file_config_config, file_config_bypass_bypass, file_google_protobuf_empty]);
+  fileDesc("Chhjb25maWcvZ3JwYy9jb25maWcucHJvdG8SHXl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlImoKDXRlc3RfcmVzcG9uc2USKQoEbW9kZRgBIAEoCzIbLnl1aGFpaW4uYnlwYXNzLm1vZGVfY29uZmlnEg4KBnJlYXNvbhgCIAEoCRIeCgphZnRlcl9hZGRyGAMgASgJUgphZnRlcl9hZGRyImoKDWJsb2NrX2hpc3RvcnkSEAoIcHJvdG9jb2wYASABKAkSDAoEaG9zdBgCIAEoCRIoCgR0aW1lGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIPCgdwcm9jZXNzGAQgASgJIocBChJibG9ja19oaXN0b3J5X2xpc3QSPQoHb2JqZWN0cxgBIAMoCzIsLnl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlLmJsb2NrX2hpc3RvcnkSMgoUZHVtcF9wcm9jZXNzX2VuYWJsZWQYAiABKAhSFGR1bXBfcHJvY2Vzc19lbmFibGVkMrgBCg5jb25maWdfc2VydmljZRI3CgRsb2FkEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhcueXVoYWlpbi5jb25maWcuc2V0dGluZxI3CgRzYXZlEhcueXVoYWlpbi5jb25maWcuc2V0dGluZxoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI0CgRpbmZvEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhQueXVoYWlpbi5jb25maWcuaW5mbzLiAgoGYnlwYXNzEjYKBGxvYWQSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFi55dWhhaWluLmJ5cGFzcy5jb25maWcSNgoEc2F2ZRIWLnl1aGFpaW4uYnlwYXNzLmNvbmZpZxoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI4CgZyZWxvYWQSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSUgoEdGVzdBIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRosLnl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlLnRlc3RfcmVzcG9uc2USWgoNYmxvY2tfaGlzdG9yeRIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoxLnl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlLmJsb2NrX2hpc3RvcnlfbGlzdEI4WjZnaXRodWIuY29tL0FzdXRvcnVmYS95dWhhaWluL3BrZy9wcm90b3MvY29uZmlnL3NlcnZpY2ViBnByb3RvMw", [file_config_config, file_config_bypass_bypass, file_google_protobuf_empty, file_google_protobuf_wrappers, file_google_protobuf_timestamp]);
+
+/**
+ * @generated from message yuhaiin.protos.config.service.test_response
+ */
+export type test_response = Message<"yuhaiin.protos.config.service.test_response"> & {
+  /**
+   * @generated from field: yuhaiin.bypass.mode_config mode = 1;
+   */
+  mode?: mode_config;
+
+  /**
+   * @generated from field: string reason = 2;
+   */
+  reason: string;
+
+  /**
+   * @generated from field: string after_addr = 3 [json_name = "after_addr"];
+   */
+  afterAddr: string;
+};
+
+/**
+ * Describes the message yuhaiin.protos.config.service.test_response.
+ * Use `create(test_responseSchema)` to create a new message.
+ */
+export const test_responseSchema: GenMessage<test_response> = /*@__PURE__*/
+  messageDesc(file_config_grpc_config, 0);
+
+/**
+ * @generated from message yuhaiin.protos.config.service.block_history
+ */
+export type block_history = Message<"yuhaiin.protos.config.service.block_history"> & {
+  /**
+   * @generated from field: string protocol = 1;
+   */
+  protocol: string;
+
+  /**
+   * @generated from field: string host = 2;
+   */
+  host: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp time = 3;
+   */
+  time?: Timestamp;
+
+  /**
+   * @generated from field: string process = 4;
+   */
+  process: string;
+};
+
+/**
+ * Describes the message yuhaiin.protos.config.service.block_history.
+ * Use `create(block_historySchema)` to create a new message.
+ */
+export const block_historySchema: GenMessage<block_history> = /*@__PURE__*/
+  messageDesc(file_config_grpc_config, 1);
+
+/**
+ * @generated from message yuhaiin.protos.config.service.block_history_list
+ */
+export type block_history_list = Message<"yuhaiin.protos.config.service.block_history_list"> & {
+  /**
+   * @generated from field: repeated yuhaiin.protos.config.service.block_history objects = 1;
+   */
+  objects: block_history[];
+
+  /**
+   * @generated from field: bool dump_process_enabled = 2 [json_name = "dump_process_enabled"];
+   */
+  dumpProcessEnabled: boolean;
+};
+
+/**
+ * Describes the message yuhaiin.protos.config.service.block_history_list.
+ * Use `create(block_history_listSchema)` to create a new message.
+ */
+export const block_history_listSchema: GenMessage<block_history_list> = /*@__PURE__*/
+  messageDesc(file_config_grpc_config, 2);
 
 /**
  * @generated from service yuhaiin.protos.config.service.config_service
@@ -75,6 +157,22 @@ export const bypass: GenService<{
     methodKind: "unary";
     input: typeof EmptySchema;
     output: typeof EmptySchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.protos.config.service.bypass.test
+   */
+  test: {
+    methodKind: "unary";
+    input: typeof StringValueSchema;
+    output: typeof test_responseSchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.protos.config.service.bypass.block_history
+   */
+  block_history: {
+    methodKind: "unary";
+    input: typeof EmptySchema;
+    output: typeof block_history_listSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_config_grpc_config, 1);

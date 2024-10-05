@@ -1,40 +1,45 @@
 "use client"
 
-import { Nav } from 'react-bootstrap';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
+import { Nav, NavDropdown, Navbar as BootstrapNavbar, Container } from 'react-bootstrap';
+import { usePathname, useRouter } from 'next/navigation';
 
 function NavBar(props: { children: React.ReactNode }) {
+    const router = useRouter()
+
     return (
         <>
-            <div className="pt-2 border-bottom shadow-sm" style={{ overflowY: 'hidden', height: '52px' }}>
-                <div style={{ overflow: 'auto hidden' }}>
-                    <Nav variant="pills" style={{ paddingBottom: '100px', paddingLeft: '10px', flexWrap: 'nowrap' }}>
-                        <Nav.Item><NavLink href='/'>HOME</NavLink></Nav.Item>
-                        <Nav.Item><NavLink href='/docs/group/'>OUTBOUND</NavLink></Nav.Item>
-                        <Nav.Item><NavLink href='/docs/tag/'>TAG</NavLink></Nav.Item>
-                        <Nav.Item><NavLink href='/docs/subscribe/'>SUBSCRIBE</NavLink></Nav.Item>
-                        <Nav.Item><NavLink href='/docs/connections/'>CONNECTIONS</NavLink></Nav.Item>
-                        <Nav.Item><NavLink href='/docs/bypass/'>BYPASS</NavLink></Nav.Item>
-                        <Nav.Item><NavLink href='/docs/config/'>CONFIG</NavLink></Nav.Item>
-                        <Nav.Item><NavLink href='/docs/webui/'>WEBUI</NavLink></Nav.Item>
-                        <Nav.Item><a className='nav-link' href='/debug/pprof'>PPROF</a></Nav.Item>
-                    </Nav>
-                </div>
-            </div >
+            <BootstrapNavbar collapseOnSelect expand="lg" style={{ backdropFilter: 'blur(50px)' }} className="shadow-sm" sticky='top'>
+
+                <Container fluid>
+                    <BootstrapNavbar.Toggle aria-controls="responsive-navbar-nav" />
+                    <BootstrapNavbar.Collapse>
+                        <Nav
+                            activeKey={usePathname()}
+                            onSelect={(key, e) => {
+                                e.preventDefault();
+                                if (key) router.push(key)
+                            }}
+                        >
+                            <Nav.Item><Nav.Link eventKey='/'>HOME</Nav.Link></Nav.Item>
+                            <Nav.Item><Nav.Link eventKey='/docs/group/'>OUTBOUND</Nav.Link></Nav.Item>
+                            <Nav.Item><Nav.Link eventKey='/docs/tag/'>TAG</Nav.Link></Nav.Item>
+                            <Nav.Item><Nav.Link eventKey='/docs/subscribe/'>SUBSCRIBE</Nav.Link></Nav.Item>
+                            <Nav.Item><Nav.Link eventKey='/docs/connections/'>CONNECTIONS</Nav.Link></Nav.Item>
+                            <NavDropdown title="BYPASS" active={usePathname().startsWith('/docs/bypass/')}>
+                                <NavDropdown.Item eventKey={'/docs/bypass/'}>Config</NavDropdown.Item>
+                                <NavDropdown.Item eventKey={'/docs/bypass/test'}>Test Route</NavDropdown.Item>
+                                <NavDropdown.Item eventKey={'/docs/bypass/block'}>Block History</NavDropdown.Item>
+                            </NavDropdown>
+                            <Nav.Item><Nav.Link eventKey='/docs/config/'>CONFIG</Nav.Link></Nav.Item>
+                            <Nav.Item><Nav.Link eventKey='/docs/webui/'>WEBUI</Nav.Link></Nav.Item>
+                            <Nav.Item><a className='nav-link' href='/debug/pprof'>PPROF</a></Nav.Item>
+                        </Nav>
+                    </BootstrapNavbar.Collapse>
+                </Container>
+            </BootstrapNavbar>
             {props.children}
         </>
     );
 }
 
-
-const NavLink = (props: { children: any, active?: boolean, href: string, as?: string }) => {
-
-    return <Link
-        className={'nav-link' + (props.active !== undefined ? (props.active ? " active" : "") : (usePathname() === props.href ? " active" : ""))}
-        href={props.href}
-    >
-        {props.children}
-    </Link>
-}
 export default NavBar;

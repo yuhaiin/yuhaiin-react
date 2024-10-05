@@ -4,15 +4,15 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv1";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv1";
-import type { EmptySchema, StringValueSchema } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_empty, file_google_protobuf_wrappers } from "@bufbuild/protobuf/wkt";
+import type { EmptySchema } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_empty } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file tools/tools.proto.
  */
 export const file_tools_tools: GenFile = /*@__PURE__*/
-  fileDesc("ChF0b29scy90b29scy5wcm90bxINeXVoYWlpbi50b29scyI6CgpJbnRlcmZhY2VzEiwKCmludGVyZmFjZXMYASADKAsyGC55dWhhaWluLnRvb2xzLkludGVyZmFjZSIsCglJbnRlcmZhY2USDAoEbmFtZRgBIAEoCRIRCglhZGRyZXNzZXMYAiADKAkynAEKBXRvb2xzEk8KF3NhdmVfcmVtb3RlX2J5cGFzc19maWxlEhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EkIKDWdldF9pbnRlcmZhY2USFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGS55dWhhaWluLnRvb2xzLkludGVyZmFjZXNCL1otZ2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL3Rvb2xzYgZwcm90bzM", [file_google_protobuf_empty, file_google_protobuf_wrappers]);
+  fileDesc("ChF0b29scy90b29scy5wcm90bxINeXVoYWlpbi50b29scyI6CgpJbnRlcmZhY2VzEiwKCmludGVyZmFjZXMYASADKAsyGC55dWhhaWluLnRvb2xzLkludGVyZmFjZSIsCglJbnRlcmZhY2USDAoEbmFtZRgBIAEoCRIRCglhZGRyZXNzZXMYAiADKAkySwoFdG9vbHMSQgoNZ2V0X2ludGVyZmFjZRIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoZLnl1aGFpaW4udG9vbHMuSW50ZXJmYWNlc0IvWi1naXRodWIuY29tL0FzdXRvcnVmYS95dWhhaWluL3BrZy9wcm90b3MvdG9vbHNiBnByb3RvMw", [file_google_protobuf_empty]);
 
 /**
  * @generated from message yuhaiin.tools.Interfaces
@@ -57,16 +57,6 @@ export const InterfaceSchema: GenMessage<Interface> = /*@__PURE__*/
  * @generated from service yuhaiin.tools.tools
  */
 export const tools: GenService<{
-  /**
-   * req: url
-   *
-   * @generated from rpc yuhaiin.tools.tools.save_remote_bypass_file
-   */
-  save_remote_bypass_file: {
-    methodKind: "unary";
-    input: typeof StringValueSchema;
-    output: typeof EmptySchema;
-  },
   /**
    * @generated from rpc yuhaiin.tools.tools.get_interface
    */

@@ -53,7 +53,6 @@ const DNS = React.memo((props: DNSProps) => {
 
             <Container title="Remote DNS" hideClose>
                 <>
-                    <SettingCheck label="Use IP" checked={props.data.resolveRemoteDomain} onChange={() => updateDNS((x) => x.resolveRemoteDomain = !x.resolveRemoteDomain)} />
                     <SettingInputText label='Host' value={props.data.remote?.host ?? ""} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote!!.host = v })} />
                     <SettingDNSTypeSelect label='Type' value={props.data.remote?.type} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote!!.type = v })} />
                     <SettingInputText label='Subnet' value={props.data.remote?.subnet ?? ""} onChange={(v) => updateDNS((x) => { if (x.remote !== undefined) x.remote!!.subnet = v })} />
