@@ -4,8 +4,8 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv1";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv1";
-import type { EmptySchema } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_empty } from "@bufbuild/protobuf/wkt";
+import type { EmptySchema, Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_empty, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { connection } from "../config_pb";
 import { file_statistic_config } from "../config_pb";
 import type { Message } from "@bufbuild/protobuf";
@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file statistic/grpc/config.proto.
  */
 export const file_statistic_grpc_config: GenFile = /*@__PURE__*/
-  fileDesc("ChtzdGF0aXN0aWMvZ3JwYy9jb25maWcucHJvdG8SIHl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlIi4KCnRvdGFsX2Zsb3cSEAoIZG93bmxvYWQYASABKAQSDgoGdXBsb2FkGAIgASgEIpcCCgtub3RpZnlfZGF0YRJCCgp0b3RhbF9mbG93GAMgASgLMiwueXVoYWlpbi5wcm90b3Muc3RhdGlzdGljLnNlcnZpY2UudG90YWxfZmxvd0gAEloKFm5vdGlmeV9uZXdfY29ubmVjdGlvbnMYASABKAsyOC55dWhhaWluLnByb3Rvcy5zdGF0aXN0aWMuc2VydmljZS5ub3RpZnlfbmV3X2Nvbm5lY3Rpb25zSAASYAoZbm90aWZ5X3JlbW92ZV9jb25uZWN0aW9ucxgCIAEoCzI7Lnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLm5vdGlmeV9yZW1vdmVfY29ubmVjdGlvbnNIAEIGCgRkYXRhIkwKFm5vdGlmeV9uZXdfY29ubmVjdGlvbnMSMgoLY29ubmVjdGlvbnMYASADKAsyHS55dWhhaWluLnN0YXRpc3RpYy5jb25uZWN0aW9uIigKGW5vdGlmeV9yZW1vdmVfY29ubmVjdGlvbnMSCwoDaWRzGAEgAygEMu0CCgtjb25uZWN0aW9ucxJZCgVjb25ucxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRo4Lnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLm5vdGlmeV9uZXdfY29ubmVjdGlvbnMSYQoKY2xvc2VfY29ubhI7Lnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLm5vdGlmeV9yZW1vdmVfY29ubmVjdGlvbnMaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSTQoFdG90YWwSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaLC55dWhhaWluLnByb3Rvcy5zdGF0aXN0aWMuc2VydmljZS50b3RhbF9mbG93ElEKBm5vdGlmeRIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRotLnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLm5vdGlmeV9kYXRhMAFCO1o5Z2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL3N0YXRpc3RpYy9zZXJ2aWNlYgZwcm90bzM", [file_google_protobuf_empty, file_statistic_config]);
+  fileDesc("ChtzdGF0aXN0aWMvZ3JwYy9jb25maWcucHJvdG8SIHl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlIi4KCnRvdGFsX2Zsb3cSEAoIZG93bmxvYWQYASABKAQSDgoGdXBsb2FkGAIgASgEIpcCCgtub3RpZnlfZGF0YRJCCgp0b3RhbF9mbG93GAMgASgLMiwueXVoYWlpbi5wcm90b3Muc3RhdGlzdGljLnNlcnZpY2UudG90YWxfZmxvd0gAEloKFm5vdGlmeV9uZXdfY29ubmVjdGlvbnMYASABKAsyOC55dWhhaWluLnByb3Rvcy5zdGF0aXN0aWMuc2VydmljZS5ub3RpZnlfbmV3X2Nvbm5lY3Rpb25zSAASYAoZbm90aWZ5X3JlbW92ZV9jb25uZWN0aW9ucxgCIAEoCzI7Lnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLm5vdGlmeV9yZW1vdmVfY29ubmVjdGlvbnNIAEIGCgRkYXRhIkwKFm5vdGlmeV9uZXdfY29ubmVjdGlvbnMSMgoLY29ubmVjdGlvbnMYASADKAsyHS55dWhhaWluLnN0YXRpc3RpYy5jb25uZWN0aW9uIigKGW5vdGlmeV9yZW1vdmVfY29ubmVjdGlvbnMSCwoDaWRzGAEgAygEInoKDmZhaWxlZF9oaXN0b3J5EhAKCHByb3RvY29sGAEgASgJEgwKBGhvc3QYAiABKAkSDQoFZXJyb3IYAyABKAkSDwoHcHJvY2VzcxgEIAEoCRIoCgR0aW1lGAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKMAQoTZmFpbGVkX2hpc3RvcnlfbGlzdBJBCgdvYmplY3RzGAEgAygLMjAueXVoYWlpbi5wcm90b3Muc3RhdGlzdGljLnNlcnZpY2UuZmFpbGVkX2hpc3RvcnkSMgoUZHVtcF9wcm9jZXNzX2VuYWJsZWQYAiABKAhSFGR1bXBfcHJvY2Vzc19lbmFibGVkMs4DCgtjb25uZWN0aW9ucxJZCgVjb25ucxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRo4Lnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLm5vdGlmeV9uZXdfY29ubmVjdGlvbnMSYQoKY2xvc2VfY29ubhI7Lnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLm5vdGlmeV9yZW1vdmVfY29ubmVjdGlvbnMaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSTQoFdG90YWwSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaLC55dWhhaWluLnByb3Rvcy5zdGF0aXN0aWMuc2VydmljZS50b3RhbF9mbG93ElEKBm5vdGlmeRIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRotLnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLm5vdGlmeV9kYXRhMAESXwoOZmFpbGVkX2hpc3RvcnkSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaNS55dWhhaWluLnByb3Rvcy5zdGF0aXN0aWMuc2VydmljZS5mYWlsZWRfaGlzdG9yeV9saXN0QjtaOWdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9zdGF0aXN0aWMvc2VydmljZWIGcHJvdG8z", [file_google_protobuf_empty, file_statistic_config, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message yuhaiin.protos.statistic.service.total_flow
@@ -108,6 +108,65 @@ export const notify_remove_connectionsSchema: GenMessage<notify_remove_connectio
   messageDesc(file_statistic_grpc_config, 3);
 
 /**
+ * @generated from message yuhaiin.protos.statistic.service.failed_history
+ */
+export type failed_history = Message<"yuhaiin.protos.statistic.service.failed_history"> & {
+  /**
+   * @generated from field: string protocol = 1;
+   */
+  protocol: string;
+
+  /**
+   * @generated from field: string host = 2;
+   */
+  host: string;
+
+  /**
+   * @generated from field: string error = 3;
+   */
+  error: string;
+
+  /**
+   * @generated from field: string process = 4;
+   */
+  process: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp time = 5;
+   */
+  time?: Timestamp;
+};
+
+/**
+ * Describes the message yuhaiin.protos.statistic.service.failed_history.
+ * Use `create(failed_historySchema)` to create a new message.
+ */
+export const failed_historySchema: GenMessage<failed_history> = /*@__PURE__*/
+  messageDesc(file_statistic_grpc_config, 4);
+
+/**
+ * @generated from message yuhaiin.protos.statistic.service.failed_history_list
+ */
+export type failed_history_list = Message<"yuhaiin.protos.statistic.service.failed_history_list"> & {
+  /**
+   * @generated from field: repeated yuhaiin.protos.statistic.service.failed_history objects = 1;
+   */
+  objects: failed_history[];
+
+  /**
+   * @generated from field: bool dump_process_enabled = 2 [json_name = "dump_process_enabled"];
+   */
+  dumpProcessEnabled: boolean;
+};
+
+/**
+ * Describes the message yuhaiin.protos.statistic.service.failed_history_list.
+ * Use `create(failed_history_listSchema)` to create a new message.
+ */
+export const failed_history_listSchema: GenMessage<failed_history_list> = /*@__PURE__*/
+  messageDesc(file_statistic_grpc_config, 5);
+
+/**
  * @generated from service yuhaiin.protos.statistic.service.connections
  */
 export const connections: GenService<{
@@ -142,6 +201,14 @@ export const connections: GenService<{
     methodKind: "server_streaming";
     input: typeof EmptySchema;
     output: typeof notify_dataSchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.protos.statistic.service.connections.failed_history
+   */
+  failed_history: {
+    methodKind: "unary";
+    input: typeof EmptySchema;
+    output: typeof failed_history_listSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_statistic_grpc_config, 0);
