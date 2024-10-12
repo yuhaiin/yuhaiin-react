@@ -18,7 +18,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file config/config.proto.
  */
 export const file_config_config: GenFile = /*@__PURE__*/
-  fileDesc("ChNjb25maWcvY29uZmlnLnByb3RvEg55dWhhaWluLmNvbmZpZyK0AwoHc2V0dGluZxIMCgRpcHY2GAcgASgIEkYKHmlwdjZfbG9jYWxfYWRkcl9wcmVmZXJfdW5pY2FzdBgKIAEoCFIeaXB2Nl9sb2NhbF9hZGRyX3ByZWZlcl91bmljYXN0EiQKDW5ldF9pbnRlcmZhY2UYBiABKAlSDW5ldF9pbnRlcmZhY2USQAoMc3lzdGVtX3Byb3h5GAEgASgLMhwueXVoYWlpbi5jb25maWcuc3lzdGVtX3Byb3h5UgxzeXN0ZW1fcHJveHkSJgoGYnlwYXNzGAIgASgLMhYueXVoYWlpbi5ieXBhc3MuY29uZmlnEiQKA2RucxgEIAEoCzIXLnl1aGFpaW4uZG5zLmRuc19jb25maWcSMAoGc2VydmVyGAUgASgLMiAueXVoYWlpbi5saXN0ZW5lci5pbmJvdW5kX2NvbmZpZxIjCgZsb2djYXQYCCABKAsyEy55dWhhaWluLmxvZy5sb2djYXQSRgoOY29uZmlnX3ZlcnNpb24YCSABKAsyHi55dWhhaWluLmNvbmZpZy5jb25maWdfdmVyc2lvblIOY29uZmlnX3ZlcnNpb24iLAoMc3lzdGVtX3Byb3h5EgwKBGh0dHAYAiABKAgSDgoGc29ja3M1GAMgASgIIrQBCgRpbmZvEg8KB3ZlcnNpb24YASABKAkSDgoGY29tbWl0GAIgASgJEh4KCmJ1aWxkX3RpbWUYAyABKAlSCmJ1aWxkX3RpbWUSHgoKZ29fdmVyc2lvbhgEIAEoCVIKZ29fdmVyc2lvbhIMCgRhcmNoGAUgASgJEhAKCHBsYXRmb3JtGAYgASgJEgoKAm9zGAcgASgJEhAKCGNvbXBpbGVyGAggASgJEg0KBWJ1aWxkGAkgAygJIiEKDmNvbmZpZ192ZXJzaW9uEg8KB3ZlcnNpb24YASABKARCMFouZ2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL2NvbmZpZ2IGcHJvdG8z", [file_config_log_log, file_config_bypass_bypass, file_config_dns_dns, file_config_listener_listener]);
+  fileDesc("ChNjb25maWcvY29uZmlnLnByb3RvEg55dWhhaWluLmNvbmZpZyLgAwoHc2V0dGluZxIMCgRpcHY2GAcgASgIEkYKHmlwdjZfbG9jYWxfYWRkcl9wcmVmZXJfdW5pY2FzdBgKIAEoCFIeaXB2Nl9sb2NhbF9hZGRyX3ByZWZlcl91bmljYXN0EiQKDW5ldF9pbnRlcmZhY2UYBiABKAlSDW5ldF9pbnRlcmZhY2USQAoMc3lzdGVtX3Byb3h5GAEgASgLMhwueXVoYWlpbi5jb25maWcuc3lzdGVtX3Byb3h5UgxzeXN0ZW1fcHJveHkSJgoGYnlwYXNzGAIgASgLMhYueXVoYWlpbi5ieXBhc3MuY29uZmlnEiQKA2RucxgEIAEoCzIXLnl1aGFpaW4uZG5zLmRuc19jb25maWcSMAoGc2VydmVyGAUgASgLMiAueXVoYWlpbi5saXN0ZW5lci5pbmJvdW5kX2NvbmZpZxIjCgZsb2djYXQYCCABKAsyEy55dWhhaWluLmxvZy5sb2djYXQSRgoOY29uZmlnX3ZlcnNpb24YCSABKAsyHi55dWhhaWluLmNvbmZpZy5jb25maWdfdmVyc2lvblIOY29uZmlnX3ZlcnNpb24SKgoIcGxhdGZvcm0YCyABKAsyGC55dWhhaWluLmNvbmZpZy5wbGF0Zm9ybSIsCgxzeXN0ZW1fcHJveHkSDAoEaHR0cBgCIAEoCBIOCgZzb2NrczUYAyABKAgitAEKBGluZm8SDwoHdmVyc2lvbhgBIAEoCRIOCgZjb21taXQYAiABKAkSHgoKYnVpbGRfdGltZRgDIAEoCVIKYnVpbGRfdGltZRIeCgpnb192ZXJzaW9uGAQgASgJUgpnb192ZXJzaW9uEgwKBGFyY2gYBSABKAkSEAoIcGxhdGZvcm0YBiABKAkSCgoCb3MYByABKAkSEAoIY29tcGlsZXIYCCABKAkSDQoFYnVpbGQYCSADKAkiIQoOY29uZmlnX3ZlcnNpb24SDwoHdmVyc2lvbhgBIAEoBCIsCghwbGF0Zm9ybRIgCgthbmRyb2lkX2FwcBgBIAEoCFILYW5kcm9pZF9hcHBCMFouZ2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL2NvbmZpZ2IGcHJvdG8z", [file_config_log_log, file_config_bypass_bypass, file_config_dns_dns, file_config_listener_listener]);
 
 /**
  * @generated from message yuhaiin.config.setting
@@ -70,6 +70,11 @@ export type setting = Message<"yuhaiin.config.setting"> & {
    * @generated from field: yuhaiin.config.config_version config_version = 9 [json_name = "config_version"];
    */
   configVersion?: config_version;
+
+  /**
+   * @generated from field: yuhaiin.config.platform platform = 11;
+   */
+  platform?: platform;
 };
 
 /**
@@ -174,4 +179,21 @@ export type config_version = Message<"yuhaiin.config.config_version"> & {
  */
 export const config_versionSchema: GenMessage<config_version> = /*@__PURE__*/
   messageDesc(file_config_config, 3);
+
+/**
+ * @generated from message yuhaiin.config.platform
+ */
+export type platform = Message<"yuhaiin.config.platform"> & {
+  /**
+   * @generated from field: bool android_app = 1 [json_name = "android_app"];
+   */
+  androidApp: boolean;
+};
+
+/**
+ * Describes the message yuhaiin.config.platform.
+ * Use `create(platformSchema)` to create a new message.
+ */
+export const platformSchema: GenMessage<platform> = /*@__PURE__*/
+  messageDesc(file_config_config, 4);
 

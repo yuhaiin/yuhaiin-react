@@ -4,13 +4,13 @@ import { useContext } from 'react';
 import { Form, Card, Row, Col, Button, Tab, ToggleButtonGroup, ToggleButton, Nav } from 'react-bootstrap';
 import DNS from './dns';
 import Loading from '../common/loading';
-import { SettingInputText, Remind, ItemList } from './components';
+import { SettingInputText, Remind } from './components';
 import { SettingCheck } from "../common/switch";
 import { GlobalToastContext } from '../common/toast';
 import useSWR from "swr";
 import { Fetch, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
-import { setting as Setting, settingSchema, infoSchema, system_proxySchema } from '../pbes/config/config_pb';
+import { setting as Setting, settingSchema, system_proxySchema } from '../pbes/config/config_pb';
 import { InterfacesSchema } from '../pbes/tools/tools_pb';
 import { dns_configSchema } from '../pbes/config/dns/dns_pb';
 import { log_level } from '../pbes/config/log/log_pb';
@@ -24,16 +24,14 @@ function ConfigComponent() {
     const { data: setting, error, isLoading, mutate: setSetting } =
         useSWR("/config", ProtoESFetcher(settingSchema),
             { revalidateOnFocus: false })
-    const { data: info } =
-        useSWR("/info", ProtoESFetcher(infoSchema),
-            {})
 
     const { data: iffs } =
-        useSWR("/interfaces", ProtoESFetcher(InterfacesSchema),
+        useSWR(setting?.platform?.androidApp ? null : "/interfaces", ProtoESFetcher(InterfacesSchema),
             { revalidateOnFocus: true })
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || setting === undefined) return <Loading />
+
 
     const updateState = (modify: (x: Setting) => void) => {
         setSetting((x: Setting) => {
@@ -71,15 +69,13 @@ function ConfigComponent() {
                         >
                             <Nav.Item><Nav.Link eventKey="home">Setting</Nav.Link></Nav.Item>
                             <Nav.Item><Nav.Link eventKey="dns">DNS</Nav.Link></Nav.Item>
-                            {/* <Nav.Item><Nav.Link eventKey="bypass">Bypass</Nav.Link></Nav.Item> */}
                             <Nav.Item><Nav.Link eventKey="inbound">Inbound</Nav.Link></Nav.Item>
-                            <Nav.Item><Nav.Link eventKey="info">Info</Nav.Link></Nav.Item>
                         </Nav>
                     </Card.Header>
                     <Card.Body>
                         <Tab.Content>
                             <Tab.Pane eventKey="home">
-                                <fieldset disabled={info?.os === "android"}>
+                                <fieldset disabled={setting.platform?.androidApp}>
 
                                     <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting(create(settingSchema, { ...setting, ipv6: !setting.ipv6 }), false)} />
                                     <SettingInputText
@@ -126,14 +122,14 @@ function ConfigComponent() {
                             </Tab.Pane>
 
                             <Tab.Pane eventKey="dns" title="DNS">
-                                <fieldset disabled={info?.os === "android"}>
+                                <fieldset disabled={setting.platform?.androidApp}>
                                     <DNS data={create(dns_configSchema, setting.dns!!)} onChange={(e) => updateState((x) => x.dns = clone(dns_configSchema, e))} />
                                 </fieldset>
                             </Tab.Pane>
 
 
                             <Tab.Pane eventKey="inbound" title="Inbound">
-                                <fieldset disabled={info?.os === "android"}>
+                                <fieldset disabled={setting.platform?.androidApp}>
                                     <Inbounds
                                         inbounds={create(inbound_configSchema, setting.server!!)}
                                         onChange={(e) => updateState((x) => x.server = clone(inbound_configSchema, e))}
@@ -141,29 +137,12 @@ function ConfigComponent() {
                                 </fieldset>
                             </Tab.Pane>
 
-                            <Tab.Pane eventKey="info">
-                                <SettingInputText plaintext mb='mb-0' label='Version' value={info?.version ?? ""} />
-                                <SettingInputText url={"https://github.com/yuhaiin/yuhaiin/commit/" + info?.commit} plaintext mb='mb-0' label='Commit' value={info?.commit ?? ""} />
-                                <SettingInputText plaintext mb='mb-0' label='Build Time' value={info?.buildTime ?? ""} />
-                                <SettingInputText plaintext mb='mb-0' label='Go Version' value={info?.goVersion ?? ""} />
-                                <SettingInputText
-                                    url="https://github.com/yuhaiin/yuhaiin"
-                                    plaintext mb='mb-0'
-                                    label='Github'
-                                    value={"yuhaiin/yuhaiin"}
-                                />
-                                <SettingInputText plaintext mb='mb-0' label='OS' value={info?.os ?? ""} />
-                                <SettingInputText plaintext mb='mb-0' label='Arch' value={info?.arch ?? ""} />
-                                <SettingInputText plaintext mb='mb-0' label='Compiler' value={info?.compiler ?? ""} />
-                                <SettingInputText plaintext mb='mb-0' label='Platform' value={info?.platform ?? ""} />
-                                <ItemList title='Build' data={info?.build} mb='mb-0' />
-                            </Tab.Pane>
                         </Tab.Content>
 
                     </Card.Body>
 
 
-                    {info?.os != "android" &&
+                    {!setting.platform?.androidApp &&
                         <Card.Footer className='d-flex justify-content-md-end'>
                             <Button
                                 variant="outline-primary"

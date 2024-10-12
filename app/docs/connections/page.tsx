@@ -140,7 +140,7 @@ const AccordionItem = React.memo((props: { data: connection, showModal: (hash: s
         <Accordion.Item eventKey={props.data.id.toString()} key={props.data.id}>
 
             <Accordion.Header>
-                <div className="d-line">
+                <div className="d-line text-break">
                     <code className="ms-2">{props.data.id.toString()}</code>
                     <span className="ms-2">{props.data.addr}</span>
                     <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{props.data.extra.MODE}</Badge>

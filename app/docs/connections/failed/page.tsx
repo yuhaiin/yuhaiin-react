@@ -3,29 +3,30 @@
 import { Button, Table } from "react-bootstrap"
 import useSWR from "swr"
 import { ProtoESFetcher } from "../../common/proto"
-import { block_history, block_history_listSchema } from "../../pbes/config/grpc/config_pb"
 import { create } from "@bufbuild/protobuf"
 import { timestampDate, TimestampSchema } from "@bufbuild/protobuf/wkt"
 import Loading from "../../common/loading"
+import { failed_history_listSchema, failed_history } from "../../pbes/statistic/grpc/config_pb"
 import { useState } from "react"
 import styles from "../../common/clickable.module.css";
 
 const TimestampZero = create(TimestampSchema, { seconds: BigInt(0), nanos: 0 })
 
-function BypassBlockHistory() {
+function FailedHistory() {
     const [sort, setSort] = useState("Time")
     const [asc, setAsc] = useState(1)
     const setSortField = (field: string) => field === sort ? setAsc(-asc) : setSort(field)
     const sortIcon = (field: string) => field === sort ? <i className={asc === -1 ? "bi bi-sort-up-alt" : "bi bi-sort-down-alt"}></i> : <></>
     const sortFunc = (a: any, b: any) => a > b ? -1 * asc : 1 * asc
     const cth = (field: string) => <th className={styles.clickable} onClick={() => setSortField(field)}>{field}{sortIcon(field)}</th>
-    const sortFieldFunc = (a: block_history, b: block_history) => {
+    const sortFieldFunc = (a: failed_history, b: failed_history) => {
         if (sort === "Host") return sortFunc(a.host, b.host)
         else if (sort === "Process") return sortFunc(a.process, b.process)
         else return sortFunc(timestampDate(a.time ?? TimestampZero), timestampDate(b.time ?? TimestampZero))
     }
 
-    const { data, error, isLoading, mutate } = useSWR("/bypass/block_history", ProtoESFetcher(block_history_listSchema))
+    const { data, error, isLoading, mutate } = useSWR("/conn/failed_history", ProtoESFetcher(failed_history_listSchema))
+
 
     if (error) return <Loading code={error.code}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />
@@ -39,6 +40,7 @@ function BypassBlockHistory() {
                     {cth("Time")}
                     <th>Net</th>
                     {cth("Host")}
+                    <th>Error</th>
                     {data.dumpProcessEnabled && cth("Process")}
                 </tr>
             </thead>
@@ -51,6 +53,7 @@ function BypassBlockHistory() {
                                 <td>{timestampDate(v.time!).toLocaleString()}</td>
                                 <td>{v.protocol}</td>
                                 <td>{v.host}</td>
+                                <td>{v.error}</td>
                                 {data.dumpProcessEnabled && <td>{v.process}</td>}
                             </tr>
                         )
@@ -61,4 +64,4 @@ function BypassBlockHistory() {
     </>
 }
 
-export default BypassBlockHistory
+export default FailedHistory
