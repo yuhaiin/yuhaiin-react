@@ -21,7 +21,8 @@ function FailedHistory() {
     const cth = (field: string) => <th className={styles.clickable} onClick={() => setSortField(field)}>{field}{sortIcon(field)}</th>
     const sortFieldFunc = (a: failed_history, b: failed_history) => {
         if (sort === "Host") return sortFunc(a.host, b.host)
-        else if (sort === "Process") return sortFunc(a.process, b.process)
+        else if (sort === "Proc") return sortFunc(a.process, b.process)
+        else if (sort === "Count") return sortFunc(a.failedCount, b.failedCount)
         else return sortFunc(timestampDate(a.time ?? TimestampZero), timestampDate(b.time ?? TimestampZero))
     }
 
@@ -36,12 +37,12 @@ function FailedHistory() {
         <Table hover striped>
             <thead>
                 <tr>
-                    <th>#</th>
                     {cth("Time")}
                     <th>Net</th>
                     {cth("Host")}
-                    <th>Error</th>
-                    {data.dumpProcessEnabled && cth("Process")}
+                    {cth("Count")}
+                    <th>Err</th>
+                    {data.dumpProcessEnabled && cth("Proc")}
                 </tr>
             </thead>
             <tbody className="text-break">
@@ -49,10 +50,10 @@ function FailedHistory() {
                     data?.objects?.filter(v => v.time).sort(sortFieldFunc).map((v, index) => {
                         return (
                             <tr key={"bh-" + index}>
-                                <td>{index + 1}</td>
                                 <td>{timestampDate(v.time!).toLocaleString()}</td>
                                 <td>{v.protocol}</td>
                                 <td>{v.host}</td>
+                                <td>{Number(v.failedCount)}</td>
                                 <td>{v.error}</td>
                                 {data.dumpProcessEnabled && <td>{v.process}</td>}
                             </tr>
