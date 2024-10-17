@@ -3,7 +3,7 @@ import { Form, InputGroup, Card, Row, Col, Button } from 'react-bootstrap';
 import { SettingInputText, SettingInputTextarea, NewItemList } from './components';
 import { SettingCheck } from "../common/switch";
 import { split as shlexSplit, join as shlexJoin } from 'shlex';
-import { http, redir, tproxy, tun, mixed, socks5, socks4a, tun_endpoint_driver, route, tls_config, certificate, websocket, grpc, tls, http2, reality, protocol, inbound_config, normal, quic, routeSchema, certificateSchema, tls_configSchema } from '../pbes/config/listener/listener_pb';
+import { http, redir, tproxy, tun, mixed, socks5, socks4a, tun_endpoint_driver, route, tls_config, certificate, websocket, grpc, tls, http2, reality, inbound_config, normal, quic, routeSchema, certificateSchema, tls_configSchema, reverse_http } from '../pbes/config/listener/listener_pb';
 import { create } from '@bufbuild/protobuf';
 
 export const HTTPComponents = React.memo((props: { http: http, onChange: (x: http) => void }) => {
@@ -20,6 +20,18 @@ export const HTTPComponents = React.memo((props: { http: http, onChange: (x: htt
     )
 })
 
+export const ReverseHTTPComponents = React.memo((props: { reverse_http: reverse_http, onChange: (x: reverse_http) => void }) => {
+    const updateState = (x: (x: reverse_http) => void) => {
+        x(props.reverse_http)
+        props.onChange(props.reverse_http)
+    }
+
+    return (
+        <>
+            <SettingInputText label='Url' value={props.reverse_http.url} onChange={(e) => updateState((x) => x.url = e)} />
+        </>
+    )
+})
 
 export const RedirComponents = React.memo((props: { redir: redir, onChange: (x: redir) => void }) => {
     const updateState = (x: (x: redir) => void) => {

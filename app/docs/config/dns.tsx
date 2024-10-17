@@ -60,7 +60,7 @@ const DNS = React.memo((props: DNSProps) => {
                 </>
             </Container>
 
-            <Container title="Remote DNS" hideClose>
+            <Container title="Bootstrap DNS" hideClose>
                 <>
                     <SettingInputText label='Host' value={props.data.bootstrap?.host ?? ""} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap!!.host = v })} />
                     <SettingDNSTypeSelect label='Type' value={props.data.bootstrap?.type} onChange={(v) => updateDNS((x) => { if (x.bootstrap !== undefined) x.bootstrap!!.type = v })} />

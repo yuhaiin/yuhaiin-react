@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file config/listener/listener.proto.
  */
 export const file_config_listener_listener: GenFile = /*@__PURE__*/
-  fileDesc("Ch5jb25maWcvbGlzdGVuZXIvbGlzdGVuZXIucHJvdG8SEHl1aGFpaW4ubGlzdGVuZXIiowIKDmluYm91bmRfY29uZmlnEh4KCmhpamFja19kbnMYAiABKAhSCmhpamFja19kbnMSLAoRaGlqYWNrX2Ruc19mYWtlaXAYAyABKAhSEWhpamFja19kbnNfZmFrZWlwEkAKCGluYm91bmRzGAEgAygLMi4ueXVoYWlpbi5saXN0ZW5lci5pbmJvdW5kX2NvbmZpZy5JbmJvdW5kc0VudHJ5EiYKBXNuaWZmGAQgASgLMhcueXVoYWlpbi5saXN0ZW5lci5zbmlmZhpKCg1JbmJvdW5kc0VudHJ5EgsKA2tleRgBIAEoCRIoCgV2YWx1ZRgCIAEoCzIZLnl1aGFpaW4ubGlzdGVuZXIuaW5ib3VuZDoCOAFKBAgFEAZSB3NlcnZlcnMi2AQKB2luYm91bmQSDAoEbmFtZRgNIAEoCRIPCgdlbmFibGVkGA4gASgIEigKBWVtcHR5GBUgASgLMhcueXVoYWlpbi5saXN0ZW5lci5lbXB0eUgAEioKBnRjcHVkcBgPIAEoCzIYLnl1aGFpaW4ubGlzdGVuZXIudGNwdWRwSAASJgoEcXVpYxgQIAEoCzIWLnl1aGFpaW4ubGlzdGVuZXIucXVpY0gAEi4KCXRyYW5zcG9ydBgCIAMoCzIbLnl1aGFpaW4ubGlzdGVuZXIudHJhbnNwb3J0EiYKBGh0dHAYAyABKAsyFi55dWhhaWluLmxpc3RlbmVyLmh0dHBIARIqCgZzb2NrczUYBCABKAsyGC55dWhhaWluLmxpc3RlbmVyLnNvY2tzNUgBEjAKCXl1dWJpbnN5YRgHIAEoCzIbLnl1aGFpaW4ubGlzdGVuZXIueXV1Ymluc3lhSAESLQoDbWl4GAggASgLMhcueXVoYWlpbi5saXN0ZW5lci5taXhlZEgBUgVtaXhlZBIsCgdzb2NrczRhGAkgASgLMhkueXVoYWlpbi5saXN0ZW5lci5zb2NrczRhSAESKgoGdHByb3h5GBQgASgLMhgueXVoYWlpbi5saXN0ZW5lci50cHJveHlIARIoCgVyZWRpchgSIAEoCzIXLnl1aGFpaW4ubGlzdGVuZXIucmVkaXJIARIkCgN0dW4YEyABKAsyFS55dWhhaWluLmxpc3RlbmVyLnR1bkgBQgkKB25ldHdvcmtCCgoIcHJvdG9jb2xKBAgREBJSBElQdjYiwgIKCXRyYW5zcG9ydBIqCgZub3JtYWwYDCABKAsyGC55dWhhaWluLmxpc3RlbmVyLm5vcm1hbEgAEiQKA3RscxgBIAEoCzIVLnl1aGFpaW4ubGlzdGVuZXIudGxzSAASJAoDbXV4GAIgASgLMhUueXVoYWlpbi5saXN0ZW5lci5tdXhIABIoCgVodHRwMhgFIAEoCzIXLnl1aGFpaW4ubGlzdGVuZXIuaHR0cDJIABIwCgl3ZWJzb2NrZXQYBiABKAsyGy55dWhhaWluLmxpc3RlbmVyLndlYnNvY2tldEgAEiYKBGdycGMYCyABKAsyFi55dWhhaWluLmxpc3RlbmVyLmdycGNIABIsCgdyZWFsaXR5GAogASgLMhkueXVoYWlpbi5saXN0ZW5lci5yZWFsaXR5SABCCwoJdHJhbnNwb3J0IpQDCghwcm90b2NvbBIMCgRuYW1lGAEgASgJEg8KB2VuYWJsZWQYAiABKAgSJgoEaHR0cBgDIAEoCzIWLnl1aGFpaW4ubGlzdGVuZXIuaHR0cEgAEioKBnNvY2tzNRgEIAEoCzIYLnl1aGFpaW4ubGlzdGVuZXIuc29ja3M1SAASKAoFcmVkaXIYBSABKAsyFy55dWhhaWluLmxpc3RlbmVyLnJlZGlySAASJAoDdHVuGAYgASgLMhUueXVoYWlpbi5saXN0ZW5lci50dW5IABIwCgl5dXViaW5zeWEYByABKAsyGy55dWhhaWluLmxpc3RlbmVyLnl1dWJpbnN5YUgAEi0KA21peBgIIAEoCzIXLnl1aGFpaW4ubGlzdGVuZXIubWl4ZWRIAFIFbWl4ZWQSLAoHc29ja3M0YRgJIAEoCzIZLnl1aGFpaW4ubGlzdGVuZXIuc29ja3M0YUgAEioKBnRwcm94eRgKIAEoCzIYLnl1aGFpaW4ubGlzdGVuZXIudHByb3h5SABCCgoIcHJvdG9jb2wiBwoFZW1wdHkiBQoDbXV4IkoKBnRjcHVkcBIMCgRob3N0GAEgASgJEjIKB2NvbnRyb2wYAiABKA4yIS55dWhhaWluLmxpc3RlbmVyLnRjcF91ZHBfY29udHJvbCI/CgRxdWljEgwKBGhvc3QYASABKAkSKQoDdGxzGAMgASgLMhwueXVoYWlpbi5saXN0ZW5lci50bHNfY29uZmlnIjYKBGh0dHASEAoIdXNlcm5hbWUYAyABKAkSEAoIcGFzc3dvcmQYBCABKAlKBAgBEAJSBGhvc3QiRQoGc29ja3M1EhAKCHVzZXJuYW1lGAMgASgJEhAKCHBhc3N3b3JkGAQgASgJEgsKA3VkcBgFIAEoCEoECAEQAlIEaG9zdCInCgdzb2NrczRhEhAKCHVzZXJuYW1lGAIgASgJSgQIARACUgRob3N0IjcKBW1peGVkEhAKCHVzZXJuYW1lGAMgASgJEhAKCHBhc3N3b3JkGAQgASgJSgQIARACUgRob3N0IhUKBXJlZGlyEgwKBGhvc3QYASABKAkiYAoGdHByb3h5EgwKBGhvc3QYASABKAkSJAoNZG5zX2hpamFja2luZxgCIAEoCFINZG5zX2hpamFja2luZxIiCgxmb3JjZV9mYWtlaXAYAyABKAhSDGZvcmNlX2Zha2VpcCKVAwoDdHVuEgwKBG5hbWUYASABKAkSCwoDbXR1GAIgASgFEiIKDGZvcmNlX2Zha2VpcBgJIAEoCFIMZm9yY2VfZmFrZWlwEiYKDnNraXBfbXVsdGljYXN0GAYgASgIUg5za2lwX211bHRpY2FzdBI1CgZkcml2ZXIYByABKA4yJS55dWhhaWluLmxpc3RlbmVyLnR1bi5lbmRwb2ludF9kcml2ZXISDgoGcG9ydGFsGAggASgJEhwKCXBvcnRhbF92NhgLIAEoCVIJcG9ydGFsX3Y2EiYKBXJvdXRlGAogASgLMhcueXVoYWlpbi5saXN0ZW5lci5yb3V0ZRIYCgdwb3N0X3VwGAwgAygJUgdwb3N0X3VwEhwKCXBvc3RfZG93bhgNIAMoCVIJcG9zdF9kb3duIj4KD2VuZHBvaW50X2RyaXZlchILCgdmZGJhc2VkEAASCwoHY2hhbm5lbBABEhEKDXN5c3RlbV9ndmlzb3IQAkoECAMQBEoECAQQBVIHZ2F0ZXdheVINZG5zX2hpamFja2luZyIpCgVyb3V0ZRIOCgZyb3V0ZXMYASADKAkSEAoIZXhjbHVkZXMYAiADKAki9QEKCXl1dWJpbnN5YRIQCghwYXNzd29yZBgCIAEoCRIgCgt0Y3BfZW5jcnlwdBgMIAEoCFILdGNwX2VuY3J5cHQSIAoLdWRwX2VuY3J5cHQYDSABKAhSC3VkcF9lbmNyeXB0EgsKA211eBgLIAEoCEoECAEQAkoECAMQBEoECAQQBUoECAUQBkoECAYQB0oECAcQCEoECAgQCUoECAkQCkoECAoQC1IEaG9zdFIVZm9yY2VfZGlzYWJsZV9lbmNyeXB0UgZub3JtYWxSA3Rsc1IEcXVpY1IJd2Vic29ja2V0UgRncnBjUgVodHRwMlIHcmVhbGl0eSIICgZub3JtYWwiFgoJd2Vic29ja2V0SgQIARACUgN0bHMiMAoDdGxzEikKA3RscxgBIAEoCzIcLnl1aGFpaW4ubGlzdGVuZXIudGxzX2NvbmZpZyIRCgRncnBjSgQIARACUgN0bHMiEgoFaHR0cDJKBAgBEAJSA3RscyKGAQoHcmVhbGl0eRIaCghzaG9ydF9pZBgBIAMoCVIIc2hvcnRfaWQSIAoLc2VydmVyX25hbWUYAiADKAlSC3NlcnZlcl9uYW1lEgwKBGRlc3QYAyABKAkSIAoLcHJpdmF0ZV9rZXkYBCABKAlSC3ByaXZhdGVfa2V5Eg0KBWRlYnVnGAUgASgIIrMCCgp0bHNfY29uZmlnEjMKDGNlcnRpZmljYXRlcxgBIAMoCzIdLnl1aGFpaW4ubGlzdGVuZXIuY2VydGlmaWNhdGUSIAoLbmV4dF9wcm90b3MYAyADKAlSC25leHRfcHJvdG9zEnEKF3NlcnZlcl9uYW1lX2NlcnRpZmljYXRlGAQgAygLMjcueXVoYWlpbi5saXN0ZW5lci50bHNfY29uZmlnLlNlcnZlck5hbWVDZXJ0aWZpY2F0ZUVudHJ5UhdzZXJ2ZXJfbmFtZV9jZXJ0aWZpY2F0ZRpbChpTZXJ2ZXJOYW1lQ2VydGlmaWNhdGVFbnRyeRILCgNrZXkYASABKAkSLAoFdmFsdWUYAiABKAsyHS55dWhhaWluLmxpc3RlbmVyLmNlcnRpZmljYXRlOgI4ASJ2CgtjZXJ0aWZpY2F0ZRIMCgRjZXJ0GAEgASgMEgsKA2tleRgCIAEoDBImCg5jZXJ0X2ZpbGVfcGF0aBgDIAEoCVIOY2VydF9maWxlX3BhdGgSJAoNa2V5X2ZpbGVfcGF0aBgEIAEoCVINa2V5X2ZpbGVfcGF0aCIYCgVzbmlmZhIPCgdlbmFibGVkGAEgASgIKkwKD3RjcF91ZHBfY29udHJvbBIXChN0Y3BfdWRwX2NvbnRyb2xfYWxsEAASDwoLZGlzYWJsZV90Y3AQARIPCgtkaXNhYmxlX3VkcBACQjlaN2dpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9jb25maWcvbGlzdGVuZXJiBnByb3RvMw");
+  fileDesc("Ch5jb25maWcvbGlzdGVuZXIvbGlzdGVuZXIucHJvdG8SEHl1aGFpaW4ubGlzdGVuZXIiowIKDmluYm91bmRfY29uZmlnEh4KCmhpamFja19kbnMYAiABKAhSCmhpamFja19kbnMSLAoRaGlqYWNrX2Ruc19mYWtlaXAYAyABKAhSEWhpamFja19kbnNfZmFrZWlwEkAKCGluYm91bmRzGAEgAygLMi4ueXVoYWlpbi5saXN0ZW5lci5pbmJvdW5kX2NvbmZpZy5JbmJvdW5kc0VudHJ5EiYKBXNuaWZmGAQgASgLMhcueXVoYWlpbi5saXN0ZW5lci5zbmlmZhpKCg1JbmJvdW5kc0VudHJ5EgsKA2tleRgBIAEoCRIoCgV2YWx1ZRgCIAEoCzIZLnl1aGFpaW4ubGlzdGVuZXIuaW5ib3VuZDoCOAFKBAgFEAZSB3NlcnZlcnMingUKB2luYm91bmQSDAoEbmFtZRgNIAEoCRIPCgdlbmFibGVkGA4gASgIEigKBWVtcHR5GBUgASgLMhcueXVoYWlpbi5saXN0ZW5lci5lbXB0eUgAEioKBnRjcHVkcBgPIAEoCzIYLnl1aGFpaW4ubGlzdGVuZXIudGNwdWRwSAASJgoEcXVpYxgQIAEoCzIWLnl1aGFpaW4ubGlzdGVuZXIucXVpY0gAEi4KCXRyYW5zcG9ydBgCIAMoCzIbLnl1aGFpaW4ubGlzdGVuZXIudHJhbnNwb3J0EiYKBGh0dHAYAyABKAsyFi55dWhhaWluLmxpc3RlbmVyLmh0dHBIARIqCgZzb2NrczUYBCABKAsyGC55dWhhaWluLmxpc3RlbmVyLnNvY2tzNUgBEjAKCXl1dWJpbnN5YRgHIAEoCzIbLnl1aGFpaW4ubGlzdGVuZXIueXV1Ymluc3lhSAESLQoDbWl4GAggASgLMhcueXVoYWlpbi5saXN0ZW5lci5taXhlZEgBUgVtaXhlZBIsCgdzb2NrczRhGAkgASgLMhkueXVoYWlpbi5saXN0ZW5lci5zb2NrczRhSAESKgoGdHByb3h5GBQgASgLMhgueXVoYWlpbi5saXN0ZW5lci50cHJveHlIARIoCgVyZWRpchgSIAEoCzIXLnl1aGFpaW4ubGlzdGVuZXIucmVkaXJIARIkCgN0dW4YEyABKAsyFS55dWhhaWluLmxpc3RlbmVyLnR1bkgBEkQKDHJldmVyc2VfaHR0cBgWIAEoCzIeLnl1aGFpaW4ubGlzdGVuZXIucmV2ZXJzZV9odHRwSAFSDHJldmVyc2VfaHR0cEIJCgduZXR3b3JrQgoKCHByb3RvY29sSgQIERASUgRJUHY2IsICCgl0cmFuc3BvcnQSKgoGbm9ybWFsGAwgASgLMhgueXVoYWlpbi5saXN0ZW5lci5ub3JtYWxIABIkCgN0bHMYASABKAsyFS55dWhhaWluLmxpc3RlbmVyLnRsc0gAEiQKA211eBgCIAEoCzIVLnl1aGFpaW4ubGlzdGVuZXIubXV4SAASKAoFaHR0cDIYBSABKAsyFy55dWhhaWluLmxpc3RlbmVyLmh0dHAySAASMAoJd2Vic29ja2V0GAYgASgLMhsueXVoYWlpbi5saXN0ZW5lci53ZWJzb2NrZXRIABImCgRncnBjGAsgASgLMhYueXVoYWlpbi5saXN0ZW5lci5ncnBjSAASLAoHcmVhbGl0eRgKIAEoCzIZLnl1aGFpaW4ubGlzdGVuZXIucmVhbGl0eUgAQgsKCXRyYW5zcG9ydCIHCgVlbXB0eSIFCgNtdXgiSgoGdGNwdWRwEgwKBGhvc3QYASABKAkSMgoHY29udHJvbBgCIAEoDjIhLnl1aGFpaW4ubGlzdGVuZXIudGNwX3VkcF9jb250cm9sIj8KBHF1aWMSDAoEaG9zdBgBIAEoCRIpCgN0bHMYAyABKAsyHC55dWhhaWluLmxpc3RlbmVyLnRsc19jb25maWciNgoEaHR0cBIQCgh1c2VybmFtZRgDIAEoCRIQCghwYXNzd29yZBgEIAEoCUoECAEQAlIEaG9zdCJFCgZzb2NrczUSEAoIdXNlcm5hbWUYAyABKAkSEAoIcGFzc3dvcmQYBCABKAkSCwoDdWRwGAUgASgISgQIARACUgRob3N0IicKB3NvY2tzNGESEAoIdXNlcm5hbWUYAiABKAlKBAgBEAJSBGhvc3QiNwoFbWl4ZWQSEAoIdXNlcm5hbWUYAyABKAkSEAoIcGFzc3dvcmQYBCABKAlKBAgBEAJSBGhvc3QiFQoFcmVkaXISDAoEaG9zdBgBIAEoCSJgCgZ0cHJveHkSDAoEaG9zdBgBIAEoCRIkCg1kbnNfaGlqYWNraW5nGAIgASgIUg1kbnNfaGlqYWNraW5nEiIKDGZvcmNlX2Zha2VpcBgDIAEoCFIMZm9yY2VfZmFrZWlwIpUDCgN0dW4SDAoEbmFtZRgBIAEoCRILCgNtdHUYAiABKAUSIgoMZm9yY2VfZmFrZWlwGAkgASgIUgxmb3JjZV9mYWtlaXASJgoOc2tpcF9tdWx0aWNhc3QYBiABKAhSDnNraXBfbXVsdGljYXN0EjUKBmRyaXZlchgHIAEoDjIlLnl1aGFpaW4ubGlzdGVuZXIudHVuLmVuZHBvaW50X2RyaXZlchIOCgZwb3J0YWwYCCABKAkSHAoJcG9ydGFsX3Y2GAsgASgJUglwb3J0YWxfdjYSJgoFcm91dGUYCiABKAsyFy55dWhhaWluLmxpc3RlbmVyLnJvdXRlEhgKB3Bvc3RfdXAYDCADKAlSB3Bvc3RfdXASHAoJcG9zdF9kb3duGA0gAygJUglwb3N0X2Rvd24iPgoPZW5kcG9pbnRfZHJpdmVyEgsKB2ZkYmFzZWQQABILCgdjaGFubmVsEAESEQoNc3lzdGVtX2d2aXNvchACSgQIAxAESgQIBBAFUgdnYXRld2F5Ug1kbnNfaGlqYWNraW5nIikKBXJvdXRlEg4KBnJvdXRlcxgBIAMoCRIQCghleGNsdWRlcxgCIAMoCSL1AQoJeXV1Ymluc3lhEhAKCHBhc3N3b3JkGAIgASgJEiAKC3RjcF9lbmNyeXB0GAwgASgIUgt0Y3BfZW5jcnlwdBIgCgt1ZHBfZW5jcnlwdBgNIAEoCFILdWRwX2VuY3J5cHQSCwoDbXV4GAsgASgISgQIARACSgQIAxAESgQIBBAFSgQIBRAGSgQIBhAHSgQIBxAISgQICBAJSgQICRAKSgQIChALUgRob3N0UhVmb3JjZV9kaXNhYmxlX2VuY3J5cHRSBm5vcm1hbFIDdGxzUgRxdWljUgl3ZWJzb2NrZXRSBGdycGNSBWh0dHAyUgdyZWFsaXR5IggKBm5vcm1hbCIWCgl3ZWJzb2NrZXRKBAgBEAJSA3RscyIwCgN0bHMSKQoDdGxzGAEgASgLMhwueXVoYWlpbi5saXN0ZW5lci50bHNfY29uZmlnIhEKBGdycGNKBAgBEAJSA3RscyISCgVodHRwMkoECAEQAlIDdGxzIoYBCgdyZWFsaXR5EhoKCHNob3J0X2lkGAEgAygJUghzaG9ydF9pZBIgCgtzZXJ2ZXJfbmFtZRgCIAMoCVILc2VydmVyX25hbWUSDAoEZGVzdBgDIAEoCRIgCgtwcml2YXRlX2tleRgEIAEoCVILcHJpdmF0ZV9rZXkSDQoFZGVidWcYBSABKAgiswIKCnRsc19jb25maWcSMwoMY2VydGlmaWNhdGVzGAEgAygLMh0ueXVoYWlpbi5saXN0ZW5lci5jZXJ0aWZpY2F0ZRIgCgtuZXh0X3Byb3RvcxgDIAMoCVILbmV4dF9wcm90b3MScQoXc2VydmVyX25hbWVfY2VydGlmaWNhdGUYBCADKAsyNy55dWhhaWluLmxpc3RlbmVyLnRsc19jb25maWcuU2VydmVyTmFtZUNlcnRpZmljYXRlRW50cnlSF3NlcnZlcl9uYW1lX2NlcnRpZmljYXRlGlsKGlNlcnZlck5hbWVDZXJ0aWZpY2F0ZUVudHJ5EgsKA2tleRgBIAEoCRIsCgV2YWx1ZRgCIAEoCzIdLnl1aGFpaW4ubGlzdGVuZXIuY2VydGlmaWNhdGU6AjgBInYKC2NlcnRpZmljYXRlEgwKBGNlcnQYASABKAwSCwoDa2V5GAIgASgMEiYKDmNlcnRfZmlsZV9wYXRoGAMgASgJUg5jZXJ0X2ZpbGVfcGF0aBIkCg1rZXlfZmlsZV9wYXRoGAQgASgJUg1rZXlfZmlsZV9wYXRoIhgKBXNuaWZmEg8KB2VuYWJsZWQYASABKAgiGwoMcmV2ZXJzZV9odHRwEgsKA3VybBgBIAEoCSpMCg90Y3BfdWRwX2NvbnRyb2wSFwoTdGNwX3VkcF9jb250cm9sX2FsbBAAEg8KC2Rpc2FibGVfdGNwEAESDwoLZGlzYWJsZV91ZHAQAkI5WjdnaXRodWIuY29tL0FzdXRvcnVmYS95dWhhaWluL3BrZy9wcm90b3MvY29uZmlnL2xpc3RlbmVyYgZwcm90bzM");
 
 /**
  * @generated from message yuhaiin.listener.inbound_config
@@ -137,6 +137,12 @@ export type inbound = Message<"yuhaiin.listener.inbound"> & {
      */
     value: tun;
     case: "tun";
+  } | {
+    /**
+     * @generated from field: yuhaiin.listener.reverse_http reverse_http = 22 [json_name = "reverse_http"];
+     */
+    value: reverse_http;
+    case: "reverseHttp";
   } | { case: undefined; value?: undefined };
 };
 
@@ -207,81 +213,6 @@ export const transportSchema: GenMessage<transport> = /*@__PURE__*/
   messageDesc(file_config_listener_listener, 2);
 
 /**
- * @generated from message yuhaiin.listener.protocol
- */
-export type protocol = Message<"yuhaiin.listener.protocol"> & {
-  /**
-   * @generated from field: string name = 1;
-   */
-  name: string;
-
-  /**
-   * @generated from field: bool enabled = 2;
-   */
-  enabled: boolean;
-
-  /**
-   * @generated from oneof yuhaiin.listener.protocol.protocol
-   */
-  protocol: {
-    /**
-     * @generated from field: yuhaiin.listener.http http = 3;
-     */
-    value: http;
-    case: "http";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.socks5 socks5 = 4;
-     */
-    value: socks5;
-    case: "socks5";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.redir redir = 5;
-     */
-    value: redir;
-    case: "redir";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.tun tun = 6;
-     */
-    value: tun;
-    case: "tun";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.yuubinsya yuubinsya = 7;
-     */
-    value: yuubinsya;
-    case: "yuubinsya";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.mixed mix = 8 [json_name = "mixed"];
-     */
-    value: mixed;
-    case: "mix";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.socks4a socks4a = 9;
-     */
-    value: socks4a;
-    case: "socks4a";
-  } | {
-    /**
-     * @generated from field: yuhaiin.listener.tproxy tproxy = 10;
-     */
-    value: tproxy;
-    case: "tproxy";
-  } | { case: undefined; value?: undefined };
-};
-
-/**
- * Describes the message yuhaiin.listener.protocol.
- * Use `create(protocolSchema)` to create a new message.
- */
-export const protocolSchema: GenMessage<protocol> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 3);
-
-/**
  * @generated from message yuhaiin.listener.empty
  */
 export type empty = Message<"yuhaiin.listener.empty"> & {
@@ -292,7 +223,7 @@ export type empty = Message<"yuhaiin.listener.empty"> & {
  * Use `create(emptySchema)` to create a new message.
  */
 export const emptySchema: GenMessage<empty> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 4);
+  messageDesc(file_config_listener_listener, 3);
 
 /**
  * @generated from message yuhaiin.listener.mux
@@ -305,7 +236,7 @@ export type mux = Message<"yuhaiin.listener.mux"> & {
  * Use `create(muxSchema)` to create a new message.
  */
 export const muxSchema: GenMessage<mux> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 5);
+  messageDesc(file_config_listener_listener, 4);
 
 /**
  * @generated from message yuhaiin.listener.tcpudp
@@ -327,7 +258,7 @@ export type tcpudp = Message<"yuhaiin.listener.tcpudp"> & {
  * Use `create(tcpudpSchema)` to create a new message.
  */
 export const tcpudpSchema: GenMessage<tcpudp> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 6);
+  messageDesc(file_config_listener_listener, 5);
 
 /**
  * @generated from message yuhaiin.listener.quic
@@ -349,7 +280,7 @@ export type quic = Message<"yuhaiin.listener.quic"> & {
  * Use `create(quicSchema)` to create a new message.
  */
 export const quicSchema: GenMessage<quic> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 7);
+  messageDesc(file_config_listener_listener, 6);
 
 /**
  * @generated from message yuhaiin.listener.http
@@ -371,7 +302,7 @@ export type http = Message<"yuhaiin.listener.http"> & {
  * Use `create(httpSchema)` to create a new message.
  */
 export const httpSchema: GenMessage<http> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 8);
+  messageDesc(file_config_listener_listener, 7);
 
 /**
  * @generated from message yuhaiin.listener.socks5
@@ -398,7 +329,7 @@ export type socks5 = Message<"yuhaiin.listener.socks5"> & {
  * Use `create(socks5Schema)` to create a new message.
  */
 export const socks5Schema: GenMessage<socks5> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 9);
+  messageDesc(file_config_listener_listener, 8);
 
 /**
  * @generated from message yuhaiin.listener.socks4a
@@ -415,7 +346,7 @@ export type socks4a = Message<"yuhaiin.listener.socks4a"> & {
  * Use `create(socks4aSchema)` to create a new message.
  */
 export const socks4aSchema: GenMessage<socks4a> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 10);
+  messageDesc(file_config_listener_listener, 9);
 
 /**
  * @generated from message yuhaiin.listener.mixed
@@ -437,7 +368,7 @@ export type mixed = Message<"yuhaiin.listener.mixed"> & {
  * Use `create(mixedSchema)` to create a new message.
  */
 export const mixedSchema: GenMessage<mixed> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 11);
+  messageDesc(file_config_listener_listener, 10);
 
 /**
  * @generated from message yuhaiin.listener.redir
@@ -454,7 +385,7 @@ export type redir = Message<"yuhaiin.listener.redir"> & {
  * Use `create(redirSchema)` to create a new message.
  */
 export const redirSchema: GenMessage<redir> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 12);
+  messageDesc(file_config_listener_listener, 11);
 
 /**
  * @generated from message yuhaiin.listener.tproxy
@@ -481,7 +412,7 @@ export type tproxy = Message<"yuhaiin.listener.tproxy"> & {
  * Use `create(tproxySchema)` to create a new message.
  */
 export const tproxySchema: GenMessage<tproxy> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 13);
+  messageDesc(file_config_listener_listener, 12);
 
 /**
  * @generated from message yuhaiin.listener.tun
@@ -546,7 +477,7 @@ export type tun = Message<"yuhaiin.listener.tun"> & {
  * Use `create(tunSchema)` to create a new message.
  */
 export const tunSchema: GenMessage<tun> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 14);
+  messageDesc(file_config_listener_listener, 13);
 
 /**
  * @generated from enum yuhaiin.listener.tun.endpoint_driver
@@ -572,7 +503,7 @@ export enum tun_endpoint_driver {
  * Describes the enum yuhaiin.listener.tun.endpoint_driver.
  */
 export const tun_endpoint_driverSchema: GenEnum<tun_endpoint_driver> = /*@__PURE__*/
-  enumDesc(file_config_listener_listener, 14, 0);
+  enumDesc(file_config_listener_listener, 13, 0);
 
 /**
  * @generated from message yuhaiin.listener.route
@@ -594,7 +525,7 @@ export type route = Message<"yuhaiin.listener.route"> & {
  * Use `create(routeSchema)` to create a new message.
  */
 export const routeSchema: GenMessage<route> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 15);
+  messageDesc(file_config_listener_listener, 14);
 
 /**
  * @generated from message yuhaiin.listener.yuubinsya
@@ -626,7 +557,7 @@ export type yuubinsya = Message<"yuhaiin.listener.yuubinsya"> & {
  * Use `create(yuubinsyaSchema)` to create a new message.
  */
 export const yuubinsyaSchema: GenMessage<yuubinsya> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 16);
+  messageDesc(file_config_listener_listener, 15);
 
 /**
  * @generated from message yuhaiin.listener.normal
@@ -639,7 +570,7 @@ export type normal = Message<"yuhaiin.listener.normal"> & {
  * Use `create(normalSchema)` to create a new message.
  */
 export const normalSchema: GenMessage<normal> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 17);
+  messageDesc(file_config_listener_listener, 16);
 
 /**
  * @generated from message yuhaiin.listener.websocket
@@ -652,7 +583,7 @@ export type websocket = Message<"yuhaiin.listener.websocket"> & {
  * Use `create(websocketSchema)` to create a new message.
  */
 export const websocketSchema: GenMessage<websocket> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 18);
+  messageDesc(file_config_listener_listener, 17);
 
 /**
  * @generated from message yuhaiin.listener.tls
@@ -669,7 +600,7 @@ export type tls = Message<"yuhaiin.listener.tls"> & {
  * Use `create(tlsSchema)` to create a new message.
  */
 export const tlsSchema: GenMessage<tls> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 19);
+  messageDesc(file_config_listener_listener, 18);
 
 /**
  * @generated from message yuhaiin.listener.grpc
@@ -682,7 +613,7 @@ export type grpc = Message<"yuhaiin.listener.grpc"> & {
  * Use `create(grpcSchema)` to create a new message.
  */
 export const grpcSchema: GenMessage<grpc> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 20);
+  messageDesc(file_config_listener_listener, 19);
 
 /**
  * @generated from message yuhaiin.listener.http2
@@ -695,7 +626,7 @@ export type http2 = Message<"yuhaiin.listener.http2"> & {
  * Use `create(http2Schema)` to create a new message.
  */
 export const http2Schema: GenMessage<http2> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 21);
+  messageDesc(file_config_listener_listener, 20);
 
 /**
  * @generated from message yuhaiin.listener.reality
@@ -732,7 +663,7 @@ export type reality = Message<"yuhaiin.listener.reality"> & {
  * Use `create(realitySchema)` to create a new message.
  */
 export const realitySchema: GenMessage<reality> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 22);
+  messageDesc(file_config_listener_listener, 21);
 
 /**
  * @generated from message yuhaiin.listener.tls_config
@@ -759,7 +690,7 @@ export type tls_config = Message<"yuhaiin.listener.tls_config"> & {
  * Use `create(tls_configSchema)` to create a new message.
  */
 export const tls_configSchema: GenMessage<tls_config> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 23);
+  messageDesc(file_config_listener_listener, 22);
 
 /**
  * @generated from message yuhaiin.listener.certificate
@@ -791,7 +722,7 @@ export type certificate = Message<"yuhaiin.listener.certificate"> & {
  * Use `create(certificateSchema)` to create a new message.
  */
 export const certificateSchema: GenMessage<certificate> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 24);
+  messageDesc(file_config_listener_listener, 23);
 
 /**
  * @generated from message yuhaiin.listener.sniff
@@ -808,6 +739,23 @@ export type sniff = Message<"yuhaiin.listener.sniff"> & {
  * Use `create(sniffSchema)` to create a new message.
  */
 export const sniffSchema: GenMessage<sniff> = /*@__PURE__*/
+  messageDesc(file_config_listener_listener, 24);
+
+/**
+ * @generated from message yuhaiin.listener.reverse_http
+ */
+export type reverse_http = Message<"yuhaiin.listener.reverse_http"> & {
+  /**
+   * @generated from field: string url = 1;
+   */
+  url: string;
+};
+
+/**
+ * Describes the message yuhaiin.listener.reverse_http.
+ * Use `create(reverse_httpSchema)` to create a new message.
+ */
+export const reverse_httpSchema: GenMessage<reverse_http> = /*@__PURE__*/
   messageDesc(file_config_listener_listener, 25);
 
 /**

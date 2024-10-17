@@ -55,7 +55,7 @@ export const Point = React.forwardRef((props: {
             label="Name"
             value={props.point.name}
             onChange={(e) => {
-                cc((x) => x.name = e) 
+                cc((x) => x.name = e)
             }}
         />
 
@@ -153,7 +153,8 @@ export const Point = React.forwardRef((props: {
             <ListGroup.Item>
                 <InputGroup>
                     <Form.Select value={newProtocol.value} onChange={(e) => {
-                        setNewProtocol({ value: e.target.value })}
+                        setNewProtocol({ value: e.target.value })
+                    }
                     }>
                         {
                             Object.keys(protocols).map((v) => {
@@ -679,6 +680,12 @@ const Socks5 = (props: { protocol: socks5, onChange: (e: socks5) => void, onClos
                 value={props.protocol.password}
                 onChange={(e) => { cc((x) => x.password = e) }}
             />
+
+            <SettingInputText label="Override Port" value={props.protocol.overridePort} onChange={(e) => {
+                let port = Number(e)
+                if (isNaN(port) || port > 65535 || port < 0) return
+                cc((x) => x.overridePort = port)
+            }} />
         </>
     </Container>
 }
