@@ -34,7 +34,7 @@ function FailedHistory() {
     return <>
         <Button variant="outline-primary" className="mb-3" onClick={() => mutate()}>Refresh</Button>
 
-        <Table hover striped>
+        <Table hover striped size="sm">
             <thead>
                 <tr>
                     {cth("Time")}

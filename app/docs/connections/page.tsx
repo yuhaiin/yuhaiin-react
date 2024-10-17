@@ -2,7 +2,6 @@
 
 import React, { useState, useContext } from "react";
 import { Button, Card, ListGroup, Accordion, Badge, Spinner } from "react-bootstrap";
-import { NodeModal } from "../modal/node";
 import useSWRSubscription from 'swr/subscription'
 import Loading from "../common/loading";
 import { Fetch, ProtoESFetcher2, WebsocketSubscribe } from "../common/proto";
@@ -12,7 +11,9 @@ import { notify_dataSchema, notify_remove_connectionsSchema, total_flow, total_f
 import { toBinary, create } from "@bufbuild/protobuf";
 import useSWR from 'swr'
 import { EmptySchema } from "@bufbuild/protobuf/wkt";
+import dynamic from "next/dynamic";
 
+const DynamicNodeModal = dynamic(() => import('../modal/node').then(mod => mod.NodeModal), { ssr: false })
 
 const formatBytes =
     (a = 0, b = 2) => {
@@ -64,7 +65,7 @@ function Connections() {
 
     return (
         <>
-            <NodeModal
+            <DynamicNodeModal
                 show={modalHash.show}
                 hash={modalHash.hash}
                 editable={false}

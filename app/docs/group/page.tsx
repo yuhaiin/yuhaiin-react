@@ -2,7 +2,6 @@
 
 import React, { useContext, useState } from "react";
 import { Row, Col, ButtonGroup, Button, Dropdown, Card, ListGroup, Spinner, DropdownButton } from "react-bootstrap";
-import { NodeJsonModal, NodeModal } from "../modal/node";
 import Loading from "../common/loading";
 import { GlobalToastContext } from "../common/toast";
 import useSWR from 'swr'
@@ -15,6 +14,11 @@ import { use_reqSchema } from "../pbes/node/grpc/node_pb";
 import { origin, point, pointSchema } from "../pbes/node/point/point_pb";
 import { fromBinary, create, toBinary } from "@bufbuild/protobuf";
 import { Duration, StringValueSchema } from "@bufbuild/protobuf/wkt";
+import dynamic from "next/dynamic";
+
+
+const DynamicNodeModal = dynamic(() => import('../modal/node').then(mod => mod.NodeModal), { ssr: false })
+const DynamicNodeJsonModal = dynamic(() => import('../modal/node').then(mod => mod.NodeJsonModal), { ssr: false })
 
 const Nanosecond = 1
 const Microsecond = 1000 * Nanosecond
@@ -418,7 +422,7 @@ function Group() {
 
     return (
         <>
-            <NodeModal
+            <DynamicNodeModal
                 show={modalData.show}
                 hash={modalData.hash}
                 point={modalData.point}
@@ -431,7 +435,7 @@ function Group() {
                 groups={Object.keys(data.groupsV2).sort((a, b) => { return a <= b ? -1 : 1 })}
             />
 
-            <NodeJsonModal
+            <DynamicNodeJsonModal
                 show={importJson.data}
                 onSave={() => mutate()}
                 onHide={() => setImportJson({ data: false })}

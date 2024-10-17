@@ -1,10 +1,10 @@
 import { clone, create, DescEnum, DescEnumValue, DescMessage, EnumJsonType, MessageShape, } from "@bufbuild/protobuf";
 import { SettingCheck } from "../common/switch";
-import { empty, emptySchema, grpc, grpcSchema, http, http2, http2Schema, httpSchema, inbound, inbound_config, inbound_configSchema, inboundSchema, mixed, mixedSchema, mux, muxSchema, normal, normalSchema, protocolSchema, quic, quicSchema, reality, realitySchema, redir, redirSchema, sniff, sniffSchema, socks5, socks5Schema, tcp_udp_control, tcp_udp_controlSchema, tcpudp, tcpudpSchema, tls, tls_config, tls_configSchema, tlsSchema, tproxy, tproxySchema, transport, transportSchema, tun, tunSchema, websocket, websocketSchema, yuubinsya, yuubinsyaSchema } from "../pbes/config/listener/listener_pb";
+import { empty, emptySchema, grpc, grpcSchema, http, http2, http2Schema, httpSchema, inbound, inbound_config, inbound_configSchema, inboundSchema, mixed, mixedSchema, mux, muxSchema, normal, normalSchema, quic, quicSchema, reality, realitySchema, redir, redirSchema, reverse_httpSchema, reverse_tcpSchema, sniff, sniffSchema, socks5, socks5Schema, tcp_udp_control, tcp_udp_controlSchema, tcpudp, tcpudpSchema, tls, tls_config, tls_configSchema, tlsSchema, tproxy, tproxySchema, transport, transportSchema, tun, tunSchema, websocket, websocketSchema, yuubinsya, yuubinsyaSchema } from "../pbes/config/listener/listener_pb";
 import { SettingInputText, Container, MoveUpDown } from "./components";
 import { Form, Row, Col, Modal, ListGroup, InputGroup, Button, Card } from "react-bootstrap";
-import { HTTPComponents, MixedComponents, QuicComponents, RealityComponents, RedirComponents, Socks5Components, TProxyComponents, TlsComponents, TunComponents } from "./server";
-import { useState } from "react";
+import { HTTPComponents, MixedComponents, QuicComponents, RealityComponents, RedirComponents, ReverseHTTPComponents, ReverseTCPComponents, Socks5Components, TProxyComponents, TlsComponents, TunComponents } from "./server";
+import { useEffect, useState } from "react";
 import React from "react";
 
 function change<T extends DescMessage>(scheme: T, e: MessageShape<T>, apply?: (x: MessageShape<T>) => void): (f: (x: MessageShape<T>) => void) => void {
@@ -276,6 +276,10 @@ const Network = (props: { inbound: inbound, onChange: (x: inbound) => void }) =>
     const cc = change(inboundSchema, props.inbound, props.onChange)
 
     const [newProtocol, setNewProtocol] = useState({ value: props.inbound.network.case?.toString() ?? "tcpudp" });
+    useEffect(() => {
+        setNewProtocol({ value: props.inbound.network.case ? props.inbound.network.case.toString() : "tcpudp" });
+    }, [props.inbound]);
+
     return <>
         <ListGroup variant="flush">
             <ListGroup.Item>
@@ -355,7 +359,6 @@ const Transport = (props: { transport: transport, onChange: (x: transport) => vo
                 reality={props.transport.transport.value}
                 onChange={(x) => { cc((y) => y.transport.value = x) }}
             />
-
     }
 }
 
@@ -366,6 +369,16 @@ const ProtocolBase = (props: { inbound: inbound, onChange: (x: inbound) => void 
         case "http":
             return <HTTPComponents
                 http={props.inbound.protocol.value}
+                onChange={(x) => { cc((y) => y.protocol.value = x) }}
+            />
+        case "reverseHttp":
+            return <ReverseHTTPComponents
+                reverse_http={props.inbound.protocol.value}
+                onChange={(x) => { cc((y) => y.protocol.value = x) }}
+            />
+        case "reverseTcp":
+            return <ReverseTCPComponents
+                reverse_tcp={props.inbound.protocol.value}
                 onChange={(x) => { cc((y) => y.protocol.value = x) }}
             />
         case "socks5":
@@ -406,7 +419,12 @@ const ProtocolBase = (props: { inbound: inbound, onChange: (x: inbound) => void 
 const Protocol = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
     const cc = change(inboundSchema, props.inbound, props.onChange)
 
-    const [newProtocol, setNewProtocol] = useState({ value: props.inbound.protocol.case?.toString() ?? "yuubinsya" });
+    const [newProtocol, setNewProtocol] = useState({ value: props.inbound.protocol.case ? props.inbound.protocol.case.toString() : "yuubinsya" });
+
+    useEffect(() => {
+        setNewProtocol({ value: props.inbound.protocol.case ? props.inbound.protocol.case.toString() : "yuubinsya" });
+    }, [props.inbound]);
+
 
     return <>
         <ListGroup variant="flush">
@@ -414,7 +432,7 @@ const Protocol = (props: { inbound: inbound, onChange: (x: inbound) => void }) =
                 <InputGroup>
                     <Form.Select value={newProtocol.value} onChange={(e) => setNewProtocol({ value: e.target.value })}>
                         {
-                            ["http", "socks5", "mix", "redir", "tun", "yuubinsya", "tproxy"].
+                            ["http", "reverseHttp", "reverseTcp", "socks5", "mix", "redir", "tun", "yuubinsya", "tproxy"].
                                 map((v) => {
                                     return <option value={v} key={v}>{v}</option>
                                 })
@@ -426,6 +444,12 @@ const Protocol = (props: { inbound: inbound, onChange: (x: inbound) => void }) =
                             switch (newProtocol.value) {
                                 case "http":
                                     x.protocol = { case: "http", value: create(httpSchema, {}) }
+                                    break
+                                case "reverseHttp":
+                                    x.protocol = { case: "reverseHttp", value: create(reverse_httpSchema, {}) }
+                                    break
+                                case "reverseTcp":
+                                    x.protocol = { case: "reverseTcp", value: create(reverse_tcpSchema, {}) }
                                     break
                                 case "socks5":
                                     x.protocol = { case: "socks5", value: create(socks5Schema, {}) }

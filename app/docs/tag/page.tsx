@@ -6,13 +6,15 @@ import Loading from "../common/loading";
 import useSWR from 'swr'
 import { Fetch, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
-import { NodeModal } from "../modal/node";
 import { GlobalToastContext } from "../common/toast";
 import { save_tag_req, save_tag_reqSchema } from "../pbes/node/grpc/node_pb";
 import { tag_type, tags, tagsSchema } from "../pbes/node/tag/tag_pb";
 import { manager, managerSchema } from "../pbes/node/node_pb";
 import { create, toBinary } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import dynamic from "next/dynamic";
+
+const DynamicNodeModal = dynamic(() => import('../modal/node').then(mod => mod.NodeModal), { ssr: false })
 
 function Tags() {
     const ctx = useContext(GlobalToastContext);
@@ -94,7 +96,7 @@ function Tags() {
 
     return (
         <>
-            <NodeModal
+            <DynamicNodeModal
                 show={modalHash.show}
                 hash={modalHash.hash}
                 onHide={() => setModalHash({ ...modalHash, hash: "", show: false })}
