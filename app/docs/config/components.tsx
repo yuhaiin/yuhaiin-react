@@ -1,5 +1,5 @@
 import { Row, Form, Card, Col, InputGroup, Button, DropdownItem, ButtonGroup, DropdownMenu, Dropdown } from "react-bootstrap"
-import React, { useState } from "react";
+import React, { JSX, useState } from "react";
 
 export class Remind {
     label: string

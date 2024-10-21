@@ -7,15 +7,17 @@
     "@bufbuild/protobuf": "^2.2.0",
     "@bufbuild/protoc-gen-es": "^2.2.0",
     "@types/node": "^22.7.5",
-    "@types/react": "^18.3.11",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "npm:types-react@19.0.0-rc.1",
+    "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1",
     "bootstrap": "^v5.3.3",
     "bootstrap-icons": "^1.11.3",
-    "next": "^14.2.15",
+    "next": "15.0.0-rc.1",
     "react-bootstrap": "^2.10.5",
     "shlex": "^2.1.2",
     "swr": "^2.2.5",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "react": "19.0.0-rc-cd22717c-20241013",
+    "react-dom": "19.0.0-rc-cd22717c-20241013"
   },
   "scripts": {
     "dev": "next dev",
@@ -23,7 +25,11 @@
     "start": "next start"
   },
   "devDependencies": {
-    "eslint": "^8.57.0",
-    "eslint-config-next": "^14.2.15"
+    "eslint": "^9.13.0",
+    "eslint-config-next": "15.0.0-rc.1"
+  },
+  "overrides": {
+    "@types/react": "npm:types-react@19.0.0-rc.1",
+    "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1"
   }
 }
