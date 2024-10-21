@@ -5,7 +5,10 @@ import { point } from "../pbes/node/point/point_pb";
 import { direct, directSchema, drop, dropSchema, grpc, grpcSchema, host, hostSchema, http, http2, http2Schema, httpSchema, mux, muxSchema, none, noneSchema, obfs_http, obfs_httpSchema, protocol, protocolSchema, quic, quicSchema, reality, realitySchema, reject, shadowsocks, shadowsocksr, shadowsocksrSchema, shadowsocksSchema, simple, simpleSchema, socks5, socks5Schema, tls_config, tls_configSchema, trojan, trojanSchema, vless, vlessSchema, vmess, vmessSchema, websocket, websocketSchema, wireguard, wireguard_peer_config, wireguard_peer_configSchema, wireguardSchema, yuubinsya, yuubinsyaSchema } from "../pbes/node/protocol/protocol_pb";
 import { NewBytesItemList, NewItemList, Remind, SettingInputText, Container, MoveUpDown } from "../config/components";
 import { SettingCheck } from "../common/switch";
-import { create, Message } from "@bufbuild/protobuf";
+import { create } from "@bufbuild/protobuf";
+import { ProtoESFetcher } from '../common/proto';
+import { InterfacesSchema } from '../pbes/tools/tools_pb';
+import useSWR from 'swr';
 
 function change<T>(e: T, apply?: (x: T) => void): (f: (x: T) => void) => void {
     if (!apply) return function (_: (x: T) => void) { }
@@ -411,12 +414,36 @@ function NewAlternateHostList(props: {
 const Simple = (props: { protocol: simple, onChange: (e: simple) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     const cc = change(props.protocol, props.onChange)
 
+    const { data: iffs } =
+        useSWR("/interfaces", ProtoESFetcher(InterfacesSchema),
+            { revalidateOnFocus: true })
+
     return <Container title="Simple" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
             <SettingInputText
                 label="Host"
                 value={props.protocol.host}
                 onChange={(e) => { cc((x) => x.host = e) }} />
+
+            <SettingInputText
+                label='Network Interface'
+                value={props.protocol.networkInterface}
+                onChange={(e) => { cc((x) => x.networkInterface = e) }}
+                reminds={
+                    iffs?.
+                        interfaces.
+                        map((v) => {
+                            if (!v.name) return undefined
+                            var r: Remind = {
+                                label: v.name,
+                                value: v.name,
+                                label_children: v.addresses?.map((vv) => !vv ? "" : vv)
+                            }
+                            return r
+                        }).
+                        filter((e): e is Exclude<Remind, null | undefined> => !!e)
+                }
+            />
 
             <SettingInputText label="Port" value={props.protocol.port} onChange={(e) => {
                 let port = Number(e)
