@@ -749,8 +749,33 @@ const HTTP = (props: { protocol: http, onChange: (x: http) => void, onClose?: ()
 
 const Direct = (props: { protocol: direct, onChange: (x: direct) => void, onClose?: () => void, moveUpDown?: MoveUpDown }) => {
     let cc = change(props.protocol, props.onChange)
+
+    const { data: iffs } =
+        useSWR("/interfaces", ProtoESFetcher(InterfacesSchema),
+            { revalidateOnFocus: true })
+
+
     return <Container title="Direct" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
+            <SettingInputText
+                label='Network Interface'
+                value={props.protocol.networkInterface}
+                onChange={(e) => { cc((x) => x.networkInterface = e) }}
+                reminds={
+                    iffs?.
+                        interfaces.
+                        map((v) => {
+                            if (!v.name) return undefined
+                            var r: Remind = {
+                                label: v.name,
+                                value: v.name,
+                                label_children: v.addresses?.map((vv) => !vv ? "" : vv)
+                            }
+                            return r
+                        }).
+                        filter((e): e is Exclude<Remind, null | undefined> => !!e)
+                }
+            />
         </>
     </Container>
 }

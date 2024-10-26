@@ -1,4 +1,7 @@
-module.exports = {
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+    /* config options here */
     output: 'export',
     compress: true,
     trailingSlash: true,
@@ -11,6 +14,9 @@ module.exports = {
                 },
             }
         })
+
         return config
     }
 }
+
+export default nextConfig
