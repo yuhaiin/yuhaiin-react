@@ -11,9 +11,7 @@ import { notify_dataSchema, notify_remove_connectionsSchema, total_flow, total_f
 import { toBinary, create } from "@bufbuild/protobuf";
 import useSWR from 'swr'
 import { EmptySchema } from "@bufbuild/protobuf/wkt";
-import dynamic from "next/dynamic";
-
-const DynamicNodeModal = dynamic(() => import('../modal/node').then(mod => mod.NodeModal), { ssr: false })
+import { NodeModal } from "../modal/node";
 
 const formatBytes =
     (a = 0, b = 2) => {
@@ -44,7 +42,7 @@ function Connections() {
             setLastFlow({ download: r.download, upload: r.upload })
             return resp
         }),
-        { refreshInterval: 2000, })
+        { refreshInterval: 2000 })
 
 
     const { data: conns, error: conn_error } = useSWRSubscription("/conn", WebsocketSubscribe(toBinary(EmptySchema, create(EmptySchema)), notify_dataSchema, (prev: Map<bigint, connection>, r) => {
@@ -65,11 +63,11 @@ function Connections() {
 
     return (
         <>
-            <DynamicNodeModal
+            <NodeModal
                 show={modalHash.show}
                 hash={modalHash.hash}
                 editable={false}
-                onHide={() => setModalHash({ hash: "", show: false })}
+                onHide={() => setModalHash({ ...modalHash, show: false })}
             />
 
             <Card className="mb-3">

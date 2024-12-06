@@ -8,17 +8,12 @@ import useSWR from 'swr'
 import { Fetch, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
 import { LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunTCPUrl, LatencyStunUrl } from "../apiurl";
-import { managerSchema } from "../pbes/node/node_pb";
 import { dns_over_quicSchema, httpSchema, ipSchema, nat_type, protocol, protocolSchema, requestsSchema, responseSchema, stunSchema } from "../pbes/node/latency/latency_pb";
-import { use_reqSchema } from "../pbes/node/grpc/node_pb";
+import { nodes_responseSchema, use_reqSchema } from "../pbes/node/grpc/node_pb";
 import { origin, point, pointSchema } from "../pbes/node/point/point_pb";
 import { fromBinary, create, toBinary } from "@bufbuild/protobuf";
 import { Duration, StringValueSchema } from "@bufbuild/protobuf/wkt";
-import dynamic from "next/dynamic";
-
-
-const DynamicNodeModal = dynamic(() => import('../modal/node').then(mod => mod.NodeModal), { ssr: false })
-const DynamicNodeJsonModal = dynamic(() => import('../modal/node').then(mod => mod.NodeJsonModal), { ssr: false })
+import { NodeJsonModal, NodeModal } from "../modal/node";
 
 const Nanosecond = 1
 const Microsecond = 1000 * Nanosecond
@@ -394,14 +389,14 @@ const NodeItem = React.memo((props: {
 })
 
 class ModalData {
-    point: point
+    point?: point
     hash: string
     show: boolean
     onDelete?: () => void
     isNew?: boolean
 
     constructor(data?: Partial<ModalData>) {
-        this.point = data?.point ?? create(pointSchema, {})
+        this.point = data?.point
         this.hash = data?.hash ?? ""
         this.show = data?.show ?? false
         this.onDelete = data?.onDelete
@@ -414,7 +409,7 @@ function Group() {
     const [importJson, setImportJson] = useState({ data: false });
     const [latency, setLatency] = useState<{ [key: string]: LatencyClass }>({})
 
-    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoESFetcher(managerSchema))
+    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoESFetcher(nodes_responseSchema))
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || data === undefined) return <Loading />
@@ -422,7 +417,7 @@ function Group() {
 
     return (
         <>
-            <DynamicNodeModal
+            <NodeModal
                 show={modalData.show}
                 hash={modalData.hash}
                 point={modalData.point}
@@ -432,10 +427,10 @@ function Group() {
                 editable
                 onHide={() => setModalData({ ...modalData, show: false })}
                 onSave={() => mutate()}
-                groups={Object.keys(data.groupsV2).sort((a, b) => { return a <= b ? -1 : 1 })}
+                groups={Object.keys(data.groups).sort((a, b) => { return a <= b ? -1 : 1 })}
             />
 
-            <DynamicNodeJsonModal
+            <NodeJsonModal
                 show={importJson.data}
                 onSave={() => mutate()}
                 onHide={() => setImportJson({ data: false })}
@@ -453,8 +448,8 @@ function Group() {
                                 <Dropdown.Item eventKey={"Select..."}>Select...</Dropdown.Item>
 
                                 {
-                                    data.groupsV2 && Object
-                                        .keys(data.groupsV2)
+                                    data.groups && Object
+                                        .keys(data.groups)
                                         .sort((a, b) => { return a <= b ? -1 : 1 })
                                         .map((k) => {
                                             return <Dropdown.Item eventKey={k} key={k}>{k}</Dropdown.Item>
@@ -496,11 +491,11 @@ function Group() {
                 </Row>
 
                 {
-                    (currentGroup && data.groupsV2 && data.groupsV2[currentGroup]) ?
+                    (currentGroup && data.groups && data.groups[currentGroup]) ?
                         <>
                             <Row className="row-cols-sm-1 row-cols-md-2 row-cols-xl-3 justify-content-md-center">
                                 {
-                                    Object.entries(data.groupsV2[currentGroup].nodesV2).
+                                    Object.entries(data.groups[currentGroup].nodesV2).
                                         sort((a, b) => { return a <= b ? -1 : 1 }).
                                         map(([k, v]) => {
                                             return <NodeItem
@@ -510,9 +505,9 @@ function Group() {
                                                 latency={latency[v] ?? new LatencyClass({})}
                                                 onChangeLatency={(e) => { setLatency(prev => { return { ...prev, [v]: e } }) }}
                                                 onClickEdit={() => {
-                                                    if (!data.nodes) return
+                                                    // if (!data.nodes) return
                                                     setModalData({
-                                                        point: data.nodes[v],
+                                                        // point: data.nodes[v],
                                                         hash: v,
                                                         show: true,
                                                         onDelete: () => {

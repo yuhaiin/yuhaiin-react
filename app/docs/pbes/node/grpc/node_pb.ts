@@ -6,7 +6,7 @@ import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegen
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv1";
 import type { EmptySchema, StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_empty, file_google_protobuf_wrappers } from "@bufbuild/protobuf/wkt";
-import type { managerSchema } from "../node_pb";
+import type { nodes } from "../node_pb";
 import { file_node_node } from "../node_pb";
 import type { point, pointSchema } from "../point/point_pb";
 import { file_node_point_point } from "../point/point_pb";
@@ -14,7 +14,7 @@ import type { link } from "../subscribe/subscribe_pb";
 import { file_node_subscribe_subscribe } from "../subscribe/subscribe_pb";
 import type { requestsSchema, responseSchema } from "../latency/latency_pb";
 import { file_node_latency_latency } from "../latency/latency_pb";
-import type { tag_type } from "../tag/tag_pb";
+import type { tag_type, tags } from "../tag/tag_pb";
 import { file_node_tag_tag } from "../tag/tag_pb";
 import type { Message } from "@bufbuild/protobuf";
 
@@ -22,7 +22,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file node/grpc/node.proto.
  */
 export const file_node_grpc_node: GenFile = /*@__PURE__*/
-  fileDesc("ChRub2RlL2dycGMvbm9kZS5wcm90bxIbeXVoYWlpbi5wcm90b3Mubm9kZS5zZXJ2aWNlIlAKCG5vd19yZXNwEiEKA3RjcBgBIAEoCzIULnl1aGFpaW4ucG9pbnQucG9pbnQSIQoDdWRwGAIgASgLMhQueXVoYWlpbi5wb2ludC5wb2ludCIxCgd1c2VfcmVxEgsKA3RjcBgBIAEoCBILCgN1ZHAYAiABKAgSDAoEaGFzaBgDIAEoCSI3Cg1zYXZlX2xpbmtfcmVxEiYKBWxpbmtzGAEgAygLMhcueXVoYWlpbi5zdWJzY3JpYmUubGluayIZCghsaW5rX3JlcRINCgVuYW1lcxgBIAMoCSKeAQoOZ2V0X2xpbmtzX3Jlc3ASRQoFbGlua3MYASADKAsyNi55dWhhaWluLnByb3Rvcy5ub2RlLnNlcnZpY2UuZ2V0X2xpbmtzX3Jlc3AuTGlua3NFbnRyeRpFCgpMaW5rc0VudHJ5EgsKA2tleRgBIAEoCRImCgV2YWx1ZRgCIAEoCzIXLnl1aGFpaW4uc3Vic2NyaWJlLmxpbms6AjgBIk4KDHNhdmVfdGFnX3JlcRILCgN0YWcYASABKAkSIwoEdHlwZRgDIAEoDjIVLnl1aGFpaW4udGFnLnRhZ190eXBlEgwKBGhhc2gYAiABKAkyuQMKBG5vZGUSRAoDbm93EhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GiUueXVoYWlpbi5wcm90b3Mubm9kZS5zZXJ2aWNlLm5vd19yZXNwEkEKA3VzZRIkLnl1aGFpaW4ucHJvdG9zLm5vZGUuc2VydmljZS51c2VfcmVxGhQueXVoYWlpbi5wb2ludC5wb2ludBI5CgNnZXQSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFC55dWhhaWluLnBvaW50LnBvaW50EjIKBHNhdmUSFC55dWhhaWluLnBvaW50LnBvaW50GhQueXVoYWlpbi5wb2ludC5wb2ludBI+CgZyZW1vdmUSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSOAoHbWFuYWdlchIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoVLnl1aGFpaW4ubm9kZS5tYW5hZ2VyEj8KB2xhdGVuY3kSGS55dWhhaWluLmxhdGVuY3kucmVxdWVzdHMaGS55dWhhaWluLmxhdGVuY3kucmVzcG9uc2UytQIKCXN1YnNjcmliZRJKCgRzYXZlEioueXVoYWlpbi5wcm90b3Mubm9kZS5zZXJ2aWNlLnNhdmVfbGlua19yZXEaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSRwoGcmVtb3ZlEiUueXVoYWlpbi5wcm90b3Mubm9kZS5zZXJ2aWNlLmxpbmtfcmVxGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EkcKBnVwZGF0ZRIlLnl1aGFpaW4ucHJvdG9zLm5vZGUuc2VydmljZS5saW5rX3JlcRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJKCgNnZXQSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaKy55dWhhaWluLnByb3Rvcy5ub2RlLnNlcnZpY2UuZ2V0X2xpbmtzX3Jlc3AykAEKA3RhZxJJCgRzYXZlEikueXVoYWlpbi5wcm90b3Mubm9kZS5zZXJ2aWNlLnNhdmVfdGFnX3JlcRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI+CgZyZW1vdmUSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFi5nb29nbGUucHJvdG9idWYuRW1wdHlCNlo0Z2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL25vZGUvc2VydmljZWIGcHJvdG8z", [file_google_protobuf_empty, file_google_protobuf_wrappers, file_node_node, file_node_point_point, file_node_subscribe_subscribe, file_node_latency_latency, file_node_tag_tag]);
+  fileDesc("ChRub2RlL2dycGMvbm9kZS5wcm90bxIbeXVoYWlpbi5wcm90b3Mubm9kZS5zZXJ2aWNlIlAKCG5vd19yZXNwEiEKA3RjcBgBIAEoCzIULnl1aGFpaW4ucG9pbnQucG9pbnQSIQoDdWRwGAIgASgLMhQueXVoYWlpbi5wb2ludC5wb2ludCIxCgd1c2VfcmVxEgsKA3RjcBgBIAEoCBILCgN1ZHAYAiABKAgSDAoEaGFzaBgDIAEoCSKdAQoObm9kZXNfcmVzcG9uc2USRwoGZ3JvdXBzGAEgAygLMjcueXVoYWlpbi5wcm90b3Mubm9kZS5zZXJ2aWNlLm5vZGVzX3Jlc3BvbnNlLkdyb3Vwc0VudHJ5GkIKC0dyb3Vwc0VudHJ5EgsKA2tleRgBIAEoCRIiCgV2YWx1ZRgCIAEoCzITLnl1aGFpaW4ubm9kZS5ub2RlczoCOAEiNwoNc2F2ZV9saW5rX3JlcRImCgVsaW5rcxgBIAMoCzIXLnl1aGFpaW4uc3Vic2NyaWJlLmxpbmsiGQoIbGlua19yZXESDQoFbmFtZXMYASADKAkingEKDmdldF9saW5rc19yZXNwEkUKBWxpbmtzGAEgAygLMjYueXVoYWlpbi5wcm90b3Mubm9kZS5zZXJ2aWNlLmdldF9saW5rc19yZXNwLkxpbmtzRW50cnkaRQoKTGlua3NFbnRyeRILCgNrZXkYASABKAkSJgoFdmFsdWUYAiABKAsyFy55dWhhaWluLnN1YnNjcmliZS5saW5rOgI4ASJOCgxzYXZlX3RhZ19yZXESCwoDdGFnGAEgASgJEiMKBHR5cGUYAyABKA4yFS55dWhhaWluLnRhZy50YWdfdHlwZRIMCgRoYXNoGAIgASgJIpMBCg10YWdzX3Jlc3BvbnNlEkIKBHRhZ3MYASADKAsyNC55dWhhaWluLnByb3Rvcy5ub2RlLnNlcnZpY2UudGFnc19yZXNwb25zZS5UYWdzRW50cnkaPgoJVGFnc0VudHJ5EgsKA2tleRgBIAEoCRIgCgV2YWx1ZRgCIAEoCzIRLnl1aGFpaW4udGFnLnRhZ3M6AjgBMswDCgRub2RlEkQKA25vdxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRolLnl1aGFpaW4ucHJvdG9zLm5vZGUuc2VydmljZS5ub3dfcmVzcBJBCgN1c2USJC55dWhhaWluLnByb3Rvcy5ub2RlLnNlcnZpY2UudXNlX3JlcRoULnl1aGFpaW4ucG9pbnQucG9pbnQSOQoDZ2V0EhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhQueXVoYWlpbi5wb2ludC5wb2ludBIyCgRzYXZlEhQueXVoYWlpbi5wb2ludC5wb2ludBoULnl1aGFpaW4ucG9pbnQucG9pbnQSPgoGcmVtb3ZlEhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EksKBGxpc3QSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaKy55dWhhaWluLnByb3Rvcy5ub2RlLnNlcnZpY2Uubm9kZXNfcmVzcG9uc2USPwoHbGF0ZW5jeRIZLnl1aGFpaW4ubGF0ZW5jeS5yZXF1ZXN0cxoZLnl1aGFpaW4ubGF0ZW5jeS5yZXNwb25zZTK1AgoJc3Vic2NyaWJlEkoKBHNhdmUSKi55dWhhaWluLnByb3Rvcy5ub2RlLnNlcnZpY2Uuc2F2ZV9saW5rX3JlcRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJHCgZyZW1vdmUSJS55dWhhaWluLnByb3Rvcy5ub2RlLnNlcnZpY2UubGlua19yZXEaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSRwoGdXBkYXRlEiUueXVoYWlpbi5wcm90b3Mubm9kZS5zZXJ2aWNlLmxpbmtfcmVxGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EkoKA2dldBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRorLnl1aGFpaW4ucHJvdG9zLm5vZGUuc2VydmljZS5nZXRfbGlua3NfcmVzcDLcAQoDdGFnEkkKBHNhdmUSKS55dWhhaWluLnByb3Rvcy5ub2RlLnNlcnZpY2Uuc2F2ZV90YWdfcmVxGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5Ej4KBnJlbW92ZRIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJKCgRsaXN0EhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GioueXVoYWlpbi5wcm90b3Mubm9kZS5zZXJ2aWNlLnRhZ3NfcmVzcG9uc2VCNlo0Z2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL25vZGUvc2VydmljZWIGcHJvdG8z", [file_google_protobuf_empty, file_google_protobuf_wrappers, file_node_node, file_node_point_point, file_node_subscribe_subscribe, file_node_latency_latency, file_node_tag_tag]);
 
 /**
  * @generated from message yuhaiin.protos.node.service.now_resp
@@ -74,6 +74,23 @@ export const use_reqSchema: GenMessage<use_req> = /*@__PURE__*/
   messageDesc(file_node_grpc_node, 1);
 
 /**
+ * @generated from message yuhaiin.protos.node.service.nodes_response
+ */
+export type nodes_response = Message<"yuhaiin.protos.node.service.nodes_response"> & {
+  /**
+   * @generated from field: map<string, yuhaiin.node.nodes> groups = 1;
+   */
+  groups: { [key: string]: nodes };
+};
+
+/**
+ * Describes the message yuhaiin.protos.node.service.nodes_response.
+ * Use `create(nodes_responseSchema)` to create a new message.
+ */
+export const nodes_responseSchema: GenMessage<nodes_response> = /*@__PURE__*/
+  messageDesc(file_node_grpc_node, 2);
+
+/**
  * @generated from message yuhaiin.protos.node.service.save_link_req
  */
 export type save_link_req = Message<"yuhaiin.protos.node.service.save_link_req"> & {
@@ -88,7 +105,7 @@ export type save_link_req = Message<"yuhaiin.protos.node.service.save_link_req">
  * Use `create(save_link_reqSchema)` to create a new message.
  */
 export const save_link_reqSchema: GenMessage<save_link_req> = /*@__PURE__*/
-  messageDesc(file_node_grpc_node, 2);
+  messageDesc(file_node_grpc_node, 3);
 
 /**
  * @generated from message yuhaiin.protos.node.service.link_req
@@ -105,7 +122,7 @@ export type link_req = Message<"yuhaiin.protos.node.service.link_req"> & {
  * Use `create(link_reqSchema)` to create a new message.
  */
 export const link_reqSchema: GenMessage<link_req> = /*@__PURE__*/
-  messageDesc(file_node_grpc_node, 3);
+  messageDesc(file_node_grpc_node, 4);
 
 /**
  * @generated from message yuhaiin.protos.node.service.get_links_resp
@@ -122,7 +139,7 @@ export type get_links_resp = Message<"yuhaiin.protos.node.service.get_links_resp
  * Use `create(get_links_respSchema)` to create a new message.
  */
 export const get_links_respSchema: GenMessage<get_links_resp> = /*@__PURE__*/
-  messageDesc(file_node_grpc_node, 4);
+  messageDesc(file_node_grpc_node, 5);
 
 /**
  * @generated from message yuhaiin.protos.node.service.save_tag_req
@@ -149,7 +166,24 @@ export type save_tag_req = Message<"yuhaiin.protos.node.service.save_tag_req"> &
  * Use `create(save_tag_reqSchema)` to create a new message.
  */
 export const save_tag_reqSchema: GenMessage<save_tag_req> = /*@__PURE__*/
-  messageDesc(file_node_grpc_node, 5);
+  messageDesc(file_node_grpc_node, 6);
+
+/**
+ * @generated from message yuhaiin.protos.node.service.tags_response
+ */
+export type tags_response = Message<"yuhaiin.protos.node.service.tags_response"> & {
+  /**
+   * @generated from field: map<string, yuhaiin.tag.tags> tags = 1;
+   */
+  tags: { [key: string]: tags };
+};
+
+/**
+ * Describes the message yuhaiin.protos.node.service.tags_response.
+ * Use `create(tags_responseSchema)` to create a new message.
+ */
+export const tags_responseSchema: GenMessage<tags_response> = /*@__PURE__*/
+  messageDesc(file_node_grpc_node, 7);
 
 /**
  * @generated from service yuhaiin.protos.node.service.node
@@ -198,12 +232,14 @@ export const node: GenService<{
     output: typeof EmptySchema;
   },
   /**
-   * @generated from rpc yuhaiin.protos.node.service.node.manager
+   * rpc manager(google.protobuf.Empty) returns (yuhaiin.node.manager);
+   *
+   * @generated from rpc yuhaiin.protos.node.service.node.list
    */
-  manager: {
+  list: {
     methodKind: "unary";
     input: typeof EmptySchema;
-    output: typeof managerSchema;
+    output: typeof nodes_responseSchema;
   },
   /**
    * @generated from rpc yuhaiin.protos.node.service.node.latency
@@ -274,6 +310,14 @@ export const tag: GenService<{
     methodKind: "unary";
     input: typeof StringValueSchema;
     output: typeof EmptySchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.protos.node.service.tag.list
+   */
+  list: {
+    methodKind: "unary";
+    input: typeof EmptySchema;
+    output: typeof tags_responseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_node_grpc_node, 2);

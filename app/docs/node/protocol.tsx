@@ -415,8 +415,7 @@ const Simple = (props: { protocol: simple, onChange: (e: simple) => void, onClos
     const cc = change(props.protocol, props.onChange)
 
     const { data: iffs } =
-        useSWR("/interfaces", ProtoESFetcher(InterfacesSchema),
-            { revalidateOnFocus: true })
+        useSWR("/interfaces", ProtoESFetcher(InterfacesSchema), { revalidateOnFocus: true })
 
     return <Container title="Simple" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>

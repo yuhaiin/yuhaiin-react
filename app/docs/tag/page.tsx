@@ -1,24 +1,22 @@
 "use client"
 
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Badge, Button, ButtonGroup, Card, FloatingLabel, Form, ListGroup, Modal, ToggleButton } from "react-bootstrap";
 import Loading from "../common/loading";
 import useSWR from 'swr'
 import { Fetch, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
 import { GlobalToastContext } from "../common/toast";
-import { save_tag_req, save_tag_reqSchema } from "../pbes/node/grpc/node_pb";
+import { nodes_response, nodes_responseSchema, save_tag_req, save_tag_reqSchema, tags_response, tags_responseSchema } from "../pbes/node/grpc/node_pb";
 import { tag_type, tags, tagsSchema } from "../pbes/node/tag/tag_pb";
-import { manager, managerSchema } from "../pbes/node/node_pb";
 import { create, toBinary } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
-import dynamic from "next/dynamic";
-
-const DynamicNodeModal = dynamic(() => import('../modal/node').then(mod => mod.NodeModal), { ssr: false })
+import { NodeModal } from "../modal/node";
 
 function Tags() {
     const ctx = useContext(GlobalToastContext);
-    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoESFetcher(managerSchema))
+    const { data, error, isLoading, mutate } = useSWR("/tags", ProtoESFetcher(tags_responseSchema))
+    const { data: nodes } = useSWR("/nodes", ProtoESFetcher(nodes_responseSchema))
     const [modalHash, setModalHash] = useState({ hash: "", show: false });
     const [tagModalData, setTagModalData] = useState({ show: false, tag: create(save_tag_reqSchema, { tag: "", hash: "", type: tag_type.node }), new: true });
 
@@ -96,14 +94,15 @@ function Tags() {
 
     return (
         <>
-            <DynamicNodeModal
+            <NodeModal
                 show={modalHash.show}
                 hash={modalHash.hash}
-                onHide={() => setModalHash({ ...modalHash, hash: "", show: false })}
+                onHide={() => setModalHash({ ...modalHash, show: false })}
             />
 
             <TagModal
                 show={tagModalData.show}
+                nodes={nodes}
                 data={data}
                 tag={tagModalData.tag}
                 onChangeTag={(x) => setTagModalData({ ...tagModalData, tag: x })}
@@ -156,7 +155,8 @@ function Tags() {
 
 const TagModal = (props: {
     show: boolean,
-    data: manager,
+    nodes?: nodes_response,
+    data: tags_response,
     tag: save_tag_req,
     new?: boolean,
     onHide: () => void,
@@ -204,7 +204,8 @@ const TagModal = (props: {
                             <Mirror data={props.data} value={props.tag.hash} onChangeMirror={(x) => { props.tag.hash = x; props.onChangeTag(props.tag) }} />
                         </> :
                         <>
-                            <Node data={props.data}
+                            <Node
+                                data={props.nodes}
                                 hash={props.tag.hash}
                                 onChangeNode={(x) => { props.tag.hash = x; props.onChangeTag(props.tag) }}
                             />
@@ -224,12 +225,26 @@ const TagModal = (props: {
     </>
 }
 
+const getGroup = (hash: string, data?: nodes_response) => {
+    if (data === undefined || hash === "") return ""
+    for (const group in data.groups) {
+        for (const node in data.groups[group].nodesV2) {
+            if (data.groups[group].nodesV2[node] === hash) return group
+        }
+    }
+
+    return ""
+}
+
 const Node = (props: {
     hash: string,
-    data: manager,
+    data?: nodes_response,
     onChangeNode: (x: string) => void
 }) => {
-    const [group, setGroup] = useState({ data: props.data.nodes[props.hash]?.group ?? "" })
+    const [group, setGroup] = useState({ data: getGroup(props.hash, props.data) })
+    useEffect(() => {
+        setGroup({ data: getGroup(props.hash, props.data) })
+    }, [props.hash, props.data]);
 
     return <>
         <FloatingLabel label="Group" className="mb-2" >
@@ -238,7 +253,7 @@ const Node = (props: {
                 <option>Choose...</option>
                 {
                     Object
-                        .keys(props.data.groupsV2)
+                        .keys(props.data ? props.data.groups : {})
                         .sort((a, b) => { return a <= b ? -1 : 1 })
                         .map((k) => {
                             return (<option value={k} key={k}>{k}</option>)
@@ -253,7 +268,7 @@ const Node = (props: {
                 <option value="">Choose...</option>
                 {
                     Object
-                        .entries(props.data.groupsV2[group.data]?.nodesV2 ?? {})
+                        .entries(props.data ? props.data.groups[group.data]?.nodesV2 ?? {} : {})
                         .sort((a, b) => { return a <= b ? -1 : 1 })
                         .map(([k, v]) => {
                             return (<option value={v} key={k}>{k}</option>)
@@ -266,7 +281,7 @@ const Node = (props: {
 
 const Mirror = (props: {
     value: string,
-    data: manager,
+    data: tags_response,
     onChangeMirror: (x: string) => void
 }) => {
     return <FloatingLabel label="Mirror" className="mb-2" >

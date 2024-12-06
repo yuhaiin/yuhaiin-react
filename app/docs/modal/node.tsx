@@ -1,5 +1,5 @@
-import { useContext, useState } from "react";
-import { Button, Modal, Form, DropdownButton, Dropdown, ButtonGroup, Collapse } from "react-bootstrap";
+import { useContext, useEffect, useState } from "react";
+import { Button, Modal, Form, DropdownButton, Dropdown, ButtonGroup } from "react-bootstrap";
 import useSWR from 'swr'
 import { Fetch, ProtoESFetcher } from '../common/proto';
 import Loading from "../common/loading";
@@ -25,21 +25,31 @@ export function NodeModal(props: {
 
     const [jsonShow, setJsonShow] = useState({ show: false, data: "" })
 
-    const { data: node, error, isLoading, mutate } = useSWR(props.show ? `/node` : null,
+    // isValidating becomes true whenever there is an ongoing request whether the data is loaded or not
+    // isLoading becomes true when there is an ongoing request and data is not loaded yet.
+    const { data: node, error, isLoading, isValidating, mutate } = useSWR(props.hash === "" ? undefined : `/node`,
         ProtoESFetcher(
             pointSchema,
             "POST",
             toBinary(StringValueSchema, create(StringValueSchema, { value: props.hash })),
             props.point,
-        )
-    )
+        ),
+        {
+            shouldRetryOnError: false,
+            keepPreviousData: false,
+            revalidateOnFocus: false,
+        })
+
+    useEffect(() => {
+        mutate();
+    }, [props.hash])
 
     const SaveButton = () => {
         if (!props.editable) return <></>
 
         return <Button
             variant="outline-primary"
-            disabled={isLoading || error || !props.editable}
+            disabled={isValidating || isLoading || error || !props.editable}
             onClick={() => {
                 if (!node) return
                 if (props.isNew) node.hash = ""
@@ -69,7 +79,7 @@ export function NodeModal(props: {
                 show={jsonShow.show}
                 data={jsonShow.data}
                 plaintext
-                onHide={() => { setJsonShow({ ...jsonShow, show: false }) }}
+                onHide={() => setJsonShow({ ...jsonShow, show: false })}
             />
 
             <Modal
@@ -93,17 +103,15 @@ export function NodeModal(props: {
                                 <h4 className="text-center my-2">{error.code} - {error.msg}</h4>
                                 <pre className="text-center my-2 text-danger lead">{error.raw}</pre>
                             </> :
-                            isLoading || !node ? <Loading /> :
-                                <Collapse in={!error && !isLoading}>
-                                    <Point
-                                        point={node}
-                                        groups={props.groups}
-                                        onChange={(e) => {
-                                            if (!props.editable) return
-                                            mutate(clone(pointSchema, e), false)
-                                        }}
-                                    />
-                                </Collapse>
+                            isValidating || isLoading || !node ? <Loading /> :
+                                <Point
+                                    point={node}
+                                    groups={props.groups}
+                                    onChange={(e) => {
+                                        if (!props.editable) return
+                                        mutate(clone(pointSchema, e), false)
+                                    }}
+                                />
                         }
                     </fieldset>
                 </Modal.Body>
@@ -125,7 +133,7 @@ export function NodeModal(props: {
                             <Dropdown.Item eventKey={"cancel"}>Cancel</Dropdown.Item>
                         </DropdownButton>
                     }
-                    {(!error && !isLoading && node) &&
+                    {(!error && !isValidating && !isLoading && node) &&
                         <Button
                             variant="outline-primary"
                             onClick={() => {
