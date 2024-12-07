@@ -17,10 +17,10 @@ export default function RootLayout({
         <meta charSet="utf-8" />
         <title>Yuhaiin</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/docs/favicon.ico" />
+        <link rel="icon" href="/docs/faviconv2.ico" />
         {/* <meta name="theme-color" content="#000000" /> */}
         <meta name="description" content="yuhaiin" />
-        <link rel="apple-touch-icon" href="/docs/logo192.png" />
+        <link rel="apple-touch-icon" href="/docs/logov2192.png" />
       </head>
       <body>
         <NavBar>
