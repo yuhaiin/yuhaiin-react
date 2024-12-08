@@ -2,10 +2,10 @@
 
 import { useContext, useState } from "react"
 import { Button, Card, Form, InputGroup } from "react-bootstrap"
-import { Fetch } from "../../common/proto"
-import { create, fromBinary, toBinary, toJson, toJsonString } from "@bufbuild/protobuf"
+import { FetchProtobuf } from "../../common/proto"
+import { create, toJsonString } from "@bufbuild/protobuf"
 import { StringValueSchema } from "@bufbuild/protobuf/wkt"
-import { test_response, test_responseSchema } from "../../pbes/config/grpc/config_pb"
+import { bypass, test_response, test_responseSchema } from "../../pbes/config/grpc/config_pb"
 import { GlobalToastContext } from "../../common/toast"
 
 function Test() {
@@ -21,16 +21,16 @@ function Test() {
                 variant="outline-primary"
                 onClick={() => {
                     if (value === "") return
-                    let resp = Fetch("/bypass/test", {
-                        method: "POST",
-                        body: toBinary(StringValueSchema, create(StringValueSchema, { value })),
-                        process: async (r) => { return fromBinary(test_responseSchema, new Uint8Array(await r.arrayBuffer())) }
-                    })
-
-                    resp.then(async ({ data, error }) => {
-                        if (error) ctx.Error(`test failed ${error.code}| ${await error.msg}`)
-                        else setResp(await data)
-                    })
+                    FetchProtobuf(
+                        bypass.method.test,
+                        "/bypass/test",
+                        "POST",
+                        create(StringValueSchema, { value })
+                    )
+                        .then(async ({ data, error }) => {
+                            if (error) ctx.Error(`test failed ${error.code}| ${error.msg}`)
+                            else setResp(data)
+                        })
                 }}
             >
                 Test

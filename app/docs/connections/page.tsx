@@ -4,14 +4,15 @@ import React, { useState, useContext } from "react";
 import { Button, Card, ListGroup, Accordion, Badge, Spinner } from "react-bootstrap";
 import useSWRSubscription from 'swr/subscription'
 import Loading from "../common/loading";
-import { Fetch, ProtoESFetcher2, WebsocketSubscribe } from "../common/proto";
+import { FetchProtobuf, WebsocketSubscribe } from "../common/proto";
 import { GlobalToastContext } from "../common/toast";
 import { connection, type } from "../pbes/statistic/config_pb";
-import { notify_dataSchema, notify_remove_connectionsSchema, total_flow, total_flowSchema } from "../pbes/statistic/grpc/config_pb";
+import { connections, notify_dataSchema, notify_remove_connectionsSchema, total_flow, total_flowSchema } from "../pbes/statistic/grpc/config_pb";
 import { toBinary, create } from "@bufbuild/protobuf";
 import useSWR from 'swr'
 import { EmptySchema } from "@bufbuild/protobuf/wkt";
 import { NodeModal } from "../modal/node";
+import { error } from "console";
 
 const formatBytes =
     (a = 0, b = 2) => {
@@ -36,12 +37,16 @@ function Connections() {
     const [modalHash, setModalHash] = useState({ show: false, hash: "" });
     const [lastFlow, setLastFlow] = useState({ download: BigInt(0), upload: BigInt(0) })
 
-    const { data: flow, error: flow_error } = useSWR("/flow/total",
-        ProtoESFetcher2(total_flowSchema, (r): { upload: string, download: string } => {
-            let resp = generateFlow(r, { download: lastFlow.download, upload: lastFlow.upload })
-            setLastFlow({ download: r.download, upload: r.upload })
-            return resp
-        }),
+    const { data: flow, error: flow_error } = useSWR("/flow/total", async (url: string) => {
+        return FetchProtobuf(connections.method.total, url).then(async ({ data: r, error }) => {
+            if (error) throw error
+            if (r) {
+                let resp = generateFlow(r, { download: lastFlow.download, upload: lastFlow.upload })
+                setLastFlow({ download: r.download, upload: r.upload })
+                return resp
+            }
+        })
+    },
         { refreshInterval: 2000 })
 
 
@@ -171,14 +176,15 @@ const AccordionItem = React.memo((props: { data: connection, showModal: (hash: s
                                 disabled={closing}
                                 onClick={() => {
                                     setClosing(true)
-                                    Fetch("/conn",
-                                        {
-                                            method: "DELETE",
-                                            body: toBinary(notify_remove_connectionsSchema, create(notify_remove_connectionsSchema, { ids: [props.data.id] }))
-                                        })
+                                    FetchProtobuf(
+                                        connections.method.close_conn,
+                                        "/conn",
+                                        "DELETE",
+                                        create(notify_remove_connectionsSchema, { ids: [props.data.id] }),
+                                    )
                                         .then(async ({ error }) => {
                                             if (error) {
-                                                ctx.Error(`code ${props.data.id} failed, ${error.code}| ${await error.msg}`)
+                                                ctx.Error(`code ${props.data.id} failed, ${error.code}| ${error.msg}`)
                                                 setClosing(false)
                                             } else {
                                                 setTimeout(() => { setClosing(false) }, 5000)

@@ -5,11 +5,11 @@ import { Row, Col, ButtonGroup, Button, Dropdown, Card, ListGroup, Spinner, Drop
 import Loading from "../common/loading";
 import { GlobalToastContext } from "../common/toast";
 import useSWR from 'swr'
-import { Fetch, ProtoESFetcher } from '../common/proto';
+import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
 import { LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunTCPUrl, LatencyStunUrl } from "../apiurl";
 import { dns_over_quicSchema, httpSchema, ipSchema, nat_type, protocol, protocolSchema, requestsSchema, responseSchema, stunSchema } from "../pbes/node/latency/latency_pb";
-import { nodes_responseSchema, use_reqSchema } from "../pbes/node/grpc/node_pb";
+import { node, use_reqSchema } from "../pbes/node/grpc/node_pb";
 import { origin, point, pointSchema } from "../pbes/node/point/point_pb";
 import { fromBinary, create, toBinary } from "@bufbuild/protobuf";
 import { Duration, StringValueSchema } from "@bufbuild/protobuf/wkt";
@@ -218,37 +218,39 @@ const NodeItem = React.memo((props: {
     }
 
     const latency = (protocol: protocol, onFinish: (r: LatencyProps) => void) => {
-        Fetch<LatencyProps>("/latency", {
-            body: toBinary(requestsSchema, create(requestsSchema, {
-                requests: [{
-                    hash: props.hash,
-                    id: "latency",
-                    ipv6: LatencyIPv6,
-                    protocol: protocol
-                }]
-            })),
-            process: async (r) => {
-                let resp = fromBinary(responseSchema, new Uint8Array(await r.arrayBuffer()));
-                if (!resp.idLatencyMap["latency"]) return { Latency: "timeout" }
-                const rr = resp.idLatencyMap["latency"].reply
-                switch (rr.case) {
-                    case "latency": return { Latency: durationToStroing(rr.value) }
-                    case "ip": return { IPv4: rr.value.ipv4, IPv6: rr.value.ipv6 }
-                    case "stun": return {
-                        Stun: {
-                            mapping: getNatTypeString(rr.value.Mapping),
-                            filter: getNatTypeString(rr.value.Filtering),
-                            mappedAddress: rr.value.mappedAddress
-                        }
-                    }
-                    default: return { Latency: "timeout" }
+        FetchProtobuf(node.method.latency, "/latency", "POST", create(requestsSchema, {
+            requests: [{
+                hash: props.hash,
+                id: "latency",
+                ipv6: LatencyIPv6,
+                protocol: protocol
+            }]
+        }))
+            .then(async ({ data: resp, error }) => {
+                if (error) {
+                    ctx.Error(`test failed ${error.code}| ${error.msg}`)
+
                 }
-            }
-        }).then(async ({ data, error }) => {
-            let duration: LatencyProps = { Latency: "timeout" };
-            if (!error && data) duration = await data;
-            onFinish(duration)
-        })
+
+                let latency: LatencyProps = { Latency: "timeout" };
+
+                if (resp && resp.idLatencyMap["latency"]) {
+                    const rr = resp.idLatencyMap["latency"].reply
+                    switch (rr.case) {
+                        case "latency": latency = { Latency: durationToStroing(rr.value) }; break
+                        case "ip": latency = { IPv4: rr.value.ipv4, IPv6: rr.value.ipv6 }; break
+                        case "stun": latency = {
+                            Stun: {
+                                mapping: getNatTypeString(rr.value.Mapping),
+                                filter: getNatTypeString(rr.value.Filtering),
+                                mappedAddress: rr.value.mappedAddress
+                            }
+                        }; break
+                    }
+                }
+
+                onFinish(latency)
+            })
     }
 
 
@@ -341,18 +343,12 @@ const NodeItem = React.memo((props: {
                             <DropdownButton
                                 onSelect={
                                     async (key) => {
-                                        Fetch(
-                                            `/node`,
-                                            {
-                                                method: "PUT",
-                                                body: toBinary(use_reqSchema, create(use_reqSchema, {
-                                                    tcp: key === "tcp" || key === "tcpudp",
-                                                    udp: key === "udp" || key === "tcpudp",
-                                                    hash: props.hash,
-                                                }))
-                                            }
-                                        ).then(async ({ error }) => {
-                                            if (error !== undefined) ctx.Error(`change node failed, ${error.code}| ${await error.msg}`)
+                                        FetchProtobuf(node.method.use, `/node`, "PUT", create(use_reqSchema, {
+                                            tcp: key === "tcp" || key === "tcpudp",
+                                            udp: key === "udp" || key === "tcpudp",
+                                            hash: props.hash,
+                                        }),).then(async ({ error }) => {
+                                            if (error !== undefined) ctx.Error(`change node failed, ${error.code}| ${error.msg}`)
                                             else ctx.Info(`Change ${key} Node To ${props.hash} Successful`)
                                         })
                                     }
@@ -409,7 +405,7 @@ function Group() {
     const [importJson, setImportJson] = useState({ data: false });
     const [latency, setLatency] = useState<{ [key: string]: LatencyClass }>({})
 
-    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoESFetcher(nodes_responseSchema))
+    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoESFetcher(node.method.list))
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || data === undefined) return <Loading />
@@ -505,21 +501,15 @@ function Group() {
                                                 latency={latency[v] ?? new LatencyClass({})}
                                                 onChangeLatency={(e) => { setLatency(prev => { return { ...prev, [v]: e } }) }}
                                                 onClickEdit={() => {
-                                                    // if (!data.nodes) return
                                                     setModalData({
-                                                        // point: data.nodes[v],
                                                         hash: v,
                                                         show: true,
                                                         onDelete: () => {
-                                                            Fetch(
-                                                                `/node`,
-                                                                {
-                                                                    method: "DELETE",
-                                                                    body: toBinary(StringValueSchema, create(StringValueSchema, { value: v }))
-                                                                }
+                                                            FetchProtobuf(node.method.remove, `/node`, "DELETE",
+                                                                create(StringValueSchema, { value: v }),
                                                             ).then(async ({ error }) => {
                                                                 if (error !== undefined) {
-                                                                    ctx.Error(`Delete Node ${v} Failed ${error.code}| ${await error.msg}`)
+                                                                    ctx.Error(`Delete Node ${v} Failed ${error.code}| ${error.msg}`)
                                                                 } else {
                                                                     ctx.Info(`Delete Node ${v} Successful.`)
                                                                     mutate()

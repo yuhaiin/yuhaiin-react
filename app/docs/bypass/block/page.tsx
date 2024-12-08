@@ -3,7 +3,7 @@
 import { Button, Table } from "react-bootstrap"
 import useSWR from "swr"
 import { ProtoESFetcher } from "../../common/proto"
-import { block_history, block_history_listSchema } from "../../pbes/config/grpc/config_pb"
+import { block_history, bypass } from "../../pbes/config/grpc/config_pb"
 import { create } from "@bufbuild/protobuf"
 import { timestampDate, TimestampSchema } from "@bufbuild/protobuf/wkt"
 import Loading from "../../common/loading"
@@ -26,7 +26,7 @@ function BypassBlockHistory() {
         else return sortFunc(timestampDate(a.time ?? TimestampZero), timestampDate(b.time ?? TimestampZero))
     }
 
-    const { data, error, isLoading, mutate } = useSWR("/bypass/block_history", ProtoESFetcher(block_history_listSchema))
+    const { data, error, isLoading, mutate } = useSWR("/bypass/block_history", ProtoESFetcher(bypass.method.block_history))
 
     if (error) return <Loading code={error.code}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />

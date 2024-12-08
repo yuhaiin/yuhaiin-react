@@ -7,7 +7,7 @@ import { NewBytesItemList, NewItemList, Remind, SettingInputText, Container, Mov
 import { SettingCheck } from "../common/switch";
 import { create } from "@bufbuild/protobuf";
 import { ProtoESFetcher } from '../common/proto';
-import { InterfacesSchema } from '../pbes/tools/tools_pb';
+import { tools } from '../pbes/tools/tools_pb';
 import useSWR from 'swr';
 
 function change<T>(e: T, apply?: (x: T) => void): (f: (x: T) => void) => void {
@@ -415,7 +415,7 @@ const Simple = (props: { protocol: simple, onChange: (e: simple) => void, onClos
     const cc = change(props.protocol, props.onChange)
 
     const { data: iffs } =
-        useSWR("/interfaces", ProtoESFetcher(InterfacesSchema), { revalidateOnFocus: true })
+        useSWR("/interfaces", ProtoESFetcher(tools.method.get_interface), { revalidateOnFocus: true })
 
     return <Container title="Simple" onClose={props.onClose} moveUpDown={props.moveUpDown}>
         <>
@@ -750,8 +750,7 @@ const Direct = (props: { protocol: direct, onChange: (x: direct) => void, onClos
     let cc = change(props.protocol, props.onChange)
 
     const { data: iffs } =
-        useSWR("/interfaces", ProtoESFetcher(InterfacesSchema),
-            { revalidateOnFocus: true })
+        useSWR("/interfaces", ProtoESFetcher(tools.method.get_interface), { revalidateOnFocus: true })
 
 
     return <Container title="Direct" onClose={props.onClose} moveUpDown={props.moveUpDown}>

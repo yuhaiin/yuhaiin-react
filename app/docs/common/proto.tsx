@@ -3,24 +3,8 @@ import { APIUrl } from '../apiurl';
 import { clone, DescMessage, fromBinary, MessageShape, toBinary } from "@bufbuild/protobuf";
 import type { SWRSubscriptionOptions } from 'swr/subscription'
 
-export function ProtoESFetcher<Desc extends DescMessage>(d: Desc, method?: string, body?: BodyInit, value?: MessageShape<Desc>): Fetcher<MessageShape<Desc>, string> {
-    return (url) => {
-        if (value) return clone(d, value)
-        return fetch(
-            `${APIUrl}${url}`,
-            {
-                method: method,
-                body: body,
-            },
-        ).then(async r => {
-            if (!r.ok) throw { code: r.status, msg: r.statusText, raw: r.text() }
-            return fromBinary(d, new Uint8Array(await r.arrayBuffer()))
-        })
-    }
-}
 
-
-export function ProtoESFetcher3<I extends DescMessage, O extends DescMessage>(
+export function ProtoESFetcher<I extends DescMessage, O extends DescMessage>(
     d: { methodKind: "unary"; input: I; output: O; },
     method?: string, body?: MessageShape<I>, default_response?: MessageShape<O>): Fetcher<MessageShape<O>, string> {
     return (url) => {
@@ -38,68 +22,32 @@ export function ProtoESFetcher3<I extends DescMessage, O extends DescMessage>(
     }
 }
 
-export function ProtoESFetcher2<Desc extends DescMessage, resp extends {}>(d: Desc, process: (data: MessageShape<Desc>) => resp, method?: string, body?: BodyInit): Fetcher<resp, string> {
-    return (url) => fetch(
-        `${APIUrl}${url}`,
-        {
-            method: method,
-            body: body,
-        },
-    ).then(async r => {
-        if (!r.ok) throw { code: r.status, msg: r.statusText, raw: r.text() }
-        let x = process(fromBinary(d, new Uint8Array(await r.arrayBuffer())))
-        return x
-    })
-}
-
 export async function FetchProtobuf<I extends DescMessage, O extends DescMessage>(
     d: { methodKind: "unary"; input: I; output: O; },
     url: string,
     method?: string,
     body?: MessageShape<I>,
 ): Promise<{
-    data?: Promise<MessageShape<O>>,
-    error?: { code: number, msg: Promise<string> }
+    data?: MessageShape<O>,
+    error?: { code: number, msg: string }
 }> {
-    return Fetch<MessageShape<O>>(
-        url,
+    let r = await fetch(`${APIUrl}${url}`,
         {
             method: method,
             body: body ? toBinary(d.input, body) : undefined,
-            process: async (r) => fromBinary(d.output, new Uint8Array(await r.arrayBuffer()))
-        }
-    )
-}
-
-export const Fetch = async <T2 extends unknown>(
-    url: string,
-    props: {
-        method?: string,
-        body?: BodyInit | null,
-        process?: (r: Response) => Promise<T2>
-    }): Promise<{
-        data?: Promise<T2>,
-        error?: { code: number, msg: Promise<string> }
-    }> => {
-    let r = await fetch(`${APIUrl}${url}`,
-        {
-            method: props.method !== undefined ? props.method : "POST",
-            body: props.body
-        }
-    )
+        })
 
     if (!r.ok) {
         return {
             error: {
                 code: r.status,
-                msg: r.text()
+                msg: await r.text()
             }
         }
     }
 
 
-    if (props.process === undefined) return {}
-    return { data: props.process(r) }
+    return { data: fromBinary(d.output, new Uint8Array(await r.arrayBuffer())) }
 }
 
 export function WebsocketSubscribe<Desc extends DescMessage, Response>(Request: Uint8Array, resp: Desc, processResponse: (prev: Response | undefined, r: MessageShape<Desc>) => Response):

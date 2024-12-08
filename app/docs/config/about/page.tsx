@@ -4,10 +4,10 @@ import { Card } from "react-bootstrap"
 import { ItemList, SettingInputText } from "../components"
 import useSWR from "swr"
 import { ProtoESFetcher } from "../../common/proto"
-import { infoSchema } from "../../pbes/config/config_pb"
+import { config_service } from "../../pbes/config/grpc/config_pb"
 
 function About() {
-    const { data: info } = useSWR("/info", ProtoESFetcher(infoSchema), {})
+    const { data: info } = useSWR("/info", ProtoESFetcher(config_service.method.info), {})
 
     return <>
         <Card>

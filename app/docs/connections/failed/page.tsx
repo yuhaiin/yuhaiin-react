@@ -6,7 +6,7 @@ import { ProtoESFetcher } from "../../common/proto"
 import { create } from "@bufbuild/protobuf"
 import { timestampDate, TimestampSchema } from "@bufbuild/protobuf/wkt"
 import Loading from "../../common/loading"
-import { failed_history_listSchema, failed_history } from "../../pbes/statistic/grpc/config_pb"
+import { failed_history, connections } from "../../pbes/statistic/grpc/config_pb"
 import { useState } from "react"
 import styles from "../../common/clickable.module.css";
 
@@ -26,7 +26,8 @@ function FailedHistory() {
         else return sortFunc(timestampDate(a.time ?? TimestampZero), timestampDate(b.time ?? TimestampZero))
     }
 
-    const { data, error, isLoading, mutate } = useSWR("/conn/failed_history", ProtoESFetcher(failed_history_listSchema))
+    const { data, error, isLoading, mutate } = useSWR("/conn/failed_history",
+        ProtoESFetcher(connections.method.failed_history))
 
 
     if (error) return <Loading code={error.code}>{error.msg}</Loading>

@@ -1,13 +1,14 @@
 import { useContext, useEffect, useState } from "react";
 import { Button, Modal, Form, DropdownButton, Dropdown, ButtonGroup } from "react-bootstrap";
 import useSWR from 'swr'
-import { Fetch, ProtoESFetcher } from '../common/proto';
+import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
 import Loading from "../common/loading";
 import { GlobalToastContext } from "../common/toast";
 import { pointSchema, point } from "../pbes/node/point/point_pb";
 import { Point } from "../node/protocol";
 import { create, clone, toJsonString, fromJsonString, toBinary } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { node } from "../pbes/node/grpc/node_pb";
 
 
 export function NodeModal(props: {
@@ -27,11 +28,11 @@ export function NodeModal(props: {
 
     // isValidating becomes true whenever there is an ongoing request whether the data is loaded or not
     // isLoading becomes true when there is an ongoing request and data is not loaded yet.
-    const { data: node, error, isLoading, isValidating, mutate } = useSWR(props.hash === "" ? undefined : `/node`,
+    const { data: nodes, error, isLoading, isValidating, mutate } = useSWR(props.hash === "" ? undefined : `/node`,
         ProtoESFetcher(
-            pointSchema,
+            node.method.get,
             "POST",
-            toBinary(StringValueSchema, create(StringValueSchema, { value: props.hash })),
+            create(StringValueSchema, { value: props.hash }),
             props.point,
         ),
         {
@@ -51,21 +52,14 @@ export function NodeModal(props: {
             variant="outline-primary"
             disabled={isValidating || isLoading || error || !props.editable}
             onClick={() => {
-                if (!node) return
-                if (props.isNew) node.hash = ""
-                Fetch("/node",
-                    {
-                        method: "PATCH",
-                        body: toBinary(pointSchema, node),
-                    })
+                if (!nodes) return
+                if (props.isNew) nodes.hash = ""
+                FetchProtobuf(node.method.save, "/node", "PATCH", nodes)
                     .then(async ({ error }) => {
                         if (!error) {
                             ctx.Info("save successful")
                             if (props.onSave) props.onSave();
-                        } else {
-                            let msg = await error.msg;
-                            ctx.Error(msg)
-                        }
+                        } else ctx.Error(error.msg)
                     })
             }}
         >
@@ -103,9 +97,9 @@ export function NodeModal(props: {
                                 <h4 className="text-center my-2">{error.code} - {error.msg}</h4>
                                 <pre className="text-center my-2 text-danger lead">{error.raw}</pre>
                             </> :
-                            isValidating || isLoading || !node ? <Loading /> :
+                            isValidating || isLoading || !nodes ? <Loading /> :
                                 <Point
-                                    point={node}
+                                    point={nodes}
                                     groups={props.groups}
                                     onChange={(e) => {
                                         if (!props.editable) return
@@ -133,11 +127,11 @@ export function NodeModal(props: {
                             <Dropdown.Item eventKey={"cancel"}>Cancel</Dropdown.Item>
                         </DropdownButton>
                     }
-                    {(!error && !isValidating && !isLoading && node) &&
+                    {(!error && !isValidating && !isLoading && nodes) &&
                         <Button
                             variant="outline-primary"
                             onClick={() => {
-                                setJsonShow({ show: true, data: toJsonString(pointSchema, node, { prettySpaces: 2 }) });
+                                setJsonShow({ show: true, data: toJsonString(pointSchema, nodes, { prettySpaces: 2 }) });
                                 // navigator.clipboard.writeText(JSON.stringify(po.toJson({ emitDefaultValues: true }), null, 2));
                             }}
                         >
@@ -170,19 +164,12 @@ export const NodeJsonModal = (
             onClick={() => {
                 let p = fromJsonString(pointSchema, nodeJson.data);
                 if (props.isNew) p.hash = ""
-                Fetch("/node",
-                    {
-                        method: "PATCH",
-                        body: toBinary(pointSchema, p),
-                    })
+                FetchProtobuf(node.method.save, "/node", "PATCH", p)
                     .then(async ({ error }) => {
                         if (error === undefined) {
                             ctx.Info("save successful")
                             if (props.onSave !== undefined) props.onSave();
-                        } else {
-                            let msg = await error.msg;
-                            ctx.Error(msg)
-                        }
+                        } else ctx.Error(error.msg)
                     })
             }}
         >

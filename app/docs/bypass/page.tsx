@@ -2,13 +2,14 @@
 
 import useSWR from "swr";
 import Bypass from "./bypass";
-import { Fetch, ProtoESFetcher } from "../common/proto";
+import { FetchProtobuf, ProtoESFetcher } from "../common/proto";
 import { configSchema } from "../pbes/config/bypass/bypass_pb";
 import Loading from "../common/loading";
 import { clone, toBinary } from "@bufbuild/protobuf";
 import { useContext, useState } from "react";
 import { GlobalToastContext } from "../common/toast";
 import { Button, Spinner, Stack } from "react-bootstrap";
+import { bypass } from "../pbes/config/grpc/config_pb";
 
 function BypassComponent() {
     const ctx = useContext(GlobalToastContext);
@@ -17,8 +18,7 @@ function BypassComponent() {
     const [reloading, setReloading] = useState(false);
 
     const { data: setting, error, isLoading, mutate: setSetting } =
-        useSWR("/bypass", ProtoESFetcher(configSchema),
-            { revalidateOnFocus: false })
+        useSWR("/bypass", ProtoESFetcher(bypass.method.load), { revalidateOnFocus: false })
 
     if (error) return <Loading code={error.code}>{error.msg}</Loading>
     if (isLoading || !setting) return <Loading />
@@ -34,12 +34,14 @@ function BypassComponent() {
                 disabled={saving}
                 onClick={() => {
                     setSaving(true)
-                    Fetch("/bypass", {
-                        body: toBinary(configSchema, setting),
-                        method: "PATCH"
-                    })
+                    FetchProtobuf(
+                        bypass.method.save,
+                        "/bypass",
+                        "PATCH",
+                        setting,
+                    )
                         .then(async ({ error }) => {
-                            if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${await error.msg}`)
+                            if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${error.msg}`)
                             else {
                                 ctx.Info("Save Successfully");
                                 setSetting()
@@ -56,11 +58,9 @@ function BypassComponent() {
                 disabled={reloading}
                 onClick={() => {
                     setReloading(true)
-                    Fetch("/bypass/reload", {
-                        method: "POST"
-                    })
+                    FetchProtobuf(bypass.method.reload, "/bypass/reload", "POST",)
                         .then(async ({ error }) => {
-                            if (error !== undefined) ctx.Error(`reload failed, ${error.code}| ${await error.msg}`)
+                            if (error !== undefined) ctx.Error(`reload failed, ${error.code}| ${error.msg}`)
                             else {
                                 ctx.Info("Reload Successfully");
                                 setSetting()

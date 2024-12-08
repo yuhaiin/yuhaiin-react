@@ -4,19 +4,19 @@ import { useState, useContext, useEffect } from "react";
 import { Badge, Button, ButtonGroup, Card, FloatingLabel, Form, ListGroup, Modal, ToggleButton } from "react-bootstrap";
 import Loading from "../common/loading";
 import useSWR from 'swr'
-import { Fetch, ProtoESFetcher } from '../common/proto';
+import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
 import { GlobalToastContext } from "../common/toast";
-import { nodes_response, nodes_responseSchema, save_tag_req, save_tag_reqSchema, tags_response, tags_responseSchema } from "../pbes/node/grpc/node_pb";
+import { node, nodes_response, save_tag_req, save_tag_reqSchema, tag, tags_response } from "../pbes/node/grpc/node_pb";
 import { tag_type, tags, tagsSchema } from "../pbes/node/tag/tag_pb";
-import { create, toBinary } from "@bufbuild/protobuf";
+import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { NodeModal } from "../modal/node";
 
 function Tags() {
     const ctx = useContext(GlobalToastContext);
-    const { data, error, isLoading, mutate } = useSWR("/tags", ProtoESFetcher(tags_responseSchema))
-    const { data: nodes } = useSWR("/nodes", ProtoESFetcher(nodes_responseSchema))
+    const { data, error, isLoading, mutate } = useSWR("/tags", ProtoESFetcher(tag.method.list))
+    const { data: nodes } = useSWR("/nodes", ProtoESFetcher(node.method.list))
     const [modalHash, setModalHash] = useState({ hash: "", show: false });
     const [tagModalData, setTagModalData] = useState({ show: false, tag: create(save_tag_reqSchema, { tag: "", hash: "", type: tag_type.node }), new: true });
 
@@ -72,13 +72,9 @@ function Tags() {
                     size="sm"
                     onClick={(e) => {
                         e.stopPropagation();
-
-                        Fetch("/tag", {
-                            method: "DELETE",
-                            body: toBinary(StringValueSchema, create(StringValueSchema, { value: props.k }))
-                        })
+                        FetchProtobuf(tag.method.remove, "/tag", "DELETE", create(StringValueSchema, { value: props.k }))
                             .then(async ({ error }) => {
-                                if (error !== undefined) ctx.Error(`delete tag ${props.k} failed, ${error.code}| ${await error.msg}`)
+                                if (error !== undefined) ctx.Error(`delete tag ${props.k} failed, ${error.code}| ${error.msg}`)
                                 else {
                                     ctx.Info(`delete tag ${props.k} success`);
                                     await mutate();
@@ -110,9 +106,9 @@ function Tags() {
                 onHide={() => setTagModalData({ ...tagModalData, show: false })}
                 onSave={() => {
                     if (tagModalData.tag.tag === "" || tagModalData.tag.hash === "") return
-                    Fetch("/tag", { body: toBinary(save_tag_reqSchema, tagModalData.tag) })
+                    FetchProtobuf(tag.method.save, "/tag", "POST", tagModalData.tag)
                         .then(async ({ error }) => {
-                            if (error !== undefined) ctx.Error(`save tag ${tagModalData.tag.tag} failed, ${error.code}| ${await error.msg}`)
+                            if (error !== undefined) ctx.Error(`save tag ${tagModalData.tag.tag} failed, ${error.code}| ${error.msg}`)
                             else {
                                 ctx.Info(`Set tag ${tagModalData.tag.tag} to ${tagModalData.tag.hash} successful`);
                                 await mutate();

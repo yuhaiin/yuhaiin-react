@@ -1,7 +1,7 @@
 "use client"
 
 import useSWR from "swr"
-import { FetchProtobuf, ProtoESFetcher3 } from "../../common/proto"
+import { FetchProtobuf, ProtoESFetcher } from "../../common/proto"
 import { inbound as inboundService } from "../../pbes/config/grpc/config_pb"
 import Error from "next/error"
 import Loading from "../../common/loading"
@@ -27,7 +27,7 @@ const InboundModal = (
     // isValidating becomes true whenever there is an ongoing request whether the data is loaded or not
     // isLoading becomes true when there is an ongoing request and data is not loaded yet.
     const { data: inbound, error, isLoading, isValidating, mutate } = useSWR(props.name === "" ? undefined : `/inbound`,
-        ProtoESFetcher3(
+        ProtoESFetcher(
             inboundService.method.get,
             "POST",
             create(StringValueSchema, { value: props.name }),
@@ -79,7 +79,7 @@ const InboundModal = (
                                         ctx.Info("save successful")
                                         props.onHide(true)
                                     } else {
-                                        let msg = await error.msg;
+                                        let msg = error.msg;
                                         ctx.Error(msg)
                                         console.error(error.code, msg)
                                     }
@@ -98,7 +98,7 @@ const InboundModal = (
 function InboudComponent() {
     const ctx = useContext(GlobalToastContext);
 
-    const { data: inbounds, error, isLoading, mutate } = useSWR("/inbounds", ProtoESFetcher3(inboundService.method.list))
+    const { data: inbounds, error, isLoading, mutate } = useSWR("/inbounds", ProtoESFetcher(inboundService.method.list))
 
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
     const [newdata, setNewdata] = useState({ value: "" });
@@ -113,7 +113,7 @@ function InboudComponent() {
                     ctx.Info("remove successful")
                     mutate()
                 } else {
-                    let msg = await error.msg;
+                    let msg = error.msg;
                     ctx.Error(msg)
                     console.error(error.code, msg)
                 }

@@ -8,24 +8,25 @@ import { SettingInputText, Remind } from './components';
 import { SettingCheck } from "../common/switch";
 import { GlobalToastContext } from '../common/toast';
 import useSWR from "swr";
-import { Fetch, ProtoESFetcher } from '../common/proto';
+import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
 import Error from 'next/error';
 import { setting as Setting, settingSchema, system_proxySchema } from '../pbes/config/config_pb';
-import { InterfacesSchema } from '../pbes/tools/tools_pb';
+import { InterfacesSchema, tools } from '../pbes/tools/tools_pb';
 import { dns_configSchema } from '../pbes/config/dns/dns_pb';
 import { log_level } from '../pbes/config/log/log_pb';
 import { clone, create, toBinary } from '@bufbuild/protobuf';
 import { sniffSchema } from '../pbes/config/listener/listener_pb';
+import { config_service } from '../pbes/config/grpc/config_pb';
 
 function ConfigComponent() {
     const ctx = useContext(GlobalToastContext);
 
     const { data: setting, error, isLoading, mutate: setSetting } =
-        useSWR("/config", ProtoESFetcher(settingSchema),
+        useSWR("/config", ProtoESFetcher(config_service.method.load),
             { revalidateOnFocus: false })
 
     const { data: iffs } =
-        useSWR(setting?.platform?.androidApp ? null : "/interfaces", ProtoESFetcher(InterfacesSchema),
+        useSWR(setting?.platform?.androidApp ? null : "/interfaces", ProtoESFetcher(tools.method.get_interface),
             { revalidateOnFocus: true })
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
@@ -149,7 +150,12 @@ function ConfigComponent() {
                             <Button
                                 variant="outline-primary"
                                 onClick={() => {
-                                    Fetch("/config", { body: toBinary(settingSchema, setting) })
+                                    FetchProtobuf(
+                                        config_service.method.save,
+                                        "/config",
+                                        "POST",
+                                        setting,
+                                    )
                                         .then(async ({ error }) => {
                                             if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${await error.msg}`)
                                             else {

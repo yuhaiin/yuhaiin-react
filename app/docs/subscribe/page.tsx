@@ -5,16 +5,16 @@ import { Button, Card, Form, Row, Col, FloatingLabel, DropdownButton, Dropdown, 
 import Loading from "../common/loading";
 import { GlobalToastContext } from "../common/toast";
 import useSWR from 'swr'
-import { Fetch, ProtoESFetcher, } from '../common/proto';
+import { FetchProtobuf, ProtoESFetcher, } from '../common/proto';
 import Error from 'next/error';
 import { link, linkSchema, type } from "../pbes/node/subscribe/subscribe_pb";
-import { get_links_respSchema, link_reqSchema, save_link_reqSchema } from "../pbes/node/grpc/node_pb";
-import { create, toBinary } from "@bufbuild/protobuf";
+import { link_reqSchema, save_link_reqSchema, subscribe } from "../pbes/node/grpc/node_pb";
+import { create } from "@bufbuild/protobuf";
 
 function Subscribe() {
     const [updating, setUpdating] = useState<{ [key: string]: boolean }>({});
     const [addItem, setAddItem] = useState<link>(create(linkSchema, { name: "", url: "", type: type.reserve }));
-    const { data: links, error, isLoading, mutate } = useSWR("/sublist", ProtoESFetcher(get_links_respSchema))
+    const { data: links, error, isLoading, mutate } = useSWR("/sublist", ProtoESFetcher(subscribe.method.get))
     const ctx = useContext(GlobalToastContext);
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
@@ -22,28 +22,19 @@ function Subscribe() {
 
     const Update = (name: string) => {
         setUpdating({ ...updating, [name]: true });
-        Fetch(
-            `/sub`,
-            {
-                method: "PATCH",
-                body: toBinary(link_reqSchema, create(link_reqSchema, { names: [name] }))
-            }
-        ).then(async ({ error }) => {
-            if (error !== undefined) ctx.Error(`Update failed ${error.code}| ${await error.msg}`)
-            else ctx.Info(`Update successfully`);
-            setUpdating({ ...updating, [name]: false });
-        })
+        FetchProtobuf(subscribe.method.update, `/sub`, "PATCH", create(link_reqSchema, { names: [name] }))
+            .then(async ({ error }) => {
+                if (error !== undefined) ctx.Error(`Update failed ${error.code}| ${error.msg}`)
+                else ctx.Info(`Update successfully`);
+                setUpdating({ ...updating, [name]: false });
+            })
     }
     const Delete = (name: string) => {
-        Fetch(`/sub`,
-            {
-                method: "DELETE",
-                body: toBinary(link_reqSchema, create(link_reqSchema, { names: [name] }))
-            }
-        ).then(async ({ error }) => {
-            if (error !== undefined) ctx.Error(`delete ${name} failed, ${error.code}| ${await error.msg}`)
-            else mutate()
-        })
+        FetchProtobuf(subscribe.method.remove, `/sub`, "DELETE", create(link_reqSchema, { names: [name] }))
+            .then(async ({ error }) => {
+                if (error !== undefined) ctx.Error(`delete ${name} failed, ${error.code}| ${error.msg}`)
+                else mutate()
+            })
     }
     return (
         <>
@@ -112,9 +103,13 @@ function Subscribe() {
                                 variant="outline-primary"
                                 onClick={async () => {
                                     if (addItem.name === "" || addItem.url === "") return
-                                    Fetch(`/sub`, { body: toBinary(save_link_reqSchema, create(save_link_reqSchema, { links: [addItem] })) })
+                                    FetchProtobuf(
+                                        subscribe.method.save,
+                                        `/sub`,
+                                        "POST",
+                                        create(save_link_reqSchema, { links: [addItem] }))
                                         .then(async ({ error }) => {
-                                            if (error !== undefined) ctx.Error(`save link ${addItem.url} failed, ${error.code}| ${await error.msg}`)
+                                            if (error !== undefined) ctx.Error(`save link ${addItem.url} failed, ${error.code}| ${error.msg}`)
                                             else mutate()
                                         })
 
