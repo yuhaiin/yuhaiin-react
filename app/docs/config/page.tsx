@@ -14,9 +14,8 @@ import { setting as Setting, settingSchema, system_proxySchema } from '../pbes/c
 import { InterfacesSchema } from '../pbes/tools/tools_pb';
 import { dns_configSchema } from '../pbes/config/dns/dns_pb';
 import { log_level } from '../pbes/config/log/log_pb';
-import { Inbounds } from './inboud';
 import { clone, create, toBinary } from '@bufbuild/protobuf';
-import { inbound_configSchema } from '../pbes/config/listener/listener_pb';
+import { sniffSchema } from '../pbes/config/listener/listener_pb';
 
 function ConfigComponent() {
     const ctx = useContext(GlobalToastContext);
@@ -69,7 +68,6 @@ function ConfigComponent() {
                         >
                             <Nav.Item><Nav.Link eventKey="home">Setting</Nav.Link></Nav.Item>
                             <Nav.Item><Nav.Link eventKey="dns">DNS</Nav.Link></Nav.Item>
-                            <Nav.Item><Nav.Link eventKey="inbound">Inbound</Nav.Link></Nav.Item>
                         </Nav>
                     </Card.Header>
                     <Card.Body>
@@ -111,6 +109,20 @@ function ConfigComponent() {
                                     </Form.Group >
 
                                     <hr />
+                                    <Card.Title className='mb-2'>Inbound</Card.Title>
+                                    <SettingCheck label='DNS Hijack'
+                                        checked={!setting.server?.hijackDns ? false : true}
+                                        onChange={() => updateState((x) => x.server!!.hijackDns = !x.server!!.hijackDns)} />
+
+                                    <SettingCheck label='Fakedns'
+                                        checked={!setting.server?.hijackDnsFakeip ? false : true}
+                                        onChange={() => updateState((x) => x.server!!.hijackDnsFakeip = !x.server!!.hijackDnsFakeip)} />
+
+                                    <SettingCheck label='Sniff'
+                                        checked={!setting.server?.sniff?.enabled ? false : true}
+                                        onChange={() => updateState((x) => x.server!!.sniff = create(sniffSchema, { enabled: !x.server!!.sniff?.enabled }))} />
+
+                                    <hr />
 
                                     <Card.Title className='mb-2'>Logcat</Card.Title>
                                     <SettingCheck label='Save'
@@ -124,16 +136,6 @@ function ConfigComponent() {
                             <Tab.Pane eventKey="dns" title="DNS">
                                 <fieldset disabled={setting.platform?.androidApp}>
                                     <DNS data={create(dns_configSchema, setting.dns!!)} onChange={(e) => updateState((x) => x.dns = clone(dns_configSchema, e))} />
-                                </fieldset>
-                            </Tab.Pane>
-
-
-                            <Tab.Pane eventKey="inbound" title="Inbound">
-                                <fieldset disabled={setting.platform?.androidApp}>
-                                    <Inbounds
-                                        inbounds={create(inbound_configSchema, setting.server!!)}
-                                        onChange={(e) => updateState((x) => x.server = clone(inbound_configSchema, e))}
-                                    />
                                 </fieldset>
                             </Tab.Pane>
 

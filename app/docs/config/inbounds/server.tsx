@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Form, InputGroup, Card, Row, Col, Button } from 'react-bootstrap';
-import { SettingInputText, SettingInputTextarea, NewItemList } from './components';
-import { SettingCheck } from "../common/switch";
+import { SettingInputText, SettingInputTextarea, NewItemList } from '../components';
+import { SettingCheck } from "../../common/switch";
 import { split as shlexSplit, join as shlexJoin } from 'shlex';
-import { http, redir, tproxy, tun, mixed, socks5, socks4a, tun_endpoint_driver, route, tls_config, certificate, websocket, grpc, tls, http2, reality, inbound_config, normal, quic, routeSchema, certificateSchema, tls_configSchema, reverse_http, reverse_tcp } from '../pbes/config/listener/listener_pb';
+import { http, redir, tproxy, tun, mixed, socks5, tun_endpoint_driver, tls_config, certificate, tls, reality, quic, routeSchema, certificateSchema, tls_configSchema, reverse_http, reverse_tcp } from '../../pbes/config/listener/listener_pb';
 import { create } from '@bufbuild/protobuf';
 
 export const HTTPComponents = React.memo((props: { http: http, onChange: (x: http) => void }) => {

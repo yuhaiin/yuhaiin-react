@@ -1,6 +1,6 @@
 import { Fetcher } from 'swr'
 import { APIUrl } from '../apiurl';
-import { clone, DescMessage, fromBinary, MessageShape } from "@bufbuild/protobuf";
+import { clone, DescMessage, fromBinary, MessageShape, toBinary } from "@bufbuild/protobuf";
 import type { SWRSubscriptionOptions } from 'swr/subscription'
 
 export function ProtoESFetcher<Desc extends DescMessage>(d: Desc, method?: string, body?: BodyInit, value?: MessageShape<Desc>): Fetcher<MessageShape<Desc>, string> {
@@ -19,6 +19,25 @@ export function ProtoESFetcher<Desc extends DescMessage>(d: Desc, method?: strin
     }
 }
 
+
+export function ProtoESFetcher3<I extends DescMessage, O extends DescMessage>(
+    d: { methodKind: "unary"; input: I; output: O; },
+    method?: string, body?: MessageShape<I>, default_response?: MessageShape<O>): Fetcher<MessageShape<O>, string> {
+    return (url) => {
+        if (default_response) return clone(d.output, default_response)
+        return fetch(
+            `${APIUrl}${url}`,
+            {
+                method: method,
+                body: body ? toBinary(d.input, body) : undefined,
+            },
+        ).then(async r => {
+            if (!r.ok) throw { code: r.status, msg: r.statusText, raw: r.text() }
+            return fromBinary(d.output, new Uint8Array(await r.arrayBuffer()))
+        })
+    }
+}
+
 export function ProtoESFetcher2<Desc extends DescMessage, resp extends {}>(d: Desc, process: (data: MessageShape<Desc>) => resp, method?: string, body?: BodyInit): Fetcher<resp, string> {
     return (url) => fetch(
         `${APIUrl}${url}`,
@@ -31,6 +50,25 @@ export function ProtoESFetcher2<Desc extends DescMessage, resp extends {}>(d: De
         let x = process(fromBinary(d, new Uint8Array(await r.arrayBuffer())))
         return x
     })
+}
+
+export async function FetchProtobuf<I extends DescMessage, O extends DescMessage>(
+    d: { methodKind: "unary"; input: I; output: O; },
+    url: string,
+    method?: string,
+    body?: MessageShape<I>,
+): Promise<{
+    data?: Promise<MessageShape<O>>,
+    error?: { code: number, msg: Promise<string> }
+}> {
+    return Fetch<MessageShape<O>>(
+        url,
+        {
+            method: method,
+            body: body ? toBinary(d.input, body) : undefined,
+            process: async (r) => fromBinary(d.output, new Uint8Array(await r.arrayBuffer()))
+        }
+    )
 }
 
 export const Fetch = async <T2 extends unknown>(

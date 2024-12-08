@@ -1,8 +1,8 @@
-import { clone, create, DescEnum, DescEnumValue, DescMessage, EnumJsonType, MessageShape, } from "@bufbuild/protobuf";
-import { SettingCheck } from "../common/switch";
-import { empty, emptySchema, grpc, grpcSchema, http, http2, http2Schema, httpSchema, inbound, inbound_config, inbound_configSchema, inboundSchema, mixed, mixedSchema, mux, muxSchema, normal, normalSchema, quic, quicSchema, reality, realitySchema, redir, redirSchema, reverse_httpSchema, reverse_tcpSchema, sniff, sniffSchema, socks5, socks5Schema, tcp_udp_control, tcp_udp_controlSchema, tcpudp, tcpudpSchema, tls, tls_config, tls_configSchema, tlsSchema, tproxy, tproxySchema, transport, transportSchema, tun, tunSchema, websocket, websocketSchema, yuubinsya, yuubinsyaSchema } from "../pbes/config/listener/listener_pb";
-import { SettingInputText, Container, MoveUpDown } from "./components";
-import { Form, Row, Col, Modal, ListGroup, InputGroup, Button, Card } from "react-bootstrap";
+import { create, DescEnum, DescEnumValue, DescMessage, MessageShape, } from "@bufbuild/protobuf";
+import { SettingCheck } from "../../common/switch"
+import { emptySchema, grpcSchema, http2Schema, httpSchema, inbound, inboundSchema, mixedSchema, muxSchema, normalSchema, quicSchema, realitySchema, redirSchema, reverse_httpSchema, reverse_tcpSchema, socks5Schema, tcp_udp_controlSchema, tcpudp, tcpudpSchema, tls_configSchema, tlsSchema, tproxySchema, transport, transportSchema, tunSchema, websocketSchema, yuubinsya, yuubinsyaSchema } from "../../pbes/config/listener/listener_pb";
+import { SettingInputText, Container, MoveUpDown } from "../components";
+import { Form, Row, Col, ListGroup, InputGroup, Button } from "react-bootstrap";
 import { HTTPComponents, MixedComponents, QuicComponents, RealityComponents, RedirComponents, ReverseHTTPComponents, ReverseTCPComponents, Socks5Components, TProxyComponents, TlsComponents, TunComponents } from "./server";
 import { useEffect, useState } from "react";
 import React from "react";
@@ -16,143 +16,143 @@ function change<T extends DescMessage>(scheme: T, e: MessageShape<T>, apply?: (x
     }
 }
 
-export const InboundModal = (
-    props: {
-        show: boolean,
-        value: inbound,
-        onHide: () => void,
-        onChange: (x: inbound) => void
-    },
-) => {
-    const [inbound, setInbound] = useState(clone(inboundSchema, props.value));
+// export const InboundModal = (
+//     props: {
+//         show: boolean,
+//         value: inbound,
+//         onHide: () => void,
+//         onChange: (x: inbound) => void
+//     },
+// ) => {
+//     const [inbound, setInbound] = useState(clone(inboundSchema, props.value));
 
-    return (
-        <>
-            <Modal
-                show={props.show}
-                scrollable
-                aria-labelledby="contained-modal-title-vcenter"
-                size='xl'
-                onHide={() => { props.onHide() }}
-                onShow={() => { setInbound(clone(inboundSchema, props.value)) }}
-                centered
-            >
-                <Modal.Header>
-                    <Modal.Title id="contained-modal-title-vcenter">{props.value.name}</Modal.Title>
-                </Modal.Header>
+//     return (
+//         <>
+//             <Modal
+//                 show={props.show}
+//                 scrollable
+//                 aria-labelledby="contained-modal-title-vcenter"
+//                 size='xl'
+//                 onHide={() => { props.onHide() }}
+//                 onShow={() => { setInbound(clone(inboundSchema, props.value)) }}
+//                 centered
+//             >
+//                 <Modal.Header>
+//                     <Modal.Title id="contained-modal-title-vcenter">{props.value.name}</Modal.Title>
+//                 </Modal.Header>
 
-                <Modal.Body>
-                    <Inbound inbound={inbound} onChange={(x) => { setInbound(clone(inboundSchema, x)) }}></Inbound>
-                </Modal.Body>
+//                 <Modal.Body>
+//                     <Inbound inbound={inbound} onChange={(x) => { setInbound(clone(inboundSchema, x)) }}></Inbound>
+//                 </Modal.Body>
 
-                <Modal.Footer>
-                    <Button variant="outline-secondary" onClick={() => { props.onHide() }}>Close</Button>
-                    <Button
-                        variant="outline-primary"
-                        onClick={() => {
-                            props.onChange(inbound)
-                            props.onHide()
-                        }}
-                    >
-                        Save
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-        </>
-    );
-}
+//                 <Modal.Footer>
+//                     <Button variant="outline-secondary" onClick={() => { props.onHide() }}>Close</Button>
+//                     <Button
+//                         variant="outline-primary"
+//                         onClick={() => {
+//                             props.onChange(inbound)
+//                             props.onHide()
+//                         }}
+//                     >
+//                         Save
+//                     </Button>
+//                 </Modal.Footer>
+//             </Modal>
+//         </>
+//     );
+// }
 
-export const Inbounds = React.memo((props: { inbounds: inbound_config, onChange: (x: inbound_config) => void }) => {
-    const cc = change(inbound_configSchema, props.inbounds, props.onChange)
+// export const Inbounds = React.memo((props: { inbounds: inbound_config, onChange: (x: inbound_config) => void }) => {
+//     const cc = change(inbound_configSchema, props.inbounds, props.onChange)
 
-    const [modalData, setModalData] = useState({ show: false, inbound: create(inboundSchema, {}), onChange: (_: inbound) => { } });
-    const [newInbound, setNewInbound] = useState({ value: "" });
+//     const [modalData, setModalData] = useState({ show: false, inbound: create(inboundSchema, {}), onChange: (_: inbound) => { } });
+//     const [newInbound, setNewInbound] = useState({ value: "" });
 
-    return <>
-        <InboundModal
-            show={modalData.show}
-            value={modalData.inbound}
-            onHide={() => { setModalData({ ...modalData, show: false }) }}
-            onChange={modalData.onChange}
-        />
+//     return <>
+//         <InboundModal
+//             show={modalData.show}
+//             value={modalData.inbound}
+//             onHide={() => { setModalData({ ...modalData, show: false }) }}
+//             onChange={modalData.onChange}
+//         />
 
-        <SettingCheck label='DNS Hijack'
-            checked={!props.inbounds.hijackDns ? false : true}
-            onChange={() => cc((x) => x.hijackDns = !x.hijackDns)} />
+//         <SettingCheck label='DNS Hijack'
+//             checked={!props.inbounds.hijackDns ? false : true}
+//             onChange={() => cc((x) => x.hijackDns = !x.hijackDns)} />
 
-        <SettingCheck label='Fakedns'
-            checked={!props.inbounds.hijackDnsFakeip ? false : true}
-            onChange={() => cc((x) => x.hijackDnsFakeip = !x.hijackDnsFakeip)} />
+//         <SettingCheck label='Fakedns'
+//             checked={!props.inbounds.hijackDnsFakeip ? false : true}
+//             onChange={() => cc((x) => x.hijackDnsFakeip = !x.hijackDnsFakeip)} />
 
-        <SettingCheck label='Sniff'
-            checked={!props.inbounds.sniff?.enabled ? false : true}
-            onChange={() => cc((x) => x.sniff = create(sniffSchema, { enabled: !x.sniff?.enabled }))} />
+//         <SettingCheck label='Sniff'
+//             checked={!props.inbounds.sniff?.enabled ? false : true}
+//             onChange={() => cc((x) => x.sniff = create(sniffSchema, { enabled: !x.sniff?.enabled }))} />
 
-        <hr />
+//         <hr />
 
 
-        <Card>
-            <Card.Header>Inbounds</Card.Header>
-            {
-                Object.keys(props.inbounds.inbounds).length === 0 ?
-                    <Card.Body>
-                        <div className="text-center my-2" style={{ opacity: '0.4' }}>No Inbounds</div>
-                    </Card.Body>
-                    :
-                    <ListGroup variant="flush">
-                        {
-                            Object.entries(props.inbounds.inbounds).
-                                sort((a, b) => { return a[0] <= b[0] ? -1 : 1 }).
-                                map(([k, v]) => {
-                                    return <React.Fragment key={"inbounds-" + k}>
-                                        <ListGroup.Item
-                                            action
-                                            className="d-flex justify-content-between align-items-center"
-                                            style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setModalData({
-                                                    show: true,
-                                                    inbound: v,
-                                                    onChange: (e: inbound) => { cc((x) => { x.inbounds[k] = e }) }
-                                                })
-                                            }}
-                                        >
-                                            {k}
-                                            <Button
-                                                variant='outline-danger'
-                                                size="sm"
-                                                as={"span"}
-                                                key={k + "span-button"}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    cc((x) => { delete x.inbounds[k] })
-                                                }}
-                                            >
-                                                <i className="bi bi-x-lg"></i>
-                                            </Button>
-                                        </ListGroup.Item>
-                                    </React.Fragment>
-                                })
-                        }
-                    </ListGroup>
-            }
-            <Card.Footer>
-                <InputGroup className="d-flex justify-content-end">
-                    <Form.Control value={newInbound.value} onChange={(e) => setNewInbound({ value: e.target.value })} />
-                    <Button
-                        variant='outline-success'
-                        onClick={() => {
-                            if (newInbound.value !== "" && props.inbounds.inbounds[newInbound.value] === undefined)
-                                cc((x) => x.inbounds[newInbound.value] = create(inboundSchema, { name: newInbound.value }))
-                        }}
-                    >
-                        <i className="bi bi-plus-lg" />New </Button>
-                </InputGroup>
-            </Card.Footer>
-        </Card>
-    </>
-})
+//         <Card>
+//             <Card.Header>Inbounds</Card.Header>
+//             {
+//                 Object.keys(props.inbounds.inbounds).length === 0 ?
+//                     <Card.Body>
+//                         <div className="text-center my-2" style={{ opacity: '0.4' }}>No Inbounds</div>
+//                     </Card.Body>
+//                     :
+//                     <ListGroup variant="flush">
+//                         {
+//                             Object.entries(props.inbounds.inbounds).
+//                                 sort((a, b) => { return a[0] <= b[0] ? -1 : 1 }).
+//                                 map(([k, v]) => {
+//                                     return <React.Fragment key={"inbounds-" + k}>
+//                                         <ListGroup.Item
+//                                             action
+//                                             className="d-flex justify-content-between align-items-center"
+//                                             style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
+//                                             onClick={(e) => {
+//                                                 e.stopPropagation();
+//                                                 setModalData({
+//                                                     show: true,
+//                                                     inbound: v,
+//                                                     onChange: (e: inbound) => { cc((x) => { x.inbounds[k] = e }) }
+//                                                 })
+//                                             }}
+//                                         >
+//                                             {k}
+//                                             <Button
+//                                                 variant='outline-danger'
+//                                                 size="sm"
+//                                                 as={"span"}
+//                                                 key={k + "span-button"}
+//                                                 onClick={(e) => {
+//                                                     e.stopPropagation();
+//                                                     cc((x) => { delete x.inbounds[k] })
+//                                                 }}
+//                                             >
+//                                                 <i className="bi bi-x-lg"></i>
+//                                             </Button>
+//                                         </ListGroup.Item>
+//                                     </React.Fragment>
+//                                 })
+//                         }
+//                     </ListGroup>
+//             }
+//             <Card.Footer>
+//                 <InputGroup className="d-flex justify-content-end">
+//                     <Form.Control value={newInbound.value} onChange={(e) => setNewInbound({ value: e.target.value })} />
+//                     <Button
+//                         variant='outline-success'
+//                         onClick={() => {
+//                             if (newInbound.value !== "" && props.inbounds.inbounds[newInbound.value] === undefined)
+//                                 cc((x) => x.inbounds[newInbound.value] = create(inboundSchema, { name: newInbound.value }))
+//                         }}
+//                     >
+//                         <i className="bi bi-plus-lg" />New </Button>
+//                 </InputGroup>
+//             </Card.Footer>
+//         </Card>
+//     </>
+// })
 
 export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
     const cc = change(inboundSchema, props.inbound, props.onChange)

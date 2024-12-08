@@ -19,7 +19,7 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode }> = ({ c
         console.log(text);
         msg(text, "success")
     }
-    
+
     const error = (text: string) => {
         console.error(text)
         msg(text, "danger")
@@ -47,7 +47,7 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode }> = ({ c
                                     let tts = texts.value;
                                     delete tts[key];
                                     setTexts({ ...texts, value: tts });
-                                    console.log("close: " + key);
+                                    // console.log("close: " + key);
                                 }
                             }
                             aria-atomic="true"
