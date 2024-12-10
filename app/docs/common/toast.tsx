@@ -2,67 +2,47 @@ import React, { createContext, useState, } from 'react';
 import { Toast, ToastContainer } from 'react-bootstrap';
 
 const initialState = {
-    Info: (text: string) => { },
-    Error: (text: string) => { }
+    Info: (_: string) => { },
+    Error: (_: string) => { }
 };
 
 export const GlobalToastContext = createContext(initialState);
 
 export const GlobalToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [texts, setTexts] =
-        useState<{ value: { [key: string]: { text: string, type: string } }, index: number }>({ value: {}, index: 0 });
+        useState<{ text: string, type: string }[]>([]);
 
-    const msg = (text: string, type: string) =>
-        setTexts(prev => { return { value: { ...prev.value, [prev.index]: { text: text, type: type } }, index: prev.index + 1 } });
-
-    const info = (text: string) => {
-        console.log(text);
-        msg(text, "success")
-    }
-
-    const error = (text: string) => {
-        console.error(text)
-        msg(text, "danger")
-    }
+    const msg = (text: string, type: string) => setTexts(prev => { return [...prev, { text: text, type: type }] });
 
     return (
-        <GlobalToastContext.Provider value={{ Info: info, Error: error }}>
+        <GlobalToastContext.Provider value={{ Info: (text: string) => { console.log(text); msg(text, "success") }, Error: (text: string) => { console.error(text); msg(text, "danger") } }}>
             <ToastContainer
                 className="p-3"
                 position={"top-center"}
                 containerPosition='fixed'
                 style={{ zIndex: 999999 }}
             >
-                {
-                    Object.entries(texts.value).map(([key, v]) => {
+                {texts.map((v, i) => {
+                    return <Toast
+                        key={"toast" + i}
+                        role='alert'
+                        aria-live='assertive'
+                        show={true}
+                        bg={v.type}
+                        onClose={() => { setTexts(prev => { return [...prev.slice(0, i), ...prev.slice(i + 1)] }) }}
+                        aria-atomic="true"
+                        delay={4000}
+                        autohide={true}
+                        animation={true}
+                    >
+                        <Toast.Header>
+                            <strong className="me-auto">Notification</strong>
+                            <small className="text-muted">just now</small>
+                        </Toast.Header>
 
-                        return <Toast
-                            key={"toast" + key}
-                            role='alert'
-                            aria-live='assertive'
-                            show={true}
-                            bg={v.type}
-                            onClose={
-                                () => {
-                                    let tts = texts.value;
-                                    delete tts[key];
-                                    setTexts({ ...texts, value: tts });
-                                    // console.log("close: " + key);
-                                }
-                            }
-                            aria-atomic="true"
-                            delay={4000}
-                            autohide={true}
-                            animation={true}
-                        >
-                            <Toast.Header>
-                                <strong className="me-auto">Notification</strong>
-                                <small className="text-muted">just now</small>
-                            </Toast.Header>
-
-                            <Toast.Body className='text-center'>{v.text}</Toast.Body>
-                        </Toast>
-                    })
+                        <Toast.Body className='text-center'>{v.text}</Toast.Body>
+                    </Toast>
+                })
                 }
             </ToastContainer>
             {children}

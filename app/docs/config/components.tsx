@@ -1,5 +1,5 @@
-import { Row, Form, Card, Col, InputGroup, Button, DropdownItem, ButtonGroup, DropdownMenu, Dropdown } from "react-bootstrap"
-import React, { JSX, useState } from "react";
+import { FC, JSX, useState } from "react";
+import { Button, ButtonGroup, Card, Col, Dropdown, DropdownItem, DropdownMenu, Form, InputGroup, Row } from "react-bootstrap";
 
 export class Remind {
     label: string
@@ -13,7 +13,7 @@ export class Remind {
     }
 }
 
-export const SettingInputText = React.memo((props: {
+export const SettingInputText: FC<{
     label: string,
     value: string | number,
     url?: string,
@@ -23,19 +23,18 @@ export const SettingInputText = React.memo((props: {
     mb?: string,
     placeholder?: string,
     errorMsg?: string,
-}) => {
-
+}> = ({ label, value, url, plaintext, onChange, reminds, mb, placeholder, errorMsg }) => {
     const dropdown = () => {
-        if (!props.reminds || !props.reminds.length) return <></>
+        if (!reminds || !reminds.length) return <></>
 
         return <Dropdown>
             <Dropdown.Toggle variant='outline-secondary' id="dropdown-basic" />
             <DropdownMenu style={{ maxHeight: '300px', overflowY: 'auto' }}>
                 {
-                    props.reminds.map((v) => {
+                    reminds.map((v) => {
                         return <DropdownItem
                             key={v.value}
-                            onClick={() => props.onChange && props.onChange(v.value)}>
+                            onClick={() => onChange && onChange(v.value)}>
                             <b>{v.label}</b>
                             {
                                 v.label_children &&
@@ -51,25 +50,25 @@ export const SettingInputText = React.memo((props: {
     }
 
     return (
-        <Form.Group as={Row} className={props.mb ? props.mb : "mb-2"}>
-            <Form.Label column sm={2} className="nowrap">{props.label}</Form.Label>
+        <Form.Group as={Row} className={mb ? mb : "mb-2"}>
+            <Form.Label column sm={2} className="nowrap">{label}</Form.Label>
             <Col sm={10}>
-                <InputGroup className={props.mb ? props.mb : "mb-2"} hasValidation={props.errorMsg ? true : false}>
+                <InputGroup className={mb ? mb : "mb-2"} hasValidation={errorMsg ? true : false}>
                     {dropdown()}
-                    {props.url
+                    {url
                         ?
-                        <a className="mt-1" href={props.url} target="_blank">{props.value}</a>
+                        <a className="mt-1" href={url} target="_blank">{value}</a>
                         :
                         <>
                             <Form.Control
-                                value={props.value}
-                                plaintext={props.plaintext}
-                                placeholder={props.placeholder}
-                                isInvalid={props.errorMsg ? true : false}
-                                onChange={(v) => { if (props.onChange) props.onChange(v.target.value) }}
+                                value={value}
+                                plaintext={plaintext}
+                                placeholder={placeholder}
+                                isInvalid={errorMsg ? true : false}
+                                onChange={(v) => { if (onChange) onChange(v.target.value) }}
                             />
                             {
-                                props.errorMsg && <Form.Control.Feedback type="invalid">{props.errorMsg}</Form.Control.Feedback>
+                                errorMsg && <Form.Control.Feedback type="invalid">{errorMsg}</Form.Control.Feedback>
                             }
                         </>}
 
@@ -77,7 +76,7 @@ export const SettingInputText = React.memo((props: {
             </Col>
         </Form.Group >
     )
-})
+}
 
 export const SettingInputTextarea = (props: { label: string, value: string | number | undefined, onChange: (x: string) => void }) => {
     return (
@@ -90,130 +89,96 @@ export const SettingInputTextarea = (props: { label: string, value: string | num
     )
 }
 
-export function NewItemList(props: {
-    title: string,
-    data: string[],
-    onChange: (x: string[]) => void,
-    errorMsgs?: { [key: string]: string }
-}) {
-    const [newData, setNewData] = useState({ value: "" });
+export const NewItemList: FC<{ title: string, data: string[], onChange: (x: string[]) => void, errorMsgs?: { [key: string]: string } }> =
+    ({ title, data, onChange, errorMsgs }) => {
+        const [newData, setNewData] = useState({ value: "" });
 
-    return (<Form.Group as={Row} className='mb-3'>
-        <Form.Label column sm={2} className="nowrap">{props.title}</Form.Label>
+        return (<Form.Group as={Row} className='mb-3'>
+            <Form.Label column sm={2} className="nowrap">{title}</Form.Label>
 
-
-        {
-            props.data &&
-            props.data.map((v, index) => {
-                return (
-                    <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
-                        <InputGroup className="mb-2" hasValidation={props.errorMsgs && props.errorMsgs[v] ? true : false}>
-                            <Form.Control
-                                onChange={(e) => {
-                                    if (!props.data) return
-                                    props.data[index] = e.target.value
-                                    props.onChange(props.data)
-                                }}
-                                isInvalid={props.errorMsgs && props.errorMsgs[v] ? true : false}
-                                value={v}
-                            />
-
-
-                            <Button variant='outline-danger' onClick={() => {
-                                if (!props.data) return
-                                props.data.splice(index, 1)
-                                props.onChange(props.data)
-                            }}>
-                                <i className="bi bi-x-lg" ></i>
-                            </Button>
-
-                            {props.errorMsgs && props.errorMsgs[v] && <Form.Control.Feedback type="invalid">{props.errorMsgs[v]}</Form.Control.Feedback>}
-                        </InputGroup>
-                    </Col>
-                )
-            })
-        }
-
-        <Col sm={{ span: 10, offset: props.data?.length !== 0 ? 2 : 0 }}>
-            <InputGroup className="mb-2" >
-                <Form.Control value={newData.value} onChange={(e) => setNewData({ value: e.target.value })} />
-                <Button variant='outline-success' onClick={() => {
-                    props.data.push(newData.value)
-                    props.onChange(props.data)
-                }} >
-                    <i className="bi bi-plus-lg" />
-                </Button>
-            </InputGroup>
-        </Col>
-
-    </Form.Group >)
-}
-
-
-export function NewBytesItemList(props: {
-    title: string,
-    data: Uint8Array[] | undefined,
-    onChange: (x: Uint8Array[]) => void,
-    textarea?: boolean
-}) {
-    const [newData, setNewData] = useState({ value: "" });
-
-    return (<Form.Group as={Row} className='mb-3'>
-        <Form.Label column sm={2} className="nowrap">{props.title}</Form.Label>
-
-
-        {
-            props.data && props.data
-                .map((v, index) => {
+            {
+                data &&
+                data.map((v, index) => {
                     return (
-                        <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={"bi-" + index} >
-                            <InputGroup className="mb-2" >
+                        <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
+                            <InputGroup className="mb-2" hasValidation={errorMsgs && errorMsgs[v] ? true : false}>
                                 <Form.Control
-                                    value={new TextDecoder().decode(v)}
-                                    as={props.textarea ? "textarea" : undefined}
-                                    onChange={(e) => {
-                                        props.data![index] = new TextEncoder().encode(e.target.value)
-                                        props.onChange(props.data ? props.data : [])
-                                    }}
+                                    onChange={(e) => { onChange([...data.slice(0, index), e.target.value, ...data.slice(index + 1)]) }}
+                                    isInvalid={errorMsgs && errorMsgs[v] ? true : false}
+                                    value={v}
                                 />
-                                <Button
-                                    variant='outline-danger'
-                                    onClick={() => {
-                                        if (props.data) {
-                                            props.data.splice(index, 1)
-                                            props.onChange(props.data)
-                                        }
-                                    }}>
+
+
+                                <Button variant='outline-danger' onClick={() => { onChange([...data.slice(0, index), ...data.slice(index + 1)]) }}>
                                     <i className="bi bi-x-lg" ></i>
                                 </Button>
+
+                                {errorMsgs && errorMsgs[v] && <Form.Control.Feedback type="invalid">{errorMsgs[v]}</Form.Control.Feedback>}
                             </InputGroup>
                         </Col>
                     )
                 })
-        }
+            }
 
-        <Col sm={{ span: 10, offset: props.data?.length !== 0 ? 2 : 0 }}>
-            <InputGroup className="mb-2" >
-                <Form.Control
-                    as={props.textarea ? "textarea" : undefined}
-                    value={newData.value}
-                    onChange={(e) => setNewData({ value: e.target.value })}
-                />
-                <Button variant='outline-success' onClick={() => {
-                    let data = new TextEncoder().encode(newData.value);
+            <Col sm={{ span: 10, offset: data?.length !== 0 ? 2 : 0 }}>
+                <InputGroup className="mb-2" >
+                    <Form.Control value={newData.value} onChange={(e) => setNewData({ value: e.target.value })} />
+                    <Button variant='outline-success' onClick={() => { onChange([...data, newData.value]) }} >
+                        <i className="bi bi-plus-lg" />
+                    </Button>
+                </InputGroup>
+            </Col>
 
-                    if (!props.data) props.data = [data]
-                    else props.data.push(data)
+        </Form.Group >)
+    }
 
-                    props.onChange(props.data);
-                }} >
-                    <i className="bi bi-plus-lg" />
-                </Button>
-            </InputGroup>
-        </Col>
 
-    </Form.Group>)
-}
+export const NewBytesItemList: FC<{ title: string, data?: Uint8Array[], onChange: (x: Uint8Array[]) => void, textarea?: boolean }> =
+    ({ title, data, onChange, textarea }) => {
+        const [newData, setNewData] = useState({ value: "" });
+
+        return (<Form.Group as={Row} className='mb-3'>
+            <Form.Label column sm={2} className="nowrap">{title}</Form.Label>
+
+
+            {data && data.map((v, index) => {
+                return (
+                    <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={"bi-" + index} >
+                        <InputGroup className="mb-2" >
+                            <Form.Control
+                                value={new TextDecoder().decode(v)}
+                                as={textarea ? "textarea" : undefined}
+                                onChange={(e) => { onChange([...data.slice(0, index), new TextEncoder().encode(e.target.value), ...data.slice(index + 1)]) }}
+                            />
+                            <Button
+                                variant='outline-danger'
+                                onClick={() => { onChange([...data.slice(0, index), ...data.slice(index + 1)]) }}>
+                                <i className="bi bi-x-lg" ></i>
+                            </Button>
+                        </InputGroup>
+                    </Col>
+                )
+            })
+            }
+
+            <Col sm={{ span: 10, offset: data?.length !== 0 ? 2 : 0 }}>
+                <InputGroup className="mb-2" >
+                    <Form.Control
+                        as={textarea ? "textarea" : undefined}
+                        value={newData.value}
+                        onChange={(e) => setNewData({ value: e.target.value })}
+                    />
+                    <Button variant='outline-success' onClick={() => {
+                        if (data) onChange([...data, new TextEncoder().encode(newData.value)])
+                        else onChange([new TextEncoder().encode(newData.value)])
+                    }} >
+                        <i className="bi bi-plus-lg" />
+                    </Button>
+                </InputGroup>
+            </Col>
+
+        </Form.Group>)
+    }
 
 export function ItemList(props: {
     title: string,
@@ -246,44 +211,54 @@ export function ItemList(props: {
 }
 
 
-export class MoveUpDown {
-    length: number
+export class MoveUpDown<T> {
     current: number
-    onmove: (up: boolean) => void
+    elems: T[]
+    onmove: (x: T[]) => void
 
+    move = (up: boolean) => {
+        if (this.elems.length <= 1) return
+        if (up && this.current === 0) return
+        if (!up && this.current === this.elems.length - 1) return
+        let rules = [...this.elems]
+        let tmp = rules[this.current]
+        rules[this.current] = rules[this.current + (up ? -1 : 1)]
+        rules[this.current + (up ? -1 : 1)] = tmp
+        this.onmove(rules)
+    }
 
-    constructor(length: number, current: number, onmove: (up: boolean) => void) {
-        this.length = length
+    length = () => this.elems.length
+
+    isTop = () => this.current === 0
+    isBottom = () => this.current === this.elems.length - 1
+
+    constructor(elems: T[], current: number, onmove: (x: T[]) => void) {
         this.current = current
+        this.elems = elems
         this.onmove = onmove
     }
 }
 
-export const Container = (props: {
+
+export function Container<T>(props: {
     title: string,
     onClose?: () => void,
     hideClose?: boolean,
-    moveUpDown?: MoveUpDown,
+    moveUpDown?: MoveUpDown<T>,
     children: JSX.Element
-}) => {
+}) {
     return <>
         <Card className="flex-grow-1 form-floating">
             <Card.Header className="d-flex justify-content-between">
                 {props.title}
 
                 {
-                    (!props.hideClose || (props.moveUpDown?.length ?? 0) > 1) &&
+                    (!props.hideClose || props.moveUpDown) &&
                     <ButtonGroup>
-                        {
-                            ((props.moveUpDown?.length ?? 0) > 1) &&
-                            <>
-                                {props.moveUpDown?.current != 0 &&
-                                    <Button variant="outline-primary" size="sm" onClick={() => props.moveUpDown!!.onmove(true)}><i className="bi bi-arrow-up"></i></Button>}
-                                {props.moveUpDown?.current != props.moveUpDown!!.length - 1 &&
-                                    <Button variant="outline-primary" size="sm" onClick={() => props.moveUpDown!!.onmove(false)}><i className="bi bi-arrow-down"></i></Button>}
-
-                            </>
-                        }
+                        {!props.moveUpDown?.isTop() &&
+                            <Button variant="outline-primary" size="sm" onClick={() => props.moveUpDown?.move(true)}><i className="bi bi-arrow-up"></i></Button>}
+                        {!props.moveUpDown?.isBottom() &&
+                            <Button variant="outline-primary" size="sm" onClick={() => props.moveUpDown?.move(false)}><i className="bi bi-arrow-down"></i></Button>}
                         {!props.hideClose &&
                             <Button variant='outline-danger' size="sm" onClick={props.onClose}><i className="bi bi-x-lg"></i></Button>
                         }
@@ -297,3 +272,4 @@ export const Container = (props: {
         <br />
     </>
 }
+

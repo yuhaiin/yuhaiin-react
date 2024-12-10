@@ -1,19 +1,11 @@
-import React from 'react';
-import { Form, Row, Col, Button, Card, } from 'react-bootstrap';
-import { SettingInputText, NewItemList, Container } from '../config/components';
-import { config, configSchema, mode, mode_config, mode_configSchema, remote_rule, remote_rule_fileSchema, remote_rule_httpSchema, remote_ruleSchema, resolve_strategy, udp_proxy_fqdn_strategy } from '../pbes/config/bypass/bypass_pb';
-import { SettingCheck } from '../common/switch';
 import { create } from '@bufbuild/protobuf';
+import { Button, Card, Col, Form, Row, } from 'react-bootstrap';
+import { SettingCheck } from '../common/switch';
+import { Container, MoveUpDown, NewItemList, SettingInputText } from '../config/components';
+import { config, mode, mode_config, mode_configSchema, remote_rule, remote_rule_fileSchema, remote_rule_httpSchema, remote_ruleSchema, resolve_strategy, udp_proxy_fqdn_strategy } from '../pbes/config/bypass/bypass_pb';
 
 
-export const defaultBypassConfig: config = create(configSchema, {
-    tcp: mode.bypass,
-    udp: mode.bypass,
-    bypassFile: "yuhaiin.conf",
-    customRuleV3: []
-})
-
-export const Bypass = React.memo((props: { bypass: config, onChange: (x: config) => void, }) => {
+export const Bypass = (props: { bypass: config, onChange: (x: config) => void, }) => {
     const defaultRule: mode_config = create(mode_configSchema, {
         hostname: ["www.example.com"],
         mode: mode.proxy,
@@ -27,21 +19,16 @@ export const Bypass = React.memo((props: { bypass: config, onChange: (x: config)
         object: { case: "file", value: create(remote_rule_fileSchema, {}) }
     })
 
-    const updateState = (x: (x: config) => void) => {
-        x(props.bypass)
-        props.onChange(props.bypass)
-    }
-
     return (
         <>
             <Card className="mb-3">
                 <Card.Body>
-                    <SettingModeSelect label='TCP' network={true} value={props.bypass.tcp} onChange={(v) => updateState((x) => x.tcp = v)} />
-                    <SettingModeSelect label='UDP' network={true} value={props.bypass.udp} onChange={(v) => updateState((x) => x.udp = v)} />
-                    <SettingCheck label='Resolve Locally' checked={props.bypass.resolveLocally} onChange={() => updateState((x) => x.resolveLocally = !x.resolveLocally)} />
+                    <SettingModeSelect label='TCP' network={true} value={props.bypass.tcp} onChange={(v) => props.onChange({ ...props.bypass, tcp: v })} />
+                    <SettingModeSelect label='UDP' network={true} value={props.bypass.udp} onChange={(v) => props.onChange({ ...props.bypass, udp: v })} />
+                    <SettingCheck label='Resolve Locally' checked={props.bypass.resolveLocally} onChange={() => props.onChange({ ...props.bypass, resolveLocally: !props.bypass.resolveLocally })} />
                     <SettingCheck label='Udp proxy Fqdn'
                         checked={props.bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve}
-                        onChange={() => updateState((x) => x.udpProxyFqdn = x.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve ? udp_proxy_fqdn_strategy.resolve : udp_proxy_fqdn_strategy.skip_resolve)} />
+                        onChange={() => props.onChange({ ...props.bypass, udpProxyFqdn: props.bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve ? udp_proxy_fqdn_strategy.resolve : udp_proxy_fqdn_strategy.skip_resolve })} />
                 </Card.Body>
             </Card>
 
@@ -50,16 +37,17 @@ export const Bypass = React.memo((props: { bypass: config, onChange: (x: config)
                     <Container
                         key={"remote_rules" + index}
                         title={value.name}
-                        onClose={() => updateState((x) => x.remoteRules.splice(index, 1))}
+                        onClose={() => props.onChange({ ...props.bypass, remoteRules: props.bypass.remoteRules.filter((_, i) => i !== index) })}
+                        moveUpDown={new MoveUpDown(props.bypass.remoteRules, index, (e) => props.onChange({ ...props.bypass, remoteRules: e }))}
                     >
-                        <RulesComponent config={value} onChange={(e) => updateState((x) => x.remoteRules[index] = e)} />
+                        <RulesComponent config={value} onChange={(e) => props.onChange({ ...props.bypass, remoteRules: [...props.bypass.remoteRules.slice(0, index), e, ...props.bypass.remoteRules.slice(index + 1)] })} />
                     </Container>
                 ))
             }
 
             <div className='d-flex mb-2'>
                 <Button className='flex-grow-1' variant='outline-success'
-                    onClick={() => updateState((x) => x.remoteRules.push(defaultRemoteRule))} >
+                    onClick={() => props.onChange({ ...props.bypass, remoteRules: [...props.bypass.remoteRules, defaultRemoteRule] })} >
                     <i className="bi bi-plus-lg mb-2" />New Remote Rule
                 </Button>
             </div>
@@ -72,40 +60,37 @@ export const Bypass = React.memo((props: { bypass: config, onChange: (x: config)
                     <Container
                         key={"rule" + index}
                         title={value.tag !== "" ? value.tag : mode[value.mode]}
-                        onClose={() => updateState((x) => x.customRuleV3.splice(index, 1))}
+                        onClose={() => props.onChange({ ...props.bypass, customRuleV3: props.bypass.customRuleV3.filter((_, i) => i !== index) })}
+                        moveUpDown={new MoveUpDown(props.bypass.customRuleV3, index, (e) => props.onChange({ ...props.bypass, customRuleV3: e }))}
                     >
-                        <BypassSingleComponents config={value} onChange={(e) => updateState((x) => x.customRuleV3[index] = e)} />
+                        <BypassSingleComponents config={value} onChange={(e) => props.onChange({ ...props.bypass, customRuleV3: [...props.bypass.customRuleV3.slice(0, index), e, ...props.bypass.customRuleV3.slice(index + 1)] })} />
                     </Container>
                 ))
             }
 
             <div className='d-flex mb-2'>
                 <Button className='flex-grow-1' variant='outline-success'
-                    onClick={() => updateState((x) => x.customRuleV3.push(defaultRule))} >
+                    onClick={() => props.onChange({ ...props.bypass, customRuleV3: [...props.bypass.customRuleV3, defaultRule] })} >
                     <i className="bi bi-plus-lg mb-2" />New Rule
                 </Button>
             </div>
 
         </>
     )
-})
+}
 
 const BypassSingleComponents = (props: { config: mode_config, onChange: (x: mode_config) => void }) => {
-    const updateState = (x: (v: mode_config) => void) => {
-        x(props.config)
-        props.onChange(props.config)
-    }
 
     return (
         <>
-            <SettingModeSelect label='Mode' network={false} value={props.config.mode} onChange={(v) => updateState((x) => x.mode = v)} />
-            <SettingInputText label='Tag' value={props.config.tag} onChange={(e) => updateState((x) => x.tag = e)} />
-            <SettingResolveStrategySelect label='Resolve Strategy' value={props.config.resolveStrategy} onChange={(e) => updateState((x) => x.resolveStrategy = e)} />
-            <SettingUdpProxyFqdnSelect label='UDP proxy Fqdn' value={props.config.udpProxyFqdnStrategy} onChange={(e) => updateState((x) => x.udpProxyFqdnStrategy = e)} />
+            <SettingModeSelect label='Mode' network={false} value={props.config.mode} onChange={(v) => props.onChange({ ...props.config, mode: v })} />
+            <SettingInputText label='Tag' value={props.config.tag} onChange={(e) => props.onChange({ ...props.config, tag: e })} />
+            <SettingResolveStrategySelect label='Resolve Strategy' value={props.config.resolveStrategy} onChange={(e) => props.onChange({ ...props.config, resolveStrategy: e })} />
+            <SettingUdpProxyFqdnSelect label='UDP proxy Fqdn' value={props.config.udpProxyFqdnStrategy} onChange={(e) => props.onChange({ ...props.config, udpProxyFqdnStrategy: e })} />
             <NewItemList
                 title='IP/DOMAIN'
                 data={props.config.hostname}
-                onChange={(v) => updateState((x) => { if (v) x.hostname = v })}
+                onChange={(v) => props.onChange({ ...props.config, hostname: v })}
                 errorMsgs={props.config.errorMsgs}
             />
         </>
@@ -113,11 +98,6 @@ const BypassSingleComponents = (props: { config: mode_config, onChange: (x: mode
 }
 
 const RulesComponent = (props: { config: remote_rule, onChange: (x: remote_rule) => void }) => {
-    const updateState = (x: (v: remote_rule) => void) => {
-        x(props.config)
-        props.onChange(props.config)
-    }
-
     const getType = () => {
         switch (props.config.object.case) {
             case "file":
@@ -143,23 +123,24 @@ const RulesComponent = (props: { config: remote_rule, onChange: (x: remote_rule)
     const setValue = (x: remote_rule, v: string) => {
         switch (x.object.case) {
             case "file":
-                x.object.value.path = v
+                x.object.value = { ...x.object.value, path: v }
                 break
             case "http":
-                x.object.value.url = v
+                x.object.value = { ...x.object.value, url: v }
                 break
         }
     }
 
     return (
         <>
-            <SettingCheck label='Enabled' checked={props.config.enabled} onChange={() => updateState((x) => x.enabled = !x.enabled)} />
-            <SettingInputText label='Name' value={props.config.name} onChange={(e) => updateState((x) => x.name = e)} />
+            <SettingCheck label='Enabled' checked={props.config.enabled} onChange={() => props.onChange({ ...props.config, enabled: !props.config.enabled })} />
+            <SettingInputText label='Name' value={props.config.name} onChange={(e) => props.onChange({ ...props.config, name: e })} />
             <Form.Group as={Row} className='mb-3'>
                 <Form.Label column sm={2}>Type</Form.Label>
                 <Col sm={10}>
-                    <Form.Select value={getType()} onChange={(e) => updateState((x) => {
+                    <Form.Select value={getType()} onChange={(e) => {
                         if (getType() == e.target.value) return
+                        const x = { ...props.config }
                         switch (e.target.value) {
                             case "file":
                                 x.object = { case: "file", value: create(remote_rule_fileSchema, {}) }
@@ -168,13 +149,18 @@ const RulesComponent = (props: { config: remote_rule, onChange: (x: remote_rule)
                                 x.object = { case: "http", value: create(remote_rule_httpSchema, {}) }
                                 break
                         }
-                    })}>
+                        props.onChange(x)
+                    }}>
                         <option value={"file"}>file</option>
                         <option value={"http"}>http</option>
                     </Form.Select>
                 </Col>
             </Form.Group>
-            <SettingInputText label='Value' value={getValue()} errorMsg={props.config.errorMsg} onChange={(e) => updateState((x) => setValue(x, e))} />
+            <SettingInputText label='Value' value={getValue()} errorMsg={props.config.errorMsg} onChange={(e) => {
+                const x = { ...props.config }
+                setValue(x, e)
+                props.onChange(x)
+            }} />
         </>
     )
 }

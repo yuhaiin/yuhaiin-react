@@ -1,14 +1,14 @@
 "use client"
 
-import { Button, Table } from "react-bootstrap"
-import useSWR from "swr"
-import { ProtoESFetcher } from "../../common/proto"
 import { create } from "@bufbuild/protobuf"
 import { timestampDate, TimestampSchema } from "@bufbuild/protobuf/wkt"
-import Loading from "../../common/loading"
-import { failed_history, connections } from "../../pbes/statistic/grpc/config_pb"
 import { useState } from "react"
-import styles from "../../common/clickable.module.css";
+import { Button, Table } from "react-bootstrap"
+import useSWR from "swr"
+import styles from "../../common/clickable.module.css"
+import Loading from "../../common/loading"
+import { ProtoESFetcher } from "../../common/proto"
+import { connections, failed_history } from "../../pbes/statistic/grpc/config_pb"
 
 const TimestampZero = create(TimestampSchema, { seconds: BigInt(0), nanos: 0 })
 

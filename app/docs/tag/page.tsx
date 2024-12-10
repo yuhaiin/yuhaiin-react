@@ -1,17 +1,17 @@
 "use client"
 
-import { useState, useContext, useEffect } from "react";
-import { Badge, Button, ButtonGroup, Card, FloatingLabel, Form, ListGroup, Modal, ToggleButton } from "react-bootstrap";
-import Loading from "../common/loading";
-import useSWR from 'swr'
-import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
-import Error from 'next/error';
-import { GlobalToastContext } from "../common/toast";
-import { node, nodes_response, save_tag_req, save_tag_reqSchema, tag, tags_response } from "../pbes/node/grpc/node_pb";
-import { tag_type, tags, tagsSchema } from "../pbes/node/tag/tag_pb";
 import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import Error from 'next/error';
+import { useContext, useEffect, useState } from "react";
+import { Badge, Button, ButtonGroup, Card, FloatingLabel, Form, ListGroup, Modal, ToggleButton } from "react-bootstrap";
+import useSWR from 'swr';
+import Loading from "../common/loading";
+import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
+import { GlobalToastContext } from "../common/toast";
 import { NodeModal } from "../modal/node";
+import { node, nodes_response, save_tag_req, save_tag_reqSchema, tag, tags_response } from "../pbes/node/grpc/node_pb";
+import { tag_type, tags, tagsSchema } from "../pbes/node/tag/tag_pb";
 
 function Tags() {
     const ctx = useContext(GlobalToastContext);

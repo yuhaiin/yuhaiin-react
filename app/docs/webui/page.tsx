@@ -1,10 +1,10 @@
 "use client"
 
-import React, { useState, useContext } from "react";
-import { Button, Card, Row, Form, Col, Spinner } from "react-bootstrap";
-import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunUrl, LatencyStunTCPUrl, SetLatencyDNSUrl, SetLatencyHTTPUrl, SetLatencyIPUrl, SetLatencyIPv6, SetLatencyStunUrl, SetUrl, SetLatencyStunTCPUrl } from "../apiurl";
-import { GlobalToastContext } from "../common/toast";
+import { useContext, useState } from "react";
+import { Button, Card, Col, Form, Row, Spinner } from "react-bootstrap";
+import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunTCPUrl, LatencyStunUrl, SetLatencyDNSUrl, SetLatencyHTTPUrl, SetLatencyIPUrl, SetLatencyIPv6, SetLatencyStunTCPUrl, SetLatencyStunUrl, SetUrl } from "../apiurl";
 import { SettingCheck } from "../common/switch";
+import { GlobalToastContext } from "../common/toast";
 
 const OnelineEdit = (props: {
     title: string,

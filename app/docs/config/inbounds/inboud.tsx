@@ -1,189 +1,36 @@
-import { create, DescEnum, DescEnumValue, DescMessage, MessageShape, } from "@bufbuild/protobuf";
-import { SettingCheck } from "../../common/switch"
-import { emptySchema, grpcSchema, http2Schema, httpSchema, inbound, inboundSchema, mixedSchema, muxSchema, normalSchema, quicSchema, realitySchema, redirSchema, reverse_httpSchema, reverse_tcpSchema, socks5Schema, tcp_udp_controlSchema, tcpudp, tcpudpSchema, tls_configSchema, tlsSchema, tproxySchema, transport, transportSchema, tunSchema, websocketSchema, yuubinsya, yuubinsyaSchema } from "../../pbes/config/listener/listener_pb";
-import { SettingInputText, Container, MoveUpDown } from "../components";
-import { Form, Row, Col, ListGroup, InputGroup, Button } from "react-bootstrap";
-import { HTTPComponents, MixedComponents, QuicComponents, RealityComponents, RedirComponents, ReverseHTTPComponents, ReverseTCPComponents, Socks5Components, TProxyComponents, TlsComponents, TunComponents } from "./server";
+import { create, DescEnum, DescEnumValue } from "@bufbuild/protobuf";
 import { useEffect, useState } from "react";
-import React from "react";
-
-function change<T extends DescMessage>(scheme: T, e: MessageShape<T>, apply?: (x: MessageShape<T>) => void): (f: (x: MessageShape<T>) => void) => void {
-    if (!apply) return function (_: (x: MessageShape<T>) => void) { }
-
-    return function (f: (x: MessageShape<T>) => void) {
-        f(e)
-        apply(e)
-    }
-}
-
-// export const InboundModal = (
-//     props: {
-//         show: boolean,
-//         value: inbound,
-//         onHide: () => void,
-//         onChange: (x: inbound) => void
-//     },
-// ) => {
-//     const [inbound, setInbound] = useState(clone(inboundSchema, props.value));
-
-//     return (
-//         <>
-//             <Modal
-//                 show={props.show}
-//                 scrollable
-//                 aria-labelledby="contained-modal-title-vcenter"
-//                 size='xl'
-//                 onHide={() => { props.onHide() }}
-//                 onShow={() => { setInbound(clone(inboundSchema, props.value)) }}
-//                 centered
-//             >
-//                 <Modal.Header>
-//                     <Modal.Title id="contained-modal-title-vcenter">{props.value.name}</Modal.Title>
-//                 </Modal.Header>
-
-//                 <Modal.Body>
-//                     <Inbound inbound={inbound} onChange={(x) => { setInbound(clone(inboundSchema, x)) }}></Inbound>
-//                 </Modal.Body>
-
-//                 <Modal.Footer>
-//                     <Button variant="outline-secondary" onClick={() => { props.onHide() }}>Close</Button>
-//                     <Button
-//                         variant="outline-primary"
-//                         onClick={() => {
-//                             props.onChange(inbound)
-//                             props.onHide()
-//                         }}
-//                     >
-//                         Save
-//                     </Button>
-//                 </Modal.Footer>
-//             </Modal>
-//         </>
-//     );
-// }
-
-// export const Inbounds = React.memo((props: { inbounds: inbound_config, onChange: (x: inbound_config) => void }) => {
-//     const cc = change(inbound_configSchema, props.inbounds, props.onChange)
-
-//     const [modalData, setModalData] = useState({ show: false, inbound: create(inboundSchema, {}), onChange: (_: inbound) => { } });
-//     const [newInbound, setNewInbound] = useState({ value: "" });
-
-//     return <>
-//         <InboundModal
-//             show={modalData.show}
-//             value={modalData.inbound}
-//             onHide={() => { setModalData({ ...modalData, show: false }) }}
-//             onChange={modalData.onChange}
-//         />
-
-//         <SettingCheck label='DNS Hijack'
-//             checked={!props.inbounds.hijackDns ? false : true}
-//             onChange={() => cc((x) => x.hijackDns = !x.hijackDns)} />
-
-//         <SettingCheck label='Fakedns'
-//             checked={!props.inbounds.hijackDnsFakeip ? false : true}
-//             onChange={() => cc((x) => x.hijackDnsFakeip = !x.hijackDnsFakeip)} />
-
-//         <SettingCheck label='Sniff'
-//             checked={!props.inbounds.sniff?.enabled ? false : true}
-//             onChange={() => cc((x) => x.sniff = create(sniffSchema, { enabled: !x.sniff?.enabled }))} />
-
-//         <hr />
-
-
-//         <Card>
-//             <Card.Header>Inbounds</Card.Header>
-//             {
-//                 Object.keys(props.inbounds.inbounds).length === 0 ?
-//                     <Card.Body>
-//                         <div className="text-center my-2" style={{ opacity: '0.4' }}>No Inbounds</div>
-//                     </Card.Body>
-//                     :
-//                     <ListGroup variant="flush">
-//                         {
-//                             Object.entries(props.inbounds.inbounds).
-//                                 sort((a, b) => { return a[0] <= b[0] ? -1 : 1 }).
-//                                 map(([k, v]) => {
-//                                     return <React.Fragment key={"inbounds-" + k}>
-//                                         <ListGroup.Item
-//                                             action
-//                                             className="d-flex justify-content-between align-items-center"
-//                                             style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
-//                                             onClick={(e) => {
-//                                                 e.stopPropagation();
-//                                                 setModalData({
-//                                                     show: true,
-//                                                     inbound: v,
-//                                                     onChange: (e: inbound) => { cc((x) => { x.inbounds[k] = e }) }
-//                                                 })
-//                                             }}
-//                                         >
-//                                             {k}
-//                                             <Button
-//                                                 variant='outline-danger'
-//                                                 size="sm"
-//                                                 as={"span"}
-//                                                 key={k + "span-button"}
-//                                                 onClick={(e) => {
-//                                                     e.stopPropagation();
-//                                                     cc((x) => { delete x.inbounds[k] })
-//                                                 }}
-//                                             >
-//                                                 <i className="bi bi-x-lg"></i>
-//                                             </Button>
-//                                         </ListGroup.Item>
-//                                     </React.Fragment>
-//                                 })
-//                         }
-//                     </ListGroup>
-//             }
-//             <Card.Footer>
-//                 <InputGroup className="d-flex justify-content-end">
-//                     <Form.Control value={newInbound.value} onChange={(e) => setNewInbound({ value: e.target.value })} />
-//                     <Button
-//                         variant='outline-success'
-//                         onClick={() => {
-//                             if (newInbound.value !== "" && props.inbounds.inbounds[newInbound.value] === undefined)
-//                                 cc((x) => x.inbounds[newInbound.value] = create(inboundSchema, { name: newInbound.value }))
-//                         }}
-//                     >
-//                         <i className="bi bi-plus-lg" />New </Button>
-//                 </InputGroup>
-//             </Card.Footer>
-//         </Card>
-//     </>
-// })
+import { Button, Col, Form, InputGroup, ListGroup, Row } from "react-bootstrap";
+import { SettingCheck } from "../../common/switch";
+import {
+    emptySchema,
+    grpcSchema,
+    http2Schema,
+    httpSchema,
+    inbound,
+    mixedSchema, muxSchema, normalSchema, quicSchema, realitySchema, redirSchema, reverse_httpSchema, reverse_tcpSchema, socks5Schema, tcp_udp_controlSchema, tcpudp, tcpudpSchema, tls_configSchema, tlsSchema, tproxySchema, transport, transportSchema, tunSchema, websocketSchema, yuubinsya, yuubinsyaSchema
+} from "../../pbes/config/listener/listener_pb";
+import { Container, MoveUpDown, SettingInputText } from "../components";
+import { HTTPComponents, MixedComponents, QuicComponents, RealityComponents, RedirComponents, ReverseHTTPComponents, ReverseTCPComponents, Socks5Components, TlsComponents, TProxyComponents, TunComponents } from "./server";
 
 export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
-    const cc = change(inboundSchema, props.inbound, props.onChange)
-
-    const onMove = (up: boolean, current: number) => {
-        if (props.inbound.transport.length <= 1) return
-        if (up && current === 0) return
-        if (!up && current === props.inbound.transport.length - 1) return
-        cc((x) => {
-            let tmp = x.transport[current]
-            x.transport[current] = x.transport[current + (up ? -1 : 1)]
-            x.transport[current + (up ? -1 : 1)] = tmp
-        })
-    }
     const [newProtocol, setNewProtocol] = useState({ value: "normal" });
 
     return <>
         <SettingCheck
             label="Enabled"
             checked={props.inbound.enabled}
-            onChange={() => { cc((x) => x.enabled = !x.enabled) }}
+            onChange={() => { props.onChange({ ...props.inbound, enabled: !props.inbound.enabled }) }}
         />
 
         <SettingInputText
             label="Name"
             value={props.inbound.name}
-            onChange={(e) => { cc((x) => x.name = e) }}
+            onChange={(e) => { props.onChange({ ...props.inbound, name: e }) }}
         />
 
         <Container title="Network" hideClose>
-            <Network inbound={props.inbound} onChange={(x) => { cc((y) => y = x) }} />
+            <Network inbound={props.inbound} onChange={(x) => { props.onChange({ ...x }) }} />
         </Container>
 
         <Container title="Transport" hideClose>
@@ -193,10 +40,12 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
                         return <Container
                             key={i}
                             title={x.transport.case?.toString() ?? ""}
-                            onClose={() => { cc((y) => y.transport.splice(i, 1)) }}
-                            moveUpDown={new MoveUpDown(props.inbound.transport.length, i, (x) => onMove(x, i))}
+                            onClose={() => { props.onChange({ ...props.inbound, transport: [...props.inbound.transport.slice(0, i), ...props.inbound.transport.slice(i + 1)] }) }}
+                            moveUpDown={new MoveUpDown(props.inbound.transport, i, (x) => props.onChange({ ...props.inbound, transport: x }))}
                         >
-                            <Transport key={i} transport={x} onChange={(x) => { cc((y) => y.transport[i] = x) }} />
+                            <Transport key={i} transport={x} onChange={(x) => {
+                                props.onChange({ ...props.inbound, transport: [...props.inbound.transport.slice(0, i), x, ...props.inbound.transport.slice(i + 1)] })
+                            }} />
                         </Container>
                     })
                 }
@@ -215,7 +64,8 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
                             </Form.Select>
                             <Button
                                 variant="outline-success"
-                                onClick={() => cc((x) => {
+                                onClick={() => {
+                                    const x = { ...props.inbound }
                                     switch (newProtocol.value) {
                                         case "normal":
                                             x.transport.push(create(transportSchema, {
@@ -255,7 +105,8 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
                                             }))
                                             break
                                     }
-                                })}
+                                    props.onChange(x)
+                                }}
                             >
                                 <i className="bi bi-plus-lg" />Add
                             </Button>
@@ -267,14 +118,12 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
         </Container>
 
         <Container title="Protocol" hideClose>
-            <Protocol inbound={props.inbound} onChange={(x) => { cc((y) => y = x) }} />
+            <Protocol inbound={props.inbound} onChange={(x) => { props.onChange({ ...x }) }} />
         </Container>
     </>
 }
 
 const Network = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
-    const cc = change(inboundSchema, props.inbound, props.onChange)
-
     const [newProtocol, setNewProtocol] = useState({ value: props.inbound.network.case?.toString() ?? "tcpudp" });
     useEffect(() => {
         setNewProtocol({ value: props.inbound.network.case ? props.inbound.network.case.toString() : "tcpudp" });
@@ -294,7 +143,8 @@ const Network = (props: { inbound: inbound, onChange: (x: inbound) => void }) =>
                     </Form.Select>
                     <Button
                         variant="outline-success"
-                        onClick={() => cc((x) => {
+                        onClick={() => {
+                            const x = { ...props.inbound }
                             switch (newProtocol.value) {
                                 case "tcpudp":
                                     x.network = { case: "tcpudp", value: create(tcpudpSchema, {}) }
@@ -306,7 +156,8 @@ const Network = (props: { inbound: inbound, onChange: (x: inbound) => void }) =>
                                     x.network = { case: "empty", value: create(emptySchema, {}) }
                                     break
                             }
-                        })}
+                            props.onChange({ ...x })
+                        }}
                     >
                         Use
                     </Button>
@@ -321,14 +172,13 @@ const Network = (props: { inbound: inbound, onChange: (x: inbound) => void }) =>
 }
 
 const NetworkBase = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
-    const cc = change(inboundSchema, props.inbound, props.onChange)
     switch (props.inbound.network.case) {
         case "tcpudp":
-            return <TcpUdp protocol={props.inbound.network.value} onChange={(x) => { cc((y) => y.network.value = x) }}></TcpUdp>
+            return <TcpUdp protocol={props.inbound.network.value} onChange={(x) => { props.onChange({ ...props.inbound, network: { case: "tcpudp", value: x } }) }}></TcpUdp>
         case "quic":
             return <QuicComponents
                 quic={props.inbound.network.value}
-                onChange={(x) => { cc((y) => y.network.value = x) }}
+                onChange={(x) => { props.onChange({ ...props.inbound, network: { case: "quic", value: x } }) }}
             />
         case "empty":
             return <></>
@@ -336,15 +186,13 @@ const NetworkBase = (props: { inbound: inbound, onChange: (x: inbound) => void }
 }
 
 const Transport = (props: { transport: transport, onChange: (x: transport) => void }) => {
-    const cc = change(transportSchema, props.transport, props.onChange)
-
     switch (props.transport.transport.case) {
         case "normal":
             return <><div className="text-center" style={{ opacity: '0.4' }}>Normal</div></>
         case "tls":
             return <TlsComponents
                 tls={props.transport.transport.value}
-                onChange={(x) => { cc((y) => y.transport.value = x) }}
+                onChange={(x) => { props.onChange({ ...props.transport, transport: { case: "tls", value: x } }) }}
             />
         case "mux":
             return <><div className="text-center" style={{ opacity: '0.4' }}>Mux</div></>
@@ -357,68 +205,64 @@ const Transport = (props: { transport: transport, onChange: (x: transport) => vo
         case "reality":
             return <RealityComponents
                 reality={props.transport.transport.value}
-                onChange={(x) => { cc((y) => y.transport.value = x) }}
+                onChange={(x) => { props.onChange({ ...props.transport, transport: { case: "reality", value: x } }) }}
             />
     }
 }
 
 const ProtocolBase = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
-    const cc = change(inboundSchema, props.inbound, props.onChange)
-
     switch (props.inbound.protocol.case) {
         case "http":
             return <HTTPComponents
                 http={props.inbound.protocol.value}
-                onChange={(x) => { cc((y) => y.protocol.value = x) }}
+                onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "http", value: x } }) }}
             />
         case "reverseHttp":
             return <ReverseHTTPComponents
                 reverse_http={props.inbound.protocol.value}
-                onChange={(x) => { cc((y) => y.protocol.value = x) }}
+                onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "reverseHttp", value: x } }) }}
             />
         case "reverseTcp":
             return <ReverseTCPComponents
                 reverse_tcp={props.inbound.protocol.value}
-                onChange={(x) => { cc((y) => y.protocol.value = x) }}
+                onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "reverseTcp", value: x } }) }}
             />
         case "socks5":
             return <Socks5Components
                 socks5={props.inbound.protocol.value}
-                onChange={(x) => { cc((y) => y.protocol.value = x) }}
+                onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "socks5", value: x } }) }}
             />
         case "socks4a":
             return <></>
         case "mix":
             return <MixedComponents
                 mixed={props.inbound.protocol.value}
-                onChange={(x) => { cc((y) => y.protocol.value = x) }}
+                onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "mix", value: x } }) }}
             />
         case "redir":
             return <RedirComponents
                 redir={props.inbound.protocol.value}
-                onChange={(x) => { cc((y) => y.protocol.value = x) }}
+                onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "redir", value: x } }) }}
             />
         case "tun":
             return <TunComponents
                 tun={props.inbound.protocol.value}
-                onChange={(x) => { cc((y) => y.protocol.value = x) }}
+                onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "tun", value: x } }) }}
             />
         case "yuubinsya":
             return <Yuubinsya
                 yuubinsya={props.inbound.protocol.value}
-                onChange={(x) => { cc((y) => y.protocol.value = x) }}
+                onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "yuubinsya", value: x } }) }}
             />
         case "tproxy":
             return <TProxyComponents
                 tproxy={props.inbound.protocol.value}
-                onChange={(x) => { cc((y) => y.protocol.value = x) }}
+                onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "tproxy", value: x } }) }}
             />
     }
 }
 
 const Protocol = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
-    const cc = change(inboundSchema, props.inbound, props.onChange)
-
     const [newProtocol, setNewProtocol] = useState({ value: props.inbound.protocol.case ? props.inbound.protocol.case.toString() : "yuubinsya" });
 
     useEffect(() => {
@@ -440,7 +284,8 @@ const Protocol = (props: { inbound: inbound, onChange: (x: inbound) => void }) =
                     </Form.Select>
                     <Button
                         variant="outline-success"
-                        onClick={() => cc((x) => {
+                        onClick={() => {
+                            const x = { ...props.inbound }
                             switch (newProtocol.value) {
                                 case "http":
                                     x.protocol = { case: "http", value: create(httpSchema, {}) }
@@ -469,7 +314,8 @@ const Protocol = (props: { inbound: inbound, onChange: (x: inbound) => void }) =
                                 case "tproxy":
                                     x.protocol = { case: "tproxy", value: create(tproxySchema, {}) }
                             }
-                        })}
+                            props.onChange({ ...x })
+                        }}
                     >
                         Use
                     </Button>
@@ -479,46 +325,44 @@ const Protocol = (props: { inbound: inbound, onChange: (x: inbound) => void }) =
 
         <br />
 
-        <ProtocolBase inbound={props.inbound} onChange={(x) => { cc((y) => y = x) }} />
+        <ProtocolBase inbound={props.inbound} onChange={(x) => { props.onChange({ ...x }) }} />
     </>
 }
 
 
 const Yuubinsya = (props: { yuubinsya: yuubinsya, onChange: (x: yuubinsya) => void }) => {
-    const cc = change(yuubinsyaSchema, props.yuubinsya, props.onChange)
     return <>
         <SettingCheck
             label="TCP Encrypt"
             checked={props.yuubinsya.tcpEncrypt}
-            onChange={() => { cc((x) => x.tcpEncrypt = !x.tcpEncrypt) }}
+            onChange={() => { props.onChange({ ...props.yuubinsya, tcpEncrypt: !props.yuubinsya.tcpEncrypt }) }}
         />
         <SettingCheck
             label="UDP Encrypt"
             checked={props.yuubinsya.udpEncrypt}
-            onChange={() => { cc((x) => x.udpEncrypt = !x.udpEncrypt) }}
+            onChange={() => { props.onChange({ ...props.yuubinsya, udpEncrypt: !props.yuubinsya.udpEncrypt }) }}
         />
         <SettingInputText
             label="Password"
             value={props.yuubinsya.password}
-            onChange={(e) => { cc((x) => x.password = e) }}
+            onChange={(e) => { props.onChange({ ...props.yuubinsya, password: e }) }}
         />
     </>
 }
 
 const TcpUdp = (props: { protocol: tcpudp, onChange: (x: tcpudp) => void }) => {
-    const cc = change(tcpudpSchema, props.protocol, props.onChange)
     return <>
         <SettingInputText
             label="Host"
             value={props.protocol.host}
-            onChange={(e) => { cc((x) => x.host = e) }}
+            onChange={(e) => { props.onChange({ ...props.protocol, host: e }) }}
         />
 
         <SettingTypeSelect
             label="Control"
             type={tcp_udp_controlSchema}
             value={props.protocol.control}
-            onChange={(e) => { cc((x) => { x.control = e }) }}
+            onChange={(e) => { props.onChange({ ...props.protocol, control: e }) }}
         />
     </>
 }

@@ -1,6 +1,6 @@
 import { DescEnum, DescEnumValue } from '@bufbuild/protobuf';
-import React from 'react';
-import { Form, Row, Col } from 'react-bootstrap';
+import { FC } from 'react';
+import { Col, Form, Row } from 'react-bootstrap';
 
 const SwitchSelect = (props: { value: boolean, onChange: (x: boolean) => void }) => {
     return (
@@ -11,17 +11,17 @@ const SwitchSelect = (props: { value: boolean, onChange: (x: boolean) => void })
     )
 }
 
-export const SettingCheck = (props: { label: string, checked: boolean, onChange: () => void }) => {
-    return (
-        <Form.Group as={Row} className='mb-2'>
-            <Form.Label column sm={2}>{props.label}</Form.Label>
-            <Col sm={10} className='d-flex align-items-center'>
-                <Form.Check className='d-flex align-items-center' type='switch' checked={props.checked} onChange={() => props.onChange()} />
-            </Col>
-        </Form.Group>
-    )
-}
-
+export const SettingCheck: FC<{ label: string, checked: boolean, onChange: (c: boolean) => void }> =
+    ({ label, checked, onChange }) => {
+        return (
+            <Form.Group as={Row} className='mb-2'>
+                <Form.Label column sm={2}>{label}</Form.Label>
+                <Col sm={10} className='d-flex align-items-center'>
+                    <Form.Check className='d-flex align-items-center' type='switch' checked={checked} onChange={(e) => onChange(e.target.checked)} />
+                </Col>
+            </Form.Group>
+        )
+    }
 
 export function SettingTypeSelect(props: {
     label: string,
@@ -44,7 +44,3 @@ export function SettingTypeSelect(props: {
         </Col>
     </Form.Group >
 }
-
-
-
-export default SwitchSelect;

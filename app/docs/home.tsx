@@ -1,10 +1,10 @@
-import { Card } from 'react-bootstrap';
-import Loading from './common/loading';
-import useSWR from 'swr'
-import { ProtoESFetcher } from './common/proto';
-import Error from 'next/error';
-import { node } from './pbes/node/grpc/node_pb';
 import { create, toJsonString } from '@bufbuild/protobuf';
+import Error from 'next/error';
+import { Card } from 'react-bootstrap';
+import useSWR from 'swr';
+import Loading from './common/loading';
+import { ProtoESFetcher } from './common/proto';
+import { node } from './pbes/node/grpc/node_pb';
 import { pointSchema } from './pbes/node/point/point_pb';
 
 function Index() {

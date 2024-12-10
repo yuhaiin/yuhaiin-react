@@ -1,7 +1,7 @@
-import { Fetcher } from 'swr'
-import { APIUrl } from '../apiurl';
 import { clone, DescMessage, fromBinary, MessageShape, toBinary } from "@bufbuild/protobuf";
-import type { SWRSubscriptionOptions } from 'swr/subscription'
+import { Fetcher } from 'swr';
+import type { SWRSubscription, SWRSubscriptionOptions } from 'swr/subscription';
+import { APIUrl } from '../apiurl';
 
 
 export function ProtoESFetcher<I extends DescMessage, O extends DescMessage>(
@@ -50,15 +50,21 @@ export async function FetchProtobuf<I extends DescMessage, O extends DescMessage
     return { data: fromBinary(d.output, new Uint8Array(await r.arrayBuffer())) }
 }
 
-export function WebsocketSubscribe<Desc extends DescMessage, Response>(Request: Uint8Array, resp: Desc, processResponse: (prev: Response | undefined, r: MessageShape<Desc>) => Response):
+export function WebsocketProtoServerStream<I extends DescMessage, O extends DescMessage, Response>(
+    d: { methodKind: "server_streaming"; input: I; output: O; },
+    Request: MessageShape<I>,
+    stream: (r: MessageShape<O>, prev?: Response) => Response,
+):
     (key: string, { next }: SWRSubscriptionOptions<Response, { msg: string, code: number }>) => () => void {
+
+    let closed = false;
+    let socket: WebSocket | undefined
+
+
     return (key, { next }) => {
         let url = new URL(APIUrl !== "" ? APIUrl : window.location.toString());
         url.pathname = key
         url.protocol = url.protocol === "https:" ? "wss:" : "ws:"
-
-        let closed = false;
-        let socket: WebSocket | undefined
 
         const connect = () => {
             if (closed) return
@@ -70,12 +76,12 @@ export function WebsocketSubscribe<Desc extends DescMessage, Response>(Request: 
 
             socket.addEventListener('open', (e) => {
                 console.log(`connect to: ${url}, event type: ${e.type}`)
-                socket?.send(Request)
+                socket?.send(toBinary(d.input, Request))
             })
 
             socket.addEventListener('message', (event) => {
-                const raw = fromBinary(resp, new Uint8Array(event.data));
-                next(null, prev => { return processResponse(prev, raw) })
+                const raw = fromBinary(d.output, new Uint8Array(event.data));
+                next(null, prev => { return stream(raw, prev) })
             })
 
             socket.addEventListener('error', (e) => {

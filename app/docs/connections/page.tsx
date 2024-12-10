@@ -1,18 +1,17 @@
 "use client"
 
-import React, { useState, useContext } from "react";
-import { Button, Card, ListGroup, Accordion, Badge, Spinner } from "react-bootstrap";
-import useSWRSubscription from 'swr/subscription'
-import Loading from "../common/loading";
-import { FetchProtobuf, WebsocketSubscribe } from "../common/proto";
-import { GlobalToastContext } from "../common/toast";
-import { connection, type } from "../pbes/statistic/config_pb";
-import { connections, notify_dataSchema, notify_remove_connectionsSchema, total_flow, total_flowSchema } from "../pbes/statistic/grpc/config_pb";
-import { toBinary, create } from "@bufbuild/protobuf";
-import useSWR from 'swr'
+import { create } from "@bufbuild/protobuf";
 import { EmptySchema } from "@bufbuild/protobuf/wkt";
+import React, { useContext, useState } from "react";
+import { Accordion, Badge, Button, Card, ListGroup, Spinner } from "react-bootstrap";
+import useSWR from 'swr';
+import useSWRSubscription from 'swr/subscription';
+import Loading from "../common/loading";
+import { FetchProtobuf, WebsocketProtoServerStream } from "../common/proto";
+import { GlobalToastContext } from "../common/toast";
 import { NodeModal } from "../modal/node";
-import { error } from "console";
+import { connection, type } from "../pbes/statistic/config_pb";
+import { connections, notify_data, notify_remove_connectionsSchema, total_flow } from "../pbes/statistic/grpc/config_pb";
 
 const formatBytes =
     (a = 0, b = 2) => {
@@ -37,20 +36,7 @@ function Connections() {
     const [modalHash, setModalHash] = useState({ show: false, hash: "" });
     const [lastFlow, setLastFlow] = useState({ download: BigInt(0), upload: BigInt(0) })
 
-    const { data: flow, error: flow_error } = useSWR("/flow/total", async (url: string) => {
-        return FetchProtobuf(connections.method.total, url).then(async ({ data: r, error }) => {
-            if (error) throw error
-            if (r) {
-                let resp = generateFlow(r, { download: lastFlow.download, upload: lastFlow.upload })
-                setLastFlow({ download: r.download, upload: r.upload })
-                return resp
-            }
-        })
-    },
-        { refreshInterval: 2000 })
-
-
-    const { data: conns, error: conn_error } = useSWRSubscription("/conn", WebsocketSubscribe(toBinary(EmptySchema, create(EmptySchema)), notify_dataSchema, (prev: Map<bigint, connection>, r) => {
+    const processStream = (r: notify_data, prev?: Map<bigint, connection>): Map<bigint, connection> => {
         if (prev === undefined) prev = new Map()
         switch (r.data.case) {
             case "notifyNewConnections":
@@ -64,7 +50,21 @@ function Connections() {
                 break
         }
         return prev
-    }))
+    }
+
+    const { data: flow, error: flow_error } = useSWR("/flow/total", async (url: string) => {
+        return FetchProtobuf(connections.method.total, url).then(async ({ data: r, error }) => {
+            if (error) throw error
+            if (r) {
+                let resp = generateFlow(r, { download: lastFlow.download, upload: lastFlow.upload })
+                setLastFlow({ download: r.download, upload: r.upload })
+                return resp
+            }
+        })
+    },
+        { refreshInterval: 2000 })
+
+    const { data: conns, error: conn_error } = useSWRSubscription("/conn", WebsocketProtoServerStream(connections.method.notify, create(EmptySchema, {}), processStream))
 
     return (
         <>

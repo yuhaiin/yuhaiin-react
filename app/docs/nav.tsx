@@ -1,7 +1,7 @@
 "use client"
 
-import { Nav, NavDropdown, Navbar as BootstrapNavbar, Container } from 'react-bootstrap';
 import { usePathname, useRouter } from 'next/navigation';
+import { Navbar as BootstrapNavbar, Container, Nav, NavDropdown } from 'react-bootstrap';
 import { APIUrl } from './apiurl';
 
 function NavBar(props: { children: React.ReactNode }) {

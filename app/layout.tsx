@@ -1,10 +1,10 @@
 "use client"
 
-import { Container } from 'react-bootstrap';
-import NavBar from './docs/nav';
-import { GlobalToastProvider } from './docs/common/toast';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Container } from 'react-bootstrap';
+import { GlobalToastProvider } from './docs/common/toast';
+import NavBar from './docs/nav';
 
 export default function RootLayout({
   children,

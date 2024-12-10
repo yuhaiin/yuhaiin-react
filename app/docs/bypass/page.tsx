@@ -1,15 +1,15 @@
 "use client"
 
-import useSWR from "swr";
-import Bypass from "./bypass";
-import { FetchProtobuf, ProtoESFetcher } from "../common/proto";
-import { configSchema } from "../pbes/config/bypass/bypass_pb";
-import Loading from "../common/loading";
-import { clone, toBinary } from "@bufbuild/protobuf";
+import { clone } from "@bufbuild/protobuf";
 import { useContext, useState } from "react";
-import { GlobalToastContext } from "../common/toast";
 import { Button, Spinner, Stack } from "react-bootstrap";
+import useSWR from "swr";
+import Loading from "../common/loading";
+import { FetchProtobuf, ProtoESFetcher } from "../common/proto";
+import { GlobalToastContext } from "../common/toast";
+import { configSchema } from "../pbes/config/bypass/bypass_pb";
 import { bypass } from "../pbes/config/grpc/config_pb";
+import Bypass from "./bypass";
 
 function BypassComponent() {
     const ctx = useContext(GlobalToastContext);

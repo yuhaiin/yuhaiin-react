@@ -1,5 +1,5 @@
+import Error from 'next/error';
 import { Spinner } from "react-bootstrap";
-import Error from 'next/error'
 
 function Loading(props: { children?: string, code?: number }) {
     return (
