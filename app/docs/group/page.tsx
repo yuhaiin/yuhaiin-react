@@ -12,7 +12,7 @@ import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
 import { GlobalToastContext } from "../common/toast";
 import { NodeJsonModal, NodeModal } from "../modal/node";
 import { node, use_reqSchema } from "../pbes/node/grpc/node_pb";
-import { dns_over_quicSchema, httpSchema, ipSchema, nat_type, protocol, protocolSchema, requestsSchema, stunSchema } from "../pbes/node/latency/latency_pb";
+import { dns_over_quicSchema, httpSchema, ipSchema, nat_type, protocol, protocolSchema, reply, requestsSchema, stunSchema } from "../pbes/node/latency/latency_pb";
 import { origin, point, pointSchema } from "../pbes/node/point/point_pb";
 
 const Nanosecond = 1
@@ -83,18 +83,6 @@ function isLoading(x: latencyStatus): boolean {
 
 function isAllLoading(x: latencyStatus): boolean {
     return x.tcp.loading && x.udp.loading && x.ip.loading && x.stun.loading && x.stun_tcp.loading
-}
-
-
-type LatencyProps = {
-    Latency?: string,
-    IPv4?: string,
-    IPv6?: string,
-    Stun?: {
-        mapping: string
-        filter: string
-        mappedAddress: string
-    }
 }
 
 const getNatTypeString = (x: nat_type): string => {
@@ -253,6 +241,53 @@ function Group() {
 
 export default Group;
 
+const createLatencyRequest = (r:
+    { url: string; case: "http"; } |
+    { host: string; targetDomain: string; case: "dnsOverQuic"; } |
+    { url: string; userAgent?: string; case: "ip"; } |
+    { host: string; tcp: boolean; case: "stun"; },
+): protocol => {
+    switch (r.case) {
+        case "http":
+            return create(protocolSchema, { protocol: { case: "http", value: create(httpSchema, { url: r.url }) } })
+        case "dnsOverQuic":
+            return create(protocolSchema, {
+                protocol: {
+                    case: "dnsOverQuic",
+                    value: create(dns_over_quicSchema, { host: r.host, targetDomain: r.targetDomain })
+                }
+            })
+        case "ip":
+            return create(protocolSchema, {
+                protocol: {
+                    case: "ip",
+                    value: create(ipSchema, { url: r.url, userAgent: r.userAgent })
+                }
+            })
+        case "stun":
+            return create(protocolSchema, {
+                protocol: {
+                    case: "stun",
+                    value: create(stunSchema, { host: r.host, tcp: r.tcp })
+                }
+            })
+    }
+}
+
+const createLatencyReqByType = (type: LatencyType) => {
+    switch (type) {
+        case LatencyType.TCP:
+            return createLatencyRequest({ case: "http", url: LatencyHTTPUrl })
+        case LatencyType.UDP:
+            return createLatencyRequest({ case: "dnsOverQuic", host: LatencyDNSUrl, targetDomain: "www.google.com" })
+        case LatencyType.IP:
+            return createLatencyRequest({ case: "ip", url: LatencyIPUrl })
+        case LatencyType.STUNTCP:
+            return createLatencyRequest({ case: "stun", host: LatencyStunTCPUrl, tcp: true })
+        case LatencyType.STUN:
+            return createLatencyRequest({ case: "stun", host: LatencyStunUrl, tcp: false })
+    }
+}
 
 const NodeItemv2: FC<{
     hash: string, name: string,
@@ -262,83 +297,81 @@ const NodeItemv2: FC<{
 }> = ({ hash, name, onClickEdit, onChangeLatency, latency }) => {
     const ctx = useContext(GlobalToastContext);
 
-    const test = (type: LatencyType) => {
+    const setLoading = (type: LatencyType, loading: boolean = true, error?: string) => {
         switch (type) {
             case LatencyType.TCP:
-                onChangeLatency({ ...latency, tcp: { ...latency.tcp, loading: true } })
-                test_latency(
-                    hash,
-                    create(protocolSchema, {
-                        protocol: {
-                            case: "http",
-                            value: create(httpSchema, { url: LatencyHTTPUrl })
-                        }
-                    }),
-                    (r) => { onChangeLatency({ ...latency, tcp: { loading: false, value: r.Latency } }) })
+                onChangeLatency({ ...latency, tcp: { ...latency.tcp, loading: loading } })
+                if (error) onChangeLatency({ ...latency, tcp: { ...latency.tcp, loading: false, value: error } })
                 break
-
             case LatencyType.UDP:
-                onChangeLatency({ ...latency, udp: { ...latency.udp, loading: true } })
-                test_latency(
-                    hash,
-                    create(protocolSchema, {
-                        protocol: {
-                            case: "dnsOverQuic",
-                            value: create(dns_over_quicSchema, {
-                                host: LatencyDNSUrl,
-                                targetDomain: "www.google.com"
-                            })
-                        }
-                    }),
-                    (r) => { onChangeLatency({ ...latency, udp: { loading: false, value: r.Latency } }) })
+                onChangeLatency({ ...latency, udp: { ...latency.udp, loading: loading } })
+                if (error) onChangeLatency({ ...latency, udp: { ...latency.udp, loading: false, value: error } })
                 break
-
             case LatencyType.IP:
-                onChangeLatency({ ...latency, ip: { ...latency.ip, loading: true } })
-                test_latency(
-                    hash,
-                    create(protocolSchema, {
-                        protocol: {
-                            case: "ip",
-                            value: create(ipSchema, { url: LatencyIPUrl })
-                        }
-                    }),
-                    (r) => { onChangeLatency({ ...latency, ip: { loading: false, ipv4: r.IPv4, ipv6: r.IPv6 } }) })
+                onChangeLatency({ ...latency, ip: { ...latency.ip, loading: loading } })
+                if (error) onChangeLatency({ ...latency, ip: { ...latency.ip, loading: false, ipv4: error, ipv6: error } })
                 break
-
-            case LatencyType.STUNTCP:
-                onChangeLatency({ ...latency, stun_tcp: { ...latency.stun_tcp, loading: true } })
-                test_latency(
-                    hash,
-                    create(protocolSchema, {
-                        protocol: {
-                            case: "stun",
-                            value: create(stunSchema, {
-                                host: LatencyStunTCPUrl,
-                                tcp: true
-                            })
-                        }
-                    }),
-                    (r) => { onChangeLatency({ ...latency, stun_tcp: { loading: false, ip: r.Stun?.mappedAddress } }) })
-                break
-
             case LatencyType.STUN:
-                onChangeLatency({ ...latency, stun: { ...latency.stun, loading: true } })
-                test_latency(
-                    hash,
-                    create(protocolSchema, {
-                        protocol: {
-                            case: "stun",
-                            value: create(stunSchema, {
-                                host: LatencyStunUrl,
-                            })
-                        }
-                    }),
-                    (r) => {
-                        onChangeLatency({ ...latency, stun: { loading: false, mapping: r.Stun?.mapping, filtering: r.Stun?.filter, mappedAddress: r.Stun?.mappedAddress } })
-                    })
+                onChangeLatency({ ...latency, stun: { ...latency.stun, loading: loading } })
+                if (error) onChangeLatency({ ...latency, stun: { loading: false, mappedAddress: error } })
+                break
+            case LatencyType.STUNTCP:
+                onChangeLatency({ ...latency, stun_tcp: { ...latency.stun_tcp, loading: loading } })
+                if (error) onChangeLatency({ ...latency, stun_tcp: { loading: false, ip: error } })
                 break
         }
+    }
+
+    const updateStatus = (result: reply, tcp: boolean = false) => {
+        let r = result.reply
+        switch (r.case) {
+            case "ip":
+                onChangeLatency({ ...latency, ip: { ipv4: r.value.ipv4, ipv6: r.value.ipv6, loading: false } })
+                break
+            case "stun":
+                if (tcp)
+                    onChangeLatency({ ...latency, stun_tcp: { loading: false, ip: r.value.mappedAddress } })
+                else onChangeLatency({
+                    ...latency, stun: {
+                        loading: false,
+                        mapping: getNatTypeString(r.value.Mapping),
+                        filtering: getNatTypeString(r.value.Filtering),
+                        mappedAddress: r.value.mappedAddress
+                    }
+                })
+                break
+            case "latency":
+                if (tcp)
+                    onChangeLatency({ ...latency, tcp: { value: durationToStroing(r.value), loading: false } })
+                else onChangeLatency({ ...latency, udp: { value: durationToStroing(r.value), loading: false } })
+                break
+        }
+    }
+
+    const test = (type: LatencyType) => {
+        setLoading(LatencyType.TCP, true)
+        FetchProtobuf(node.method.latency, "/latency", "POST", create(requestsSchema, { requests: [{ hash: hash, id: "latency", ipv6: LatencyIPv6, protocol: createLatencyReqByType(type) }] }))
+            .then(async ({ data: resp, error }) => {
+                if (error) {
+                    console.log(`test failed ${error.code}| ${error.msg}`)
+                    setLoading(type, false, `${error.code}| ${error.msg}`)
+                    return
+                }
+
+                if (resp && resp.idLatencyMap["latency"]) {
+                    const rr = resp.idLatencyMap["latency"]
+                    if (rr.reply.case === "error") {
+                        console.log(`test failed ${rr.reply.value.msg}`)
+                        setLoading(type, false, rr.reply.value.msg);
+                        return
+                    }
+
+                    setLoading(type, false);
+                    updateStatus(resp.idLatencyMap["latency"], type === LatencyType.STUNTCP || type === LatencyType.TCP)
+                } else {
+                    setLoading(type, false, "timeout")
+                }
+            })
     }
 
     return <Accordion.Item eventKey={hash}>
@@ -463,39 +496,4 @@ const useNode = (ctx, hash: string, key: string) => {
         if (error !== undefined) ctx.Error(`change node failed, ${error.code}| ${error.msg}`)
         else ctx.Info(`Change ${key} Node To ${hash} Successful`)
     })
-}
-
-const test_latency = (hash: string, protocol: protocol, onFinish: (r: LatencyProps) => void) => {
-    FetchProtobuf(node.method.latency, "/latency", "POST", create(requestsSchema, {
-        requests: [{
-            hash: hash,
-            id: "latency",
-            ipv6: LatencyIPv6,
-            protocol: protocol
-        }]
-    }))
-        .then(async ({ data: resp, error }) => {
-            if (error) {
-                console.log(`test failed ${error.code}| ${error.msg}`)
-            }
-
-            let latency: LatencyProps = { Latency: "timeout" };
-
-            if (resp && resp.idLatencyMap["latency"]) {
-                const rr = resp.idLatencyMap["latency"].reply
-                switch (rr.case) {
-                    case "latency": latency = { Latency: durationToStroing(rr.value) }; break
-                    case "ip": latency = { IPv4: rr.value.ipv4, IPv6: rr.value.ipv6 }; break
-                    case "stun": latency = {
-                        Stun: {
-                            mapping: getNatTypeString(rr.value.Mapping),
-                            filter: getNatTypeString(rr.value.Filtering),
-                            mappedAddress: rr.value.mappedAddress
-                        }
-                    }; break
-                }
-            }
-
-            onFinish(latency)
-        })
 }

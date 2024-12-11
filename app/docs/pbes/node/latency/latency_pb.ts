@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file node/latency/latency.proto.
  */
 export const file_node_latency_latency: GenFile = /*@__PURE__*/
-  fileDesc("Chpub2RlL2xhdGVuY3kvbGF0ZW5jeS5wcm90bxIPeXVoYWlpbi5sYXRlbmN5IhMKBGh0dHASCwoDdXJsGAEgASgJIjcKA2RucxIMCgRob3N0GAEgASgJEiIKDXRhcmdldF9kb21haW4YAiABKAlSC3RhcmdldF9uYW1lIkEKDWRuc19vdmVyX3F1aWMSDAoEaG9zdBgBIAEoCRIiCg10YXJnZXRfZG9tYWluGAIgASgJUgt0YXJnZXRfbmFtZSIxCgJpcBILCgN1cmwYASABKAkSHgoKdXNlcl9hZ2VudBgCIAEoCVIKdXNlcl9hZ2VudCIpCgtpcF9yZXNwb25zZRIMCgRpcHY0GAEgASgJEgwKBGlwdjYYAiABKAkiIQoEc3R1bhIMCgRob3N0GAEgASgJEgsKA3RjcBgCIAEoCCLHAgoNc3R1bl9yZXNwb25zZRIuChJ4b3JfbWFwcGVkX2FkZHJlc3MYASABKAlSEnhvcl9tYXBwZWRfYWRkcmVzcxImCg5tYXBwZWRfYWRkcmVzcxgCIAEoCVIObWFwcGVkX2FkZHJlc3MSJAoNb3RoZXJfYWRkcmVzcxgDIAEoCVINb3RoZXJfYWRkcmVzcxI4ChdyZXNwb25zZV9vcmlnaW5fYWRkcmVzcxgEIAEoCVIXcmVzcG9uc2Vfb3JpZ2luX2FkZHJlc3MSEAoIU29mdHdhcmUYBSABKAkSMwoHTWFwcGluZxgGIAEoDjIZLnl1aGFpaW4ubGF0ZW5jeS5uYXRfdHlwZVIHbWFwcGluZxI3CglGaWx0ZXJpbmcYByABKA4yGS55dWhhaWluLmxhdGVuY3kubmF0X3R5cGVSCWZpbHRlcmluZyL0AQoIcHJvdG9jb2wSJQoEaHR0cBgBIAEoCzIVLnl1aGFpaW4ubGF0ZW5jeS5odHRwSAASIwoDZG5zGAIgASgLMhQueXVoYWlpbi5sYXRlbmN5LmRuc0gAEkYKDWRuc19vdmVyX3F1aWMYAyABKAsyHi55dWhhaWluLmxhdGVuY3kuZG5zX292ZXJfcXVpY0gAUg1kbnNfb3Zlcl9xdWljEiEKAmlwGAQgASgLMhMueXVoYWlpbi5sYXRlbmN5LmlwSAASJQoEc3R1bhgFIAEoCzIVLnl1aGFpaW4ubGF0ZW5jeS5zdHVuSABCCgoIcHJvdG9jb2wiXgoHcmVxdWVzdBIKCgJpZBgDIAEoCRIMCgRoYXNoGAEgASgJEgwKBGlwdjYYBCABKAgSKwoIcHJvdG9jb2wYAiABKAsyGS55dWhhaWluLmxhdGVuY3kucHJvdG9jb2wiNgoIcmVxdWVzdHMSKgoIcmVxdWVzdHMYASADKAsyGC55dWhhaWluLmxhdGVuY3kucmVxdWVzdCKsAQoIcmVzcG9uc2USUwoOaWRfbGF0ZW5jeV9tYXAYASADKAsyKy55dWhhaWluLmxhdGVuY3kucmVzcG9uc2UuSWRMYXRlbmN5TWFwRW50cnlSDmlkX2xhdGVuY3lfbWFwGksKEUlkTGF0ZW5jeU1hcEVudHJ5EgsKA2tleRgBIAEoCRIlCgV2YWx1ZRgCIAEoCzIWLnl1aGFpaW4ubGF0ZW5jeS5yZXBseToCOAEimgEKBXJlcGx5EiwKB2xhdGVuY3kYASABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb25IABIqCgJpcBgCIAEoCzIcLnl1aGFpaW4ubGF0ZW5jeS5pcF9yZXNwb25zZUgAEi4KBHN0dW4YAyABKAsyHi55dWhhaWluLmxhdGVuY3kuc3R1bl9yZXNwb25zZUgAQgcKBXJlcGx5KswBCghuYXRfdHlwZRIPCgtOQVRfVU5LTk9XThAAEhEKDU5BVF9OT19SRVNVTFQQARIgChxOQVRfRW5kcG9pbnRJbmRlcGVuZGVudE5vTkFUEAISGwoXTkFUX0VuZHBvaW50SW5kZXBlbmRlbnQQAxIYChROQVRfQWRkcmVzc0RlcGVuZGVudBAEEh8KG05BVF9BZGRyZXNzQW5kUG9ydERlcGVuZGVudBAFEiIKHk5BVF9TZXJ2ZXJOb3RTdXBwb3J0Q2hhbmdlUG9ydBAGQjZaNGdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9ub2RlL2xhdGVuY3liBnByb3RvMw", [file_google_protobuf_duration]);
+  fileDesc("Chpub2RlL2xhdGVuY3kvbGF0ZW5jeS5wcm90bxIPeXVoYWlpbi5sYXRlbmN5IhMKBGh0dHASCwoDdXJsGAEgASgJIjcKA2RucxIMCgRob3N0GAEgASgJEiIKDXRhcmdldF9kb21haW4YAiABKAlSC3RhcmdldF9uYW1lIkEKDWRuc19vdmVyX3F1aWMSDAoEaG9zdBgBIAEoCRIiCg10YXJnZXRfZG9tYWluGAIgASgJUgt0YXJnZXRfbmFtZSIxCgJpcBILCgN1cmwYASABKAkSHgoKdXNlcl9hZ2VudBgCIAEoCVIKdXNlcl9hZ2VudCIpCgtpcF9yZXNwb25zZRIMCgRpcHY0GAEgASgJEgwKBGlwdjYYAiABKAkiFAoFZXJyb3ISCwoDbXNnGAEgASgJIiEKBHN0dW4SDAoEaG9zdBgBIAEoCRILCgN0Y3AYAiABKAgixwIKDXN0dW5fcmVzcG9uc2USLgoSeG9yX21hcHBlZF9hZGRyZXNzGAEgASgJUhJ4b3JfbWFwcGVkX2FkZHJlc3MSJgoObWFwcGVkX2FkZHJlc3MYAiABKAlSDm1hcHBlZF9hZGRyZXNzEiQKDW90aGVyX2FkZHJlc3MYAyABKAlSDW90aGVyX2FkZHJlc3MSOAoXcmVzcG9uc2Vfb3JpZ2luX2FkZHJlc3MYBCABKAlSF3Jlc3BvbnNlX29yaWdpbl9hZGRyZXNzEhAKCFNvZnR3YXJlGAUgASgJEjMKB01hcHBpbmcYBiABKA4yGS55dWhhaWluLmxhdGVuY3kubmF0X3R5cGVSB21hcHBpbmcSNwoJRmlsdGVyaW5nGAcgASgOMhkueXVoYWlpbi5sYXRlbmN5Lm5hdF90eXBlUglmaWx0ZXJpbmci9AEKCHByb3RvY29sEiUKBGh0dHAYASABKAsyFS55dWhhaWluLmxhdGVuY3kuaHR0cEgAEiMKA2RucxgCIAEoCzIULnl1aGFpaW4ubGF0ZW5jeS5kbnNIABJGCg1kbnNfb3Zlcl9xdWljGAMgASgLMh4ueXVoYWlpbi5sYXRlbmN5LmRuc19vdmVyX3F1aWNIAFINZG5zX292ZXJfcXVpYxIhCgJpcBgEIAEoCzITLnl1aGFpaW4ubGF0ZW5jeS5pcEgAEiUKBHN0dW4YBSABKAsyFS55dWhhaWluLmxhdGVuY3kuc3R1bkgAQgoKCHByb3RvY29sIl4KB3JlcXVlc3QSCgoCaWQYAyABKAkSDAoEaGFzaBgBIAEoCRIMCgRpcHY2GAQgASgIEisKCHByb3RvY29sGAIgASgLMhkueXVoYWlpbi5sYXRlbmN5LnByb3RvY29sIjYKCHJlcXVlc3RzEioKCHJlcXVlc3RzGAEgAygLMhgueXVoYWlpbi5sYXRlbmN5LnJlcXVlc3QirAEKCHJlc3BvbnNlElMKDmlkX2xhdGVuY3lfbWFwGAEgAygLMisueXVoYWlpbi5sYXRlbmN5LnJlc3BvbnNlLklkTGF0ZW5jeU1hcEVudHJ5Ug5pZF9sYXRlbmN5X21hcBpLChFJZExhdGVuY3lNYXBFbnRyeRILCgNrZXkYASABKAkSJQoFdmFsdWUYAiABKAsyFi55dWhhaWluLmxhdGVuY3kucmVwbHk6AjgBIsMBCgVyZXBseRIsCgdsYXRlbmN5GAEgASgLMhkuZ29vZ2xlLnByb3RvYnVmLkR1cmF0aW9uSAASKgoCaXAYAiABKAsyHC55dWhhaWluLmxhdGVuY3kuaXBfcmVzcG9uc2VIABIuCgRzdHVuGAMgASgLMh4ueXVoYWlpbi5sYXRlbmN5LnN0dW5fcmVzcG9uc2VIABInCgVlcnJvchgEIAEoCzIWLnl1aGFpaW4ubGF0ZW5jeS5lcnJvckgAQgcKBXJlcGx5KswBCghuYXRfdHlwZRIPCgtOQVRfVU5LTk9XThAAEhEKDU5BVF9OT19SRVNVTFQQARIgChxOQVRfRW5kcG9pbnRJbmRlcGVuZGVudE5vTkFUEAISGwoXTkFUX0VuZHBvaW50SW5kZXBlbmRlbnQQAxIYChROQVRfQWRkcmVzc0RlcGVuZGVudBAEEh8KG05BVF9BZGRyZXNzQW5kUG9ydERlcGVuZGVudBAFEiIKHk5BVF9TZXJ2ZXJOb3RTdXBwb3J0Q2hhbmdlUG9ydBAGQjZaNGdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9ub2RlL2xhdGVuY3liBnByb3RvMw", [file_google_protobuf_duration]);
 
 /**
  * @generated from message yuhaiin.latency.http
@@ -120,6 +120,23 @@ export const ip_responseSchema: GenMessage<ip_response> = /*@__PURE__*/
   messageDesc(file_node_latency_latency, 4);
 
 /**
+ * @generated from message yuhaiin.latency.error
+ */
+export type error = Message<"yuhaiin.latency.error"> & {
+  /**
+   * @generated from field: string msg = 1;
+   */
+  msg: string;
+};
+
+/**
+ * Describes the message yuhaiin.latency.error.
+ * Use `create(errorSchema)` to create a new message.
+ */
+export const errorSchema: GenMessage<error> = /*@__PURE__*/
+  messageDesc(file_node_latency_latency, 5);
+
+/**
  * @generated from message yuhaiin.latency.stun
  */
 export type stun = Message<"yuhaiin.latency.stun"> & {
@@ -139,7 +156,7 @@ export type stun = Message<"yuhaiin.latency.stun"> & {
  * Use `create(stunSchema)` to create a new message.
  */
 export const stunSchema: GenMessage<stun> = /*@__PURE__*/
-  messageDesc(file_node_latency_latency, 5);
+  messageDesc(file_node_latency_latency, 6);
 
 /**
  * @generated from message yuhaiin.latency.stun_response
@@ -186,7 +203,7 @@ export type stun_response = Message<"yuhaiin.latency.stun_response"> & {
  * Use `create(stun_responseSchema)` to create a new message.
  */
 export const stun_responseSchema: GenMessage<stun_response> = /*@__PURE__*/
-  messageDesc(file_node_latency_latency, 6);
+  messageDesc(file_node_latency_latency, 7);
 
 /**
  * @generated from message yuhaiin.latency.protocol
@@ -233,7 +250,7 @@ export type protocol = Message<"yuhaiin.latency.protocol"> & {
  * Use `create(protocolSchema)` to create a new message.
  */
 export const protocolSchema: GenMessage<protocol> = /*@__PURE__*/
-  messageDesc(file_node_latency_latency, 7);
+  messageDesc(file_node_latency_latency, 8);
 
 /**
  * @generated from message yuhaiin.latency.request
@@ -265,7 +282,7 @@ export type request = Message<"yuhaiin.latency.request"> & {
  * Use `create(requestSchema)` to create a new message.
  */
 export const requestSchema: GenMessage<request> = /*@__PURE__*/
-  messageDesc(file_node_latency_latency, 8);
+  messageDesc(file_node_latency_latency, 9);
 
 /**
  * @generated from message yuhaiin.latency.requests
@@ -282,7 +299,7 @@ export type requests = Message<"yuhaiin.latency.requests"> & {
  * Use `create(requestsSchema)` to create a new message.
  */
 export const requestsSchema: GenMessage<requests> = /*@__PURE__*/
-  messageDesc(file_node_latency_latency, 9);
+  messageDesc(file_node_latency_latency, 10);
 
 /**
  * @generated from message yuhaiin.latency.response
@@ -299,7 +316,7 @@ export type response = Message<"yuhaiin.latency.response"> & {
  * Use `create(responseSchema)` to create a new message.
  */
 export const responseSchema: GenMessage<response> = /*@__PURE__*/
-  messageDesc(file_node_latency_latency, 10);
+  messageDesc(file_node_latency_latency, 11);
 
 /**
  * @generated from message yuhaiin.latency.reply
@@ -326,6 +343,12 @@ export type reply = Message<"yuhaiin.latency.reply"> & {
      */
     value: stun_response;
     case: "stun";
+  } | {
+    /**
+     * @generated from field: yuhaiin.latency.error error = 4;
+     */
+    value: error;
+    case: "error";
   } | { case: undefined; value?: undefined };
 };
 
@@ -334,7 +357,7 @@ export type reply = Message<"yuhaiin.latency.reply"> & {
  * Use `create(replySchema)` to create a new message.
  */
 export const replySchema: GenMessage<reply> = /*@__PURE__*/
-  messageDesc(file_node_latency_latency, 11);
+  messageDesc(file_node_latency_latency, 12);
 
 /**
  * @generated from enum yuhaiin.latency.nat_type
