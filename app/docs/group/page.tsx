@@ -44,45 +44,35 @@ enum LatencyType {
 type latencyStatus = {
     tcp: {
         loading: boolean,
-        value?: string
+        value: string
     }
     udp: {
         loading: boolean,
-        value?: string
+        value: string
     }
-    ip: {
+    ip?: {
         loading: boolean,
-        ipv4?: string,
-        ipv6?: string
+        ipv4: string,
+        ipv6: string
     }
-    stun: {
+    stun?: {
         loading: boolean,
-        mapping?: string,
-        filtering?: string,
-        mappedAddress?: string
+        mapping: string,
+        filtering: string,
+        mappedAddress: string
     }
-    stun_tcp: {
+    stun_tcp?: {
         loading: boolean,
-        ip?: string
-    }
-}
-
-const createLatencyStatus = (): latencyStatus => {
-    return {
-        tcp: { loading: false },
-        udp: { loading: false },
-        ip: { loading: false },
-        stun: { loading: false },
-        stun_tcp: { loading: false },
+        ip: string
     }
 }
 
 function isLoading(x: latencyStatus): boolean {
-    return x.tcp.loading || x.udp.loading || x.ip.loading || x.stun.loading || x.stun_tcp.loading
+    return x.tcp.loading || x.udp.loading || x.ip?.loading || x.stun?.loading || x.stun_tcp?.loading || false
 }
 
 function isAllLoading(x: latencyStatus): boolean {
-    return x.tcp.loading && x.udp.loading && x.ip.loading && x.stun.loading && x.stun_tcp.loading
+    return x.tcp.loading && x.udp.loading && (x.ip ? x.ip?.loading : false) && (x.stun ? x.stun.loading : false) && (x.stun_tcp ? x.stun_tcp.loading : false)
 }
 
 const getNatTypeString = (x: nat_type): string => {
@@ -227,8 +217,8 @@ function Group() {
                                     key={v}
                                     hash={v}
                                     name={k}
-                                    latency={latency[v] ?? createLatencyStatus()}
-                                    onChangeLatency={(e) => { setLatency(prev => { return { ...prev, [v]: e } }) }}
+                                    latency={latency[v] ?? { tcp: { loading: false, value: "N/A" }, udp: { loading: false, value: "N/A" }, }}
+                                    onChangeLatency={(e) => { setLatency(prev => { return { ...prev, [v]: e(prev[v] ?? { tcp: { loading: false, value: "N/A" }, udp: { loading: false, value: "N/A" }, }) } }) }}
                                     onClickEdit={() => { openModal(v) }}
                                 />
                             })
@@ -274,87 +264,117 @@ const createLatencyRequest = (r:
     }
 }
 
-const createLatencyReqByType = (type: LatencyType) => {
+type Request = {
+    request: protocol,
+    setLoading: (loading: boolean, error?: string) => void,
+    setResult: (result: reply) => void
+}
+
+const createLatencyReqByType = (type: LatencyType, latency: latencyStatus, setState: (x: (x: latencyStatus) => latencyStatus) => void): Request => {
     switch (type) {
         case LatencyType.TCP:
-            return createLatencyRequest({ case: "http", url: LatencyHTTPUrl })
+            return {
+                request: createLatencyRequest({ case: "http", url: LatencyHTTPUrl }),
+                setLoading: (loading: boolean, error?: string) => {
+                    setState((prev) => { return { ...prev, tcp: { ...prev.tcp, loading: loading } } })
+                    if (error) setState((prev) => { return { ...prev, tcp: { loading: false, value: error } } })
+                },
+                setResult: (r: reply) => {
+                    if (r.reply.case === "latency") {
+                        const value = durationToStroing(r.reply.value)
+                        setState((prev) => { return { ...prev, tcp: { value: value, loading: false } } })
+                    }
+                }
+            }
         case LatencyType.UDP:
-            return createLatencyRequest({ case: "dnsOverQuic", host: LatencyDNSUrl, targetDomain: "www.google.com" })
+            return {
+                request: createLatencyRequest({ case: "dnsOverQuic", host: LatencyDNSUrl, targetDomain: "www.google.com" }),
+                setLoading: (loading: boolean, error?: string) => {
+                    setState((prev) => { return { ...prev, udp: { ...prev.udp, loading: loading } } })
+                    if (error) setState((prev) => { return { ...prev, udp: { loading: false, value: error } } })
+                },
+                setResult: (r: reply) => {
+                    if (r.reply.case === "latency") {
+                        const value = durationToStroing(r.reply.value)
+                        setState((prev) => { return { ...prev, udp: { value: value, loading: false } } })
+                    }
+                }
+            }
         case LatencyType.IP:
-            return createLatencyRequest({ case: "ip", url: LatencyIPUrl })
+            return {
+                request: createLatencyRequest({ case: "ip", url: LatencyIPUrl }),
+                setLoading: (loading: boolean, error?: string) => {
+                    setState((prev) => { return { ...prev, ip: { loading: loading, ipv4: latency.ip ? latency.ip.ipv4 : "N/A", ipv6: latency.ip ? latency.ip.ipv6 : "N/A" } } })
+                    if (error) setState((prev) => { return { ...prev, ip: { loading: false, ipv4: error, ipv6: error } } })
+                },
+                setResult: (r: reply) => {
+                    if (r.reply.case === "ip") {
+                        const ipv4 = r.reply.value.ipv4
+                        const ipv6 = r.reply.value.ipv6
+                        setState((prev) => { return { ...prev, ip: { ipv4: ipv4, ipv6: ipv6, loading: false } } })
+                    }
+                }
+            }
         case LatencyType.STUNTCP:
-            return createLatencyRequest({ case: "stun", host: LatencyStunTCPUrl, tcp: true })
+            return {
+                request: createLatencyRequest({ case: "stun", host: LatencyStunTCPUrl, tcp: true }),
+                setLoading: (loading: boolean, error?: string) => {
+                    setState((prev) => { return { ...prev, stun_tcp: { loading: loading, ip: latency.stun_tcp ? latency.stun_tcp.ip : "N/A" } } })
+                    if (error) setState((prev) => { return { ...prev, stun_tcp: { loading: false, ip: error } } })
+                },
+                setResult: (r: reply) => {
+                    if (r.reply.case === "stun") {
+                        const ip = r.reply.value.mappedAddress
+                        setState((prev) => { return { ...prev, stun_tcp: { ip: ip, loading: false } } })
+                    }
+                }
+            }
         case LatencyType.STUN:
-            return createLatencyRequest({ case: "stun", host: LatencyStunUrl, tcp: false })
+            return {
+                request: createLatencyRequest({ case: "stun", host: LatencyStunUrl, tcp: false }),
+                setLoading: (loading: boolean, error?: string) => {
+                    setState((prev) => { return { ...prev, stun: { loading: loading, mappedAddress: latency.stun ? latency.stun.mappedAddress : "N/A", mapping: latency.stun ? latency.stun.mapping : "N/A", filtering: latency.stun ? latency.stun.filtering : "N/A" } } })
+                    if (error) setState((prev) => { return { ...prev, stun: { loading: false, mappedAddress: error, mapping: error, filtering: error } } })
+                },
+                setResult: (r: reply) => {
+                    if (r.reply.case === "stun") {
+                        const mapping = getNatTypeString(r.reply.value.Mapping)
+                        const filtering = getNatTypeString(r.reply.value.Filtering)
+                        const mappedAddress = r.reply.value.mappedAddress
+                        setState((prev) => {
+                            return {
+                                ...prev, stun: {
+                                    loading: false,
+                                    mapping: mapping,
+                                    filtering: filtering,
+                                    mappedAddress: mappedAddress
+                                }
+                            }
+                        })
+                    }
+                }
+            }
     }
 }
 
 const NodeItemv2: FC<{
     hash: string, name: string,
     latency: latencyStatus,
-    onChangeLatency: (x: latencyStatus) => void
+    onChangeLatency: (x: (s: latencyStatus) => latencyStatus) => void
     onClickEdit: () => void
 }> = ({ hash, name, onClickEdit, onChangeLatency, latency }) => {
     const ctx = useContext(GlobalToastContext);
 
-    const setLoading = (type: LatencyType, loading: boolean = true, error?: string) => {
-        switch (type) {
-            case LatencyType.TCP:
-                onChangeLatency({ ...latency, tcp: { ...latency.tcp, loading: loading } })
-                if (error) onChangeLatency({ ...latency, tcp: { ...latency.tcp, loading: false, value: error } })
-                break
-            case LatencyType.UDP:
-                onChangeLatency({ ...latency, udp: { ...latency.udp, loading: loading } })
-                if (error) onChangeLatency({ ...latency, udp: { ...latency.udp, loading: false, value: error } })
-                break
-            case LatencyType.IP:
-                onChangeLatency({ ...latency, ip: { ...latency.ip, loading: loading } })
-                if (error) onChangeLatency({ ...latency, ip: { ...latency.ip, loading: false, ipv4: error, ipv6: error } })
-                break
-            case LatencyType.STUN:
-                onChangeLatency({ ...latency, stun: { ...latency.stun, loading: loading } })
-                if (error) onChangeLatency({ ...latency, stun: { loading: false, mappedAddress: error } })
-                break
-            case LatencyType.STUNTCP:
-                onChangeLatency({ ...latency, stun_tcp: { ...latency.stun_tcp, loading: loading } })
-                if (error) onChangeLatency({ ...latency, stun_tcp: { loading: false, ip: error } })
-                break
-        }
-    }
-
-    const updateStatus = (result: reply, tcp: boolean = false) => {
-        let r = result.reply
-        switch (r.case) {
-            case "ip":
-                onChangeLatency({ ...latency, ip: { ipv4: r.value.ipv4, ipv6: r.value.ipv6, loading: false } })
-                break
-            case "stun":
-                if (tcp)
-                    onChangeLatency({ ...latency, stun_tcp: { loading: false, ip: r.value.mappedAddress } })
-                else onChangeLatency({
-                    ...latency, stun: {
-                        loading: false,
-                        mapping: getNatTypeString(r.value.Mapping),
-                        filtering: getNatTypeString(r.value.Filtering),
-                        mappedAddress: r.value.mappedAddress
-                    }
-                })
-                break
-            case "latency":
-                if (tcp)
-                    onChangeLatency({ ...latency, tcp: { value: durationToStroing(r.value), loading: false } })
-                else onChangeLatency({ ...latency, udp: { value: durationToStroing(r.value), loading: false } })
-                break
-        }
-    }
-
     const test = (type: LatencyType) => {
-        setLoading(LatencyType.TCP, true)
-        FetchProtobuf(node.method.latency, "/latency", "POST", create(requestsSchema, { requests: [{ hash: hash, id: "latency", ipv6: LatencyIPv6, protocol: createLatencyReqByType(type) }] }))
+        const { request, setLoading, setResult } = createLatencyReqByType(type, latency, onChangeLatency)
+
+        setLoading(true)
+
+        FetchProtobuf(node.method.latency, "/latency", "POST", create(requestsSchema, { requests: [{ hash: hash, id: "latency", ipv6: LatencyIPv6, protocol: request }] }))
             .then(async ({ data: resp, error }) => {
                 if (error) {
                     console.log(`test failed ${error.code}| ${error.msg}`)
-                    setLoading(type, false, `${error.code}| ${error.msg}`)
+                    setLoading(false, `${error.code}| ${error.msg}`)
                     return
                 }
 
@@ -362,14 +382,14 @@ const NodeItemv2: FC<{
                     const rr = resp.idLatencyMap["latency"]
                     if (rr.reply.case === "error") {
                         console.log(`test failed ${rr.reply.value.msg}`)
-                        setLoading(type, false, rr.reply.value.msg);
+                        setLoading(false, rr.reply.value.msg);
                         return
                     }
 
-                    setLoading(type, false);
-                    updateStatus(resp.idLatencyMap["latency"], type === LatencyType.STUNTCP || type === LatencyType.TCP)
+                    setLoading(false);
+                    setResult(rr)
                 } else {
-                    setLoading(type, false, "timeout")
+                    setLoading(false, "timeout")
                 }
             })
     }
@@ -382,7 +402,7 @@ const NodeItemv2: FC<{
                 <ListGroup.Item>
                     <div className="d-xl-flex">
                         <div className="endpoint-name flex-grow-1 notranslate">TCP</div>
-                        <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-download">{latency.tcp.value ?? "N/A"}</div>
+                        <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-download">{latency.tcp.value}</div>
                     </div>
                 </ListGroup.Item>
 
@@ -390,62 +410,54 @@ const NodeItemv2: FC<{
                 <ListGroup.Item>
                     <div className="d-xl-flex">
                         <div className="endpoint-name flex-grow-1 notranslate">UDP</div>
-                        <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.udp.value ?? "N/A"}</div>
+                        <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.udp.value}</div>
                     </div>
                 </ListGroup.Item>
 
                 {
-                    latency.ip.ipv4 &&
-                    <ListGroup.Item>
-                        <div className="d-xl-flex">
-                            <div className="endpoint-name flex-grow-1 notranslate">IPv4</div>
-                            <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.ip.ipv4}</div>
-                        </div>
-                    </ListGroup.Item>
+                    latency.ip &&
+                    <>
+                        <ListGroup.Item>
+                            <div className="d-xl-flex">
+                                <div className="endpoint-name flex-grow-1 notranslate">IPv4</div>
+                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.ip.ipv4}</div>
+                            </div>
+                        </ListGroup.Item>
+                        <ListGroup.Item>
+                            <div className="d-xl-flex">
+                                <div className="endpoint-name flex-grow-1 notranslate">IPv6</div>
+                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.ip.ipv6}</div>
+                            </div>
+                        </ListGroup.Item>
+                    </>
                 }
 
                 {
-                    latency.ip.ipv6 &&
-                    <ListGroup.Item>
-                        <div className="d-xl-flex">
-                            <div className="endpoint-name flex-grow-1 notranslate">IPv6</div>
-                            <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.ip.ipv6}</div>
-                        </div>
-                    </ListGroup.Item>
+                    latency.stun &&
+                    <>
+                        <ListGroup.Item>
+                            <div className="d-xl-flex text-truncate">
+                                <div className="endpoint-name flex-grow-1 notranslate text-truncate">Mapping</div>
+                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.stun.mapping}</div>
+                            </div>
+                        </ListGroup.Item>
+                        <ListGroup.Item>
+                            <div className="d-xl-flex text-truncate">
+                                <div className="endpoint-name flex-grow-1 notranslate text-truncate">Filtering</div>
+                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.stun.filtering}</div>
+                            </div>
+                        </ListGroup.Item>
+                        <ListGroup.Item>
+                            <div className="d-xl-flex text-truncate">
+                                <div className="endpoint-name flex-grow-1 notranslate text-truncate">MappedAddress</div>
+                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.stun.mappedAddress}</div>
+                            </div>
+                        </ListGroup.Item>
+                    </>
                 }
 
                 {
-                    latency.stun.mapping &&
-                    <ListGroup.Item>
-                        <div className="d-xl-flex text-truncate">
-                            <div className="endpoint-name flex-grow-1 notranslate text-truncate">Mapping</div>
-                            <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.stun.mapping}</div>
-                        </div>
-                    </ListGroup.Item>
-                }
-
-                {
-                    latency.stun.filtering &&
-                    <ListGroup.Item>
-                        <div className="d-xl-flex text-truncate">
-                            <div className="endpoint-name flex-grow-1 notranslate text-truncate">Filtering</div>
-                            <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.stun.filtering}</div>
-                        </div>
-                    </ListGroup.Item>
-                }
-
-                {
-                    latency.stun.mappedAddress &&
-                    <ListGroup.Item>
-                        <div className="d-xl-flex text-truncate">
-                            <div className="endpoint-name flex-grow-1 notranslate text-truncate">MappedAddress</div>
-                            <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.stun.mappedAddress}</div>
-                        </div>
-                    </ListGroup.Item>
-                }
-
-                {
-                    latency.stun_tcp.ip &&
+                    latency.stun_tcp &&
                     <ListGroup.Item>
                         <div className="d-xl-flex text-truncate">
                             <div className="endpoint-name flex-grow-1 notranslate text-truncate">STUN IP</div>
@@ -476,9 +488,9 @@ const NodeItemv2: FC<{
                         >
                             <Dropdown.Item disabled={latency.tcp.loading} eventKey={LatencyType.TCP}>TCP&nbsp;{latency.tcp.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
                             <Dropdown.Item disabled={latency.udp.loading} eventKey={LatencyType.UDP}>UDP&nbsp;{latency.udp.loading && <Spinner size="sm" animation="border" />} </Dropdown.Item>
-                            <Dropdown.Item disabled={latency.stun.loading} eventKey={LatencyType.STUN}>STUN&nbsp;{latency.stun.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
-                            <Dropdown.Item disabled={latency.stun_tcp.loading} eventKey={LatencyType.STUNTCP}>STUN TCP&nbsp;{latency.stun_tcp.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
-                            <Dropdown.Item disabled={latency.ip.loading} eventKey={LatencyType.IP}>IP&nbsp;{latency.ip.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
+                            <Dropdown.Item disabled={latency.stun?.loading} eventKey={LatencyType.STUN}>STUN&nbsp;{latency.stun?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
+                            <Dropdown.Item disabled={latency.stun_tcp?.loading} eventKey={LatencyType.STUNTCP}>STUN TCP&nbsp;{latency.stun_tcp?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
+                            <Dropdown.Item disabled={latency.ip?.loading} eventKey={LatencyType.IP}>IP&nbsp;{latency.ip?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
                         </DropdownButton>
                     </ButtonGroup>
                 </ListGroup.Item>

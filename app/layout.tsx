@@ -5,14 +5,27 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container } from 'react-bootstrap';
 import { GlobalToastProvider } from './docs/common/toast';
 import NavBar from './docs/nav';
+import { useEffect, useState } from 'react';
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const [colorScheme, setColorScheme] = useState<'light' | 'dark' | undefined>(undefined);
+
+  useEffect(() => {
+    if (!window.matchMedia) {
+      setColorScheme('light')
+      return
+    }
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    setColorScheme(mq.matches ? 'dark' : 'light')
+    mq.addEventListener('change', (evt) => { setColorScheme(evt.matches ? 'dark' : 'light'); });
+  }, []);
+
   return (
-    <html lang="en" data-bs-theme="auto">
+    <html lang="en" data-bs-theme={colorScheme} suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <title>Yuhaiin</title>
@@ -23,13 +36,15 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/docs/logov2192.png" />
       </head>
       <body>
-        <NavBar>
-          <Container className="mt-3 mb-3">
-            <GlobalToastProvider>
-              {children}
-            </GlobalToastProvider>
-          </Container>
-        </NavBar>
+        {colorScheme &&
+          <NavBar>
+            <Container className="mt-3 mb-3">
+              <GlobalToastProvider>
+                {children}
+              </GlobalToastProvider>
+            </Container>
+          </NavBar>
+        }
       </body>
     </html>
   )

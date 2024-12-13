@@ -6,12 +6,12 @@
     "@bufbuild/buf": "^1.45.0",
     "@bufbuild/protobuf": "^2.2.3",
     "@bufbuild/protoc-gen-es": "^2.2.3",
-    "@types/node": "^22.10.1",
+    "@types/node": "^22.10.2",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.2",
     "bootstrap": "^v5.3.3",
     "bootstrap-icons": "^1.11.3",
-    "next": "^15.0.4",
+    "next": "^15.1.0",
     "react-bootstrap": "^2.10.5",
     "shlex": "^2.1.2",
     "swr": "^2.2.5",
@@ -24,6 +24,6 @@
   },
   "devDependencies": {
     "eslint": "^9.13.0",
-    "eslint-config-next": "^15.0.4"
+    "eslint-config-next": "^15.1.0"
   }
 }
