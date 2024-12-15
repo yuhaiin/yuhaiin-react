@@ -8,26 +8,27 @@ import useSWR from "swr"
 import styles from "../../common/clickable.module.css"
 import Loading from "../../common/loading"
 import { ProtoESFetcher } from "../../common/proto"
-import { connections, failed_history } from "../../pbes/statistic/grpc/config_pb"
+import { type } from "../../pbes/statistic/config_pb"
+import { all_history, connections } from "../../pbes/statistic/grpc/config_pb"
 
 const TimestampZero = create(TimestampSchema, { seconds: BigInt(0), nanos: 0 })
 
-function FailedHistory() {
+function History() {
     const [sort, setSort] = useState("Time")
     const [asc, setAsc] = useState(1)
     const setSortField = (field: string) => field === sort ? setAsc(-asc) : setSort(field)
     const sortIcon = (field: string) => field === sort ? <i className={asc === -1 ? "bi bi-sort-up-alt" : "bi bi-sort-down-alt"}></i> : <></>
     const sortFunc = (a: any, b: any) => a > b ? -1 * asc : 1 * asc
     const cth = (field: string) => <th className={styles.clickable} onClick={() => setSortField(field)}>{field}{sortIcon(field)}</th>
-    const sortFieldFunc = (a: failed_history, b: failed_history) => {
-        if (sort === "Host") return sortFunc(a.host, b.host)
-        else if (sort === "Proc") return sortFunc(a.process, b.process)
-        else if (sort === "Count") return sortFunc(a.failedCount, b.failedCount)
+    const sortFieldFunc = (a: all_history, b: all_history) => {
+        if (sort === "Host") return sortFunc(a.connection?.addr, b.connection?.addr)
+        else if (sort === "Proc") return sortFunc(a.connection?.extra.Process, b.connection?.extra.Process)
+        else if (sort === "Count") return sortFunc(a.count, b.count)
         else return sortFunc(timestampDate(a.time ?? TimestampZero), timestampDate(b.time ?? TimestampZero))
     }
 
-    const { data, error, isLoading, isValidating, mutate } = useSWR("/conn/failed_history",
-        ProtoESFetcher(connections.method.failed_history))
+    const { data, error, isLoading, isValidating, mutate } = useSWR("/conn/history",
+        ProtoESFetcher(connections.method.all_history))
 
 
     if (error) return <Loading code={error.code}>{error.msg}</Loading>
@@ -46,10 +47,10 @@ function FailedHistory() {
             <thead>
                 <tr>
                     {cth("Time")}
-                    <th>Net</th>
                     {cth("Host")}
+                    <th>Mode</th>
+                    <th>Net</th>
                     {cth("Count")}
-                    <th>Err</th>
                     {data.dumpProcessEnabled && cth("Proc")}
                 </tr>
             </thead>
@@ -59,11 +60,11 @@ function FailedHistory() {
                         return (
                             <tr key={"bh-" + index}>
                                 <td>{timestampDate(v.time!).toLocaleString()}</td>
-                                <td>{v.protocol}</td>
-                                <td>{v.host}</td>
-                                <td>{Number(v.failedCount)}</td>
-                                <td>{v.error}</td>
-                                {data.dumpProcessEnabled && <td>{v.process}</td>}
+                                <td>{v.connection?.addr}</td>
+                                <td>{v.connection?.extra.MODE}</td>
+                                <td>{type[v.connection?.type?.connType ?? type.unknown]}</td>
+                                <td>{Number(v.count)}</td>
+                                {data.dumpProcessEnabled && <td>{v.connection?.extra.Process}</td>}
                             </tr>
                         )
                     })
@@ -73,4 +74,4 @@ function FailedHistory() {
     </>
 }
 
-export default FailedHistory
+export default History

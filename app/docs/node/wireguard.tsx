@@ -88,7 +88,7 @@ export const Wireguardv2: FC<Props<wireguard>> = ({ value, onChange }) => {
 
         <SettingInputText
             label="Reserved"
-            value={btoa(String.fromCharCode.apply(null, value.reserved))}
+            value={btoa(String.fromCharCode.apply(null, Array.from(value.reserved)))}
             onChange={(e) => { onChange({ ...value, reserved: Uint8Array.from(atob(e), c => c.charCodeAt(0)) }) }}
         />
 

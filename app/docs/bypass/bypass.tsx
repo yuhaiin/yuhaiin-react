@@ -1,11 +1,15 @@
 import { create } from '@bufbuild/protobuf';
-import { Button, Card, Col, Form, Row, } from 'react-bootstrap';
+import { Dispatch, SetStateAction } from 'react';
+import { Button, ButtonGroup, Card, Col, Form, Row } from 'react-bootstrap';
 import { SettingCheck } from '../common/switch';
 import { Container, MoveUpDown, NewItemList, SettingInputText } from '../config/components';
 import { config, mode, mode_config, mode_configSchema, remote_rule, remote_rule_fileSchema, remote_rule_httpSchema, remote_ruleSchema, resolve_strategy, udp_proxy_fqdn_strategy } from '../pbes/config/bypass/bypass_pb';
 
-
-export const Bypass = (props: { bypass: config, onChange: (x: config) => void, }) => {
+export const Bypass = (props: {
+    bypass: config,
+    onChange: (x: config) => void,
+    setModalData: Dispatch<SetStateAction<{ show: boolean, data?: string, import?: boolean, onSave?: (data: string) => void }>>
+}) => {
     const defaultRule: mode_config = create(mode_configSchema, {
         hostname: ["www.example.com"],
         mode: mode.proxy,
@@ -21,6 +25,8 @@ export const Bypass = (props: { bypass: config, onChange: (x: config) => void, }
 
     return (
         <>
+
+
             <Card className="mb-3">
                 <Card.Body>
                     <SettingModeSelect label='TCP' network={true} value={props.bypass.tcp} onChange={(v) => props.onChange({ ...props.bypass, tcp: v })} />
@@ -54,7 +60,6 @@ export const Bypass = (props: { bypass: config, onChange: (x: config) => void, }
 
             <hr />
 
-
             {
                 props.bypass.customRuleV3.map((value, index) => (
                     <Container
@@ -63,7 +68,11 @@ export const Bypass = (props: { bypass: config, onChange: (x: config) => void, }
                         onClose={() => props.onChange({ ...props.bypass, customRuleV3: props.bypass.customRuleV3.filter((_, i) => i !== index) })}
                         moveUpDown={new MoveUpDown(props.bypass.customRuleV3, index, (e) => props.onChange({ ...props.bypass, customRuleV3: e }))}
                     >
-                        <BypassSingleComponents config={value} onChange={(e) => props.onChange({ ...props.bypass, customRuleV3: [...props.bypass.customRuleV3.slice(0, index), e, ...props.bypass.customRuleV3.slice(index + 1)] })} />
+                        <BypassSingleComponents
+                            config={value}
+                            onChange={(e) => props.onChange({ ...props.bypass, customRuleV3: [...props.bypass.customRuleV3.slice(0, index), e, ...props.bypass.customRuleV3.slice(index + 1)] })}
+                            setModalData={props.setModalData}
+                        />
                     </Container>
                 ))
             }
@@ -79,8 +88,11 @@ export const Bypass = (props: { bypass: config, onChange: (x: config) => void, }
     )
 }
 
-const BypassSingleComponents = (props: { config: mode_config, onChange: (x: mode_config) => void }) => {
-
+const BypassSingleComponents = (props: {
+    config: mode_config,
+    onChange: (x: mode_config) => void,
+    setModalData: Dispatch<SetStateAction<{ show: boolean, data?: string, import?: boolean, onSave?: (data: string) => void }>>
+}) => {
     return (
         <>
             <SettingModeSelect label='Mode' network={false} value={props.config.mode} onChange={(v) => props.onChange({ ...props.config, mode: v })} />
@@ -92,6 +104,39 @@ const BypassSingleComponents = (props: { config: mode_config, onChange: (x: mode
                 data={props.config.hostname}
                 onChange={(v) => props.onChange({ ...props.config, hostname: v })}
                 errorMsgs={props.config.errorMsgs}
+                beforeContent={<>
+                    <ButtonGroup className="mb-2 w-100">
+                        <Button
+                            variant='outline-success'
+                            onClick={() => {
+                                props.setModalData({
+                                    show: true,
+                                    import: true,
+                                    data: undefined,
+                                    onSave: (data: string) => {
+                                        const v = JSON.parse(data)
+                                        props.onChange({ ...props.config, hostname: [...props.config.hostname, ...v] })
+                                        props.setModalData(prev => { return { ...prev, show: false } })
+                                    }
+                                })
+                            }}
+                        >
+                            <i className="bi bi-box-arrow-in-down"></i> Import
+                        </Button>
+                        <Button
+                            variant='outline-success'
+                            onClick={() => {
+                                props.setModalData({
+                                    show: true,
+                                    data: JSON.stringify(props.config.hostname, null, 4),
+                                    import: false
+                                })
+                            }}
+                        >
+                            <i className="bi bi-box-arrow-in-up"></i> Export
+                        </Button>
+                    </ButtonGroup>
+                </>}
             />
         </>
     )
@@ -170,7 +215,7 @@ function SettingModeSelect(props: { label: string, network: boolean, value: mode
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2}>{props.label}</Form.Label>
             <Col sm={10}>
-                <Form.Select value={mode[props.value]} onChange={(e) => props.onChange(mode[e.target.value])}>
+                <Form.Select value={mode[props.value]} onChange={(e) => props.onChange(mode[e.target.value as keyof typeof mode])}>
                     {props.network && <option value={mode[mode.bypass]}>BYPASS</option>}
                     <option value={mode[mode.direct]}>DIRECT</option>
                     <option value={mode[mode.proxy]}>PROXY</option>
@@ -186,7 +231,7 @@ function SettingUdpProxyFqdnSelect(props: { label: string, value: udp_proxy_fqdn
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2}>{props.label}</Form.Label>
             <Col sm={10}>
-                <Form.Select value={udp_proxy_fqdn_strategy[props.value]} onChange={(e) => props.onChange(udp_proxy_fqdn_strategy[e.target.value])}>
+                <Form.Select value={udp_proxy_fqdn_strategy[props.value]} onChange={(e) => props.onChange(udp_proxy_fqdn_strategy[e.target.value as keyof typeof udp_proxy_fqdn_strategy])}>
                     <option value={udp_proxy_fqdn_strategy[udp_proxy_fqdn_strategy.udp_proxy_fqdn_strategy_default]}>Global</option>
                     <option value={udp_proxy_fqdn_strategy[udp_proxy_fqdn_strategy.resolve]}>Resolve</option>
                     <option value={udp_proxy_fqdn_strategy[udp_proxy_fqdn_strategy.skip_resolve]}>Skip</option>
@@ -202,7 +247,7 @@ function SettingResolveStrategySelect(props: { label: string, value: resolve_str
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2}>{props.label}</Form.Label>
             <Col sm={10}>
-                <Form.Select value={resolve_strategy[props.value]} onChange={(e) => props.onChange(resolve_strategy[e.target.value])}>
+                <Form.Select value={resolve_strategy[props.value]} onChange={(e) => props.onChange(resolve_strategy[e.target.value as keyof typeof resolve_strategy])}>
                     <option value={resolve_strategy[resolve_strategy.default]}>default</option>
                     <option value={resolve_strategy[resolve_strategy.prefer_ipv4]}>prefer_ipv4</option>
                     <option value={resolve_strategy[resolve_strategy.only_ipv4]}>only_ipv4</option>
@@ -213,4 +258,8 @@ function SettingResolveStrategySelect(props: { label: string, value: resolve_str
         </Form.Group>
     )
 }
+
+
+
+
 export default Bypass;

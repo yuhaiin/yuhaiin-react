@@ -10,7 +10,7 @@ import { LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunTC
 import Loading from "../common/loading";
 import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
 import { GlobalToastContext } from "../common/toast";
-import { NodeJsonModal, NodeModal } from "../modal/node";
+import { NodeJsonModal, NodeModal } from "../node/modal";
 import { node, use_reqSchema } from "../pbes/node/grpc/node_pb";
 import { dns_over_quicSchema, httpSchema, ipSchema, nat_type, protocol, protocolSchema, reply, requestsSchema, stunSchema } from "../pbes/node/latency/latency_pb";
 import { origin, point, pointSchema } from "../pbes/node/point/point_pb";
@@ -499,7 +499,7 @@ const NodeItemv2: FC<{
     </Accordion.Item>
 }
 
-const useNode = (ctx, hash: string, key: string) => {
+const useNode = (ctx: any, hash: string, key: string) => {
     FetchProtobuf(node.method.use, `/node`, "PUT", create(use_reqSchema, {
         tcp: key === "tcp" || key === "tcpudp",
         udp: key === "udp" || key === "tcpudp",

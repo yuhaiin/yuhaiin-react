@@ -88,7 +88,7 @@ export const TunComponents = React.memo((props: { tun: tun, onChange: (x: tun) =
                 <Col sm={10}>
                     <Form.Select
                         value={tun_endpoint_driver[(props.value === undefined || props.value === null) ? tun_endpoint_driver.fdbased : props.value]}
-                        onChange={(e) => props.onChange(tun_endpoint_driver[e.target.value])}
+                        onChange={(e) => props.onChange(tun_endpoint_driver[e.target.value as keyof typeof tun_endpoint_driver])}
                     >
                         <option value={tun_endpoint_driver[tun_endpoint_driver.fdbased]}>Fdbased</option>
                         <option value={tun_endpoint_driver[tun_endpoint_driver.channel]}>Channel</option>

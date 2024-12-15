@@ -3,7 +3,7 @@
 import { create } from "@bufbuild/protobuf"
 import { timestampDate, TimestampSchema } from "@bufbuild/protobuf/wkt"
 import { useState } from "react"
-import { Button, Table } from "react-bootstrap"
+import { Button, Spinner, Table } from "react-bootstrap"
 import useSWR from "swr"
 import styles from "../../common/clickable.module.css"
 import Loading from "../../common/loading"
@@ -26,12 +26,19 @@ function BypassBlockHistory() {
         else return sortFunc(timestampDate(a.time ?? TimestampZero), timestampDate(b.time ?? TimestampZero))
     }
 
-    const { data, error, isLoading, mutate } = useSWR("/bypass/block_history", ProtoESFetcher(bypass.method.block_history))
+    const { data, error, isLoading, isValidating, mutate } = useSWR("/bypass/block_history", ProtoESFetcher(bypass.method.block_history))
 
     if (error) return <Loading code={error.code}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />
     return <>
-        <Button variant="outline-primary" className="mb-3" onClick={() => mutate()}>Refresh</Button>
+        <Button
+            variant="outline-primary"
+            className="mb-3"
+            onClick={() => mutate()}
+            disabled={isValidating || isLoading}
+        >
+            Refresh {(isValidating || isLoading) && <>&nbsp;<Spinner size="sm" animation="border" /></>}
+        </Button>
 
         <Table hover striped size="sm">
             <thead>

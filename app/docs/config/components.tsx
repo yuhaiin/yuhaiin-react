@@ -89,18 +89,29 @@ export const SettingInputTextarea = (props: { label: string, value: string | num
     )
 }
 
-export const NewItemList: FC<{ title: string, data: string[], onChange: (x: string[]) => void, errorMsgs?: { [key: string]: string } }> =
-    ({ title, data, onChange, errorMsgs }) => {
+export const NewItemList: FC<{
+    title: string,
+    data: string[],
+    onChange: (x: string[]) => void, errorMsgs?: { [key: string]: string },
+    beforeContent?: JSX.Element
+}> =
+    ({ title, data, onChange, errorMsgs, beforeContent }) => {
         const [newData, setNewData] = useState({ value: "" });
 
         return (<Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2} className="nowrap">{title}</Form.Label>
 
+            {beforeContent &&
+                <Col sm={{ span: 10 }} >
+                    {beforeContent}
+                </Col>
+            }
+
             {
                 data &&
                 data.map((v, index) => {
                     return (
-                        <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
+                        <Col sm={{ span: 10, offset: (beforeContent || index !== 0) ? 2 : 0 }} key={index} >
                             <InputGroup className="mb-2" hasValidation={errorMsgs && errorMsgs[v] ? true : false}>
                                 <Form.Control
                                     onChange={(e) => { onChange([...data.slice(0, index), e.target.value, ...data.slice(index + 1)]) }}
@@ -120,7 +131,8 @@ export const NewItemList: FC<{ title: string, data: string[], onChange: (x: stri
                 })
             }
 
-            <Col sm={{ span: 10, offset: data?.length !== 0 ? 2 : 0 }}>
+
+            <Col sm={{ span: 10, offset: (beforeContent || data?.length !== 0) ? 2 : 0 }}>
                 <InputGroup className="mb-2" >
                     <Form.Control value={newData.value} onChange={(e) => setNewData({ value: e.target.value })} />
                     <Button variant='outline-success' onClick={() => { onChange([...data, newData.value]) }} >

@@ -27,6 +27,7 @@ function NavBar(props: { children: React.ReactNode }) {
                             <Nav.Item><Nav.Link eventKey='/docs/subscribe/'>SUBSCRIBE</Nav.Link></Nav.Item>
                             <NavDropdown title="CONNECTIONS" active={usePathname().startsWith('/docs/connections/')}>
                                 <NavDropdown.Item eventKey={'/docs/connections/'}>Connections</NavDropdown.Item>
+                                <NavDropdown.Item eventKey={'/docs/connections/history'}>History</NavDropdown.Item>
                                 <NavDropdown.Item eventKey={'/docs/connections/failed'}>Failed History</NavDropdown.Item>
                             </NavDropdown>
                             <NavDropdown title="BYPASS" active={usePathname().startsWith('/docs/bypass/')}>

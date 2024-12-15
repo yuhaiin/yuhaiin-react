@@ -7,9 +7,9 @@ import { Interfaces, InterfacesContext } from "../common/interfaces";
 import Loading from "../common/loading";
 import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
 import { GlobalToastContext } from "../common/toast";
-import { Point } from "../node/protocol";
 import { node } from "../pbes/node/grpc/node_pb";
 import { point, pointSchema } from "../pbes/node/point/point_pb";
+import { Point } from "./protocol";
 
 
 export const NodeModal: FC<{

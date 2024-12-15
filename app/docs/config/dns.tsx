@@ -92,7 +92,7 @@ function SettingDNSTypeSelect(props: { label: string, value?: type | null, onCha
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2}>{props.label}</Form.Label>
             <Col sm={10}>
-                <Form.Select value={type[props.value ?? type.udp]} onChange={(e) => props.onChange(type[e.target.value])}>
+                <Form.Select value={type[props.value ?? type.udp]} onChange={(e) => props.onChange(type[e.target.value as keyof typeof type])}>
                     {
                         typeSchema.values.
                             filter((v) => v.number !== 0).

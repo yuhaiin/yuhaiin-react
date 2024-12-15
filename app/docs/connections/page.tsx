@@ -9,7 +9,7 @@ import useSWRSubscription from 'swr/subscription';
 import Loading from "../common/loading";
 import { FetchProtobuf, WebsocketProtoServerStream } from "../common/proto";
 import { GlobalToastContext } from "../common/toast";
-import { NodeModal } from "../modal/node";
+import { NodeModal } from "../node/modal";
 import { connection, type } from "../pbes/statistic/config_pb";
 import { connections, notify_data, notify_remove_connectionsSchema, total_flow } from "../pbes/statistic/grpc/config_pb";
 

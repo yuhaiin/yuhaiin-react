@@ -161,7 +161,7 @@ function SettingLogcatLevelSelect(props: { label: string, value: log_level, onCh
         <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={2}>{props.label}</Form.Label>
             <Col sm={10}>
-                <Form.Select value={log_level[props.value]} onChange={(e) => props.onChange(log_level[e.target.value])}>
+                <Form.Select value={log_level[props.value]} onChange={(e) => props.onChange(log_level[e.target.value as keyof typeof log_level])}>
                     <option value={log_level[log_level.debug]}>DEBUG</option>
                     <option value={log_level[log_level.info]}>INFO</option>
                     <option value={log_level[log_level.warning]}>WARN</option>

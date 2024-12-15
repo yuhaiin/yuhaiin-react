@@ -9,7 +9,7 @@ import useSWR from 'swr';
 import Loading from "../common/loading";
 import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
 import { GlobalToastContext } from "../common/toast";
-import { NodeModal } from "../modal/node";
+import { NodeModal } from "../node/modal";
 import { node, nodes_response, save_tag_req, save_tag_reqSchema, tag, tags_response } from "../pbes/node/grpc/node_pb";
 import { tag_type, tags, tagsSchema } from "../pbes/node/tag/tag_pb";
 
