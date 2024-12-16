@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES6",
+    "target": "es2023",
     "lib": [
       "dom",
       "dom.iterable",
@@ -9,15 +9,13 @@
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
+    "strict": false,
     "module": "esnext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "incremental": true,
     "jsx": "preserve",
     "plugins": [
       {
@@ -28,9 +26,7 @@
       "@/*": [
         "./*"
       ]
-    },
-    "incremental": true,
-    "strictNullChecks": true
+    }
   },
   "include": [
     "src",

@@ -41,7 +41,7 @@ const InboundModal = (
 
     useEffect(() => {
         mutate();
-    }, [props.name, props.isNew])
+    }, [props.name, props.isNew, mutate])
 
     return (
         <>
@@ -79,7 +79,7 @@ const InboundModal = (
                                         ctx.Info("save successful")
                                         props.onHide(true)
                                     } else {
-                                        let msg = error.msg;
+                                        const msg = error.msg;
                                         ctx.Error(msg)
                                         console.error(error.code, msg)
                                     }
@@ -113,7 +113,7 @@ function InboudComponent() {
                     ctx.Info("remove successful")
                     mutate()
                 } else {
-                    let msg = error.msg;
+                    const msg = error.msg;
                     ctx.Error(msg)
                     console.error(error.code, msg)
                 }

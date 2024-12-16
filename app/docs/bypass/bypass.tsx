@@ -1,5 +1,5 @@
 import { create } from '@bufbuild/protobuf';
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import { Button, ButtonGroup, Card, Col, Form, Row } from 'react-bootstrap';
 import { SettingCheck } from '../common/switch';
 import { Container, MoveUpDown, NewItemList, SettingInputText } from '../config/components';
@@ -23,10 +23,10 @@ export const Bypass = (props: {
         object: { case: "file", value: create(remote_rule_fileSchema, {}) }
     })
 
+    const [drag, setDrag] = useState({ start: -1 })
+
     return (
         <>
-
-
             <Card className="mb-3">
                 <Card.Body>
                     <SettingModeSelect label='TCP' network={true} value={props.bypass.tcp} onChange={(v) => props.onChange({ ...props.bypass, tcp: v })} />
@@ -64,9 +64,29 @@ export const Bypass = (props: {
                 props.bypass.customRuleV3.map((value, index) => (
                     <Container
                         key={"rule" + index}
+                        fold
                         title={value.tag !== "" ? value.tag : mode[value.mode]}
                         onClose={() => props.onChange({ ...props.bypass, customRuleV3: props.bypass.customRuleV3.filter((_, i) => i !== index) })}
-                        moveUpDown={new MoveUpDown(props.bypass.customRuleV3, index, (e) => props.onChange({ ...props.bypass, customRuleV3: e }))}
+                        moveUpDown={new MoveUpDown(
+                            props.bypass.customRuleV3,
+                            index,
+                            (e) => props.onChange({ ...props.bypass, customRuleV3: e }),
+                            {
+                                draggable: true,
+                                onDrop: (i) => {
+                                    if (drag.start !== i) {
+                                        const rules = [...props.bypass.customRuleV3]
+                                        const tmp = rules[drag.start]
+                                        rules[drag.start] = rules[i]
+                                        rules[i] = tmp
+                                        props.onChange({ ...props.bypass, customRuleV3: rules })
+                                    }
+                                },
+                                onDragStart: (i) => {
+                                    setDrag({ start: i })
+                                }
+                            },
+                        )}
                     >
                         <BypassSingleComponents
                             config={value}
@@ -201,7 +221,7 @@ const RulesComponent = (props: { config: remote_rule, onChange: (x: remote_rule)
                     </Form.Select>
                 </Col>
             </Form.Group>
-            <SettingInputText label='Value' value={getValue()} errorMsg={props.config.errorMsg} onChange={(e) => {
+            <SettingInputText mb='' label='Value' value={getValue()} errorMsg={props.config.errorMsg} onChange={(e) => {
                 const x = { ...props.config }
                 setValue(x, e)
                 props.onChange(x)

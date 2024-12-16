@@ -1,11 +1,11 @@
-export var APIUrl = ""
-export var RemoteBypass = "https://raw.githubusercontent.com/yuhaiin/kitte/main/yuhaiin/remote.conf"
-export var LatencyHTTPUrl = "https://clients3.google.com/generate_204"
-export var LatencyDNSUrl = "dns.nextdns.io:853"
-export var LatencyIPv6 = true
-export var LatencyIPUrl = "http://ip.sb"
-export var LatencyStunUrl = "stun.syncthing.net:3478"
-export var LatencyStunTCPUrl = "stun.nextcloud.com:443"
+export let APIUrl = ""
+export let RemoteBypass = "https://raw.githubusercontent.com/yuhaiin/kitte/main/yuhaiin/remote.conf"
+export let LatencyHTTPUrl = "https://clients3.google.com/generate_204"
+export let LatencyDNSUrl = "dns.nextdns.io:853"
+export let LatencyIPv6 = true
+export let LatencyIPUrl = "http://ip.sb"
+export let LatencyStunUrl = "stun.syncthing.net:3478"
+export let LatencyStunTCPUrl = "stun.nextcloud.com:443"
 
 const RefreshUrl = () => {
     let url = localStorage.getItem("api_url")

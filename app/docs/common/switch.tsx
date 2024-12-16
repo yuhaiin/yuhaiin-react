@@ -2,7 +2,7 @@ import { DescEnum, DescEnumValue } from '@bufbuild/protobuf';
 import { FC } from 'react';
 import { Col, Form, Row } from 'react-bootstrap';
 
-const SwitchSelect = (props: { value: boolean, onChange: (x: boolean) => void }) => {
+export const SwitchSelect = (props: { value: boolean, onChange: (x: boolean) => void }) => {
     return (
         <Form.Select value={props.value ? "true" : "false"} onChange={(e) => props.onChange(e.target.value == "true" ? true : false)}>
             <option value="true">TRUE</option>

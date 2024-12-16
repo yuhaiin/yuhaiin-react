@@ -31,7 +31,7 @@ function Tags() {
                 style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
                 key={props.k}
                 action
-                onClick={(e) => {
+                onClick={() => {
                     setTagModalData({
                         show: true,
                         tag: create(save_tag_reqSchema, { tag: props.k, hash: props.v.hash[0], type: props.v.type }),

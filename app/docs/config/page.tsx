@@ -30,7 +30,7 @@ function ConfigComponent() {
     if (isLoading || setting === undefined) return <Loading />
 
     const getSystemProxy = (data: Setting) => {
-        var x: number[] = []
+        const x: number[] = []
         if (data.systemProxy?.http) x.push(1)
         if (data.systemProxy?.socks5) x.push(2)
         return x
@@ -39,7 +39,7 @@ function ConfigComponent() {
     const setSystemProxy = (x: number[]) => {
         let http = false, socks5 = false;
 
-        for (var y of x) {
+        for (const y of x) {
             if (y === 1) http = true
             if (y === 2) socks5 = true
         }
@@ -71,7 +71,7 @@ function ConfigComponent() {
                                         onChange={(v) => setSetting({ ...setting, netInterface: v }, false)}
                                         reminds={interfaces.map((v) => {
                                             if (!v.name) return undefined
-                                            var r: Remind = {
+                                            const r: Remind = {
                                                 label: v.name,
                                                 value: v.name,
                                                 label_children: v.addresses?.map((vv) => !vv ? "" : vv)
@@ -97,30 +97,30 @@ function ConfigComponent() {
                                     <Card.Title className='mb-2'>Inbound</Card.Title>
                                     <SettingCheck label='DNS Hijack'
                                         checked={!setting.server?.hijackDns ? false : true}
-                                        onChange={() => setSetting({ ...setting, server: { ...setting.server!!, hijackDns: !setting.server!!.hijackDns } }, false)} />
+                                        onChange={() => setSetting({ ...setting, server: { ...setting.server, hijackDns: !setting.server.hijackDns } }, false)} />
 
                                     <SettingCheck label='Fakedns'
                                         checked={!setting.server?.hijackDnsFakeip ? false : true}
-                                        onChange={() => setSetting({ ...setting, server: { ...setting.server!!, hijackDnsFakeip: !setting.server!!.hijackDnsFakeip } }, false)} />
+                                        onChange={() => setSetting({ ...setting, server: { ...setting.server, hijackDnsFakeip: !setting.server.hijackDnsFakeip } }, false)} />
 
                                     <SettingCheck label='Sniff'
                                         checked={!setting.server?.sniff?.enabled ? false : true}
-                                        onChange={() => setSetting({ ...setting, server: { ...setting.server!!, sniff: { ...setting.server!!.sniff!!, enabled: !setting.server!!.sniff!!.enabled } } }, false)} />
+                                        onChange={() => setSetting({ ...setting, server: { ...setting.server, sniff: { ...setting.server.sniff, enabled: !setting.server.sniff.enabled } } }, false)} />
 
                                     <hr />
 
                                     <Card.Title className='mb-2'>Logcat</Card.Title>
                                     <SettingCheck label='Save'
-                                        checked={setting.logcat!!.save!!}
-                                        onChange={(x) => setSetting({ ...setting, logcat: { ...setting.logcat!!, save: x } }, false)} />
-                                    <SettingLogcatLevelSelect label='Level' value={setting.logcat!!.level!!} onChange={(e) => setSetting({ ...setting, logcat: { ...setting.logcat!!, level: e } }, false)} />
+                                        checked={setting.logcat.save}
+                                        onChange={(x) => setSetting({ ...setting, logcat: { ...setting.logcat, save: x } }, false)} />
+                                    <SettingLogcatLevelSelect label='Level' value={setting.logcat.level} onChange={(e) => setSetting({ ...setting, logcat: { ...setting.logcat, level: e } }, false)} />
 
                                 </fieldset>
                             </Tab.Pane>
 
                             <Tab.Pane eventKey="dns" title="DNS">
                                 <fieldset disabled={setting.platform?.androidApp}>
-                                    <DNS value={create(dns_configSchema, setting.dns!!)} onChange={(e) => setSetting({ ...setting, dns: e }, false)} />
+                                    <DNS value={create(dns_configSchema, setting.dns)} onChange={(e) => setSetting({ ...setting, dns: e }, false)} />
                                 </fieldset>
                             </Tab.Pane>
 

@@ -25,7 +25,7 @@ export const Socks5v2: FC<Props<socks5>> = ({ value, onChange }) => {
         />
 
         <SettingInputText label="Override Port" value={value.overridePort} onChange={(e) => {
-            let port = Number(e)
+            const port = Number(e)
             if (isNaN(port) || port > 65535 || port < 0) return
             onChange({ ...value, overridePort: port })
         }} />

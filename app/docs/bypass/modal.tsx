@@ -28,14 +28,6 @@ export const JsonModal: FC<{
                 onHide={() => { onHide() }}
                 centered
             >
-                {!plaintext &&
-                    <Modal.Header closeButton>
-                        <Modal.Title id="contained-modal-title-vcenter">
-                            Import JSON
-                        </Modal.Title>
-                    </Modal.Header>
-                }
-
                 <Modal.Body>
                     <Form.Control
                         as="textarea"

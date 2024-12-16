@@ -2,8 +2,8 @@ import React, { createContext, useState, } from 'react';
 import { Toast, ToastContainer } from 'react-bootstrap';
 
 const initialState = {
-    Info: (_: string) => { },
-    Error: (_: string) => { }
+    Info: (s: string) => { console.log(s) },
+    Error: (s: string) => { console.error(s) }
 };
 
 export const GlobalToastContext = createContext(initialState);

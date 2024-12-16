@@ -14,7 +14,7 @@ export const Directv2: FC<Props<direct>> = ({ value, onChange }) => {
             onChange={(e) => { onChange({ ...value, networkInterface: e }) }}
             reminds={interfaces.map((v) => {
                 if (!v.name) return undefined
-                var r: Remind = {
+                const r: Remind = {
                     label: v.name,
                     value: v.name,
                     label_children: v.addresses?.map((vv) => !vv ? "" : vv)

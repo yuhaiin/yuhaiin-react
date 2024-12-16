@@ -71,9 +71,9 @@ function isLoading(x: latencyStatus): boolean {
     return x.tcp.loading || x.udp.loading || x.ip?.loading || x.stun?.loading || x.stun_tcp?.loading || false
 }
 
-function isAllLoading(x: latencyStatus): boolean {
-    return x.tcp.loading && x.udp.loading && (x.ip ? x.ip?.loading : false) && (x.stun ? x.stun.loading : false) && (x.stun_tcp ? x.stun_tcp.loading : false)
-}
+// function isAllLoading(x: latencyStatus): boolean {
+//     return x.tcp.loading && x.udp.loading && (x.ip ? x.ip?.loading : false) && (x.stun ? x.stun.loading : false) && (x.stun_tcp ? x.stun_tcp.loading : false)
+// }
 
 const getNatTypeString = (x: nat_type): string => {
     switch (x) {
@@ -469,7 +469,7 @@ const NodeItemv2: FC<{
                 <ListGroup.Item className="d-flex justify-content-center">
                     <ButtonGroup>
                         <DropdownButton
-                            onSelect={async (key) => { useNode(ctx, hash, key as LatencyType); }}
+                            onSelect={async (key) => { setNode(ctx, hash, key as LatencyType); }}
                             as={ButtonGroup}
                             variant="outline-primary"
                             title="USE"
@@ -499,7 +499,7 @@ const NodeItemv2: FC<{
     </Accordion.Item>
 }
 
-const useNode = (ctx: any, hash: string, key: string) => {
+function setNode(ctx: { Info: (msg: string) => void, Error: (msg: string) => void }, hash: string, key: string) {
     FetchProtobuf(node.method.use, `/node`, "PUT", create(use_reqSchema, {
         tcp: key === "tcp" || key === "tcpudp",
         udp: key === "udp" || key === "tcpudp",

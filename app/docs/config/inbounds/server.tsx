@@ -1,47 +1,47 @@
 import { create } from '@bufbuild/protobuf';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button, Card, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import { join as shlexJoin, split as shlexSplit } from 'shlex';
 import { SettingCheck } from "../../common/switch";
 import { certificate, certificateSchema, http, mixed, quic, reality, redir, reverse_http, reverse_tcp, routeSchema, socks5, tls, tls_config, tls_configSchema, tproxy, tun, tun_endpoint_driver } from '../../pbes/config/listener/listener_pb';
 import { NewItemList, SettingInputText, SettingInputTextarea } from '../components';
 
-export const HTTPComponents = React.memo((props: { http: http, onChange: (x: http) => void }) => {
+export const HTTPComponents = (props: { http: http, onChange: (x: http) => void }) => {
     return (
         <>
             <SettingInputText label='Username' value={props.http.username} onChange={(e) => props.onChange({ ...props.http, username: e })} />
             <SettingInputText label='Password' value={props.http.password} onChange={(e) => props.onChange({ ...props.http, password: e })} />
         </>
     )
-})
+}
 
-export const ReverseHTTPComponents = React.memo((props: { reverse_http: reverse_http, onChange: (x: reverse_http) => void }) => {
+export const ReverseHTTPComponents = (props: { reverse_http: reverse_http, onChange: (x: reverse_http) => void }) => {
     return (
         <>
             <SettingInputText label='Url' value={props.reverse_http.url} onChange={(e) => props.onChange({ ...props.reverse_http, url: e })} />
         </>
     )
-})
+}
 
-export const ReverseTCPComponents = React.memo((props: { reverse_tcp: reverse_tcp, onChange: (x: reverse_tcp) => void }) => {
+export const ReverseTCPComponents = (props: { reverse_tcp: reverse_tcp, onChange: (x: reverse_tcp) => void }) => {
     return (
         <>
             <SettingInputText label='Host' value={props.reverse_tcp.host} onChange={(e) => props.onChange({ ...props.reverse_tcp, host: e })} />
         </>
     )
-})
+}
 
 
-export const RedirComponents = React.memo((props: { redir: redir, onChange: (x: redir) => void }) => {
+export const RedirComponents = (props: { redir: redir, onChange: (x: redir) => void }) => {
     return (
         <>
             <SettingInputText label='Host' value={props.redir.host} onChange={(e) => props.onChange({ ...props.redir, host: e })} />
         </>
     )
-})
+}
 
 
-export const TProxyComponents = React.memo((props: { tproxy: tproxy, onChange: (x: tproxy) => void }) => {
+export const TProxyComponents = (props: { tproxy: tproxy, onChange: (x: tproxy) => void }) => {
     return (
         <>
             <SettingCheck label='DNS Hijacking'
@@ -53,28 +53,28 @@ export const TProxyComponents = React.memo((props: { tproxy: tproxy, onChange: (
             <SettingInputText label='Host' value={props.tproxy.host} onChange={(e) => props.onChange({ ...props.tproxy, host: e })} />
         </>
     )
-})
+}
 
-export const Socks5Components = React.memo((props: { socks5: socks5, onChange: (x: socks5) => void }) => {
+export const Socks5Components = (props: { socks5: socks5, onChange: (x: socks5) => void }) => {
     return (
         <>
             <SettingInputText label='Username' value={props.socks5.username} onChange={(e) => props.onChange({ ...props.socks5, username: e })} />
             <SettingInputText label='Password' value={props.socks5.password} onChange={(e) => props.onChange({ ...props.socks5, password: e })} />
         </>
     )
-})
+}
 
 
-export const MixedComponents = React.memo((props: { mixed: mixed, onChange: (x: mixed) => void }) => {
+export const MixedComponents = (props: { mixed: mixed, onChange: (x: mixed) => void }) => {
     return (
         <>
             <SettingInputText label='Username' value={props.mixed.username} onChange={(e) => props.onChange({ ...props.mixed, username: e })} />
             <SettingInputText label='Password' value={props.mixed.password} onChange={(e) => props.onChange({ ...props.mixed, password: e })} />
         </>
     )
-})
+}
 
-export const TunComponents = React.memo((props: { tun: tun, onChange: (x: tun) => void }) => {
+export const TunComponents = (props: { tun: tun, onChange: (x: tun) => void }) => {
     const [postUp, setPostUp] = useState(shlexJoin(props.tun.postUp))
     const [postDown, setPostDown] = useState(shlexJoin(props.tun.postDown))
 
@@ -115,7 +115,7 @@ export const TunComponents = React.memo((props: { tun: tun, onChange: (x: tun) =
                 onChange={(e) => {
                     setPostUp(e)
                     try {
-                        let cmds = shlexSplit(e)
+                        const cmds = shlexSplit(e)
                         props.onChange({ ...props.tun, postUp: cmds })
                     } catch (e) {
                         console.log(e)
@@ -126,7 +126,7 @@ export const TunComponents = React.memo((props: { tun: tun, onChange: (x: tun) =
                 onChange={(e) => {
                     setPostDown(e)
                     try {
-                        let cmds = shlexSplit(e)
+                        const cmds = shlexSplit(e)
                         props.onChange({ ...props.tun, postDown: cmds })
                     } catch (e) {
                         console.log(e)
@@ -139,7 +139,7 @@ export const TunComponents = React.memo((props: { tun: tun, onChange: (x: tun) =
                 title='Routes'
                 data={props.tun.route?.routes ?? []}
                 onChange={(e) => {
-                    let x = { ...props.tun }
+                    const x = { ...props.tun }
                     if (!x.route) x.route = create(routeSchema, {})
                     if (!e) e = []
                     if (x.route) x.route.routes = e
@@ -149,13 +149,9 @@ export const TunComponents = React.memo((props: { tun: tun, onChange: (x: tun) =
             />
         </>
     )
-})
+}
 
-const IsTLSEmpty = (tls?: tls_config | null) =>
-    tls === null || tls === undefined || (tls.certificates === undefined && tls.nextProtos === undefined && tls.serverNameCertificate === undefined)
-
-
-const TLSCertificateComponents = React.memo((props: { cert: certificate, onChange: (x: certificate) => void }) => {
+const TLSCertificateComponents = (props: { cert: certificate, onChange: (x: certificate) => void }) => {
     return (
         <>
             <SettingInputTextarea label='Cert' value={new TextDecoder().decode(props.cert.cert)}
@@ -168,9 +164,9 @@ const TLSCertificateComponents = React.memo((props: { cert: certificate, onChang
             <SettingInputText label='Key File' value={props.cert.keyFilePath} onChange={(e) => props.onChange({ ...props.cert, keyFilePath: e })} />
         </>
     )
-})
+}
 
-const TLSComponents = React.memo((props: { tls: tls_config, onChange: (x: tls_config) => void }) => {
+const TLSComponents = (props: { tls: tls_config, onChange: (x: tls_config) => void }) => {
     const [newSni, setNewSni] = useState("www.example.com")
 
     return (
@@ -249,9 +245,9 @@ const TLSComponents = React.memo((props: { tls: tls_config, onChange: (x: tls_co
             </InputGroup>
         </>
     )
-})
+}
 
-export const QuicComponents = React.memo((props: { quic: quic, onChange: (x: quic) => void }) => {
+export const QuicComponents = (props: { quic: quic, onChange: (x: quic) => void }) => {
     return (
         <>
             <SettingInputText
@@ -266,9 +262,9 @@ export const QuicComponents = React.memo((props: { quic: quic, onChange: (x: qui
 
         </>
     )
-})
+}
 
-export const TlsComponents = React.memo((props: { tls: tls, onChange: (x: tls) => void }) => {
+export const TlsComponents = (props: { tls: tls, onChange: (x: tls) => void }) => {
     return (
         <>
             <SettingInputText plaintext={true} label='Protocol' value={"TLS"} />
@@ -277,9 +273,9 @@ export const TlsComponents = React.memo((props: { tls: tls, onChange: (x: tls) =
             }
         </>
     )
-})
+}
 
-export const RealityComponents = React.memo((props: { reality: reality, onChange: (x: reality) => void }) => {
+export const RealityComponents = (props: { reality: reality, onChange: (x: reality) => void }) => {
     const [newShortID, setNewShortID] = useState({ value: "" });
     const [newServerName, setNewServerName] = useState({ value: "" });
 
@@ -351,4 +347,4 @@ export const RealityComponents = React.memo((props: { reality: reality, onChange
             </Form.Group>
         </>
     )
-})
+}

@@ -2,7 +2,7 @@
 
 import { create } from "@bufbuild/protobuf";
 import { EmptySchema } from "@bufbuild/protobuf/wkt";
-import React, { useContext, useState } from "react";
+import { useContext, useState } from "react";
 import { Accordion, Badge, Button, Card, ListGroup, Spinner } from "react-bootstrap";
 import useSWR from 'swr';
 import useSWRSubscription from 'swr/subscription';
@@ -12,6 +12,7 @@ import { GlobalToastContext } from "../common/toast";
 import { NodeModal } from "../node/modal";
 import { connection, type } from "../pbes/statistic/config_pb";
 import { connections, notify_data, notify_remove_connectionsSchema, total_flow } from "../pbes/statistic/grpc/config_pb";
+import { ConnectionInfo } from "./components";
 
 const formatBytes =
     (a = 0, b = 2) => {
@@ -25,10 +26,10 @@ const formatBytes =
 
 
 const generateFlow = (flow: total_flow, prev: { upload: bigint, download: bigint }): { upload: string, download: string } => {
-    let drate = (flow.download - (prev.download !== BigInt(0) ? prev.download : flow.download)) / BigInt(2)
-    let urate = (flow.upload - (prev.upload !== BigInt(0) ? prev.upload : flow.upload)) / BigInt(2)
-    let dstr = `(${formatBytes(Number(flow.download))}): ${formatBytes(Number(drate))}/S`
-    let ustr = `(${formatBytes(Number(flow.upload))}): ${formatBytes(Number(urate))}/S`
+    const drate = (flow.download - (prev.download !== BigInt(0) ? prev.download : flow.download)) / BigInt(2)
+    const urate = (flow.upload - (prev.upload !== BigInt(0) ? prev.upload : flow.upload)) / BigInt(2)
+    const dstr = `(${formatBytes(Number(flow.download))}): ${formatBytes(Number(drate))}/S`
+    const ustr = `(${formatBytes(Number(flow.upload))}): ${formatBytes(Number(urate))}/S`
     return { download: dstr, upload: ustr }
 }
 
@@ -56,7 +57,7 @@ function Connections() {
         return FetchProtobuf(connections.method.total, url).then(async ({ data: r, error }) => {
             if (error) throw error
             if (r) {
-                let resp = generateFlow(r, { download: lastFlow.download, upload: lastFlow.upload })
+                const resp = generateFlow(r, { download: lastFlow.download, upload: lastFlow.upload })
                 setLastFlow({ download: r.download, upload: r.upload })
                 return resp
             }
@@ -111,31 +112,7 @@ function Connections() {
     );
 }
 
-const ListGroupItem = React.memo((props: { itemKey: string, itemValue: string, showModal: (hash: string) => void }) => {
-    return (
-        <>
-            <ListGroup.Item>
-                <div className="d-sm-flex">
-                    <div className="endpoint-name flex-grow-1 notranslate">{props.itemKey}</div>
-
-                    <div className="notranslate text-break" style={{ opacity: 0.6 }}>
-                        {
-                            props.itemKey !== "Hash" ? props.itemValue :
-                                <a
-                                    href="#"
-                                    onClick={(e) => { e.preventDefault(); props.showModal(props.itemValue) }}
-                                >
-                                    {props.itemValue}
-                                </a>
-                        }
-                    </div>
-                </div>
-            </ListGroup.Item>
-        </>
-    )
-})
-
-const AccordionItem = React.memo((props: { data: connection, showModal: (hash: string) => void }) => {
+const AccordionItem = (props: { data: connection, showModal: (hash: string) => void }) => {
     const ctx = useContext(GlobalToastContext);
 
     const [closing, setClosing] = useState(false);
@@ -157,18 +134,8 @@ const AccordionItem = React.memo((props: { data: connection, showModal: (hash: s
             </Accordion.Header>
 
             <Accordion.Body>
-                <ListGroup variant="flush">
-                    <ListGroupItem itemKey="Type" itemValue={type[props.data.type?.connType ?? 0]} showModal={props.showModal} />
-                    <ListGroupItem itemKey="Underlying" itemValue={type[props.data.type?.underlyingType ?? 0]} showModal={props.showModal} />
-
-                    {
-                        Object.entries(props.data.extra)
-                            .sort((a, b) => { return a <= b ? -1 : 1 })
-                            .map(([k, v]) => {
-                                return <ListGroupItem itemKey={k} itemValue={v} key={k} showModal={props.showModal} />
-                            })
-                    }
-                    <ListGroup.Item>
+                <ConnectionInfo value={props.data} showModal={props.showModal}
+                    endContent={<ListGroup.Item>
                         <div className="d-sm-flex">
                             <Button
                                 variant="outline-danger"
@@ -196,11 +163,12 @@ const AccordionItem = React.memo((props: { data: connection, showModal: (hash: s
                                 {closing && <>&nbsp;<Spinner size="sm" animation="border" variant='danger' /></>}
                             </Button>
                         </div>
-                    </ListGroup.Item>
-                </ListGroup>
+                    </ListGroup.Item>}
+                />
             </Accordion.Body>
 
         </Accordion.Item >
     )
-})
+}
+
 export default Connections;

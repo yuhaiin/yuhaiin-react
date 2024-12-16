@@ -21,7 +21,7 @@ export const Simplev2: FC<Props<simple>> = ({ value, onChange }) => {
             onChange={(e) => { onChange({ ...value, networkInterface: e }) }}
             reminds={interfaces.map((v) => {
                 if (!v.name) return undefined
-                var r: Remind = {
+                const r: Remind = {
                     label: v.name,
                     value: v.name,
                     label_children: v.addresses?.map((vv) => !vv ? "" : vv)
@@ -33,7 +33,7 @@ export const Simplev2: FC<Props<simple>> = ({ value, onChange }) => {
         />
 
         <SettingInputText label="Port" value={value.port} onChange={(e) => {
-            let port = Number(e)
+            const port = Number(e)
             if (isNaN(port) || port > 65535 || port < 0) return
             onChange({ ...value, port: port })
         }} />

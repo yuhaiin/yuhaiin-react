@@ -1,6 +1,6 @@
 import { clone, DescMessage, fromBinary, MessageShape, toBinary } from "@bufbuild/protobuf";
 import { Fetcher } from 'swr';
-import type { SWRSubscription, SWRSubscriptionOptions } from 'swr/subscription';
+import type { SWRSubscriptionOptions } from 'swr/subscription';
 import { APIUrl } from '../apiurl';
 
 
@@ -31,7 +31,7 @@ export async function FetchProtobuf<I extends DescMessage, O extends DescMessage
     data?: MessageShape<O>,
     error?: { code: number, msg: string }
 }> {
-    let r = await fetch(`${APIUrl}${url}`,
+    const r = await fetch(`${APIUrl}${url}`,
         {
             method: method,
             body: body ? toBinary(d.input, body) : undefined,
@@ -62,7 +62,7 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
 
 
     return (key, { next }) => {
-        let url = new URL(APIUrl !== "" ? APIUrl : window.location.toString());
+        const url = new URL(APIUrl !== "" ? APIUrl : window.location.toString());
         url.pathname = key
         url.protocol = url.protocol === "https:" ? "wss:" : "ws:"
 
@@ -85,7 +85,7 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
             })
 
             socket.addEventListener('error', (e) => {
-                let msg = "websocket have some error"
+                const msg = "websocket have some error"
                 next({ msg: msg, code: 500 })
                 console.log(msg, e.type)
             })

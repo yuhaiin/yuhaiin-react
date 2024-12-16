@@ -17,7 +17,7 @@ function FailedHistory() {
     const [asc, setAsc] = useState(1)
     const setSortField = (field: string) => field === sort ? setAsc(-asc) : setSort(field)
     const sortIcon = (field: string) => field === sort ? <i className={asc === -1 ? "bi bi-sort-up-alt" : "bi bi-sort-down-alt"}></i> : <></>
-    const sortFunc = (a: any, b: any) => a > b ? -1 * asc : 1 * asc
+    function sortFunc<T>(a: T, b: T) { return a > b ? -1 * asc : 1 * asc }
     const cth = (field: string) => <th className={styles.clickable} onClick={() => setSortField(field)}>{field}{sortIcon(field)}</th>
     const sortFieldFunc = (a: failed_history, b: failed_history) => {
         if (sort === "Host") return sortFunc(a.host, b.host)

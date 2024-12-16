@@ -1,5 +1,5 @@
 import { FC, JSX, useState } from "react";
-import { Button, ButtonGroup, Card, Col, Dropdown, DropdownItem, DropdownMenu, Form, InputGroup, Row } from "react-bootstrap";
+import { Button, ButtonGroup, Card, Col, Collapse, Dropdown, DropdownItem, DropdownMenu, Form, InputGroup, Row } from "react-bootstrap";
 
 export class Remind {
     label: string
@@ -50,10 +50,10 @@ export const SettingInputText: FC<{
     }
 
     return (
-        <Form.Group as={Row} className={mb ? mb : "mb-2"}>
+        <Form.Group as={Row} className={mb !== undefined ? mb : "mb-2"}>
             <Form.Label column sm={2} className="nowrap">{label}</Form.Label>
             <Col sm={10}>
-                <InputGroup className={mb ? mb : "mb-2"} hasValidation={errorMsg ? true : false}>
+                <InputGroup className={mb !== undefined ? mb : "mb-2"} hasValidation={errorMsg ? true : false}>
                     {dropdown()}
                     {url
                         ?
@@ -98,7 +98,7 @@ export const NewItemList: FC<{
     ({ title, data, onChange, errorMsgs, beforeContent }) => {
         const [newData, setNewData] = useState({ value: "" });
 
-        return (<Form.Group as={Row} className='mb-3'>
+        return (<Form.Group as={Row}>
             <Form.Label column sm={2} className="nowrap">{title}</Form.Label>
 
             {beforeContent &&
@@ -133,7 +133,7 @@ export const NewItemList: FC<{
 
 
             <Col sm={{ span: 10, offset: (beforeContent || data?.length !== 0) ? 2 : 0 }}>
-                <InputGroup className="mb-2" >
+                <InputGroup>
                     <Form.Control value={newData.value} onChange={(e) => setNewData({ value: e.target.value })} />
                     <Button variant='outline-success' onClick={() => { onChange([...data, newData.value]) }} >
                         <i className="bi bi-plus-lg" />
@@ -222,18 +222,24 @@ export function ItemList(props: {
     </Form.Group>
 }
 
+export type Drag = {
+    draggable: boolean
+    onDragStart: (i: number) => void
+    onDrop: (i: number) => void
+}
 
 export class MoveUpDown<T> {
     current: number
     elems: T[]
     onmove: (x: T[]) => void
+    drag?: Drag
 
     move = (up: boolean) => {
         if (this.elems.length <= 1) return
         if (up && this.current === 0) return
         if (!up && this.current === this.elems.length - 1) return
-        let rules = [...this.elems]
-        let tmp = rules[this.current]
+        const rules = [...this.elems]
+        const tmp = rules[this.current]
         rules[this.current] = rules[this.current + (up ? -1 : 1)]
         rules[this.current + (up ? -1 : 1)] = tmp
         this.onmove(rules)
@@ -244,10 +250,11 @@ export class MoveUpDown<T> {
     isTop = () => this.current === 0
     isBottom = () => this.current === this.elems.length - 1
 
-    constructor(elems: T[], current: number, onmove: (x: T[]) => void) {
+    constructor(elems: T[], current: number, onmove: (x: T[]) => void, drag?: Drag) {
         this.current = current
         this.elems = elems
         this.onmove = onmove
+        this.drag = drag
     }
 }
 
@@ -257,29 +264,93 @@ export function Container<T>(props: {
     onClose?: () => void,
     hideClose?: boolean,
     moveUpDown?: MoveUpDown<T>,
-    children: JSX.Element
+    children: JSX.Element,
+    fold?: boolean
 }) {
-    return <>
-        <Card className="flex-grow-1 form-floating">
-            <Card.Header className="d-flex justify-content-between">
-                {props.title}
+    const [fold, setFold] = useState({ value: false })
+    const [dragOvering, setDragOvering] = useState(false)
+    const [clicking, setClicking] = useState(false)
 
+    const getBorderColor = () => {
+        if (dragOvering) return "success"
+        if (clicking) return "primary"
+        return undefined
+    }
+
+    return <>
+        <Card
+            border={getBorderColor()}
+            className="flex-grow-1 form-floating"
+            onDragOver={(e) => {
+                e.preventDefault()
+                setDragOvering(true)
+            }}
+            onDragLeave={(e) => {
+                e.preventDefault()
+                setDragOvering(false)
+            }}
+            onDragEnd={() => {
+                setDragOvering(false)
+            }}
+            onDrop={() => {
+                setDragOvering(false)
+                props.moveUpDown?.drag?.onDrop(props.moveUpDown.current)
+            }}
+        >
+            <Card.Header
+                draggable={props.moveUpDown?.drag?.draggable}
+                onDragEnd={() => {
+                    setDragOvering(false)
+                }}
+                onDragStart={() => {
+                    setClicking(false)
+                    if (props.moveUpDown && props.moveUpDown.drag) props.moveUpDown.drag.onDragStart(props.moveUpDown.current)
+                }}
+                style={props.fold ? { cursor: 'pointer' } : {}}
+                className={"d-flex justify-content-between"}
+                onClick={() => props.fold && setFold(prev => { return { value: !prev.value } })}
+                onMouseDown={() => {
+                    setClicking(true)
+                }}
+                onMouseUp={() => {
+                    setClicking(false)
+                }}
+                aria-controls={"example-collapse-text"}
+                aria-expanded={fold.value}
+            >
+                {props.title}
                 {
                     (!props.hideClose || props.moveUpDown) &&
                     <ButtonGroup>
                         {!props.moveUpDown?.isTop() &&
-                            <Button variant="outline-primary" size="sm" onClick={() => props.moveUpDown?.move(true)}><i className="bi bi-arrow-up"></i></Button>}
+                            <Button variant="outline-primary" size="sm" onClick={(e) => {
+                                e.stopPropagation()
+                                props.moveUpDown?.move(true)
+                            }}>
+                                <i className="bi bi-arrow-up"></i>
+                            </Button>}
                         {!props.moveUpDown?.isBottom() &&
-                            <Button variant="outline-primary" size="sm" onClick={() => props.moveUpDown?.move(false)}><i className="bi bi-arrow-down"></i></Button>}
+                            <Button variant="outline-primary" size="sm" onClick={(e) => {
+                                e.stopPropagation()
+                                props.moveUpDown?.move(false)
+                            }}>
+                                <i className="bi bi-arrow-down"></i>
+                            </Button>}
                         {!props.hideClose &&
-                            <Button variant='outline-danger' size="sm" onClick={props.onClose}><i className="bi bi-x-lg"></i></Button>
+                            <Button variant='outline-danger' size="sm" onClick={(e) => {
+                                e.stopPropagation()
+                                props.onClose()
+                            }}>
+                                <i className="bi bi-x-lg"></i>
+                            </Button>
                         }
                     </ButtonGroup>
                 }
             </Card.Header>
-            <Card.Body>
-                {props.children}
-            </Card.Body>
+
+            {props.fold && <Collapse in={fold.value}><div id="example-collapse-text"><Card.Body>{props.children}</Card.Body></div></Collapse>}
+            {!props.fold && <Card.Body>{props.children}</Card.Body>}
+
         </Card>
         <br />
     </>

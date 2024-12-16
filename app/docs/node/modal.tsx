@@ -40,7 +40,7 @@ export const NodeModal: FC<{
                 revalidateOnFocus: false,
             })
 
-        useEffect(() => { mutate(); }, [hash])
+        useEffect(() => { mutate(); }, [hash, mutate])
 
         const SaveButton = () => {
             if (!editable) return <></>
@@ -161,7 +161,7 @@ export const NodeJsonModal = (
         if (!props.onSave) return <></>
         return <Button variant="outline-primary"
             onClick={() => {
-                let p = fromJsonString(pointSchema, nodeJson.data);
+                const p = fromJsonString(pointSchema, nodeJson.data);
                 if (props.isNew) p.hash = ""
                 FetchProtobuf(node.method.save, "/node", "PATCH", p)
                     .then(async ({ error }) => {

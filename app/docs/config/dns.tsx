@@ -57,7 +57,7 @@ const DNS: FC<Props<dns_config>> = (props) => {
                                 </InputGroup>
                             )
                     }
-                    <InputGroup className="mb-2" >
+                    <InputGroup>
                         <Form.Control value={newHosts.key} onChange={(e) => setNewHosts({ ...newHosts, key: e.target.value })} />
                         <InputGroup.Text><i className="bi bi-arrow-right"></i></InputGroup.Text>
                         <Form.Control
@@ -82,7 +82,7 @@ const Single: FC<{ value: dns, onChange: (x: dns) => void, title: string }> = ({
             <SettingInputText label='Host' value={value.host} onChange={(v) => onChange({ ...value, host: v })} />
             <SettingDNSTypeSelect label='Type' value={value.type} onChange={(v) => onChange({ ...value, type: v })} />
             <SettingInputText label='Subnet' value={value.subnet} onChange={(v) => onChange({ ...value, subnet: v })} />
-            <SettingInputText label='SNI' value={value.tlsServername} onChange={(v) => onChange({ ...value, tlsServername: v })} />
+            <SettingInputText mb='' label='SNI' value={value.tlsServername} onChange={(v) => onChange({ ...value, tlsServername: v })} />
         </>
     </Container>
 }

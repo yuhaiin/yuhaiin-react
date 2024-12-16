@@ -120,8 +120,8 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
 
 const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const update = (data: any) => onChange({ ...value, protocol: { case: value.protocol.case, value: data } })
-
 
     const data = value.protocol
     switch (data.case) {
@@ -177,7 +177,7 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
 const Unknown = <div className="text-center my-2" style={{ opacity: '0.4' }}>Not Implement</div>
 
 
-let tlsConfig = create(tls_configSchema, {
+const tlsConfig = create(tls_configSchema, {
     enable: false,
     caCert: [new TextEncoder().encode(`-----CERTIFICATE-----
         MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQD4MVvq8SAOzdeE
