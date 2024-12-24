@@ -14,7 +14,7 @@
     "next": "^15.1.0",
     "react-bootstrap": "^2.10.7",
     "shlex": "^2.1.2",
-    "swr": "^2.2.5",
+    "swr": "^2.3.0",
     "typescript": "^5.6.3"
   },
   "scripts": {
