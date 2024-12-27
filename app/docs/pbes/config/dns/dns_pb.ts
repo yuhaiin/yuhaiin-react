@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file config/dns/dns.proto.
  */
 export const file_config_dns_dns: GenFile = /*@__PURE__*/
-  fileDesc("ChRjb25maWcvZG5zL2Rucy5wcm90bxILeXVoYWlpbi5kbnMibAoDZG5zEgwKBGhvc3QYASABKAkSHwoEdHlwZRgFIAEoDjIRLnl1aGFpaW4uZG5zLnR5cGUSDgoGc3VibmV0GAQgASgJEiYKDnRsc19zZXJ2ZXJuYW1lGAIgASgJUg50bHNfc2VydmVybmFtZSKZBAoKZG5zX2NvbmZpZxIOCgZzZXJ2ZXIYBCABKAkSDwoHZmFrZWRucxgFIAEoCBIqChBmYWtlZG5zX2lwX3JhbmdlGAYgASgJUhBmYWtlZG5zX2lwX3JhbmdlEi4KEmZha2VkbnNfaXB2Nl9yYW5nZRgNIAEoCVISZmFrZWRuc19pcHY2X3JhbmdlEiwKEWZha2VkbnNfd2hpdGVsaXN0GAkgAygJUhFmYWtlZG5zX3doaXRlbGlzdBIgCgZyZW1vdGUYASABKAsyEC55dWhhaWluLmRucy5kbnMSHwoFbG9jYWwYAiABKAsyEC55dWhhaWluLmRucy5kbnMSIwoJYm9vdHN0cmFwGAMgASgLMhAueXVoYWlpbi5kbnMuZG5zEjEKBWhvc3RzGAggAygLMiIueXVoYWlpbi5kbnMuZG5zX2NvbmZpZy5Ib3N0c0VudHJ5EjcKCHJlc29sdmVyGAogAygLMiUueXVoYWlpbi5kbnMuZG5zX2NvbmZpZy5SZXNvbHZlckVudHJ5GiwKCkhvc3RzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ARpBCg1SZXNvbHZlckVudHJ5EgsKA2tleRgBIAEoCRIfCgV2YWx1ZRgCIAEoCzIQLnl1aGFpaW4uZG5zLmRuczoCOAFKBAgHEAhSFXJlc29sdmVfcmVtb3RlX2RvbWFpbipKCgR0eXBlEgsKB3Jlc2VydmUQABIHCgN1ZHAQARIHCgN0Y3AQAhIHCgNkb2gQAxIHCgNkb3QQBBIHCgNkb3EQBRIICgRkb2gzEAZCNFoyZ2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL2NvbmZpZy9kbnNiBnByb3RvMw");
+  fileDesc("ChRjb25maWcvZG5zL2Rucy5wcm90bxILeXVoYWlpbi5kbnMibAoDZG5zEgwKBGhvc3QYASABKAkSHwoEdHlwZRgFIAEoDjIRLnl1aGFpaW4uZG5zLnR5cGUSDgoGc3VibmV0GAQgASgJEiYKDnRsc19zZXJ2ZXJuYW1lGAIgASgJUg50bHNfc2VydmVybmFtZSKZBAoKZG5zX2NvbmZpZxIOCgZzZXJ2ZXIYBCABKAkSDwoHZmFrZWRucxgFIAEoCBIqChBmYWtlZG5zX2lwX3JhbmdlGAYgASgJUhBmYWtlZG5zX2lwX3JhbmdlEi4KEmZha2VkbnNfaXB2Nl9yYW5nZRgNIAEoCVISZmFrZWRuc19pcHY2X3JhbmdlEiwKEWZha2VkbnNfd2hpdGVsaXN0GAkgAygJUhFmYWtlZG5zX3doaXRlbGlzdBIgCgZyZW1vdGUYASABKAsyEC55dWhhaWluLmRucy5kbnMSHwoFbG9jYWwYAiABKAsyEC55dWhhaWluLmRucy5kbnMSIwoJYm9vdHN0cmFwGAMgASgLMhAueXVoYWlpbi5kbnMuZG5zEjEKBWhvc3RzGAggAygLMiIueXVoYWlpbi5kbnMuZG5zX2NvbmZpZy5Ib3N0c0VudHJ5EjcKCHJlc29sdmVyGAogAygLMiUueXVoYWlpbi5kbnMuZG5zX2NvbmZpZy5SZXNvbHZlckVudHJ5GiwKCkhvc3RzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ARpBCg1SZXNvbHZlckVudHJ5EgsKA2tleRgBIAEoCRIfCgV2YWx1ZRgCIAEoCzIQLnl1aGFpaW4uZG5zLmRuczoCOAFKBAgHEAhSFXJlc29sdmVfcmVtb3RlX2RvbWFpbiJ0Cg5mYWtlZG5zX2NvbmZpZxIPCgdlbmFibGVkGAEgASgIEh4KCmlwdjRfcmFuZ2UYAiABKAlSCmlwdjRfcmFuZ2USHgoKaXB2Nl9yYW5nZRgDIAEoCVIKaXB2Nl9yYW5nZRIRCgl3aGl0ZWxpc3QYBCADKAkqSgoEdHlwZRILCgdyZXNlcnZlEAASBwoDdWRwEAESBwoDdGNwEAISBwoDZG9oEAMSBwoDZG90EAQSBwoDZG9xEAUSCAoEZG9oMxAGQjRaMmdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9jb25maWcvZG5zYgZwcm90bzM");
 
 /**
  * @generated from message yuhaiin.dns.dns
@@ -105,6 +105,38 @@ export type dns_config = Message<"yuhaiin.dns.dns_config"> & {
  */
 export const dns_configSchema: GenMessage<dns_config> = /*@__PURE__*/
   messageDesc(file_config_dns_dns, 1);
+
+/**
+ * @generated from message yuhaiin.dns.fakedns_config
+ */
+export type fakedns_config = Message<"yuhaiin.dns.fakedns_config"> & {
+  /**
+   * @generated from field: bool enabled = 1;
+   */
+  enabled: boolean;
+
+  /**
+   * @generated from field: string ipv4_range = 2 [json_name = "ipv4_range"];
+   */
+  ipv4Range: string;
+
+  /**
+   * @generated from field: string ipv6_range = 3 [json_name = "ipv6_range"];
+   */
+  ipv6Range: string;
+
+  /**
+   * @generated from field: repeated string whitelist = 4;
+   */
+  whitelist: string[];
+};
+
+/**
+ * Describes the message yuhaiin.dns.fakedns_config.
+ * Use `create(fakedns_configSchema)` to create a new message.
+ */
+export const fakedns_configSchema: GenMessage<fakedns_config> = /*@__PURE__*/
+  messageDesc(file_config_dns_dns, 2);
 
 /**
  * @generated from enum yuhaiin.dns.type

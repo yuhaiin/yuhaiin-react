@@ -1,7 +1,7 @@
 import { clone, DescMessage, fromBinary, MessageShape, toBinary } from "@bufbuild/protobuf";
 import { Fetcher } from 'swr';
 import type { SWRSubscriptionOptions } from 'swr/subscription';
-import { APIUrl } from '../apiurl';
+import { APIUrl } from './apiurl';
 
 
 export function ProtoESFetcher<I extends DescMessage, O extends DescMessage>(

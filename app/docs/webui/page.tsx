@@ -2,7 +2,7 @@
 
 import { useContext, useState } from "react";
 import { Button, Card, Col, Form, Row, Spinner } from "react-bootstrap";
-import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunTCPUrl, LatencyStunUrl, SetLatencyDNSUrl, SetLatencyHTTPUrl, SetLatencyIPUrl, SetLatencyIPv6, SetLatencyStunTCPUrl, SetLatencyStunUrl, SetUrl } from "../apiurl";
+import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunTCPUrl, LatencyStunUrl, SetLatencyDNSUrl, SetLatencyHTTPUrl, SetLatencyIPUrl, SetLatencyIPv6, SetLatencyStunTCPUrl, SetLatencyStunUrl, SetUrl } from "../common/apiurl";
 import { SettingCheck } from "../common/switch";
 import { GlobalToastContext } from "../common/toast";
 

@@ -1,14 +1,15 @@
-import { create, DescEnum, DescEnumValue } from "@bufbuild/protobuf";
+import { create } from "@bufbuild/protobuf";
 import { useEffect, useState } from "react";
-import { Button, Col, Form, InputGroup, ListGroup, Row } from "react-bootstrap";
-import { SettingCheck } from "../../common/switch";
+import { Button, InputGroup, ListGroup } from "react-bootstrap";
+import { FormSelect, SettingCheck, SettingTypeSelect } from "../../common/switch";
 import {
     emptySchema,
     grpcSchema,
     http2Schema,
     httpSchema,
     inbound,
-    mixedSchema, muxSchema, normalSchema, quicSchema, realitySchema, redirSchema, reverse_httpSchema, reverse_tcpSchema, socks5Schema, tcp_udp_controlSchema, tcpudp, tcpudpSchema, tls_configSchema, tlsSchema, tproxySchema, transport, transportSchema, tunSchema, websocketSchema, yuubinsya, yuubinsyaSchema
+    mixedSchema,
+    muxSchema, normalSchema, quicSchema, realitySchema, redirSchema, reverse_httpSchema, reverse_tcpSchema, socks5Schema, tcp_udp_controlSchema, tcpudp, tcpudpSchema, tls_configSchema, tlsSchema, tproxySchema, transport, transportSchema, tunSchema, websocketSchema, yuubinsya, yuubinsyaSchema
 } from "../../pbes/config/listener/listener_pb";
 import { Container, MoveUpDown, SettingInputText } from "../components";
 import { HTTPComponents, MixedComponents, QuicComponents, RealityComponents, RedirComponents, ReverseHTTPComponents, ReverseTCPComponents, Socks5Components, TlsComponents, TProxyComponents, TunComponents } from "./server";
@@ -54,14 +55,7 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
                 <ListGroup variant="flush">
                     <ListGroup.Item>
                         <InputGroup>
-                            <Form.Select value={newProtocol.value} onChange={(e) => setNewProtocol({ value: e.target.value })}>
-                                {
-                                    ["normal", "tls", "mux", "http2", "websocket", "grpc", "reality"].
-                                        map((v) => {
-                                            return <option value={v} key={v}>{v}</option>
-                                        })
-                                }
-                            </Form.Select>
+                            <FormSelect value={newProtocol.value} values={["normal", "tls", "mux", "http2", "websocket", "grpc", "reality"]} onChange={(e) => setNewProtocol({ value: e })} />
                             <Button
                                 variant="outline-success"
                                 onClick={() => {
@@ -133,14 +127,7 @@ const Network = (props: { inbound: inbound, onChange: (x: inbound) => void }) =>
         <ListGroup variant="flush">
             <ListGroup.Item>
                 <InputGroup>
-                    <Form.Select value={newProtocol.value} onChange={(e) => setNewProtocol({ value: e.target.value })}>
-                        {
-                            ["empty", "tcpudp", "quic"].
-                                map((v) => {
-                                    return <option value={v} key={v}>{v}</option>
-                                })
-                        }
-                    </Form.Select>
+                    <FormSelect value={newProtocol.value} values={["empty", "tcpudp", "quic"]} onChange={(e) => setNewProtocol({ value: e })} />
                     <Button
                         variant="outline-success"
                         onClick={() => {
@@ -274,14 +261,11 @@ const Protocol = (props: { inbound: inbound, onChange: (x: inbound) => void }) =
         <ListGroup variant="flush">
             <ListGroup.Item>
                 <InputGroup>
-                    <Form.Select value={newProtocol.value} onChange={(e) => setNewProtocol({ value: e.target.value })}>
-                        {
-                            ["http", "reverseHttp", "reverseTcp", "socks5", "mix", "redir", "tun", "yuubinsya", "tproxy"].
-                                map((v) => {
-                                    return <option value={v} key={v}>{v}</option>
-                                })
-                        }
-                    </Form.Select>
+                    <FormSelect
+                        value={newProtocol.value}
+                        values={["http", "reverseHttp", "reverseTcp", "socks5", "mix", "redir", "tun", "yuubinsya", "tproxy"]}
+                        onChange={(e) => setNewProtocol({ value: e })}
+                    />
                     <Button
                         variant="outline-success"
                         onClick={() => {
@@ -365,26 +349,4 @@ const TcpUdp = (props: { protocol: tcpudp, onChange: (x: tcpudp) => void }) => {
             onChange={(e) => { props.onChange({ ...props.protocol, control: e }) }}
         />
     </>
-}
-
-function SettingTypeSelect(props: {
-    label: string,
-    type: DescEnum,
-    value: number,
-    onChange: (no: number) => void,
-    filter?: (v: DescEnumValue) => boolean
-}) {
-    return <Form.Group as={Row} className='mb-3'>
-        <Form.Label column sm={2}>{props.label}</Form.Label>
-        <Col sm={10}>
-            <Form.Select value={props.value}
-                onChange={(e) => props.onChange(Number(e.target.value))} >
-                {
-                    props.type.values.
-                        filter(props.filter ?? (() => true)).
-                        map((v) => <option key={v.number} value={v.number}>{v.name}</option>)
-                }
-            </Form.Select>
-        </Col>
-    </Form.Group >
 }

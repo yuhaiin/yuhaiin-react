@@ -1,9 +1,9 @@
 import { create } from '@bufbuild/protobuf';
 import { FC, useState } from 'react';
-import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
-import { SettingCheck } from "../common/switch";
+import { Button, Form, InputGroup } from 'react-bootstrap';
+import { SettingCheck, SettingTypeSelect } from "../common/switch";
 import { Props } from '../node/tools';
-import { dns, dns_config, dnsSchema, type, typeSchema } from '../pbes/config/dns/dns_pb';
+import { dns, dns_config, dnsSchema, typeSchema } from '../pbes/config/dns/dns_pb';
 import { Container, NewItemList, SettingInputText } from './components';
 
 const DNS: FC<Props<dns_config>> = (props) => {
@@ -80,28 +80,11 @@ const Single: FC<{ value: dns, onChange: (x: dns) => void, title: string }> = ({
     return <Container title={title} hideClose>
         <>
             <SettingInputText label='Host' value={value.host} onChange={(v) => onChange({ ...value, host: v })} />
-            <SettingDNSTypeSelect label='Type' value={value.type} onChange={(v) => onChange({ ...value, type: v })} />
+            <SettingTypeSelect label='Type' type={typeSchema} value={value.type} onChange={(v) => onChange({ ...value, type: v })} />
             <SettingInputText label='Subnet' value={value.subnet} onChange={(v) => onChange({ ...value, subnet: v })} />
             <SettingInputText mb='' label='SNI' value={value.tlsServername} onChange={(v) => onChange({ ...value, tlsServername: v })} />
         </>
     </Container>
-}
-
-function SettingDNSTypeSelect(props: { label: string, value?: type | null, onChange: (value: type) => void }) {
-    return (
-        <Form.Group as={Row} className='mb-3'>
-            <Form.Label column sm={2}>{props.label}</Form.Label>
-            <Col sm={10}>
-                <Form.Select value={type[props.value ?? type.udp]} onChange={(e) => props.onChange(type[e.target.value as keyof typeof type])}>
-                    {
-                        typeSchema.values.
-                            filter((v) => v.number !== 0).
-                            map((v) => <option key={v.number} value={type[v.number]}>{v.name}</option>)
-                    }
-                </Form.Select>
-            </Col>
-        </Form.Group>
-    )
 }
 
 export default DNS;

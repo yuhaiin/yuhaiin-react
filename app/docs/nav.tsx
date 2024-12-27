@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { Navbar as BootstrapNavbar, Container, Nav, NavDropdown } from 'react-bootstrap';
-import { APIUrl } from './apiurl';
+import { APIUrl } from './common/apiurl';
 
 function NavBar(props: { children: React.ReactNode }) {
     const router = useRouter()
@@ -38,6 +38,7 @@ function NavBar(props: { children: React.ReactNode }) {
                             <NavDropdown title="SETTING" active={((path: string) => { return path.startsWith('/docs/config/') || path.startsWith('/docs/webui/') })(usePathname())}>
                                 <NavDropdown.Item eventKey={'/docs/config/'}>Config</NavDropdown.Item>
                                 <NavDropdown.Item eventKey={'/docs/config/inbounds/'}>Inbound</NavDropdown.Item>
+                                <NavDropdown.Item eventKey={'/docs/config/resolver/'}>Resolver</NavDropdown.Item>
                                 <NavDropdown.Item eventKey={'/docs/webui/'}>WebUI</NavDropdown.Item>
                                 <NavDropdown.Divider />
                                 <NavDropdown.Item eventKey={APIUrl + '/debug/pprof'} >Pprof</NavDropdown.Item>
