@@ -8,6 +8,8 @@ import type { infoSchema, settingSchema } from "../config_pb";
 import { file_config_config } from "../config_pb";
 import type { configSchema, mode_config } from "../bypass/bypass_pb";
 import { file_config_bypass_bypass } from "../bypass/bypass_pb";
+import type { dns, dnsSchema, fakedns_configSchema } from "../dns/dns_pb";
+import { file_config_dns_dns } from "../dns/dns_pb";
 import type { inboundSchema } from "../listener/listener_pb";
 import { file_config_listener_listener } from "../listener/listener_pb";
 import type { EmptySchema, StringValueSchema, Timestamp } from "@bufbuild/protobuf/wkt";
@@ -18,7 +20,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file config/grpc/config.proto.
  */
 export const file_config_grpc_config: GenFile = /*@__PURE__*/
-  fileDesc("Chhjb25maWcvZ3JwYy9jb25maWcucHJvdG8SHXl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlImoKDXRlc3RfcmVzcG9uc2USKQoEbW9kZRgBIAEoCzIbLnl1aGFpaW4uYnlwYXNzLm1vZGVfY29uZmlnEg4KBnJlYXNvbhgCIAEoCRIeCgphZnRlcl9hZGRyGAMgASgJUgphZnRlcl9hZGRyIowBCg1ibG9ja19oaXN0b3J5EhAKCHByb3RvY29sGAEgASgJEgwKBGhvc3QYAiABKAkSKAoEdGltZRgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDwoHcHJvY2VzcxgEIAEoCRIgCgtibG9ja19jb3VudBgFIAEoBFILYmxvY2tfY291bnQihwEKEmJsb2NrX2hpc3RvcnlfbGlzdBI9CgdvYmplY3RzGAEgAygLMiwueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2UuYmxvY2tfaGlzdG9yeRIyChRkdW1wX3Byb2Nlc3NfZW5hYmxlZBgCIAEoCFIUZHVtcF9wcm9jZXNzX2VuYWJsZWQiIgoRaW5ib3VuZHNfcmVzcG9uc2USDQoFbmFtZXMYASADKAkyuAEKDmNvbmZpZ19zZXJ2aWNlEjcKBGxvYWQSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFy55dWhhaWluLmNvbmZpZy5zZXR0aW5nEjcKBHNhdmUSFy55dWhhaWluLmNvbmZpZy5zZXR0aW5nGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EjQKBGluZm8SFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFC55dWhhaWluLmNvbmZpZy5pbmZvMuICCgZieXBhc3MSNgoEbG9hZBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoWLnl1aGFpaW4uYnlwYXNzLmNvbmZpZxI2CgRzYXZlEhYueXVoYWlpbi5ieXBhc3MuY29uZmlnGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EjgKBnJlbG9hZBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJSCgR0ZXN0EhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGiwueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2UudGVzdF9yZXNwb25zZRJaCg1ibG9ja19oaXN0b3J5EhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GjEueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2UuYmxvY2tfaGlzdG9yeV9saXN0MpkCCgdpbmJvdW5kElAKBGxpc3QSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaMC55dWhhaWluLnByb3Rvcy5jb25maWcuc2VydmljZS5pbmJvdW5kc19yZXNwb25zZRI+CgNnZXQSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaGS55dWhhaWluLmxpc3RlbmVyLmluYm91bmQSPAoEc2F2ZRIZLnl1aGFpaW4ubGlzdGVuZXIuaW5ib3VuZBoZLnl1aGFpaW4ubGlzdGVuZXIuaW5ib3VuZBI+CgZyZW1vdmUSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFi5nb29nbGUucHJvdG9idWYuRW1wdHlCOFo2Z2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL2NvbmZpZy9zZXJ2aWNlYgZwcm90bzM", [file_config_config, file_config_bypass_bypass, file_config_listener_listener, file_google_protobuf_empty, file_google_protobuf_wrappers, file_google_protobuf_timestamp]);
+  fileDesc("Chhjb25maWcvZ3JwYy9jb25maWcucHJvdG8SHXl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlImoKDXRlc3RfcmVzcG9uc2USKQoEbW9kZRgBIAEoCzIbLnl1aGFpaW4uYnlwYXNzLm1vZGVfY29uZmlnEg4KBnJlYXNvbhgCIAEoCRIeCgphZnRlcl9hZGRyGAMgASgJUgphZnRlcl9hZGRyIowBCg1ibG9ja19oaXN0b3J5EhAKCHByb3RvY29sGAEgASgJEgwKBGhvc3QYAiABKAkSKAoEdGltZRgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDwoHcHJvY2VzcxgEIAEoCRIgCgtibG9ja19jb3VudBgFIAEoBFILYmxvY2tfY291bnQihwEKEmJsb2NrX2hpc3RvcnlfbGlzdBI9CgdvYmplY3RzGAEgAygLMiwueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2UuYmxvY2tfaGlzdG9yeRIyChRkdW1wX3Byb2Nlc3NfZW5hYmxlZBgCIAEoCFIUZHVtcF9wcm9jZXNzX2VuYWJsZWQiIgoRaW5ib3VuZHNfcmVzcG9uc2USDQoFbmFtZXMYASADKAkiHQoMcmVzb2x2ZV9saXN0Eg0KBW5hbWVzGAEgAygJIkEKDXNhdmVfcmVzb2x2ZXISDAoEbmFtZRgBIAEoCRIiCghyZXNvbHZlchgCIAEoCzIQLnl1aGFpaW4uZG5zLmRucyJ1CgVIb3N0cxI+CgVob3N0cxgBIAMoCzIvLnl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlLkhvc3RzLkhvc3RzRW50cnkaLAoKSG9zdHNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBMrgBCg5jb25maWdfc2VydmljZRI3CgRsb2FkEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhcueXVoYWlpbi5jb25maWcuc2V0dGluZxI3CgRzYXZlEhcueXVoYWlpbi5jb25maWcuc2V0dGluZxoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI0CgRpbmZvEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhQueXVoYWlpbi5jb25maWcuaW5mbzLiAgoGYnlwYXNzEjYKBGxvYWQSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFi55dWhhaWluLmJ5cGFzcy5jb25maWcSNgoEc2F2ZRIWLnl1aGFpaW4uYnlwYXNzLmNvbmZpZxoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI4CgZyZWxvYWQSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSUgoEdGVzdBIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRosLnl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlLnRlc3RfcmVzcG9uc2USWgoNYmxvY2tfaGlzdG9yeRIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoxLnl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlLmJsb2NrX2hpc3RvcnlfbGlzdDKZAgoHaW5ib3VuZBJQCgRsaXN0EhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GjAueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2UuaW5ib3VuZHNfcmVzcG9uc2USPgoDZ2V0EhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhkueXVoYWlpbi5saXN0ZW5lci5pbmJvdW5kEjwKBHNhdmUSGS55dWhhaWluLmxpc3RlbmVyLmluYm91bmQaGS55dWhhaWluLmxpc3RlbmVyLmluYm91bmQSPgoGcmVtb3ZlEhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5Mq4ECghyZXNvbHZlchJLCgRsaXN0EhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GisueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2UucmVzb2x2ZV9saXN0EjUKA2dldBIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRoQLnl1aGFpaW4uZG5zLmRucxJGCgRzYXZlEiwueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2Uuc2F2ZV9yZXNvbHZlchoQLnl1aGFpaW4uZG5zLmRucxI+CgZyZW1vdmUSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSRQoFaG9zdHMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaJC55dWhhaWluLnByb3Rvcy5jb25maWcuc2VydmljZS5Ib3N0cxJKCgpzYXZlX2hvc3RzEiQueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2UuSG9zdHMaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSPgoHZmFrZWRucxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRobLnl1aGFpaW4uZG5zLmZha2VkbnNfY29uZmlnEkMKDHNhdmVfZmFrZWRucxIbLnl1aGFpaW4uZG5zLmZha2VkbnNfY29uZmlnGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5QjhaNmdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9jb25maWcvc2VydmljZWIGcHJvdG8z", [file_config_config, file_config_bypass_bypass, file_config_dns_dns, file_config_listener_listener, file_google_protobuf_empty, file_google_protobuf_wrappers, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message yuhaiin.protos.config.service.test_response
@@ -122,6 +124,62 @@ export type inbounds_response = Message<"yuhaiin.protos.config.service.inbounds_
  */
 export const inbounds_responseSchema: GenMessage<inbounds_response> = /*@__PURE__*/
   messageDesc(file_config_grpc_config, 3);
+
+/**
+ * @generated from message yuhaiin.protos.config.service.resolve_list
+ */
+export type resolve_list = Message<"yuhaiin.protos.config.service.resolve_list"> & {
+  /**
+   * @generated from field: repeated string names = 1;
+   */
+  names: string[];
+};
+
+/**
+ * Describes the message yuhaiin.protos.config.service.resolve_list.
+ * Use `create(resolve_listSchema)` to create a new message.
+ */
+export const resolve_listSchema: GenMessage<resolve_list> = /*@__PURE__*/
+  messageDesc(file_config_grpc_config, 4);
+
+/**
+ * @generated from message yuhaiin.protos.config.service.save_resolver
+ */
+export type save_resolver = Message<"yuhaiin.protos.config.service.save_resolver"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * @generated from field: yuhaiin.dns.dns resolver = 2;
+   */
+  resolver?: dns;
+};
+
+/**
+ * Describes the message yuhaiin.protos.config.service.save_resolver.
+ * Use `create(save_resolverSchema)` to create a new message.
+ */
+export const save_resolverSchema: GenMessage<save_resolver> = /*@__PURE__*/
+  messageDesc(file_config_grpc_config, 5);
+
+/**
+ * @generated from message yuhaiin.protos.config.service.Hosts
+ */
+export type Hosts = Message<"yuhaiin.protos.config.service.Hosts"> & {
+  /**
+   * @generated from field: map<string, string> hosts = 1;
+   */
+  hosts: { [key: string]: string };
+};
+
+/**
+ * Describes the message yuhaiin.protos.config.service.Hosts.
+ * Use `create(HostsSchema)` to create a new message.
+ */
+export const HostsSchema: GenMessage<Hosts> = /*@__PURE__*/
+  messageDesc(file_config_grpc_config, 6);
 
 /**
  * @generated from service yuhaiin.protos.config.service.config_service
@@ -239,4 +297,77 @@ export const inbound: GenService<{
   },
 }> = /*@__PURE__*/
   serviceDesc(file_config_grpc_config, 2);
+
+/**
+ * @generated from service yuhaiin.protos.config.service.resolver
+ */
+export const resolver: GenService<{
+  /**
+   * @generated from rpc yuhaiin.protos.config.service.resolver.list
+   */
+  list: {
+    methodKind: "unary";
+    input: typeof EmptySchema;
+    output: typeof resolve_listSchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.protos.config.service.resolver.get
+   */
+  get: {
+    methodKind: "unary";
+    input: typeof StringValueSchema;
+    output: typeof dnsSchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.protos.config.service.resolver.save
+   */
+  save: {
+    methodKind: "unary";
+    input: typeof save_resolverSchema;
+    output: typeof dnsSchema;
+  },
+  /**
+   * the bootstrap can't be remove
+   *
+   * @generated from rpc yuhaiin.protos.config.service.resolver.remove
+   */
+  remove: {
+    methodKind: "unary";
+    input: typeof StringValueSchema;
+    output: typeof EmptySchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.protos.config.service.resolver.hosts
+   */
+  hosts: {
+    methodKind: "unary";
+    input: typeof EmptySchema;
+    output: typeof HostsSchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.protos.config.service.resolver.save_hosts
+   */
+  save_hosts: {
+    methodKind: "unary";
+    input: typeof HostsSchema;
+    output: typeof EmptySchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.protos.config.service.resolver.fakedns
+   */
+  fakedns: {
+    methodKind: "unary";
+    input: typeof EmptySchema;
+    output: typeof fakedns_configSchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.protos.config.service.resolver.save_fakedns
+   */
+  save_fakedns: {
+    methodKind: "unary";
+    input: typeof fakedns_configSchema;
+    output: typeof EmptySchema;
+  },
+}> = /*@__PURE__*/
+  serviceDesc(file_config_grpc_config, 3);
 

@@ -8,12 +8,12 @@ import useSWR from "swr";
 import { Interfaces } from '../common/interfaces';
 import Loading from '../common/loading';
 import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
-import { SettingCheck } from "../common/switch";
+import { SettingCheck, SettingTypeSelect } from "../common/switch";
 import { GlobalToastContext } from '../common/toast';
 import { setting as Setting, system_proxySchema } from '../pbes/config/config_pb';
 import { dns_configSchema } from '../pbes/config/dns/dns_pb';
 import { config_service } from '../pbes/config/grpc/config_pb';
-import { log_level } from '../pbes/config/log/log_pb';
+import { log_level, log_levelSchema } from '../pbes/config/log/log_pb';
 import { Remind, SettingInputText } from './components';
 import DNS from './dns';
 
@@ -56,7 +56,7 @@ function ConfigComponent() {
                             style={{ flexWrap: 'nowrap', overflow: 'auto hidden' }}
                         >
                             <Nav.Item><Nav.Link eventKey="home">Setting</Nav.Link></Nav.Item>
-                            <Nav.Item><Nav.Link eventKey="dns">DNS</Nav.Link></Nav.Item>
+                            <Nav.Item><Nav.Link eventKey="dns">DNS(Deprecated)</Nav.Link></Nav.Item>
                         </Nav>
                     </Card.Header>
                     <Card.Body>
@@ -109,11 +109,25 @@ function ConfigComponent() {
 
                                     <hr />
 
+
+                                    <Card.Title className='mb-2'>DNS</Card.Title>
+                                    <SettingInputText label='DNS Server'
+                                        value={setting.dns?.server ? setting.dns?.server : ""}
+                                        onChange={(e) => setSetting({ ...setting, dns: { ...setting.dns, server: e } }, false)} />
+
+                                    <hr />
+
                                     <Card.Title className='mb-2'>Logcat</Card.Title>
                                     <SettingCheck label='Save'
                                         checked={setting.logcat.save}
                                         onChange={(x) => setSetting({ ...setting, logcat: { ...setting.logcat, save: x } }, false)} />
-                                    <SettingLogcatLevelSelect label='Level' value={setting.logcat.level} onChange={(e) => setSetting({ ...setting, logcat: { ...setting.logcat, level: e } }, false)} />
+                                    <SettingTypeSelect
+                                        label='Level'
+                                        type={log_levelSchema}
+                                        value={setting.logcat.level}
+                                        filter={(v) => v.number !== log_level.verbose && v.number !== log_level.fatal}
+                                        onChange={(e) => setSetting({ ...setting, logcat: { ...setting.logcat, level: e } }, false)}
+                                    />
 
                                 </fieldset>
                             </Tab.Pane>
@@ -155,19 +169,3 @@ function ConfigComponent() {
 }
 
 export default ConfigComponent;
-
-function SettingLogcatLevelSelect(props: { label: string, value: log_level, onChange: (value: log_level) => void }) {
-    return (
-        <Form.Group as={Row} className='mb-3'>
-            <Form.Label column sm={2}>{props.label}</Form.Label>
-            <Col sm={10}>
-                <Form.Select value={log_level[props.value]} onChange={(e) => props.onChange(log_level[e.target.value as keyof typeof log_level])}>
-                    <option value={log_level[log_level.debug]}>DEBUG</option>
-                    <option value={log_level[log_level.info]}>INFO</option>
-                    <option value={log_level[log_level.warning]}>WARN</option>
-                    <option value={log_level[log_level.error]}>ERROR</option>
-                </Form.Select>
-            </Col>
-        </Form.Group>
-    )
-}

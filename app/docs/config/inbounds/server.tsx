@@ -2,8 +2,8 @@ import { create } from '@bufbuild/protobuf';
 import { useState } from 'react';
 import { Button, Card, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import { join as shlexJoin, split as shlexSplit } from 'shlex';
-import { SettingCheck } from "../../common/switch";
-import { certificate, certificateSchema, http, mixed, quic, reality, redir, reverse_http, reverse_tcp, routeSchema, socks5, tls, tls_config, tls_configSchema, tproxy, tun, tun_endpoint_driver } from '../../pbes/config/listener/listener_pb';
+import { SettingCheck, SettingTypeSelect } from "../../common/switch";
+import { certificate, certificateSchema, http, mixed, quic, reality, redir, reverse_http, reverse_tcp, routeSchema, socks5, tls, tls_config, tls_configSchema, tproxy, tun, tun_endpoint_driverSchema } from '../../pbes/config/listener/listener_pb';
 import { NewItemList, SettingInputText, SettingInputTextarea } from '../components';
 
 export const HTTPComponents = (props: { http: http, onChange: (x: http) => void }) => {
@@ -78,27 +78,6 @@ export const TunComponents = (props: { tun: tun, onChange: (x: tun) => void }) =
     const [postUp, setPostUp] = useState(shlexJoin(props.tun.postUp))
     const [postDown, setPostDown] = useState(shlexJoin(props.tun.postDown))
 
-    function SettingTunTypeSelect(props: {
-        label: string, value?: tun_endpoint_driver | null,
-        onChange: (value: tun_endpoint_driver) => void
-    }) {
-        return (
-            <Form.Group as={Row} className='mb-3'>
-                <Form.Label column sm={2}>{props.label}</Form.Label>
-                <Col sm={10}>
-                    <Form.Select
-                        value={tun_endpoint_driver[(props.value === undefined || props.value === null) ? tun_endpoint_driver.fdbased : props.value]}
-                        onChange={(e) => props.onChange(tun_endpoint_driver[e.target.value as keyof typeof tun_endpoint_driver])}
-                    >
-                        <option value={tun_endpoint_driver[tun_endpoint_driver.fdbased]}>Fdbased</option>
-                        <option value={tun_endpoint_driver[tun_endpoint_driver.channel]}>Channel</option>
-                        <option value={tun_endpoint_driver[tun_endpoint_driver.system_gvisor]}>System</option>
-                    </Form.Select>
-                </Col>
-            </Form.Group>
-        )
-    }
-
     return (
         <>
             <SettingCheck
@@ -133,7 +112,7 @@ export const TunComponents = (props: { tun: tun, onChange: (x: tun) => void }) =
                     }
                 }
                 } />
-            <SettingTunTypeSelect label='Stack' value={props.tun.driver} onChange={(e) => props.onChange({ ...props.tun, driver: e })} />
+            <SettingTypeSelect label='Stack' type={tun_endpoint_driverSchema} value={props.tun.driver} onChange={(e) => props.onChange({ ...props.tun, driver: e })} />
 
             <NewItemList
                 title='Routes'

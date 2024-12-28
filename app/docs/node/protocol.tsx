@@ -2,7 +2,8 @@
 
 import { create } from "@bufbuild/protobuf";
 import { FC, useState } from 'react';
-import { Button, Form, InputGroup, ListGroup } from "react-bootstrap";
+import { Button, InputGroup, ListGroup } from "react-bootstrap";
+import { FormSelect } from "../common/switch";
 import { Container, MoveUpDown, Remind, SettingInputText } from "../config/components";
 import { point } from "../pbes/node/point/point_pb";
 import {
@@ -93,20 +94,10 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
             <ListGroup variant="flush">
                 <ListGroup.Item>
                     <InputGroup>
-                        <Form.Select value={newProtocol.value} onChange={(e) => {
-                            setNewProtocol({ value: e.target.value })
-                        }
-                        }>
-                            {
-                                Object.keys(protocols).map((v) => {
-                                    return <option value={v} key={v}>{v}</option>
-                                })
-                            }
-                        </Form.Select>
+                        <FormSelect value={newProtocol.value} values={Object.keys(protocols)} onChange={(e) => setNewProtocol({ value: e })} />
                         <Button
                             variant="outline-secondary"
                             onClick={() => {
-                                console.log("click adddd")
                                 onChange({ ...value, protocols: [...value.protocols, protocols[newProtocol.value]] })
                             }}
                         >

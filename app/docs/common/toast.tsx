@@ -10,9 +10,10 @@ export const GlobalToastContext = createContext(initialState);
 
 export const GlobalToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [texts, setTexts] =
-        useState<{ text: string, type: string }[]>([]);
+        useState<{ value: { [key: string]: { text: string, type: string } }, index: number }>({ value: {}, index: 0 });
 
-    const msg = (text: string, type: string) => setTexts(prev => { return [...prev, { text: text, type: type }] });
+    const msg = (text: string, type: string) =>
+        setTexts(prev => { return { value: { ...prev.value, [prev.index]: { text: text, type: type } }, index: prev.index + 1 } });
 
     return (
         <GlobalToastContext.Provider value={{ Info: (text: string) => { console.log(text); msg(text, "success") }, Error: (text: string) => { console.error(text); msg(text, "danger") } }}>
@@ -22,14 +23,20 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 containerPosition='fixed'
                 style={{ zIndex: 999999 }}
             >
-                {texts.map((v, i) => {
+                {Object.entries(texts.value).map(([key, v]) => {
                     return <Toast
-                        key={"toast" + i}
+                        key={"toast" + key}
                         role='alert'
                         aria-live='assertive'
                         show={true}
                         bg={v.type}
-                        onClose={() => { setTexts(prev => { return [...prev.slice(0, i), ...prev.slice(i + 1)] }) }}
+                        onClose={() => {
+                            setTexts(prev => {
+                                const value = { ...prev.value }
+                                delete value[key]
+                                return { ...prev, value }
+                            })
+                        }}
                         aria-atomic="true"
                         delay={4000}
                         autohide={true}

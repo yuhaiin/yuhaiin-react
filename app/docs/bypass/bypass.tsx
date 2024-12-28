@@ -1,9 +1,9 @@
 import { create } from '@bufbuild/protobuf';
 import { Dispatch, SetStateAction, useState } from 'react';
 import { Button, ButtonGroup, Card, Col, Form, Row } from 'react-bootstrap';
-import { SettingCheck } from '../common/switch';
+import { FormSelect, SettingCheck, SettingTypeSelect } from '../common/switch';
 import { Container, MoveUpDown, NewItemList, SettingInputText } from '../config/components';
-import { config, mode, mode_config, mode_configSchema, remote_rule, remote_rule_fileSchema, remote_rule_httpSchema, remote_ruleSchema, resolve_strategy, udp_proxy_fqdn_strategy } from '../pbes/config/bypass/bypass_pb';
+import { config, mode, mode_config, mode_configSchema, modeSchema, remote_rule, remote_rule_fileSchema, remote_rule_httpSchema, remote_ruleSchema, resolve_strategy, resolve_strategySchema, udp_proxy_fqdn_strategy, udp_proxy_fqdn_strategySchema } from '../pbes/config/bypass/bypass_pb';
 
 export const Bypass = (props: {
     bypass: config,
@@ -29,8 +29,8 @@ export const Bypass = (props: {
         <>
             <Card className="mb-3">
                 <Card.Body>
-                    <SettingModeSelect label='TCP' network={true} value={props.bypass.tcp} onChange={(v) => props.onChange({ ...props.bypass, tcp: v })} />
-                    <SettingModeSelect label='UDP' network={true} value={props.bypass.udp} onChange={(v) => props.onChange({ ...props.bypass, udp: v })} />
+                    <SettingTypeSelect label='TCP' type={modeSchema} value={props.bypass.tcp} onChange={(v) => props.onChange({ ...props.bypass, tcp: v })} />
+                    <SettingTypeSelect label='UDP' type={modeSchema} value={props.bypass.udp} onChange={(v) => props.onChange({ ...props.bypass, udp: v })} />
                     <SettingCheck label='Resolve Locally' checked={props.bypass.resolveLocally} onChange={() => props.onChange({ ...props.bypass, resolveLocally: !props.bypass.resolveLocally })} />
                     <SettingCheck label='Udp proxy Fqdn'
                         checked={props.bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve}
@@ -115,10 +115,15 @@ const BypassSingleComponents = (props: {
 }) => {
     return (
         <>
-            <SettingModeSelect label='Mode' network={false} value={props.config.mode} onChange={(v) => props.onChange({ ...props.config, mode: v })} />
+            <SettingTypeSelect label='Mode' type={modeSchema} filter={(v) => v.number !== mode.bypass} value={props.config.mode} onChange={(v) => props.onChange({ ...props.config, mode: v })} />
             <SettingInputText label='Tag' value={props.config.tag} onChange={(e) => props.onChange({ ...props.config, tag: e })} />
-            <SettingResolveStrategySelect label='Resolve Strategy' value={props.config.resolveStrategy} onChange={(e) => props.onChange({ ...props.config, resolveStrategy: e })} />
-            <SettingUdpProxyFqdnSelect label='UDP proxy Fqdn' value={props.config.udpProxyFqdnStrategy} onChange={(e) => props.onChange({ ...props.config, udpProxyFqdnStrategy: e })} />
+            <SettingTypeSelect label='Resolve Strategy' type={resolve_strategySchema} value={props.config.resolveStrategy} onChange={(e) => props.onChange({ ...props.config, resolveStrategy: e })} />
+            <SettingTypeSelect label='UDP proxy Fqdn'
+                type={udp_proxy_fqdn_strategySchema}
+                format={(v) => v === udp_proxy_fqdn_strategy.udp_proxy_fqdn_strategy_default ? "global" : udp_proxy_fqdn_strategy[v]}
+                value={props.config.udpProxyFqdnStrategy}
+                onChange={(e) => props.onChange({ ...props.config, udpProxyFqdnStrategy: e })}
+            />
             <NewItemList
                 title='IP/DOMAIN'
                 data={props.config.hostname}
@@ -203,22 +208,22 @@ const RulesComponent = (props: { config: remote_rule, onChange: (x: remote_rule)
             <Form.Group as={Row} className='mb-3'>
                 <Form.Label column sm={2}>Type</Form.Label>
                 <Col sm={10}>
-                    <Form.Select value={getType()} onChange={(e) => {
-                        if (getType() == e.target.value) return
-                        const x = { ...props.config }
-                        switch (e.target.value) {
-                            case "file":
-                                x.object = { case: "file", value: create(remote_rule_fileSchema, {}) }
-                                break
-                            case "http":
-                                x.object = { case: "http", value: create(remote_rule_httpSchema, {}) }
-                                break
-                        }
-                        props.onChange(x)
-                    }}>
-                        <option value={"file"}>file</option>
-                        <option value={"http"}>http</option>
-                    </Form.Select>
+                    <FormSelect value={getType()}
+                        values={["file", "http"]}
+                        onChange={(e) => {
+                            if (getType() == e) return
+                            const x = { ...props.config }
+                            switch (e) {
+                                case "file":
+                                    x.object = { case: "file", value: create(remote_rule_fileSchema, {}) }
+                                    break
+                                case "http":
+                                    x.object = { case: "http", value: create(remote_rule_httpSchema, {}) }
+                                    break
+                            }
+                            props.onChange(x)
+                        }}
+                    />
                 </Col>
             </Form.Group>
             <SettingInputText mb='' label='Value' value={getValue()} errorMsg={props.config.errorMsg} onChange={(e) => {
@@ -229,57 +234,5 @@ const RulesComponent = (props: { config: remote_rule, onChange: (x: remote_rule)
         </>
     )
 }
-
-function SettingModeSelect(props: { label: string, network: boolean, value: mode, onChange: (value: mode) => void }) {
-    return (
-        <Form.Group as={Row} className='mb-3'>
-            <Form.Label column sm={2}>{props.label}</Form.Label>
-            <Col sm={10}>
-                <Form.Select value={mode[props.value]} onChange={(e) => props.onChange(mode[e.target.value as keyof typeof mode])}>
-                    {props.network && <option value={mode[mode.bypass]}>BYPASS</option>}
-                    <option value={mode[mode.direct]}>DIRECT</option>
-                    <option value={mode[mode.proxy]}>PROXY</option>
-                    <option value={mode[mode.block]}>BLOCK</option>
-                </Form.Select>
-            </Col>
-        </Form.Group>
-    )
-}
-
-function SettingUdpProxyFqdnSelect(props: { label: string, value: udp_proxy_fqdn_strategy, onChange: (value: udp_proxy_fqdn_strategy) => void }) {
-    return (
-        <Form.Group as={Row} className='mb-3'>
-            <Form.Label column sm={2}>{props.label}</Form.Label>
-            <Col sm={10}>
-                <Form.Select value={udp_proxy_fqdn_strategy[props.value]} onChange={(e) => props.onChange(udp_proxy_fqdn_strategy[e.target.value as keyof typeof udp_proxy_fqdn_strategy])}>
-                    <option value={udp_proxy_fqdn_strategy[udp_proxy_fqdn_strategy.udp_proxy_fqdn_strategy_default]}>Global</option>
-                    <option value={udp_proxy_fqdn_strategy[udp_proxy_fqdn_strategy.resolve]}>Resolve</option>
-                    <option value={udp_proxy_fqdn_strategy[udp_proxy_fqdn_strategy.skip_resolve]}>Skip</option>
-                </Form.Select>
-            </Col>
-        </Form.Group>
-    )
-}
-
-
-function SettingResolveStrategySelect(props: { label: string, value: resolve_strategy, onChange: (value: resolve_strategy) => void }) {
-    return (
-        <Form.Group as={Row} className='mb-3'>
-            <Form.Label column sm={2}>{props.label}</Form.Label>
-            <Col sm={10}>
-                <Form.Select value={resolve_strategy[props.value]} onChange={(e) => props.onChange(resolve_strategy[e.target.value as keyof typeof resolve_strategy])}>
-                    <option value={resolve_strategy[resolve_strategy.default]}>default</option>
-                    <option value={resolve_strategy[resolve_strategy.prefer_ipv4]}>prefer_ipv4</option>
-                    <option value={resolve_strategy[resolve_strategy.only_ipv4]}>only_ipv4</option>
-                    <option value={resolve_strategy[resolve_strategy.prefer_ipv6]}>prefer_ipv6</option>
-                    <option value={resolve_strategy[resolve_strategy.only_ipv6]}>only_ipv6</option>
-                </Form.Select>
-            </Col>
-        </Form.Group>
-    )
-}
-
-
-
 
 export default Bypass;

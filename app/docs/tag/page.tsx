@@ -3,11 +3,13 @@
 import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import Error from 'next/error';
-import { useContext, useEffect, useState } from "react";
+import { FC, useContext, useEffect, useState } from "react";
 import { Badge, Button, ButtonGroup, Card, FloatingLabel, Form, ListGroup, Modal, ToggleButton } from "react-bootstrap";
 import useSWR from 'swr';
+import { ConfirmModal } from "../common/confirm";
 import Loading from "../common/loading";
 import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
+import { FormSelect } from "../common/switch";
 import { GlobalToastContext } from "../common/toast";
 import { NodeModal } from "../node/modal";
 import { node, nodes_response, save_tag_req, save_tag_reqSchema, tag, tags_response } from "../pbes/node/grpc/node_pb";
@@ -19,36 +21,37 @@ function Tags() {
     const { data: nodes } = useSWR("/nodes", ProtoESFetcher(node.method.list))
     const [modalHash, setModalHash] = useState({ hash: "", show: false });
     const [tagModalData, setTagModalData] = useState({ show: false, tag: create(save_tag_reqSchema, { tag: "", hash: "", type: tag_type.node }), new: true });
+    const [confirmData, setConfirmData] = useState({ show: false, name: "" });
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
 
     if (isLoading || data == undefined) return <Loading />
 
-    const TagItem = (props: { k: string, v: tags }) => {
+    const TagItem: FC<{ k: string, v: tags }> = ({ k, v }) => {
         return (
             <ListGroup.Item
                 className="align-items-center d-flex justify-content-between"
                 style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
-                key={props.k}
+                key={k}
                 action
                 onClick={() => {
                     setTagModalData({
                         show: true,
-                        tag: create(save_tag_reqSchema, { tag: props.k, hash: props.v.hash[0], type: props.v.type }),
+                        tag: create(save_tag_reqSchema, { tag: k, hash: v.hash[0], type: v.type }),
                         new: false
                     })
                 }}
             >
                 <div>
-                    {props.k}
+                    {k}
                     <Badge className="rounded-pill bg-light text-dark ms-1">
-                        {props.v.hash.length === 0 || props.v.hash[0] === ""
+                        {v.hash.length === 0 || v.hash[0] === ""
                             ?
                             <>Fallback <i className="bi bi-heart-arrow"></i> Global</>
                             :
-                            props.v.type === tag_type.mirror
+                            v.type === tag_type.mirror
                                 ?
-                                <>Mirror <i className="bi bi-arrow-right"></i> {props.v.hash}</>
+                                <>Mirror <i className="bi bi-arrow-right"></i> {v.hash}</>
                                 :
                                 <>Target <i className="bi bi-arrow-right"></i>
                                     <a
@@ -57,9 +60,9 @@ function Tags() {
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
-                                            setModalHash({ hash: props.v.hash[0], show: true })
+                                            setModalHash({ hash: v.hash[0], show: true })
                                         }} >
-                                        {props.v.hash}
+                                        {v.hash}
                                     </a>
                                 </>
                         }
@@ -70,17 +73,7 @@ function Tags() {
                     variant="outline-danger"
                     as="span"
                     size="sm"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        FetchProtobuf(tag.method.remove, "/tag", "DELETE", create(StringValueSchema, { value: props.k }))
-                            .then(async ({ error }) => {
-                                if (error !== undefined) ctx.Error(`delete tag ${props.k} failed, ${error.code}| ${error.msg}`)
-                                else {
-                                    ctx.Info(`delete tag ${props.k} success`);
-                                    await mutate();
-                                }
-                            })
-                    }}
+                    onClick={(e) => { e.stopPropagation(); setConfirmData({ show: true, name: k }) }}
                 >
                     <i className="bi-trash"></i></Button>
             </ListGroup.Item>
@@ -90,6 +83,23 @@ function Tags() {
 
     return (
         <>
+            <ConfirmModal
+                show={confirmData.show}
+                content={<p>Delete tag {confirmData.name}?</p>}
+                onHide={() => setConfirmData({ ...confirmData, show: false })}
+                onOk={() => {
+                    FetchProtobuf(tag.method.remove, "/tag", "DELETE", create(StringValueSchema, { value: confirmData.name }))
+                        .then(async ({ error }) => {
+                            if (error !== undefined) ctx.Error(`delete tag ${confirmData.name} failed, ${error.code}| ${error.msg}`)
+                            else {
+                                ctx.Info(`delete tag ${confirmData.name} success`);
+                                await mutate();
+                            }
+                            setConfirmData({ ...confirmData, show: false })
+                        })
+                }}
+            />
+
             <NodeModal
                 show={modalHash.show}
                 hash={modalHash.hash}
@@ -239,38 +249,21 @@ const Node = (props: {
 }) => {
     const [group, setGroup] = useState({ data: getGroup(props.hash, props.data) })
     useEffect(() => {
-        setGroup({ data: getGroup(props.hash, props.data) })
+        if (props.hash) setGroup({ data: getGroup(props.hash, props.data) })
     }, [props.hash, props.data]);
 
     return <>
         <FloatingLabel label="Group" className="mb-2" >
-            <Form.Select defaultValue={group.data}
-                onChange={(e) => setGroup({ data: e.target.value })}>
-                <option>Choose...</option>
-                {
-                    Object
-                        .keys(props.data ? props.data.groups : {})
-                        .sort((a, b) => { return a <= b ? -1 : 1 })
-                        .map((k) => {
-                            return (<option value={k} key={k}>{k}</option>)
-                        })
-                }
-            </Form.Select>
+            <FormSelect emptyChoose value={group.data} onChange={(x) => { setGroup({ data: x }) }} values={Object.keys(props.data ? props.data.groups : {}).sort((a, b) => { return a <= b ? -1 : 1 })} />
         </FloatingLabel>
 
-        <FloatingLabel label="Node" className="mb-2" >
-            <Form.Select defaultValue={props.hash}
-                onChange={(e) => { props.onChangeNode(e.target.value) }}>
-                <option value="">Choose...</option>
-                {
-                    Object
-                        .entries(props.data ? props.data.groups[group.data]?.nodesV2 ?? {} : {})
-                        .sort((a, b) => { return a <= b ? -1 : 1 })
-                        .map(([k, v]) => {
-                            return (<option value={v} key={k}>{k}</option>)
-                        })
-                }
-            </Form.Select>
+        <FloatingLabel label="Node">
+            <FormSelect
+                emptyChoose
+                value={props.hash}
+                onChange={(x) => { props.onChangeNode(x) }}
+                values={Object.entries(props.data ? props.data.groups[group.data]?.nodesV2 ?? {} : {}).sort((a, b) => { return a <= b ? -1 : 1 })}
+            />
         </FloatingLabel>
     </>
 }
@@ -281,19 +274,12 @@ const Mirror = (props: {
     onChangeMirror: (x: string) => void
 }) => {
     return <FloatingLabel label="Mirror" className="mb-2" >
-        <Form.Select defaultValue={props.value}
-            onChange={(e) => { props.onChangeMirror(e.target.value) }}
-        >
-            <option value="">Choose...</option>
-            {
-                Object
-                    .keys(props.data.tags)
-                    .sort((a, b) => { return a <= b ? -1 : 1 })
-                    .map((k) => {
-                        return (<option value={k} key={k}>{k}</option>)
-                    })
-            }
-        </Form.Select>
+        <FormSelect
+            emptyChoose
+            value={props.value}
+            onChange={(x) => { props.onChangeMirror(x) }}
+            values={Object.keys(props.data.tags).sort((a, b) => { return a <= b ? -1 : 1 })}
+        />
     </FloatingLabel>
 }
 
