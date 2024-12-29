@@ -46,13 +46,14 @@ export const SettingTypeSelect: FC<{
     </Form.Group >
 }
 
-export const SettingSelect: FC<{ label: string, value: string, values: string[], onChange: (x: string) => void }> =
-    ({ label, values, onChange, value }) => {
+export const SettingSelect: FC<{ label: string, value: string, values: string[], onChange: (x: string) => void, emptyChoose?: boolean }> =
+    ({ label, values, onChange, value, emptyChoose }) => {
         return (
             <Form.Group as={Row} className='mb-2'>
                 <Form.Label column sm={2}>{label}</Form.Label>
                 <Col sm={10}>
                     <Form.Select value={value} onChange={(e) => onChange(e.target.value)}>
+                        {emptyChoose && <option value="">Choose...</option>}
                         {
                             values.map((v) => <option key={v} value={v}>{v}</option>)
                         }

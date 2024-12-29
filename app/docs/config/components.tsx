@@ -265,7 +265,8 @@ export function Container<T>(props: {
     hideClose?: boolean,
     moveUpDown?: MoveUpDown<T>,
     children: JSX.Element,
-    fold?: boolean
+    fold?: boolean,
+    as?: React.ElementType,
 }) {
     const [fold, setFold] = useState({ value: false })
     const [dragOvering, setDragOvering] = useState(false)
@@ -279,6 +280,7 @@ export function Container<T>(props: {
 
     return <>
         <Card
+            as={props.as}
             border={getBorderColor()}
             className="flex-grow-1 form-floating"
             onDragOver={(e) => {
@@ -306,7 +308,7 @@ export function Container<T>(props: {
                     setClicking(false)
                     if (props.moveUpDown && props.moveUpDown.drag) props.moveUpDown.drag.onDragStart(props.moveUpDown.current)
                 }}
-                style={props.fold ? { cursor: 'pointer' } : {}}
+                style={props.fold ? { cursor: 'pointer', backgroundColor: "#00000000", borderBottom: "0px", padding: "0px" } : {}}
                 className={"d-flex justify-content-between"}
                 onClick={() => props.fold && setFold(prev => { return { value: !prev.value } })}
                 onMouseDown={() => {

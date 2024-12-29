@@ -93,6 +93,7 @@ function Resolver() {
                             return <React.Fragment key={"resolvers-" + k}>
                                 <ListGroup.Item
                                     action
+                                    disabled={v === "direct" || v === "proxy" || v === "bootstrap"}
                                     className="d-flex justify-content-between align-items-center"
                                     style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
                                     onClick={(e) => { e.stopPropagation(); setShowdata({ show: true, name: v, new: false }) }}
@@ -101,6 +102,7 @@ function Resolver() {
                                     {v !== "bootstrap" &&
                                         <Button
                                             variant='outline-danger'
+                                            disabled={v === "direct" || v === "proxy" || v === "bootstrap"}
                                             size="sm"
                                             as={"span"}
                                             key={k + "span-button"}
