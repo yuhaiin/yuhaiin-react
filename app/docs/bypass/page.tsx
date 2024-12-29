@@ -44,9 +44,7 @@ function BypassComponent() {
             setModalData={setModalData}
         />
 
-        <hr />
-
-        <Stack gap={1} direction="horizontal">
+        <Stack gap={1} direction="horizontal" className="mt-2">
             <ButtonGroup>
                 <Button
                     variant="outline-primary"

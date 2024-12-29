@@ -133,32 +133,33 @@ function InboudComponent() {
 
         <Card>
             {inbounds.names.length === 0 && <Card.Body><div className="text-center my-2" style={{ opacity: '0.4' }}>No Inbounds</div>  </Card.Body>}
-            {inbounds.names.length !== 0 && <ListGroup variant="flush">
-                {inbounds.names.
-                    sort((a, b) => { return a <= b ? -1 : 1 }).
-                    map((v, k) => {
-                        return <React.Fragment key={"inbounds-" + k}>
-                            <ListGroup.Item
-                                action
-                                className="d-flex justify-content-between align-items-center"
-                                style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
-                                onClick={(e) => { e.stopPropagation(); setShowdata({ show: true, name: v, new: false }) }}
-                            >
-                                {v}
-                                <Button
-                                    variant='outline-danger'
-                                    size="sm"
-                                    as={"span"}
-                                    key={k + "span-button"}
-                                    onClick={(e) => { e.stopPropagation(); deleteInbound(v) }}
+            {inbounds.names.length !== 0 &&
+                <ListGroup variant="flush" style={{ borderBottom: "none" }}>
+                    {inbounds.names.
+                        sort((a, b) => { return a <= b ? -1 : 1 }).
+                        map((v, k) => {
+                            return <React.Fragment key={"inbounds-" + k}>
+                                <ListGroup.Item
+                                    action
+                                    className="d-flex justify-content-between align-items-center"
+                                    style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
+                                    onClick={(e) => { e.stopPropagation(); setShowdata({ show: true, name: v, new: false }) }}
                                 >
-                                    <i className="bi bi-x-lg"></i>
-                                </Button>
-                            </ListGroup.Item>
-                        </React.Fragment>
-                    })
-                }
-            </ListGroup>
+                                    {v}
+                                    <Button
+                                        variant='outline-danger'
+                                        size="sm"
+                                        as={"span"}
+                                        key={k + "span-button"}
+                                        onClick={(e) => { e.stopPropagation(); deleteInbound(v) }}
+                                    >
+                                        <i className="bi bi-x-lg"></i>
+                                    </Button>
+                                </ListGroup.Item>
+                            </React.Fragment>
+                        })
+                    }
+                </ListGroup>
             }
             <Card.Footer>
                 <InputGroup className="d-flex justify-content-end">

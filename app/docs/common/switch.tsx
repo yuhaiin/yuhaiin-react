@@ -29,9 +29,10 @@ export const SettingTypeSelect: FC<{
     value: number,
     onChange: (no: number) => void,
     filter?: (v: DescEnumValue) => boolean
-    format?: (v: number) => string
+    format?: (v: number) => string,
+    lastElem?: boolean
 }> = ({ ...props }) => {
-    return <Form.Group as={Row} className='mb-3'>
+    return <Form.Group as={Row} className={!props.lastElem ? 'mb-2' : ''}>
         <Form.Label column sm={2}>{props.label}</Form.Label>
         <Col sm={10}>
             <Form.Select value={props.value}
@@ -46,13 +47,21 @@ export const SettingTypeSelect: FC<{
     </Form.Group >
 }
 
-export const SettingSelect: FC<{ label: string, value: string, values: string[], onChange: (x: string) => void }> =
-    ({ label, values, onChange, value }) => {
+export const SettingSelect: FC<{
+    label: string,
+    value: string,
+    values: string[],
+    onChange: (x: string) => void,
+    emptyChoose?: boolean,
+    lastElem?: boolean
+}> =
+    ({ label, values, onChange, value, emptyChoose, lastElem: last }) => {
         return (
-            <Form.Group as={Row} className='mb-2'>
+            <Form.Group as={Row} className={!last ? 'mb-2' : ''}>
                 <Form.Label column sm={2}>{label}</Form.Label>
                 <Col sm={10}>
                     <Form.Select value={value} onChange={(e) => onChange(e.target.value)}>
+                        {emptyChoose && <option value="">Choose...</option>}
                         {
                             values.map((v) => <option key={v} value={v}>{v}</option>)
                         }
