@@ -2,11 +2,10 @@
 
 import { clone, create } from "@bufbuild/protobuf"
 import { StringValueSchema } from "@bufbuild/protobuf/wkt"
-import Error from "next/error"
 import React, { useContext, useEffect, useState } from "react"
 import { Button, Card, Form, InputGroup, ListGroup, Modal } from "react-bootstrap"
 import useSWR from "swr"
-import Loading from "../../common/loading"
+import Loading, { Error } from "../../common/loading"
 import { FetchProtobuf, ProtoESFetcher } from "../../common/proto"
 import { GlobalToastContext } from "../../common/toast"
 import { inbound as inboundService } from "../../pbes/config/grpc/config_pb"

@@ -1,8 +1,7 @@
 import { create, toJsonString } from '@bufbuild/protobuf';
-import Error from 'next/error';
 import { Card } from 'react-bootstrap';
 import useSWR from 'swr';
-import Loading from './common/loading';
+import Loading, { Error } from './common/loading';
 import { ProtoESFetcher } from './common/proto';
 import { node } from './pbes/node/grpc/node_pb';
 import { pointSchema } from './pbes/node/point/point_pb';

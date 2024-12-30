@@ -262,7 +262,7 @@ const RulesComponent: FC<{ config: remote_rule, onChange: (x: remote_rule) => vo
                     />
                 </Col>
             </Form.Group>
-            <SettingInputText mb='' label='Value' value={getValue()} errorMsg={config.errorMsg} onChange={(e) => {
+            <SettingInputText className='' label='Value' value={getValue()} errorMsg={config.errorMsg} onChange={(e) => {
                 const x = { ...config }
                 setValue(x, e)
                 onChange(x)

@@ -4,7 +4,7 @@ import { FC, useContext, useEffect, useState } from "react";
 import { Button, ButtonGroup, Dropdown, DropdownButton, Form, Modal } from "react-bootstrap";
 import useSWR from 'swr';
 import { Interfaces, InterfacesContext } from "../common/interfaces";
-import Loading from "../common/loading";
+import Loading, { Error } from "../common/loading";
 import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
 import { GlobalToastContext } from "../common/toast";
 import { node } from "../pbes/node/grpc/node_pb";
@@ -91,8 +91,7 @@ export const NodeModal: FC<{
                         <fieldset disabled={!editable}>
                             {error ?
                                 <>
-                                    <h4 className="text-center my-2">{error.code} - {error.msg}</h4>
-                                    <pre className="text-center my-2 text-danger lead">{error.raw}</pre>
+                                    <Error statusCode={error.code} title={error.msg} raw={error.raw} />
                                 </> :
                                 isValidating || isLoading || !nodes ? <Loading /> :
                                     <InterfacesContext value={interfaces}>

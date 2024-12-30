@@ -299,7 +299,7 @@ const Single: FC<{ value: dns, onChange: (x: dns) => void }> = ({ value, onChang
         <SettingInputText label='Host' value={value.host} onChange={(v) => onChange({ ...value, host: v })} />
         <SettingTypeSelect label='Type' type={typeSchema} value={value.type} onChange={(v) => onChange({ ...value, type: v })} />
         <SettingInputText label='Subnet' value={value.subnet} onChange={(v) => onChange({ ...value, subnet: v })} />
-        <SettingInputText mb='' label='SNI' value={value.tlsServername} onChange={(v) => onChange({ ...value, tlsServername: v })} />
+        <SettingInputText className='' label='SNI' value={value.tlsServername} onChange={(v) => onChange({ ...value, tlsServername: v })} />
     </>
 }
 

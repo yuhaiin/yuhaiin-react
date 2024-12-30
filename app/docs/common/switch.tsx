@@ -11,10 +11,10 @@ export const SwitchSelect = (props: { value: boolean, onChange: (x: boolean) => 
     )
 }
 
-export const SettingCheck: FC<{ label: string, checked: boolean, onChange: (c: boolean) => void }> =
-    ({ label, checked, onChange }) => {
+export const SettingCheck: FC<{ label: string, checked: boolean, onChange: (c: boolean) => void, className?: string }> =
+    ({ label, checked, onChange, className }) => {
         return (
-            <Form.Group as={Row} className='mb-2'>
+            <Form.Group as={Row} className={className}>
                 <Form.Label column sm={2}>{label}</Form.Label>
                 <Col sm={10} className='d-flex align-items-center'>
                     <Form.Check className='d-flex align-items-center' type='switch' checked={checked} onChange={(e) => onChange(e.target.checked)} />

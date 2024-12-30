@@ -30,16 +30,17 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
             onChange={(e) => { props.onChange({ ...props.inbound, name: e }) }}
         />
 
-        <Container title="Network" hideClose>
+        <Container title="Network" className="mb-2" hideClose>
             <Network inbound={props.inbound} onChange={(x) => { props.onChange({ ...x }) }} />
         </Container>
 
-        <Container title="Transport" hideClose>
+        <Container title="Transport" className="mb-2" hideClose>
             <>
                 {
                     props.inbound.transport.map((x, i) => {
                         return <Container
                             key={i}
+                            className={i !== 0 ? "mt-2" : ""}
                             title={x.transport.case?.toString() ?? ""}
                             onClose={() => { props.onChange({ ...props.inbound, transport: [...props.inbound.transport.slice(0, i), ...props.inbound.transport.slice(i + 1)] }) }}
                             moveUpDown={new MoveUpDown(props.inbound.transport, i, (x) => props.onChange({ ...props.inbound, transport: x }))}
@@ -59,7 +60,7 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
                             <Button
                                 variant="outline-success"
                                 onClick={() => {
-                                    const x = { ...props.inbound }
+                                    const x = { ...props.inbound, transport: [...props.inbound.transport] }
                                     switch (newProtocol.value) {
                                         case "normal":
                                             x.transport.push(create(transportSchema, {

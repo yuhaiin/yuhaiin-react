@@ -170,7 +170,7 @@ const TagModal = (props: {
     onChangeTag: (x: save_tag_req) => void
 }) => {
     return <>
-        <Modal show={props.show} onHide={() => { props.onHide() }}>
+        <Modal show={props.show} onHide={() => { props.onHide() }} centered>
             <Modal.Header closeButton>{props.tag.tag}</Modal.Header>
             <Modal.Body>
                 <ButtonGroup className="mb-3 d-flex">

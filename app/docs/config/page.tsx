@@ -1,12 +1,11 @@
 "use client"
 
 import { create } from '@bufbuild/protobuf';
-import Error from 'next/error';
 import { useContext } from 'react';
 import { Button, Card, Col, Form, Nav, Row, Tab, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
 import useSWR from "swr";
 import { Interfaces } from '../common/interfaces';
-import Loading from '../common/loading';
+import Loading, { Error } from '../common/loading';
 import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
 import { SettingCheck, SettingTypeSelect } from "../common/switch";
 import { GlobalToastContext } from '../common/toast';

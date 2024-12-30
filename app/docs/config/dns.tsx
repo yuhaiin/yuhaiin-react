@@ -34,7 +34,7 @@ const DNS: FC<Props<dns_config>> = (props) => {
             <Single title='Remote DNS' value={props.value.remote ?? create(dnsSchema, {})} onChange={(v) => props.onChange({ ...props.value, remote: v })} />
             <Single title='Bootstrap DNS' value={props.value.bootstrap ?? create(dnsSchema, {})} onChange={(v) => props.onChange({ ...props.value, bootstrap: v })} />
 
-            <Container title="Hosts" hideClose>
+            <Container title="Hosts" className="mt-2" hideClose>
                 <>
                     {
                         Object.entries(props.value.hosts)
@@ -77,12 +77,12 @@ const DNS: FC<Props<dns_config>> = (props) => {
 }
 
 const Single: FC<{ value: dns, onChange: (x: dns) => void, title: string }> = ({ title, value, onChange }) => {
-    return <Container title={title} hideClose>
+    return <Container title={title} className='mt-2' hideClose>
         <>
             <SettingInputText label='Host' value={value.host} onChange={(v) => onChange({ ...value, host: v })} />
             <SettingTypeSelect label='Type' type={typeSchema} value={value.type} onChange={(v) => onChange({ ...value, type: v })} />
             <SettingInputText label='Subnet' value={value.subnet} onChange={(v) => onChange({ ...value, subnet: v })} />
-            <SettingInputText mb='' label='SNI' value={value.tlsServername} onChange={(v) => onChange({ ...value, tlsServername: v })} />
+            <SettingInputText className='' label='SNI' value={value.tlsServername} onChange={(v) => onChange({ ...value, tlsServername: v })} />
         </>
     </Container>
 }

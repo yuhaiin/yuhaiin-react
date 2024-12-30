@@ -20,10 +20,10 @@ export const SettingInputText: FC<{
     plaintext?: boolean,
     onChange?: (x: string) => void,
     reminds?: Remind[] | null,
-    mb?: string,
     placeholder?: string,
     errorMsg?: string,
-}> = ({ label, value, url, plaintext, onChange, reminds, mb, placeholder, errorMsg }) => {
+    className?: string
+}> = ({ label, value, url, plaintext, onChange, reminds, placeholder, errorMsg, className }) => {
     const dropdown = () => {
         if (!reminds || !reminds.length) return <></>
 
@@ -50,10 +50,10 @@ export const SettingInputText: FC<{
     }
 
     return (
-        <Form.Group as={Row} className={mb !== undefined ? mb : "mb-2"}>
+        <Form.Group as={Row} className={className !== undefined ? className : "mb-2"}>
             <Form.Label column sm={2} className="nowrap">{label}</Form.Label>
             <Col sm={10}>
-                <InputGroup className={mb !== undefined ? mb : "mb-2"} hasValidation={errorMsg ? true : false}>
+                <InputGroup hasValidation={errorMsg ? true : false}>
                     {dropdown()}
                     {url
                         ?
@@ -267,6 +267,7 @@ export function Container<T>(props: {
     children: JSX.Element,
     fold?: boolean,
     as?: React.ElementType,
+    className?: string
 }) {
     const [fold, setFold] = useState({ value: false })
     const [dragOvering, setDragOvering] = useState(false)
@@ -282,7 +283,7 @@ export function Container<T>(props: {
         <Card
             as={props.as}
             border={getBorderColor()}
-            className="flex-grow-1 form-floating"
+            className={"flex-grow-1 form-floating" + props.className ? " " + props.className : ""}
             onDragOver={(e) => {
                 e.preventDefault()
                 setDragOvering(true)
@@ -309,7 +310,7 @@ export function Container<T>(props: {
                     if (props.moveUpDown && props.moveUpDown.drag) props.moveUpDown.drag.onDragStart(props.moveUpDown.current)
                 }}
                 style={props.fold ? { cursor: 'pointer', backgroundColor: "#00000000", borderBottom: "0px", padding: "0px" } : {}}
-                className={"d-flex justify-content-between"}
+                className={"d-flex justify-content-between align-items-center"}
                 onClick={() => props.fold && setFold(prev => { return { value: !prev.value } })}
                 onMouseDown={() => {
                     setClicking(true)
@@ -354,7 +355,6 @@ export function Container<T>(props: {
             {!props.fold && <Card.Body>{props.children}</Card.Body>}
 
         </Card>
-        <br />
     </>
 }
 

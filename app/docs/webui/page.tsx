@@ -13,11 +13,12 @@ const OnelineEdit = (props: {
     onClick: () => void,
     buttonText?: string,
     placeholder?: string,
-    loading?: boolean
+    loading?: boolean,
+    className?: string
 }) => {
     return <>
-        <Form.Group as={Row} className='mb-1 ms-1'>
-            <Row className="g-2">
+        <Form.Group as={Row} className={'ms-1' + (props.className ? " " + props.className : "")}>
+            <Row>
                 <Form.Label column sm={2} className="nowrap">{props.title}</Form.Label>
                 <Col sm={6}>
                     <Form.Control value={props.value} onChange={(v) => props.onChange(v.target.value)} placeholder={props.placeholder} />
@@ -65,6 +66,7 @@ function Setting() {
 
             <SettingCheck
                 label="IPv6"
+                className="mb-1 ms-1"
                 checked={latencyIPv6}
                 onChange={() => {
                     setLatencyIPv6(!latencyIPv6)
@@ -76,6 +78,7 @@ function Setting() {
                 title="HTTP(tcp)"
                 placeholder="https://clients3.google.com/generate_204"
                 value={latencyHTTP}
+                className="mb-2"
                 onChange={setLatencyHTTP}
                 onClick={() => {
                     SetLatencyHTTPUrl(latencyHTTP)
@@ -87,6 +90,7 @@ function Setting() {
             <OnelineEdit
                 title="DOQ(udp)"
                 placeholder="dns.adguard.com:853"
+                className="mb-2"
                 value={latencyDNS}
                 onChange={setLatencyDNS}
                 onClick={() => {
@@ -99,6 +103,7 @@ function Setting() {
             <OnelineEdit
                 title="IP"
                 placeholder="http://ip.sb"
+                className="mb-2"
                 value={latencyIPUrl}
                 onChange={setLatencyIPUrl}
                 onClick={() => {
@@ -111,6 +116,7 @@ function Setting() {
             <OnelineEdit
                 title="STUN"
                 placeholder="stun.syncthing.net:3478"
+                className="mb-2"
                 value={latencyStunUrl}
                 onChange={setLatencyStunUrl}
                 onClick={() => {

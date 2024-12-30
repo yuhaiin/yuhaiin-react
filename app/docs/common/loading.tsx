@@ -14,10 +14,11 @@ function Loading(props: { children?: string, code?: number }) {
 }
 
 
-export const Error: FC<{ statusCode?: number, title?: string }> = ({ statusCode, title }) => {
-    return <>
-        <p className='fw-bold fs-3'>{statusCode} | <a className='text-reset text-decoration-none fs-6 fw-normal'>{title}</a></p>
 
+export const Error: FC<{ statusCode?: number, title?: string, raw?: string }> = ({ statusCode, title, raw }) => {
+    return <>
+        <p className='fw-bold fs-3 text-center'>{statusCode} | <a className='text-reset text-decoration-none fs-6 fw-normal'>{title}</a></p>
+        {raw && <pre className="text-center my-2 text-danger lead">{raw}</pre>}
     </>
 }
 
