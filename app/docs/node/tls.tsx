@@ -14,8 +14,8 @@ export const TlsConfigv2: FC<{ value: tls_config, onChange: (x: tls_config) => v
             {(showEnabled === undefined || showEnabled) &&
                 <SettingCheck label="TLS Enabled" checked={value.enable} onChange={() => { onChange({ ...value, enable: !value.enable }) }} />}
             <SettingCheck label="InsecureSkipVerify" checked={value.insecureSkipVerify} onChange={() => { onChange({ ...value, insecureSkipVerify: !value.insecureSkipVerify }) }} />
-            <NewItemList title="ServerNames" data={value.serverNames} onChange={(x) => { onChange({ ...value, serverNames: x }) }} />
-            <NewItemList title="NextProtos" data={value.nextProtos} onChange={(x) => { onChange({ ...value, nextProtos: x }) }} />
+            <NewItemList className="mb-2" title="ServerNames" data={value.serverNames} onChange={(x) => { onChange({ ...value, serverNames: x }) }} />
+            <NewItemList className="mb-2" title="NextProtos" data={value.nextProtos} onChange={(x) => { onChange({ ...value, nextProtos: x }) }} />
             <NewBytesItemList title="CaCert" textarea data={value.caCert} onChange={(x) => { onChange({ ...value, caCert: x }) }} />
         </>
     }

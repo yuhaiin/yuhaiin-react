@@ -14,15 +14,13 @@ import { connection, type } from "../pbes/statistic/config_pb";
 import { connections, notify_data, notify_remove_connectionsSchema, total_flow } from "../pbes/statistic/grpc/config_pb";
 import { ConnectionInfo } from "./components";
 
-const formatBytes =
-    (a = 0, b = 2) => {
-        if (!+a) return "0B";
-        const c = 0 > b ? 0 : b, d = Math.floor(Math.log(a) / Math.log(1024));
-        const Num = parseFloat((a / Math.pow(1024, d)).toFixed(c))
-        const Unit = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"][d]
-        if (isNaN(Num) || Unit === undefined) return ""
-        return `${Num}${Unit}`
-    }
+const formatBytes = (a = 0, b = 2) => {
+    if (!+a) return "0B";
+    const c = 0 > b ? 0 : b, d = Math.floor(Math.log(a) / Math.log(1024));
+    const Num = parseFloat((a / Math.pow(1024, d)).toFixed(c))
+    const Unit = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"][d]
+    return (isNaN(Num) || Unit === undefined) ? "" : `${Num}${Unit}`
+}
 
 
 const generateFlow = (flow: total_flow, prev: { upload: bigint, download: bigint }): { upload: string, download: string } => {

@@ -1,7 +1,7 @@
 import { create } from "@bufbuild/protobuf"
 import { FC } from "react"
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap"
-import { Container, SettingInputText } from "../config/components"
+import { Container, MoveUpDown, SettingInputText } from "../config/components"
 import { host, hostSchema } from "../pbes/node/protocol/protocol_pb"
 
 export type Props<T> = {
@@ -20,7 +20,9 @@ export const NewAlternateHostList: FC<{ title: string, data: host[], onChange: (
                             <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
                                 <InputGroup className="mb-2" >
                                     <Container
+                                        moveUpDown={new MoveUpDown(data, index, onChange)}
                                         title="Host"
+                                        className="flex-grow-1"
                                         onClose={() => {
                                             if (data) { onChange([...data.slice(0, index), ...data.slice(index + 1)]) }
                                         }}>

@@ -93,12 +93,13 @@ export const NewItemList: FC<{
     title: string,
     data: string[],
     onChange: (x: string[]) => void, errorMsgs?: { [key: string]: string },
-    beforeContent?: JSX.Element
+    beforeContent?: JSX.Element,
+    className?: string
 }> =
-    ({ title, data, onChange, errorMsgs, beforeContent }) => {
+    ({ title, data, onChange, errorMsgs, beforeContent, className }) => {
         const [newData, setNewData] = useState({ value: "" });
 
-        return (<Form.Group as={Row}>
+        return (<Form.Group className={className} as={Row}>
             <Form.Label column sm={2} className="nowrap">{title}</Form.Label>
 
             {beforeContent &&
@@ -325,14 +326,14 @@ export function Container<T>(props: {
                 {
                     (!props.hideClose || props.moveUpDown) &&
                     <ButtonGroup>
-                        {!props.moveUpDown?.isTop() &&
+                        {props.moveUpDown && !props.moveUpDown?.isTop() &&
                             <Button variant="outline-primary" size="sm" onClick={(e) => {
                                 e.stopPropagation()
                                 props.moveUpDown?.move(true)
                             }}>
                                 <i className="bi bi-arrow-up"></i>
                             </Button>}
-                        {!props.moveUpDown?.isBottom() &&
+                        {props.moveUpDown && !props.moveUpDown?.isBottom() &&
                             <Button variant="outline-primary" size="sm" onClick={(e) => {
                                 e.stopPropagation()
                                 props.moveUpDown?.move(false)

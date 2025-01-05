@@ -7,7 +7,7 @@ import { Props } from "./tools"
 
 export const Quicv2: FC<Props<quic>> = ({ value, onChange }) => {
     return <>
-        <SettingInputText label="Host" value={value.host} onChange={(e) => { onChange({ ...value, host: e }) }} />
+        <SettingInputText className="" label="Host" value={value.host} onChange={(e) => { onChange({ ...value, host: e }) }} />
         <TlsConfigv2 showEnabled={false} value={value.tls ?? create(tls_configSchema, {})} onChange={(x) => { onChange({ ...value, tls: x }) }} />
     </>
 }

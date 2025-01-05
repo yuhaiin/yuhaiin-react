@@ -80,6 +80,7 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
             {
                 value.protocols.map((x, i) => {
                     return <Container
+                        className={i !== 0 ? "mt-2" : ""}
                         key={i} title={x.protocol.case ?? "Unknown"}
                         onClose={() => onChange({ ...value, protocols: [...value.protocols.slice(0, i), ...value.protocols.slice(i + 1)] })}
                         moveUpDown={new MoveUpDown(value.protocols, i, (x) => { onChange({ ...value, protocols: x }) })}

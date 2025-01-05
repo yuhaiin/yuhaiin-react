@@ -29,7 +29,6 @@ function FailedHistory() {
     const { data, error, isLoading, isValidating, mutate } = useSWR("/conn/failed_history",
         ProtoESFetcher(connections.method.failed_history))
 
-
     if (error) return <Loading code={error.code}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />
     return <>
