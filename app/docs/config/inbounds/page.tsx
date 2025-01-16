@@ -72,6 +72,8 @@ const InboundModal = (
                     <Button
                         variant="outline-primary"
                         onClick={() => {
+                            inbound.name = props.name
+
                             FetchProtobuf(inboundService.method.save, "/inbound", "PATCH", inbound,)
                                 .then(async ({ error }) => {
                                     if (error === undefined) {

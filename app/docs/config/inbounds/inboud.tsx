@@ -43,11 +43,11 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
             onChange={() => { props.onChange({ ...props.inbound, enabled: !props.inbound.enabled }) }}
         />
 
-        <SettingInputText
+        {/* <SettingInputText
             label="Name"
             value={props.inbound.name}
             onChange={(e) => { props.onChange({ ...props.inbound, name: e }) }}
-        />
+        /> */}
 
         <Container title="Network" className="mb-2" hideClose>
             <Network inbound={props.inbound} onChange={(x) => { props.onChange({ ...x }) }} />
