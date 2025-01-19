@@ -1,8 +1,7 @@
 import { create } from '@bufbuild/protobuf';
 import React, { Dispatch, FC, SetStateAction, useState } from 'react';
 import { Button, ButtonGroup, Card, Col, Form, ListGroup, Row } from 'react-bootstrap';
-import useSWR from 'swr';
-import { ProtoESFetcher } from '../common/proto';
+import { useProtoSWR } from '../common/proto';
 import { FormSelect, SettingCheck, SettingSelect, SettingTypeSelect } from '../common/switch';
 import { Container, MoveUpDown, NewItemList, SettingInputText } from '../config/components';
 import { config, mode, mode_config, mode_configSchema, modeSchema, remote_rule, remote_rule_fileSchema, remote_rule_httpSchema, remote_ruleSchema, resolve_strategy, resolve_strategySchema, udp_proxy_fqdn_strategy, udp_proxy_fqdn_strategySchema } from '../pbes/config/bypass/bypass_pb';
@@ -13,7 +12,7 @@ export const Bypass: FC<{
     onChange: (x: config) => void,
     setModalData: Dispatch<SetStateAction<{ show: boolean, data?: string, import?: boolean, onSave?: (data: string) => void }>>
 }> = ({ bypass, onChange, setModalData }) => {
-    const { data: resolvers } = useSWR("/resolvers", ProtoESFetcher(resolver.method.list))
+    const { data: resolvers } = useProtoSWR(resolver, resolver.method.list)
 
     const resolverList = () => { return resolvers ? resolvers.names.sort((a, b) => a.localeCompare(b)) : [] }
 

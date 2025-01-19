@@ -1,14 +1,13 @@
 "use client"
 
 import { Card } from "react-bootstrap"
-import useSWR from "swr"
 import Loading, { Error } from "../../common/loading"
-import { ProtoESFetcher } from "../../common/proto"
+import { useProtoSWR } from "../../common/proto"
 import { config_service } from "../../pbes/config/grpc/config_pb"
 import { ItemList, SettingInputText } from "../components"
 
 function About() {
-    const { data: info, isLoading, isValidating, error } = useSWR("/info", ProtoESFetcher(config_service.method.info), {})
+    const { data: info, isLoading, isValidating, error } = useProtoSWR(config_service, config_service.method.info)
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || isValidating || !info) return <Loading />

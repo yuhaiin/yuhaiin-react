@@ -3,9 +3,8 @@
 import { clone, fromJsonString, toJsonString } from "@bufbuild/protobuf";
 import { useContext, useState } from "react";
 import { Button, ButtonGroup, Spinner, Stack } from "react-bootstrap";
-import useSWR from "swr";
 import Loading from "../common/loading";
-import { FetchProtobuf, ProtoESFetcher } from "../common/proto";
+import { FetchProtobuf, useProtoSWR } from "../common/proto";
 import { GlobalToastContext } from "../common/toast";
 import { configSchema } from "../pbes/config/bypass/bypass_pb";
 import { bypass } from "../pbes/config/grpc/config_pb";
@@ -21,7 +20,7 @@ function BypassComponent() {
 
 
     const { data: setting, error, isLoading, mutate: setSetting } =
-        useSWR("/bypass", ProtoESFetcher(bypass.method.load), { revalidateOnFocus: false })
+        useProtoSWR(bypass, bypass.method.load, { revalidateOnFocus: false })
 
     if (error) return <Loading code={error.code}>{error.msg}</Loading>
     if (isLoading || !setting) return <Loading />
@@ -52,9 +51,8 @@ function BypassComponent() {
                     onClick={() => {
                         setSaving(true)
                         FetchProtobuf(
+                            bypass,
                             bypass.method.save,
-                            "/bypass",
-                            "PATCH",
                             setting,
                         )
                             .then(async ({ error }) => {
@@ -75,7 +73,7 @@ function BypassComponent() {
                     disabled={reloading}
                     onClick={() => {
                         setReloading(true)
-                        FetchProtobuf(bypass.method.reload, "/bypass/reload", "POST",)
+                        FetchProtobuf(bypass, bypass.method.reload,)
                             .then(async ({ error }) => {
                                 if (error !== undefined) ctx.Error(`reload failed, ${error.code}| ${error.msg}`)
                                 else {

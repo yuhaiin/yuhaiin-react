@@ -7,7 +7,7 @@ import { Accordion, Badge, Button, Card, ListGroup, Spinner } from "react-bootst
 import useSWR from 'swr';
 import useSWRSubscription from 'swr/subscription';
 import Loading from "../common/loading";
-import { FetchProtobuf, WebsocketProtoServerStream } from "../common/proto";
+import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "../common/proto";
 import { GlobalToastContext } from "../common/toast";
 import { NodeModal } from "../node/modal";
 import { connection, type } from "../pbes/statistic/config_pb";
@@ -51,8 +51,8 @@ function Connections() {
         return prev
     }
 
-    const { data: flow, error: flow_error } = useSWR("/flow/total", async (url: string) => {
-        return FetchProtobuf(connections.method.total, url).then(async ({ data: r, error }) => {
+    const { data: flow, error: flow_error } = useSWR("/flow/total", async () => {
+        return FetchProtobuf(connections, connections.method.total).then(async ({ data: r, error }) => {
             if (error) throw error
             if (r) {
                 const resp = generateFlow(r, { download: lastFlow.download, upload: lastFlow.upload })
@@ -63,7 +63,12 @@ function Connections() {
     },
         { refreshInterval: 2000 })
 
-    const { data: conns, error: conn_error } = useSWRSubscription("/conn", WebsocketProtoServerStream(connections.method.notify, create(EmptySchema, {}), processStream))
+    const { data: conns, error: conn_error } =
+        useSWRSubscription(
+            ProtoPath(connections, connections.method.notify),
+            WebsocketProtoServerStream(connections, connections.method.notify, create(EmptySchema, {}), processStream),
+            {}
+        )
 
     return (
         <>
@@ -142,9 +147,8 @@ const AccordionItem = (props: { data: connection, showModal: (hash: string) => v
                                 onClick={() => {
                                     setClosing(true)
                                     FetchProtobuf(
+                                        connections,
                                         connections.method.close_conn,
-                                        "/conn",
-                                        "DELETE",
                                         create(notify_remove_connectionsSchema, { ids: [props.data.id] }),
                                     )
                                         .then(async ({ error }) => {

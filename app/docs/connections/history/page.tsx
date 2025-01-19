@@ -4,10 +4,9 @@ import { create } from "@bufbuild/protobuf"
 import { timestampDate, TimestampSchema } from "@bufbuild/protobuf/wkt"
 import { useState } from "react"
 import { Button, Modal, Spinner, Table } from "react-bootstrap"
-import useSWR from "swr"
 import styles from "../../common/clickable.module.css"
 import Loading from "../../common/loading"
-import { ProtoESFetcher } from "../../common/proto"
+import { useProtoSWR } from "../../common/proto"
 import { connectionSchema, type } from "../../pbes/statistic/config_pb"
 import { all_history, connections } from "../../pbes/statistic/grpc/config_pb"
 import { ConnectionInfo, ListGroupItem } from "../components"
@@ -29,8 +28,7 @@ function History() {
     }
 
     const [modalData, setModalData] = useState<{ show: boolean, data?: all_history }>({ show: false })
-    const { data, error, isLoading, isValidating, mutate } = useSWR("/conn/history",
-        ProtoESFetcher(connections.method.all_history))
+    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(connections, connections.method.all_history)
 
 
     if (error) return <Loading code={error.code}>{error.msg}</Loading>

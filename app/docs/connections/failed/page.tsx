@@ -4,10 +4,9 @@ import { create } from "@bufbuild/protobuf"
 import { timestampDate, TimestampSchema } from "@bufbuild/protobuf/wkt"
 import { useState } from "react"
 import { Button, Spinner, Table } from "react-bootstrap"
-import useSWR from "swr"
 import styles from "../../common/clickable.module.css"
 import Loading from "../../common/loading"
-import { ProtoESFetcher } from "../../common/proto"
+import { useProtoSWR } from "../../common/proto"
 import { connections, failed_history } from "../../pbes/statistic/grpc/config_pb"
 
 const TimestampZero = create(TimestampSchema, { seconds: BigInt(0), nanos: 0 })
@@ -26,8 +25,7 @@ function FailedHistory() {
         else return sortFunc(timestampDate(a.time ?? TimestampZero), timestampDate(b.time ?? TimestampZero))
     }
 
-    const { data, error, isLoading, isValidating, mutate } = useSWR("/conn/failed_history",
-        ProtoESFetcher(connections.method.failed_history))
+    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(connections, connections.method.failed_history)
 
     if (error) return <Loading code={error.code}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />

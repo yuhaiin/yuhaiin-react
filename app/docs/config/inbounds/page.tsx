@@ -6,7 +6,7 @@ import React, { useContext, useEffect, useState } from "react"
 import { Button, Card, Form, InputGroup, ListGroup, Modal } from "react-bootstrap"
 import useSWR from "swr"
 import Loading, { Error } from "../../common/loading"
-import { FetchProtobuf, ProtoESFetcher } from "../../common/proto"
+import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../common/proto"
 import { GlobalToastContext } from "../../common/toast"
 import { inbound as inboundService } from "../../pbes/config/grpc/config_pb"
 import { inboundSchema } from "../../pbes/config/listener/listener_pb"
@@ -25,8 +25,10 @@ const InboundModal = (
 
     // isValidating becomes true whenever there is an ongoing request whether the data is loaded or not
     // isLoading becomes true when there is an ongoing request and data is not loaded yet.
-    const { data: inbound, error, isLoading, isValidating, mutate } = useSWR(props.name === "" ? undefined : `/inbound`,
+    const { data: inbound, error, isLoading, isValidating, mutate } = useSWR(
+        props.name === "" ? undefined : ProtoPath(inboundService, inboundService.method.get),
         ProtoESFetcher(
+            inboundService,
             inboundService.method.get,
             "POST",
             create(StringValueSchema, { value: props.name }),
@@ -74,7 +76,7 @@ const InboundModal = (
                         onClick={() => {
                             inbound.name = props.name
 
-                            FetchProtobuf(inboundService.method.save, "/inbound", "PATCH", inbound,)
+                            FetchProtobuf(inboundService, inboundService.method.save, inbound,)
                                 .then(async ({ error }) => {
                                     if (error === undefined) {
                                         ctx.Info("save successful")
@@ -99,7 +101,7 @@ const InboundModal = (
 function InboudComponent() {
     const ctx = useContext(GlobalToastContext);
 
-    const { data: inbounds, error, isLoading, mutate } = useSWR("/inbounds", ProtoESFetcher(inboundService.method.list))
+    const { data: inbounds, error, isLoading, mutate } = useProtoSWR(inboundService, inboundService.method.list)
 
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
     const [newdata, setNewdata] = useState({ value: "" });
@@ -108,7 +110,11 @@ function InboudComponent() {
     if (isLoading || inbounds === undefined) return <Loading />
 
     const deleteInbound = (name: string) => {
-        FetchProtobuf(inboundService.method.remove, "/inbound", "DELETE", create(StringValueSchema, { value: name }),)
+        FetchProtobuf(
+            inboundService,
+            inboundService.method.remove,
+            create(StringValueSchema, { value: name }),
+        )
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("remove successful")

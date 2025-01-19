@@ -22,9 +22,8 @@ function Test() {
                 onClick={() => {
                     if (value === "") return
                     FetchProtobuf(
+                        bypass,
                         bypass.method.test,
-                        "/bypass/test",
-                        "POST",
                         create(StringValueSchema, { value })
                     )
                         .then(async ({ data, error }) => {

@@ -7,7 +7,7 @@ import { Button, Card, Form, InputGroup, ListGroup, Modal, Spinner } from "react
 import useSWR from "swr";
 import { ConfirmModal } from "../../common/confirm";
 import Loading, { Error } from "../../common/loading";
-import { FetchProtobuf, ProtoESFetcher } from "../../common/proto";
+import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../common/proto";
 import { SettingCheck, SettingTypeSelect } from "../../common/switch";
 import { GlobalToastContext } from "../../common/toast";
 import { dns, dnsSchema, type, typeSchema } from "../../pbes/config/dns/dns_pb";
@@ -29,7 +29,7 @@ export default function ResolverComponent() {
 function Resolver() {
     const ctx = useContext(GlobalToastContext);
 
-    const { data: resolvers, error, isLoading, mutate } = useSWR("/resolvers", ProtoESFetcher(resolver.method.list))
+    const { data: resolvers, error, isLoading, mutate } = useProtoSWR(resolver, resolver.method.list)
 
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
     const [confirm, setConfirm] = useState<{ show: boolean, name: string }>({ show: false, name: "" });
@@ -49,7 +49,7 @@ function Resolver() {
 
 
     const deleteResolver = (name: string) => {
-        FetchProtobuf(resolver.method.remove, "/resolver", "DELETE", create(StringValueSchema, { value: name }),)
+        FetchProtobuf(resolver, resolver.method.remove, create(StringValueSchema, { value: name }),)
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("remove successful")
@@ -149,8 +149,7 @@ const Hosts: FC = () => {
     const [newHosts, setNewHosts] = useState({ key: "", value: "" })
     const [saving, setSaving] = useState(false);
 
-    const { data, error, isLoading, mutate } =
-        useSWR("/resolver/hosts", ProtoESFetcher(resolver.method.hosts))
+    const { data, error, isLoading, mutate } = useProtoSWR(resolver, resolver.method.hosts)
 
     if (error !== undefined) return <Card className="align-items-center">
         <Card.Body>
@@ -212,7 +211,7 @@ const Hosts: FC = () => {
                     disabled={saving}
                     onClick={() => {
                         setSaving(true)
-                        FetchProtobuf(resolver.method.save_hosts, "/resolver/hosts", "PATCH", data)
+                        FetchProtobuf(resolver, resolver.method.save_hosts, data)
                             .then(async ({ error }) => {
                                 if (error === undefined) {
                                     ctx.Info("save hosts successful")
@@ -240,8 +239,9 @@ const ResolverModal: FC<{ name: string, show: boolean, isNew?: boolean, onHide: 
 
     // isValidating becomes true whenever there is an ongoing request whether the data is loaded or not
     // isLoading becomes true when there is an ongoing request and data is not loaded yet.
-    const { data, error, isLoading, isValidating, mutate } = useSWR(name === "" ? undefined : `/resolver`,
+    const { data, error, isLoading, isValidating, mutate } = useSWR(name === "" ? undefined : ProtoPath(resolver, resolver.method.get),
         ProtoESFetcher(
+            resolver,
             resolver.method.get,
             "POST",
             create(StringValueSchema, { value: name }),
@@ -273,7 +273,8 @@ const ResolverModal: FC<{ name: string, show: boolean, isNew?: boolean, onHide: 
                 <Button
                     variant="outline-primary"
                     onClick={() => {
-                        FetchProtobuf(resolver.method.save, "/resolver", "PATCH", create(save_resolverSchema, { name: name, resolver: data }))
+                        FetchProtobuf(resolver, resolver.method.save,
+                            create(save_resolverSchema, { name: name, resolver: data }))
                             .then(async ({ error }) => {
                                 if (error === undefined) {
                                     ctx.Info("save successful")
@@ -307,8 +308,7 @@ const Fakedns: FC = () => {
 
     const [saving, setSaving] = useState(false);
 
-    const { data, error, isLoading, mutate } =
-        useSWR("/resolver/fakedns", ProtoESFetcher(resolver.method.fakedns))
+    const { data, error, isLoading, mutate } = useProtoSWR(resolver, resolver.method.fakedns)
 
     if (error !== undefined) return <Card className="align-items-center">
         <Card.Body>
@@ -343,7 +343,7 @@ const Fakedns: FC = () => {
                     disabled={saving}
                     onClick={() => {
                         setSaving(true)
-                        FetchProtobuf(resolver.method.save_fakedns, "/resolver/fakedns", "PATCH", data)
+                        FetchProtobuf(resolver, resolver.method.save_fakedns, data)
                             .then(async ({ error }) => {
                                 if (error === undefined) {
                                     ctx.Info("save fakedns successful")

@@ -4,9 +4,8 @@ import { create } from "@bufbuild/protobuf";
 import Error from 'next/error';
 import { useContext, useState } from "react";
 import { Button, ButtonGroup, Card, Col, Dropdown, DropdownButton, FloatingLabel, Form, Row, Spinner } from "react-bootstrap";
-import useSWR from 'swr';
 import Loading from "../common/loading";
-import { FetchProtobuf, ProtoESFetcher, } from '../common/proto';
+import { FetchProtobuf, useProtoSWR } from '../common/proto';
 import { GlobalToastContext } from "../common/toast";
 import { link_reqSchema, save_link_reqSchema, subscribe } from "../pbes/node/grpc/node_pb";
 import { link, linkSchema, type } from "../pbes/node/subscribe/subscribe_pb";
@@ -14,7 +13,7 @@ import { link, linkSchema, type } from "../pbes/node/subscribe/subscribe_pb";
 function Subscribe() {
     const [updating, setUpdating] = useState<{ [key: string]: boolean }>({});
     const [addItem, setAddItem] = useState<link>(create(linkSchema, { name: "", url: "", type: type.reserve }));
-    const { data: links, error, isLoading, mutate } = useSWR("/sublist", ProtoESFetcher(subscribe.method.get))
+    const { data: links, error, isLoading, mutate } = useProtoSWR(subscribe, subscribe.method.get)
     const ctx = useContext(GlobalToastContext);
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
@@ -22,7 +21,7 @@ function Subscribe() {
 
     const Update = (name: string) => {
         setUpdating({ ...updating, [name]: true });
-        FetchProtobuf(subscribe.method.update, `/sub`, "PATCH", create(link_reqSchema, { names: [name] }))
+        FetchProtobuf(subscribe, subscribe.method.update, create(link_reqSchema, { names: [name] }))
             .then(async ({ error }) => {
                 if (error !== undefined) ctx.Error(`Update failed ${error.code}| ${error.msg}`)
                 else ctx.Info(`Update successfully`);
@@ -30,7 +29,7 @@ function Subscribe() {
             })
     }
     const Delete = (name: string) => {
-        FetchProtobuf(subscribe.method.remove, `/sub`, "DELETE", create(link_reqSchema, { names: [name] }))
+        FetchProtobuf(subscribe, subscribe.method.remove, create(link_reqSchema, { names: [name] }))
             .then(async ({ error }) => {
                 if (error !== undefined) ctx.Error(`delete ${name} failed, ${error.code}| ${error.msg}`)
                 else mutate()
@@ -104,9 +103,8 @@ function Subscribe() {
                                 onClick={async () => {
                                     if (addItem.name === "" || addItem.url === "") return
                                     FetchProtobuf(
+                                        subscribe,
                                         subscribe.method.save,
-                                        `/sub`,
-                                        "POST",
                                         create(save_link_reqSchema, { links: [addItem] }))
                                         .then(async ({ error }) => {
                                             if (error !== undefined) ctx.Error(`save link ${addItem.url} failed, ${error.code}| ${error.msg}`)
