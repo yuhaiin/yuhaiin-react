@@ -3,10 +3,9 @@
 import { create } from '@bufbuild/protobuf';
 import { useContext } from 'react';
 import { Button, Card, Col, Form, Row, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
-import useSWR from "swr";
 import { Interfaces } from '../common/interfaces';
 import Loading, { Error } from '../common/loading';
-import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
+import { FetchProtobuf, useProtoSWR } from '../common/proto';
 import { SettingCheck, SettingTypeSelect } from "../common/switch";
 import { GlobalToastContext } from '../common/toast';
 import { setting as Setting, system_proxySchema } from '../pbes/config/config_pb';
@@ -18,8 +17,7 @@ function ConfigComponent() {
     const ctx = useContext(GlobalToastContext);
 
     const { data: setting, error, isLoading, mutate: setSetting } =
-        useSWR("/config", ProtoESFetcher(config_service.method.load),
-            { revalidateOnFocus: false })
+        useProtoSWR(config_service.method.load, { revalidateOnFocus: false })
 
     const interfaces = Interfaces();
 
@@ -124,7 +122,7 @@ function ConfigComponent() {
                         <Button
                             variant="outline-primary"
                             onClick={() => {
-                                FetchProtobuf(config_service.method.save, "/config", "POST", setting,)
+                                FetchProtobuf(config_service.method.save, setting)
                                     .then(async ({ error }) => {
                                         if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${await error.msg}`)
                                         else {

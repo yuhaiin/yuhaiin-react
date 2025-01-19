@@ -23,8 +23,6 @@ function Test() {
                     if (value === "") return
                     FetchProtobuf(
                         bypass.method.test,
-                        "/bypass/test",
-                        "POST",
                         create(StringValueSchema, { value })
                     )
                         .then(async ({ data, error }) => {

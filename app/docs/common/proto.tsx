@@ -1,18 +1,28 @@
-import { clone, DescMessage, fromBinary, MessageShape, toBinary } from "@bufbuild/protobuf";
-import { Fetcher } from 'swr';
+import { clone, DescMessage, DescMethod, fromBinary, MessageShape, toBinary } from "@bufbuild/protobuf";
+import useSWR, { Fetcher, SWRConfiguration, SWRResponse } from 'swr';
 import type { SWRSubscriptionOptions } from 'swr/subscription';
 import { APIUrl } from './apiurl';
 
 
+export function useProtoSWR<I extends DescMessage, O extends DescMessage>(
+    m: DescMethod & { methodKind: "unary"; input: I; output: O; },
+    options?: SWRConfiguration,
+): SWRResponse<MessageShape<O>, { msg: string, code: number }> {
+    return useSWR(ProtoPath(m), ProtoESFetcher(m), options)
+}
+
+export const ProtoPath = (m: DescMethod) => `/${m.parent.typeName}/${m.name}`
+
+
 export function ProtoESFetcher<I extends DescMessage, O extends DescMessage>(
-    d: { methodKind: "unary"; input: I; output: O; },
-    method?: string, body?: MessageShape<I>, default_response?: MessageShape<O>): Fetcher<MessageShape<O>, string> {
-    return (url) => {
+    d: DescMethod & { methodKind: "unary"; input: I; output: O; },
+    body?: MessageShape<I>, default_response?: MessageShape<O>): Fetcher<MessageShape<O>, string> {
+    return () => {
         if (default_response) return clone(d.output, default_response)
         return fetch(
-            `${APIUrl}${url}`,
+            `${APIUrl}${ProtoPath(d)}`,
             {
-                method: method,
+                method: "POST",
                 body: body ? toBinary(d.input, body) : undefined,
             },
         ).then(async r => {
@@ -23,17 +33,15 @@ export function ProtoESFetcher<I extends DescMessage, O extends DescMessage>(
 }
 
 export async function FetchProtobuf<I extends DescMessage, O extends DescMessage>(
-    d: { methodKind: "unary"; input: I; output: O; },
-    url: string,
-    method?: string,
+    d: DescMethod & { methodKind: "unary"; input: I; output: O; },
     body?: MessageShape<I>,
 ): Promise<{
     data?: MessageShape<O>,
     error?: { code: number, msg: string }
 }> {
-    const r = await fetch(`${APIUrl}${url}`,
+    const r = await fetch(`${APIUrl}${ProtoPath(d)}`,
         {
-            method: method,
+            method: "POST",
             body: body ? toBinary(d.input, body) : undefined,
         })
 
@@ -51,20 +59,20 @@ export async function FetchProtobuf<I extends DescMessage, O extends DescMessage
 }
 
 export function WebsocketProtoServerStream<I extends DescMessage, O extends DescMessage, Response>(
-    d: { methodKind: "server_streaming"; input: I; output: O; },
+    d: DescMethod & { methodKind: "server_streaming"; input: I; output: O; },
     Request: MessageShape<I>,
     stream: (r: MessageShape<O>, prev?: Response) => Response,
 ):
     (key: string, { next }: SWRSubscriptionOptions<Response, { msg: string, code: number }>) => () => void {
 
-    let closed = false;
-    let socket: WebSocket | undefined
-
 
     return (key, { next }) => {
         const url = new URL(APIUrl !== "" ? APIUrl : window.location.toString());
-        url.pathname = key
+        url.pathname = ProtoPath(d)
         url.protocol = url.protocol === "https:" ? "wss:" : "ws:"
+
+        let socket: WebSocket;
+        let closed = false
 
         const connect = () => {
             if (closed) return
@@ -91,12 +99,12 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
             })
 
             socket.addEventListener('close', (e) => {
-                console.log("websocket closed, code: " + e.code)
+                console.log("websocket closed, code: " + e.code + ", isClosed: ", closed)
                 next(null, undefined)
                 if (closed) return
                 else {
-                    console.log("reconnect after 1 seconds")
-                    setTimeout(connect, 1000)
+                    console.log("reconnect after 2 seconds")
+                    setTimeout(() => connect(), 2000)
                 }
             })
         }

@@ -32,4 +32,7 @@ protoc -I ${PROTO_PATH} --plugin ./node_modules/.bin/protoc-gen-es --es_out ${OU
 
 
 # // tools
+
 protoc -I ${PROTO_PATH} --plugin ./node_modules/.bin/protoc-gen-es --es_out ${OUTPUT_PATH} --es_opt target=ts ${PROTO_PATH}/tools/tools.proto
+
+protoc -I ${PROTO_PATH} --plugin ./node_modules/.bin/protoc-gen-es --es_out ${OUTPUT_PATH} --es_opt target=ts ${PROTO_PATH}/google/protobuf/go_features.proto

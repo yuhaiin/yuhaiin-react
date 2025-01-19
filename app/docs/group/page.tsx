@@ -5,10 +5,9 @@ import { Duration, StringValueSchema } from "@bufbuild/protobuf/wkt";
 import Error from 'next/error';
 import { FC, useContext, useState } from "react";
 import { Accordion, Button, ButtonGroup, Col, Dropdown, DropdownButton, ListGroup, Row, Spinner } from "react-bootstrap";
-import useSWR from 'swr';
 import { LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunTCPUrl, LatencyStunUrl } from "../common/apiurl";
 import Loading from "../common/loading";
-import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
+import { FetchProtobuf, useProtoSWR } from '../common/proto';
 import { GlobalToastContext } from "../common/toast";
 import { NodeJsonModal, NodeModal } from "../node/modal";
 import { node, use_reqSchema } from "../pbes/node/grpc/node_pb";
@@ -109,7 +108,7 @@ function Group() {
     const [importJson, setImportJson] = useState({ data: false });
     const [latency, setLatency] = useState<{ [key: string]: latencyStatus }>({})
 
-    const { data, error, isLoading, mutate } = useSWR("/nodes", ProtoESFetcher(node.method.list))
+    const { data, error, isLoading, mutate } = useProtoSWR(node.method.list)
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || data === undefined) return <Loading />
@@ -120,16 +119,15 @@ function Group() {
             hash: hash,
             show: true,
             onDelete: () => {
-                FetchProtobuf(node.method.remove, `/node`, "DELETE",
-                    create(StringValueSchema, { value: hash }),
-                ).then(async ({ error }) => {
-                    if (error !== undefined) {
-                        ctx.Error(`Delete Node ${hash} Failed ${error.code}| ${error.msg}`)
-                    } else {
-                        ctx.Info(`Delete Node ${hash} Successful.`)
-                        mutate()
-                    }
-                })
+                FetchProtobuf(node.method.remove, create(StringValueSchema, { value: hash }))
+                    .then(async ({ error }) => {
+                        if (error !== undefined) {
+                            ctx.Error(`Delete Node ${hash} Failed ${error.code}| ${error.msg}`)
+                        } else {
+                            ctx.Info(`Delete Node ${hash} Successful.`)
+                            mutate()
+                        }
+                    })
             }
         })
     }
@@ -370,7 +368,7 @@ const NodeItemv2: FC<{
 
         setLoading(true)
 
-        FetchProtobuf(node.method.latency, "/latency", "POST", create(requestsSchema, { requests: [{ hash: hash, id: "latency", ipv6: LatencyIPv6, protocol: request }] }))
+        FetchProtobuf(node.method.latency, create(requestsSchema, { requests: [{ hash: hash, id: "latency", ipv6: LatencyIPv6, protocol: request }] }))
             .then(async ({ data: resp, error }) => {
                 if (error) {
                     console.log(`test failed ${error.code}| ${error.msg}`)
@@ -500,12 +498,13 @@ const NodeItemv2: FC<{
 }
 
 function setNode(ctx: { Info: (msg: string) => void, Error: (msg: string) => void }, hash: string, key: string) {
-    FetchProtobuf(node.method.use, `/node`, "PUT", create(use_reqSchema, {
+    FetchProtobuf(node.method.use, create(use_reqSchema, {
         tcp: key === "tcp" || key === "tcpudp",
         udp: key === "udp" || key === "tcpudp",
         hash: hash,
-    }),).then(async ({ error }) => {
-        if (error !== undefined) ctx.Error(`change node failed, ${error.code}| ${error.msg}`)
-        else ctx.Info(`Change ${key} Node To ${hash} Successful`)
-    })
+    }))
+        .then(async ({ error }) => {
+            if (error !== undefined) ctx.Error(`change node failed, ${error.code}| ${error.msg}`)
+            else ctx.Info(`Change ${key} Node To ${hash} Successful`)
+        })
 }

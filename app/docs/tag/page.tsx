@@ -5,10 +5,9 @@ import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import Error from 'next/error';
 import { FC, useContext, useEffect, useState } from "react";
 import { Badge, Button, ButtonGroup, Card, FloatingLabel, Form, ListGroup, Modal, ToggleButton } from "react-bootstrap";
-import useSWR from 'swr';
 import { ConfirmModal } from "../common/confirm";
 import Loading from "../common/loading";
-import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
+import { FetchProtobuf, useProtoSWR } from '../common/proto';
 import { FormSelect } from "../common/switch";
 import { GlobalToastContext } from "../common/toast";
 import { NodeModal } from "../node/modal";
@@ -17,8 +16,8 @@ import { tag_type, tags, tagsSchema } from "../pbes/node/tag/tag_pb";
 
 function Tags() {
     const ctx = useContext(GlobalToastContext);
-    const { data, error, isLoading, mutate } = useSWR("/tags", ProtoESFetcher(tag.method.list))
-    const { data: nodes } = useSWR("/nodes", ProtoESFetcher(node.method.list))
+    const { data, error, isLoading, mutate } = useProtoSWR(tag.method.list)
+    const { data: nodes } = useProtoSWR(node.method.list)
     const [modalHash, setModalHash] = useState({ hash: "", show: false });
     const [tagModalData, setTagModalData] = useState({ show: false, tag: create(save_tag_reqSchema, { tag: "", hash: "", type: tag_type.node }), new: true });
     const [confirmData, setConfirmData] = useState({ show: false, name: "" });
@@ -88,7 +87,7 @@ function Tags() {
                 content={<p>Delete tag {confirmData.name}?</p>}
                 onHide={() => setConfirmData({ ...confirmData, show: false })}
                 onOk={() => {
-                    FetchProtobuf(tag.method.remove, "/tag", "DELETE", create(StringValueSchema, { value: confirmData.name }))
+                    FetchProtobuf(tag.method.remove, create(StringValueSchema, { value: confirmData.name }))
                         .then(async ({ error }) => {
                             if (error !== undefined) ctx.Error(`delete tag ${confirmData.name} failed, ${error.code}| ${error.msg}`)
                             else {
@@ -116,7 +115,7 @@ function Tags() {
                 onHide={() => setTagModalData({ ...tagModalData, show: false })}
                 onSave={() => {
                     if (tagModalData.tag.tag === "" || tagModalData.tag.hash === "") return
-                    FetchProtobuf(tag.method.save, "/tag", "POST", tagModalData.tag)
+                    FetchProtobuf(tag.method.save, tagModalData.tag)
                         .then(async ({ error }) => {
                             if (error !== undefined) ctx.Error(`save tag ${tagModalData.tag.tag} failed, ${error.code}| ${error.msg}`)
                             else {

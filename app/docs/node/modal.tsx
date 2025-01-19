@@ -5,7 +5,7 @@ import { Button, ButtonGroup, Dropdown, DropdownButton, Form, Modal } from "reac
 import useSWR from 'swr';
 import { Interfaces, InterfacesContext } from "../common/interfaces";
 import Loading, { Error } from "../common/loading";
-import { FetchProtobuf, ProtoESFetcher } from '../common/proto';
+import { FetchProtobuf, ProtoESFetcher, ProtoPath } from '../common/proto';
 import { GlobalToastContext } from "../common/toast";
 import { node } from "../pbes/node/grpc/node_pb";
 import { point, pointSchema } from "../pbes/node/point/point_pb";
@@ -32,8 +32,9 @@ export const NodeModal: FC<{
 
         // isValidating becomes true whenever there is an ongoing request whether the data is loaded or not
         // isLoading becomes true when there is an ongoing request and data is not loaded yet.
-        const { data: nodes, error, isLoading, isValidating, mutate } = useSWR(hash === "" ? undefined : `/node`,
-            ProtoESFetcher(node.method.get, "POST", create(StringValueSchema, { value: hash }), point,),
+        const { data: nodes, error, isLoading, isValidating, mutate } = useSWR(
+            hash === "" ? undefined : ProtoPath(node.method.get),
+            ProtoESFetcher(node.method.get, create(StringValueSchema, { value: hash }), point),
             {
                 shouldRetryOnError: false,
                 keepPreviousData: false,
@@ -51,7 +52,7 @@ export const NodeModal: FC<{
                 onClick={() => {
                     if (!nodes) return
                     if (isNew) nodes.hash = ""
-                    FetchProtobuf(node.method.save, "/node", "PATCH", nodes)
+                    FetchProtobuf(node.method.save, nodes)
                         .then(async ({ error }) => {
                             if (!error) {
                                 ctx.Info("save successful")
@@ -162,7 +163,7 @@ export const NodeJsonModal = (
             onClick={() => {
                 const p = fromJsonString(pointSchema, nodeJson.data);
                 if (props.isNew) p.hash = ""
-                FetchProtobuf(node.method.save, "/node", "PATCH", p)
+                FetchProtobuf(node.method.save, p)
                     .then(async ({ error }) => {
                         if (error === undefined) {
                             ctx.Info("save successful")
