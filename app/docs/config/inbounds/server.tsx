@@ -152,6 +152,7 @@ const TLSComponents = (props: { tls: tls_config, onChange: (x: tls_config) => vo
         <>
             <NewItemList
                 title='Next Protos'
+                className='mb-2'
                 data={props.tls?.nextProtos ?? []}
                 onChange={(e) => props.onChange({ ...props.tls, nextProtos: e })}
             />
@@ -235,10 +236,7 @@ export const QuicComponents = (props: { quic: quic, onChange: (x: quic) => void 
                 value={props.quic.host}
             />
 
-            {
-                props.quic.tls && <TLSComponents tls={create(tls_configSchema, props.quic.tls !== null ? props.quic.tls : undefined)} onChange={(e) => props.onChange({ ...props.quic, tls: e })} />
-            }
-
+            <TLSComponents tls={create(tls_configSchema, props.quic.tls ? props.quic.tls : undefined)} onChange={(e) => props.onChange({ ...props.quic, tls: e })} />
         </>
     )
 }
