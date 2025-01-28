@@ -8,7 +8,7 @@ import Loading, { Error } from '../common/loading';
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
 import { SettingCheck, SettingTypeSelect } from "../common/switch";
 import { GlobalToastContext } from '../common/toast';
-import { setting as Setting, system_proxySchema } from '../pbes/config/config_pb';
+import { advanced_configSchema, setting as Setting, system_proxySchema } from '../pbes/config/config_pb';
 import { config_service } from '../pbes/config/grpc/config_pb';
 import { log_level, log_levelSchema } from '../pbes/config/log/log_pb';
 import { Remind, SettingInputText } from './components';
@@ -112,6 +112,30 @@ function ConfigComponent() {
                             onChange={(e) => setSetting({ ...setting, logcat: { ...setting.logcat, level: e } }, false)}
                         />
 
+                        <hr />
+
+                        <Card.Title className='mb-2'>Advanced</Card.Title>
+
+                        <Form.Label>UDP Buffer Size ({setting.advancedConfig ? setting.advancedConfig.udpBufferSize : 2048} Bytes)</Form.Label>
+                        <Form.Range value={setting.advancedConfig ? setting.advancedConfig.udpBufferSize : 2048} min={2048} max={65535}
+                            onChange={(v) => {
+                                setSetting(prev => {
+                                    const tmp = { ...prev }
+                                    if (!tmp.advancedConfig) tmp.advancedConfig = create(advanced_configSchema, { udpBufferSize: v.target.valueAsNumber, relayBufferSize: 4096 })
+                                    else tmp.advancedConfig = { ...tmp.advancedConfig, udpBufferSize: v.target.valueAsNumber }
+                                    return tmp
+                                }, false)
+                            }
+                            } />
+
+                        <Form.Label>Relay Buffer Size ({setting.advancedConfig ? setting.advancedConfig.relayBufferSize : 4096} Bytes)</Form.Label>
+                        <Form.Range value={setting.advancedConfig ? setting.advancedConfig.relayBufferSize : 4096} min={2048} max={65535}
+                            onChange={(v) => setSetting(prev => {
+                                const tmp = { ...prev }
+                                if (!tmp.advancedConfig) tmp.advancedConfig = create(advanced_configSchema, { relayBufferSize: v.target.valueAsNumber, udpBufferSize: 2048 })
+                                else tmp.advancedConfig = { ...tmp.advancedConfig, relayBufferSize: v.target.valueAsNumber }
+                                return tmp
+                            }, false)} />
                     </fieldset>
 
                 </Card.Body>

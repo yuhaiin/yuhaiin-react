@@ -19,7 +19,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file config/config.proto.
  */
 export const file_config_config: GenFile = /*@__PURE__*/
-  fileDesc("ChNjb25maWcvY29uZmlnLnByb3RvEg55dWhhaWluLmNvbmZpZyLgAwoHc2V0dGluZxIMCgRpcHY2GAcgASgIEkYKHmlwdjZfbG9jYWxfYWRkcl9wcmVmZXJfdW5pY2FzdBgKIAEoCFIeaXB2Nl9sb2NhbF9hZGRyX3ByZWZlcl91bmljYXN0EiQKDW5ldF9pbnRlcmZhY2UYBiABKAlSDW5ldF9pbnRlcmZhY2USQAoMc3lzdGVtX3Byb3h5GAEgASgLMhwueXVoYWlpbi5jb25maWcuc3lzdGVtX3Byb3h5UgxzeXN0ZW1fcHJveHkSJgoGYnlwYXNzGAIgASgLMhYueXVoYWlpbi5ieXBhc3MuY29uZmlnEiQKA2RucxgEIAEoCzIXLnl1aGFpaW4uZG5zLmRuc19jb25maWcSMAoGc2VydmVyGAUgASgLMiAueXVoYWlpbi5saXN0ZW5lci5pbmJvdW5kX2NvbmZpZxIjCgZsb2djYXQYCCABKAsyEy55dWhhaWluLmxvZy5sb2djYXQSRgoOY29uZmlnX3ZlcnNpb24YCSABKAsyHi55dWhhaWluLmNvbmZpZy5jb25maWdfdmVyc2lvblIOY29uZmlnX3ZlcnNpb24SKgoIcGxhdGZvcm0YCyABKAsyGC55dWhhaWluLmNvbmZpZy5wbGF0Zm9ybSIsCgxzeXN0ZW1fcHJveHkSDAoEaHR0cBgCIAEoCBIOCgZzb2NrczUYAyABKAgitAEKBGluZm8SDwoHdmVyc2lvbhgBIAEoCRIOCgZjb21taXQYAiABKAkSHgoKYnVpbGRfdGltZRgDIAEoCVIKYnVpbGRfdGltZRIeCgpnb192ZXJzaW9uGAQgASgJUgpnb192ZXJzaW9uEgwKBGFyY2gYBSABKAkSEAoIcGxhdGZvcm0YBiABKAkSCgoCb3MYByABKAkSEAoIY29tcGlsZXIYCCABKAkSDQoFYnVpbGQYCSADKAkiIQoOY29uZmlnX3ZlcnNpb24SDwoHdmVyc2lvbhgBIAEoBCIsCghwbGF0Zm9ybRIgCgthbmRyb2lkX2FwcBgBIAEoCFILYW5kcm9pZF9hcHBCOFouZ2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL2NvbmZpZ5IDBdI+AhADYghlZGl0aW9uc3DoBw", [file_config_log_log, file_config_bypass_bypass, file_config_dns_dns, file_config_listener_listener, file_google_protobuf_go_features]);
+  fileDesc("ChNjb25maWcvY29uZmlnLnByb3RvEg55dWhhaWluLmNvbmZpZyKrBAoHc2V0dGluZxIMCgRpcHY2GAcgASgIEkYKHmlwdjZfbG9jYWxfYWRkcl9wcmVmZXJfdW5pY2FzdBgKIAEoCFIeaXB2Nl9sb2NhbF9hZGRyX3ByZWZlcl91bmljYXN0EiQKDW5ldF9pbnRlcmZhY2UYBiABKAlSDW5ldF9pbnRlcmZhY2USQAoMc3lzdGVtX3Byb3h5GAEgASgLMhwueXVoYWlpbi5jb25maWcuc3lzdGVtX3Byb3h5UgxzeXN0ZW1fcHJveHkSJgoGYnlwYXNzGAIgASgLMhYueXVoYWlpbi5ieXBhc3MuY29uZmlnEiQKA2RucxgEIAEoCzIXLnl1aGFpaW4uZG5zLmRuc19jb25maWcSMAoGc2VydmVyGAUgASgLMiAueXVoYWlpbi5saXN0ZW5lci5pbmJvdW5kX2NvbmZpZxIjCgZsb2djYXQYCCABKAsyEy55dWhhaWluLmxvZy5sb2djYXQSRgoOY29uZmlnX3ZlcnNpb24YCSABKAsyHi55dWhhaWluLmNvbmZpZy5jb25maWdfdmVyc2lvblIOY29uZmlnX3ZlcnNpb24SKgoIcGxhdGZvcm0YCyABKAsyGC55dWhhaWluLmNvbmZpZy5wbGF0Zm9ybRJJCg9hZHZhbmNlZF9jb25maWcYDCABKAsyHy55dWhhaWluLmNvbmZpZy5hZHZhbmNlZF9jb25maWdSD2FkdmFuY2VkX2NvbmZpZyJpCg9hZHZhbmNlZF9jb25maWcSKAoPdWRwX2J1ZmZlcl9zaXplGAEgASgFUg91ZHBfYnVmZmVyX3NpemUSLAoRcmVsYXlfYnVmZmVyX3NpemUYAiABKAVSEXJlbGF5X2J1ZmZlcl9zaXplIiwKDHN5c3RlbV9wcm94eRIMCgRodHRwGAIgASgIEg4KBnNvY2tzNRgDIAEoCCK0AQoEaW5mbxIPCgd2ZXJzaW9uGAEgASgJEg4KBmNvbW1pdBgCIAEoCRIeCgpidWlsZF90aW1lGAMgASgJUgpidWlsZF90aW1lEh4KCmdvX3ZlcnNpb24YBCABKAlSCmdvX3ZlcnNpb24SDAoEYXJjaBgFIAEoCRIQCghwbGF0Zm9ybRgGIAEoCRIKCgJvcxgHIAEoCRIQCghjb21waWxlchgIIAEoCRINCgVidWlsZBgJIAMoCSIhCg5jb25maWdfdmVyc2lvbhIPCgd2ZXJzaW9uGAEgASgEIiwKCHBsYXRmb3JtEiAKC2FuZHJvaWRfYXBwGAEgASgIUgthbmRyb2lkX2FwcEI4Wi5naXRodWIuY29tL0FzdXRvcnVmYS95dWhhaWluL3BrZy9wcm90b3MvY29uZmlnkgMF0j4CEANiCGVkaXRpb25zcOgH", [file_config_log_log, file_config_bypass_bypass, file_config_dns_dns, file_config_listener_listener, file_google_protobuf_go_features]);
 
 /**
  * @generated from message yuhaiin.config.setting
@@ -76,6 +76,11 @@ export type setting = Message<"yuhaiin.config.setting"> & {
    * @generated from field: yuhaiin.config.platform platform = 11;
    */
   platform?: platform;
+
+  /**
+   * @generated from field: yuhaiin.config.advanced_config advanced_config = 12 [json_name = "advanced_config"];
+   */
+  advancedConfig?: advanced_config;
 };
 
 /**
@@ -84,6 +89,28 @@ export type setting = Message<"yuhaiin.config.setting"> & {
  */
 export const settingSchema: GenMessage<setting> = /*@__PURE__*/
   messageDesc(file_config_config, 0);
+
+/**
+ * @generated from message yuhaiin.config.advanced_config
+ */
+export type advanced_config = Message<"yuhaiin.config.advanced_config"> & {
+  /**
+   * @generated from field: int32 udp_buffer_size = 1 [json_name = "udp_buffer_size"];
+   */
+  udpBufferSize: number;
+
+  /**
+   * @generated from field: int32 relay_buffer_size = 2 [json_name = "relay_buffer_size"];
+   */
+  relayBufferSize: number;
+};
+
+/**
+ * Describes the message yuhaiin.config.advanced_config.
+ * Use `create(advanced_configSchema)` to create a new message.
+ */
+export const advanced_configSchema: GenMessage<advanced_config> = /*@__PURE__*/
+  messageDesc(file_config_config, 1);
 
 /**
  * @generated from message yuhaiin.config.system_proxy
@@ -105,7 +132,7 @@ export type system_proxy = Message<"yuhaiin.config.system_proxy"> & {
  * Use `create(system_proxySchema)` to create a new message.
  */
 export const system_proxySchema: GenMessage<system_proxy> = /*@__PURE__*/
-  messageDesc(file_config_config, 1);
+  messageDesc(file_config_config, 2);
 
 /**
  * @generated from message yuhaiin.config.info
@@ -162,7 +189,7 @@ export type info = Message<"yuhaiin.config.info"> & {
  * Use `create(infoSchema)` to create a new message.
  */
 export const infoSchema: GenMessage<info> = /*@__PURE__*/
-  messageDesc(file_config_config, 2);
+  messageDesc(file_config_config, 3);
 
 /**
  * @generated from message yuhaiin.config.config_version
@@ -179,7 +206,7 @@ export type config_version = Message<"yuhaiin.config.config_version"> & {
  * Use `create(config_versionSchema)` to create a new message.
  */
 export const config_versionSchema: GenMessage<config_version> = /*@__PURE__*/
-  messageDesc(file_config_config, 3);
+  messageDesc(file_config_config, 4);
 
 /**
  * @generated from message yuhaiin.config.platform
@@ -196,5 +223,5 @@ export type platform = Message<"yuhaiin.config.platform"> & {
  * Use `create(platformSchema)` to create a new message.
  */
 export const platformSchema: GenMessage<platform> = /*@__PURE__*/
-  messageDesc(file_config_config, 4);
+  messageDesc(file_config_config, 5);
 
