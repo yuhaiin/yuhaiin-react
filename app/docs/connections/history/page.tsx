@@ -22,7 +22,7 @@ function History() {
     const cth = (field: string) => <th className={styles.clickable} onClick={() => setSortField(field)}>{field}{sortIcon(field)}</th>
     const sortFieldFunc = (a: all_history, b: all_history) => {
         if (sort === "Host") return sortFunc(a.connection?.addr, b.connection?.addr)
-        else if (sort === "Proc") return sortFunc(a.connection?.extra.Process, b.connection?.extra.Process)
+        else if (sort === "Proc") return sortFunc(a.connection?.process, b.connection?.process)
         else if (sort === "Count") return sortFunc(a.count, b.count)
         else return sortFunc(timestampDate(a.time ?? TimestampZero), timestampDate(b.time ?? TimestampZero))
     }
@@ -75,10 +75,10 @@ function History() {
                             <tr key={"bh-" + index} onClick={() => setModalData({ show: true, data: v })}>
                                 <td>{timestampDate(v.time!).toLocaleString()}</td>
                                 <td>{v.connection?.addr}</td>
-                                <td>{v.connection?.extra.MODE}</td>
+                                <td>{v.connection?.mode}</td>
                                 <td>{type[v.connection?.type?.connType ?? type.unknown]}</td>
                                 <td>{Number(v.count)}</td>
-                                {data.dumpProcessEnabled && <td>{v.connection?.extra.Process}</td>}
+                                {data.dumpProcessEnabled && <td>{v.connection?.process}</td>}
                             </tr>
                         )
                     })

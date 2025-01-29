@@ -5,13 +5,15 @@
 import type { GenEnum, GenFile, GenMessage } from "@bufbuild/protobuf/codegenv1";
 import { enumDesc, fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv1";
 import { file_google_protobuf_go_features } from "../google/protobuf/go_features_pb";
+import type { mode } from "../config/bypass/bypass_pb";
+import { file_config_bypass_bypass } from "../config/bypass/bypass_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file statistic/config.proto.
  */
 export const file_statistic_config: GenFile = /*@__PURE__*/
-  fileDesc("ChZzdGF0aXN0aWMvY29uZmlnLnByb3RvEhF5dWhhaWluLnN0YXRpc3RpYyKEAQoIbmV0X3R5cGUSNQoJY29ubl90eXBlGAEgASgOMhcueXVoYWlpbi5zdGF0aXN0aWMudHlwZVIJY29ubl90eXBlEkEKD3VuZGVybHlpbmdfdHlwZRgCIAEoDjIXLnl1aGFpaW4uc3RhdGlzdGljLnR5cGVSD3VuZGVybHlpbmdfdHlwZSK8AQoKY29ubmVjdGlvbhIMCgRhZGRyGAEgASgJEgoKAmlkGAIgASgEEikKBHR5cGUYAyABKAsyGy55dWhhaWluLnN0YXRpc3RpYy5uZXRfdHlwZRI7CgVleHRyYRgEIAMoCzIoLnl1aGFpaW4uc3RhdGlzdGljLmNvbm5lY3Rpb24uRXh0cmFFbnRyeUICKAEaLAoKRXh0cmFFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBKo8BCgR0eXBlEgsKB3Vua25vd24QABIHCgN0Y3AQARIICgR0Y3A0EAISCAoEdGNwNhADEgcKA3VkcBAEEggKBHVkcDQQBRIICgR1ZHA2EAYSBgoCaXAQBxIHCgNpcDQQCBIHCgNpcDYQCRIICgR1bml4EAoSDAoIdW5peGdyYW0QCxIOCgp1bml4cGFja2V0EAxCO1oxZ2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL3N0YXRpc3RpY5IDBdI+AhADYghlZGl0aW9uc3DoBw", [file_google_protobuf_go_features]);
+  fileDesc("ChZzdGF0aXN0aWMvY29uZmlnLnByb3RvEhF5dWhhaWluLnN0YXRpc3RpYyKEAQoIbmV0X3R5cGUSNQoJY29ubl90eXBlGAEgASgOMhcueXVoYWlpbi5zdGF0aXN0aWMudHlwZVIJY29ubl90eXBlEkEKD3VuZGVybHlpbmdfdHlwZRgCIAEoDjIXLnl1aGFpaW4uc3RhdGlzdGljLnR5cGVSD3VuZGVybHlpbmdfdHlwZSKNBAoKY29ubmVjdGlvbhIMCgRhZGRyGAEgASgJEgoKAmlkGAIgASgEEikKBHR5cGUYAyABKAsyGy55dWhhaWluLnN0YXRpc3RpYy5uZXRfdHlwZRIOCgZzb3VyY2UYBSABKAkSDwoHaW5ib3VuZBgGIAEoCRIQCghvdXRib3VuZBgYIAEoCRIUCgxkZXN0aW9uYXRpb24YByABKAkSGAoHZmFrZV9pcBgIIAEoCVIHZmFrZV9pcBINCgVob3N0cxgJIAEoCRIOCgZkb21haW4YCiABKAkSCgoCaXAYCyABKAkSCwoDdGFnGAwgASgJEgwKBGhhc2gYDSABKAkSEAoIcHJvdG9jb2wYDiABKAkSDwoHcHJvY2VzcxgPIAEoCRILCgNwaWQYECABKAQSCwoDdWlkGBEgASgEEigKD3Rsc19zZXJ2ZXJfbmFtZRgSIAEoCVIPdGxzX3NlcnZlcl9uYW1lEhwKCWh0dHBfaG9zdBgTIAEoCVIJaHR0cF9ob3N0EhEKCWNvbXBvbmVudBgUIAEoCRImCg51ZHBfbWlncmF0ZV9pZBgVIAEoBFIOdWRwX21pZ3JhdGVfaWQSIgoEbW9kZRgWIAEoDjIULnl1aGFpaW4uYnlwYXNzLm1vZGUSIAoLbW9kZV9yZWFzb24YFyABKAlSC21vZGVfcmVhc29uSgQIBBAFUgVleHRyYSqPAQoEdHlwZRILCgd1bmtub3duEAASBwoDdGNwEAESCAoEdGNwNBACEggKBHRjcDYQAxIHCgN1ZHAQBBIICgR1ZHA0EAUSCAoEdWRwNhAGEgYKAmlwEAcSBwoDaXA0EAgSBwoDaXA2EAkSCAoEdW5peBAKEgwKCHVuaXhncmFtEAsSDgoKdW5peHBhY2tldBAMQjtaMWdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9zdGF0aXN0aWOSAwXSPgIQA2IIZWRpdGlvbnNw6Ac", [file_google_protobuf_go_features, file_config_bypass_bypass]);
 
 /**
  * @generated from message yuhaiin.statistic.net_type
@@ -55,9 +57,104 @@ export type connection = Message<"yuhaiin.statistic.connection"> & {
   type?: net_type;
 
   /**
-   * @generated from field: map<string, string> extra = 4;
+   * @generated from field: string source = 5;
    */
-  extra: { [key: string]: string };
+  source: string;
+
+  /**
+   * @generated from field: string inbound = 6;
+   */
+  inbound: string;
+
+  /**
+   * @generated from field: string outbound = 24;
+   */
+  outbound: string;
+
+  /**
+   * @generated from field: string destionation = 7;
+   */
+  destionation: string;
+
+  /**
+   * @generated from field: string fake_ip = 8 [json_name = "fake_ip"];
+   */
+  fakeIp: string;
+
+  /**
+   * @generated from field: string hosts = 9;
+   */
+  hosts: string;
+
+  /**
+   * @generated from field: string domain = 10;
+   */
+  domain: string;
+
+  /**
+   * @generated from field: string ip = 11;
+   */
+  ip: string;
+
+  /**
+   * @generated from field: string tag = 12;
+   */
+  tag: string;
+
+  /**
+   * @generated from field: string hash = 13;
+   */
+  hash: string;
+
+  /**
+   * @generated from field: string protocol = 14;
+   */
+  protocol: string;
+
+  /**
+   * @generated from field: string process = 15;
+   */
+  process: string;
+
+  /**
+   * @generated from field: uint64 pid = 16;
+   */
+  pid: bigint;
+
+  /**
+   * @generated from field: uint64 uid = 17;
+   */
+  uid: bigint;
+
+  /**
+   * @generated from field: string tls_server_name = 18 [json_name = "tls_server_name"];
+   */
+  tlsServerName: string;
+
+  /**
+   * @generated from field: string http_host = 19 [json_name = "http_host"];
+   */
+  httpHost: string;
+
+  /**
+   * @generated from field: string component = 20;
+   */
+  component: string;
+
+  /**
+   * @generated from field: uint64 udp_migrate_id = 21 [json_name = "udp_migrate_id"];
+   */
+  udpMigrateId: bigint;
+
+  /**
+   * @generated from field: yuhaiin.bypass.mode mode = 22;
+   */
+  mode: mode;
+
+  /**
+   * @generated from field: string mode_reason = 23 [json_name = "mode_reason"];
+   */
+  modeReason: string;
 };
 
 /**

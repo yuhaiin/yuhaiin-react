@@ -10,6 +10,7 @@ import Loading from "../common/loading";
 import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "../common/proto";
 import { GlobalToastContext } from "../common/toast";
 import { NodeModal } from "../node/modal";
+import { mode } from "../pbes/config/bypass/bypass_pb";
 import { connection, type } from "../pbes/statistic/config_pb";
 import { connections, notify_data, notify_remove_connectionsSchema, total_flow } from "../pbes/statistic/grpc/config_pb";
 import { ConnectionInfo } from "./components";
@@ -127,11 +128,11 @@ const AccordionItem = (props: { data: connection, showModal: (hash: string) => v
                 <div className="d-line text-break">
                     <code className="ms-2">{props.data.id.toString()}</code>
                     <span className="ms-2">{props.data.addr}</span>
-                    <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{props.data.extra.MODE}</Badge>
+                    <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{mode[props.data.mode]}</Badge>
                     <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{type[props.data.type?.connType ?? 0]}</Badge>
                     {
-                        props.data.extra.Tag !== undefined &&
-                        <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{props.data.extra.Tag}</Badge>
+                        props.data.tag &&
+                        <Badge className="bg-light rounded-pill text-dark ms-1 text-uppercase">{props.data.tag}</Badge>
                     }
                 </div>
             </Accordion.Header>
