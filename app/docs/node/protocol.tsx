@@ -28,6 +28,7 @@ import {
     wireguardSchema,
     yuubinsyaSchema
 } from "../pbes/node/protocol/protocol_pb";
+import { BootstrapDnsWarp } from "./bootstrap_dns_warp";
 import { Directv2 } from './direct';
 import { Dropv2 } from './drop';
 import { Grpcv2 } from './grpc';
@@ -161,6 +162,8 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
             return <Wireguardv2 value={data.value} onChange={(e) => update(e)} />
         case "mux":
             return <Muxv2 value={data.value} onChange={(e) => update(e)} />
+        case "bootstrapDnsWarp":
+            return BootstrapDnsWarp
         default: return Unknown
     }
 }
@@ -395,6 +398,12 @@ export const protocols: { [key: string]: protocol } = {
                 serverName: "127.0.0.1",
                 shortId: "9d5031b6-4ef5-11ee-be56-0242ac120002"
             })
+        }
+    }),
+    "bootstrapDnsWarp": create(protocolSchema, {
+        protocol: {
+            case: "bootstrapDnsWarp",
+            value: {}
         }
     })
 }
