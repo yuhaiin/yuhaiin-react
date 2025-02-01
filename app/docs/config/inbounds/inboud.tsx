@@ -20,6 +20,7 @@ import {
     tcp_udp_controlSchema,
     tcpudp,
     tcpudpSchema,
+    tls_autoSchema,
     tls_configSchema,
     tlsSchema,
     tproxySchema,
@@ -31,7 +32,7 @@ import {
     yuubinsyaSchema
 } from "../../pbes/config/listener/listener_pb";
 import { Container, MoveUpDown, SettingInputText } from "../components";
-import { HTTPComponents, MixedComponents, QuicComponents, RealityComponents, RedirComponents, ReverseHTTPComponents, ReverseTCPComponents, Socks5Components, TlsComponents, TProxyComponents, TunComponents } from "./server";
+import { HTTPComponents, MixedComponents, QuicComponents, RealityComponents, RedirComponents, ReverseHTTPComponents, ReverseTCPComponents, Socks5Components, TLSAutoComponents, TlsComponents, TProxyComponents, TunComponents } from "./server";
 
 export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
     const [newProtocol, setNewProtocol] = useState({ value: "normal" });
@@ -75,7 +76,7 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
                 <ListGroup variant="flush">
                     <ListGroup.Item>
                         <InputGroup>
-                            <FormSelect value={newProtocol.value} values={["normal", "tls", "mux", "http2", "websocket", "grpc", "reality"]} onChange={(e) => setNewProtocol({ value: e })} />
+                            <FormSelect value={newProtocol.value} values={["normal", "tls", "mux", "http2", "websocket", "grpc", "reality", "tlsAuto"]} onChange={(e) => setNewProtocol({ value: e })} />
                             <Button
                                 variant="outline-success"
                                 onClick={() => {
@@ -84,6 +85,11 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
                                         case "normal":
                                             x.transport.push(create(transportSchema, {
                                                 transport: { case: "normal", value: create(normalSchema, {}) }
+                                            }))
+                                            break
+                                        case "tlsAuto":
+                                            x.transport.push(create(transportSchema, {
+                                                transport: { case: "tlsAuto", value: create(tls_autoSchema, {}) }
                                             }))
                                             break
                                         case "tls":
@@ -200,6 +206,11 @@ const Transport = (props: { transport: transport, onChange: (x: transport) => vo
             return <TlsComponents
                 tls={props.transport.transport.value}
                 onChange={(x) => { props.onChange({ ...props.transport, transport: { case: "tls", value: x } }) }}
+            />
+        case "tlsAuto":
+            return <TLSAutoComponents
+                tls={props.transport.transport.value}
+                onChange={(x) => { props.onChange({ ...props.transport, transport: { case: "tlsAuto", value: x } }) }}
             />
         case "mux":
             return <><div className="text-center" style={{ opacity: '0.4' }}>Mux</div></>

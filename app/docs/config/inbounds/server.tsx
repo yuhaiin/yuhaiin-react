@@ -1,9 +1,9 @@
 import { create } from '@bufbuild/protobuf';
-import { useState } from 'react';
+import { FC, useState } from 'react';
 import { Button, Card, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import { join as shlexJoin, split as shlexSplit } from 'shlex';
 import { SettingCheck, SettingTypeSelect } from "../../common/switch";
-import { certificate, certificateSchema, http, mixed, quic, reality, redir, reverse_http, reverse_tcp, routeSchema, socks5, tls, tls_config, tls_configSchema, tproxy, tun, tun_endpoint_driverSchema } from '../../pbes/config/listener/listener_pb';
+import { certificate, certificateSchema, http, mixed, quic, reality, redir, reverse_http, reverse_tcp, routeSchema, socks5, tls, tls_auto, tls_config, tls_configSchema, tproxy, tun, tun_endpoint_driverSchema } from '../../pbes/config/listener/listener_pb';
 import { NewItemList, SettingInputText, SettingInputTextarea } from '../components';
 
 export const HTTPComponents = (props: { http: http, onChange: (x: http) => void }) => {
@@ -145,6 +145,29 @@ const TLSCertificateComponents = (props: { cert: certificate, onChange: (x: cert
     )
 }
 
+export const TLSAutoComponents: FC<{ tls: tls_auto, onChange: (x: tls_auto) => void }> = ({ tls, onChange }) => {
+    return <>
+        <NewItemList
+            title='Next Protos'
+            className='mb-2'
+            data={tls?.nextProtos ?? []}
+            onChange={(e) => onChange({ ...tls, nextProtos: e })}
+        />
+
+        <NewItemList
+            title='Servenames'
+            className='mb-2'
+            data={tls?.servernames ?? []}
+            onChange={(e) => onChange({ ...tls, servernames: e })}
+        />
+
+        <SettingInputTextarea label='CA Cert' value={new TextDecoder().decode(tls.caCert)} disabled />
+        <SettingInputTextarea label='CA Key' value={new TextDecoder().decode(tls.caKey)} disabled />
+
+        <Button variant='outline-danger' onClick={() => onChange({ ...tls, caCert: new TextEncoder().encode(""), caKey: new TextEncoder().encode("") })}>regenerate</Button>
+    </>
+}
+
 const TLSComponents = (props: { tls: tls_config, onChange: (x: tls_config) => void }) => {
     const [newSni, setNewSni] = useState("www.example.com")
 
@@ -215,6 +238,7 @@ const TLSComponents = (props: { tls: tls_config, onChange: (x: tls_config) => vo
                     )
                 })
             }
+
             <InputGroup className="d-flex justify-content-end">
                 <Form.Control value={newSni} onChange={(e) => setNewSni(e.target.value)} />
                 <Button variant='outline-success'
