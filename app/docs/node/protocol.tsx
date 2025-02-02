@@ -20,6 +20,7 @@ import {
     realitySchema, shadowsocksrSchema, shadowsocksSchema,
     simpleSchema,
     socks5Schema,
+    tailscaleSchema,
     tls_configSchema,
     trojanSchema,
     vlessSchema,
@@ -43,6 +44,7 @@ import { ObfsHttpv2, Shadowsocksv2 } from './shadowsocks';
 import { Shadowsocksrv2 } from './shadowsocksr';
 import { Simplev2 } from './simple';
 import { Socks5v2 } from './socks5';
+import { Tailscale } from "./tailscale";
 import { Tlsv2 } from './tls';
 import { Props } from './tools';
 import { Trojanv2 } from './trojan';
@@ -164,6 +166,8 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
             return <Muxv2 value={data.value} onChange={(e) => update(e)} />
         case "bootstrapDnsWarp":
             return BootstrapDnsWarp
+        case "tailscale":
+            return <Tailscale value={data.value} onChange={(e) => update(e)} />
         default: return Unknown
     }
 }
@@ -404,6 +408,15 @@ export const protocols: { [key: string]: protocol } = {
         protocol: {
             case: "bootstrapDnsWarp",
             value: {}
+        }
+    }),
+    "tailscale": create(protocolSchema, {
+        protocol: {
+            case: "tailscale",
+            value: create(tailscaleSchema, {
+                authKey: "tskey-auth-xxxxx",
+                hostname: "yuhaiin-node",
+            })
         }
     })
 }

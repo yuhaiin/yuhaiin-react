@@ -2,13 +2,6 @@ import 'client-only';
 
 import reactExports, { useCallback as useCallbackFromReact, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-interface Noop {
-    (...args: any[]): any
-}
-
-/** @see https://foxact.skk.moe/noop */
-const noop: Noop = () => { /* noop */ };
-
 // useIsomorphicInsertionEffect
 const useInsertionEffect
     = typeof window === 'undefined'
@@ -24,10 +17,12 @@ const useInsertionEffect
  * - No dependency lists required
  * - Properties or state accessed within the callback will always be "current"
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function useStableHandler<Args extends any[], Result>(
     callback: (...args: Args) => Result
 ): typeof callback {
     // Keep track of the latest callback:
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const latestRef = useRef<typeof callback>(shouldNotBeInvokedBeforeMount as any);
     useInsertionEffect(() => {
         latestRef.current = callback;
@@ -82,7 +77,7 @@ export function useClipboard({
     const [copied, setCopied] = useState(false);
     const copyTimeoutRef = useRef<number | null>(null);
 
-    const stablizedOnCopyError = useStableHandler<[e: Error], void>(onCopyError || noop);
+    const stablizedOnCopyError = useStableHandler<[e: Error], void>(onCopyError);
 
     const handleCopyResult = useCallback((isCopied: boolean) => {
         if (copyTimeoutRef.current) {
