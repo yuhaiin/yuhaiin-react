@@ -23,7 +23,8 @@ export const SettingInputText: FC<{
     placeholder?: string,
     errorMsg?: string,
     className?: string
-}> = ({ label, value, url, plaintext, onChange, reminds, placeholder, errorMsg, className }) => {
+    endContent?: JSX.Element
+}> = ({ label, value, url, plaintext, onChange, reminds, placeholder, errorMsg, className, endContent }) => {
     const dropdown = () => {
         if (!reminds || !reminds.length) return <></>
 
@@ -67,11 +68,12 @@ export const SettingInputText: FC<{
                                 isInvalid={errorMsg ? true : false}
                                 onChange={(v) => { if (onChange) onChange(v.target.value) }}
                             />
-                            {
-                                errorMsg && <Form.Control.Feedback type="invalid">{errorMsg}</Form.Control.Feedback>
-                            }
-                        </>}
 
+                        </>}
+                    {endContent && endContent}
+                    {
+                        errorMsg && <Form.Control.Feedback type="invalid">{errorMsg}</Form.Control.Feedback>
+                    }
                 </InputGroup>
             </Col>
         </Form.Group >
