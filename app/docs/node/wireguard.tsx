@@ -81,12 +81,6 @@ export const Wireguardv2: FC<Props<wireguard>> = ({ value, onChange }) => {
         />
 
         <SettingInputText
-            label="IdleTimeout"
-            value={value.idleTimeout}
-            onChange={(e) => { if (!isNaN(Number(e))) onChange({ ...value, idleTimeout: Number(e) }) }}
-        />
-
-        <SettingInputText
             label="Reserved"
             value={btoa(String.fromCharCode.apply(null, Array.from(value.reserved)))}
             onChange={(e) => { onChange({ ...value, reserved: Uint8Array.from(atob(e), c => c.charCodeAt(0)) }) }}

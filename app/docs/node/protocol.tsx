@@ -74,11 +74,11 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                 reminds={groups ? groups.map(x => new Remind({ label: x, value: x })) : undefined}
             />
 
-            <SettingInputText
+            {/* <SettingInputText
                 label="Hash"
                 value={value.hash}
                 onChange={(e) => { onChange({ ...value, hash: e }) }}
-            />
+            /> */}
 
             {
                 value.protocols.map((x, i) => {
@@ -346,7 +346,6 @@ export const protocols: { [key: string]: protocol } = {
             value: create(wireguardSchema, {
                 endpoint: ["10.0.0.2/32"],
                 mtu: 1500,
-                idleTimeout: 3,
                 reserved: new Uint8Array([0, 0, 0]),
                 secretKey: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
                 peers: [
@@ -416,7 +415,6 @@ export const protocols: { [key: string]: protocol } = {
             value: create(tailscaleSchema, {
                 authKey: "tskey-auth-xxxxx",
                 hostname: "yuhaiin-node",
-                idleTimeout: 30,
             })
         }
     })

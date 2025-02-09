@@ -22,7 +22,10 @@ function NavBar(props: { children: React.ReactNode }) {
                             }}
                         >
                             <Nav.Item><Nav.Link eventKey='/'>HOME</Nav.Link></Nav.Item>
-                            <Nav.Item><Nav.Link eventKey='/docs/group/'>OUTBOUND</Nav.Link></Nav.Item>
+                            <NavDropdown title="OUTBOUND" active={usePathname().startsWith('/docs/group/')}>
+                                <NavDropdown.Item eventKey={'/docs/group/'}>Outbound</NavDropdown.Item>
+                                <NavDropdown.Item eventKey={'/docs/group/activates'}>Activates</NavDropdown.Item>
+                            </NavDropdown>
                             <Nav.Item><Nav.Link eventKey='/docs/tag/'>TAG</Nav.Link></Nav.Item>
                             <Nav.Item><Nav.Link eventKey='/docs/subscribe/'>SUBSCRIBE</Nav.Link></Nav.Item>
                             <NavDropdown title="CONNECTIONS" active={usePathname().startsWith('/docs/connections/')}>
