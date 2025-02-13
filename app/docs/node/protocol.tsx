@@ -17,7 +17,7 @@ import {
     obfs_httpSchema,
     protocol, protocolSchema,
     quicSchema,
-    realitySchema, shadowsocksrSchema, shadowsocksSchema,
+    realitySchema, setSchema, shadowsocksrSchema, shadowsocksSchema,
     simpleSchema,
     socks5Schema,
     tailscaleSchema,
@@ -40,6 +40,7 @@ import { Nonev2 } from './none';
 import { Quicv2 } from './quic';
 import { Realityv2 } from './reality';
 import { Rejectv2 } from './reject';
+import { Set } from "./set";
 import { ObfsHttpv2, Shadowsocksv2 } from './shadowsocks';
 import { Shadowsocksrv2 } from './shadowsocksr';
 import { Simplev2 } from './simple';
@@ -168,6 +169,8 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
             return BootstrapDnsWarp
         case "tailscale":
             return <Tailscale value={data.value} onChange={(e) => update(e)} />
+        case "set":
+            return <Set value={data.value} onChange={(e) => update(e)} />
         default: return Unknown
     }
 }
@@ -417,5 +420,11 @@ export const protocols: { [key: string]: protocol } = {
                 hostname: "yuhaiin-node",
             })
         }
-    })
+    }),
+    "set": create(protocolSchema, {
+        protocol: {
+            case: "set",
+            value: create(setSchema, { nodes: [] })
+        }
+    }),
 }

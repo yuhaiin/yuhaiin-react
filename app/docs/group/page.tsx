@@ -7,6 +7,7 @@ import { FC, useContext, useState } from "react";
 import { Accordion, Button, ButtonGroup, Col, Dropdown, DropdownButton, ListGroup, Row, Spinner } from "react-bootstrap";
 import { LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunTCPUrl, LatencyStunUrl } from "../common/apiurl";
 import Loading from "../common/loading";
+import { NodesContext } from "../common/nodes";
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
 import { GlobalToastContext } from "../common/toast";
 import { NodeJsonModal, NodeModal } from "../node/modal";
@@ -134,25 +135,27 @@ function Group() {
 
     return (
         <>
-            <NodeModal
-                show={modalData.show}
-                hash={modalData.hash}
-                point={modalData.point}
-                isNew={modalData.isNew}
-                onDelete={modalData.onDelete}
-                editable
-                onHide={() => setModalData({ ...modalData, show: false })}
-                onSave={() => mutate()}
-                groups={Object.keys(data.groups).sort((a, b) => { return a <= b ? -1 : 1 })}
-            />
+            <NodesContext value={data}>
+                <NodeModal
+                    show={modalData.show}
+                    hash={modalData.hash}
+                    point={modalData.point}
+                    isNew={modalData.isNew}
+                    onDelete={modalData.onDelete}
+                    editable
+                    onHide={() => setModalData({ ...modalData, show: false })}
+                    onSave={() => mutate()}
+                    groups={Object.keys(data.groups).sort((a, b) => { return a <= b ? -1 : 1 })}
+                />
 
-            <NodeJsonModal
-                show={importJson.data}
-                onSave={() => mutate()}
-                onHide={() => setImportJson({ data: false })}
-                isNew
-            />
+                <NodeJsonModal
+                    show={importJson.data}
+                    onSave={() => mutate()}
+                    onHide={() => setImportJson({ data: false })}
+                    isNew
+                />
 
+            </NodesContext>
 
 
             <div>
