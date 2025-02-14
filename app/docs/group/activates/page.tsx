@@ -87,7 +87,7 @@ function Activates() {
 
                 <ListGroup variant="flush">
                     {
-                        data.nodes.map((v) => { return <TagItem key={v.hash} v={v} /> })
+                        data.nodes.sort((a, b) => a.hash.localeCompare(b.hash)).map((v) => { return <TagItem key={v.hash} v={v} /> })
                     }
                 </ListGroup>
             </Card >

@@ -6,7 +6,7 @@ import { useProtoSWR } from "../../common/proto"
 import { config_service } from "../../pbes/config/grpc/config_pb"
 import { ItemList, SettingInputText } from "../components"
 
-function About() {
+export default function About() {
     const { data: info, isLoading, isValidating, error } = useProtoSWR(config_service.method.info)
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
@@ -29,10 +29,8 @@ function About() {
                 <SettingInputText plaintext className='mb-0' label='Arch' value={info?.arch ?? ""} />
                 <SettingInputText plaintext className='mb-0' label='Compiler' value={info?.compiler ?? ""} />
                 <SettingInputText plaintext className='mb-0' label='Platform' value={info?.platform ?? ""} />
-                <ItemList title='Build' data={info?.build} mb='mb-0' />
+                <ItemList title='Build' data={info?.build} mb='mb-0 text-break' />
             </Card.Body>
         </Card>
     </>
 }
-
-export default About

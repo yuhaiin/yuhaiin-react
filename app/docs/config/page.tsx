@@ -49,22 +49,25 @@ function ConfigComponent() {
                     <fieldset disabled={setting.platform?.androidApp}>
 
                         <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting({ ...setting, ipv6: !setting.ipv6 }, false)} />
-                        <SettingInputText
-                            label='Network Interface'
-                            value={setting.netInterface}
-                            onChange={(v) => setSetting({ ...setting, netInterface: v }, false)}
-                            reminds={interfaces.map((v) => {
-                                if (!v.name) return undefined
-                                const r: Remind = {
-                                    label: v.name,
-                                    value: v.name,
-                                    label_children: v.addresses?.map((vv) => !vv ? "" : vv)
+                        <SettingCheck label='Use Default Interface' checked={setting.useDefaultInterface} onChange={() => setSetting({ ...setting, useDefaultInterface: !setting.useDefaultInterface }, false)} />
+                        {!setting.useDefaultInterface &&
+                            <SettingInputText
+                                label='Network Interface'
+                                value={setting.netInterface}
+                                onChange={(v) => setSetting({ ...setting, netInterface: v }, false)}
+                                reminds={interfaces.map((v) => {
+                                    if (!v.name) return undefined
+                                    const r: Remind = {
+                                        label: v.name,
+                                        value: v.name,
+                                        label_children: v.addresses?.map((vv) => !vv ? "" : vv)
+                                    }
+                                    return r
+                                })
+                                    .filter((e): e is Exclude<Remind, null | undefined> => !!e)
                                 }
-                                return r
-                            })
-                                .filter((e): e is Exclude<Remind, null | undefined> => !!e)
-                            }
-                        />
+                            />
+                        }
 
                         <Form.Group as={Row} className={"mb-2"}>
                             <Form.Label column sm={2} className="nowrap">System Proxy</Form.Label>

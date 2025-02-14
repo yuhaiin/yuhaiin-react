@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file tools/tools.proto.
  */
 export const file_tools_tools: GenFile = /*@__PURE__*/
-  fileDesc("ChF0b29scy90b29scy5wcm90bxINeXVoYWlpbi50b29scyI6CgpJbnRlcmZhY2VzEiwKCmludGVyZmFjZXMYASADKAsyGC55dWhhaWluLnRvb2xzLkludGVyZmFjZSIsCglJbnRlcmZhY2USDAoEbmFtZRgBIAEoCRIRCglhZGRyZXNzZXMYAiADKAkySwoFdG9vbHMSQgoNZ2V0X2ludGVyZmFjZRIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoZLnl1aGFpaW4udG9vbHMuSW50ZXJmYWNlc0I3Wi1naXRodWIuY29tL0FzdXRvcnVmYS95dWhhaWluL3BrZy9wcm90b3MvdG9vbHOSAwXSPgIQA2IIZWRpdGlvbnNw6Ac", [file_google_protobuf_empty, file_google_protobuf_go_features]);
+  fileDesc("ChF0b29scy90b29scy5wcm90bxINeXVoYWlpbi50b29scyI6CgpJbnRlcmZhY2VzEiwKCmludGVyZmFjZXMYASADKAsyGC55dWhhaWluLnRvb2xzLkludGVyZmFjZSIsCglJbnRlcmZhY2USDAoEbmFtZRgBIAEoCRIRCglhZGRyZXNzZXMYAiADKAkiXAoITGljZW5zZXMSJwoHeXVoYWlpbhgBIAMoCzIWLnl1aGFpaW4udG9vbHMuTGljZW5zZRInCgdhbmRyb2lkGAIgAygLMhYueXVoYWlpbi50b29scy5MaWNlbnNlIlcKB0xpY2Vuc2USDAoEbmFtZRgBIAEoCRILCgN1cmwYAiABKAkSDwoHbGljZW5zZRgDIAEoCRIgCgtsaWNlbnNlX3VybBgEIAEoCVILbGljZW5zZV91cmwyiAEKBXRvb2xzEkIKDWdldF9pbnRlcmZhY2USFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGS55dWhhaWluLnRvb2xzLkludGVyZmFjZXMSOwoIbGljZW5zZXMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFy55dWhhaWluLnRvb2xzLkxpY2Vuc2VzQjdaLWdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy90b29sc5IDBdI+AhADYghlZGl0aW9uc3DoBw", [file_google_protobuf_empty, file_google_protobuf_go_features]);
 
 /**
  * @generated from message yuhaiin.tools.Interfaces
@@ -55,6 +55,60 @@ export const InterfaceSchema: GenMessage<Interface> = /*@__PURE__*/
   messageDesc(file_tools_tools, 1);
 
 /**
+ * @generated from message yuhaiin.tools.Licenses
+ */
+export type Licenses = Message<"yuhaiin.tools.Licenses"> & {
+  /**
+   * @generated from field: repeated yuhaiin.tools.License yuhaiin = 1;
+   */
+  yuhaiin: License[];
+
+  /**
+   * @generated from field: repeated yuhaiin.tools.License android = 2;
+   */
+  android: License[];
+};
+
+/**
+ * Describes the message yuhaiin.tools.Licenses.
+ * Use `create(LicensesSchema)` to create a new message.
+ */
+export const LicensesSchema: GenMessage<Licenses> = /*@__PURE__*/
+  messageDesc(file_tools_tools, 2);
+
+/**
+ * @generated from message yuhaiin.tools.License
+ */
+export type License = Message<"yuhaiin.tools.License"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string url = 2;
+   */
+  url: string;
+
+  /**
+   * @generated from field: string license = 3;
+   */
+  license: string;
+
+  /**
+   * @generated from field: string license_url = 4 [json_name = "license_url"];
+   */
+  licenseUrl: string;
+};
+
+/**
+ * Describes the message yuhaiin.tools.License.
+ * Use `create(LicenseSchema)` to create a new message.
+ */
+export const LicenseSchema: GenMessage<License> = /*@__PURE__*/
+  messageDesc(file_tools_tools, 3);
+
+/**
  * @generated from service yuhaiin.tools.tools
  */
 export const tools: GenService<{
@@ -65,6 +119,14 @@ export const tools: GenService<{
     methodKind: "unary";
     input: typeof EmptySchema;
     output: typeof InterfacesSchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.tools.tools.licenses
+   */
+  licenses: {
+    methodKind: "unary";
+    input: typeof EmptySchema;
+    output: typeof LicensesSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_tools_tools, 0);

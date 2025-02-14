@@ -46,6 +46,7 @@ function NavBar(props: { children: React.ReactNode }) {
                                 <NavDropdown.Divider />
                                 <NavDropdown.Item eventKey={APIUrl + '/debug/pprof'} >Pprof</NavDropdown.Item>
                                 <NavDropdown.Divider />
+                                <NavDropdown.Item eventKey={'/docs/config/licenses'} >Licenses</NavDropdown.Item>
                                 <NavDropdown.Item eventKey={'/docs/config/about'} >About</NavDropdown.Item>
                             </NavDropdown>
                         </Nav>
