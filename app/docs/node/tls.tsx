@@ -1,6 +1,6 @@
 import { FC } from "react"
 import { SettingCheck } from "../common/switch"
-import { NewBytesItemList, NewItemList } from "../config/components"
+import { NewBytesItemList, NewItemList, SettingInputText } from "../config/components"
 import { tls_config } from "../pbes/node/protocol/protocol_pb"
 import { Props } from "./tools"
 
@@ -17,5 +17,19 @@ export const TlsConfigv2: FC<{ value: tls_config, onChange: (x: tls_config) => v
             <NewItemList className="mb-2" title="ServerNames" data={value.serverNames} onChange={(x) => { onChange({ ...value, serverNames: x }) }} />
             <NewItemList className="mb-2" title="NextProtos" data={value.nextProtos} onChange={(x) => { onChange({ ...value, nextProtos: x }) }} />
             <NewBytesItemList title="CaCert" textarea data={value.caCert} onChange={(x) => { onChange({ ...value, caCert: x }) }} />
+            <SettingInputText label="ECH Config List"
+                value={btoa(String.fromCharCode(...value.echConfig))}
+                onChange={(x) => {
+                    try {
+                        onChange({ ...value, echConfig: Uint8Array.from(Array.prototype.map.call(atob(x), (c: string) => c.charCodeAt(0))) })
+                    } catch (e) {
+                        ignore(e)
+                    }
+                }
+                }
+            />
         </>
     }
+
+
+const ignore = (e: any) => { }// eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-explicit-any

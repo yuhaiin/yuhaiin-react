@@ -2,9 +2,9 @@ import { create } from "@bufbuild/protobuf";
 import { FC, useContext, useEffect, useState } from "react";
 import { Button, FloatingLabel, ListGroup, Modal } from "react-bootstrap";
 import { NodesContext } from "../common/nodes";
-import { FormSelect } from "../common/switch";
+import { FormSelect, SettingTypeSelect } from "../common/switch";
 import { nodes_response } from "../pbes/node/grpc/node_pb";
-import { set, setSchema } from "../pbes/node/protocol/protocol_pb";
+import { set, set_strategy_typeSchema, setSchema } from "../pbes/node/protocol/protocol_pb";
 import { Props } from "./tools";
 
 export const Set: FC<Props<set>> = ({ value, onChange }) => {
@@ -23,6 +23,8 @@ export const Set: FC<Props<set>> = ({ value, onChange }) => {
                 setModalData(prev => { return { ...prev, show: false } })
             }}
         />
+
+        <SettingTypeSelect label="Mode" type={set_strategy_typeSchema} value={value.strategy} onChange={(v) => onChange({ ...value, strategy: v })} />
 
         <ListGroup variant="flush">
             {
@@ -78,7 +80,7 @@ export const Set: FC<Props<set>> = ({ value, onChange }) => {
                         })
                     }}
                 >
-                    <i className="bi bi-plus-lg" />New
+                    <i className="bi bi-plus-lg" />Add
                 </Button>
             </ListGroup.Item>
         </ListGroup>
@@ -115,8 +117,8 @@ const SelectModal: FC<{
                 />
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="outline-secondary" onClick={() => { onHide() }}>Close</Button>
-                <Button variant="outline-primary" onClick={() => { onSave() }}>Save</Button>
+                <Button variant="outline-secondary" onClick={() => { onHide() }}>Cancel</Button>
+                <Button variant="outline-primary" onClick={() => { onSave() }}>Apply</Button>
             </Modal.Footer>
         </Modal>
     </>

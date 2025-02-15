@@ -18,13 +18,18 @@ export const SettingInputText: FC<{
     value: string | number,
     url?: string,
     plaintext?: boolean,
+    password?: boolean,
     onChange?: (x: string) => void,
     reminds?: Remind[] | null,
     placeholder?: string,
     errorMsg?: string,
     className?: string
     endContent?: JSX.Element
-}> = ({ label, value, url, plaintext, onChange, reminds, placeholder, errorMsg, className, endContent }) => {
+    disabled?: boolean
+    readonly?: boolean
+}> = ({ label, value, url, plaintext, onChange, reminds, placeholder, errorMsg, className, endContent, disabled, password, readonly }) => {
+    const [showPassword, setShowPassword] = useState(false)
+
     const dropdown = () => {
         if (!reminds || !reminds.length) return <></>
 
@@ -62,34 +67,53 @@ export const SettingInputText: FC<{
                         :
                         <>
                             <Form.Control
+                                readOnly={readonly}
+                                disabled={disabled}
                                 value={value}
                                 plaintext={plaintext}
                                 placeholder={placeholder}
+                                type={password && !showPassword ? "password" : "text"}
                                 isInvalid={errorMsg ? true : false}
                                 onChange={(v) => { if (onChange) onChange(v.target.value) }}
                             />
-
                         </>}
+                    {
+                        password &&
+                        <Button onClick={() => { setShowPassword(prev => !prev) }} variant="outline-secondary">
+                            {showPassword ? <i className="bi bi-eye-slash"></i> : <i className="bi bi-eye"></i>}
+                        </Button>
+                    }
                     {endContent && endContent}
                     {
                         errorMsg && <Form.Control.Feedback type="invalid">{errorMsg}</Form.Control.Feedback>
                     }
+
+
                 </InputGroup>
             </Col>
         </Form.Group >
     )
 }
 
-export const SettingInputTextarea = (props: { label: string, value: string | number | undefined, onChange?: (x: string) => void, disabled?: boolean }) => {
-    return (
-        <Form.Group as={Row} className='mb-2'>
-            <Form.Label column sm={2} className="nowrap">{props.label}</Form.Label>
-            <Col sm={10}>
-                <Form.Control as="textarea" disabled={props.disabled} rows={5} value={props.value} onChange={(v) => props.onChange(v.target.value)} />
-            </Col>
-        </Form.Group>
-    )
-}
+export const SettingInputTextarea: FC<{ label: string, value: string | number | undefined, onChange?: (x: string) => void, disabled?: boolean, readonly?: boolean, password?: boolean }> =
+    ({ label, value, onChange, disabled, readonly, password }) => {
+        return (
+            <Form.Group as={Row} className='mb-2'>
+                <Form.Label column sm={2} className="nowrap">{label}</Form.Label>
+                <Col sm={10}>
+                    <Form.Control
+                        as="textarea"
+                        type={password ? "password" : "text"}
+                        disabled={disabled}
+                        readOnly={readonly}
+                        rows={5}
+                        value={value}
+                        onChange={(v) => onChange(v.target.value)}
+                    />
+                </Col>
+            </Form.Group>
+        )
+    }
 
 export const NewItemList: FC<{
     title: string,

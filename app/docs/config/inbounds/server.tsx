@@ -3,7 +3,7 @@ import { FC, useState } from 'react';
 import { Button, Card, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import { join as shlexJoin, split as shlexSplit } from 'shlex';
 import { SettingCheck, SettingTypeSelect } from "../../common/switch";
-import { certificate, certificateSchema, http, mixed, quic, reality, redir, reverse_http, reverse_tcp, routeSchema, socks5, tls, tls_auto, tls_config, tls_configSchema, tproxy, tun, tun_endpoint_driverSchema } from '../../pbes/config/listener/listener_pb';
+import { certificate, certificateSchema, ech_config, ech_configSchema, http, mixed, quic, reality, redir, reverse_http, reverse_tcp, routeSchema, socks5, tls, tls_auto, tls_config, tls_configSchema, tproxy, tun, tun_endpoint_driverSchema } from '../../pbes/config/listener/listener_pb';
 import { NewItemList, SettingInputText, SettingInputTextarea } from '../components';
 
 export const HTTPComponents = (props: { http: http, onChange: (x: http) => void }) => {
@@ -146,6 +146,14 @@ const TLSCertificateComponents = (props: { cert: certificate, onChange: (x: cert
 }
 
 export const TLSAutoComponents: FC<{ tls: tls_auto, onChange: (x: tls_auto) => void }> = ({ tls, onChange }) => {
+    const setEch = (onEchChange: (x: ech_config) => ech_config) => {
+        const tlsConfig = { ...tls }
+        if (!tls.ech) tlsConfig.ech = create(ech_configSchema, {})
+        else tlsConfig.ech = { ...tls.ech }
+        onEchChange(tlsConfig.ech)
+        onChange({ ...tlsConfig })
+    }
+
     return <>
         <NewItemList
             title='Next Protos'
@@ -161,10 +169,23 @@ export const TLSAutoComponents: FC<{ tls: tls_auto, onChange: (x: tls_auto) => v
             onChange={(e) => onChange({ ...tls, servernames: e })}
         />
 
-        <SettingInputTextarea label='CA Cert' value={new TextDecoder().decode(tls.caCert)} disabled />
-        <SettingInputTextarea label='CA Key' value={new TextDecoder().decode(tls.caKey)} disabled />
+        <SettingCheck label='ECH Enabled' checked={tls.ech ? tls.ech.enable : false} onChange={((x) => setEch((e) => { e.enable = x; return e }))} />
+        {
+            tls.ech?.enable &&
+            <SettingInputText label='ECH Outer SNI' value={tls.ech ? tls.ech.OuterSNI : ""} onChange={(e) => setEch((x) => { x.OuterSNI = e; return x })} />
+        }
 
-        <Button variant='outline-danger' onClick={() => onChange({ ...tls, caCert: new TextEncoder().encode(""), caKey: new TextEncoder().encode("") })}>regenerate</Button>
+        <SettingInputTextarea label='CA Cert' value={new TextDecoder().decode(tls.caCert)} readonly />
+        <SettingInputTextarea label='CA Key' value={new TextDecoder().decode(tls.caKey)} readonly password />
+        <SettingInputText label='ECH Config' value={tls.ech ? btoa(String.fromCharCode(...tls.ech?.config)) : ""} readonly />
+        <SettingInputText label='ECH Key' value={tls.ech ? btoa(String.fromCharCode(...tls.ech?.privateKey)) : ""} readonly password />
+
+        <Button variant='outline-danger' onClick={() => onChange({
+            ...tls,
+            caCert: new TextEncoder().encode(""),
+            caKey: new TextEncoder().encode(""),
+            ech: { ...tls.ech, config: new Uint8Array(0), privateKey: new Uint8Array(0) }
+        })}>regenerate</Button>
     </>
 }
 

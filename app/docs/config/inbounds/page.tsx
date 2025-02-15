@@ -78,6 +78,7 @@ const InboundModal = (
                                 .then(async ({ error }) => {
                                     if (error === undefined) {
                                         ctx.Info("save successful")
+                                        mutate();
                                         props.onHide(true)
                                     } else {
                                         const msg = error.msg;
