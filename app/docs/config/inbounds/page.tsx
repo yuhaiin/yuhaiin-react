@@ -3,10 +3,11 @@
 import { clone, create } from "@bufbuild/protobuf"
 import { StringValueSchema } from "@bufbuild/protobuf/wkt"
 import React, { useContext, useEffect, useState } from "react"
-import { Button, Card, Form, InputGroup, ListGroup, Modal } from "react-bootstrap"
+import { Button, Card, Form, InputGroup, ListGroup, Modal, Spinner } from "react-bootstrap"
 import useSWR from "swr"
 import Loading, { Error } from "../../common/loading"
 import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../common/proto"
+import { SettingCheck } from "../../common/switch"
 import { GlobalToastContext } from "../../common/toast"
 import { inbound as inboundService } from "../../pbes/config/grpc/config_pb"
 import { inboundSchema } from "../../pbes/config/listener/listener_pb"
@@ -101,6 +102,7 @@ function InboudComponent() {
     const ctx = useContext(GlobalToastContext);
 
     const { data: inbounds, error, isLoading, mutate } = useProtoSWR(inboundService.method.list)
+    const [saving, setSaving] = useState(false);
 
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
     const [newdata, setNewdata] = useState({ value: "" });
@@ -136,7 +138,49 @@ function InboudComponent() {
             isNew={showdata.new}
         />
 
+
         <Card>
+            <Card.Body>
+                <SettingCheck label='DNS Hijack'
+                    checked={inbounds.hijackDns}
+                    onChange={() => { mutate({ ...inbounds, hijackDns: !inbounds.hijackDns }, false) }} />
+
+                <SettingCheck label='Fakedns'
+                    checked={inbounds.hijackDnsFakeip}
+                    onChange={() => { mutate({ ...inbounds, hijackDnsFakeip: !inbounds.hijackDnsFakeip }, false) }} />
+
+                <SettingCheck label='Sniff'
+                    checked={!inbounds.sniff?.enabled ? false : true}
+                    onChange={() => mutate({ ...inbounds, sniff: { ...inbounds.sniff, enabled: !inbounds.sniff.enabled } }, false)} />
+            </Card.Body>
+
+            <Card.Footer className="d-flex justify-content-end">
+                <Button
+                    variant="outline-primary"
+                    disabled={saving}
+                    onClick={() => {
+                        setSaving(true)
+                        FetchProtobuf(inboundService.method.apply, inbounds)
+                            .then(async ({ error }) => {
+                                if (error === undefined) {
+                                    ctx.Info("save hosts successful")
+                                } else {
+                                    const msg = error.msg;
+                                    ctx.Error(msg)
+                                    console.error(error.code, msg)
+                                }
+
+                                mutate()
+                                setSaving(false)
+                            })
+                    }}
+                >
+                    Save{saving && <>&nbsp;<Spinner size="sm" animation="border" /></>}
+                </Button>
+            </Card.Footer>
+        </Card>
+
+        <Card className="mt-3">
             {inbounds.names.length === 0 && <Card.Body><div className="text-center my-2" style={{ opacity: '0.4' }}>No Inbounds</div>  </Card.Body>}
             {inbounds.names.length !== 0 &&
                 <ListGroup variant="flush" style={{ borderBottom: "none" }}>
@@ -184,6 +228,7 @@ function InboudComponent() {
             </Card.Footer>
 
         </Card>
+
     </>
 }
 

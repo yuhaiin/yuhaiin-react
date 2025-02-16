@@ -22,7 +22,12 @@ export default function ResolverComponent() {
         <div className="mb-3">
             <Hosts />
         </div>
-        <Fakedns />
+        <div className="mb-3">
+            <Fakedns />
+        </div>
+        <div>
+            <Server />
+        </div>
     </>
 }
 
@@ -345,6 +350,59 @@ const Fakedns: FC = () => {
                             .then(async ({ error }) => {
                                 if (error === undefined) {
                                     ctx.Info("save fakedns successful")
+                                } else {
+                                    const msg = error.msg;
+                                    ctx.Error(msg)
+                                    console.error(error.code, msg)
+                                }
+
+                                mutate()
+                                setSaving(false)
+                            })
+                    }}
+                >
+                    Save{saving && <>&nbsp;<Spinner size="sm" animation="border" /></>}
+                </Button>
+            </Card.Footer>
+        </Card>
+    </>
+}
+
+
+const Server: FC = () => {
+    const ctx = useContext(GlobalToastContext);
+
+    const [saving, setSaving] = useState(false);
+
+    const { data, error, isLoading, mutate } = useProtoSWR(resolver.method.server)
+
+    if (error !== undefined) return <Card className="align-items-center">
+        <Card.Body>
+            <Error statusCode={error.code} title={error.msg} />
+        </Card.Body>
+    </Card>
+    if (isLoading || data === undefined) return <Card className="align-items-center">
+        <Card.Body>
+            <Loading />
+        </Card.Body>
+    </Card>
+
+    return <>
+        <Card>
+            <Card.Body>
+                <SettingInputText label="Server" value={data.value} onChange={(v) => mutate(prev => { return { ...prev, server: v } }, false)} />
+            </Card.Body>
+
+            <Card.Footer className="d-flex justify-content-end">
+                <Button
+                    variant="outline-primary"
+                    disabled={saving}
+                    onClick={() => {
+                        setSaving(true)
+                        FetchProtobuf(resolver.method.save_server, data)
+                            .then(async ({ error }) => {
+                                if (error === undefined) {
+                                    ctx.Info("save server successful")
                                 } else {
                                     const msg = error.msg;
                                     ctx.Error(msg)

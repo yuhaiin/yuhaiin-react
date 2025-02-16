@@ -81,27 +81,6 @@ function ConfigComponent() {
                         </Form.Group >
 
                         <hr />
-                        <Card.Title className='mb-2'>Inbound</Card.Title>
-                        <SettingCheck label='DNS Hijack'
-                            checked={!setting.server?.hijackDns ? false : true}
-                            onChange={() => setSetting({ ...setting, server: { ...setting.server, hijackDns: !setting.server.hijackDns } }, false)} />
-
-                        <SettingCheck label='Fakedns'
-                            checked={!setting.server?.hijackDnsFakeip ? false : true}
-                            onChange={() => setSetting({ ...setting, server: { ...setting.server, hijackDnsFakeip: !setting.server.hijackDnsFakeip } }, false)} />
-
-                        <SettingCheck label='Sniff'
-                            checked={!setting.server?.sniff?.enabled ? false : true}
-                            onChange={() => setSetting({ ...setting, server: { ...setting.server, sniff: { ...setting.server.sniff, enabled: !setting.server.sniff.enabled } } }, false)} />
-
-                        <hr />
-
-
-                        <Card.Title className='mb-2'>DNS</Card.Title>
-                        <SettingInputText label='DNS Server'
-                            value={setting.dns?.server ? setting.dns?.server : ""}
-                            onChange={(e) => setSetting({ ...setting, dns: { ...setting.dns, server: e } }, false)} />
-                        <hr />
 
                         <Card.Title className='mb-2'>Logcat</Card.Title>
                         <SettingCheck label='Save'
