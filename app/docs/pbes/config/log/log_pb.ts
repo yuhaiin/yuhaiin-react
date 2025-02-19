@@ -11,7 +11,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file config/log/log.proto.
  */
 export const file_config_log_log: GenFile = /*@__PURE__*/
-  fileDesc("ChRjb25maWcvbG9nL2xvZy5wcm90bxILeXVoYWlpbi5sb2ciPQoGbG9nY2F0EiUKBWxldmVsGAEgASgOMhYueXVoYWlpbi5sb2cubG9nX2xldmVsEgwKBHNhdmUYAiABKAgqUAoJbG9nX2xldmVsEgsKB3ZlcmJvc2UQABIJCgVkZWJ1ZxABEggKBGluZm8QAhILCgd3YXJuaW5nEAMSCQoFZXJyb3IQBBIJCgVmYXRhbBAFQjxaMmdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9jb25maWcvbG9nkgMF0j4CEANiCGVkaXRpb25zcOgH", [file_google_protobuf_go_features]);
+  fileDesc("ChRjb25maWcvbG9nL2xvZy5wcm90bxILeXVoYWlpbi5sb2cinQEKBmxvZ2NhdBIlCgVsZXZlbBgBIAEoDjIWLnl1aGFpaW4ubG9nLmxvZ19sZXZlbBIMCgRzYXZlGAIgASgIEjIKFGlnbm9yZV90aW1lb3V0X2Vycm9yGAMgASgIUhRpZ25vcmVfdGltZW91dF9lcnJvchIqChBpZ25vcmVfZG5zX2Vycm9yGAQgASgIUhBpZ25vcmVfZG5zX2Vycm9yKlAKCWxvZ19sZXZlbBILCgd2ZXJib3NlEAASCQoFZGVidWcQARIICgRpbmZvEAISCwoHd2FybmluZxADEgkKBWVycm9yEAQSCQoFZmF0YWwQBUI8WjJnaXRodWIuY29tL0FzdXRvcnVmYS95dWhhaWluL3BrZy9wcm90b3MvY29uZmlnL2xvZ5IDBdI+AhADYghlZGl0aW9uc3DoBw", [file_google_protobuf_go_features]);
 
 /**
  * @generated from message yuhaiin.log.logcat
@@ -26,6 +26,16 @@ export type logcat = Message<"yuhaiin.log.logcat"> & {
    * @generated from field: bool save = 2;
    */
   save: boolean;
+
+  /**
+   * @generated from field: bool ignore_timeout_error = 3 [json_name = "ignore_timeout_error"];
+   */
+  ignoreTimeoutError: boolean;
+
+  /**
+   * @generated from field: bool ignore_dns_error = 4 [json_name = "ignore_dns_error"];
+   */
+  ignoreDnsError: boolean;
 };
 
 /**

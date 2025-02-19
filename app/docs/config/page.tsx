@@ -8,7 +8,7 @@ import Loading, { Error } from '../common/loading';
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
 import { SettingCheck, SettingTypeSelect } from "../common/switch";
 import { GlobalToastContext } from '../common/toast';
-import { advanced_configSchema, setting as Setting, system_proxySchema } from '../pbes/config/config_pb';
+import { advanced_config, advanced_configSchema, setting as Setting, system_proxySchema } from '../pbes/config/config_pb';
 import { config_service } from '../pbes/config/grpc/config_pb';
 import { log_level, log_levelSchema } from '../pbes/config/log/log_pb';
 import { Remind, SettingInputText } from './components';
@@ -42,106 +42,120 @@ function ConfigComponent() {
         setSetting({ ...setting, systemProxy: create(system_proxySchema, { http: http, socks5: socks5 }) }, false)
     }
 
+    const getAdvanced = () => {
+        if (setting.advancedConfig) return setting.advancedConfig
+        else return create(advanced_configSchema, {
+            relayBufferSize: 4096,
+            udpRingbufferSize: 250,
+            udpBufferSize: 2048
+        })
+    }
+
+    const setAdvanced = (f: (data: advanced_config) => advanced_config) => {
+        setSetting(prev => {
+            const tmp = { ...prev }
+            if (!tmp.advancedConfig) tmp.advancedConfig = create(advanced_configSchema, {
+                relayBufferSize: 4096,
+                udpRingbufferSize: 250,
+                udpBufferSize: 2048
+            })
+            else tmp.advancedConfig = { ...tmp.advancedConfig }
+            tmp.advancedConfig = f(tmp.advancedConfig)
+            return tmp
+        }, false)
+    }
+
     return (
         <>
             <Card className='mb-3'>
                 <Card.Body>
-                    <fieldset disabled={setting.platform?.androidApp}>
 
-                        <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting({ ...setting, ipv6: !setting.ipv6 }, false)} />
-                        <SettingCheck label='Use Default Interface' checked={setting.useDefaultInterface} onChange={() => setSetting({ ...setting, useDefaultInterface: !setting.useDefaultInterface }, false)} />
-                        {!setting.useDefaultInterface &&
-                            <SettingInputText
-                                label='Network Interface'
-                                value={setting.netInterface}
-                                onChange={(v) => setSetting({ ...setting, netInterface: v }, false)}
-                                reminds={interfaces.map((v) => {
-                                    if (!v.name) return undefined
-                                    const r: Remind = {
-                                        label: v.name,
-                                        value: v.name,
-                                        label_children: v.addresses?.map((vv) => !vv ? "" : vv)
-                                    }
-                                    return r
-                                })
-                                    .filter((e): e is Exclude<Remind, null | undefined> => !!e)
+                    <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting({ ...setting, ipv6: !setting.ipv6 }, false)} />
+                    <SettingCheck label='Use Default Interface' checked={setting.useDefaultInterface} onChange={() => setSetting({ ...setting, useDefaultInterface: !setting.useDefaultInterface }, false)} />
+                    {!setting.useDefaultInterface &&
+                        <SettingInputText
+                            label='Network Interface'
+                            value={setting.netInterface}
+                            onChange={(v) => setSetting({ ...setting, netInterface: v }, false)}
+                            reminds={interfaces.map((v) => {
+                                if (!v.name) return undefined
+                                const r: Remind = {
+                                    label: v.name,
+                                    value: v.name,
+                                    label_children: v.addresses?.map((vv) => !vv ? "" : vv)
                                 }
-                            />
-                        }
-
-                        <Form.Group as={Row} className={"mb-2"}>
-                            <Form.Label column sm={2} className="nowrap">System Proxy</Form.Label>
-                            <Col sm={10}>
-                                <ToggleButtonGroup type="checkbox" className='d-flex' defaultValue={getSystemProxy(setting)} value={getSystemProxy(setting)} onChange={setSystemProxy}>
-                                    <ToggleButton variant='outline-primary' className='w-100' id="system-proxy-tbg-btn-1" value={1}>HTTP</ToggleButton>
-                                    <ToggleButton variant='outline-primary' className='w-100' id="system-proxy-tbg-btn-2" value={2}>SOCKS5</ToggleButton>
-                                </ToggleButtonGroup>
-
-                            </Col>
-                        </Form.Group >
-
-                        <hr />
-
-                        <Card.Title className='mb-2'>Logcat</Card.Title>
-                        <SettingCheck label='Save'
-                            checked={setting.logcat.save}
-                            onChange={(x) => setSetting({ ...setting, logcat: { ...setting.logcat, save: x } }, false)} />
-                        <SettingTypeSelect
-                            label='Level'
-                            type={log_levelSchema}
-                            value={setting.logcat.level}
-                            filter={(v) => v.number !== log_level.verbose && v.number !== log_level.fatal}
-                            onChange={(e) => setSetting({ ...setting, logcat: { ...setting.logcat, level: e } }, false)}
-                        />
-
-                        <hr />
-
-                        <Card.Title className='mb-2'>Advanced</Card.Title>
-
-                        <Form.Label>UDP Buffer Size ({setting.advancedConfig ? setting.advancedConfig.udpBufferSize : 2048} Bytes)</Form.Label>
-                        <Form.Range value={setting.advancedConfig ? setting.advancedConfig.udpBufferSize : 2048} min={2048} max={65535}
-                            onChange={(v) => {
-                                setSetting(prev => {
-                                    const tmp = { ...prev }
-                                    if (!tmp.advancedConfig) tmp.advancedConfig = create(advanced_configSchema, { udpBufferSize: v.target.valueAsNumber, relayBufferSize: 4096 })
-                                    else tmp.advancedConfig = { ...tmp.advancedConfig, udpBufferSize: v.target.valueAsNumber }
-                                    return tmp
-                                }, false)
+                                return r
+                            })
+                                .filter((e): e is Exclude<Remind, null | undefined> => !!e)
                             }
-                            } />
+                        />
+                    }
 
-                        <Form.Label>Relay Buffer Size ({setting.advancedConfig ? setting.advancedConfig.relayBufferSize : 4096} Bytes)</Form.Label>
-                        <Form.Range value={setting.advancedConfig ? setting.advancedConfig.relayBufferSize : 4096} min={2048} max={65535}
-                            onChange={(v) => setSetting(prev => {
-                                const tmp = { ...prev }
-                                if (!tmp.advancedConfig) tmp.advancedConfig = create(advanced_configSchema, { relayBufferSize: v.target.valueAsNumber, udpBufferSize: 2048 })
-                                else tmp.advancedConfig = { ...tmp.advancedConfig, relayBufferSize: v.target.valueAsNumber }
-                                return tmp
-                            }, false)} />
-                    </fieldset>
+                    <Form.Group as={Row} className={"mb-2"}>
+                        <Form.Label column sm={2} className="nowrap">System Proxy</Form.Label>
+                        <Col sm={10}>
+                            <ToggleButtonGroup type="checkbox" className='d-flex' defaultValue={getSystemProxy(setting)} value={getSystemProxy(setting)} onChange={setSystemProxy}>
+                                <ToggleButton variant='outline-primary' className='w-100' id="system-proxy-tbg-btn-1" value={1}>HTTP</ToggleButton>
+                                <ToggleButton variant='outline-primary' className='w-100' id="system-proxy-tbg-btn-2" value={2}>SOCKS5</ToggleButton>
+                            </ToggleButtonGroup>
+
+                        </Col>
+                    </Form.Group >
+
+                    <hr />
+
+                    <Card.Title className='mb-2'>Logcat</Card.Title>
+                    <SettingCheck label='Save'
+                        checked={setting.logcat.save}
+                        onChange={(x) => setSetting({ ...setting, logcat: { ...setting.logcat, save: x } }, false)} />
+                    <SettingTypeSelect
+                        label='Level'
+                        type={log_levelSchema}
+                        value={setting.logcat.level}
+                        filter={(v) => v.number !== log_level.verbose && v.number !== log_level.fatal}
+                        onChange={(e) => setSetting({ ...setting, logcat: { ...setting.logcat, level: e } }, false)}
+                    />
+                    <SettingCheck label='Ignore Timeout Error'
+                        checked={setting.logcat.ignoreTimeoutError}
+                        onChange={(x) => setSetting({ ...setting, logcat: { ...setting.logcat, ignoreTimeoutError: x } }, false)} />
+                    <SettingCheck label='Ignore DNS Error'
+                        checked={setting.logcat.ignoreDnsError}
+                        onChange={(x) => setSetting({ ...setting, logcat: { ...setting.logcat, ignoreDnsError: x } }, false)} />
+                    <hr />
+
+                    <Card.Title className='mb-2'>Advanced</Card.Title>
+
+                    <Form.Label>UDP Buffer Size ({getAdvanced().udpBufferSize ?? 2048} Bytes)</Form.Label>
+                    <Form.Range value={getAdvanced().udpBufferSize ?? 2048} min={2048} max={65536} step={1024}
+                        onChange={(v) => setAdvanced(prev => { return { ...prev, udpBufferSize: v.target.valueAsNumber } })} />
+
+                    <Form.Label>UDP Ring Buffer Size ({getAdvanced().udpRingbufferSize ?? 250})</Form.Label>
+                    <Form.Range value={getAdvanced().udpRingbufferSize ?? 250} min={100} max={2000} step={10}
+                        onChange={(v) => setAdvanced(prev => { return { ...prev, udpRingbufferSize: v.target.valueAsNumber } })} />
+
+                    <Form.Label>Relay Buffer Size ({getAdvanced().relayBufferSize ?? 4096} Bytes)</Form.Label>
+                    <Form.Range value={getAdvanced().relayBufferSize ?? 4096} min={2048} max={65536} step={1024}
+                        onChange={(v) => setAdvanced(prev => { return { ...prev, relayBufferSize: v.target.valueAsNumber } })} />
 
                 </Card.Body>
 
-
-                {!setting.platform?.androidApp &&
-                    <Card.Footer className='d-flex justify-content-md-end'>
-                        <Button
-                            variant="outline-primary"
-                            onClick={() => {
-                                FetchProtobuf(config_service.method.save, setting)
-                                    .then(async ({ error }) => {
-                                        if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${await error.msg}`)
-                                        else {
-                                            ctx.Info("Save Config Successfully");
-                                            setSetting()
-                                        }
-                                    })
-                            }}
-                        >
-                            Save
-                        </Button>
-                    </Card.Footer>
-                }
+                <Card.Footer className='d-flex justify-content-md-end'>
+                    <Button
+                        variant="outline-primary"
+                        onClick={() => {
+                            FetchProtobuf(config_service.method.save, setting)
+                                .then(async ({ error }) => {
+                                    if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${await error.msg}`)
+                                    else {
+                                        ctx.Info("Save Config Successfully");
+                                        setSetting()
+                                    }
+                                })
+                        }}
+                    >
+                        Save
+                    </Button>
+                </Card.Footer>
             </Card >
         </>
     );

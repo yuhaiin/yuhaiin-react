@@ -211,7 +211,8 @@ const tlsConfig = create(tls_configSchema, {
         -----CERTIFICATE-----`)],
     insecureSkipVerify: false,
     nextProtos: ["h2"],
-    serverNames: ["www.example.com"]
+    serverNames: ["www.example.com"],
+    echConfig: new Uint8Array(8)
 })
 
 

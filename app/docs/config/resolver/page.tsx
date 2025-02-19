@@ -390,7 +390,7 @@ const Server: FC = () => {
     return <>
         <Card>
             <Card.Body>
-                <SettingInputText label="Server" value={data.value} onChange={(v) => mutate(prev => { return { ...prev, server: v } }, false)} />
+                <SettingInputText label="Server" value={data.value} onChange={(v) => mutate(prev => { return { ...prev, value: v } }, false)} />
             </Card.Body>
 
             <Card.Footer className="d-flex justify-content-end">
