@@ -15,7 +15,29 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file statistic/grpc/config.proto.
  */
 export const file_statistic_grpc_config: GenFile = /*@__PURE__*/
-  fileDesc("ChtzdGF0aXN0aWMvZ3JwYy9jb25maWcucHJvdG8SIHl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlIi4KCnRvdGFsX2Zsb3cSEAoIZG93bmxvYWQYASABKAQSDgoGdXBsb2FkGAIgASgEIpcCCgtub3RpZnlfZGF0YRJCCgp0b3RhbF9mbG93GAMgASgLMiwueXVoYWlpbi5wcm90b3Muc3RhdGlzdGljLnNlcnZpY2UudG90YWxfZmxvd0gAEloKFm5vdGlmeV9uZXdfY29ubmVjdGlvbnMYASABKAsyOC55dWhhaWluLnByb3Rvcy5zdGF0aXN0aWMuc2VydmljZS5ub3RpZnlfbmV3X2Nvbm5lY3Rpb25zSAASYAoZbm90aWZ5X3JlbW92ZV9jb25uZWN0aW9ucxgCIAEoCzI7Lnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLm5vdGlmeV9yZW1vdmVfY29ubmVjdGlvbnNIAEIGCgRkYXRhIkwKFm5vdGlmeV9uZXdfY29ubmVjdGlvbnMSMgoLY29ubmVjdGlvbnMYASADKAsyHS55dWhhaWluLnN0YXRpc3RpYy5jb25uZWN0aW9uIigKGW5vdGlmeV9yZW1vdmVfY29ubmVjdGlvbnMSCwoDaWRzGAEgAygEIp4BCg5mYWlsZWRfaGlzdG9yeRIQCghwcm90b2NvbBgBIAEoCRIMCgRob3N0GAIgASgJEg0KBWVycm9yGAMgASgJEg8KB3Byb2Nlc3MYBCABKAkSKAoEdGltZRgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASIgoMZmFpbGVkX2NvdW50GAYgASgEUgxmYWlsZWRfY291bnQijAEKE2ZhaWxlZF9oaXN0b3J5X2xpc3QSQQoHb2JqZWN0cxgBIAMoCzIwLnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLmZhaWxlZF9oaXN0b3J5EjIKFGR1bXBfcHJvY2Vzc19lbmFibGVkGAIgASgIUhRkdW1wX3Byb2Nlc3NfZW5hYmxlZCJ5CgthbGxfaGlzdG9yeRIxCgpjb25uZWN0aW9uGAEgASgLMh0ueXVoYWlpbi5zdGF0aXN0aWMuY29ubmVjdGlvbhINCgVjb3VudBgCIAEoBBIoCgR0aW1lGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKGAQoQYWxsX2hpc3RvcnlfbGlzdBI+CgdvYmplY3RzGAEgAygLMi0ueXVoYWlpbi5wcm90b3Muc3RhdGlzdGljLnNlcnZpY2UuYWxsX2hpc3RvcnkSMgoUZHVtcF9wcm9jZXNzX2VuYWJsZWQYAiABKAhSFGR1bXBfcHJvY2Vzc19lbmFibGVkMqkECgtjb25uZWN0aW9ucxJZCgVjb25ucxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRo4Lnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLm5vdGlmeV9uZXdfY29ubmVjdGlvbnMSYQoKY2xvc2VfY29ubhI7Lnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLm5vdGlmeV9yZW1vdmVfY29ubmVjdGlvbnMaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSTQoFdG90YWwSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaLC55dWhhaWluLnByb3Rvcy5zdGF0aXN0aWMuc2VydmljZS50b3RhbF9mbG93ElEKBm5vdGlmeRIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRotLnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLm5vdGlmeV9kYXRhMAESXwoOZmFpbGVkX2hpc3RvcnkSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaNS55dWhhaWluLnByb3Rvcy5zdGF0aXN0aWMuc2VydmljZS5mYWlsZWRfaGlzdG9yeV9saXN0ElkKC2FsbF9oaXN0b3J5EhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GjIueXVoYWlpbi5wcm90b3Muc3RhdGlzdGljLnNlcnZpY2UuYWxsX2hpc3RvcnlfbGlzdEJDWjlnaXRodWIuY29tL0FzdXRvcnVmYS95dWhhaWluL3BrZy9wcm90b3Mvc3RhdGlzdGljL3NlcnZpY2WSAwXSPgIQA2IIZWRpdGlvbnNw6Ac", [file_google_protobuf_empty, file_statistic_config, file_google_protobuf_timestamp, file_google_protobuf_go_features]);
+  fileDesc("ChtzdGF0aXN0aWMvZ3JwYy9jb25maWcucHJvdG8SIHl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlIisKB2NvdW50ZXISEAoIZG93bmxvYWQYASABKAQSDgoGdXBsb2FkGAIgASgEItgBCgp0b3RhbF9mbG93EhAKCGRvd25sb2FkGAEgASgEEg4KBnVwbG9hZBgCIAEoBBJMCghjb3VudGVycxgDIAMoCzI6Lnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLnRvdGFsX2Zsb3cuQ291bnRlcnNFbnRyeRpaCg1Db3VudGVyc0VudHJ5EgsKA2tleRgBIAEoBBI4CgV2YWx1ZRgCIAEoCzIpLnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLmNvdW50ZXI6AjgBIpcCCgtub3RpZnlfZGF0YRJCCgp0b3RhbF9mbG93GAMgASgLMiwueXVoYWlpbi5wcm90b3Muc3RhdGlzdGljLnNlcnZpY2UudG90YWxfZmxvd0gAEloKFm5vdGlmeV9uZXdfY29ubmVjdGlvbnMYASABKAsyOC55dWhhaWluLnByb3Rvcy5zdGF0aXN0aWMuc2VydmljZS5ub3RpZnlfbmV3X2Nvbm5lY3Rpb25zSAASYAoZbm90aWZ5X3JlbW92ZV9jb25uZWN0aW9ucxgCIAEoCzI7Lnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLm5vdGlmeV9yZW1vdmVfY29ubmVjdGlvbnNIAEIGCgRkYXRhIkwKFm5vdGlmeV9uZXdfY29ubmVjdGlvbnMSMgoLY29ubmVjdGlvbnMYASADKAsyHS55dWhhaWluLnN0YXRpc3RpYy5jb25uZWN0aW9uIigKGW5vdGlmeV9yZW1vdmVfY29ubmVjdGlvbnMSCwoDaWRzGAEgAygEIp4BCg5mYWlsZWRfaGlzdG9yeRIQCghwcm90b2NvbBgBIAEoCRIMCgRob3N0GAIgASgJEg0KBWVycm9yGAMgASgJEg8KB3Byb2Nlc3MYBCABKAkSKAoEdGltZRgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASIgoMZmFpbGVkX2NvdW50GAYgASgEUgxmYWlsZWRfY291bnQijAEKE2ZhaWxlZF9oaXN0b3J5X2xpc3QSQQoHb2JqZWN0cxgBIAMoCzIwLnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLmZhaWxlZF9oaXN0b3J5EjIKFGR1bXBfcHJvY2Vzc19lbmFibGVkGAIgASgIUhRkdW1wX3Byb2Nlc3NfZW5hYmxlZCJ5CgthbGxfaGlzdG9yeRIxCgpjb25uZWN0aW9uGAEgASgLMh0ueXVoYWlpbi5zdGF0aXN0aWMuY29ubmVjdGlvbhINCgVjb3VudBgCIAEoBBIoCgR0aW1lGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKGAQoQYWxsX2hpc3RvcnlfbGlzdBI+CgdvYmplY3RzGAEgAygLMi0ueXVoYWlpbi5wcm90b3Muc3RhdGlzdGljLnNlcnZpY2UuYWxsX2hpc3RvcnkSMgoUZHVtcF9wcm9jZXNzX2VuYWJsZWQYAiABKAhSFGR1bXBfcHJvY2Vzc19lbmFibGVkMqkECgtjb25uZWN0aW9ucxJZCgVjb25ucxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRo4Lnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLm5vdGlmeV9uZXdfY29ubmVjdGlvbnMSYQoKY2xvc2VfY29ubhI7Lnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLm5vdGlmeV9yZW1vdmVfY29ubmVjdGlvbnMaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSTQoFdG90YWwSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaLC55dWhhaWluLnByb3Rvcy5zdGF0aXN0aWMuc2VydmljZS50b3RhbF9mbG93ElEKBm5vdGlmeRIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRotLnl1aGFpaW4ucHJvdG9zLnN0YXRpc3RpYy5zZXJ2aWNlLm5vdGlmeV9kYXRhMAESXwoOZmFpbGVkX2hpc3RvcnkSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaNS55dWhhaWluLnByb3Rvcy5zdGF0aXN0aWMuc2VydmljZS5mYWlsZWRfaGlzdG9yeV9saXN0ElkKC2FsbF9oaXN0b3J5EhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GjIueXVoYWlpbi5wcm90b3Muc3RhdGlzdGljLnNlcnZpY2UuYWxsX2hpc3RvcnlfbGlzdEJDWjlnaXRodWIuY29tL0FzdXRvcnVmYS95dWhhaWluL3BrZy9wcm90b3Mvc3RhdGlzdGljL3NlcnZpY2WSAwXSPgIQA2IIZWRpdGlvbnNw6Ac", [file_google_protobuf_empty, file_statistic_config, file_google_protobuf_timestamp, file_google_protobuf_go_features]);
+
+/**
+ * @generated from message yuhaiin.protos.statistic.service.counter
+ */
+export type counter = Message<"yuhaiin.protos.statistic.service.counter"> & {
+  /**
+   * @generated from field: uint64 download = 1;
+   */
+  download: bigint;
+
+  /**
+   * @generated from field: uint64 upload = 2;
+   */
+  upload: bigint;
+};
+
+/**
+ * Describes the message yuhaiin.protos.statistic.service.counter.
+ * Use `create(counterSchema)` to create a new message.
+ */
+export const counterSchema: GenMessage<counter> = /*@__PURE__*/
+  messageDesc(file_statistic_grpc_config, 0);
 
 /**
  * @generated from message yuhaiin.protos.statistic.service.total_flow
@@ -30,6 +52,11 @@ export type total_flow = Message<"yuhaiin.protos.statistic.service.total_flow"> 
    * @generated from field: uint64 upload = 2;
    */
   upload: bigint;
+
+  /**
+   * @generated from field: map<uint64, yuhaiin.protos.statistic.service.counter> counters = 3;
+   */
+  counters: { [key: string]: counter };
 };
 
 /**
@@ -37,7 +64,7 @@ export type total_flow = Message<"yuhaiin.protos.statistic.service.total_flow"> 
  * Use `create(total_flowSchema)` to create a new message.
  */
 export const total_flowSchema: GenMessage<total_flow> = /*@__PURE__*/
-  messageDesc(file_statistic_grpc_config, 0);
+  messageDesc(file_statistic_grpc_config, 1);
 
 /**
  * @generated from message yuhaiin.protos.statistic.service.notify_data
@@ -72,7 +99,7 @@ export type notify_data = Message<"yuhaiin.protos.statistic.service.notify_data"
  * Use `create(notify_dataSchema)` to create a new message.
  */
 export const notify_dataSchema: GenMessage<notify_data> = /*@__PURE__*/
-  messageDesc(file_statistic_grpc_config, 1);
+  messageDesc(file_statistic_grpc_config, 2);
 
 /**
  * @generated from message yuhaiin.protos.statistic.service.notify_new_connections
@@ -89,7 +116,7 @@ export type notify_new_connections = Message<"yuhaiin.protos.statistic.service.n
  * Use `create(notify_new_connectionsSchema)` to create a new message.
  */
 export const notify_new_connectionsSchema: GenMessage<notify_new_connections> = /*@__PURE__*/
-  messageDesc(file_statistic_grpc_config, 2);
+  messageDesc(file_statistic_grpc_config, 3);
 
 /**
  * @generated from message yuhaiin.protos.statistic.service.notify_remove_connections
@@ -106,7 +133,7 @@ export type notify_remove_connections = Message<"yuhaiin.protos.statistic.servic
  * Use `create(notify_remove_connectionsSchema)` to create a new message.
  */
 export const notify_remove_connectionsSchema: GenMessage<notify_remove_connections> = /*@__PURE__*/
-  messageDesc(file_statistic_grpc_config, 3);
+  messageDesc(file_statistic_grpc_config, 4);
 
 /**
  * @generated from message yuhaiin.protos.statistic.service.failed_history
@@ -148,7 +175,7 @@ export type failed_history = Message<"yuhaiin.protos.statistic.service.failed_hi
  * Use `create(failed_historySchema)` to create a new message.
  */
 export const failed_historySchema: GenMessage<failed_history> = /*@__PURE__*/
-  messageDesc(file_statistic_grpc_config, 4);
+  messageDesc(file_statistic_grpc_config, 5);
 
 /**
  * @generated from message yuhaiin.protos.statistic.service.failed_history_list
@@ -170,7 +197,7 @@ export type failed_history_list = Message<"yuhaiin.protos.statistic.service.fail
  * Use `create(failed_history_listSchema)` to create a new message.
  */
 export const failed_history_listSchema: GenMessage<failed_history_list> = /*@__PURE__*/
-  messageDesc(file_statistic_grpc_config, 5);
+  messageDesc(file_statistic_grpc_config, 6);
 
 /**
  * @generated from message yuhaiin.protos.statistic.service.all_history
@@ -197,7 +224,7 @@ export type all_history = Message<"yuhaiin.protos.statistic.service.all_history"
  * Use `create(all_historySchema)` to create a new message.
  */
 export const all_historySchema: GenMessage<all_history> = /*@__PURE__*/
-  messageDesc(file_statistic_grpc_config, 6);
+  messageDesc(file_statistic_grpc_config, 7);
 
 /**
  * @generated from message yuhaiin.protos.statistic.service.all_history_list
@@ -219,7 +246,7 @@ export type all_history_list = Message<"yuhaiin.protos.statistic.service.all_his
  * Use `create(all_history_listSchema)` to create a new message.
  */
 export const all_history_listSchema: GenMessage<all_history_list> = /*@__PURE__*/
-  messageDesc(file_statistic_grpc_config, 7);
+  messageDesc(file_statistic_grpc_config, 8);
 
 /**
  * @generated from service yuhaiin.protos.statistic.service.connections
