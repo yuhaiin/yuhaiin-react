@@ -59,6 +59,7 @@ jobs:
           external_repository: yuhaiin/yuhaiin.github.io
           publish_branch: main # default: gh-pages
           enable_jekyll: false
+          destination_dir: yuhaiin-ui
 
       - name: upload_static
         uses: actions/upload-artifact@v4
