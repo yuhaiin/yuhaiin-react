@@ -35,7 +35,7 @@ jobs:
 
       - run: |
           cat <<EOF > out/go.mod
-          module github.com/yuhaiin/yuhaiin.github.io
+          module github.com/yuhaiin/yuhaiin.github.io/yuhaiinui
 
           go 1.22.0
           EOF
@@ -59,6 +59,7 @@ jobs:
           external_repository: yuhaiin/yuhaiin.github.io
           publish_branch: main # default: gh-pages
           enable_jekyll: false
+          destination_dir: yuhaiinui
 
       - name: upload_static
         uses: actions/upload-artifact@v4
