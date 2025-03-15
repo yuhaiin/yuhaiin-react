@@ -46,16 +46,27 @@ jobs:
 
           import "embed"
 
-          //go:embed *
+          //go:embed 404 _next docs 404.html index.html index.txt
           var Content embed.FS
           EOF
+
+      - run: |
+          git clone https://github.com/yuhaiin/yuhaiin.github.io.git publish
+          rm -rf publish/.git
+          rm -rf publish/_next
+          rm -rf publish/docs
+          rm -rf publish/404
+          rm -rf publish/404.html
+          rm -rf publish/index.html
+          rm -rf publish/index.txt
+          cp -rf out/* publish/
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         if: github.event_name != 'pull_request'
         with:
           personal_token: ${{ secrets.PERSONAL_TOKEN }}
-          publish_dir: ./out
+          publish_dir: ./publish
           external_repository: yuhaiin/yuhaiin.github.io
           publish_branch: main # default: gh-pages
           enable_jekyll: false
