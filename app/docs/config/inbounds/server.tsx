@@ -3,7 +3,9 @@ import { FC, useState } from 'react';
 import { Button, Card, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import { join as shlexJoin, split as shlexSplit } from 'shlex';
 import { SettingCheck, SettingTypeSelect } from "../../common/switch";
+import { TlsConfigv2 } from '../../node/tls';
 import { certificate, certificateSchema, ech_config, ech_configSchema, http, mixed, quic, reality, redir, reverse_http, reverse_tcp, routeSchema, socks5, tls, tls_auto, tls_config, tls_configSchema, tproxy, tun, tun_endpoint_driverSchema } from '../../pbes/config/listener/listener_pb';
+import { tls_configSchema as tls_config$1 } from '../../pbes/node/protocol/protocol_pb';
 import { NewItemList, SettingInputText, SettingInputTextarea } from '../components';
 
 export const HTTPComponents = (props: { http: http, onChange: (x: http) => void }) => {
@@ -19,6 +21,7 @@ export const ReverseHTTPComponents = (props: { reverse_http: reverse_http, onCha
     return (
         <>
             <SettingInputText label='Url' value={props.reverse_http.url} onChange={(e) => props.onChange({ ...props.reverse_http, url: e })} />
+            <TlsConfigv2 value={props.reverse_http.tls ?? create(tls_config$1, {})} onChange={(x) => { props.onChange({ ...props.reverse_http, tls: x }) }} />
         </>
     )
 }
