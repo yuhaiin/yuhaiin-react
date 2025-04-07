@@ -5,7 +5,7 @@
 import type { GenEnum, GenFile, GenMessage } from "@bufbuild/protobuf/codegenv1";
 import { enumDesc, fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv1";
 import { file_google_protobuf_go_features } from "../../google/protobuf/go_features_pb";
-import type { tls_config as tls_config$1 } from "../../node/protocol/protocol_pb";
+import type { tls_config, tls_server_config } from "../../node/protocol/protocol_pb";
 import { file_node_protocol_protocol } from "../../node/protocol/protocol_pb";
 import type { Message } from "@bufbuild/protobuf";
 
@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file config/listener/listener.proto.
  */
 export const file_config_listener_listener: GenFile = /*@__PURE__*/
-  fileDesc("Ch5jb25maWcvbGlzdGVuZXIvbGlzdGVuZXIucHJvdG8SEHl1aGFpaW4ubGlzdGVuZXIiowIKDmluYm91bmRfY29uZmlnEh4KCmhpamFja19kbnMYAiABKAhSCmhpamFja19kbnMSLAoRaGlqYWNrX2Ruc19mYWtlaXAYAyABKAhSEWhpamFja19kbnNfZmFrZWlwEkAKCGluYm91bmRzGAEgAygLMi4ueXVoYWlpbi5saXN0ZW5lci5pbmJvdW5kX2NvbmZpZy5JbmJvdW5kc0VudHJ5EiYKBXNuaWZmGAQgASgLMhcueXVoYWlpbi5saXN0ZW5lci5zbmlmZhpKCg1JbmJvdW5kc0VudHJ5EgsKA2tleRgBIAEoCRIoCgV2YWx1ZRgCIAEoCzIZLnl1aGFpaW4ubGlzdGVuZXIuaW5ib3VuZDoCOAFKBAgFEAZSB3NlcnZlcnMiigYKB2luYm91bmQSDAoEbmFtZRgNIAEoCRIPCgdlbmFibGVkGA4gASgIEigKBWVtcHR5GBUgASgLMhcueXVoYWlpbi5saXN0ZW5lci5lbXB0eUgAEioKBnRjcHVkcBgPIAEoCzIYLnl1aGFpaW4ubGlzdGVuZXIudGNwdWRwSAASJgoEcXVpYxgQIAEoCzIWLnl1aGFpaW4ubGlzdGVuZXIucXVpY0gAEi4KCXRyYW5zcG9ydBgCIAMoCzIbLnl1aGFpaW4ubGlzdGVuZXIudHJhbnNwb3J0EiYKBGh0dHAYAyABKAsyFi55dWhhaWluLmxpc3RlbmVyLmh0dHBIARIqCgZzb2NrczUYBCABKAsyGC55dWhhaWluLmxpc3RlbmVyLnNvY2tzNUgBEjAKCXl1dWJpbnN5YRgHIAEoCzIbLnl1aGFpaW4ubGlzdGVuZXIueXV1Ymluc3lhSAESLQoDbWl4GAggASgLMhcueXVoYWlpbi5saXN0ZW5lci5taXhlZEgBUgVtaXhlZBIsCgdzb2NrczRhGAkgASgLMhkueXVoYWlpbi5saXN0ZW5lci5zb2NrczRhSAESKgoGdHByb3h5GBQgASgLMhgueXVoYWlpbi5saXN0ZW5lci50cHJveHlIARIoCgVyZWRpchgSIAEoCzIXLnl1aGFpaW4ubGlzdGVuZXIucmVkaXJIARIkCgN0dW4YEyABKAsyFS55dWhhaWluLmxpc3RlbmVyLnR1bkgBEkQKDHJldmVyc2VfaHR0cBgWIAEoCzIeLnl1aGFpaW4ubGlzdGVuZXIucmV2ZXJzZV9odHRwSAFSDHJldmVyc2VfaHR0cBJBCgtyZXZlcnNlX3RjcBgXIAEoCzIdLnl1aGFpaW4ubGlzdGVuZXIucmV2ZXJzZV90Y3BIAVILcmV2ZXJzZV90Y3ASJwoEbm9uZRgYIAEoCzIXLnl1aGFpaW4ubGlzdGVuZXIuZW1wdHlIAUIJCgduZXR3b3JrQgoKCHByb3RvY29sSgQIERASUgRJUHY2IvwCCgl0cmFuc3BvcnQSKgoGbm9ybWFsGAwgASgLMhgueXVoYWlpbi5saXN0ZW5lci5ub3JtYWxIABIkCgN0bHMYASABKAsyFS55dWhhaWluLmxpc3RlbmVyLnRsc0gAEiQKA211eBgCIAEoCzIVLnl1aGFpaW4ubGlzdGVuZXIubXV4SAASKAoFaHR0cDIYBSABKAsyFy55dWhhaWluLmxpc3RlbmVyLmh0dHAySAASMAoJd2Vic29ja2V0GAYgASgLMhsueXVoYWlpbi5saXN0ZW5lci53ZWJzb2NrZXRIABImCgRncnBjGAsgASgLMhYueXVoYWlpbi5saXN0ZW5lci5ncnBjSAASLAoHcmVhbGl0eRgKIAEoCzIZLnl1aGFpaW4ubGlzdGVuZXIucmVhbGl0eUgAEjgKCHRsc19hdXRvGA0gASgLMhoueXVoYWlpbi5saXN0ZW5lci50bHNfYXV0b0gAUgh0bHNfYXV0b0ILCgl0cmFuc3BvcnQiBwoFZW1wdHkiBQoDbXV4IkoKBnRjcHVkcBIMCgRob3N0GAEgASgJEjIKB2NvbnRyb2wYAiABKA4yIS55dWhhaWluLmxpc3RlbmVyLnRjcF91ZHBfY29udHJvbCI/CgRxdWljEgwKBGhvc3QYASABKAkSKQoDdGxzGAMgASgLMhwueXVoYWlpbi5saXN0ZW5lci50bHNfY29uZmlnIjYKBGh0dHASEAoIdXNlcm5hbWUYAyABKAkSEAoIcGFzc3dvcmQYBCABKAlKBAgBEAJSBGhvc3QiRQoGc29ja3M1EhAKCHVzZXJuYW1lGAMgASgJEhAKCHBhc3N3b3JkGAQgASgJEgsKA3VkcBgFIAEoCEoECAEQAlIEaG9zdCInCgdzb2NrczRhEhAKCHVzZXJuYW1lGAIgASgJSgQIARACUgRob3N0IjcKBW1peGVkEhAKCHVzZXJuYW1lGAMgASgJEhAKCHBhc3N3b3JkGAQgASgJSgQIARACUgRob3N0IhUKBXJlZGlyEgwKBGhvc3QYASABKAkiYAoGdHByb3h5EgwKBGhvc3QYASABKAkSJAoNZG5zX2hpamFja2luZxgCIAEoCFINZG5zX2hpamFja2luZxIiCgxmb3JjZV9mYWtlaXAYAyABKAhSDGZvcmNlX2Zha2VpcCKVAwoDdHVuEgwKBG5hbWUYASABKAkSCwoDbXR1GAIgASgFEiIKDGZvcmNlX2Zha2VpcBgJIAEoCFIMZm9yY2VfZmFrZWlwEiYKDnNraXBfbXVsdGljYXN0GAYgASgIUg5za2lwX211bHRpY2FzdBI1CgZkcml2ZXIYByABKA4yJS55dWhhaWluLmxpc3RlbmVyLnR1bi5lbmRwb2ludF9kcml2ZXISDgoGcG9ydGFsGAggASgJEhwKCXBvcnRhbF92NhgLIAEoCVIJcG9ydGFsX3Y2EiYKBXJvdXRlGAogASgLMhcueXVoYWlpbi5saXN0ZW5lci5yb3V0ZRIYCgdwb3N0X3VwGAwgAygJUgdwb3N0X3VwEhwKCXBvc3RfZG93bhgNIAMoCVIJcG9zdF9kb3duIj4KD2VuZHBvaW50X2RyaXZlchILCgdmZGJhc2VkEAASCwoHY2hhbm5lbBABEhEKDXN5c3RlbV9ndmlzb3IQAkoECAMQBEoECAQQBVIHZ2F0ZXdheVINZG5zX2hpamFja2luZyIpCgVyb3V0ZRIOCgZyb3V0ZXMYASADKAkSEAoIZXhjbHVkZXMYAiADKAki8wEKCXl1dWJpbnN5YRIQCghwYXNzd29yZBgCIAEoCRIgCgt0Y3BfZW5jcnlwdBgMIAEoCFILdGNwX2VuY3J5cHQSIAoLdWRwX2VuY3J5cHQYDSABKAhSC3VkcF9lbmNyeXB0SgQIARACSgQIAxAESgQIBBAFSgQIBRAGSgQIBhAHSgQIBxAISgQICBAJSgQICRAKSgQIChALSgQICxAMUgRob3N0UhVmb3JjZV9kaXNhYmxlX2VuY3J5cHRSBm5vcm1hbFIDdGxzUgRxdWljUgl3ZWJzb2NrZXRSBGdycGNSBWh0dHAyUgdyZWFsaXR5UgNtdXgiCAoGbm9ybWFsIhYKCXdlYnNvY2tldEoECAEQAlIDdGxzIjAKA3RscxIpCgN0bHMYASABKAsyHC55dWhhaWluLmxpc3RlbmVyLnRsc19jb25maWciEQoEZ3JwY0oECAEQAlIDdGxzIhIKBWh0dHAySgQIARACUgN0bHMipgEKB3JlYWxpdHkSGgoIc2hvcnRfaWQYASADKAlSCHNob3J0X2lkEiAKC3NlcnZlcl9uYW1lGAIgAygJUgtzZXJ2ZXJfbmFtZRIMCgRkZXN0GAMgASgJEiAKC3ByaXZhdGVfa2V5GAQgASgJUgtwcml2YXRlX2tleRIeCgpwdWJsaWNfa2V5GAYgASgJUgpwdWJsaWNfa2V5Eg0KBWRlYnVnGAUgASgIIrMCCgp0bHNfY29uZmlnEjMKDGNlcnRpZmljYXRlcxgBIAMoCzIdLnl1aGFpaW4ubGlzdGVuZXIuY2VydGlmaWNhdGUSIAoLbmV4dF9wcm90b3MYAyADKAlSC25leHRfcHJvdG9zEnEKF3NlcnZlcl9uYW1lX2NlcnRpZmljYXRlGAQgAygLMjcueXVoYWlpbi5saXN0ZW5lci50bHNfY29uZmlnLlNlcnZlck5hbWVDZXJ0aWZpY2F0ZUVudHJ5UhdzZXJ2ZXJfbmFtZV9jZXJ0aWZpY2F0ZRpbChpTZXJ2ZXJOYW1lQ2VydGlmaWNhdGVFbnRyeRILCgNrZXkYASABKAkSLAoFdmFsdWUYAiABKAsyHS55dWhhaWluLmxpc3RlbmVyLmNlcnRpZmljYXRlOgI4ASKeAQoIdGxzX2F1dG8SEwoLc2VydmVybmFtZXMYASADKAkSIAoLbmV4dF9wcm90b3MYAiADKAlSC25leHRfcHJvdG9zEhgKB2NhX2NlcnQYAyABKAxSB2NhX2NlcnQSFgoGY2Ffa2V5GAQgASgMUgZjYV9rZXkSKQoDZWNoGAUgASgLMhwueXVoYWlpbi5saXN0ZW5lci5lY2hfY29uZmlnImAKCmVjaF9jb25maWcSDgoGZW5hYmxlGAEgASgIEg4KBmNvbmZpZxgCIAEoDBIgCgtwcml2YXRlX2tleRgDIAEoDFILcHJpdmF0ZV9rZXkSEAoIT3V0ZXJTTkkYBCABKAkidgoLY2VydGlmaWNhdGUSDAoEY2VydBgBIAEoDBILCgNrZXkYAiABKAwSJgoOY2VydF9maWxlX3BhdGgYAyABKAlSDmNlcnRfZmlsZV9wYXRoEiQKDWtleV9maWxlX3BhdGgYBCABKAlSDWtleV9maWxlX3BhdGgiGAoFc25pZmYSDwoHZW5hYmxlZBgBIAEoCCJGCgxyZXZlcnNlX2h0dHASCwoDdXJsGAEgASgJEikKA3RscxgCIAEoCzIcLnl1aGFpaW4ucHJvdG9jb2wudGxzX2NvbmZpZyIbCgtyZXZlcnNlX3RjcBIMCgRob3N0GAEgASgJKkwKD3RjcF91ZHBfY29udHJvbBIXChN0Y3BfdWRwX2NvbnRyb2xfYWxsEAASDwoLZGlzYWJsZV90Y3AQARIPCgtkaXNhYmxlX3VkcBACQkFaN2dpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9jb25maWcvbGlzdGVuZXKSAwXSPgIQA2IIZWRpdGlvbnNw6Ac", [file_google_protobuf_go_features, file_node_protocol_protocol]);
+  fileDesc("Ch5jb25maWcvbGlzdGVuZXIvbGlzdGVuZXIucHJvdG8SEHl1aGFpaW4ubGlzdGVuZXIiowIKDmluYm91bmRfY29uZmlnEh4KCmhpamFja19kbnMYAiABKAhSCmhpamFja19kbnMSLAoRaGlqYWNrX2Ruc19mYWtlaXAYAyABKAhSEWhpamFja19kbnNfZmFrZWlwEkAKCGluYm91bmRzGAEgAygLMi4ueXVoYWlpbi5saXN0ZW5lci5pbmJvdW5kX2NvbmZpZy5JbmJvdW5kc0VudHJ5EiYKBXNuaWZmGAQgASgLMhcueXVoYWlpbi5saXN0ZW5lci5zbmlmZhpKCg1JbmJvdW5kc0VudHJ5EgsKA2tleRgBIAEoCRIoCgV2YWx1ZRgCIAEoCzIZLnl1aGFpaW4ubGlzdGVuZXIuaW5ib3VuZDoCOAFKBAgFEAZSB3NlcnZlcnMiigYKB2luYm91bmQSDAoEbmFtZRgNIAEoCRIPCgdlbmFibGVkGA4gASgIEigKBWVtcHR5GBUgASgLMhcueXVoYWlpbi5saXN0ZW5lci5lbXB0eUgAEioKBnRjcHVkcBgPIAEoCzIYLnl1aGFpaW4ubGlzdGVuZXIudGNwdWRwSAASJgoEcXVpYxgQIAEoCzIWLnl1aGFpaW4ubGlzdGVuZXIucXVpY0gAEi4KCXRyYW5zcG9ydBgCIAMoCzIbLnl1aGFpaW4ubGlzdGVuZXIudHJhbnNwb3J0EiYKBGh0dHAYAyABKAsyFi55dWhhaWluLmxpc3RlbmVyLmh0dHBIARIqCgZzb2NrczUYBCABKAsyGC55dWhhaWluLmxpc3RlbmVyLnNvY2tzNUgBEjAKCXl1dWJpbnN5YRgHIAEoCzIbLnl1aGFpaW4ubGlzdGVuZXIueXV1Ymluc3lhSAESLQoDbWl4GAggASgLMhcueXVoYWlpbi5saXN0ZW5lci5taXhlZEgBUgVtaXhlZBIsCgdzb2NrczRhGAkgASgLMhkueXVoYWlpbi5saXN0ZW5lci5zb2NrczRhSAESKgoGdHByb3h5GBQgASgLMhgueXVoYWlpbi5saXN0ZW5lci50cHJveHlIARIoCgVyZWRpchgSIAEoCzIXLnl1aGFpaW4ubGlzdGVuZXIucmVkaXJIARIkCgN0dW4YEyABKAsyFS55dWhhaWluLmxpc3RlbmVyLnR1bkgBEkQKDHJldmVyc2VfaHR0cBgWIAEoCzIeLnl1aGFpaW4ubGlzdGVuZXIucmV2ZXJzZV9odHRwSAFSDHJldmVyc2VfaHR0cBJBCgtyZXZlcnNlX3RjcBgXIAEoCzIdLnl1aGFpaW4ubGlzdGVuZXIucmV2ZXJzZV90Y3BIAVILcmV2ZXJzZV90Y3ASJwoEbm9uZRgYIAEoCzIXLnl1aGFpaW4ubGlzdGVuZXIuZW1wdHlIAUIJCgduZXR3b3JrQgoKCHByb3RvY29sSgQIERASUgRJUHY2IvwCCgl0cmFuc3BvcnQSKgoGbm9ybWFsGAwgASgLMhgueXVoYWlpbi5saXN0ZW5lci5ub3JtYWxIABIkCgN0bHMYASABKAsyFS55dWhhaWluLmxpc3RlbmVyLnRsc0gAEiQKA211eBgCIAEoCzIVLnl1aGFpaW4ubGlzdGVuZXIubXV4SAASKAoFaHR0cDIYBSABKAsyFy55dWhhaWluLmxpc3RlbmVyLmh0dHAySAASMAoJd2Vic29ja2V0GAYgASgLMhsueXVoYWlpbi5saXN0ZW5lci53ZWJzb2NrZXRIABImCgRncnBjGAsgASgLMhYueXVoYWlpbi5saXN0ZW5lci5ncnBjSAASLAoHcmVhbGl0eRgKIAEoCzIZLnl1aGFpaW4ubGlzdGVuZXIucmVhbGl0eUgAEjgKCHRsc19hdXRvGA0gASgLMhoueXVoYWlpbi5saXN0ZW5lci50bHNfYXV0b0gAUgh0bHNfYXV0b0ILCgl0cmFuc3BvcnQiBwoFZW1wdHkiBQoDbXV4IkoKBnRjcHVkcBIMCgRob3N0GAEgASgJEjIKB2NvbnRyb2wYAiABKA4yIS55dWhhaWluLmxpc3RlbmVyLnRjcF91ZHBfY29udHJvbCJGCgRxdWljEgwKBGhvc3QYASABKAkSMAoDdGxzGAMgASgLMiMueXVoYWlpbi5wcm90b2NvbC50bHNfc2VydmVyX2NvbmZpZyI2CgRodHRwEhAKCHVzZXJuYW1lGAMgASgJEhAKCHBhc3N3b3JkGAQgASgJSgQIARACUgRob3N0IkUKBnNvY2tzNRIQCgh1c2VybmFtZRgDIAEoCRIQCghwYXNzd29yZBgEIAEoCRILCgN1ZHAYBSABKAhKBAgBEAJSBGhvc3QiJwoHc29ja3M0YRIQCgh1c2VybmFtZRgCIAEoCUoECAEQAlIEaG9zdCI3CgVtaXhlZBIQCgh1c2VybmFtZRgDIAEoCRIQCghwYXNzd29yZBgEIAEoCUoECAEQAlIEaG9zdCIVCgVyZWRpchIMCgRob3N0GAEgASgJImAKBnRwcm94eRIMCgRob3N0GAEgASgJEiQKDWRuc19oaWphY2tpbmcYAiABKAhSDWRuc19oaWphY2tpbmcSIgoMZm9yY2VfZmFrZWlwGAMgASgIUgxmb3JjZV9mYWtlaXAilQMKA3R1bhIMCgRuYW1lGAEgASgJEgsKA210dRgCIAEoBRIiCgxmb3JjZV9mYWtlaXAYCSABKAhSDGZvcmNlX2Zha2VpcBImCg5za2lwX211bHRpY2FzdBgGIAEoCFIOc2tpcF9tdWx0aWNhc3QSNQoGZHJpdmVyGAcgASgOMiUueXVoYWlpbi5saXN0ZW5lci50dW4uZW5kcG9pbnRfZHJpdmVyEg4KBnBvcnRhbBgIIAEoCRIcCglwb3J0YWxfdjYYCyABKAlSCXBvcnRhbF92NhImCgVyb3V0ZRgKIAEoCzIXLnl1aGFpaW4ubGlzdGVuZXIucm91dGUSGAoHcG9zdF91cBgMIAMoCVIHcG9zdF91cBIcCglwb3N0X2Rvd24YDSADKAlSCXBvc3RfZG93biI+Cg9lbmRwb2ludF9kcml2ZXISCwoHZmRiYXNlZBAAEgsKB2NoYW5uZWwQARIRCg1zeXN0ZW1fZ3Zpc29yEAJKBAgDEARKBAgEEAVSB2dhdGV3YXlSDWRuc19oaWphY2tpbmciKQoFcm91dGUSDgoGcm91dGVzGAEgAygJEhAKCGV4Y2x1ZGVzGAIgAygJIvMBCgl5dXViaW5zeWESEAoIcGFzc3dvcmQYAiABKAkSIAoLdGNwX2VuY3J5cHQYDCABKAhSC3RjcF9lbmNyeXB0EiAKC3VkcF9lbmNyeXB0GA0gASgIUgt1ZHBfZW5jcnlwdEoECAEQAkoECAMQBEoECAQQBUoECAUQBkoECAYQB0oECAcQCEoECAgQCUoECAkQCkoECAoQC0oECAsQDFIEaG9zdFIVZm9yY2VfZGlzYWJsZV9lbmNyeXB0UgZub3JtYWxSA3Rsc1IEcXVpY1IJd2Vic29ja2V0UgRncnBjUgVodHRwMlIHcmVhbGl0eVIDbXV4IggKBm5vcm1hbCIWCgl3ZWJzb2NrZXRKBAgBEAJSA3RscyI3CgN0bHMSMAoDdGxzGAEgASgLMiMueXVoYWlpbi5wcm90b2NvbC50bHNfc2VydmVyX2NvbmZpZyIRCgRncnBjSgQIARACUgN0bHMiEgoFaHR0cDJKBAgBEAJSA3RscyKmAQoHcmVhbGl0eRIaCghzaG9ydF9pZBgBIAMoCVIIc2hvcnRfaWQSIAoLc2VydmVyX25hbWUYAiADKAlSC3NlcnZlcl9uYW1lEgwKBGRlc3QYAyABKAkSIAoLcHJpdmF0ZV9rZXkYBCABKAlSC3ByaXZhdGVfa2V5Eh4KCnB1YmxpY19rZXkYBiABKAlSCnB1YmxpY19rZXkSDQoFZGVidWcYBSABKAgingEKCHRsc19hdXRvEhMKC3NlcnZlcm5hbWVzGAEgAygJEiAKC25leHRfcHJvdG9zGAIgAygJUgtuZXh0X3Byb3RvcxIYCgdjYV9jZXJ0GAMgASgMUgdjYV9jZXJ0EhYKBmNhX2tleRgEIAEoDFIGY2Ffa2V5EikKA2VjaBgFIAEoCzIcLnl1aGFpaW4ubGlzdGVuZXIuZWNoX2NvbmZpZyJgCgplY2hfY29uZmlnEg4KBmVuYWJsZRgBIAEoCBIOCgZjb25maWcYAiABKAwSIAoLcHJpdmF0ZV9rZXkYAyABKAxSC3ByaXZhdGVfa2V5EhAKCE91dGVyU05JGAQgASgJIhgKBXNuaWZmEg8KB2VuYWJsZWQYASABKAgiRgoMcmV2ZXJzZV9odHRwEgsKA3VybBgBIAEoCRIpCgN0bHMYAiABKAsyHC55dWhhaWluLnByb3RvY29sLnRsc19jb25maWciGwoLcmV2ZXJzZV90Y3ASDAoEaG9zdBgBIAEoCSpMCg90Y3BfdWRwX2NvbnRyb2wSFwoTdGNwX3VkcF9jb250cm9sX2FsbBAAEg8KC2Rpc2FibGVfdGNwEAESDwoLZGlzYWJsZV91ZHAQAkJBWjdnaXRodWIuY29tL0FzdXRvcnVmYS95dWhhaWluL3BrZy9wcm90b3MvY29uZmlnL2xpc3RlbmVykgMF0j4CEANiCGVkaXRpb25zcOgH", [file_google_protobuf_go_features, file_node_protocol_protocol]);
 
 /**
  * @generated from message yuhaiin.listener.inbound_config
@@ -291,9 +291,9 @@ export type quic = Message<"yuhaiin.listener.quic"> & {
   host: string;
 
   /**
-   * @generated from field: yuhaiin.listener.tls_config tls = 3;
+   * @generated from field: yuhaiin.protocol.tls_server_config tls = 3;
    */
-  tls?: tls_config;
+  tls?: tls_server_config;
 };
 
 /**
@@ -606,9 +606,9 @@ export const websocketSchema: GenMessage<websocket> = /*@__PURE__*/
  */
 export type tls = Message<"yuhaiin.listener.tls"> & {
   /**
-   * @generated from field: yuhaiin.listener.tls_config tls = 1;
+   * @generated from field: yuhaiin.protocol.tls_server_config tls = 1;
    */
-  tls?: tls_config;
+  tls?: tls_server_config;
 };
 
 /**
@@ -687,33 +687,6 @@ export const realitySchema: GenMessage<reality> = /*@__PURE__*/
   messageDesc(file_config_listener_listener, 21);
 
 /**
- * @generated from message yuhaiin.listener.tls_config
- */
-export type tls_config = Message<"yuhaiin.listener.tls_config"> & {
-  /**
-   * @generated from field: repeated yuhaiin.listener.certificate certificates = 1;
-   */
-  certificates: certificate[];
-
-  /**
-   * @generated from field: repeated string next_protos = 3 [json_name = "next_protos"];
-   */
-  nextProtos: string[];
-
-  /**
-   * @generated from field: map<string, yuhaiin.listener.certificate> server_name_certificate = 4 [json_name = "server_name_certificate"];
-   */
-  serverNameCertificate: { [key: string]: certificate };
-};
-
-/**
- * Describes the message yuhaiin.listener.tls_config.
- * Use `create(tls_configSchema)` to create a new message.
- */
-export const tls_configSchema: GenMessage<tls_config> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 22);
-
-/**
  * @generated from message yuhaiin.listener.tls_auto
  */
 export type tls_auto = Message<"yuhaiin.listener.tls_auto"> & {
@@ -751,7 +724,7 @@ export type tls_auto = Message<"yuhaiin.listener.tls_auto"> & {
  * Use `create(tls_autoSchema)` to create a new message.
  */
 export const tls_autoSchema: GenMessage<tls_auto> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 23);
+  messageDesc(file_config_listener_listener, 22);
 
 /**
  * @generated from message yuhaiin.listener.ech_config
@@ -783,39 +756,7 @@ export type ech_config = Message<"yuhaiin.listener.ech_config"> & {
  * Use `create(ech_configSchema)` to create a new message.
  */
 export const ech_configSchema: GenMessage<ech_config> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 24);
-
-/**
- * @generated from message yuhaiin.listener.certificate
- */
-export type certificate = Message<"yuhaiin.listener.certificate"> & {
-  /**
-   * @generated from field: bytes cert = 1;
-   */
-  cert: Uint8Array;
-
-  /**
-   * @generated from field: bytes key = 2;
-   */
-  key: Uint8Array;
-
-  /**
-   * @generated from field: string cert_file_path = 3 [json_name = "cert_file_path"];
-   */
-  certFilePath: string;
-
-  /**
-   * @generated from field: string key_file_path = 4 [json_name = "key_file_path"];
-   */
-  keyFilePath: string;
-};
-
-/**
- * Describes the message yuhaiin.listener.certificate.
- * Use `create(certificateSchema)` to create a new message.
- */
-export const certificateSchema: GenMessage<certificate> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 25);
+  messageDesc(file_config_listener_listener, 23);
 
 /**
  * @generated from message yuhaiin.listener.sniff
@@ -832,7 +773,7 @@ export type sniff = Message<"yuhaiin.listener.sniff"> & {
  * Use `create(sniffSchema)` to create a new message.
  */
 export const sniffSchema: GenMessage<sniff> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 26);
+  messageDesc(file_config_listener_listener, 24);
 
 /**
  * @generated from message yuhaiin.listener.reverse_http
@@ -846,7 +787,7 @@ export type reverse_http = Message<"yuhaiin.listener.reverse_http"> & {
   /**
    * @generated from field: yuhaiin.protocol.tls_config tls = 2;
    */
-  tls?: tls_config$1;
+  tls?: tls_config;
 };
 
 /**
@@ -854,7 +795,7 @@ export type reverse_http = Message<"yuhaiin.listener.reverse_http"> & {
  * Use `create(reverse_httpSchema)` to create a new message.
  */
 export const reverse_httpSchema: GenMessage<reverse_http> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 27);
+  messageDesc(file_config_listener_listener, 25);
 
 /**
  * @generated from message yuhaiin.listener.reverse_tcp
@@ -871,7 +812,7 @@ export type reverse_tcp = Message<"yuhaiin.listener.reverse_tcp"> & {
  * Use `create(reverse_tcpSchema)` to create a new message.
  */
 export const reverse_tcpSchema: GenMessage<reverse_tcp> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 28);
+  messageDesc(file_config_listener_listener, 26);
 
 /**
  * @generated from enum yuhaiin.listener.tcp_udp_control

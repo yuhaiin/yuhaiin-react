@@ -11,17 +11,24 @@ import {
     dropSchema,
     grpcSchema,
     http2Schema,
+    http_terminationSchema,
     httpSchema,
     muxSchema,
     noneSchema,
     obfs_httpSchema,
-    protocol, protocolSchema,
+    protocol,
+    protocolSchema,
     quicSchema,
-    realitySchema, setSchema, shadowsocksrSchema, shadowsocksSchema,
+    realitySchema,
+    setSchema,
+    shadowsocksrSchema,
+    shadowsocksSchema,
     simpleSchema,
     socks5Schema,
     tailscaleSchema,
     tls_configSchema,
+    tls_server_configSchema,
+    tls_terminationSchema,
     trojanSchema,
     vlessSchema,
     vmessSchema,
@@ -33,7 +40,7 @@ import { BootstrapDnsWarp } from "./bootstrap_dns_warp";
 import { Directv2 } from './direct';
 import { Dropv2 } from './drop';
 import { Grpcv2 } from './grpc';
-import { HTTPv2 } from './http';
+import { HTTPv2, UnWrapHttp } from './http';
 import { HTTP2v2 } from './http2';
 import { Muxv2 } from './mux';
 import { Nonev2 } from './none';
@@ -47,6 +54,7 @@ import { Simplev2 } from './simple';
 import { Socks5v2 } from './socks5';
 import { Tailscale } from "./tailscale";
 import { Tlsv2 } from './tls';
+import { UnWrapTls } from "./tls_server";
 import { Props } from './tools';
 import { Trojanv2 } from './trojan';
 import { Vlessv2 } from './vless';
@@ -117,7 +125,7 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
 const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const update = (data: any) => onChange({ ...value, protocol: { case: value.protocol.case, value: data } })
+    const update = (data: any) => onChange({ ...value, protocol: { ...value.protocol, value: data } })
 
     const data = value.protocol
     switch (data.case) {
@@ -171,6 +179,10 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
             return <Tailscale value={data.value} onChange={(e) => update(e)} />
         case "set":
             return <Set value={data.value} onChange={(e) => update(e)} />
+        case "tlsTermination":
+            return <UnWrapTls value={data.value} onChange={(e) => update(e)} />
+        case "httpTermination":
+            return <UnWrapHttp value={data.value} onChange={(e) => update(e)} />
         default: return Unknown
     }
 }
@@ -428,4 +440,26 @@ export const protocols: { [key: string]: protocol } = {
             value: create(setSchema, { nodes: [] })
         }
     }),
+    "tlsTermination": create(protocolSchema, {
+        protocol: {
+            case: "tlsTermination",
+            value: create(tls_terminationSchema, {
+                tls: create(tls_server_configSchema, {
+                    certificates: [],
+                    nextProtos: [],
+                    serverNameCertificate: {}
+                })
+            })
+        }
+    }),
+    "httpTermination": create(protocolSchema, {
+        protocol: {
+            case: "httpTermination",
+            value: create(http_terminationSchema, {
+                headers: {},
+                // unwrapTls: true,
+                // defaultScheme: "https"
+            })
+        }
+    })
 }

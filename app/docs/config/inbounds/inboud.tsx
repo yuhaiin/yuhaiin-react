@@ -21,7 +21,6 @@ import {
     tcpudp,
     tcpudpSchema,
     tls_autoSchema,
-    tls_configSchema,
     tlsSchema,
     tproxySchema,
     transport,
@@ -31,6 +30,7 @@ import {
     yuubinsya,
     yuubinsyaSchema
 } from "../../pbes/config/listener/listener_pb";
+import { tls_server_configSchema } from "../../pbes/node/protocol/protocol_pb";
 import { Container, MoveUpDown, SettingInputText } from "../components";
 import { HTTPComponents, MixedComponents, QuicComponents, RealityComponents, RedirComponents, ReverseHTTPComponents, ReverseTCPComponents, Socks5Components, TLSAutoComponents, TlsComponents, TProxyComponents, TunComponents } from "./server";
 
@@ -95,7 +95,7 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
                                         case "tls":
                                             x.transport.push(create(transportSchema, {
                                                 transport: {
-                                                    case: "tls", value: create(tlsSchema, { tls: create(tls_configSchema, {}) })
+                                                    case: "tls", value: create(tlsSchema, { tls: create(tls_server_configSchema, {}) })
                                                 }
                                             }))
                                             break
