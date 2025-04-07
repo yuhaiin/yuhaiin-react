@@ -1,11 +1,12 @@
 import { create } from '@bufbuild/protobuf';
 import { FC, useState } from 'react';
-import { Button, Card, Col, Form, InputGroup, Row } from 'react-bootstrap';
+import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import { join as shlexJoin, split as shlexSplit } from 'shlex';
 import { SettingCheck, SettingTypeSelect } from "../../common/switch";
 import { TlsConfigv2 } from '../../node/tls';
-import { certificate, certificateSchema, ech_config, ech_configSchema, http, mixed, quic, reality, redir, reverse_http, reverse_tcp, routeSchema, socks5, tls, tls_auto, tls_config, tls_configSchema, tproxy, tun, tun_endpoint_driverSchema } from '../../pbes/config/listener/listener_pb';
-import { tls_configSchema as tls_config$1 } from '../../pbes/node/protocol/protocol_pb';
+import { TLSServerComponents } from '../../node/tls_server';
+import { ech_config, ech_configSchema, http, mixed, quic, reality, redir, reverse_http, reverse_tcp, routeSchema, socks5, tls, tls_auto, tproxy, tun, tun_endpoint_driverSchema } from '../../pbes/config/listener/listener_pb';
+import { tls_configSchema as tls_config$1, tls_server_configSchema } from '../../pbes/node/protocol/protocol_pb';
 import { NewItemList, SettingInputText, SettingInputTextarea } from '../components';
 
 export const HTTPComponents = (props: { http: http, onChange: (x: http) => void }) => {
@@ -121,32 +122,13 @@ export const TunComponents = (props: { tun: tun, onChange: (x: tun) => void }) =
                 title='Routes'
                 data={props.tun.route?.routes ?? []}
                 onChange={(e) => {
-                    const x = { ...props.tun }
-                    if (!x.route) x.route = create(routeSchema, {})
-                    if (!e) e = []
-                    if (x.route) x.route.routes = e
-                    props.onChange({ ...x })
-                }
-                }
+                    props.onChange({ ...props.tun, route: { ...(props.tun.route ? props.tun.route : create(routeSchema, {})), routes: e ? e : [] } })
+                }}
             />
         </>
     )
 }
 
-const TLSCertificateComponents = (props: { cert: certificate, onChange: (x: certificate) => void }) => {
-    return (
-        <>
-            <SettingInputTextarea label='Cert' value={new TextDecoder().decode(props.cert.cert)}
-                onChange={(e) => props.onChange({ ...props.cert, cert: new TextEncoder().encode(e) })} />
-
-            <SettingInputTextarea label='Key' value={new TextDecoder().decode(props.cert.key)}
-                onChange={(e) => props.onChange({ ...props.cert, key: new TextEncoder().encode(e) })} />
-
-            <SettingInputText label='Cert File' value={props.cert.certFilePath} onChange={(e) => props.onChange({ ...props.cert, certFilePath: e })} />
-            <SettingInputText label='Key File' value={props.cert.keyFilePath} onChange={(e) => props.onChange({ ...props.cert, keyFilePath: e })} />
-        </>
-    )
-}
 
 export const TLSAutoComponents: FC<{ tls: tls_auto, onChange: (x: tls_auto) => void }> = ({ tls, onChange }) => {
     const setEch = (onEchChange: (x: ech_config) => ech_config) => {
@@ -192,89 +174,6 @@ export const TLSAutoComponents: FC<{ tls: tls_auto, onChange: (x: tls_auto) => v
     </>
 }
 
-const TLSComponents = (props: { tls: tls_config, onChange: (x: tls_config) => void }) => {
-    const [newSni, setNewSni] = useState("www.example.com")
-
-    return (
-        <>
-            <NewItemList
-                title='Next Protos'
-                className='mb-2'
-                data={props.tls?.nextProtos ?? []}
-                onChange={(e) => props.onChange({ ...props.tls, nextProtos: e })}
-            />
-
-            {
-                props.tls && props.tls.certificates.map((v, index) => {
-                    return <Card className='mb-2' key={"tls_certificates" + index}>
-                        <Card.Body>
-                            <Card.Title className='d-flex justify-content-end align-items-center'>
-                                <Button variant='outline-danger' onClick={() => props.onChange({ ...props.tls, certificates: props.tls.certificates.filter((_, i) => i !== index) })}>
-                                    <i className="bi bi-x-lg"></i>
-                                </Button>
-                            </Card.Title>
-                            <TLSCertificateComponents cert={create(certificateSchema, v)}
-                                onChange={(e) => {
-                                    props.onChange({ ...props.tls, certificates: [...props.tls.certificates.slice(0, index), e, ...props.tls.certificates.slice(index + 1)] })
-                                }
-                                } />
-                        </Card.Body>
-                    </Card>
-                })
-            }
-
-            <InputGroup className="d-flex justify-content-end mb-2">
-                <Button variant='outline-success'
-                    onClick={() => props.onChange({
-                        ...props.tls, certificates: [...props.tls.certificates, create(certificateSchema, {
-                            cert: new Uint8Array(0),
-                            key: new Uint8Array(0),
-                            certFilePath: "",
-                            keyFilePath: "",
-                        })]
-                    })} >
-                    <i className="bi bi-plus-lg" />New Certificate
-                </Button>
-            </InputGroup>
-
-
-            {
-                props.tls && props.tls.serverNameCertificate
-                && Object.entries(props.tls.serverNameCertificate).map(([k, v]) => {
-                    return (
-                        <Card className='mb-2' key={"server_name_certificate" + k}>
-                            <Card.Body>
-                                <Card.Title className='d-flex justify-content-between align-items-center'>
-                                    {k}
-                                    <Button variant='outline-danger' onClick={() => {
-                                        const serverNameCertificate = { ...props.tls.serverNameCertificate }
-                                        delete serverNameCertificate[k]
-                                        props.onChange({ ...props.tls, serverNameCertificate })
-                                    }}>
-                                        <i className="bi bi-x-lg"></i>
-                                    </Button>
-                                </Card.Title>
-                                <TLSCertificateComponents cert={create(certificateSchema, v)}
-                                    onChange={(e) => { props.onChange({ ...props.tls, serverNameCertificate: { ...props.tls.serverNameCertificate, [k]: e } }) }}
-                                />
-                            </Card.Body>
-                        </Card>
-                    )
-                })
-            }
-
-            <InputGroup className="d-flex justify-content-end">
-                <Form.Control value={newSni} onChange={(e) => setNewSni(e.target.value)} />
-                <Button variant='outline-success'
-                    onClick={() => { if (newSni) props.onChange({ ...props.tls, serverNameCertificate: { ...props.tls.serverNameCertificate, [newSni]: create(certificateSchema, {}) } }) }}
-                >
-                    <i className="bi bi-plus-lg" />New SNI Certificate
-                </Button>
-            </InputGroup>
-        </>
-    )
-}
-
 export const QuicComponents = (props: { quic: quic, onChange: (x: quic) => void }) => {
     return (
         <>
@@ -284,7 +183,7 @@ export const QuicComponents = (props: { quic: quic, onChange: (x: quic) => void 
                 value={props.quic.host}
             />
 
-            <TLSComponents tls={create(tls_configSchema, props.quic.tls ? props.quic.tls : undefined)} onChange={(e) => props.onChange({ ...props.quic, tls: e })} />
+            <TLSServerComponents tls={create(tls_server_configSchema, props.quic.tls ? props.quic.tls : undefined)} onChange={(e) => props.onChange({ ...props.quic, tls: e })} />
         </>
     )
 }
@@ -294,7 +193,7 @@ export const TlsComponents = (props: { tls: tls, onChange: (x: tls) => void }) =
         <>
             <SettingInputText plaintext={true} label='Protocol' value={"TLS"} />
             {
-                props.tls.tls && <TLSComponents tls={create(tls_configSchema, props.tls.tls)} onChange={(e) => props.onChange({ ...props.tls, tls: e })} />
+                props.tls.tls && <TLSServerComponents tls={create(tls_server_configSchema, props.tls.tls)} onChange={(e) => props.onChange({ ...props.tls, tls: e })} />
             }
         </>
     )
