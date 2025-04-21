@@ -12,29 +12,68 @@ import { GlobalToastContext } from "../common/toast";
 import { NodeModal } from "../node/modal";
 import { mode } from "../pbes/config/bypass/bypass_pb";
 import { connection, type } from "../pbes/statistic/config_pb";
-import { connections, counter, counterSchema, notify_data, notify_remove_connectionsSchema, total_flow } from "../pbes/statistic/grpc/config_pb";
+import { connections, counter, notify_data, notify_remove_connectionsSchema, total_flow } from "../pbes/statistic/grpc/config_pb";
 import { ConnectionInfo } from "./components";
 
-const formatBytes = (a = 0, b = 2) => {
-    if (!+a) return "0B";
-    const c = 0 > b ? 0 : b, d = Math.floor(Math.log(a) / Math.log(1024));
-    const Num = parseFloat((a / Math.pow(1024, d)).toFixed(c))
-    const Unit = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"][d]
-    return (isNaN(Num) || Unit === undefined) ? "" : `${Num}${Unit}`
+const Unit = {
+    B: 'B',
+    KB: 'KB',
+    MB: 'MB',
+    GB: 'GB',
+    TB: 'TB',
+    PB: 'PB'
+};
+
+function reducedUnit(bytes: number) {
+    if (bytes >= 1125899906842624) {
+        return { bytes: bytes / 1125899906842624, unit: Unit.PB };
+    }
+    if (bytes >= 1099511627776) {
+        return { bytes: bytes / 1099511627776, unit: Unit.TB };
+    }
+    if (bytes >= 1073741824) {
+        return { bytes: bytes / 1073741824, unit: Unit.GB };
+    }
+    if (bytes >= 1048576) {
+        return { bytes: bytes / 1048576, unit: Unit.MB };
+    }
+    if (bytes >= 1024) {
+        return { bytes: bytes / 1024, unit: Unit.KB };
+    }
+    return { bytes, unit: Unit.B };
 }
 
-const generateFlow = (flow: total_flow, prev: { upload: bigint, download: bigint })
-    : { upload: string, download: string, counters: { [key: string]: counter } } => {
-    const drate = (flow.download - (prev.download !== BigInt(0) ? prev.download : flow.download)) / BigInt(2)
-    const urate = (flow.upload - (prev.upload !== BigInt(0) ? prev.upload : flow.upload)) / BigInt(2)
-    const dstr = `(${formatBytes(Number(flow.download))}): ${formatBytes(Number(drate))}/S`
-    const ustr = `(${formatBytes(Number(flow.upload))}): ${formatBytes(Number(urate))}/S`
-    return { download: dstr, upload: ustr, counters: flow.counters }
+const formatBytes = (a = 0, b = 2) => {
+    const { bytes, unit } = reducedUnit(a);
+    return `${bytes.toFixed(b)}${unit}`;
+}
+
+type last_flow = {
+    download: number,
+    download_rate: string,
+    upload: number,
+    upload_rate: string,
+    counters: { [key: string]: counter },
+    time: Date
+}
+
+const generateFlow = (flow: total_flow, prev: last_flow): { upload_rate: string, download_rate: string } => {
+    const duration = (new Date().getTime() - prev.time.getTime()) / 1000
+    if ((prev.download === 0 && prev.upload === 0) || duration === 0) return { download_rate: "Loading...", upload_rate: "Loading..." }
+    const download = Number(flow.download)
+    const upload = Number(flow.upload)
+    return {
+        download_rate: `(${formatBytes(download)}): ${formatBytes((download - prev.download) / duration)}/S`,
+        upload_rate: `(${formatBytes(upload)}): ${formatBytes((upload - prev.upload) / duration)}/S`
+    }
 }
 
 function Connections() {
     const [modalHash, setModalHash] = useState({ show: false, hash: "" });
-    const [lastFlow, setLastFlow] = useState({ download: BigInt(0), upload: BigInt(0), counters: {} })
+    const [lastFlow, setLastFlow] = useState<last_flow>({
+        download: 0, upload: 0, counters: {}, time: new Date(),
+        download_rate: "Loading...", upload_rate: "Loading..."
+    });
 
     const processStream = (r: notify_data, prev?: Map<bigint, connection>): Map<bigint, connection> => {
         if (prev === undefined) prev = new Map()
@@ -52,13 +91,27 @@ function Connections() {
         return prev
     }
 
-    const { data: flow, error: flow_error } = useSWR("/flow/total", async () => {
+    const { error: flow_error } = useSWR("/flow/total", async () => {
         return FetchProtobuf(connections.method.total).then(async ({ data: r, error }) => {
             if (error) throw error
             if (r) {
-                const resp = generateFlow(r, { download: lastFlow.download, upload: lastFlow.upload })
-                setLastFlow({ download: r.download, upload: r.upload, counters: r.counters })
-                return resp
+                try {
+                    const resp = generateFlow(r, lastFlow)
+                    setLastFlow(prev => {
+                        return {
+                            ...prev,
+                            download: Number(r.download),
+                            upload: Number(r.upload),
+                            counters: r.counters,
+                            time: new Date(),
+                            download_rate: resp.download_rate,
+                            upload_rate: resp.upload_rate
+                        }
+                    })
+                    return resp
+                } catch (e) {
+                    throw { msg: e.toString(), code: 500 }
+                }
             }
         })
     },
@@ -87,7 +140,7 @@ function Connections() {
 
                         <div className="d-sm-flex">
                             <div className="endpoint-name flex-grow-1 notranslate">Download</div>
-                            <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-download">{flow ? flow.download : flow_error !== undefined ? flow_error.msg : "Loading..."}</div>
+                            <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-download">{flow_error ? flow_error.msg : lastFlow.download_rate}</div>
                         </div>
                     </ListGroup.Item>
 
@@ -95,7 +148,7 @@ function Connections() {
                     <ListGroup.Item>
                         <div className="d-sm-flex">
                             <div className="endpoint-name flex-grow-1 notranslate">Upload</div>
-                            <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-upload">{flow ? flow.upload : flow_error !== undefined ? flow_error.msg : "Loading..."}</div>
+                            <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-upload">{flow_error ? flow_error.msg : lastFlow.upload_rate}</div>
                         </div>
                     </ListGroup.Item>
                 </ListGroup>
@@ -107,7 +160,7 @@ function Connections() {
                         <Accordion className="mb-3" alwaysOpen id="connections">
                             {
                                 [...conns.values()].reverse().map((e) => {
-                                    return <AccordionItem data={e} counter={flow && flow.counters ? flow.counters[e.id.toString()] : create(counterSchema, {})} key={e.id} showModal={(hash) => setModalHash({ show: true, hash: hash })} />
+                                    return <AccordionItem data={e} counter={lastFlow.counters[e.id.toString()]} key={e.id} showModal={(hash) => setModalHash({ show: true, hash: hash })} />
                                 })
                             }
                         </Accordion>
