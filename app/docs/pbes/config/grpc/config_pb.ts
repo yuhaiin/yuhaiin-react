@@ -6,7 +6,7 @@ import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegen
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv1";
 import type { infoSchema, settingSchema } from "../config_pb";
 import { file_config_config } from "../config_pb";
-import type { configSchema, mode_config } from "../bypass/bypass_pb";
+import type { configSchema, listSchema, mode_config } from "../bypass/bypass_pb";
 import { file_config_bypass_bypass } from "../bypass/bypass_pb";
 import type { dns, dnsSchema, fakedns_configSchema } from "../dns/dns_pb";
 import { file_config_dns_dns } from "../dns/dns_pb";
@@ -21,7 +21,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file config/grpc/config.proto.
  */
 export const file_config_grpc_config: GenFile = /*@__PURE__*/
-  fileDesc("Chhjb25maWcvZ3JwYy9jb25maWcucHJvdG8SHXl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlImoKDXRlc3RfcmVzcG9uc2USKQoEbW9kZRgBIAEoCzIbLnl1aGFpaW4uYnlwYXNzLm1vZGVfY29uZmlnEg4KBnJlYXNvbhgCIAEoCRIeCgphZnRlcl9hZGRyGAMgASgJUgphZnRlcl9hZGRyIowBCg1ibG9ja19oaXN0b3J5EhAKCHByb3RvY29sGAEgASgJEgwKBGhvc3QYAiABKAkSKAoEdGltZRgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDwoHcHJvY2VzcxgEIAEoCRIgCgtibG9ja19jb3VudBgFIAEoBFILYmxvY2tfY291bnQihwEKEmJsb2NrX2hpc3RvcnlfbGlzdBI9CgdvYmplY3RzGAEgAygLMiwueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2UuYmxvY2tfaGlzdG9yeRIyChRkdW1wX3Byb2Nlc3NfZW5hYmxlZBgCIAEoCFIUZHVtcF9wcm9jZXNzX2VuYWJsZWQimAEKEWluYm91bmRzX3Jlc3BvbnNlEg0KBW5hbWVzGAEgAygJEh4KCmhpamFja19kbnMYAiABKAhSCmhpamFja19kbnMSLAoRaGlqYWNrX2Ruc19mYWtlaXAYAyABKAhSEWhpamFja19kbnNfZmFrZWlwEiYKBXNuaWZmGAQgASgLMhcueXVoYWlpbi5saXN0ZW5lci5zbmlmZiIdCgxyZXNvbHZlX2xpc3QSDQoFbmFtZXMYASADKAkiQQoNc2F2ZV9yZXNvbHZlchIMCgRuYW1lGAEgASgJEiIKCHJlc29sdmVyGAIgASgLMhAueXVoYWlpbi5kbnMuZG5zInUKBUhvc3RzEj4KBWhvc3RzGAEgAygLMi8ueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2UuSG9zdHMuSG9zdHNFbnRyeRosCgpIb3N0c0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEyuAEKDmNvbmZpZ19zZXJ2aWNlEjcKBGxvYWQSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFy55dWhhaWluLmNvbmZpZy5zZXR0aW5nEjcKBHNhdmUSFy55dWhhaWluLmNvbmZpZy5zZXR0aW5nGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EjQKBGluZm8SFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFC55dWhhaWluLmNvbmZpZy5pbmZvMuICCgZieXBhc3MSNgoEbG9hZBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoWLnl1aGFpaW4uYnlwYXNzLmNvbmZpZxI2CgRzYXZlEhYueXVoYWlpbi5ieXBhc3MuY29uZmlnGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EjgKBnJlbG9hZBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJSCgR0ZXN0EhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGiwueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2UudGVzdF9yZXNwb25zZRJaCg1ibG9ja19oaXN0b3J5EhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GjEueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2UuYmxvY2tfaGlzdG9yeV9saXN0MuwCCgdpbmJvdW5kElAKBGxpc3QSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaMC55dWhhaWluLnByb3Rvcy5jb25maWcuc2VydmljZS5pbmJvdW5kc19yZXNwb25zZRI+CgNnZXQSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaGS55dWhhaWluLmxpc3RlbmVyLmluYm91bmQSPAoEc2F2ZRIZLnl1aGFpaW4ubGlzdGVuZXIuaW5ib3VuZBoZLnl1aGFpaW4ubGlzdGVuZXIuaW5ib3VuZBI+CgZyZW1vdmUSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSUQoFYXBwbHkSMC55dWhhaWluLnByb3Rvcy5jb25maWcuc2VydmljZS5pbmJvdW5kc19yZXNwb25zZRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eTKzBQoIcmVzb2x2ZXISSwoEbGlzdBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRorLnl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlLnJlc29sdmVfbGlzdBI1CgNnZXQSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaEC55dWhhaWluLmRucy5kbnMSRgoEc2F2ZRIsLnl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlLnNhdmVfcmVzb2x2ZXIaEC55dWhhaWluLmRucy5kbnMSPgoGcmVtb3ZlEhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EkUKBWhvc3RzEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GiQueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2UuSG9zdHMSSgoKc2F2ZV9ob3N0cxIkLnl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlLkhvc3RzGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5Ej4KB2Zha2VkbnMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGy55dWhhaWluLmRucy5mYWtlZG5zX2NvbmZpZxJDCgxzYXZlX2Zha2VkbnMSGy55dWhhaWluLmRucy5mYWtlZG5zX2NvbmZpZxoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI+CgZzZXJ2ZXISFi5nb29nbGUucHJvdG9idWYuRW1wdHkaHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUSQwoLc2F2ZV9zZXJ2ZXISHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFi5nb29nbGUucHJvdG9idWYuRW1wdHlCQFo2Z2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL2NvbmZpZy9zZXJ2aWNlkgMF0j4CEANiCGVkaXRpb25zcOgH", [file_config_config, file_config_bypass_bypass, file_config_dns_dns, file_config_listener_listener, file_google_protobuf_empty, file_google_protobuf_wrappers, file_google_protobuf_timestamp, file_google_protobuf_go_features]);
+  fileDesc("Chhjb25maWcvZ3JwYy9jb25maWcucHJvdG8SHXl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlImoKDXRlc3RfcmVzcG9uc2USKQoEbW9kZRgBIAEoCzIbLnl1aGFpaW4uYnlwYXNzLm1vZGVfY29uZmlnEg4KBnJlYXNvbhgCIAEoCRIeCgphZnRlcl9hZGRyGAMgASgJUgphZnRlcl9hZGRyIowBCg1ibG9ja19oaXN0b3J5EhAKCHByb3RvY29sGAEgASgJEgwKBGhvc3QYAiABKAkSKAoEdGltZRgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDwoHcHJvY2VzcxgEIAEoCRIgCgtibG9ja19jb3VudBgFIAEoBFILYmxvY2tfY291bnQihwEKEmJsb2NrX2hpc3RvcnlfbGlzdBI9CgdvYmplY3RzGAEgAygLMiwueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2UuYmxvY2tfaGlzdG9yeRIyChRkdW1wX3Byb2Nlc3NfZW5hYmxlZBgCIAEoCFIUZHVtcF9wcm9jZXNzX2VuYWJsZWQiHgoNbGlzdF9yZXNwb25zZRINCgVuYW1lcxgBIAMoCSKYAQoRaW5ib3VuZHNfcmVzcG9uc2USDQoFbmFtZXMYASADKAkSHgoKaGlqYWNrX2RucxgCIAEoCFIKaGlqYWNrX2RucxIsChFoaWphY2tfZG5zX2Zha2VpcBgDIAEoCFIRaGlqYWNrX2Ruc19mYWtlaXASJgoFc25pZmYYBCABKAsyFy55dWhhaWluLmxpc3RlbmVyLnNuaWZmIh0KDHJlc29sdmVfbGlzdBINCgVuYW1lcxgBIAMoCSJBCg1zYXZlX3Jlc29sdmVyEgwKBG5hbWUYASABKAkSIgoIcmVzb2x2ZXIYAiABKAsyEC55dWhhaWluLmRucy5kbnMidQoFSG9zdHMSPgoFaG9zdHMYASADKAsyLy55dWhhaWluLnByb3Rvcy5jb25maWcuc2VydmljZS5Ib3N0cy5Ib3N0c0VudHJ5GiwKCkhvc3RzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ATK4AQoOY29uZmlnX3NlcnZpY2USNwoEbG9hZBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoXLnl1aGFpaW4uY29uZmlnLnNldHRpbmcSNwoEc2F2ZRIXLnl1aGFpaW4uY29uZmlnLnNldHRpbmcaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSNAoEaW5mbxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoULnl1aGFpaW4uY29uZmlnLmluZm8y4gIKBmJ5cGFzcxI2CgRsb2FkEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhYueXVoYWlpbi5ieXBhc3MuY29uZmlnEjYKBHNhdmUSFi55dWhhaWluLmJ5cGFzcy5jb25maWcaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSOAoGcmVsb2FkEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5ElIKBHRlc3QSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaLC55dWhhaWluLnByb3Rvcy5jb25maWcuc2VydmljZS50ZXN0X3Jlc3BvbnNlEloKDWJsb2NrX2hpc3RvcnkSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaMS55dWhhaWluLnByb3Rvcy5jb25maWcuc2VydmljZS5ibG9ja19oaXN0b3J5X2xpc3QywQIKBWxpc3RzEkwKBGxpc3QSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaLC55dWhhaWluLnByb3Rvcy5jb25maWcuc2VydmljZS5saXN0X3Jlc3BvbnNlEjkKA2dldBIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRoULnl1aGFpaW4uYnlwYXNzLmxpc3QSNAoEc2F2ZRIULnl1aGFpaW4uYnlwYXNzLmxpc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSPgoGcmVtb3ZlEhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EjkKB3JlZnJlc2gSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFi5nb29nbGUucHJvdG9idWYuRW1wdHky7AIKB2luYm91bmQSUAoEbGlzdBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRowLnl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlLmluYm91bmRzX3Jlc3BvbnNlEj4KA2dldBIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRoZLnl1aGFpaW4ubGlzdGVuZXIuaW5ib3VuZBI8CgRzYXZlEhkueXVoYWlpbi5saXN0ZW5lci5pbmJvdW5kGhkueXVoYWlpbi5saXN0ZW5lci5pbmJvdW5kEj4KBnJlbW92ZRIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJRCgVhcHBseRIwLnl1aGFpaW4ucHJvdG9zLmNvbmZpZy5zZXJ2aWNlLmluYm91bmRzX3Jlc3BvbnNlGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5MrMFCghyZXNvbHZlchJLCgRsaXN0EhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GisueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2UucmVzb2x2ZV9saXN0EjUKA2dldBIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRoQLnl1aGFpaW4uZG5zLmRucxJGCgRzYXZlEiwueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2Uuc2F2ZV9yZXNvbHZlchoQLnl1aGFpaW4uZG5zLmRucxI+CgZyZW1vdmUSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSRQoFaG9zdHMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaJC55dWhhaWluLnByb3Rvcy5jb25maWcuc2VydmljZS5Ib3N0cxJKCgpzYXZlX2hvc3RzEiQueXVoYWlpbi5wcm90b3MuY29uZmlnLnNlcnZpY2UuSG9zdHMaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSPgoHZmFrZWRucxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRobLnl1aGFpaW4uZG5zLmZha2VkbnNfY29uZmlnEkMKDHNhdmVfZmFrZWRucxIbLnl1aGFpaW4uZG5zLmZha2VkbnNfY29uZmlnGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5Ej4KBnNlcnZlchIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRocLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRJDCgtzYXZlX3NlcnZlchIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eUJAWjZnaXRodWIuY29tL0FzdXRvcnVmYS95dWhhaWluL3BrZy9wcm90b3MvY29uZmlnL3NlcnZpY2WSAwXSPgIQA2IIZWRpdGlvbnNw6Ac", [file_config_config, file_config_bypass_bypass, file_config_dns_dns, file_config_listener_listener, file_google_protobuf_empty, file_google_protobuf_wrappers, file_google_protobuf_timestamp, file_google_protobuf_go_features]);
 
 /**
  * @generated from message yuhaiin.protos.config.service.test_response
@@ -110,6 +110,23 @@ export const block_history_listSchema: GenMessage<block_history_list> = /*@__PUR
   messageDesc(file_config_grpc_config, 2);
 
 /**
+ * @generated from message yuhaiin.protos.config.service.list_response
+ */
+export type list_response = Message<"yuhaiin.protos.config.service.list_response"> & {
+  /**
+   * @generated from field: repeated string names = 1;
+   */
+  names: string[];
+};
+
+/**
+ * Describes the message yuhaiin.protos.config.service.list_response.
+ * Use `create(list_responseSchema)` to create a new message.
+ */
+export const list_responseSchema: GenMessage<list_response> = /*@__PURE__*/
+  messageDesc(file_config_grpc_config, 3);
+
+/**
  * @generated from message yuhaiin.protos.config.service.inbounds_response
  */
 export type inbounds_response = Message<"yuhaiin.protos.config.service.inbounds_response"> & {
@@ -139,7 +156,7 @@ export type inbounds_response = Message<"yuhaiin.protos.config.service.inbounds_
  * Use `create(inbounds_responseSchema)` to create a new message.
  */
 export const inbounds_responseSchema: GenMessage<inbounds_response> = /*@__PURE__*/
-  messageDesc(file_config_grpc_config, 3);
+  messageDesc(file_config_grpc_config, 4);
 
 /**
  * @generated from message yuhaiin.protos.config.service.resolve_list
@@ -156,7 +173,7 @@ export type resolve_list = Message<"yuhaiin.protos.config.service.resolve_list">
  * Use `create(resolve_listSchema)` to create a new message.
  */
 export const resolve_listSchema: GenMessage<resolve_list> = /*@__PURE__*/
-  messageDesc(file_config_grpc_config, 4);
+  messageDesc(file_config_grpc_config, 5);
 
 /**
  * @generated from message yuhaiin.protos.config.service.save_resolver
@@ -178,7 +195,7 @@ export type save_resolver = Message<"yuhaiin.protos.config.service.save_resolver
  * Use `create(save_resolverSchema)` to create a new message.
  */
 export const save_resolverSchema: GenMessage<save_resolver> = /*@__PURE__*/
-  messageDesc(file_config_grpc_config, 5);
+  messageDesc(file_config_grpc_config, 6);
 
 /**
  * @generated from message yuhaiin.protos.config.service.Hosts
@@ -195,7 +212,7 @@ export type Hosts = Message<"yuhaiin.protos.config.service.Hosts"> & {
  * Use `create(HostsSchema)` to create a new message.
  */
 export const HostsSchema: GenMessage<Hosts> = /*@__PURE__*/
-  messageDesc(file_config_grpc_config, 6);
+  messageDesc(file_config_grpc_config, 7);
 
 /**
  * @generated from service yuhaiin.protos.config.service.config_service
@@ -276,6 +293,53 @@ export const bypass: GenService<{
   serviceDesc(file_config_grpc_config, 1);
 
 /**
+ * @generated from service yuhaiin.protos.config.service.lists
+ */
+export const lists: GenService<{
+  /**
+   * @generated from rpc yuhaiin.protos.config.service.lists.list
+   */
+  list: {
+    methodKind: "unary";
+    input: typeof EmptySchema;
+    output: typeof list_responseSchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.protos.config.service.lists.get
+   */
+  get: {
+    methodKind: "unary";
+    input: typeof StringValueSchema;
+    output: typeof listSchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.protos.config.service.lists.save
+   */
+  save: {
+    methodKind: "unary";
+    input: typeof listSchema;
+    output: typeof EmptySchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.protos.config.service.lists.remove
+   */
+  remove: {
+    methodKind: "unary";
+    input: typeof StringValueSchema;
+    output: typeof EmptySchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.protos.config.service.lists.refresh
+   */
+  refresh: {
+    methodKind: "unary";
+    input: typeof EmptySchema;
+    output: typeof EmptySchema;
+  },
+}> = /*@__PURE__*/
+  serviceDesc(file_config_grpc_config, 2);
+
+/**
  * @generated from service yuhaiin.protos.config.service.inbound
  */
 export const inbound: GenService<{
@@ -320,7 +384,7 @@ export const inbound: GenService<{
     output: typeof EmptySchema;
   },
 }> = /*@__PURE__*/
-  serviceDesc(file_config_grpc_config, 2);
+  serviceDesc(file_config_grpc_config, 3);
 
 /**
  * @generated from service yuhaiin.protos.config.service.resolver
@@ -409,5 +473,5 @@ export const resolver: GenService<{
     output: typeof EmptySchema;
   },
 }> = /*@__PURE__*/
-  serviceDesc(file_config_grpc_config, 3);
+  serviceDesc(file_config_grpc_config, 4);
 

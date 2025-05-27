@@ -1,11 +1,13 @@
 import { create } from '@bufbuild/protobuf';
 import React, { Dispatch, FC, SetStateAction, useState } from 'react';
-import { Button, ButtonGroup, Card, Col, Form, ListGroup, Row } from 'react-bootstrap';
+import { Button, ButtonGroup, Card, Col, Form, InputGroup, ListGroup, Row } from 'react-bootstrap';
+import { ConfirmModal } from '../common/confirm';
 import { useProtoSWR } from '../common/proto';
 import { FormSelect, SettingCheck, SettingSelect, SettingTypeSelect } from '../common/switch';
 import { Container, MoveUpDown, NewItemList, SettingInputText } from '../config/components';
-import { config, mode, mode_config, mode_configSchema, modeSchema, remote_rule, remote_rule_fileSchema, remote_rule_httpSchema, remote_ruleSchema, resolve_strategy, resolve_strategySchema, udp_proxy_fqdn_strategy, udp_proxy_fqdn_strategySchema } from '../pbes/config/bypass/bypass_pb';
+import { config, mode, mode_config, mode_configSchema, modeSchema, remote_rule, remote_rule_fileSchema, remote_rule_httpSchema, remote_ruleSchema, resolve_strategy, resolve_strategySchema, rulev2Schema, udp_proxy_fqdn_strategy, udp_proxy_fqdn_strategySchema } from '../pbes/config/bypass/bypass_pb';
 import { resolver } from '../pbes/config/grpc/config_pb';
+import { FilterModal } from './filter/filter';
 
 export const Bypass: FC<{
     bypass: config,
@@ -13,6 +15,10 @@ export const Bypass: FC<{
     setModalData: Dispatch<SetStateAction<{ show: boolean, data?: string, import?: boolean, onSave?: (data: string) => void }>>
 }> = ({ bypass, onChange, setModalData }) => {
     const { data: resolvers } = useProtoSWR(resolver.method.list)
+
+    const [filterModal, setFilterModal] = useState({ show: false, index: 0 })
+    const [confirmData, setConfirmData] = useState({ show: false, index: -1 });
+    const [newdata, setNewdata] = useState({ value: "" });
 
     const resolverList = () => { return resolvers ? resolvers.names.sort((a, b) => a.localeCompare(b)) : [] }
 
@@ -29,6 +35,9 @@ export const Bypass: FC<{
         object: { case: "file", value: create(remote_rule_fileSchema, {}) }
     })
 
+    const moveUpDown = (index: number) => {
+        return new MoveUpDown(bypass.rulesV2, index, (e) => onChange({ ...bypass, rulesV2: e }))
+    }
     const [drag, setDrag] = useState({ start: -1 })
 
     return (
@@ -129,8 +138,99 @@ export const Bypass: FC<{
                         </Button>
                     </ListGroup.Item>
                 </ListGroup>
-            </Card>
+            </Card >
 
+
+
+            <Card className="mt-3">
+                <Card.Header>
+                    <SettingCheck label='Enabled' checked={bypass.enabledV2} onChange={() => onChange({ ...bypass, enabledV2: !bypass.enabledV2 })} />
+                </Card.Header>
+                <ConfirmModal
+                    show={confirmData.show}
+                    content={<p>Delete {(confirmData.index >= 0 && bypass.rulesV2.length > confirmData.index) && bypass.rulesV2[confirmData.index].name}?</p>}
+                    onHide={() => setConfirmData({ ...confirmData, show: false })}
+                    onOk={() => { onChange({ ...bypass, rulesV2: bypass.rulesV2.filter((_, i) => i !== confirmData.index) }) }}
+                />
+
+                <FilterModal
+                    show={filterModal.show}
+                    onHide={() => { setFilterModal({ ...filterModal, show: false }) }}
+                    rule={(filterModal.index >= 0 && bypass.rulesV2.length > filterModal.index) ? bypass.rulesV2[filterModal.index] : create(rulev2Schema, {
+                        tag: "",
+                        rules: [],
+                        mode: mode.proxy,
+                        resolver: "",
+                        resolveStrategy: resolve_strategy.default,
+                        udpProxyFqdnStrategy: udp_proxy_fqdn_strategy.udp_proxy_fqdn_strategy_default,
+                    })}
+                    onChange={(groups) => { onChange({ ...bypass, rulesV2: [...bypass.rulesV2.slice(0, filterModal.index), groups, ...bypass.rulesV2.slice(filterModal.index + 1)] }) }}
+                />
+                <ListGroup variant="flush">
+                    {
+                        bypass.rulesV2.map((value, index) => (
+                            <ListGroup.Item
+                                className="align-items-center d-flex justify-content-between"
+                                style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
+                                key={index}
+                                action
+                                onClick={() => { setFilterModal({ show: true, index: index }) }}
+                            >
+                                {value.name}
+
+                                <ButtonGroup>
+                                    {!moveUpDown(index).isTop() &&
+                                        <Button variant="outline-primary" size="sm" onClick={(e) => {
+                                            e.stopPropagation()
+                                            moveUpDown(index).move(true)
+                                        }}>
+                                            <i className="bi bi-arrow-up"></i>
+                                        </Button>}
+                                    {!moveUpDown(index).isBottom() &&
+                                        <Button variant="outline-primary" size="sm" onClick={(e) => {
+                                            e.stopPropagation()
+                                            moveUpDown(index).move(false)
+                                        }}>
+                                            <i className="bi bi-arrow-down"></i>
+                                        </Button>}
+                                    <Button
+                                        variant="outline-danger"
+                                        as="span"
+                                        size="sm"
+                                        onClick={(e) => { e.stopPropagation(); setConfirmData({ show: true, index: index }) }}
+                                    >
+                                        <i className="bi-trash"></i></Button>
+                                </ButtonGroup>
+                            </ListGroup.Item>
+                        ))
+                    }
+
+
+                    <ListGroup.Item className='d-flex'>
+                        <InputGroup className="d-flex justify-content-end">
+                            <Form.Control value={newdata.value} onChange={(e) => setNewdata({ value: e.target.value })} />
+                            <Button
+                                variant='outline-success'
+                                onClick={() => {
+                                    if (!newdata.value || bypass.rulesV2.map((v) => v.name).includes(newdata.value)) return
+                                    onChange({
+                                        ...bypass, rulesV2: [...bypass.rulesV2, create(rulev2Schema, {
+                                            tag: "",
+                                            name: newdata.value,
+                                            rules: [],
+                                            mode: mode.proxy,
+                                            resolver: "",
+                                            resolveStrategy: resolve_strategy.default,
+                                            udpProxyFqdnStrategy: udp_proxy_fqdn_strategy.udp_proxy_fqdn_strategy_default,
+                                        })]
+                                    })
+                                }}
+                            >
+                                <i className="bi bi-plus-lg" />New </Button>
+                        </InputGroup>
+                    </ListGroup.Item>
+                </ListGroup>
+            </Card >
 
         </>
     )

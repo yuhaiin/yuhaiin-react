@@ -11,7 +11,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file config/bypass/bypass.proto.
  */
 export const file_config_bypass_bypass: GenFile = /*@__PURE__*/
-  fileDesc("Chpjb25maWcvYnlwYXNzL2J5cGFzcy5wcm90bxIOeXVoYWlpbi5ieXBhc3MixwMKBmNvbmZpZxIhCgN0Y3AYAyABKA4yFC55dWhhaWluLmJ5cGFzcy5tb2RlEiEKA3VkcBgEIAEoDjIULnl1aGFpaW4uYnlwYXNzLm1vZGUSJAoLYnlwYXNzX2ZpbGUYAiABKAlCAhgBUgtieXBhc3NfZmlsZRJPCg51ZHBfcHJveHlfZnFkbhgGIAEoDjInLnl1aGFpaW4uYnlwYXNzLnVkcF9wcm94eV9mcWRuX3N0cmF0ZWd5Ug51ZHBfcHJveHlfZnFkbhJDCg5jdXN0b21fcnVsZV92MxgHIAMoCzIbLnl1aGFpaW4uYnlwYXNzLm1vZGVfY29uZmlnUg5jdXN0b21fcnVsZV92MxI/CgxyZW1vdGVfcnVsZXMYCCADKAsyGy55dWhhaWluLmJ5cGFzcy5yZW1vdGVfcnVsZVIMcmVtb3RlX3J1bGVzEigKD3Jlc29sdmVfbG9jYWxseRgJIAEoCFIPcmVzb2x2ZV9sb2NhbGx5EigKD2RpcmVjdF9yZXNvbHZlchgKIAEoCVIPZGlyZWN0X3Jlc29sdmVyEiYKDnByb3h5X3Jlc29sdmVyGAsgASgJUg5wcm94eV9yZXNvbHZlciKmAwoLbW9kZV9jb25maWcSIgoEbW9kZRgBIAEoDjIULnl1aGFpaW4uYnlwYXNzLm1vZGUSCwoDdGFnGAIgASgJEhAKCGhvc3RuYW1lGAMgAygJEkwKEHJlc29sdmVfc3RyYXRlZ3kYBCABKA4yIC55dWhhaWluLmJ5cGFzcy5yZXNvbHZlX3N0cmF0ZWd5UhByZXNvbHZlX3N0cmF0ZWd5EmEKF3VkcF9wcm94eV9mcWRuX3N0cmF0ZWd5GAYgASgOMicueXVoYWlpbi5ieXBhc3MudWRwX3Byb3h5X2ZxZG5fc3RyYXRlZ3lSF3VkcF9wcm94eV9mcWRuX3N0cmF0ZWd5EhAKCHJlc29sdmVyGAggASgJEkkKCmVycm9yX21zZ3MYByADKAsyKi55dWhhaWluLmJ5cGFzcy5tb2RlX2NvbmZpZy5FcnJvck1zZ3NFbnRyeVIJZXJyb3JfbXNnGjAKDkVycm9yTXNnc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAFKBAgFEAZSDnVkcF9wcm94eV9mcWRuIvkBCgtyZW1vdGVfcnVsZRIPCgdlbmFibGVkGAEgASgIEgwKBG5hbWUYAiABKAkSMAoEZmlsZRgDIAEoCzIgLnl1aGFpaW4uYnlwYXNzLnJlbW90ZV9ydWxlX2ZpbGVIABIwCgRodHRwGAQgASgLMiAueXVoYWlpbi5ieXBhc3MucmVtb3RlX3J1bGVfaHR0cEgAEhwKCWVycm9yX21zZxgFIAEoCVIJZXJyb3JfbXNnEj8KDGRlZmF1bHRfbW9kZRgGIAEoCzIbLnl1aGFpaW4uYnlwYXNzLm1vZGVfY29uZmlnUgxkZWZhdWx0X21vZGVCCAoGb2JqZWN0IiAKEHJlbW90ZV9ydWxlX2ZpbGUSDAoEcGF0aBgBIAEoCSIvChByZW1vdGVfcnVsZV9odHRwEgsKA3VybBgBIAEoCRIOCgZtZXRob2QYAiABKAkqNAoEbW9kZRIKCgZieXBhc3MQABIKCgZkaXJlY3QQARIJCgVwcm94eRACEgkKBWJsb2NrEAMqXwoQcmVzb2x2ZV9zdHJhdGVneRILCgdkZWZhdWx0EAASDwoLcHJlZmVyX2lwdjQQARINCglvbmx5X2lwdjQQAhIPCgtwcmVmZXJfaXB2NhADEg0KCW9ubHlfaXB2NhAEKl0KF3VkcF9wcm94eV9mcWRuX3N0cmF0ZWd5EiMKH3VkcF9wcm94eV9mcWRuX3N0cmF0ZWd5X2RlZmF1bHQQABILCgdyZXNvbHZlEAESEAoMc2tpcF9yZXNvbHZlEAJCP1o1Z2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL2NvbmZpZy9ieXBhc3OSAwXSPgIQA2IIZWRpdGlvbnNw6Ac", [file_google_protobuf_go_features]);
+  fileDesc("Chpjb25maWcvYnlwYXNzL2J5cGFzcy5wcm90bxIOeXVoYWlpbi5ieXBhc3MimQUKBmNvbmZpZxIhCgN0Y3AYAyABKA4yFC55dWhhaWluLmJ5cGFzcy5tb2RlEiEKA3VkcBgEIAEoDjIULnl1aGFpaW4uYnlwYXNzLm1vZGUSJAoLYnlwYXNzX2ZpbGUYAiABKAlCAhgBUgtieXBhc3NfZmlsZRJPCg51ZHBfcHJveHlfZnFkbhgGIAEoDjInLnl1aGFpaW4uYnlwYXNzLnVkcF9wcm94eV9mcWRuX3N0cmF0ZWd5Ug51ZHBfcHJveHlfZnFkbhJHCg5jdXN0b21fcnVsZV92MxgHIAMoCzIbLnl1aGFpaW4uYnlwYXNzLm1vZGVfY29uZmlnQgIYAVIOY3VzdG9tX3J1bGVfdjMSQwoMcmVtb3RlX3J1bGVzGAggAygLMhsueXVoYWlpbi5ieXBhc3MucmVtb3RlX3J1bGVCAhgBUgxyZW1vdGVfcnVsZXMSKAoPcmVzb2x2ZV9sb2NhbGx5GAkgASgIUg9yZXNvbHZlX2xvY2FsbHkSKAoPZGlyZWN0X3Jlc29sdmVyGAogASgJUg9kaXJlY3RfcmVzb2x2ZXISJgoOcHJveHlfcmVzb2x2ZXIYCyABKAlSDnByb3h5X3Jlc29sdmVyEh4KCmVuYWJsZWRfdjIYDiABKAhSCmVuYWJsZWRfdjISMgoIcnVsZXNfdjIYDCADKAsyFi55dWhhaWluLmJ5cGFzcy5ydWxldjJSCHJ1bGVzX3YyEjAKBWxpc3RzGA0gAygLMiEueXVoYWlpbi5ieXBhc3MuY29uZmlnLkxpc3RzRW50cnkaQgoKTGlzdHNFbnRyeRILCgNrZXkYASABKAkSIwoFdmFsdWUYAiABKAsyFC55dWhhaWluLmJ5cGFzcy5saXN0OgI4ASKmAwoLbW9kZV9jb25maWcSIgoEbW9kZRgBIAEoDjIULnl1aGFpaW4uYnlwYXNzLm1vZGUSCwoDdGFnGAIgASgJEhAKCGhvc3RuYW1lGAMgAygJEkwKEHJlc29sdmVfc3RyYXRlZ3kYBCABKA4yIC55dWhhaWluLmJ5cGFzcy5yZXNvbHZlX3N0cmF0ZWd5UhByZXNvbHZlX3N0cmF0ZWd5EmEKF3VkcF9wcm94eV9mcWRuX3N0cmF0ZWd5GAYgASgOMicueXVoYWlpbi5ieXBhc3MudWRwX3Byb3h5X2ZxZG5fc3RyYXRlZ3lSF3VkcF9wcm94eV9mcWRuX3N0cmF0ZWd5EhAKCHJlc29sdmVyGAggASgJEkkKCmVycm9yX21zZ3MYByADKAsyKi55dWhhaWluLmJ5cGFzcy5tb2RlX2NvbmZpZy5FcnJvck1zZ3NFbnRyeVIJZXJyb3JfbXNnGjAKDkVycm9yTXNnc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAFKBAgFEAZSDnVkcF9wcm94eV9mcWRuIvkBCgtyZW1vdGVfcnVsZRIPCgdlbmFibGVkGAEgASgIEgwKBG5hbWUYAiABKAkSMAoEZmlsZRgDIAEoCzIgLnl1aGFpaW4uYnlwYXNzLnJlbW90ZV9ydWxlX2ZpbGVIABIwCgRodHRwGAQgASgLMiAueXVoYWlpbi5ieXBhc3MucmVtb3RlX3J1bGVfaHR0cEgAEhwKCWVycm9yX21zZxgFIAEoCVIJZXJyb3JfbXNnEj8KDGRlZmF1bHRfbW9kZRgGIAEoCzIbLnl1aGFpaW4uYnlwYXNzLm1vZGVfY29uZmlnUgxkZWZhdWx0X21vZGVCCAoGb2JqZWN0IiAKEHJlbW90ZV9ydWxlX2ZpbGUSDAoEcGF0aBgBIAEoCSIvChByZW1vdGVfcnVsZV9odHRwEgsKA3VybBgBIAEoCRIOCgZtZXRob2QYAiABKAkiFAoEaG9zdBIMCgRsaXN0GAEgASgJIhcKB3Byb2Nlc3MSDAoEbGlzdBgBIAEoCSIXCgdpbmJvdW5kEgwKBG5hbWUYASABKAkijgEKBHJ1bGUSJAoEaG9zdBgBIAEoCzIULnl1aGFpaW4uYnlwYXNzLmhvc3RIABIqCgdwcm9jZXNzGAIgASgLMhcueXVoYWlpbi5ieXBhc3MucHJvY2Vzc0gAEioKB2luYm91bmQYAyABKAsyFy55dWhhaWluLmJ5cGFzcy5pbmJvdW5kSABCCAoGb2JqZWN0IikKAm9yEiMKBXJ1bGVzGAEgAygLMhQueXVoYWlpbi5ieXBhc3MucnVsZSKtAgoGcnVsZXYyEgwKBG5hbWUYASABKAkSIgoEbW9kZRgCIAEoDjIULnl1aGFpaW4uYnlwYXNzLm1vZGUSCwoDdGFnGAMgASgJEkwKEHJlc29sdmVfc3RyYXRlZ3kYBCABKA4yIC55dWhhaWluLmJ5cGFzcy5yZXNvbHZlX3N0cmF0ZWd5UhByZXNvbHZlX3N0cmF0ZWd5EmEKF3VkcF9wcm94eV9mcWRuX3N0cmF0ZWd5GAUgASgOMicueXVoYWlpbi5ieXBhc3MudWRwX3Byb3h5X2ZxZG5fc3RyYXRlZ3lSF3VkcF9wcm94eV9mcWRuX3N0cmF0ZWd5EhAKCHJlc29sdmVyGAYgASgJEiEKBXJ1bGVzGAcgAygLMhIueXVoYWlpbi5ieXBhc3Mub3Ii/wEKBGxpc3QSPAoJbGlzdF90eXBlGAEgASgOMiMueXVoYWlpbi5ieXBhc3MubGlzdC5saXN0X3R5cGVfZW51bVIEdHlwZRIMCgRuYW1lGAIgASgJEisKBWxvY2FsGAMgASgLMhoueXVoYWlpbi5ieXBhc3MubGlzdF9sb2NhbEgAEi0KBnJlbW90ZRgEIAEoCzIbLnl1aGFpaW4uYnlwYXNzLmxpc3RfcmVtb3RlSAASHgoKZXJyb3JfbXNncxgFIAMoCVIKZXJyb3JfbXNncyInCg5saXN0X3R5cGVfZW51bRIICgRob3N0EAASCwoHcHJvY2VzcxABQgYKBGxpc3QiGwoKbGlzdF9sb2NhbBINCgVsaXN0cxgBIAMoCSIbCgtsaXN0X3JlbW90ZRIMCgR1cmxzGAEgAygJKjQKBG1vZGUSCgoGYnlwYXNzEAASCgoGZGlyZWN0EAESCQoFcHJveHkQAhIJCgVibG9jaxADKl8KEHJlc29sdmVfc3RyYXRlZ3kSCwoHZGVmYXVsdBAAEg8KC3ByZWZlcl9pcHY0EAESDQoJb25seV9pcHY0EAISDwoLcHJlZmVyX2lwdjYQAxINCglvbmx5X2lwdjYQBCpdChd1ZHBfcHJveHlfZnFkbl9zdHJhdGVneRIjCh91ZHBfcHJveHlfZnFkbl9zdHJhdGVneV9kZWZhdWx0EAASCwoHcmVzb2x2ZRABEhAKDHNraXBfcmVzb2x2ZRACQj9aNWdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9jb25maWcvYnlwYXNzkgMF0j4CEANiCGVkaXRpb25zcOgH", [file_google_protobuf_go_features]);
 
 /**
  * @generated from message yuhaiin.bypass.config
@@ -39,12 +39,14 @@ export type config = Message<"yuhaiin.bypass.config"> & {
   udpProxyFqdn: udp_proxy_fqdn_strategy;
 
   /**
-   * @generated from field: repeated yuhaiin.bypass.mode_config custom_rule_v3 = 7 [json_name = "custom_rule_v3"];
+   * @generated from field: repeated yuhaiin.bypass.mode_config custom_rule_v3 = 7 [json_name = "custom_rule_v3", deprecated = true];
+   * @deprecated
    */
   customRuleV3: mode_config[];
 
   /**
-   * @generated from field: repeated yuhaiin.bypass.remote_rule remote_rules = 8 [json_name = "remote_rules"];
+   * @generated from field: repeated yuhaiin.bypass.remote_rule remote_rules = 8 [json_name = "remote_rules", deprecated = true];
+   * @deprecated
    */
   remoteRules: remote_rule[];
 
@@ -64,6 +66,21 @@ export type config = Message<"yuhaiin.bypass.config"> & {
    * @generated from field: string proxy_resolver = 11 [json_name = "proxy_resolver"];
    */
   proxyResolver: string;
+
+  /**
+   * @generated from field: bool enabled_v2 = 14 [json_name = "enabled_v2"];
+   */
+  enabledV2: boolean;
+
+  /**
+   * @generated from field: repeated yuhaiin.bypass.rulev2 rules_v2 = 12 [json_name = "rules_v2"];
+   */
+  rulesV2: rulev2[];
+
+  /**
+   * @generated from field: map<string, yuhaiin.bypass.list> lists = 13;
+   */
+  lists: { [key: string]: list };
 };
 
 /**
@@ -211,6 +228,255 @@ export type remote_rule_http = Message<"yuhaiin.bypass.remote_rule_http"> & {
  */
 export const remote_rule_httpSchema: GenMessage<remote_rule_http> = /*@__PURE__*/
   messageDesc(file_config_bypass_bypass, 4);
+
+/**
+ * @generated from message yuhaiin.bypass.host
+ */
+export type host = Message<"yuhaiin.bypass.host"> & {
+  /**
+   * @generated from field: string list = 1;
+   */
+  list: string;
+};
+
+/**
+ * Describes the message yuhaiin.bypass.host.
+ * Use `create(hostSchema)` to create a new message.
+ */
+export const hostSchema: GenMessage<host> = /*@__PURE__*/
+  messageDesc(file_config_bypass_bypass, 5);
+
+/**
+ * @generated from message yuhaiin.bypass.process
+ */
+export type process = Message<"yuhaiin.bypass.process"> & {
+  /**
+   * @generated from field: string list = 1;
+   */
+  list: string;
+};
+
+/**
+ * Describes the message yuhaiin.bypass.process.
+ * Use `create(processSchema)` to create a new message.
+ */
+export const processSchema: GenMessage<process> = /*@__PURE__*/
+  messageDesc(file_config_bypass_bypass, 6);
+
+/**
+ * @generated from message yuhaiin.bypass.inbound
+ */
+export type inbound = Message<"yuhaiin.bypass.inbound"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+};
+
+/**
+ * Describes the message yuhaiin.bypass.inbound.
+ * Use `create(inboundSchema)` to create a new message.
+ */
+export const inboundSchema: GenMessage<inbound> = /*@__PURE__*/
+  messageDesc(file_config_bypass_bypass, 7);
+
+/**
+ * @generated from message yuhaiin.bypass.rule
+ */
+export type rule = Message<"yuhaiin.bypass.rule"> & {
+  /**
+   * @generated from oneof yuhaiin.bypass.rule.object
+   */
+  object: {
+    /**
+     * @generated from field: yuhaiin.bypass.host host = 1;
+     */
+    value: host;
+    case: "host";
+  } | {
+    /**
+     * @generated from field: yuhaiin.bypass.process process = 2;
+     */
+    value: process;
+    case: "process";
+  } | {
+    /**
+     * @generated from field: yuhaiin.bypass.inbound inbound = 3;
+     */
+    value: inbound;
+    case: "inbound";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message yuhaiin.bypass.rule.
+ * Use `create(ruleSchema)` to create a new message.
+ */
+export const ruleSchema: GenMessage<rule> = /*@__PURE__*/
+  messageDesc(file_config_bypass_bypass, 8);
+
+/**
+ * @generated from message yuhaiin.bypass.or
+ */
+export type or = Message<"yuhaiin.bypass.or"> & {
+  /**
+   * @generated from field: repeated yuhaiin.bypass.rule rules = 1;
+   */
+  rules: rule[];
+};
+
+/**
+ * Describes the message yuhaiin.bypass.or.
+ * Use `create(orSchema)` to create a new message.
+ */
+export const orSchema: GenMessage<or> = /*@__PURE__*/
+  messageDesc(file_config_bypass_bypass, 9);
+
+/**
+ * @generated from message yuhaiin.bypass.rulev2
+ */
+export type rulev2 = Message<"yuhaiin.bypass.rulev2"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * @generated from field: yuhaiin.bypass.mode mode = 2;
+   */
+  mode: mode;
+
+  /**
+   * @generated from field: string tag = 3;
+   */
+  tag: string;
+
+  /**
+   * @generated from field: yuhaiin.bypass.resolve_strategy resolve_strategy = 4 [json_name = "resolve_strategy"];
+   */
+  resolveStrategy: resolve_strategy;
+
+  /**
+   * @generated from field: yuhaiin.bypass.udp_proxy_fqdn_strategy udp_proxy_fqdn_strategy = 5 [json_name = "udp_proxy_fqdn_strategy"];
+   */
+  udpProxyFqdnStrategy: udp_proxy_fqdn_strategy;
+
+  /**
+   * @generated from field: string resolver = 6;
+   */
+  resolver: string;
+
+  /**
+   * @generated from field: repeated yuhaiin.bypass.or rules = 7;
+   */
+  rules: or[];
+};
+
+/**
+ * Describes the message yuhaiin.bypass.rulev2.
+ * Use `create(rulev2Schema)` to create a new message.
+ */
+export const rulev2Schema: GenMessage<rulev2> = /*@__PURE__*/
+  messageDesc(file_config_bypass_bypass, 10);
+
+/**
+ * @generated from message yuhaiin.bypass.list
+ */
+export type list = Message<"yuhaiin.bypass.list"> & {
+  /**
+   * @generated from field: yuhaiin.bypass.list.list_type_enum list_type = 1 [json_name = "type"];
+   */
+  listType: list_list_type_enum;
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
+
+  /**
+   * @generated from oneof yuhaiin.bypass.list.list
+   */
+  list: {
+    /**
+     * @generated from field: yuhaiin.bypass.list_local local = 3;
+     */
+    value: list_local;
+    case: "local";
+  } | {
+    /**
+     * @generated from field: yuhaiin.bypass.list_remote remote = 4;
+     */
+    value: list_remote;
+    case: "remote";
+  } | { case: undefined; value?: undefined };
+
+  /**
+   * @generated from field: repeated string error_msgs = 5 [json_name = "error_msgs"];
+   */
+  errorMsgs: string[];
+};
+
+/**
+ * Describes the message yuhaiin.bypass.list.
+ * Use `create(listSchema)` to create a new message.
+ */
+export const listSchema: GenMessage<list> = /*@__PURE__*/
+  messageDesc(file_config_bypass_bypass, 11);
+
+/**
+ * @generated from enum yuhaiin.bypass.list.list_type_enum
+ */
+export enum list_list_type_enum {
+  /**
+   * @generated from enum value: host = 0;
+   */
+  host = 0,
+
+  /**
+   * @generated from enum value: process = 1;
+   */
+  process = 1,
+}
+
+/**
+ * Describes the enum yuhaiin.bypass.list.list_type_enum.
+ */
+export const list_list_type_enumSchema: GenEnum<list_list_type_enum> = /*@__PURE__*/
+  enumDesc(file_config_bypass_bypass, 11, 0);
+
+/**
+ * @generated from message yuhaiin.bypass.list_local
+ */
+export type list_local = Message<"yuhaiin.bypass.list_local"> & {
+  /**
+   * @generated from field: repeated string lists = 1;
+   */
+  lists: string[];
+};
+
+/**
+ * Describes the message yuhaiin.bypass.list_local.
+ * Use `create(list_localSchema)` to create a new message.
+ */
+export const list_localSchema: GenMessage<list_local> = /*@__PURE__*/
+  messageDesc(file_config_bypass_bypass, 12);
+
+/**
+ * @generated from message yuhaiin.bypass.list_remote
+ */
+export type list_remote = Message<"yuhaiin.bypass.list_remote"> & {
+  /**
+   * @generated from field: repeated string urls = 1;
+   */
+  urls: string[];
+};
+
+/**
+ * Describes the message yuhaiin.bypass.list_remote.
+ * Use `create(list_remoteSchema)` to create a new message.
+ */
+export const list_remoteSchema: GenMessage<list_remote> = /*@__PURE__*/
+  messageDesc(file_config_bypass_bypass, 13);
 
 /**
  * @generated from enum yuhaiin.bypass.mode

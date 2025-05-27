@@ -37,6 +37,7 @@ function NavBar(props: { children: React.ReactNode }) {
                                 <NavDropdown.Item eventKey={'/docs/bypass/'}>Config</NavDropdown.Item>
                                 <NavDropdown.Item eventKey={'/docs/bypass/test'}>Test Route</NavDropdown.Item>
                                 <NavDropdown.Item eventKey={'/docs/bypass/block'}>Block History</NavDropdown.Item>
+                                <NavDropdown.Item eventKey={'/docs/bypass/list'}>List</NavDropdown.Item>
                             </NavDropdown>
                             <NavDropdown title="SETTING" active={((path: string) => { return path.startsWith('/docs/config/') || path.startsWith('/docs/webui/') })(usePathname())}>
                                 <NavDropdown.Item eventKey={'/docs/config/'}>Config</NavDropdown.Item>

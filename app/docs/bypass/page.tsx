@@ -7,12 +7,18 @@ import Loading from "../common/loading";
 import { FetchProtobuf, useProtoSWR } from "../common/proto";
 import { GlobalToastContext } from "../common/toast";
 import { configSchema } from "../pbes/config/bypass/bypass_pb";
-import { bypass } from "../pbes/config/grpc/config_pb";
+import { bypass, inbound, lists, resolver } from "../pbes/config/grpc/config_pb";
 import Bypass from "./bypass";
+import { FilterContext } from "./filter/filter";
 import { JsonModal } from "./modal";
 
 function BypassComponent() {
     const ctx = useContext(GlobalToastContext);
+
+
+    const { data: listsData } = useProtoSWR(lists.method.list)
+    const { data: inboundsData } = useProtoSWR(inbound.method.list)
+    const { data: resolvers } = useProtoSWR(resolver.method.list)
 
     const [saving, setSaving] = useState(false);
     const [reloading, setReloading] = useState(false);
@@ -21,6 +27,7 @@ function BypassComponent() {
 
     const { data: setting, error, isLoading, mutate: setSetting } =
         useProtoSWR(bypass.method.load, { revalidateOnFocus: false })
+
 
     if (error) return <Loading code={error.code}>{error.msg}</Loading>
     if (isLoading || !setting) return <Loading />
@@ -37,11 +44,17 @@ function BypassComponent() {
             onSave={modalData.onSave}
         />
 
-        <Bypass
-            bypass={clone(configSchema, setting)}
-            onChange={(x) => { setSetting(x, false) }}
-            setModalData={setModalData}
-        />
+        <FilterContext value={{
+            Inbounds: inboundsData ? inboundsData.names : [],
+            Lists: listsData ? listsData.names : [],
+            Resolvers: resolvers ? resolvers.names.sort((a, b) => a.localeCompare(b)) : [],
+        }}>
+            <Bypass
+                bypass={clone(configSchema, setting)}
+                onChange={(x) => { setSetting(x, false) }}
+                setModalData={setModalData}
+            />
+        </FilterContext>
 
         <Stack gap={1} direction="horizontal" className="mt-2">
             <ButtonGroup>
