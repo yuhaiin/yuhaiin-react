@@ -1,28 +1,17 @@
 "use client"
 
-import { clone, fromJsonString, toJsonString } from "@bufbuild/protobuf";
-import { useContext, useState } from "react";
-import { Button, ButtonGroup, Spinner, Stack } from "react-bootstrap";
+import { clone } from "@bufbuild/protobuf";
 import Loading from "../common/loading";
-import { FetchProtobuf, useProtoSWR } from "../common/proto";
-import { GlobalToastContext } from "../common/toast";
+import { useProtoSWR } from "../common/proto";
 import { configSchema } from "../pbes/config/bypass/bypass_pb";
 import { bypass, inbound, lists, resolver } from "../pbes/config/grpc/config_pb";
 import Bypass from "./bypass";
 import { FilterContext } from "./filter/filter";
-import { JsonModal } from "./modal";
 
 function BypassComponent() {
-    const ctx = useContext(GlobalToastContext);
-
-
-    const { data: listsData } = useProtoSWR(lists.method.list)
-    const { data: inboundsData } = useProtoSWR(inbound.method.list)
-    const { data: resolvers } = useProtoSWR(resolver.method.list)
-
-    const [saving, setSaving] = useState(false);
-    const [reloading, setReloading] = useState(false);
-    const [modalData, setModalData] = useState<{ show: boolean, data?: string, import?: boolean, onSave?: (data: string) => void }>({ show: false });
+    const { data: listsData } = useProtoSWR(lists.method.list, { revalidateOnFocus: false })
+    const { data: inboundsData } = useProtoSWR(inbound.method.list, { revalidateOnFocus: false })
+    const { data: resolvers } = useProtoSWR(resolver.method.list, { revalidateOnFocus: false })
 
 
     const { data: setting, error, isLoading, mutate: setSetting } =
@@ -34,98 +23,15 @@ function BypassComponent() {
 
     return <>
 
-        <JsonModal
-            onHide={() => {
-                setModalData(prev => { return { ...prev, show: false } })
-            }}
-            show={modalData.show}
-            plaintext={!modalData.import}
-            data={modalData.data}
-            onSave={modalData.onSave}
-        />
 
         <FilterContext value={{
             Inbounds: inboundsData ? inboundsData.names : [],
             Lists: listsData ? listsData.names : [],
             Resolvers: resolvers ? resolvers.names.sort((a, b) => a.localeCompare(b)) : [],
         }}>
-            <Bypass
-                bypass={clone(configSchema, setting)}
-                onChange={(x) => { setSetting(x, false) }}
-                setModalData={setModalData}
-            />
+            <Bypass bypass={clone(configSchema, setting)} onChange={(x) => { setSetting(x, false) }} refresh={setSetting} />
         </FilterContext>
 
-        <Stack gap={1} direction="horizontal" className="mt-2">
-            <ButtonGroup>
-                <Button
-                    variant="outline-primary"
-                    disabled={saving}
-                    onClick={() => {
-                        setSaving(true)
-                        FetchProtobuf(bypass.method.save, setting)
-                            .then(async ({ error }) => {
-                                if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${error.msg}`)
-                                else {
-                                    ctx.Info("Save Successfully");
-                                    setSetting()
-                                }
-                                setSaving(false)
-                            })
-                    }}
-                >
-                    <i className="bi bi-floppy"></i> Save
-                    {saving && <>&nbsp;<Spinner size="sm" animation="border" variant='primary' /></>}
-                </Button>
-                <Button
-                    variant="outline-primary"
-                    disabled={reloading}
-                    onClick={() => {
-                        setReloading(true)
-                        FetchProtobuf(bypass.method.reload)
-                            .then(async ({ error }) => {
-                                if (error !== undefined) ctx.Error(`reload failed, ${error.code}| ${error.msg}`)
-                                else {
-                                    ctx.Info("Reload Successfully");
-                                    setSetting()
-                                }
-                                setReloading(false)
-                            })
-                    }}
-                >
-                    <i className="bi bi-arrow-clockwise"></i> Refresh Now
-                    {reloading && <>&nbsp;<Spinner size="sm" animation="border" variant='primary' /></>}
-                </Button>
-            </ButtonGroup>
-
-            <ButtonGroup>
-                <Button
-                    variant="outline-success"
-                    onClick={() => {
-                        setModalData({
-                            show: true,
-                            import: true,
-                            onSave: (data: string) => {
-                                const v = fromJsonString(configSchema, data)
-                                setSetting(v, false)
-                                setModalData(prev => { return { ...prev, show: false } })
-                            }
-                        })
-                    }}
-                >
-                    <i className="bi bi-box-arrow-in-down"></i> Import
-                </Button>
-                <Button
-                    variant="outline-success"
-                    onClick={() => {
-                        const data = toJsonString(configSchema, setting, { prettySpaces: 2 })
-                        setModalData({ show: true, data: data })
-                    }}
-                >
-                    <i className="bi bi-box-arrow-in-up"></i> Export
-                </Button>
-            </ButtonGroup>
-        </Stack>
     </>
 }
 

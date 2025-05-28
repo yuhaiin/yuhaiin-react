@@ -10,9 +10,9 @@ import Loading, { Error } from "../../common/loading";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../common/proto";
 import { SettingCheck, SettingTypeSelect } from "../../common/switch";
 import { GlobalToastContext } from "../../common/toast";
+import { NewItemList, SettingInputText } from "../../config/components";
 import { dns, dnsSchema, type, typeSchema } from "../../pbes/config/dns/dns_pb";
 import { resolver, save_resolverSchema } from "../../pbes/config/grpc/config_pb";
-import { NewItemList, SettingInputText } from "../components";
 
 export default function ResolverComponent() {
     return <>

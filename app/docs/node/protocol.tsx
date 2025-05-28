@@ -1,6 +1,7 @@
 "use client"
 
 import { create } from "@bufbuild/protobuf";
+import dynamic from "next/dynamic";
 import { FC, useState } from 'react';
 import { Button, InputGroup, ListGroup } from "react-bootstrap";
 import { FormSelect } from "../common/switch";
@@ -37,31 +38,10 @@ import {
     yuubinsyaSchema
 } from "../pbes/node/protocol/protocol_pb";
 import { BootstrapDnsWarp } from "./bootstrap_dns_warp";
-import { Directv2 } from './direct';
 import { Dropv2 } from './drop';
-import { Grpcv2 } from './grpc';
-import { HTTPv2, UnWrapHttp } from './http';
-import { HTTP2v2 } from './http2';
-import { Muxv2 } from './mux';
 import { Nonev2 } from './none';
-import { Quicv2 } from './quic';
-import { Realityv2 } from './reality';
 import { Rejectv2 } from './reject';
-import { Set } from "./set";
-import { ObfsHttpv2, Shadowsocksv2 } from './shadowsocks';
-import { Shadowsocksrv2 } from './shadowsocksr';
-import { Simplev2 } from './simple';
-import { Socks5v2 } from './socks5';
-import { Tailscale } from "./tailscale";
-import { Tlsv2 } from './tls';
-import { UnWrapTls } from "./tls_server";
 import { Props } from './tools';
-import { Trojanv2 } from './trojan';
-import { Vlessv2 } from './vless';
-import { Vmessv2 } from './vmess';
-import { Websocketv2 } from './websocket';
-import { Wireguardv2 } from './wireguard';
-import { Yuubinsyav2 } from './yuubinsta';
 
 
 export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: string[] }> =
@@ -122,6 +102,30 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
         </>
     }
 
+const LazySimple = dynamic(() => import("./simple").then(mod => mod.Simplev2), { ssr: false })
+const LazyDirect = dynamic(() => import("./direct").then(mod => mod.Directv2), { ssr: false })
+const LazyTls = dynamic(() => import("./tls").then(mod => mod.Tlsv2), { ssr: false })
+const LazyWebsocket = dynamic(() => import("./websocket").then(mod => mod.Websocketv2), { ssr: false })
+const LazyShadowsocks = dynamic(() => import("./shadowsocks").then(mod => mod.Shadowsocksv2), { ssr: false })
+const LazyShadowsocksr = dynamic(() => import("./shadowsocksr").then(mod => mod.Shadowsocksrv2), { ssr: false })
+const LazyVless = dynamic(() => import("./vless").then(mod => mod.Vlessv2), { ssr: false })
+const LazyVmess = dynamic(() => import("./vmess").then(mod => mod.Vmessv2), { ssr: false })
+const LazyTrojan = dynamic(() => import("./trojan").then(mod => mod.Trojanv2), { ssr: false })
+const LazyObfsHttp = dynamic(() => import("./shadowsocks").then(mod => mod.ObfsHttpv2), { ssr: false })
+const LazySocks5 = dynamic(() => import("./socks5").then(mod => mod.Socks5v2), { ssr: false })
+const LazyHttp = dynamic(() => import("./http").then(mod => mod.HTTPv2), { ssr: false })
+const LazyYuubinsya = dynamic(() => import("./yuubinsta").then(mod => mod.Yuubinsyav2), { ssr: false })
+const LazyGrpc = dynamic(() => import("./grpc").then(mod => mod.Grpcv2), { ssr: false })
+const LazyHttp2 = dynamic(() => import("./http2").then(mod => mod.HTTP2v2), { ssr: false })
+const LazyReality = dynamic(() => import("./reality").then(mod => mod.Realityv2), { ssr: false })
+const LazyWireguard = dynamic(() => import("./wireguard").then(mod => mod.Wireguardv2), { ssr: false })
+const LazyMux = dynamic(() => import("./mux").then(mod => mod.Muxv2), { ssr: false })
+const LazyTailscale = dynamic(() => import("./tailscale").then(mod => mod.Tailscale), { ssr: false })
+const LazySet = dynamic(() => import("./set").then(mod => mod.Set), { ssr: false })
+const LazyTlsTermination = dynamic(() => import("./tls_server").then(mod => mod.UnWrapTls), { ssr: false })
+const LazyHttpTermination = dynamic(() => import("./http").then(mod => mod.UnWrapHttp), { ssr: false })
+const LazyQuic = dynamic(() => import("./quic").then(mod => mod.Quicv2), { ssr: false })
+
 const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -130,59 +134,59 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
     const data = value.protocol
     switch (data.case) {
         case "simple":
-            return <Simplev2 value={data.value} onChange={(e) => update(e)} />
+            return <LazySimple value={data.value} onChange={(e) => update(e)} />
         case "direct":
-            return <Directv2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyDirect value={data.value} onChange={(e) => update(e)} />
         case "drop":
             return Dropv2
         case "tls":
-            return <Tlsv2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyTls value={data.value} onChange={(e) => update(e)} />
         case "websocket":
-            return <Websocketv2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyWebsocket value={data.value} onChange={(e) => update(e)} />
         case "shadowsocks":
-            return <Shadowsocksv2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyShadowsocks value={data.value} onChange={(e) => update(e)} />
         case "quic":
-            return <Quicv2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyQuic value={data.value} onChange={(e) => update(e)} />
         case "vless":
-            return <Vlessv2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyVless value={data.value} onChange={(e) => update(e)} />
         case "vmess":
-            return <Vmessv2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyVmess value={data.value} onChange={(e) => update(e)} />
         case "trojan":
-            return <Trojanv2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyTrojan value={data.value} onChange={(e) => update(e)} />
         case "shadowsocksr":
-            return <Shadowsocksrv2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyShadowsocksr value={data.value} onChange={(e) => update(e)} />
         case "obfsHttp":
-            return <ObfsHttpv2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyObfsHttp value={data.value} onChange={(e) => update(e)} />
         case "none":
             return Nonev2
         case "socks5":
-            return <Socks5v2 value={data.value} onChange={(e) => update(e)} />
+            return <LazySocks5 value={data.value} onChange={(e) => update(e)} />
         case "http":
-            return <HTTPv2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyHttp value={data.value} onChange={(e) => update(e)} />
         case "reject":
             return Rejectv2
         case "yuubinsya":
-            return <Yuubinsyav2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyYuubinsya value={data.value} onChange={(e) => update(e)} />
         case "grpc":
-            return <Grpcv2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyGrpc value={data.value} onChange={(e) => update(e)} />
         case "http2":
-            return <HTTP2v2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyHttp2 value={data.value} onChange={(e) => update(e)} />
         case "reality":
-            return <Realityv2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyReality value={data.value} onChange={(e) => update(e)} />
         case "wireguard":
-            return <Wireguardv2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyWireguard value={data.value} onChange={(e) => update(e)} />
         case "mux":
-            return <Muxv2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyMux value={data.value} onChange={(e) => update(e)} />
         case "bootstrapDnsWarp":
             return BootstrapDnsWarp
         case "tailscale":
-            return <Tailscale value={data.value} onChange={(e) => update(e)} />
+            return <LazyTailscale value={data.value} onChange={(e) => update(e)} />
         case "set":
-            return <Set value={data.value} onChange={(e) => update(e)} />
+            return <LazySet value={data.value} onChange={(e) => update(e)} />
         case "tlsTermination":
-            return <UnWrapTls value={data.value} onChange={(e) => update(e)} />
+            return <LazyTlsTermination value={data.value} onChange={(e) => update(e)} />
         case "httpTermination":
-            return <UnWrapHttp value={data.value} onChange={(e) => update(e)} />
+            return <LazyHttpTermination value={data.value} onChange={(e) => update(e)} />
         default: return Unknown
     }
 }

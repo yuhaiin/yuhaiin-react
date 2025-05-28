@@ -30,6 +30,7 @@ export const SettingTypeSelect: FC<{
     onChange: (no: number) => void,
     filter?: (v: DescEnumValue) => boolean
     format?: (v: number) => string,
+    emptyChoose?: boolean,
     lastElem?: boolean
 }> = ({ ...props }) => {
     return <Form.Group as={Row} className={!props.lastElem ? 'mb-2' : ''}>
@@ -37,6 +38,7 @@ export const SettingTypeSelect: FC<{
         <Col sm={10}>
             <Form.Select value={props.value}
                 onChange={(e) => props.onChange(Number(e.target.value))} >
+                {props.emptyChoose && <option value="">Choose...</option>}
                 {
                     props.type.values.
                         filter(props.filter ?? (() => true)).

@@ -5,14 +5,14 @@ import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import Error from 'next/error';
 import { FC, useContext, useEffect, useState } from "react";
 import { Badge, Button, ButtonGroup, Card, FloatingLabel, Form, ListGroup, Modal, ToggleButton } from "react-bootstrap";
-import { ConfirmModal } from "../common/confirm";
-import Loading from "../common/loading";
-import { FetchProtobuf, useProtoSWR } from '../common/proto';
-import { FormSelect } from "../common/switch";
-import { GlobalToastContext } from "../common/toast";
-import { NodeModal } from "../node/modal";
-import { node, nodes_response, save_tag_req, save_tag_reqSchema, tag, tags_response } from "../pbes/node/grpc/node_pb";
-import { tag_type, tags, tagsSchema } from "../pbes/node/tag/tag_pb";
+import { ConfirmModal } from "../../common/confirm";
+import Loading from "../../common/loading";
+import { FetchProtobuf, useProtoSWR } from '../../common/proto';
+import { FormSelect } from "../../common/switch";
+import { GlobalToastContext } from "../../common/toast";
+import { NodeModal } from "../../node/modal";
+import { node, nodes_response, save_tag_req, save_tag_reqSchema, tag, tags_response } from "../../pbes/node/grpc/node_pb";
+import { tag_type, tags, tagsSchema } from "../../pbes/node/tag/tag_pb";
 
 function Tags() {
     const ctx = useContext(GlobalToastContext);

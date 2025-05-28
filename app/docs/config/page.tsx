@@ -8,7 +8,7 @@ import Loading, { Error } from '../common/loading';
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
 import { SettingCheck, SettingTypeSelect } from "../common/switch";
 import { GlobalToastContext } from '../common/toast';
-import { advanced_config, advanced_configSchema, setting as Setting, system_proxySchema } from '../pbes/config/config_pb';
+import { advanced_configSchema, setting as Setting, system_proxySchema } from '../pbes/config/config_pb';
 import { config_service } from '../pbes/config/grpc/config_pb';
 import { log_level, log_levelSchema } from '../pbes/config/log/log_pb';
 import { Remind, SettingInputText } from './components';
@@ -25,6 +25,8 @@ function ConfigComponent() {
     if (isLoading || setting === undefined) return <Loading />
 
     const getSystemProxy = (data: Setting) => {
+        if (!data.systemProxy) setSetting({ ...data, systemProxy: create(system_proxySchema, { http: false, socks5: false }) }, false)
+
         const x: number[] = []
         if (data.systemProxy?.http) x.push(1)
         if (data.systemProxy?.socks5) x.push(2)
@@ -43,26 +45,29 @@ function ConfigComponent() {
     }
 
     const getAdvanced = () => {
-        if (setting.advancedConfig) return setting.advancedConfig
-        else return create(advanced_configSchema, {
-            relayBufferSize: 4096,
-            udpRingbufferSize: 250,
-            udpBufferSize: 2048
-        })
-    }
+        if (
+            !setting.advancedConfig ||
+            !setting.advancedConfig.relayBufferSize ||
+            !setting.advancedConfig.udpRingbufferSize ||
+            !setting.advancedConfig.udpBufferSize
+        ) {
+            setSetting(prev => {
+                const tmp = { ...prev }
+                if (!tmp.advancedConfig) tmp.advancedConfig = create(advanced_configSchema, {
+                    relayBufferSize: 4096,
+                    udpRingbufferSize: 250,
+                    udpBufferSize: 2048
+                })
 
-    const setAdvanced = (f: (data: advanced_config) => advanced_config) => {
-        setSetting(prev => {
-            const tmp = { ...prev }
-            if (!tmp.advancedConfig) tmp.advancedConfig = create(advanced_configSchema, {
-                relayBufferSize: 4096,
-                udpRingbufferSize: 250,
-                udpBufferSize: 2048
-            })
-            else tmp.advancedConfig = { ...tmp.advancedConfig }
-            tmp.advancedConfig = f(tmp.advancedConfig)
-            return tmp
-        }, false)
+                if (!tmp.advancedConfig.relayBufferSize) tmp.advancedConfig.relayBufferSize = 4096
+                if (!tmp.advancedConfig.udpRingbufferSize) tmp.advancedConfig.udpRingbufferSize = 250
+                if (!tmp.advancedConfig.udpBufferSize) tmp.advancedConfig.udpBufferSize = 2048
+
+                return tmp
+            }, false)
+        }
+
+        return setting.advancedConfig
     }
 
     return (
@@ -127,15 +132,15 @@ function ConfigComponent() {
 
                     <Form.Label>UDP Buffer Size ({getAdvanced().udpBufferSize ?? 2048} Bytes)</Form.Label>
                     <Form.Range value={getAdvanced().udpBufferSize ?? 2048} min={2048} max={65536} step={1024}
-                        onChange={(v) => setAdvanced(prev => { return { ...prev, udpBufferSize: v.target.valueAsNumber } })} />
+                        onChange={(v) => setSetting({ ...setting, advancedConfig: { ...setting.advancedConfig, udpBufferSize: v.target.valueAsNumber } }, false)} />
 
                     <Form.Label>UDP Ring Buffer Size ({getAdvanced().udpRingbufferSize ?? 250})</Form.Label>
                     <Form.Range value={getAdvanced().udpRingbufferSize ?? 250} min={100} max={2000} step={10}
-                        onChange={(v) => setAdvanced(prev => { return { ...prev, udpRingbufferSize: v.target.valueAsNumber } })} />
+                        onChange={(v) => setSetting({ ...setting, advancedConfig: { ...setting.advancedConfig, udpRingbufferSize: v.target.valueAsNumber } }, false)} />
 
                     <Form.Label>Relay Buffer Size ({getAdvanced().relayBufferSize ?? 4096} Bytes)</Form.Label>
                     <Form.Range value={getAdvanced().relayBufferSize ?? 4096} min={2048} max={65536} step={1024}
-                        onChange={(v) => setAdvanced(prev => { return { ...prev, relayBufferSize: v.target.valueAsNumber } })} />
+                        onChange={(v) => setSetting({ ...setting, advancedConfig: { ...setting.advancedConfig, relayBufferSize: v.target.valueAsNumber } }, false)} />
 
                 </Card.Body>
 

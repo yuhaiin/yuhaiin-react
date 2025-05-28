@@ -1,7 +1,5 @@
 "use client"
 
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState } from 'react';
 import { Container } from 'react-bootstrap';
 import { GlobalToastProvider } from './docs/common/toast';

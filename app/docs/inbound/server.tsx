@@ -2,12 +2,12 @@ import { create } from '@bufbuild/protobuf';
 import { FC, useState } from 'react';
 import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import { join as shlexJoin, split as shlexSplit } from 'shlex';
-import { SettingCheck, SettingTypeSelect } from "../../common/switch";
-import { TlsConfigv2 } from '../../node/tls';
-import { TLSServerComponents } from '../../node/tls_server';
-import { ech_config, ech_configSchema, http, mixed, quic, reality, redir, reverse_http, reverse_tcp, routeSchema, socks5, tls, tls_auto, tproxy, tun, tun_endpoint_driverSchema } from '../../pbes/config/listener/listener_pb';
-import { tls_configSchema as tls_config$1, tls_server_configSchema } from '../../pbes/node/protocol/protocol_pb';
-import { NewItemList, SettingInputText, SettingInputTextarea } from '../components';
+import { SettingCheck, SettingTypeSelect } from "../common/switch";
+import { NewItemList, SettingInputText, SettingInputTextarea } from '../config/components';
+import { TlsConfigv2 } from '../node/tls';
+import { TLSServerComponents } from '../node/tls_server';
+import { ech_config, ech_configSchema, http, mixed, quic, reality, redir, reverse_http, reverse_tcp, routeSchema, socks5, tcp_udp_controlSchema, tcpudp, tls, tls_auto, tproxy, tun, tun_endpoint_driverSchema, yuubinsya } from '../pbes/config/listener/listener_pb';
+import { tls_configSchema as tls_config$1, tls_server_configSchema } from '../pbes/node/protocol/protocol_pb';
 
 export const HTTPComponents = (props: { http: http, onChange: (x: http) => void }) => {
     return (
@@ -271,4 +271,42 @@ export const RealityComponents = (props: { reality: reality, onChange: (x: reali
             </Form.Group>
         </>
     )
+}
+
+
+export const Yuubinsya = (props: { yuubinsya: yuubinsya, onChange: (x: yuubinsya) => void }) => {
+    return <>
+        <SettingCheck
+            label="TCP Encrypt"
+            checked={props.yuubinsya.tcpEncrypt}
+            onChange={() => { props.onChange({ ...props.yuubinsya, tcpEncrypt: !props.yuubinsya.tcpEncrypt }) }}
+        />
+        <SettingCheck
+            label="UDP Encrypt"
+            checked={props.yuubinsya.udpEncrypt}
+            onChange={() => { props.onChange({ ...props.yuubinsya, udpEncrypt: !props.yuubinsya.udpEncrypt }) }}
+        />
+        <SettingInputText
+            label="Password"
+            value={props.yuubinsya.password}
+            onChange={(e) => { props.onChange({ ...props.yuubinsya, password: e }) }}
+        />
+    </>
+}
+
+export const TcpUdp = (props: { protocol: tcpudp, onChange: (x: tcpudp) => void }) => {
+    return <>
+        <SettingInputText
+            label="Host"
+            value={props.protocol.host}
+            onChange={(e) => { props.onChange({ ...props.protocol, host: e }) }}
+        />
+
+        <SettingTypeSelect
+            label="Control"
+            type={tcp_udp_controlSchema}
+            value={props.protocol.control}
+            onChange={(e) => { props.onChange({ ...props.protocol, control: e }) }}
+        />
+    </>
 }

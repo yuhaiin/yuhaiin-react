@@ -1,8 +1,11 @@
 import { DescField } from "@bufbuild/protobuf";
 import { reflect, ReflectMessage } from "@bufbuild/protobuf/reflect";
-import { FC, JSX } from "react";
+import { FC, JSX, useState } from "react";
 import { ListGroup } from "react-bootstrap";
+import useSWR from "swr";
+import { FetchProtobuf, ProtoPath } from "../common/proto";
 import { connection, connectionSchema } from "../pbes/statistic/config_pb";
+import { connections, counter, total_flow } from "../pbes/statistic/grpc/config_pb";
 
 export const ListGroupItem = (props: { itemKey: string, itemValue: string, showModal?: (hash: string) => void }) => {
     return (
@@ -73,4 +76,94 @@ export const ConnectionInfo: FC<{ value: connection, endContent?: JSX.Element, s
             {endContent}
         </ListGroup>
     </>
+}
+
+
+const Unit = {
+    B: 'B',
+    KB: 'KB',
+    MB: 'MB',
+    GB: 'GB',
+    TB: 'TB',
+    PB: 'PB'
+};
+
+function reducedUnit(bytes: number) {
+    if (bytes >= 1125899906842624) {
+        return { bytes: bytes / 1125899906842624, unit: Unit.PB };
+    }
+    if (bytes >= 1099511627776) {
+        return { bytes: bytes / 1099511627776, unit: Unit.TB };
+    }
+    if (bytes >= 1073741824) {
+        return { bytes: bytes / 1073741824, unit: Unit.GB };
+    }
+    if (bytes >= 1048576) {
+        return { bytes: bytes / 1048576, unit: Unit.MB };
+    }
+    if (bytes >= 1024) {
+        return { bytes: bytes / 1024, unit: Unit.KB };
+    }
+    return { bytes, unit: Unit.B };
+}
+
+export const formatBytes = (a = 0, b = 2) => {
+    const { bytes, unit } = reducedUnit(a);
+    return `${bytes.toFixed(b)}${unit}`;
+}
+
+export type last_flow = {
+    download: number,
+    download_rate: string,
+    upload: number,
+    upload_rate: string,
+    counters: { [key: string]: counter },
+    time: Date
+}
+
+const generateFlow = (flow: total_flow, prev: last_flow): { upload_rate: string, download_rate: string } => {
+    const duration = (new Date().getTime() - prev.time.getTime()) / 1000
+    if ((prev.download === 0 && prev.upload === 0) || duration === 0) return { download_rate: "Loading...", upload_rate: "Loading..." }
+    const download = Number(flow.download)
+    const upload = Number(flow.upload)
+    return {
+        download_rate: `(${formatBytes(download)}): ${formatBytes((download - prev.download) / duration)}/S`,
+        upload_rate: `(${formatBytes(upload)}): ${formatBytes((upload - prev.upload) / duration)}/S`
+    }
+}
+
+
+export const useFlow = () => {
+    const [lastFlow, setLastFlow] = useState<last_flow>({
+        download: 0, upload: 0, counters: {}, time: new Date(),
+        download_rate: "Loading...", upload_rate: "Loading..."
+    });
+
+    return useSWR(
+        ProtoPath(connections.method.total),
+        async () => {
+            return FetchProtobuf(connections.method.total).then(async ({ data: r, error }) => {
+                if (error) throw error
+                if (r) {
+                    try {
+                        const resp = generateFlow(r, lastFlow)
+                        setLastFlow(prev => {
+                            return {
+                                ...prev,
+                                download: Number(r.download),
+                                upload: Number(r.upload),
+                                counters: r.counters,
+                                time: new Date(),
+                                download_rate: resp.download_rate,
+                                upload_rate: resp.upload_rate
+                            }
+                        })
+                        return { ...lastFlow }
+                    } catch (e) {
+                        throw { msg: e.toString(), code: 500 }
+                    }
+                }
+            })
+        },
+        { refreshInterval: 2000 })
 }

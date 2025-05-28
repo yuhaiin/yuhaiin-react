@@ -5,12 +5,12 @@ import { StringValueSchema } from "@bufbuild/protobuf/wkt"
 import React, { useContext, useEffect, useState } from "react"
 import { Button, Card, Form, InputGroup, ListGroup, Modal, Spinner } from "react-bootstrap"
 import useSWR from "swr"
-import Loading, { Error } from "../../common/loading"
-import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../common/proto"
-import { SettingCheck } from "../../common/switch"
-import { GlobalToastContext } from "../../common/toast"
-import { inbound as inboundService } from "../../pbes/config/grpc/config_pb"
-import { inboundSchema } from "../../pbes/config/listener/listener_pb"
+import Loading, { Error } from "../common/loading"
+import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../common/proto"
+import { SettingCheck } from "../common/switch"
+import { GlobalToastContext } from "../common/toast"
+import { inbound as inboundService } from "../pbes/config/grpc/config_pb"
+import { inboundSchema } from "../pbes/config/listener/listener_pb"
 import { Inbound } from "./inboud"
 
 
@@ -152,32 +152,34 @@ function InboudComponent() {
                 <SettingCheck label='Sniff'
                     checked={!inbounds.sniff?.enabled ? false : true}
                     onChange={() => mutate({ ...inbounds, sniff: { ...inbounds.sniff, enabled: !inbounds.sniff.enabled } }, false)} />
+
+                <hr />
+
+                <div className="d-flex justify-content-end">
+                    <Button
+                        variant="outline-primary"
+                        disabled={saving}
+                        onClick={() => {
+                            setSaving(true)
+                            FetchProtobuf(inboundService.method.apply, inbounds)
+                                .then(async ({ error }) => {
+                                    if (error === undefined) {
+                                        ctx.Info("save hosts successful")
+                                    } else {
+                                        const msg = error.msg;
+                                        ctx.Error(msg)
+                                        console.error(error.code, msg)
+                                    }
+
+                                    mutate()
+                                    setSaving(false)
+                                })
+                        }}
+                    >
+                        Save{saving && <>&nbsp;<Spinner size="sm" animation="border" /></>}
+                    </Button>
+                </div>
             </Card.Body>
-
-            <Card.Footer className="d-flex justify-content-end">
-                <Button
-                    variant="outline-primary"
-                    disabled={saving}
-                    onClick={() => {
-                        setSaving(true)
-                        FetchProtobuf(inboundService.method.apply, inbounds)
-                            .then(async ({ error }) => {
-                                if (error === undefined) {
-                                    ctx.Info("save hosts successful")
-                                } else {
-                                    const msg = error.msg;
-                                    ctx.Error(msg)
-                                    console.error(error.code, msg)
-                                }
-
-                                mutate()
-                                setSaving(false)
-                            })
-                    }}
-                >
-                    Save{saving && <>&nbsp;<Spinner size="sm" animation="border" /></>}
-                </Button>
-            </Card.Footer>
         </Card>
 
         <Card className="mt-3">

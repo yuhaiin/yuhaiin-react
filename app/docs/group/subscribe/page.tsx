@@ -4,11 +4,11 @@ import { create } from "@bufbuild/protobuf";
 import Error from 'next/error';
 import { useContext, useState } from "react";
 import { Button, ButtonGroup, Card, Col, Dropdown, DropdownButton, FloatingLabel, Form, Row, Spinner } from "react-bootstrap";
-import Loading from "../common/loading";
-import { FetchProtobuf, useProtoSWR } from '../common/proto';
-import { GlobalToastContext } from "../common/toast";
-import { link_reqSchema, save_link_reqSchema, subscribe } from "../pbes/node/grpc/node_pb";
-import { link, linkSchema, type } from "../pbes/node/subscribe/subscribe_pb";
+import Loading from "../../common/loading";
+import { FetchProtobuf, useProtoSWR } from '../../common/proto';
+import { GlobalToastContext } from "../../common/toast";
+import { link_reqSchema, save_link_reqSchema, subscribe } from "../../pbes/node/grpc/node_pb";
+import { link, linkSchema, type } from "../../pbes/node/subscribe/subscribe_pb";
 
 function Subscribe() {
     const [updating, setUpdating] = useState<{ [key: string]: boolean }>({});

@@ -4,21 +4,23 @@
   "private": true,
   "dependencies": {
     "@bufbuild/buf": "^1.52.0",
-    "@bufbuild/protobuf": "^2.2.5",
-    "@bufbuild/protoc-gen-es": "^2.2.5",
+    "@bufbuild/protobuf": "^2.5.1",
+    "@bufbuild/protoc-gen-es": "^2.5.1",
+    "@next/bundle-analyzer": "^15.3.3",
     "@types/node": "^22.14.1",
-    "@types/react": "^19.1.2",
+    "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.1",
     "bootstrap": "^v5.3.5",
     "bootstrap-icons": "^1.11.3",
-    "next": "^15.3.1",
+    "next": "^15.3.3",
     "react-bootstrap": "^2.10.9",
+    "react-select": "^5.10.1",
     "shlex": "^2.1.2",
     "swr": "^2.3.3",
     "typescript": "^5.8.3"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start"
   },

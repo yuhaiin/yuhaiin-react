@@ -1,7 +1,9 @@
 import { create } from "@bufbuild/protobuf";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { Button, InputGroup, ListGroup } from "react-bootstrap";
-import { FormSelect, SettingCheck, SettingTypeSelect } from "../../common/switch";
+import { FormSelect, SettingCheck } from "../common/switch";
+import { Container, MoveUpDown } from "../config/components";
 import {
     emptySchema,
     grpcSchema,
@@ -17,8 +19,6 @@ import {
     reverse_httpSchema,
     reverse_tcpSchema,
     socks5Schema,
-    tcp_udp_controlSchema,
-    tcpudp,
     tcpudpSchema,
     tls_autoSchema,
     tlsSchema,
@@ -27,12 +27,9 @@ import {
     transportSchema,
     tunSchema,
     websocketSchema,
-    yuubinsya,
     yuubinsyaSchema
-} from "../../pbes/config/listener/listener_pb";
-import { tls_server_configSchema } from "../../pbes/node/protocol/protocol_pb";
-import { Container, MoveUpDown, SettingInputText } from "../components";
-import { HTTPComponents, MixedComponents, QuicComponents, RealityComponents, RedirComponents, ReverseHTTPComponents, ReverseTCPComponents, Socks5Components, TLSAutoComponents, TlsComponents, TProxyComponents, TunComponents } from "./server";
+} from "../pbes/config/listener/listener_pb";
+import { tls_server_configSchema } from "../pbes/node/protocol/protocol_pb";
 
 export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
     const [newProtocol, setNewProtocol] = useState({ value: "normal" });
@@ -184,12 +181,15 @@ const Network = (props: { inbound: inbound, onChange: (x: inbound) => void }) =>
     </>
 }
 
+const LazyTcpUdp = dynamic(() => import("./server").then(mod => mod.TcpUdp), { ssr: false })
+const LazyQuic = dynamic(() => import("./server").then(mod => mod.QuicComponents), { ssr: false })
+
 const NetworkBase = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
     switch (props.inbound.network.case) {
         case "tcpudp":
-            return <TcpUdp protocol={props.inbound.network.value} onChange={(x) => { props.onChange({ ...props.inbound, network: { case: "tcpudp", value: x } }) }}></TcpUdp>
+            return <LazyTcpUdp protocol={props.inbound.network.value} onChange={(x) => { props.onChange({ ...props.inbound, network: { case: "tcpudp", value: x } }) }}></LazyTcpUdp>
         case "quic":
-            return <QuicComponents
+            return <LazyQuic
                 quic={props.inbound.network.value}
                 onChange={(x) => { props.onChange({ ...props.inbound, network: { case: "quic", value: x } }) }}
             />
@@ -198,17 +198,22 @@ const NetworkBase = (props: { inbound: inbound, onChange: (x: inbound) => void }
     }
 }
 
+const LazyTls = dynamic(() => import("./server").then(mod => mod.TlsComponents), { ssr: false })
+const LazyTlsAuto = dynamic(() => import("./server").then(mod => mod.TLSAutoComponents), { ssr: false })
+const LazyReality = dynamic(() => import("./server").then(mod => mod.RealityComponents), { ssr: false })
+
+
 const Transport = (props: { transport: transport, onChange: (x: transport) => void }) => {
     switch (props.transport.transport.case) {
         case "normal":
             return <><div className="text-center" style={{ opacity: '0.4' }}>Normal</div></>
         case "tls":
-            return <TlsComponents
+            return <LazyTls
                 tls={props.transport.transport.value}
                 onChange={(x) => { props.onChange({ ...props.transport, transport: { case: "tls", value: x } }) }}
             />
         case "tlsAuto":
-            return <TLSAutoComponents
+            return <LazyTlsAuto
                 tls={props.transport.transport.value}
                 onChange={(x) => { props.onChange({ ...props.transport, transport: { case: "tlsAuto", value: x } }) }}
             />
@@ -221,59 +226,70 @@ const Transport = (props: { transport: transport, onChange: (x: transport) => vo
         case "grpc":
             return <><div className="text-center" style={{ opacity: '0.4' }}>Grpc</div></>
         case "reality":
-            return <RealityComponents
+            return <LazyReality
                 reality={props.transport.transport.value}
                 onChange={(x) => { props.onChange({ ...props.transport, transport: { case: "reality", value: x } }) }}
             />
     }
 }
 
+const LazyHTTP = dynamic(() => import("./server").then(mod => mod.HTTPComponents), { ssr: false })
+const LazyReverseHTTP = dynamic(() => import("./server").then(mod => mod.ReverseHTTPComponents), { ssr: false })
+const LazyReverseTCP = dynamic(() => import("./server").then(mod => mod.ReverseTCPComponents), { ssr: false })
+const LazyRedir = dynamic(() => import("./server").then(mod => mod.RedirComponents), { ssr: false })
+const LazySocks5 = dynamic(() => import("./server").then(mod => mod.Socks5Components), { ssr: false })
+const LazyTProxy = dynamic(() => import("./server").then(mod => mod.TProxyComponents), { ssr: false })
+const LazyMixed = dynamic(() => import("./server").then(mod => mod.MixedComponents), { ssr: false })
+const LazyTun = dynamic(() => import("./server").then(mod => mod.TunComponents), { ssr: false })
+const LazyYuubinsya = dynamic(() => import("./server").then(mod => mod.Yuubinsya), { ssr: false })
+
+
 const ProtocolBase = (props: { inbound: inbound, onChange: (x: inbound) => void }) => {
     switch (props.inbound.protocol.case) {
         case "http":
-            return <HTTPComponents
+            return <LazyHTTP
                 http={props.inbound.protocol.value}
                 onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "http", value: x } }) }}
             />
         case "reverseHttp":
-            return <ReverseHTTPComponents
+            return <LazyReverseHTTP
                 reverse_http={props.inbound.protocol.value}
                 onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "reverseHttp", value: x } }) }}
             />
         case "reverseTcp":
-            return <ReverseTCPComponents
+            return <LazyReverseTCP
                 reverse_tcp={props.inbound.protocol.value}
                 onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "reverseTcp", value: x } }) }}
             />
         case "socks5":
-            return <Socks5Components
+            return <LazySocks5
                 socks5={props.inbound.protocol.value}
                 onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "socks5", value: x } }) }}
             />
         case "socks4a":
             return <></>
         case "mix":
-            return <MixedComponents
+            return <LazyMixed
                 mixed={props.inbound.protocol.value}
                 onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "mix", value: x } }) }}
             />
         case "redir":
-            return <RedirComponents
+            return <LazyRedir
                 redir={props.inbound.protocol.value}
                 onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "redir", value: x } }) }}
             />
         case "tun":
-            return <TunComponents
+            return <LazyTun
                 tun={props.inbound.protocol.value}
                 onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "tun", value: x } }) }}
             />
         case "yuubinsya":
-            return <Yuubinsya
+            return <LazyYuubinsya
                 yuubinsya={props.inbound.protocol.value}
                 onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "yuubinsya", value: x } }) }}
             />
         case "tproxy":
-            return <TProxyComponents
+            return <LazyTProxy
                 tproxy={props.inbound.protocol.value}
                 onChange={(x) => { props.onChange({ ...props.inbound, protocol: { case: "tproxy", value: x } }) }}
             />
@@ -344,40 +360,3 @@ const Protocol = (props: { inbound: inbound, onChange: (x: inbound) => void }) =
     </>
 }
 
-
-const Yuubinsya = (props: { yuubinsya: yuubinsya, onChange: (x: yuubinsya) => void }) => {
-    return <>
-        <SettingCheck
-            label="TCP Encrypt"
-            checked={props.yuubinsya.tcpEncrypt}
-            onChange={() => { props.onChange({ ...props.yuubinsya, tcpEncrypt: !props.yuubinsya.tcpEncrypt }) }}
-        />
-        <SettingCheck
-            label="UDP Encrypt"
-            checked={props.yuubinsya.udpEncrypt}
-            onChange={() => { props.onChange({ ...props.yuubinsya, udpEncrypt: !props.yuubinsya.udpEncrypt }) }}
-        />
-        <SettingInputText
-            label="Password"
-            value={props.yuubinsya.password}
-            onChange={(e) => { props.onChange({ ...props.yuubinsya, password: e }) }}
-        />
-    </>
-}
-
-const TcpUdp = (props: { protocol: tcpudp, onChange: (x: tcpudp) => void }) => {
-    return <>
-        <SettingInputText
-            label="Host"
-            value={props.protocol.host}
-            onChange={(e) => { props.onChange({ ...props.protocol, host: e }) }}
-        />
-
-        <SettingTypeSelect
-            label="Control"
-            type={tcp_udp_controlSchema}
-            value={props.protocol.control}
-            onChange={(e) => { props.onChange({ ...props.protocol, control: e }) }}
-        />
-    </>
-}

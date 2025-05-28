@@ -24,25 +24,29 @@ function NavBar(props: { children: React.ReactNode }) {
                             <Nav.Item><Nav.Link eventKey='/'>HOME</Nav.Link></Nav.Item>
                             <NavDropdown title="OUTBOUND" active={usePathname().startsWith('/docs/group/')}>
                                 <NavDropdown.Item eventKey={'/docs/group/'}>Outbound</NavDropdown.Item>
+                                <NavDropdown.Item eventKey='/docs/group/subscribe'>Subscribe</NavDropdown.Item>
                                 <NavDropdown.Item eventKey={'/docs/group/activates'}>Activates</NavDropdown.Item>
                             </NavDropdown>
-                            <Nav.Item><Nav.Link eventKey='/docs/tag/'>TAG</Nav.Link></Nav.Item>
-                            <Nav.Item><Nav.Link eventKey='/docs/subscribe/'>SUBSCRIBE</Nav.Link></Nav.Item>
+                            <NavDropdown title="INBOUND" active={usePathname().startsWith('/docs/inbound/')}>
+                                <NavDropdown.Item eventKey={'/docs/inbound/'}>Config</NavDropdown.Item>
+                            </NavDropdown>
+                            <NavDropdown title="BYPASS" active={usePathname().startsWith('/docs/bypass/')}>
+                                <NavDropdown.Item eventKey={'/docs/bypass/'}>Rule</NavDropdown.Item>
+                                <NavDropdown.Item eventKey={'/docs/bypass/list'}>List</NavDropdown.Item>
+                                <NavDropdown.Item eventKey='/docs/bypass/tag'>Tag</NavDropdown.Item>
+                                <NavDropdown.Divider />
+                                <NavDropdown.Item eventKey={'/docs/bypass/resolver/'}>Resolver</NavDropdown.Item>
+                                <NavDropdown.Divider />
+                                <NavDropdown.Item eventKey={'/docs/bypass/test'}>Test Route</NavDropdown.Item>
+                                <NavDropdown.Item eventKey={'/docs/bypass/block'}>Block History</NavDropdown.Item>
+                            </NavDropdown>
                             <NavDropdown title="CONNECTIONS" active={usePathname().startsWith('/docs/connections/')}>
                                 <NavDropdown.Item eventKey={'/docs/connections/'}>Connections</NavDropdown.Item>
                                 <NavDropdown.Item eventKey={'/docs/connections/history'}>History</NavDropdown.Item>
                                 <NavDropdown.Item eventKey={'/docs/connections/failed'}>Failed History</NavDropdown.Item>
                             </NavDropdown>
-                            <NavDropdown title="BYPASS" active={usePathname().startsWith('/docs/bypass/')}>
-                                <NavDropdown.Item eventKey={'/docs/bypass/'}>Config</NavDropdown.Item>
-                                <NavDropdown.Item eventKey={'/docs/bypass/test'}>Test Route</NavDropdown.Item>
-                                <NavDropdown.Item eventKey={'/docs/bypass/block'}>Block History</NavDropdown.Item>
-                                <NavDropdown.Item eventKey={'/docs/bypass/list'}>List</NavDropdown.Item>
-                            </NavDropdown>
                             <NavDropdown title="SETTING" active={((path: string) => { return path.startsWith('/docs/config/') || path.startsWith('/docs/webui/') })(usePathname())}>
                                 <NavDropdown.Item eventKey={'/docs/config/'}>Config</NavDropdown.Item>
-                                <NavDropdown.Item eventKey={'/docs/config/inbounds/'}>Inbound</NavDropdown.Item>
-                                <NavDropdown.Item eventKey={'/docs/config/resolver/'}>Resolver</NavDropdown.Item>
                                 <NavDropdown.Item eventKey={'/docs/webui/'}>WebUI</NavDropdown.Item>
                                 <NavDropdown.Divider />
                                 <NavDropdown.Item eventKey={APIUrl + '/debug/pprof'} >Pprof</NavDropdown.Item>
