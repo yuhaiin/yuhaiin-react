@@ -152,32 +152,34 @@ function InboudComponent() {
                 <SettingCheck label='Sniff'
                     checked={!inbounds.sniff?.enabled ? false : true}
                     onChange={() => mutate({ ...inbounds, sniff: { ...inbounds.sniff, enabled: !inbounds.sniff.enabled } }, false)} />
+
+                <hr />
+
+                <div className="d-flex justify-content-end">
+                    <Button
+                        variant="outline-primary"
+                        disabled={saving}
+                        onClick={() => {
+                            setSaving(true)
+                            FetchProtobuf(inboundService.method.apply, inbounds)
+                                .then(async ({ error }) => {
+                                    if (error === undefined) {
+                                        ctx.Info("save hosts successful")
+                                    } else {
+                                        const msg = error.msg;
+                                        ctx.Error(msg)
+                                        console.error(error.code, msg)
+                                    }
+
+                                    mutate()
+                                    setSaving(false)
+                                })
+                        }}
+                    >
+                        Save{saving && <>&nbsp;<Spinner size="sm" animation="border" /></>}
+                    </Button>
+                </div>
             </Card.Body>
-
-            <Card.Footer className="d-flex justify-content-end">
-                <Button
-                    variant="outline-primary"
-                    disabled={saving}
-                    onClick={() => {
-                        setSaving(true)
-                        FetchProtobuf(inboundService.method.apply, inbounds)
-                            .then(async ({ error }) => {
-                                if (error === undefined) {
-                                    ctx.Info("save hosts successful")
-                                } else {
-                                    const msg = error.msg;
-                                    ctx.Error(msg)
-                                    console.error(error.code, msg)
-                                }
-
-                                mutate()
-                                setSaving(false)
-                            })
-                    }}
-                >
-                    Save{saving && <>&nbsp;<Spinner size="sm" animation="border" /></>}
-                </Button>
-            </Card.Footer>
         </Card>
 
         <Card className="mt-3">

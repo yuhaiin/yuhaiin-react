@@ -13,6 +13,7 @@
     "bootstrap-icons": "^1.11.3",
     "next": "^15.3.1",
     "react-bootstrap": "^2.10.9",
+    "react-select": "^5.10.1",
     "shlex": "^2.1.2",
     "swr": "^2.3.3",
     "typescript": "^5.8.3"
