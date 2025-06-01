@@ -58,7 +58,9 @@ function Connections() {
 
                         <div className="d-sm-flex">
                             <div className="endpoint-name flex-grow-1 notranslate">Download</div>
-                            <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-download">{flow_error ? flow_error.msg : lastFlow.download_rate}</div>
+                            <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-download">
+                                {flow_error ? flow_error.msg : lastFlow ? lastFlow.download_rate : "Loading..."}
+                            </div>
                         </div>
                     </ListGroup.Item>
 
@@ -66,7 +68,9 @@ function Connections() {
                     <ListGroup.Item>
                         <div className="d-sm-flex">
                             <div className="endpoint-name flex-grow-1 notranslate">Upload</div>
-                            <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-upload">{flow_error ? flow_error.msg : lastFlow.upload_rate}</div>
+                            <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-upload">
+                                {flow_error ? flow_error.msg : lastFlow ? lastFlow.upload_rate : "Loading..."}
+                            </div>
                         </div>
                     </ListGroup.Item>
                 </ListGroup>

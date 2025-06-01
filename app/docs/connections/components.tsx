@@ -31,7 +31,12 @@ export const ListGroupItem = (props: { itemKey: string, itemValue: string, showM
     )
 }
 
-export const ConnectionInfo: FC<{ value: connection, endContent?: JSX.Element, showModal?: (hash: string) => void }> = ({ value, endContent, showModal }) => {
+export const ConnectionInfo: FC<{
+    value: connection,
+    startContent?: JSX.Element,
+    endContent?: JSX.Element,
+    showModal?: (hash: string) => void
+}> = ({ value, startContent, endContent, showModal }) => {
 
     function rangeInfo(d: connection) {
         const ref = reflect(connectionSchema, d)
@@ -72,6 +77,7 @@ export const ConnectionInfo: FC<{ value: connection, endContent?: JSX.Element, s
 
     return <>
         <ListGroup variant="flush">
+            {startContent}
             {rangeInfo(value)}
             {endContent}
         </ListGroup>
@@ -122,13 +128,23 @@ export type last_flow = {
 }
 
 const generateFlow = (flow: total_flow, prev: last_flow): { upload_rate: string, download_rate: string } => {
-    const duration = (new Date().getTime() - prev.time.getTime()) / 1000
-    if ((prev.download === 0 && prev.upload === 0) || duration === 0) return { download_rate: "Loading...", upload_rate: "Loading..." }
     const download = Number(flow.download)
     const upload = Number(flow.upload)
+    const duration = (new Date().getTime() - prev.time.getTime()) / 1000
+
+    const dstr = formatBytes(download)
+    const ustr = formatBytes(upload)
+    let dratestr = "Loading..."
+    let uratestr = "Loading..."
+
+    if ((prev.download !== 0 || prev.upload !== 0) && duration !== 0) {
+        dratestr = formatBytes((download - prev.download) / duration) + "/S"
+        uratestr = formatBytes((upload - prev.upload) / duration) + "/S"
+    }
+
     return {
-        download_rate: `(${formatBytes(download)}): ${formatBytes((download - prev.download) / duration)}/S`,
-        upload_rate: `(${formatBytes(upload)}): ${formatBytes((upload - prev.upload) / duration)}/S`
+        download_rate: `(${dstr}): ${dratestr}`,
+        upload_rate: `(${ustr}): ${uratestr}`
     }
 }
 
@@ -165,5 +181,7 @@ export const useFlow = () => {
                 }
             })
         },
-        { refreshInterval: 2000 })
+        {
+            refreshInterval: 2000
+        })
 }

@@ -3,7 +3,7 @@
 import { create } from "@bufbuild/protobuf"
 import { timestampDate, TimestampSchema } from "@bufbuild/protobuf/wkt"
 import { useState } from "react"
-import { Button, Modal, Spinner, Table } from "react-bootstrap"
+import { Button, ListGroup, Modal, Spinner, Table } from "react-bootstrap"
 import styles from "../../common/clickable.module.css"
 import Loading from "../../common/loading"
 import { useProtoSWR } from "../../common/proto"
@@ -38,10 +38,23 @@ function History() {
             <Modal.Body>
                 <ConnectionInfo
                     value={modalData.data?.connection ?? create(connectionSchema, {})}
-                    endContent={
+                    startContent={
                         <>
                             <ListGroupItem itemKey="Count" itemValue={modalData.data?.count.toString() ?? "1"} />
                             <ListGroupItem itemKey="Time" itemValue={timestampDate(modalData.data?.time ?? TimestampZero).toLocaleString()} />
+                        </>
+                    }
+                    endContent={
+                        <>
+                            <ListGroup.Item className="d-sm-flex justify-content-center">
+                                <Button
+                                    variant="outline-primary"
+                                    className="flex-grow-1"
+                                    onClick={() => setModalData(prev => { return { ...prev, show: false } })}
+                                >
+                                    Close
+                                </Button>
+                            </ListGroup.Item>
                         </>
                     }
                 />

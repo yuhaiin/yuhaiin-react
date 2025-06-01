@@ -1,6 +1,6 @@
 import { create } from '@bufbuild/protobuf';
-import React, { FC, useContext, useState } from 'react';
-import { Accordion, Button, ButtonGroup, Card, Col, Form, InputGroup, ListGroup, Row, Spinner } from 'react-bootstrap';
+import React, { FC, useContext, useEffect, useState } from 'react';
+import { Accordion, Button, ButtonGroup, Card, Col, Form, InputGroup, ListGroup, Modal, Row, Spinner } from 'react-bootstrap';
 import { ConfirmModal } from '../common/confirm';
 import Loading, { Error } from '../common/loading';
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
@@ -326,6 +326,7 @@ const Rulev2Component: FC = () => {
 
     const [filterModal, setFilterModal] = useState({ show: false, index: 0 })
     const [confirmData, setConfirmData] = useState({ show: false, index: -1 });
+    const [priorityModal, setPriorityModal] = useState({ show: false, index: -1 });
     const [newdata, setNewdata] = useState({ value: "" });
     const [isChangePriority, setIsChangePriority] = useState(false)
 
@@ -342,9 +343,6 @@ const Rulev2Component: FC = () => {
             <Loading />
         </Card.Body>
     </Card>
-
-    const isTop = (index: number) => index === 0
-    const isBottom = (index: number) => index === rules_data.names.length - 1
 
     const changePriority = (src_index: number, dst_index: number) => {
         setIsChangePriority(true)
@@ -371,7 +369,11 @@ const Rulev2Component: FC = () => {
         <Card className="mt-3">
             <ConfirmModal
                 show={confirmData.show}
-                content={<p>Delete {(confirmData.index >= 0 && rules_data.names.length > confirmData.index) && rules_data.names[confirmData.index]}?</p>}
+                content={
+                    <p>
+                        Delete {(confirmData.index >= 0 && rules_data.names.length > confirmData.index) ? rules_data.names[confirmData.index] : ""}?
+                    </p>
+                }
                 onHide={() => setConfirmData({ ...confirmData, show: false })}
                 onOk={() => { deleteRule(confirmData.index, rules_data.names[confirmData.index]) }}
             />
@@ -379,9 +381,18 @@ const Rulev2Component: FC = () => {
             <FilterModal
                 show={filterModal.show}
                 onHide={() => { setFilterModal({ ...filterModal, show: false }) }}
-                name={(filterModal.index >= 0 && rules_data.names.length) > filterModal.index ? rules_data.names[filterModal.index] : ""}
+                name={(filterModal.index >= 0 && rules_data.names.length > filterModal.index) ? rules_data.names[filterModal.index] : ""}
                 index={filterModal.index}
             />
+
+            <PriorityModal
+                show={priorityModal.show}
+                onHide={() => { setPriorityModal({ ...priorityModal, show: false }) }}
+                index={priorityModal.index}
+                rules={rules_data.names}
+                onChange={(index) => { changePriority(priorityModal.index, index) }}
+            />
+
             <ListGroup variant="flush">
                 {
                     rules_data.names.map((value, index) => (
@@ -395,30 +406,17 @@ const Rulev2Component: FC = () => {
                             {value}
 
                             <ButtonGroup>
-                                {!isTop(index) &&
-                                    <Button
-                                        disabled={isChangePriority}
-                                        variant="outline-primary"
-                                        as="span"
-                                        size="sm"
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            changePriority(index, index - 1)
-                                        }}>
-                                        <i className="bi bi-arrow-up"></i>
-                                    </Button>}
-                                {!isBottom(index) &&
-                                    <Button
-                                        variant="outline-primary"
-                                        as="span"
-                                        size="sm"
-                                        disabled={isChangePriority}
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            changePriority(index, index + 1)
-                                        }}>
-                                        <i className="bi bi-arrow-down"></i>
-                                    </Button>}
+                                <Button
+                                    variant="outline-primary"
+                                    as="span"
+                                    size="sm"
+                                    disabled={isChangePriority}
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        setPriorityModal({ show: true, index: index })
+                                    }}>
+                                    <i className="bi-arrow-down-up"></i>
+                                </Button>
                                 <Button
                                     variant="outline-danger"
                                     as="span"
@@ -447,6 +445,45 @@ const Rulev2Component: FC = () => {
                 </ListGroup.Item>
             </ListGroup>
         </Card >
+    </>
+}
+
+
+const PriorityModal: FC<{
+    index: number,
+    rules: string[],
+    show: boolean,
+    onHide: () => void,
+    onChange: (index: number) => void
+}> = ({ index, rules, show, onHide, onChange }) => {
+    const [value, setValue] = useState(index)
+
+    useEffect(() => {
+        setValue(index)
+    }, [index, rules])
+
+    return <>
+        <Modal show={show} onHide={onHide}>
+            <Modal.Body>
+                <Form.Control defaultValue={index >= 0 && index < rules.length ? rules[index] : ""} readOnly className='text-center' />
+                <div className="d-flex align-items-center my-3">
+                    <hr className="flex-grow-1" />
+                    <span className="mx-2 fw-bold text-muted">To</span>
+                    <hr className="flex-grow-1" />
+                </div>
+                <Form.Select className='text-center' value={value} onChange={(e) => setValue(parseInt(e.target.value))}>
+                    {
+                        rules.map((rule, index) => (
+                            <option key={index} value={index}>{rule}</option>
+                        ))
+                    }
+                </Form.Select>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="outline-secondary" onClick={onHide}>Cancel</Button>
+                <Button variant="primary" onClick={() => { onChange(value); onHide(); }}>OK</Button>
+            </Modal.Footer>
+        </Modal>
     </>
 }
 
