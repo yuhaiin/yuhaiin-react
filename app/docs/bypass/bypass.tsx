@@ -47,8 +47,8 @@ export const Bypass: FC<{
                     <SettingCheck label='Udp proxy Fqdn'
                         checked={bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve}
                         onChange={() => onChange({ ...bypass, udpProxyFqdn: bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve ? udp_proxy_fqdn_strategy.resolve : udp_proxy_fqdn_strategy.skip_resolve })} />
-                    <SettingSelect value={bypass.directResolver ? bypass.directResolver : "direct"} values={resolverList()} label='Direct Resolver' onChange={(v) => onChange({ ...bypass, directResolver: v })} />
-                    <SettingSelect lastElem value={bypass.proxyResolver ? bypass.proxyResolver : "proxy"} values={resolverList()} label='Proxy Resolver' onChange={(v) => onChange({ ...bypass, proxyResolver: v })} />
+                    <SettingSelect value={bypass.directResolver ? bypass.directResolver : "direct"} values={resolverList()} label='Direct Resolver' onChange={(v) => onChange({ ...bypass, directResolver: v })} emptyChoose />
+                    <SettingSelect lastElem value={bypass.proxyResolver ? bypass.proxyResolver : "proxy"} values={resolverList()} label='Proxy Resolver' onChange={(v) => onChange({ ...bypass, proxyResolver: v })} emptyChoose />
                     <hr />
                     <div className="d-flex justify-content-end">
                         <Button
