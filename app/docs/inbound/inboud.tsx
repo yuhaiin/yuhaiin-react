@@ -8,6 +8,7 @@ import {
     emptySchema,
     grpcSchema,
     http2Schema,
+    http_mockSchema,
     httpSchema,
     inbound,
     mixedSchema,
@@ -73,7 +74,7 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
                 <ListGroup variant="flush">
                     <ListGroup.Item>
                         <InputGroup>
-                            <FormSelect value={newProtocol.value} values={["normal", "tls", "mux", "http2", "websocket", "grpc", "reality", "tlsAuto"]} onChange={(e) => setNewProtocol({ value: e })} />
+                            <FormSelect value={newProtocol.value} values={["normal", "tls", "mux", "http2", "websocket", "grpc", "reality", "tlsAuto", "httpMock"]} onChange={(e) => setNewProtocol({ value: e })} />
                             <Button
                                 variant="outline-success"
                                 onClick={() => {
@@ -121,6 +122,10 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
                                                 transport: { case: "reality", value: create(realitySchema, {}) }
                                             }))
                                             break
+                                        case "httpMock":
+                                            x.transport.push(create(transportSchema, {
+                                                transport: { case: "httpMock", value: create(http_mockSchema, {}) }
+                                            }))
                                     }
                                     props.onChange(x)
                                 }}
@@ -230,6 +235,8 @@ const Transport = (props: { transport: transport, onChange: (x: transport) => vo
                 reality={props.transport.transport.value}
                 onChange={(x) => { props.onChange({ ...props.transport, transport: { case: "reality", value: x } }) }}
             />
+        case "httpMock":
+            return <><div className="text-center" style={{ opacity: '0.4' }}>HTTP MOCK</div></>
     }
 }
 

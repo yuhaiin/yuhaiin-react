@@ -23,6 +23,12 @@ export const Yuubinsyav2: FC<Props<yuubinsya>> = ({ value, onChange }) => {
             onChange={() => { onChange({ ...value, udpOverStream: !value.udpOverStream }) }}
         />
 
+        <SettingCheck
+            label="UdpCoalesce"
+            checked={value.udpCoalesce}
+            onChange={() => { onChange({ ...value, udpCoalesce: !value.udpCoalesce }) }}
+        />
+
         <SettingInputText
             label="Password"
             value={value.password}

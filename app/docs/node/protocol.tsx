@@ -12,6 +12,7 @@ import {
     dropSchema,
     grpcSchema,
     http2Schema,
+    http_mockSchema,
     http_terminationSchema,
     httpSchema,
     muxSchema,
@@ -39,6 +40,7 @@ import {
 } from "../pbes/node/protocol/protocol_pb";
 import { BootstrapDnsWarp } from "./bootstrap_dns_warp";
 import { Dropv2 } from './drop';
+import { HttpMock } from "./mock";
 import { Nonev2 } from './none';
 import { Rejectv2 } from './reject';
 import { Props } from './tools';
@@ -187,6 +189,8 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
             return <LazyTlsTermination value={data.value} onChange={(e) => update(e)} />
         case "httpTermination":
             return <LazyHttpTermination value={data.value} onChange={(e) => update(e)} />
+        case "httpMock":
+            return HttpMock
         default: return Unknown
     }
 }
@@ -463,6 +467,14 @@ export const protocols: { [key: string]: protocol } = {
                 headers: {},
                 // unwrapTls: true,
                 // defaultScheme: "https"
+            })
+        }
+    }),
+    "httpMock": create(protocolSchema, {
+        protocol: {
+            case: "httpMock",
+            value: create(http_mockSchema, {
+                data: new Uint8Array()
             })
         }
     })

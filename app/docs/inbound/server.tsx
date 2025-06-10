@@ -286,6 +286,11 @@ export const Yuubinsya = (props: { yuubinsya: yuubinsya, onChange: (x: yuubinsya
             checked={props.yuubinsya.udpEncrypt}
             onChange={() => { props.onChange({ ...props.yuubinsya, udpEncrypt: !props.yuubinsya.udpEncrypt }) }}
         />
+        <SettingCheck
+            label="UDP Coalesce"
+            checked={props.yuubinsya.udpCoalesce}
+            onChange={() => { props.onChange({ ...props.yuubinsya, udpCoalesce: !props.yuubinsya.udpCoalesce }) }}
+        />
         <SettingInputText
             label="Password"
             value={props.yuubinsya.password}
