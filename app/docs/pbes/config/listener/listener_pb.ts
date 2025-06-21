@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file config/listener/listener.proto.
  */
 export const file_config_listener_listener: GenFile = /*@__PURE__*/
-  fileDesc("Ch5jb25maWcvbGlzdGVuZXIvbGlzdGVuZXIucHJvdG8SEHl1aGFpaW4ubGlzdGVuZXIiowIKDmluYm91bmRfY29uZmlnEh4KCmhpamFja19kbnMYAiABKAhSCmhpamFja19kbnMSLAoRaGlqYWNrX2Ruc19mYWtlaXAYAyABKAhSEWhpamFja19kbnNfZmFrZWlwEkAKCGluYm91bmRzGAEgAygLMi4ueXVoYWlpbi5saXN0ZW5lci5pbmJvdW5kX2NvbmZpZy5JbmJvdW5kc0VudHJ5EiYKBXNuaWZmGAQgASgLMhcueXVoYWlpbi5saXN0ZW5lci5zbmlmZhpKCg1JbmJvdW5kc0VudHJ5EgsKA2tleRgBIAEoCRIoCgV2YWx1ZRgCIAEoCzIZLnl1aGFpaW4ubGlzdGVuZXIuaW5ib3VuZDoCOAFKBAgFEAZSB3NlcnZlcnMiigYKB2luYm91bmQSDAoEbmFtZRgNIAEoCRIPCgdlbmFibGVkGA4gASgIEigKBWVtcHR5GBUgASgLMhcueXVoYWlpbi5saXN0ZW5lci5lbXB0eUgAEioKBnRjcHVkcBgPIAEoCzIYLnl1aGFpaW4ubGlzdGVuZXIudGNwdWRwSAASJgoEcXVpYxgQIAEoCzIWLnl1aGFpaW4ubGlzdGVuZXIucXVpY0gAEi4KCXRyYW5zcG9ydBgCIAMoCzIbLnl1aGFpaW4ubGlzdGVuZXIudHJhbnNwb3J0EiYKBGh0dHAYAyABKAsyFi55dWhhaWluLmxpc3RlbmVyLmh0dHBIARIqCgZzb2NrczUYBCABKAsyGC55dWhhaWluLmxpc3RlbmVyLnNvY2tzNUgBEjAKCXl1dWJpbnN5YRgHIAEoCzIbLnl1aGFpaW4ubGlzdGVuZXIueXV1Ymluc3lhSAESLQoDbWl4GAggASgLMhcueXVoYWlpbi5saXN0ZW5lci5taXhlZEgBUgVtaXhlZBIsCgdzb2NrczRhGAkgASgLMhkueXVoYWlpbi5saXN0ZW5lci5zb2NrczRhSAESKgoGdHByb3h5GBQgASgLMhgueXVoYWlpbi5saXN0ZW5lci50cHJveHlIARIoCgVyZWRpchgSIAEoCzIXLnl1aGFpaW4ubGlzdGVuZXIucmVkaXJIARIkCgN0dW4YEyABKAsyFS55dWhhaWluLmxpc3RlbmVyLnR1bkgBEkQKDHJldmVyc2VfaHR0cBgWIAEoCzIeLnl1aGFpaW4ubGlzdGVuZXIucmV2ZXJzZV9odHRwSAFSDHJldmVyc2VfaHR0cBJBCgtyZXZlcnNlX3RjcBgXIAEoCzIdLnl1aGFpaW4ubGlzdGVuZXIucmV2ZXJzZV90Y3BIAVILcmV2ZXJzZV90Y3ASJwoEbm9uZRgYIAEoCzIXLnl1aGFpaW4ubGlzdGVuZXIuZW1wdHlIAUIJCgduZXR3b3JrQgoKCHByb3RvY29sSgQIERASUgRJUHY2IrkDCgl0cmFuc3BvcnQSKgoGbm9ybWFsGAwgASgLMhgueXVoYWlpbi5saXN0ZW5lci5ub3JtYWxIABIkCgN0bHMYASABKAsyFS55dWhhaWluLmxpc3RlbmVyLnRsc0gAEiQKA211eBgCIAEoCzIVLnl1aGFpaW4ubGlzdGVuZXIubXV4SAASKAoFaHR0cDIYBSABKAsyFy55dWhhaWluLmxpc3RlbmVyLmh0dHAySAASMAoJd2Vic29ja2V0GAYgASgLMhsueXVoYWlpbi5saXN0ZW5lci53ZWJzb2NrZXRIABImCgRncnBjGAsgASgLMhYueXVoYWlpbi5saXN0ZW5lci5ncnBjSAASLAoHcmVhbGl0eRgKIAEoCzIZLnl1aGFpaW4ubGlzdGVuZXIucmVhbGl0eUgAEjgKCHRsc19hdXRvGA0gASgLMhoueXVoYWlpbi5saXN0ZW5lci50bHNfYXV0b0gAUgh0bHNfYXV0bxI7CglodHRwX21vY2sYDiABKAsyGy55dWhhaWluLmxpc3RlbmVyLmh0dHBfbW9ja0gAUglodHRwX21vY2tCCwoJdHJhbnNwb3J0IgcKBWVtcHR5IgUKA211eCJKCgZ0Y3B1ZHASDAoEaG9zdBgBIAEoCRIyCgdjb250cm9sGAIgASgOMiEueXVoYWlpbi5saXN0ZW5lci50Y3BfdWRwX2NvbnRyb2wiRgoEcXVpYxIMCgRob3N0GAEgASgJEjAKA3RscxgDIAEoCzIjLnl1aGFpaW4ucHJvdG9jb2wudGxzX3NlcnZlcl9jb25maWciNgoEaHR0cBIQCgh1c2VybmFtZRgDIAEoCRIQCghwYXNzd29yZBgEIAEoCUoECAEQAlIEaG9zdCJFCgZzb2NrczUSEAoIdXNlcm5hbWUYAyABKAkSEAoIcGFzc3dvcmQYBCABKAkSCwoDdWRwGAUgASgISgQIARACUgRob3N0IicKB3NvY2tzNGESEAoIdXNlcm5hbWUYAiABKAlKBAgBEAJSBGhvc3QiNwoFbWl4ZWQSEAoIdXNlcm5hbWUYAyABKAkSEAoIcGFzc3dvcmQYBCABKAlKBAgBEAJSBGhvc3QiFQoFcmVkaXISDAoEaG9zdBgBIAEoCSJgCgZ0cHJveHkSDAoEaG9zdBgBIAEoCRIkCg1kbnNfaGlqYWNraW5nGAIgASgIUg1kbnNfaGlqYWNraW5nEiIKDGZvcmNlX2Zha2VpcBgDIAEoCFIMZm9yY2VfZmFrZWlwIpUDCgN0dW4SDAoEbmFtZRgBIAEoCRILCgNtdHUYAiABKAUSIgoMZm9yY2VfZmFrZWlwGAkgASgIUgxmb3JjZV9mYWtlaXASJgoOc2tpcF9tdWx0aWNhc3QYBiABKAhSDnNraXBfbXVsdGljYXN0EjUKBmRyaXZlchgHIAEoDjIlLnl1aGFpaW4ubGlzdGVuZXIudHVuLmVuZHBvaW50X2RyaXZlchIOCgZwb3J0YWwYCCABKAkSHAoJcG9ydGFsX3Y2GAsgASgJUglwb3J0YWxfdjYSJgoFcm91dGUYCiABKAsyFy55dWhhaWluLmxpc3RlbmVyLnJvdXRlEhgKB3Bvc3RfdXAYDCADKAlSB3Bvc3RfdXASHAoJcG9zdF9kb3duGA0gAygJUglwb3N0X2Rvd24iPgoPZW5kcG9pbnRfZHJpdmVyEgsKB2ZkYmFzZWQQABILCgdjaGFubmVsEAESEQoNc3lzdGVtX2d2aXNvchACSgQIAxAESgQIBBAFUgdnYXRld2F5Ug1kbnNfaGlqYWNraW5nIikKBXJvdXRlEg4KBnJvdXRlcxgBIAMoCRIQCghleGNsdWRlcxgCIAMoCSKXAgoJeXV1Ymluc3lhEhAKCHBhc3N3b3JkGAIgASgJEiAKC3RjcF9lbmNyeXB0GAwgASgIUgt0Y3BfZW5jcnlwdBIgCgt1ZHBfZW5jcnlwdBgNIAEoCFILdWRwX2VuY3J5cHQSIgoMdWRwX2NvYWxlc2NlGA4gASgIUgx1ZHBfY29hbGVzY2VKBAgBEAJKBAgDEARKBAgEEAVKBAgFEAZKBAgGEAdKBAgHEAhKBAgIEAlKBAgJEApKBAgKEAtKBAgLEAxSBGhvc3RSFWZvcmNlX2Rpc2FibGVfZW5jcnlwdFIGbm9ybWFsUgN0bHNSBHF1aWNSCXdlYnNvY2tldFIEZ3JwY1IFaHR0cDJSB3JlYWxpdHlSA211eCIICgZub3JtYWwiFgoJd2Vic29ja2V0SgQIARACUgN0bHMiNwoDdGxzEjAKA3RscxgBIAEoCzIjLnl1aGFpaW4ucHJvdG9jb2wudGxzX3NlcnZlcl9jb25maWciEQoEZ3JwY0oECAEQAlIDdGxzIhIKBWh0dHAySgQIARACUgN0bHMipgEKB3JlYWxpdHkSGgoIc2hvcnRfaWQYASADKAlSCHNob3J0X2lkEiAKC3NlcnZlcl9uYW1lGAIgAygJUgtzZXJ2ZXJfbmFtZRIMCgRkZXN0GAMgASgJEiAKC3ByaXZhdGVfa2V5GAQgASgJUgtwcml2YXRlX2tleRIeCgpwdWJsaWNfa2V5GAYgASgJUgpwdWJsaWNfa2V5Eg0KBWRlYnVnGAUgASgIIp4BCgh0bHNfYXV0bxITCgtzZXJ2ZXJuYW1lcxgBIAMoCRIgCgtuZXh0X3Byb3RvcxgCIAMoCVILbmV4dF9wcm90b3MSGAoHY2FfY2VydBgDIAEoDFIHY2FfY2VydBIWCgZjYV9rZXkYBCABKAxSBmNhX2tleRIpCgNlY2gYBSABKAsyHC55dWhhaWluLmxpc3RlbmVyLmVjaF9jb25maWciYAoKZWNoX2NvbmZpZxIOCgZlbmFibGUYASABKAgSDgoGY29uZmlnGAIgASgMEiAKC3ByaXZhdGVfa2V5GAMgASgMUgtwcml2YXRlX2tleRIQCghPdXRlclNOSRgEIAEoCSIYCgVzbmlmZhIPCgdlbmFibGVkGAEgASgIIkYKDHJldmVyc2VfaHR0cBILCgN1cmwYASABKAkSKQoDdGxzGAIgASgLMhwueXVoYWlpbi5wcm90b2NvbC50bHNfY29uZmlnIhsKC3JldmVyc2VfdGNwEgwKBGhvc3QYASABKAkiGQoJaHR0cF9tb2NrEgwKBGRhdGEYASABKAwqTAoPdGNwX3VkcF9jb250cm9sEhcKE3RjcF91ZHBfY29udHJvbF9hbGwQABIPCgtkaXNhYmxlX3RjcBABEg8KC2Rpc2FibGVfdWRwEAJCQVo3Z2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL2NvbmZpZy9saXN0ZW5lcpIDBdI+AhADYghlZGl0aW9uc3DoBw", [file_google_protobuf_go_features, file_node_protocol_protocol]);
+  fileDesc("Ch5jb25maWcvbGlzdGVuZXIvbGlzdGVuZXIucHJvdG8SEHl1aGFpaW4ubGlzdGVuZXIiowIKDmluYm91bmRfY29uZmlnEh4KCmhpamFja19kbnMYAiABKAhSCmhpamFja19kbnMSLAoRaGlqYWNrX2Ruc19mYWtlaXAYAyABKAhSEWhpamFja19kbnNfZmFrZWlwEkAKCGluYm91bmRzGAEgAygLMi4ueXVoYWlpbi5saXN0ZW5lci5pbmJvdW5kX2NvbmZpZy5JbmJvdW5kc0VudHJ5EiYKBXNuaWZmGAQgASgLMhcueXVoYWlpbi5saXN0ZW5lci5zbmlmZhpKCg1JbmJvdW5kc0VudHJ5EgsKA2tleRgBIAEoCRIoCgV2YWx1ZRgCIAEoCzIZLnl1aGFpaW4ubGlzdGVuZXIuaW5ib3VuZDoCOAFKBAgFEAZSB3NlcnZlcnMiigYKB2luYm91bmQSDAoEbmFtZRgNIAEoCRIPCgdlbmFibGVkGA4gASgIEigKBWVtcHR5GBUgASgLMhcueXVoYWlpbi5saXN0ZW5lci5lbXB0eUgAEioKBnRjcHVkcBgPIAEoCzIYLnl1aGFpaW4ubGlzdGVuZXIudGNwdWRwSAASJgoEcXVpYxgQIAEoCzIWLnl1aGFpaW4ubGlzdGVuZXIucXVpY0gAEi4KCXRyYW5zcG9ydBgCIAMoCzIbLnl1aGFpaW4ubGlzdGVuZXIudHJhbnNwb3J0EiYKBGh0dHAYAyABKAsyFi55dWhhaWluLmxpc3RlbmVyLmh0dHBIARIqCgZzb2NrczUYBCABKAsyGC55dWhhaWluLmxpc3RlbmVyLnNvY2tzNUgBEjAKCXl1dWJpbnN5YRgHIAEoCzIbLnl1aGFpaW4ubGlzdGVuZXIueXV1Ymluc3lhSAESLQoDbWl4GAggASgLMhcueXVoYWlpbi5saXN0ZW5lci5taXhlZEgBUgVtaXhlZBIsCgdzb2NrczRhGAkgASgLMhkueXVoYWlpbi5saXN0ZW5lci5zb2NrczRhSAESKgoGdHByb3h5GBQgASgLMhgueXVoYWlpbi5saXN0ZW5lci50cHJveHlIARIoCgVyZWRpchgSIAEoCzIXLnl1aGFpaW4ubGlzdGVuZXIucmVkaXJIARIkCgN0dW4YEyABKAsyFS55dWhhaWluLmxpc3RlbmVyLnR1bkgBEkQKDHJldmVyc2VfaHR0cBgWIAEoCzIeLnl1aGFpaW4ubGlzdGVuZXIucmV2ZXJzZV9odHRwSAFSDHJldmVyc2VfaHR0cBJBCgtyZXZlcnNlX3RjcBgXIAEoCzIdLnl1aGFpaW4ubGlzdGVuZXIucmV2ZXJzZV90Y3BIAVILcmV2ZXJzZV90Y3ASJwoEbm9uZRgYIAEoCzIXLnl1aGFpaW4ubGlzdGVuZXIuZW1wdHlIAUIJCgduZXR3b3JrQgoKCHByb3RvY29sSgQIERASUgRJUHY2IrkDCgl0cmFuc3BvcnQSKgoGbm9ybWFsGAwgASgLMhgueXVoYWlpbi5saXN0ZW5lci5ub3JtYWxIABIkCgN0bHMYASABKAsyFS55dWhhaWluLmxpc3RlbmVyLnRsc0gAEiQKA211eBgCIAEoCzIVLnl1aGFpaW4ubGlzdGVuZXIubXV4SAASKAoFaHR0cDIYBSABKAsyFy55dWhhaWluLmxpc3RlbmVyLmh0dHAySAASMAoJd2Vic29ja2V0GAYgASgLMhsueXVoYWlpbi5saXN0ZW5lci53ZWJzb2NrZXRIABImCgRncnBjGAsgASgLMhYueXVoYWlpbi5saXN0ZW5lci5ncnBjSAASLAoHcmVhbGl0eRgKIAEoCzIZLnl1aGFpaW4ubGlzdGVuZXIucmVhbGl0eUgAEjgKCHRsc19hdXRvGA0gASgLMhoueXVoYWlpbi5saXN0ZW5lci50bHNfYXV0b0gAUgh0bHNfYXV0bxI7CglodHRwX21vY2sYDiABKAsyGy55dWhhaWluLmxpc3RlbmVyLmh0dHBfbW9ja0gAUglodHRwX21vY2tCCwoJdHJhbnNwb3J0IgcKBWVtcHR5IgUKA211eCJKCgZ0Y3B1ZHASDAoEaG9zdBgBIAEoCRIyCgdjb250cm9sGAIgASgOMiEueXVoYWlpbi5saXN0ZW5lci50Y3BfdWRwX2NvbnRyb2wiRgoEcXVpYxIMCgRob3N0GAEgASgJEjAKA3RscxgDIAEoCzIjLnl1aGFpaW4ucHJvdG9jb2wudGxzX3NlcnZlcl9jb25maWciNgoEaHR0cBIQCgh1c2VybmFtZRgDIAEoCRIQCghwYXNzd29yZBgEIAEoCUoECAEQAlIEaG9zdCJFCgZzb2NrczUSEAoIdXNlcm5hbWUYAyABKAkSEAoIcGFzc3dvcmQYBCABKAkSCwoDdWRwGAUgASgISgQIARACUgRob3N0IicKB3NvY2tzNGESEAoIdXNlcm5hbWUYAiABKAlKBAgBEAJSBGhvc3QiNwoFbWl4ZWQSEAoIdXNlcm5hbWUYAyABKAkSEAoIcGFzc3dvcmQYBCABKAlKBAgBEAJSBGhvc3QiFQoFcmVkaXISDAoEaG9zdBgBIAEoCSJgCgZ0cHJveHkSDAoEaG9zdBgBIAEoCRIkCg1kbnNfaGlqYWNraW5nGAIgASgIUg1kbnNfaGlqYWNraW5nEiIKDGZvcmNlX2Zha2VpcBgDIAEoCFIMZm9yY2VfZmFrZWlwIosBCgx0dW5fcGxhdGZyb20SPgoGZGFyd2luGAEgASgLMi4ueXVoYWlpbi5saXN0ZW5lci50dW5fcGxhdGZyb20ucGxhdGZvcm1fZGFyd2luGjsKD3BsYXRmb3JtX2RhcndpbhIoCg9uZXR3b3JrX3NlcnZpY2UYASABKAlSD25ldHdvcmtfc2VydmljZSLHAwoDdHVuEgwKBG5hbWUYASABKAkSCwoDbXR1GAIgASgFEiIKDGZvcmNlX2Zha2VpcBgJIAEoCFIMZm9yY2VfZmFrZWlwEiYKDnNraXBfbXVsdGljYXN0GAYgASgIUg5za2lwX211bHRpY2FzdBI1CgZkcml2ZXIYByABKA4yJS55dWhhaWluLmxpc3RlbmVyLnR1bi5lbmRwb2ludF9kcml2ZXISDgoGcG9ydGFsGAggASgJEhwKCXBvcnRhbF92NhgLIAEoCVIJcG9ydGFsX3Y2EiYKBXJvdXRlGAogASgLMhcueXVoYWlpbi5saXN0ZW5lci5yb3V0ZRIYCgdwb3N0X3VwGAwgAygJUgdwb3N0X3VwEhwKCXBvc3RfZG93bhgNIAMoCVIJcG9zdF9kb3duEjAKCHBsYXRmb3JtGA4gASgLMh4ueXVoYWlpbi5saXN0ZW5lci50dW5fcGxhdGZyb20iPgoPZW5kcG9pbnRfZHJpdmVyEgsKB2ZkYmFzZWQQABILCgdjaGFubmVsEAESEQoNc3lzdGVtX2d2aXNvchACSgQIAxAESgQIBBAFUgdnYXRld2F5Ug1kbnNfaGlqYWNraW5nIikKBXJvdXRlEg4KBnJvdXRlcxgBIAMoCRIQCghleGNsdWRlcxgCIAMoCSKXAgoJeXV1Ymluc3lhEhAKCHBhc3N3b3JkGAIgASgJEiAKC3RjcF9lbmNyeXB0GAwgASgIUgt0Y3BfZW5jcnlwdBIgCgt1ZHBfZW5jcnlwdBgNIAEoCFILdWRwX2VuY3J5cHQSIgoMdWRwX2NvYWxlc2NlGA4gASgIUgx1ZHBfY29hbGVzY2VKBAgBEAJKBAgDEARKBAgEEAVKBAgFEAZKBAgGEAdKBAgHEAhKBAgIEAlKBAgJEApKBAgKEAtKBAgLEAxSBGhvc3RSFWZvcmNlX2Rpc2FibGVfZW5jcnlwdFIGbm9ybWFsUgN0bHNSBHF1aWNSCXdlYnNvY2tldFIEZ3JwY1IFaHR0cDJSB3JlYWxpdHlSA211eCIICgZub3JtYWwiFgoJd2Vic29ja2V0SgQIARACUgN0bHMiNwoDdGxzEjAKA3RscxgBIAEoCzIjLnl1aGFpaW4ucHJvdG9jb2wudGxzX3NlcnZlcl9jb25maWciEQoEZ3JwY0oECAEQAlIDdGxzIhIKBWh0dHAySgQIARACUgN0bHMipgEKB3JlYWxpdHkSGgoIc2hvcnRfaWQYASADKAlSCHNob3J0X2lkEiAKC3NlcnZlcl9uYW1lGAIgAygJUgtzZXJ2ZXJfbmFtZRIMCgRkZXN0GAMgASgJEiAKC3ByaXZhdGVfa2V5GAQgASgJUgtwcml2YXRlX2tleRIeCgpwdWJsaWNfa2V5GAYgASgJUgpwdWJsaWNfa2V5Eg0KBWRlYnVnGAUgASgIIp4BCgh0bHNfYXV0bxITCgtzZXJ2ZXJuYW1lcxgBIAMoCRIgCgtuZXh0X3Byb3RvcxgCIAMoCVILbmV4dF9wcm90b3MSGAoHY2FfY2VydBgDIAEoDFIHY2FfY2VydBIWCgZjYV9rZXkYBCABKAxSBmNhX2tleRIpCgNlY2gYBSABKAsyHC55dWhhaWluLmxpc3RlbmVyLmVjaF9jb25maWciYAoKZWNoX2NvbmZpZxIOCgZlbmFibGUYASABKAgSDgoGY29uZmlnGAIgASgMEiAKC3ByaXZhdGVfa2V5GAMgASgMUgtwcml2YXRlX2tleRIQCghPdXRlclNOSRgEIAEoCSIYCgVzbmlmZhIPCgdlbmFibGVkGAEgASgIIkYKDHJldmVyc2VfaHR0cBILCgN1cmwYASABKAkSKQoDdGxzGAIgASgLMhwueXVoYWlpbi5wcm90b2NvbC50bHNfY29uZmlnIhsKC3JldmVyc2VfdGNwEgwKBGhvc3QYASABKAkiGQoJaHR0cF9tb2NrEgwKBGRhdGEYASABKAwqTAoPdGNwX3VkcF9jb250cm9sEhcKE3RjcF91ZHBfY29udHJvbF9hbGwQABIPCgtkaXNhYmxlX3RjcBABEg8KC2Rpc2FibGVfdWRwEAJCQVo3Z2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL2NvbmZpZy9saXN0ZW5lcpIDBdI+AhADYghlZGl0aW9uc3DoBw", [file_google_protobuf_go_features, file_node_protocol_protocol]);
 
 /**
  * @generated from message yuhaiin.listener.inbound_config
@@ -442,6 +442,40 @@ export const tproxySchema: GenMessage<tproxy> = /*@__PURE__*/
   messageDesc(file_config_listener_listener, 12);
 
 /**
+ * @generated from message yuhaiin.listener.tun_platfrom
+ */
+export type tun_platfrom = Message<"yuhaiin.listener.tun_platfrom"> & {
+  /**
+   * @generated from field: yuhaiin.listener.tun_platfrom.platform_darwin darwin = 1;
+   */
+  darwin?: tun_platfrom_platform_darwin;
+};
+
+/**
+ * Describes the message yuhaiin.listener.tun_platfrom.
+ * Use `create(tun_platfromSchema)` to create a new message.
+ */
+export const tun_platfromSchema: GenMessage<tun_platfrom> = /*@__PURE__*/
+  messageDesc(file_config_listener_listener, 13);
+
+/**
+ * @generated from message yuhaiin.listener.tun_platfrom.platform_darwin
+ */
+export type tun_platfrom_platform_darwin = Message<"yuhaiin.listener.tun_platfrom.platform_darwin"> & {
+  /**
+   * @generated from field: string network_service = 1 [json_name = "network_service"];
+   */
+  networkService: string;
+};
+
+/**
+ * Describes the message yuhaiin.listener.tun_platfrom.platform_darwin.
+ * Use `create(tun_platfrom_platform_darwinSchema)` to create a new message.
+ */
+export const tun_platfrom_platform_darwinSchema: GenMessage<tun_platfrom_platform_darwin> = /*@__PURE__*/
+  messageDesc(file_config_listener_listener, 13, 0);
+
+/**
  * @generated from message yuhaiin.listener.tun
  */
 export type tun = Message<"yuhaiin.listener.tun"> & {
@@ -497,6 +531,11 @@ export type tun = Message<"yuhaiin.listener.tun"> & {
    * @generated from field: repeated string post_down = 13 [json_name = "post_down"];
    */
   postDown: string[];
+
+  /**
+   * @generated from field: yuhaiin.listener.tun_platfrom platform = 14;
+   */
+  platform?: tun_platfrom;
 };
 
 /**
@@ -504,7 +543,7 @@ export type tun = Message<"yuhaiin.listener.tun"> & {
  * Use `create(tunSchema)` to create a new message.
  */
 export const tunSchema: GenMessage<tun> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 13);
+  messageDesc(file_config_listener_listener, 14);
 
 /**
  * @generated from enum yuhaiin.listener.tun.endpoint_driver
@@ -530,7 +569,7 @@ export enum tun_endpoint_driver {
  * Describes the enum yuhaiin.listener.tun.endpoint_driver.
  */
 export const tun_endpoint_driverSchema: GenEnum<tun_endpoint_driver> = /*@__PURE__*/
-  enumDesc(file_config_listener_listener, 13, 0);
+  enumDesc(file_config_listener_listener, 14, 0);
 
 /**
  * @generated from message yuhaiin.listener.route
@@ -552,7 +591,7 @@ export type route = Message<"yuhaiin.listener.route"> & {
  * Use `create(routeSchema)` to create a new message.
  */
 export const routeSchema: GenMessage<route> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 14);
+  messageDesc(file_config_listener_listener, 15);
 
 /**
  * @generated from message yuhaiin.listener.yuubinsya
@@ -584,7 +623,7 @@ export type yuubinsya = Message<"yuhaiin.listener.yuubinsya"> & {
  * Use `create(yuubinsyaSchema)` to create a new message.
  */
 export const yuubinsyaSchema: GenMessage<yuubinsya> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 15);
+  messageDesc(file_config_listener_listener, 16);
 
 /**
  * @generated from message yuhaiin.listener.normal
@@ -597,7 +636,7 @@ export type normal = Message<"yuhaiin.listener.normal"> & {
  * Use `create(normalSchema)` to create a new message.
  */
 export const normalSchema: GenMessage<normal> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 16);
+  messageDesc(file_config_listener_listener, 17);
 
 /**
  * @generated from message yuhaiin.listener.websocket
@@ -610,7 +649,7 @@ export type websocket = Message<"yuhaiin.listener.websocket"> & {
  * Use `create(websocketSchema)` to create a new message.
  */
 export const websocketSchema: GenMessage<websocket> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 17);
+  messageDesc(file_config_listener_listener, 18);
 
 /**
  * @generated from message yuhaiin.listener.tls
@@ -627,7 +666,7 @@ export type tls = Message<"yuhaiin.listener.tls"> & {
  * Use `create(tlsSchema)` to create a new message.
  */
 export const tlsSchema: GenMessage<tls> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 18);
+  messageDesc(file_config_listener_listener, 19);
 
 /**
  * @generated from message yuhaiin.listener.grpc
@@ -640,7 +679,7 @@ export type grpc = Message<"yuhaiin.listener.grpc"> & {
  * Use `create(grpcSchema)` to create a new message.
  */
 export const grpcSchema: GenMessage<grpc> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 19);
+  messageDesc(file_config_listener_listener, 20);
 
 /**
  * @generated from message yuhaiin.listener.http2
@@ -653,7 +692,7 @@ export type http2 = Message<"yuhaiin.listener.http2"> & {
  * Use `create(http2Schema)` to create a new message.
  */
 export const http2Schema: GenMessage<http2> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 20);
+  messageDesc(file_config_listener_listener, 21);
 
 /**
  * @generated from message yuhaiin.listener.reality
@@ -695,7 +734,7 @@ export type reality = Message<"yuhaiin.listener.reality"> & {
  * Use `create(realitySchema)` to create a new message.
  */
 export const realitySchema: GenMessage<reality> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 21);
+  messageDesc(file_config_listener_listener, 22);
 
 /**
  * @generated from message yuhaiin.listener.tls_auto
@@ -735,7 +774,7 @@ export type tls_auto = Message<"yuhaiin.listener.tls_auto"> & {
  * Use `create(tls_autoSchema)` to create a new message.
  */
 export const tls_autoSchema: GenMessage<tls_auto> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 22);
+  messageDesc(file_config_listener_listener, 23);
 
 /**
  * @generated from message yuhaiin.listener.ech_config
@@ -767,7 +806,7 @@ export type ech_config = Message<"yuhaiin.listener.ech_config"> & {
  * Use `create(ech_configSchema)` to create a new message.
  */
 export const ech_configSchema: GenMessage<ech_config> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 23);
+  messageDesc(file_config_listener_listener, 24);
 
 /**
  * @generated from message yuhaiin.listener.sniff
@@ -784,7 +823,7 @@ export type sniff = Message<"yuhaiin.listener.sniff"> & {
  * Use `create(sniffSchema)` to create a new message.
  */
 export const sniffSchema: GenMessage<sniff> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 24);
+  messageDesc(file_config_listener_listener, 25);
 
 /**
  * @generated from message yuhaiin.listener.reverse_http
@@ -806,7 +845,7 @@ export type reverse_http = Message<"yuhaiin.listener.reverse_http"> & {
  * Use `create(reverse_httpSchema)` to create a new message.
  */
 export const reverse_httpSchema: GenMessage<reverse_http> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 25);
+  messageDesc(file_config_listener_listener, 26);
 
 /**
  * @generated from message yuhaiin.listener.reverse_tcp
@@ -823,7 +862,7 @@ export type reverse_tcp = Message<"yuhaiin.listener.reverse_tcp"> & {
  * Use `create(reverse_tcpSchema)` to create a new message.
  */
 export const reverse_tcpSchema: GenMessage<reverse_tcp> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 26);
+  messageDesc(file_config_listener_listener, 27);
 
 /**
  * @generated from message yuhaiin.listener.http_mock
@@ -840,7 +879,7 @@ export type http_mock = Message<"yuhaiin.listener.http_mock"> & {
  * Use `create(http_mockSchema)` to create a new message.
  */
 export const http_mockSchema: GenMessage<http_mock> = /*@__PURE__*/
-  messageDesc(file_config_listener_listener, 27);
+  messageDesc(file_config_listener_listener, 28);
 
 /**
  * @generated from enum yuhaiin.listener.tcp_udp_control

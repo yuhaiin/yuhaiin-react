@@ -2,11 +2,13 @@ import { create } from '@bufbuild/protobuf';
 import { FC, useState } from 'react';
 import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import { join as shlexJoin, split as shlexSplit } from 'shlex';
-import { SettingCheck, SettingTypeSelect } from "../common/switch";
+import { useProtoSWR } from '../common/proto';
+import { SettingCheck, SettingSelect, SettingTypeSelect } from "../common/switch";
 import { NewItemList, SettingInputText, SettingInputTextarea } from '../config/components';
 import { TlsConfigv2 } from '../node/tls';
 import { TLSServerComponents } from '../node/tls_server';
-import { ech_config, ech_configSchema, http, mixed, quic, reality, redir, reverse_http, reverse_tcp, routeSchema, socks5, tcp_udp_controlSchema, tcpudp, tls, tls_auto, tproxy, tun, tun_endpoint_driverSchema, yuubinsya } from '../pbes/config/listener/listener_pb';
+import { inbound } from '../pbes/config/grpc/config_pb';
+import { ech_config, ech_configSchema, http, mixed, quic, reality, redir, reverse_http, reverse_tcp, routeSchema, socks5, tcp_udp_controlSchema, tcpudp, tls, tls_auto, tproxy, tun, tun_endpoint_driverSchema, tun_platfrom_platform_darwinSchema, tun_platfromSchema, yuubinsya } from '../pbes/config/listener/listener_pb';
 import { tls_configSchema as tls_config$1, tls_server_configSchema } from '../pbes/node/protocol/protocol_pb';
 
 export const HTTPComponents = (props: { http: http, onChange: (x: http) => void }) => {
@@ -82,6 +84,8 @@ export const TunComponents = (props: { tun: tun, onChange: (x: tun) => void }) =
     const [postUp, setPostUp] = useState(shlexJoin(props.tun.postUp))
     const [postDown, setPostDown] = useState(shlexJoin(props.tun.postDown))
 
+    const { data: platform } = useProtoSWR(inbound.method.platform_info)
+
     return (
         <>
             <SettingCheck
@@ -94,6 +98,19 @@ export const TunComponents = (props: { tun: tun, onChange: (x: tun) => void }) =
             <SettingInputText label='MTU' value={props.tun.mtu} onChange={(e) => { if (!isNaN(Number(e))) props.onChange({ ...props.tun, mtu: Number(e) }) }} />
             <SettingInputText label='IPv4' value={props.tun.portal} onChange={(e) => props.onChange({ ...props.tun, portal: e })} />
             <SettingInputText label='IPv6' value={props.tun.portalV6} onChange={(e) => props.onChange({ ...props.tun, portalV6: e })} />
+
+            {platform?.darwin && platform?.darwin?.networkServices &&
+                <SettingSelect
+                    label='DNS Network Service'
+                    emptyChoose
+                    value={props.tun.platform?.darwin?.networkService ?? ""}
+                    values={platform.darwin.networkServices}
+                    onChange={(e) => props.onChange({
+                        ...props.tun, platform: create(tun_platfromSchema,
+                            { darwin: create(tun_platfrom_platform_darwinSchema, { networkService: e }) })
+                    })}
+                />
+            }
             <SettingInputText label='Post Up' value={postUp}
                 onChange={(e) => {
                     setPostUp(e)
