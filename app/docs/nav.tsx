@@ -49,6 +49,8 @@ function NavBar(props: { children: React.ReactNode }) {
                                 <NavDropdown.Item eventKey={'/docs/config/'}>Config</NavDropdown.Item>
                                 <NavDropdown.Item eventKey={'/docs/webui/'}>WebUI</NavDropdown.Item>
                                 <NavDropdown.Divider />
+                                <NavDropdown.Item eventKey={'/docs/config/log/'}>Log</NavDropdown.Item>
+                                <NavDropdown.Divider />
                                 <NavDropdown.Item eventKey={APIUrl + '/debug/pprof'} >Pprof</NavDropdown.Item>
                                 <NavDropdown.Item eventKey="https://yuhaiin.github.io/documents/" >Documents</NavDropdown.Item>
                                 <NavDropdown.Divider />

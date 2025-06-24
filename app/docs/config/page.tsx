@@ -75,8 +75,16 @@ function ConfigComponent() {
             <Card className='mb-3'>
                 <Card.Body>
 
-                    <SettingCheck label='IPv6' checked={setting.ipv6} onChange={() => setSetting({ ...setting, ipv6: !setting.ipv6 }, false)} />
-                    <SettingCheck label='Use Default Interface' checked={setting.useDefaultInterface} onChange={() => setSetting({ ...setting, useDefaultInterface: !setting.useDefaultInterface }, false)} />
+                    <SettingCheck
+                        label='IPv6'
+                        checked={setting.ipv6}
+                        onChange={() => setSetting({ ...setting, ipv6: !setting.ipv6 }, false)}
+                    />
+                    <SettingCheck
+                        label='Use Default Interface'
+                        checked={setting.useDefaultInterface}
+                        onChange={() => setSetting({ ...setting, useDefaultInterface: !setting.useDefaultInterface }, false)}
+                    />
                     {!setting.useDefaultInterface &&
                         <SettingInputText
                             label='Network Interface'
