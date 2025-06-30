@@ -7,6 +7,21 @@ import { NewAlternateHostList, Props } from "./tools";
 export const Simplev2: FC<Props<simple>> = ({ value, onChange }) => {
     const interfaces = useContext(InterfacesContext);
 
+    const reminds = interfaces.map((v) => {
+        if (!v.name) return undefined
+        const r: Remind = {
+            label: v.name,
+            value: v.name,
+            label_children: v.addresses?.map((vv) => !vv ? "" : vv)
+        }
+        return r
+    })
+        .filter((e): e is Exclude<Remind, null | undefined> => !!e)
+
+    const changeInterface = (e: string) => {
+        onChange({ ...value, networkInterface: e })
+    }
+
     return <>
         <SettingInputText
             label="Host"
@@ -18,18 +33,8 @@ export const Simplev2: FC<Props<simple>> = ({ value, onChange }) => {
         <SettingInputText
             label='Network Interface'
             value={value.networkInterface}
-            onChange={(e) => { onChange({ ...value, networkInterface: e }) }}
-            reminds={interfaces.map((v) => {
-                if (!v.name) return undefined
-                const r: Remind = {
-                    label: v.name,
-                    value: v.name,
-                    label_children: v.addresses?.map((vv) => !vv ? "" : vv)
-                }
-                return r
-            })
-                .filter((e): e is Exclude<Remind, null | undefined> => !!e)
-            }
+            onChange={changeInterface}
+            reminds={reminds}
         />
 
         <SettingInputText label="Port" value={value.port} onChange={(e) => {

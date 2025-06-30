@@ -1,6 +1,6 @@
 import { create, fromJsonString, toJsonString } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
-import { FC, useContext, useEffect, useState } from "react";
+import React, { FC, useContext, useEffect, useState } from "react";
 import { Button, ButtonGroup, Dropdown, DropdownButton, Form, Modal } from "react-bootstrap";
 import useSWR from 'swr';
 import { Interfaces, InterfacesContext } from "../common/interfaces";
@@ -11,8 +11,7 @@ import { node } from "../pbes/node/grpc/node_pb";
 import { point, pointSchema } from "../pbes/node/point/point_pb";
 import { Point } from "./protocol";
 
-
-export const NodeModal: FC<{
+const NodeModalComponent: FC<{
     hash: string,
     point?: point,
     editable?: boolean,
@@ -144,6 +143,8 @@ export const NodeModal: FC<{
             </>
         );
     }
+
+export const NodeModal = React.memo(NodeModalComponent)
 
 export const NodeJsonModal = (
     props: {

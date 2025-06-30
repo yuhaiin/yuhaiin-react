@@ -1,5 +1,5 @@
 import { DescEnum, DescEnumValue } from '@bufbuild/protobuf';
-import { FC } from 'react';
+import React, { FC, useCallback, useMemo } from 'react';
 import { Col, Form, Row } from 'react-bootstrap';
 
 export const SwitchSelect = (props: { value: boolean, onChange: (x: boolean) => void }) => {
@@ -11,19 +11,22 @@ export const SwitchSelect = (props: { value: boolean, onChange: (x: boolean) => 
     )
 }
 
-export const SettingCheck: FC<{ label: string, checked: boolean, onChange: (c: boolean) => void, className?: string }> =
+const SettingCheckComponent: FC<{ label: string, checked: boolean, onChange: (c: boolean) => void, className?: string }> =
     ({ label, checked, onChange, className }) => {
+        const change = (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.checked)
         return (
             <Form.Group as={Row} className={className}>
                 <Form.Label column sm={2}>{label}</Form.Label>
                 <Col sm={10} className='d-flex align-items-center'>
-                    <Form.Check className='d-flex align-items-center' type='switch' checked={checked} onChange={(e) => onChange(e.target.checked)} />
+                    <Form.Check className='d-flex align-items-center' type='switch' checked={checked} onChange={change} />
                 </Col>
             </Form.Group>
         )
     }
 
-export const SettingTypeSelect: FC<{
+export const SettingCheck = React.memo(SettingCheckComponent)
+
+const SettingTypeSelectComponent: FC<{
     label: string,
     type: DescEnum,
     value: number,
@@ -33,23 +36,32 @@ export const SettingTypeSelect: FC<{
     emptyChoose?: boolean,
     lastElem?: boolean
 }> = ({ ...props }) => {
+    const change = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => props.onChange(Number(e.target.value)), [props])
+    const types = useMemo(() => props.type.values.filter(props.filter ?? (() => true)), [props.type, props.filter])
+
+    const EmptyChoose = () => {
+        return props.emptyChoose ? <option value="">Choose...</option> : <></>
+    }
     return <Form.Group as={Row} className={!props.lastElem ? 'mb-2' : ''}>
         <Form.Label column sm={2}>{props.label}</Form.Label>
         <Col sm={10}>
-            <Form.Select value={props.value}
-                onChange={(e) => props.onChange(Number(e.target.value))} >
-                {props.emptyChoose && <option value="">Choose...</option>}
+            <Form.Select value={props.value} onChange={change} >
+                <EmptyChoose />
                 {
-                    props.type.values.
-                        filter(props.filter ?? (() => true)).
-                        map((v) => <option key={v.number} value={v.number}>{props.format ? props.format(v.number) : v.name}</option>)
+                    types.map((v) =>
+                        <option key={v.number} value={v.number}>
+                            {props.format ? props.format(v.number) : v.name}
+                        </option>
+                    )
                 }
             </Form.Select>
         </Col>
     </Form.Group >
 }
 
-export const SettingSelect: FC<{
+export const SettingTypeSelect = React.memo(SettingTypeSelectComponent)
+
+const SettingSelectComponent: FC<{
     label: string,
     value: string,
     values: string[],
@@ -73,8 +85,15 @@ export const SettingSelect: FC<{
         )
     }
 
+export const SettingSelect = React.memo(SettingSelectComponent)
 
-export const FormSelect: FC<{ value: string, values: string[] | [string, string][], onChange: (x: string) => void, format?: (v: string) => string, emptyChoose?: boolean }> =
+const FormSelectComponent: FC<{
+    value: string,
+    values: string[] | [string, string][],
+    onChange: (x: string) => void,
+    format?: (v: string) => string,
+    emptyChoose?: boolean
+}> =
     ({ values, onChange, value, emptyChoose, format }) => {
         return (
             <Form.Select value={value} onChange={(e) => onChange(e.target.value)}>
@@ -90,3 +109,5 @@ export const FormSelect: FC<{ value: string, values: string[] | [string, string]
             </Form.Select>
         )
     }
+
+export const FormSelect = React.memo(FormSelectComponent)

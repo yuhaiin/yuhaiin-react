@@ -1,5 +1,5 @@
 import { create } from '@bufbuild/protobuf';
-import React, { FC, useContext, useEffect, useState } from 'react';
+import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
 import { Accordion, Button, ButtonGroup, Card, Col, Form, InputGroup, ListGroup, Modal, Row, Spinner } from 'react-bootstrap';
 import { ConfirmModal } from '../common/confirm';
 import Loading, { Error } from '../common/loading';
@@ -11,7 +11,7 @@ import { config, mode, mode_config, mode_configSchema, modeSchema, remote_rule, 
 import { change_priority_requestSchema, bypass as gb, resolver, rule_indexSchema, rule_save_requestSchema, rules } from '../pbes/config/grpc/config_pb';
 import { FilterModal } from './filter/filter';
 
-export const Bypass: FC<{
+const BypassComponent: FC<{
     bypass: config,
     onChange: (x: config) => void,
     refresh: () => void
@@ -37,36 +37,68 @@ export const Bypass: FC<{
     const [drag, setDrag] = useState({ start: -1 })
     const [saving, setSaving] = useState(false);
 
+    const changeEnabledv2 = useCallback(() => {
+        onChange({ ...bypass, enabledV2: !bypass.enabledV2 })
+    }, [bypass, onChange])
+
+    const changeResolveLocally = useCallback(() => {
+        onChange({ ...bypass, resolveLocally: !bypass.resolveLocally })
+    }, [bypass, onChange])
+
+    const chnageUdpProxyFqdn = useCallback(() => {
+        onChange({ ...bypass, udpProxyFqdn: bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve ? udp_proxy_fqdn_strategy.resolve : udp_proxy_fqdn_strategy.skip_resolve })
+    }, [bypass, onChange])
+
+    const resolverListValues = resolverList();
+
+    const changeDirectResolver = useCallback((v: string) => {
+        onChange({ ...bypass, directResolver: v })
+    }, [bypass, onChange])
+
+    const changeProxyResolver = useCallback((v: string) => {
+        onChange({ ...bypass, proxyResolver: v })
+    }, [bypass, onChange])
+
+    const onSave = useCallback(() => {
+        setSaving(true)
+        FetchProtobuf(gb.method.save, bypass)
+            .then(async ({ error }) => {
+                if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${error.msg}`)
+                else {
+                    ctx.Info("Save Successfully");
+                    refresh()
+                }
+                setSaving(false)
+            })
+    }, [bypass, ctx, refresh, setSaving])
 
     return (
         <>
             <Card className="mb-3">
                 <Card.Body>
-                    <SettingCheck label='Enabled RuleV2' checked={bypass.enabledV2} onChange={() => onChange({ ...bypass, enabledV2: !bypass.enabledV2 })} />
-                    <SettingCheck label='Resolve Locally' checked={bypass.resolveLocally} onChange={() => onChange({ ...bypass, resolveLocally: !bypass.resolveLocally })} />
-                    <SettingCheck label='Udp proxy Fqdn'
-                        checked={bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve}
-                        onChange={() => onChange({ ...bypass, udpProxyFqdn: bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve ? udp_proxy_fqdn_strategy.resolve : udp_proxy_fqdn_strategy.skip_resolve })} />
-                    <SettingSelect value={bypass.directResolver ? bypass.directResolver : "direct"} values={resolverList()} label='Direct Resolver' onChange={(v) => onChange({ ...bypass, directResolver: v })} emptyChoose />
-                    <SettingSelect lastElem value={bypass.proxyResolver ? bypass.proxyResolver : "proxy"} values={resolverList()} label='Proxy Resolver' onChange={(v) => onChange({ ...bypass, proxyResolver: v })} emptyChoose />
+                    <SettingCheck label='Enabled RuleV2' checked={bypass.enabledV2} onChange={changeEnabledv2} />
+                    <SettingCheck label='Resolve Locally' checked={bypass.resolveLocally} onChange={changeResolveLocally} />
+                    <SettingCheck label='Udp proxy Fqdn' checked={bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve} onChange={chnageUdpProxyFqdn} />
+                    <SettingSelect
+                        value={bypass.directResolver ? bypass.directResolver : "direct"}
+                        values={resolverListValues}
+                        label='Direct Resolver'
+                        onChange={changeDirectResolver}
+                        emptyChoose
+                    />
+                    <SettingSelect
+                        lastElem value={bypass.proxyResolver ? bypass.proxyResolver : "proxy"}
+                        values={resolverListValues}
+                        label='Proxy Resolver'
+                        onChange={changeProxyResolver}
+                        emptyChoose
+                    />
                     <hr />
                     <div className="d-flex justify-content-end">
                         <Button
                             variant="outline-primary"
                             disabled={saving}
-                            onClick={() => {
-                                setSaving(true)
-                                FetchProtobuf(gb.method.save, bypass)
-                                    .then(async ({ error }) => {
-                                        if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${error.msg}`)
-                                        else {
-                                            ctx.Info("Save Successfully");
-                                            refresh()
-                                        }
-                                        setSaving(false)
-                                    })
-                            }}
-
+                            onClick={onSave}
                         >
                             <i className="bi bi-floppy"></i> Save
                             {saving && <>&nbsp;<Spinner size="sm" animation="border" variant='primary' /></>}
@@ -177,6 +209,8 @@ export const Bypass: FC<{
     )
 }
 
+export const Bypass = React.memo(BypassComponent)
+
 const BypassSingleComponents: FC<{
     config: mode_config,
     onChange: (x: mode_config) => void,
@@ -207,6 +241,7 @@ const BypassSingleComponents: FC<{
             </>
         )
     }
+
 
 const RulesComponent: FC<{ config: remote_rule, onChange: (x: remote_rule) => void }> = ({ config, onChange }) => {
     const getType = () => {
@@ -277,22 +312,7 @@ const RulesComponent: FC<{ config: remote_rule, onChange: (x: remote_rule) => vo
 }
 
 const Rulev2Component: FC = () => {
-
     const ctx = useContext(GlobalToastContext);
-
-    const deleteRule = (index: number, name: string) => {
-        FetchProtobuf(rules.method.remove, create(rule_indexSchema, { name: name, index: index }),)
-            .then(async ({ error }) => {
-                if (error === undefined) {
-                    ctx.Info("remove successful")
-                    mutate()
-                } else {
-                    const msg = error.msg;
-                    ctx.Error(msg)
-                    console.error(error.code, msg)
-                }
-            })
-    }
 
     const [adding, setAdding] = useState(false)
 
@@ -325,26 +345,17 @@ const Rulev2Component: FC = () => {
     }
 
     const [filterModal, setFilterModal] = useState({ show: false, index: 0 })
+
+    const hideFilterModal = () => { setFilterModal(prev => { return { ...prev, show: false, } }) }
     const [confirmData, setConfirmData] = useState({ show: false, index: -1 });
+
+    const hideConfirmModal = () => { setConfirmData(prev => { return { ...prev, show: false, } }) }
+
     const [priorityModal, setPriorityModal] = useState({ show: false, index: -1 });
-    const [newdata, setNewdata] = useState({ value: "" });
-    const [isChangePriority, setIsChangePriority] = useState(false)
 
     const { data: rules_data, error, isLoading, mutate } = useProtoSWR(rules.method.list)
 
-    if (error !== undefined) return <Card className="align-items-center">
-        <Card.Body>
-            <Error statusCode={error.code} title={error.msg} />
-        </Card.Body>
-    </Card>
-
-    if (isLoading || rules_data === undefined) return <Card className="align-items-center">
-        <Card.Body>
-            <Loading />
-        </Card.Body>
-    </Card>
-
-    const changePriority = (src_index: number, dst_index: number) => {
+    const changePriority = useCallback((src_index: number, dst_index: number) => {
         setIsChangePriority(true)
 
         FetchProtobuf(rules.method.change_priority, create(change_priority_requestSchema, {
@@ -363,7 +374,42 @@ const Rulev2Component: FC = () => {
 
                 setIsChangePriority(false)
             })
-    }
+    }, [ctx, mutate, rules_data?.names])
+    const hidePriorityModal = () => { setPriorityModal(prev => { return { ...prev, show: false, } }) }
+    const onChangePriority = useCallback((index: number) => {
+        changePriority(priorityModal.index, index)
+    }, [priorityModal, changePriority])
+
+    const [newdata, setNewdata] = useState({ value: "" });
+    const [isChangePriority, setIsChangePriority] = useState(false)
+
+    const deleteRule = useCallback(() => {
+        FetchProtobuf(rules.method.remove, create(rule_indexSchema, { name: rules_data.names[confirmData.index], index: confirmData.index }))
+            .then(async ({ error }) => {
+                if (error === undefined) {
+                    ctx.Info("remove successful")
+                    mutate()
+                } else {
+                    const msg = error.msg;
+                    ctx.Error(msg)
+                    console.error(error.code, msg)
+                }
+            })
+    }, [rules_data, confirmData, ctx, mutate])
+
+
+
+    if (error !== undefined) return <Card className="align-items-center">
+        <Card.Body>
+            <Error statusCode={error.code} title={error.msg} />
+        </Card.Body>
+    </Card>
+
+    if (isLoading || rules_data === undefined) return <Card className="align-items-center">
+        <Card.Body>
+            <Loading />
+        </Card.Body>
+    </Card>
 
     return <>
         <Card className="mt-3">
@@ -374,23 +420,23 @@ const Rulev2Component: FC = () => {
                         Delete {(confirmData.index >= 0 && rules_data.names.length > confirmData.index) ? rules_data.names[confirmData.index] : ""}?
                     </p>
                 }
-                onHide={() => setConfirmData({ ...confirmData, show: false })}
-                onOk={() => { deleteRule(confirmData.index, rules_data.names[confirmData.index]) }}
+                onHide={hideConfirmModal}
+                onOk={deleteRule}
             />
 
             <FilterModal
                 show={filterModal.show}
-                onHide={() => { setFilterModal({ ...filterModal, show: false }) }}
+                onHide={hideFilterModal}
                 name={(filterModal.index >= 0 && rules_data.names.length > filterModal.index) ? rules_data.names[filterModal.index] : ""}
                 index={filterModal.index}
             />
 
             <PriorityModal
                 show={priorityModal.show}
-                onHide={() => { setPriorityModal({ ...priorityModal, show: false }) }}
+                onHide={hidePriorityModal}
                 index={priorityModal.index}
                 rules={rules_data.names}
-                onChange={(index) => { changePriority(priorityModal.index, index) }}
+                onChange={onChangePriority}
             />
 
             <ListGroup variant="flush">
@@ -448,8 +494,9 @@ const Rulev2Component: FC = () => {
     </>
 }
 
+export const Rulev2 = React.memo(Rulev2Component)
 
-const PriorityModal: FC<{
+const PriorityModalComponent: FC<{
     index: number,
     rules: string[],
     show: boolean,
@@ -487,4 +534,4 @@ const PriorityModal: FC<{
     </>
 }
 
-export default Bypass;
+export const PriorityModal = React.memo(PriorityModalComponent)

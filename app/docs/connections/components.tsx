@@ -1,7 +1,7 @@
 import { DescField } from "@bufbuild/protobuf";
 import { reflect, ReflectMessage } from "@bufbuild/protobuf/reflect";
-import { FC, JSX, useState } from "react";
-import { ListGroup } from "react-bootstrap";
+import React, { FC, JSX, useEffect, useState } from "react";
+import { Card, ListGroup } from "react-bootstrap";
 import useSWR from "swr";
 import { FetchProtobuf, ProtoPath } from "../common/proto";
 import { connection, connectionSchema } from "../pbes/statistic/config_pb";
@@ -76,7 +76,7 @@ export const ConnectionInfo: FC<{
     }
 
     return <>
-        <ListGroup variant="flush">
+        <ListGroup variant="flush" className="w-100 p-2">
             {startContent}
             {rangeInfo(value)}
             {endContent}
@@ -185,3 +185,50 @@ export const useFlow = () => {
             refreshInterval: 2000
         })
 }
+
+
+export const FlowCard: FC<{
+    lastFlow?: last_flow,
+    flow_error?: { msg: string, code: number },
+    end_content?: React.ReactNode
+}> = ({ lastFlow, flow_error, end_content }) => {
+    return <Card className="mb-3">
+        <ListGroup variant="flush">
+
+            <ListGroup.Item>
+                <div className="d-sm-flex">
+                    <div className="endpoint-name flex-grow-1 notranslate">Download</div>
+                    <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-download">
+                        {flow_error ? flow_error.msg : lastFlow ? lastFlow.download_rate : "Loading..."}
+                    </div>
+                </div>
+            </ListGroup.Item>
+
+
+            <ListGroup.Item>
+                <div className="d-sm-flex">
+                    <div className="endpoint-name flex-grow-1 notranslate">Upload</div>
+                    <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-upload">
+                        {flow_error ? flow_error.msg : lastFlow ? lastFlow.upload_rate : "Loading..."}
+                    </div>
+                </div>
+            </ListGroup.Item>
+
+            {end_content}
+        </ListGroup>
+    </Card>
+}
+
+export const FlowContainer: FC<{
+    onUpdate?: (counters: { [key: string]: counter }) => void
+    end_content?: React.ReactNode,
+}> = React.memo((
+    { onUpdate, end_content }
+) => {
+    const { data: lastFlow, error: flow_error } = useFlow()
+    useEffect(() => {
+        if (onUpdate && lastFlow) { onUpdate(lastFlow.counters) }
+    }, [onUpdate, lastFlow])
+
+    return <FlowCard lastFlow={lastFlow} flow_error={flow_error} end_content={end_content} />
+})

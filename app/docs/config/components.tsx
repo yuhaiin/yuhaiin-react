@@ -1,4 +1,4 @@
-import { FC, JSX, useState } from "react";
+import React, { FC, JSX, useState } from "react";
 import { Button, ButtonGroup, Card, Col, Collapse, Dropdown, DropdownItem, DropdownMenu, Form, InputGroup, Row } from "react-bootstrap";
 
 export class Remind {
@@ -13,7 +13,7 @@ export class Remind {
     }
 }
 
-export const SettingInputText: FC<{
+const SettingInputTextComponent: FC<{
     label: string,
     value: string | number,
     url?: string,
@@ -30,7 +30,10 @@ export const SettingInputText: FC<{
 }> = ({ label, value, url, plaintext, onChange, reminds, placeholder, errorMsg, className, endContent, disabled, password, readonly }) => {
     const [showPassword, setShowPassword] = useState(false)
 
-    const dropdown = () => {
+    const IDropdownComponent = () => {
+        const changeValue = (v: string) => {
+            if (onChange) onChange(v)
+        }
         if (!reminds || !reminds.length) return <></>
 
         return <Dropdown>
@@ -40,7 +43,7 @@ export const SettingInputText: FC<{
                     reminds.map((v) => {
                         return <DropdownItem
                             key={v.value}
-                            onClick={() => onChange && onChange(v.value)}>
+                            onClick={() => changeValue(v.value)}>
                             <b>{v.label}</b>
                             {
                                 v.label_children &&
@@ -55,31 +58,43 @@ export const SettingInputText: FC<{
         </Dropdown>
     }
 
+    const IDropdown = React.memo(IDropdownComponent)
+
+    const onChangeInput = (v: React.ChangeEvent<HTMLInputElement>) => {
+        if (onChange) onChange(v.target.value)
+    }
+
+    const changeShowPassword = () => {
+        setShowPassword(prev => !prev)
+    }
+
+    const FormControlComponent: FC<{ url?: string }> = ({ url }) => {
+        if (url) return <a className="mt-1" href={url} target="_blank">{value}</a>
+
+        return <Form.Control
+            readOnly={readonly}
+            disabled={disabled}
+            value={value}
+            plaintext={plaintext}
+            placeholder={placeholder}
+            type={password && !showPassword ? "password" : "text"}
+            isInvalid={errorMsg ? true : false}
+            onChange={onChangeInput}
+        />
+    }
+
+    const FormControl = React.memo(FormControlComponent)
+
     return (
         <Form.Group as={Row} className={className !== undefined ? className : "mb-2"}>
             <Form.Label column sm={2} className="nowrap">{label}</Form.Label>
             <Col sm={10}>
                 <InputGroup hasValidation={errorMsg ? true : false}>
-                    {dropdown()}
-                    {url
-                        ?
-                        <a className="mt-1" href={url} target="_blank">{value}</a>
-                        :
-                        <>
-                            <Form.Control
-                                readOnly={readonly}
-                                disabled={disabled}
-                                value={value}
-                                plaintext={plaintext}
-                                placeholder={placeholder}
-                                type={password && !showPassword ? "password" : "text"}
-                                isInvalid={errorMsg ? true : false}
-                                onChange={(v) => { if (onChange) onChange(v.target.value) }}
-                            />
-                        </>}
+                    <IDropdown />
+                    <FormControl url={url} />
                     {
                         password &&
-                        <Button onClick={() => { setShowPassword(prev => !prev) }} variant="outline-secondary">
+                        <Button onClick={changeShowPassword} variant="outline-secondary">
                             {showPassword ? <i className="bi bi-eye-slash"></i> : <i className="bi bi-eye"></i>}
                         </Button>
                     }
@@ -88,14 +103,22 @@ export const SettingInputText: FC<{
                         errorMsg && <Form.Control.Feedback type="invalid">{errorMsg}</Form.Control.Feedback>
                     }
 
-
                 </InputGroup>
             </Col>
         </Form.Group >
     )
 }
 
-export const SettingInputTextarea: FC<{ label: string, value: string | number | undefined, onChange?: (x: string) => void, disabled?: boolean, readonly?: boolean, password?: boolean }> =
+export const SettingInputText = React.memo(SettingInputTextComponent)
+
+export const SettingInputTextarea: FC<{
+    label: string,
+    value: string | number | undefined,
+    onChange?: (x: string) => void,
+    disabled?: boolean,
+    readonly?: boolean,
+    password?: boolean
+}> =
     ({ label, value, onChange, disabled, readonly, password }) => {
         return (
             <Form.Group as={Row} className='mb-2'>
