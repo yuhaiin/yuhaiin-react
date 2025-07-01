@@ -1,5 +1,5 @@
-import React, { FC, JSX, useState } from "react";
-import { Button, ButtonGroup, Card, Col, Collapse, Dropdown, DropdownItem, DropdownMenu, Form, InputGroup, Row } from "react-bootstrap";
+import React, { FC, JSX, useCallback, useState } from "react";
+import { Button, ButtonGroup, Card, Col, Collapse, Dropdown, DropdownMenu, Form, InputGroup, Row } from "react-bootstrap";
 
 export class Remind {
     label: string
@@ -30,68 +30,59 @@ const SettingInputTextComponent: FC<{
 }> = ({ label, value, url, plaintext, onChange, reminds, placeholder, errorMsg, className, endContent, disabled, password, readonly }) => {
     const [showPassword, setShowPassword] = useState(false)
 
-    const IDropdownComponent = () => {
-        const changeValue = (v: string) => {
-            if (onChange) onChange(v)
-        }
-        if (!reminds || !reminds.length) return <></>
+    const changeValue = useCallback((v: string) => {
+        if (onChange) onChange(v)
+    }, [onChange])
 
-        return <Dropdown>
-            <Dropdown.Toggle variant='outline-secondary' id="dropdown-basic" />
-            <DropdownMenu style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                {
-                    reminds.map((v) => {
-                        return <DropdownItem
-                            key={v.value}
-                            onClick={() => changeValue(v.value)}>
-                            <b>{v.label}</b>
-                            {
-                                v.label_children &&
-                                v.label_children.map((vv) => {
-                                    return <div key={vv}><span className="text-body-secondary">{vv}</span></div>
-                                })
-                            }
-                        </DropdownItem>
-                    })
-                }
-            </DropdownMenu>
-        </Dropdown>
-    }
-
-    const IDropdown = React.memo(IDropdownComponent)
-
-    const onChangeInput = (v: React.ChangeEvent<HTMLInputElement>) => {
+    const onChangeInput = useCallback((v: React.ChangeEvent<HTMLInputElement>) => {
         if (onChange) onChange(v.target.value)
-    }
+    }, [onChange])
 
-    const changeShowPassword = () => {
+    const changeShowPassword = useCallback(() => {
         setShowPassword(prev => !prev)
-    }
-
-    const FormControlComponent: FC<{ url?: string }> = ({ url }) => {
-        if (url) return <a className="mt-1" href={url} target="_blank">{value}</a>
-
-        return <Form.Control
-            readOnly={readonly}
-            disabled={disabled}
-            value={value}
-            plaintext={plaintext}
-            placeholder={placeholder}
-            type={password && !showPassword ? "password" : "text"}
-            isInvalid={errorMsg ? true : false}
-            onChange={onChangeInput}
-        />
-    }
-
-    const FormControl = React.memo(FormControlComponent)
+    }, [setShowPassword])
 
     return (
         <Form.Group as={Row} className={className !== undefined ? className : "mb-2"}>
             <Form.Label column sm={2} className="nowrap">{label}</Form.Label>
             <Col sm={10}>
                 <InputGroup hasValidation={errorMsg ? true : false}>
-                    <IDropdown />
-                    <FormControl url={url} />
+                    {
+                        (!reminds || !reminds.length) ? <></>
+                            : <Dropdown>
+                                <Dropdown.Toggle variant='outline-secondary' id="dropdown-basic" />
+                                <DropdownMenu style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                    {
+                                        reminds.map((v) => {
+                                            return <Dropdown.Item
+                                                key={v.value}
+                                                onClick={() => changeValue(v.value)}>
+                                                <b>{v.label}</b>
+                                                {
+                                                    v.label_children &&
+                                                    v.label_children.map((vv) => {
+                                                        return <div key={vv}><span className="text-body-secondary">{vv}</span></div>
+                                                    })
+                                                }
+                                            </Dropdown.Item>
+                                        })
+                                    }
+                                </DropdownMenu>
+                            </Dropdown>
+                    }
+                    {
+                        url ? <a className="mt-1" href={url} target="_blank">{value}</a>
+                            : <Form.Control
+                                readOnly={readonly}
+                                disabled={disabled}
+                                value={value}
+                                plaintext={plaintext}
+                                placeholder={placeholder}
+                                type={password && !showPassword ? "password" : "text"}
+                                isInvalid={errorMsg ? true : false}
+                                onChange={onChangeInput}
+                            />
+                    }
                     {
                         password &&
                         <Button onClick={changeShowPassword} variant="outline-secondary">

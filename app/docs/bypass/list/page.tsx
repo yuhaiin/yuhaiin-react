@@ -17,7 +17,7 @@ import { lists } from "../../pbes/config/grpc/config_pb";
 export default function Lists() {
     const ctx = useContext(GlobalToastContext);
 
-    const { data: listsData, error, isLoading, mutate } = useProtoSWR(lists.method.list)
+    const { data: listsData, error, isLoading, mutate } = useProtoSWR(lists.method.list, { revalidateOnFocus: false })
 
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
     const [confirm, setConfirm] = useState<{ show: boolean, name: string }>({ show: false, name: "" });

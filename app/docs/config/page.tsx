@@ -1,8 +1,8 @@
 "use client"
 
 import { create, DescEnumValue } from '@bufbuild/protobuf';
-import { FC, useCallback, useContext, useEffect, useMemo } from 'react';
-import { Button, Card, Col, Form, Row, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Button, Card, Col, Form, Row, Spinner, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
 import { Interfaces } from '../common/interfaces';
 import Loading, { Error } from '../common/loading';
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
@@ -72,16 +72,6 @@ function ConfigComponent() {
         setSetting(prev => ({ ...prev, netInterface: v }), false)
     }, [setSetting])
 
-    const DefaultInterfaceSelect: FC<{ enabled: boolean }> = ({ enabled }) => {
-        if (!enabled) return <></>
-        return <SettingInputText
-            label='Network Interface'
-            value={setting.netInterface}
-            onChange={setDefaultInterface}
-            reminds={reminds}
-        />
-    }
-
     const setLogcat = useCallback((change: (v: logcat) => logcat) => {
         setSetting(prev => ({ ...prev, logcat: change(prev.logcat) }), false)
     }, [setSetting])
@@ -131,7 +121,10 @@ function ConfigComponent() {
         setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, udpBufferSize: Number(v.target.value) } }), false)
     }, [setSetting])
 
+    const [saving, setSaving] = useState(false);
+
     const save = useCallback(() => {
+        setSaving(true);
         FetchProtobuf(config_service.method.save, setting)
             .then(async ({ error }) => {
                 if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${error.msg}`)
@@ -139,8 +132,9 @@ function ConfigComponent() {
                     ctx.Info("Save Config Successfully");
                     setSetting()
                 }
-            })
+            }).finally(() => setSaving(false));
     }, [setting, setSetting, ctx])
+
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || setting === undefined) return <Loading />
@@ -161,7 +155,15 @@ function ConfigComponent() {
                         onChange={switchDefaultInterface}
                     />
 
-                    <DefaultInterfaceSelect enabled={setting.useDefaultInterface} />
+                    {
+                        !setting.useDefaultInterface ? <></> :
+                            <SettingInputText
+                                label='Network Interface'
+                                value={setting.netInterface}
+                                onChange={setDefaultInterface}
+                                reminds={reminds}
+                            />
+                    }
 
                     <Form.Group as={Row} className={"mb-2"}>
                         <Form.Label column sm={2} className="nowrap">System Proxy</Form.Label>
@@ -220,8 +222,10 @@ function ConfigComponent() {
                     <Button
                         variant="outline-primary"
                         onClick={save}
+                        disabled={saving}
                     >
-                        Save
+                        Save  <i className="bi bi-floppy"></i> Save
+                        {saving && <>&nbsp;<Spinner size="sm" animation="border" variant='primary' /></>}
                     </Button>
                 </Card.Footer>
             </Card >
