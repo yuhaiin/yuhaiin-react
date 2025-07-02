@@ -156,7 +156,7 @@ function ConfigComponent() {
                     />
 
                     {
-                        !setting.useDefaultInterface ? <></> :
+                        setting.useDefaultInterface ? <></> :
                             <SettingInputText
                                 label='Network Interface'
                                 value={setting.netInterface}
@@ -224,7 +224,7 @@ function ConfigComponent() {
                         onClick={save}
                         disabled={saving}
                     >
-                        Save  <i className="bi bi-floppy"></i> Save
+                        <i className="bi bi-floppy"></i> Save
                         {saving && <>&nbsp;<Spinner size="sm" animation="border" variant='primary' /></>}
                     </Button>
                 </Card.Footer>
