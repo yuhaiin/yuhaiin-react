@@ -1,35 +1,86 @@
 import { DescField } from "@bufbuild/protobuf";
 import { reflect, ReflectMessage } from "@bufbuild/protobuf/reflect";
 import React, { FC, JSX, useEffect, useState } from "react";
-import { Card, ListGroup } from "react-bootstrap";
+import { Badge, Card, ListGroup } from "react-bootstrap";
 import useSWR from "swr";
 import { FetchProtobuf, ProtoPath } from "../common/proto";
 import { connection, connectionSchema } from "../pbes/statistic/config_pb";
 import { connections, counter, total_flow } from "../pbes/statistic/grpc/config_pb";
 
-export const ListGroupItem = (props: { itemKey: string, itemValue: string, showModal?: (hash: string) => void }) => {
-    return (
-        <>
-            <ListGroup.Item>
-                <div className="d-sm-flex">
-                    <div className="endpoint-name flex-grow-1 notranslate text-capitalize">{props.itemKey}</div>
+export const ListGroupItem: FC<{ itemKey: string, itemValue: string, showModal?: (hash: string) => void }> =
+    ({ itemKey, itemValue, showModal }) => {
+        return (
+            <>
+                <ListGroup.Item>
+                    <div className="d-sm-flex">
+                        <div className="endpoint-name flex-grow-1 notranslate text-capitalize">{itemKey}</div>
 
-                    <div className="notranslate text-break" style={{ opacity: 0.6 }}>
-                        {
-                            (props.itemKey !== "hash" || !props.showModal) ? props.itemValue :
-                                <a
-                                    href="#"
-                                    onClick={(e) => { e.preventDefault(); if (props.showModal) props.showModal(props.itemValue) }}
-                                >
-                                    {props.itemValue}
-                                </a>
-                        }
+                        <div className="notranslate text-break" style={{ opacity: 0.6 }}>
+                            <ItemInfo itemKey={itemKey} itemValue={itemValue} showModal={showModal} />
+                        </div>
+                    </div>
+                </ListGroup.Item>
+            </>
+        )
+    }
+
+type MatchHistory = {
+    rule_name: string,
+    history: { list_name: string, matched: boolean }[]
+}
+const ItemInfo: FC<{ itemKey: string, itemValue: string, showModal?: (hash: string) => void }> =
+    ({ itemKey, itemValue, showModal }) => {
+        if (itemKey === "mode reason") {
+            const history = JSON.parse(itemValue) as MatchHistory[]
+            return <>
+                <div>
+
+                    <div className="d-flex align-items-center gap-2">
+                        <div style={{ flex: 1, height: "1px", background: "black" }}></div>
+                        <span><b>Rule Name</b></span>
+                        <div style={{ flex: 1, height: "1px", background: "black" }}></div>
+                    </div>
+
+                    <div className="mt-2 mb-2">
+                        <div >
+                            <div><Badge bg="success">Hit</Badge> List Name</div>
+                            <div><Badge bg="danger">Miss</Badge> List Name</div>
+                        </div>
                     </div>
                 </div>
-            </ListGroup.Item>
-        </>
-    )
-}
+
+                <hr />
+
+                {history.map((e, i) => {
+                    return <div key={"rule-" + e.rule_name + i}>
+
+                        <div className="d-flex align-items-center gap-2">
+                            <div style={{ flex: 1, height: "1px", background: "black" }}></div>
+                            <span><b>{e.rule_name}</b></span>
+                            <div style={{ flex: 1, height: "1px", background: "black" }}></div>
+                        </div>
+
+                        <div className="mt-2 mb-2">
+                            {e.history.map((h, j) => {
+                                return <div key={"list-" + h.list_name + j}>
+                                    <div>{h.matched ? <Badge bg="success">Hit</Badge> : <Badge bg="danger">Miss</Badge>} {h.list_name}</div>
+                                </div>
+                            })}
+                        </div>
+
+                    </div>
+                })}
+            </>
+        }
+
+        if (itemKey == "hash" && showModal) {
+            return <a href="#" onClick={(e) => { e.preventDefault(); showModal(itemValue) }}>
+                {itemValue}
+            </a>
+        }
+
+        return <>{itemValue}</>
+    }
 
 export const ConnectionInfo: FC<{
     value: connection,
@@ -118,42 +169,59 @@ export const formatBytes = (a = 0, b = 2) => {
     return `${bytes.toFixed(b)}${unit}`;
 }
 
-export type last_flow = {
-    download: number,
-    download_rate: string,
-    upload: number,
-    upload_rate: string,
-    counters: { [key: string]: counter },
+export class Flow {
+    download: number
+    download_rate: number
+    upload: number
+    upload_rate: number
+    counters: { [key: string]: counter }
     time: Date
+
+    constructor(download = 0, download_rate = 0, upload = 0, upload_rate = 0, counters = {}) {
+        this.download = download
+        this.download_rate = download_rate
+        this.upload = upload
+        this.upload_rate = upload_rate
+        this.counters = counters
+        this.time = new Date()
+    }
+
+    DownloadString() {
+        const dstr = formatBytes(this.download)
+        const dratestr = formatBytes(this.download_rate) + "/S"
+
+        return `(${dstr}): ${dratestr}`
+    }
+
+    UploadString() {
+        const ustr = formatBytes(this.upload)
+        const uratestr = formatBytes(this.upload_rate) + "/S"
+
+        return `(${ustr}): ${uratestr}`
+    }
 }
 
-const generateFlow = (flow: total_flow, prev: last_flow): { upload_rate: string, download_rate: string } => {
-    const download = Number(flow.download)
-    const upload = Number(flow.upload)
+const generateFlow = (flow: total_flow, prev: Flow): { upload_rate: number, download_rate: number } => {
     const duration = (new Date().getTime() - prev.time.getTime()) / 1000
-
-    const dstr = formatBytes(download)
-    const ustr = formatBytes(upload)
-    let dratestr = "Loading..."
-    let uratestr = "Loading..."
+    let drate = 0
+    let urate = 0
 
     if ((prev.download !== 0 || prev.upload !== 0) && duration !== 0) {
-        dratestr = formatBytes((download - prev.download) / duration) + "/S"
-        uratestr = formatBytes((upload - prev.upload) / duration) + "/S"
+        const download = Number(flow.download)
+        const upload = Number(flow.upload)
+        drate = (download - prev.download) / duration
+        urate = (upload - prev.upload) / duration
     }
 
     return {
-        download_rate: `(${dstr}): ${dratestr}`,
-        upload_rate: `(${ustr}): ${uratestr}`
+        download_rate: drate,
+        upload_rate: urate
     }
 }
 
 
 export const useFlow = () => {
-    const [lastFlow, setLastFlow] = useState<last_flow>({
-        download: 0, upload: 0, counters: {}, time: new Date(),
-        download_rate: "Loading...", upload_rate: "Loading..."
-    });
+    const [lastFlow, setLastFlow] = useState<Flow>(new Flow(0, 0, 0, 0, {}));
 
     return useSWR(
         ProtoPath(connections.method.total),
@@ -163,18 +231,9 @@ export const useFlow = () => {
                 if (r) {
                     try {
                         const resp = generateFlow(r, lastFlow)
-                        setLastFlow(prev => {
-                            return {
-                                ...prev,
-                                download: Number(r.download),
-                                upload: Number(r.upload),
-                                counters: r.counters,
-                                time: new Date(),
-                                download_rate: resp.download_rate,
-                                upload_rate: resp.upload_rate
-                            }
-                        })
-                        return { ...lastFlow }
+                        const flow = new Flow(Number(r.download), resp.download_rate, Number(r.upload), resp.upload_rate, r.counters)
+                        setLastFlow(flow)
+                        return flow
                     } catch (e) {
                         throw { msg: e.toString(), code: 500 }
                     }
@@ -188,7 +247,7 @@ export const useFlow = () => {
 
 
 export const FlowCard: FC<{
-    lastFlow?: last_flow,
+    lastFlow?: Flow,
     flow_error?: { msg: string, code: number },
     end_content?: React.ReactNode
 }> = ({ lastFlow, flow_error, end_content }) => {
@@ -199,7 +258,7 @@ export const FlowCard: FC<{
                 <div className="d-sm-flex">
                     <div className="endpoint-name flex-grow-1 notranslate">Download</div>
                     <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-download">
-                        {flow_error ? flow_error.msg : lastFlow ? lastFlow.download_rate : "Loading..."}
+                        {flow_error ? flow_error.msg : lastFlow ? lastFlow.DownloadString() : "Loading..."}
                     </div>
                 </div>
             </ListGroup.Item>
@@ -209,7 +268,7 @@ export const FlowCard: FC<{
                 <div className="d-sm-flex">
                     <div className="endpoint-name flex-grow-1 notranslate">Upload</div>
                     <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-upload">
-                        {flow_error ? flow_error.msg : lastFlow ? lastFlow.upload_rate : "Loading..."}
+                        {flow_error ? flow_error.msg : lastFlow ? lastFlow.UploadString() : "Loading..."}
                     </div>
                 </div>
             </ListGroup.Item>
@@ -226,6 +285,7 @@ export const FlowContainer: FC<{
     { onUpdate, end_content }
 ) => {
     const { data: lastFlow, error: flow_error } = useFlow()
+
     useEffect(() => {
         if (onUpdate && lastFlow) { onUpdate(lastFlow.counters) }
     }, [onUpdate, lastFlow])

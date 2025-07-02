@@ -256,6 +256,22 @@ const InfoOffcanvasComponent: FC<{
 
         const [closing, setClosing] = useState(false);
 
+        const closeConnection = useCallback(() => {
+            setClosing(true)
+            FetchProtobuf(
+                connections.method.close_conn,
+                create(notify_remove_connectionsSchema, { ids: [data.id] }),
+            )
+                .then(async ({ error }) => {
+                    if (error) {
+                        ctx.Error(`code ${data.id} failed, ${error.code}| ${error.msg}`)
+                        setClosing(false)
+                    } else {
+                        setTimeout(() => { setClosing(false) }, 5000)
+                    }
+                })
+        }, [setClosing, data.id, ctx])
+
         return <Offcanvas className="w-75" show={show} onHide={handleClose} placement="end" scroll renderStaticNode>
             <Offcanvas.Body>
                 <ConnectionInfo value={data} showModal={showModal}
@@ -265,21 +281,7 @@ const InfoOffcanvasComponent: FC<{
                                 variant="outline-danger"
                                 className="flex-grow-1 notranslate"
                                 disabled={closing}
-                                onClick={() => {
-                                    setClosing(true)
-                                    FetchProtobuf(
-                                        connections.method.close_conn,
-                                        create(notify_remove_connectionsSchema, { ids: [data.id] }),
-                                    )
-                                        .then(async ({ error }) => {
-                                            if (error) {
-                                                ctx.Error(`code ${data.id} failed, ${error.code}| ${error.msg}`)
-                                                setClosing(false)
-                                            } else {
-                                                setTimeout(() => { setClosing(false) }, 5000)
-                                            }
-                                        })
-                                }}
+                                onClick={closeConnection}
                             >
                                 Close
                                 {closing && <>&nbsp;<Spinner size="sm" animation="border" variant='danger' /></>}

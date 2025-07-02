@@ -1,19 +1,18 @@
 import { create } from '@bufbuild/protobuf';
 import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
-import { Accordion, Button, ButtonGroup, Card, Col, Form, InputGroup, ListGroup, Modal, Row, Spinner } from 'react-bootstrap';
+import { Button, ButtonGroup, Card, Form, InputGroup, ListGroup, Modal, Spinner } from 'react-bootstrap';
 import { ConfirmModal } from '../common/confirm';
 import Loading, { Error } from '../common/loading';
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
-import { FormSelect, SettingCheck, SettingSelect, SettingTypeSelect } from '../common/switch';
+import { SettingCheck, SettingSelect } from '../common/switch';
 import { GlobalToastContext } from '../common/toast';
-import { Container, MoveUpDown, NewItemList, SettingInputText } from '../config/components';
-import { config, mode, mode_config, mode_configSchema, modeSchema, remote_rule, remote_rule_fileSchema, remote_rule_httpSchema, remote_ruleSchema, resolve_strategy, resolve_strategySchema, rulev2Schema, udp_proxy_fqdn_strategy, udp_proxy_fqdn_strategySchema } from '../pbes/config/bypass/bypass_pb';
-import { change_priority_requestSchema, bypass as gb, resolver, rule_indexSchema, rule_save_requestSchema, rules } from '../pbes/config/grpc/config_pb';
+import { configv2, mode, resolve_strategy, rulev2Schema, udp_proxy_fqdn_strategy } from '../pbes/config/bypass/bypass_pb';
+import { change_priority_requestSchema, resolver, rule_indexSchema, rule_save_requestSchema, rules } from '../pbes/config/grpc/config_pb';
 import { FilterModal } from './filter/filter';
 
 const BypassComponent: FC<{
-    bypass: config,
-    onChange: (x: config) => void,
+    bypass: configv2,
+    onChange: (x: configv2) => void,
     refresh: () => void
 }> = ({ bypass, onChange, refresh }) => {
     const { data: resolvers } = useProtoSWR(resolver.method.list)
@@ -21,25 +20,7 @@ const BypassComponent: FC<{
 
     const ctx = useContext(GlobalToastContext);
 
-    const defaultRule: mode_config = create(mode_configSchema, {
-        hostname: ["www.example.com"],
-        mode: mode.proxy,
-        tag: "",
-        resolveStrategy: resolve_strategy.default
-    })
-
-    const defaultRemoteRule: remote_rule = create(remote_ruleSchema, {
-        name: "my rule",
-        enabled: false,
-        object: { case: "file", value: create(remote_rule_fileSchema, {}) }
-    })
-
-    const [drag, setDrag] = useState({ start: -1 })
     const [saving, setSaving] = useState(false);
-
-    const changeEnabledv2 = useCallback(() => {
-        onChange({ ...bypass, enabledV2: !bypass.enabledV2 })
-    }, [bypass, onChange])
 
     const changeResolveLocally = useCallback(() => {
         onChange({ ...bypass, resolveLocally: !bypass.resolveLocally })
@@ -61,7 +42,7 @@ const BypassComponent: FC<{
 
     const onSave = useCallback(() => {
         setSaving(true)
-        FetchProtobuf(gb.method.save, bypass)
+        FetchProtobuf(rules.method.save_config, bypass)
             .then(async ({ error }) => {
                 if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${error.msg}`)
                 else {
@@ -76,7 +57,6 @@ const BypassComponent: FC<{
         <>
             <Card className="mb-3">
                 <Card.Body>
-                    <SettingCheck label='Enabled RuleV2' checked={bypass.enabledV2} onChange={changeEnabledv2} />
                     <SettingCheck label='Resolve Locally' checked={bypass.resolveLocally} onChange={changeResolveLocally} />
                     <SettingCheck label='Udp proxy Fqdn' checked={bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve} onChange={chnageUdpProxyFqdn} />
                     <SettingSelect
@@ -109,207 +89,11 @@ const BypassComponent: FC<{
 
 
             <Rulev2Component />
-
-            <div className="d-flex align-items-center my-3">
-                <hr className="flex-grow-1" />
-                <span className="mx-2 fw-bold text-muted">DEPRECATED</span>
-                <hr className="flex-grow-1" />
-            </div>
-
-            <Accordion>
-                <Accordion.Item eventKey="0">
-                    <Accordion.Header>DEPRECATED</Accordion.Header>
-                    <Accordion.Body>
-                        <SettingTypeSelect label='TCP' type={modeSchema} value={bypass.tcp} onChange={(v) => onChange({ ...bypass, tcp: v })} />
-                        <SettingTypeSelect lastElem label='UDP' type={modeSchema} value={bypass.udp} onChange={(v) => onChange({ ...bypass, udp: v })} />
-                        <hr />
-                        <Card>
-                            <ListGroup variant="flush">
-                                {
-                                    bypass.remoteRules.map((value, index) => (
-                                        <React.Fragment key={"remote_rules" + index}>
-                                            <Container
-                                                as={ListGroup.Item}
-                                                fold
-                                                title={value.name}
-                                                onClose={() => onChange({ ...bypass, remoteRules: bypass.remoteRules.filter((_, i) => i !== index) })}
-                                                moveUpDown={new MoveUpDown(bypass.remoteRules, index, (e) => onChange({ ...bypass, remoteRules: e }))}
-                                            >
-                                                <RulesComponent config={value} onChange={(e) => onChange({ ...bypass, remoteRules: [...bypass.remoteRules.slice(0, index), e, ...bypass.remoteRules.slice(index + 1)] })} />
-                                            </Container>
-                                        </React.Fragment>
-                                    ))
-                                }
-
-                                <ListGroup.Item className='d-flex'>
-                                    <Button className='flex-grow-1' variant='outline-success'
-                                        onClick={() => onChange({ ...bypass, remoteRules: [...bypass.remoteRules, defaultRemoteRule] })} >
-                                        <i className="bi bi-plus-lg mb-2" />New Remote Rule
-                                    </Button>
-                                </ListGroup.Item>
-                            </ListGroup>
-                        </Card >
-
-
-                        <Card className="mt-3">
-                            <ListGroup variant="flush">
-                                {
-                                    bypass.customRuleV3.map((value, index) => (
-                                        <React.Fragment key={"rule" + index}>
-                                            <Container
-                                                as={ListGroup.Item}
-                                                fold
-                                                title={value.tag !== "" ? value.tag : mode[value.mode]}
-                                                onClose={() => onChange({ ...bypass, customRuleV3: bypass.customRuleV3.filter((_, i) => i !== index) })}
-                                                moveUpDown={new MoveUpDown(
-                                                    bypass.customRuleV3,
-                                                    index,
-                                                    (e) => onChange({ ...bypass, customRuleV3: e }),
-                                                    {
-                                                        draggable: true,
-                                                        onDrop: (i) => {
-                                                            if (drag.start !== i) {
-                                                                const rules = [...bypass.customRuleV3]
-                                                                const tmp = rules[drag.start]
-                                                                rules[drag.start] = rules[i]
-                                                                rules[i] = tmp
-                                                                onChange({ ...bypass, customRuleV3: rules })
-                                                            }
-                                                        },
-                                                        onDragStart: (i) => {
-                                                            setDrag({ start: i })
-                                                        }
-                                                    },
-                                                )}
-                                            >
-                                                <BypassSingleComponents
-                                                    config={value}
-                                                    onChange={(e) => onChange({ ...bypass, customRuleV3: [...bypass.customRuleV3.slice(0, index), e, ...bypass.customRuleV3.slice(index + 1)] })}
-                                                    resolvers={resolverList()}
-                                                />
-                                            </Container>
-                                        </React.Fragment>
-                                    ))
-                                }
-
-
-                                <ListGroup.Item className='d-flex'>
-                                    <Button className='flex-grow-1' variant='outline-success'
-                                        onClick={() => onChange({ ...bypass, customRuleV3: [...bypass.customRuleV3, defaultRule] })} >
-                                        <i className="bi bi-plus-lg mb-2" />New Rule
-                                    </Button>
-                                </ListGroup.Item>
-                            </ListGroup>
-                        </Card >
-                    </Accordion.Body>
-                </Accordion.Item>
-            </Accordion>
-
         </>
     )
 }
 
 export const Bypass = React.memo(BypassComponent)
-
-const BypassSingleComponents: FC<{
-    config: mode_config,
-    onChange: (x: mode_config) => void,
-    resolvers: string[]
-}> = ({
-    config,
-    onChange,
-    resolvers
-}) => {
-        return (
-            <>
-                <SettingTypeSelect label='Mode' type={modeSchema} filter={(v) => v.number !== mode.bypass} value={config.mode} onChange={(v) => onChange({ ...config, mode: v })} />
-                <SettingInputText label='Tag' value={config.tag} onChange={(e) => onChange({ ...config, tag: e })} />
-                <SettingTypeSelect label='Resolve Strategy' type={resolve_strategySchema} value={config.resolveStrategy} onChange={(e) => onChange({ ...config, resolveStrategy: e })} />
-                <SettingTypeSelect label='UDP proxy Fqdn'
-                    type={udp_proxy_fqdn_strategySchema}
-                    format={(v) => v === udp_proxy_fqdn_strategy.udp_proxy_fqdn_strategy_default ? "global" : udp_proxy_fqdn_strategy[v]}
-                    value={config.udpProxyFqdnStrategy}
-                    onChange={(e) => onChange({ ...config, udpProxyFqdnStrategy: e })}
-                />
-                <SettingSelect value={config.resolver} values={resolvers} label='Resolver' onChange={(v) => onChange({ ...config, resolver: v })} emptyChoose />
-                <NewItemList
-                    title='IP/DOMAIN'
-                    data={config.hostname}
-                    onChange={(v) => onChange({ ...config, hostname: v })}
-                    errorMsgs={config.errorMsgs}
-                />
-            </>
-        )
-    }
-
-
-const RulesComponent: FC<{ config: remote_rule, onChange: (x: remote_rule) => void }> = ({ config, onChange }) => {
-    const getType = () => {
-        switch (config.object.case) {
-            case "file":
-                return "file"
-            case "http":
-                return "http"
-            default:
-                return ""
-        }
-    }
-
-    const getValue = () => {
-        switch (config.object.case) {
-            case "file":
-                return config.object.value.path
-            case "http":
-                return config.object.value.url
-            default:
-                return ""
-        }
-    }
-
-    const setValue = (x: remote_rule, v: string) => {
-        switch (x.object.case) {
-            case "file":
-                x.object.value = { ...x.object.value, path: v }
-                break
-            case "http":
-                x.object.value = { ...x.object.value, url: v }
-                break
-        }
-    }
-
-    return (
-        <>
-            <SettingCheck label='Enabled' checked={config.enabled} onChange={() => onChange({ ...config, enabled: !config.enabled })} />
-            <SettingInputText label='Name' value={config.name} onChange={(e) => onChange({ ...config, name: e })} />
-            <Form.Group as={Row} className='mb-3'>
-                <Form.Label column sm={2}>Type</Form.Label>
-                <Col sm={10}>
-                    <FormSelect value={getType()}
-                        values={["file", "http"]}
-                        onChange={(e) => {
-                            if (getType() == e) return
-                            const x = { ...config }
-                            switch (e) {
-                                case "file":
-                                    x.object = { case: "file", value: create(remote_rule_fileSchema, {}) }
-                                    break
-                                case "http":
-                                    x.object = { case: "http", value: create(remote_rule_httpSchema, {}) }
-                                    break
-                            }
-                            onChange(x)
-                        }}
-                    />
-                </Col>
-            </Form.Group>
-            <SettingInputText className='' label='Value' value={getValue()} errorMsg={config.errorMsg} onChange={(e) => {
-                const x = { ...config }
-                setValue(x, e)
-                onChange(x)
-            }} />
-        </>
-    )
-}
 
 const Rulev2Component: FC = () => {
     const ctx = useContext(GlobalToastContext);

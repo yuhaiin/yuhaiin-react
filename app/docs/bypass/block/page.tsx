@@ -7,7 +7,7 @@ import { Button, Spinner, Table } from "react-bootstrap"
 import styles from "../../common/clickable.module.css"
 import Loading from "../../common/loading"
 import { useProtoSWR } from "../../common/proto"
-import { block_history, bypass } from "../../pbes/config/grpc/config_pb"
+import { block_history, rules } from "../../pbes/config/grpc/config_pb"
 
 const TimestampZero = create(TimestampSchema, { seconds: BigInt(0), nanos: 0 })
 
@@ -25,7 +25,7 @@ function BypassBlockHistory() {
         else return sortFunc(timestampDate(a.time ?? TimestampZero), timestampDate(b.time ?? TimestampZero))
     }
 
-    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(bypass.method.block_history)
+    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(rules.method.block_history)
 
     if (error) return <Loading code={error.code}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />

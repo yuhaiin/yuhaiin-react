@@ -3,8 +3,8 @@
 import { useCallback } from "react";
 import Loading from "../common/loading";
 import { useProtoSWR } from "../common/proto";
-import { config } from "../pbes/config/bypass/bypass_pb";
-import { bypass, inbound, lists, resolver } from "../pbes/config/grpc/config_pb";
+import { configv2 } from "../pbes/config/bypass/bypass_pb";
+import { inbound, lists, resolver, rules } from "../pbes/config/grpc/config_pb";
 import { Bypass } from "./bypass";
 import { FilterContext } from "./filter/filter";
 
@@ -13,11 +13,10 @@ function BypassComponent() {
     const { data: inboundsData } = useProtoSWR(inbound.method.list, { revalidateOnFocus: false })
     const { data: resolvers } = useProtoSWR(resolver.method.list, { revalidateOnFocus: false })
 
-
     const { data: setting, error, isLoading, mutate: setSetting } =
-        useProtoSWR(bypass.method.load, { revalidateOnFocus: false })
+        useProtoSWR(rules.method.config, { revalidateOnFocus: false })
 
-    const onChangeSetting = useCallback((x: config) => {
+    const onChangeSetting = useCallback((x: configv2) => {
         setSetting(x, false)
     }, [setSetting])
 
