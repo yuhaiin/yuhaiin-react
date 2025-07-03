@@ -7,7 +7,7 @@ import { FetchProtobuf, useProtoSWR } from '../common/proto';
 import { SettingCheck, SettingSelect } from '../common/switch';
 import { GlobalToastContext } from '../common/toast';
 import { configv2, mode, resolve_strategy, rulev2Schema, udp_proxy_fqdn_strategy } from '../pbes/config/bypass/bypass_pb';
-import { change_priority_requestSchema, resolver, rule_indexSchema, rule_save_requestSchema, rules } from '../pbes/config/grpc/config_pb';
+import { change_priority_request_change_priority_operate, change_priority_request_change_priority_operateSchema, change_priority_requestSchema, resolver, rule_indexSchema, rule_save_requestSchema, rules } from '../pbes/config/grpc/config_pb';
 import { FilterModal } from './filter/filter';
 
 const BypassComponent: FC<{
@@ -139,10 +139,11 @@ const Rulev2Component: FC = () => {
 
     const { data: rules_data, error, isLoading, mutate } = useProtoSWR(rules.method.list)
 
-    const changePriority = useCallback((src_index: number, dst_index: number) => {
+    const changePriority = useCallback((src_index: number, dst_index: number, operate: change_priority_request_change_priority_operate) => {
         setIsChangePriority(true)
 
         FetchProtobuf(rules.method.change_priority, create(change_priority_requestSchema, {
+            operate: operate,
             source: create(rule_indexSchema, { index: src_index, name: rules_data.names[src_index] }),
             target: create(rule_indexSchema, { index: dst_index, name: rules_data.names[dst_index] })
         }),)
@@ -155,13 +156,11 @@ const Rulev2Component: FC = () => {
                     ctx.Error(msg)
                     console.error(error.code, msg)
                 }
-
-                setIsChangePriority(false)
-            })
+            }).finally(() => setIsChangePriority(false))
     }, [ctx, mutate, rules_data?.names])
     const hidePriorityModal = () => { setPriorityModal(prev => { return { ...prev, show: false, } }) }
-    const onChangePriority = useCallback((index: number) => {
-        changePriority(priorityModal.index, index)
+    const onChangePriority = useCallback((index: number, operate: change_priority_request_change_priority_operate) => {
+        changePriority(priorityModal.index, index, operate)
     }, [priorityModal, changePriority])
 
     const [newdata, setNewdata] = useState({ value: "" });
@@ -285,9 +284,10 @@ const PriorityModalComponent: FC<{
     rules: string[],
     show: boolean,
     onHide: () => void,
-    onChange: (index: number) => void
+    onChange: (index: number, operate: change_priority_request_change_priority_operate) => void
 }> = ({ index, rules, show, onHide, onChange }) => {
     const [value, setValue] = useState(index)
+    const [operate, setOperate] = useState(change_priority_request_change_priority_operate.Exchange)
 
     useEffect(() => {
         setValue(index)
@@ -302,7 +302,16 @@ const PriorityModalComponent: FC<{
                     <span className="mx-2 fw-bold text-muted">To</span>
                     <hr className="flex-grow-1" />
                 </div>
-                <Form.Select className='text-center' value={value} onChange={(e) => setValue(parseInt(e.target.value))}>
+
+                <Form.Select className='text-center' value={operate} onChange={(e) => setOperate(parseInt(e.target.value))}>
+                    {
+                        change_priority_request_change_priority_operateSchema.values.map((v) => (
+                            <option key={v.number} value={v.number}>{v.name}</option>
+                        ))
+                    }
+                </Form.Select>
+
+                <Form.Select className='text-center mt-2' value={value} onChange={(e) => setValue(parseInt(e.target.value))}>
                     {
                         rules.map((rule, index) => (
                             <option key={index} value={index}>{rule}</option>
@@ -312,7 +321,7 @@ const PriorityModalComponent: FC<{
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="outline-secondary" onClick={onHide}>Cancel</Button>
-                <Button variant="primary" onClick={() => { onChange(value); onHide(); }}>OK</Button>
+                <Button variant="primary" onClick={() => { onChange(value, operate); onHide(); }}>OK</Button>
             </Modal.Footer>
         </Modal>
     </>

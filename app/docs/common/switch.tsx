@@ -27,7 +27,7 @@ const SettingCheckComponent: FC<{ label: string, checked: boolean, onChange: (c:
 export const SettingCheck = React.memo(SettingCheckComponent)
 
 const SettingTypeSelectComponent: FC<{
-    label: string,
+    label?: string,
     type: DescEnum,
     value: number,
     onChange: (no: number) => void,
@@ -43,7 +43,7 @@ const SettingTypeSelectComponent: FC<{
         return props.emptyChoose ? <option value="">Choose...</option> : <></>
     }
     return <Form.Group as={Row} className={!props.lastElem ? 'mb-2' : ''}>
-        <Form.Label column sm={2}>{props.label}</Form.Label>
+        {props.label && <Form.Label column sm={2}>{props.label}</Form.Label>}
         <Col sm={10}>
             <Form.Select value={props.value} onChange={change} >
                 <EmptyChoose />
