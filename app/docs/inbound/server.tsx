@@ -137,6 +137,8 @@ export const TunComponents = (props: { tun: tun, onChange: (x: tun) => void }) =
 
             <NewItemList
                 title='Routes'
+                textarea
+                dump
                 data={props.tun.route?.routes ?? []}
                 onChange={(e) => {
                     props.onChange({ ...props.tun, route: { ...(props.tun.route ? props.tun.route : create(routeSchema, {})), routes: e ? e : [] } })

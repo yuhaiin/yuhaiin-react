@@ -336,6 +336,8 @@ const Fakedns: FC = () => {
 
                 <NewItemList
                     title="Whitelist"
+                    textarea
+                    dump
                     data={data.whitelist}
                     onChange={(v) => mutate(prev => { return { ...prev, whitelist: v } }, false)}
                 />

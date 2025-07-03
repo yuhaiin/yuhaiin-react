@@ -243,6 +243,8 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
 
         <NewItemList
             title="List"
+            textarea
+            dump
             data={value.list.case === "remote" ? value.list.value.urls : value.list.value.lists}
             onChange={(x) => {
                 onChange({

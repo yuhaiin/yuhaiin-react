@@ -134,9 +134,11 @@ export const NewItemList: FC<{
     data: string[],
     onChange: (x: string[]) => void, errorMsgs?: { [key: string]: string },
     beforeContent?: JSX.Element,
-    className?: string
+    className?: string,
+    textarea?: boolean,
+    dump?: boolean
 }> =
-    ({ title, data, onChange, errorMsgs, beforeContent, className }) => {
+    ({ title, data, onChange, errorMsgs, beforeContent, className, textarea, dump }) => {
         const [newData, setNewData] = useState({ value: "" });
 
         return (<Form.Group className={className} as={Row}>
@@ -175,8 +177,21 @@ export const NewItemList: FC<{
 
             <Col sm={{ span: 10, offset: (beforeContent || data?.length !== 0) ? 2 : 0 }}>
                 <InputGroup>
-                    <Form.Control value={newData.value} onChange={(e) => setNewData({ value: e.target.value })} />
-                    <Button variant='outline-success' onClick={() => { onChange([...data, newData.value]) }} >
+                    {dump &&
+                        <Button variant='outline-primary' onClick={() => {
+                            setNewData({ value: data.join("\n") })
+                        }}>
+                            <i className="bi bi-arrow-return-right" />
+                        </Button>
+                    }
+                    <Form.Control as={textarea ? "textarea" : undefined} value={newData.value} onChange={(e) => setNewData({ value: e.target.value })} />
+                    <Button variant='outline-success' onClick={() => {
+                        if (textarea) {
+                            onChange([...data, ...newData.value.split("\n").map((v) => v.trim())])
+                        } else {
+                            onChange([...data, newData.value.trim()])
+                        }
+                    }} >
                         <i className="bi bi-plus-lg" />
                     </Button>
                 </InputGroup>
