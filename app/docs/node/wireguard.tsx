@@ -48,13 +48,13 @@ const Peer: FC<Props<wireguard_peer_config>> = ({ value, onChange }) => {
         <SettingInputText
             label="Endpoint"
             value={value.endpoint}
-            onChange={(e) => { onChange({ ...value, endpoint: e }) }}
+            onChange={(e: string) => { onChange({ ...value, endpoint: e }) }}
         />
 
         <SettingInputText
             label="PublicKey"
             value={value.publicKey}
-            onChange={(e) => { onChange({ ...value, publicKey: e }) }}
+            onChange={(e: string) => { onChange({ ...value, publicKey: e }) }}
         />
 
         <NewItemList
@@ -71,7 +71,7 @@ export const Wireguardv2: FC<Props<wireguard>> = ({ value, onChange }) => {
             label="SecretKey"
             value={value.secretKey}
             placeholder="SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY="
-            onChange={(e) => { onChange({ ...value, secretKey: e }) }}
+            onChange={(e: string) => { onChange({ ...value, secretKey: e }) }}
         />
 
         <SettingInputText
@@ -83,7 +83,7 @@ export const Wireguardv2: FC<Props<wireguard>> = ({ value, onChange }) => {
         <SettingInputText
             label="Reserved"
             value={btoa(String.fromCharCode.apply(null, Array.from(value.reserved)))}
-            onChange={(e) => { onChange({ ...value, reserved: Uint8Array.from(atob(e), c => c.charCodeAt(0)) }) }}
+            onChange={(e: string) => { onChange({ ...value, reserved: Uint8Array.from(atob(e), c => c.charCodeAt(0)) }) }}
         />
 
         <NewItemList

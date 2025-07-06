@@ -10,21 +10,21 @@ export const Vmessv2: FC<Props<vmess>> = ({ value, onChange }) => {
         <SettingInputText
             label="AlterId"
             value={value.alterId}
-            onChange={(e) => { onChange({ ...value, alterId: e }) }}
+            onChange={(e: string) => { onChange({ ...value, alterId: e }) }}
         />
 
         <SettingInputText
             label="Security"
             value={value.security}
             placeholder="chacha20-poly1305"
-            onChange={(e) => { onChange({ ...value, security: e }) }}
+            onChange={(e: string) => { onChange({ ...value, security: e }) }}
         />
 
         <SettingInputText
             label="UUID"
             value={value.uuid}
             placeholder="9d5031b6-4ef5-11ee-be56-0242ac120002"
-            onChange={(e) => { onChange({ ...value, uuid: e }) }}
+            onChange={(e: string) => { onChange({ ...value, uuid: e }) }}
         />
     </>
 }

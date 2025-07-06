@@ -19,7 +19,7 @@ export const TlsConfigv2: FC<{ value: tls_config, onChange: (x: tls_config) => v
             <NewBytesItemList title="CaCert" textarea data={value.caCert} onChange={(x) => { onChange({ ...value, caCert: x }) }} />
             <SettingInputText label="ECH Config List"
                 value={value.echConfig ? btoa(String.fromCharCode(...value.echConfig)) : ""}
-                onChange={(x) => {
+                onChange={(x: string) => {
                     try {
                         onChange({ ...value, echConfig: Uint8Array.from(Array.prototype.map.call(atob(x), (c: string) => c.charCodeAt(0))) })
                     } catch (e) {

@@ -10,19 +10,19 @@ export const Tailscale: FC<Props<tailscale>> = ({ value, onChange }) => {
         <SettingInputText
             label="Auth Key"
             value={value.authKey}
-            onChange={(e) => { onChange({ ...value, authKey: e }) }}
+            onChange={(e: string) => { onChange({ ...value, authKey: e }) }}
         />
 
         <SettingInputText
             label="Hostname"
             value={value.hostname}
-            onChange={(e) => { onChange({ ...value, hostname: e }) }}
+            onChange={(e: string) => { onChange({ ...value, hostname: e }) }}
         />
 
         <SettingInputText
             label="Control URL"
             value={value.controlUrl}
-            onChange={(e) => { onChange({ ...value, controlUrl: e }) }}
+            onChange={(e: string) => { onChange({ ...value, controlUrl: e }) }}
         />
     </>
 }

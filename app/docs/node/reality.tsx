@@ -15,19 +15,19 @@ export const Realityv2: FC<Props<reality>> = ({ value, onChange }) => {
         <SettingInputText
             label="PublicKey"
             value={value.publicKey}
-            onChange={(e) => { onChange({ ...value, publicKey: e }) }}
+            onChange={(e: string) => { onChange({ ...value, publicKey: e }) }}
         />
 
         <SettingInputText
             label="ServerName"
             value={value.serverName}
-            onChange={(e) => { onChange({ ...value, serverName: e }) }}
+            onChange={(e: string) => { onChange({ ...value, serverName: e }) }}
         />
 
         <SettingInputText
             label="ShortId"
             value={value.shortId}
-            onChange={(e) => { onChange({ ...value, shortId: e }) }}
+            onChange={(e: string) => { onChange({ ...value, shortId: e }) }}
         />
     </>
 }

@@ -8,13 +8,13 @@ export const Trojanv2: FC<Props<trojan>> = ({ value, onChange }) => {
         <SettingInputText
             label="Password"
             value={value.password}
-            onChange={(e) => { onChange({ ...value, password: e }) }}
+            onChange={(e: string) => { onChange({ ...value, password: e }) }}
         />
 
         <SettingInputText
             label="Peer"
             value={value.peer}
-            onChange={(e) => { onChange({ ...value, peer: e }) }}
+            onChange={(e: string) => { onChange({ ...value, peer: e }) }}
         />
     </>
 }

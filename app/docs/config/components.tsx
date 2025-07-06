@@ -19,7 +19,7 @@ const SettingInputTextComponent: FC<{
     url?: string,
     plaintext?: boolean,
     password?: boolean,
-    onChange?: (x: string) => void,
+    onChange?: (x: string | number) => void,
     reminds?: Remind[] | null,
     placeholder?: string,
     errorMsg?: string,
@@ -105,12 +105,13 @@ export const SettingInputText = React.memo(SettingInputTextComponent)
 export const SettingInputTextarea: FC<{
     label: string,
     value: string | number | undefined,
-    onChange?: (x: string) => void,
+    onChange?: (x: string | number) => void,
     disabled?: boolean,
     readonly?: boolean,
+    plaintext?: boolean,
     password?: boolean
 }> =
-    ({ label, value, onChange, disabled, readonly, password }) => {
+    ({ label, value, onChange, disabled, readonly, password, plaintext }) => {
         return (
             <Form.Group as={Row} className='mb-2'>
                 <Form.Label column sm={2} className="nowrap">{label}</Form.Label>
@@ -118,6 +119,7 @@ export const SettingInputTextarea: FC<{
                     <Form.Control
                         as="textarea"
                         type={password ? "password" : "text"}
+                        plaintext={plaintext}
                         disabled={disabled}
                         readOnly={readonly}
                         rows={5}

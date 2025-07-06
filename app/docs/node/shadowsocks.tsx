@@ -8,13 +8,13 @@ export const Shadowsocksv2: FC<Props<shadowsocks>> = ({ value, onChange }) => {
         <SettingInputText
             label="Method"
             value={value.method}
-            onChange={(e) => { onChange({ ...value, method: e }) }}
+            onChange={(e: string) => { onChange({ ...value, method: e }) }}
         />
 
         <SettingInputText
             label="Password"
             value={value.password}
-            onChange={(e) => { onChange({ ...value, password: e }) }}
+            onChange={(e: string) => { onChange({ ...value, password: e }) }}
         />
     </>
 }
@@ -24,13 +24,13 @@ export const ObfsHttpv2: FC<Props<obfs_http>> = ({ value, onChange }) => {
         <SettingInputText
             label="Host"
             value={value.host}
-            onChange={(e) => { onChange({ ...value, host: e }) }}
+            onChange={(e: string) => { onChange({ ...value, host: e }) }}
         />
 
         <SettingInputText
             label="Port"
             value={value.port}
-            onChange={(e) => { onChange({ ...value, port: e }) }}
+            onChange={(e: string) => { onChange({ ...value, port: e }) }}
         />
     </>
 }

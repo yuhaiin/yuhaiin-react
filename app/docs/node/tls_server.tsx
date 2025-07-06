@@ -101,13 +101,13 @@ const TLSCertificateComponents = (props: { cert: certificate, onChange: (x: cert
     return (
         <>
             <SettingInputTextarea label='Cert' value={new TextDecoder().decode(props.cert.cert)}
-                onChange={(e) => props.onChange({ ...props.cert, cert: new TextEncoder().encode(e) })} />
+                onChange={(e: string) => props.onChange({ ...props.cert, cert: new TextEncoder().encode(e) })} />
 
             <SettingInputTextarea label='Key' value={new TextDecoder().decode(props.cert.key)}
-                onChange={(e) => props.onChange({ ...props.cert, key: new TextEncoder().encode(e) })} />
+                onChange={(e: string) => props.onChange({ ...props.cert, key: new TextEncoder().encode(e) })} />
 
-            <SettingInputText label='Cert File' value={props.cert.certFilePath} onChange={(e) => props.onChange({ ...props.cert, certFilePath: e })} />
-            <SettingInputText label='Key File' value={props.cert.keyFilePath} onChange={(e) => props.onChange({ ...props.cert, keyFilePath: e })} />
+            <SettingInputText label='Cert File' value={props.cert.certFilePath} onChange={(e: string) => props.onChange({ ...props.cert, certFilePath: e })} />
+            <SettingInputText label='Key File' value={props.cert.keyFilePath} onChange={(e: string) => props.onChange({ ...props.cert, keyFilePath: e })} />
         </>
     )
 }

@@ -8,13 +8,13 @@ export const Websocketv2: FC<Props<websocket>> = ({ value, onChange }) => {
         <SettingInputText
             label="Host"
             value={value.host}
-            onChange={(e) => { onChange({ ...value, host: e }) }}
+            onChange={(e: string) => { onChange({ ...value, host: e }) }}
         />
 
         <SettingInputText
             label="Path"
             value={value.path}
-            onChange={(e) => { onChange({ ...value, path: e }) }}
+            onChange={(e: string) => { onChange({ ...value, path: e }) }}
         />
     </>
 }

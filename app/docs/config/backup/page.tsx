@@ -73,9 +73,10 @@ function Page() {
                 if (error !== undefined) ctx.Error(`backup config failed, ${error.code}| ${error.msg}`)
                 else {
                     ctx.Info("Backup Config Successfully");
+                    setSetting()
                 }
             }).finally(() => setSaving(false))
-    }, [ctx, setSaving])
+    }, [ctx, setSaving, setSetting])
 
     const restoreNow = useCallback(() => {
         setSaving(true);
@@ -84,15 +85,21 @@ function Page() {
                 if (error !== undefined) ctx.Error(`restore config failed, ${error.code}| ${error.msg}`)
                 else {
                     ctx.Info("Restore Config Successfully");
+                    setSetting()
                 }
             }).finally(() => setSaving(false))
-    }, [ctx, setSaving])
+    }, [ctx, setSaving, setSetting])
 
     const [showConfirmModal, setShowConfirmModal] = useState(false)
 
     const switchShowConfirmModal = useCallback(() => {
         setShowConfirmModal(prev => !prev)
     }, [setShowConfirmModal])
+
+    const setInterval = useCallback((x: number) => {
+        if (x < 0 || Number.isNaN(x)) return
+        setSetting(prev => { return { ...prev, interval: BigInt(x) } }, false)
+    }, [setSetting])
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || !data) return <Loading />
@@ -112,6 +119,19 @@ function Page() {
                     label="Instance Name"
                     value={data.instanceName}
                     onChange={setInstanceName}
+                />
+
+                <SettingInputText
+                    label="Backup Interval"
+                    value={Number(data.interval)}
+                    onChange={setInterval}
+                />
+
+                <SettingInputText
+                    label="Last Backup Hash"
+                    value={data.lastBackupHash}
+                    readonly
+                    plaintext
                 />
 
                 <hr />

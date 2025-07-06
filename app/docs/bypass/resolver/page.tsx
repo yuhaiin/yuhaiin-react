@@ -299,10 +299,10 @@ const ResolverModal: FC<{ name: string, show: boolean, isNew?: boolean, onHide: 
 
 const Single: FC<{ value: dns, onChange: (x: dns) => void }> = ({ value, onChange }) => {
     return <>
-        <SettingInputText label='Host' value={value.host} onChange={(v) => onChange({ ...value, host: v })} />
-        <SettingTypeSelect label='Type' type={typeSchema} value={value.type} onChange={(v) => onChange({ ...value, type: v })} />
-        <SettingInputText label='Subnet' value={value.subnet} onChange={(v) => onChange({ ...value, subnet: v })} />
-        <SettingInputText className='' label='SNI' value={value.tlsServername} onChange={(v) => onChange({ ...value, tlsServername: v })} />
+        <SettingInputText label='Host' value={value.host} onChange={(v: string) => onChange({ ...value, host: v })} />
+        <SettingTypeSelect label='Type' type={typeSchema} value={value.type} onChange={(v: number) => onChange({ ...value, type: v })} />
+        <SettingInputText label='Subnet' value={value.subnet} onChange={(v: string) => onChange({ ...value, subnet: v })} />
+        <SettingInputText className='' label='SNI' value={value.tlsServername} onChange={(v: string) => onChange({ ...value, tlsServername: v })} />
     </>
 }
 
@@ -331,8 +331,8 @@ const Fakedns: FC = () => {
                 <SettingCheck label="Enabled"
                     checked={data.enabled}
                     onChange={() => mutate(prev => { return { ...prev, enabled: !prev.enabled } }, false)} />
-                <SettingInputText label='IPv4 Range' value={data.ipv4Range} onChange={(v) => mutate(prev => { return { ...prev, ipv4Range: v } }, false)} />
-                <SettingInputText label='IPv6 Range' value={data.ipv6Range} onChange={(v) => mutate(prev => { return { ...prev, ipv6Range: v } }, false)} />
+                <SettingInputText label='IPv4 Range' value={data.ipv4Range} onChange={(v: string) => mutate(prev => { return { ...prev, ipv4Range: v } }, false)} />
+                <SettingInputText label='IPv6 Range' value={data.ipv6Range} onChange={(v: string) => mutate(prev => { return { ...prev, ipv6Range: v } }, false)} />
 
                 <NewItemList
                     title="Whitelist"
@@ -392,7 +392,7 @@ const Server: FC = () => {
     return <>
         <Card>
             <Card.Body>
-                <SettingInputText label="Server" value={data.value} onChange={(v) => mutate(prev => { return { ...prev, value: v } }, false)} />
+                <SettingInputText label="Server" value={data.value} onChange={(v: string) => mutate(prev => { return { ...prev, value: v } }, false)} />
             </Card.Body>
 
             <Card.Footer className="d-flex justify-content-end">

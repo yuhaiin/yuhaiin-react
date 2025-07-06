@@ -241,7 +241,7 @@ export const useFlow = () => {
             })
         },
         {
-            refreshInterval: 2000
+            refreshInterval: 2000,
         })
 }
 

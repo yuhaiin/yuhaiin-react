@@ -14,8 +14,8 @@ import { tls_configSchema as tls_config$1, tls_server_configSchema } from '../pb
 export const HTTPComponents = (props: { http: http, onChange: (x: http) => void }) => {
     return (
         <>
-            <SettingInputText label='Username' value={props.http.username} onChange={(e) => props.onChange({ ...props.http, username: e })} />
-            <SettingInputText label='Password' value={props.http.password} onChange={(e) => props.onChange({ ...props.http, password: e })} />
+            <SettingInputText label='Username' value={props.http.username} onChange={(e: string) => props.onChange({ ...props.http, username: e })} />
+            <SettingInputText label='Password' value={props.http.password} onChange={(e: string) => props.onChange({ ...props.http, password: e })} />
         </>
     )
 }
@@ -23,7 +23,7 @@ export const HTTPComponents = (props: { http: http, onChange: (x: http) => void 
 export const ReverseHTTPComponents = (props: { reverse_http: reverse_http, onChange: (x: reverse_http) => void }) => {
     return (
         <>
-            <SettingInputText label='Url' value={props.reverse_http.url} onChange={(e) => props.onChange({ ...props.reverse_http, url: e })} />
+            <SettingInputText label='Url' value={props.reverse_http.url} onChange={(e: string) => props.onChange({ ...props.reverse_http, url: e })} />
             <TlsConfigv2 value={props.reverse_http.tls ?? create(tls_config$1, {})} onChange={(x) => { props.onChange({ ...props.reverse_http, tls: x }) }} />
         </>
     )
@@ -32,7 +32,7 @@ export const ReverseHTTPComponents = (props: { reverse_http: reverse_http, onCha
 export const ReverseTCPComponents = (props: { reverse_tcp: reverse_tcp, onChange: (x: reverse_tcp) => void }) => {
     return (
         <>
-            <SettingInputText label='Host' value={props.reverse_tcp.host} onChange={(e) => props.onChange({ ...props.reverse_tcp, host: e })} />
+            <SettingInputText label='Host' value={props.reverse_tcp.host} onChange={(e: string) => props.onChange({ ...props.reverse_tcp, host: e })} />
         </>
     )
 }
@@ -41,7 +41,7 @@ export const ReverseTCPComponents = (props: { reverse_tcp: reverse_tcp, onChange
 export const RedirComponents = (props: { redir: redir, onChange: (x: redir) => void }) => {
     return (
         <>
-            <SettingInputText label='Host' value={props.redir.host} onChange={(e) => props.onChange({ ...props.redir, host: e })} />
+            <SettingInputText label='Host' value={props.redir.host} onChange={(e: string) => props.onChange({ ...props.redir, host: e })} />
         </>
     )
 }
@@ -56,7 +56,7 @@ export const TProxyComponents = (props: { tproxy: tproxy, onChange: (x: tproxy) 
             <SettingCheck label='Force Fake IP'
                 checked={props.tproxy.forceFakeip}
                 onChange={() => props.onChange({ ...props.tproxy, forceFakeip: !props.tproxy.forceFakeip })} />
-            <SettingInputText label='Host' value={props.tproxy.host} onChange={(e) => props.onChange({ ...props.tproxy, host: e })} />
+            <SettingInputText label='Host' value={props.tproxy.host} onChange={(e: string) => props.onChange({ ...props.tproxy, host: e })} />
         </>
     )
 }
@@ -64,8 +64,8 @@ export const TProxyComponents = (props: { tproxy: tproxy, onChange: (x: tproxy) 
 export const Socks5Components = (props: { socks5: socks5, onChange: (x: socks5) => void }) => {
     return (
         <>
-            <SettingInputText label='Username' value={props.socks5.username} onChange={(e) => props.onChange({ ...props.socks5, username: e })} />
-            <SettingInputText label='Password' value={props.socks5.password} onChange={(e) => props.onChange({ ...props.socks5, password: e })} />
+            <SettingInputText label='Username' value={props.socks5.username} onChange={(e: string) => props.onChange({ ...props.socks5, username: e })} />
+            <SettingInputText label='Password' value={props.socks5.password} onChange={(e: string) => props.onChange({ ...props.socks5, password: e })} />
         </>
     )
 }
@@ -74,8 +74,8 @@ export const Socks5Components = (props: { socks5: socks5, onChange: (x: socks5) 
 export const MixedComponents = (props: { mixed: mixed, onChange: (x: mixed) => void }) => {
     return (
         <>
-            <SettingInputText label='Username' value={props.mixed.username} onChange={(e) => props.onChange({ ...props.mixed, username: e })} />
-            <SettingInputText label='Password' value={props.mixed.password} onChange={(e) => props.onChange({ ...props.mixed, password: e })} />
+            <SettingInputText label='Username' value={props.mixed.username} onChange={(e: string) => props.onChange({ ...props.mixed, username: e })} />
+            <SettingInputText label='Password' value={props.mixed.password} onChange={(e: string) => props.onChange({ ...props.mixed, password: e })} />
         </>
     )
 }
@@ -94,10 +94,10 @@ export const TunComponents = (props: { tun: tun, onChange: (x: tun) => void }) =
                 label="Skip Multicast"
             />
 
-            <SettingInputText label='Name' value={props.tun.name} onChange={(e) => props.onChange({ ...props.tun, name: e })} />
-            <SettingInputText label='MTU' value={props.tun.mtu} onChange={(e) => { if (!isNaN(Number(e))) props.onChange({ ...props.tun, mtu: Number(e) }) }} />
-            <SettingInputText label='IPv4' value={props.tun.portal} onChange={(e) => props.onChange({ ...props.tun, portal: e })} />
-            <SettingInputText label='IPv6' value={props.tun.portalV6} onChange={(e) => props.onChange({ ...props.tun, portalV6: e })} />
+            <SettingInputText label='Name' value={props.tun.name} onChange={(e: string) => props.onChange({ ...props.tun, name: e })} />
+            <SettingInputText label='MTU' value={props.tun.mtu} onChange={(e: string) => { if (!isNaN(Number(e))) props.onChange({ ...props.tun, mtu: Number(e) }) }} />
+            <SettingInputText label='IPv4' value={props.tun.portal} onChange={(e: string) => props.onChange({ ...props.tun, portal: e })} />
+            <SettingInputText label='IPv6' value={props.tun.portalV6} onChange={(e: string) => props.onChange({ ...props.tun, portalV6: e })} />
 
             {platform?.darwin && platform?.darwin?.networkServices &&
                 <SettingSelect
@@ -112,7 +112,7 @@ export const TunComponents = (props: { tun: tun, onChange: (x: tun) => void }) =
                 />
             }
             <SettingInputText label='Post Up' value={postUp}
-                onChange={(e) => {
+                onChange={(e: string) => {
                     setPostUp(e)
                     try {
                         const cmds = shlexSplit(e)
@@ -123,7 +123,7 @@ export const TunComponents = (props: { tun: tun, onChange: (x: tun) => void }) =
                 }
                 } />
             <SettingInputText label='Post Down' value={postDown}
-                onChange={(e) => {
+                onChange={(e: string) => {
                     setPostDown(e)
                     try {
                         const cmds = shlexSplit(e)
@@ -176,7 +176,7 @@ export const TLSAutoComponents: FC<{ tls: tls_auto, onChange: (x: tls_auto) => v
         <SettingCheck label='ECH Enabled' checked={tls.ech ? tls.ech.enable : false} onChange={((x) => setEch((e) => { e.enable = x; return e }))} />
         {
             tls.ech?.enable &&
-            <SettingInputText label='ECH Outer SNI' value={tls.ech ? tls.ech.OuterSNI : ""} onChange={(e) => setEch((x) => { x.OuterSNI = e; return x })} />
+            <SettingInputText label='ECH Outer SNI' value={tls.ech ? tls.ech.OuterSNI : ""} onChange={(e: string) => setEch((x) => { x.OuterSNI = e; return x })} />
         }
 
         <SettingInputTextarea label='CA Cert' value={new TextDecoder().decode(tls.caCert)} readonly />
@@ -198,7 +198,7 @@ export const QuicComponents = (props: { quic: quic, onChange: (x: quic) => void 
         <>
             <SettingInputText
                 label='Host'
-                onChange={(e) => props.onChange({ ...props.quic, host: e })}
+                onChange={(e: string) => props.onChange({ ...props.quic, host: e })}
                 value={props.quic.host}
             />
 
@@ -226,8 +226,8 @@ export const RealityComponents = (props: { reality: reality, onChange: (x: reali
         <>
             <SettingInputText plaintext={true} label='Protocol' value={"Reality"} />
 
-            <SettingInputText label='Dest' value={props.reality.dest} onChange={(e) => props.onChange({ ...props.reality, dest: e })} />
-            <SettingInputText label='Private Key' value={props.reality.privateKey} onChange={(e) => props.onChange({ ...props.reality, privateKey: e })} />
+            <SettingInputText label='Dest' value={props.reality.dest} onChange={(e: string) => props.onChange({ ...props.reality, dest: e })} />
+            <SettingInputText label='Private Key' value={props.reality.privateKey} onChange={(e: string) => props.onChange({ ...props.reality, privateKey: e })} />
 
             <Form.Group as={Row} className='mb-3'>
                 <Form.Label column sm={2} className="nowrap">Short ID</Form.Label>
@@ -313,7 +313,7 @@ export const Yuubinsya = (props: { yuubinsya: yuubinsya, onChange: (x: yuubinsya
         <SettingInputText
             label="Password"
             value={props.yuubinsya.password}
-            onChange={(e) => { props.onChange({ ...props.yuubinsya, password: e }) }}
+            onChange={(e: string) => { props.onChange({ ...props.yuubinsya, password: e }) }}
         />
     </>
 }
@@ -323,7 +323,7 @@ export const TcpUdp = (props: { protocol: tcpudp, onChange: (x: tcpudp) => void 
         <SettingInputText
             label="Host"
             value={props.protocol.host}
-            onChange={(e) => { props.onChange({ ...props.protocol, host: e }) }}
+            onChange={(e: string) => { props.onChange({ ...props.protocol, host: e }) }}
         />
 
         <SettingTypeSelect

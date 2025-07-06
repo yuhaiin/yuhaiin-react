@@ -26,7 +26,7 @@ export const Simplev2: FC<Props<simple>> = ({ value, onChange }) => {
         <SettingInputText
             label="Host"
             value={value.host}
-            onChange={(e) => { onChange({ ...value, host: e }) }
+            onChange={(e: string) => { onChange({ ...value, host: e }) }
             }
         />
 

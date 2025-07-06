@@ -55,13 +55,13 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
             <SettingInputText
                 label="Name"
                 value={value.name}
-                onChange={(e) => { onChange({ ...value, name: e }) }}
+                onChange={(e: string) => { onChange({ ...value, name: e }) }}
             />
 
             <SettingInputText
                 label="Group"
                 value={value.group}
-                onChange={(e) => { onChange({ ...value, group: e }) }}
+                onChange={(e: string) => { onChange({ ...value, group: e }) }}
                 reminds={groups ? groups.map(x => new Remind({ label: x, value: x })) : undefined}
             />
 

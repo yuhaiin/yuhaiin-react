@@ -388,7 +388,7 @@ export const FilterModal: FC<{ index: number, name: string, show: boolean, onHid
                     isValidating || isLoading || !rule ? <Loading /> :
                         <>
                             <SettingTypeSelect label='Mode' type={modeSchema} filter={(v) => v.number !== mode.bypass} value={rule.mode} onChange={(v) => setRule({ ...rule, mode: v }, false)} emptyChoose />
-                            <SettingInputText label='Tag' value={rule.tag} onChange={(e) => setRule({ ...rule, tag: e }, false)} />
+                            <SettingInputText label='Tag' value={rule.tag} onChange={(e: string) => setRule({ ...rule, tag: e }, false)} />
                             <SettingTypeSelect label='Resolve Strategy' type={resolve_strategySchema} value={rule.resolveStrategy} onChange={(e) => setRule({ ...rule, resolveStrategy: e }, false)} emptyChoose />
                             <SettingTypeSelect label='UDP proxy Fqdn'
                                 type={udp_proxy_fqdn_strategySchema}

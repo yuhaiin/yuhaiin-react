@@ -8,13 +8,13 @@ export const HTTPv2: FC<Props<http>> = ({ value, onChange }) => {
         <SettingInputText
             label="User"
             value={value.user}
-            onChange={(e) => { onChange({ ...value, user: e }) }}
+            onChange={(e: string) => { onChange({ ...value, user: e }) }}
         />
 
         <SettingInputText
             label="Password"
             value={value.password}
-            onChange={(e) => { onChange({ ...value, password: e }) }}
+            onChange={(e: string) => { onChange({ ...value, password: e }) }}
         />
     </>
 }

@@ -9,7 +9,7 @@ export const Vlessv2: FC<Props<vless>> = ({ value, onChange }) => {
         <SettingInputText
             label="UUID"
             value={value.uuid}
-            onChange={(e) => { onChange({ ...value, uuid: e }) }}
+            onChange={(e: string) => { onChange({ ...value, uuid: e }) }}
         />
     </>
 }

@@ -30,7 +30,7 @@ export const NewAlternateHostList: FC<{ title: string, data: host[], onChange: (
                                             <SettingInputText
                                                 label="Host"
                                                 value={v.host}
-                                                onChange={(e) => { onChange([...data.slice(0, index), { ...v, host: e }, ...data.slice(index + 1)]) }}
+                                                onChange={(e: string) => { onChange([...data.slice(0, index), { ...v, host: e }, ...data.slice(index + 1)]) }}
                                             />
 
                                             <SettingInputText

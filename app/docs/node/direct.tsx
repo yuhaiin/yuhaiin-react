@@ -11,7 +11,7 @@ export const Directv2: FC<Props<direct>> = ({ value, onChange }) => {
         <SettingInputText
             label='Network Interface'
             value={value.networkInterface}
-            onChange={(e) => { onChange({ ...value, networkInterface: e }) }}
+            onChange={(e: string) => { onChange({ ...value, networkInterface: e }) }}
             reminds={interfaces.map((v) => {
                 if (!v.name) return undefined
                 const r: Remind = {

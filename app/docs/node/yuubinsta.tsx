@@ -32,7 +32,7 @@ export const Yuubinsyav2: FC<Props<yuubinsya>> = ({ value, onChange }) => {
         <SettingInputText
             label="Password"
             value={value.password}
-            onChange={(e) => { onChange({ ...value, password: e }) }}
+            onChange={(e: string) => { onChange({ ...value, password: e }) }}
         />
     </>
 }
