@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file tools/tools.proto.
  */
 export const file_tools_tools: GenFile = /*@__PURE__*/
-  fileDesc("ChF0b29scy90b29scy5wcm90bxINeXVoYWlpbi50b29scyI6CgpJbnRlcmZhY2VzEiwKCmludGVyZmFjZXMYASADKAsyGC55dWhhaWluLnRvb2xzLkludGVyZmFjZSIsCglJbnRlcmZhY2USDAoEbmFtZRgBIAEoCRIRCglhZGRyZXNzZXMYAiADKAkiXAoITGljZW5zZXMSJwoHeXVoYWlpbhgBIAMoCzIWLnl1aGFpaW4udG9vbHMuTGljZW5zZRInCgdhbmRyb2lkGAIgAygLMhYueXVoYWlpbi50b29scy5MaWNlbnNlIlcKB0xpY2Vuc2USDAoEbmFtZRgBIAEoCRILCgN1cmwYAiABKAkSDwoHbGljZW5zZRgDIAEoCRIgCgtsaWNlbnNlX3VybBgEIAEoCVILbGljZW5zZV91cmwiEgoDTG9nEgsKA2xvZxgBIAEoCTK9AQoFdG9vbHMSQgoNZ2V0X2ludGVyZmFjZRIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoZLnl1aGFpaW4udG9vbHMuSW50ZXJmYWNlcxI7CghsaWNlbnNlcxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoXLnl1aGFpaW4udG9vbHMuTGljZW5zZXMSMwoDbG9nEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhIueXVoYWlpbi50b29scy5Mb2cwAUI3Wi1naXRodWIuY29tL0FzdXRvcnVmYS95dWhhaWluL3BrZy9wcm90b3MvdG9vbHOSAwXSPgIQA2IIZWRpdGlvbnNw6Ac", [file_google_protobuf_empty, file_google_protobuf_go_features]);
+  fileDesc("ChF0b29scy90b29scy5wcm90bxINeXVoYWlpbi50b29scyI6CgpJbnRlcmZhY2VzEiwKCmludGVyZmFjZXMYASADKAsyGC55dWhhaWluLnRvb2xzLkludGVyZmFjZSIsCglJbnRlcmZhY2USDAoEbmFtZRgBIAEoCRIRCglhZGRyZXNzZXMYAiADKAkiXAoITGljZW5zZXMSJwoHeXVoYWlpbhgBIAMoCzIWLnl1aGFpaW4udG9vbHMuTGljZW5zZRInCgdhbmRyb2lkGAIgAygLMhYueXVoYWlpbi50b29scy5MaWNlbnNlIlcKB0xpY2Vuc2USDAoEbmFtZRgBIAEoCRILCgN1cmwYAiABKAkSDwoHbGljZW5zZRgDIAEoCRIgCgtsaWNlbnNlX3VybBgEIAEoCVILbGljZW5zZV91cmwiEgoDTG9nEgsKA2xvZxgBIAEoCSIUCgVMb2d2MhILCgNsb2cYASADKAky9gEKBXRvb2xzEkIKDWdldF9pbnRlcmZhY2USFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGS55dWhhaWluLnRvb2xzLkludGVyZmFjZXMSOwoIbGljZW5zZXMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFy55dWhhaWluLnRvb2xzLkxpY2Vuc2VzEjMKA2xvZxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoSLnl1aGFpaW4udG9vbHMuTG9nMAESNwoFbG9ndjISFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFC55dWhhaWluLnRvb2xzLkxvZ3YyMAFCN1otZ2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL3Rvb2xzkgMF0j4CEANiCGVkaXRpb25zcOgH", [file_google_protobuf_empty, file_google_protobuf_go_features]);
 
 /**
  * @generated from message yuhaiin.tools.Interfaces
@@ -125,6 +125,23 @@ export const LogSchema: GenMessage<Log> = /*@__PURE__*/
   messageDesc(file_tools_tools, 4);
 
 /**
+ * @generated from message yuhaiin.tools.Logv2
+ */
+export type Logv2 = Message<"yuhaiin.tools.Logv2"> & {
+  /**
+   * @generated from field: repeated string log = 1;
+   */
+  log: string[];
+};
+
+/**
+ * Describes the message yuhaiin.tools.Logv2.
+ * Use `create(Logv2Schema)` to create a new message.
+ */
+export const Logv2Schema: GenMessage<Logv2> = /*@__PURE__*/
+  messageDesc(file_tools_tools, 5);
+
+/**
  * @generated from service yuhaiin.tools.tools
  */
 export const tools: GenService<{
@@ -151,6 +168,14 @@ export const tools: GenService<{
     methodKind: "server_streaming";
     input: typeof EmptySchema;
     output: typeof LogSchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.tools.tools.logv2
+   */
+  logv2: {
+    methodKind: "server_streaming";
+    input: typeof EmptySchema;
+    output: typeof Logv2Schema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_tools_tools, 0);

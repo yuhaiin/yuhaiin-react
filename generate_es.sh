@@ -1,4 +1,4 @@
-PROTO_PATH=${HOME}/Documents/Programming/yuhaiin/pkg/protos
+PROTO_PATH=../yuhaiin/pkg/protos
 OUTPUT_PATH=./app/docs/pbes
 
 

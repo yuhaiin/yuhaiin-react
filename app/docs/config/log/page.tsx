@@ -7,7 +7,7 @@ import { FixedSizeList } from 'react-window'
 import useSWRSubscription from "swr/subscription"
 import { Error } from "../../common/loading"
 import { ProtoPath, WebsocketProtoServerStream } from "../../common/proto"
-import { Log, tools } from "../../pbes/tools/tools_pb"
+import { Logv2, tools } from "../../pbes/tools/tools_pb"
 
 const HighlightLogLine: FC<{ line: string, style: CSSProperties }> = ({ line, style }) => {
     if (line.includes('ERROR')) {
@@ -26,15 +26,15 @@ const HighlightLogLine: FC<{ line: string, style: CSSProperties }> = ({ line, st
 }
 
 export default function LogComponent() {
-    const processStream = (r: Log, prev?: string[]): string[] => {
+    const processStream = (r: Logv2, prev?: string[]): string[] => {
         if (prev === undefined) prev = []
-        return [r.log, ...prev]
+        return [...r.log.reverse(), ...prev]
     }
 
     const { data: log, error: log_error } =
         useSWRSubscription(
             ProtoPath(tools.method.log),
-            WebsocketProtoServerStream(tools.method.log, create(EmptySchema, {}), processStream),
+            WebsocketProtoServerStream(tools.method.logv2, create(EmptySchema, {}), processStream),
             {}
         )
 
