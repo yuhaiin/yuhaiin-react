@@ -8,7 +8,7 @@ import { NewItemList, SettingInputText, SettingInputTextarea } from '../config/c
 import { TlsConfigv2 } from '../node/tls';
 import { TLSServerComponents } from '../node/tls_server';
 import { inbound } from '../pbes/config/grpc/config_pb';
-import { ech_config, ech_configSchema, http, mixed, quic, reality, redir, reverse_http, reverse_tcp, routeSchema, socks5, tcp_udp_controlSchema, tcpudp, tls, tls_auto, tproxy, tun, tun_endpoint_driverSchema, tun_platfrom_platform_darwinSchema, tun_platfromSchema, yuubinsya } from '../pbes/config/listener/listener_pb';
+import { aead, ech_config, ech_configSchema, http, mixed, quic, reality, redir, reverse_http, reverse_tcp, routeSchema, socks5, tcp_udp_controlSchema, tcpudp, tls, tls_auto, tproxy, tun, tun_endpoint_driverSchema, tun_platfrom_platform_darwinSchema, tun_platfromSchema, yuubinsya } from '../pbes/config/listener/listener_pb';
 import { tls_configSchema as tls_config$1, tls_server_configSchema } from '../pbes/node/protocol/protocol_pb';
 
 export const HTTPComponents = (props: { http: http, onChange: (x: http) => void }) => {
@@ -296,16 +296,6 @@ export const RealityComponents = (props: { reality: reality, onChange: (x: reali
 export const Yuubinsya = (props: { yuubinsya: yuubinsya, onChange: (x: yuubinsya) => void }) => {
     return <>
         <SettingCheck
-            label="TCP Encrypt"
-            checked={props.yuubinsya.tcpEncrypt}
-            onChange={() => { props.onChange({ ...props.yuubinsya, tcpEncrypt: !props.yuubinsya.tcpEncrypt }) }}
-        />
-        <SettingCheck
-            label="UDP Encrypt"
-            checked={props.yuubinsya.udpEncrypt}
-            onChange={() => { props.onChange({ ...props.yuubinsya, udpEncrypt: !props.yuubinsya.udpEncrypt }) }}
-        />
-        <SettingCheck
             label="UDP Coalesce"
             checked={props.yuubinsya.udpCoalesce}
             onChange={() => { props.onChange({ ...props.yuubinsya, udpCoalesce: !props.yuubinsya.udpCoalesce }) }}
@@ -314,6 +304,16 @@ export const Yuubinsya = (props: { yuubinsya: yuubinsya, onChange: (x: yuubinsya
             label="Password"
             value={props.yuubinsya.password}
             onChange={(e: string) => { props.onChange({ ...props.yuubinsya, password: e }) }}
+        />
+    </>
+}
+
+export const Aead: FC<{ aead: aead, onChange: (x: aead) => void }> = ({ aead, onChange }) => {
+    return <>
+        <SettingInputText
+            label="Password"
+            value={aead.password}
+            onChange={(e: string) => { onChange({ ...aead, password: e }) }}
         />
     </>
 }

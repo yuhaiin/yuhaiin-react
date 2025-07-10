@@ -5,6 +5,7 @@ import { Button, InputGroup, ListGroup } from "react-bootstrap";
 import { FormSelect, SettingCheck } from "../common/switch";
 import { Container, MoveUpDown } from "../config/components";
 import {
+    aeadSchema,
     emptySchema,
     grpcSchema,
     http2Schema,
@@ -74,7 +75,16 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
                 <ListGroup variant="flush">
                     <ListGroup.Item>
                         <InputGroup>
-                            <FormSelect value={newProtocol.value} values={["normal", "tls", "mux", "http2", "websocket", "grpc", "reality", "tlsAuto", "httpMock"]} onChange={(e) => setNewProtocol({ value: e })} />
+                            <FormSelect
+                                value={newProtocol.value}
+                                values={[
+                                    "normal", "tls", "mux",
+                                    "http2", "websocket", "grpc",
+                                    "reality", "tlsAuto", "httpMock",
+                                    "aead",
+                                ]}
+                                onChange={(e) => setNewProtocol({ value: e })}
+                            />
                             <Button
                                 variant="outline-success"
                                 onClick={() => {
@@ -125,6 +135,10 @@ export const Inbound = (props: { inbound: inbound, onChange: (x: inbound) => voi
                                         case "httpMock":
                                             x.transport.push(create(transportSchema, {
                                                 transport: { case: "httpMock", value: create(http_mockSchema, {}) }
+                                            }))
+                                        case "aead":
+                                            x.transport.push(create(transportSchema, {
+                                                transport: { case: "aead", value: create(aeadSchema, {}) }
                                             }))
                                     }
                                     props.onChange(x)
@@ -206,6 +220,7 @@ const NetworkBase = (props: { inbound: inbound, onChange: (x: inbound) => void }
 const LazyTls = dynamic(() => import("./server").then(mod => mod.TlsComponents), { ssr: false })
 const LazyTlsAuto = dynamic(() => import("./server").then(mod => mod.TLSAutoComponents), { ssr: false })
 const LazyReality = dynamic(() => import("./server").then(mod => mod.RealityComponents), { ssr: false })
+const LazyAead = dynamic(() => import("./server").then(mod => mod.Aead), { ssr: false })
 
 
 const Transport = (props: { transport: transport, onChange: (x: transport) => void }) => {
@@ -237,6 +252,11 @@ const Transport = (props: { transport: transport, onChange: (x: transport) => vo
             />
         case "httpMock":
             return <><div className="text-center" style={{ opacity: '0.4' }}>HTTP MOCK</div></>
+        case "aead":
+            return <LazyAead
+                aead={props.transport.transport.value}
+                onChange={(x) => { props.onChange({ ...props.transport, transport: { case: "aead", value: x } }) }}
+            />
     }
 }
 

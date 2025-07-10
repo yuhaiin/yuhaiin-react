@@ -8,6 +8,7 @@ import { FormSelect } from "../common/switch";
 import { Container, MoveUpDown, Remind, SettingInputText } from "../config/components";
 import { point } from "../pbes/node/point/point_pb";
 import {
+    aeadSchema,
     directSchema,
     dropSchema,
     grpcSchema,
@@ -127,6 +128,7 @@ const LazySet = dynamic(() => import("./set").then(mod => mod.Set), { ssr: false
 const LazyTlsTermination = dynamic(() => import("./tls_server").then(mod => mod.UnWrapTls), { ssr: false })
 const LazyHttpTermination = dynamic(() => import("./http").then(mod => mod.UnWrapHttp), { ssr: false })
 const LazyQuic = dynamic(() => import("./quic").then(mod => mod.Quicv2), { ssr: false })
+const LazyAead = dynamic(() => import("./aead").then(mod => mod.Aead), { ssr: false })
 
 const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
 
@@ -191,6 +193,8 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
             return <LazyHttpTermination value={data.value} onChange={(e) => update(e)} />
         case "httpMock":
             return HttpMock
+        case "aead":
+            return <LazyAead value={data.value} onChange={(e) => update(e)} />
         default: return Unknown
     }
 }
@@ -351,8 +355,6 @@ export const protocols: { [key: string]: protocol } = {
         protocol: {
             case: "yuubinsya",
             value: create(yuubinsyaSchema, {
-                tcpEncrypt: true,
-                udpEncrypt: true,
                 password: "password",
                 udpOverStream: false,
             })
@@ -477,5 +479,13 @@ export const protocols: { [key: string]: protocol } = {
                 data: new Uint8Array()
             })
         }
-    })
+    }),
+    "aead": create(protocolSchema, {
+        protocol: {
+            case: "aead",
+            value: create(aeadSchema, {
+                password: "password",
+            })
+        }
+    }),
 }

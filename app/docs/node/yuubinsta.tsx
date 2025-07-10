@@ -7,17 +7,6 @@ import { Props } from "./tools";
 export const Yuubinsyav2: FC<Props<yuubinsya>> = ({ value, onChange }) => {
     return <>
         <SettingCheck
-            label="TCP Encrypt"
-            checked={value.tcpEncrypt}
-            onChange={() => { onChange({ ...value, tcpEncrypt: !value.tcpEncrypt }) }}
-        />
-        <SettingCheck
-            label="UDP Encrypt"
-            checked={value.udpEncrypt}
-            onChange={() => { onChange({ ...value, udpEncrypt: !value.udpEncrypt }) }}
-        />
-
-        <SettingCheck
             label="UdpOverStream"
             checked={value.udpOverStream}
             onChange={() => { onChange({ ...value, udpOverStream: !value.udpOverStream }) }}
