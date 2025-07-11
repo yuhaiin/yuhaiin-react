@@ -4,7 +4,6 @@ import Loading from "@/app/docs/common/loading";
 import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "@/app/docs/common/proto";
 import { GlobalToastContext } from "@/app/docs/common/toast";
 import { ConnectionInfo, FlowContainer, formatBytes } from "@/app/docs/connections/components";
-import { NodeModal } from "@/app/docs/node/modal";
 import { connection, connectionSchema, type } from "@/app/docs/pbes/statistic/config_pb";
 import { connections, counter, notify_data, notify_remove_connectionsSchema } from "@/app/docs/pbes/statistic/grpc/config_pb";
 import { create } from "@bufbuild/protobuf";
@@ -35,7 +34,6 @@ const processStream = (r: notify_data, prev?: { [key: string]: connection }): { 
 }
 
 function Connections() {
-    const [modalHash, setModalHash] = useState({ show: false, hash: "" });
     const [counters, setCounters] = useState<{ [key: string]: counter }>({});
     const [info, setInfo] = useState<{ info: connection, show: boolean }>({
         info: create(connectionSchema, {}), show: false
@@ -45,13 +43,6 @@ function Connections() {
         setInfo(prev => { return { ...prev, show: false } })
     }, [])
 
-    const showModal = useCallback((hash: string) => {
-        setModalHash({ show: true, hash: hash })
-    }, [])
-
-    const hideModal = useCallback(() => {
-        setModalHash(prev => { return { ...prev, show: false } })
-    }, [])
 
     const { data: conns, error: conn_error } =
         useSWRSubscription(
@@ -80,18 +71,10 @@ function Connections() {
         <>
             <FlowContainer onUpdate={updateCounters} />
 
-            <NodeModal
-                show={modalHash.show}
-                hash={modalHash.hash}
-                editable={false}
-                onHide={hideModal}
-            />
-
             <InfoOffcanvas
                 data={info.info}
                 show={info.show}
                 onClose={hideInfo}
-                showModal={showModal}
             />
 
 
@@ -249,9 +232,8 @@ const InfoOffcanvasComponent: FC<{
     data: connection,
     show: boolean,
     onClose: () => void,
-    showModal: (hash: string) => void
 }> =
-    ({ data, show, onClose: handleClose, showModal }) => {
+    ({ data, show, onClose: handleClose }) => {
         const ctx = useContext(GlobalToastContext);
 
         const [closing, setClosing] = useState(false);
@@ -274,7 +256,7 @@ const InfoOffcanvasComponent: FC<{
 
         return <Offcanvas className="w-75" show={show} onHide={handleClose} placement="end" scroll renderStaticNode>
             <Offcanvas.Body>
-                <ConnectionInfo value={data} showModal={showModal}
+                <ConnectionInfo value={data}
                     endContent={<ListGroup.Item>
                         <div className="d-flex">
                             <Button

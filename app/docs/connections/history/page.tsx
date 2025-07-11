@@ -9,7 +9,7 @@ import Loading from "../../common/loading"
 import { useProtoSWR } from "../../common/proto"
 import { connectionSchema, type } from "../../pbes/statistic/config_pb"
 import { all_history, connections } from "../../pbes/statistic/grpc/config_pb"
-import { ConnectionInfo, ListGroupItem } from "../components"
+import { ConnectionInfo, ListGroupItemString } from "../components"
 
 const TimestampZero = create(TimestampSchema, { seconds: BigInt(0), nanos: 0 })
 
@@ -40,8 +40,8 @@ function History() {
                     value={modalData.data?.connection ?? create(connectionSchema, {})}
                     startContent={
                         <>
-                            <ListGroupItem itemKey="Count" itemValue={modalData.data?.count.toString() ?? "1"} />
-                            <ListGroupItem itemKey="Time" itemValue={timestampDate(modalData.data?.time ?? TimestampZero).toLocaleString()} />
+                            <ListGroupItemString itemKey="Count" itemValue={modalData.data?.count.toString() ?? "1"} />
+                            <ListGroupItemString itemKey="Time" itemValue={timestampDate(modalData.data?.time ?? TimestampZero).toLocaleString()} />
                         </>
                     }
                     endContent={

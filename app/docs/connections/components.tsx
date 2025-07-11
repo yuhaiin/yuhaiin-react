@@ -1,135 +1,122 @@
-import { DescField } from "@bufbuild/protobuf";
-import { reflect, ReflectMessage } from "@bufbuild/protobuf/reflect";
-import React, { FC, JSX, useEffect, useState } from "react";
+import React, { FC, JSX, useCallback, useEffect, useState } from "react";
 import { Badge, Card, ListGroup } from "react-bootstrap";
 import useSWR from "swr";
 import { FetchProtobuf, ProtoPath } from "../common/proto";
-import { connection, connectionSchema } from "../pbes/statistic/config_pb";
+import { NodeModal } from "../node/modal";
+import { mode } from "../pbes/config/bypass/bypass_pb";
+import { connection, type as connType } from "../pbes/statistic/config_pb";
 import { connections, counter, total_flow } from "../pbes/statistic/grpc/config_pb";
 
-export const ListGroupItem: FC<{ itemKey: string, itemValue: string, showModal?: (hash: string) => void }> =
-    ({ itemKey, itemValue, showModal }) => {
-        return (
-            <>
-                <ListGroup.Item>
-                    <div className="d-sm-flex">
-                        <div className="endpoint-name flex-grow-1 notranslate text-capitalize">{itemKey}</div>
+export const ListGroupItemString: FC<{ itemKey: string, itemValue: string }> =
+    ({ itemKey, itemValue }) => {
+        if (itemValue == "") return <></>
 
-                        <div className="notranslate text-break" style={{ opacity: 0.6 }}>
-                            <ItemInfo itemKey={itemKey} itemValue={itemValue} showModal={showModal} />
-                        </div>
-                    </div>
-                </ListGroup.Item>
-            </>
-        )
-    }
+        return <>
+            <ListGroup.Item>
+                <div className="d-sm-flex">
+                    <div className="endpoint-name flex-grow-1 notranslate text-capitalize">{itemKey}</div>
 
-type MatchHistory = {
-    rule_name: string,
-    history: { list_name: string, matched: boolean }[]
-}
-const ItemInfo: FC<{ itemKey: string, itemValue: string, showModal?: (hash: string) => void }> =
-    ({ itemKey, itemValue, showModal }) => {
-        if (itemKey === "mode reason") {
-            const history = JSON.parse(itemValue) as MatchHistory[]
-            return <>
-                <div>
-
-                    <div className="d-flex align-items-center gap-2">
-                        <div style={{ flex: 1, height: "1px", background: "black" }}></div>
-                        <span><b>Rule Name</b></span>
-                        <div style={{ flex: 1, height: "1px", background: "black" }}></div>
-                    </div>
-
-                    <div className="mt-2 mb-2">
-                        <div >
-                            <div><Badge bg="success">Hit</Badge> List Name</div>
-                            <div><Badge bg="danger">Miss</Badge> List Name</div>
-                        </div>
+                    <div className="notranslate text-break" style={{ opacity: 0.6 }}>
+                        {itemValue}
                     </div>
                 </div>
-
-                <hr />
-
-                {history.map((e, i) => {
-                    return <div key={"rule-" + e.rule_name + i}>
-
-                        <div className="d-flex align-items-center gap-2">
-                            <div style={{ flex: 1, height: "1px", background: "black" }}></div>
-                            <span><b>{e.rule_name}</b></span>
-                            <div style={{ flex: 1, height: "1px", background: "black" }}></div>
-                        </div>
-
-                        <div className="mt-2 mb-2">
-                            {e.history.map((h, j) => {
-                                return <div key={"list-" + h.list_name + j}>
-                                    <div>{h.matched ? <Badge bg="success">Hit</Badge> : <Badge bg="danger">Miss</Badge>} {h.list_name}</div>
-                                </div>
-                            })}
-                        </div>
-
-                    </div>
-                })}
-            </>
-        }
-
-        if (itemKey == "hash" && showModal) {
-            return <a href="#" onClick={(e) => { e.preventDefault(); showModal(itemValue) }}>
-                {itemValue}
-            </a>
-        }
-
-        return <>{itemValue}</>
+            </ListGroup.Item>
+        </>
     }
 
 export const ConnectionInfo: FC<{
     value: connection,
     startContent?: JSX.Element,
     endContent?: JSX.Element,
-    showModal?: (hash: string) => void
-}> = ({ value, startContent, endContent, showModal }) => {
+}> = ({ value, startContent, endContent }) => {
+    const [modalHash, setModalHash] = useState({ show: false, hash: "" });
 
-    function rangeInfo(d: connection) {
-        const ref = reflect(connectionSchema, d)
+    const showModal = useCallback((hash: string) => {
+        setModalHash({ show: true, hash: hash })
+    }, [setModalHash])
 
-
-        const getValueString = (f: DescField, ref: ReflectMessage) => {
-            if (f.fieldKind === "enum") {
-                const value: number = ref.get(f)
-                return f.enum.value[value].name
-            } else {
-                const value = ref.get(f)
-                if (!value) return undefined
-                return value.toString()
-            }
-        }
-
-        const Item: FC<{ f: DescField, ref: ReflectMessage }> = ({ f, ref }) => {
-            const valueStr = getValueString(f, ref)
-            if (!valueStr) return
-            return <ListGroupItem itemKey={f.name.replaceAll("_", " ")} itemValue={valueStr} showModal={showModal} />
-        }
-
-        return <>
-            {
-                ref.fields.map((f) => {
-                    if (f.fieldKind === "message") {
-                        const value: ReflectMessage = ref.get(f)
-                        return value.fields.map((f) => {
-                            return <Item f={f} ref={value} key={f.name} />
-                        })
-                    }
-
-                    return <Item f={f} ref={ref} key={f.name} />
-                })
-            }
-        </>
-    }
+    const hideModal = useCallback(() => {
+        setModalHash(prev => { return { ...prev, show: false } })
+    }, [setModalHash])
 
     return <>
+        <NodeModal
+            show={modalHash.show}
+            hash={modalHash.hash}
+            editable={false}
+            onHide={hideModal}
+        />
+
         <ListGroup variant="flush" className="w-100 p-2">
             {startContent}
-            {rangeInfo(value)}
+            <ListGroupItemString itemKey="Id" itemValue={value.id.toString()} />
+            <ListGroupItemString itemKey="Addr" itemValue={value.addr} />
+            <ListGroupItemString itemKey="Type" itemValue={connType[value.type?.connType]} />
+            <ListGroupItemString itemKey="UnderlyingType" itemValue={connType[value.type?.underlyingType]} />
+            <ListGroupItemString itemKey="Inbound" itemValue={value.inboundName} />
+            <ListGroupItemString itemKey="InboundAddr" itemValue={value.inbound} />
+            <ListGroupItemString itemKey="Source" itemValue={value.source} />
+            <ListGroupItemString itemKey="Outbound" itemValue={value.outbound} />
+            <ListGroupItemString itemKey="LocalAddr" itemValue={value.localAddr} />
+            <ListGroupItemString itemKey="Destination" itemValue={value.destionation} />
+            <ListGroupItemString itemKey="FakeIP" itemValue={value.fakeIp} />
+            <ListGroupItemString itemKey="Hosts" itemValue={value.hosts} />
+            <ListGroupItemString itemKey="Domain" itemValue={value.domain} />
+            <ListGroupItemString itemKey="IP" itemValue={value.ip} />
+            <ListGroupItemString itemKey="Tag" itemValue={value.tag} />
+
+            <ListGroup.Item>
+                <div className="d-sm-flex">
+                    <div className="endpoint-name flex-grow-1 notranslate text-capitalize">Point</div>
+                    <div className="notranslate text-break" style={{ opacity: 0.6 }}>
+                        <a href="#" onClick={(e) => { e.preventDefault(); showModal(value.hash) }}>
+                            {value.nodeName ? value.nodeName : value.hash}
+                        </a>
+                    </div>
+                </div>
+            </ListGroup.Item>
+
+            <ListGroupItemString itemKey="Protocol" itemValue={value.protocol} />
+            <ListGroupItemString itemKey="Process" itemValue={value.process} />
+            <ListGroupItemString itemKey="TlsServerName" itemValue={value.tlsServerName} />
+            <ListGroupItemString itemKey="HttpHost" itemValue={value.httpHost} />
+            <ListGroupItemString itemKey="Component" itemValue={value.component} />
+            <ListGroupItemString itemKey="Mode" itemValue={mode[value.mode]} />
+            <ListGroupItemString itemKey="UdpMigrateId" itemValue={value.udpMigrateId ? value.udpMigrateId.toString() : ""} />
+            <ListGroupItemString itemKey="Pid" itemValue={value.pid ? value.pid.toString() : ""} />
+            <ListGroupItemString itemKey="Uid" itemValue={value.uid ? value.uid.toString() : ""} />
+
+            {value.matchHistory && value.matchHistory.length > 0 &&
+                <ListGroup.Item>
+                    <div className="d-sm-flex">
+                        <div className="endpoint-name flex-grow-1 notranslate text-capitalize">MatchHistory</div>
+
+                        <div className="notranslate text-break" style={{ opacity: 0.6 }}>
+                            {
+                                value.matchHistory.map((e, i) => {
+                                    return <div key={"rule-" + e.ruleName + i}>
+
+                                        <div className="d-flex align-items-center gap-2">
+                                            <div style={{ flex: 1, height: "1px", background: "black" }}></div>
+                                            <span><b>{e.ruleName}</b></span>
+                                            <div style={{ flex: 1, height: "1px", background: "black" }}></div>
+                                        </div>
+
+                                        <div className="mt-2 mb-2">
+                                            {e.history && e.history.map((h, j) => {
+                                                return <div key={"list-" + h.listName + j}>
+                                                    <div>{h.matched ? <Badge bg="success">Hit</Badge> : <Badge bg="danger">Miss</Badge>} {h.listName}</div>
+                                                </div>
+                                            })}
+                                        </div>
+
+                                    </div>
+                                })
+                            }
+                        </div>
+                    </div>
+                </ListGroup.Item>
+            }
             {endContent}
         </ListGroup>
     </>
@@ -244,7 +231,6 @@ export const useFlow = () => {
             refreshInterval: 2000,
         })
 }
-
 
 export const FlowCard: FC<{
     lastFlow?: Flow,

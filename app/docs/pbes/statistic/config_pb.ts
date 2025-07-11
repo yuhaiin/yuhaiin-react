@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file statistic/config.proto.
  */
 export const file_statistic_config: GenFile = /*@__PURE__*/
-  fileDesc("ChZzdGF0aXN0aWMvY29uZmlnLnByb3RvEhF5dWhhaWluLnN0YXRpc3RpYyKEAQoIbmV0X3R5cGUSNQoJY29ubl90eXBlGAEgASgOMhcueXVoYWlpbi5zdGF0aXN0aWMudHlwZVIJY29ubl90eXBlEkEKD3VuZGVybHlpbmdfdHlwZRgCIAEoDjIXLnl1aGFpaW4uc3RhdGlzdGljLnR5cGVSD3VuZGVybHlpbmdfdHlwZSLuBAoKY29ubmVjdGlvbhIMCgRhZGRyGAEgASgJEgoKAmlkGAIgASgEEikKBHR5cGUYAyABKAsyGy55dWhhaWluLnN0YXRpc3RpYy5uZXRfdHlwZRIOCgZzb3VyY2UYBSABKAkSDwoHaW5ib3VuZBgGIAEoCRIiCgxpbmJvdW5kX25hbWUYGyABKAlSDGluYm91bmRfbmFtZRIQCghvdXRib3VuZBgYIAEoCRIdCgpsb2NhbF9hZGRyGBogASgJUglMb2NhbEFkZHISFAoMZGVzdGlvbmF0aW9uGAcgASgJEhgKB2Zha2VfaXAYCCABKAlSB2Zha2VfaXASDQoFaG9zdHMYCSABKAkSDgoGZG9tYWluGAogASgJEgoKAmlwGAsgASgJEgsKA3RhZxgMIAEoCRIMCgRoYXNoGA0gASgJEhwKCW5vZGVfbmFtZRgZIAEoCVIJbm9kZV9uYW1lEhAKCHByb3RvY29sGA4gASgJEg8KB3Byb2Nlc3MYDyABKAkSCwoDcGlkGBAgASgEEgsKA3VpZBgRIAEoBBIoCg90bHNfc2VydmVyX25hbWUYEiABKAlSD3Rsc19zZXJ2ZXJfbmFtZRIcCglodHRwX2hvc3QYEyABKAlSCWh0dHBfaG9zdBIRCgljb21wb25lbnQYFCABKAkSJgoOdWRwX21pZ3JhdGVfaWQYFSABKARSDnVkcF9taWdyYXRlX2lkEiIKBG1vZGUYFiABKA4yFC55dWhhaWluLmJ5cGFzcy5tb2RlEiAKC21vZGVfcmVhc29uGBcgASgJUgttb2RlX3JlYXNvbkoECAQQBVIFZXh0cmEqjwEKBHR5cGUSCwoHdW5rbm93bhAAEgcKA3RjcBABEggKBHRjcDQQAhIICgR0Y3A2EAMSBwoDdWRwEAQSCAoEdWRwNBAFEggKBHVkcDYQBhIGCgJpcBAHEgcKA2lwNBAIEgcKA2lwNhAJEggKBHVuaXgQChIMCgh1bml4Z3JhbRALEg4KCnVuaXhwYWNrZXQQDEI7WjFnaXRodWIuY29tL0FzdXRvcnVmYS95dWhhaWluL3BrZy9wcm90b3Mvc3RhdGlzdGljkgMF0j4CEANiCGVkaXRpb25zcOgH", [file_google_protobuf_go_features, file_config_bypass_bypass]);
+  fileDesc("ChZzdGF0aXN0aWMvY29uZmlnLnByb3RvEhF5dWhhaWluLnN0YXRpc3RpYyKEAQoIbmV0X3R5cGUSNQoJY29ubl90eXBlGAEgASgOMhcueXVoYWlpbi5zdGF0aXN0aWMudHlwZVIJY29ubl90eXBlEkEKD3VuZGVybHlpbmdfdHlwZRgCIAEoDjIXLnl1aGFpaW4uc3RhdGlzdGljLnR5cGVSD3VuZGVybHlpbmdfdHlwZSKtBQoKY29ubmVjdGlvbhIMCgRhZGRyGAEgASgJEgoKAmlkGAIgASgEEikKBHR5cGUYAyABKAsyGy55dWhhaWluLnN0YXRpc3RpYy5uZXRfdHlwZRIOCgZzb3VyY2UYBSABKAkSDwoHaW5ib3VuZBgGIAEoCRIiCgxpbmJvdW5kX25hbWUYGyABKAlSDGluYm91bmRfbmFtZRIQCghvdXRib3VuZBgYIAEoCRIdCgpsb2NhbF9hZGRyGBogASgJUglMb2NhbEFkZHISFAoMZGVzdGlvbmF0aW9uGAcgASgJEhgKB2Zha2VfaXAYCCABKAlSB2Zha2VfaXASDQoFaG9zdHMYCSABKAkSDgoGZG9tYWluGAogASgJEgoKAmlwGAsgASgJEgsKA3RhZxgMIAEoCRIMCgRoYXNoGA0gASgJEhwKCW5vZGVfbmFtZRgZIAEoCVIJbm9kZV9uYW1lEhAKCHByb3RvY29sGA4gASgJEg8KB3Byb2Nlc3MYDyABKAkSCwoDcGlkGBAgASgEEgsKA3VpZBgRIAEoBBIoCg90bHNfc2VydmVyX25hbWUYEiABKAlSD3Rsc19zZXJ2ZXJfbmFtZRIcCglodHRwX2hvc3QYEyABKAlSCWh0dHBfaG9zdBIRCgljb21wb25lbnQYFCABKAkSJgoOdWRwX21pZ3JhdGVfaWQYFSABKARSDnVkcF9taWdyYXRlX2lkEiIKBG1vZGUYFiABKA4yFC55dWhhaWluLmJ5cGFzcy5tb2RlEkwKDW1hdGNoX2hpc3RvcnkYHCADKAsyJi55dWhhaWluLnN0YXRpc3RpYy5tYXRjaF9oaXN0b3J5X2VudHJ5Ug1tYXRjaF9oaXN0b3J5SgQIBBAFSgQIFxAYUgVleHRyYVILbW9kZV9yZWFzb24iPQoMbWF0Y2hfcmVzdWx0EhwKCWxpc3RfbmFtZRgBIAEoCVIJbGlzdF9uYW1lEg8KB21hdGNoZWQYAiABKAgiZQoTbWF0Y2hfaGlzdG9yeV9lbnRyeRIcCglydWxlX25hbWUYASABKAlSCXJ1bGVfbmFtZRIwCgdoaXN0b3J5GAIgAygLMh8ueXVoYWlpbi5zdGF0aXN0aWMubWF0Y2hfcmVzdWx0Ko8BCgR0eXBlEgsKB3Vua25vd24QABIHCgN0Y3AQARIICgR0Y3A0EAISCAoEdGNwNhADEgcKA3VkcBAEEggKBHVkcDQQBRIICgR1ZHA2EAYSBgoCaXAQBxIHCgNpcDQQCBIHCgNpcDYQCRIICgR1bml4EAoSDAoIdW5peGdyYW0QCxIOCgp1bml4cGFja2V0EAxCO1oxZ2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL3N0YXRpc3RpY5IDBdI+AhADYghlZGl0aW9uc3DoBw", [file_google_protobuf_go_features, file_config_bypass_bypass]);
 
 /**
  * @generated from message yuhaiin.statistic.net_type
@@ -167,9 +167,9 @@ export type connection = Message<"yuhaiin.statistic.connection"> & {
   mode: mode;
 
   /**
-   * @generated from field: string mode_reason = 23 [json_name = "mode_reason"];
+   * @generated from field: repeated yuhaiin.statistic.match_history_entry match_history = 28 [json_name = "match_history"];
    */
-  modeReason: string;
+  matchHistory: match_history_entry[];
 };
 
 /**
@@ -178,6 +178,50 @@ export type connection = Message<"yuhaiin.statistic.connection"> & {
  */
 export const connectionSchema: GenMessage<connection> = /*@__PURE__*/
   messageDesc(file_statistic_config, 1);
+
+/**
+ * @generated from message yuhaiin.statistic.match_result
+ */
+export type match_result = Message<"yuhaiin.statistic.match_result"> & {
+  /**
+   * @generated from field: string list_name = 1 [json_name = "list_name"];
+   */
+  listName: string;
+
+  /**
+   * @generated from field: bool matched = 2;
+   */
+  matched: boolean;
+};
+
+/**
+ * Describes the message yuhaiin.statistic.match_result.
+ * Use `create(match_resultSchema)` to create a new message.
+ */
+export const match_resultSchema: GenMessage<match_result> = /*@__PURE__*/
+  messageDesc(file_statistic_config, 2);
+
+/**
+ * @generated from message yuhaiin.statistic.match_history_entry
+ */
+export type match_history_entry = Message<"yuhaiin.statistic.match_history_entry"> & {
+  /**
+   * @generated from field: string rule_name = 1 [json_name = "rule_name"];
+   */
+  ruleName: string;
+
+  /**
+   * @generated from field: repeated yuhaiin.statistic.match_result history = 2;
+   */
+  history: match_result[];
+};
+
+/**
+ * Describes the message yuhaiin.statistic.match_history_entry.
+ * Use `create(match_history_entrySchema)` to create a new message.
+ */
+export const match_history_entrySchema: GenMessage<match_history_entry> = /*@__PURE__*/
+  messageDesc(file_statistic_config, 3);
 
 /**
  *
