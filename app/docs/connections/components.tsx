@@ -65,16 +65,18 @@ export const ConnectionInfo: FC<{
             <ListGroupItemString itemKey="IP" itemValue={value.ip} />
             <ListGroupItemString itemKey="Tag" itemValue={value.tag} />
 
-            <ListGroup.Item>
-                <div className="d-sm-flex">
-                    <div className="endpoint-name flex-grow-1 notranslate text-capitalize">Point</div>
-                    <div className="notranslate text-break" style={{ opacity: 0.6 }}>
-                        <a href="#" onClick={(e) => { e.preventDefault(); showModal(value.hash) }}>
-                            {value.nodeName ? value.nodeName : value.hash}
-                        </a>
+            {(value.nodeName || value.hash) &&
+                <ListGroup.Item>
+                    <div className="d-sm-flex">
+                        <div className="endpoint-name flex-grow-1 notranslate text-capitalize">Point</div>
+                        <div className="notranslate text-break" style={{ opacity: 0.6 }}>
+                            <a href="#" onClick={(e) => { e.preventDefault(); showModal(value.hash) }}>
+                                {value.nodeName ? value.nodeName : value.hash}
+                            </a>
+                        </div>
                     </div>
-                </div>
-            </ListGroup.Item>
+                </ListGroup.Item>
+            }
 
             <ListGroupItemString itemKey="Protocol" itemValue={value.protocol} />
             <ListGroupItemString itemKey="Process" itemValue={value.process} />
