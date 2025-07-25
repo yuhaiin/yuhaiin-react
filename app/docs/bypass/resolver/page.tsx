@@ -341,6 +341,15 @@ const Fakedns: FC = () => {
                     data={data.whitelist}
                     onChange={(v) => mutate(prev => { return { ...prev, whitelist: v } }, false)}
                 />
+
+                <NewItemList
+                    title="Skip Check List"
+                    className="mt-2"
+                    textarea
+                    dump
+                    data={data.skipCheckList ? data.skipCheckList : []}
+                    onChange={(v) => mutate(prev => { return { ...prev, skipCheckList: v } }, false)}
+                />
             </Card.Body>
             <Card.Footer className="d-flex justify-content-end">
                 <Button
