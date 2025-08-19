@@ -103,6 +103,7 @@ export const TunComponents = (props: { tun: tun, onChange: (x: tun) => void }) =
                 <SettingSelect
                     label='DNS Network Service'
                     emptyChoose
+                    emptyChooseName="Default"
                     value={props.tun.platform?.darwin?.networkService ?? ""}
                     values={platform.darwin.networkServices}
                     onChange={(e) => props.onChange({

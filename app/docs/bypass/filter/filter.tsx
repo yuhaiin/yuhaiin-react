@@ -397,7 +397,14 @@ export const FilterModal: FC<{ index: number, name: string, show: boolean, onHid
                                 onChange={(e) => setRule({ ...rule, udpProxyFqdnStrategy: e }, false)}
                                 emptyChoose
                             />
-                            <SettingSelect value={rule.resolver} values={filterContext.Resolvers} label='Resolver' onChange={(v) => setRule({ ...rule, resolver: v }, false)} emptyChoose />
+                            <SettingSelect
+                                value={rule.resolver}
+                                values={filterContext.Resolvers}
+                                label='Resolver'
+                                onChange={(v) => setRule({ ...rule, resolver: v }, false)}
+                                emptyChoose
+                                emptyChooseName="Global"
+                            />
                             <FilterBuilder groups={rule.rules} onUpdateGroups={(groups) => { setRule({ ...rule, rules: groups }, false) }} />
 
 

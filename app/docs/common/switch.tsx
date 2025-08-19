@@ -67,15 +67,16 @@ const SettingSelectComponent: FC<{
     values: string[],
     onChange: (x: string) => void,
     emptyChoose?: boolean,
+    emptyChooseName?: string
     lastElem?: boolean
 }> =
-    ({ label, values, onChange, value, emptyChoose, lastElem: last }) => {
+    ({ label, values, onChange, value, emptyChoose, emptyChooseName, lastElem: last }) => {
         return (
             <Form.Group as={Row} className={!last ? 'mb-2' : ''}>
                 <Form.Label column sm={2}>{label}</Form.Label>
                 <Col sm={10}>
                     <Form.Select value={value} onChange={(e) => onChange(e.target.value)}>
-                        {emptyChoose && <option value="">Choose...</option>}
+                        {emptyChoose && <option value="">{emptyChooseName ?? "Choose..."}</option>}
                         {
                             values.map((v) => <option key={v} value={v}>{v}</option>)
                         }
@@ -92,12 +93,13 @@ const FormSelectComponent: FC<{
     values: string[] | [string, string][],
     onChange: (x: string) => void,
     format?: (v: string) => string,
-    emptyChoose?: boolean
+    emptyChoose?: boolean,
+    emptyChooseName?: string
 }> =
-    ({ values, onChange, value, emptyChoose, format }) => {
+    ({ values, onChange, value, emptyChoose, format, emptyChooseName }) => {
         return (
             <Form.Select value={value} onChange={(e) => onChange(e.target.value)}>
-                {emptyChoose && <option value="">Choose...</option>}
+                {emptyChoose && <option value="">{emptyChooseName ?? "Choose..."}</option>}
                 {
                     values.map((value: string | [string, string]) => {
                         const k = typeof value == "string" ? value : value[0]

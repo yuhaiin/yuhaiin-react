@@ -65,6 +65,7 @@ const BypassComponent: FC<{
                         label='Direct Resolver'
                         onChange={changeDirectResolver}
                         emptyChoose
+                        emptyChooseName="Global"
                     />
                     <SettingSelect
                         lastElem value={bypass.proxyResolver ? bypass.proxyResolver : "proxy"}
@@ -72,6 +73,7 @@ const BypassComponent: FC<{
                         label='Proxy Resolver'
                         onChange={changeProxyResolver}
                         emptyChoose
+                        emptyChooseName="Global"
                     />
                     <hr />
                     <div className="d-flex justify-content-end">

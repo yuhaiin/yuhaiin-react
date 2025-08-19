@@ -192,20 +192,18 @@ export class Flow {
 
 const generateFlow = (flow: total_flow, prev: Flow): { upload_rate: number, download_rate: number } => {
     const duration = (new Date().getTime() - prev.time.getTime()) / 1000
-    let drate = 0
-    let urate = 0
 
     if ((prev.download !== 0 || prev.upload !== 0) && duration !== 0) {
         const download = Number(flow.download)
         const upload = Number(flow.upload)
-        drate = (download - prev.download) / duration
-        urate = (upload - prev.upload) / duration
+
+        return {
+            download_rate: download > prev.download ? (download - prev.download) / duration : 0,
+            upload_rate: upload > prev.upload ? (upload - prev.upload) / duration : 0
+        }
     }
 
-    return {
-        download_rate: drate,
-        upload_rate: urate
-    }
+    return { download_rate: 0, upload_rate: 0 }
 }
 
 
