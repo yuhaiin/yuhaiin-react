@@ -13,11 +13,15 @@ import { config_service } from '../pbes/config/grpc/config_pb';
 import { log_level, log_levelSchema, logcat } from '../pbes/config/log/log_pb';
 import { Remind, SettingInputText } from './components';
 
+
 function ConfigComponent() {
     const ctx = useContext(GlobalToastContext);
 
     const { data: setting, error, isLoading, mutate: setSetting } =
-        useProtoSWR(config_service.method.load, { revalidateOnFocus: false })
+        useProtoSWR(config_service.method.load, {
+            revalidateOnFocus: false,
+            use: []
+        })
 
     const interfaces = Interfaces();
 

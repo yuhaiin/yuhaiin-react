@@ -3,7 +3,6 @@ import useSWR, { Fetcher, SWRConfiguration, SWRResponse } from 'swr';
 import type { SWRSubscriptionOptions } from 'swr/subscription';
 import { APIUrl } from './apiurl';
 
-
 export function useProtoSWR<I extends DescMessage, O extends DescMessage>(
     m: DescMethod & { methodKind: "unary"; input: I; output: O; },
     options?: SWRConfiguration,
