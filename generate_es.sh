@@ -40,3 +40,39 @@ protoc -I ${PROTO_PATH} --plugin ./node_modules/.bin/protoc-gen-es --es_out ${OU
 # backup
 
 protoc -I ${PROTO_PATH} --plugin ./node_modules/.bin/protoc-gen-es --es_out ${OUTPUT_PATH} --es_opt target=ts ${PROTO_PATH}/backup/backup.proto
+
+
+# ------------------------------
+
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/node/node.proto
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/node/protocol/protocol.proto
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/node/subscribe/subscribe.proto
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/node/point/point.proto
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/node/latency/latency.proto
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/node/tag/tag.proto
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/node/grpc/node.proto
+
+# # statistic
+
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/statistic/config.proto
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/statistic/grpc/config.proto
+
+
+# # config
+
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/config/config.proto
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/config/grpc/config.proto
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/config/log/log.proto
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/config/bypass/bypass.proto
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/config/dns/dns.proto
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/config/listener/listener.proto
+
+# # tools
+
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/tools/tools.proto
+
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/google/protobuf/go_features.proto
+
+# # backup
+
+# protoc -I ${PROTO_PATH} --js_out=import_style=commonjs,binary:./app/proto-js ${PROTO_PATH}/backup/backup.proto

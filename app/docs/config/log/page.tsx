@@ -3,7 +3,7 @@
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
 import { CSSProperties, FC } from "react"
-import { FixedSizeList } from 'react-window'
+import { List, type RowComponentProps } from 'react-window'
 import useSWRSubscription from "swr/subscription"
 import { Error } from "../../common/loading"
 import { ProtoPath, WebsocketProtoServerStream } from "../../common/proto"
@@ -42,19 +42,17 @@ export default function LogComponent() {
         return <Error statusCode={log_error.code} title={log_error.msg} />
     }
 
-    const Row = ({ index, style, data }: { index: number, style: CSSProperties, data: string[] }) => (
+    const Row = ({ index, style, data }: RowComponentProps<{ data: string[] }>) => (
         <HighlightLogLine style={{ ...style, fontFamily: 'monospace', whiteSpace: 'nowrap' }} line={data[index]} />
     );
 
     return (
-        <FixedSizeList
-            height={window.innerHeight}
-            itemCount={log?.length || 0}
-            itemSize={25}
-            width="100%"
-            itemData={log}
-        >
-            {Row}
-        </FixedSizeList>
+        <List
+            rowCount={log?.length || 0}
+            rowComponent={Row}
+            rowHeight={25}
+            style={{ height: window.innerHeight - 90, width: "100%" }}
+            rowProps={{ data: log }}
+        />
     );
 }
