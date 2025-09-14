@@ -1,4 +1,6 @@
-PROTO_PATH=../yuhaiin/pkg/protos
+#!/bin/bash
+
+PROTO_PATH=../yuhaiin/pkg/idl
 OUTPUT_PATH=./app/docs/pbes
 
 

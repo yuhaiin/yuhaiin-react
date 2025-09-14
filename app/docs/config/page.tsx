@@ -125,6 +125,10 @@ function ConfigComponent() {
         setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, udpBufferSize: Number(v.target.value) } }), false)
     }, [setSetting])
 
+    const setHappyEyeballsSemaphore = useCallback((v: React.ChangeEvent<HTMLInputElement>) => {
+        setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, happyeyeballsSemaphore: Number(v.target.value) } }), false)
+    }, [setSetting])
+
     const [saving, setSaving] = useState(false);
 
     const save = useCallback(() => {
@@ -219,6 +223,10 @@ function ConfigComponent() {
                     <Form.Label>Relay Buffer Size ({setting.advancedConfig?.relayBufferSize ?? 4096} Bytes)</Form.Label>
                     <Form.Range value={setting.advancedConfig?.relayBufferSize ?? 4096}
                         min={2048} max={65536} step={1024} onChange={setRelayBufferSize} />
+
+                    <Form.Label>Happy Eyeballs Semaphore ({setting.advancedConfig?.happyeyeballsSemaphore ? setting.advancedConfig?.happyeyeballsSemaphore : 0})</Form.Label>
+                    <Form.Range value={setting.advancedConfig?.happyeyeballsSemaphore ? setting.advancedConfig?.happyeyeballsSemaphore : 0}
+                        min={0} step={10} max={10000} onChange={setHappyEyeballsSemaphore} />
 
                 </Card.Body>
 
