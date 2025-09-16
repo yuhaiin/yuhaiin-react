@@ -2,7 +2,7 @@
 
 import { create, toJsonString } from '@bufbuild/protobuf';
 import React, { createContext, FC, useContext, useEffect, useState } from 'react';
-import { Button, InputGroup, Modal, Spinner } from 'react-bootstrap';
+import { Button, Form, InputGroup, Modal, Spinner } from 'react-bootstrap';
 import Select, { CSSObjectWithLabel } from 'react-select';
 import useSWR from 'swr';
 import Loading from '../../common/loading';
@@ -10,7 +10,7 @@ import { FetchProtobuf, ProtoESFetcher, ProtoPath } from '../../common/proto';
 import { SettingSelect, SettingTypeSelect } from '../../common/switch';
 import { GlobalToastContext } from '../../common/toast';
 import { SettingInputText } from '../../config/components';
-import { hostSchema, inboundSchema, mode, modeSchema, network_network_type, networkSchema, or, orSchema, processSchema, resolve_strategySchema, rule, ruleSchema, rulev2Schema, udp_proxy_fqdn_strategy, udp_proxy_fqdn_strategySchema } from '../../pbes/config/bypass/bypass_pb';
+import { hostSchema, inboundSchema, mode, modeSchema, network_network_type, networkSchema, or, orSchema, portSchema, processSchema, resolve_strategySchema, rule, ruleSchema, rulev2Schema, udp_proxy_fqdn_strategy, udp_proxy_fqdn_strategySchema } from '../../pbes/config/bypass/bypass_pb';
 import { rule_indexSchema, rule_save_requestSchema, rules } from '../../pbes/config/grpc/config_pb';
 
 
@@ -65,6 +65,14 @@ const RuleRow: FC<{
                         }
                     }))
                     break;
+                case 'port':
+                    onUpdate(create(ruleSchema, {
+                        object: {
+                            case: "port",
+                            value: create(portSchema, { ports: value })
+                        }
+                    }))
+                    break;
             }
         } else {
             switch (v) {
@@ -105,6 +113,7 @@ const RuleRow: FC<{
                         { value: "process", label: "Process" },
                         { value: "inbound", label: "Inbound" },
                         { value: "network", label: "Network" },
+                        { value: "port", label: "Port" },
                     ]}
                 />
             </div>
@@ -199,6 +208,15 @@ const RuleRow: FC<{
                     }}
                     onChange={(e) => handleUpdate("network", e.value)}
                     options={[{ value: "tcp", label: "tcp" }, { value: "udp", label: "udp" }]}
+                />
+            }
+
+            {
+                rule.object.case == "port" &&
+                <Form.Control
+                    type="text"
+                    value={rule.object.value.ports}
+                    onChange={(e) => handleUpdate("port", e.target.value)}
                 />
             }
 
