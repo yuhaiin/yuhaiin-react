@@ -1,7 +1,7 @@
 "use client"
 
 import { FC } from "react"
-import { Col, ListGroup, Nav, Row, Tab } from "react-bootstrap"
+import { ListGroup, Tab, Tabs } from "react-bootstrap"
 import Loading, { Error } from "../../common/loading"
 import { useProtoSWR } from "../../common/proto"
 import { License, tools } from "../../pbes/tools/tools_pb"
@@ -13,7 +13,7 @@ export default function Licenses() {
     if (isLoading || isValidating || !data) return <Loading />
 
     return <>
-        <Tab.Container defaultActiveKey="yuhaiin">
+        {/* <Tab.Container defaultActiveKey="yuhaiin">
             <Row>
                 <Col sm={2}>
                     <Nav variant="pills" className="flex-column mt-2">
@@ -32,7 +32,16 @@ export default function Licenses() {
                     </Tab.Content>
                 </Col>
             </Row>
-        </Tab.Container>
+        </Tab.Container> */}
+
+        <Tabs defaultActiveKey={"yuhaiin"}>
+            <Tab title="Yuhaiin" eventKey="yuhaiin">
+                <LicensesList value={data.yuhaiin} />
+            </Tab>
+            <Tab title="Android" eventKey="android">
+                <LicensesList value={data.android} />
+            </Tab>
+        </Tabs>
     </>
 }
 

@@ -254,7 +254,7 @@ const InfoOffcanvasComponent: FC<{
                 })
         }, [setClosing, data.id, ctx])
 
-        return <Offcanvas className="w-75" show={show} onHide={handleClose} placement="end" scroll renderStaticNode>
+        return <Offcanvas className="w-75" show={show} onHide={handleClose} placement="end" scroll>
             <Offcanvas.Body>
                 <ConnectionInfo value={data}
                     endContent={<ListGroup.Item>
