@@ -65,6 +65,7 @@ export const ConnectionInfo: FC<{
             <ListGroupItemString itemKey="Domain" itemValue={value.domain} />
             <ListGroupItemString itemKey="IP" itemValue={value.ip} />
             <ListGroupItemString itemKey="Tag" itemValue={value.tag} />
+            <ListGroupItemString itemKey="Resolver" itemValue={value.resolver} />
 
             {(value.nodeName || value.hash) &&
                 <ListGroup.Item>
