@@ -211,16 +211,16 @@ function Group() {
 
                 <Accordion className="mb-3" alwaysOpen id="connections">
                     {
-                        data.groups[currentGroup] && Object.entries(data.groups[currentGroup].nodesV2)
-                            .sort((a, b) => { return a <= b ? -1 : 1 })
-                            .map(([k, v]) => {
+                        data.groups[currentGroup] && data.groups[currentGroup].nodes
+                            .sort((a, b) => { return a.name <= b.name ? -1 : 1 })
+                            .map((v) => {
                                 return <NodeItemv2
-                                    key={v}
-                                    hash={v}
-                                    name={k}
-                                    latency={latency[v] ?? { tcp: { loading: false, value: "N/A" }, udp: { loading: false, value: "N/A" }, }}
-                                    onChangeLatency={(e) => { setLatency(prev => { return { ...prev, [v]: e(prev[v] ?? { tcp: { loading: false, value: "N/A" }, udp: { loading: false, value: "N/A" }, }) } }) }}
-                                    onClickEdit={() => { openModal(v) }}
+                                    key={v.hash}
+                                    hash={v.hash}
+                                    name={v.name}
+                                    latency={latency[v.hash] ?? { tcp: { loading: false, value: "N/A" }, udp: { loading: false, value: "N/A" }, }}
+                                    onChangeLatency={(e) => { setLatency(prev => { return { ...prev, [v.hash]: e(prev[v.hash] ?? { tcp: { loading: false, value: "N/A" }, udp: { loading: false, value: "N/A" }, }) } }) }}
+                                    onClickEdit={() => { openModal(v.hash) }}
                                 />
                             })
                     }

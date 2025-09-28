@@ -91,8 +91,8 @@ export const Set: FC<Props<set>> = ({ value, onChange }) => {
 const getGroup = (hash: string, data?: nodes_response): { group: string, node: string } => {
     if (data === undefined || hash === "") return { group: "", node: "" }
     for (const group in data.groups) {
-        for (const node in data.groups[group].nodesV2) {
-            if (data.groups[group].nodesV2[node] === hash) return { group: group, node: node }
+        for (const node of data.groups[group].nodes) {
+            if (node.hash === hash) return { group: group, node: node.name }
         }
     }
 
@@ -147,7 +147,10 @@ const Node = (props: {
                 emptyChoose
                 value={props.hash}
                 onChange={(x) => { props.onChangeNode(x) }}
-                values={Object.entries(props.data ? props.data.groups[group.data.group]?.nodesV2 ?? {} : {}).sort((a, b) => { return a <= b ? -1 : 1 })}
+                values={
+                    (props.data ? props.data.groups[group.data.group]?.nodes ?? [] : []).
+                        sort((a, b) => { return a <= b ? -1 : 1 }).map((v) => { return v.name })
+                }
             />
         </FloatingLabel>
     </>

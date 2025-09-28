@@ -233,8 +233,8 @@ const TagModal = (props: {
 const getGroup = (hash: string, data?: nodes_response) => {
     if (data === undefined || hash === "") return ""
     for (const group in data.groups) {
-        for (const node in data.groups[group].nodesV2) {
-            if (data.groups[group].nodesV2[node] === hash) return group
+        for (const node of data.groups[group].nodes) {
+            if (node.hash === hash) return group
         }
     }
 
@@ -261,7 +261,11 @@ const Node = (props: {
                 emptyChoose
                 value={props.hash}
                 onChange={(x) => { props.onChangeNode(x) }}
-                values={Object.entries(props.data ? props.data.groups[group.data]?.nodesV2 ?? {} : {}).sort((a, b) => { return a <= b ? -1 : 1 })}
+                values={
+                    (props.data ? props.data.groups[group.data]?.nodes ?? [] : []).
+                        sort((a, b) => { return a.name <= b.name ? -1 : 1 }).
+                        map((v) => { return v.name })
+                }
             />
         </FloatingLabel>
     </>
