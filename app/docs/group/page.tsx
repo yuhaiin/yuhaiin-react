@@ -7,7 +7,7 @@ import { FC, useContext, useState } from "react";
 import { Accordion, Button, ButtonGroup, Col, Dropdown, DropdownButton, ListGroup, Row, Spinner } from "react-bootstrap";
 import { LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunTCPUrl, LatencyStunUrl } from "../common/apiurl";
 import Loading from "../common/loading";
-import { NodesContext } from "../common/nodes";
+import { Nodes, NodesContext } from "../common/nodes";
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
 import { GlobalToastContext } from "../common/toast";
 import { NodeJsonModal, NodeModal } from "../node/modal";
@@ -104,7 +104,7 @@ class ModalData {
 }
 function Group() {
     const ctx = useContext(GlobalToastContext);
-    const [currentGroup, setCurrentGroup] = useState("Select...");
+    const [groupIndex, setGroupIndex] = useState(-1);
     const [modalData, setModalData] = useState(new ModalData());
     const [importJson, setImportJson] = useState({ data: false });
     const [latency, setLatency] = useState<{ [key: string]: latencyStatus }>({})
@@ -135,7 +135,7 @@ function Group() {
 
     return (
         <>
-            <NodesContext value={data}>
+            <NodesContext value={new Nodes(data)}>
                 <NodeModal
                     show={modalData.show}
                     hash={modalData.hash}
@@ -145,7 +145,7 @@ function Group() {
                     editable
                     onHide={() => setModalData({ ...modalData, show: false })}
                     onSave={() => mutate()}
-                    groups={Object.keys(data.groups).sort((a, b) => { return a <= b ? -1 : 1 })}
+                    groups={data.groups.map((v) => { return v.name })}
                 />
 
                 <NodeJsonModal
@@ -161,17 +161,17 @@ function Group() {
             <div>
                 <Row>
                     <Col className="mb-4 d-flex">
-                        <Dropdown onSelect={(e) => { setCurrentGroup(e != null ? e : "Select...") }}>
-                            <Dropdown.Toggle variant="light">{currentGroup ?? "GROUP"}</Dropdown.Toggle>
+                        <Dropdown
+                            onSelect={(e) => { const i = Number(e); if (!isNaN(i)) setGroupIndex(i) }}
+                        >
+                            <Dropdown.Toggle variant="light">{groupIndex >= 0 && data.groups.length > groupIndex ? data.groups[groupIndex].name : "GROUP"}</Dropdown.Toggle>
                             <Dropdown.Menu>
-                                <Dropdown.Item eventKey={"Select..."}>Select...</Dropdown.Item>
+                                <Dropdown.Item eventKey={-1}>Select...</Dropdown.Item>
 
                                 {
-                                    data.groups && Object
-                                        .keys(data.groups)
-                                        .sort((a, b) => { return a <= b ? -1 : 1 })
-                                        .map((k) => {
-                                            return <Dropdown.Item eventKey={k} key={k}>{k}</Dropdown.Item>
+                                    data.groups && data.groups
+                                        .map((k, i) => {
+                                            return <Dropdown.Item eventKey={i} key={i}>{k.name}</Dropdown.Item>
                                         })
                                 }
                             </Dropdown.Menu>
@@ -211,8 +211,9 @@ function Group() {
 
                 <Accordion className="mb-3" alwaysOpen id="connections">
                     {
-                        data.groups[currentGroup] && data.groups[currentGroup].nodes
-                            .sort((a, b) => { return a.name <= b.name ? -1 : 1 })
+                        groupIndex >= 0
+                        && data.groups.length > groupIndex
+                        && data.groups[groupIndex].nodes
                             .map((v) => {
                                 return <NodeItemv2
                                     key={v.hash}
@@ -469,18 +470,8 @@ const NodeItemv2: FC<{
 
                 <ListGroup.Item className="d-flex justify-content-center">
                     <ButtonGroup>
-                        <DropdownButton
-                            onSelect={async (key) => { setNode(ctx, hash, key as LatencyType); }}
-                            as={ButtonGroup}
-                            variant="outline-primary"
-                            title="USE"
-                        >
-                            <Dropdown.Item eventKey={"tcpudp"}>TCP and UDP</Dropdown.Item>
-                            <Dropdown.Item eventKey={"tcp"}>TCP</Dropdown.Item>
-                            <Dropdown.Item eventKey={"udp"}>UDP</Dropdown.Item>
-                        </DropdownButton>
+                        <Button variant="outline-primary" onClick={() => setNode(ctx, hash)}>Use</Button>
                         <Button variant="outline-primary" onClick={onClickEdit}>Edit</Button>
-
                         <DropdownButton
                             onSelect={async (key) => { test(key as LatencyType) }}
                             as={ButtonGroup}
@@ -500,14 +491,10 @@ const NodeItemv2: FC<{
     </Accordion.Item>
 }
 
-function setNode(ctx: { Info: (msg: string) => void, Error: (msg: string) => void }, hash: string, key: string) {
-    FetchProtobuf(node.method.use, create(use_reqSchema, {
-        tcp: key === "tcp" || key === "tcpudp",
-        udp: key === "udp" || key === "tcpudp",
-        hash: hash,
-    }))
+function setNode(ctx: { Info: (msg: string) => void, Error: (msg: string) => void }, hash: string) {
+    FetchProtobuf(node.method.use, create(use_reqSchema, { hash: hash, }))
         .then(async ({ error }) => {
             if (error !== undefined) ctx.Error(`change node failed, ${error.code}| ${error.msg}`)
-            else ctx.Info(`Change ${key} Node To ${hash} Successful`)
+            else ctx.Info(`Change Node To ${hash} Successful`)
         })
 }

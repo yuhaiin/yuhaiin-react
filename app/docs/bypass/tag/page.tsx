@@ -3,15 +3,16 @@
 import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import Error from 'next/error';
-import { FC, useContext, useEffect, useState } from "react";
+import { FC, useContext, useState } from "react";
 import { Badge, Button, ButtonGroup, Card, FloatingLabel, Form, ListGroup, Modal, ToggleButton } from "react-bootstrap";
 import { ConfirmModal } from "../../common/confirm";
 import Loading from "../../common/loading";
+import { Node, Nodes } from "../../common/nodes";
 import { FetchProtobuf, useProtoSWR } from '../../common/proto';
 import { FormSelect } from "../../common/switch";
 import { GlobalToastContext } from "../../common/toast";
 import { NodeModal } from "../../node/modal";
-import { node, nodes_response, save_tag_req, save_tag_reqSchema, tag, tags_response } from "../../pbes/node/grpc/node_pb";
+import { node, save_tag_req, save_tag_reqSchema, tag, tags_response } from "../../pbes/node/grpc/node_pb";
 import { tag_type, tags, tagsSchema } from "../../pbes/node/tag/tag_pb";
 
 function Tags() {
@@ -107,7 +108,7 @@ function Tags() {
 
             <TagModal
                 show={tagModalData.show}
-                nodes={nodes}
+                nodes={new Nodes(nodes)}
                 data={data}
                 tag={tagModalData.tag}
                 onChangeTag={(x) => setTagModalData({ ...tagModalData, tag: x })}
@@ -160,7 +161,7 @@ function Tags() {
 
 const TagModal = (props: {
     show: boolean,
-    nodes?: nodes_response,
+    nodes: Nodes,
     data: tags_response,
     tag: save_tag_req,
     new?: boolean,
@@ -230,46 +231,6 @@ const TagModal = (props: {
     </>
 }
 
-const getGroup = (hash: string, data?: nodes_response) => {
-    if (data === undefined || hash === "") return ""
-    for (const group in data.groups) {
-        for (const node of data.groups[group].nodes) {
-            if (node.hash === hash) return group
-        }
-    }
-
-    return ""
-}
-
-const Node = (props: {
-    hash: string,
-    data?: nodes_response,
-    onChangeNode: (x: string) => void
-}) => {
-    const [group, setGroup] = useState({ data: getGroup(props.hash, props.data) })
-    useEffect(() => {
-        if (props.hash) setGroup({ data: getGroup(props.hash, props.data) })
-    }, [props.hash, props.data]);
-
-    return <>
-        <FloatingLabel label="Group" className="mb-2" >
-            <FormSelect emptyChoose value={group.data} onChange={(x) => { setGroup({ data: x }) }} values={Object.keys(props.data ? props.data.groups : {}).sort((a, b) => { return a <= b ? -1 : 1 })} />
-        </FloatingLabel>
-
-        <FloatingLabel label="Node">
-            <FormSelect
-                emptyChoose
-                value={props.hash}
-                onChange={(x) => { props.onChangeNode(x) }}
-                values={
-                    (props.data ? props.data.groups[group.data]?.nodes ?? [] : []).
-                        sort((a, b) => { return a.name <= b.name ? -1 : 1 }).
-                        map((v) => { return v.name })
-                }
-            />
-        </FloatingLabel>
-    </>
-}
 
 const Mirror = (props: {
     value: string,

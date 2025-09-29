@@ -1,9 +1,8 @@
 import { create } from "@bufbuild/protobuf";
-import { FC, useContext, useEffect, useState } from "react";
-import { Button, FloatingLabel, ListGroup, Modal } from "react-bootstrap";
-import { NodesContext } from "../common/nodes";
-import { FormSelect, SettingTypeSelect } from "../common/switch";
-import { nodes_response } from "../pbes/node/grpc/node_pb";
+import { FC, useContext, useState } from "react";
+import { Button, ListGroup, Modal } from "react-bootstrap";
+import { Node, Nodes, NodesContext } from "../common/nodes";
+import { SettingTypeSelect } from "../common/switch";
 import { set, set_strategy_typeSchema, setSchema } from "../pbes/node/protocol/protocol_pb";
 import { Props } from "./tools";
 
@@ -45,8 +44,7 @@ export const Set: FC<Props<set>> = ({ value, onChange }) => {
                             })
                         }}
                     >
-                        {x} - {getGroup(x, groups).node}
-
+                        {x} - {groups.getGroupByHash(x).node}
 
                         <Button
                             variant="outline-danger"
@@ -87,22 +85,10 @@ export const Set: FC<Props<set>> = ({ value, onChange }) => {
     </>
 }
 
-
-const getGroup = (hash: string, data?: nodes_response): { group: string, node: string } => {
-    if (data === undefined || hash === "") return { group: "", node: "" }
-    for (const group in data.groups) {
-        for (const node of data.groups[group].nodes) {
-            if (node.hash === hash) return { group: group, node: node.name }
-        }
-    }
-
-    return { group: "", node: "" }
-}
-
 const SelectModal: FC<{
     show: boolean,
     hash: string,
-    nodes?: nodes_response,
+    nodes: Nodes,
     onHide: () => void,
     onChange: (x: string) => void
     onSave: () => void
@@ -121,37 +107,5 @@ const SelectModal: FC<{
                 <Button variant="outline-primary" onClick={() => { onSave() }}>Apply</Button>
             </Modal.Footer>
         </Modal>
-    </>
-}
-
-const Node = (props: {
-    hash: string,
-    data?: nodes_response,
-    onChangeNode: (x: string) => void
-}) => {
-    const [group, setGroup] = useState({ data: getGroup(props.hash, props.data) })
-    useEffect(() => {
-        if (props.hash) setGroup({ data: getGroup(props.hash, props.data) })
-    }, [props.hash, props.data]);
-
-    return <>
-        <FloatingLabel label="Group" className="mb-2" >
-            <FormSelect emptyChoose value={group.data.group}
-                onChange={(x) => { setGroup({ data: { group: x, node: "" } }) }}
-                values={Object.keys(props.data ? props.data.groups : {}).sort((a, b) => { return a <= b ? -1 : 1 })}
-            />
-        </FloatingLabel>
-
-        <FloatingLabel label="Node">
-            <FormSelect
-                emptyChoose
-                value={props.hash}
-                onChange={(x) => { props.onChangeNode(x) }}
-                values={
-                    (props.data ? props.data.groups[group.data.group]?.nodes ?? [] : []).
-                        sort((a, b) => { return a <= b ? -1 : 1 }).map((v) => { return v.name })
-                }
-            />
-        </FloatingLabel>
     </>
 }
