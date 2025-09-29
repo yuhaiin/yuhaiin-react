@@ -3,20 +3,23 @@
 import { create } from "@bufbuild/protobuf";
 import dynamic from "next/dynamic";
 import { FC, useState } from 'react';
-import { Button, InputGroup, ListGroup } from "react-bootstrap";
-import { FormSelect } from "../common/switch";
+import { Button, Card, InputGroup, ListGroup } from "react-bootstrap";
+import { FormSelect, SettingSelect } from "../common/switch";
 import { Container, MoveUpDown, Remind, SettingInputText } from "../config/components";
 import { point } from "../pbes/node/point/point_pb";
 import {
     aeadSchema,
     directSchema,
     dropSchema,
+    fixedSchema,
     grpcSchema,
     http2Schema,
     http_mockSchema,
     http_terminationSchema,
     httpSchema,
     muxSchema,
+    network_split,
+    network_splitSchema,
     noneSchema,
     obfs_httpSchema,
     protocol,
@@ -26,7 +29,6 @@ import {
     setSchema,
     shadowsocksrSchema,
     shadowsocksSchema,
-    simpleSchema,
     socks5Schema,
     tailscaleSchema,
     tls_configSchema,
@@ -105,7 +107,7 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
         </>
     }
 
-const LazySimple = dynamic(() => import("./simple").then(mod => mod.Simplev2), { ssr: false })
+const LazyFixed = dynamic(() => import("./simple").then(mod => mod.Fixed), { ssr: false })
 const LazyDirect = dynamic(() => import("./direct").then(mod => mod.Directv2), { ssr: false })
 const LazyTls = dynamic(() => import("./tls").then(mod => mod.Tlsv2), { ssr: false })
 const LazyWebsocket = dynamic(() => import("./websocket").then(mod => mod.Websocketv2), { ssr: false })
@@ -138,7 +140,17 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
     const data = value.protocol
     switch (data.case) {
         case "simple":
-            return <LazySimple value={data.value} onChange={(e) => update(e)} />
+            return <LazyFixed
+                value={create(fixedSchema, {
+                    host: data.value.host,
+                    networkInterface: data.value.networkInterface,
+                    alternateHost: data.value.alternateHost,
+                    port: data.value.port
+                })}
+                onChange={(e) => update(e)}
+            />
+        case "fixed":
+            return <LazyFixed value={data.value} onChange={(e) => update(e)} />
         case "direct":
             return <LazyDirect value={data.value} onChange={(e) => update(e)} />
         case "drop":
@@ -195,10 +207,35 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
             return HttpMock
         case "aead":
             return <LazyAead value={data.value} onChange={(e) => update(e)} />
+        case "networkSplit":
+            return <NetworkSplit value={data.value} onChange={(e) => update(e)} />
         default: return Unknown
     }
 }
 
+
+const NetworkSplit: FC<Props<network_split>> = ({ value, onChange }) => {
+    const protocolNames = Object.keys(protocols).filter(x => x !== "networkSplit")
+    return <>
+        <SettingSelect label="TCP" value={value.tcp.protocol.case} values={protocolNames}
+            onChange={(e) => { onChange({ ...value, tcp: protocols[e] }) }} />
+
+        <Card className="mt-2 mb-2">
+            <Card.Body>
+                <Protocol value={value.tcp} onChange={(e) => { onChange({ ...value, tcp: e }) }} />
+            </Card.Body>
+        </Card>
+
+        <SettingSelect label="UDP" value={value.udp.protocol.case} values={protocolNames}
+            onChange={(e) => { onChange({ ...value, udp: protocols[e] }) }} />
+
+        <Card className="mt-2">
+            <Card.Body>
+                <Protocol value={value.udp} onChange={(e) => { onChange({ ...value, udp: e }) }} />
+            </Card.Body>
+        </Card >
+    </>
+}
 
 const Unknown = <div className="text-center my-2" style={{ opacity: '0.4' }}>Not Implement</div>
 
@@ -241,10 +278,10 @@ const tlsConfig = create(tls_configSchema, {
 
 
 export const protocols: { [key: string]: protocol } = {
-    "simple": create(protocolSchema, {
+    "fixed": create(protocolSchema, {
         protocol: {
-            case: "simple",
-            value: create(simpleSchema, {
+            case: "fixed",
+            value: create(fixedSchema, {
                 host: "",
                 alternateHost: [],
                 port: 1080,
@@ -485,6 +522,15 @@ export const protocols: { [key: string]: protocol } = {
             case: "aead",
             value: create(aeadSchema, {
                 password: "password",
+            })
+        }
+    }),
+    "networkSplit": create(protocolSchema, {
+        protocol: {
+            case: "networkSplit",
+            value: create(network_splitSchema, {
+                tcp: create(protocolSchema, { protocol: { case: "none", value: create(noneSchema, {}) } }),
+                udp: create(protocolSchema, { protocol: { case: "none", value: create(noneSchema, {}) } }),
             })
         }
     }),

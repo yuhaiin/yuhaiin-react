@@ -1,10 +1,10 @@
 import { FC, useContext } from "react";
 import { InterfacesContext } from "../common/interfaces";
 import { Remind, SettingInputText } from "../config/components";
-import { simple } from "../pbes/node/protocol/protocol_pb";
+import { fixed } from "../pbes/node/protocol/protocol_pb";
 import { NewAlternateHostList, Props } from "./tools";
 
-export const Simplev2: FC<Props<simple>> = ({ value, onChange }) => {
+export const Fixed: FC<Props<fixed>> = ({ value, onChange }) => {
     const interfaces = useContext(InterfacesContext);
 
     const reminds = interfaces.map((v) => {
