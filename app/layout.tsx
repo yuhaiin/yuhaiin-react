@@ -1,10 +1,21 @@
 "use client"
 
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Container } from 'react-bootstrap';
 import { GlobalToastProvider } from './docs/common/toast';
 import NavBar from './docs/nav';
 import './global.css';
+
+interface AndroidInterface {
+  setRefreshEnabled?: (enabled: boolean) => void
+}
+
+declare global {
+  interface Window {
+    Android?: AndroidInterface
+  }
+}
 
 export default function RootLayout({
   children,
@@ -12,6 +23,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const [colorScheme, setColorScheme] = useState<'light' | 'dark' | undefined>(undefined);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    window.Android?.setRefreshEnabled?.(!pathname.includes("/docs/config/log"));
+  }, [pathname]);
+
 
   useEffect(() => {
     if (!window.matchMedia) {
