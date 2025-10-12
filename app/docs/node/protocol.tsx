@@ -51,8 +51,7 @@ import { Props } from './tools';
 
 export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: string[] }> =
     ({ value, onChange, groups }) => {
-        const [newProtocol, setNewProtocol] = useState({ value: "simple" });
-
+        const [newProtocol, setNewProtocol] = useState({ value: Object.keys(protocols)[0] });
 
         return <>
             <SettingInputText
