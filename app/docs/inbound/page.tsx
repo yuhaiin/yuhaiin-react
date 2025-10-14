@@ -2,7 +2,7 @@
 
 import { clone, create } from "@bufbuild/protobuf"
 import { StringValueSchema } from "@bufbuild/protobuf/wkt"
-import React, { useContext, useEffect, useState } from "react"
+import React, { FC, useContext, useEffect, useState } from "react"
 import { Button, Card, Form, InputGroup, ListGroup, Modal, Spinner } from "react-bootstrap"
 import useSWR from "swr"
 import Loading, { Error } from "../common/loading"
@@ -14,24 +14,23 @@ import { inboundSchema } from "../pbes/config/listener/listener_pb"
 import { Inbound } from "./inboud"
 
 
-const InboundModal = (
-    props: {
-        show: boolean,
-        name: string,
-        onHide: (save?: boolean) => void,
-        isNew?: boolean,
-    },
-) => {
+const InboundModal: FC<{
+    show: boolean,
+    name: string,
+    onHide: (save?: boolean) => void,
+    isNew?: boolean,
+}
+> = ({ show, name, onHide, isNew }) => {
     const ctx = useContext(GlobalToastContext);
 
     // isValidating becomes true whenever there is an ongoing request whether the data is loaded or not
     // isLoading becomes true when there is an ongoing request and data is not loaded yet.
     const { data: inbound, error, isLoading, isValidating, mutate } = useSWR(
-        props.name === "" ? undefined : ProtoPath(inboundService.method.get),
+        name === "" ? undefined : ProtoPath(inboundService.method.get),
         ProtoESFetcher(
             inboundService.method.get,
-            create(StringValueSchema, { value: props.name }),
-            props.isNew ? create(inboundSchema, { name: props.name, enabled: false }) : undefined
+            create(StringValueSchema, { value: name }),
+            isNew ? create(inboundSchema, { name: name, enabled: false }) : undefined
         ),
         {
             shouldRetryOnError: false,
@@ -41,20 +40,20 @@ const InboundModal = (
 
     useEffect(() => {
         mutate();
-    }, [props.name, props.isNew, mutate])
+    }, [name, isNew, mutate])
 
     return (
         <>
             <Modal
-                show={props.show}
+                show={show}
                 scrollable
                 aria-labelledby="contained-modal-title-vcenter"
                 size='xl'
-                onHide={() => { props.onHide() }}
+                onHide={() => { onHide() }}
                 centered
             >
                 <Modal.Header>
-                    <Modal.Title id="contained-modal-title-vcenter">{props.name}</Modal.Title>
+                    <Modal.Title id="contained-modal-title-vcenter">{name}</Modal.Title>
                 </Modal.Header>
 
                 <Modal.Body>
@@ -69,18 +68,18 @@ const InboundModal = (
                 </Modal.Body>
 
                 <Modal.Footer>
-                    <Button variant="outline-secondary" onClick={() => { props.onHide() }}>Close</Button>
+                    <Button variant="outline-secondary" onClick={() => { onHide() }}>Close</Button>
                     <Button
                         variant="outline-primary"
                         onClick={() => {
-                            inbound.name = props.name
+                            inbound.name = name
 
                             FetchProtobuf(inboundService.method.save, inbound)
                                 .then(async ({ error }) => {
                                     if (error === undefined) {
                                         ctx.Info("save successful")
                                         mutate();
-                                        props.onHide(true)
+                                        onHide(true)
                                     } else {
                                         const msg = error.msg;
                                         ctx.Error(msg)
