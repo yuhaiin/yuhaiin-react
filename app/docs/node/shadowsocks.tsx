@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { SettingInputText } from "../config/components";
-import { obfs_http, shadowsocks } from "../pbes/node/protocol/protocol_pb";
+import { obfs_http, shadowsocks } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
 export const Shadowsocksv2: FC<Props<shadowsocks>> = ({ value, onChange }) => {

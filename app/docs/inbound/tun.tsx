@@ -5,8 +5,8 @@ import { join as shlexJoin, split as shlexSplit } from 'shlex';
 import { useProtoSWR } from '../common/proto';
 import { SettingCheck, SettingSelect, SettingTypeSelect } from "../common/switch";
 import { NewItemList, SettingInputText } from '../config/components';
-import { inbound } from '../pbes/config/grpc/config_pb';
-import { routeSchema, tun, tun_endpoint_driverSchema, tun_platfrom_platform_darwinSchema, tun_platfromSchema } from '../pbes/config/listener/listener_pb';
+import { inbound } from '../pbes/api/config_pb';
+import { routeSchema, tun, tun_endpoint_driverSchema, tun_platfrom_platform_darwinSchema, tun_platfromSchema } from '../pbes/config/inbound_pb';
 
 
 export const Tun: FC<{ tun: tun, onChange: (x: tun) => void }> = ({ tun, onChange }) => {

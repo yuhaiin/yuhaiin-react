@@ -2,7 +2,7 @@
 import { FC } from "react";
 import { SettingCheck } from "../common/switch";
 import { SettingInputText } from '../config/components';
-import { yuubinsya } from '../pbes/config/listener/listener_pb';
+import { yuubinsya } from '../pbes/config/inbound_pb';
 
 export const Yuubinsya: FC<{ yuubinsya: yuubinsya, onChange: (x: yuubinsya) => void }> = ({ yuubinsya, onChange }) => {
     return <>

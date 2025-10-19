@@ -1,7 +1,7 @@
 import { FC } from "react"
 import { SettingCheck } from "../common/switch"
 import { NewBytesItemList, NewItemList, SettingInputText } from "../config/components"
-import { tls_config } from "../pbes/node/protocol/protocol_pb"
+import { tls_config } from "../pbes/node/protocol_pb"
 import { Props } from "./tools"
 
 export const Tlsv2 = (props: Props<tls_config>) => {

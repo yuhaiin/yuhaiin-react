@@ -1,7 +1,7 @@
 import { FC, useContext } from "react";
 import { InterfacesContext } from "../common/interfaces";
 import { Remind, SettingInputText } from "../config/components";
-import { fixed } from "../pbes/node/protocol/protocol_pb";
+import { fixed } from "../pbes/node/protocol_pb";
 import { NewAlternateHostList, Props } from "./tools";
 
 export const Fixed: FC<Props<fixed>> = ({ value, onChange }) => {

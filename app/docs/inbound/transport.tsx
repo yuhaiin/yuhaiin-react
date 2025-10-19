@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic"
 import { FC } from "react"
-import { transport } from "../pbes/config/listener/listener_pb"
+import { transport } from "../pbes/config/inbound_pb"
 
 const LazyTls = dynamic(() => import("./tls").then(mod => mod.Tls), { ssr: false })
 const LazyTlsAuto = dynamic(() => import("./tls").then(mod => mod.TLSAuto), { ssr: false })

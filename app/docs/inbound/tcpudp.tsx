@@ -1,7 +1,7 @@
 import { FC } from "react"
 import { SettingTypeSelect } from "../common/switch"
 import { SettingInputText } from "../config/components"
-import { reverse_tcp, tcp_udp_controlSchema, tcpudp } from "../pbes/config/listener/listener_pb"
+import { reverse_tcp, tcp_udp_controlSchema, tcpudp } from "../pbes/config/inbound_pb"
 
 export const ReverseTCP: FC<{ reverse_tcp: reverse_tcp, onChange: (x: reverse_tcp) => void }> = ({ reverse_tcp, onChange }) => {
     return (

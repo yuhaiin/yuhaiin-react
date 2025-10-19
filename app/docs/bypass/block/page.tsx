@@ -8,7 +8,7 @@ import styles from "../../common/clickable.module.css"
 import Loading from "../../common/loading"
 import { CustomPagination } from "../../common/pagination"
 import { useProtoSWR } from "../../common/proto"
-import { block_history, rules } from "../../pbes/config/grpc/config_pb"
+import { block_history, rules } from "../../pbes/api/config_pb"
 
 const TimestampZero = create(TimestampSchema, { seconds: BigInt(0), nanos: 0 })
 

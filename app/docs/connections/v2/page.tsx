@@ -4,14 +4,14 @@ import Loading from "@/app/docs/common/loading";
 import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "@/app/docs/common/proto";
 import { GlobalToastContext } from "@/app/docs/common/toast";
 import { ConnectionInfo, FlowContainer, formatBytes } from "@/app/docs/connections/components";
+import { connections, counter, notify_data, notify_remove_connectionsSchema } from "@/app/docs/pbes/api/statistic_pb";
 import { connection, connectionSchema, type } from "@/app/docs/pbes/statistic/config_pb";
-import { connections, counter, notify_data, notify_remove_connectionsSchema } from "@/app/docs/pbes/statistic/grpc/config_pb";
 import { create } from "@bufbuild/protobuf";
 import { EmptySchema } from "@bufbuild/protobuf/wkt";
 import React, { FC, useCallback, useContext, useMemo, useState } from "react";
 import { Badge, Button, Card, ListGroup, Offcanvas, Spinner } from "react-bootstrap";
 import useSWRSubscription from 'swr/subscription';
-import { mode } from "../../pbes/config/bypass/bypass_pb";
+import { mode } from "../../pbes/config/bypass_pb";
 
 const processStream = (r: notify_data, prev?: { [key: string]: connection }): { [key: string]: connection } => {
     let data: { [key: string]: connection };

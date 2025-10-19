@@ -9,7 +9,8 @@ import Loading, { Error } from "../../common/loading"
 import { FetchProtobuf, useProtoSWR } from "../../common/proto"
 import { SettingCheck } from "../../common/switch"
 import { GlobalToastContext } from "../../common/toast"
-import { backup, restore_optionSchema } from "../../pbes/backup/backup_pb"
+import { backup } from "../../pbes/api/backup_pb"
+import { restore_optionSchema } from "../../pbes/backup/backup_pb"
 import { SettingInputText } from "../components"
 
 

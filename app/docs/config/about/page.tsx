@@ -3,7 +3,7 @@
 import { Card } from "react-bootstrap"
 import Loading, { Error } from "../../common/loading"
 import { useProtoSWR } from "../../common/proto"
-import { config_service } from "../../pbes/config/grpc/config_pb"
+import { config_service } from "../../pbes/api/config_pb"
 import { ItemList, SettingInputText } from "../components"
 
 export default function About() {

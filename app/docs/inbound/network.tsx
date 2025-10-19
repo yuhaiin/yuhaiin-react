@@ -8,7 +8,7 @@ import {
     inbound,
     quicSchema,
     tcpudpSchema
-} from "../pbes/config/listener/listener_pb";
+} from "../pbes/config/inbound_pb";
 
 export const Network: FC<{ inbound: inbound, onChange: (x: inbound) => void }> = ({ inbound, onChange }) => {
     const [newProtocol, setNewProtocol] = useState({ value: inbound.network.case?.toString() ?? "tcpudp" });

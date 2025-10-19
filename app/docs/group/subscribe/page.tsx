@@ -7,8 +7,8 @@ import { Button, ButtonGroup, Card, Col, Dropdown, DropdownButton, FloatingLabel
 import Loading from "../../common/loading";
 import { FetchProtobuf, useProtoSWR } from '../../common/proto';
 import { GlobalToastContext } from "../../common/toast";
-import { link_reqSchema, save_link_reqSchema, subscribe } from "../../pbes/node/grpc/node_pb";
-import { link, linkSchema, type } from "../../pbes/node/subscribe/subscribe_pb";
+import { link_reqSchema, save_link_reqSchema, subscribe } from "../../pbes/api/node_pb";
+import { link, linkSchema, type } from "../../pbes/node/subscribe_pb";
 
 function Subscribe() {
     const [updating, setUpdating] = useState<{ [key: string]: boolean }>({});

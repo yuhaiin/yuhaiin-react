@@ -9,8 +9,8 @@ import Loading, { Error } from "../common/loading"
 import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../common/proto"
 import { SettingCheck } from "../common/switch"
 import { GlobalToastContext } from "../common/toast"
-import { inbound as inboundService } from "../pbes/config/grpc/config_pb"
-import { inboundSchema } from "../pbes/config/listener/listener_pb"
+import { inbound as inboundService } from "../pbes/api/config_pb"
+import { inboundSchema } from "../pbes/config/inbound_pb"
 import { Inbound } from "./inboud"
 
 

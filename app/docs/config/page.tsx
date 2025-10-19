@@ -8,9 +8,9 @@ import Loading, { Error } from '../common/loading';
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
 import { SettingCheck, SettingTypeSelect } from "../common/switch";
 import { GlobalToastContext } from '../common/toast';
+import { config_service } from '../pbes/api/config_pb';
 import { advanced_configSchema, setting as Setting, system_proxySchema } from '../pbes/config/config_pb';
-import { config_service } from '../pbes/config/grpc/config_pb';
-import { log_level, log_levelSchema, logcat } from '../pbes/config/log/log_pb';
+import { log_level, log_levelSchema, logcat } from '../pbes/config/log_pb';
 import { Remind, SettingInputText } from './components';
 
 

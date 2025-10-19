@@ -2,17 +2,16 @@
 // @generated from file tools/tools.proto (package yuhaiin.tools, edition 2023)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { EmptySchema } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_empty, file_google_protobuf_go_features } from "@bufbuild/protobuf/wkt";
+import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
+import { file_google_protobuf_go_features } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file tools/tools.proto.
  */
 export const file_tools_tools: GenFile = /*@__PURE__*/
-  fileDesc("ChF0b29scy90b29scy5wcm90bxINeXVoYWlpbi50b29scyI6CgpJbnRlcmZhY2VzEiwKCmludGVyZmFjZXMYASADKAsyGC55dWhhaWluLnRvb2xzLkludGVyZmFjZSIsCglJbnRlcmZhY2USDAoEbmFtZRgBIAEoCRIRCglhZGRyZXNzZXMYAiADKAkiXAoITGljZW5zZXMSJwoHeXVoYWlpbhgBIAMoCzIWLnl1aGFpaW4udG9vbHMuTGljZW5zZRInCgdhbmRyb2lkGAIgAygLMhYueXVoYWlpbi50b29scy5MaWNlbnNlIlcKB0xpY2Vuc2USDAoEbmFtZRgBIAEoCRILCgN1cmwYAiABKAkSDwoHbGljZW5zZRgDIAEoCRIgCgtsaWNlbnNlX3VybBgEIAEoCVILbGljZW5zZV91cmwiEgoDTG9nEgsKA2xvZxgBIAEoCSIUCgVMb2d2MhILCgNsb2cYASADKAky9gEKBXRvb2xzEkIKDWdldF9pbnRlcmZhY2USFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGS55dWhhaWluLnRvb2xzLkludGVyZmFjZXMSOwoIbGljZW5zZXMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFy55dWhhaWluLnRvb2xzLkxpY2Vuc2VzEjMKA2xvZxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoSLnl1aGFpaW4udG9vbHMuTG9nMAESNwoFbG9ndjISFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFC55dWhhaWluLnRvb2xzLkxvZ3YyMAFCN1otZ2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL3Rvb2xzkgMF0j4CEANiCGVkaXRpb25zcOgH", [file_google_protobuf_empty, file_google_protobuf_go_features]);
+  fileDesc("ChF0b29scy90b29scy5wcm90bxINeXVoYWlpbi50b29scyI6CgpJbnRlcmZhY2VzEiwKCmludGVyZmFjZXMYASADKAsyGC55dWhhaWluLnRvb2xzLkludGVyZmFjZSIsCglJbnRlcmZhY2USDAoEbmFtZRgBIAEoCRIRCglhZGRyZXNzZXMYAiADKAkiXAoITGljZW5zZXMSJwoHeXVoYWlpbhgBIAMoCzIWLnl1aGFpaW4udG9vbHMuTGljZW5zZRInCgdhbmRyb2lkGAIgAygLMhYueXVoYWlpbi50b29scy5MaWNlbnNlIlcKB0xpY2Vuc2USDAoEbmFtZRgBIAEoCRILCgN1cmwYAiABKAkSDwoHbGljZW5zZRgDIAEoCRIgCgtsaWNlbnNlX3VybBgEIAEoCVILbGljZW5zZV91cmwiEgoDTG9nEgsKA2xvZxgBIAEoCSIUCgVMb2d2MhILCgNsb2cYASADKAlCN1otZ2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL3Rvb2xzkgMF0j4CEANiCGVkaXRpb25zcOgH", [file_google_protobuf_go_features]);
 
 /**
  * @generated from message yuhaiin.tools.Interfaces
@@ -140,43 +139,4 @@ export type Logv2 = Message<"yuhaiin.tools.Logv2"> & {
  */
 export const Logv2Schema: GenMessage<Logv2> = /*@__PURE__*/
   messageDesc(file_tools_tools, 5);
-
-/**
- * @generated from service yuhaiin.tools.tools
- */
-export const tools: GenService<{
-  /**
-   * @generated from rpc yuhaiin.tools.tools.get_interface
-   */
-  get_interface: {
-    methodKind: "unary";
-    input: typeof EmptySchema;
-    output: typeof InterfacesSchema;
-  },
-  /**
-   * @generated from rpc yuhaiin.tools.tools.licenses
-   */
-  licenses: {
-    methodKind: "unary";
-    input: typeof EmptySchema;
-    output: typeof LicensesSchema;
-  },
-  /**
-   * @generated from rpc yuhaiin.tools.tools.log
-   */
-  log: {
-    methodKind: "server_streaming";
-    input: typeof EmptySchema;
-    output: typeof LogSchema;
-  },
-  /**
-   * @generated from rpc yuhaiin.tools.tools.logv2
-   */
-  logv2: {
-    methodKind: "server_streaming";
-    input: typeof EmptySchema;
-    output: typeof Logv2Schema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_tools_tools, 0);
 

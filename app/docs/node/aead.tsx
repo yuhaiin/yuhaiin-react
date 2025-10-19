@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { SettingTypeSelect } from "../common/switch";
 import { SettingInputText } from "../config/components";
-import { aead, AeadCryptoMethodSchema } from "../pbes/node/protocol/protocol_pb";
+import { aead, AeadCryptoMethodSchema } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
 export const Aead: FC<Props<aead>> = ({ value, onChange }) => {

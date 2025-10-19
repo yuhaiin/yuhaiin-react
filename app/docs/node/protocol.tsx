@@ -6,7 +6,7 @@ import { FC, useState } from 'react';
 import { Button, Card, InputGroup, ListGroup } from "react-bootstrap";
 import { FormSelect, SettingSelect } from "../common/switch";
 import { Container, MoveUpDown, Remind, SettingInputText } from "../config/components";
-import { point } from "../pbes/node/point/point_pb";
+import { point } from "../pbes/node/point_pb";
 import {
     aeadSchema,
     directSchema,
@@ -40,7 +40,7 @@ import {
     websocketSchema,
     wireguardSchema,
     yuubinsyaSchema
-} from "../pbes/node/protocol/protocol_pb";
+} from "../pbes/node/protocol_pb";
 import { BootstrapDnsWarp } from "./bootstrap_dns_warp";
 import { Dropv2 } from './drop';
 import { HttpMock } from "./mock";

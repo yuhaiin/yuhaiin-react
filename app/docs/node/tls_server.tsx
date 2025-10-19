@@ -2,7 +2,7 @@ import { create } from "@bufbuild/protobuf"
 import { FC, useState } from "react"
 import { Button, Card, Form, InputGroup } from "react-bootstrap"
 import { NewItemList, SettingInputText, SettingInputTextarea } from "../config/components"
-import { certificate, certificateSchema, tls_server_config, tls_termination } from "../pbes/node/protocol/protocol_pb"
+import { certificate, certificateSchema, tls_server_config, tls_termination } from "../pbes/node/protocol_pb"
 import { Props } from "./tools"
 
 export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (x: tls_server_config) => void }) => {

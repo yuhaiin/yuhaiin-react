@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { SettingCheck } from "../common/switch";
 import { SettingInputText } from "../config/components";
-import { yuubinsya } from "../pbes/node/protocol/protocol_pb";
+import { yuubinsya } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
 export const Yuubinsyav2: FC<Props<yuubinsya>> = ({ value, onChange }) => {

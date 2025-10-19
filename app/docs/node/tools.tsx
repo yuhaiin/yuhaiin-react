@@ -2,7 +2,7 @@ import { create } from "@bufbuild/protobuf"
 import { FC } from "react"
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap"
 import { Container, MoveUpDown, SettingInputText } from "../config/components"
-import { host, hostSchema } from "../pbes/node/protocol/protocol_pb"
+import { host, hostSchema } from "../pbes/node/protocol_pb"
 
 export type Props<T> = {
     value: T,

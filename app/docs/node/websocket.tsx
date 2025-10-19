@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { SettingInputText } from "../config/components";
-import { websocket } from "../pbes/node/protocol/protocol_pb";
+import { websocket } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
 export const Websocketv2: FC<Props<websocket>> = ({ value, onChange }) => {

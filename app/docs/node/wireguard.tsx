@@ -2,7 +2,7 @@ import { create } from "@bufbuild/protobuf"
 import { FC } from "react"
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap"
 import { Container, NewItemList, SettingInputText } from "../config/components"
-import { wireguard, wireguard_peer_config, wireguard_peer_configSchema } from "../pbes/node/protocol/protocol_pb"
+import { wireguard, wireguard_peer_config, wireguard_peer_configSchema } from "../pbes/node/protocol_pb"
 import { Props } from "./tools"
 
 const NewPeersList: FC<{ title: string, data: wireguard_peer_config[], onChange: (x: wireguard_peer_config[]) => void }> =

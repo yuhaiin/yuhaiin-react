@@ -7,7 +7,8 @@ import { List, type RowComponentProps } from 'react-window'
 import useSWRSubscription from "swr/subscription"
 import { Error } from "../../common/loading"
 import { ProtoPath, WebsocketProtoServerStream } from "../../common/proto"
-import { Logv2, tools } from "../../pbes/tools/tools_pb"
+import { tools } from "../../pbes/api/tools_pb"
+import { Logv2 } from "../../pbes/tools/tools_pb"
 
 const HighlightLogLine: FC<{ line: string, style: CSSProperties }> = ({ line, style }) => {
     if (line.includes('ERROR')) {

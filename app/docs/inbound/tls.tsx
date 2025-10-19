@@ -5,8 +5,8 @@ import { Button } from 'react-bootstrap';
 import { SettingCheck } from "../common/switch";
 import { NewItemList, SettingInputText, SettingInputTextarea } from '../config/components';
 import { TLSServerComponents } from '../node/tls_server';
-import { ech_config, ech_configSchema, tls, tls_auto } from '../pbes/config/listener/listener_pb';
-import { tls_server_configSchema } from '../pbes/node/protocol/protocol_pb';
+import { ech_config, ech_configSchema, tls, tls_auto } from '../pbes/config/inbound_pb';
+import { tls_server_configSchema } from '../pbes/node/protocol_pb';
 
 export const TLSAuto: FC<{ tls: tls_auto, onChange: (x: tls_auto) => void }> = ({ tls, onChange }) => {
     const setEch = (onEchChange: (x: ech_config) => ech_config) => {

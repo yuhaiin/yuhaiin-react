@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { SettingInputText } from '../config/components';
-import { redir } from '../pbes/config/listener/listener_pb';
+import { redir } from '../pbes/config/inbound_pb';
 
 export const Redir: FC<{ redir: redir, onChange: (x: redir) => void }> = ({ redir, onChange }) => {
     return (

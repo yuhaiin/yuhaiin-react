@@ -1,7 +1,7 @@
 import { create } from "@bufbuild/protobuf"
 import { FC } from "react"
 import { SettingInputText } from "../config/components"
-import { quic, tls_configSchema } from "../pbes/node/protocol/protocol_pb"
+import { quic, tls_configSchema } from "../pbes/node/protocol_pb"
 import { TlsConfigv2 } from "./tls"
 import { Props } from "./tools"
 

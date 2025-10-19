@@ -6,7 +6,7 @@ import { useCallback, useContext, useState } from "react"
 import { Button, Card, Form, InputGroup } from "react-bootstrap"
 import { FetchProtobuf } from "../../common/proto"
 import { GlobalToastContext } from "../../common/toast"
-import { rules, test_response, test_responseSchema } from "../../pbes/config/grpc/config_pb"
+import { rules, test_response, test_responseSchema } from "../../pbes/api/config_pb"
 
 function Test() {
     const ctx = useContext(GlobalToastContext);

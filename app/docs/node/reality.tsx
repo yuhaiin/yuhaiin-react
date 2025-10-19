@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { SettingCheck } from "../common/switch";
 import { SettingInputText } from "../config/components";
-import { reality } from "../pbes/node/protocol/protocol_pb";
+import { reality } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
 export const Realityv2: FC<Props<reality>> = ({ value, onChange }) => {

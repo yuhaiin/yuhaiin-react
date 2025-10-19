@@ -2,7 +2,7 @@
 
 import { FC } from "react";
 import { SettingInputText } from "../config/components";
-import { tailscale } from "../pbes/node/protocol/protocol_pb";
+import { tailscale } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
 export const Tailscale: FC<Props<tailscale>> = ({ value, onChange }) => {

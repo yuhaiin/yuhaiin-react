@@ -4,16 +4,14 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { logcat } from "./log/log_pb";
-import { file_config_log_log } from "./log/log_pb";
-import type { config } from "./bypass/bypass_pb";
-import { file_config_bypass_bypass } from "./bypass/bypass_pb";
-import type { dns_config } from "./dns/dns_pb";
-import { file_config_dns_dns } from "./dns/dns_pb";
-import type { inbound_config } from "./listener/listener_pb";
-import { file_config_listener_listener } from "./listener/listener_pb";
-import type { backup_option } from "../backup/backup_pb";
-import { file_backup_backup } from "../backup/backup_pb";
+import type { logcat } from "./log_pb";
+import { file_config_log } from "./log_pb";
+import type { bypass_config } from "./bypass_pb";
+import { file_config_bypass } from "./bypass_pb";
+import type { dns_config } from "./dns_pb";
+import { file_config_dns } from "./dns_pb";
+import type { inbound_config } from "./inbound_pb";
+import { file_config_inbound } from "./inbound_pb";
 import { file_google_protobuf_go_features } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
 
@@ -21,7 +19,95 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file config/config.proto.
  */
 export const file_config_config: GenFile = /*@__PURE__*/
-  fileDesc("ChNjb25maWcvY29uZmlnLnByb3RvEg55dWhhaWluLmNvbmZpZyLuBAoHc2V0dGluZxIMCgRpcHY2GAcgASgIEjQKFXVzZV9kZWZhdWx0X2ludGVyZmFjZRgNIAEoCFIVdXNlX2RlZmF1bHRfaW50ZXJmYWNlEiQKDW5ldF9pbnRlcmZhY2UYBiABKAlSDW5ldF9pbnRlcmZhY2USQAoMc3lzdGVtX3Byb3h5GAEgASgLMhwueXVoYWlpbi5jb25maWcuc3lzdGVtX3Byb3h5UgxzeXN0ZW1fcHJveHkSJgoGYnlwYXNzGAIgASgLMhYueXVoYWlpbi5ieXBhc3MuY29uZmlnEiQKA2RucxgEIAEoCzIXLnl1aGFpaW4uZG5zLmRuc19jb25maWcSMAoGc2VydmVyGAUgASgLMiAueXVoYWlpbi5saXN0ZW5lci5pbmJvdW5kX2NvbmZpZxIjCgZsb2djYXQYCCABKAsyEy55dWhhaWluLmxvZy5sb2djYXQSRgoOY29uZmlnX3ZlcnNpb24YCSABKAsyHi55dWhhaWluLmNvbmZpZy5jb25maWdfdmVyc2lvblIOY29uZmlnX3ZlcnNpb24SKgoIcGxhdGZvcm0YCyABKAsyGC55dWhhaWluLmNvbmZpZy5wbGF0Zm9ybRJJCg9hZHZhbmNlZF9jb25maWcYDCABKAsyHy55dWhhaWluLmNvbmZpZy5hZHZhbmNlZF9jb25maWdSD2FkdmFuY2VkX2NvbmZpZxItCgZiYWNrdXAYDiABKAsyHS55dWhhaWluLmJhY2t1cC5iYWNrdXBfb3B0aW9uSgQIChALUh5pcHY2X2xvY2FsX2FkZHJfcHJlZmVyX3VuaWNhc3Qi1QEKD2FkdmFuY2VkX2NvbmZpZxIoCg91ZHBfYnVmZmVyX3NpemUYASABKAVSD3VkcF9idWZmZXJfc2l6ZRIsChFyZWxheV9idWZmZXJfc2l6ZRgCIAEoBVIRcmVsYXlfYnVmZmVyX3NpemUSMAoTdWRwX3JpbmdidWZmZXJfc2l6ZRgDIAEoBVITdWRwX3JpbmdidWZmZXJfc2l6ZRI4ChdoYXBweWV5ZWJhbGxzX3NlbWFwaG9yZRgEIAEoBVIXaGFwcHlleWViYWxsc19zZW1hcGhvcmUiLAoMc3lzdGVtX3Byb3h5EgwKBGh0dHAYAiABKAgSDgoGc29ja3M1GAMgASgIIrQBCgRpbmZvEg8KB3ZlcnNpb24YASABKAkSDgoGY29tbWl0GAIgASgJEh4KCmJ1aWxkX3RpbWUYAyABKAlSCmJ1aWxkX3RpbWUSHgoKZ29fdmVyc2lvbhgEIAEoCVIKZ29fdmVyc2lvbhIMCgRhcmNoGAUgASgJEhAKCHBsYXRmb3JtGAYgASgJEgoKAm9zGAcgASgJEhAKCGNvbXBpbGVyGAggASgJEg0KBWJ1aWxkGAkgAygJIiEKDmNvbmZpZ192ZXJzaW9uEg8KB3ZlcnNpb24YASABKAQiLAoIcGxhdGZvcm0SIAoLYW5kcm9pZF9hcHAYASABKAhSC2FuZHJvaWRfYXBwQjhaLmdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9jb25maWeSAwXSPgIQA2IIZWRpdGlvbnNw6Ac", [file_config_log_log, file_config_bypass_bypass, file_config_dns_dns, file_config_listener_listener, file_backup_backup, file_google_protobuf_go_features]);
+  fileDesc("ChNjb25maWcvY29uZmlnLnByb3RvEg55dWhhaWluLmNvbmZpZyLnAQoCczMSDwoHZW5hYmxlZBgBIAEoCBIeCgphY2Nlc3Nfa2V5GAIgASgJUgphY2Nlc3Nfa2V5Eh4KCnNlY3JldF9rZXkYAyABKAlSCnNlY3JldF9rZXkSDgoGYnVja2V0GAQgASgJEg4KBnJlZ2lvbhgFIAEoCRIiCgxlbmRwb2ludF91cmwYBiABKAlSDGVuZHBvaW50X3VybBImCg51c2VfcGF0aF9zdHlsZRgHIAEoCFIOdXNlX3BhdGhfc3R5bGUSJAoNc3RvcmFnZV9jbGFzcxgIIAEoCVINc3RvcmFnZV9jbGFzcyKTAQoNYmFja3VwX29wdGlvbhIkCg1pbnN0YW5jZV9uYW1lGAEgASgJUg1pbnN0YW5jZV9uYW1lEh4KAnMzGAIgASgLMhIueXVoYWlpbi5jb25maWcuczMSEAoIaW50ZXJ2YWwYAyABKAQSKgoQbGFzdF9iYWNrdXBfaGFzaBgEIAEoCVIQbGFzdF9iYWNrdXBfaGFzaCL0BAoHc2V0dGluZxIMCgRpcHY2GAcgASgIEjQKFXVzZV9kZWZhdWx0X2ludGVyZmFjZRgNIAEoCFIVdXNlX2RlZmF1bHRfaW50ZXJmYWNlEiQKDW5ldF9pbnRlcmZhY2UYBiABKAlSDW5ldF9pbnRlcmZhY2USQAoMc3lzdGVtX3Byb3h5GAEgASgLMhwueXVoYWlpbi5jb25maWcuc3lzdGVtX3Byb3h5UgxzeXN0ZW1fcHJveHkSLQoGYnlwYXNzGAIgASgLMh0ueXVoYWlpbi5ieXBhc3MuYnlwYXNzX2NvbmZpZxIkCgNkbnMYBCABKAsyFy55dWhhaWluLmRucy5kbnNfY29uZmlnEi8KBnNlcnZlchgFIAEoCzIfLnl1aGFpaW4uaW5ib3VuZC5pbmJvdW5kX2NvbmZpZxIjCgZsb2djYXQYCCABKAsyEy55dWhhaWluLmxvZy5sb2djYXQSRgoOY29uZmlnX3ZlcnNpb24YCSABKAsyHi55dWhhaWluLmNvbmZpZy5jb25maWdfdmVyc2lvblIOY29uZmlnX3ZlcnNpb24SKgoIcGxhdGZvcm0YCyABKAsyGC55dWhhaWluLmNvbmZpZy5wbGF0Zm9ybRJJCg9hZHZhbmNlZF9jb25maWcYDCABKAsyHy55dWhhaWluLmNvbmZpZy5hZHZhbmNlZF9jb25maWdSD2FkdmFuY2VkX2NvbmZpZxItCgZiYWNrdXAYDiABKAsyHS55dWhhaWluLmNvbmZpZy5iYWNrdXBfb3B0aW9uSgQIChALUh5pcHY2X2xvY2FsX2FkZHJfcHJlZmVyX3VuaWNhc3Qi1QEKD2FkdmFuY2VkX2NvbmZpZxIoCg91ZHBfYnVmZmVyX3NpemUYASABKAVSD3VkcF9idWZmZXJfc2l6ZRIsChFyZWxheV9idWZmZXJfc2l6ZRgCIAEoBVIRcmVsYXlfYnVmZmVyX3NpemUSMAoTdWRwX3JpbmdidWZmZXJfc2l6ZRgDIAEoBVITdWRwX3JpbmdidWZmZXJfc2l6ZRI4ChdoYXBweWV5ZWJhbGxzX3NlbWFwaG9yZRgEIAEoBVIXaGFwcHlleWViYWxsc19zZW1hcGhvcmUiLAoMc3lzdGVtX3Byb3h5EgwKBGh0dHAYAiABKAgSDgoGc29ja3M1GAMgASgIIrQBCgRpbmZvEg8KB3ZlcnNpb24YASABKAkSDgoGY29tbWl0GAIgASgJEh4KCmJ1aWxkX3RpbWUYAyABKAlSCmJ1aWxkX3RpbWUSHgoKZ29fdmVyc2lvbhgEIAEoCVIKZ29fdmVyc2lvbhIMCgRhcmNoGAUgASgJEhAKCHBsYXRmb3JtGAYgASgJEgoKAm9zGAcgASgJEhAKCGNvbXBpbGVyGAggASgJEg0KBWJ1aWxkGAkgAygJIiEKDmNvbmZpZ192ZXJzaW9uEg8KB3ZlcnNpb24YASABKAQiLAoIcGxhdGZvcm0SIAoLYW5kcm9pZF9hcHAYASABKAhSC2FuZHJvaWRfYXBwQjhaLmdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9jb25maWeSAwXSPgIQA2IIZWRpdGlvbnNw6Ac", [file_config_log, file_config_bypass, file_config_dns, file_config_inbound, file_google_protobuf_go_features]);
+
+/**
+ * @generated from message yuhaiin.config.s3
+ */
+export type s3 = Message<"yuhaiin.config.s3"> & {
+  /**
+   * @generated from field: bool enabled = 1;
+   */
+  enabled: boolean;
+
+  /**
+   * @generated from field: string access_key = 2 [json_name = "access_key"];
+   */
+  accessKey: string;
+
+  /**
+   * @generated from field: string secret_key = 3 [json_name = "secret_key"];
+   */
+  secretKey: string;
+
+  /**
+   * @generated from field: string bucket = 4;
+   */
+  bucket: string;
+
+  /**
+   * @generated from field: string region = 5;
+   */
+  region: string;
+
+  /**
+   * @generated from field: string endpoint_url = 6 [json_name = "endpoint_url"];
+   */
+  endpointUrl: string;
+
+  /**
+   * @generated from field: bool use_path_style = 7 [json_name = "use_path_style"];
+   */
+  usePathStyle: boolean;
+
+  /**
+   * @generated from field: string storage_class = 8 [json_name = "storage_class"];
+   */
+  storageClass: string;
+};
+
+/**
+ * Describes the message yuhaiin.config.s3.
+ * Use `create(s3Schema)` to create a new message.
+ */
+export const s3Schema: GenMessage<s3> = /*@__PURE__*/
+  messageDesc(file_config_config, 0);
+
+/**
+ * @generated from message yuhaiin.config.backup_option
+ */
+export type backup_option = Message<"yuhaiin.config.backup_option"> & {
+  /**
+   * @generated from field: string instance_name = 1 [json_name = "instance_name"];
+   */
+  instanceName: string;
+
+  /**
+   * @generated from field: yuhaiin.config.s3 s3 = 2;
+   */
+  s3?: s3;
+
+  /**
+   * interval in minutes
+   *
+   * @generated from field: uint64 interval = 3;
+   */
+  interval: bigint;
+
+  /**
+   * last backup hash, used to check if the config has changed
+   *
+   * @generated from field: string last_backup_hash = 4 [json_name = "last_backup_hash"];
+   */
+  lastBackupHash: string;
+};
+
+/**
+ * Describes the message yuhaiin.config.backup_option.
+ * Use `create(backup_optionSchema)` to create a new message.
+ */
+export const backup_optionSchema: GenMessage<backup_option> = /*@__PURE__*/
+  messageDesc(file_config_config, 1);
 
 /**
  * @generated from message yuhaiin.config.setting
@@ -50,9 +136,9 @@ export type setting = Message<"yuhaiin.config.setting"> & {
   systemProxy?: system_proxy;
 
   /**
-   * @generated from field: yuhaiin.bypass.config bypass = 2;
+   * @generated from field: yuhaiin.bypass.bypass_config bypass = 2;
    */
-  bypass?: config;
+  bypass?: bypass_config;
 
   /**
    * @generated from field: yuhaiin.dns.dns_config dns = 4;
@@ -60,7 +146,7 @@ export type setting = Message<"yuhaiin.config.setting"> & {
   dns?: dns_config;
 
   /**
-   * @generated from field: yuhaiin.listener.inbound_config server = 5;
+   * @generated from field: yuhaiin.inbound.inbound_config server = 5;
    */
   server?: inbound_config;
 
@@ -85,7 +171,7 @@ export type setting = Message<"yuhaiin.config.setting"> & {
   advancedConfig?: advanced_config;
 
   /**
-   * @generated from field: yuhaiin.backup.backup_option backup = 14;
+   * @generated from field: yuhaiin.config.backup_option backup = 14;
    */
   backup?: backup_option;
 };
@@ -95,7 +181,7 @@ export type setting = Message<"yuhaiin.config.setting"> & {
  * Use `create(settingSchema)` to create a new message.
  */
 export const settingSchema: GenMessage<setting> = /*@__PURE__*/
-  messageDesc(file_config_config, 0);
+  messageDesc(file_config_config, 2);
 
 /**
  * @generated from message yuhaiin.config.advanced_config
@@ -127,7 +213,7 @@ export type advanced_config = Message<"yuhaiin.config.advanced_config"> & {
  * Use `create(advanced_configSchema)` to create a new message.
  */
 export const advanced_configSchema: GenMessage<advanced_config> = /*@__PURE__*/
-  messageDesc(file_config_config, 1);
+  messageDesc(file_config_config, 3);
 
 /**
  * @generated from message yuhaiin.config.system_proxy
@@ -149,7 +235,7 @@ export type system_proxy = Message<"yuhaiin.config.system_proxy"> & {
  * Use `create(system_proxySchema)` to create a new message.
  */
 export const system_proxySchema: GenMessage<system_proxy> = /*@__PURE__*/
-  messageDesc(file_config_config, 2);
+  messageDesc(file_config_config, 4);
 
 /**
  * @generated from message yuhaiin.config.info
@@ -206,7 +292,7 @@ export type info = Message<"yuhaiin.config.info"> & {
  * Use `create(infoSchema)` to create a new message.
  */
 export const infoSchema: GenMessage<info> = /*@__PURE__*/
-  messageDesc(file_config_config, 3);
+  messageDesc(file_config_config, 5);
 
 /**
  * @generated from message yuhaiin.config.config_version
@@ -223,7 +309,7 @@ export type config_version = Message<"yuhaiin.config.config_version"> & {
  * Use `create(config_versionSchema)` to create a new message.
  */
 export const config_versionSchema: GenMessage<config_version> = /*@__PURE__*/
-  messageDesc(file_config_config, 4);
+  messageDesc(file_config_config, 6);
 
 /**
  * @generated from message yuhaiin.config.platform
@@ -240,5 +326,5 @@ export type platform = Message<"yuhaiin.config.platform"> & {
  * Use `create(platformSchema)` to create a new message.
  */
 export const platformSchema: GenMessage<platform> = /*@__PURE__*/
-  messageDesc(file_config_config, 5);
+  messageDesc(file_config_config, 7);
 

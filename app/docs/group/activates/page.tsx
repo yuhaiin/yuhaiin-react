@@ -10,8 +10,8 @@ import Loading from "../../common/loading";
 import { FetchProtobuf, useProtoSWR } from '../../common/proto';
 import { GlobalToastContext } from "../../common/toast";
 import { NodeModal } from "../../node/modal";
-import { node } from "../../pbes/node/grpc/node_pb";
-import { point, pointSchema } from "../../pbes/node/point/point_pb";
+import { node } from "../../pbes/api/node_pb";
+import { point, pointSchema } from "../../pbes/node/point_pb";
 
 function Activates() {
     const ctx = useContext(GlobalToastContext);

@@ -11,8 +11,8 @@ import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../com
 import { SettingCheck, SettingTypeSelect } from "../../common/switch";
 import { GlobalToastContext } from "../../common/toast";
 import { NewItemList } from "../../config/components";
-import { list, list_list_type_enum, list_list_type_enumSchema, list_localSchema, list_remoteSchema, listSchema } from "../../pbes/config/bypass/bypass_pb";
-import { lists } from "../../pbes/config/grpc/config_pb";
+import { lists } from "../../pbes/api/config_pb";
+import { list, list_list_type_enum, list_list_type_enumSchema, list_localSchema, list_remoteSchema, listSchema } from "../../pbes/config/bypass_pb";
 
 export default function Lists() {
     const ctx = useContext(GlobalToastContext);

@@ -3,8 +3,8 @@
 import { useCallback } from "react";
 import Loading from "../common/loading";
 import { useProtoSWR } from "../common/proto";
-import { configv2 } from "../pbes/config/bypass/bypass_pb";
-import { inbound, lists, resolver, rules } from "../pbes/config/grpc/config_pb";
+import { inbound, lists, resolver, rules } from "../pbes/api/config_pb";
+import { configv2 } from "../pbes/config/bypass_pb";
 import { Bypass } from "./bypass";
 import { FilterContext } from "./filter/filter";
 

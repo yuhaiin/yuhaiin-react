@@ -8,8 +8,8 @@ import styles from "../../common/clickable.module.css"
 import Loading from "../../common/loading"
 import { CustomPagination } from "../../common/pagination"
 import { useProtoSWR } from "../../common/proto"
+import { connections, failed_history } from "../../pbes/api/statistic_pb"
 import { type } from "../../pbes/statistic/config_pb"
-import { connections, failed_history } from "../../pbes/statistic/grpc/config_pb"
 
 const TimestampZero = create(TimestampSchema, { seconds: BigInt(0), nanos: 0 })
 

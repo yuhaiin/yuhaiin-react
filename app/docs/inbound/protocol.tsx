@@ -14,7 +14,7 @@ import {
     tproxySchema,
     tunSchema,
     yuubinsyaSchema
-} from "../pbes/config/listener/listener_pb";
+} from "../pbes/config/inbound_pb";
 
 const LazyHTTP = dynamic(() => import("./http").then(mod => mod.HTTP), { ssr: false })
 const LazyReverseHTTP = dynamic(() => import("./http").then(mod => mod.ReverseHTTP), { ssr: false })

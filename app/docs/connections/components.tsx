@@ -3,9 +3,9 @@ import { Badge, Card, ListGroup } from "react-bootstrap";
 import useSWR from "swr";
 import { FetchProtobuf, ProtoPath } from "../common/proto";
 import { NodeModal } from "../node/modal";
-import { mode } from "../pbes/config/bypass/bypass_pb";
+import { connections, counter, total_flow } from "../pbes/api/statistic_pb";
+import { mode } from "../pbes/config/bypass_pb";
 import { connection, type as connType } from "../pbes/statistic/config_pb";
-import { connections, counter, total_flow } from "../pbes/statistic/grpc/config_pb";
 
 export const ListGroupItemString: FC<{ itemKey: string, itemValue: string }> =
     ({ itemKey, itemValue }) => {

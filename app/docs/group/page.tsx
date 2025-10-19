@@ -11,9 +11,9 @@ import { Nodes, NodesContext } from "../common/nodes";
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
 import { GlobalToastContext } from "../common/toast";
 import { NodeJsonModal, NodeModal } from "../node/modal";
-import { node, use_reqSchema } from "../pbes/node/grpc/node_pb";
-import { dns_over_quicSchema, httpSchema, ipSchema, nat_type, protocol, protocolSchema, reply, requestsSchema, stunSchema } from "../pbes/node/latency/latency_pb";
-import { origin, point, pointSchema } from "../pbes/node/point/point_pb";
+import { node, use_reqSchema } from "../pbes/api/node_pb";
+import { dns_over_quicSchema, http_testSchema, ipSchema, nat_type, reply, request_protocol, request_protocolSchema, requestsSchema, stunSchema } from "../pbes/node/latency_pb";
+import { origin, point, pointSchema } from "../pbes/node/point_pb";
 
 const Nanosecond = 1
 const Microsecond = 1000 * Nanosecond
@@ -238,26 +238,26 @@ const createLatencyRequest = (r:
     { host: string; targetDomain: string; case: "dnsOverQuic"; } |
     { url: string; userAgent?: string; case: "ip"; } |
     { host: string; tcp: boolean; case: "stun"; },
-): protocol => {
+): request_protocol => {
     switch (r.case) {
         case "http":
-            return create(protocolSchema, { protocol: { case: "http", value: create(httpSchema, { url: r.url }) } })
+            return create(request_protocolSchema, { protocol: { case: "http", value: create(http_testSchema, { url: r.url }) } })
         case "dnsOverQuic":
-            return create(protocolSchema, {
+            return create(request_protocolSchema, {
                 protocol: {
                     case: "dnsOverQuic",
                     value: create(dns_over_quicSchema, { host: r.host, targetDomain: r.targetDomain })
                 }
             })
         case "ip":
-            return create(protocolSchema, {
+            return create(request_protocolSchema, {
                 protocol: {
                     case: "ip",
                     value: create(ipSchema, { url: r.url, userAgent: r.userAgent })
                 }
             })
         case "stun":
-            return create(protocolSchema, {
+            return create(request_protocolSchema, {
                 protocol: {
                     case: "stun",
                     value: create(stunSchema, { host: r.host, tcp: r.tcp })
@@ -267,7 +267,7 @@ const createLatencyRequest = (r:
 }
 
 type Request = {
-    request: protocol,
+    request: request_protocol,
     setLoading: (loading: boolean, error?: string) => void,
     setResult: (result: reply) => void
 }
@@ -372,7 +372,14 @@ const NodeItemv2: FC<{
 
         setLoading(true)
 
-        FetchProtobuf(node.method.latency, create(requestsSchema, { requests: [{ hash: hash, id: "latency", ipv6: LatencyIPv6, protocol: request }] }))
+        FetchProtobuf(node.method.latency, create(requestsSchema, {
+            requests: [{
+                hash: hash,
+                id: "latency",
+                ipv6: LatencyIPv6,
+                method: request
+            }]
+        }))
             .then(async ({ data: resp, error }) => {
                 if (error) {
                     console.log(`test failed ${error.code}| ${error.msg}`)

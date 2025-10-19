@@ -1,8 +1,8 @@
 import { FC } from "react"
 import { SettingTypeSelect } from "../common/switch"
 import { SettingInputText } from "../config/components"
-import { aead } from "../pbes/config/listener/listener_pb"
-import { AeadCryptoMethodSchema } from "../pbes/node/protocol/protocol_pb"
+import { aead } from "../pbes/config/inbound_pb"
+import { AeadCryptoMethodSchema } from "../pbes/node/protocol_pb"
 
 export const Aead: FC<{ aead: aead, onChange: (x: aead) => void }> = ({ aead, onChange }) => {
     return <>

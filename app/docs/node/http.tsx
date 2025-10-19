@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { SettingInputText } from "../config/components";
-import { http, http_termination } from "../pbes/node/protocol/protocol_pb";
+import { http, http_termination } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
 export const HTTPv2: FC<Props<http>> = ({ value, onChange }) => {

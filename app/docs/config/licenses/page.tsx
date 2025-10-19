@@ -4,7 +4,8 @@ import { FC } from "react"
 import { Col, ListGroup, Nav, Row, Tab } from "react-bootstrap"
 import Loading, { Error } from "../../common/loading"
 import { useProtoSWR } from "../../common/proto"
-import { License, tools } from "../../pbes/tools/tools_pb"
+import { tools } from "../../pbes/api/tools_pb"
+import { License } from "../../pbes/tools/tools_pb"
 
 export default function Licenses() {
     const { data, isLoading, isValidating, error } = useProtoSWR(tools.method.licenses, { revalidateOnFocus: false })

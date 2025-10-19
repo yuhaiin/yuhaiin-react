@@ -16,8 +16,8 @@ import {
     tlsSchema,
     transportSchema,
     websocketSchema
-} from "../pbes/config/listener/listener_pb";
-import { tls_server_configSchema } from "../pbes/node/protocol/protocol_pb";
+} from "../pbes/config/inbound_pb";
+import { tls_server_configSchema } from "../pbes/node/protocol_pb";
 import { Network } from "./network";
 import { Protocol } from "./protocol";
 import { Transport } from "./transport";

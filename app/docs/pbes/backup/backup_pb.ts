@@ -2,117 +2,28 @@
 // @generated from file backup/backup.proto (package yuhaiin.backup, edition 2023)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { EmptySchema } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_empty, file_google_protobuf_go_features } from "@bufbuild/protobuf/wkt";
-import type { point } from "../node/point/point_pb";
-import { file_node_point_point } from "../node/point/point_pb";
-import type { link } from "../node/subscribe/subscribe_pb";
-import { file_node_subscribe_subscribe } from "../node/subscribe/subscribe_pb";
-import type { dns_config_v2 } from "../config/dns/dns_pb";
-import { file_config_dns_dns } from "../config/dns/dns_pb";
-import type { inbound_config } from "../config/listener/listener_pb";
-import { file_config_listener_listener } from "../config/listener/listener_pb";
-import type { configv2, list, rulev2 } from "../config/bypass/bypass_pb";
-import { file_config_bypass_bypass } from "../config/bypass/bypass_pb";
-import type { tags as tags$1 } from "../node/tag/tag_pb";
-import { file_node_tag_tag } from "../node/tag/tag_pb";
+import type { GenEnum, GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
+import { file_google_protobuf_go_features } from "@bufbuild/protobuf/wkt";
+import type { point } from "../node/point_pb";
+import { file_node_point } from "../node/point_pb";
+import type { link } from "../node/subscribe_pb";
+import { file_node_subscribe } from "../node/subscribe_pb";
+import type { tags as tags$1 } from "../node/tag_pb";
+import { file_node_tag } from "../node/tag_pb";
+import type { dns_config_v2 } from "../config/dns_pb";
+import { file_config_dns } from "../config/dns_pb";
+import type { inbound_config } from "../config/inbound_pb";
+import { file_config_inbound } from "../config/inbound_pb";
+import type { configv2, list, rulev2 } from "../config/bypass_pb";
+import { file_config_bypass } from "../config/bypass_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file backup/backup.proto.
  */
 export const file_backup_backup: GenFile = /*@__PURE__*/
-  fileDesc("ChNiYWNrdXAvYmFja3VwLnByb3RvEg55dWhhaWluLmJhY2t1cCLnAQoCczMSDwoHZW5hYmxlZBgBIAEoCBIeCgphY2Nlc3Nfa2V5GAIgASgJUgphY2Nlc3Nfa2V5Eh4KCnNlY3JldF9rZXkYAyABKAlSCnNlY3JldF9rZXkSDgoGYnVja2V0GAQgASgJEg4KBnJlZ2lvbhgFIAEoCRIiCgxlbmRwb2ludF91cmwYBiABKAlSDGVuZHBvaW50X3VybBImCg51c2VfcGF0aF9zdHlsZRgHIAEoCFIOdXNlX3BhdGhfc3R5bGUSJAoNc3RvcmFnZV9jbGFzcxgIIAEoCVINc3RvcmFnZV9jbGFzcyKTAQoNYmFja3VwX29wdGlvbhIkCg1pbnN0YW5jZV9uYW1lGAEgASgJUg1pbnN0YW5jZV9uYW1lEh4KAnMzGAIgASgLMhIueXVoYWlpbi5iYWNrdXAuczMSEAoIaW50ZXJ2YWwYAyABKAQSKgoQbGFzdF9iYWNrdXBfaGFzaBgEIAEoCVIQbGFzdF9iYWNrdXBfaGFzaCJ8CgVub2RlcxIvCgVub2RlcxgBIAMoCzIgLnl1aGFpaW4uYmFja3VwLm5vZGVzLk5vZGVzRW50cnkaQgoKTm9kZXNFbnRyeRILCgNrZXkYASABKAkSIwoFdmFsdWUYAiABKAsyFC55dWhhaWluLnBvaW50LnBvaW50OgI4ASKJAQoKc3Vic2NyaWJlcxI0CgVsaW5rcxgBIAMoCzIlLnl1aGFpaW4uYmFja3VwLnN1YnNjcmliZXMuTGlua3NFbnRyeRpFCgpMaW5rc0VudHJ5EgsKA2tleRgBIAEoCRImCgV2YWx1ZRgCIAEoCzIXLnl1aGFpaW4uc3Vic2NyaWJlLmxpbms6AjgBIs0BCgVydWxlcxIoCgZjb25maWcYASABKAsyGC55dWhhaWluLmJ5cGFzcy5jb25maWd2MhIlCgVydWxlcxgCIAMoCzIWLnl1aGFpaW4uYnlwYXNzLnJ1bGV2MhIvCgVsaXN0cxgDIAMoCzIgLnl1aGFpaW4uYmFja3VwLnJ1bGVzLkxpc3RzRW50cnkaQgoKTGlzdHNFbnRyeRILCgNrZXkYASABKAkSIwoFdmFsdWUYAiABKAsyFC55dWhhaWluLmJ5cGFzcy5saXN0OgI4ASJ0CgR0YWdzEiwKBHRhZ3MYASADKAsyHi55dWhhaWluLmJhY2t1cC50YWdzLlRhZ3NFbnRyeRo+CglUYWdzRW50cnkSCwoDa2V5GAEgASgJEiAKBXZhbHVlGAIgASgLMhEueXVoYWlpbi50YWcudGFnczoCOAEikgIKDmJhY2t1cF9jb250ZW50EiQKBW5vZGVzGAIgASgLMhUueXVoYWlpbi5iYWNrdXAubm9kZXMSLgoKc3Vic2NyaWJlcxgDIAEoCzIaLnl1aGFpaW4uYmFja3VwLnN1YnNjcmliZXMSJwoDZG5zGAQgASgLMhoueXVoYWlpbi5kbnMuZG5zX2NvbmZpZ192MhIyCghpbmJvdW5kcxgFIAEoCzIgLnl1aGFpaW4ubGlzdGVuZXIuaW5ib3VuZF9jb25maWcSJAoFcnVsZXMYBiABKAsyFS55dWhhaWluLmJhY2t1cC5ydWxlcxInCgR0YWdzGAcgASgLMhQueXVoYWlpbi5iYWNrdXAudGFnc1IDdGFnIvEBCg5yZXN0b3JlX29wdGlvbhILCgNhbGwYASABKAgSDQoFcnVsZXMYAiABKAgSDQoFbGlzdHMYAyABKAgSDQoFbm9kZXMYBCABKAgSDAoEdGFncxgFIAEoCBILCgNkbnMYBiABKAgSEAoIaW5ib3VuZHMYByABKAgSEgoKc3Vic2NyaWJlcxgIIAEoCBI9CgZzb3VyY2UYCSABKA4yLS55dWhhaWluLmJhY2t1cC5yZXN0b3JlX29wdGlvbi5yZXN0b3JlX3NvdXJjZSIlCg5yZXN0b3JlX3NvdXJjZRILCgd1bmtub3duEAASBgoCczMQATKCAgoGYmFja3VwEj0KBHNhdmUSHS55dWhhaWluLmJhY2t1cC5iYWNrdXBfb3B0aW9uGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EjwKA2dldBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRodLnl1aGFpaW4uYmFja3VwLmJhY2t1cF9vcHRpb24SOAoGYmFja3VwEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EkEKB3Jlc3RvcmUSHi55dWhhaWluLmJhY2t1cC5yZXN0b3JlX29wdGlvbhoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eUI4Wi5naXRodWIuY29tL0FzdXRvcnVmYS95dWhhaWluL3BrZy9wcm90b3MvYmFja3VwkgMF0j4CEANiCGVkaXRpb25zcOgH", [file_google_protobuf_go_features, file_google_protobuf_empty, file_node_point_point, file_node_subscribe_subscribe, file_config_dns_dns, file_config_listener_listener, file_config_bypass_bypass, file_node_tag_tag]);
-
-/**
- * @generated from message yuhaiin.backup.s3
- */
-export type s3 = Message<"yuhaiin.backup.s3"> & {
-  /**
-   * @generated from field: bool enabled = 1;
-   */
-  enabled: boolean;
-
-  /**
-   * @generated from field: string access_key = 2 [json_name = "access_key"];
-   */
-  accessKey: string;
-
-  /**
-   * @generated from field: string secret_key = 3 [json_name = "secret_key"];
-   */
-  secretKey: string;
-
-  /**
-   * @generated from field: string bucket = 4;
-   */
-  bucket: string;
-
-  /**
-   * @generated from field: string region = 5;
-   */
-  region: string;
-
-  /**
-   * @generated from field: string endpoint_url = 6 [json_name = "endpoint_url"];
-   */
-  endpointUrl: string;
-
-  /**
-   * @generated from field: bool use_path_style = 7 [json_name = "use_path_style"];
-   */
-  usePathStyle: boolean;
-
-  /**
-   * @generated from field: string storage_class = 8 [json_name = "storage_class"];
-   */
-  storageClass: string;
-};
-
-/**
- * Describes the message yuhaiin.backup.s3.
- * Use `create(s3Schema)` to create a new message.
- */
-export const s3Schema: GenMessage<s3> = /*@__PURE__*/
-  messageDesc(file_backup_backup, 0);
-
-/**
- * @generated from message yuhaiin.backup.backup_option
- */
-export type backup_option = Message<"yuhaiin.backup.backup_option"> & {
-  /**
-   * @generated from field: string instance_name = 1 [json_name = "instance_name"];
-   */
-  instanceName: string;
-
-  /**
-   * @generated from field: yuhaiin.backup.s3 s3 = 2;
-   */
-  s3?: s3;
-
-  /**
-   * interval in minutes
-   *
-   * @generated from field: uint64 interval = 3;
-   */
-  interval: bigint;
-
-  /**
-   * last backup hash, used to check if the config has changed
-   *
-   * @generated from field: string last_backup_hash = 4 [json_name = "last_backup_hash"];
-   */
-  lastBackupHash: string;
-};
-
-/**
- * Describes the message yuhaiin.backup.backup_option.
- * Use `create(backup_optionSchema)` to create a new message.
- */
-export const backup_optionSchema: GenMessage<backup_option> = /*@__PURE__*/
-  messageDesc(file_backup_backup, 1);
+  fileDesc("ChNiYWNrdXAvYmFja3VwLnByb3RvEg55dWhhaWluLmJhY2t1cCJ8CgVub2RlcxIvCgVub2RlcxgBIAMoCzIgLnl1aGFpaW4uYmFja3VwLm5vZGVzLk5vZGVzRW50cnkaQgoKTm9kZXNFbnRyeRILCgNrZXkYASABKAkSIwoFdmFsdWUYAiABKAsyFC55dWhhaWluLnBvaW50LnBvaW50OgI4ASKJAQoKc3Vic2NyaWJlcxI0CgVsaW5rcxgBIAMoCzIlLnl1aGFpaW4uYmFja3VwLnN1YnNjcmliZXMuTGlua3NFbnRyeRpFCgpMaW5rc0VudHJ5EgsKA2tleRgBIAEoCRImCgV2YWx1ZRgCIAEoCzIXLnl1aGFpaW4uc3Vic2NyaWJlLmxpbms6AjgBIs0BCgVydWxlcxIoCgZjb25maWcYASABKAsyGC55dWhhaWluLmJ5cGFzcy5jb25maWd2MhIlCgVydWxlcxgCIAMoCzIWLnl1aGFpaW4uYnlwYXNzLnJ1bGV2MhIvCgVsaXN0cxgDIAMoCzIgLnl1aGFpaW4uYmFja3VwLnJ1bGVzLkxpc3RzRW50cnkaQgoKTGlzdHNFbnRyeRILCgNrZXkYASABKAkSIwoFdmFsdWUYAiABKAsyFC55dWhhaWluLmJ5cGFzcy5saXN0OgI4ASJ0CgR0YWdzEiwKBHRhZ3MYASADKAsyHi55dWhhaWluLmJhY2t1cC50YWdzLlRhZ3NFbnRyeRo+CglUYWdzRW50cnkSCwoDa2V5GAEgASgJEiAKBXZhbHVlGAIgASgLMhEueXVoYWlpbi50YWcudGFnczoCOAEikQIKDmJhY2t1cF9jb250ZW50EiQKBW5vZGVzGAIgASgLMhUueXVoYWlpbi5iYWNrdXAubm9kZXMSLgoKc3Vic2NyaWJlcxgDIAEoCzIaLnl1aGFpaW4uYmFja3VwLnN1YnNjcmliZXMSJwoDZG5zGAQgASgLMhoueXVoYWlpbi5kbnMuZG5zX2NvbmZpZ192MhIxCghpbmJvdW5kcxgFIAEoCzIfLnl1aGFpaW4uaW5ib3VuZC5pbmJvdW5kX2NvbmZpZxIkCgVydWxlcxgGIAEoCzIVLnl1aGFpaW4uYmFja3VwLnJ1bGVzEicKBHRhZ3MYByABKAsyFC55dWhhaWluLmJhY2t1cC50YWdzUgN0YWci8QEKDnJlc3RvcmVfb3B0aW9uEgsKA2FsbBgBIAEoCBINCgVydWxlcxgCIAEoCBINCgVsaXN0cxgDIAEoCBINCgVub2RlcxgEIAEoCBIMCgR0YWdzGAUgASgIEgsKA2RucxgGIAEoCBIQCghpbmJvdW5kcxgHIAEoCBISCgpzdWJzY3JpYmVzGAggASgIEj0KBnNvdXJjZRgJIAEoDjItLnl1aGFpaW4uYmFja3VwLnJlc3RvcmVfb3B0aW9uLnJlc3RvcmVfc291cmNlIiUKDnJlc3RvcmVfc291cmNlEgsKB3Vua25vd24QABIGCgJzMxABQjhaLmdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9iYWNrdXCSAwXSPgIQA2IIZWRpdGlvbnNw6Ac", [file_google_protobuf_go_features, file_node_point, file_node_subscribe, file_node_tag, file_config_dns, file_config_inbound, file_config_bypass]);
 
 /**
  * @generated from message yuhaiin.backup.nodes
@@ -129,7 +40,7 @@ export type nodes = Message<"yuhaiin.backup.nodes"> & {
  * Use `create(nodesSchema)` to create a new message.
  */
 export const nodesSchema: GenMessage<nodes> = /*@__PURE__*/
-  messageDesc(file_backup_backup, 2);
+  messageDesc(file_backup_backup, 0);
 
 /**
  * @generated from message yuhaiin.backup.subscribes
@@ -146,7 +57,7 @@ export type subscribes = Message<"yuhaiin.backup.subscribes"> & {
  * Use `create(subscribesSchema)` to create a new message.
  */
 export const subscribesSchema: GenMessage<subscribes> = /*@__PURE__*/
-  messageDesc(file_backup_backup, 3);
+  messageDesc(file_backup_backup, 1);
 
 /**
  * @generated from message yuhaiin.backup.rules
@@ -173,7 +84,7 @@ export type rules = Message<"yuhaiin.backup.rules"> & {
  * Use `create(rulesSchema)` to create a new message.
  */
 export const rulesSchema: GenMessage<rules> = /*@__PURE__*/
-  messageDesc(file_backup_backup, 4);
+  messageDesc(file_backup_backup, 2);
 
 /**
  * @generated from message yuhaiin.backup.tags
@@ -190,7 +101,7 @@ export type tags = Message<"yuhaiin.backup.tags"> & {
  * Use `create(tagsSchema)` to create a new message.
  */
 export const tagsSchema: GenMessage<tags> = /*@__PURE__*/
-  messageDesc(file_backup_backup, 5);
+  messageDesc(file_backup_backup, 3);
 
 /**
  * @generated from message yuhaiin.backup.backup_content
@@ -212,7 +123,7 @@ export type backup_content = Message<"yuhaiin.backup.backup_content"> & {
   dns?: dns_config_v2;
 
   /**
-   * @generated from field: yuhaiin.listener.inbound_config inbounds = 5;
+   * @generated from field: yuhaiin.inbound.inbound_config inbounds = 5;
    */
   inbounds?: inbound_config;
 
@@ -232,7 +143,7 @@ export type backup_content = Message<"yuhaiin.backup.backup_content"> & {
  * Use `create(backup_contentSchema)` to create a new message.
  */
 export const backup_contentSchema: GenMessage<backup_content> = /*@__PURE__*/
-  messageDesc(file_backup_backup, 6);
+  messageDesc(file_backup_backup, 4);
 
 /**
  * @generated from message yuhaiin.backup.restore_option
@@ -289,7 +200,7 @@ export type restore_option = Message<"yuhaiin.backup.restore_option"> & {
  * Use `create(restore_optionSchema)` to create a new message.
  */
 export const restore_optionSchema: GenMessage<restore_option> = /*@__PURE__*/
-  messageDesc(file_backup_backup, 7);
+  messageDesc(file_backup_backup, 5);
 
 /**
  * @generated from enum yuhaiin.backup.restore_option.restore_source
@@ -310,44 +221,5 @@ export enum restore_option_restore_source {
  * Describes the enum yuhaiin.backup.restore_option.restore_source.
  */
 export const restore_option_restore_sourceSchema: GenEnum<restore_option_restore_source> = /*@__PURE__*/
-  enumDesc(file_backup_backup, 7, 0);
-
-/**
- * @generated from service yuhaiin.backup.backup
- */
-export const backup: GenService<{
-  /**
-   * @generated from rpc yuhaiin.backup.backup.save
-   */
-  save: {
-    methodKind: "unary";
-    input: typeof backup_optionSchema;
-    output: typeof EmptySchema;
-  },
-  /**
-   * @generated from rpc yuhaiin.backup.backup.get
-   */
-  get: {
-    methodKind: "unary";
-    input: typeof EmptySchema;
-    output: typeof backup_optionSchema;
-  },
-  /**
-   * @generated from rpc yuhaiin.backup.backup.backup
-   */
-  backup: {
-    methodKind: "unary";
-    input: typeof EmptySchema;
-    output: typeof EmptySchema;
-  },
-  /**
-   * @generated from rpc yuhaiin.backup.backup.restore
-   */
-  restore: {
-    methodKind: "unary";
-    input: typeof restore_optionSchema;
-    output: typeof EmptySchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_backup_backup, 0);
+  enumDesc(file_backup_backup, 5, 0);
 

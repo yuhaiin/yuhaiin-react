@@ -10,8 +10,8 @@ import { FetchProtobuf, ProtoESFetcher, ProtoPath } from '../../common/proto';
 import { SettingSelect, SettingTypeSelect } from '../../common/switch';
 import { GlobalToastContext } from '../../common/toast';
 import { SettingInputText } from '../../config/components';
-import { hostSchema, inboundSchema, mode, modeSchema, network_network_type, networkSchema, or, orSchema, portSchema, processSchema, resolve_strategySchema, rule, ruleSchema, rulev2Schema, udp_proxy_fqdn_strategy, udp_proxy_fqdn_strategySchema } from '../../pbes/config/bypass/bypass_pb';
-import { rule_indexSchema, rule_save_requestSchema, rules } from '../../pbes/config/grpc/config_pb';
+import { rule_indexSchema, rule_save_requestSchema, rules } from '../../pbes/api/config_pb';
+import { hostSchema, mode, modeSchema, network_network_type, networkSchema, or, orSchema, portSchema, processSchema, resolve_strategySchema, rule, ruleSchema, rulev2Schema, sourceSchema, udp_proxy_fqdn_strategy, udp_proxy_fqdn_strategySchema } from '../../pbes/config/bypass_pb';
 
 
 const Values = {
@@ -50,7 +50,7 @@ const RuleRow: FC<{
                     onUpdate(create(ruleSchema, {
                         object: {
                             case: "inbound",
-                            value: create(inboundSchema, { name: value })
+                            value: create(sourceSchema, { name: value })
                         }
                     }))
                     break;
@@ -80,7 +80,7 @@ const RuleRow: FC<{
                     onUpdate(create(ruleSchema, {
                         object: {
                             case: "inbound",
-                            value: create(inboundSchema, { names: value })
+                            value: create(sourceSchema, { names: value })
                         }
                     }))
                     break;

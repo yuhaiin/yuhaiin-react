@@ -4,12 +4,12 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { point } from "./point/point_pb";
-import { file_node_point_point } from "./point/point_pb";
-import type { link } from "./subscribe/subscribe_pb";
-import { file_node_subscribe_subscribe } from "./subscribe/subscribe_pb";
-import type { tags } from "./tag/tag_pb";
-import { file_node_tag_tag } from "./tag/tag_pb";
+import type { point } from "./point_pb";
+import { file_node_point } from "./point_pb";
+import type { link } from "./subscribe_pb";
+import { file_node_subscribe } from "./subscribe_pb";
+import type { tags } from "./tag_pb";
+import { file_node_tag } from "./tag_pb";
 import { file_google_protobuf_go_features } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
 
@@ -17,7 +17,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file node/node.proto.
  */
 export const file_node_node: GenFile = /*@__PURE__*/
-  fileDesc("Cg9ub2RlL25vZGUucHJvdG8SDHl1aGFpaW4ubm9kZSLpAQoEbm9kZRIhCgN0Y3AYBCABKAsyFC55dWhhaWluLnBvaW50LnBvaW50EiEKA3VkcBgFIAEoCzIULnl1aGFpaW4ucG9pbnQucG9pbnQSLAoFbGlua3MYAiADKAsyHS55dWhhaWluLm5vZGUubm9kZS5MaW5rc0VudHJ5EiYKB21hbmFnZXIYAyABKAsyFS55dWhhaWluLm5vZGUubWFuYWdlchpFCgpMaW5rc0VudHJ5EgsKA2tleRgBIAEoCRImCgV2YWx1ZRgCIAEoCzIXLnl1aGFpaW4uc3Vic2NyaWJlLmxpbms6AjgBIv0BCgdtYW5hZ2VyEi8KBW5vZGVzGAMgAygLMiAueXVoYWlpbi5ub2RlLm1hbmFnZXIuTm9kZXNFbnRyeRItCgR0YWdzGAQgAygLMh8ueXVoYWlpbi5ub2RlLm1hbmFnZXIuVGFnc0VudHJ5GkIKCk5vZGVzRW50cnkSCwoDa2V5GAEgASgJEiMKBXZhbHVlGAIgASgLMhQueXVoYWlpbi5wb2ludC5wb2ludDoCOAEaPgoJVGFnc0VudHJ5EgsKA2tleRgBIAEoCRIgCgV2YWx1ZRgCIAEoCzIRLnl1aGFpaW4udGFnLnRhZ3M6AjgBSgQIAhADUghncm91cHNWMkI2WixnaXRodWIuY29tL0FzdXRvcnVmYS95dWhhaWluL3BrZy9wcm90b3Mvbm9kZZIDBdI+AhADYghlZGl0aW9uc3DoBw", [file_node_point_point, file_node_subscribe_subscribe, file_node_tag_tag, file_google_protobuf_go_features]);
+  fileDesc("Cg9ub2RlL25vZGUucHJvdG8SDHl1aGFpaW4ubm9kZSLpAQoEbm9kZRIhCgN0Y3AYBCABKAsyFC55dWhhaWluLnBvaW50LnBvaW50EiEKA3VkcBgFIAEoCzIULnl1aGFpaW4ucG9pbnQucG9pbnQSLAoFbGlua3MYAiADKAsyHS55dWhhaWluLm5vZGUubm9kZS5MaW5rc0VudHJ5EiYKB21hbmFnZXIYAyABKAsyFS55dWhhaWluLm5vZGUubWFuYWdlchpFCgpMaW5rc0VudHJ5EgsKA2tleRgBIAEoCRImCgV2YWx1ZRgCIAEoCzIXLnl1aGFpaW4uc3Vic2NyaWJlLmxpbms6AjgBIoUCCgdtYW5hZ2VyEjMKBW5vZGVzGAMgAygLMiAueXVoYWlpbi5ub2RlLm1hbmFnZXIuTm9kZXNFbnRyeUICKAESMQoEdGFncxgEIAMoCzIfLnl1aGFpaW4ubm9kZS5tYW5hZ2VyLlRhZ3NFbnRyeUICKAEaQgoKTm9kZXNFbnRyeRILCgNrZXkYASABKAkSIwoFdmFsdWUYAiABKAsyFC55dWhhaWluLnBvaW50LnBvaW50OgI4ARo+CglUYWdzRW50cnkSCwoDa2V5GAEgASgJEiAKBXZhbHVlGAIgASgLMhEueXVoYWlpbi50YWcudGFnczoCOAFKBAgCEANSCGdyb3Vwc1YyQjZaLGdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9ub2RlkgMF0j4CEANiCGVkaXRpb25zcOgH", [file_node_point, file_node_subscribe, file_node_tag, file_google_protobuf_go_features]);
 
 /**
  * @generated from message yuhaiin.node.node

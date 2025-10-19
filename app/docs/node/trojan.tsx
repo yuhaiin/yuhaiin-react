@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { SettingInputText } from "../config/components";
-import { trojan } from "../pbes/node/protocol/protocol_pb";
+import { trojan } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
 export const Trojanv2: FC<Props<trojan>> = ({ value, onChange }) => {

@@ -4,8 +4,8 @@ import { ListGroup } from 'react-bootstrap';
 import { useProtoSWR } from './common/proto';
 import { FlowContainer } from './connections/components';
 import { NodeModal } from './node/modal';
-import { node } from './pbes/node/grpc/node_pb';
-import { pointSchema } from './pbes/node/point/point_pb';
+import { node } from './pbes/api/node_pb';
+import { pointSchema } from './pbes/node/point_pb';
 
 function Index() {
     const [nodeModal, setNodeModal] = useState({ show: false, point: create(pointSchema, {}) });

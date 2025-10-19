@@ -3,7 +3,7 @@ import { FC, useContext, useState } from "react";
 import { Button, ListGroup, Modal } from "react-bootstrap";
 import { Node, Nodes, NodesContext } from "../common/nodes";
 import { SettingTypeSelect } from "../common/switch";
-import { set, set_strategy_typeSchema, setSchema } from "../pbes/node/protocol/protocol_pb";
+import { set, set_strategy_typeSchema, setSchema } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
 export const Set: FC<Props<set>> = ({ value, onChange }) => {

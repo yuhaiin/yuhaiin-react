@@ -1,7 +1,7 @@
 import { FC, useContext } from "react";
 import { InterfacesContext } from "../common/interfaces";
 import { Remind, SettingInputText } from "../config/components";
-import { direct } from "../pbes/node/protocol/protocol_pb";
+import { direct } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
 export const Directv2: FC<Props<direct>> = ({ value, onChange }) => {
