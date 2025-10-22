@@ -3,7 +3,7 @@ import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import React, { FC, useContext, useEffect, useState } from "react";
 import { Button, ButtonGroup, Dropdown, DropdownButton, Form, Modal } from "react-bootstrap";
 import useSWR from 'swr';
-import { Interfaces, InterfacesContext } from "../common/interfaces";
+import { InterfacesContext, useInterfaces } from "../common/interfaces";
 import Loading, { Error } from "../common/loading";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath } from '../common/proto';
 import { GlobalToastContext } from "../common/toast";
@@ -27,12 +27,12 @@ const NodeModalComponent: FC<{
 
         const [jsonShow, setJsonShow] = useState({ show: false, data: "" })
 
-        const interfaces = Interfaces();
+        const interfaces = useInterfaces();
 
         // isValidating becomes true whenever there is an ongoing request whether the data is loaded or not
         // isLoading becomes true when there is an ongoing request and data is not loaded yet.
         const { data: nodes, error, isLoading, isValidating, mutate } = useSWR(
-            hash === "" ? undefined : ProtoPath(node.method.get),
+            hash === "" ? null : ProtoPath(node.method.get),
             ProtoESFetcher(node.method.get, create(StringValueSchema, { value: hash }), point),
             {
                 shouldRetryOnError: false,
@@ -88,13 +88,13 @@ const NodeModalComponent: FC<{
                     </Modal.Header>
 
                     <Modal.Body>
-                        <fieldset disabled={!editable}>
-                            {error ?
-                                <>
-                                    <Error statusCode={error.code} title={error.msg} raw={error.raw} />
-                                </> :
-                                isValidating || isLoading || !nodes ? <Loading /> :
-                                    <InterfacesContext value={interfaces}>
+                        <InterfacesContext value={interfaces}>
+                            <fieldset disabled={!editable}>
+                                {error ?
+                                    <>
+                                        <Error statusCode={error.code} title={error.msg} raw={error.raw} />
+                                    </> :
+                                    isValidating || isLoading || !nodes ? <Loading /> :
                                         <Point
                                             value={nodes}
                                             groups={groups}
@@ -103,9 +103,9 @@ const NodeModalComponent: FC<{
                                                 mutate(e, false)
                                             }}
                                         />
-                                    </InterfacesContext>
-                            }
-                        </fieldset>
+                                }
+                            </fieldset>
+                        </InterfacesContext>
                     </Modal.Body>
 
                     <Modal.Footer>

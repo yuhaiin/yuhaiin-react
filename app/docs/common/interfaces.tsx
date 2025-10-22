@@ -5,7 +5,7 @@ import { useProtoSWR } from "./proto";
 
 export const InterfacesContext = createContext<Interface[]>([])
 
-export function Interfaces(): Interface[] {
+export function useInterfaces(): Interface[] {
     const { data: iffs } =
         useProtoSWR(tools.method.get_interface, { revalidateOnFocus: false })
 

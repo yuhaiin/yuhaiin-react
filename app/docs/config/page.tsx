@@ -3,7 +3,7 @@
 import { create, DescEnumValue } from '@bufbuild/protobuf';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Button, Card, Col, Form, Row, Spinner, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
-import { Interfaces } from '../common/interfaces';
+import { useInterfaces } from '../common/interfaces';
 import Loading, { Error } from '../common/loading';
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
 import { SettingCheck, SettingTypeSelect } from "../common/switch";
@@ -23,7 +23,7 @@ function ConfigComponent() {
             use: []
         })
 
-    const interfaces = Interfaces();
+    const interfaces = useInterfaces();
 
 
     const switchIPv6 = useCallback(() => {

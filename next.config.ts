@@ -6,6 +6,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 const nextConfig: NextConfig = {
     /* config options here */
+    reactCompiler: true,
     output: 'export',
     compress: true,
     trailingSlash: true,
