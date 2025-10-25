@@ -10,7 +10,7 @@ import Loading, { Error } from "../../common/loading";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../common/proto";
 import { SettingCheck, SettingTypeSelect } from "../../common/switch";
 import { GlobalToastContext } from "../../common/toast";
-import { NewItemList } from "../../config/components";
+import { NewItemList, SettingInputText } from "../../config/components";
 import { lists } from "../../pbes/api/config_pb";
 import { list, list_list_type_enum, list_list_type_enumSchema, list_localSchema, list_remoteSchema, listSchema } from "../../pbes/config/bypass_pb";
 
@@ -23,6 +23,7 @@ export default function Lists() {
     const [confirm, setConfirm] = useState<{ show: boolean, name: string }>({ show: false, name: "" });
     const [newdata, setNewdata] = useState({ value: "" });
     const [refresh, setRefresh] = useState(false)
+    const [saving, setSaving] = useState(false)
 
     if (error !== undefined) return <Card className="align-items-center">
         <Card.Body>
@@ -73,7 +74,29 @@ export default function Lists() {
         />
 
 
-        <Card>
+        <Button
+            className="flex"
+            variant='outline-primary'
+            disabled={refresh}
+            onClick={() => {
+                setRefresh(true)
+                FetchProtobuf(lists.method.refresh, create(EmptySchema))
+                    .then(async ({ error }) => {
+                        if (error === undefined) {
+                            ctx.Info("refresh successful")
+                        } else {
+                            const msg = error.msg;
+                            ctx.Error(msg)
+                            console.error(error.code, msg)
+                        }
+                        setRefresh(false)
+                    })
+            }}
+        >
+            {refresh && <Spinner animation="border" size="sm" />} Refresh
+        </Button>
+
+        <Card className="mt-2">
             {listsData.names.length !== 0 &&
                 <ListGroup variant="flush" style={{ borderBottom: "none" }}>
                     {listsData.names.
@@ -127,30 +150,49 @@ export default function Lists() {
 
                 </InputGroup>
 
+            </Card.Footer>
+        </Card>
+
+
+        <Card className="mt-2">
+            <Card.Body>
+                {
+                    listsData.maxminddbGeoip?.error &&
+                    <Alert variant="danger">{listsData.maxminddbGeoip.error}</Alert>
+                }
+                <SettingInputText
+                    label="MaxminddbGeoip DownloadUrl"
+                    value={listsData.maxminddbGeoip?.downloadUrl}
+                    onChange={(e) => {
+                        mutate(prev => { return { ...prev, maxminddbGeoip: { ...prev.maxminddbGeoip, downloadUrl: e.toString() } } }, false)
+                    }}
+                />
+            </Card.Body>
+
+            <Card.Footer className="d-flex justify-content-end">
                 <Button
-                    className="ms-2"
                     variant='outline-primary'
-                    disabled={refresh}
+                    disabled={saving}
                     onClick={() => {
-                        setRefresh(true)
-                        FetchProtobuf(lists.method.refresh, create(EmptySchema))
+                        setSaving(true)
+                        FetchProtobuf(lists.method.save_maxminddb_geoip, listsData.maxminddbGeoip)
                             .then(async ({ error }) => {
                                 if (error === undefined) {
-                                    ctx.Info("refresh successful")
+                                    ctx.Info("save successful")
+                                    mutate()
                                 } else {
                                     const msg = error.msg;
                                     ctx.Error(msg)
                                     console.error(error.code, msg)
                                 }
-                                setRefresh(false)
+                                setSaving(false)
                             })
                     }}
                 >
-                    {refresh && <Spinner animation="border" size="sm" />} Refresh
+                    {saving && <Spinner animation="border" size="sm" />} Save
                 </Button>
             </Card.Footer>
         </Card>
-
     </>
 }
 
