@@ -71,10 +71,10 @@ function History() {
                     }
                     endContent={
                         <>
-                            <ListGroup.Item className="d-sm-flex justify-content-center">
+                            <ListGroup.Item className="d-flex">
                                 <Button
                                     variant="outline-primary"
-                                    className="flex-grow-1"
+                                    className="flex-grow-1 notranslate"
                                     onClick={() => setModalData(prev => { return { ...prev, show: false } })}
                                 >
                                     Close

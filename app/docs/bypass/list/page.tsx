@@ -10,19 +10,20 @@ import Loading, { Error } from "../../common/loading";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../common/proto";
 import { SettingCheck, SettingTypeSelect } from "../../common/switch";
 import { GlobalToastContext } from "../../common/toast";
-import { NewItemList } from "../../config/components";
+import { NewItemList, SettingInputText } from "../../config/components";
 import { lists } from "../../pbes/api/config_pb";
 import { list, list_list_type_enum, list_list_type_enumSchema, list_localSchema, list_remoteSchema, listSchema } from "../../pbes/config/bypass_pb";
 
 export default function Lists() {
     const ctx = useContext(GlobalToastContext);
 
-    const { data: listsData, error, isLoading, mutate } = useProtoSWR(lists.method.list, { revalidateOnFocus: false })
+    const { data, error, isLoading, mutate } = useProtoSWR(lists.method.list, { revalidateOnFocus: false })
 
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
     const [confirm, setConfirm] = useState<{ show: boolean, name: string }>({ show: false, name: "" });
     const [newdata, setNewdata] = useState({ value: "" });
     const [refresh, setRefresh] = useState(false)
+    const [saving, setSaving] = useState(false)
 
     if (error !== undefined) return <Card className="align-items-center">
         <Card.Body>
@@ -30,7 +31,7 @@ export default function Lists() {
         </Card.Body>
     </Card>
 
-    if (isLoading || listsData === undefined) return <Card className="align-items-center">
+    if (isLoading || data === undefined) return <Card className="align-items-center">
         <Card.Body>
             <Loading />
         </Card.Body>
@@ -73,10 +74,33 @@ export default function Lists() {
         />
 
 
-        <Card>
-            {listsData.names.length !== 0 &&
+        <Button
+            className="flex"
+            variant='outline-primary'
+            disabled={refresh}
+            onClick={() => {
+                setRefresh(true)
+                FetchProtobuf(lists.method.refresh, create(EmptySchema))
+                    .then(async ({ error }) => {
+                        if (error === undefined) {
+                            ctx.Info("refresh successful")
+                            mutate()
+                        } else {
+                            const msg = error.msg;
+                            ctx.Error(msg)
+                            console.error(error.code, msg)
+                        }
+                        setRefresh(false)
+                    })
+            }}
+        >
+            {refresh && <Spinner animation="border" size="sm" />} Refresh
+        </Button>
+
+        <Card className="mt-2">
+            {data.names.length !== 0 &&
                 <ListGroup variant="flush" style={{ borderBottom: "none" }}>
-                    {listsData.names.
+                    {data.names.
                         sort((a, b) => { return a <= b ? -1 : 1 }).
                         map((v, k) => {
                             return <React.Fragment key={"resolvers-" + k}>
@@ -116,7 +140,7 @@ export default function Lists() {
                     <Button
                         variant='outline-success'
                         onClick={() => {
-                            if (!newdata.value || listsData.names.includes(newdata.value)) return
+                            if (!newdata.value || data.names.includes(newdata.value)) return
                             if (showdata.name === newdata.value && showdata.new)
                                 setShowdata(prev => { return { ...prev, show: true } })
                             else
@@ -127,30 +151,49 @@ export default function Lists() {
 
                 </InputGroup>
 
+            </Card.Footer>
+        </Card>
+
+
+        <Card className="mt-2">
+            <Card.Body>
+                {
+                    data.maxminddbGeoip?.error &&
+                    <Alert variant="danger">{data.maxminddbGeoip.error}</Alert>
+                }
+                <SettingInputText
+                    label="MaxminddbGeoip DownloadUrl"
+                    value={data.maxminddbGeoip?.downloadUrl}
+                    onChange={(e) => {
+                        mutate(prev => { return { ...prev, maxminddbGeoip: { ...prev.maxminddbGeoip, downloadUrl: e.toString() } } }, false)
+                    }}
+                />
+            </Card.Body>
+
+            <Card.Footer className="d-flex justify-content-end">
                 <Button
-                    className="ms-2"
                     variant='outline-primary'
-                    disabled={refresh}
+                    disabled={saving}
                     onClick={() => {
-                        setRefresh(true)
-                        FetchProtobuf(lists.method.refresh, create(EmptySchema))
+                        setSaving(true)
+                        FetchProtobuf(lists.method.save_maxminddb_geoip, data.maxminddbGeoip)
                             .then(async ({ error }) => {
                                 if (error === undefined) {
-                                    ctx.Info("refresh successful")
+                                    ctx.Info("save successful")
+                                    mutate()
                                 } else {
                                     const msg = error.msg;
                                     ctx.Error(msg)
                                     console.error(error.code, msg)
                                 }
-                                setRefresh(false)
+                                setSaving(false)
                             })
                     }}
                 >
-                    {refresh && <Spinner animation="border" size="sm" />} Refresh
+                    {saving && <Spinner animation="border" size="sm" />} Save
                 </Button>
             </Card.Footer>
         </Card>
-
     </>
 }
 

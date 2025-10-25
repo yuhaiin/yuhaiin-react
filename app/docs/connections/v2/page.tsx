@@ -9,7 +9,7 @@ import { connection, connectionSchema, type } from "@/app/docs/pbes/statistic/co
 import { create } from "@bufbuild/protobuf";
 import { EmptySchema } from "@bufbuild/protobuf/wkt";
 import React, { FC, useCallback, useContext, useMemo, useState } from "react";
-import { Badge, Button, Card, ListGroup, Offcanvas, Spinner } from "react-bootstrap";
+import { Badge, Button, Card, ListGroup, Modal, Spinner } from "react-bootstrap";
 import useSWRSubscription from 'swr/subscription';
 import { mode } from "../../pbes/config/bypass_pb";
 
@@ -254,25 +254,38 @@ const InfoOffcanvasComponent: FC<{
                 })
         }, [setClosing, data.id, ctx])
 
-        return <Offcanvas className="w-75" show={show} onHide={handleClose} placement="end" scroll>
-            <Offcanvas.Body>
-                <ConnectionInfo value={data}
-                    endContent={<ListGroup.Item>
-                        <div className="d-flex">
-                            <Button
-                                variant="outline-danger"
-                                className="flex-grow-1 notranslate"
-                                disabled={closing}
-                                onClick={closeConnection}
-                            >
-                                Close
-                                {closing && <>&nbsp;<Spinner size="sm" animation="border" variant='danger' /></>}
-                            </Button>
-                        </div>
-                    </ListGroup.Item>}
+        return <Modal
+            show={show}
+            onHide={handleClose}
+        >
+            <Modal.Body>
+                <ConnectionInfo
+                    value={data}
+                    endContent={
+                        <ListGroup.Item>
+                            <div className="d-flex">
+                                <Button
+                                    variant="outline-success"
+                                    onClick={handleClose}
+                                    className="flex-grow-1 notranslate"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="outline-danger"
+                                    className="ms-2 flex-grow-1 notranslate"
+                                    disabled={closing}
+                                    onClick={closeConnection}
+                                >
+                                    Close
+                                    {closing && <>&nbsp;<Spinner size="sm" animation="border" variant='danger' /></>}
+                                </Button>
+                            </div>
+                        </ListGroup.Item>
+                    }
                 />
-            </Offcanvas.Body>
-        </Offcanvas>
+            </Modal.Body>
+        </Modal>
     }
 
 const InfoOffcanvas = React.memo(InfoOffcanvasComponent)

@@ -51,12 +51,14 @@ export const ConnectionInfo: FC<{
             {startContent}
             <ListGroupItemString itemKey="Id" itemValue={value.id.toString()} />
             <ListGroupItemString itemKey="Addr" itemValue={value.addr} />
+            <ListGroupItemString itemKey="Geo" itemValue={value.geo} />
             <ListGroupItemString itemKey="Type" itemValue={connType[value.type?.connType]} />
             <ListGroupItemString itemKey="UnderlyingType" itemValue={connType[value.type?.underlyingType]} />
             <ListGroupItemString itemKey="Inbound" itemValue={value.inboundName} />
             <ListGroupItemString itemKey="InboundAddr" itemValue={value.inbound} />
             <ListGroupItemString itemKey="Source" itemValue={value.source} />
-            <ListGroupItemString itemKey="Outbound" itemValue={value.outbound} />
+            <ListGroupItemString itemKey="RemoteAddr" itemValue={value.outbound} />
+            <ListGroupItemString itemKey="Remote Geo" itemValue={value.outboundGeo} />
             <ListGroupItemString itemKey="Interface" itemValue={value.interface} />
             <ListGroupItemString itemKey="LocalAddr" itemValue={value.localAddr} />
             <ListGroupItemString itemKey="Destination" itemValue={value.destionation} />

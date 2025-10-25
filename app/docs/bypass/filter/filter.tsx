@@ -11,7 +11,7 @@ import { SettingSelect, SettingTypeSelect } from '../../common/switch';
 import { GlobalToastContext } from '../../common/toast';
 import { SettingInputText } from '../../config/components';
 import { rule_indexSchema, rule_save_requestSchema, rules } from '../../pbes/api/config_pb';
-import { hostSchema, mode, modeSchema, network_network_type, networkSchema, or, orSchema, portSchema, processSchema, resolve_strategySchema, rule, ruleSchema, rulev2Schema, sourceSchema, udp_proxy_fqdn_strategy, udp_proxy_fqdn_strategySchema } from '../../pbes/config/bypass_pb';
+import { geoipSchema, hostSchema, mode, modeSchema, network_network_type, networkSchema, or, orSchema, portSchema, processSchema, resolve_strategySchema, rule, ruleSchema, rulev2Schema, sourceSchema, udp_proxy_fqdn_strategy, udp_proxy_fqdn_strategySchema } from '../../pbes/config/bypass_pb';
 
 
 const Values = {
@@ -73,6 +73,14 @@ const RuleRow: FC<{
                         }
                     }))
                     break;
+                case 'geoip':
+                    onUpdate(create(ruleSchema, {
+                        object: {
+                            case: "geoip",
+                            value: create(geoipSchema, { countries: value })
+                        }
+                    }))
+                    break;
             }
         } else {
             switch (v) {
@@ -114,6 +122,7 @@ const RuleRow: FC<{
                         { value: "inbound", label: "Inbound" },
                         { value: "network", label: "Network" },
                         { value: "port", label: "Port" },
+                        { value: "geoip", label: "Geoip" },
                     ]}
                 />
             </div>
@@ -220,13 +229,21 @@ const RuleRow: FC<{
                 />
             }
 
+            {
+                rule.object.case == "geoip" &&
+                <Form.Control
+                    type="text"
+                    value={rule.object.value.countries}
+                    onChange={(e) => handleUpdate("geoip", e.target.value)}
+                />
+            }
+
             <Button variant="outline-danger" onClick={onRemove}>
                 <i className="bi bi-x-lg" />
             </Button>
         </InputGroup >
     );
 };
-
 
 const RuleGroup: FC<{
     group: or;
