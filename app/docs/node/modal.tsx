@@ -81,12 +81,6 @@ const NodeModalComponent: FC<{
                     onHide={() => { onHide() }}
                     centered
                 >
-                    <Modal.Header closeButton>
-                        <Modal.Title id="contained-modal-title-vcenter">
-                            {hash}
-                        </Modal.Title>
-                    </Modal.Header>
-
                     <Modal.Body>
                         <InterfacesContext value={interfaces}>
                             <fieldset disabled={!editable}>

@@ -3,7 +3,7 @@
 import { create } from "@bufbuild/protobuf"
 import { timestampDate, TimestampSchema } from "@bufbuild/protobuf/wkt"
 import { useCallback, useMemo, useState } from "react"
-import { Button, Form, InputGroup, ListGroup, Modal, Spinner, Table } from "react-bootstrap"
+import { Button, Form, InputGroup, Modal, Spinner, Table } from "react-bootstrap"
 import styles from "../../common/clickable.module.css"
 import Loading from "../../common/loading"
 import { CustomPagination } from "../../common/pagination"
@@ -59,7 +59,12 @@ function History() {
 
 
     return <>
-        <Modal centered show={modalData.show} onHide={() => setModalData(prev => { return { ...prev, show: false } })}>
+        <Modal
+            scrollable
+            centered
+            show={modalData.show}
+            onHide={() => setModalData(prev => { return { ...prev, show: false } })}
+        >
             <Modal.Body>
                 <ConnectionInfo
                     value={modalData.data?.connection ?? create(connectionSchema, {})}
@@ -69,21 +74,17 @@ function History() {
                             <ListGroupItemString itemKey="Time" itemValue={timestampDate(modalData.data?.time ?? TimestampZero).toLocaleString()} />
                         </>
                     }
-                    endContent={
-                        <>
-                            <ListGroup.Item className="d-flex">
-                                <Button
-                                    variant="outline-primary"
-                                    className="flex-grow-1 notranslate"
-                                    onClick={() => setModalData(prev => { return { ...prev, show: false } })}
-                                >
-                                    Close
-                                </Button>
-                            </ListGroup.Item>
-                        </>
-                    }
                 />
             </Modal.Body>
+            <Modal.Footer className="d-flex">
+                <Button
+                    variant="outline-primary"
+                    className="flex-grow-1 notranslate"
+                    onClick={() => setModalData(prev => { return { ...prev, show: false } })}
+                >
+                    Close
+                </Button>
+            </Modal.Footer>
         </Modal>
 
 

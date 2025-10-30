@@ -28,15 +28,19 @@ export const ConnectionInfo: FC<{
     value: connection,
     startContent?: JSX.Element,
     endContent?: JSX.Element,
-}> = ({ value, startContent, endContent }) => {
+    onNodeModalShow?: () => void,
+    onNodeModalHide?: () => void,
+}> = ({ value, startContent, endContent, onNodeModalShow, onNodeModalHide }) => {
     const [modalHash, setModalHash] = useState({ show: false, hash: "" });
 
     const showModal = useCallback((hash: string) => {
         setModalHash({ show: true, hash: hash })
+        onNodeModalShow?.()
     }, [setModalHash])
 
     const hideModal = useCallback(() => {
         setModalHash(prev => { return { ...prev, show: false } })
+        onNodeModalHide?.()
     }, [setModalHash])
 
     return <>
@@ -47,7 +51,7 @@ export const ConnectionInfo: FC<{
             onHide={hideModal}
         />
 
-        <ListGroup variant="flush" className="w-100 p-2">
+        <ListGroup variant="flush" >
             {startContent}
             <ListGroupItemString itemKey="Id" itemValue={value.id.toString()} />
             <ListGroupItemString itemKey="Addr" itemValue={value.addr} />

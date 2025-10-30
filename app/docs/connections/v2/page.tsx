@@ -243,48 +243,39 @@ const InfoOffcanvasComponent: FC<{
             FetchProtobuf(
                 connections.method.close_conn,
                 create(notify_remove_connectionsSchema, { ids: [data.id] }),
-            )
-                .then(async ({ error }) => {
-                    if (error) {
-                        ctx.Error(`code ${data.id} failed, ${error.code}| ${error.msg}`)
-                        setClosing(false)
-                    } else {
-                        setTimeout(() => { setClosing(false) }, 5000)
-                    }
-                })
+            ).then(({ error }) => {
+                if (error) ctx.Error(`code ${data.id} failed, ${error.code}| ${error.msg}`)
+                else handleClose()
+            }).finally(() => { setClosing(false) })
         }, [setClosing, data.id, ctx])
 
         return <Modal
             show={show}
             onHide={handleClose}
+            scrollable
         >
             <Modal.Body>
-                <ConnectionInfo
-                    value={data}
-                    endContent={
-                        <ListGroup.Item>
-                            <div className="d-flex">
-                                <Button
-                                    variant="outline-success"
-                                    onClick={handleClose}
-                                    className="flex-grow-1 notranslate"
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    variant="outline-danger"
-                                    className="ms-2 flex-grow-1 notranslate"
-                                    disabled={closing}
-                                    onClick={closeConnection}
-                                >
-                                    Close
-                                    {closing && <>&nbsp;<Spinner size="sm" animation="border" variant='danger' /></>}
-                                </Button>
-                            </div>
-                        </ListGroup.Item>
-                    }
-                />
+                <ConnectionInfo value={data} />
             </Modal.Body>
+
+            <Modal.Footer className="d-flex">
+                <Button
+                    variant="outline-success"
+                    onClick={handleClose}
+                    className="flex-grow-1 notranslate"
+                >
+                    Cancel
+                </Button>
+                <Button
+                    variant="outline-danger"
+                    className="ms-2 flex-grow-1 notranslate"
+                    disabled={closing}
+                    onClick={closeConnection}
+                >
+                    Disconnect
+                    {closing && <>&nbsp;<Spinner size="sm" animation="border" variant='danger' /></>}
+                </Button>
+            </Modal.Footer>
         </Modal>
     }
 
