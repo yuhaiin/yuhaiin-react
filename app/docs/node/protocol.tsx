@@ -2,7 +2,7 @@
 
 import { create } from "@bufbuild/protobuf";
 import dynamic from "next/dynamic";
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Button, Card, InputGroup, ListGroup } from "react-bootstrap";
 import { FormSelect, SettingSelect } from "../common/switch";
 import { Container, MoveUpDown, Remind, SettingInputText } from "../config/components";
@@ -136,18 +136,26 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const update = (data: any) => onChange({ ...value, protocol: { ...value.protocol, value: data } })
 
+    useEffect(() => {
+        switch (value.protocol.case) {
+            case "simple":
+                onChange(create(protocolSchema, {
+                    protocol: {
+                        case: "fixed",
+                        value: create(fixedSchema, {
+                            host: value.protocol.value.host,
+                            networkInterface: value.protocol.value.networkInterface,
+                            alternateHost: value.protocol.value.alternateHost,
+                            port: value.protocol.value.port
+                        })
+                    }
+                }))
+                break
+        }
+    }, [value.protocol.case])
+
     const data = value.protocol
     switch (data.case) {
-        case "simple":
-            return <LazyFixed
-                value={create(fixedSchema, {
-                    host: data.value.host,
-                    networkInterface: data.value.networkInterface,
-                    alternateHost: data.value.alternateHost,
-                    port: data.value.port
-                })}
-                onChange={(e) => update(e)}
-            />
         case "fixed":
             return <LazyFixed value={data.value} onChange={(e) => update(e)} />
         case "direct":

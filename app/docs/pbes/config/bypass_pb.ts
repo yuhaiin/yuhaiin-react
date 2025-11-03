@@ -11,7 +11,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file config/bypass.proto.
  */
 export const file_config_bypass: GenFile = /*@__PURE__*/
-  fileDesc("ChNjb25maWcvYnlwYXNzLnByb3RvEg55dWhhaWluLmJ5cGFzcyLXAQoIY29uZmlndjISTwoOdWRwX3Byb3h5X2ZxZG4YASABKA4yJy55dWhhaWluLmJ5cGFzcy51ZHBfcHJveHlfZnFkbl9zdHJhdGVneVIOdWRwX3Byb3h5X2ZxZG4SKAoPcmVzb2x2ZV9sb2NhbGx5GAIgASgIUg9yZXNvbHZlX2xvY2FsbHkSKAoPZGlyZWN0X3Jlc29sdmVyGAMgASgJUg9kaXJlY3RfcmVzb2x2ZXISJgoOcHJveHlfcmVzb2x2ZXIYBCABKAlSDnByb3h5X3Jlc29sdmVyIkQKD21heG1pbmRkYl9nZW9pcBIiCgxkb3dubG9hZF91cmwYASABKAlSDGRvd25sb2FkX3VybBINCgVlcnJvchgCIAEoCSKEBAoNYnlwYXNzX2NvbmZpZxJPCg51ZHBfcHJveHlfZnFkbhgGIAEoDjInLnl1aGFpaW4uYnlwYXNzLnVkcF9wcm94eV9mcWRuX3N0cmF0ZWd5Ug51ZHBfcHJveHlfZnFkbhIoCg9yZXNvbHZlX2xvY2FsbHkYCSABKAhSD3Jlc29sdmVfbG9jYWxseRIoCg9kaXJlY3RfcmVzb2x2ZXIYCiABKAlSD2RpcmVjdF9yZXNvbHZlchImCg5wcm94eV9yZXNvbHZlchgLIAEoCVIOcHJveHlfcmVzb2x2ZXISMgoIcnVsZXNfdjIYDCADKAsyFi55dWhhaWluLmJ5cGFzcy5ydWxldjJSCHJ1bGVzX3YyEjcKBWxpc3RzGA0gAygLMigueXVoYWlpbi5ieXBhc3MuYnlwYXNzX2NvbmZpZy5MaXN0c0VudHJ5EioKEHJlZnJlc2hfaW50ZXJ2YWwYDyABKARSEHJlZnJlc2hfaW50ZXJ2YWwSSQoPbWF4bWluZGRiX2dlb2lwGBAgASgLMh8ueXVoYWlpbi5ieXBhc3MubWF4bWluZGRiX2dlb2lwUg9tYXhtaW5kZGJfZ2VvaXAaQgoKTGlzdHNFbnRyeRILCgNrZXkYASABKAkSIwoFdmFsdWUYAiABKAsyFC55dWhhaWluLmJ5cGFzcy5saXN0OgI4ASKmAwoLbW9kZV9jb25maWcSIgoEbW9kZRgBIAEoDjIULnl1aGFpaW4uYnlwYXNzLm1vZGUSCwoDdGFnGAIgASgJEhAKCGhvc3RuYW1lGAMgAygJEkwKEHJlc29sdmVfc3RyYXRlZ3kYBCABKA4yIC55dWhhaWluLmJ5cGFzcy5yZXNvbHZlX3N0cmF0ZWd5UhByZXNvbHZlX3N0cmF0ZWd5EmEKF3VkcF9wcm94eV9mcWRuX3N0cmF0ZWd5GAYgASgOMicueXVoYWlpbi5ieXBhc3MudWRwX3Byb3h5X2ZxZG5fc3RyYXRlZ3lSF3VkcF9wcm94eV9mcWRuX3N0cmF0ZWd5EhAKCHJlc29sdmVyGAggASgJEkkKCmVycm9yX21zZ3MYByADKAsyKi55dWhhaWluLmJ5cGFzcy5tb2RlX2NvbmZpZy5FcnJvck1zZ3NFbnRyeVIJZXJyb3JfbXNnGjAKDkVycm9yTXNnc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAFKBAgFEAZSDnVkcF9wcm94eV9mcWRuIvkBCgtyZW1vdGVfcnVsZRIPCgdlbmFibGVkGAEgASgIEgwKBG5hbWUYAiABKAkSMAoEZmlsZRgDIAEoCzIgLnl1aGFpaW4uYnlwYXNzLnJlbW90ZV9ydWxlX2ZpbGVIABIwCgRodHRwGAQgASgLMiAueXVoYWlpbi5ieXBhc3MucmVtb3RlX3J1bGVfaHR0cEgAEhwKCWVycm9yX21zZxgFIAEoCVIJZXJyb3JfbXNnEj8KDGRlZmF1bHRfbW9kZRgGIAEoCzIbLnl1aGFpaW4uYnlwYXNzLm1vZGVfY29uZmlnUgxkZWZhdWx0X21vZGVCCAoGb2JqZWN0IiAKEHJlbW90ZV9ydWxlX2ZpbGUSDAoEcGF0aBgBIAEoCSIvChByZW1vdGVfcnVsZV9odHRwEgsKA3VybBgBIAEoCRIOCgZtZXRob2QYAiABKAkiFAoEaG9zdBIMCgRsaXN0GAEgASgJIhcKB3Byb2Nlc3MSDAoEbGlzdBgBIAEoCSIlCgZzb3VyY2USDAoEbmFtZRgBIAEoCRINCgVuYW1lcxgCIAMoCSIVCgRwb3J0Eg0KBXBvcnRzGAEgASgJIhoKBWdlb2lwEhEKCWNvdW50cmllcxgBIAEoCSKHAgoEcnVsZRIkCgRob3N0GAEgASgLMhQueXVoYWlpbi5ieXBhc3MuaG9zdEgAEioKB3Byb2Nlc3MYAiABKAsyFy55dWhhaWluLmJ5cGFzcy5wcm9jZXNzSAASKQoHaW5ib3VuZBgDIAEoCzIWLnl1aGFpaW4uYnlwYXNzLnNvdXJjZUgAEioKB25ldHdvcmsYBCABKAsyFy55dWhhaWluLmJ5cGFzcy5uZXR3b3JrSAASJAoEcG9ydBgFIAEoCzIULnl1aGFpaW4uYnlwYXNzLnBvcnRIABImCgVnZW9pcBgGIAEoCzIVLnl1aGFpaW4uYnlwYXNzLmdlb2lwSABCCAoGb2JqZWN0Im8KB25ldHdvcmsSNQoHbmV0d29yaxgBIAEoDjIkLnl1aGFpaW4uYnlwYXNzLm5ldHdvcmsubmV0d29ya190eXBlIi0KDG5ldHdvcmtfdHlwZRILCgd1bmtub3duEAASBwoDdGNwEAESBwoDdWRwEAIiKQoCb3ISIwoFcnVsZXMYASADKAsyFC55dWhhaWluLmJ5cGFzcy5ydWxlIq0CCgZydWxldjISDAoEbmFtZRgBIAEoCRIiCgRtb2RlGAIgASgOMhQueXVoYWlpbi5ieXBhc3MubW9kZRILCgN0YWcYAyABKAkSTAoQcmVzb2x2ZV9zdHJhdGVneRgEIAEoDjIgLnl1aGFpaW4uYnlwYXNzLnJlc29sdmVfc3RyYXRlZ3lSEHJlc29sdmVfc3RyYXRlZ3kSYQoXdWRwX3Byb3h5X2ZxZG5fc3RyYXRlZ3kYBSABKA4yJy55dWhhaWluLmJ5cGFzcy51ZHBfcHJveHlfZnFkbl9zdHJhdGVneVIXdWRwX3Byb3h5X2ZxZG5fc3RyYXRlZ3kSEAoIcmVzb2x2ZXIYBiABKAkSIQoFcnVsZXMYByADKAsyEi55dWhhaWluLmJ5cGFzcy5vciKSAgoEbGlzdBI8CglsaXN0X3R5cGUYASABKA4yIy55dWhhaWluLmJ5cGFzcy5saXN0Lmxpc3RfdHlwZV9lbnVtUgR0eXBlEgwKBG5hbWUYAiABKAkSKwoFbG9jYWwYAyABKAsyGi55dWhhaWluLmJ5cGFzcy5saXN0X2xvY2FsSAASLQoGcmVtb3RlGAQgASgLMhsueXVoYWlpbi5ieXBhc3MubGlzdF9yZW1vdGVIABIeCgplcnJvcl9tc2dzGAUgAygJUgplcnJvcl9tc2dzIjoKDmxpc3RfdHlwZV9lbnVtEggKBGhvc3QQABILCgdwcm9jZXNzEAESEQoNaG9zdHNfYXNfaG9zdBACQgYKBGxpc3QiGwoKbGlzdF9sb2NhbBINCgVsaXN0cxgBIAMoCSIbCgtsaXN0X3JlbW90ZRIMCgR1cmxzGAEgAygJKjQKBG1vZGUSCgoGYnlwYXNzEAASCgoGZGlyZWN0EAESCQoFcHJveHkQAhIJCgVibG9jaxADKl8KEHJlc29sdmVfc3RyYXRlZ3kSCwoHZGVmYXVsdBAAEg8KC3ByZWZlcl9pcHY0EAESDQoJb25seV9pcHY0EAISDwoLcHJlZmVyX2lwdjYQAxINCglvbmx5X2lwdjYQBCpdChd1ZHBfcHJveHlfZnFkbl9zdHJhdGVneRIjCh91ZHBfcHJveHlfZnFkbl9zdHJhdGVneV9kZWZhdWx0EAASCwoHcmVzb2x2ZRABEhAKDHNraXBfcmVzb2x2ZRACQjhaLmdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9jb25maWeSAwXSPgIQA2IIZWRpdGlvbnNw6Ac", [file_google_protobuf_go_features]);
+  fileDesc("ChNjb25maWcvYnlwYXNzLnByb3RvEg55dWhhaWluLmJ5cGFzcyLXAQoIY29uZmlndjISTwoOdWRwX3Byb3h5X2ZxZG4YASABKA4yJy55dWhhaWluLmJ5cGFzcy51ZHBfcHJveHlfZnFkbl9zdHJhdGVneVIOdWRwX3Byb3h5X2ZxZG4SKAoPcmVzb2x2ZV9sb2NhbGx5GAIgASgIUg9yZXNvbHZlX2xvY2FsbHkSKAoPZGlyZWN0X3Jlc29sdmVyGAMgASgJUg9kaXJlY3RfcmVzb2x2ZXISJgoOcHJveHlfcmVzb2x2ZXIYBCABKAlSDnByb3h5X3Jlc29sdmVyIkQKD21heG1pbmRkYl9nZW9pcBIiCgxkb3dubG9hZF91cmwYASABKAlSDGRvd25sb2FkX3VybBINCgVlcnJvchgCIAEoCSKgBAoNYnlwYXNzX2NvbmZpZxJPCg51ZHBfcHJveHlfZnFkbhgGIAEoDjInLnl1aGFpaW4uYnlwYXNzLnVkcF9wcm94eV9mcWRuX3N0cmF0ZWd5Ug51ZHBfcHJveHlfZnFkbhIoCg9yZXNvbHZlX2xvY2FsbHkYCSABKAhSD3Jlc29sdmVfbG9jYWxseRIoCg9kaXJlY3RfcmVzb2x2ZXIYCiABKAlSD2RpcmVjdF9yZXNvbHZlchImCg5wcm94eV9yZXNvbHZlchgLIAEoCVIOcHJveHlfcmVzb2x2ZXISMgoIcnVsZXNfdjIYDCADKAsyFi55dWhhaWluLmJ5cGFzcy5ydWxldjJSCHJ1bGVzX3YyEjcKBWxpc3RzGA0gAygLMigueXVoYWlpbi5ieXBhc3MuYnlwYXNzX2NvbmZpZy5MaXN0c0VudHJ5EkkKD21heG1pbmRkYl9nZW9pcBgQIAEoCzIfLnl1aGFpaW4uYnlwYXNzLm1heG1pbmRkYl9nZW9pcFIPbWF4bWluZGRiX2dlb2lwEkYKDnJlZnJlc2hfY29uZmlnGBEgASgLMh4ueXVoYWlpbi5ieXBhc3MucmVmcmVzaF9jb25maWdSDnJlZnJlc2hfY29uZmlnGkIKCkxpc3RzRW50cnkSCwoDa2V5GAEgASgJEiMKBXZhbHVlGAIgASgLMhQueXVoYWlpbi5ieXBhc3MubGlzdDoCOAEieQoOcmVmcmVzaF9jb25maWcSKgoQcmVmcmVzaF9pbnRlcnZhbBgBIAEoBFIQcmVmcmVzaF9pbnRlcnZhbBIsChFsYXN0X3JlZnJlc2hfdGltZRgCIAEoBFIRbGFzdF9yZWZyZXNoX3RpbWUSDQoFZXJyb3IYAyABKAkipgMKC21vZGVfY29uZmlnEiIKBG1vZGUYASABKA4yFC55dWhhaWluLmJ5cGFzcy5tb2RlEgsKA3RhZxgCIAEoCRIQCghob3N0bmFtZRgDIAMoCRJMChByZXNvbHZlX3N0cmF0ZWd5GAQgASgOMiAueXVoYWlpbi5ieXBhc3MucmVzb2x2ZV9zdHJhdGVneVIQcmVzb2x2ZV9zdHJhdGVneRJhChd1ZHBfcHJveHlfZnFkbl9zdHJhdGVneRgGIAEoDjInLnl1aGFpaW4uYnlwYXNzLnVkcF9wcm94eV9mcWRuX3N0cmF0ZWd5Uhd1ZHBfcHJveHlfZnFkbl9zdHJhdGVneRIQCghyZXNvbHZlchgIIAEoCRJJCgplcnJvcl9tc2dzGAcgAygLMioueXVoYWlpbi5ieXBhc3MubW9kZV9jb25maWcuRXJyb3JNc2dzRW50cnlSCWVycm9yX21zZxowCg5FcnJvck1zZ3NFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBSgQIBRAGUg51ZHBfcHJveHlfZnFkbiL5AQoLcmVtb3RlX3J1bGUSDwoHZW5hYmxlZBgBIAEoCBIMCgRuYW1lGAIgASgJEjAKBGZpbGUYAyABKAsyIC55dWhhaWluLmJ5cGFzcy5yZW1vdGVfcnVsZV9maWxlSAASMAoEaHR0cBgEIAEoCzIgLnl1aGFpaW4uYnlwYXNzLnJlbW90ZV9ydWxlX2h0dHBIABIcCgllcnJvcl9tc2cYBSABKAlSCWVycm9yX21zZxI/CgxkZWZhdWx0X21vZGUYBiABKAsyGy55dWhhaWluLmJ5cGFzcy5tb2RlX2NvbmZpZ1IMZGVmYXVsdF9tb2RlQggKBm9iamVjdCIgChByZW1vdGVfcnVsZV9maWxlEgwKBHBhdGgYASABKAkiLwoQcmVtb3RlX3J1bGVfaHR0cBILCgN1cmwYASABKAkSDgoGbWV0aG9kGAIgASgJIhQKBGhvc3QSDAoEbGlzdBgBIAEoCSIXCgdwcm9jZXNzEgwKBGxpc3QYASABKAkiJQoGc291cmNlEgwKBG5hbWUYASABKAkSDQoFbmFtZXMYAiADKAkiFQoEcG9ydBINCgVwb3J0cxgBIAEoCSIaCgVnZW9pcBIRCgljb3VudHJpZXMYASABKAkihwIKBHJ1bGUSJAoEaG9zdBgBIAEoCzIULnl1aGFpaW4uYnlwYXNzLmhvc3RIABIqCgdwcm9jZXNzGAIgASgLMhcueXVoYWlpbi5ieXBhc3MucHJvY2Vzc0gAEikKB2luYm91bmQYAyABKAsyFi55dWhhaWluLmJ5cGFzcy5zb3VyY2VIABIqCgduZXR3b3JrGAQgASgLMhcueXVoYWlpbi5ieXBhc3MubmV0d29ya0gAEiQKBHBvcnQYBSABKAsyFC55dWhhaWluLmJ5cGFzcy5wb3J0SAASJgoFZ2VvaXAYBiABKAsyFS55dWhhaWluLmJ5cGFzcy5nZW9pcEgAQggKBm9iamVjdCJvCgduZXR3b3JrEjUKB25ldHdvcmsYASABKA4yJC55dWhhaWluLmJ5cGFzcy5uZXR3b3JrLm5ldHdvcmtfdHlwZSItCgxuZXR3b3JrX3R5cGUSCwoHdW5rbm93bhAAEgcKA3RjcBABEgcKA3VkcBACIikKAm9yEiMKBXJ1bGVzGAEgAygLMhQueXVoYWlpbi5ieXBhc3MucnVsZSKtAgoGcnVsZXYyEgwKBG5hbWUYASABKAkSIgoEbW9kZRgCIAEoDjIULnl1aGFpaW4uYnlwYXNzLm1vZGUSCwoDdGFnGAMgASgJEkwKEHJlc29sdmVfc3RyYXRlZ3kYBCABKA4yIC55dWhhaWluLmJ5cGFzcy5yZXNvbHZlX3N0cmF0ZWd5UhByZXNvbHZlX3N0cmF0ZWd5EmEKF3VkcF9wcm94eV9mcWRuX3N0cmF0ZWd5GAUgASgOMicueXVoYWlpbi5ieXBhc3MudWRwX3Byb3h5X2ZxZG5fc3RyYXRlZ3lSF3VkcF9wcm94eV9mcWRuX3N0cmF0ZWd5EhAKCHJlc29sdmVyGAYgASgJEiEKBXJ1bGVzGAcgAygLMhIueXVoYWlpbi5ieXBhc3Mub3IikgIKBGxpc3QSPAoJbGlzdF90eXBlGAEgASgOMiMueXVoYWlpbi5ieXBhc3MubGlzdC5saXN0X3R5cGVfZW51bVIEdHlwZRIMCgRuYW1lGAIgASgJEisKBWxvY2FsGAMgASgLMhoueXVoYWlpbi5ieXBhc3MubGlzdF9sb2NhbEgAEi0KBnJlbW90ZRgEIAEoCzIbLnl1aGFpaW4uYnlwYXNzLmxpc3RfcmVtb3RlSAASHgoKZXJyb3JfbXNncxgFIAMoCVIKZXJyb3JfbXNncyI6Cg5saXN0X3R5cGVfZW51bRIICgRob3N0EAASCwoHcHJvY2VzcxABEhEKDWhvc3RzX2FzX2hvc3QQAkIGCgRsaXN0IhsKCmxpc3RfbG9jYWwSDQoFbGlzdHMYASADKAkiGwoLbGlzdF9yZW1vdGUSDAoEdXJscxgBIAMoCSo0CgRtb2RlEgoKBmJ5cGFzcxAAEgoKBmRpcmVjdBABEgkKBXByb3h5EAISCQoFYmxvY2sQAypfChByZXNvbHZlX3N0cmF0ZWd5EgsKB2RlZmF1bHQQABIPCgtwcmVmZXJfaXB2NBABEg0KCW9ubHlfaXB2NBACEg8KC3ByZWZlcl9pcHY2EAMSDQoJb25seV9pcHY2EAQqXQoXdWRwX3Byb3h5X2ZxZG5fc3RyYXRlZ3kSIwofdWRwX3Byb3h5X2ZxZG5fc3RyYXRlZ3lfZGVmYXVsdBAAEgsKB3Jlc29sdmUQARIQCgxza2lwX3Jlc29sdmUQAkI4Wi5naXRodWIuY29tL0FzdXRvcnVmYS95dWhhaWluL3BrZy9wcm90b3MvY29uZmlnkgMF0j4CEANiCGVkaXRpb25zcOgH", [file_google_protobuf_go_features]);
 
 /**
  * @generated from message yuhaiin.bypass.configv2
@@ -104,14 +104,14 @@ export type bypass_config = Message<"yuhaiin.bypass.bypass_config"> & {
   lists: { [key: string]: list };
 
   /**
-   * @generated from field: uint64 refresh_interval = 15 [json_name = "refresh_interval"];
-   */
-  refreshInterval: bigint;
-
-  /**
    * @generated from field: yuhaiin.bypass.maxminddb_geoip maxminddb_geoip = 16 [json_name = "maxminddb_geoip"];
    */
   maxminddbGeoip?: maxminddb_geoip;
+
+  /**
+   * @generated from field: yuhaiin.bypass.refresh_config refresh_config = 17 [json_name = "refresh_config"];
+   */
+  refreshConfig?: refresh_config;
 };
 
 /**
@@ -120,6 +120,33 @@ export type bypass_config = Message<"yuhaiin.bypass.bypass_config"> & {
  */
 export const bypass_configSchema: GenMessage<bypass_config> = /*@__PURE__*/
   messageDesc(file_config_bypass, 2);
+
+/**
+ * @generated from message yuhaiin.bypass.refresh_config
+ */
+export type refresh_config = Message<"yuhaiin.bypass.refresh_config"> & {
+  /**
+   * @generated from field: uint64 refresh_interval = 1 [json_name = "refresh_interval"];
+   */
+  refreshInterval: bigint;
+
+  /**
+   * @generated from field: uint64 last_refresh_time = 2 [json_name = "last_refresh_time"];
+   */
+  lastRefreshTime: bigint;
+
+  /**
+   * @generated from field: string error = 3;
+   */
+  error: string;
+};
+
+/**
+ * Describes the message yuhaiin.bypass.refresh_config.
+ * Use `create(refresh_configSchema)` to create a new message.
+ */
+export const refresh_configSchema: GenMessage<refresh_config> = /*@__PURE__*/
+  messageDesc(file_config_bypass, 3);
 
 /**
  * @generated from message yuhaiin.bypass.mode_config
@@ -166,7 +193,7 @@ export type mode_config = Message<"yuhaiin.bypass.mode_config"> & {
  * Use `create(mode_configSchema)` to create a new message.
  */
 export const mode_configSchema: GenMessage<mode_config> = /*@__PURE__*/
-  messageDesc(file_config_bypass, 3);
+  messageDesc(file_config_bypass, 4);
 
 /**
  * @generated from message yuhaiin.bypass.remote_rule
@@ -217,7 +244,7 @@ export type remote_rule = Message<"yuhaiin.bypass.remote_rule"> & {
  * Use `create(remote_ruleSchema)` to create a new message.
  */
 export const remote_ruleSchema: GenMessage<remote_rule> = /*@__PURE__*/
-  messageDesc(file_config_bypass, 4);
+  messageDesc(file_config_bypass, 5);
 
 /**
  * @generated from message yuhaiin.bypass.remote_rule_file
@@ -234,7 +261,7 @@ export type remote_rule_file = Message<"yuhaiin.bypass.remote_rule_file"> & {
  * Use `create(remote_rule_fileSchema)` to create a new message.
  */
 export const remote_rule_fileSchema: GenMessage<remote_rule_file> = /*@__PURE__*/
-  messageDesc(file_config_bypass, 5);
+  messageDesc(file_config_bypass, 6);
 
 /**
  * @generated from message yuhaiin.bypass.remote_rule_http
@@ -258,7 +285,7 @@ export type remote_rule_http = Message<"yuhaiin.bypass.remote_rule_http"> & {
  * Use `create(remote_rule_httpSchema)` to create a new message.
  */
 export const remote_rule_httpSchema: GenMessage<remote_rule_http> = /*@__PURE__*/
-  messageDesc(file_config_bypass, 6);
+  messageDesc(file_config_bypass, 7);
 
 /**
  * @generated from message yuhaiin.bypass.host
@@ -275,7 +302,7 @@ export type host = Message<"yuhaiin.bypass.host"> & {
  * Use `create(hostSchema)` to create a new message.
  */
 export const hostSchema: GenMessage<host> = /*@__PURE__*/
-  messageDesc(file_config_bypass, 7);
+  messageDesc(file_config_bypass, 8);
 
 /**
  * @generated from message yuhaiin.bypass.process
@@ -292,7 +319,7 @@ export type process = Message<"yuhaiin.bypass.process"> & {
  * Use `create(processSchema)` to create a new message.
  */
 export const processSchema: GenMessage<process> = /*@__PURE__*/
-  messageDesc(file_config_bypass, 8);
+  messageDesc(file_config_bypass, 9);
 
 /**
  * @generated from message yuhaiin.bypass.source
@@ -314,7 +341,7 @@ export type source = Message<"yuhaiin.bypass.source"> & {
  * Use `create(sourceSchema)` to create a new message.
  */
 export const sourceSchema: GenMessage<source> = /*@__PURE__*/
-  messageDesc(file_config_bypass, 9);
+  messageDesc(file_config_bypass, 10);
 
 /**
  * @generated from message yuhaiin.bypass.port
@@ -333,7 +360,7 @@ export type port = Message<"yuhaiin.bypass.port"> & {
  * Use `create(portSchema)` to create a new message.
  */
 export const portSchema: GenMessage<port> = /*@__PURE__*/
-  messageDesc(file_config_bypass, 10);
+  messageDesc(file_config_bypass, 11);
 
 /**
  * @generated from message yuhaiin.bypass.geoip
@@ -352,7 +379,7 @@ export type geoip = Message<"yuhaiin.bypass.geoip"> & {
  * Use `create(geoipSchema)` to create a new message.
  */
 export const geoipSchema: GenMessage<geoip> = /*@__PURE__*/
-  messageDesc(file_config_bypass, 11);
+  messageDesc(file_config_bypass, 12);
 
 /**
  * @generated from message yuhaiin.bypass.rule
@@ -405,7 +432,7 @@ export type rule = Message<"yuhaiin.bypass.rule"> & {
  * Use `create(ruleSchema)` to create a new message.
  */
 export const ruleSchema: GenMessage<rule> = /*@__PURE__*/
-  messageDesc(file_config_bypass, 12);
+  messageDesc(file_config_bypass, 13);
 
 /**
  * @generated from message yuhaiin.bypass.network
@@ -422,7 +449,7 @@ export type network = Message<"yuhaiin.bypass.network"> & {
  * Use `create(networkSchema)` to create a new message.
  */
 export const networkSchema: GenMessage<network> = /*@__PURE__*/
-  messageDesc(file_config_bypass, 13);
+  messageDesc(file_config_bypass, 14);
 
 /**
  * @generated from enum yuhaiin.bypass.network.network_type
@@ -448,7 +475,7 @@ export enum network_network_type {
  * Describes the enum yuhaiin.bypass.network.network_type.
  */
 export const network_network_typeSchema: GenEnum<network_network_type> = /*@__PURE__*/
-  enumDesc(file_config_bypass, 13, 0);
+  enumDesc(file_config_bypass, 14, 0);
 
 /**
  * @generated from message yuhaiin.bypass.or
@@ -465,7 +492,7 @@ export type or = Message<"yuhaiin.bypass.or"> & {
  * Use `create(orSchema)` to create a new message.
  */
 export const orSchema: GenMessage<or> = /*@__PURE__*/
-  messageDesc(file_config_bypass, 14);
+  messageDesc(file_config_bypass, 15);
 
 /**
  * @generated from message yuhaiin.bypass.rulev2
@@ -512,7 +539,7 @@ export type rulev2 = Message<"yuhaiin.bypass.rulev2"> & {
  * Use `create(rulev2Schema)` to create a new message.
  */
 export const rulev2Schema: GenMessage<rulev2> = /*@__PURE__*/
-  messageDesc(file_config_bypass, 15);
+  messageDesc(file_config_bypass, 16);
 
 /**
  * @generated from message yuhaiin.bypass.list
@@ -556,7 +583,7 @@ export type list = Message<"yuhaiin.bypass.list"> & {
  * Use `create(listSchema)` to create a new message.
  */
 export const listSchema: GenMessage<list> = /*@__PURE__*/
-  messageDesc(file_config_bypass, 16);
+  messageDesc(file_config_bypass, 17);
 
 /**
  * @generated from enum yuhaiin.bypass.list.list_type_enum
@@ -584,7 +611,7 @@ export enum list_list_type_enum {
  * Describes the enum yuhaiin.bypass.list.list_type_enum.
  */
 export const list_list_type_enumSchema: GenEnum<list_list_type_enum> = /*@__PURE__*/
-  enumDesc(file_config_bypass, 16, 0);
+  enumDesc(file_config_bypass, 17, 0);
 
 /**
  * @generated from message yuhaiin.bypass.list_local
@@ -601,7 +628,7 @@ export type list_local = Message<"yuhaiin.bypass.list_local"> & {
  * Use `create(list_localSchema)` to create a new message.
  */
 export const list_localSchema: GenMessage<list_local> = /*@__PURE__*/
-  messageDesc(file_config_bypass, 17);
+  messageDesc(file_config_bypass, 18);
 
 /**
  * @generated from message yuhaiin.bypass.list_remote
@@ -618,7 +645,7 @@ export type list_remote = Message<"yuhaiin.bypass.list_remote"> & {
  * Use `create(list_remoteSchema)` to create a new message.
  */
 export const list_remoteSchema: GenMessage<list_remote> = /*@__PURE__*/
-  messageDesc(file_config_bypass, 18);
+  messageDesc(file_config_bypass, 19);
 
 /**
  * @generated from enum yuhaiin.bypass.mode

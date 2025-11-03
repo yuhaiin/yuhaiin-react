@@ -107,9 +107,27 @@ function ConfigComponent() {
                     create(advanced_configSchema, {
                         relayBufferSize: 4096,
                         udpRingbufferSize: 250,
-                        udpBufferSize: 2048
+                        udpBufferSize: 2048,
+                        happyeyeballsSemaphore: 250
                     })
             }), false)
+            return
+        }
+
+        if (!setting.advancedConfig.udpBufferSize) {
+            setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, udpBufferSize: 2048 } }), false)
+        }
+
+        if (!setting.advancedConfig.relayBufferSize) {
+            setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, relayBufferSize: 4096 } }), false)
+        }
+
+        if (!setting.advancedConfig.udpRingbufferSize) {
+            setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, udpRingbufferSize: 250 } }), false)
+        }
+
+        if (!setting.advancedConfig.happyeyeballsSemaphore) {
+            setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, happyeyeballsSemaphore: 250 } }), false)
         }
     }, [setting, setSetting])
 
@@ -212,20 +230,20 @@ function ConfigComponent() {
 
                     <Card.Title className='mb-2'>Advanced</Card.Title>
 
-                    <Form.Label>UDP Buffer Size ({setting.advancedConfig?.udpBufferSize ?? 2048} Bytes)</Form.Label>
-                    <Form.Range value={setting.advancedConfig?.udpBufferSize ?? 2048}
+                    <Form.Label>UDP Buffer Size ({setting.advancedConfig?.udpBufferSize} Bytes)</Form.Label>
+                    <Form.Range value={setting.advancedConfig?.udpBufferSize}
                         min={2048} max={65536} step={1024} onChange={setUdpBufferSize} />
 
-                    <Form.Label>UDP Ring Buffer Size ({setting.advancedConfig?.udpRingbufferSize ?? 250})</Form.Label>
-                    <Form.Range value={setting.advancedConfig?.udpRingbufferSize ?? 250}
+                    <Form.Label>UDP Ring Buffer Size ({setting.advancedConfig?.udpRingbufferSize})</Form.Label>
+                    <Form.Range value={setting.advancedConfig?.udpRingbufferSize}
                         min={100} max={2000} step={10} onChange={setUdpRingbufferSize} />
 
-                    <Form.Label>Relay Buffer Size ({setting.advancedConfig?.relayBufferSize ?? 4096} Bytes)</Form.Label>
-                    <Form.Range value={setting.advancedConfig?.relayBufferSize ?? 4096}
+                    <Form.Label>Relay Buffer Size ({setting.advancedConfig?.relayBufferSize} Bytes)</Form.Label>
+                    <Form.Range value={setting.advancedConfig?.relayBufferSize}
                         min={2048} max={65536} step={1024} onChange={setRelayBufferSize} />
 
-                    <Form.Label>Happy Eyeballs Semaphore ({setting.advancedConfig?.happyeyeballsSemaphore ? setting.advancedConfig?.happyeyeballsSemaphore : 0})</Form.Label>
-                    <Form.Range value={setting.advancedConfig?.happyeyeballsSemaphore ? setting.advancedConfig?.happyeyeballsSemaphore : 0}
+                    <Form.Label>Happy Eyeballs Semaphore ({setting.advancedConfig?.happyeyeballsSemaphore})</Form.Label>
+                    <Form.Range value={setting.advancedConfig?.happyeyeballsSemaphore}
                         min={0} step={10} max={10000} onChange={setHappyEyeballsSemaphore} />
 
                 </Card.Body>

@@ -94,7 +94,7 @@ const NodeModalComponent: FC<{
                                             groups={groups}
                                             onChange={(e) => {
                                                 if (!editable) return
-                                                mutate(e, false)
+                                                mutate(prev => { return { ...prev, ...e } }, false)
                                             }}
                                         />
                                 }

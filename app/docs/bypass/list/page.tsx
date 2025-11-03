@@ -11,8 +11,8 @@ import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../com
 import { SettingCheck, SettingTypeSelect } from "../../common/switch";
 import { GlobalToastContext } from "../../common/toast";
 import { NewItemList, SettingInputText } from "../../config/components";
-import { lists } from "../../pbes/api/config_pb";
-import { list, list_list_type_enum, list_list_type_enumSchema, list_localSchema, list_remoteSchema, listSchema } from "../../pbes/config/bypass_pb";
+import { lists, save_list_config_requestSchema } from "../../pbes/api/config_pb";
+import { list, list_list_type_enum, list_list_type_enumSchema, list_localSchema, list_remoteSchema, listSchema, refresh_configSchema } from "../../pbes/config/bypass_pb";
 
 export default function Lists() {
     const ctx = useContext(GlobalToastContext);
@@ -25,6 +25,14 @@ export default function Lists() {
     const [refresh, setRefresh] = useState(false)
     const [saving, setSaving] = useState(false)
 
+    useEffect(() => {
+        if (!data) return
+        if (!data.refreshConfig) {
+            mutate(prev => {
+                return { ...prev, refreshConfig: create(refresh_configSchema, { refreshInterval: BigInt(0), }) }
+            }, false)
+        }
+    }, [data, mutate])
     if (error !== undefined) return <Card className="align-items-center">
         <Card.Body>
             <Error statusCode={error.code} title={error.msg} />
@@ -74,28 +82,33 @@ export default function Lists() {
         />
 
 
-        <Button
-            className="flex"
-            variant='outline-primary'
-            disabled={refresh}
-            onClick={() => {
-                setRefresh(true)
-                FetchProtobuf(lists.method.refresh, create(EmptySchema))
-                    .then(async ({ error }) => {
-                        if (error === undefined) {
-                            ctx.Info("refresh successful")
-                            mutate()
-                        } else {
-                            const msg = error.msg;
-                            ctx.Error(msg)
-                            console.error(error.code, msg)
-                        }
-                        setRefresh(false)
-                    })
-            }}
-        >
-            {refresh && <Spinner animation="border" size="sm" />} Refresh
-        </Button>
+
+
+        <Alert variant="info" className="ms-2">
+            <Button
+                variant='outline-primary'
+                disabled={refresh}
+                onClick={() => {
+                    setRefresh(true)
+                    FetchProtobuf(lists.method.refresh, create(EmptySchema))
+                        .then(async ({ error }) => {
+                            if (error === undefined) {
+                                ctx.Info("refresh successful")
+                                mutate()
+                            } else {
+                                const msg = error.msg;
+                                ctx.Error(msg)
+                                console.error(error.code, msg)
+                            }
+                            setRefresh(false)
+                        })
+                }}
+            >
+                {refresh && <Spinner animation="border" size="sm" />} Refresh
+            </Button>
+
+            <span className="ms-2">{new Date(Number(data.refreshConfig?.lastRefreshTime ?? BigInt(0)) * 1000).toString()}</span>
+        </Alert>
 
         <Card className="mt-2">
             {data.names.length !== 0 &&
@@ -168,6 +181,30 @@ export default function Lists() {
                         mutate(prev => { return { ...prev, maxminddbGeoip: { ...prev.maxminddbGeoip, downloadUrl: e.toString() } } }, false)
                     }}
                 />
+
+                {
+                    data.refreshConfig?.error &&
+                    <Alert variant="danger">{data.refreshConfig.error}</Alert>
+                }
+
+                <Form.Label>
+                    Auto Fetch Interval ({
+                        data.refreshConfig?.refreshInterval
+                            ? <>Every {Number(data.refreshConfig?.refreshInterval) / 60} Hours</>
+                            : <>Disabled</>
+                    })
+                </Form.Label>
+                <Form.Range
+                    value={Number(data.refreshConfig?.refreshInterval) / 60}
+                    min={0} max={24 * 30} step={1} onChange={(e) => mutate(prev => {
+                        return {
+                            ...prev,
+                            refreshConfig: {
+                                ...prev.refreshConfig,
+                                refreshInterval: BigInt(Number(e.target.value) * 60)
+                            }
+                        }
+                    }, false)} />
             </Card.Body>
 
             <Card.Footer className="d-flex justify-content-end">
@@ -176,7 +213,10 @@ export default function Lists() {
                     disabled={saving}
                     onClick={() => {
                         setSaving(true)
-                        FetchProtobuf(lists.method.save_maxminddb_geoip, data.maxminddbGeoip)
+                        FetchProtobuf(lists.method.save_config, create(save_list_config_requestSchema, {
+                            refreshInterval: data.refreshConfig?.refreshInterval,
+                            maxminddbGeoip: data.maxminddbGeoip
+                        }))
                             .then(async ({ error }) => {
                                 if (error === undefined) {
                                     ctx.Info("save successful")
