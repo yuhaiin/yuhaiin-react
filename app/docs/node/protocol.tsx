@@ -9,6 +9,7 @@ import { Container, MoveUpDown, Remind, SettingInputText } from "../config/compo
 import { point } from "../pbes/node/point_pb";
 import {
     aeadSchema,
+    cloudflare_warp_masqueSchema,
     directSchema,
     dropSchema,
     fixedSchema,
@@ -130,6 +131,7 @@ const LazyTlsTermination = dynamic(() => import("./tls_server").then(mod => mod.
 const LazyHttpTermination = dynamic(() => import("./http").then(mod => mod.UnWrapHttp), { ssr: false })
 const LazyQuic = dynamic(() => import("./quic").then(mod => mod.Quicv2), { ssr: false })
 const LazyAead = dynamic(() => import("./aead").then(mod => mod.Aead), { ssr: false })
+const LazyCloudflareWarpMasque = dynamic(() => import("./cloudflare_warp_masque").then(mod => mod.CloudflareWarpMasque), { ssr: false })
 
 const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
 
@@ -216,6 +218,8 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
             return <LazyAead value={data.value} onChange={(e) => update(e)} />
         case "networkSplit":
             return <NetworkSplit value={data.value} onChange={(e) => update(e)} />
+        case "cloudflareWarpMasque":
+            return <LazyCloudflareWarpMasque value={data.value} onChange={(e) => update(e)} />
         default: return Unknown
     }
 }
@@ -426,6 +430,25 @@ export const protocols: { [key: string]: protocol } = {
                     },
                 ]
             })
+        }
+    }),
+    "cloudflareWarpMasque": create(protocolSchema, {
+        protocol: {
+            case: "cloudflareWarpMasque",
+            value: create(cloudflare_warp_masqueSchema, {
+                privateKey: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
+                endpointPublicKey: `-----BEGIN PUBLIC KEY-----
+SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY
+SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY
+-----END PUBLIC KEY-----
+`,
+                endpoint: "198.122.111.1",
+                mtu: 1280,
+                localAddresses: [
+                    "172.16.0.2/32",
+                    "3333:4444:111:8567:3333:6666:a888:95a0/128",
+                ]
+            }),
         }
     }),
     "mux": create(protocolSchema, {
