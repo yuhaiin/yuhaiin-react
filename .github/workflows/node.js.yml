@@ -46,7 +46,7 @@ jobs:
 
           import "embed"
 
-          //go:embed 404 _next docs 404.html index.html index.txt
+          //go:embed 404 _next _not-found docs 404.html index.html index.txt __next.__PAGE__.txt __next._full.txt __next._index.txt __next._tree.txt
           var Content embed.FS
           EOF
 
@@ -54,11 +54,16 @@ jobs:
           git clone https://github.com/yuhaiin/yuhaiin.github.io.git publish
           rm -rf publish/.git
           rm -rf publish/_next
+          rm -rf publish/_not-found
           rm -rf publish/docs
           rm -rf publish/404
           rm -rf publish/404.html
           rm -rf publish/index.html
           rm -rf publish/index.txt
+          rm -rf publish/__next.__PAGE__.txt
+          rm -rf publish/__next._full.txt
+          rm -rf publish/__next._index.txt
+          rm -rf publish/__next._tree.txt
           cp -rf out/* publish/
 
       - name: Deploy
