@@ -1,7 +1,7 @@
 import { clone, DescMessage, DescMethod, fromBinary, MessageShape, toBinary } from "@bufbuild/protobuf";
 import useSWR, { Fetcher, SWRConfiguration, SWRResponse } from 'swr';
 import type { SWRSubscriptionOptions } from 'swr/subscription';
-import { APIUrl } from './apiurl';
+import { getApiUrl } from "./apiurl";
 
 export function useProtoSWR<I extends DescMessage, O extends DescMessage>(
     m: DescMethod & { methodKind: "unary"; input: I; output: O; },
@@ -12,14 +12,13 @@ export function useProtoSWR<I extends DescMessage, O extends DescMessage>(
 
 export const ProtoPath = (m: DescMethod) => `/${m.parent.typeName}/${m.name}`
 
-
 export function ProtoESFetcher<I extends DescMessage, O extends DescMessage>(
     d: DescMethod & { methodKind: "unary"; input: I; output: O; },
     body?: MessageShape<I>, default_response?: MessageShape<O>): Fetcher<MessageShape<O>, string> {
     return () => {
         if (default_response) return clone(d.output, default_response)
         return fetch(
-            `${APIUrl}${ProtoPath(d)}`,
+            `${getApiUrl()}${ProtoPath(d)}`,
             {
                 method: "POST",
                 body: body ? toBinary(d.input, body) : undefined,
@@ -38,7 +37,7 @@ export async function FetchProtobuf<I extends DescMessage, O extends DescMessage
     data?: MessageShape<O>,
     error?: { code: number, msg: string }
 }> {
-    const r = await fetch(`${APIUrl}${ProtoPath(d)}`,
+    const r = await fetch(`${getApiUrl()}${ProtoPath(d)}`,
         {
             method: "POST",
             body: body ? toBinary(d.input, body) : undefined,
@@ -63,10 +62,10 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
     stream: (r: MessageShape<O>, prev?: Response) => Response,
 ):
     (key: string, { next }: SWRSubscriptionOptions<Response, { msg: string, code: number }>) => () => void {
-
+    const apiUrl = getApiUrl()
 
     return (key, { next }) => {
-        const url = new URL(APIUrl !== "" ? APIUrl : window.location.toString());
+        const url = new URL(apiUrl !== "" ? apiUrl : window.location.toString());
         url.pathname = ProtoPath(d)
         url.protocol = url.protocol === "https:" ? "wss:" : "ws:"
 

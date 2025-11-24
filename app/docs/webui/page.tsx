@@ -1,10 +1,10 @@
 "use client"
 
-import { useContext, useState } from "react";
 import { Button, Card, Col, Form, Row, Spinner } from "react-bootstrap";
-import { APIUrl, LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunTCPUrl, LatencyStunUrl, SetLatencyDNSUrl, SetLatencyHTTPUrl, SetLatencyIPUrl, SetLatencyIPv6, SetLatencyStunTCPUrl, SetLatencyStunUrl, SetUrl } from "../common/apiurl";
+import { useLocalStorage } from "usehooks-ts";
+import { APIUrlDefault, APIUrlKey, LatencyDNSUrlDefault, LatencyDNSUrlKey, LatencyHTTPUrlDefault, LatencyHTTPUrlKey, LatencyIPUrlDefault, LatencyIPUrlKey, LatencyIPv6Default, LatencyIPv6Key, LatencyStunTCPUrlDefault, LatencyStunTCPUrlKey, LatencyStunUrlDefault, LatencyStunUrlKey } from "../common/apiurl";
 import { SettingCheck } from "../common/switch";
-import { GlobalToastContext } from "../common/toast";
+import { SettingInputText } from "../config/components";
 
 const OnelineEdit = (props: {
     title: string,
@@ -36,28 +36,21 @@ const OnelineEdit = (props: {
 }
 
 function Setting() {
-    const ctx = useContext(GlobalToastContext);
-    const [url, setUrl] = useState(APIUrl);
-    const [latencyHTTP, setLatencyHTTP] = useState(LatencyHTTPUrl);
-    const [latencyDNS, setLatencyDNS] = useState(LatencyDNSUrl);
-    const [latencyIPv6, setLatencyIPv6] = useState(LatencyIPv6);
-    const [latencyIPUrl, setLatencyIPUrl] = useState(LatencyIPUrl);
-    const [latencyStunUrl, setLatencyStunUrl] = useState(LatencyStunUrl);
-    const [latencyStunTCPUrl, setLatencyStunTCPUrl] = useState(LatencyStunTCPUrl);
+    const [url, setUrl] = useLocalStorage(APIUrlKey, APIUrlDefault);
+    const [latencyHTTP, setLatencyHTTP] = useLocalStorage(LatencyHTTPUrlKey, LatencyHTTPUrlDefault);
+    const [latencyDNS, setLatencyDNS] = useLocalStorage(LatencyDNSUrlKey, LatencyDNSUrlDefault);
+    const [latencyIPv6, setLatencyIPv6] = useLocalStorage(LatencyIPv6Key, LatencyIPv6Default);
+    const [latencyIPUrl, setLatencyIPUrl] = useLocalStorage(LatencyIPUrlKey, LatencyIPUrlDefault);
+    const [latencyStunUrl, setLatencyStunUrl] = useLocalStorage(LatencyStunUrlKey, LatencyStunUrlDefault);
+    const [latencyStunTCPUrl, setLatencyStunTCPUrl] = useLocalStorage(LatencyStunTCPUrlKey, LatencyStunTCPUrlDefault);
 
     return <> <Card className="mb-3">
         <Card.Body>
-            <OnelineEdit
-                title="API Host"
+            <SettingInputText
+                label="API Host"
                 value={url}
-                onChange={setUrl}
+                onChange={(v: string) => setUrl(v)}
                 placeholder="http://127.0.0.1:50051"
-                onClick={() => {
-                    SetUrl(url)
-                    if (url !== "") ctx.Info(`Set API Url: ${url} success.`)
-                    else ctx.Info(`Remove API Url success.`)
-                    console.log(url)
-                }} buttonText="Save"
             />
 
             <hr />
@@ -68,74 +61,46 @@ function Setting() {
                 label="IPv6"
                 className="mb-1 ms-1"
                 checked={latencyIPv6}
-                onChange={() => {
-                    setLatencyIPv6(!latencyIPv6)
-                    SetLatencyIPv6(!latencyIPv6)
-                }}
+                onChange={() => { setLatencyIPv6(!latencyIPv6) }}
             />
 
-            <OnelineEdit
-                title="HTTP(tcp)"
+            <SettingInputText
+                label="HTTP(tcp)"
                 placeholder="https://clients3.google.com/generate_204"
                 value={latencyHTTP}
                 className="mb-2"
-                onChange={setLatencyHTTP}
-                onClick={() => {
-                    SetLatencyHTTPUrl(latencyHTTP)
-                    if (latencyHTTP !== "") ctx.Info(`Set Latency HTTP Url: ${latencyHTTP} success.`)
-                    else ctx.Info(`Remove Latency HTTP Url success.`)
-                }}
+                onChange={(v: string) => setLatencyHTTP(v)}
             />
 
-            <OnelineEdit
-                title="DOQ(udp)"
+            <SettingInputText
+                label="DOQ(udp)"
                 placeholder="dns.adguard.com:853"
                 className="mb-2"
                 value={latencyDNS}
-                onChange={setLatencyDNS}
-                onClick={() => {
-                    SetLatencyDNSUrl(latencyDNS)
-                    if (latencyDNS !== "") ctx.Info(`Set Latency DNS: ${latencyDNS} success.`)
-                    else ctx.Info(`Remove Latency DNS success.`)
-                }}
+                onChange={(v: string) => setLatencyDNS(v)}
             />
 
-            <OnelineEdit
-                title="IP"
+            <SettingInputText
+                label="IP"
                 placeholder="http://ip.sb"
                 className="mb-2"
                 value={latencyIPUrl}
-                onChange={setLatencyIPUrl}
-                onClick={() => {
-                    SetLatencyIPUrl(latencyIPUrl)
-                    if (latencyIPUrl !== "") ctx.Info(`Set Latency IP Url: ${latencyIPUrl} success.`)
-                    else ctx.Info(`Remove Latency IP Url success.`)
-                }}
+                onChange={(v: string) => setLatencyIPUrl(v)}
             />
 
-            <OnelineEdit
-                title="STUN"
+            <SettingInputText
+                label="STUN"
                 placeholder="stun.syncthing.net:3478"
                 className="mb-2"
                 value={latencyStunUrl}
-                onChange={setLatencyStunUrl}
-                onClick={() => {
-                    SetLatencyStunUrl(latencyStunUrl)
-                    if (latencyStunUrl !== "") ctx.Info(`Set Latency STUN Url: ${latencyStunUrl} success.`)
-                    else ctx.Info(`Remove Latency STUN Url success.`)
-                }}
+                onChange={(v: string) => setLatencyStunUrl(v)}
             />
 
-            <OnelineEdit
-                title="STUN TCP"
+            <SettingInputText
+                label="STUN TCP"
                 placeholder="stun.syncthing.net:3478"
                 value={latencyStunTCPUrl}
-                onChange={setLatencyStunTCPUrl}
-                onClick={() => {
-                    SetLatencyStunTCPUrl(latencyStunTCPUrl)
-                    if (latencyStunTCPUrl !== "") ctx.Info(`Set Latency STUN TCP Url: ${latencyStunTCPUrl} success.`)
-                    else ctx.Info(`Remove Latency STUN TCP Url success.`)
-                }}
+                onChange={(v: string) => setLatencyStunTCPUrl(v)}
             />
         </Card.Body>
     </Card>

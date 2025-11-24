@@ -5,7 +5,8 @@ import { Duration, StringValueSchema } from "@bufbuild/protobuf/wkt";
 import Error from 'next/error';
 import { FC, useContext, useState } from "react";
 import { Accordion, Button, ButtonGroup, Col, Dropdown, DropdownButton, ListGroup, Row, Spinner } from "react-bootstrap";
-import { LatencyDNSUrl, LatencyHTTPUrl, LatencyIPUrl, LatencyIPv6, LatencyStunTCPUrl, LatencyStunUrl } from "../common/apiurl";
+import { useLocalStorage } from "usehooks-ts";
+import { LatencyDNSUrlDefault, LatencyDNSUrlKey, LatencyHTTPUrlDefault, LatencyHTTPUrlKey, LatencyIPUrlDefault, LatencyIPUrlKey, LatencyIPv6Default, LatencyIPv6Key, LatencyStunTCPUrlDefault, LatencyStunTCPUrlKey, LatencyStunUrlDefault, LatencyStunUrlKey } from "../common/apiurl";
 import Loading from "../common/loading";
 import { Nodes, NodesContext } from "../common/nodes";
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
@@ -108,6 +109,13 @@ function Group() {
     const [modalData, setModalData] = useState(new ModalData());
     const [importJson, setImportJson] = useState({ data: false });
     const [latency, setLatency] = useState<{ [key: string]: latencyStatus }>({})
+
+    const [latencyHTTP] = useLocalStorage(LatencyHTTPUrlKey, LatencyHTTPUrlDefault);
+    const [latencyDNS] = useLocalStorage(LatencyDNSUrlKey, LatencyDNSUrlDefault);
+    const [latencyIPv6] = useLocalStorage(LatencyIPv6Key, LatencyIPv6Default);
+    const [latencyIPUrl] = useLocalStorage(LatencyIPUrlKey, LatencyIPUrlDefault);
+    const [latencyStunUrl] = useLocalStorage(LatencyStunUrlKey, LatencyStunUrlDefault);
+    const [latencyStunTCPUrl] = useLocalStorage(LatencyStunTCPUrlKey, LatencyStunTCPUrlDefault);
 
     const { data, error, isLoading, mutate } = useProtoSWR(node.method.list)
 
@@ -222,6 +230,14 @@ function Group() {
                                     latency={latency[v.hash] ?? { tcp: { loading: false, value: "N/A" }, udp: { loading: false, value: "N/A" }, }}
                                     onChangeLatency={(e) => { setLatency(prev => { return { ...prev, [v.hash]: e(prev[v.hash] ?? { tcp: { loading: false, value: "N/A" }, udp: { loading: false, value: "N/A" }, }) } }) }}
                                     onClickEdit={() => { openModal(v.hash) }}
+                                    ipv6={latencyIPv6}
+                                    urls={{
+                                        ip: latencyIPUrl,
+                                        tcp: latencyHTTP,
+                                        udp: latencyDNS,
+                                        stun: latencyStunUrl,
+                                        stunTCP: latencyStunTCPUrl,
+                                    }}
                                 />
                             })
                     }
@@ -269,14 +285,25 @@ const createLatencyRequest = (r:
 type Request = {
     request: request_protocol,
     setLoading: (loading: boolean, error?: string) => void,
-    setResult: (result: reply) => void
+    setResult: (result: reply) => void,
 }
 
-const createLatencyReqByType = (type: LatencyType, latency: latencyStatus, setState: (x: (x: latencyStatus) => latencyStatus) => void): Request => {
+const createLatencyReqByType = (
+    type: LatencyType,
+    latency: latencyStatus,
+    setState: (x: (x: latencyStatus) => latencyStatus) => void,
+    urls: {
+        tcp: string,
+        udp: string,
+        ip: string,
+        stun: string,
+        stunTCP: string
+    }
+): Request => {
     switch (type) {
         case LatencyType.TCP:
             return {
-                request: createLatencyRequest({ case: "http", url: LatencyHTTPUrl }),
+                request: createLatencyRequest({ case: "http", url: urls.tcp }),
                 setLoading: (loading: boolean, error?: string) => {
                     setState((prev) => { return { ...prev, tcp: { ...prev.tcp, loading: loading } } })
                     if (error) setState((prev) => { return { ...prev, tcp: { loading: false, value: error } } })
@@ -290,7 +317,7 @@ const createLatencyReqByType = (type: LatencyType, latency: latencyStatus, setSt
             }
         case LatencyType.UDP:
             return {
-                request: createLatencyRequest({ case: "dnsOverQuic", host: LatencyDNSUrl, targetDomain: "www.google.com" }),
+                request: createLatencyRequest({ case: "dnsOverQuic", host: urls.udp, targetDomain: "www.google.com" }),
                 setLoading: (loading: boolean, error?: string) => {
                     setState((prev) => { return { ...prev, udp: { ...prev.udp, loading: loading } } })
                     if (error) setState((prev) => { return { ...prev, udp: { loading: false, value: error } } })
@@ -304,39 +331,102 @@ const createLatencyReqByType = (type: LatencyType, latency: latencyStatus, setSt
             }
         case LatencyType.IP:
             return {
-                request: createLatencyRequest({ case: "ip", url: LatencyIPUrl }),
+                request: createLatencyRequest({ case: "ip", url: urls.ip }),
                 setLoading: (loading: boolean, error?: string) => {
-                    setState((prev) => { return { ...prev, ip: { loading: loading, ipv4: latency.ip ? latency.ip.ipv4 : "N/A", ipv6: latency.ip ? latency.ip.ipv6 : "N/A" } } })
-                    if (error) setState((prev) => { return { ...prev, ip: { loading: false, ipv4: error, ipv6: error } } })
+                    setState((prev) => {
+                        return {
+                            ...prev, ip: {
+                                loading: loading,
+                                ipv4: latency.ip ? latency.ip.ipv4 : "N/A",
+                                ipv6: latency.ip ? latency.ip.ipv6 : "N/A"
+                            }
+                        }
+                    })
+                    if (error) setState((prev) => {
+                        return {
+                            ...prev, ip: {
+                                loading: false,
+                                ipv4: error,
+                                ipv6: error
+                            }
+                        }
+                    })
                 },
                 setResult: (r: reply) => {
                     if (r.reply.case === "ip") {
                         const ipv4 = r.reply.value.ipv4
                         const ipv6 = r.reply.value.ipv6
-                        setState((prev) => { return { ...prev, ip: { ipv4: ipv4, ipv6: ipv6, loading: false } } })
+                        setState((prev) => {
+                            return {
+                                ...prev, ip: {
+                                    ipv4: ipv4,
+                                    ipv6: ipv6,
+                                    loading: false
+                                }
+                            }
+                        })
                     }
                 }
             }
         case LatencyType.STUNTCP:
             return {
-                request: createLatencyRequest({ case: "stun", host: LatencyStunTCPUrl, tcp: true }),
+                request: createLatencyRequest({ case: "stun", host: urls.stunTCP, tcp: true }),
                 setLoading: (loading: boolean, error?: string) => {
-                    setState((prev) => { return { ...prev, stun_tcp: { loading: loading, ip: latency.stun_tcp ? latency.stun_tcp.ip : "N/A" } } })
-                    if (error) setState((prev) => { return { ...prev, stun_tcp: { loading: false, ip: error } } })
+                    setState((prev) => {
+                        return {
+                            ...prev, stun_tcp: {
+                                loading: loading,
+                                ip: latency.stun_tcp ? latency.stun_tcp.ip : "N/A"
+                            }
+                        }
+                    })
+                    if (error) setState((prev) => {
+                        return {
+                            ...prev, stun_tcp: {
+                                loading: false,
+                                ip: error
+                            }
+                        }
+                    })
                 },
                 setResult: (r: reply) => {
                     if (r.reply.case === "stun") {
                         const ip = r.reply.value.mappedAddress
-                        setState((prev) => { return { ...prev, stun_tcp: { ip: ip, loading: false } } })
+                        setState((prev) => {
+                            return {
+                                ...prev, stun_tcp: {
+                                    ip: ip,
+                                    loading: false
+                                }
+                            }
+                        })
                     }
                 }
             }
         case LatencyType.STUN:
             return {
-                request: createLatencyRequest({ case: "stun", host: LatencyStunUrl, tcp: false }),
+                request: createLatencyRequest({ case: "stun", host: urls.stun, tcp: false }),
                 setLoading: (loading: boolean, error?: string) => {
-                    setState((prev) => { return { ...prev, stun: { loading: loading, mappedAddress: latency.stun ? latency.stun.mappedAddress : "N/A", mapping: latency.stun ? latency.stun.mapping : "N/A", filtering: latency.stun ? latency.stun.filtering : "N/A" } } })
-                    if (error) setState((prev) => { return { ...prev, stun: { loading: false, mappedAddress: error, mapping: error, filtering: error } } })
+                    setState((prev) => {
+                        return {
+                            ...prev, stun: {
+                                loading: loading,
+                                mappedAddress: latency.stun ? latency.stun.mappedAddress : "N/A",
+                                mapping: latency.stun ? latency.stun.mapping : "N/A",
+                                filtering: latency.stun ? latency.stun.filtering : "N/A"
+                            }
+                        }
+                    })
+                    if (error) setState((prev) => {
+                        return {
+                            ...prev, stun: {
+                                loading: false,
+                                mappedAddress: error,
+                                mapping: error,
+                                filtering: error
+                            }
+                        }
+                    })
                 },
                 setResult: (r: reply) => {
                     if (r.reply.case === "stun") {
@@ -363,12 +453,20 @@ const NodeItemv2: FC<{
     hash: string, name: string,
     latency: latencyStatus,
     onChangeLatency: (x: (s: latencyStatus) => latencyStatus) => void
-    onClickEdit: () => void
-}> = ({ hash, name, onClickEdit, onChangeLatency, latency }) => {
+    onClickEdit: () => void,
+    urls: {
+        tcp: string,
+        udp: string,
+        ip: string,
+        stun: string,
+        stunTCP: string,
+    },
+    ipv6?: boolean,
+}> = ({ hash, name, onClickEdit, onChangeLatency, latency, ipv6, urls }) => {
     const ctx = useContext(GlobalToastContext);
 
     const test = (type: LatencyType) => {
-        const { request, setLoading, setResult } = createLatencyReqByType(type, latency, onChangeLatency)
+        const { request, setLoading, setResult } = createLatencyReqByType(type, latency, onChangeLatency, urls)
 
         setLoading(true)
 
@@ -376,7 +474,7 @@ const NodeItemv2: FC<{
             requests: [{
                 hash: hash,
                 id: "latency",
-                ipv6: LatencyIPv6,
+                ipv6: ipv6,
                 method: request
             }]
         }))

@@ -2,10 +2,12 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { Navbar as BootstrapNavbar, Container, Nav, NavDropdown } from 'react-bootstrap';
-import { APIUrl } from './common/apiurl';
+import { useLocalStorage } from 'usehooks-ts';
+import { APIUrlDefault, APIUrlKey } from './common/apiurl';
 
 function NavBar(props: { children: React.ReactNode }) {
     const router = useRouter()
+    const [apiUrl] = useLocalStorage<string>(APIUrlKey, APIUrlDefault)
 
     return (
         <>
@@ -53,7 +55,7 @@ function NavBar(props: { children: React.ReactNode }) {
                                 <NavDropdown.Divider />
                                 <NavDropdown.Item eventKey={'/docs/config/log/'}>Log</NavDropdown.Item>
                                 <NavDropdown.Divider />
-                                <NavDropdown.Item eventKey={APIUrl + '/debug/pprof'} >Pprof</NavDropdown.Item>
+                                <NavDropdown.Item eventKey={apiUrl + '/debug/pprof'} >Pprof</NavDropdown.Item>
                                 <NavDropdown.Item eventKey="https://yuhaiin.github.io/documents/" >Documents</NavDropdown.Item>
                                 <NavDropdown.Divider />
                                 <NavDropdown.Item eventKey={'/docs/config/licenses'} >Licenses</NavDropdown.Item>
