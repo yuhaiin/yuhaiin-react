@@ -2,8 +2,7 @@
 
 import { create, toJsonString } from '@bufbuild/protobuf';
 import React, { createContext, FC, useContext, useEffect, useState } from 'react';
-import { Button, Form, InputGroup, Modal, Spinner } from 'react-bootstrap';
-import Select, { CSSObjectWithLabel } from 'react-select';
+import { Button, Card, Dropdown, Form, InputGroup, Modal, Spinner } from 'react-bootstrap';
 import useSWR from 'swr';
 import Loading from '../../common/loading';
 import { FetchProtobuf, ProtoESFetcher, ProtoPath } from '../../common/proto';
@@ -100,124 +99,66 @@ const RuleRow: FC<{
 
     return (
         <InputGroup className="mb-3">
-            <div className='form-control p-0' style={{ flex: '0 0 35%' }}>
-                <Select
-                    styles={{
-                        indicatorSeparator: () => ({ display: "none" }),
-                        control: (base: CSSObjectWithLabel) => ({
-                            ...base,
-                            border: "none",
-                            boxShadow: "none",
-                            "&:hover": {
-                                border: "none",
-                            },
-                        })
-                    }}
-                    menuShouldScrollIntoView={false}
-                    value={{ value: String(rule.object.case), label: String(rule.object.case) }}
-                    onChange={(e) => handleUpdate(e.value, "")}
-                    options={[
+            <Form.Select value={rule.object.case} onChange={(e) => handleUpdate(e.target.value, "")} style={{ flex: "0 1 100px" }}>
+                {
+                    [
                         { value: "host", label: "Host" },
                         { value: "process", label: "Process" },
                         { value: "inbound", label: "Inbound" },
                         { value: "network", label: "Network" },
                         { value: "port", label: "Port" },
                         { value: "geoip", label: "Geoip" },
-                    ]}
-                />
-            </div>
+                    ].
+                        map((v) => <option key={v.value} value={v.value}>{v.label}</option>)
+                }
+
+            </Form.Select>
 
             {
                 rule.object.case == "host" &&
-                <Select
-                    className='form-control p-0'
-                    styles={{
-                        indicatorSeparator: () => ({ display: "none" }),
-                        control: (base: CSSObjectWithLabel) => ({
-                            ...base,
-                            border: "none",
-                            boxShadow: "none",
-                            "&:hover": {
-                                border: "none",
-                            },
-                        })
-                    }}
-                    menuShouldScrollIntoView={false}
-                    value={{ value: rule.object.value.list, label: rule.object.value.list }}
-                    onChange={(e) => handleUpdate("host", e.value)}
-                    options={valuesContext.Lists.map((v) => ({ value: v, label: v }))}
-                />
+                <>
+                    <Form.Select value={rule.object.value.list} onChange={(e) => handleUpdate("host", e.target.value)}>
+                        {
+                            valuesContext.Lists.map((v) => <option key={v} value={v}>{v}</option>)
+                        }
+                    </Form.Select>
+                </>
             }
 
             {
                 rule.object.case == "inbound" &&
-                <Select
-                    className='form-control p-0'
-                    styles={{
-                        indicatorSeparator: () => ({ display: "none" }),
-                        control: (base: CSSObjectWithLabel) => ({
-                            ...base,
-                            border: "none",
-                            boxShadow: "none",
-                            "&:hover": {
-                                border: "none",
-                            },
-                        })
-                    }}
-                    isMulti
-                    closeMenuOnSelect={false}
-                    menuShouldScrollIntoView={false}
-                    options={valuesContext.Inbounds.map((v) => ({ value: v, label: v }))}
-                    value={rule.object.value.names.map((v) => ({ value: v, label: v }))}
-                    onChange={(v) => handleUpdate("inbound", v.map((v) => v.value))}
-                />
+                <>
+                    <DropdownSelect
+                        values={rule.object.value.names}
+                        items={valuesContext.Inbounds}
+                        onUpdate={(v) => handleUpdate("inbound", v)}
+                    />
+                </>
             }
 
             {
                 rule.object.case == "process" &&
-                <Select
-                    className='form-control p-0'
-                    styles={{
-                        indicatorSeparator: () => ({ display: "none" }),
-                        control: (base: CSSObjectWithLabel) => ({
-                            ...base,
-                            border: "none",
-                            boxShadow: "none",
-                            "&:hover": {
-                                border: "none",
-                            },
-                        })
-                    }}
-                    menuShouldScrollIntoView={false}
-                    value={{ value: rule.object.value.list, label: rule.object.value.list }}
-                    onChange={(e) => handleUpdate("process", e.value)}
-                    options={valuesContext.Lists.map((v) => ({ value: v, label: v }))}
-                />
+                <>
+                    <Form.Select value={rule.object.value.list} onChange={(e) => handleUpdate("process", e.target.value)}>
+                        {
+                            valuesContext.Lists.map((v) => <option key={v} value={v}>{v}</option>)
+                        }
+                    </Form.Select>
+                </>
             }
 
             {
                 rule.object.case == "network" &&
-                <Select
-                    className='form-control p-0'
-                    styles={{
-                        indicatorSeparator: () => ({ display: "none" }),
-                        control: (base: CSSObjectWithLabel) => ({
-                            ...base,
-                            border: "none",
-                            boxShadow: "none",
-                            "&:hover": {
-                                border: "none",
-                            },
-                        })
-                    }}
-                    menuShouldScrollIntoView={false}
-                    value={{
-                        value: rule.object.value.network === network_network_type.tcp ? "tcp" : "udp",
-                        label: rule.object.value.network === network_network_type.tcp ? "tcp" : "udp"
-                    }}
-                    onChange={(e) => handleUpdate("network", e.value)}
-                    options={[{ value: "tcp", label: "tcp" }, { value: "udp", label: "udp" }]}
-                />
+                <>
+                    <Form.Select value={rule.object.value.network === network_network_type.tcp ? "tcp" : "udp"} onChange={(e) => handleUpdate("network", e.target.value)}>
+                        {
+                            [
+                                { value: "tcp", label: "tcp" },
+                                { value: "udp", label: "udp" },
+                            ].map((v) => <option key={v.value} value={v.value}>{v.label}</option>)
+                        }
+                    </Form.Select>
+                </>
             }
 
             {
@@ -442,12 +383,14 @@ export const FilterModal: FC<{ index: number, name: string, show: boolean, onHid
                             />
                             <FilterBuilder groups={rule.rules} onUpdateGroups={(groups) => { setRule({ ...rule, rules: groups }, false) }} />
 
-
-                            <hr className="my-4" />
-                            <h5>Current State (for Debugging):</h5>
-                            <pre style={{ background: '#f8f9fa', padding: '15px', borderRadius: '5px' }}>
-                                {toJsonString(rulev2Schema, rule, { prettySpaces: 2 })}
-                            </pre>
+                            <Card className='mt-2'>
+                                <Card.Body>
+                                    <Card.Title>Current State (for Debugging):</Card.Title>
+                                    <pre>
+                                        {toJsonString(rulev2Schema, rule, { prettySpaces: 2 })}
+                                    </pre>
+                                </Card.Body>
+                            </Card>
                         </>
                 }
             </Modal.Body>
@@ -462,4 +405,25 @@ export const FilterModal: FC<{ index: number, name: string, show: boolean, onHid
             </Modal.Footer>
         </Modal>
     </>
+}
+
+
+const DropdownSelect: FC<{ values: string[], items: string[], onUpdate: (x: string[]) => void }> = ({ values, items, onUpdate: onAdd }) => {
+    return <Dropdown autoClose="outside">
+        <Dropdown.Toggle variant='outline-primary' as={Form.Select} defaultValue="">
+            <option value="" hidden>{values.length === 0 ? "Choose..." : values.join(", ")}</option>
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
+            {
+                items.map((v) =>
+                    <Dropdown.Item
+                        key={v}
+                        onClick={() => onAdd(values.includes(v) ? values.filter((x) => x !== v) : [...values, v])}
+                        active={values.includes(v)}
+                    >
+                        {v}
+                    </Dropdown.Item>)
+            }
+        </Dropdown.Menu>
+    </Dropdown>
 }
