@@ -118,6 +118,7 @@ const RuleRow: FC<{
                 rule.object.case == "host" &&
                 <>
                     <Form.Select value={rule.object.value.list} onChange={(e) => handleUpdate("host", e.target.value)}>
+                        <option value="">Choose...</option>
                         {
                             valuesContext.Lists.map((v) => <option key={v} value={v}>{v}</option>)
                         }
@@ -140,6 +141,7 @@ const RuleRow: FC<{
                 rule.object.case == "process" &&
                 <>
                     <Form.Select value={rule.object.value.list} onChange={(e) => handleUpdate("process", e.target.value)}>
+                        <option value="">Choose...</option>
                         {
                             valuesContext.Lists.map((v) => <option key={v} value={v}>{v}</option>)
                         }
