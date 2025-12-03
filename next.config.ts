@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
     transpilePackages: ['react-bootstrap'],
     experimental: {
         optimizePackageImports: ['shlex', 'bootstrap-icons', 'bootstrap', '@bufbuild/buf', '@bufbuild/protobuf', 'swr'],
+        viewTransition: true,
     },
 }
 

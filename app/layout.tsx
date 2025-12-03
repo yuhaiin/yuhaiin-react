@@ -1,7 +1,7 @@
 "use client"
 
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, ViewTransition } from 'react';
 import { Container } from 'react-bootstrap';
 import { GlobalToastProvider } from './docs/common/toast';
 import NavBar from './docs/nav';
@@ -56,7 +56,9 @@ export default function RootLayout({
           <NavBar>
             <Container className="mt-3 mb-3">
               <GlobalToastProvider>
-                {children}
+                <ViewTransition>
+                  {children}
+                </ViewTransition>
               </GlobalToastProvider>
             </Container>
           </NavBar>
