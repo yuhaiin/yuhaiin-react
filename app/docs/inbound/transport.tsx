@@ -42,5 +42,7 @@ export const Transport: FC<{ transport: transport, onChange: (x: transport) => v
                 aead={transport.transport.value}
                 onChange={(x) => { onChange({ ...transport, transport: { case: "aead", value: x } }) }}
             />
+        case "proxy":
+            return <><div className="text-center" style={{ opacity: '0.4' }}>Proxy</div></>
     }
 }

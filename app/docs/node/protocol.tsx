@@ -25,6 +25,7 @@ import {
     obfs_httpSchema,
     protocol,
     protocolSchema,
+    proxySchema,
     quicSchema,
     realitySchema,
     setSchema,
@@ -46,6 +47,7 @@ import { BootstrapDnsWarp } from "./bootstrap_dns_warp";
 import { Dropv2 } from './drop';
 import { HttpMock } from "./mock";
 import { Nonev2 } from './none';
+import { Proxy } from "./proxy";
 import { Rejectv2 } from './reject';
 import { Props } from './tools';
 
@@ -220,6 +222,8 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
             return <NetworkSplit value={data.value} onChange={(e) => update(e)} />
         case "cloudflareWarpMasque":
             return <LazyCloudflareWarpMasque value={data.value} onChange={(e) => update(e)} />
+        case "proxy":
+            return Proxy
         default: return Unknown
     }
 }
@@ -564,4 +568,10 @@ SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY
             })
         }
     }),
+    "proxy": create(protocolSchema, {
+        protocol: {
+            case: "proxy",
+            value: create(proxySchema, {})
+        }
+    })
 }

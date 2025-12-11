@@ -11,6 +11,7 @@ import {
     inbound,
     muxSchema,
     normalSchema,
+    proxySchema,
     realitySchema,
     tls_autoSchema,
     tlsSchema,
@@ -69,7 +70,7 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
                                     "normal", "tls", "mux",
                                     "http2", "websocket", "grpc",
                                     "reality", "tlsAuto", "httpMock",
-                                    "aead",
+                                    "aead", "proxy"
                                 ]}
                                 onChange={(e) => setNewProtocol({ value: e })}
                             />
@@ -128,6 +129,12 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
                                             x.transport.push(create(transportSchema, {
                                                 transport: { case: "aead", value: create(aeadSchema, {}) }
                                             }))
+                                            break
+                                        case "proxy":
+                                            x.transport.push(create(transportSchema, {
+                                                transport: { case: "proxy", value: create(proxySchema, {}) }
+                                            }))
+                                            break
                                     }
                                     onChange(x)
                                 }}
