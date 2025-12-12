@@ -13,6 +13,7 @@ import {
     directSchema,
     dropSchema,
     fixedSchema,
+    fixedv2Schema,
     grpcSchema,
     http2Schema,
     http_mockSchema,
@@ -110,6 +111,7 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
     }
 
 const LazyFixed = dynamic(() => import("./simple").then(mod => mod.Fixed), { ssr: false })
+const LazyFixedv2 = dynamic(() => import("./fixedv2").then(mod => mod.Fixed), { ssr: false })
 const LazyDirect = dynamic(() => import("./direct").then(mod => mod.Directv2), { ssr: false })
 const LazyTls = dynamic(() => import("./tls").then(mod => mod.Tlsv2), { ssr: false })
 const LazyWebsocket = dynamic(() => import("./websocket").then(mod => mod.Websocketv2), { ssr: false })
@@ -224,6 +226,8 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
             return <LazyCloudflareWarpMasque value={data.value} onChange={(e) => update(e)} />
         case "proxy":
             return Proxy
+        case "fixedv2":
+            return <LazyFixedv2 value={data.value} onChange={(e) => update(e)} />
         default: return Unknown
     }
 }
@@ -293,6 +297,12 @@ const tlsConfig = create(tls_configSchema, {
 
 
 export const protocols: { [key: string]: protocol } = {
+    "fixedv2": create(protocolSchema, {
+        protocol: {
+            case: "fixedv2",
+            value: create(fixedv2Schema, { addresses: [] })
+        }
+    }),
     "fixed": create(protocolSchema, {
         protocol: {
             case: "fixed",
