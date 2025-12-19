@@ -2,12 +2,16 @@ import { create } from "@bufbuild/protobuf";
 import { FC, useContext } from "react";
 import { Button, InputGroup, Row } from "react-bootstrap";
 import { InterfacesContext } from "../common/interfaces";
+import { SettingCheck } from "../common/switch";
 import { Container, MoveUpDown, Remind, SettingInputText } from "../config/components";
 import { fixedv2, fixedv2_address, fixedv2_addressSchema } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
 export const Fixed: FC<Props<fixedv2>> = ({ value, onChange }) => {
-    return <Hosts data={value.addresses} onChange={(x) => onChange({ ...value, addresses: x })} />
+    return <>
+        <Hosts data={value.addresses} onChange={(x) => onChange({ ...value, addresses: x })} />
+        <SettingCheck label="UDP HappyEyeballs" checked={value.udpHappyEyeballs} onChange={() => { onChange({ ...value, udpHappyEyeballs: !value.udpHappyEyeballs }) }} />
+    </>
 }
 
 export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[]) => void }> =

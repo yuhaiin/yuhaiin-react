@@ -1,5 +1,5 @@
 import { FC } from "react"
-import { SettingTypeSelect } from "../common/switch"
+import { SettingCheck, SettingTypeSelect } from "../common/switch"
 import { SettingInputText } from "../config/components"
 import { reverse_tcp, tcp_udp_controlSchema, tcpudp } from "../pbes/config/inbound_pb"
 
@@ -25,5 +25,6 @@ export const TcpUdp: FC<{ protocol: tcpudp, onChange: (x: tcpudp) => void }> = (
             value={protocol.control}
             onChange={(e) => { onChange({ ...protocol, control: e }) }}
         />
+        <SettingCheck label="UDP HappyEyeballs" checked={protocol.udpHappyEyeballs} onChange={() => { onChange({ ...protocol, udpHappyEyeballs: !protocol.udpHappyEyeballs }) }} />
     </>
 }
