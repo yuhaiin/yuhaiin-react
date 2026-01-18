@@ -165,84 +165,76 @@ function Group() {
 
             </NodesContext>
 
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <Dropdown
+                    onSelect={(e) => { const i = Number(e); if (!isNaN(i)) setGroupIndex(i) }}
+                >
+                    <Dropdown.Toggle variant="outline-primary">{groupIndex >= 0 && data.groups.length > groupIndex ? data.groups[groupIndex].name : "GROUP"}</Dropdown.Toggle>
+                    <Dropdown.Menu>
+                        <Dropdown.Item eventKey={-1}>Select...</Dropdown.Item>
 
-            <div>
-                <Row>
-                    <Col className="mb-4 d-flex">
-                        <Dropdown
-                            onSelect={(e) => { const i = Number(e); if (!isNaN(i)) setGroupIndex(i) }}
-                        >
-                            <Dropdown.Toggle variant="light">{groupIndex >= 0 && data.groups.length > groupIndex ? data.groups[groupIndex].name : "GROUP"}</Dropdown.Toggle>
-                            <Dropdown.Menu>
-                                <Dropdown.Item eventKey={-1}>Select...</Dropdown.Item>
-
-                                {
-                                    data.groups && data.groups
-                                        .map((k, i) => {
-                                            return <Dropdown.Item eventKey={i} key={i}>{k.name}</Dropdown.Item>
-                                        })
-                                }
-                            </Dropdown.Menu>
-                        </Dropdown>
-
-
-                        <ButtonGroup className="ms-2 d-flex">
-                            <Button
-                                variant="outline-success"
-                                className="w-100"
-                                onClick={() => {
-                                    setModalData({
-                                        point: create(pointSchema, {
-                                            group: "template_group",
-                                            name: "template_name",
-                                            origin: origin.manual,
-                                        }),
-                                        hash: "new node",
-                                        show: true,
-                                        onDelete: undefined,
-                                        isNew: true
-                                    })
-                                }}
-                            >
-                                New
-                            </Button>
-
-                            <Button
-                                variant="outline-success"
-                                className="w-100"
-                                onClick={() => { setImportJson({ data: true }) }}
-                            >Import</Button>
-
-                        </ButtonGroup>
-                    </Col>
-                </Row>
-
-                <Accordion className="mb-3" alwaysOpen id="connections">
-                    {
-                        groupIndex >= 0
-                        && data.groups.length > groupIndex
-                        && data.groups[groupIndex].nodes
-                            .map((v) => {
-                                return <NodeItemv2
-                                    key={v.hash}
-                                    hash={v.hash}
-                                    name={v.name}
-                                    latency={latency[v.hash] ?? { tcp: { loading: false, value: "N/A" }, udp: { loading: false, value: "N/A" }, }}
-                                    onChangeLatency={(e) => { setLatency(prev => { return { ...prev, [v.hash]: e(prev[v.hash] ?? { tcp: { loading: false, value: "N/A" }, udp: { loading: false, value: "N/A" }, }) } }) }}
-                                    onClickEdit={() => { openModal(v.hash) }}
-                                    ipv6={latencyIPv6}
-                                    urls={{
-                                        ip: latencyIPUrl,
-                                        tcp: latencyHTTP,
-                                        udp: latencyDNS,
-                                        stun: latencyStunUrl,
-                                        stunTCP: latencyStunTCPUrl,
-                                    }}
-                                />
+                        {
+                            data.groups?.map((k, i) => {
+                                return <Dropdown.Item eventKey={i} key={i}>{k.name}</Dropdown.Item>
                             })
-                    }
-                </Accordion>
-            </div >
+                        }
+                    </Dropdown.Menu>
+                </Dropdown>
+
+                <ButtonGroup>
+                    <Button
+                        variant="outline-primary"
+                        onClick={() => {
+                            setModalData({
+                                point: create(pointSchema, {
+                                    group: "template_group",
+                                    name: "template_name",
+                                    origin: origin.manual,
+                                }),
+                                hash: "new node",
+                                show: true,
+                                onDelete: undefined,
+                                isNew: true
+                            })
+                        }}
+                    >
+                        <i className="bi bi-plus-lg" />&nbsp;New
+                    </Button>
+
+                    <Button
+                        variant="outline-primary"
+                        onClick={() => { setImportJson({ data: true }) }}
+                    >
+                        <i className="bi bi-box-arrow-in-down" />&nbsp;Import
+                    </Button>
+                </ButtonGroup>
+            </div>
+
+            <Accordion className="mb-3" alwaysOpen id="connections">
+                {
+                    groupIndex >= 0
+                    && data.groups.length > groupIndex
+                    && data.groups[groupIndex].nodes
+                        .map((v) => {
+                            return <NodeItemv2
+                                key={v.hash}
+                                hash={v.hash}
+                                name={v.name}
+                                latency={latency[v.hash] ?? { tcp: { loading: false, value: "N/A" }, udp: { loading: false, value: "N/A" }, }}
+                                onChangeLatency={(e) => { setLatency(prev => { return { ...prev, [v.hash]: e(prev[v.hash] ?? { tcp: { loading: false, value: "N/A" }, udp: { loading: false, value: "N/A" }, }) } }) }}
+                                onClickEdit={() => { openModal(v.hash) }}
+                                ipv6={latencyIPv6}
+                                urls={{
+                                    ip: latencyIPUrl,
+                                    tcp: latencyHTTP,
+                                    udp: latencyDNS,
+                                    stun: latencyStunUrl,
+                                    stunTCP: latencyStunTCPUrl,
+                                }}
+                            />
+                        })
+                }
+            </Accordion>
         </>
     );
 }
@@ -505,91 +497,87 @@ const NodeItemv2: FC<{
         <Accordion.Header>{name}</Accordion.Header>
         <Accordion.Body>
             <ListGroup variant="flush">
-
                 <ListGroup.Item>
-                    <div className="d-xl-flex">
-                        <div className="endpoint-name flex-grow-1 notranslate">TCP</div>
-                        <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-download">{latency.tcp.value}</div>
-                    </div>
+                    <Row>
+                        <Col md={6}>
+                            <div className="d-flex justify-content-between">
+                                <div className="fw-bold">TCP</div>
+                                <div className="text-break">{latency.tcp.value}</div>
+                            </div>
+                        </Col>
+                        <Col md={6}>
+                            <div className="d-flex justify-content-between">
+                                <div className="fw-bold">UDP</div>
+                                <div className="text-break">{latency.udp.value}</div>
+                            </div>
+                        </Col>
+                    </Row>
                 </ListGroup.Item>
-
-
-                <ListGroup.Item>
-                    <div className="d-xl-flex">
-                        <div className="endpoint-name flex-grow-1 notranslate">UDP</div>
-                        <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.udp.value}</div>
-                    </div>
-                </ListGroup.Item>
-
-                {
-                    latency.ip &&
-                    <>
-                        <ListGroup.Item>
-                            <div className="d-xl-flex">
-                                <div className="endpoint-name flex-grow-1 notranslate">IPv4</div>
-                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.ip.ipv4}</div>
-                            </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item>
-                            <div className="d-xl-flex">
-                                <div className="endpoint-name flex-grow-1 notranslate">IPv6</div>
-                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.ip.ipv6}</div>
-                            </div>
-                        </ListGroup.Item>
-                    </>
-                }
-
-                {
-                    latency.stun &&
-                    <>
-                        <ListGroup.Item>
-                            <div className="d-xl-flex text-truncate">
-                                <div className="endpoint-name flex-grow-1 notranslate text-truncate">Mapping</div>
-                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.stun.mapping}</div>
-                            </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item>
-                            <div className="d-xl-flex text-truncate">
-                                <div className="endpoint-name flex-grow-1 notranslate text-truncate">Filtering</div>
-                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.stun.filtering}</div>
-                            </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item>
-                            <div className="d-xl-flex text-truncate">
-                                <div className="endpoint-name flex-grow-1 notranslate text-truncate">MappedAddress</div>
-                                <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.stun.mappedAddress}</div>
-                            </div>
-                        </ListGroup.Item>
-                    </>
-                }
-
-                {
-                    latency.stun_tcp &&
+                {latency.ip && <>
                     <ListGroup.Item>
-                        <div className="d-xl-flex text-truncate">
-                            <div className="endpoint-name flex-grow-1 notranslate text-truncate">STUN IP</div>
-                            <div className="notranslate text-break" style={{ opacity: 0.6 }} id="statistic-upload">{latency.stun_tcp.ip}</div>
+                        <Row>
+                            <Col md={6}>
+                                <div className="d-flex justify-content-between">
+                                    <div className="fw-bold">IPv4</div>
+                                    <div className="text-break">{latency.ip.ipv4}</div>
+                                </div>
+                            </Col>
+                            <Col md={6}>
+                                <div className="d-flex justify-content-between">
+                                    <div className="fw-bold">IPv6</div>
+                                    <div className="text-break">{latency.ip.ipv6}</div>
+                                </div>
+                            </Col>
+                        </Row>
+                    </ListGroup.Item>
+                </>}
+                {latency.stun && <>
+                    <ListGroup.Item>
+                        <div className="d-flex justify-content-between">
+                            <div className="fw-bold text-truncate">Mapping</div>
+                            <div className="text-break">{latency.stun.mapping}</div>
+                        </div>
+                    </ListGroup.Item>
+                    <ListGroup.Item>
+                        <div className="d-flex justify-content-between">
+                            <div className="fw-bold text-truncate">Filtering</div>
+                            <div className="text-break">{latency.stun.filtering}</div>
+                        </div>
+                    </ListGroup.Item>
+                    <ListGroup.Item>
+                        <div className="d-flex justify-content-between">
+                            <div className="fw-bold text-truncate">MappedAddress</div>
+                            <div className="text-break">{latency.stun.mappedAddress}</div>
+                        </div>
+                    </ListGroup.Item>
+                </>}
+                {latency.stun_tcp &&
+                    <ListGroup.Item>
+                        <div className="d-flex justify-content-between">
+                            <div className="fw-bold text-truncate">STUN IP</div>
+                            <div className="text-break">{latency.stun_tcp.ip}</div>
                         </div>
                     </ListGroup.Item>
                 }
-
-                <ListGroup.Item className="d-flex justify-content-center">
-                    <ButtonGroup>
-                        <Button variant="outline-primary" onClick={() => setNode(ctx, hash)}>Use</Button>
-                        <Button variant="outline-primary" onClick={onClickEdit}>Edit</Button>
-                        <DropdownButton
-                            onSelect={async (key) => { test(key as LatencyType) }}
-                            as={ButtonGroup}
-                            variant="outline-primary"
-                            title={<>Test{isLoading(latency) && <>&nbsp;<Spinner size="sm" animation="border" /></>}</>}
-                        >
-                            <Dropdown.Item disabled={latency.tcp.loading} eventKey={LatencyType.TCP}>TCP&nbsp;{latency.tcp.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
-                            <Dropdown.Item disabled={latency.udp.loading} eventKey={LatencyType.UDP}>UDP&nbsp;{latency.udp.loading && <Spinner size="sm" animation="border" />} </Dropdown.Item>
-                            <Dropdown.Item disabled={latency.stun?.loading} eventKey={LatencyType.STUN}>STUN&nbsp;{latency.stun?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
-                            <Dropdown.Item disabled={latency.stun_tcp?.loading} eventKey={LatencyType.STUNTCP}>STUN TCP&nbsp;{latency.stun_tcp?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
-                            <Dropdown.Item disabled={latency.ip?.loading} eventKey={LatencyType.IP}>IP&nbsp;{latency.ip?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
-                        </DropdownButton>
-                    </ButtonGroup>
+                <ListGroup.Item>
+                    <div className="d-flex justify-content-center">
+                        <ButtonGroup>
+                            <Button variant="outline-primary" onClick={() => setNode(ctx, hash)}><i className="bi bi-check2-circle" />&nbsp;Use</Button>
+                            <Button variant="outline-primary" onClick={onClickEdit}><i className="bi bi-pencil" />&nbsp;Edit</Button>
+                            <DropdownButton
+                                onSelect={async (key) => { test(key as LatencyType) }}
+                                as={ButtonGroup}
+                                variant="outline-primary"
+                                title={<><i className="bi bi-speedometer2" />&nbsp;Test{isLoading(latency) && <>&nbsp;<Spinner size="sm" animation="border" /></>}</>}
+                            >
+                                <Dropdown.Item disabled={latency.tcp.loading} eventKey={LatencyType.TCP}>TCP&nbsp;{latency.tcp.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
+                                <Dropdown.Item disabled={latency.udp.loading} eventKey={LatencyType.UDP}>UDP&nbsp;{latency.udp.loading && <Spinner size="sm" animation="border" />} </Dropdown.Item>
+                                <Dropdown.Item disabled={latency.stun?.loading} eventKey={LatencyType.STUN}>STUN&nbsp;{latency.stun?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
+                                <Dropdown.Item disabled={latency.stun_tcp?.loading} eventKey={LatencyType.STUNTCP}>STUN TCP&nbsp;{latency.stun_tcp?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
+                                <Dropdown.Item disabled={latency.ip?.loading} eventKey={LatencyType.IP}>IP&nbsp;{latency.ip?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
+                            </DropdownButton>
+                        </ButtonGroup>
+                    </div>
                 </ListGroup.Item>
             </ListGroup>
         </Accordion.Body>
