@@ -198,7 +198,10 @@ function PublishPage() {
                 <ListGroup variant="flush">
                     {Object.entries(publishes.publishes).map(([name, pub]) => {
                         const yuhaiinUrlRemote = create(YuhaiinUrl_RemoteSchema, {
-                            publish: create(PublishSchema, pub),
+                            publish: create(PublishSchema, {
+                                ...pub,
+                                points: []
+                            }),
                         });
 
                         const yuhaiinUrl = create(YuhaiinUrlSchema, {
