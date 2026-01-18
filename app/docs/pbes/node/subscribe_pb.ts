@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file node/subscribe.proto.
  */
 export const file_node_subscribe: GenFile = /*@__PURE__*/
-  fileDesc("ChRub2RlL3N1YnNjcmliZS5wcm90bxIReXVoYWlpbi5zdWJzY3JpYmUiSAoEbGluaxIMCgRuYW1lGAEgASgJEiUKBHR5cGUYAiABKA4yFy55dWhhaWluLnN1YnNjcmliZS50eXBlEgsKA3VybBgDIAEoCSJHCgdQdWJsaXNoEg4KBnBvaW50cxgBIAMoCRIMCgRwYXRoGAIgASgJEgwKBG5hbWUYAyABKAkSEAoIcGFzc3dvcmQYBCABKAkilwIKCll1aGFpaW5VcmwSNgoGcmVtb3RlGAEgASgLMiQueXVoYWlpbi5zdWJzY3JpYmUuWXVoYWlpblVybC5SZW1vdGVIABI2CgZwb2ludHMYAiABKAsyJC55dWhhaWluLnN1YnNjcmliZS5ZdWhhaWluVXJsLlBvaW50c0gAEgwKBG5hbWUYAyABKAkaVAoGUmVtb3RlEgsKA3VybBgBIAEoCRIQCghpbnNlY3VyZRgCIAEoCBIrCgdwdWJsaXNoGAMgASgLMhoueXVoYWlpbi5zdWJzY3JpYmUuUHVibGlzaBouCgZQb2ludHMSJAoGcG9pbnRzGAEgAygLMhQueXVoYWlpbi5wb2ludC5wb2ludEIFCgN1cmwqTQoEdHlwZRILCgdyZXNlcnZlEAASCgoGdHJvamFuEAESCQoFdm1lc3MQAhIPCgtzaGFkb3dzb2NrcxADEhAKDHNoYWRvd3NvY2tzchAEQjZaLGdpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9ub2RlkgMF0j4CEANiCGVkaXRpb25zcOgH", [file_google_protobuf_go_features, file_node_point]);
+  fileDesc("ChRub2RlL3N1YnNjcmliZS5wcm90bxIReXVoYWlpbi5zdWJzY3JpYmUiSAoEbGluaxIMCgRuYW1lGAEgASgJEiUKBHR5cGUYAiABKA4yFy55dWhhaWluLnN1YnNjcmliZS50eXBlEgsKA3VybBgDIAEoCSJqCgdQdWJsaXNoEg4KBnBvaW50cxgBIAMoCRIMCgRwYXRoGAIgASgJEgwKBG5hbWUYAyABKAkSEAoIcGFzc3dvcmQYBCABKAkSDwoHYWRkcmVzcxgFIAEoCRIQCghpbnNlY3VyZRgGIAEoCCL4AQoKWXVoYWlpblVybBI2CgZyZW1vdGUYASABKAsyJC55dWhhaWluLnN1YnNjcmliZS5ZdWhhaWluVXJsLlJlbW90ZUgAEjYKBnBvaW50cxgCIAEoCzIkLnl1aGFpaW4uc3Vic2NyaWJlLll1aGFpaW5VcmwuUG9pbnRzSAASDAoEbmFtZRgDIAEoCRo1CgZSZW1vdGUSKwoHcHVibGlzaBgBIAEoCzIaLnl1aGFpaW4uc3Vic2NyaWJlLlB1Ymxpc2gaLgoGUG9pbnRzEiQKBnBvaW50cxgBIAMoCzIULnl1aGFpaW4ucG9pbnQucG9pbnRCBQoDdXJsKk0KBHR5cGUSCwoHcmVzZXJ2ZRAAEgoKBnRyb2phbhABEgkKBXZtZXNzEAISDwoLc2hhZG93c29ja3MQAxIQCgxzaGFkb3dzb2Nrc3IQBEI2WixnaXRodWIuY29tL0FzdXRvcnVmYS95dWhhaWluL3BrZy9wcm90b3Mvbm9kZZIDBdI+AhADYghlZGl0aW9uc3DoBw", [file_google_protobuf_go_features, file_node_point]);
 
 /**
  * @generated from message yuhaiin.subscribe.link
@@ -65,6 +65,16 @@ export type Publish = Message<"yuhaiin.subscribe.Publish"> & {
    * @generated from field: string password = 4;
    */
   password: string;
+
+  /**
+   * @generated from field: string address = 5;
+   */
+  address: string;
+
+  /**
+   * @generated from field: bool insecure = 6;
+   */
+  insecure: boolean;
 };
 
 /**
@@ -113,17 +123,7 @@ export const YuhaiinUrlSchema: GenMessage<YuhaiinUrl> = /*@__PURE__*/
  */
 export type YuhaiinUrl_Remote = Message<"yuhaiin.subscribe.YuhaiinUrl.Remote"> & {
   /**
-   * @generated from field: string url = 1;
-   */
-  url: string;
-
-  /**
-   * @generated from field: bool insecure = 2;
-   */
-  insecure: boolean;
-
-  /**
-   * @generated from field: yuhaiin.subscribe.Publish publish = 3;
+   * @generated from field: yuhaiin.subscribe.Publish publish = 1;
    */
   publish?: Publish;
 };

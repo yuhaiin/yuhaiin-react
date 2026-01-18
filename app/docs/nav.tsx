@@ -27,6 +27,7 @@ function NavBar(props: { children: React.ReactNode }) {
                             <NavDropdown title="OUTBOUND" active={usePathname().startsWith('/docs/group/')}>
                                 <NavDropdown.Item eventKey={'/docs/group/'}>Outbound</NavDropdown.Item>
                                 <NavDropdown.Item eventKey='/docs/group/subscribe'>Subscribe</NavDropdown.Item>
+                                <NavDropdown.Item eventKey='/docs/group/publish'>Publish</NavDropdown.Item>
                                 <NavDropdown.Item eventKey={'/docs/group/activates'}>Activates</NavDropdown.Item>
                             </NavDropdown>
                             <NavDropdown title="INBOUND" active={usePathname().startsWith('/docs/inbound/')}>
