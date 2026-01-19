@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState, ViewTransition } from 'react';
 import { Container } from 'react-bootstrap';
 import { GlobalToastProvider } from './docs/common/toast';
-import NavBar from './docs/nav';
+import NavBarContainer from './docs/NavBarContainer'; // Updated import
 import './global.css';
 
 interface AndroidInterface {
@@ -53,15 +53,15 @@ export default function RootLayout({
       </head>
       <body>
         {colorScheme &&
-          <NavBar>
-            <Container className="mt-3 mb-3">
+          <NavBarContainer> {/* Updated component name */}
+            <Container className="main-content">
               <GlobalToastProvider>
                 <ViewTransition>
                   {children}
                 </ViewTransition>
               </GlobalToastProvider>
             </Container>
-          </NavBar>
+          </NavBarContainer>
         }
       </body>
     </html>

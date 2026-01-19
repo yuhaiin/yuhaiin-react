@@ -15,6 +15,7 @@ import { NodeJsonModal, NodeModal } from "../node/modal";
 import { node, use_reqSchema } from "../pbes/api/node_pb";
 import { dns_over_quicSchema, http_testSchema, ipSchema, nat_type, reply, request_protocol, request_protocolSchema, requestsSchema, stunSchema } from "../pbes/node/latency_pb";
 import { origin, point, pointSchema } from "../pbes/node/point_pb";
+import styles from './group.module.css';
 
 const Nanosecond = 1
 const Microsecond = 1000 * Nanosecond
@@ -165,52 +166,54 @@ function Group() {
 
             </NodesContext>
 
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <Dropdown
-                    onSelect={(e) => { const i = Number(e); if (!isNaN(i)) setGroupIndex(i) }}
-                >
-                    <Dropdown.Toggle variant="outline-primary">{groupIndex >= 0 && data.groups.length > groupIndex ? data.groups[groupIndex].name : "GROUP"}</Dropdown.Toggle>
-                    <Dropdown.Menu>
-                        <Dropdown.Item eventKey={-1}>Select...</Dropdown.Item>
-
-                        {
-                            data.groups?.map((k, i) => {
-                                return <Dropdown.Item eventKey={i} key={i}>{k.name}</Dropdown.Item>
-                            })
-                        }
-                    </Dropdown.Menu>
-                </Dropdown>
-
-                <ButtonGroup>
-                    <Button
-                        variant="outline-primary"
-                        onClick={() => {
-                            setModalData({
-                                point: create(pointSchema, {
-                                    group: "template_group",
-                                    name: "template_name",
-                                    origin: origin.manual,
-                                }),
-                                hash: "new node",
-                                show: true,
-                                onDelete: undefined,
-                                isNew: true
-                            })
-                        }}
+            <div className={styles.pageHeader}>
+                <div className={styles.headerActions}>
+                    <Dropdown
+                        onSelect={(e) => { const i = Number(e); if (!isNaN(i)) setGroupIndex(i) }}
                     >
-                        <i className="bi bi-plus-lg" />&nbsp;New
-                    </Button>
+                        <Dropdown.Toggle variant="outline-primary">{groupIndex >= 0 && data.groups.length > groupIndex ? data.groups[groupIndex].name : "GROUP"}</Dropdown.Toggle>
+                        <Dropdown.Menu className={styles.dropdownMenu}>
+                            <Dropdown.Item className={styles.dropdownItem} eventKey={-1}>Select...</Dropdown.Item>
 
-                    <Button
-                        variant="outline-primary"
-                        onClick={() => { setImportJson({ data: true }) }}
-                    >
-                        <i className="bi bi-box-arrow-in-down" />&nbsp;Import
-                    </Button>
-                </ButtonGroup>
+                            {
+                                data.groups?.map((k, i) => {
+                                    return <Dropdown.Item className={styles.dropdownItem} eventKey={i} key={i}>{k.name}</Dropdown.Item>
+                                })
+                            }
+                        </Dropdown.Menu>
+                    </Dropdown>
+
+                    <ButtonGroup>
+                        <Button
+                            variant="outline-primary"
+                            onClick={() => {
+                                setModalData({
+                                    point: create(pointSchema, {
+                                        group: "template_group",
+                                        name: "template_name",
+                                        origin: origin.manual,
+                                    }),
+                                    hash: "new node",
+                                    show: true,
+                                    onDelete: undefined,
+                                    isNew: true
+                                })
+                            }}
+                        >
+                            <i className="bi bi-plus-lg" />&nbsp;New
+                        </Button>
+
+                        <Button
+                            variant="outline-primary"
+                            onClick={() => { setImportJson({ data: true }) }}
+                        >
+                            <i className="bi bi-box-arrow-in-down" />&nbsp;Import
+                        </Button>
+                    </ButtonGroup>
+                </div>
             </div>
 
-            <Accordion className="mb-3" alwaysOpen id="connections">
+            <Accordion className={styles.accordion} alwaysOpen id="connections">
                 {
                     groupIndex >= 0
                     && data.groups.length > groupIndex
@@ -494,8 +497,11 @@ const NodeItemv2: FC<{
     }
 
     return <Accordion.Item eventKey={hash}>
-        <Accordion.Header>{name}</Accordion.Header>
-        <Accordion.Body>
+        <Accordion.Header className={styles.accordionHeader}>
+            {name}
+            <i className={`bi bi-chevron-right ${styles.accordionIcon}`}></i>
+        </Accordion.Header>
+        <Accordion.Body className={styles.accordionBody}>
             <ListGroup variant="flush">
                 <ListGroup.Item>
                     <Row>
@@ -561,7 +567,7 @@ const NodeItemv2: FC<{
                 }
                 <ListGroup.Item>
                     <div className="d-flex justify-content-center">
-                        <ButtonGroup>
+                        <ButtonGroup className={styles.buttonGroup}>
                             <Button variant="outline-primary" onClick={() => setNode(ctx, hash)}><i className="bi bi-check2-circle" />&nbsp;Use</Button>
                             <Button variant="outline-primary" onClick={onClickEdit}><i className="bi bi-pencil" />&nbsp;Edit</Button>
                             <DropdownButton
@@ -570,11 +576,11 @@ const NodeItemv2: FC<{
                                 variant="outline-primary"
                                 title={<><i className="bi bi-speedometer2" />&nbsp;Test{isLoading(latency) && <>&nbsp;<Spinner size="sm" animation="border" /></>}</>}
                             >
-                                <Dropdown.Item disabled={latency.tcp.loading} eventKey={LatencyType.TCP}>TCP&nbsp;{latency.tcp.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
-                                <Dropdown.Item disabled={latency.udp.loading} eventKey={LatencyType.UDP}>UDP&nbsp;{latency.udp.loading && <Spinner size="sm" animation="border" />} </Dropdown.Item>
-                                <Dropdown.Item disabled={latency.stun?.loading} eventKey={LatencyType.STUN}>STUN&nbsp;{latency.stun?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
-                                <Dropdown.Item disabled={latency.stun_tcp?.loading} eventKey={LatencyType.STUNTCP}>STUN TCP&nbsp;{latency.stun_tcp?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
-                                <Dropdown.Item disabled={latency.ip?.loading} eventKey={LatencyType.IP}>IP&nbsp;{latency.ip?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
+                                <Dropdown.Item className={styles.dropdownItem} disabled={latency.tcp.loading} eventKey={LatencyType.TCP}>TCP&nbsp;{latency.tcp.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
+                                <Dropdown.Item className={styles.dropdownItem} disabled={latency.udp.loading} eventKey={LatencyType.UDP}>UDP&nbsp;{latency.udp.loading && <Spinner size="sm" animation="border" />} </Dropdown.Item>
+                                <Dropdown.Item className={styles.dropdownItem} disabled={latency.stun?.loading} eventKey={LatencyType.STUN}>STUN&nbsp;{latency.stun?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
+                                <Dropdown.Item className={styles.dropdownItem} disabled={latency.stun_tcp?.loading} eventKey={LatencyType.STUNTCP}>STUN TCP&nbsp;{latency.stun_tcp?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
+                                <Dropdown.Item className={styles.dropdownItem} disabled={latency.ip?.loading} eventKey={LatencyType.IP}>IP&nbsp;{latency.ip?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
                             </DropdownButton>
                         </ButtonGroup>
                     </div>

@@ -5,8 +5,6 @@ import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import Error from 'next/error';
 import { useContext, useEffect, useState } from "react";
 import { Badge, Button, ButtonGroup, Card, Dropdown, FloatingLabel, Form, InputGroup, ListGroup, Modal } from "react-bootstrap";
-import { useLocalStorage } from 'usehooks-ts';
-import { APIUrlDefault, APIUrlKey } from '../../common/apiurl';
 import { useClipboard } from '../../common/clipboard';
 import { ConfirmModal } from "../../common/confirm";
 import Loading from "../../common/loading";
@@ -145,14 +143,11 @@ function PublishPage() {
         onCopyError: (e) => ctx.Error(e.message)
     });
 
-    const [apiUrl] = useLocalStorage<string>(APIUrlKey, APIUrlDefault)
-
     useEffect(() => {
         if (copied) {
             ctx.Info("Copied to clipboard!");
         }
     }, [copied, ctx]);
-
 
     if (errPub) return <Error statusCode={errPub.code} title={errPub.msg} />
     if (errNodes) return <Error statusCode={errNodes.code} title={errNodes.msg} />

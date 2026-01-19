@@ -1,12 +1,33 @@
 import React, { FC, JSX, useCallback, useEffect, useState } from "react";
-import { Badge, Card, ListGroup } from "react-bootstrap";
+import { Badge, ListGroup } from "react-bootstrap";
 import useSWR from "swr";
 import { FetchProtobuf, ProtoPath } from "../common/proto";
 import { NodeModal } from "../node/modal";
 import { connections, counter, total_flow } from "../pbes/api/statistic_pb";
 import { mode } from "../pbes/config/bypass_pb";
 import { connection, type as connType } from "../pbes/statistic/config_pb";
+import styles from './flowcard.module.css';
 
+interface MetricProps {
+    label: string;
+    value: React.ReactNode;
+    error?: string;
+    color?: string;
+}
+
+const MetricCard: FC<MetricProps> = ({ label, value, error, color = '#3b82f6' }) => {
+    return (
+        <div
+            className={styles.metricCard}
+            style={{ '--accent-color': color } as React.CSSProperties}
+        >
+            <div className={styles.metricCardLabel}>{label}</div>
+            <div className={`${styles.metricCardValue} ${error ? styles.error : ''}`}>
+                {error || value}
+            </div>
+        </div>
+    );
+};
 export const ListGroupItemString: FC<{ itemKey: string, itemValue: string }> =
     ({ itemKey, itemValue }) => {
         if (itemValue == "") return <></>
@@ -185,17 +206,19 @@ export class Flow {
     }
 
     DownloadString() {
-        const dstr = formatBytes(this.download)
-        const dratestr = formatBytes(this.download_rate) + "/S"
-
-        return `(${dstr}): ${dratestr}`
+        return `${formatBytes(this.download_rate) + "/S"}`
     }
 
     UploadString() {
-        const ustr = formatBytes(this.upload)
-        const uratestr = formatBytes(this.upload_rate) + "/S"
+        return `${formatBytes(this.upload_rate) + "/S"}`
+    }
 
-        return `(${ustr}): ${uratestr}`
+    DownloadTotalString() {
+        return formatBytes(this.download)
+    }
+
+    UploadTotalString() {
+        return formatBytes(this.upload)
     }
 }
 
@@ -244,46 +267,57 @@ export const useFlow = () => {
 export const FlowCard: FC<{
     lastFlow?: Flow,
     flow_error?: { msg: string, code: number },
-    end_content?: React.ReactNode
-}> = ({ lastFlow, flow_error, end_content }) => {
-    return <Card className="mb-3">
-        <ListGroup variant="flush">
-
-            <ListGroup.Item>
-                <div className="d-sm-flex">
-                    <div className="endpoint-name flex-grow-1 notranslate">Download</div>
-                    <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-download">
-                        {flow_error ? flow_error.msg : lastFlow ? lastFlow.DownloadString() : "Loading..."}
-                    </div>
-                </div>
-            </ListGroup.Item>
-
-
-            <ListGroup.Item>
-                <div className="d-sm-flex">
-                    <div className="endpoint-name flex-grow-1 notranslate">Upload</div>
-                    <div className="notranslate" style={{ opacity: 0.6 }} id="statistic-upload">
-                        {flow_error ? flow_error.msg : lastFlow ? lastFlow.UploadString() : "Loading..."}
-                    </div>
-                </div>
-            </ListGroup.Item>
-
-            {end_content}
-        </ListGroup>
-    </Card>
+    extra_fields?: MetricProps[],
+}> = ({ lastFlow, flow_error, extra_fields }) => {
+    return (
+        <div className={`${styles.flowCardGrid} mb-3`}>
+            <MetricCard
+                label="Total Download"
+                value={lastFlow ? lastFlow.DownloadTotalString() : "Loading..."}
+                error={flow_error?.msg}
+            />
+            <MetricCard
+                label="Download Rate"
+                value={lastFlow ? lastFlow.DownloadString() : "Loading..."}
+                error={flow_error?.msg}
+            />
+            <MetricCard
+                label="Total Upload"
+                value={lastFlow ? lastFlow.UploadTotalString() : "Loading..."}
+                error={flow_error?.msg}
+            />
+            <MetricCard
+                label="Upload Rate"
+                value={lastFlow ? lastFlow.UploadString() : "Loading..."}
+                error={flow_error?.msg}
+            />
+            {
+                extra_fields && extra_fields.map((field, index) => (
+                    <MetricCard
+                        key={`extra-field-${index}`}
+                        label={field.label}
+                        value={field.value || "Loading..."}
+                        error={field.error}
+                    />
+                ))
+            }
+        </div>
+    );
 }
 
 export const FlowContainer: FC<{
     onUpdate?: (counters: { [key: string]: counter }) => void
-    end_content?: React.ReactNode,
+    onFlow?: (flow: Flow) => void
+    extra_fields?: MetricProps[],
 }> = React.memo((
-    { onUpdate, end_content }
+    { onUpdate, onFlow, extra_fields }
 ) => {
     const { data: lastFlow, error: flow_error } = useFlow()
 
     useEffect(() => {
         if (onUpdate && lastFlow) { onUpdate(lastFlow.counters) }
-    }, [onUpdate, lastFlow])
+        if (onFlow && lastFlow) { onFlow(lastFlow) }
+    }, [onUpdate, onFlow, lastFlow])
 
-    return <FlowCard lastFlow={lastFlow} flow_error={flow_error} end_content={end_content} />
+    return <FlowCard lastFlow={lastFlow} flow_error={flow_error} extra_fields={extra_fields} />
 })

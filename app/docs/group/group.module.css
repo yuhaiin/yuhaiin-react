@@ -1,0 +1,113 @@
+/* app/docs/group/group.module.css */
+
+.pageHeader {
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    margin-bottom: 2rem; /* More spacing */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 1rem; /* Add gap for spacing when wrapped */
+}
+
+.pageTitle {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+}
+
+.headerActions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.accordion {
+    --bs-accordion-border-radius: 16px;
+    --bs-accordion-inner-border-radius: 16px;
+    --bs-accordion-border-color: var(--sidebar-border-color);
+    --bs-accordion-bg: var(--bs-body-bg);
+    box-shadow: var(--sidebar-box-shadow);
+    border-radius: var(--bs-accordion-border-radius);
+    overflow: hidden;
+    border: 1px solid var(--sidebar-border-color);
+}
+
+.accordionHeader button {
+    font-weight: 500;
+    color: var(--bs-body-color);
+    background-color: var(--bs-tertiary-bg);
+    transition: background-color 0.2s ease;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.accordionHeader button:not(.collapsed) {
+    background-color: var(--sidebar-bg);
+    box-shadow: none;
+}
+
+.accordionHeader button:hover {
+    background-color: var(--sidebar-hover-bg);
+}
+
+.accordionHeader button::after {
+    display: none;
+}
+
+.accordionIcon {
+    margin-left: auto;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: transform 0.3s ease;
+}
+
+.accordionHeader button[aria-expanded="true"] .accordionIcon {
+    transform: rotate(90deg);
+    color: var(--sidebar-color);
+}
+
+
+.accordionBody {
+    padding: 0;
+}
+
+.accordionBody :global(.list-group) {
+    background-color: var(--sidebar-bg);
+    --bs-list-group-bg: transparent;
+    --bs-list-group-border-color: transparent;
+    --bs-list-group-border-radius: 0;
+}
+
+.accordionBody :global(.list-group-item) {
+    background-color: transparent;
+    color: var(--bs-body-color);
+    border-bottom: 1px solid var(--sidebar-border-color);
+}
+
+.accordionBody :global(.list-group-item:last-child) {
+    border-bottom: none;
+}
+
+
+.buttonGroup .btn {
+    border-radius: 12px; /* Rounded buttons */
+}
+
+.buttonGroup .dropdown-toggle::after {
+    margin-left: 0.5em; /* Space out the caret */
+}
+
+.dropdownMenu {
+    border-radius: 14px;
+    border: 1px solid var(--sidebar-border-color);
+    background-color: var(--bs-body-bg);
+    box-shadow: var(--sidebar-box-shadow);
+}
+
+.dropdownItem:hover {
+    background-color: var(--sidebar-hover-bg);
+}
+.dropdownItem:active {
+    background-color: var(--sidebar-active-bg);
+    color: var(--sidebar-active-color);
+}

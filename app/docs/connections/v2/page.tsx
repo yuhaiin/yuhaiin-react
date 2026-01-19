@@ -9,9 +9,10 @@ import { connection, connectionSchema, type } from "@/app/docs/pbes/statistic/co
 import { create } from "@bufbuild/protobuf";
 import { EmptySchema } from "@bufbuild/protobuf/wkt";
 import React, { FC, useCallback, useContext, useMemo, useState } from "react";
-import { Badge, Button, Card, ListGroup, Modal, Spinner } from "react-bootstrap";
+import { Badge, Button, Modal, Spinner, ToggleButton, ToggleButtonGroup } from "react-bootstrap";
 import useSWRSubscription from 'swr/subscription';
 import { mode } from "../../pbes/config/bypass_pb";
+import styles from './connections.module.css';
 
 const processStream = (r: notify_data, prev?: { [key: string]: connection }): { [key: string]: connection } => {
     let data: { [key: string]: connection };
@@ -57,18 +58,18 @@ function Connections() {
     }, [])
 
     const [sortBy, setSortBy] = useState("")
-    const changeSoryBy = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSortBy(e.target.value)
+    const changeSortBy = useCallback((value: string) => {
+        setSortBy(value)
     }, [setSortBy])
 
 
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc"); // 'asc' | 'desc'
-    const changeSortOrder = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSortOrder(e.target.value as "asc" | "desc")
+    const changeSortOrder = useCallback((value: "asc" | "desc") => {
+        setSortOrder(value)
     }, [setSortOrder])
 
     return (
-        <>
+        <div>
             <FlowContainer onUpdate={updateCounters} />
 
             <InfoOffcanvas
@@ -78,40 +79,36 @@ function Connections() {
             />
 
 
+            <div className="d-flex justify-content-end mb-3">
+                <div className="d-flex align-items-center gap-3 flex-wrap">
+                    <ToggleButtonGroup type="radio" name="sortOrder" value={sortOrder} onChange={changeSortOrder}>
+                        <ToggleButton id="sort-asc" value="asc" variant="outline-secondary">
+                            <i className="bi bi-sort-up"></i> Asc
+                        </ToggleButton>
+                        <ToggleButton id="sort-desc" value="desc" variant="outline-secondary">
+                            <i className="bi bi-sort-down"></i> Desc
+                        </ToggleButton>
+                    </ToggleButtonGroup>
 
-            <div className="d-flex">
-                <div className="d-flex align-items-center gap-2 mb-3 ms-auto flex-wrap">
-                    <span className="d-flex align-items-center gap-2">
-                        Sort Order
-                        <select
-                            className="form-select"
-                            value={sortOrder}
-                            onChange={changeSortOrder}
-                            style={{ width: 150 }}
-                        >
-                            <option value="asc">Asc</option>
-                            <option value="desc">Desc</option>
-                        </select>
-                    </span>
-                    <span className="d-flex align-items-center gap-2">
-                        Sort By
-                        <select
-                            className="form-select"
-                            value={sortBy}
-                            onChange={changeSoryBy}
-                            style={{ width: 150 }}
-                        >
-                            <option value="">Id</option>
-                            <option value="name">Name</option>
-                            <option value="download">Download</option>
-                            <option value="upload">Upload</option>
-                        </select>
-                    </span>
+                    <ToggleButtonGroup type="radio" name="sortBy" value={sortBy} onChange={changeSortBy}>
+                        <ToggleButton id="sort-id" value="" variant="outline-secondary">
+                            Id
+                        </ToggleButton>
+                        <ToggleButton id="sort-name" value="name" variant="outline-secondary">
+                            Name
+                        </ToggleButton>
+                        <ToggleButton id="sort-download" value="download" variant="outline-secondary">
+                            Download
+                        </ToggleButton>
+                        <ToggleButton id="sort-upload" value="upload" variant="outline-secondary">
+                            Upload
+                        </ToggleButton>
+                    </ToggleButtonGroup>
                 </div>
             </div>
 
             <ConnectionList conns={conns} counters={counters} setInfo={setInfo} conn_error={conn_error} sortFields={sortBy} sortOrder={sortOrder} />
-        </>
+        </div>
     );
 }
 
@@ -156,74 +153,67 @@ const ConnectionListComponent: FC<{
     if (conn_error !== undefined) return <Loading code={conn_error.code}>{conn_error.msg}</Loading>
     if (conns === undefined) return <Loading />
 
-    return <>
-        <Card>
-            <ListGroup variant="flush" style={{ borderBottom: "none" }}>
-                {
-                    values.map((e) => {
-                        return <ListItem
-                            data={e}
-                            download={Number(counters[e.id.toString()]?.download ?? 0)}
-                            upload={Number(counters[e.id.toString()]?.upload ?? 0)}
-                            key={e.id}
-                            onClick={() => setInfo({ info: e, show: true })}
-                        />
-                    })
-                }
-            </ListGroup>
-        </Card>
-    </>
+    return <ul className={styles['connections-list']}>
+        {
+            values.map((e) => {
+                return <ListItem
+                    data={e}
+                    download={Number(counters[e.id.toString()]?.download ?? 0)}
+                    upload={Number(counters[e.id.toString()]?.upload ?? 0)}
+                    key={e.id}
+                    onClick={() => setInfo({ info: e, show: true })}
+                />
+            })
+        }
+    </ul>
 }
 
 const ConnectionList = React.memo(ConnectionListComponent)
 
+const IconBadge: FC<{ icon: string, text: string }> = ({ icon, text }) => {
+    return <Badge pill>
+        <i className={`bi ${icon} ${styles['badge-icon']}`}></i>
+        {text}
+    </Badge>
+}
+
 const ListItemComponent: FC<{ data: connection, download: number, upload: number, onClick?: () => void }> =
     ({ data, download, upload, onClick }) => {
-        const Tag = () => {
-            if (data.tag) {
-                return <Badge bg="primary" pill className="ms-1 text-uppercase">{data.tag}</Badge>
-            }
-            return <></>
-        }
-
-        const Mode = () => {
-            return <Badge bg="primary" pill className="ms-1 text-uppercase">{mode[data.mode]}</Badge>
-        }
-
-        const ConnType = () => {
-            return <Badge bg="primary" pill className="ms-1 text-uppercase">{type[data.type?.connType ?? 0]}</Badge>
-        }
-
-
         return (
-            <
-                ListGroup.Item
-                className="d-flex justify-content-between align-items-start py-3 flex-wrap"
-                style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
-                action
+            <li
+                className={styles['list-item']}
                 onClick={onClick}
             >
-                <div className="text-break">
-                    <code>{data.id.toString()}</code>
-                    <span className="ms-2">{data.addr}</span>
+                <div className={styles['item-main']}>
+                    <code className={styles['item-id']}>{data.id.toString()}</code>
+                    <span className={styles['item-addr']}>{data.addr}</span>
                 </div>
 
-                <div className="fs-9">
+                <div className={styles['item-details-right']}>
                     <FlowBadge download={download} upload={upload} />
-                    <Mode />
-                    <ConnType />
-                    <Tag />
+                    <div className={styles['item-details']}>
+                        <IconBadge icon="bi-shield-check" text={mode[data.mode]} />
+                        <IconBadge icon="bi-hdd-network" text={type[data.type?.connType ?? 0]} />
+                        {data.tag && <IconBadge icon="bi-tag" text={data.tag} />}
+                    </div>
                 </div>
-            </ListGroup.Item>
+            </li>
         );
     }
 
 const ListItem = React.memo(ListItemComponent)
 
 const FlowBadgeComponent: FC<{ download: number, upload: number }> = ({ download, upload }) => {
-    return <Badge bg="primary" pill>
-        {formatBytes(download)} / {formatBytes(upload)}
-    </Badge>
+    return <div className="d-flex gap-2">
+        <Badge pill>
+            <i className={`bi bi-arrow-down ${styles['badge-icon']}`}></i>
+            {formatBytes(download)}
+        </Badge>
+        <Badge pill>
+            <i className={`bi bi-arrow-up ${styles['badge-icon']}`}></i>
+            {formatBytes(upload)}
+        </Badge>
+    </div>
 }
 
 const FlowBadge = React.memo(FlowBadgeComponent)

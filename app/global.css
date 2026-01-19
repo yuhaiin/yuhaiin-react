@@ -1,2 +1,156 @@
 @import 'bootstrap/dist/css/bootstrap.css';
 @import 'bootstrap-icons/font/bootstrap-icons.css';
+
+/* 1. Basic Setup */
+body {
+    overflow-x: hidden;
+    /* Prevent horizontal scrollbar on body */
+    width: 100%;
+    /* Ensure background color adapts to theme if set in :root */
+    background-color: var(--bs-body-bg);
+}
+
+/* 2. Main Content Area (Desktop) */
+.main-content {
+    /* Auto width fill */
+    width: auto;
+
+    /* Key: Left margin = Sidebar width (260) + Left gap (16) + Right gap (16) = 292px */
+    margin-left: 292px;
+
+    /* Constrain max width to prevent internal wide elements from breaking layout */
+    max-width: calc(100vw - 292px);
+
+    /* --- Key fix for height issues --- */
+    /* Do NOT use max-height: 100%, it cuts off long content. */
+    /* Use min-height to ensure it takes at least one full screen. */
+    min-height: 100vh;
+    height: 100vh;
+
+    padding: 10px;
+    padding-right: 20px;
+    /* Slightly larger padding for better aesthetics */
+
+    /* Handle horizontal overflow for internal tables/code blocks */
+    overflow-x: auto;
+
+    /* Smooth transition animations */
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        padding 0.3s ease;
+}
+
+/* 3. Mobile Adaptation */
+@media (max-width: 991.98px) {
+    .main-content {
+        /* Reset left margin, fill screen */
+        margin-left: 0;
+        width: 100%;
+        max-width: 100vw;
+        height: calc(100vh - 80px);  /* Adjust for mobile header height */
+        min-height: calc(100vh - 80px);
+
+        /* Horizontal padding */
+        padding: 10px;
+
+        /* --- Fix for overlap by floating button --- */
+        /* Button height approx 45px + top 15px = 60px */
+        /* Set to 80px to ensure the page title is fully visible below the button */
+        padding-top: 80px;
+    }
+}
+/* =======================================================
+   Global Component Overrides (Buttons & Switches)
+   ======================================================= */
+
+/* -------------------------------------------------------
+   1. Buttons (Includes Dropdowns & Input Groups)
+   ------------------------------------------------------- */
+
+/* Base Button Style */
+.btn {
+    background-color: var(--bs-tertiary-bg);
+    border: 1px solid var(--sidebar-border-color);
+    color: var(--bs-body-color);
+    
+    /* 
+       CRITICAL: Set default radius WITHOUT !important.
+       This allows Bootstrap's Input Group selectors to override 
+       corners (making them square) when buttons are attached to inputs.
+    */
+    border-radius: 12px;
+    
+    font-weight: 500;
+    transition: all 0.2s ease;
+    
+    /* Fix positioning for z-index stacking in Input Groups */
+    position: relative; 
+}
+
+/* Hover State */
+.btn:hover {
+    background-color: var(--sidebar-hover-bg);
+    border-color: var(--sidebar-active-color);
+    color: var(--sidebar-active-color);
+    
+    /* Ensure hovered button border sits above adjacent input borders */
+    z-index: 2; 
+}
+
+/* 
+   Active / Focus / Dropdown Open States
+   We use !important here to override Bootstrap's high-specificity 
+   default blue styles for .btn-primary:active, etc.
+*/
+.btn:active,
+.btn.active,
+.btn:focus,
+.btn:focus-visible,
+.show > .btn.dropdown-toggle,  /* Target parent .show (Dropdowns) */
+.btn.dropdown-toggle.show      /* Target button .show */
+{
+    /* Force background to match the hover state */
+    background-color: var(--sidebar-hover-bg) !important;
+    border-color: var(--sidebar-active-color) !important;
+    color: var(--sidebar-active-color) !important;
+    
+    /* Remove the default blue focus ring/glow */
+    box-shadow: none !important; 
+    outline: none !important;
+    
+    /* Highest priority in Input Groups so the active border is fully visible */
+    z-index: 3; 
+}
+
+/* -------------------------------------------------------
+   2. Switches & Checkboxes
+   ------------------------------------------------------- */
+
+/* Default State (Unchecked) */
+.form-check-input {
+    background-color: var(--bs-tertiary-bg);
+    border: 1px solid var(--sidebar-border-color);
+    cursor: pointer;
+    
+    /* Smooth transition for color and the switch knob movement */
+    transition: background-position .15s ease-in-out, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Focus State (Remove Blue Glow) */
+.form-check-input:focus {
+    border-color: var(--sidebar-active-color);
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Checked State (Active/On) */
+.form-check-input:checked {
+    background-color: var(--sidebar-active-color) !important;
+    border-color: var(--sidebar-active-color) !important;
+}
+
+/* Active State (While clicking/holding) */
+.form-check-input:active {
+    /* Slight dimming effect for tactile feedback */
+    filter: brightness(90%);
+}
