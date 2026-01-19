@@ -41,7 +41,7 @@ export default function RootLayout({
   }, []);
 
   return (
-    <html lang="en" data-bs-theme={colorScheme} suppressHydrationWarning>
+    <html lang="en" data-bs-theme={colorScheme}>
       <head>
         <meta charSet="utf-8" />
         <title>Yuhaiin</title>

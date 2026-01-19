@@ -73,8 +73,8 @@ function Index() {
 
         <div style={{
             flex: 1,
-            marginTop: '1rem',
-            marginBottom: '2rem',
+            marginTop: '10px',
+            marginBottom: '10px',
             minHeight: 0,
         }}>
             <TrafficChart data={trafficData} />

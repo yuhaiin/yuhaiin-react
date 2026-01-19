@@ -47,8 +47,8 @@ body {
         margin-left: 0;
         width: 100%;
         max-width: 100vw;
-        height: calc(100vh - 80px);  /* Adjust for mobile header height */
-        min-height: calc(100vh - 80px);
+        height: 100dvh;  /* Adjust for mobile header height */
+        min-height: 100dvh;
 
         /* Horizontal padding */
         padding: 10px;
