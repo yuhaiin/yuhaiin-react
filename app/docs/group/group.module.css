@@ -27,7 +27,7 @@
     --bs-accordion-bg: var(--bs-body-bg);
     box-shadow: var(--sidebar-box-shadow);
     border-radius: var(--bs-accordion-border-radius);
-    overflow: hidden;
+    overflow: visible;
     border: 1px solid var(--sidebar-border-color);
 }
 
@@ -69,6 +69,11 @@
 
 .accordionBody {
     padding: 0;
+}
+
+.accordion :global(.accordion-item:last-of-type .list-group) {
+    border-bottom-right-radius: var(--bs-accordion-border-radius);
+    border-bottom-left-radius: var(--bs-accordion-border-radius);
 }
 
 .accordionBody :global(.list-group) {
