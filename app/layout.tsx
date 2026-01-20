@@ -45,7 +45,7 @@ export default function RootLayout({
       <head>
         <meta charSet="utf-8" />
         <title>Yuhaiin</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <link rel="icon" href="/docs/faviconv2.ico" />
         {/* <meta name="theme-color" content="#000000" /> */}
         <meta name="description" content="yuhaiin" />
