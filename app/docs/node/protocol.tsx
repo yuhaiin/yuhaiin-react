@@ -4,6 +4,7 @@ import { create } from "@bufbuild/protobuf";
 import dynamic from "next/dynamic";
 import { FC, useEffect, useState } from 'react';
 import { Button, Card, InputGroup, ListGroup } from "react-bootstrap";
+import Loading from "../common/loading";
 import { FormSelect, SettingSelect } from "../common/switch";
 import { Container, MoveUpDown, Remind, SettingInputText } from "../config/components";
 import { point } from "../pbes/node/point_pb";
@@ -110,32 +111,32 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
         </>
     }
 
-const LazyFixed = dynamic(() => import("./simple").then(mod => mod.Fixed), { ssr: false })
-const LazyFixedv2 = dynamic(() => import("./fixedv2").then(mod => mod.Fixed), { ssr: false })
-const LazyDirect = dynamic(() => import("./direct").then(mod => mod.Directv2), { ssr: false })
-const LazyTls = dynamic(() => import("./tls").then(mod => mod.Tlsv2), { ssr: false })
-const LazyWebsocket = dynamic(() => import("./websocket").then(mod => mod.Websocketv2), { ssr: false })
-const LazyShadowsocks = dynamic(() => import("./shadowsocks").then(mod => mod.Shadowsocksv2), { ssr: false })
-const LazyShadowsocksr = dynamic(() => import("./shadowsocksr").then(mod => mod.Shadowsocksrv2), { ssr: false })
-const LazyVless = dynamic(() => import("./vless").then(mod => mod.Vlessv2), { ssr: false })
-const LazyVmess = dynamic(() => import("./vmess").then(mod => mod.Vmessv2), { ssr: false })
-const LazyTrojan = dynamic(() => import("./trojan").then(mod => mod.Trojanv2), { ssr: false })
-const LazyObfsHttp = dynamic(() => import("./shadowsocks").then(mod => mod.ObfsHttpv2), { ssr: false })
-const LazySocks5 = dynamic(() => import("./socks5").then(mod => mod.Socks5v2), { ssr: false })
-const LazyHttp = dynamic(() => import("./http").then(mod => mod.HTTPv2), { ssr: false })
-const LazyYuubinsya = dynamic(() => import("./yuubinsta").then(mod => mod.Yuubinsyav2), { ssr: false })
-const LazyGrpc = dynamic(() => import("./grpc").then(mod => mod.Grpcv2), { ssr: false })
-const LazyHttp2 = dynamic(() => import("./http2").then(mod => mod.HTTP2v2), { ssr: false })
-const LazyReality = dynamic(() => import("./reality").then(mod => mod.Realityv2), { ssr: false })
-const LazyWireguard = dynamic(() => import("./wireguard").then(mod => mod.Wireguardv2), { ssr: false })
-const LazyMux = dynamic(() => import("./mux").then(mod => mod.Muxv2), { ssr: false })
-const LazyTailscale = dynamic(() => import("./tailscale").then(mod => mod.Tailscale), { ssr: false })
-const LazySet = dynamic(() => import("./set").then(mod => mod.Set), { ssr: false })
-const LazyTlsTermination = dynamic(() => import("./tls_server").then(mod => mod.UnWrapTls), { ssr: false })
-const LazyHttpTermination = dynamic(() => import("./http").then(mod => mod.UnWrapHttp), { ssr: false })
-const LazyQuic = dynamic(() => import("./quic").then(mod => mod.Quicv2), { ssr: false })
-const LazyAead = dynamic(() => import("./aead").then(mod => mod.Aead), { ssr: false })
-const LazyCloudflareWarpMasque = dynamic(() => import("./cloudflare_warp_masque").then(mod => mod.CloudflareWarpMasque), { ssr: false })
+const LazyFixed = dynamic(() => import("./simple").then(mod => mod.Fixed), { ssr: false, loading: () => <Loading /> })
+const LazyFixedv2 = dynamic(() => import("./fixedv2").then(mod => mod.Fixed), { ssr: false, loading: () => <Loading /> })
+const LazyDirect = dynamic(() => import("./direct").then(mod => mod.Directv2), { ssr: false, loading: () => <Loading /> })
+const LazyTls = dynamic(() => import("./tls").then(mod => mod.Tlsv2), { ssr: false, loading: () => <Loading /> })
+const LazyWebsocket = dynamic(() => import("./websocket").then(mod => mod.Websocketv2), { ssr: false, loading: () => <Loading /> })
+const LazyShadowsocks = dynamic(() => import("./shadowsocks").then(mod => mod.Shadowsocksv2), { ssr: false, loading: () => <Loading /> })
+const LazyShadowsocksr = dynamic(() => import("./shadowsocksr").then(mod => mod.Shadowsocksrv2), { ssr: false, loading: () => <Loading /> })
+const LazyVless = dynamic(() => import("./vless").then(mod => mod.Vlessv2), { ssr: false, loading: () => <Loading /> })
+const LazyVmess = dynamic(() => import("./vmess").then(mod => mod.Vmessv2), { ssr: false, loading: () => <Loading /> })
+const LazyTrojan = dynamic(() => import("./trojan").then(mod => mod.Trojanv2), { ssr: false, loading: () => <Loading /> })
+const LazyObfsHttp = dynamic(() => import("./shadowsocks").then(mod => mod.ObfsHttpv2), { ssr: false, loading: () => <Loading /> })
+const LazySocks5 = dynamic(() => import("./socks5").then(mod => mod.Socks5v2), { ssr: false, loading: () => <Loading /> })
+const LazyHttp = dynamic(() => import("./http").then(mod => mod.HTTPv2), { ssr: false, loading: () => <Loading /> })
+const LazyYuubinsya = dynamic(() => import("./yuubinsta").then(mod => mod.Yuubinsyav2), { ssr: false, loading: () => <Loading /> })
+const LazyGrpc = dynamic(() => import("./grpc").then(mod => mod.Grpcv2), { ssr: false, loading: () => <Loading /> })
+const LazyHttp2 = dynamic(() => import("./http2").then(mod => mod.HTTP2v2), { ssr: false, loading: () => <Loading /> })
+const LazyReality = dynamic(() => import("./reality").then(mod => mod.Realityv2), { ssr: false, loading: () => <Loading /> })
+const LazyWireguard = dynamic(() => import("./wireguard").then(mod => mod.Wireguardv2), { ssr: false, loading: () => <Loading /> })
+const LazyMux = dynamic(() => import("./mux").then(mod => mod.Muxv2), { ssr: false, loading: () => <Loading /> })
+const LazyTailscale = dynamic(() => import("./tailscale").then(mod => mod.Tailscale), { ssr: false, loading: () => <Loading /> })
+const LazySet = dynamic(() => import("./set").then(mod => mod.Set), { ssr: false, loading: () => <Loading /> })
+const LazyTlsTermination = dynamic(() => import("./tls_server").then(mod => mod.UnWrapTls), { ssr: false, loading: () => <Loading /> })
+const LazyHttpTermination = dynamic(() => import("./http").then(mod => mod.UnWrapHttp), { ssr: false, loading: () => <Loading /> })
+const LazyQuic = dynamic(() => import("./quic").then(mod => mod.Quicv2), { ssr: false, loading: () => <Loading /> })
+const LazyAead = dynamic(() => import("./aead").then(mod => mod.Aead), { ssr: false, loading: () => <Loading /> })
+const LazyCloudflareWarpMasque = dynamic(() => import("./cloudflare_warp_masque").then(mod => mod.CloudflareWarpMasque), { ssr: false, loading: () => <Loading /> })
 
 const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
 

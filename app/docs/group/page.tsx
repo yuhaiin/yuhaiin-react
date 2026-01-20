@@ -1,17 +1,17 @@
 "use client"
 
-import { create } from "@bufbuild/protobuf";
+import { create, fromJsonString } from "@bufbuild/protobuf";
 import { Duration, StringValueSchema } from "@bufbuild/protobuf/wkt";
 import Error from 'next/error';
 import { FC, useContext, useState } from "react";
-import { Accordion, Button, ButtonGroup, Col, Dropdown, DropdownButton, ListGroup, Row, Spinner } from "react-bootstrap";
+import { Accordion, Button, ButtonGroup, Col, Dropdown, DropdownButton, Form, ListGroup, Modal, Row, Spinner } from "react-bootstrap";
 import { useLocalStorage } from "usehooks-ts";
 import { LatencyDNSUrlDefault, LatencyDNSUrlKey, LatencyHTTPUrlDefault, LatencyHTTPUrlKey, LatencyIPUrlDefault, LatencyIPUrlKey, LatencyIPv6Default, LatencyIPv6Key, LatencyStunTCPUrlDefault, LatencyStunTCPUrlKey, LatencyStunUrlDefault, LatencyStunUrlKey } from "../common/apiurl";
 import Loading from "../common/loading";
 import { Nodes, NodesContext } from "../common/nodes";
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
 import { GlobalToastContext } from "../common/toast";
-import { NodeJsonModal, NodeModal } from "../node/modal";
+import { NodeModal } from "../node/modal";
 import { node, use_reqSchema } from "../pbes/api/node_pb";
 import { dns_over_quicSchema, http_testSchema, ipSchema, nat_type, reply, request_protocol, request_protocolSchema, requestsSchema, stunSchema } from "../pbes/node/latency_pb";
 import { origin, point, pointSchema } from "../pbes/node/point_pb";
@@ -109,7 +109,6 @@ function Group() {
     const [groupIndex, setGroupIndex] = useState(-1);
     const [modalData, setModalData] = useState(new ModalData());
     const [importJson, setImportJson] = useState({ data: false });
-    const [latency, setLatency] = useState<{ [key: string]: latencyStatus }>({})
 
     const [latencyHTTP] = useLocalStorage(LatencyHTTPUrlKey, LatencyHTTPUrlDefault);
     const [latencyDNS] = useLocalStorage(LatencyDNSUrlKey, LatencyDNSUrlDefault);
@@ -163,7 +162,6 @@ function Group() {
                     onHide={() => setImportJson({ data: false })}
                     isNew
                 />
-
             </NodesContext>
 
             <div className={styles.pageHeader}>
@@ -205,7 +203,7 @@ function Group() {
 
                         <Button
                             variant="outline-primary"
-                            onClick={() => { setImportJson({ data: true }) }}
+                            onClick={() => setImportJson({ data: true })}
                         >
                             <i className="bi bi-box-arrow-in-down" />&nbsp;Import
                         </Button>
@@ -216,26 +214,30 @@ function Group() {
             <Accordion className={styles.accordion} alwaysOpen id="connections">
                 {
                     groupIndex >= 0
-                    && data.groups.length > groupIndex
-                    && data.groups[groupIndex].nodes
-                        .map((v) => {
-                            return <NodeItemv2
-                                key={v.hash}
-                                hash={v.hash}
-                                name={v.name}
-                                latency={latency[v.hash] ?? { tcp: { loading: false, value: "N/A" }, udp: { loading: false, value: "N/A" }, }}
-                                onChangeLatency={(e) => { setLatency(prev => { return { ...prev, [v.hash]: e(prev[v.hash] ?? { tcp: { loading: false, value: "N/A" }, udp: { loading: false, value: "N/A" }, }) } }) }}
-                                onClickEdit={() => { openModal(v.hash) }}
-                                ipv6={latencyIPv6}
-                                urls={{
-                                    ip: latencyIPUrl,
-                                    tcp: latencyHTTP,
-                                    udp: latencyDNS,
-                                    stun: latencyStunUrl,
-                                    stunTCP: latencyStunTCPUrl,
-                                }}
-                            />
-                        })
+                        && data.groups.length > groupIndex
+                        && data.groups[groupIndex].nodes.length > 0 ? (
+                        data.groups[groupIndex].nodes
+                            .map((v) => {
+                                return <NodeItemv2
+                                    key={v.hash}
+                                    hash={v.hash}
+                                    name={v.name}
+                                    onClickEdit={() => { openModal(v.hash) }}
+                                    ipv6={latencyIPv6}
+                                    urls={{
+                                        ip: latencyIPUrl,
+                                        tcp: latencyHTTP,
+                                        udp: latencyDNS,
+                                        stun: latencyStunUrl,
+                                        stunTCP: latencyStunTCPUrl,
+                                    }}
+                                />
+                            })
+                    ) : (
+                        <div className="text-center text-secondary py-3">
+                            {groupIndex === -1 ? "Please select a group to display nodes" : "Current group has no nodes"}
+                        </div>
+                    )
                 }
             </Accordion>
         </>
@@ -445,9 +447,8 @@ const createLatencyReqByType = (
 }
 
 const NodeItemv2: FC<{
-    hash: string, name: string,
-    latency: latencyStatus,
-    onChangeLatency: (x: (s: latencyStatus) => latencyStatus) => void
+    hash: string,
+    name: string,
     onClickEdit: () => void,
     urls: {
         tcp: string,
@@ -457,11 +458,12 @@ const NodeItemv2: FC<{
         stunTCP: string,
     },
     ipv6?: boolean,
-}> = ({ hash, name, onClickEdit, onChangeLatency, latency, ipv6, urls }) => {
+}> = ({ hash, name, onClickEdit, ipv6, urls }) => {
     const ctx = useContext(GlobalToastContext);
+    const [latency, setLatency] = useLocalStorage<latencyStatus>(`latency-${hash}`, { tcp: { loading: false, value: "N/A" }, udp: { loading: false, value: "N/A" } })
 
     const test = (type: LatencyType) => {
-        const { request, setLoading, setResult } = createLatencyReqByType(type, latency, onChangeLatency, urls)
+        const { request, setLoading, setResult } = createLatencyReqByType(type, latency, setLatency, urls)
 
         setLoading(true)
 
@@ -596,4 +598,72 @@ function setNode(ctx: { Info: (msg: string) => void, Error: (msg: string) => voi
             if (error !== undefined) ctx.Error(`change node failed, ${error.code}| ${error.msg}`)
             else ctx.Info(`Change Node To ${hash} Successful`)
         })
+}
+
+
+export const NodeJsonModal = (
+    props: {
+        show: boolean,
+        plaintext?: boolean,
+        data?: string,
+        onSave?: () => void
+        onHide: () => void,
+        isNew?: boolean
+    },
+) => {
+    const ctx = useContext(GlobalToastContext);
+    const [nodeJson, setNodeJson] = useState({ data: "" });
+    const Footer = () => {
+        if (!props.onSave) return <></>
+        return <Button variant="outline-primary"
+            onClick={() => {
+                const p = fromJsonString(pointSchema, nodeJson.data);
+                if (props.isNew) p.hash = ""
+                FetchProtobuf(node.method.save, p)
+                    .then(async ({ error }) => {
+                        if (error === undefined) {
+                            ctx.Info("save successful")
+                            if (props.onSave !== undefined) props.onSave();
+                        } else ctx.Error(error.msg)
+                    })
+            }}
+        >
+            Save
+        </Button>
+    }
+    return (
+        <>
+            <Modal
+                show={props.show}
+                aria-labelledby="contained-modal-title-vcenter"
+                size='xl'
+                onHide={() => { props.onHide() }}
+                centered
+            >
+                {!props.plaintext &&
+                    <Modal.Header closeButton>
+                        <Modal.Title id="contained-modal-title-vcenter">
+                            Import JSON
+                        </Modal.Title>
+                    </Modal.Header>
+                }
+
+                <Modal.Body>
+                    <Form.Control
+                        as="textarea"
+                        readOnly={props.plaintext}
+                        value={props.data ? props.data : nodeJson.data}
+                        style={{ height: "65vh", fontFamily: "monospace" }}
+                        onChange={(e) => { setNodeJson({ data: e.target.value }); }}
+                    />
+                </Modal.Body>
+
+
+                <Modal.Footer>
+                    <Button variant="outline-secondary" onClick={() => { props.onHide() }}>Close</Button>
+                    <Footer />
+                </Modal.Footer>
+            </Modal>
+        </>
+    );
 }

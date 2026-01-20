@@ -1,5 +1,6 @@
 import React, { createContext, useState, } from 'react';
 import { Toast, ToastContainer } from 'react-bootstrap';
+import styles from './toast.module.css';
 
 const initialState = {
     Info: (s: string) => { console.log(s) },
@@ -16,7 +17,7 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode }> = ({ c
         setTexts(prev => { return { value: { ...prev.value, [prev.index]: { text: text, type: type } }, index: prev.index + 1 } });
 
     return (
-        <GlobalToastContext.Provider value={{ Info: (text: string) => { console.log(text); msg(text, "success") }, Error: (text: string) => { console.error(text); msg(text, "danger") } }}>
+        <GlobalToastContext.Provider value={{ Info: (text: string) => { console.log(text); msg(text, "info") }, Error: (text: string) => { console.error(text); msg(text, "error") } }}>
             <ToastContainer
                 className="p-3"
                 position={"top-center"}
@@ -29,7 +30,6 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode }> = ({ c
                         role='alert'
                         aria-live='assertive'
                         show={true}
-                        bg={v.type}
                         onClose={() => {
                             setTexts(prev => {
                                 const value = { ...prev.value }
@@ -37,12 +37,13 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode }> = ({ c
                                 return { ...prev, value }
                             })
                         }}
+                        className={`${styles.toast} ${styles[v.type]}`}
                         aria-atomic="true"
                         delay={4000}
                         autohide={true}
                         animation={true}
                     >
-                        <Toast.Header>
+                        <Toast.Header className={styles.toast_header}>
                             <strong className="me-auto">Notification</strong>
                             <small className="text-muted">just now</small>
                         </Toast.Header>

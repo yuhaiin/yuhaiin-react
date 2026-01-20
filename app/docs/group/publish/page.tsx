@@ -140,7 +140,8 @@ function PublishPage() {
 
     const ctx = useContext(GlobalToastContext);
     const { copy, copied } = useClipboard({
-        onCopyError: (e) => ctx.Error(e.message)
+        onCopyError: (e) => ctx.Error(e.message),
+        usePromptAsFallback: true,
     });
 
     useEffect(() => {

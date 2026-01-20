@@ -8,6 +8,7 @@ import styles from "../../common/clickable.module.css"
 import Loading from "../../common/loading"
 import { CustomPagination } from "../../common/pagination"
 import { useProtoSWR } from "../../common/proto"
+import { NodeModal } from "../../node/modal"
 import { all_history, connections } from "../../pbes/api/statistic_pb"
 import { connectionSchema, type, typeSchema } from "../../pbes/statistic/config_pb"
 import { ConnectionInfo, ListGroupItemString } from "../components"
@@ -53,20 +54,35 @@ function History() {
             sort(sortFieldFunc)
     }, [data, filter, netFilter, sortFieldFunc])
 
+
+
+    const [nodeModal, setNodeModal] = useState<{ show: boolean, hash: string }>({ show: false, hash: "" });
+    const showNodeModal = useCallback((hash: string) => {
+        setNodeModal({ show: true, hash: hash });
+    }, []);
+
     if (error) return <Loading code={error.code}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />
 
 
 
     return <>
+        <NodeModal
+            editable={false}
+            show={nodeModal.show}
+            hash={nodeModal.hash}
+            onHide={() => setNodeModal({ show: false, hash: "" })}
+        />
+
         <Modal
             scrollable
             centered
-            show={modalData.show}
+            show={!nodeModal.show && modalData.show}
             onHide={() => setModalData(prev => { return { ...prev, show: false } })}
         >
             <Modal.Body>
                 <ConnectionInfo
+                    showNodeModal={showNodeModal}
                     value={modalData.data?.connection ?? create(connectionSchema, {})}
                     startContent={
                         <>

@@ -2,6 +2,7 @@ import { create } from "@bufbuild/protobuf";
 import dynamic from "next/dynamic";
 import { FC, useEffect, useState } from "react";
 import { Button, InputGroup, ListGroup } from "react-bootstrap";
+import Loading from "../common/loading";
 import { FormSelect } from "../common/switch";
 import {
     emptySchema,
@@ -51,8 +52,8 @@ export const Network: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
     </>
 }
 
-const LazyTcpUdp = dynamic(() => import("./tcpudp").then(mod => mod.TcpUdp), { ssr: false })
-const LazyQuic = dynamic(() => import("./quic").then(mod => mod.Quic), { ssr: false })
+const LazyTcpUdp = dynamic(() => import("./tcpudp").then(mod => mod.TcpUdp), { ssr: false, loading: () => <Loading /> });
+const LazyQuic = dynamic(() => import("./quic").then(mod => mod.Quic), { ssr: false, loading: () => <Loading /> });
 
 const Config: FC<{ inbound: inbound, onChange: (x: inbound) => void }> = ({ inbound, onChange }) => {
     switch (inbound.network.case) {

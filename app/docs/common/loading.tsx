@@ -1,11 +1,11 @@
-import { FC } from 'react';
+import { CSSProperties, FC } from 'react';
 import { Spinner } from "react-bootstrap";
 
-function Loading(props: { children?: string, code?: number }) {
+function Loading(props: { children?: string, code?: number, style?: CSSProperties }) {
     return (
         <div
             className="z-1090 d-flex flex-column justify-content-center align-items-center"
-            style={{ height: "100px" }}
+            style={{ height: "100px", ...props.style }}
         >
             {props.children !== undefined && <><Error statusCode={props.code !== undefined ? props.code : 500} title={props.children}></Error></>}
             <div className="p2"><Spinner /></div>

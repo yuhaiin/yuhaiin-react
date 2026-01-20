@@ -1,8 +1,9 @@
-import { create, fromJsonString, toJsonString } from "@bufbuild/protobuf";
+import { create, toJsonString } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
-import React, { FC, useContext, useEffect, useState } from "react";
-import { Button, ButtonGroup, Dropdown, DropdownButton, Form, Modal } from "react-bootstrap";
+import React, { FC, useContext, useEffect } from "react";
+import { Button, ButtonGroup, Dropdown, DropdownButton, Modal } from "react-bootstrap";
 import useSWR from 'swr';
+import { useClipboard } from '../common/clipboard';
 import { InterfacesContext, useInterfaces } from "../common/interfaces";
 import Loading, { Error } from "../common/loading";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath } from '../common/proto';
@@ -25,9 +26,11 @@ const NodeModalComponent: FC<{
     ({ hash, point, editable, show, onHide, onSave, groups, onDelete, isNew }) => {
         const ctx = useContext(GlobalToastContext);
 
-        const [jsonShow, setJsonShow] = useState({ show: false, data: "" })
-
         const interfaces = useInterfaces();
+        const { copy } = useClipboard({
+            onCopyError: (e) => ctx.Error(`Failed to copy JSON: ${e.message}`),
+            usePromptAsFallback: true, // Use prompt as fallback for older browsers or if clipboard access is denied
+        });
 
         // isValidating becomes true whenever there is an ongoing request whether the data is loaded or not
         // isLoading becomes true when there is an ongoing request and data is not loaded yet.
@@ -64,17 +67,17 @@ const NodeModalComponent: FC<{
             </Button >
         }
 
+        const handleCopyJson = () => {
+            if (nodes) {
+                const jsonString = toJsonString(pointSchema, nodes, { prettySpaces: 2 });
+                copy(jsonString);
+            }
+        };
+
         return (
             <>
-                <NodeJsonModal
-                    show={jsonShow.show}
-                    data={jsonShow.data}
-                    plaintext
-                    onHide={() => setJsonShow({ ...jsonShow, show: false })}
-                />
-
                 <Modal
-                    show={jsonShow.show ? false : show}
+                    show={show}
                     scrollable
                     aria-labelledby="contained-modal-title-vcenter"
                     size='xl'
@@ -82,6 +85,7 @@ const NodeModalComponent: FC<{
                     centered
                 >
                     <Modal.Body>
+
                         <InterfacesContext value={interfaces}>
                             <fieldset disabled={!editable}>
                                 {error ?
@@ -112,7 +116,7 @@ const NodeModalComponent: FC<{
                                     }
                                 }}
                                 as={ButtonGroup}
-                                variant="outline-danger"
+                                variant="outline-danger" // Keep variant for now, will remove if custom styling is enough
                                 title="Remove"
                             >
                                 <Dropdown.Item eventKey={"ok"}>OK</Dropdown.Item>
@@ -122,15 +126,12 @@ const NodeModalComponent: FC<{
                         {(!error && !isValidating && !isLoading && nodes) &&
                             <Button
                                 variant="outline-primary"
-                                onClick={() => {
-                                    setJsonShow({ show: true, data: toJsonString(pointSchema, nodes, { prettySpaces: 2 }) });
-                                    // navigator.clipboard.writeText(JSON.stringify(po.toJson({ emitDefaultValues: true }), null, 2));
-                                }}
+                                onClick={handleCopyJson}
                             >
-                                JSON
+                                Copy JSON
                             </Button>
                         }
-                        <Button variant="outline-secondary" onClick={() => { onHide() }}>Close</Button>
+                        <Button variant="outline-primary" onClick={onHide}>Close</Button>
                         <SaveButton />
                     </Modal.Footer>
                 </Modal>
@@ -139,70 +140,3 @@ const NodeModalComponent: FC<{
     }
 
 export const NodeModal = React.memo(NodeModalComponent)
-
-export const NodeJsonModal = (
-    props: {
-        show: boolean,
-        plaintext?: boolean,
-        data?: string,
-        onSave?: () => void
-        onHide: () => void,
-        isNew?: boolean
-    },
-) => {
-    const ctx = useContext(GlobalToastContext);
-    const [nodeJson, setNodeJson] = useState({ data: "" });
-    const Footer = () => {
-        if (!props.onSave) return <></>
-        return <Button variant="outline-primary"
-            onClick={() => {
-                const p = fromJsonString(pointSchema, nodeJson.data);
-                if (props.isNew) p.hash = ""
-                FetchProtobuf(node.method.save, p)
-                    .then(async ({ error }) => {
-                        if (error === undefined) {
-                            ctx.Info("save successful")
-                            if (props.onSave !== undefined) props.onSave();
-                        } else ctx.Error(error.msg)
-                    })
-            }}
-        >
-            Save
-        </Button>
-    }
-    return (
-        <>
-            <Modal
-                show={props.show}
-                aria-labelledby="contained-modal-title-vcenter"
-                size='xl'
-                onHide={() => { props.onHide() }}
-                centered
-            >
-                {!props.plaintext &&
-                    <Modal.Header closeButton>
-                        <Modal.Title id="contained-modal-title-vcenter">
-                            Import JSON
-                        </Modal.Title>
-                    </Modal.Header>
-                }
-
-                <Modal.Body>
-                    <Form.Control
-                        as="textarea"
-                        readOnly={props.plaintext}
-                        value={props.data ? props.data : nodeJson.data}
-                        style={{ height: "65vh", fontFamily: "monospace" }}
-                        onChange={(e) => { setNodeJson({ data: e.target.value }); }}
-                    />
-                </Modal.Body>
-
-
-                <Modal.Footer>
-                    <Button variant="outline-secondary" onClick={() => { props.onHide() }}>Close</Button>
-                    <Footer />
-                </Modal.Footer>
-            </Modal>
-        </>
-    );
-}

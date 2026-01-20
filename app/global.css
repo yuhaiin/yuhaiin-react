@@ -47,7 +47,8 @@ body {
         margin-left: 0;
         width: 100%;
         max-width: 100vw;
-        height: 100dvh;  /* Adjust for mobile header height */
+        height: 100dvh;
+        /* Adjust for mobile header height */
         min-height: 100dvh;
 
         /* Horizontal padding */
@@ -59,6 +60,7 @@ body {
         padding-top: 80px;
     }
 }
+
 /* =======================================================
    Global Component Overrides (Buttons & Switches)
    ======================================================= */
@@ -72,19 +74,19 @@ body {
     background-color: var(--bs-tertiary-bg);
     border: 1px solid var(--sidebar-border-color);
     color: var(--bs-body-color);
-    
+
     /* 
        CRITICAL: Set default radius WITHOUT !important.
        This allows Bootstrap's Input Group selectors to override 
        corners (making them square) when buttons are attached to inputs.
     */
     border-radius: 12px;
-    
+
     font-weight: 500;
     transition: all 0.2s ease;
-    
+
     /* Fix positioning for z-index stacking in Input Groups */
-    position: relative; 
+    position: relative;
 }
 
 /* Hover State */
@@ -92,9 +94,9 @@ body {
     background-color: var(--sidebar-hover-bg);
     border-color: var(--sidebar-active-color);
     color: var(--sidebar-active-color);
-    
+
     /* Ensure hovered button border sits above adjacent input borders */
-    z-index: 2; 
+    z-index: 2;
 }
 
 /* 
@@ -104,22 +106,69 @@ body {
 */
 .btn:active,
 .btn.active,
-.btn:focus,
 .btn:focus-visible,
-.show > .btn.dropdown-toggle,  /* Target parent .show (Dropdowns) */
-.btn.dropdown-toggle.show      /* Target button .show */
-{
+.show>.btn.dropdown-toggle,
+/* Target parent .show (Dropdowns) */
+.btn.dropdown-toggle.show
+
+/* Target button .show */
+    {
     /* Force background to match the hover state */
     background-color: var(--sidebar-hover-bg) !important;
     border-color: var(--sidebar-active-color) !important;
     color: var(--sidebar-active-color) !important;
-    
+
     /* Remove the default blue focus ring/glow */
-    box-shadow: none !important; 
+    box-shadow: none !important;
     outline: none !important;
-    
+
     /* Highest priority in Input Groups so the active border is fully visible */
-    z-index: 3; 
+    z-index: 3;
+}
+
+.btn.btn-danger {
+    background-color: var(--bs-danger) !important;
+    border-color: var(--bs-danger) !important;
+    color: #fff !important;
+}
+
+.btn.btn-danger:hover,
+.btn.btn-danger:active,
+.btn.btn-danger.active,
+.btn.btn-danger:focus-visible {
+    background-color: #bb2d3b !important;
+    border-color: #b02a37 !important;
+    color: #fff !important;
+
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5) !important;
+}
+
+.btn.btn-outline-danger {
+    background-color: transparent !important;
+    border-color: var(--bs-danger) !important;
+    color: var(--bs-danger) !important;
+}
+
+.btn.btn-outline-danger:hover {
+    background-color: var(--bs-danger) !important;
+    border-color: var(--bs-danger) !important;
+    color: #fff !important;
+}
+
+.btn.btn-outline-danger:active,
+.btn.btn-outline-danger.active,
+.btn.btn-outline-danger:focus-visible {
+    background-color: var(--bs-danger) !important;
+
+    border-color: var(--bs-danger) !important;
+    color: #fff !important;
+
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5) !important;
+}
+
+.btn:focus, .btn:active:focus {
+    box-shadow: none !important;
+    outline: none !important;
 }
 
 /* -------------------------------------------------------
@@ -131,7 +180,7 @@ body {
     background-color: var(--bs-tertiary-bg);
     border: 1px solid var(--sidebar-border-color);
     cursor: pointer;
-    
+
     /* Smooth transition for color and the switch knob movement */
     transition: background-position .15s ease-in-out, background-color 0.2s ease, border-color 0.2s ease;
 }
@@ -153,4 +202,186 @@ body {
 .form-check-input:active {
     /* Slight dimming effect for tactile feedback */
     filter: brightness(90%);
+}
+
+/* =========================================================
+   Global Bootstrap Modal Override
+   Adapting to Sidebar Theme Variables
+   ========================================================= */
+
+/* 1. Animation & Positioning (Mapping .modalContainer logic) */
+/* Override default slide-down. Set initial state for .fade */
+.modal.fade .modal-dialog {
+    transform: translateY(-20px);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Final state when shown */
+.modal.show .modal-dialog {
+    transform: translateY(0);
+}
+
+/* 2. Modal Container (Mapping .modalContainer) */
+.modal-content {
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-color);
+    border-radius: var(--sidebar-radius);
+    border: 1px solid var(--sidebar-border-color);
+    box-shadow: var(--sidebar-box-shadow);
+    overflow: hidden;
+    /* Prevents content from overflowing corners */
+}
+
+/* 3. Header (Mapping .modalHeader) */
+.modal-header {
+    border-bottom: 1px solid var(--sidebar-border-color);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-header .modal-title {
+    font-size: 1.25rem;
+    color: var(--sidebar-header-color);
+    margin: 0;
+    font-weight: 500;
+}
+
+/* 4. Close Button (Mapping .modalCloseButton) */
+/* Heavily override .btn-close to remove SVG and use CSS styling */
+.modal-header .btn-close {
+    background: transparent;
+    /* Remove default Bootstrap SVG */
+    opacity: 1;
+    /* Reset default opacity */
+    padding: 0;
+    margin: 0;
+    margin-left: auto;
+    font-size: 1.5rem;
+    color: var(--sidebar-color);
+    box-shadow: none;
+    /* Remove focus ring */
+    width: auto;
+    height: auto;
+    transition: color 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Use pseudo-element to simulate the '×' icon for color control */
+.modal-header .btn-close::before {
+    content: '×';
+    font-family: sans-serif;
+    font-style: normal;
+    line-height: 1;
+}
+
+.modal-header .btn-close:hover {
+    color: var(--sidebar-active-color);
+    opacity: 1;
+}
+
+/* 5. Body (Mapping .modalBody) */
+.modal-body {
+    padding: 20px;
+    color: var(--sidebar-color);
+}
+
+/* 6. Footer (Mapping .modalFooter) */
+.modal-footer {
+    border-top: 1px solid var(--sidebar-border-color);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Reset margin for children in footer */
+.modal-footer>* {
+    margin: 0;
+}
+
+/* 7. Buttons inside Modal (Mapping .modalButton) */
+/* Scoped to .modal-footer to avoid affecting other buttons on the page */
+.modal-footer .btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    /* Or use var(--sidebar-radius) */
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--sidebar-border-color);
+    background-color: transparent;
+    /* Default transparent */
+    color: var(--sidebar-color);
+    box-shadow: none;
+}
+
+.modal-footer .btn:hover {
+    background-color: var(--sidebar-hover-bg);
+    color: var(--sidebar-active-color);
+    border-color: var(--sidebar-active-color);
+}
+
+/* Primary Action Button (Mapping .modalButton.primary) */
+/* Targeted via .btn-primary */
+.modal-footer .btn-primary {
+    background-color: var(--sidebar-active-bg);
+    color: var(--sidebar-active-color);
+    border-color: var(--sidebar-active-color);
+    box-shadow: var(--sidebar-active-glow);
+}
+
+.modal-footer .btn-primary:hover,
+.modal-footer .btn-primary:active,
+.modal-footer .btn-primary:focus {
+    background-color: var(--sidebar-active-bg) !important;
+    border-color: var(--sidebar-active-color) !important;
+    color: var(--sidebar-active-color) !important;
+    filter: brightness(1.1);
+    /* Slightly brighter on hover */
+}
+
+/* Backdrop Overlay (Mapping .modalOverlay background) */
+.modal-backdrop.show {
+    opacity: 0.5;
+    background-color: #000;
+}
+
+/* =========================================================
+   ListGroup Override (Matches Modal/Sidebar Theme)
+   ========================================================= */
+
+.list-group-item {
+    background-color: var(--sidebar-bg);
+    /* Matches Modal body bg */
+    border-color: var(--sidebar-border-color);
+    /* Matches Modal borders */
+    color: var(--sidebar-color);
+    /* Matches Modal text */
+}
+
+/* Optional: Hover effect for list items if they are actionable */
+.list-group-item-action:hover,
+.list-group-item-action:focus {
+    background-color: var(--sidebar-hover-bg);
+    color: var(--sidebar-active-color);
+}
+
+/* Utility class for the separator lines to match the border color */
+.theme-divider {
+    height: 1px;
+    background-color: var(--sidebar-border-color) !important;
+    opacity: 1;
+    /* Ensure color is visible */
+}
+
+/* Adjust Badges to blend better if needed */
+.badge {
+    font-weight: 500;
+    /* Optional: slightly soften badges */
+    box-shadow: var(--sidebar-box-shadow);
 }

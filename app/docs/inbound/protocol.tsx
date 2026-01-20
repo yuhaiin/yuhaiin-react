@@ -2,6 +2,7 @@ import { create } from "@bufbuild/protobuf";
 import dynamic from "next/dynamic";
 import { FC, useEffect, useState } from "react";
 import { Button, InputGroup, ListGroup } from "react-bootstrap";
+import Loading from "../common/loading";
 import { FormSelect } from "../common/switch";
 import {
     httpSchema,
@@ -16,15 +17,15 @@ import {
     yuubinsyaSchema
 } from "../pbes/config/inbound_pb";
 
-const LazyHTTP = dynamic(() => import("./http").then(mod => mod.HTTP), { ssr: false })
-const LazyReverseHTTP = dynamic(() => import("./http").then(mod => mod.ReverseHTTP), { ssr: false })
-const LazyReverseTCP = dynamic(() => import("./tcpudp").then(mod => mod.ReverseTCP), { ssr: false })
-const LazyRedir = dynamic(() => import("./redir").then(mod => mod.Redir), { ssr: false })
-const LazySocks5 = dynamic(() => import("./mixed").then(mod => mod.Socks5), { ssr: false })
-const LazyTProxy = dynamic(() => import("./tproxy").then(mod => mod.TProxy), { ssr: false })
-const LazyMixed = dynamic(() => import("./mixed").then(mod => mod.Mixed), { ssr: false })
-const LazyTun = dynamic(() => import("./tun").then(mod => mod.Tun), { ssr: false })
-const LazyYuubinsya = dynamic(() => import("./yuubinsya").then(mod => mod.Yuubinsya), { ssr: false })
+const LazyHTTP = dynamic(() => import("./http").then(mod => mod.HTTP), { ssr: false, loading: () => <Loading /> })
+const LazyReverseHTTP = dynamic(() => import("./http").then(mod => mod.ReverseHTTP), { ssr: false, loading: () => <Loading /> })
+const LazyReverseTCP = dynamic(() => import("./tcpudp").then(mod => mod.ReverseTCP), { ssr: false, loading: () => <Loading /> })
+const LazyRedir = dynamic(() => import("./redir").then(mod => mod.Redir), { ssr: false, loading: () => <Loading /> })
+const LazySocks5 = dynamic(() => import("./mixed").then(mod => mod.Socks5), { ssr: false, loading: () => <Loading /> })
+const LazyTProxy = dynamic(() => import("./tproxy").then(mod => mod.TProxy), { ssr: false, loading: () => <Loading /> })
+const LazyMixed = dynamic(() => import("./mixed").then(mod => mod.Mixed), { ssr: false, loading: () => <Loading /> })
+const LazyTun = dynamic(() => import("./tun").then(mod => mod.Tun), { ssr: false, loading: () => <Loading /> })
+const LazyYuubinsya = dynamic(() => import("./yuubinsya").then(mod => mod.Yuubinsya), { ssr: false, loading: () => <Loading /> })
 
 const Config: FC<{ inbound: inbound, onChange: (x: inbound) => void }> = ({ inbound, onChange }) => {
     switch (inbound.protocol.case) {

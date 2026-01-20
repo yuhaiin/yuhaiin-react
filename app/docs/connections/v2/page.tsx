@@ -11,6 +11,7 @@ import { EmptySchema } from "@bufbuild/protobuf/wkt";
 import React, { FC, useCallback, useContext, useMemo, useState } from "react";
 import { Badge, Button, Modal, Spinner, ToggleButton, ToggleButtonGroup } from "react-bootstrap";
 import useSWRSubscription from 'swr/subscription';
+import { NodeModal } from "../../node/modal";
 import { mode } from "../../pbes/config/bypass_pb";
 import styles from './connections.module.css';
 
@@ -68,14 +69,28 @@ function Connections() {
         setSortOrder(value)
     }, [setSortOrder])
 
+
+    const [nodeModal, setNodeModal] = useState<{ show: boolean, hash: string }>({ show: false, hash: "" });
+    const showNodeModal = useCallback((hash: string) => {
+        setNodeModal({ show: true, hash: hash });
+    }, []);
+
     return (
         <div>
+            <NodeModal
+                editable={false}
+                show={nodeModal.show}
+                hash={nodeModal.hash}
+                onHide={() => setNodeModal({ show: false, hash: "" })}
+            />
+
             <FlowContainer onUpdate={updateCounters} />
 
             <InfoOffcanvas
                 data={info.info}
-                show={info.show}
+                show={!nodeModal.show && info.show}
                 onClose={hideInfo}
+                showNodeModal={showNodeModal}
             />
 
 
@@ -222,52 +237,70 @@ const InfoOffcanvasComponent: FC<{
     data: connection,
     show: boolean,
     onClose: () => void,
-}> =
-    ({ data, show, onClose: handleClose }) => {
-        const ctx = useContext(GlobalToastContext);
+    showNodeModal?: (hash: string) => void
+}> = ({ data, show, onClose: handleClose, showNodeModal }) => {
+    const ctx = useContext(GlobalToastContext);
+    const [closing, setClosing] = useState(false);
 
-        const [closing, setClosing] = useState(false);
+    const closeConnection = useCallback(() => {
+        setClosing(true)
+        FetchProtobuf(
+            connections.method.close_conn,
+            create(notify_remove_connectionsSchema, { ids: [data.id] }),
+        ).then(({ error }) => {
+            if (error) ctx.Error(`code ${data.id} failed, ${error.code}| ${error.msg}`)
+            else handleClose()
+        }).finally(() => { setClosing(false) })
+    }, [setClosing, data.id, ctx])
 
-        const closeConnection = useCallback(() => {
-            setClosing(true)
-            FetchProtobuf(
-                connections.method.close_conn,
-                create(notify_remove_connectionsSchema, { ids: [data.id] }),
-            ).then(({ error }) => {
-                if (error) ctx.Error(`code ${data.id} failed, ${error.code}| ${error.msg}`)
-                else handleClose()
-            }).finally(() => { setClosing(false) })
-        }, [setClosing, data.id, ctx])
-
-        return <Modal
+    return (
+        <Modal
             show={show}
             onHide={handleClose}
             scrollable
+            centered
+            contentClassName="border-0 shadow-lg"
         >
-            <Modal.Body>
-                <ConnectionInfo value={data} />
+            <Modal.Header closeButton className="border-bottom-0 pb-0">
+                <Modal.Title className="h5 fw-bold">
+                    Connection Details
+                </Modal.Title>
+            </Modal.Header>
+
+            <Modal.Body className="pt-2">
+                <ConnectionInfo value={data} showNodeModal={showNodeModal} />
             </Modal.Body>
 
-            <Modal.Footer className="d-flex">
+            <Modal.Footer className="border-top-0 pt-0 pb-3 px-3">
                 <Button
-                    variant="outline-success"
-                    onClick={handleClose}
-                    className="flex-grow-1 notranslate"
-                >
-                    Cancel
-                </Button>
-                <Button
-                    variant="outline-danger"
-                    className="ms-2 flex-grow-1 notranslate"
+                    variant="danger"
+                    className="w-100 py-2 d-flex align-items-center justify-content-center notranslate"
                     disabled={closing}
                     onClick={closeConnection}
                 >
-                    Disconnect
-                    {closing && <>&nbsp;<Spinner size="sm" animation="border" variant='danger' /></>}
+                    {closing ? (
+                        <>
+                            <Spinner
+                                as="span"
+                                animation="border"
+                                size="sm"
+                                role="status"
+                                aria-hidden="true"
+                                className="me-2"
+                            />
+                            Disconnecting...
+                        </>
+                    ) : (
+                        <>
+                            <i className="bi bi-power fs-5 me-2"></i>
+                            <span className="fw-bold">Disconnect</span>
+                        </>
+                    )}
                 </Button>
             </Modal.Footer>
         </Modal>
-    }
+    );
+}
 
 const InfoOffcanvas = React.memo(InfoOffcanvasComponent)
 

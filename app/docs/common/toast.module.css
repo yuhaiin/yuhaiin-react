@@ -1,0 +1,21 @@
+.toast {
+    background-color: var(--sidebar-bg) !important;
+    border: 1px solid var(--sidebar-border-color) !important;
+    color: var(--sidebar-color) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--sidebar-box-shadow) !important;
+    overflow: hidden !important;
+}
+
+.info {
+    /* border-left removed as per user request */
+}
+
+.error {
+    /* border-left removed as per user request */
+}
+
+.toast_header {
+    border-bottom: 1px solid var(--sidebar-border-color) !important;
+    background-color: var(--bs-tertiary-bg) !important;
+}

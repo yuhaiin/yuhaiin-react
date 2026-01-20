@@ -1,5 +1,6 @@
 import { create } from '@bufbuild/protobuf';
 import { useCallback, useState } from 'react';
+import ActiveNodes from './ActiveNodes';
 import { useProtoSWR } from './common/proto';
 import { Flow, FlowContainer } from './connections/components';
 import { NodeModal } from './node/modal';
@@ -41,7 +42,7 @@ function Index() {
             onHide={() => setNodeModal({ ...nodeModal, show: false })}
         />
 
-        <div style={{ flexShrink: 0 }}>
+        <div style={{ flexShrink: 0, marginBottom: '1rem' }}>
             <FlowContainer
                 onFlow={onFlow}
                 extra_fields={[
@@ -71,13 +72,12 @@ function Index() {
             />
         </div>
 
-        <div style={{
-            flex: 1,
-            marginTop: '10px',
-            marginBottom: '10px',
-            minHeight: 0,
-        }}>
+        <div style={{ minHeight: '400px', marginBottom: '1rem' }}>
             <TrafficChart data={trafficData} />
+        </div>
+
+        <div>
+            <ActiveNodes />
         </div>
     </div>
 }

@@ -1,11 +1,12 @@
 import dynamic from "next/dynamic"
 import { FC } from "react"
+import Loading from "../common/loading"
 import { transport } from "../pbes/config/inbound_pb"
 
-const LazyTls = dynamic(() => import("./tls").then(mod => mod.Tls), { ssr: false })
-const LazyTlsAuto = dynamic(() => import("./tls").then(mod => mod.TLSAuto), { ssr: false })
-const LazyReality = dynamic(() => import("./reality").then(mod => mod.Reality), { ssr: false })
-const LazyAead = dynamic(() => import("./aead").then(mod => mod.Aead), { ssr: false })
+const LazyTls = dynamic(() => import("./tls").then(mod => mod.Tls), { ssr: false, loading: () => <Loading /> })
+const LazyTlsAuto = dynamic(() => import("./tls").then(mod => mod.TLSAuto), { ssr: false, loading: () => <Loading /> })
+const LazyReality = dynamic(() => import("./reality").then(mod => mod.Reality), { ssr: false, loading: () => <Loading /> })
+const LazyAead = dynamic(() => import("./aead").then(mod => mod.Aead), { ssr: false, loading: () => <Loading /> })
 
 
 export const Transport: FC<{ transport: transport, onChange: (x: transport) => void }> = ({ transport, onChange }) => {
