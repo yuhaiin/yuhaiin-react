@@ -5,15 +5,13 @@ function Loading(props: { children?: string, code?: number, style?: CSSPropertie
     return (
         <div
             className="z-1090 d-flex flex-column justify-content-center align-items-center"
-            style={{ height: "100px", ...props.style }}
+            style={{ height: "100%", ...props.style }}
         >
             {props.children !== undefined && <><Error statusCode={props.code !== undefined ? props.code : 500} title={props.children}></Error></>}
             <div className="p2"><Spinner /></div>
         </div >
     )
 }
-
-
 
 export const Error: FC<{ statusCode?: number, title?: string, raw?: string }> = ({ statusCode, title, raw }) => {
     return <>

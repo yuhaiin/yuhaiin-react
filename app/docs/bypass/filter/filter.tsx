@@ -2,16 +2,15 @@
 
 import { create, toJsonString } from '@bufbuild/protobuf';
 import React, { createContext, FC, useContext, useEffect, useState } from 'react';
-import { Button, Card, Dropdown, Form, InputGroup, Modal, Spinner } from 'react-bootstrap';
+import { Button, Dropdown, Form, InputGroup, Modal, Spinner } from 'react-bootstrap';
 import useSWR from 'swr';
 import Loading from '../../common/loading';
 import { FetchProtobuf, ProtoESFetcher, ProtoPath } from '../../common/proto';
-import { SettingSelect, SettingTypeSelect } from '../../common/switch';
+import { SettingEnumSelectVertical, SettingInputVertical, SettingSelectVertical } from '../../common/switch';
 import { GlobalToastContext } from '../../common/toast';
-import { SettingInputText } from '../../config/components';
 import { rule_indexSchema, rule_save_requestSchema, rules } from '../../pbes/api/config_pb';
 import { geoipSchema, hostSchema, mode, modeSchema, network_network_type, networkSchema, or, orSchema, portSchema, processSchema, resolve_strategySchema, rule, ruleSchema, rulev2Schema, sourceSchema, udp_proxy_fqdn_strategy, udp_proxy_fqdn_strategySchema } from '../../pbes/config/bypass_pb';
-
+import styles from '../list/list.module.css';
 
 const Values = {
     Inbounds: [] as string[],
@@ -300,115 +299,159 @@ const FilterBuilder: FC<{ groups: or[], onUpdateGroups: (groups: or[]) => void }
         </>
     );
 };
-
-
-export const FilterModal: FC<{ index: number, name: string, show: boolean, onHide: () => void }> = ({ index, name, show, onHide }) => {
+export const FilterModal: FC<{
+    index: number,
+    name: string,
+    show: boolean,
+    onHide: () => void,
+    onDelete: () => void
+}> = ({ index, name, show, onHide, onDelete }) => {
     const ctx = useContext(GlobalToastContext);
-
+    const filterContext = useContext(FilterContext);
     const [loadding, setLoadding] = useState(false);
+    const [showDebug, setShowDebug] = useState(false);
 
-
-    // isValidating becomes true whenever there is an ongoing request whether the data is loaded or not
-    // isLoading becomes true when there is an ongoing request and data is not loaded yet.
     const { data: rule, error, isLoading, isValidating, mutate: setRule } = useSWR(
         name === "" ? undefined : ProtoPath(rules.method.get),
         ProtoESFetcher(rules.method.get, create(rule_indexSchema, { index, name })),
-        {
-            shouldRetryOnError: false,
-            keepPreviousData: false,
-            revalidateOnFocus: false,
-        })
+        { shouldRetryOnError: false, keepPreviousData: false, revalidateOnFocus: false }
+    )
 
     useEffect(() => { setRule(); }, [name, index, setRule])
 
-
     const saveRule = () => {
         setLoadding(true)
-
         FetchProtobuf(rules.method.save, create(rule_save_requestSchema, { index: create(rule_indexSchema, { index, name }), rule: rule }))
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info(`save ${name} successful`)
                     setRule()
+                    onHide()
                 } else {
-                    const msg = error.msg;
-                    ctx.Error(msg)
-                    console.error(error.code, msg)
+                    ctx.Error(error.msg)
                 }
-
                 setLoadding(false)
             })
     }
 
-    const filterContext = useContext(FilterContext);
-
-    return <>
+    return (
         <Modal
             show={show}
             scrollable
-            aria-labelledby="contained-modal-title-vcenter"
             size='xl'
-            onHide={() => { onHide() }}
+            onHide={onHide}
             centered
         >
-            <Modal.Header closeButton>
-                <Modal.Title id="contained-modal-title-vcenter">
-                    {rule ? rule.name : "Loading..."}
-                </Modal.Title>
+            <Modal.Header closeButton className="border-bottom-0 pb-0">
+                <Modal.Title className="fw-bold">{rule ? rule.name : "Loading..."}</Modal.Title>
             </Modal.Header>
 
-            <Modal.Body>
-                {error ?
-                    <>
-                        <h4 className="text-center my-2">{error.code} - {error.msg}</h4>
-                        <pre className="text-center my-2 text-danger lead">{error.raw}</pre>
-                    </> :
-                    isValidating || isLoading || !rule ? <Loading /> :
-                        <>
-                            <SettingTypeSelect label='Mode' type={modeSchema} filter={(v) => v.number !== mode.bypass} value={rule.mode} onChange={(v) => setRule({ ...rule, mode: v }, false)} emptyChoose />
-                            <SettingInputText label='Tag' value={rule.tag} onChange={(e: string) => setRule({ ...rule, tag: e }, false)} />
-                            <SettingTypeSelect label='Resolve Strategy' type={resolve_strategySchema} value={rule.resolveStrategy} onChange={(e) => setRule({ ...rule, resolveStrategy: e }, false)} emptyChoose />
-                            <SettingTypeSelect label='UDP proxy Fqdn'
-                                type={udp_proxy_fqdn_strategySchema}
-                                format={(v) => v === udp_proxy_fqdn_strategy.udp_proxy_fqdn_strategy_default ? "global" : udp_proxy_fqdn_strategy[v]}
-                                value={rule.udpProxyFqdnStrategy}
-                                onChange={(e) => setRule({ ...rule, udpProxyFqdnStrategy: e }, false)}
-                                emptyChoose
-                            />
-                            <SettingSelect
-                                value={rule.resolver}
-                                values={filterContext.Resolvers}
-                                label='Resolver'
-                                onChange={(v) => setRule({ ...rule, resolver: v }, false)}
-                                emptyChoose
-                                emptyChooseName="Global"
-                            />
-                            <FilterBuilder groups={rule.rules} onUpdateGroups={(groups) => { setRule({ ...rule, rules: groups }, false) }} />
+            <Modal.Body className="pt-2">
+                {error ? (
+                    <div className={`alert alert-danger ${styles.errorBox}`}>
+                        <h4 className="alert-heading">{error.code} - {error.msg}</h4>
+                        <pre className="mb-0">{error.raw}</pre>
+                    </div>
+                ) : isValidating || isLoading || !rule ? (
+                    <Loading />
+                ) : (
+                    <div className="d-flex flex-column gap-3">
+                        <div className={styles.settingsBox}>
+                            <div className="row g-3">
+                                <div className="col-md-6">
+                                    <SettingEnumSelectVertical
+                                        label="Mode"
+                                        type={modeSchema}
+                                        value={rule.mode}
+                                        onChange={(v) => setRule({ ...rule, mode: v }, false)}
+                                        filter={(v) => v.number !== mode.bypass}
+                                        emptyChoose
+                                    />
+                                </div>
+                                <div className="col-md-6">
+                                    <SettingInputVertical
+                                        label="Tag"
+                                        value={rule.tag}
+                                        onChange={(v) => setRule({ ...rule, tag: v }, false)}
+                                        placeholder="Optional tag"
+                                    />
+                                </div>
+                                <div className="col-md-6">
+                                    <SettingEnumSelectVertical
+                                        label="Resolve Strategy"
+                                        type={resolve_strategySchema}
+                                        value={rule.resolveStrategy}
+                                        onChange={(v) => setRule({ ...rule, resolveStrategy: v }, false)}
+                                        emptyChoose
+                                    />
+                                </div>
+                                <div className="col-md-6">
+                                    <SettingEnumSelectVertical
+                                        label="UDP proxy Fqdn"
+                                        type={udp_proxy_fqdn_strategySchema}
+                                        value={rule.udpProxyFqdnStrategy}
+                                        onChange={(v) => setRule({ ...rule, udpProxyFqdnStrategy: v }, false)}
+                                        format={(v) => v === udp_proxy_fqdn_strategy.udp_proxy_fqdn_strategy_default ? "global" : udp_proxy_fqdn_strategySchema.values.find(x => x.number === v)?.name || ""}
+                                        emptyChoose
+                                    />
+                                </div>
+                                <div className="col-12">
+                                    <SettingSelectVertical
+                                        label="Resolver"
+                                        value={rule.resolver}
+                                        values={filterContext.Resolvers}
+                                        onChange={(v) => setRule({ ...rule, resolver: v }, false)}
+                                        emptyChoose
+                                        emptyChooseName="Global Default"
+                                    />
+                                </div>
+                            </div>
+                        </div>
 
-                            <Card className='mt-2'>
-                                <Card.Body>
-                                    <Card.Title>Current State (for Debugging):</Card.Title>
-                                    <pre>
+                        {/* 2. Rules Builder Area */}
+                        <div className={styles.settingsBox}>
+                            <h6 className={styles.settingLabel}>Rule Entries</h6>
+                            <FilterBuilder groups={rule.rules} onUpdateGroups={(groups) => { setRule({ ...rule, rules: groups }, false) }} />
+                        </div>
+
+                        {/* 3. Debug Info */}
+                        <div className="mt-2">
+                            <Button
+                                variant="link"
+                                className="text-muted d-flex align-items-center"
+                                onClick={() => setShowDebug(!showDebug)}
+                                style={{ fontSize: '0.85rem' }}
+                            >
+                                <i className={`bi bi-chevron-${showDebug ? 'down' : 'right'} me-1`}></i>
+                                {showDebug ? "Hide Debug Info" : "Show Debug Info"}
+                            </Button>
+
+                            {showDebug && (
+                                <div className="mt-2 animate__animated animate__fadeIn"> {/* animate.css class optional */}
+                                    <pre className="small bg-dark bg-opacity-10 p-3 rounded overflow-auto" style={{ maxHeight: '300px' }}>
                                         {toJsonString(rulev2Schema, rule, { prettySpaces: 2 })}
                                     </pre>
-                                </Card.Body>
-                            </Card>
-                        </>
-                }
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </Modal.Body>
-            <Modal.Footer>
-                <Button
-                    variant="outline-primary"
-                    disabled={loadding}
-                    onClick={() => { saveRule() }}
-                >
-                    {loadding && <Spinner animation="border" size="sm" />}    Save
+
+            <Modal.Footer className="d-flex justify-content-between">
+                <Button variant="outline-danger" onClick={() => { onHide(); onDelete(); }}>
+                    <i className="bi bi-trash me-2"></i>Delete Rule
                 </Button>
+                <div className="d-flex gap-2">
+                    <Button variant="outline-secondary" onClick={onHide}>Close</Button>
+                    <Button variant="primary" disabled={loadding} onClick={saveRule}>
+                        {loadding ? <Spinner animation="border" size="sm" /> : <><i className="bi bi-check2 me-1"></i> Save</>}
+                    </Button>
+                </div>
             </Modal.Footer>
         </Modal>
-    </>
+    );
 }
-
 
 const DropdownSelect: FC<{ values: string[], items: string[], onUpdate: (x: string[]) => void }> = ({ values, items, onUpdate: onAdd }) => {
     return <Dropdown autoClose="outside">

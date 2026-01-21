@@ -4,7 +4,7 @@ import { create, fromJsonString } from "@bufbuild/protobuf";
 import { Duration, StringValueSchema } from "@bufbuild/protobuf/wkt";
 import Error from 'next/error';
 import { FC, useContext, useState } from "react";
-import { Accordion, Button, ButtonGroup, Col, Dropdown, DropdownButton, Form, ListGroup, Modal, Row, Spinner } from "react-bootstrap";
+import { Accordion, Badge, Button, ButtonGroup, Dropdown, DropdownButton, Form, Modal, Spinner } from "react-bootstrap";
 import { useLocalStorage } from "usehooks-ts";
 import { LatencyDNSUrlDefault, LatencyDNSUrlKey, LatencyHTTPUrlDefault, LatencyHTTPUrlKey, LatencyIPUrlDefault, LatencyIPUrlKey, LatencyIPv6Default, LatencyIPv6Key, LatencyStunTCPUrlDefault, LatencyStunTCPUrlKey, LatencyStunUrlDefault, LatencyStunUrlKey } from "../common/apiurl";
 import Loading from "../common/loading";
@@ -223,7 +223,6 @@ function Group() {
                                     hash={v.hash}
                                     name={v.name}
                                     onClickEdit={() => { openModal(v.hash) }}
-                                    ipv6={latencyIPv6}
                                     urls={{
                                         ip: latencyIPUrl,
                                         tcp: latencyHTTP,
@@ -446,6 +445,49 @@ const createLatencyReqByType = (
     }
 }
 
+const InfoBlock: FC<{ label: string, value: React.ReactNode, loading?: boolean, colorClass?: string }> = ({ label, value, loading, colorClass }) => (
+    <div className={styles.infoCard}>
+        <span className={styles.infoLabel}>{label}</span>
+        <div className={`${styles.infoValue} ${colorClass || ''} text-break`}>
+            {loading ? <Spinner animation="border" size="sm" variant="secondary" /> : value || "N/A"}
+        </div>
+    </div>
+);
+
+// Helper function: parse a Go duration string into milliseconds
+const parseGoDurationToMs = (val: string): number => {
+    if (!val || val === "N/A" || val.includes("error") || val.includes("timeout")) return -1;
+
+    // Remove possible surrounding whitespace
+    const cleanVal = val.trim();
+    const num = parseFloat(cleanVal);
+
+    if (isNaN(num)) return -1;
+
+    // Convert based on unit suffix
+    if (cleanVal.endsWith("ns")) return num / 1_000_000;
+    if (cleanVal.endsWith("µs") || cleanVal.endsWith("us")) return num / 1_000;
+    if (cleanVal.endsWith("ms")) return num;
+    if (cleanVal.endsWith("s") && !cleanVal.endsWith("ms")) return num * 1_000; // must check ms first
+    if (cleanVal.endsWith("m")) return num * 60 * 1_000; // very rare case
+
+    // If no unit is provided, treat it as milliseconds (or consider it abnormal)
+    return num;
+};
+
+// Helper function: return a color class based on latency in milliseconds
+const getLatencyColor = (val: string) => {
+    const ms = parseGoDurationToMs(val);
+
+    // -1 indicates invalid or error value, no color applied
+    if (ms < 0) return "";
+
+    // Latency thresholds
+    if (ms < 100) return styles['latency-good']; // < 100ms: green
+    if (ms < 400) return styles['latency-avg'];  // 100ms–400ms: yellow
+    return styles['latency-bad'];                // > 400ms: red
+};
+
 const NodeItemv2: FC<{
     hash: string,
     name: string,
@@ -498,98 +540,125 @@ const NodeItemv2: FC<{
             })
     }
 
-    return <Accordion.Item eventKey={hash}>
-        <Accordion.Header className={styles.accordionHeader}>
-            {name}
-            <i className={`bi bi-chevron-right ${styles.accordionIcon}`}></i>
-        </Accordion.Header>
-        <Accordion.Body className={styles.accordionBody}>
-            <ListGroup variant="flush">
-                <ListGroup.Item>
-                    <Row>
-                        <Col md={6}>
-                            <div className="d-flex justify-content-between">
-                                <div className="fw-bold">TCP</div>
-                                <div className="text-break">{latency.tcp.value}</div>
+    const isTesting = isLoading(latency);
+
+    return (
+        <Accordion.Item eventKey={hash} className={styles.accordionItem}>
+            {/* 1. Header: Clean and Info-rich */}
+            <Accordion.Header className={styles.nodeHeader}>
+                <div className="d-flex w-100 align-items-center justify-content-between pe-3">
+                    <div className="d-flex align-items-center gap-3">
+                        {/* Status Dot (Optional: Could be based on last connectivity check) */}
+                        <i className={`bi bi-hdd-network fs-5 ${latency.tcp.value !== "N/A" && !latency.tcp.value.includes("timeout") ? "text-primary" : "text-muted"}`}></i>
+
+                        <div className="d-flex flex-column">
+                            <span className="fw-bold">{name}</span>
+                            <div className="d-flex gap-2 align-items-center" style={{ fontSize: '0.75rem' }}>
+                                <span className="text-muted font-monospace">{hash.substring(0, 8)}</span>
+                                {ipv6 && <Badge bg="info" className="text-dark py-0 px-1">IPv6</Badge>}
                             </div>
-                        </Col>
-                        <Col md={6}>
-                            <div className="d-flex justify-content-between">
-                                <div className="fw-bold">UDP</div>
-                                <div className="text-break">{latency.udp.value}</div>
-                            </div>
-                        </Col>
-                    </Row>
-                </ListGroup.Item>
-                {latency.ip && <>
-                    <ListGroup.Item>
-                        <Row>
-                            <Col md={6}>
-                                <div className="d-flex justify-content-between">
-                                    <div className="fw-bold">IPv4</div>
-                                    <div className="text-break">{latency.ip.ipv4}</div>
-                                </div>
-                            </Col>
-                            <Col md={6}>
-                                <div className="d-flex justify-content-between">
-                                    <div className="fw-bold">IPv6</div>
-                                    <div className="text-break">{latency.ip.ipv6}</div>
-                                </div>
-                            </Col>
-                        </Row>
-                    </ListGroup.Item>
-                </>}
-                {latency.stun && <>
-                    <ListGroup.Item>
-                        <div className="d-flex justify-content-between">
-                            <div className="fw-bold text-truncate">Mapping</div>
-                            <div className="text-break">{latency.stun.mapping}</div>
                         </div>
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                        <div className="d-flex justify-content-between">
-                            <div className="fw-bold text-truncate">Filtering</div>
-                            <div className="text-break">{latency.stun.filtering}</div>
-                        </div>
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                        <div className="d-flex justify-content-between">
-                            <div className="fw-bold text-truncate">MappedAddress</div>
-                            <div className="text-break">{latency.stun.mappedAddress}</div>
-                        </div>
-                    </ListGroup.Item>
-                </>}
-                {latency.stun_tcp &&
-                    <ListGroup.Item>
-                        <div className="d-flex justify-content-between">
-                            <div className="fw-bold text-truncate">STUN IP</div>
-                            <div className="text-break">{latency.stun_tcp.ip}</div>
-                        </div>
-                    </ListGroup.Item>
-                }
-                <ListGroup.Item>
-                    <div className="d-flex justify-content-center">
-                        <ButtonGroup className={styles.buttonGroup}>
-                            <Button variant="outline-primary" onClick={() => setNode(ctx, hash)}><i className="bi bi-check2-circle" />&nbsp;Use</Button>
-                            <Button variant="outline-primary" onClick={onClickEdit}><i className="bi bi-pencil" />&nbsp;Edit</Button>
-                            <DropdownButton
-                                onSelect={async (key) => { test(key as LatencyType) }}
-                                as={ButtonGroup}
-                                variant="outline-primary"
-                                title={<><i className="bi bi-speedometer2" />&nbsp;Test{isLoading(latency) && <>&nbsp;<Spinner size="sm" animation="border" /></>}</>}
-                            >
-                                <Dropdown.Item className={styles.dropdownItem} disabled={latency.tcp.loading} eventKey={LatencyType.TCP}>TCP&nbsp;{latency.tcp.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
-                                <Dropdown.Item className={styles.dropdownItem} disabled={latency.udp.loading} eventKey={LatencyType.UDP}>UDP&nbsp;{latency.udp.loading && <Spinner size="sm" animation="border" />} </Dropdown.Item>
-                                <Dropdown.Item className={styles.dropdownItem} disabled={latency.stun?.loading} eventKey={LatencyType.STUN}>STUN&nbsp;{latency.stun?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
-                                <Dropdown.Item className={styles.dropdownItem} disabled={latency.stun_tcp?.loading} eventKey={LatencyType.STUNTCP}>STUN TCP&nbsp;{latency.stun_tcp?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
-                                <Dropdown.Item className={styles.dropdownItem} disabled={latency.ip?.loading} eventKey={LatencyType.IP}>IP&nbsp;{latency.ip?.loading && <Spinner size="sm" animation="border" />}</Dropdown.Item>
-                            </DropdownButton>
-                        </ButtonGroup>
                     </div>
-                </ListGroup.Item>
-            </ListGroup>
-        </Accordion.Body>
-    </Accordion.Item>
+
+                    {/* Collapsed State Summary (Visible only if header supports custom content, 
+                        Bootstrap Accordion Header might need custom toggle handling for complex layouts inside button.
+                        Assuming standard usage, this part renders inside the button) */}
+                    <div className="d-flex gap-3 text-muted small">
+                        <div className="d-flex align-items-center gap-1">
+                            <span className="text-uppercase" style={{ fontSize: '0.7rem', fontWeight: 700 }}>TCP</span>
+                            <span className={`font-monospace ${getLatencyColor(latency.tcp.value)}`}>
+                                {latency.tcp.value}
+                            </span>
+                        </div>
+                        <div className="d-flex align-items-center gap-1">
+                            <span className="text-uppercase" style={{ fontSize: '0.7rem', fontWeight: 700 }}>UDP</span>
+                            <span className={`font-monospace ${getLatencyColor(latency.udp.value)}`}>
+                                {latency.udp.value}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </Accordion.Header>
+
+            <Accordion.Body className="p-4 pt-0">
+                <hr className="my-3 opacity-10" />
+
+                {/* 2. Latency & IP Grid */}
+                <div className={styles.infoGrid}>
+                    <InfoBlock
+                        label="TCP Latency"
+                        value={latency.tcp.value}
+                        loading={latency.tcp.loading}
+                        colorClass={getLatencyColor(latency.tcp.value)}
+                    />
+                    <InfoBlock
+                        label="UDP Latency"
+                        value={latency.udp.value}
+                        loading={latency.udp.loading}
+                        colorClass={getLatencyColor(latency.udp.value)}
+                    />
+
+                    {latency.ip && (
+                        <>
+                            <InfoBlock label="IPv4 Address" value={latency.ip.ipv4} loading={latency.ip.loading} />
+                            <InfoBlock label="IPv6 Address" value={latency.ip.ipv6} loading={latency.ip.loading} />
+                        </>
+                    )}
+                </div>
+
+                {/* 3. Advanced Info (STUN) - Conditional Rendering */}
+                {(latency.stun || latency.stun_tcp) && (
+                    <div className="mb-4">
+                        <h6 className="text-muted small fw-bold mb-2">NAT & STUN Details</h6>
+                        <div className={styles.infoGrid}>
+                            {latency.stun && (
+                                <>
+                                    <InfoBlock label="NAT Type" value={latency.stun.mapping} loading={latency.stun.loading} />
+                                    <InfoBlock label="Filtering" value={latency.stun.filtering} loading={latency.stun.loading} />
+                                    <InfoBlock label="Mapped Address" value={latency.stun.mappedAddress} loading={latency.stun.loading} />
+                                </>
+                            )}
+                            {latency.stun_tcp && (
+                                <InfoBlock label="STUN TCP IP" value={latency.stun_tcp.ip} loading={latency.stun_tcp.loading} />
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* 4. Action Footer */}
+                <div className={styles.actionFooter}>
+                    <DropdownButton
+                        as={ButtonGroup}
+                        variant="outline-secondary"
+                        size="sm"
+                        title={
+                            <>
+                                {isTesting ? <Spinner as="span" animation="border" size="sm" className="me-2" /> : <i className="bi bi-speedometer2 me-2" />}
+                                Test Latency
+                            </>
+                        }
+                        disabled={isTesting}
+                        onSelect={(key) => test(key as LatencyType)}
+                    >
+                        <Dropdown.Item eventKey={LatencyType.TCP}>TCP Ping</Dropdown.Item>
+                        <Dropdown.Item eventKey={LatencyType.UDP}>UDP Ping</Dropdown.Item>
+                        <Dropdown.Divider />
+                        <Dropdown.Item eventKey={LatencyType.STUN}>STUN Test</Dropdown.Item>
+                        <Dropdown.Item eventKey={LatencyType.STUNTCP}>STUN TCP Test</Dropdown.Item>
+                        <Dropdown.Item eventKey={LatencyType.IP}>IP Check</Dropdown.Item>
+                    </DropdownButton>
+
+                    <Button variant="outline-secondary" size="sm" onClick={onClickEdit}>
+                        <i className="bi bi-pencil me-2" /> Edit Config
+                    </Button>
+
+                    <Button variant="primary" size="sm" onClick={() => setNode(ctx, hash)}>
+                        <i className="bi bi-check2-circle me-2" /> Use Node
+                    </Button>
+                </div>
+            </Accordion.Body>
+        </Accordion.Item>
+    )
 }
 
 function setNode(ctx: { Info: (msg: string) => void, Error: (msg: string) => void }, hash: string) {

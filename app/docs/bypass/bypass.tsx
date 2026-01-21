@@ -1,14 +1,15 @@
 import { create } from '@bufbuild/protobuf';
 import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
-import { Button, ButtonGroup, Card, Form, InputGroup, ListGroup, Modal, Spinner } from 'react-bootstrap';
+import { Button, Card, Form, InputGroup, Modal, Spinner } from 'react-bootstrap';
 import { ConfirmModal } from '../common/confirm';
 import Loading, { Error } from '../common/loading';
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
-import { SettingCheck, SettingSelect } from '../common/switch';
+import { SettingSelectVertical, SettingSwitchCard } from '../common/switch';
 import { GlobalToastContext } from '../common/toast';
 import { change_priority_request_change_priority_operate, change_priority_request_change_priority_operateSchema, change_priority_requestSchema, resolver, rule_indexSchema, rule_save_requestSchema, rules } from '../pbes/api/config_pb';
 import { configv2, mode, resolve_strategy, rulev2Schema, udp_proxy_fqdn_strategy } from '../pbes/config/bypass_pb';
 import { FilterModal } from './filter/filter';
+import styles from './list/list.module.css';
 
 const BypassComponent: FC<{
     bypass: configv2,
@@ -16,29 +17,10 @@ const BypassComponent: FC<{
     refresh: () => void
 }> = ({ bypass, onChange, refresh }) => {
     const { data: resolvers } = useProtoSWR(resolver.method.list)
-    const resolverList = () => { return resolvers ? resolvers.names.sort((a, b) => a.localeCompare(b)) : [] }
+    const resolverListValues = resolvers ? resolvers.names.sort((a, b) => a.localeCompare(b)) : [];
 
     const ctx = useContext(GlobalToastContext);
-
     const [saving, setSaving] = useState(false);
-
-    const changeResolveLocally = useCallback(() => {
-        onChange({ ...bypass, resolveLocally: !bypass.resolveLocally })
-    }, [bypass, onChange])
-
-    const chnageUdpProxyFqdn = useCallback(() => {
-        onChange({ ...bypass, udpProxyFqdn: bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve ? udp_proxy_fqdn_strategy.resolve : udp_proxy_fqdn_strategy.skip_resolve })
-    }, [bypass, onChange])
-
-    const resolverListValues = resolverList();
-
-    const changeDirectResolver = useCallback((v: string) => {
-        onChange({ ...bypass, directResolver: v })
-    }, [bypass, onChange])
-
-    const changeProxyResolver = useCallback((v: string) => {
-        onChange({ ...bypass, proxyResolver: v })
-    }, [bypass, onChange])
 
     const onSave = useCallback(() => {
         setSaving(true)
@@ -54,57 +36,135 @@ const BypassComponent: FC<{
     }, [bypass, ctx, refresh, setSaving])
 
     return (
-        <>
-            <Card className="mb-3">
-                <Card.Body>
-                    <SettingCheck label='Resolve Locally' checked={bypass.resolveLocally} onChange={changeResolveLocally} />
-                    <SettingCheck label='Udp proxy Fqdn' checked={bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve} onChange={chnageUdpProxyFqdn} />
-                    <SettingSelect
-                        value={bypass.directResolver ? bypass.directResolver : "direct"}
-                        values={resolverListValues}
-                        label='Direct Resolver'
-                        onChange={changeDirectResolver}
-                        emptyChoose
-                        emptyChooseName="Global"
-                    />
-                    <SettingSelect
-                        lastElem value={bypass.proxyResolver ? bypass.proxyResolver : "proxy"}
-                        values={resolverListValues}
-                        label='Proxy Resolver'
-                        onChange={changeProxyResolver}
-                        emptyChoose
-                        emptyChooseName="Global"
-                    />
-                    <hr />
-                    <div className="d-flex justify-content-end">
-                        <Button
-                            variant="outline-primary"
-                            disabled={saving}
-                            onClick={onSave}
-                        >
-                            <i className="bi bi-floppy"></i> Save
-                            {saving && <>&nbsp;<Spinner size="sm" animation="border" variant='primary' /></>}
-                        </Button>
+        <div className={styles.mainContainer}>
+            {/* 1. Global Bypass Settings Card */}
+            <Card className={styles.configCard}>
+                <Card.Header className={styles.cardHeaderCustom}>
+                    <div className="d-flex align-items-center">
+                        <div className={styles.iconBox} style={{ color: '#ec4899', borderColor: 'rgba(236, 72, 153, 0.2)', background: 'rgba(236, 72, 153, 0.1)' }}>
+                            <i className="bi bi-shield-check"></i>
+                        </div>
+                        <div>
+                            <h5 className="mb-0 fw-bold">Global Bypass Settings</h5>
+                            <small className="text-muted">DNS Resolution & Strategies</small>
+                        </div>
+                    </div>
+                </Card.Header>
+                <Card.Body className="p-4">
+                    <div className="row g-4">
+                        {/* Left Column: Toggles */}
+                        <div className="col-lg-6">
+                            <h6 className="fw-bold mb-3 text-uppercase small text-muted text-opacity-75" style={{ letterSpacing: '0.5px' }}>Resolution Strategy</h6>
+
+                            <div className="d-flex flex-column gap-3">
+                                <SettingSwitchCard
+                                    label="Resolve Locally"
+                                    description="Resolve DNS on local device"
+                                    checked={bypass.resolveLocally}
+                                    onChange={() => onChange({ ...bypass, resolveLocally: !bypass.resolveLocally })}
+                                />
+
+                                <SettingSwitchCard
+                                    label="UDP Proxy FQDN"
+                                    description="Skip local resolution for UDP"
+                                    checked={bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve}
+                                    onChange={() => onChange({ ...bypass, udpProxyFqdn: bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve ? udp_proxy_fqdn_strategy.resolve : udp_proxy_fqdn_strategy.skip_resolve })}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Right Column: Resolvers */}
+                        <div className="col-lg-6 border-start-lg ps-lg-4" style={{ borderColor: 'var(--card-inner-border)' }}>
+                            <h6 className="fw-bold mb-3 text-uppercase small text-muted text-opacity-75" style={{ letterSpacing: '0.5px' }}>Default Resolvers</h6>
+
+                            <div className="d-flex flex-column gap-3">
+                                <SettingSelectVertical
+                                    label="Direct Resolver"
+                                    value={bypass.directResolver ? bypass.directResolver : ""}
+                                    values={resolverListValues}
+                                    onChange={(v) => onChange({ ...bypass, directResolver: v })}
+                                    emptyChoose
+                                    emptyChooseName="Global Default"
+                                />
+
+                                <SettingSelectVertical
+                                    label="Proxy Resolver"
+                                    value={bypass.proxyResolver ? bypass.proxyResolver : ""}
+                                    values={resolverListValues}
+                                    onChange={(v) => onChange({ ...bypass, proxyResolver: v })}
+                                    emptyChoose
+                                    emptyChooseName="Global Default"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </Card.Body>
+                <Card.Footer className={styles.cardFooterCustom}>
+                    <Button
+                        variant="primary"
+                        disabled={saving}
+                        onClick={onSave}
+                    >
+                        {saving ? <Spinner as="span" size="sm" animation="border" /> : <><i className="bi bi-save me-1"></i> Save Settings</>}
+                    </Button>
+                </Card.Footer>
             </Card>
 
-
+            {/* 2. Rules List */}
             <Rulev2Component />
-        </>
+        </div>
     )
 }
 
 export const Bypass = React.memo(BypassComponent)
+const RuleItem: FC<{
+    name: string,
+    index: number,
+    onEdit: (index: number) => void,
+    onPriority: (index: number) => void,
+    isChangePriority: boolean
+}> = ({ name, index, onEdit, onPriority, isChangePriority }) => {
+    return (
+        <div className="col-md-6 col-lg-4">
+            <div className={styles.listItem} onClick={() => onEdit(index)}>
+                <div className="d-flex align-items-center flex-grow-1 overflow-hidden">
+                    <span className="badge bg-secondary bg-opacity-10 text-secondary me-2">#{index + 1}</span>
+                    <i className="bi bi-signpost-2 me-2 text-muted"></i>
+                    <span className="text-truncate fw-medium">{name}</span>
+                </div>
+
+                <div className="d-flex gap-1" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                        variant="link"
+                        className="text-primary p-1"
+                        disabled={isChangePriority}
+                        title="Change Priority"
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            onPriority(index)
+                        }}>
+                        <i className="bi bi-arrow-down-up"></i>
+                    </Button>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 
 const Rulev2Component: FC = () => {
     const ctx = useContext(GlobalToastContext);
-
     const [adding, setAdding] = useState(false)
+    const [filterModal, setFilterModal] = useState({ show: false, index: 0 })
+    const [confirmData, setConfirmData] = useState({ show: false, index: -1 });
+    const [priorityModal, setPriorityModal] = useState({ show: false, index: -1 });
+    const [newdata, setNewdata] = useState({ value: "" });
+    const [isChangePriority, setIsChangePriority] = useState(false)
+
+    const { data: rules_data, error, isLoading, mutate } = useProtoSWR(rules.method.list)
 
     const addNewRule = (name: string) => {
         setAdding(true)
-
         FetchProtobuf(rules.method.save, create(rule_save_requestSchema, {
             rule: create(rulev2Schema, {
                 name: name,
@@ -118,32 +178,23 @@ const Rulev2Component: FC = () => {
         }),)
             .then(async ({ error }) => {
                 if (error === undefined) {
-                    ctx.Info("remove successful")
+                    ctx.Info("Add rule successful")
                     mutate()
+                    setNewdata({ value: "" })
                 } else {
-                    const msg = error.msg;
-                    ctx.Error(msg)
-                    console.error(error.code, msg)
+                    ctx.Error(error.msg)
+                    console.error(error.code, error.msg)
                 }
-
                 setAdding(false)
             })
     }
 
-    const [filterModal, setFilterModal] = useState({ show: false, index: 0 })
-
-    const hideFilterModal = () => { setFilterModal(prev => { return { ...prev, show: false, } }) }
-    const [confirmData, setConfirmData] = useState({ show: false, index: -1 });
-
-    const hideConfirmModal = () => { setConfirmData(prev => { return { ...prev, show: false, } }) }
-
-    const [priorityModal, setPriorityModal] = useState({ show: false, index: -1 });
-
-    const { data: rules_data, error, isLoading, mutate } = useProtoSWR(rules.method.list)
+    const hideFilterModal = useCallback(() => { setFilterModal(prev => { return { ...prev, show: false, } }) }, [])
+    const hideConfirmModal = useCallback(() => { setConfirmData(prev => { return { ...prev, show: false, } }) }, [])
+    const hidePriorityModal = useCallback(() => { setPriorityModal(prev => { return { ...prev, show: false, } }) }, [])
 
     const changePriority = useCallback((src_index: number, dst_index: number, operate: change_priority_request_change_priority_operate) => {
         setIsChangePriority(true)
-
         FetchProtobuf(rules.method.change_priority, create(change_priority_requestSchema, {
             operate: operate,
             source: create(rule_indexSchema, { index: src_index, name: rules_data.names[src_index] }),
@@ -154,19 +205,15 @@ const Rulev2Component: FC = () => {
                     ctx.Info("change priority successful")
                     mutate()
                 } else {
-                    const msg = error.msg;
-                    ctx.Error(msg)
-                    console.error(error.code, msg)
+                    ctx.Error(error.msg)
+                    console.error(error.code, error.msg)
                 }
             }).finally(() => setIsChangePriority(false))
     }, [ctx, mutate, rules_data?.names])
-    const hidePriorityModal = () => { setPriorityModal(prev => { return { ...prev, show: false, } }) }
+
     const onChangePriority = useCallback((index: number, operate: change_priority_request_change_priority_operate) => {
         changePriority(priorityModal.index, index, operate)
     }, [priorityModal, changePriority])
-
-    const [newdata, setNewdata] = useState({ value: "" });
-    const [isChangePriority, setIsChangePriority] = useState(false)
 
     const deleteRule = useCallback(() => {
         FetchProtobuf(rules.method.remove, create(rule_indexSchema, { name: rules_data.names[confirmData.index], index: confirmData.index }))
@@ -175,107 +222,106 @@ const Rulev2Component: FC = () => {
                     ctx.Info("remove successful")
                     mutate()
                 } else {
-                    const msg = error.msg;
-                    ctx.Error(msg)
-                    console.error(error.code, msg)
+                    ctx.Error(error.msg)
+                    console.error(error.code, error.msg)
                 }
             })
     }, [rules_data, confirmData, ctx, mutate])
 
 
-
-    if (error !== undefined) return <Card className="align-items-center">
-        <Card.Body>
-            <Error statusCode={error.code} title={error.msg} />
-        </Card.Body>
-    </Card>
-
-    if (isLoading || rules_data === undefined) return <Card className="align-items-center">
-        <Card.Body>
-            <Loading />
-        </Card.Body>
-    </Card>
+    if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
+    if (isLoading || rules_data === undefined) return <Loading />
 
     return <>
-        <Card className="mt-3">
-            <ConfirmModal
-                show={confirmData.show}
-                content={
-                    <p>
-                        Delete {(confirmData.index >= 0 && rules_data.names.length > confirmData.index) ? rules_data.names[confirmData.index] : ""}?
-                    </p>
-                }
-                onHide={hideConfirmModal}
-                onOk={deleteRule}
-            />
+        <ConfirmModal
+            show={confirmData.show}
+            content={
+                <p>Delete rule <strong>{(confirmData.index >= 0 && rules_data.names.length > confirmData.index) ? rules_data.names[confirmData.index] : ""}</strong>?</p>
+            }
+            onHide={hideConfirmModal}
+            onOk={deleteRule}
+        />
 
-            <FilterModal
-                show={filterModal.show}
-                onHide={hideFilterModal}
-                name={(filterModal.index >= 0 && rules_data.names.length > filterModal.index) ? rules_data.names[filterModal.index] : ""}
-                index={filterModal.index}
-            />
+        <FilterModal
+            show={filterModal.show}
+            onHide={hideFilterModal}
+            name={(filterModal.index >= 0 && rules_data.names.length > filterModal.index) ? rules_data.names[filterModal.index] : ""}
+            index={filterModal.index}
+            onDelete={() => setConfirmData({ show: true, index: filterModal.index })}
+        />
 
-            <PriorityModal
-                show={priorityModal.show}
-                onHide={hidePriorityModal}
-                index={priorityModal.index}
-                rules={rules_data.names}
-                onChange={onChangePriority}
-            />
+        <PriorityModal
+            show={priorityModal.show}
+            onHide={hidePriorityModal}
+            index={priorityModal.index}
+            rules={rules_data.names}
+            onChange={onChangePriority}
+        />
 
-            <ListGroup variant="flush">
-                {
-                    rules_data.names.map((value, index) => (
-                        <ListGroup.Item
-                            className="align-items-center d-flex justify-content-between"
-                            style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
+        <Card className={styles.configCard}>
+            <Card.Header className={styles.cardHeaderCustom}>
+                <div className="d-flex align-items-center">
+                    <div className={styles.iconBox}><i className="bi bi-list-ol"></i></div>
+                    <div>
+                        <h5 className="mb-0 fw-bold">Rules</h5>
+                        <small className="text-muted">Traffic Routing Rules</small>
+                    </div>
+                </div>
+            </Card.Header>
+            <Card.Body className="p-4">
+                <div className="row g-3">
+                    {/* Render Rules */}
+                    {rules_data.names.map((value, index) => (
+                        <RuleItem
                             key={index}
-                            action
-                            onClick={() => { setFilterModal({ show: true, index: index }) }}
-                        >
-                            {value}
+                            name={value}
+                            index={index}
+                            onEdit={(idx) => { setFilterModal({ show: true, index: idx }) }}
+                            onPriority={(idx) => { setPriorityModal({ show: true, index: idx }) }}
+                            isChangePriority={isChangePriority}
+                        />
+                    ))}
 
-                            <ButtonGroup>
+                    {/* New Rule Input (Grid Item) */}
+                    <div className="col-md-6 col-lg-4">
+                        <div className={`${styles.listItem} ${styles.newItemBox}`}>
+                            <InputGroup className="w-100 align-items-center">
+                                <Form.Control
+                                    value={newdata.value}
+                                    onChange={(e) => setNewdata({ value: e.target.value })}
+                                    placeholder="Create new rule..."
+                                    className={styles.seamlessInput}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            if (!newdata.value || rules_data.names.includes(newdata.value)) return
+                                            addNewRule(newdata.value)
+                                        }
+                                    }}
+                                    autoComplete="off"
+                                />
                                 <Button
-                                    variant="outline-primary"
-                                    as="span"
-                                    size="sm"
-                                    disabled={isChangePriority}
-                                    onClick={(e) => {
-                                        e.stopPropagation()
-                                        setPriorityModal({ show: true, index: index })
-                                    }}>
-                                    <i className="bi-arrow-down-up"></i>
-                                </Button>
-                                <Button
-                                    variant="outline-danger"
-                                    as="span"
-                                    size="sm"
-                                    onClick={(e) => { e.stopPropagation(); setConfirmData({ show: true, index: index }) }}
+                                    variant='link'
+                                    onClick={() => {
+                                        if (!newdata.value || rules_data.names.includes(newdata.value)) return
+                                        addNewRule(newdata.value)
+                                    }}
+                                    className={styles.seamlessBtn}
+                                    disabled={adding}
                                 >
-                                    <i className="bi-trash"></i></Button>
-                            </ButtonGroup>
-                        </ListGroup.Item>
-                    ))
-                }
+                                    {adding ? <Spinner animation="border" size="sm" /> : <i className="bi bi-plus-lg fs-5" />}
+                                </Button>
+                            </InputGroup>
+                        </div>
+                    </div>
+                </div>
 
-                <ListGroup.Item className='d-flex'>
-                    <InputGroup className="d-flex justify-content-end">
-                        <Form.Control value={newdata.value} onChange={(e) => setNewdata({ value: e.target.value })} />
-                        <Button
-                            disabled={adding}
-                            variant='outline-success'
-                            onClick={() => {
-                                if (!newdata.value || rules_data.names.map((v) => v).includes(newdata.value)) return
-                                addNewRule(newdata.value)
-                            }}
-                        >
-                            <i className="bi bi-plus-lg" />New </Button>
-                    </InputGroup>
-                </ListGroup.Item>
-            </ListGroup>
-        </Card >
+                {rules_data.names.length === 0 && (
+                    <div className="text-center text-muted p-3">
+                        No rules defined yet. Add your first rule above.
+                    </div>
+                )}
+            </Card.Body>
+        </Card>
     </>
 }
 
@@ -296,34 +342,55 @@ const PriorityModalComponent: FC<{
     }, [index, rules])
 
     return <>
-        <Modal show={show} onHide={onHide}>
+        <Modal show={show} onHide={onHide} centered>
+            <Modal.Header closeButton>
+                <Modal.Title>Change Rule Priority</Modal.Title>
+            </Modal.Header>
             <Modal.Body>
-                <Form.Control defaultValue={index >= 0 && index < rules.length ? rules[index] : ""} readOnly className='text-center' />
-                <div className="d-flex align-items-center my-3">
-                    <hr className="flex-grow-1" />
-                    <span className="mx-2 fw-bold text-muted">To</span>
-                    <hr className="flex-grow-1" />
+                {/* Use the new styles.settingsBox for modal content */}
+                <div className={styles.settingsBox}>
+                    <div className="d-flex align-items-center mb-3">
+                        <span className="badge bg-primary me-2">#{index + 1}</span>
+                        <Form.Control
+                            value={index >= 0 && index < rules.length ? rules[index] : ""}
+                            readOnly
+                            className="bg-transparent border-0 fw-bold text-center"
+                            style={{ color: 'var(--bs-body-color)' }}
+                        />
+                    </div>
+
+                    <div className="d-flex align-items-center my-3 text-muted">
+                        <hr className="flex-grow-1 opacity-25" />
+                        <small className="mx-2 text-uppercase fw-bold" style={{ fontSize: '0.7rem' }}>Operation</small>
+                        <hr className="flex-grow-1 opacity-25" />
+                    </div>
+
+                    <Form.Select className='text-center mb-3' value={operate} onChange={(e) => setOperate(parseInt(e.target.value))}>
+                        {
+                            change_priority_request_change_priority_operateSchema.values.map((v) => (
+                                <option key={v.number} value={v.number}>{v.name}</option>
+                            ))
+                        }
+                    </Form.Select>
+
+                    <div className="d-flex align-items-center my-3 text-muted">
+                        <hr className="flex-grow-1 opacity-25" />
+                        <small className="mx-2 text-uppercase fw-bold" style={{ fontSize: '0.7rem' }}>Target Rule</small>
+                        <hr className="flex-grow-1 opacity-25" />
+                    </div>
+
+                    <Form.Select className='text-center' value={value} onChange={(e) => setValue(parseInt(e.target.value))}>
+                        {
+                            rules.map((rule, idx) => (
+                                <option key={idx} value={idx}>#{idx + 1} - {rule}</option>
+                            ))
+                        }
+                    </Form.Select>
                 </div>
-
-                <Form.Select className='text-center' value={operate} onChange={(e) => setOperate(parseInt(e.target.value))}>
-                    {
-                        change_priority_request_change_priority_operateSchema.values.map((v) => (
-                            <option key={v.number} value={v.number}>{v.name}</option>
-                        ))
-                    }
-                </Form.Select>
-
-                <Form.Select className='text-center mt-2' value={value} onChange={(e) => setValue(parseInt(e.target.value))}>
-                    {
-                        rules.map((rule, index) => (
-                            <option key={index} value={index}>{rule}</option>
-                        ))
-                    }
-                </Form.Select>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="outline-secondary" onClick={onHide}>Cancel</Button>
-                <Button variant="primary" onClick={() => { onChange(value, operate); onHide(); }}>OK</Button>
+                <Button variant="primary" onClick={() => { onChange(value, operate); onHide(); }}>Apply Change</Button>
             </Modal.Footer>
         </Modal>
     </>

@@ -6,13 +6,13 @@ import Error from 'next/error';
 import { FC, useContext, useState } from "react";
 import { Button, Card } from "react-bootstrap";
 import styles from './activate.module.css';
-import { ConfirmModal } from "./common/confirm";
-import Loading from "./common/loading";
-import { FetchProtobuf, useProtoSWR } from './common/proto';
-import { GlobalToastContext } from "./common/toast";
-import { NodeModal } from "./node/modal";
-import { node } from "./pbes/api/node_pb";
-import { point, pointSchema } from "./pbes/node/point_pb";
+import { ConfirmModal } from "../common/confirm";
+import Loading from "../common/loading";
+import { FetchProtobuf, useProtoSWR } from '../common/proto';
+import { GlobalToastContext } from "../common/toast";
+import { NodeModal } from "../node/modal";
+import { node } from "../pbes/api/node_pb";
+import { point, pointSchema } from "../pbes/node/point_pb";
 
 const IconBadge: FC<{ icon: string, text: string }> = ({ icon, text }) => (
     <span className={styles['icon-badge']}>

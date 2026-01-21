@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState, ViewTransition } from 'react';
 import { Container } from 'react-bootstrap';
 import { GlobalToastProvider } from './docs/common/toast';
-import NavBarContainer from './docs/NavBarContainer'; // Updated import
+import NavBarContainer from './docs/nav/NavBarContainer';
 import './global.css';
 
 interface AndroidInterface {

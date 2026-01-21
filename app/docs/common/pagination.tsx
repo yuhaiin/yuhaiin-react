@@ -39,8 +39,8 @@ export function CustomPagination({
     }
 
     return (
-        <div className="text-center">
-            <Pagination className="justify-content-center d-inline-flex">
+        <div>
+            <Pagination>
                 <Pagination.Prev
                     onClick={() => onPageChange(currentPage - 1)}
                     disabled={currentPage === 1}

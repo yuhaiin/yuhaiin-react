@@ -2,34 +2,67 @@
 
 import { create } from "@bufbuild/protobuf"
 import { timestampDate, TimestampSchema } from "@bufbuild/protobuf/wkt"
-import { useCallback, useMemo, useState } from "react"
-import { Button, Form, InputGroup, Modal, Spinner, Table } from "react-bootstrap"
-import styles from "../../common/clickable.module.css"
+import React, { FC, useCallback, useMemo, useState } from "react"
+import { Badge, Button, Dropdown, Form, InputGroup, Modal, Spinner, ToggleButton, ToggleButtonGroup } from "react-bootstrap"
 import Loading from "../../common/loading"
 import { CustomPagination } from "../../common/pagination"
 import { useProtoSWR } from "../../common/proto"
 import { NodeModal } from "../../node/modal"
 import { all_history, connections } from "../../pbes/api/statistic_pb"
+import { mode } from "../../pbes/config/bypass_pb"
 import { connectionSchema, type, typeSchema } from "../../pbes/statistic/config_pb"
 import { ConnectionInfo, ListGroupItemString } from "../components"
+import styles from '../v2/connections.module.css'
 
 const TimestampZero = create(TimestampSchema, { seconds: BigInt(0), nanos: 0 })
 
+const IconBadge: FC<{ icon: string, text: string | number, className?: string }> = ({ icon, text, className }) => {
+    return <Badge pill bg="primary" className={className}>
+        <i className={`bi ${icon} me-1`}></i>
+        {text}
+    </Badge>
+}
+
+const ListItemComponent: FC<{ data: all_history, onClick?: () => void }> =
+    ({ data, onClick }) => {
+        if (!data.connection) return <></>
+
+        return (
+            <li
+                className={styles['list-item']}
+                onClick={onClick}
+            >
+                <div className={styles['item-main']}>
+                    <code className={styles['item-id']}>{data.connection.id.toString()}</code>
+                    <span className={styles['item-addr']}>{data.connection.addr}</span>
+                </div>
+
+                <div className={styles['item-details-right']}>
+                    <div className={styles['item-details']}>
+                        <IconBadge icon="bi-shield-check" text={mode[data.connection.mode]} />
+                        <IconBadge icon="bi-hdd-network" text={type[data.connection.type?.connType ?? 0]} />
+                        <IconBadge icon="bi-arrow-repeat" text={Number(data.count)} />
+                        <IconBadge icon="bi-clock" text={timestampDate(data.time!).toLocaleTimeString()} />
+                    </div>
+                </div>
+            </li>
+        );
+    }
+
+const ListItem = React.memo(ListItemComponent)
+
 function History() {
 
-    const [sort, setSort] = useState("Time")
-    const [asc, setAsc] = useState(1)
-    const setSortField = (field: string) => field === sort ? setAsc(-asc) : setSort(field)
-    const sortIcon = (field: string) => field === sort ? <i className={asc === -1 ? "bi bi-sort-up-alt" : "bi bi-sort-down-alt"}></i> : <></>
-    function sortFuncGeneric<T>(a: T, b: T) { return a > b ? -1 * asc : 1 * asc }
-    const sortFunc = useCallback(sortFuncGeneric, [asc]);
-    const cth = (field: string) => <th className={styles.clickable} onClick={() => setSortField(field)}>{field}{sortIcon(field)}</th>
-    const sortFieldFunc = useCallback((a: all_history, b: all_history) => {
-        if (sort === "Host") return sortFunc(a.connection?.addr, b.connection?.addr)
-        else if (sort === "Proc") return sortFunc(a.connection?.process, b.connection?.process)
-        else if (sort === "Count") return sortFunc(a.count, b.count)
-        else return sortFunc(timestampDate(a.time ?? TimestampZero), timestampDate(b.time ?? TimestampZero))
-    }, [sort, sortFunc])
+    const [sortBy, setSortBy] = useState("Time")
+    const changeSortBy = useCallback((value: string) => {
+        setSortBy(value)
+    }, [setSortBy])
+
+
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc"); // 'asc' | 'desc'
+    const changeSortOrder = useCallback((value: "asc" | "desc") => {
+        setSortOrder(value)
+    }, [setSortOrder])
 
     const [filter, setFilter] = useState("");
     const [filterInput, setFilterInput] = useState("");
@@ -42,17 +75,44 @@ function History() {
     const [modalData, setModalData] = useState<{ show: boolean, data?: all_history }>({ show: false })
     const { data, error, isLoading, isValidating, mutate } = useProtoSWR(connections.method.all_history)
 
-    const objects = useMemo(() => {
-        return data?.objects?.
+    const values = useMemo(() => {
+        if (!data?.objects) return []
+        return data.objects?.
             filter(v => {
-                if (!v.time) return false
+                if (!v.time || !v.connection) return false
                 if (netFilter && v.connection?.type?.connType !== netFilter) return false
                 if (filter) return v.connection.addr?.toLowerCase().includes(filter) ||
                     v.connection.process?.toLowerCase().includes(filter)
                 return true
             }).
-            sort(sortFieldFunc)
-    }, [data, filter, netFilter, sortFieldFunc])
+            sort((a, b) => {
+                let first = 1;
+                let second = -1;
+
+                if (sortOrder === "asc") {
+                    first = -1;
+                    second = 1;
+                }
+
+                if (sortBy) {
+                    switch (sortBy) {
+                        case "Host":
+                            return (a.connection?.addr ?? "") < (b.connection?.addr ?? "") ? first : second
+                        case "Count":
+                            return Number(a.count) < Number(b.count) ? first : second
+                    }
+                }
+
+                const aTime = a.time ?? TimestampZero;
+                const bTime = b.time ?? TimestampZero;
+
+                if (aTime.seconds < bTime.seconds) return first;
+                if (aTime.seconds > bTime.seconds) return second;
+                if (aTime.nanos < bTime.nanos) return first;
+                if (aTime.nanos > bTime.nanos) return second;
+                return 0;
+            })
+    }, [data, filter, netFilter, sortBy, sortOrder])
 
 
 
@@ -104,34 +164,34 @@ function History() {
         </Modal>
 
 
-        <div className="d-flex">
-            <div className="d-flex align-items-center gap-2 mb-3 ms-auto flex-wrap">
+        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+            <CustomPagination
+                currentPage={page}
+                totalItems={values.length}
+                pageSize={30}
+                onPageChange={(p) => { setPage(p) }}
+            />
+            <div className="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                <InputGroup style={{ width: 'auto' }}>
+                    <Form.Control value={filterInput} onChange={(e) => setFilterInput(e.target.value)} placeholder="Filter..." />
+                    <Button onClick={() => { setFilter(filterInput.toLowerCase()) }}>
+                        <i className="bi bi-funnel" />
+                    </Button>
+                </InputGroup>
 
-                <span className="d-flex align-items-center gap-2">
-                    <InputGroup>
-                        <Form.Control value={filterInput} onChange={(e) => setFilterInput(e.target.value)} />
-                        <Button onClick={() => { setFilter(filterInput.toLowerCase()) }}>
-                            <i className="bi bi-funnel" />
-                        </Button>
-                    </InputGroup>
-                </span>
-
-                <span className="d-flex align-items-center gap-2">
-                    <select
-                        className="form-select"
-                        value={netFilter}
-                        onChange={(e) => setNetFilter(Number(e.target.value))}
-                        style={{ width: 130 }}
-                    >
-                        {
-                            typeSchema.values.map((v) =>
-                                <option key={v.number} value={v.number}>
-                                    {v.number === 0 ? "all" : v.name}
-                                </option>
-                            )
-                        }
-                    </select>
-                </span>
+                <Form.Select
+                    value={netFilter}
+                    onChange={(e) => setNetFilter(Number(e.target.value))}
+                    style={{ width: 'auto' }}
+                >
+                    {
+                        typeSchema.values.map((v) =>
+                            <option key={v.number} value={v.number}>
+                                {v.number === 0 ? "All Net" : v.name}
+                            </option>
+                        )
+                    }
+                </Form.Select>
 
                 <Button
                     variant="outline-primary"
@@ -140,46 +200,48 @@ function History() {
                 >
                     <i className="bi bi-arrow-clockwise" />{(isValidating || isLoading) && <>&nbsp;<Spinner size="sm" animation="border" /></>}
                 </Button>
+                <Dropdown>
+                    <Dropdown.Toggle variant="outline-secondary">
+                        <i className="bi bi-sort-down"></i> Sort
+                    </Dropdown.Toggle>
+
+                    <Dropdown.Menu>
+                        <div className="p-2 d-flex flex-column gap-2">
+                            <ToggleButtonGroup type="radio" name="sortOrder" value={sortOrder} onChange={changeSortOrder}>
+                                <ToggleButton id="sort-asc" value="asc" variant="outline-secondary">
+                                    <i className="bi bi-sort-up"></i> Asc
+                                </ToggleButton>
+                                <ToggleButton id="sort-desc" value="desc" variant="outline-secondary">
+                                    <i className="bi bi-sort-down"></i> Desc
+                                </ToggleButton>
+                            </ToggleButtonGroup>
+
+                            <ToggleButtonGroup type="radio" name="sortBy" value={sortBy} onChange={changeSortBy}>
+                                <ToggleButton id="sort-time" value="Time" variant="outline-secondary">
+                                    Time
+                                </ToggleButton>
+                                <ToggleButton id="sort-host" value="Host" variant="outline-secondary">
+                                    Host
+                                </ToggleButton>
+                                <ToggleButton id="sort-count" value="Count" variant="outline-secondary">
+                                    Count
+                                </ToggleButton>
+                            </ToggleButtonGroup>
+                        </div>
+                    </Dropdown.Menu>
+                </Dropdown>
             </div>
         </div>
 
-        <CustomPagination
-            currentPage={page}
-            totalItems={objects.length}
-            pageSize={30}
-            onPageChange={(p) => { setPage(p) }}
-        />
-
-        <Table hover striped size="sm">
-            <thead>
-                <tr>
-                    <th>Index</th>
-                    {cth("Time")}
-                    {cth("Host")}
-                    <th>Mode</th>
-                    <th>Net</th>
-                    {cth("Count")}
-                    {data.dumpProcessEnabled && cth("Proc")}
-                </tr>
-            </thead>
-            <tbody className="text-break">
-                {
-                    objects.slice((page - 1) * 30, (page - 1) * 30 + 30).map((v, index) => {
-                        return (
-                            <tr key={"bh-" + index} onClick={() => setModalData({ show: true, data: v })}>
-                                <td>{index + (page - 1) * 30 + 1}</td>
-                                <td>{timestampDate(v.time!).toLocaleString()}</td>
-                                <td>{v.connection?.addr}</td>
-                                <td>{v.connection?.mode}</td>
-                                <td>{type[v.connection?.type?.connType ?? type.unknown]}</td>
-                                <td>{Number(v.count)}</td>
-                                {data.dumpProcessEnabled && <td>{v.connection?.process}</td>}
-                            </tr>
-                        )
-                    })
-                }
-            </tbody>
-        </Table>
+        <ul className={styles['connections-list']}>
+            {
+                values.slice((page - 1) * 30, (page - 1) * 30 + 30).map((v, index) => {
+                    return (
+                        <ListItem data={v} key={`his-${index}`} onClick={() => setModalData({ show: true, data: v })} />
+                    )
+                })
+            }
+        </ul>
     </>
 }
 

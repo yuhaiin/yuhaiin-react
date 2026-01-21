@@ -1,31 +1,45 @@
-import { create } from '@bufbuild/protobuf';
-import { useCallback, useState } from 'react';
-import ActiveNodes from './ActiveNodes';
-import { useProtoSWR } from './common/proto';
-import { Flow, FlowContainer } from './connections/components';
-import { NodeModal } from './node/modal';
-import { node } from './pbes/api/node_pb';
-import { pointSchema } from './pbes/node/point_pb';
-import TrafficChart from './TrafficChart';
+"use client";
 
-function Index() {
+import { create } from '@bufbuild/protobuf';
+import dynamic from 'next/dynamic';
+import { useCallback, useState } from 'react';
+import Loading from '../common/loading';
+import { useProtoSWR } from '../common/proto';
+import { Flow, FlowContainer } from '../connections/components';
+import { NodeModal } from '../node/modal';
+import { node } from '../pbes/api/node_pb';
+import { pointSchema } from '../pbes/node/point_pb';
+
+function HomePage() {
     const [nodeModal, setNodeModal] = useState({ show: false, point: create(pointSchema, {}) });
     const { data: now, error: now_error, isLoading: now_isLoading } = useProtoSWR(node.method.now)
-    const [trafficData, setTrafficData] = useState<{ upload: number, download: number, time: string }[]>([]);
+
+    const MAX_POINTS = 120;
+    const [traffic, setTraffic] = useState<{ labels: string[], upload: number[], download: number[], rawMax: number }>
+        ({ labels: [], upload: [], download: [], rawMax: 0, });
 
     const onFlow = useCallback((lastFlow: Flow) => {
-        setTrafficData(prevData => {
-            const newTrafficData = [...prevData, {
-                upload: lastFlow.upload_rate,
-                download: lastFlow.download_rate,
-                time: lastFlow.time.toLocaleTimeString(),
-            }];
-            if (newTrafficData.length > 30) {
-                newTrafficData.shift();
+        const upload = lastFlow.upload_rate;
+        const download = lastFlow.download_rate;
+        const time = lastFlow.time.toLocaleTimeString();
+        const pointMax = Math.max(upload, download);
+
+        setTraffic(prev => {
+            let labels = [...prev.labels, time];
+            let uploadArr = [...prev.upload, upload];
+            let downloadArr = [...prev.download, download];
+            let rawMax = Math.max(prev.rawMax, pointMax);
+
+            if (labels.length > MAX_POINTS) {
+                labels.shift();
+                if (uploadArr.shift() === rawMax || downloadArr.shift() === rawMax)
+                    rawMax = Math.max(...uploadArr, ...downloadArr, 0);
             }
-            return newTrafficData;
+
+            return { labels, upload: uploadArr, download: downloadArr, rawMax };
         });
     }, []);
+
 
 
     return <div style={{
@@ -73,13 +87,16 @@ function Index() {
         </div>
 
         <div style={{ minHeight: '400px', marginBottom: '1rem' }}>
-            <TrafficChart data={trafficData} />
+            <TrafficChartDynamic data={traffic} />
         </div>
 
         <div>
-            <ActiveNodes />
+            <ActiveNodesDynamic />
         </div>
     </div>
 }
 
-export default Index;
+const TrafficChartDynamic = dynamic(() => import('./TrafficChart'), { ssr: false, loading: () => <Loading /> });
+const ActiveNodesDynamic = dynamic(() => import('./ActiveNodes'), { ssr: false, loading: () => <Loading /> });
+
+export default HomePage;

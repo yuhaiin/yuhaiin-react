@@ -172,6 +172,56 @@ body {
 }
 
 /* -------------------------------------------------------
+   Disabled State
+   ------------------------------------------------------- */
+
+/* 
+   General Button Disabled State 
+   Resets style to the base look but with reduced opacity.
+   We use !important to override :hover or :active styles if they persist.
+*/
+.btn:disabled,
+.btn.disabled,
+fieldset:disabled .btn {
+    background-color: var(--bs-tertiary-bg) !important;
+    border-color: var(--sidebar-border-color) !important;
+    color: var(--bs-body-color) !important;
+    
+    /* Standard Bootstrap disabled opacity */
+    opacity: 0.65;
+    
+    /* Prevent interactions */
+    pointer-events: none;
+    box-shadow: none !important;
+    
+    /* Ensure no z-index weirdness with input groups when disabled */
+    z-index: 0; 
+}
+
+/* 
+   Danger Button Disabled State 
+   Needs to keep the red background but faded.
+*/
+.btn.btn-danger:disabled,
+.btn.btn-danger.disabled {
+    background-color: var(--bs-danger) !important;
+    border-color: var(--bs-danger) !important;
+    color: #fff !important;
+    opacity: 0.65; /* Fades the red */
+}
+
+/* 
+   Outline Danger Button Disabled State 
+*/
+.btn.btn-outline-danger:disabled,
+.btn.btn-outline-danger.disabled {
+    background-color: transparent !important;
+    border-color: var(--bs-danger) !important;
+    color: var(--bs-danger) !important;
+    opacity: 0.5; /* Usually outlines look better a bit more transparent when disabled */
+}
+
+/* -------------------------------------------------------
    2. Switches & Checkboxes
    ------------------------------------------------------- */
 
@@ -384,4 +434,106 @@ body {
     font-weight: 500;
     /* Optional: slightly soften badges */
     box-shadow: var(--sidebar-box-shadow);
+}
+
+/* =========================================================
+   Pagination Override (Matches Button Theme)
+   ========================================================= */
+
+.pagination .page-item .page-link {
+    background-color: var(--bs-tertiary-bg);
+    border: 1px solid var(--sidebar-border-color);
+    color: var(--bs-body-color);
+    border-radius: 12px; /* Match button border-radius */
+    margin: 0 4px; /* Add some spacing between items */
+    transition: all 0.2s ease;
+    min-width: 40px; /* Ensure a minimum width for clicks */
+    text-align: center;
+}
+
+.pagination .page-item:first-child .page-link,
+.pagination .page-item:last-child .page-link {
+    border-radius: 12px; /* Ensure prev/next buttons also have radius */
+}
+
+.pagination .page-item .page-link:hover {
+    background-color: var(--sidebar-hover-bg);
+    border-color: var(--sidebar-active-color);
+    color: var(--sidebar-active-color);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--sidebar-active-color) !important;
+    border-color: var(--sidebar-active-color) !important;
+    color: #fff !important; /* Force white text for active item */
+    box-shadow: none !important;
+}
+
+.pagination .page-item.disabled .page-link {
+    background-color: var(--bs-tertiary-bg);
+    border-color: var(--sidebar-border-color);
+    color: var(--bs-body-color);
+    opacity: 0.5;
+}
+
+/* global scrollbar */
+
+/* 1. Define defaults (Light Mode) */
+:root {
+  /* Dark gray thumb for light backgrounds */
+  --scrollbar-thumb: rgba(0, 0, 0, 0.25);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
+  --scrollbar-thumb-active: rgba(0, 0, 0, 0.6);
+  --scrollbar-track: transparent;
+}
+
+/* 2. Override for Dark Mode */
+/* Bootstrap 5.3+ uses this attribute. If you use a different class, change this selector. */
+[data-bs-theme="dark"] {
+  /* Light gray thumb for dark backgrounds */
+  --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
+  --scrollbar-thumb-active: rgba(255, 255, 255, 0.6);
+}
+
+/* Also support system preference if no specific theme attribute is set */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-bs-theme="light"]) {
+    --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
+    --scrollbar-thumb-active: rgba(255, 255, 255, 0.6);
+  }
+}
+
+/* 3. Apply to Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* 4. Apply to Webkit (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: var(--scrollbar-thumb-active);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }

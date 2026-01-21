@@ -3,8 +3,6 @@
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
 import { Collapse, Nav } from 'react-bootstrap';
-import { useLocalStorage } from 'usehooks-ts';
-import { APIUrlDefault, APIUrlKey } from './common/apiurl';
 import styles from './sidebar.module.css';
 
 interface SidebarProps {
@@ -15,7 +13,6 @@ interface SidebarProps {
 function Sidebar({ show, onHide }: SidebarProps) {
     const router = useRouter();
     const pathname = usePathname();
-    const [apiUrl] = useLocalStorage<string>(APIUrlKey, APIUrlDefault);
     const sidebarRef = useRef<HTMLDivElement>(null);
 
     const handleNavLinkClick = (key: string | null, e: React.SyntheticEvent) => {
@@ -60,9 +57,7 @@ function Sidebar({ show, onHide }: SidebarProps) {
                     onSelect={handleNavLinkClick}
                 >
                     <Nav.Item>
-                        <Nav.Link eventKey='/' active={pathname === '/'}>
-                            <i className="bi bi-house-door"></i>HOME
-                        </Nav.Link>
+                        <Nav.Link eventKey='/' active={pathname === '/'}><i className="bi bi-house-door"></i>HOME</Nav.Link>
                     </Nav.Item>
 
                     <SidebarCollapseItem
@@ -131,8 +126,8 @@ function Sidebar({ show, onHide }: SidebarProps) {
                         <div className={styles['dropdown-divider']}></div>
                         <Nav.Link eventKey='/docs/config/log/' active={pathname.startsWith('/docs/config/log')}>Log</Nav.Link>
                         <div className={styles['dropdown-divider']}></div>
-                        <Nav.Link eventKey={apiUrl + '/debug/pprof'} active={apiUrl + '/debug/pprof' === pathname}>Pprof</Nav.Link>
-                        <Nav.Link eventKey="https://yuhaiin.github.io/documents/">Documents</Nav.Link>
+                        <Nav.Link eventKey='/docs/config/pprof/' active={pathname.startsWith('/docs/config/pprof')}>Pprof</Nav.Link>
+                        <Nav.Link eventKey='/docs/config/documents/' active={pathname.startsWith('/docs/config/documents')}>Documents</Nav.Link>
                         <div className={styles['dropdown-divider']}></div>
                         <Nav.Link eventKey='/docs/config/licenses' active={pathname.startsWith('/docs/config/licenses')}>Licenses</Nav.Link>
                         <Nav.Link eventKey='/docs/config/about' active={pathname.startsWith('/docs/config/about')}>About</Nav.Link>

@@ -18,7 +18,8 @@ const MetricCard: FC<MetricProps> = ({ label, value, error, color = '#3b82f6' })
     return (
         <div
             className={styles.metricCard}
-            style={{ accentColor: color }}
+            // Show a blue light line on the left edge of the card
+            style={{ '--accent-color': color } as React.CSSProperties}
         >
             <div className={styles.metricCardLabel}>{label}</div>
             <div className={`${styles.metricCardValue} ${error ? styles.error : ''}`}>
@@ -151,7 +152,7 @@ const Unit = {
     PB: 'PB'
 };
 
-function reducedUnit(bytes: number) {
+export function reducedUnit(bytes: number) {
     if (bytes >= 1125899906842624) {
         return { bytes: bytes / 1125899906842624, unit: Unit.PB };
     }
@@ -170,9 +171,9 @@ function reducedUnit(bytes: number) {
     return { bytes, unit: Unit.B };
 }
 
-export const formatBytes = (a = 0, b = 2) => {
+export const formatBytes = (a = 0, b = 2, space = "") => {
     const { bytes, unit } = reducedUnit(a);
-    return `${bytes.toFixed(b)}${unit}`;
+    return `${bytes.toFixed(b)}${space}${unit}`;
 }
 
 export class Flow {
@@ -193,11 +194,11 @@ export class Flow {
     }
 
     DownloadString() {
-        return `${formatBytes(this.download_rate) + "/S"}`
+        return `${formatBytes(this.download_rate, 2, " ") + "/S"}`
     }
 
     UploadString() {
-        return `${formatBytes(this.upload_rate) + "/S"}`
+        return `${formatBytes(this.upload_rate, 2, " ") + "/S"}`
     }
 
     DownloadTotalString() {
