@@ -1,8 +1,8 @@
 import { create } from "@bufbuild/protobuf";
 import { FC, useState } from "react";
 import { Button, InputGroup, ListGroup } from "react-bootstrap";
-import { FormSelect, SettingCheck } from "../common/switch";
-import { Container, MoveUpDown } from "../config/components";
+import { Container, MoveUpDown } from "../../component/components";
+import { FormSelect, SettingCheck } from "../../component/switch";
 import {
     aeadSchema,
     grpcSchema,

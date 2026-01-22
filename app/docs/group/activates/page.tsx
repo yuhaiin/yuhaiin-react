@@ -1,81 +1,106 @@
 "use client"
 
+import { CardList, MainContainer } from "@/app/component/cardlist";
 import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import Error from 'next/error';
 import { FC, useContext, useState } from "react";
-import { Badge, Button, Card, ListGroup } from "react-bootstrap";
-import { ConfirmModal } from "../../common/confirm";
-import Loading from "../../common/loading";
+import { Badge, Button } from "react-bootstrap";
+import { ConfirmModal } from "../../../component/confirm";
+import Loading from "../../../component/loading";
+import { GlobalToastContext } from "../../../component/toast";
 import { FetchProtobuf, useProtoSWR } from '../../common/proto';
-import { GlobalToastContext } from "../../common/toast";
 import { NodeModal } from "../../node/modal";
 import { node } from "../../pbes/api/node_pb";
 import { point, pointSchema } from "../../pbes/node/point_pb";
 
-function Activates() {
+// --- Component: Individual Active Node Row ---
+const ActiveNodeItem: FC<{
+    v: point,
+    onClose: () => void
+}> = ({ v, onClose }) => {
+    return (
+        <>
+            <div className="d-flex w-100 flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+
+                {/* Left Side: Status Icon + Name & Group */}
+                <div className="d-flex align-items-center flex-grow-1 overflow-hidden gap-3 w-100 w-md-auto">
+                    <div className="d-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle flex-shrink-0 shadow-sm"
+                        style={{ width: '40px', height: '40px' }}>
+                        <i className="bi bi-lightning-charge-fill"></i>
+                    </div>
+
+                    <div className="d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
+                        <div className="d-flex align-items-center gap-2 mb-1">
+                            <span className="fw-bold text-truncate fs-6">{v.name}</span>
+                            <Badge bg="primary" className="bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1" style={{ fontSize: '0.65rem' }}>
+                                {v.group}
+                            </Badge>
+                        </div>
+                        <small className="text-muted text-truncate font-monospace opacity-75">
+                            <i className="bi bi-hash me-1"></i>{v.hash}
+                        </small>
+                    </div>
+                </div>
+
+                {/* Right Side: Action Button */}
+                <div className="d-flex gap-2 align-items-center flex-shrink-0 ms-auto ms-md-0">
+                    <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); onClose(); }}
+                        title="Close this node connection"
+                        className="d-flex align-items-center gap-2"
+                        style={{ minWidth: '38px' }}
+                    >
+                        <i className="bi bi-power"></i>
+                        <span className="d-none d-sm-inline ms-1">Terminate</span>
+                    </Button>
+                </div>
+            </div >
+        </>
+    );
+};
+
+function Activates({ showFooter = true }: { showFooter?: boolean }) {
     const ctx = useContext(GlobalToastContext);
-    const { data, error, isLoading, mutate } = useProtoSWR(node.method.activates)
+    const { data, error, isLoading, mutate } = useProtoSWR(node.method.activates);
+
     const [modalHash, setModalHash] = useState({ hash: "", show: false, point: create(pointSchema, {}) });
     const [confirmData, setConfirmData] = useState({ show: false, name: "" });
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
-
     if (isLoading || data == undefined) return <Loading />
 
-    const TagItem: FC<{ v: point }> = ({ v }) => {
-        return (
-            <ListGroup.Item
-                className="align-items-center d-flex justify-content-between"
-                style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
-                key={v.hash}
-            >
-                <div>
-                    <Badge className="rounded-pill bg-light text-dark ms-1">  <a
-                        className="text-truncate"
-                        href="#"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setModalHash({ hash: v.hash, show: true, point: v })
-                        }} >
-                        {v.hash}
-                    </a></Badge>
-                    <Badge className="rounded-pill bg-light text-dark ms-1">{v.group}</Badge>
-                    <Badge className="rounded-pill bg-light text-dark ms-1">{v.name}</Badge>
-                </div>
-
-                <Button
-                    variant="outline-danger"
-                    as="span"
-                    size="sm"
-                    onClick={(e) => { e.stopPropagation(); setConfirmData({ show: true, name: v.hash }) }}
-                >
-                    <i className="bi-x-lg"></i></Button>
-            </ListGroup.Item>
-        )
-    }
-
+    const handleCloseNode = (hash: string) => {
+        FetchProtobuf(node.method.close, create(StringValueSchema, { value: hash }))
+            .then(async ({ error }) => {
+                if (error !== undefined) {
+                    ctx.Error(`Failed to close node: ${error.msg}`);
+                } else {
+                    ctx.Info(`Node ${hash.substring(0, 8)}... terminated`);
+                    await mutate();
+                }
+                setConfirmData({ show: false, name: "" });
+            });
+    };
 
     return (
-        <>
+        <MainContainer>
+            {/* Confirmation for Closing Node */}
             <ConfirmModal
                 show={confirmData.show}
-                content={<p>Close node {confirmData.name}?</p>}
-                onHide={() => setConfirmData({ ...confirmData, show: false })}
-                onOk={() => {
-                    FetchProtobuf(node.method.close, create(StringValueSchema, { value: confirmData.name }))
-                        .then(async ({ error }) => {
-                            if (error !== undefined) ctx.Error(`delete tag ${confirmData.name} failed, ${error.code}| ${error.msg}`)
-                            else {
-                                ctx.Info(`delete tag ${confirmData.name} success`);
-                                await mutate();
-                            }
-                            setConfirmData({ ...confirmData, show: false })
-                        })
-                }}
+                content={
+                    <div className="py-2">
+                        <p className="mb-1">Are you sure you want to <strong>terminate</strong> this active node connection?</p>
+                        <code className="small text-muted">{confirmData.name}</code>
+                    </div>
+                }
+                onHide={() => setConfirmData({ show: false, name: "" })}
+                onOk={() => handleCloseNode(confirmData.name)}
             />
 
+            {/* Node Detail Modal */}
             <NodeModal
                 show={modalHash.show}
                 hash={modalHash.hash}
@@ -83,17 +108,36 @@ function Activates() {
                 onHide={() => setModalHash({ ...modalHash, show: false })}
             />
 
-            <Card className="mb-3">
 
-                <ListGroup variant="flush">
-                    {
-                        data.nodes.sort((a, b) => a.hash.localeCompare(b.hash)).map((v) => { return <TagItem key={v.hash} v={v} /> })
-                    }
-                </ListGroup>
-            </Card >
+            <CardList
+                items={data.nodes
+                    .sort((a, b) => a.hash.localeCompare(b.hash))
+                }
+                renderListItem={(v) => <ActiveNodeItem v={v} onClose={() => setConfirmData({ show: true, name: v.hash })} />}
+                onClickItem={(v) => setModalHash({ hash: v.hash, show: true, point: v })}
+                header={
+                    <div className="d-flex align-items-center justify-content-between w-100">
+                        <div>
+                            <h5 className="mb-0 fw-bold">Active Nodes</h5>
+                            <small className="text-muted">Live outbound connection instances</small>
+                        </div>
+                        <Badge bg="success" className="bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill">
+                            {data.nodes.length} Running
+                        </Badge>
+                    </div>
+                }
+            />
 
-        </>
-    )
+            {showFooter &&
+                <div className="text-center mt-4 opacity-50 pb-5">
+                    <small className="text-muted">
+                        <i className="bi bi-info-circle me-1"></i>
+                        Closing a node here will force a reconnection if the rule still requires it.
+                    </small>
+                </div>
+            }
+        </MainContainer>
+    );
 }
 
 export default Activates;

@@ -1,38 +1,37 @@
 "use client";
 
+import { CardRowList, IconBox } from '@/app/component/cardlist';
 import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { FC, useContext, useEffect, useState } from "react";
-import { Button, Card, Form, InputGroup, Modal, Spinner } from "react-bootstrap";
+import { Button, Modal, Spinner } from "react-bootstrap";
 import useSWR from "swr";
-import { ConfirmModal } from "../../common/confirm";
-import Loading, { Error } from "../../common/loading";
+import { SettingInputText } from "../../../component/components";
+import { ConfirmModal } from "../../../component/confirm";
+import Loading, { Error } from "../../../component/loading";
+import { SettingTypeSelect } from "../../../component/switch";
+import { GlobalToastContext } from "../../../component/toast";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../common/proto";
-import { SettingTypeSelect } from "../../common/switch";
-import { GlobalToastContext } from "../../common/toast";
-import { SettingInputText } from "../../config/components";
 import { resolver, save_resolverSchema } from "../../pbes/api/config_pb";
 import { dns, dnsSchema, type, typeSchema } from "../../pbes/config/dns_pb";
 import { Fakedns } from "./fakedns";
 import { Hosts } from "./hosts";
-import styles from './resolver.module.css';
 import { Server } from "./server";
 
 export default function ResolverComponent() {
     return (
-        <div className={styles.mainContainer}>
+        <div>
             <Resolver />
-
-            <div className="row g-4 mt-3">
-                <div className="col-lg-6">
+            <div className="row g-4">
+                <div className="col-lg-6 mt-0">
                     <Hosts />
                 </div>
-                <div className="col-lg-6">
+                <div className="col-lg-6 mt-0">
                     <Fakedns />
                 </div>
             </div>
 
-            <div className="mt-5">
+            <div className="mt-3">
                 <Server />
             </div>
         </div>
@@ -44,7 +43,6 @@ function Resolver() {
     const { data: resolvers, error, isLoading, mutate } = useProtoSWR(resolver.method.list)
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
     const [confirm, setConfirm] = useState<{ show: boolean, name: string }>({ show: false, name: "" });
-    const [newdata, setNewdata] = useState({ value: "" });
 
     if (error !== undefined) return <Loading code={error.code}>{error.msg}</Loading>
     if (isLoading || resolvers === undefined) return <Loading />
@@ -62,13 +60,13 @@ function Resolver() {
             })
     }
 
-    const handleCreate = () => {
-        if (!newdata.value || resolvers.names.includes(newdata.value)) return;
+    const handleCreate = (v: string) => {
+        if (resolvers.names.includes(v)) return;
 
-        if (showdata.name === newdata.value && showdata.new) {
+        if (showdata.name === v && showdata.new) {
             setShowdata(prev => { return { ...prev, show: true } })
         } else {
-            setShowdata({ show: true, name: newdata.value, new: true })
+            setShowdata({ show: true, name: v, new: true })
         }
     };
 
@@ -90,62 +88,25 @@ function Resolver() {
             onHide={(save) => {
                 if (save) {
                     mutate();
-                    setNewdata({ value: "" });
                 }
                 setShowdata(prev => { return { ...prev, show: false } })
             }}
             onDelete={(name) => setConfirm({ show: true, name: name })}
         />
 
-        <Card className={`${styles.configCard} mb-5`}>
-            <Card.Header className={styles.cardHeaderCustom}>
-                <div className="d-flex align-items-center">
-                    <div className={styles.iconBox}><i className="bi bi-layers-half"></i></div>
-                    <div>
-                        <h5 className="mb-0 fw-bold">Resolvers</h5>
-                        <small className="text-muted">Upstream Resolvers</small>
-                    </div>
-                </div>
-            </Card.Header>
-
-            <Card.Body className="p-4">
-                <div id="resolverList" className="row g-3">
-                    {resolvers.names.
-                        sort((a, b) => a.localeCompare(b)).
-                        map((v, k) => (
-                            <div className="col-md-6 col-lg-4" key={k}>
-                                <div className={styles.resolverItem} onClick={() => setShowdata({ show: true, name: v, new: false })}>
-                                    <i className="bi bi-hdd-network me-2"></i>
-                                    <span className="flex-grow-1 text-truncate">{v}</span>
-                                    {v === 'bootstrap' && <i className="bi bi-patch-check-fill text-primary ms-2" title="System Default"></i>}
-                                </div>
-                            </div>
-                        ))
-                    }
-                    <div className="col-md-6 col-lg-4">
-                        <div className={`${styles.resolverItem} ${styles.newItemBox}`}>
-                            <InputGroup className="w-100 align-items-center">
-                                <Form.Control
-                                    value={newdata.value}
-                                    onChange={(e) => setNewdata({ value: e.target.value })}
-                                    placeholder="New Resolver Name..."
-                                    className={styles.seamlessInput}
-                                    onKeyDown={(e) => { if (e.key === 'Enter') handleCreate() }}
-                                    autoComplete="off"
-                                />
-                                <Button
-                                    variant='link'
-                                    onClick={handleCreate}
-                                    className={styles.seamlessBtn}
-                                >
-                                    <i className="bi bi-plus-lg" style={{ fontSize: '1.2rem' }} />
-                                </Button>
-                            </InputGroup>
-                        </div>
-                    </div>
-                </div>
-            </Card.Body>
-        </Card>
+        <CardRowList
+            items={resolvers.names.sort((a, b) => a.localeCompare(b))}
+            renderListItem={(v) =>
+                <>
+                    <i className="bi bi-hdd-network me-2"></i>
+                    <span className="flex-grow-1 text-truncate">{v}</span>
+                    {v === 'bootstrap' && <i className="bi bi-patch-check-fill text-primary ms-2" title="System Default"></i>}
+                </>
+            }
+            onClickItem={(v) => setShowdata({ show: true, name: v, new: false })}
+            onAddNew={handleCreate}
+            header={<IconBox icon="layers-half" color="primary" title='Resolvers' description='Upstream Resolvers' />}
+        />
     </>
 }
 

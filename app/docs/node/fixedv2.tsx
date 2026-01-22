@@ -1,9 +1,9 @@
 import { create } from "@bufbuild/protobuf";
 import { FC, useContext } from "react";
 import { Button, InputGroup, Row } from "react-bootstrap";
+import { Container, MoveUpDown, Remind, SettingInputText } from "../../component/components";
+import { SettingCheck } from "../../component/switch";
 import { InterfacesContext } from "../common/interfaces";
-import { SettingCheck } from "../common/switch";
-import { Container, MoveUpDown, Remind, SettingInputText } from "../config/components";
 import { fixedv2, fixedv2_address, fixedv2_addressSchema } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 

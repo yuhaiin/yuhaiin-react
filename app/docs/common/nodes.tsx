@@ -1,7 +1,7 @@
 import { createContext, FC, useEffect, useState } from "react";
 import { FloatingLabel } from "react-bootstrap";
+import { FormSelect } from "../../component/switch";
 import { NodesResponse } from "../pbes/api/node_pb";
-import { FormSelect } from "./switch";
 
 
 export class Nodes {

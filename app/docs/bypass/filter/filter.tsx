@@ -1,16 +1,16 @@
 "use client";
 
+import { ErrorMsg, SettingLabel, SettingsBox } from '@/app/component/cardlist';
 import { create, toJsonString } from '@bufbuild/protobuf';
 import React, { createContext, FC, useContext, useEffect, useState } from 'react';
 import { Button, Dropdown, Form, InputGroup, Modal, Spinner } from 'react-bootstrap';
 import useSWR from 'swr';
-import Loading from '../../common/loading';
+import Loading from '../../../component/loading';
+import { SettingEnumSelectVertical, SettingInputVertical, SettingSelectVertical } from '../../../component/switch';
+import { GlobalToastContext } from '../../../component/toast';
 import { FetchProtobuf, ProtoESFetcher, ProtoPath } from '../../common/proto';
-import { SettingEnumSelectVertical, SettingInputVertical, SettingSelectVertical } from '../../common/switch';
-import { GlobalToastContext } from '../../common/toast';
 import { rule_indexSchema, rule_save_requestSchema, rules } from '../../pbes/api/config_pb';
 import { geoipSchema, hostSchema, mode, modeSchema, network_network_type, networkSchema, or, orSchema, portSchema, processSchema, resolve_strategySchema, rule, ruleSchema, rulev2Schema, sourceSchema, udp_proxy_fqdn_strategy, udp_proxy_fqdn_strategySchema } from '../../pbes/config/bypass_pb';
-import styles from '../list/list.module.css';
 
 const Values = {
     Inbounds: [] as string[],
@@ -348,15 +348,12 @@ export const FilterModal: FC<{
 
             <Modal.Body className="pt-2">
                 {error ? (
-                    <div className={`alert alert-danger ${styles.errorBox}`}>
-                        <h4 className="alert-heading">{error.code} - {error.msg}</h4>
-                        <pre className="mb-0">{error.raw}</pre>
-                    </div>
+                    <ErrorMsg msg={error.msg} code={error.code} raw={error.raw} />
                 ) : isValidating || isLoading || !rule ? (
                     <Loading />
                 ) : (
                     <div className="d-flex flex-column gap-3">
-                        <div className={styles.settingsBox}>
+                        <SettingsBox>
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <SettingEnumSelectVertical
@@ -406,13 +403,13 @@ export const FilterModal: FC<{
                                     />
                                 </div>
                             </div>
-                        </div>
+                        </SettingsBox>
 
                         {/* 2. Rules Builder Area */}
-                        <div className={styles.settingsBox}>
-                            <h6 className={styles.settingLabel}>Rule Entries</h6>
+                        <SettingsBox>
+                            <SettingLabel>Rule Entries</SettingLabel>
                             <FilterBuilder groups={rule.rules} onUpdateGroups={(groups) => { setRule({ ...rule, rules: groups }, false) }} />
-                        </div>
+                        </SettingsBox>
 
                         {/* 3. Debug Info */}
                         <div className="mt-2">

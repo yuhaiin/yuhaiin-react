@@ -1,6 +1,6 @@
 import { FC, useContext } from "react";
+import { Remind, SettingInputText } from "../../component/components";
 import { InterfacesContext } from "../common/interfaces";
-import { Remind, SettingInputText } from "../config/components";
 import { fixed } from "../pbes/node/protocol_pb";
 import { NewAlternateHostList, Props } from "./tools";
 

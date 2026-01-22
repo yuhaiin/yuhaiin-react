@@ -1,6 +1,6 @@
 import { FC } from "react"
-import { SettingCheck } from "../common/switch"
-import { NewBytesItemList, NewItemList, SettingInputText } from "../config/components"
+import { NewBytesItemList, NewItemList, SettingInputText } from "../../component/components"
+import { SettingCheck } from "../../component/switch"
 import { tls_config } from "../pbes/node/protocol_pb"
 import { Props } from "./tools"
 
@@ -16,7 +16,7 @@ export const TlsConfigv2: FC<{ value: tls_config, onChange: (x: tls_config) => v
             <SettingCheck label="InsecureSkipVerify" checked={value.insecureSkipVerify} onChange={() => { onChange({ ...value, insecureSkipVerify: !value.insecureSkipVerify }) }} />
             <NewItemList className="mb-2" title="ServerNames" data={value.serverNames} onChange={(x) => { onChange({ ...value, serverNames: x }) }} />
             <NewItemList className="mb-2" title="NextProtos" data={value.nextProtos} onChange={(x) => { onChange({ ...value, nextProtos: x }) }} />
-            <NewBytesItemList title="CaCert" textarea data={value.caCert} onChange={(x) => { onChange({ ...value, caCert: x }) }} />
+            <NewBytesItemList title="CaCert" data={value.caCert} onChange={(x) => { onChange({ ...value, caCert: x }) }} />
             <SettingInputText label="ECH Config List"
                 value={value.echConfig ? btoa(String.fromCharCode(...value.echConfig)) : ""}
                 onChange={(x: string) => {

@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { SettingInputText } from "../config/components";
+import { SettingInputText } from "../../component/components";
 import { socks5 } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 

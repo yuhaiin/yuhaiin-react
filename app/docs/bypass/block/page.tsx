@@ -1,222 +1,163 @@
 "use client"
 
-import { create } from "@bufbuild/protobuf"
-import { timestampDate, TimestampSchema } from "@bufbuild/protobuf/wkt"
-import React, { FC, useCallback, useMemo, useState } from "react"
-import { Badge, Button, Dropdown, Modal, Spinner, ToggleButton, ToggleButtonGroup } from "react-bootstrap"
-import Loading from "../../common/loading"
-import { CustomPagination } from "../../common/pagination"
+import { CardList, IconBadge, MainContainer, SettingLabel } from "@/app/component/cardlist"
+import { timestampDate } from "@bufbuild/protobuf/wkt"
+import React, { FC, useMemo, useState } from "react"
+import { Button, Dropdown, Modal, Spinner, ToggleButton, ToggleButtonGroup } from "react-bootstrap"
+import Loading from "../../../component/loading"
+import { CustomPagination } from "../../../component/pagination"
 import { useProtoSWR } from "../../common/proto"
-import { block_history, rules } from "../../pbes/api/config_pb"
-import styles from '../../connections/v2/connections.module.css';
 import { ListGroupItemString } from "../../connections/components"
+import { TimestampZero } from "../../connections/history/page"
+import { block_history, rules } from "../../pbes/api/config_pb"
 
-const TimestampZero = create(TimestampSchema, { seconds: BigInt(0), nanos: 0 })
+// --- Component: Individual Blocked History Row ---
+const ListItem: FC<{ data: block_history }> = React.memo(({ data }) => {
+    return (
+        <>
+            <div className="d-flex w-100 flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
 
-const IconBadge: FC<{ icon: string, text: string | number, className?: string }> = ({ icon, text, className }) => {
-    return <Badge pill bg="secondary" className={className}>
-        <i className={`bi ${icon} me-1`}></i>
-        {text}
-    </Badge>
-}
+                {/* Left Side: Icon + Host & Process */}
+                <div className="d-flex align-items-center flex-grow-1 overflow-hidden gap-3 w-100 w-md-auto">
+                    <div className="d-flex align-items-center justify-content-center bg-secondary bg-opacity-10 text-secondary rounded-circle flex-shrink-0" style={{ width: '42px', height: '42px' }}>
+                        <i className="bi bi-shield-slash fs-5"></i>
+                    </div>
 
-const ListItemComponent: FC<{ data: block_history, onClick?: () => void }> =
-    ({ data, onClick }) => {
-        return (
-            <li
-                className={styles['list-item']}
-                onClick={onClick}
-            >
-                <div className={styles['item-main']}>
-                    <span className={styles['item-addr']}>{data.host}</span>
-                </div>
-
-                <div className={styles['item-details-right']}>
-                    <div className={styles['item-details']}>
-                        <IconBadge icon="bi-ethernet" text={data.protocol} />
-                        <IconBadge icon="bi-bug" text={Number(data.blockCount)} />
-                        <IconBadge icon="bi-clock" text={timestampDate(data.time!).toLocaleTimeString()} />
+                    <div className="d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
+                        <span className="fw-bold text-truncate fs-6 opacity-75">{data.host}</span>
+                        <small className="text-muted text-truncate opacity-75 font-monospace">
+                            {data.process || "System Filter"}
+                        </small>
                     </div>
                 </div>
-            </li>
-        );
-    }
 
-const ListItem = React.memo(ListItemComponent)
+                {/* Right Side: Metadata Badges */}
+                <div className="d-flex flex-wrap gap-2 align-items-center flex-shrink-0">
+                    <IconBadge icon="bi-ethernet" text={data.protocol} color="info" />
+                    <IconBadge icon="bi-slash-circle" text={`${data.blockCount} Blocks`} color="danger" />
+                    <IconBadge icon="bi-clock" text={timestampDate(data.time!).toLocaleTimeString()} color="secondary" />
+                    <i className="bi bi-chevron-right text-muted opacity-25 ms-2 d-none d-md-block"></i>
+                </div>
+            </div>
+        </>
+    );
+});
 
-const InfoModalComponent: FC<{
-    data?: block_history,
-    show: boolean,
-    onClose: () => void,
-}> = ({ data, show, onClose: handleClose }) => {
-    if (!data) return <></>
+// --- Component: Details Modal ---
+const InfoModal: FC<{ data?: block_history, show: boolean, onClose: () => void }> = React.memo(({ data, show, onClose }) => {
+    if (!data) return null;
     return (
-        <Modal
-            show={show}
-            onHide={handleClose}
-            scrollable
-            centered
-            contentClassName="border-0 shadow-lg"
-        >
-            <Modal.Header closeButton className="border-bottom-0 pb-0">
-                <Modal.Title className="h5 fw-bold">
-                    Block History Details
-                </Modal.Title>
+        <Modal show={show} onHide={onClose} centered scrollable>
+            <Modal.Header closeButton className="border-0 shadow-none">
+                <Modal.Title className="fw-bold">Blocked Session Details</Modal.Title>
             </Modal.Header>
-
-            <Modal.Body className="pt-2">
+            <Modal.Body className="pt-0">
                 <ListGroupItemString itemKey="Time" itemValue={timestampDate(data.time!).toLocaleString()} />
-                <ListGroupItemString itemKey="Net" itemValue={data.protocol} />
+                <ListGroupItemString itemKey="Network" itemValue={data.protocol} />
                 <ListGroupItemString itemKey="Host" itemValue={data.host} />
-                <ListGroupItemString itemKey="Count" itemValue={String(data.blockCount)} />
-                <ListGroupItemString itemKey="Process" itemValue={data.process} />
+                <ListGroupItemString itemKey="Total Blocks" itemValue={String(data.blockCount)} />
+                <ListGroupItemString itemKey="Process" itemValue={data.process || "Unknown"} />
             </Modal.Body>
-
-            <Modal.Footer className="border-top-0 pt-0 pb-3 px-3">
-                <Button
-                    variant="secondary"
-                    className="w-100 py-2 d-flex align-items-center justify-content-center notranslate"
-                    onClick={handleClose}
-                >
-                    Close
-                </Button>
+            <Modal.Footer className="border-0">
+                <Button variant="outline-secondary" className="w-100" onClick={onClose}>Close</Button>
             </Modal.Footer>
         </Modal>
     );
-}
-
-const InfoModal = React.memo(InfoModalComponent)
-
+});
 
 function BypassBlockHistory() {
-    const [sortBy, setSortBy] = useState("Time")
-    const changeSortBy = useCallback((value: string) => {
-        setSortBy(value)
-    }, [setSortBy])
-
-
+    const [sortBy, setSortBy] = useState("Time");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-    const changeSortOrder = useCallback((value: "asc" | "desc") => {
-        setSortOrder(value)
-    }, [setSortOrder])
-
     const [page, setPage] = useState(1);
-    const [info, setInfo] = useState<{ data?: block_history, show: boolean }>({
-        show: false
-    });
+    const [info, setInfo] = useState<{ data?: block_history, show: boolean }>({ show: false });
 
-    const hideInfo = useCallback(() => {
-        setInfo(prev => { return { ...prev, show: false } })
-    }, [])
-
-
-    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(rules.method.block_history)
+    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(rules.method.block_history);
 
     const values = useMemo(() => {
         if (!data?.objects) return []
         return data.objects.filter(v => v.time).sort((a, b) => {
-            let first = 1;
-            let second = -1;
+            const first = sortOrder === "asc" ? -1 : 1;
+            const second = sortOrder === "asc" ? 1 : -1;
 
-            if (sortOrder === "asc") {
-                first = -1;
-                second = 1;
-            }
-
-            if (sortBy) {
-                switch (sortBy) {
-                    case "Host":
-                        return a.host < b.host ? first : second
-                    case "Count":
-                        return Number(a.blockCount) < Number(b.blockCount) ? first : second
-                    case "Proc":
-                        return (a.process ?? "") < (b.process ?? "") ? first : second
-                }
-            }
+            if (sortBy === "Host") return a.host < b.host ? first : second;
+            if (sortBy === "Count") return Number(a.blockCount) < Number(b.blockCount) ? first : second;
+            if (sortBy === "Proc") return (a.process ?? "") < (b.process ?? "") ? first : second;
 
             const aTime = a.time ?? TimestampZero;
             const bTime = b.time ?? TimestampZero;
-
             if (aTime.seconds < bTime.seconds) return first;
             if (aTime.seconds > bTime.seconds) return second;
-            if (aTime.nanos < bTime.nanos) return first;
-            if (aTime.nanos > bTime.nanos) return second;
             return 0;
         })
-    }, [data, sortBy, sortOrder])
+    }, [data, sortBy, sortOrder]);
 
     if (error) return <Loading code={error.code}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />
-    return <>
-        <InfoModal
-            data={info.data}
-            show={info.show}
-            onClose={hideInfo}
-        />
 
-        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-            <CustomPagination
-                currentPage={page}
-                totalItems={values.length}
-                pageSize={30}
-                onPageChange={(p) => { setPage(p) }}
-            />
-            <div className="d-flex align-items-center gap-2">
-                <Button
-                    variant="outline-primary"
-                    onClick={() => mutate()}
-                    disabled={isValidating || isLoading}
-                >
-                    <i className="bi bi-arrow-clockwise" /> {(isValidating || isLoading) && <>&nbsp;<Spinner size="sm" animation="border" /></>}
-                </Button>
-                <Dropdown>
-                    <Dropdown.Toggle variant="outline-secondary">
-                        <i className="bi bi-sort-down"></i> Sort
-                    </Dropdown.Toggle>
+    const pageSize = 30;
+    const paginatedItems = values.slice((page - 1) * pageSize, page * pageSize);
 
-                    <Dropdown.Menu>
-                        <div className="p-2 d-flex flex-column gap-2">
-                            <ToggleButtonGroup type="radio" name="sortOrder" value={sortOrder} onChange={changeSortOrder}>
-                                <ToggleButton id="sort-asc" value="asc" variant="outline-secondary">
-                                    <i className="bi bi-sort-up"></i> Asc
-                                </ToggleButton>
-                                <ToggleButton id="sort-desc" value="desc" variant="outline-secondary">
-                                    <i className="bi bi-sort-down"></i> Desc
-                                </ToggleButton>
-                            </ToggleButtonGroup>
+    return (
+        <MainContainer>
+            <InfoModal data={info.data} show={info.show} onClose={() => setInfo({ ...info, show: false })} />
 
-                            <ToggleButtonGroup type="radio" name="sortBy" value={sortBy} onChange={changeSortBy}>
-                                <ToggleButton id="sort-time" value="Time" variant="outline-secondary">
-                                    Time
-                                </ToggleButton>
-                                <ToggleButton id="sort-host" value="Host" variant="outline-secondary">
-                                    Host
-                                </ToggleButton>
-                                <ToggleButton id="sort-count" value="Count" variant="outline-secondary">
-                                    Count
-                                </ToggleButton>
-                                {data.dumpProcessEnabled && <ToggleButton id="sort-proc" value="Proc" variant="outline-secondary">
-                                    Proc
-                                </ToggleButton>}
-                            </ToggleButtonGroup>
-                        </div>
-                    </Dropdown.Menu>
-                </Dropdown>
+            {/* --- Action Bar --- */}
+            <div className="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3">
+                <div>
+                    <h4 className="fw-bold mb-1">Blocked Traffic</h4>
+                    <div className="text-muted d-flex align-items-center small">
+                        <i className="bi bi-shield-slash-fill me-2 opacity-50"></i>
+                        <span>Displaying {values.length} connections denied by rules</span>
+                    </div>
+                </div>
+
+                <div className="d-flex flex-wrap gap-2 justify-content-end align-items-center">
+                    <Button variant="outline-primary" size="sm" onClick={() => mutate()} disabled={isValidating}>
+                        {isValidating ? <Spinner size="sm" animation="border" /> : <i className="bi bi-arrow-clockwise"></i>}
+                    </Button>
+
+                    <Dropdown>
+                        <Dropdown.Toggle variant="outline-secondary" size="sm">
+                            <i className="bi bi-sort-down me-1"></i> Sort
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu align="end" className="p-3 shadow-lg border-0" style={{ minWidth: '220px' }}>
+                            <div className="mb-3">
+                                <SettingLabel>Order</SettingLabel>
+                                <ToggleButtonGroup type="radio" name="sortOrder" value={sortOrder} onChange={setSortOrder} className="w-100">
+                                    <ToggleButton id="b-asc" value="asc" variant="outline-secondary" size="sm">ASC</ToggleButton>
+                                    <ToggleButton id="b-desc" value="desc" variant="outline-secondary" size="sm">DESC</ToggleButton>
+                                </ToggleButtonGroup>
+                            </div>
+                            <div>
+                                <SettingLabel>By</SettingLabel>
+                                <ToggleButtonGroup type="radio" name="sortBy" value={sortBy} onChange={setSortBy} className="w-100">
+                                    <ToggleButton id="b-time" value="Time" variant="outline-secondary" size="sm">Time</ToggleButton>
+                                    <ToggleButton id="b-host" value="Host" variant="outline-secondary" size="sm">Host</ToggleButton>
+                                    <ToggleButton id="b-count" value="Count" variant="outline-secondary" size="sm">Count</ToggleButton>
+                                    {data.dumpProcessEnabled && (
+                                        <ToggleButton id="b-proc" value="Proc" variant="outline-secondary" size="sm">Proc</ToggleButton>
+                                    )}
+                                </ToggleButtonGroup>
+                            </div>
+                        </Dropdown.Menu>
+                    </Dropdown>
+                </div>
             </div>
-        </div>
 
-        <ul className={styles['connections-list']}>
-            {
-                values.slice((page - 1) * 30, (page - 1) * 30 + 30).map((e, i) => {
-                    return <ListItem
-                        data={e}
-                        key={`${i}-${e.host}`}
-                        onClick={() => setInfo({ data: e, show: true })}
-                    />
-                })
-            }
-        </ul>
-    </>
+            <CardList
+                items={paginatedItems}
+                onClickItem={(item) => setInfo({ show: true, data: item })}
+                renderListItem={(item) => <ListItem data={item} />}
+                footer={<CustomPagination
+                    currentPage={page}
+                    totalItems={values.length}
+                    pageSize={pageSize}
+                    onPageChange={setPage}
+                />}
+            />
+
+        </MainContainer>
+    );
 }
 
-export default BypassBlockHistory
+export default BypassBlockHistory;

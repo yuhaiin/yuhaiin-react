@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback } from "react";
-import Loading from "../common/loading";
+import Loading from "../../component/loading";
 import { useProtoSWR } from "../common/proto";
 import { inbound, lists, resolver, rules } from "../pbes/api/config_pb";
 import { configv2 } from "../pbes/config/bypass_pb";

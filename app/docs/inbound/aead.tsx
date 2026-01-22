@@ -1,6 +1,6 @@
 import { FC } from "react"
-import { SettingTypeSelect } from "../common/switch"
-import { SettingInputText } from "../config/components"
+import { SettingInputText } from "../../component/components"
+import { SettingTypeSelect } from "../../component/switch"
 import { aead } from "../pbes/config/inbound_pb"
 import { AeadCryptoMethodSchema } from "../pbes/node/protocol_pb"
 

@@ -18,8 +18,8 @@ const MetricCard: FC<MetricProps> = ({ label, value, error, color = '#3b82f6' })
     return (
         <div
             className={styles.metricCard}
-            // Show a blue light line on the left edge of the card
-            style={{ '--accent-color': color } as React.CSSProperties}
+        // Show a blue light line on the left edge of the card
+        // style={{ '--accent-color': color } as React.CSSProperties}
         >
             <div className={styles.metricCardLabel}>{label}</div>
             <div className={`${styles.metricCardValue} ${error ? styles.error : ''}`}>
@@ -258,7 +258,8 @@ export const FlowCard: FC<{
     extra_fields?: MetricProps[],
 }> = ({ lastFlow, flow_error, extra_fields }) => {
     return (
-        <div className={`${styles.flowCardGrid} mb-3`}>
+        <div className={`${styles.flowCardGrid} mb-3`}
+            style={{ viewTransitionName: "flow-card-root !important" }}>
             <MetricCard
                 label="Total Download"
                 value={lastFlow ? lastFlow.DownloadTotalString() : "Loading..."}

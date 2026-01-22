@@ -1,8 +1,8 @@
 "use client";
 
 import { useLocalStorage } from "usehooks-ts";
+import { IFramePage } from "../../../component/iframe";
 import { APIUrlDefault, APIUrlKey } from "../../common/apiurl";
-import { IFramePage } from "../../common/iframe";
 
 const PprofPage = () => {
     const [apiUrl] = useLocalStorage<string>(APIUrlKey, APIUrlDefault);

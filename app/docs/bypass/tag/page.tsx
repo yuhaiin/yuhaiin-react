@@ -1,299 +1,284 @@
 "use client"
 
+import { CardList, IconBox, IconBoxRounded, MainContainer, SettingLabel, SettingsBox } from "@/app/component/cardlist";
 import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import Error from 'next/error';
 import { FC, useContext, useState } from "react";
-import { Button, ButtonGroup, FloatingLabel, Form, Modal, ToggleButton } from "react-bootstrap";
-import { ConfirmModal } from "../../common/confirm";
-import Loading from "../../common/loading";
+import { Button, ButtonGroup, Modal, ToggleButton } from "react-bootstrap";
+import { ConfirmModal } from "../../../component/confirm";
+import Loading from "../../../component/loading";
+import { SettingInputVertical, SettingSelectVertical } from "../../../component/switch";
+import { GlobalToastContext } from "../../../component/toast";
 import { Node, Nodes } from "../../common/nodes";
 import { FetchProtobuf, useProtoSWR } from '../../common/proto';
-import { FormSelect } from "../../common/switch";
-import { GlobalToastContext } from "../../common/toast";
 import { NodeModal } from "../../node/modal";
 import { node, save_tag_req, save_tag_reqSchema, tag, tags_response } from "../../pbes/api/node_pb";
-import { tag_type, tags, tagsSchema } from "../../pbes/node/tag_pb";
-import styles from './tag.module.css';
-
-
-const HashPill: FC<{ v: tags, onHashClick: (h: string) => void }> = ({ v, onHashClick }) => {
-    if (v.hash.length === 0 || v.hash[0] === "") {
-        return (
-            <div className={styles['hash-pill']} title="Global Fallback">
-                <div className={`${styles['hash-pill-icon']} ${styles['bg-type-global']}`}>
-                    <i className="bi bi-globe"></i>
-                </div>
-                <span className="text-muted fw-medium">Global</span>
-            </div>
-        );
-    }
-
-    const isMirror = v.type === tag_type.mirror;
-    const iconBgClass = isMirror ? styles['bg-type-mirror'] : styles['bg-type-node'];
-    const icon = isMirror ? "bi-files" : "bi-hdd-network";
-
-    return (
-        <div className={styles['hash-pill']}>
-            <div className={`${styles['hash-pill-icon']} ${iconBgClass}`}>
-                <i className={`bi ${icon}`}></i>
-            </div>
-            <a
-                href="#"
-                className="font-monospace text-decoration-none text-body text-truncate d-block text-start"
-                style={{ maxWidth: '100%' }}
-                onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onHashClick(v.hash[0]);
-                }}
-            >
-                {v.hash[0]}
-            </a>
-        </div>
-    );
-};
-
+import { tag_type } from "../../pbes/node/tag_pb";
 
 const TagItem: FC<{
-    k: string,
-    v: tags,
-    onEdit: () => void,
+    tagName: string,
+    tagData: any,
     onDelete: () => void,
     onHashClick: (h: string) => void
-}> = ({ k, v, onEdit, onDelete, onHashClick }) => {
-    return (
-        <li className={styles['list-item']} onClick={onEdit}>
-            <div className={styles['item-top']}>
-                <i className="bi bi-tag-fill text-muted me-2 small opacity-50"></i>
-                <span className={styles['item-title']} title={k}>{k}</span>
-            </div>
-
-            <div className={styles['item-bottom']}>
-                <div className={styles['pill-wrapper']}>
-                    <HashPill v={v} onHashClick={onHashClick} />
-                </div>
-
-                <div className={styles['action-wrapper']}>
-                    <Button
-                        as="div"
-                        variant="link"
-                        size="sm"
-                        className="p-0 text-danger opacity-50 opacity-100-hover d-flex align-items-center justify-content-center"
-                        style={{ width: '100%', height: '100%' }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete();
-                        }}
-                    >
-                        <i className="bi bi-trash" style={{ lineHeight: 1 }}></i>
-                    </Button>
-                </div>
-            </div>
-        </li>
-    )
-}
-
-
-function Tags() {
-    const ctx = useContext(GlobalToastContext);
-    const { data, error, isLoading, mutate } = useProtoSWR(tag.method.list)
-    const { data: nodes } = useProtoSWR(node.method.list)
-    const [modalHash, setModalHash] = useState({ hash: "", show: false });
-    const [tagModalData, setTagModalData] = useState({ show: false, tag: create(save_tag_reqSchema, { tag: "", hash: "", type: tag_type.node }), new: true });
-    const [confirmData, setConfirmData] = useState({ show: false, name: "" });
-
-    if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
-    if (isLoading || data == undefined) return <Loading />
+}> = ({ tagName, tagData, onDelete, onHashClick }) => {
+    const isGlobal = tagData.hash.length === 0 || tagData.hash[0] === "";
+    const isMirror = tagData.type === tag_type.mirror;
 
     return (
         <>
-            <ConfirmModal
-                show={confirmData.show}
-                content={
-                    <div className="text-center">
-                        <i className="bi bi-exclamation-circle text-danger display-4 mb-3 d-block"></i>
-                        <p className="mb-0">Delete tag <strong className="text-break">{confirmData.name}</strong>?</p>
+            <div className="d-flex align-items-center flex-grow-1 overflow-hidden gap-3">
+                {/* Icon based on type */}
+                <IconBoxRounded
+                    icon={isGlobal ? 'globe' : isMirror ? 'files' : 'hdd-network'}
+                    color={isGlobal ? '#6c757d' : isMirror ? '#0dcaf0' : '#0d6efd'}
+                    style={{ width: '40px', height: '40px', border: 'none', marginRight: '0px' }}
+                />
+
+                {/* Tag Info */}
+                <div className="d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
+                    <span className="fw-bold text-truncate">{tagName}</span>
+                    <div className="d-flex align-items-center gap-2">
+                        {isGlobal ? (
+                            <small className="text-muted opacity-75">Global Fallback</small>
+                        ) : (
+                            <small
+                                className="text-muted text-truncate font-monospace opacity-75 text-decoration-underline"
+                                style={{ cursor: 'pointer' }}
+                                onClick={(e) => {
+                                    if (!isMirror) {
+                                        e.stopPropagation();
+                                        onHashClick(tagData.hash[0]);
+                                    }
+                                }}
+                            >
+                                {isMirror ? `Mirror: ${tagData.hash[0]}` : tagData.hash[0]}
+                            </small>
+                        )}
                     </div>
+                </div>
+            </div>
+
+            {/* Actions */}
+            <div className="d-flex gap-2 ms-3 align-items-center flex-shrink-0">
+                <Button
+                    variant="outline-danger"
+                    size="sm"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete();
+                    }}
+                >
+                    <i className="bi bi-trash"></i>
+                    <span className="d-none d-sm-inline ms-2">Delete</span>
+                </Button>
+            </div>
+        </>
+    );
+};
+
+// --- Component: Tag Edit/Add Modal ---
+const TagModal: FC<{
+    show: boolean,
+    nodes: Nodes,
+    data: tags_response,
+    tagItem: save_tag_req,
+    isNew?: boolean,
+    onHide: () => void,
+    onSave: () => void,
+    onChangeTag: (x: save_tag_req) => void
+}> = (props) => {
+    return (
+        <Modal show={props.show} onHide={props.onHide} centered scrollable>
+            <Modal.Header closeButton className="border-bottom-0 pb-0">
+                <Modal.Title className="fw-bold">{props.isNew ? "Create Tag" : `Edit Tag: ${props.tagItem.tag}`}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body className="pt-2">
+                <div className="d-flex flex-column gap-3">
+                    {/* Mode Toggle */}
+                    <SettingsBox>
+                        <SettingLabel>Tag Type</SettingLabel>
+                        <ButtonGroup className="w-100">
+                            <ToggleButton
+                                id="toggle-node"
+                                type="radio"
+                                variant="outline-primary"
+                                value={tag_type.node}
+                                checked={props.tagItem.type === tag_type.node}
+                                onChange={() => props.onChangeTag({ ...props.tagItem, type: tag_type.node })}
+                            >
+                                <i className="bi bi-hdd-network me-2"></i>Node
+                            </ToggleButton>
+                            <ToggleButton
+                                id="toggle-mirror"
+                                type="radio"
+                                variant="outline-primary"
+                                value={tag_type.mirror}
+                                checked={props.tagItem.type === tag_type.mirror}
+                                onChange={() => props.onChangeTag({ ...props.tagItem, type: tag_type.mirror })}
+                            >
+                                <i className="bi bi-files me-2"></i>Mirror
+                            </ToggleButton>
+                        </ButtonGroup>
+                    </SettingsBox>
+
+                    {/* Inputs */}
+                    <SettingsBox>
+                        <div className="d-flex flex-column gap-3">
+                            {props.isNew && (
+                                <SettingInputVertical
+                                    label="Tag Name"
+                                    value={props.tagItem.tag}
+                                    placeholder="e.g., fast-proxy"
+                                    onChange={(v) => props.onChangeTag({ ...props.tagItem, tag: v })}
+                                />
+                            )}
+
+                            {props.tagItem.type === tag_type.mirror ? (
+                                <SettingSelectVertical
+                                    label="Target Mirror Tag"
+                                    value={props.tagItem.hash}
+                                    values={Object.keys(props.data.tags).sort()}
+                                    emptyChoose
+                                    onChange={(v) => props.onChangeTag({ ...props.tagItem, hash: v })}
+                                />
+                            ) : (
+                                <div>
+                                    <SettingLabel>Target Node</SettingLabel>
+                                    <Node
+                                        data={props.nodes}
+                                        hash={props.tagItem.hash}
+                                        onChangeNode={(x) => props.onChangeTag({ ...props.tagItem, hash: x })}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </SettingsBox>
+                </div>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="outline-secondary" onClick={props.onHide}>Cancel</Button>
+                <Button variant="primary" onClick={props.onSave} disabled={!props.tagItem.tag || !props.tagItem.hash}>
+                    <i className="bi bi-save me-1"></i> Save
+                </Button>
+            </Modal.Footer>
+        </Modal>
+    );
+};
+
+function Tags() {
+    const ctx = useContext(GlobalToastContext);
+    const { data, error, isLoading, mutate } = useProtoSWR(tag.method.list);
+    const { data: nodes } = useProtoSWR(node.method.list);
+
+    const [modalHash, setModalHash] = useState({ hash: "", show: false });
+    const [tagModalData, setTagModalData] = useState({
+        show: false,
+        tag: create(save_tag_reqSchema, { tag: "", hash: "", type: tag_type.node }),
+        isNew: true
+    });
+    const [confirmDelete, setConfirmDelete] = useState({ show: false, name: "" });
+
+    if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
+    if (isLoading || data === undefined) return <Loading />
+
+    const handleSave = () => {
+        if (tagModalData.tag.tag === "" || tagModalData.tag.hash === "") return;
+        FetchProtobuf(tag.method.save, tagModalData.tag)
+            .then(async ({ error }) => {
+                if (error !== undefined) ctx.Error(`Save failed: ${error.msg}`);
+                else {
+                    ctx.Info("Tag saved successfully");
+                    mutate();
+                    setTagModalData(prev => ({ ...prev, show: false }));
                 }
-                onHide={() => setConfirmData({ ...confirmData, show: false })}
-                onOk={() => {
-                    FetchProtobuf(tag.method.remove, create(StringValueSchema, { value: confirmData.name }))
-                        .then(async ({ error }) => {
-                            if (error !== undefined) ctx.Error(`delete tag failed: ${error.msg}`)
-                            else {
-                                await mutate();
-                            }
-                            setConfirmData({ ...confirmData, show: false })
-                        })
-                }}
+            });
+    };
+
+    const handleDelete = (name: string) => {
+        FetchProtobuf(tag.method.remove, create(StringValueSchema, { value: name }))
+            .then(async ({ error }) => {
+                if (error !== undefined) ctx.Error(`Delete failed: ${error.msg}`);
+                else {
+                    ctx.Info("Tag removed");
+                    mutate();
+                }
+                setConfirmDelete({ show: false, name: "" });
+            });
+    };
+
+    return (
+        <MainContainer>
+            {/* Delete Confirmation */}
+            <ConfirmModal
+                show={confirmDelete.show}
+                content={<p>Delete tag <strong>{confirmDelete.name}</strong>?</p>}
+                onHide={() => setConfirmDelete({ show: false, name: "" })}
+                onOk={() => handleDelete(confirmDelete.name)}
             />
 
+            {/* Node Info Modal */}
             <NodeModal
                 show={modalHash.show}
                 hash={modalHash.hash}
                 onHide={() => setModalHash({ ...modalHash, show: false })}
             />
 
+            {/* Tag Edit/Create Modal */}
             <TagModal
                 show={tagModalData.show}
                 nodes={new Nodes(nodes)}
                 data={data}
-                tag={tagModalData.tag}
-                onChangeTag={(x) => setTagModalData({ ...tagModalData, tag: x })}
-                new={tagModalData.new}
-                onHide={() => setTagModalData({ ...tagModalData, show: false })}
-                onSave={() => {
-                    if (tagModalData.tag.tag === "" || tagModalData.tag.hash === "") return
-                    FetchProtobuf(tag.method.save, tagModalData.tag)
-                        .then(async ({ error }) => {
-                            if (error !== undefined) ctx.Error(`save failed: ${error.msg}`)
-                            else {
-                                await mutate();
-                            }
-                            setTagModalData({ ...tagModalData, show: false })
-                        })
-                }}
+                tagItem={tagModalData.tag}
+                isNew={tagModalData.isNew}
+                onHide={() => setTagModalData(prev => ({ ...prev, show: false }))}
+                onChangeTag={(x) => setTagModalData(prev => ({ ...prev, tag: x }))}
+                onSave={handleSave}
             />
 
-            <div className={styles.tagList + " mb-3"}>
-                <div className={styles.tagHeader}>
-                    <span className="fw-bold small text-muted text-uppercase ls-1">
-                        <i className="bi bi-tags-fill me-2 text-primary"></i>Tags
-                    </span>
-                    <Button
-                        variant="primary"
-                        size="sm"
-                        className="rounded-circle d-flex align-items-center justify-content-center shadow-sm"
-                        style={{ width: '28px', height: '28px' }}
-                        onClick={() => setTagModalData({
-                            show: true,
-                            tag: create(save_tag_reqSchema, { tag: "new tag", hash: "", type: tag_type.node }), new: true
-                        })}
-                    >
-                        <i className="bi bi-plus-lg"></i>
-                    </Button>
-                </div>
-
-                <ul className="list-unstyled m-0 p-0">
-                    {
-                        Object
-                            .entries(data.tags)
-                            .sort((a, b) => a[0].localeCompare(b[0]))
-                            .map(([k, v]) => {
-                                return <TagItem
-                                    key={k}
-                                    k={k}
-                                    v={create(tagsSchema, v)}
-                                    onEdit={() => setTagModalData({
-                                        show: true,
-                                        tag: create(save_tag_reqSchema, { tag: k, hash: v.hash[0], type: v.type }),
-                                        new: false
-                                    })}
-                                    onDelete={() => setConfirmData({ show: true, name: k })}
-                                    onHashClick={(h) => setModalHash({ hash: h, show: true })}
-                                />
-                            })
-                    }
-                    {Object.keys(data.tags).length === 0 && (
-                        <li className="text-center text-muted py-5">
-                            <span className="small">No tags</span>
-                        </li>
-                    )}
-                </ul>
-            </div>
-        </>
-    )
-}
-
-const TagModal = (props: {
-    show: boolean,
-    nodes: Nodes,
-    data: tags_response,
-    tag: save_tag_req,
-    new?: boolean,
-    onHide: () => void,
-    onSave: () => void,
-    onChangeTag: (x: save_tag_req) => void
-}) => {
-    return <>
-        <Modal show={props.show} onHide={() => { props.onHide() }} centered>
-            <Modal.Header closeButton>{props.tag.tag}</Modal.Header>
-            <Modal.Body>
-                <ButtonGroup className="mb-3 d-flex w-100">
-                    <ToggleButton
-                        id="toggle-node"
-                        type="radio"
-                        variant="outline-primary"
-                        value={tag_type.node}
-                        onChange={() => { props.tag.type = tag_type.node; props.onChangeTag(props.tag) }}
-                        checked={props.tag.type === tag_type.node}
-                        className="w-50"
-                    >
-                        Node
-                    </ToggleButton>
-                    <ToggleButton
-                        id="toggle-mirror"
-                        type="radio"
-                        variant="outline-primary"
-                        value={tag_type.mirror}
-                        onChange={() => { props.tag.type = tag_type.mirror; props.onChangeTag(props.tag) }}
-                        checked={props.tag.type === tag_type.mirror}
-                        className="w-50"
-                    >
-                        Mirror
-                    </ToggleButton>
-                </ButtonGroup>
-
-                {props.new &&
-                    <FloatingLabel label="Tag Name" className="mb-2" >
-                        <Form.Control placeholder="Tag Name"
-                            value={props.tag.tag}
-                            onChange={(e) => { props.tag.tag = e.target.value; props.onChangeTag(props.tag) }}
-                        ></Form.Control>
-                    </FloatingLabel>
+            <CardList
+                items={Object.entries(data.tags).sort((a, b) => a[0].localeCompare(b[0]))}
+                onClickItem={([key, value]) => setTagModalData({
+                    show: true,
+                    tag: create(save_tag_reqSchema, { tag: key, hash: value.hash[0], type: value.type }),
+                    isNew: false
+                })}
+                renderListItem={
+                    ([key, value]) =>
+                        <TagItem
+                            key={key}
+                            tagName={key}
+                            tagData={value}
+                            onDelete={() => setConfirmDelete({ show: true, name: key })}
+                            onHashClick={(h) => setModalHash({ hash: h, show: true })}
+                        />
                 }
-                {
-                    props.tag.type == tag_type.mirror ?
-                        <>
-                            <Mirror data={props.data} value={props.tag.hash} onChangeMirror={(x) => { props.tag.hash = x; props.onChangeTag(props.tag) }} />
-                        </> :
-                        <>
-                            <Node
-                                data={props.nodes}
-                                hash={props.tag.hash}
-                                onChangeNode={(x) => { props.tag.hash = x; props.onChangeTag(props.tag) }}
-                            />
-                        </>
+
+                header={
+                    <>
+                        <div className="d-flex align-items-center">
+                            <IconBox icon="tags" color="#10b981" />
+                            <div>
+                                <h5 className="mb-0 fw-bold">Tags</h5>
+                                <small className="text-muted">Alias and mirror nodes</small>
+                            </div>
+                        </div>
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => setTagModalData({
+                                show: true,
+                                tag: create(save_tag_reqSchema, { tag: "", hash: "", type: tag_type.node }),
+                                isNew: true
+                            })}
+                        >
+                            <i className="bi bi-plus-lg me-1"></i> Add
+                        </Button>
+                    </>
                 }
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="link" className="text-decoration-none text-muted" onClick={() => { props.onHide() }}>Cancel</Button>
-                <Button
-                    variant="primary"
-                    onClick={() => { props.onSave() }}
-                >
-                    Save Changes
-                </Button>
-            </Modal.Footer>
-        </Modal>
-    </>
-}
-
-
-const Mirror = (props: {
-    value: string,
-    data: tags_response,
-    onChangeMirror: (x: string) => void
-}) => {
-    return <FloatingLabel label="Target Mirror Tag" className="mb-2" >
-        <FormSelect
-            emptyChoose
-            value={props.value}
-            onChange={(x) => { props.onChangeMirror(x) }}
-            values={Object.keys(props.data.tags).sort((a, b) => { return a <= b ? -1 : 1 })}
-        />
-    </FloatingLabel>
+            />
+        </MainContainer>
+    );
 }
 
 export default Tags;

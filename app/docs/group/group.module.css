@@ -69,7 +69,7 @@
 
 
 .accordionBody {
-    padding: 0;
+    padding: 10px;
 }
 
 .accordion :global(.accordion-item:last-of-type .list-group) {
@@ -131,11 +131,11 @@
 .infoCard {
     background: var(--card-footer-bg);
     border: 1px solid var(--card-inner-border);
-    border-radius: 16px; 
-    padding: 1rem;      
+    border-radius: 16px;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
-    transition: transform 0.2s ease, box-shadow 0.2s ease; 
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .infoCard:hover {
@@ -161,9 +161,21 @@
 }
 
 /* Latency Colors */
-.latency-good { color: #10b981; }
-.latency-avg  { color: #f59e0b; }
-.latency-bad  { color: #ef4444; }
+.latency-good {
+    color: #10b981;
+}
+
+.latency-avg {
+    color: #f59e0b;
+}
+
+.latency-bad {
+    color: #ef4444;
+}
+
+.latency-invalid {
+    color: #9ca3af;
+}
 
 /* Action Footer */
 .actionFooter {

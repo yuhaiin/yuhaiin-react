@@ -1,6 +1,6 @@
 import { create } from '@bufbuild/protobuf';
 import { FC } from 'react';
-import { SettingInputText } from '../config/components';
+import { SettingInputText } from '../../component/components';
 import { TLSServerComponents } from '../node/tls_server';
 import { quic } from '../pbes/config/inbound_pb';
 import { tls_server_configSchema } from '../pbes/node/protocol_pb';

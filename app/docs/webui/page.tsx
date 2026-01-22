@@ -1,39 +1,41 @@
 "use client"
 
-import { Button, Card, Col, Form, Row, Spinner } from "react-bootstrap";
+import { Card, CardBody, CardHeader, IconBox, MainContainer } from '@/app/component/cardlist';
+import React from "react";
 import { useLocalStorage } from "usehooks-ts";
-import { APIUrlDefault, APIUrlKey, LatencyDNSUrlDefault, LatencyDNSUrlKey, LatencyHTTPUrlDefault, LatencyHTTPUrlKey, LatencyIPUrlDefault, LatencyIPUrlKey, LatencyIPv6Default, LatencyIPv6Key, LatencyStunTCPUrlDefault, LatencyStunTCPUrlKey, LatencyStunUrlDefault, LatencyStunUrlKey } from "../common/apiurl";
-import { SettingCheck } from "../common/switch";
-import { SettingInputText } from "../config/components";
+import { SettingInputVertical, SettingSwitchCard } from "../../component/switch";
+import {
+    APIUrlDefault, APIUrlKey,
+    LatencyDNSUrlDefault, LatencyDNSUrlKey,
+    LatencyHTTPUrlDefault, LatencyHTTPUrlKey,
+    LatencyIPUrlDefault, LatencyIPUrlKey,
+    LatencyIPv6Default, LatencyIPv6Key,
+    LatencyStunTCPUrlDefault, LatencyStunTCPUrlKey,
+    LatencyStunUrlDefault, LatencyStunUrlKey
+} from "../common/apiurl";
 
-const OnelineEdit = (props: {
-    title: string,
-    value: string,
-    onChange: (v: string) => void,
-    onClick: () => void,
-    buttonText?: string,
-    placeholder?: string,
-    loading?: boolean,
-    className?: string
-}) => {
-    return <>
-        <Form.Group as={Row} className={'ms-1' + (props.className ? " " + props.className : "")}>
-            <Row>
-                <Form.Label column sm={2} className="nowrap">{props.title}</Form.Label>
-                <Col sm={6}>
-                    <Form.Control value={props.value} onChange={(v) => props.onChange(v.target.value)} placeholder={props.placeholder} />
-                </Col>
-                <Col sm={2}>
-                    <Button disabled={props.loading} onClick={() => props.onClick()} variant="outline-primary">
-                        {props.buttonText ? props.buttonText : "Save"}
-                        {props.loading &&
-                            <Spinner size="sm" animation="border" variant='primary' />}
-                    </Button>
-                </Col>
-            </Row>
-        </Form.Group>
-    </>
-}
+// Internal helper for this page to add icons to inputs
+const InputWithIcon: React.FC<{
+    icon: string;
+    label: string;
+    value: string;
+    onChange: (v: string) => void;
+    placeholder: string;
+}> = ({ icon, label, value, onChange, placeholder }) => (
+    <div className="d-flex align-items-start gap-3 mb-4">
+        <div className="bg-light bg-opacity-10 rounded-3 p-2 mt-4 d-none d-sm-block">
+            <i className={`bi ${icon} text-muted fs-5`}></i>
+        </div>
+        <div className="flex-grow-1">
+            <SettingInputVertical
+                label={label}
+                value={value}
+                onChange={onChange}
+                placeholder={placeholder}
+            />
+        </div>
+    </div>
+);
 
 function Setting() {
     const [url, setUrl] = useLocalStorage(APIUrlKey, APIUrlDefault);
@@ -44,67 +46,87 @@ function Setting() {
     const [latencyStunUrl, setLatencyStunUrl] = useLocalStorage(LatencyStunUrlKey, LatencyStunUrlDefault);
     const [latencyStunTCPUrl, setLatencyStunTCPUrl] = useLocalStorage(LatencyStunTCPUrlKey, LatencyStunTCPUrlDefault);
 
-    return <> <Card className="mb-3">
-        <Card.Body>
-            <SettingInputText
-                label="API Host"
-                value={url}
-                onChange={(v: string) => setUrl(v)}
-                placeholder="http://127.0.0.1:50051"
-            />
+    return (
+        <MainContainer>
+            {/* 1. API Connection */}
+            <Card>
+                <CardHeader>
+                    <IconBox icon="link-45deg" color="#6366f1" title="API Connection" description="Web-controller interface" />
+                </CardHeader>
+                <CardBody className="pt-2">
+                    <InputWithIcon
+                        icon="bi-hdd-network"
+                        label="Controller Host"
+                        value={url}
+                        onChange={setUrl}
+                        placeholder="http://127.0.0.1:50051"
+                    />
+                </CardBody>
+            </Card>
 
-            <hr />
+            {/* 2. Latency Targets */}
+            <Card >
+                <CardHeader>
+                    <IconBox icon="speedometer2" color="#10b981" title="Latency Targets" description="Endpoints for connectivity checks" />
+                </CardHeader>
+                <CardBody>
+                    {/* Toggle at the top */}
+                    <div className="mb-3">
+                        <SettingSwitchCard
+                            label="IPv6 Testing"
+                            description="Use IPv6 resolution for latency checks"
+                            checked={latencyIPv6}
+                            onChange={() => setLatencyIPv6(!latencyIPv6)}
+                        />
+                    </div>
 
-            <Card.Title className='mb-2'>Latency</Card.Title>
+                    {/* Vertical List of Targets */}
+                    <InputWithIcon
+                        icon="bi-globe"
+                        label="HTTP (TCP) Check"
+                        value={latencyHTTP}
+                        onChange={setLatencyHTTP}
+                        placeholder="https://..."
+                    />
+                    <InputWithIcon
+                        icon="bi-shield-shaded"
+                        label="DNS (UDP/DOQ) Check"
+                        value={latencyDNS}
+                        onChange={setLatencyDNS}
+                        placeholder="dns.example.com:853"
+                    />
+                    <InputWithIcon
+                        icon="bi-geo-alt"
+                        label="IP Info Service"
+                        value={latencyIPUrl}
+                        onChange={setLatencyIPUrl}
+                        placeholder="http://ip.sb"
+                    />
+                    <InputWithIcon
+                        icon="bi-broadcast-pin"
+                        label="STUN (UDP) Check"
+                        value={latencyStunUrl}
+                        onChange={setLatencyStunUrl}
+                        placeholder="stun.example.com:3478"
+                    />
+                    <InputWithIcon
+                        icon="bi-terminal"
+                        label="STUN (TCP) Check"
+                        value={latencyStunTCPUrl}
+                        onChange={setLatencyStunTCPUrl}
+                        placeholder="stun.example.com:3478"
+                    />
+                </CardBody>
+            </Card>
 
-            <SettingCheck
-                label="IPv6"
-                className="mb-1 ms-1"
-                checked={latencyIPv6}
-                onChange={() => { setLatencyIPv6(!latencyIPv6) }}
-            />
-
-            <SettingInputText
-                label="HTTP(tcp)"
-                placeholder="https://clients3.google.com/generate_204"
-                value={latencyHTTP}
-                className="mb-2"
-                onChange={(v: string) => setLatencyHTTP(v)}
-            />
-
-            <SettingInputText
-                label="DOQ(udp)"
-                placeholder="dns.adguard.com:853"
-                className="mb-2"
-                value={latencyDNS}
-                onChange={(v: string) => setLatencyDNS(v)}
-            />
-
-            <SettingInputText
-                label="IP"
-                placeholder="http://ip.sb"
-                className="mb-2"
-                value={latencyIPUrl}
-                onChange={(v: string) => setLatencyIPUrl(v)}
-            />
-
-            <SettingInputText
-                label="STUN"
-                placeholder="stun.syncthing.net:3478"
-                className="mb-2"
-                value={latencyStunUrl}
-                onChange={(v: string) => setLatencyStunUrl(v)}
-            />
-
-            <SettingInputText
-                label="STUN TCP"
-                placeholder="stun.syncthing.net:3478"
-                value={latencyStunTCPUrl}
-                onChange={(v: string) => setLatencyStunTCPUrl(v)}
-            />
-        </Card.Body>
-    </Card>
-    </>
+            <div className="text-center mt-3 opacity-50 pb-5">
+                <small className="text-muted">
+                    <i className="bi bi-info-circle me-1"></i>
+                    These settings are stored locally in your browser cache.
+                </small>
+            </div>
+        </MainContainer>
+    );
 }
 
 export default Setting;

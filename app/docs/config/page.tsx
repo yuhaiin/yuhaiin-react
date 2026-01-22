@@ -1,265 +1,237 @@
 "use client"
 
+import { Card, CardBody, CardFooter, CardHeader, IconBox, MainContainer, SettingLabel } from '@/app/component/cardlist';
 import { create, DescEnumValue } from '@bufbuild/protobuf';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { Button, Card, Col, Form, Row, Spinner, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
+import { Button, Spinner, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
+import Loading, { Error } from '../../component/loading';
+import {
+    SettingEnumSelectVertical,
+    SettingInputVertical,
+    SettingRangeVertical,
+    SettingSwitchCard
+} from "../../component/switch";
+import { GlobalToastContext } from '../../component/toast';
 import { useInterfaces } from '../common/interfaces';
-import Loading, { Error } from '../common/loading';
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
-import { SettingCheck, SettingTypeSelect } from "../common/switch";
-import { GlobalToastContext } from '../common/toast';
 import { config_service } from '../pbes/api/config_pb';
 import { advanced_configSchema, setting as Setting, system_proxySchema } from '../pbes/config/config_pb';
-import { log_level, log_levelSchema, logcat } from '../pbes/config/log_pb';
-import { Remind, SettingInputText } from './components';
-
+import { log_level, log_levelSchema } from '../pbes/config/log_pb';
 
 function ConfigComponent() {
     const ctx = useContext(GlobalToastContext);
-
-    const { data: setting, error, isLoading, mutate: setSetting } =
-        useProtoSWR(config_service.method.load, {
-            revalidateOnFocus: false,
-            use: []
-        })
+    const { data: setting, error, isLoading, mutate: setSetting } = useProtoSWR(config_service.method.load, {
+        revalidateOnFocus: false,
+        use: []
+    });
 
     const interfaces = useInterfaces();
-
-
-    const switchIPv6 = useCallback(() => {
-        setSetting(prev => ({ ...prev, ipv6: !prev.ipv6 }), false)
-    }, [setSetting])
-
-
-    const getSystemProxy = useCallback((data: Setting) => {
-        if (!data) return []
-        if (!data?.systemProxy) setSetting(prev => { return { ...prev, systemProxy: create(system_proxySchema, { http: false, socks5: false }) } }, false)
-
-        const x: number[] = []
-        if (data.systemProxy?.http) x.push(1)
-        if (data.systemProxy?.socks5) x.push(2)
-        return x
-    }, [setSetting])
-
-    const systemProxy = useMemo(() => getSystemProxy(setting), [setting, getSystemProxy])
-
-    const setSystemProxy = useCallback((x: number[]) => {
-        let http = false, socks5 = false;
-
-        for (const y of x) {
-            if (y === 1) http = true
-            if (y === 2) socks5 = true
-        }
-
-        setSetting(prev => ({ ...prev, systemProxy: create(system_proxySchema, { http: http, socks5: socks5 }) }), false)
-    }, [setSetting])
-
-    const switchDefaultInterface = useCallback(() => {
-        setSetting(prev => ({ ...prev, useDefaultInterface: !prev.useDefaultInterface }), false)
-    }, [setSetting])
-
-    const reminds = useMemo(() => {
-        return interfaces.map((v) => {
-            if (!v.name) return undefined
-            const r: Remind = {
-                label: v.name,
-                value: v.name,
-                label_children: v.addresses?.map((vv) => !vv ? "" : vv)
-            }
-            return r
-        })
-            .filter((e): e is Exclude<Remind, null | undefined> => !!e)
-
-    }, [interfaces])
-
-    const setDefaultInterface = useCallback((v: string) => {
-        setSetting(prev => ({ ...prev, netInterface: v }), false)
-    }, [setSetting])
-
-    const setLogcat = useCallback((change: (v: logcat) => logcat) => {
-        setSetting(prev => ({ ...prev, logcat: change(prev.logcat) }), false)
-    }, [setSetting])
-
-    const setLogcatSave = useCallback((v: boolean) => {
-        setLogcat(prev => ({ ...prev, save: v }))
-    }, [setLogcat])
-
-    const setLogcatLevel = useCallback((v: log_level) => {
-        setLogcat(prev => ({ ...prev, level: v }))
-    }, [setLogcat])
-
-    const LogcatLevelFilter = useCallback((v: DescEnumValue) => v.number !== log_level.verbose && v.number !== log_level.fatal, [])
-
-    const setLogcatIgnoreTimeoutError = useCallback((v: boolean) => {
-        setLogcat(prev => ({ ...prev, ignoreTimeoutError: v }))
-    }, [setLogcat])
-
-    const setLogcatIgnoreDnsError = useCallback((v: boolean) => {
-        setLogcat(prev => ({ ...prev, ignoreDnsError: v }))
-    }, [setLogcat])
-
-    useEffect(() => {
-        if (!setting) return
-        if (!setting.advancedConfig) {
-            setSetting(prev => ({
-                ...prev,
-                advancedConfig:
-                    create(advanced_configSchema, {
-                        relayBufferSize: 4096,
-                        udpRingbufferSize: 250,
-                        udpBufferSize: 2048,
-                        happyeyeballsSemaphore: 250
-                    })
-            }), false)
-            return
-        }
-
-        if (!setting.advancedConfig.udpBufferSize) {
-            setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, udpBufferSize: 2048 } }), false)
-        }
-
-        if (!setting.advancedConfig.relayBufferSize) {
-            setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, relayBufferSize: 4096 } }), false)
-        }
-
-        if (!setting.advancedConfig.udpRingbufferSize) {
-            setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, udpRingbufferSize: 250 } }), false)
-        }
-
-        if (!setting.advancedConfig.happyeyeballsSemaphore) {
-            setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, happyeyeballsSemaphore: 250 } }), false)
-        }
-    }, [setting, setSetting])
-
-    const setRelayBufferSize = useCallback((v: React.ChangeEvent<HTMLInputElement>) => {
-        setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, relayBufferSize: Number(v.target.value) } }), false)
-    }, [setSetting])
-
-    const setUdpRingbufferSize = useCallback((v: React.ChangeEvent<HTMLInputElement>) => {
-        setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, udpRingbufferSize: Number(v.target.value) } }), false)
-    }, [setSetting])
-
-    const setUdpBufferSize = useCallback((v: React.ChangeEvent<HTMLInputElement>) => {
-        setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, udpBufferSize: Number(v.target.value) } }), false)
-    }, [setSetting])
-
-    const setHappyEyeballsSemaphore = useCallback((v: React.ChangeEvent<HTMLInputElement>) => {
-        setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, happyeyeballsSemaphore: Number(v.target.value) } }), false)
-    }, [setSetting])
-
     const [saving, setSaving] = useState(false);
 
-    const save = useCallback(() => {
+    // --- Logic Helpers ---
+
+    const getSystemProxy = useCallback((data: Setting) => {
+        if (!data?.systemProxy) return [];
+        const x: number[] = [];
+        if (data.systemProxy.http) x.push(1);
+        if (data.systemProxy.socks5) x.push(2);
+        return x;
+    }, []);
+
+    const systemProxy = useMemo(() => getSystemProxy(setting), [setting, getSystemProxy]);
+
+    const handleSystemProxyChange = (x: number[]) => {
+        setSetting(prev => ({
+            ...prev,
+            systemProxy: create(system_proxySchema, { http: x.includes(1), socks5: x.includes(2) })
+        }), false);
+    };
+
+    const LogcatLevelFilter = useCallback((v: DescEnumValue) =>
+        v.number !== log_level.verbose && v.number !== log_level.fatal, []);
+
+    // Initialize Advanced Config if missing
+    useEffect(() => {
+        if (!setting || setting.advancedConfig) return;
+        setSetting(prev => ({
+            ...prev,
+            advancedConfig: create(advanced_configSchema, {
+                relayBufferSize: 4096,
+                udpRingbufferSize: 250,
+                udpBufferSize: 2048,
+                happyeyeballsSemaphore: 250
+            })
+        }), false);
+    }, [setting, setSetting]);
+
+    const handleSave = () => {
         setSaving(true);
         FetchProtobuf(config_service.method.save, setting)
-            .then(async ({ error }) => {
-                if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${error.msg}`)
+            .then(({ error }) => {
+                if (error) ctx.Error(`Save failed: ${error.msg}`);
                 else {
-                    ctx.Info("Save Config Successfully");
-                    setSetting()
+                    ctx.Info("Configuration saved successfully");
+                    setSetting();
                 }
             }).finally(() => setSaving(false));
-    }, [setting, setSetting, ctx])
-
+    };
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || setting === undefined) return <Loading />
 
     return (
-        <>
-            <Card className='mb-3'>
-                <Card.Body>
-
-                    <SettingCheck
-                        label='IPv6'
-                        checked={setting.ipv6}
-                        onChange={switchIPv6}
-                    />
-                    <SettingCheck
-                        label='Use Default Interface'
-                        checked={setting.useDefaultInterface}
-                        onChange={switchDefaultInterface}
-                    />
-
-                    {
-                        setting.useDefaultInterface ? <></> :
-                            <SettingInputText
-                                label='Network Interface'
-                                value={setting.netInterface}
-                                onChange={setDefaultInterface}
-                                reminds={reminds}
+        <MainContainer>
+            {/* 1. General Network Settings */}
+            <Card>
+                <CardHeader>
+                    <IconBox icon="globe2" color="#3b82f6" title='General Settings' description='Network and system integration' />
+                </CardHeader>
+                <CardBody>
+                    <div className="row g-3">
+                        <div className="col-md-6">
+                            <SettingSwitchCard
+                                label="Enable IPv6"
+                                description="Global IPv6 traffic support"
+                                checked={setting.ipv6}
+                                onChange={() => setSetting(prev => ({ ...prev, ipv6: !prev.ipv6 }), false)}
                             />
-                    }
+                        </div>
+                        <div className="col-md-6">
+                            <SettingSwitchCard
+                                label="Default Interface"
+                                description="Automatically detect exit"
+                                checked={setting.useDefaultInterface}
+                                onChange={() => setSetting(prev => ({ ...prev, useDefaultInterface: !prev.useDefaultInterface }), false)}
+                            />
+                        </div>
 
-                    <Form.Group as={Row} className={"mb-2"}>
-                        <Form.Label column sm={2} className="nowrap">System Proxy</Form.Label>
-                        <Col sm={10}>
+                        {!setting.useDefaultInterface && (
+                            <div className="col-12 mt-2">
+                                <SettingInputVertical
+                                    label="Manual Network Interface"
+                                    value={setting.netInterface}
+                                    onChange={(v) => setSetting(prev => ({ ...prev, netInterface: v }), false)}
+                                    placeholder="e.g. eth0, wlan0"
+                                />
+                            </div>
+                        )}
+
+                        <div className="col-12 mt-3">
+                            <SettingLabel>System Proxy Integration</SettingLabel>
                             <ToggleButtonGroup
                                 type="checkbox"
-                                className='d-flex'
-                                defaultValue={systemProxy}
+                                className="w-100 shadow-sm"
                                 value={systemProxy}
-                                onChange={setSystemProxy}
+                                onChange={handleSystemProxyChange}
                             >
-                                <ToggleButton variant='outline-primary' className='w-100' id="system-proxy-tbg-btn-1" value={1}>HTTP</ToggleButton>
-                                <ToggleButton variant='outline-primary' className='w-100' id="system-proxy-tbg-btn-2" value={2}>SOCKS5</ToggleButton>
+                                <ToggleButton id="tbg-http" value={1} variant="outline-primary" className="py-2">HTTP Proxy</ToggleButton>
+                                <ToggleButton id="tbg-socks" value={2} variant="outline-primary" className="py-2">SOCKS5 Proxy</ToggleButton>
                             </ToggleButtonGroup>
-                        </Col>
-                    </Form.Group >
+                        </div>
+                    </div>
+                </CardBody>
+            </Card>
 
-                    <hr />
+            {/* 2. Logging Card */}
+            <Card>
+                <CardHeader>
+                    <IconBox icon="journal-text" color="#10b981" title="Logging (Logcat)" description="Debug and error reporting" />
+                </CardHeader>
+                <CardBody>
+                    <div className="row g-3">
+                        <div className="col-md-6">
+                            <SettingEnumSelectVertical
+                                label="Log Level"
+                                type={log_levelSchema}
+                                value={setting.logcat.level}
+                                filter={LogcatLevelFilter}
+                                onChange={(v) => setSetting(prev => ({ ...prev, logcat: { ...prev.logcat, level: v } }), false)}
+                            />
+                        </div>
+                        <div className="col-md-6">
+                            <SettingSwitchCard
+                                label="Persistent Logging"
+                                description="Save logs to disk"
+                                checked={setting.logcat.save}
+                                onChange={() => setSetting(prev => ({ ...prev, logcat: { ...prev.logcat, save: !prev.logcat.save } }), false)}
+                            />
+                        </div>
+                        <div className="col-md-6">
+                            <SettingSwitchCard
+                                label="Ignore Timeouts"
+                                description="Hide timeout errors in logs"
+                                checked={setting.logcat.ignoreTimeoutError}
+                                onChange={() => setSetting(prev => ({ ...prev, logcat: { ...prev.logcat, ignoreTimeoutError: !prev.logcat.ignoreTimeoutError } }), false)}
+                            />
+                        </div>
+                        <div className="col-md-6">
+                            <SettingSwitchCard
+                                label="Ignore DNS Errors"
+                                description="Hide resolution failures"
+                                checked={setting.logcat.ignoreDnsError}
+                                onChange={() => setSetting(prev => ({ ...prev, logcat: { ...prev.logcat, ignoreDnsError: !prev.logcat.ignoreDnsError } }), false)}
+                            />
+                        </div>
+                    </div>
+                </CardBody>
+            </Card>
 
-                    <Card.Title className='mb-2'>Logcat</Card.Title>
-                    <SettingCheck label='Save'
-                        checked={setting.logcat.save}
-                        onChange={setLogcatSave} />
-                    <SettingTypeSelect
-                        label='Level'
-                        type={log_levelSchema}
-                        value={setting.logcat.level}
-                        filter={LogcatLevelFilter}
-                        onChange={setLogcatLevel}
-                    />
-                    <SettingCheck label='Ignore Timeout Error'
-                        checked={setting.logcat.ignoreTimeoutError}
-                        onChange={setLogcatIgnoreTimeoutError} />
-                    <SettingCheck label='Ignore DNS Error'
-                        checked={setting.logcat.ignoreDnsError}
-                        onChange={setLogcatIgnoreDnsError} />
-                    <hr />
+            {/* 3. Advanced Performance Card */}
+            <Card>
+                <CardHeader>
+                    <IconBox icon="cpu" color="#f59e0b" title="Performance & Advanced" description="Buffer sizes and concurrency limits" />
+                </CardHeader>
+                <CardBody>
+                    <div className="row g-4">
+                        <div className="col-lg-6">
+                            <SettingRangeVertical
+                                label="UDP Buffer Size"
+                                unit="B"
+                                value={setting.advancedConfig?.udpBufferSize || 2048}
+                                min={2048} max={65536} step={1024}
+                                onChange={(v) => setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, udpBufferSize: v } }), false)}
+                            />
+                        </div>
 
-                    <Card.Title className='mb-2'>Advanced</Card.Title>
+                        <div className="col-lg-6">
+                            <SettingRangeVertical
+                                label="Relay Buffer Size"
+                                unit="B"
+                                value={setting.advancedConfig?.relayBufferSize || 4096}
+                                min={2048} max={65536} step={1024}
+                                onChange={(v) => setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, relayBufferSize: v } }), false)}
+                            />
+                        </div>
 
-                    <Form.Label>UDP Buffer Size ({setting.advancedConfig?.udpBufferSize} Bytes)</Form.Label>
-                    <Form.Range value={setting.advancedConfig?.udpBufferSize}
-                        min={2048} max={65536} step={1024} onChange={setUdpBufferSize} />
+                        <div className="col-lg-6">
+                            <SettingRangeVertical
+                                label="UDP Ring Buffer"
+                                unit="Slots"
+                                value={setting.advancedConfig?.udpRingbufferSize || 250}
+                                min={100} max={2000} step={10}
+                                onChange={(v) => setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, udpRingbufferSize: v } }), false)}
+                            />
+                        </div>
 
-                    <Form.Label>UDP Ring Buffer Size ({setting.advancedConfig?.udpRingbufferSize})</Form.Label>
-                    <Form.Range value={setting.advancedConfig?.udpRingbufferSize}
-                        min={100} max={2000} step={10} onChange={setUdpRingbufferSize} />
+                        <div className="col-lg-6">
+                            <SettingRangeVertical
+                                label="Happy Eyeballs Concurrency"
+                                unit="Sems"
+                                value={setting.advancedConfig?.happyeyeballsSemaphore || 250}
+                                min={0} max={10000} step={10}
+                                onChange={(v) => setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, happyeyeballsSemaphore: v } }), false)}
+                            />
+                        </div>
+                    </div>
+                </CardBody>
 
-                    <Form.Label>Relay Buffer Size ({setting.advancedConfig?.relayBufferSize} Bytes)</Form.Label>
-                    <Form.Range value={setting.advancedConfig?.relayBufferSize}
-                        min={2048} max={65536} step={1024} onChange={setRelayBufferSize} />
-
-                    <Form.Label>Happy Eyeballs Semaphore ({setting.advancedConfig?.happyeyeballsSemaphore})</Form.Label>
-                    <Form.Range value={setting.advancedConfig?.happyeyeballsSemaphore}
-                        min={0} step={10} max={10000} onChange={setHappyEyeballsSemaphore} />
-
-                </Card.Body>
-
-                <Card.Footer className='d-flex justify-content-md-end'>
-                    <Button
-                        variant="outline-primary"
-                        onClick={save}
-                        disabled={saving}
-                    >
-                        <i className="bi bi-floppy"></i> Save
-                        {saving && <>&nbsp;<Spinner size="sm" animation="border" variant='primary' /></>}
+                <CardFooter className="d-flex justify-content-end">
+                    <Button variant="primary" disabled={saving} onClick={handleSave}>
+                        {saving ? <Spinner size="sm" animation="border" /> : <><i className="bi bi-save me-2"></i>Apply Advanced Changes</>}
                     </Button>
-                </Card.Footer>
-            </Card >
-        </>
+                </CardFooter>
+            </Card>
+        </MainContainer>
     );
 }
 

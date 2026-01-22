@@ -1,219 +1,159 @@
 "use client"
 
-import { create } from "@bufbuild/protobuf"
-import { timestampDate, TimestampSchema } from "@bufbuild/protobuf/wkt"
-import React, { FC, useCallback, useMemo, useState } from "react"
-import { Badge, Button, Dropdown, Modal, Spinner, ToggleButton, ToggleButtonGroup } from "react-bootstrap"
-import Loading from "../../common/loading"
-import { CustomPagination } from "../../common/pagination"
+import { CardList, IconBadge, MainContainer, SettingLabel } from "@/app/component/cardlist"
+import { timestampDate } from "@bufbuild/protobuf/wkt"
+import React, { FC, useMemo, useState } from "react"
+import { Button, Dropdown, Modal, Spinner, ToggleButton, ToggleButtonGroup } from "react-bootstrap"
+import Loading from "../../../component/loading"
+import { CustomPagination } from "../../../component/pagination"
 import { useProtoSWR } from "../../common/proto"
 import { connections, failed_history } from "../../pbes/api/statistic_pb"
 import { type } from "../../pbes/statistic/config_pb"
 import { ListGroupItemString } from "../components"
-import styles from '../v2/connections.module.css'
+import { TimestampZero } from "../history/page"
 
-const TimestampZero = create(TimestampSchema, { seconds: BigInt(0), nanos: 0 })
 
-const IconBadge: FC<{ icon: string, text: string | number, className?: string }> = ({ icon, text, className }) => {
-    return <Badge pill bg="primary" className={className}>
-        <i className={`bi ${icon} me-1`}></i>
-        {text}
-    </Badge>
-}
+// --- Component: Individual Failed History Row ---
+const ListItem: FC<{ data: failed_history }> = React.memo(({ data }) => {
+    return (
+        <>
+            <div className="d-flex w-100 flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
 
-const ListItemComponent: FC<{ data: failed_history, onClick?: () => void }> =
-    ({ data, onClick }) => {
-        return (
-            <li
-                className={styles['list-item']}
-                onClick={onClick}
-            >
-                <div className={styles['item-main']}>
-                    <span className={styles['item-addr']}>{data.host}</span>
-                </div>
+                {/* Left Side: Icon + Host & Error Preview */}
+                <div className="d-flex align-items-center flex-grow-1 overflow-hidden gap-3 w-100 w-md-auto">
+                    <div className="d-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle flex-shrink-0" style={{ width: '42px', height: '42px' }}>
+                        <i className="bi bi-bug fs-5"></i>
+                    </div>
 
-                <div className={styles['item-details-right']}>
-                    <div className={styles['item-details']}>
-                        <IconBadge icon="bi-ethernet" text={type[data.protocol ?? type.unknown]} />
-                        <IconBadge icon="bi-bug" text={Number(data.failedCount)} />
-                        <IconBadge icon="bi-clock" text={timestampDate(data.time!).toLocaleTimeString()} />
+                    <div className="d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
+                        <span className="fw-bold text-truncate fs-6 text-danger text-opacity-75">{data.host}</span>
+                        <small className="text-muted text-truncate opacity-75 font-monospace">
+                            {data.error || "Unknown Error"}
+                        </small>
                     </div>
                 </div>
-            </li>
-        );
-    }
 
-const ListItem = React.memo(ListItemComponent)
+                {/* Right Side: Metadata Badges */}
+                <div className="d-flex flex-wrap gap-2 align-items-center flex-shrink-0">
+                    <IconBadge icon="bi-ethernet" text={type[data.protocol ?? type.unknown]} color="info" />
+                    <IconBadge icon="bi-exclamation-octagon" text={`${data.failedCount} Fails`} color="warning" />
+                    <IconBadge icon="bi-clock" text={timestampDate(data.time!).toLocaleTimeString()} color="secondary" />
+                    <i className="bi bi-chevron-right text-muted opacity-25 ms-2 d-none d-md-block"></i>
+                </div>
+            </div>
+        </>
+    );
+});
 
-const InfoModalComponent: FC<{
-    data?: failed_history,
-    show: boolean,
-    onClose: () => void,
-}> = ({ data, show, onClose: handleClose }) => {
-    if (!data) return <></>
+// --- Component: Failed Details Modal ---
+const InfoModal: FC<{ data?: failed_history, show: boolean, onClose: () => void }> = React.memo(({ data, show, onClose }) => {
+    if (!data) return null;
     return (
-        <Modal
-            show={show}
-            onHide={handleClose}
-            scrollable
-            centered
-            contentClassName="border-0 shadow-lg"
-        >
-            <Modal.Header closeButton className="border-bottom-0 pb-0">
-                <Modal.Title className="h5 fw-bold">
-                    Failed Connection Details
-                </Modal.Title>
+        <Modal show={show} onHide={onClose} centered scrollable>
+            <Modal.Header closeButton className="border-0">
+                <Modal.Title className="fw-bold text-danger">Failure Details</Modal.Title>
             </Modal.Header>
-
-            <Modal.Body className="pt-2">
-                <ListGroupItemString itemKey="Time" itemValue={timestampDate(data.time!).toLocaleString()} />
-                <ListGroupItemString itemKey="Net" itemValue={type[data.protocol ?? type.unknown]} />
-                <ListGroupItemString itemKey="Host" itemValue={data.host} />
-                <ListGroupItemString itemKey="Count" itemValue={String(data.failedCount)} />
-                <ListGroupItemString itemKey="Error" itemValue={data.error} />
-                <ListGroupItemString itemKey="Process" itemValue={data.process} />
+            <Modal.Body className="pt-0">
+                <div>
+                    <ListGroupItemString itemKey="Host" itemValue={data.host} />
+                    <ListGroupItemString itemKey="Network" itemValue={type[data.protocol ?? type.unknown]} />
+                    <ListGroupItemString itemKey="Failures" itemValue={String(data.failedCount)} />
+                    <ListGroupItemString itemKey="Last Error" itemValue={data.error} />
+                    <ListGroupItemString itemKey="Process" itemValue={data.process || "System"} />
+                    <ListGroupItemString itemKey="Timestamp" itemValue={timestampDate(data.time!).toLocaleString()} />
+                </div>
             </Modal.Body>
-
-            <Modal.Footer className="border-top-0 pt-0 pb-3 px-3">
-                <Button
-                    variant="secondary"
-                    className="w-100 py-2 d-flex align-items-center justify-content-center notranslate"
-                    onClick={handleClose}
-                >
-                    Close
-                </Button>
+            <Modal.Footer className="border-0">
+                <Button variant="outline-secondary" className="w-100" onClick={onClose}>Close</Button>
             </Modal.Footer>
         </Modal>
     );
-}
-
-const InfoModal = React.memo(InfoModalComponent)
-
+});
 
 function FailedHistory() {
-    const [sortBy, setSortBy] = useState("Time")
-    const changeSortBy = useCallback((value: string) => {
-        setSortBy(value)
-    }, [setSortBy])
-
-
-    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc"); // 'asc' | 'desc'
-    const changeSortOrder = useCallback((value: "asc" | "desc") => {
-        setSortOrder(value)
-    }, [setSortOrder])
-
+    const [sortBy, setSortBy] = useState("Time");
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [page, setPage] = useState(1);
-    const [info, setInfo] = useState<{ data?: failed_history, show: boolean }>({
-        show: false
-    });
+    const [info, setInfo] = useState<{ data?: failed_history, show: boolean }>({ show: false });
 
-    const hideInfo = useCallback(() => {
-        setInfo(prev => { return { ...prev, show: false } })
-    }, [])
-
-
-    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(connections.method.failed_history)
+    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(connections.method.failed_history);
 
     const values = useMemo(() => {
         if (!data?.objects) return []
         return data.objects.filter(v => v.time).sort((a, b) => {
-            let first = 1;
-            let second = -1;
+            const first = sortOrder === "asc" ? -1 : 1;
+            const second = sortOrder === "asc" ? 1 : -1;
 
-            if (sortOrder === "asc") {
-                first = -1;
-                second = 1;
-            }
-
-            if (sortBy) {
-                switch (sortBy) {
-                    case "Host":
-                        return a.host < b.host ? first : second
-                    case "Count":
-                        return Number(a.failedCount) < Number(b.failedCount) ? first : second
-                }
-            }
+            if (sortBy === "Host") return a.host < b.host ? first : second;
+            if (sortBy === "Count") return Number(a.failedCount) < Number(b.failedCount) ? first : second;
 
             const aTime = a.time ?? TimestampZero;
             const bTime = b.time ?? TimestampZero;
-
             if (aTime.seconds < bTime.seconds) return first;
             if (aTime.seconds > bTime.seconds) return second;
-            if (aTime.nanos < bTime.nanos) return first;
-            if (aTime.nanos > bTime.nanos) return second;
             return 0;
         })
-    }, [data, sortBy, sortOrder])
+    }, [data, sortBy, sortOrder]);
 
     if (error) return <Loading code={error.code}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />
-    return <>
-        <InfoModal
-            data={info.data}
-            show={info.show}
-            onClose={hideInfo}
-        />
 
-        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-            <CustomPagination
-                currentPage={page}
-                totalItems={values.length}
-                pageSize={30}
-                onPageChange={(p) => { setPage(p) }}
-            />
-            <div className="d-flex align-items-center gap-2">
-                <Button
-                    variant="outline-primary"
-                    onClick={() => mutate()}
-                    disabled={isValidating || isLoading}
-                >
-                    <i className="bi bi-arrow-clockwise" /> {(isValidating || isLoading) && <>&nbsp;<Spinner size="sm" animation="border" /></>}
-                </Button>
-                <Dropdown>
-                    <Dropdown.Toggle variant="outline-secondary">
-                        <i className="bi bi-sort-down"></i> Sort
-                    </Dropdown.Toggle>
+    const pageSize = 30;
+    const paginatedItems = values.slice((page - 1) * pageSize, page * pageSize);
 
-                    <Dropdown.Menu>
-                        <div className="p-2 d-flex flex-column gap-2">
-                            <ToggleButtonGroup type="radio" name="sortOrder" value={sortOrder} onChange={changeSortOrder}>
-                                <ToggleButton id="sort-asc" value="asc" variant="outline-secondary">
-                                    <i className="bi bi-sort-up"></i> Asc
-                                </ToggleButton>
-                                <ToggleButton id="sort-desc" value="desc" variant="outline-secondary">
-                                    <i className="bi bi-sort-down"></i> Desc
-                                </ToggleButton>
-                            </ToggleButtonGroup>
+    return (
+        <MainContainer>
+            <InfoModal data={info.data} show={info.show} onClose={() => setInfo({ ...info, show: false })} />
 
-                            <ToggleButtonGroup type="radio" name="sortBy" value={sortBy} onChange={changeSortBy}>
-                                <ToggleButton id="sort-time" value="Time" variant="outline-secondary">
-                                    Time
-                                </ToggleButton>
-                                <ToggleButton id="sort-host" value="Host" variant="outline-secondary">
-                                    Host
-                                </ToggleButton>
-                                <ToggleButton id="sort-count" value="Count" variant="outline-secondary">
-                                    Count
-                                </ToggleButton>
-                            </ToggleButtonGroup>
-                        </div>
-                    </Dropdown.Menu>
-                </Dropdown>
+            {/* --- Action Bar --- */}
+            <div className="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3">
+                <div>
+                    <h4 className="fw-bold mb-1">Failed Connections</h4>
+                    <div className="text-muted d-flex align-items-center small">
+                        <i className="bi bi-bug-fill text-danger me-2"></i>
+                        <span>Tracking {values.length} rejected or timed-out requests</span>
+                    </div>
+                </div>
+
+                <div className="d-flex flex-wrap gap-2 justify-content-end align-items-center">
+                    <Button variant="outline-primary" size="sm" onClick={() => mutate()} disabled={isValidating}>
+                        {isValidating ? <Spinner size="sm" animation="border" /> : <i className="bi bi-arrow-clockwise"></i>}
+                    </Button>
+
+                    <Dropdown>
+                        <Dropdown.Toggle variant="outline-secondary" size="sm">
+                            <i className="bi bi-sort-down me-1"></i> Sort
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu align="end" className="p-3 shadow-lg border-0" style={{ minWidth: '220px' }}>
+                            <div className="mb-3">
+                                <SettingLabel>Order</SettingLabel>
+                                <ToggleButtonGroup type="radio" name="sortOrder" value={sortOrder} onChange={setSortOrder} className="w-100">
+                                    <ToggleButton id="f-asc" value="asc" variant="outline-secondary" size="sm">ASC</ToggleButton>
+                                    <ToggleButton id="f-desc" value="desc" variant="outline-secondary" size="sm">DESC</ToggleButton>
+                                </ToggleButtonGroup>
+                            </div>
+                            <div>
+                                <SettingLabel>By</SettingLabel>
+                                <ToggleButtonGroup type="radio" name="sortBy" value={sortBy} onChange={setSortBy} className="w-100">
+                                    <ToggleButton id="f-time" value="Time" variant="outline-secondary" size="sm">Time</ToggleButton>
+                                    <ToggleButton id="f-host" value="Host" variant="outline-secondary" size="sm">Host</ToggleButton>
+                                    <ToggleButton id="f-count" value="Count" variant="outline-secondary" size="sm">Count</ToggleButton>
+                                </ToggleButtonGroup>
+                            </div>
+                        </Dropdown.Menu>
+                    </Dropdown>
+                </div>
             </div>
-        </div>
 
-        <ul className={styles['connections-list']}>
-            {
-                values.slice((page - 1) * 30, (page - 1) * 30 + 30).map((e, i) => {
-                    return <ListItem
-                        data={e}
-                        key={`${i}-${e.host}`}
-                        onClick={() => setInfo({ data: e, show: true })}
-                    />
-                })
-            }
-        </ul>
-    </>
+            <CardList
+                items={paginatedItems}
+                onClickItem={(item) => setInfo({ show: true, data: item })}
+                renderListItem={(item) => <ListItem data={item} />}
+                footer={<CustomPagination currentPage={page} totalItems={values.length} pageSize={pageSize} onPageChange={setPage} />}
+            />
+
+        </MainContainer>
+    );
 }
 
-export default FailedHistory
+export default FailedHistory;

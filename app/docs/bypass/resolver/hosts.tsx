@@ -1,12 +1,12 @@
 "use client";
 
+import { Card, CardBody, CardFooter, CardHeader, IconBox } from '@/app/component/cardlist';
 import { FC, useContext, useState } from "react";
-import { Button, Card, Form, InputGroup, Spinner } from "react-bootstrap";
-import Loading from "../../common/loading";
+import { Button, Form, InputGroup, Spinner } from "react-bootstrap";
+import Loading from "../../../component/loading";
+import { GlobalToastContext } from "../../../component/toast";
 import { FetchProtobuf, useProtoSWR } from "../../common/proto";
-import { GlobalToastContext } from "../../common/toast";
 import { resolver } from "../../pbes/api/config_pb";
-import styles from './resolver.module.css';
 
 export const Hosts: FC = () => {
     const ctx = useContext(GlobalToastContext);
@@ -41,24 +41,20 @@ export const Hosts: FC = () => {
         setDirty(true);
     }
 
-    return <Card className={`${styles.configCard} h-100`}>
-        <Card.Header className={styles.cardHeaderCustom}>
-            <div className="d-flex align-items-center">
-                <div className={styles.iconBox}><i className="bi bi-signpost-split"></i></div>
-                <div>
-                    <h5 className="mb-0 fw-bold">Static Hosts</h5>
-                    <small className="text-muted">Static Host Mapping</small>
-                </div>
-            </div>
-        </Card.Header>
-        <Card.Body>
+    return <Card className={`h-100`}>
+        <CardHeader>
+            <IconBox icon="signpost-split" color="primary" title="Static Hosts" description="Static Host Mapping" />
+        </CardHeader>
+        <CardBody>
             {
                 Object.entries(data.hosts)
                     .sort(([a], [b]) => a.localeCompare(b))
                     .map(([k, v], i) =>
                         <InputGroup className="mb-3" key={"hosts" + k}>
                             <Form.Control value={k} readOnly style={{ background: 'rgba(255,255,255,0.03)', opacity: 0.7 }} />
-                            <InputGroup.Text className={styles.inputGroupText}><i className="bi bi-chevron-right small"></i></InputGroup.Text>
+                            <InputGroup.Text style={{ backgroundColor: 'transparent', border: 'none', color: 'var(--text-dim)' }}>
+                                <i className="bi bi-chevron-right small"></i>
+                            </InputGroup.Text>
                             <Form.Control
                                 value={v}
                                 onChange={(e) => handleMutate(prev => { return { ...prev, hosts: { ...prev.hosts, [k]: e.target.value } } })}
@@ -78,7 +74,9 @@ export const Hosts: FC = () => {
 
             <InputGroup className="mt-3">
                 <Form.Control value={newHosts.key} onChange={(e) => setNewHosts({ ...newHosts, key: e.target.value })} placeholder="Domain..." />
-                <InputGroup.Text className={styles.inputGroupText}><i className="bi bi-chevron-right small"></i></InputGroup.Text>
+                <InputGroup.Text style={{ backgroundColor: 'transparent', border: 'none', color: 'var(--text-dim)' }}>
+                    <i className="bi bi-chevron-right small"></i>
+                </InputGroup.Text>
                 <Form.Control
                     value={newHosts.value}
                     onChange={(e) => setNewHosts({ ...newHosts, value: e.target.value })}
@@ -92,10 +90,9 @@ export const Hosts: FC = () => {
                     <i className="bi bi-plus-lg"></i>
                 </Button>
             </InputGroup>
-        </Card.Body>
+        </CardBody>
 
-        {/* Changed: Removed isDirty check, used styles.cardFooterCustom */}
-        <Card.Footer className={styles.cardFooterCustom}>
+        <CardFooter className="d-flex justify-content-end gap-2">
             <Button
                 variant='outline-secondary'
                 size="sm"
@@ -105,13 +102,13 @@ export const Hosts: FC = () => {
                 <i className="bi bi-arrow-counterclockwise me-1"></i> Reset
             </Button>
             <Button
-                variant="primary" // Changed to solid primary for better visibility
+                variant="primary"
                 size="sm"
-                disabled={saving || !isDirty} // Optional: keep disabled if no changes
+                disabled={saving || !isDirty}
                 onClick={handleSave}
             >
                 {saving ? <Spinner as="span" size="sm" animation="border" /> : <><i className="bi bi-cloud-upload me-1"></i> Save</>}
             </Button>
-        </Card.Footer>
+        </CardFooter>
     </Card>
 }

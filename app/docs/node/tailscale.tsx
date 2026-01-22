@@ -1,7 +1,7 @@
 "use client"
 
 import { FC } from "react";
-import { SettingInputText } from "../config/components";
+import { SettingInputText } from "../../component/components";
 import { tailscale } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 

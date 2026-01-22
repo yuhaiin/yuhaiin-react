@@ -1,8 +1,8 @@
 import { create } from "@bufbuild/protobuf";
 import { FC, useContext, useState } from "react";
 import { Button, ListGroup, Modal } from "react-bootstrap";
+import { SettingTypeSelect } from "../../component/switch";
 import { Node, Nodes, NodesContext } from "../common/nodes";
-import { SettingTypeSelect } from "../common/switch";
 import { set, set_strategy_typeSchema, setSchema } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 

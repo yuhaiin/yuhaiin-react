@@ -2,8 +2,8 @@
 import { create } from '@bufbuild/protobuf';
 import { FC } from 'react';
 import { Button } from 'react-bootstrap';
-import { SettingCheck } from "../common/switch";
-import { NewItemList, SettingInputText, SettingInputTextarea } from '../config/components';
+import { NewItemList, SettingInputText, SettingInputTextarea } from '../../component/components';
+import { SettingCheck } from "../../component/switch";
 import { TLSServerComponents } from '../node/tls_server';
 import { ech_config, ech_configSchema, tls, tls_auto } from '../pbes/config/inbound_pb';
 import { tls_server_configSchema } from '../pbes/node/protocol_pb';

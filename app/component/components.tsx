@@ -1,6 +1,6 @@
 import React, { FC, JSX, useCallback, useEffect, useRef, useState } from "react";
 import { Button, ButtonGroup, Card, Col, Collapse, Dropdown, DropdownMenu, Form, InputGroup, Row } from "react-bootstrap";
-import { useClipboard } from "../common/clipboard";
+import { useClipboard } from "./clipboard";
 
 export class Remind {
     label: string
@@ -278,52 +278,149 @@ export const NewItemList: FC<{
     );
 };
 
-export const NewBytesItemList: FC<{ title: string, data?: Uint8Array[], onChange: (x: Uint8Array[]) => void, textarea?: boolean }> =
-    ({ title, data, onChange, textarea }) => {
-        const [newData, setNewData] = useState({ value: "" });
+export const NewBytesItemList: FC<{
+    title?: string,
+    data?: Uint8Array[],
+    onChange: (x: Uint8Array[]) => void,
+    dump?: boolean,
+    className?: string
+}> = ({ title, data = [], onChange, dump, className }) => {
+    const [newData, setNewData] = useState({ value: "" });
+    const listRef = useRef<HTMLDivElement>(null);
+    const { copy, copied } = useClipboard({
+        usePromptAsFallback: true,
+    });
 
-        return (<Form.Group as={Row} className='mb-3'>
-            <Form.Label column sm={2} className="nowrap">{title}</Form.Label>
+    // Auto-scroll logic when a new item is added to the list
+    useEffect(() => {
+        if (listRef.current) {
+            listRef.current.scrollTop = listRef.current.scrollHeight;
+        }
+    }, [data.length]);
 
+    // Handle adding the current buffer as a single entry
+    const handleAdd = () => {
+        if (!newData.value.trim()) return;
 
-            {data && data.map((v, index) => {
-                return (
-                    <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={"bi-" + index} >
-                        <InputGroup className="mb-2" >
-                            <Form.Control
-                                value={new TextDecoder().decode(v)}
-                                as={textarea ? "textarea" : undefined}
-                                onChange={(e) => { onChange([...data.slice(0, index), new TextEncoder().encode(e.target.value), ...data.slice(index + 1)]) }}
-                            />
-                            <Button
-                                variant='outline-danger'
-                                onClick={() => { onChange([...data.slice(0, index), ...data.slice(index + 1)]) }}>
-                                <i className="bi bi-x-lg" ></i>
-                            </Button>
-                        </InputGroup>
-                    </Col>
-                )
-            })
-            }
+        const encoder = new TextEncoder();
+        // We treat the entire textarea content as one single Byte entry
+        const newByteArray = encoder.encode(newData.value);
 
-            <Col sm={{ span: 10, offset: data?.length !== 0 ? 2 : 0 }}>
-                <InputGroup className="mb-2" >
+        onChange([...data, newByteArray]);
+        setNewData({ value: "" });
+    };
+
+    // Remove item by index
+    const handleRemove = (index: number) => {
+        const next = [...data];
+        next.splice(index, 1);
+        onChange(next);
+    };
+
+    // Update item by index
+    const handleEdit = (index: number, val: string) => {
+        const next = [...data];
+        next[index] = new TextEncoder().encode(val);
+        onChange(next);
+    };
+
+    // Copy all items to clipboard as a single block of text
+    const handleCopy = () => {
+        const decoder = new TextDecoder();
+        const textToCopy = data.map(v => decoder.decode(v)).join('\n---\n'); // Separator for clarity
+        copy(textToCopy);
+    };
+
+    return (
+        <div className={`d-flex flex-column gap-2 ${className || ""}`}>
+            {/* 1. Header: Title and Export Button */}
+            <div className="d-flex justify-content-between align-items-center mb-1">
+                <div>
+                    {title && <label className="form-label fw-bold mb-0 small text-uppercase opacity-75">{title}</label>}
+                </div>
+
+                {dump && data.length > 0 && (
+                    <Button
+                        variant={copied ? "success" : "outline-secondary"}
+                        size="sm"
+                        onClick={handleCopy}
+                        className="d-flex align-items-center gap-2 px-3"
+                        title="Copy all entries to clipboard"
+                    >
+                        {copied ? (
+                            <><i className="bi bi-check2"></i> Copied</>
+                        ) : (
+                            <><i className="bi bi-clipboard"></i> Copy All</>
+                        )}
+                    </Button>
+                )}
+            </div>
+
+            {/* 2. Scrollable List Area */}
+            <div
+                ref={listRef}
+                className="border rounded-3 p-3"
+                style={{
+                    maxHeight: '350px', // Increased height for multiple textareas
+                    overflowY: 'auto',
+                    background: 'rgba(255,255,255,0.02)'
+                }}
+            >
+                {data.length === 0 ? (
+                    <div className="text-muted fst-italic small text-center py-4 opacity-50">
+                        No entries defined.
+                    </div>
+                ) : (
+                    data.map((v, index) => (
+                        <div key={index} className="mb-3">
+                            <InputGroup className="align-items-start">
+                                <Form.Control
+                                    as="textarea"
+                                    rows={2} // Minimum visible lines
+                                    value={new TextDecoder().decode(v)}
+                                    onChange={(e) => handleEdit(index, e.target.value)}
+                                    className="bg-transparent text-body font-monospace shadow-none"
+                                    style={{ fontSize: '0.8rem', lineHeight: '1.4' }}
+                                />
+                                <Button
+                                    variant="outline-danger"
+                                    className="px-2"
+                                    onClick={() => handleRemove(index)}
+                                    style={{ borderLeft: 'none' }}
+                                >
+                                    <i className="bi bi-x-lg"></i>
+                                </Button>
+                            </InputGroup>
+                        </div>
+                    ))
+                )}
+            </div>
+
+            {/* 3. Footer: Textarea for adding new data */}
+            <div className="mt-1">
+                <label className="form-label small text-muted mb-1 px-1">Add New Entry</label>
+                <InputGroup className="align-items-stretch">
                     <Form.Control
-                        as={textarea ? "textarea" : undefined}
+                        as="textarea"
+                        rows={3}
+                        placeholder="Paste or type raw data here..."
                         value={newData.value}
                         onChange={(e) => setNewData({ value: e.target.value })}
+                        className="font-monospace shadow-none"
+                        style={{ fontSize: '0.85rem' }}
                     />
-                    <Button variant='outline-success' onClick={() => {
-                        if (data) onChange([...data, new TextEncoder().encode(newData.value)])
-                        else onChange([new TextEncoder().encode(newData.value)])
-                    }} >
-                        <i className="bi bi-plus-lg" />
+                    <Button
+                        variant="outline-primary"
+                        onClick={handleAdd}
+                        className="d-flex align-items-center px-3"
+                    >
+                        <i className="bi bi-plus-lg fs-5"></i>
                     </Button>
                 </InputGroup>
-            </Col>
-
-        </Form.Group>)
-    }
+            </div>
+        </div>
+    );
+};
 
 export function ItemList(props: {
     title: string,

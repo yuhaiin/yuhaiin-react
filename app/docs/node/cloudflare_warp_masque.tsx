@@ -1,5 +1,5 @@
 import { FC } from "react"
-import { NewItemList, SettingInputText, SettingInputTextarea } from "../config/components"
+import { NewItemList, SettingInputText, SettingInputTextarea } from "../../component/components"
 import { cloudflare_warp_masque } from "../pbes/node/protocol_pb"
 import { Props } from "./tools"
 

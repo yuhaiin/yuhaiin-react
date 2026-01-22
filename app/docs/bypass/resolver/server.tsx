@@ -1,13 +1,13 @@
 "use client";
 
+import { Card, CardBody, CardFooter, CardHeader, IconBox } from '@/app/component/cardlist';
 import { FC, useContext, useState } from "react";
-import { Button, Card, Spinner } from "react-bootstrap";
-import Loading from "../../common/loading";
+import { Button, Spinner } from "react-bootstrap";
+import { SettingInputText } from "../../../component/components";
+import Loading from "../../../component/loading";
+import { GlobalToastContext } from "../../../component/toast";
 import { FetchProtobuf, useProtoSWR } from "../../common/proto";
-import { GlobalToastContext } from "../../common/toast";
-import { SettingInputText } from "../../config/components";
 import { resolver } from "../../pbes/api/config_pb";
-import styles from './resolver.module.css';
 
 
 export const Server: FC = () => {
@@ -41,21 +41,15 @@ export const Server: FC = () => {
         setDirty(true);
     }
 
-    return <Card className={`${styles.configCard} d-flex flex-column`}>
-        <Card.Header className={styles.cardHeaderCustom}>
-            <div className="d-flex align-items-center">
-                <div className={styles.iconBox}><i className="bi bi-hdd-rack"></i></div>
-                <div>
-                    <h5 className="mb-0 fw-bold">DNS Server</h5>
-                    <small className="text-muted">Listen and Serve</small>
-                </div>
-            </div>
-        </Card.Header>
-        <Card.Body className="card-body px-4 py-3 flex-grow-1">
+    return <Card className={`d-flex flex-column`}>
+        <CardHeader>
+            <IconBox icon="hdd-rack" color="primary" title='DNS Server' description='Listen and Serve' />
+        </CardHeader>
+        <CardBody className="card-body px-4 py-3 flex-grow-1">
             <SettingInputText label="Listen Address" value={data.value} onChange={(v: string) => handleMutate(prev => ({ ...prev, value: v }))} />
-        </Card.Body>
+        </CardBody>
 
-        <Card.Footer className={styles.cardFooterCustom}>
+        <CardFooter className="d-flex justify-content-end gap-2">
             <Button
                 variant='outline-secondary'
                 size="sm"
@@ -72,6 +66,6 @@ export const Server: FC = () => {
             >
                 {saving ? <Spinner as="span" size="sm" animation="border" /> : <> <i className="bi bi-cloud-upload me-1" /> Save</>}
             </Button>
-        </Card.Footer>
+        </CardFooter>
     </Card>
 }

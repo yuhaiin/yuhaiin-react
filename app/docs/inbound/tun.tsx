@@ -2,9 +2,9 @@
 import { create } from '@bufbuild/protobuf';
 import { FC, useState } from 'react';
 import { join as shlexJoin, split as shlexSplit } from 'shlex';
+import { NewItemList, SettingInputText } from '../../component/components';
+import { SettingCheck, SettingSelect, SettingTypeSelect } from "../../component/switch";
 import { useProtoSWR } from '../common/proto';
-import { SettingCheck, SettingSelect, SettingTypeSelect } from "../common/switch";
-import { NewItemList, SettingInputText } from '../config/components';
 import { inbound } from '../pbes/api/config_pb';
 import { routeSchema, tun, tun_endpoint_driverSchema, tun_platfrom_platform_darwinSchema, tun_platfromSchema } from '../pbes/config/inbound_pb';
 

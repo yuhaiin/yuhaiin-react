@@ -1,15 +1,15 @@
+import { Card, CardBody, CardFooter, CardHeader, CardRowList, IconBox, SettingsBox } from '@/app/component/cardlist';
 import { create } from '@bufbuild/protobuf';
 import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
-import { Button, Card, Form, InputGroup, Modal, Spinner } from 'react-bootstrap';
-import { ConfirmModal } from '../common/confirm';
-import Loading, { Error } from '../common/loading';
+import { Button, Form, Modal, Spinner } from 'react-bootstrap';
+import { ConfirmModal } from '../../component/confirm';
+import Loading, { Error } from '../../component/loading';
+import { SettingSelectVertical, SettingSwitchCard } from '../../component/switch';
+import { GlobalToastContext } from '../../component/toast';
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
-import { SettingSelectVertical, SettingSwitchCard } from '../common/switch';
-import { GlobalToastContext } from '../common/toast';
 import { change_priority_request_change_priority_operate, change_priority_request_change_priority_operateSchema, change_priority_requestSchema, resolver, rule_indexSchema, rule_save_requestSchema, rules } from '../pbes/api/config_pb';
 import { configv2, mode, resolve_strategy, rulev2Schema, udp_proxy_fqdn_strategy } from '../pbes/config/bypass_pb';
 import { FilterModal } from './filter/filter';
-import styles from './list/list.module.css';
 
 const BypassComponent: FC<{
     bypass: configv2,
@@ -36,21 +36,13 @@ const BypassComponent: FC<{
     }, [bypass, ctx, refresh, setSaving])
 
     return (
-        <div className={styles.mainContainer}>
+        <div>
             {/* 1. Global Bypass Settings Card */}
-            <Card className={styles.configCard}>
-                <Card.Header className={styles.cardHeaderCustom}>
-                    <div className="d-flex align-items-center">
-                        <div className={styles.iconBox} style={{ color: '#ec4899', borderColor: 'rgba(236, 72, 153, 0.2)', background: 'rgba(236, 72, 153, 0.1)' }}>
-                            <i className="bi bi-shield-check"></i>
-                        </div>
-                        <div>
-                            <h5 className="mb-0 fw-bold">Global Bypass Settings</h5>
-                            <small className="text-muted">DNS Resolution & Strategies</small>
-                        </div>
-                    </div>
-                </Card.Header>
-                <Card.Body className="p-4">
+            <Card>
+                <CardHeader>
+                    <IconBox icon="shield-check" color="#ec4899" title="Global Bypass Settings" description="DNS Resolution & Strategies" />
+                </CardHeader>
+                <CardBody>
                     <div className="row g-4">
                         {/* Left Column: Toggles */}
                         <div className="col-lg-6">
@@ -98,8 +90,8 @@ const BypassComponent: FC<{
                             </div>
                         </div>
                     </div>
-                </Card.Body>
-                <Card.Footer className={styles.cardFooterCustom}>
+                </CardBody>
+                <CardFooter>
                     <Button
                         variant="primary"
                         disabled={saving}
@@ -107,47 +99,44 @@ const BypassComponent: FC<{
                     >
                         {saving ? <Spinner as="span" size="sm" animation="border" /> : <><i className="bi bi-save me-1"></i> Save Settings</>}
                     </Button>
-                </Card.Footer>
+                </CardFooter>
             </Card>
 
-            {/* 2. Rules List */}
             <Rulev2Component />
         </div>
     )
 }
 
 export const Bypass = React.memo(BypassComponent)
+
 const RuleItem: FC<{
     name: string,
     index: number,
-    onEdit: (index: number) => void,
     onPriority: (index: number) => void,
     isChangePriority: boolean
-}> = ({ name, index, onEdit, onPriority, isChangePriority }) => {
+}> = ({ name, index, onPriority, isChangePriority }) => {
     return (
-        <div className="col-md-6 col-lg-4">
-            <div className={styles.listItem} onClick={() => onEdit(index)}>
-                <div className="d-flex align-items-center flex-grow-1 overflow-hidden">
-                    <span className="badge bg-secondary bg-opacity-10 text-secondary me-2">#{index + 1}</span>
-                    <i className="bi bi-signpost-2 me-2 text-muted"></i>
-                    <span className="text-truncate fw-medium">{name}</span>
-                </div>
-
-                <div className="d-flex gap-1" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                        variant="link"
-                        className="text-primary p-1"
-                        disabled={isChangePriority}
-                        title="Change Priority"
-                        onClick={(e) => {
-                            e.stopPropagation()
-                            onPriority(index)
-                        }}>
-                        <i className="bi bi-arrow-down-up"></i>
-                    </Button>
-                </div>
+        <>
+            <div className="d-flex align-items-center flex-grow-1 overflow-hidden">
+                <span className="badge bg-secondary bg-opacity-10 text-secondary me-2">#{index + 1}</span>
+                <i className="bi bi-signpost-2 me-2 text-muted"></i>
+                <span className="text-truncate fw-medium">{name}</span>
             </div>
-        </div>
+
+            <div className="d-flex gap-1" onClick={(e) => e.stopPropagation()}>
+                <Button
+                    variant="link"
+                    className="text-primary p-1"
+                    disabled={isChangePriority}
+                    title="Change Priority"
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        onPriority(index)
+                    }}>
+                    <i className="bi bi-arrow-down-up"></i>
+                </Button>
+            </div>
+        </>
     )
 }
 
@@ -158,7 +147,6 @@ const Rulev2Component: FC = () => {
     const [filterModal, setFilterModal] = useState({ show: false, index: 0 })
     const [confirmData, setConfirmData] = useState({ show: false, index: -1 });
     const [priorityModal, setPriorityModal] = useState({ show: false, index: -1 });
-    const [newdata, setNewdata] = useState({ value: "" });
     const [isChangePriority, setIsChangePriority] = useState(false)
 
     const { data: rules_data, error, isLoading, mutate } = useProtoSWR(rules.method.list)
@@ -180,7 +168,6 @@ const Rulev2Component: FC = () => {
                 if (error === undefined) {
                     ctx.Info("Add rule successful")
                     mutate()
-                    setNewdata({ value: "" })
                 } else {
                     ctx.Error(error.msg)
                     console.error(error.code, error.msg)
@@ -258,70 +245,26 @@ const Rulev2Component: FC = () => {
             onChange={onChangePriority}
         />
 
-        <Card className={styles.configCard}>
-            <Card.Header className={styles.cardHeaderCustom}>
-                <div className="d-flex align-items-center">
-                    <div className={styles.iconBox}><i className="bi bi-list-ol"></i></div>
-                    <div>
-                        <h5 className="mb-0 fw-bold">Rules</h5>
-                        <small className="text-muted">Traffic Routing Rules</small>
-                    </div>
-                </div>
-            </Card.Header>
-            <Card.Body className="p-4">
-                <div className="row g-3">
-                    {/* Render Rules */}
-                    {rules_data.names.map((value, index) => (
-                        <RuleItem
-                            key={index}
-                            name={value}
-                            index={index}
-                            onEdit={(idx) => { setFilterModal({ show: true, index: idx }) }}
-                            onPriority={(idx) => { setPriorityModal({ show: true, index: idx }) }}
-                            isChangePriority={isChangePriority}
-                        />
-                    ))}
-
-                    {/* New Rule Input (Grid Item) */}
-                    <div className="col-md-6 col-lg-4">
-                        <div className={`${styles.listItem} ${styles.newItemBox}`}>
-                            <InputGroup className="w-100 align-items-center">
-                                <Form.Control
-                                    value={newdata.value}
-                                    onChange={(e) => setNewdata({ value: e.target.value })}
-                                    placeholder="Create new rule..."
-                                    className={styles.seamlessInput}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            if (!newdata.value || rules_data.names.includes(newdata.value)) return
-                                            addNewRule(newdata.value)
-                                        }
-                                    }}
-                                    autoComplete="off"
-                                />
-                                <Button
-                                    variant='link'
-                                    onClick={() => {
-                                        if (!newdata.value || rules_data.names.includes(newdata.value)) return
-                                        addNewRule(newdata.value)
-                                    }}
-                                    className={styles.seamlessBtn}
-                                    disabled={adding}
-                                >
-                                    {adding ? <Spinner animation="border" size="sm" /> : <i className="bi bi-plus-lg fs-5" />}
-                                </Button>
-                            </InputGroup>
-                        </div>
-                    </div>
-                </div>
-
-                {rules_data.names.length === 0 && (
-                    <div className="text-center text-muted p-3">
-                        No rules defined yet. Add your first rule above.
-                    </div>
-                )}
-            </Card.Body>
-        </Card>
+        <CardRowList
+            items={rules_data.names}
+            onClickItem={(_, index) => { setFilterModal({ show: true, index: index }) }}
+            renderListItem={(name, index) => (
+                <RuleItem
+                    key={index}
+                    name={name}
+                    index={index}
+                    onPriority={(idx) => { setPriorityModal({ show: true, index: idx }) }}
+                    isChangePriority={isChangePriority}
+                />
+            )}
+            adding={adding}
+            onAddNew={(name) => {
+                if (!rules_data.names.includes(name)) addNewRule(name)
+            }}
+            header={
+                <IconBox icon="list-ol" color="primary" title="Bypass Rules" description="Traffic Routing Rules" />
+            }
+        />
     </>
 }
 
@@ -347,8 +290,7 @@ const PriorityModalComponent: FC<{
                 <Modal.Title>Change Rule Priority</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                {/* Use the new styles.settingsBox for modal content */}
-                <div className={styles.settingsBox}>
+                <SettingsBox>
                     <div className="d-flex align-items-center mb-3">
                         <span className="badge bg-primary me-2">#{index + 1}</span>
                         <Form.Control
@@ -386,7 +328,7 @@ const PriorityModalComponent: FC<{
                             ))
                         }
                     </Form.Select>
-                </div>
+                </SettingsBox>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="outline-secondary" onClick={onHide}>Cancel</Button>

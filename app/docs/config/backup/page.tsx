@@ -1,221 +1,227 @@
 "use client"
 
+import { Card, CardBody, CardFooter, CardHeader, IconBox, ListItem, MainContainer, SettingLabel } from '@/app/component/cardlist'
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
 import { useCallback, useContext, useState } from "react"
-import { Button, Card, Spinner } from "react-bootstrap"
-import { ConfirmModal } from "../../common/confirm"
-import Loading, { Error } from "../../common/loading"
+import { Button, Spinner } from "react-bootstrap"
+import { ConfirmModal } from "../../../component/confirm"
+import Loading, { Error } from "../../../component/loading"
+import { SettingInputVertical, SettingPasswordVertical, SettingSwitchCard } from "../../../component/switch"
+import { GlobalToastContext } from "../../../component/toast"
 import { FetchProtobuf, useProtoSWR } from "../../common/proto"
-import { SettingCheck } from "../../common/switch"
-import { GlobalToastContext } from "../../common/toast"
 import { backup } from "../../pbes/api/backup_pb"
 import { restore_optionSchema } from "../../pbes/backup/backup_pb"
-import { SettingInputText } from "../components"
 
-
-function Page() {
+function BackupPage() {
     const ctx = useContext(GlobalToastContext);
-
     const [saving, setSaving] = useState(false);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-    const { data, error, isLoading, mutate: setSetting } = useProtoSWR(backup.method.get, { revalidateOnFocus: false })
+    const { data, error, isLoading, mutate: setSetting } = useProtoSWR(backup.method.get, {
+        revalidateOnFocus: false
+    });
 
+    // --- Action Handlers ---
 
-    const setInstanceName = useCallback((x: string) => {
-        setSetting(prev => { return { ...prev, instanceName: x } }, false)
-    }, [setSetting])
-
-    const setEndpointUrl = useCallback((x: string) => {
-        setSetting(prev => { return { ...prev, s3: { ...prev.s3, endpointUrl: x } } }, false)
-    }, [setSetting])
-
-    const setAccessKey = useCallback((x: string) => {
-        setSetting(prev => { return { ...prev, s3: { ...prev.s3, accessKey: x } } }, false)
-    }, [setSetting])
-
-    const setSecretKey = useCallback((x: string) => {
-        setSetting(prev => { return { ...prev, s3: { ...prev.s3, secretKey: x } } }, false)
-    }, [setSetting])
-
-    const setRegion = useCallback((x: string) => {
-        setSetting(prev => { return { ...prev, s3: { ...prev.s3, region: x } } }, false)
-    }, [setSetting])
-
-    const setBucket = useCallback((x: string) => {
-        setSetting(prev => { return { ...prev, s3: { ...prev.s3, bucket: x } } }, false)
-    }, [setSetting])
-
-    const switchUsePathStyle = useCallback(() => {
-        setSetting(prev => { return { ...prev, s3: { ...prev.s3, usePathStyle: !prev.s3.usePathStyle } } }, false)
-    }, [setSetting])
-
-    const switchEnabled = useCallback(() => {
-        setSetting(prev => { return { ...prev, s3: { ...prev.s3, enabled: !prev.s3.enabled } } }, false)
-    }, [setSetting])
-
-
-    const save = useCallback(() => {
+    const handleSave = useCallback(() => {
         setSaving(true);
         FetchProtobuf(backup.method.save, data)
-            .then(async ({ error }) => {
-                if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${error.msg}`)
+            .then(({ error }) => {
+                if (error) ctx.Error(`Save failed: ${error.msg}`);
                 else {
-                    ctx.Info("Save Config Successfully");
-                    setSetting()
+                    ctx.Info("Configuration saved successfully");
+                    setSetting();
                 }
             }).finally(() => setSaving(false))
-    }, [data, setSetting, ctx, setSaving])
+    }, [data, setSetting, ctx]);
 
-    const backupNow = useCallback(() => {
+    const handleBackupNow = useCallback(() => {
         setSaving(true);
         FetchProtobuf(backup.method.backup, create(EmptySchema, {}))
-            .then(async ({ error }) => {
-                if (error !== undefined) ctx.Error(`backup config failed, ${error.code}| ${error.msg}`)
+            .then(({ error }) => {
+                if (error) ctx.Error(`Backup failed: ${error.msg}`);
                 else {
-                    ctx.Info("Backup Config Successfully");
-                    setSetting()
+                    ctx.Info("Backup completed successfully");
+                    setSetting();
                 }
             }).finally(() => setSaving(false))
-    }, [ctx, setSaving, setSetting])
+    }, [ctx, setSetting]);
 
-    const restoreNow = useCallback(() => {
+    const handleRestoreNow = useCallback(() => {
         setSaving(true);
-        FetchProtobuf(backup.method.restore, create(restore_optionSchema, { all: true, }))
-            .then(async ({ error }) => {
-                if (error !== undefined) ctx.Error(`restore config failed, ${error.code}| ${error.msg}`)
+        FetchProtobuf(backup.method.restore, create(restore_optionSchema, { all: true }))
+            .then(({ error }) => {
+                if (error) ctx.Error(`Restore failed: ${error.msg}`);
                 else {
-                    ctx.Info("Restore Config Successfully");
-                    setSetting()
+                    ctx.Info("Configuration restored successfully");
+                    setSetting();
                 }
             }).finally(() => setSaving(false))
-    }, [ctx, setSaving, setSetting])
-
-    const [showConfirmModal, setShowConfirmModal] = useState(false)
-
-    const switchShowConfirmModal = useCallback(() => {
-        setShowConfirmModal(prev => !prev)
-    }, [setShowConfirmModal])
-
-    const setInterval = useCallback((x: number) => {
-        if (x < 0 || Number.isNaN(x)) return
-        setSetting(prev => { return { ...prev, interval: BigInt(x) } }, false)
-    }, [setSetting])
+    }, [ctx, setSetting]);
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || !data) return <Loading />
 
-    return <>
-        <ConfirmModal
-            show={showConfirmModal}
-            content={<>
-                <p>Are you sure you want to restore, this will override all config?</p>
-            </>}
-            onOk={restoreNow}
-            onHide={switchShowConfirmModal}
-        />
-        <Card>
-            <Card.Body>
-                <SettingInputText
-                    label="Instance Name"
-                    value={data.instanceName}
-                    onChange={setInstanceName}
-                />
+    return (
+        <MainContainer>
+            <ConfirmModal
+                show={showConfirmModal}
+                content={<p className="mb-0">Are you sure you want to restore? This will <strong>overwrite all current configurations</strong>.</p>}
+                onOk={handleRestoreNow}
+                onHide={() => setShowConfirmModal(false)}
+            />
 
-                <SettingInputText
-                    label="Backup Interval"
-                    value={Number(data.interval)}
-                    onChange={setInterval}
-                />
+            {/* 1. General Backup Settings */}
+            <Card>
+                <CardHeader>
+                    <IconBox icon="shield-lock" color="#3b82f6" title='Backup Instance' description='Identification and timing' />
+                </CardHeader>
+                <CardBody>
+                    <div className="row g-4">
+                        <div className="col-md-6">
+                            <SettingInputVertical
+                                label="Instance Name"
+                                value={data.instanceName}
+                                onChange={(v) => setSetting(prev => ({ ...prev, instanceName: v }), false)}
+                                placeholder="Unique identifier for this node"
+                            />
+                        </div>
+                        <div className="col-md-6">
+                            <SettingInputVertical
+                                label="Backup Interval (Seconds)"
+                                value={data.interval.toString()}
+                                onChange={(v) => {
+                                    const val = parseInt(v);
+                                    if (!isNaN(val) && val >= 0) setSetting(prev => ({ ...prev, interval: BigInt(val) }), false);
+                                }}
+                                placeholder="e.g. 3600"
+                            />
+                        </div>
+                        <div className="col-12">
+                            <SettingLabel>Last Backup Hash</SettingLabel>
+                            <ListItem style={{ cursor: 'default', background: 'rgba(0,0,0,0.1)' }}>
+                                <i className="bi bi-hash me-2 text-muted"></i>
+                                <span className="font-monospace small text-truncate opacity-75">
+                                    {data.lastBackupHash || "No backup records found"}
+                                </span>
+                            </ListItem>
+                        </div>
+                    </div>
+                </CardBody>
+            </Card>
 
-                <SettingInputText
-                    label="Last Backup Hash"
-                    value={data.lastBackupHash}
-                    readonly
-                    plaintext
-                />
+            {/* 2. S3 Storage Configuration */}
+            <Card>
+                <CardBody>
+                    <div className="row g-4">
+                        {/* Toggles Row */}
+                        <div className="col-md-6">
+                            <SettingSwitchCard
+                                label="S3 Backup Enabled"
+                                description="Enable automatic S3 sync"
+                                checked={data.s3.enabled}
+                                onChange={() => setSetting(prev => ({ ...prev, s3: { ...prev.s3, enabled: !prev.s3.enabled } }), false)}
+                            />
+                        </div>
+                        <div className="col-md-6">
+                            <SettingSwitchCard
+                                label="Use Path Style"
+                                description="Compatibility for MinIO/S3 clones"
+                                checked={data.s3.usePathStyle}
+                                onChange={() => setSetting(prev => ({ ...prev, s3: { ...prev.s3, usePathStyle: !prev.s3.usePathStyle } }), false)}
+                            />
+                        </div>
 
-                <hr />
+                        <div className="col-12 mt-2">
+                            <SettingInputVertical
+                                label="Endpoint URL"
+                                value={data.s3.endpointUrl}
+                                onChange={(v) => setSetting(prev => ({ ...prev, s3: { ...prev.s3, endpointUrl: v } }), false)}
+                                placeholder="https://s3.amazonaws.com"
+                            />
+                        </div>
 
-                <Card.Title>S3</Card.Title>
+                        <div className="col-md-6">
+                            <SettingInputVertical
+                                label="Bucket Name"
+                                value={data.s3.bucket}
+                                onChange={(v) => setSetting(prev => ({ ...prev, s3: { ...prev.s3, bucket: v } }), false)}
+                                placeholder="my-backup-bucket"
+                            />
+                        </div>
+                        <div className="col-md-6">
+                            <SettingInputVertical
+                                label="Region"
+                                value={data.s3.region}
+                                onChange={(v) => setSetting(prev => ({ ...prev, s3: { ...prev.s3, region: v } }), false)}
+                                placeholder="us-east-1"
+                            />
+                        </div>
 
-                <SettingCheck
-                    label="Enabled"
-                    checked={data.s3.enabled}
-                    onChange={switchEnabled}
-                />
+                        {/* Credential Row with Password Toggles */}
+                        <div className="col-md-6">
+                            <SettingPasswordVertical
+                                label="Access Key"
+                                value={data.s3.accessKey}
+                                onChange={(v) => setSetting(prev => ({ ...prev, s3: { ...prev.s3, accessKey: v } }), false)}
+                                placeholder="Enter Access Key"
+                            />
+                        </div>
+                        <div className="col-md-6">
+                            <SettingPasswordVertical
+                                label="Secret Key"
+                                value={data.s3.secretKey}
+                                onChange={(v) => setSetting(prev => ({ ...prev, s3: { ...prev.s3, secretKey: v } }), false)}
+                                placeholder="Enter Secret Key"
+                            />
+                        </div>
+                    </div>
+                </CardBody>
 
-                <SettingInputText
-                    label="Endpoint Url"
-                    value={data.s3.endpointUrl}
-                    onChange={setEndpointUrl}
-                />
+                <CardFooter>
+                    <div className="d-flex gap-2">
+                        <Button
+                            variant="outline-success"
+                            onClick={handleBackupNow}
+                            disabled={saving}
+                            title="Trigger immediate backup"
+                        >
+                            {saving ? <Spinner size="sm" animation="border" /> : <i className="bi bi-cloud-arrow-up"></i>}
+                            <span className="ms-2 d-none d-sm-inline">Backup Now</span>
+                        </Button>
 
-                <SettingCheck
-                    label="Use Path Style"
-                    checked={data.s3.usePathStyle}
-                    onChange={switchUsePathStyle}
-                />
+                        <Button
+                            variant="outline-warning"
+                            onClick={() => setShowConfirmModal(true)}
+                            disabled={saving}
+                            title="Restore from cloud"
+                        >
+                            <i className="bi bi-arrow-clockwise"></i>
+                            <span className="ms-2 d-none d-sm-inline">Restore Now</span>
+                        </Button>
 
-                <SettingInputText
-                    label="Bucket"
-                    value={data.s3.bucket}
-                    onChange={setBucket}
-                />
+                        <Button
+                            variant="primary"
+                            onClick={handleSave}
+                            disabled={saving}
+                            title="Save configuration changes"
+                        >
+                            <i className="bi bi-save"></i>
+                            <span className="ms-2 d-none d-sm-inline">Save Config</span>
+                        </Button>
+                    </div>
+                </CardFooter>
+            </Card>
 
-                <SettingInputText
-                    label="Region"
-                    value={data.s3.region}
-                    onChange={setRegion}
-                />
-
-                <SettingInputText
-                    label="Access Key"
-                    password
-                    value={data.s3.accessKey}
-                    onChange={setAccessKey}
-                />
-
-                <SettingInputText
-                    label="Secret Key"
-                    password
-                    value={data.s3.secretKey}
-                    onChange={setSecretKey}
-                />
-            </Card.Body>
-
-            <Card.Footer className='d-flex justify-content-md-end'>
-                <Button
-                    variant="outline-success"
-                    onClick={backupNow}
-                    disabled={saving}
-                >
-                    <i className="bi bi-save"></i> Backup Now
-                    {saving && <>&nbsp;<Spinner size="sm" animation="border" variant='primary' /></>}
-                </Button>
-
-                <Button
-                    className="ms-2"
-                    variant="outline-info"
-                    onClick={switchShowConfirmModal}
-                    disabled={saving}
-                >
-                    <i className="bi bi-arrow-clockwise"></i> Restore Now
-                    {saving && <>&nbsp;<Spinner size="sm" animation="border" variant='primary' /></>}
-                </Button>
-
-                <Button
-                    className="ms-2"
-                    variant="outline-primary"
-                    onClick={save}
-                    disabled={saving}
-                >
-                    <i className="bi bi-floppy"></i> Save
-                    {saving && <>&nbsp;<Spinner size="sm" animation="border" variant='primary' /></>}
-                </Button>
-            </Card.Footer>
-        </Card >
-    </>
+            <div className="text-center mt-3 opacity-50 pb-5">
+                <small className="text-muted">
+                    <i className="bi bi-info-circle me-1"></i>
+                    Backups include all lists, rules, and node configurations.
+                </small>
+            </div>
+        </MainContainer>
+    )
 }
 
-export default Page
+export default BackupPage;

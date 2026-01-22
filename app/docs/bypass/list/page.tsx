@@ -1,19 +1,19 @@
 "use client";
 
+import { Card, CardBody, CardFooter, CardHeader, CardRowList, ErrorBox, IconBox, SettingLabel, SettingsBox } from '@/app/component/cardlist';
 import { create } from "@bufbuild/protobuf";
 import { EmptySchema, StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { FC, useContext, useEffect, useState } from "react";
-import { Alert, Button, Card, Form, InputGroup, Modal, Spinner } from "react-bootstrap";
+import { Alert, Button, Form, Modal, Spinner } from "react-bootstrap";
 import useSWR from "swr";
-import { ConfirmModal } from "../../common/confirm";
-import Loading, { Error } from "../../common/loading";
+import { NewItemList, SettingInputText } from "../../../component/components";
+import { ConfirmModal } from "../../../component/confirm";
+import Loading, { Error } from "../../../component/loading";
+import { SettingTypeSelect } from "../../../component/switch";
+import { GlobalToastContext } from "../../../component/toast";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../common/proto";
-import { SettingTypeSelect } from "../../common/switch";
-import { GlobalToastContext } from "../../common/toast";
-import { NewItemList, SettingInputText } from "../../config/components";
 import { lists, save_list_config_requestSchema } from "../../pbes/api/config_pb";
 import { list, list_list_type_enum, list_list_type_enumSchema, list_localSchema, list_remoteSchema, listSchema, refresh_configSchema } from "../../pbes/config/bypass_pb";
-import styles from "./list.module.css";
 
 
 export default function Lists() {
@@ -22,7 +22,6 @@ export default function Lists() {
 
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
     const [confirm, setConfirm] = useState<{ show: boolean, name: string }>({ show: false, name: "" });
-    const [newdata, setNewdata] = useState({ value: "" });
     const [refresh, setRefresh] = useState(false)
     const [saving, setSaving] = useState(false)
 
@@ -69,12 +68,12 @@ export default function Lists() {
             })
     }
 
-    const handleCreate = () => {
-        if (!newdata.value || data.names.includes(newdata.value)) return;
-        if (showdata.name === newdata.value && showdata.new) {
+    const handleCreate = (v: string) => {
+        if (data.names.includes(v)) return;
+        if (showdata.name === v && showdata.new) {
             setShowdata(prev => { return { ...prev, show: true } })
         } else {
-            setShowdata({ show: true, name: newdata.value, new: true })
+            setShowdata({ show: true, name: v, new: true })
         }
     };
 
@@ -82,7 +81,7 @@ export default function Lists() {
         ? new Date(Number(data.refreshConfig.lastRefreshTime) * 1000).toLocaleString()
         : "Never";
 
-    return <div className={styles.mainContainer}>
+    return <div>
         <ConfirmModal
             show={confirm.show}
             content={<>Are you sure to delete <span className="fw-bold text-danger">{confirm.name}</span>?</>}
@@ -100,7 +99,6 @@ export default function Lists() {
             onHide={(save) => {
                 if (save) {
                     mutate();
-                    setNewdata({ value: "" });
                 }
                 setShowdata(prev => { return { ...prev, show: false } })
             }}
@@ -143,20 +141,12 @@ export default function Lists() {
         </div>
 
         {/* --- 2. Configuration Card --- */}
-        <Card className={styles.configCard}>
-            <Card.Header className={styles.cardHeaderCustom}>
-                <div className="d-flex align-items-center">
-                    <div className={styles.iconBox} style={{ color: '#a855f7', borderColor: 'rgba(168, 85, 247, 0.2)', background: 'rgba(168, 85, 247, 0.1)' }}>
-                        <i className="bi bi-sliders2"></i>
-                    </div>
-                    <div>
-                        <h5 className="mb-0 fw-bold">Configuration</h5>
-                        <small className="text-muted">Auto-fetch Interval & GeoIP</small>
-                    </div>
-                </div>
-            </Card.Header>
+        <Card >
+            <CardHeader>
+                <IconBox icon="sliders2" color="#a855f7" title="Configuration" description="Auto-fetch Interval & GeoIP" />
+            </CardHeader>
 
-            <Card.Body className="p-4">
+            <CardBody>
                 {/* 1. Auto-fetch Interval (Single Line) */}
                 <div className="mb-4">
                     <div className="d-flex justify-content-between align-items-end mb-2">
@@ -206,69 +196,33 @@ export default function Lists() {
                         }}
                     />
                 </div>
-            </Card.Body>
+            </CardBody>
 
-            <Card.Footer className={styles.cardFooterCustom}>
+            <CardFooter>
                 <div className="d-flex justify-content-end w-100">
                     <Button variant='outline-primary' disabled={saving} onClick={handleSaveSettings}>
                         {saving ? <Spinner as="span" animation="border" size="sm" /> : <><i className="bi bi-check2 me-1"></i> Save Configuration</>}
                     </Button>
                 </div>
-            </Card.Footer>
+            </CardFooter>
         </Card>
 
-        <Card className={styles.configCard}>
-            <Card.Header className={styles.cardHeaderCustom}>
-                <div className="d-flex align-items-center">
-                    <div className={styles.iconBox}><i className="bi bi-list-check"></i></div>
-                    <div>
-                        <h5 className="mb-0 fw-bold">Defined Lists</h5>
-                        <small className="text-muted">{data.names.length} Lists Available</small>
-                    </div>
-                </div>
-            </Card.Header>
-            <Card.Body className="p-4">
-                <div className="row g-3">
-                    {data.names.
-                        sort((a, b) => a.localeCompare(b)).
-                        map((v, k) => (
-                            <div className="col-md-6 col-lg-4" key={k}>
-                                <div
-                                    className={styles.listItem}
-                                    onClick={() => setShowdata({ show: true, name: v, new: false })}
-                                >
-                                    <i className="bi bi-file-text me-3 fs-4 text-secondary"></i>
-                                    <span className="text-truncate fw-medium flex-grow-1">{v}</span>
-                                    <i className="bi bi-chevron-right text-muted opacity-25"></i>
-                                </div>
-                            </div>
-                        ))
-                    }
-
-                    <div className="col-md-6 col-lg-4">
-                        <div className={`${styles.listItem} ${styles.newItemBox}`}>
-                            <InputGroup className="w-100 align-items-center">
-                                <Form.Control
-                                    value={newdata.value}
-                                    onChange={(e) => setNewdata({ value: e.target.value })}
-                                    placeholder="Create new list..."
-                                    className={styles.seamlessInput}
-                                    onKeyDown={(e) => { if (e.key === 'Enter') handleCreate() }}
-                                    autoComplete="off"
-                                />
-                                <Button
-                                    variant='link'
-                                    onClick={handleCreate}
-                                    className={styles.seamlessBtn}
-                                >
-                                    <i className="bi bi-plus-lg fs-5" />
-                                </Button>
-                            </InputGroup>
-                        </div>
-                    </div>
-                </div>
-            </Card.Body>
-        </Card>
+        <CardRowList
+            items={data.names.sort((a, b) => a.localeCompare(b))}
+            renderListItem={(v) =>
+                <>
+                    <i className="bi bi-file-text me-3 fs-4 text-secondary"></i>
+                    <span className="text-truncate fw-medium flex-grow-1">{v}</span>
+                    <i className="bi bi-chevron-right text-muted opacity-25"></i>
+                </>
+            }
+            onClickItem={(v) => setShowdata({ show: true, name: v, new: false })}
+            onAddNew={handleCreate}
+            adding={saving}
+            header={
+                <IconBox icon="list-check" color="primary" title="Defined Lists" description={`${data.names.length} Lists Available`} />
+            }
+        />
     </div>
 }
 
@@ -363,8 +317,7 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
     return (
         <div className="d-flex flex-column gap-4">
             {/* 1. Top Settings Area */}
-            {/* Replaced inline style with styles.settingsBox */}
-            <div className={styles.settingsBox}>
+            <SettingsBox>
                 <div className="d-flex flex-column gap-4">
                     {/* Row 1: Content Type */}
                     <div>
@@ -381,10 +334,9 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
 
                     {/* Row 2: Source Mode */}
                     <div>
-                        {/* Replaced inline style with styles.settingLabel */}
-                        <label className={styles.settingLabel}>
+                        <SettingLabel>
                             Source Mode
-                        </label>
+                        </SettingLabel>
                         <div className="btn-group w-100" role="group">
                             <input
                                 type="radio"
@@ -414,7 +366,7 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
                         </div>
                     </div>
                 </div>
-            </div>
+            </SettingsBox>
 
             {/* 2. List Editor Area */}
             <div>
@@ -451,20 +403,7 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
             </div>
 
             {/* 3. Error Messages Area */}
-            {value.errorMsgs.length > 0 && (
-                // Replaced inline background style with styles.errorBox
-                <div className={`alert alert-danger mb-0 d-flex align-items-start shadow-sm ${styles.errorBox}`}>
-                    <i className="bi bi-exclamation-triangle-fill me-3 mt-1 fs-5 text-danger"></i>
-                    <div className="flex-grow-1">
-                        <h6 className="alert-heading fw-bold mb-2 text-danger">Configuration Error</h6>
-                        <ul className="mb-0 ps-3 text-danger text-opacity-75">
-                            {value.errorMsgs.map((v, index) => (
-                                <li key={index}>{v}</li>
-                            ))}
-                        </ul>
-                    </div>
-                </div>
-            )}
+            <ErrorBox msgs={value.errorMsgs} />
         </div>
     );
 }

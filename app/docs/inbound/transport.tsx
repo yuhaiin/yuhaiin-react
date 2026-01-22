@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic"
 import { FC } from "react"
-import Loading from "../common/loading"
+import Loading from "../../component/loading"
 import { transport } from "../pbes/config/inbound_pb"
 
 const LazyTls = dynamic(() => import("./tls").then(mod => mod.Tls), { ssr: false, loading: () => <Loading /> })

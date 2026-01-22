@@ -14,14 +14,14 @@
   padding: 1rem 1.25rem;
   background: var(--metric-bg);
   border: 1px solid var(--metric-border);
-  border-radius: 8px;
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  view-transition-name: metric-card-root !important;
 }
 
-.metricCard::before {
+/* Show a blue light line on the left edge of the card */
+/* .metricCard::before {
   content: "";
   position: absolute;
   left: 0;
@@ -31,7 +31,7 @@
   background: var(--accent-color);
   border-radius: 0 4px 4px 0;
   box-shadow: 0 0 10px var(--accent-color);
-}
+} */
 
 .metricCardLabel {
   font-size: 0.75rem;

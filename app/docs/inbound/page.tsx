@@ -1,30 +1,29 @@
 "use client"
 
+import { Card, CardBody, CardFooter, CardHeader, CardRowList, ErrorMsg, IconBox, MainContainer, SettingsBox } from '@/app/component/cardlist'
 import { clone, create } from "@bufbuild/protobuf"
 import { StringValueSchema } from "@bufbuild/protobuf/wkt"
-import React, { FC, useContext, useEffect, useState } from "react"
-import { Button, Card, Form, InputGroup, ListGroup, Modal, Spinner } from "react-bootstrap"
+import { FC, useContext, useEffect, useState } from "react"
+import { Button, Modal, Spinner } from "react-bootstrap"
 import useSWR from "swr"
-import Loading, { Error } from "../common/loading"
+import Loading, { Error } from "../../component/loading"
+import { SettingSwitchCard } from "../../component/switch"
+import { GlobalToastContext } from "../../component/toast"
 import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../common/proto"
-import { SettingCheck } from "../common/switch"
-import { GlobalToastContext } from "../common/toast"
 import { inbound as inboundService } from "../pbes/api/config_pb"
 import { inboundSchema } from "../pbes/config/inbound_pb"
 import { Inbound } from "./inboud"
-
 
 const InboundModal: FC<{
     show: boolean,
     name: string,
     onHide: (save?: boolean) => void,
+    onDelete: () => void,
     isNew?: boolean,
-}
-> = ({ show, name, onHide, isNew }) => {
+}> = ({ show, name, onHide, onDelete, isNew }) => {
     const ctx = useContext(GlobalToastContext);
+    const [saving, setSaving] = useState(false);
 
-    // isValidating becomes true whenever there is an ongoing request whether the data is loaded or not
-    // isLoading becomes true when there is an ongoing request and data is not loaded yet.
     const { data: inbound, error, isLoading, isValidating, mutate } = useSWR(
         name === "" ? undefined : ProtoPath(inboundService.method.get),
         ProtoESFetcher(
@@ -32,205 +31,177 @@ const InboundModal: FC<{
             create(StringValueSchema, { value: name }),
             isNew ? create(inboundSchema, { name: name, enabled: false }) : undefined
         ),
-        {
-            shouldRetryOnError: false,
-            keepPreviousData: false,
-            revalidateOnFocus: false,
-        })
+        { shouldRetryOnError: false, keepPreviousData: false, revalidateOnFocus: false }
+    )
 
-    useEffect(() => {
-        mutate();
-    }, [name, isNew, mutate])
+    useEffect(() => { mutate(); }, [name, isNew, mutate])
+
+    const handleSave = () => {
+        if (!inbound) return;
+        setSaving(true);
+        inbound.name = name;
+        FetchProtobuf(inboundService.method.save, inbound)
+            .then(async ({ error }) => {
+                if (error === undefined) {
+                    ctx.Info("Save successful");
+                    onHide(true);
+                } else {
+                    ctx.Error(error.msg);
+                }
+            })
+            .finally(() => setSaving(false));
+    };
 
     return (
-        <>
-            <Modal
-                show={show}
-                scrollable
-                aria-labelledby="contained-modal-title-vcenter"
-                size='xl'
-                onHide={() => { onHide() }}
-                centered
-            >
-                <Modal.Header>
-                    <Modal.Title id="contained-modal-title-vcenter">{name}</Modal.Title>
-                </Modal.Header>
-
-                <Modal.Body>
-                    {error ?
-                        <>
-                            <h4 className="text-center my-2">{error.code} - {error.msg}</h4>
-                            <pre className="text-center my-2 text-danger lead">{error.raw}</pre>
-                        </> :
-                        isValidating || isLoading || !inbound ? <Loading /> :
-                            <Inbound inbound={inbound} onChange={(x) => { mutate(clone(inboundSchema, x), false) }}></Inbound>
-                    }
-                </Modal.Body>
-
-                <Modal.Footer>
-                    <Button variant="outline-secondary" onClick={() => { onHide() }}>Close</Button>
-                    <Button
-                        variant="outline-primary"
-                        onClick={() => {
-                            inbound.name = name
-
-                            FetchProtobuf(inboundService.method.save, inbound)
-                                .then(async ({ error }) => {
-                                    if (error === undefined) {
-                                        ctx.Info("save successful")
-                                        mutate();
-                                        onHide(true)
-                                    } else {
-                                        const msg = error.msg;
-                                        ctx.Error(msg)
-                                        console.error(error.code, msg)
-                                    }
-                                })
-                        }}
-                    >
-                        Save
+        <Modal show={show} onHide={() => onHide()} centered size='xl' scrollable>
+            <Modal.Header closeButton className="border-bottom-0 pb-0">
+                <Modal.Title className="fw-bold">{isNew ? "New Inbound" : `Edit Inbound: ${name}`}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body className="pt-2">
+                {error ? <ErrorMsg msg={error.msg} code={error.code} raw={error.raw} /> : isValidating || isLoading || !inbound ? (
+                    <Loading />
+                ) : (
+                    <SettingsBox>
+                        {/* Assuming the Inbound internal component handles its own rows/fields */}
+                        <Inbound inbound={inbound} onChange={(x) => mutate(clone(inboundSchema, x), false)} />
+                    </SettingsBox>
+                )}
+            </Modal.Body>
+            <Modal.Footer className="d-flex justify-content-between">
+                <div>
+                    {!isNew && (
+                        <Button variant="outline-danger" onClick={() => { onHide(); onDelete(); }}>
+                            <i className="bi bi-trash me-2"></i>Delete
+                        </Button>
+                    )}
+                </div>
+                <div className="d-flex gap-2">
+                    <Button variant="outline-secondary" onClick={() => onHide()}>Cancel</Button>
+                    <Button variant="primary" disabled={saving || !inbound} onClick={handleSave}>
+                        {saving ? <Spinner size="sm" animation="border" /> : <><i className="bi bi-check-lg me-1"></i> Save</>}
                     </Button>
-                </Modal.Footer>
-            </Modal>
-        </>
+                </div>
+            </Modal.Footer>
+        </Modal>
     );
 }
 
+const InboundItem: FC<{ name: string, }> = ({ name }) => {
+    return <>
+        <div className="d-flex align-items-center flex-grow-1 overflow-hidden">
+            <div className="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style={{ width: '36px', height: '36px' }}>
+                <i className="bi bi-box-arrow-in-right"></i>
+            </div>
+            <span className="text-truncate fw-medium">{name}</span>
+        </div>
+        <i className="bi bi-chevron-right text-muted opacity-25"></i>
+    </>
+}
 
 function InboudComponent() {
     const ctx = useContext(GlobalToastContext);
+    const { data: inbounds, error, isLoading, mutate } = useProtoSWR(inboundService.method.list);
 
-    const { data: inbounds, error, isLoading, mutate } = useProtoSWR(inboundService.method.list)
     const [saving, setSaving] = useState(false);
-
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
-    const [newdata, setNewdata] = useState({ value: "" });
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || inbounds === undefined) return <Loading />
 
     const deleteInbound = (name: string) => {
-        FetchProtobuf(
-            inboundService.method.remove,
-            create(StringValueSchema, { value: name }),
-        )
+        FetchProtobuf(inboundService.method.remove, create(StringValueSchema, { value: name }))
             .then(async ({ error }) => {
                 if (error === undefined) {
-                    ctx.Info("remove successful")
-                    mutate()
+                    ctx.Info("Removed successful");
+                    mutate();
                 } else {
-                    const msg = error.msg;
-                    ctx.Error(msg)
-                    console.error(error.code, msg)
+                    ctx.Error(error.msg);
                 }
-            })
+            });
     }
 
-    return <>
-        <InboundModal
-            show={showdata.show}
-            name={showdata.name}
-            onHide={(save) => {
-                if (save) mutate();
-                setShowdata({ ...showdata, show: false })
-            }}
-            isNew={showdata.new}
-        />
+    const handleApply = () => {
+        setSaving(true);
+        FetchProtobuf(inboundService.method.apply, inbounds)
+            .then(async ({ error }) => {
+                if (error === undefined) ctx.Info("Settings applied successfully");
+                else ctx.Error(error.msg);
+                mutate();
+            })
+            .finally(() => setSaving(false));
+    };
 
+    const handleCreate = (v: string) => {
+        if (!inbounds.names.includes(v)) setShowdata({ show: true, name: v, new: true });
+    };
 
-        <Card>
-            <Card.Body>
-                <SettingCheck label='DNS Hijack'
-                    checked={inbounds.hijackDns}
-                    onChange={() => { mutate({ ...inbounds, hijackDns: !inbounds.hijackDns }, false) }} />
+    return (
+        <MainContainer>
+            <InboundModal
+                show={showdata.show}
+                name={showdata.name}
+                isNew={showdata.new}
+                onHide={(save) => {
+                    if (save) mutate();
+                    setShowdata(prev => ({ ...prev, show: false }));
+                }}
+                onDelete={() => deleteInbound(showdata.name)}
+            />
 
-                <SettingCheck label='Fakedns'
-                    checked={inbounds.hijackDnsFakeip}
-                    onChange={() => { mutate({ ...inbounds, hijackDnsFakeip: !inbounds.hijackDnsFakeip }, false) }} />
-
-                <SettingCheck label='Sniff'
-                    checked={!inbounds.sniff?.enabled ? false : true}
-                    onChange={() => mutate({ ...inbounds, sniff: { ...inbounds.sniff, enabled: !inbounds.sniff.enabled } }, false)} />
-
-                <hr />
-
-                <div className="d-flex justify-content-end">
-                    <Button
-                        variant="outline-primary"
-                        disabled={saving}
-                        onClick={() => {
-                            setSaving(true)
-                            FetchProtobuf(inboundService.method.apply, inbounds)
-                                .then(async ({ error }) => {
-                                    if (error === undefined) {
-                                        ctx.Info("save hosts successful")
-                                    } else {
-                                        const msg = error.msg;
-                                        ctx.Error(msg)
-                                        console.error(error.code, msg)
-                                    }
-
-                                    mutate()
-                                    setSaving(false)
-                                })
-                        }}
-                    >
-                        Save{saving && <>&nbsp;<Spinner size="sm" animation="border" /></>}
+            {/* 1. Global Settings Card */}
+            <Card>
+                <CardHeader>
+                    <IconBox icon="gear-fill" color="#f59e0b" title='Inbound Configuration' description="Global interception & sniffing" />
+                </CardHeader>
+                <CardBody>
+                    <div className="row g-3">
+                        <div className="col-md-4">
+                            <SettingSwitchCard
+                                label="DNS Hijack"
+                                description="Intersects DNS requests"
+                                checked={inbounds.hijackDns}
+                                onChange={() => mutate({ ...inbounds, hijackDns: !inbounds.hijackDns }, false)}
+                            />
+                        </div>
+                        <div className="col-md-4">
+                            <SettingSwitchCard
+                                label="FakeDNS"
+                                description="Use virtual IP logic"
+                                checked={inbounds.hijackDnsFakeip}
+                                onChange={() => mutate({ ...inbounds, hijackDnsFakeip: !inbounds.hijackDnsFakeip }, false)}
+                            />
+                        </div>
+                        <div className="col-md-4">
+                            <SettingSwitchCard
+                                label="Traffic Sniffing"
+                                description="Inspects protocol types"
+                                checked={!!inbounds.sniff?.enabled}
+                                onChange={() => mutate({ ...inbounds, sniff: { ...inbounds.sniff, enabled: !inbounds.sniff?.enabled } }, false)}
+                            />
+                        </div>
+                    </div>
+                </CardBody>
+                <CardFooter>
+                    <Button variant="primary" disabled={saving} onClick={handleApply}>
+                        {saving ? <Spinner size="sm" animation="border" /> : <><i className="bi bi-save me-1"></i> Apply Settings</>}
                     </Button>
-                </div>
-            </Card.Body>
-        </Card>
+                </CardFooter>
+            </Card>
 
-        <Card className="mt-3">
-            {inbounds.names.length === 0 && <Card.Body><div className="text-center my-2" style={{ opacity: '0.4' }}>No Inbounds</div>  </Card.Body>}
-            {inbounds.names.length !== 0 &&
-                <ListGroup variant="flush" style={{ borderBottom: "none" }}>
-                    {inbounds.names.
-                        sort((a, b) => { return a <= b ? -1 : 1 }).
-                        map((v, k) => {
-                            return <React.Fragment key={"inbounds-" + k}>
-                                <ListGroup.Item
-                                    action
-                                    className="d-flex justify-content-between align-items-center"
-                                    style={{ border: "0ch", borderBottom: "1px solid #dee2e6" }}
-                                    onClick={(e) => { e.stopPropagation(); setShowdata({ show: true, name: v, new: false }) }}
-                                >
-                                    {v}
-                                    <Button
-                                        variant='outline-danger'
-                                        size="sm"
-                                        as={"span"}
-                                        key={k + "span-button"}
-                                        onClick={(e) => { e.stopPropagation(); deleteInbound(v) }}
-                                    >
-                                        <i className="bi bi-x-lg"></i>
-                                    </Button>
-                                </ListGroup.Item>
-                            </React.Fragment>
-                        })
-                    }
-                </ListGroup>
-            }
-            <Card.Footer>
-                <InputGroup className="d-flex justify-content-end">
-                    <Form.Control value={newdata.value} onChange={(e) => setNewdata({ value: e.target.value })} />
-                    <Button
-                        variant='outline-success'
-                        onClick={() => {
-                            if (!newdata.value || inbounds.names.includes(newdata.value)) return
-                            if (showdata.name === newdata.value && showdata.new)
-                                setShowdata(prev => { return { ...prev, show: true } })
-                            else
-                                setShowdata({ show: true, name: newdata.value, new: true })
-                        }}
-                    >
-                        <i className="bi bi-plus-lg" />New </Button>
-                </InputGroup>
-            </Card.Footer>
 
-        </Card>
-
-    </>
+            {/* 2. Inbound Service List Card */}
+            <CardRowList
+                items={inbounds.names.sort((a, b) => a.localeCompare(b))}
+                onClickItem={(name) => setShowdata({ show: true, name, new: false })}
+                onAddNew={handleCreate}
+                renderListItem={(name) => (<InboundItem name={name} />)}
+                header={
+                    <IconBox icon="door-open" color="primary" title="Entry Points" description={`${inbounds.names.length} active inbounds`} />
+                }
+                adding={saving}
+            />
+        </MainContainer>
+    );
 }
 
-export default InboudComponent
+export default InboudComponent;

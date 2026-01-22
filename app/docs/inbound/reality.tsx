@@ -1,7 +1,7 @@
 
 import { FC, useState } from 'react';
 import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
-import { SettingInputText } from '../config/components';
+import { SettingInputText } from '../../component/components';
 import { reality } from '../pbes/config/inbound_pb';
 
 export const Reality: FC<{ reality: reality, onChange: (x: reality) => void }> = ({ reality, onChange }) => {

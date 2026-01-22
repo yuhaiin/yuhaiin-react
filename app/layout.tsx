@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, ViewTransition } from 'react';
 import { Container } from 'react-bootstrap';
-import { GlobalToastProvider } from './docs/common/toast';
+import { GlobalToastProvider } from './component/toast';
 import NavBarContainer from './docs/nav/NavBarContainer';
 import './global.css';
 

@@ -1,8 +1,9 @@
 "use client"
 
-import Loading from "@/app/docs/common/loading";
+import { IconBadge } from "@/app/component/cardlist";
+import Loading from "@/app/component/loading";
+import { GlobalToastContext } from "@/app/component/toast";
 import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "@/app/docs/common/proto";
-import { GlobalToastContext } from "@/app/docs/common/toast";
 import { ConnectionInfo, FlowContainer, formatBytes } from "@/app/docs/connections/components";
 import { connections, counter, notify_data, notify_remove_connectionsSchema } from "@/app/docs/pbes/api/statistic_pb";
 import { connection, connectionSchema, type } from "@/app/docs/pbes/statistic/config_pb";
@@ -185,12 +186,6 @@ const ConnectionListComponent: FC<{
 
 const ConnectionList = React.memo(ConnectionListComponent)
 
-const IconBadge: FC<{ icon: string, text: string }> = ({ icon, text }) => {
-    return <Badge pill>
-        <i className={`bi ${icon} ${styles['badge-icon']}`}></i>
-        {text}
-    </Badge>
-}
 
 const ListItemComponent: FC<{ data: connection, download: number, upload: number, onClick?: () => void }> =
     ({ data, download, upload, onClick }) => {

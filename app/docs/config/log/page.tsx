@@ -1,15 +1,15 @@
 "use client"
 
+import { Card, CardBody, CardHeader, FilterSearch, MainContainer } from '@/app/component/cardlist'
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
 import { FC, useMemo, useState } from "react"
 import { List, type RowComponentProps } from 'react-window'
 import useSWRSubscription from "swr/subscription"
-import { Error } from "../../common/loading"
+import { Error } from "../../../component/loading"
 import { ProtoPath, WebsocketProtoServerStream } from "../../common/proto"
 import { tools } from "../../pbes/api/tools_pb"
 import { Logv2 } from "../../pbes/tools/tools_pb"
-import styles from './log.module.css'
 
 const HighlightLogLine: FC<{ line: string }> = ({ line }) => {
     if (line.includes('ERROR')) return <span style={{ color: 'red' }}>{line}</span>;
@@ -22,7 +22,15 @@ const HighlightLogLine: FC<{ line: string }> = ({ line }) => {
 const Row = ({ index, style, data }: RowComponentProps<{ data: string[] }>) => {
     const { width, ...restStyle } = style;
     return (
-        <div style={restStyle} className={styles.logEntry}>
+        <div style={{
+            ...restStyle,
+            width: 'max-content',
+            fontFamily: 'monospace',
+            fontSize: '14px',
+            lineHeight: '20px',
+            display: 'flex',
+            alignItems: 'center'
+        }}>
             {data[index] && <HighlightLogLine line={data[index]} />}
         </div>
     );
@@ -34,8 +42,8 @@ export default function LogComponent() {
     const processStream = (r: Logv2, prev?: string[]): string[] => {
         if (prev === undefined) prev = []
         const combined = [...r.log.reverse(), ...prev];
-        if (combined.length > 5000) {
-            return combined.slice(0, 5000);
+        if (combined.length > 10000) {
+            return combined.slice(0, 10000);
         }
         return combined;
     }
@@ -56,29 +64,22 @@ export default function LogComponent() {
     if (log_error) { return <Error statusCode={log_error.code} title={log_error.msg} /> }
 
     return (
-        <main className={styles.main}>
-            <div className={styles.searchContainer}>
-                <div className={styles.searchWrapper}>
-                    <input
-                        type="text"
-                        placeholder="Search logs..."
-                        className={styles.searchInput}
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                    />
-                </div>
-            </div>
+        <MainContainer style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
 
-            <div className={styles.logContainer}>
-                <List
-                    className={styles.list}
-                    rowCount={filteredLog.length}
-                    rowHeight={25}
-                    rowComponent={Row}
-                    rowProps={{ data: filteredLog }}
-                    style={{ ...styles }}
-                />
-            </div>
-        </main>
+
+            <Card style={{ height: '100%', marginBottom: '0px' }}>
+                <CardHeader style={{ display: 'flex' }}>
+                    <FilterSearch onEnter={setSearchTerm} style={{ flex: 1 }} />
+                </CardHeader>
+                <CardBody style={{ height: '90%' }}>
+                    <List
+                        rowCount={filteredLog.length}
+                        rowHeight={20}
+                        rowComponent={Row}
+                        rowProps={{ data: filteredLog }}
+                    />
+                </CardBody>
+            </Card>
+        </MainContainer>
     );
 }

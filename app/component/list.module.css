@@ -6,14 +6,14 @@
     /* --- Default (Dark Mode) --- */
     --card-inner-border: rgba(255, 255, 255, 0.05);
     --card-footer-bg: rgba(0, 0, 0, 0.1);
-    
+
     --list-item-bg: rgba(255, 255, 255, 0.02);
     --list-item-hover: rgba(255, 255, 255, 0.05);
     --list-item-border-hover: rgba(255, 255, 255, 0.1);
-    
+
     --new-item-dashed: rgba(255, 255, 255, 0.2);
     --new-item-focus: rgba(255, 255, 255, 0.05);
-    
+
     --input-text-color: #ffffff;
     --input-placeholder: rgba(255, 255, 255, 0.3);
 
@@ -27,14 +27,14 @@
 :global([data-bs-theme="light"]) {
     --card-inner-border: rgba(0, 0, 0, 0.08);
     --card-footer-bg: rgba(0, 0, 0, 0.03);
-    
+
     --list-item-bg: rgba(0, 0, 0, 0.03);
     --list-item-hover: rgba(0, 0, 0, 0.06);
     --list-item-border-hover: rgba(0, 0, 0, 0.15);
-    
+
     --new-item-dashed: rgba(0, 0, 0, 0.2);
     --new-item-focus: rgba(0, 0, 0, 0.05);
-    
+
     --input-text-color: var(--bs-body-color);
     --input-placeholder: rgba(0, 0, 0, 0.4);
 
@@ -48,24 +48,28 @@
    2. Component Styles
    ========================================= */
 
-.mainContainer {
-    max-width: 1100px;
-    margin: 3rem auto;
-    padding: 0 1.5rem;
-}
-
 .configCard {
     background: var(--sidebar-bg);
     border: 1px solid var(--sidebar-border-color);
     border-radius: 20px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     margin-bottom: 2rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
+    view-transition-name: config-card-root !important;
+}
+
+.configCard:hover {
+    transform: translateY(-5px);
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.1);
 }
 
 .cardHeaderCustom {
     padding: 1.25rem 1.5rem;
-    background: transparent;
     border-bottom: 1px solid var(--card-inner-border);
     display: flex;
     align-items: center;
@@ -73,9 +77,14 @@
 }
 
 .cardFooterCustom {
-    padding: 1rem 1.5rem;
-    background: var(--card-footer-bg);
-    border-top: 1px solid var(--card-inner-border);
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 0.75rem;
+    margin-top: auto;
+    justify-content: flex-end;
+    /* Optional: Light background for footer */
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .iconBox {
@@ -155,8 +164,8 @@
 .settingsBox {
     background: var(--modal-settings-bg);
     border: 1px solid var(--modal-settings-border);
-    border-radius: 0.5rem; 
-    padding: 1.5rem;       
+    border-radius: 0.5rem;
+    padding: 1.5rem;
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -173,4 +182,63 @@
 .errorBox {
     background: var(--modal-error-bg);
     border: none;
+}
+
+/* 搜索框容器 */
+.filterSearchWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--list-item-bg);
+    border: 1px solid var(--card-inner-border);
+    border-radius: 10px;
+    padding-left: 0.75rem;
+    transition: all 0.2s ease;
+    min-width: 200px;
+}
+
+.filterSearchWrapper:focus-within {
+    border-color: var(--bs-primary);
+    background: var(--new-item-focus);
+    box-shadow: 0 0 0 1px var(--bs-primary);
+}
+
+.filterSearchIcon {
+    color: var(--bs-secondary-color);
+    opacity: 0.5;
+    font-size: 0.9rem;
+}
+
+.filterSearchInput {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--input-text-color) !important;
+    font-size: 0.85rem !important;
+    padding: 0.5rem 0.75rem !important;
+    width: 100%;
+}
+
+.filterSearchInput::placeholder {
+    color: var(--input-placeholder) !important;
+}
+
+.filterSelect {
+    background-color: var(--list-item-bg) !important;
+    border: 1px solid var(--card-inner-border) !important;
+    border-radius: 10px !important;
+    color: var(--input-text-color) !important;
+    font-size: 0.85rem !important;
+    padding: 0.5rem 2.25rem 0.5rem 0.75rem !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filterSelect:focus {
+    border-color: var(--bs-primary) !important;
+    box-shadow: 0 0 0 1px var(--bs-primary) !important;
+}
+
+:global([data-bs-theme="light"]) .filterSelect {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
 }

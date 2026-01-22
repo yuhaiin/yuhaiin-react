@@ -2,8 +2,8 @@ import { create } from "@bufbuild/protobuf";
 import dynamic from "next/dynamic";
 import { FC, useEffect, useState } from "react";
 import { Button, InputGroup, ListGroup } from "react-bootstrap";
-import Loading from "../common/loading";
-import { FormSelect } from "../common/switch";
+import Loading from "../../component/loading";
+import { FormSelect } from "../../component/switch";
 import {
     emptySchema,
     inbound,

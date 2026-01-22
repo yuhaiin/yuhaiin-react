@@ -4,9 +4,9 @@ import { create } from "@bufbuild/protobuf";
 import dynamic from "next/dynamic";
 import { FC, useEffect, useState } from 'react';
 import { Button, Card, InputGroup, ListGroup } from "react-bootstrap";
-import Loading from "../common/loading";
-import { FormSelect, SettingSelect } from "../common/switch";
-import { Container, MoveUpDown, Remind, SettingInputText } from "../config/components";
+import { Container, MoveUpDown, Remind, SettingInputText } from "../../component/components";
+import Loading from "../../component/loading";
+import { FormSelect, SettingSelect } from "../../component/switch";
 import { point } from "../pbes/node/point_pb";
 import {
     aeadSchema,

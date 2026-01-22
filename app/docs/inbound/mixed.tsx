@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { SettingInputText } from '../config/components';
+import { SettingInputText } from '../../component/components';
 import { mixed, socks5 } from '../pbes/config/inbound_pb';
 
 export const Socks5: FC<{ socks5: socks5, onChange: (x: socks5) => void }> = ({ socks5, onChange }) => {

@@ -1,6 +1,6 @@
 import { FC } from "react";
-import { SettingCheck } from "../common/switch";
-import { SettingInputText } from "../config/components";
+import { SettingInputText } from "../../component/components";
+import { SettingCheck } from "../../component/switch";
 import { yuubinsya } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 

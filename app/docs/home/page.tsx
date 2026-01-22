@@ -1,9 +1,10 @@
 "use client";
 
+import { Card, CardBody, MainContainer } from '@/app/component/cardlist';
 import { create } from '@bufbuild/protobuf';
 import dynamic from 'next/dynamic';
 import { useCallback, useState } from 'react';
-import Loading from '../common/loading';
+import Loading from '../../component/loading';
 import { useProtoSWR } from '../common/proto';
 import { Flow, FlowContainer } from '../connections/components';
 import { NodeModal } from '../node/modal';
@@ -86,17 +87,20 @@ function HomePage() {
             />
         </div>
 
-        <div style={{ minHeight: '400px', marginBottom: '1rem' }}>
-            <TrafficChartDynamic data={traffic} />
-        </div>
 
-        <div>
-            <ActiveNodesDynamic />
-        </div>
+        <MainContainer>
+            <Card style={{ minHeight: '400px' }}>
+                <CardBody>
+                    <TrafficChartDynamic data={traffic} />
+                </CardBody>
+            </Card>
+        </MainContainer>
+
+        <ActiveNodesDynamic showFooter={false} />
     </div>
 }
 
 const TrafficChartDynamic = dynamic(() => import('./TrafficChart'), { ssr: false, loading: () => <Loading /> });
-const ActiveNodesDynamic = dynamic(() => import('./ActiveNodes'), { ssr: false, loading: () => <Loading /> });
+const ActiveNodesDynamic = dynamic(() => import('../group/activates/page'), { ssr: false, loading: () => <Loading /> });
 
 export default HomePage;

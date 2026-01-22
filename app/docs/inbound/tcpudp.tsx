@@ -1,6 +1,6 @@
 import { FC } from "react"
-import { SettingCheck, SettingTypeSelect } from "../common/switch"
-import { SettingInputText } from "../config/components"
+import { SettingInputText } from "../../component/components"
+import { SettingCheck, SettingTypeSelect } from "../../component/switch"
 import { reverse_tcp, tcp_udp_controlSchema, tcpudp } from "../pbes/config/inbound_pb"
 
 export const ReverseTCP: FC<{ reverse_tcp: reverse_tcp, onChange: (x: reverse_tcp) => void }> = ({ reverse_tcp, onChange }) => {

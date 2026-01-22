@@ -6,11 +6,11 @@ import Error from 'next/error';
 import { FC, useContext, useState } from "react";
 import { Accordion, Badge, Button, ButtonGroup, Dropdown, DropdownButton, Form, Modal, Spinner } from "react-bootstrap";
 import { useLocalStorage } from "usehooks-ts";
+import Loading from "../../component/loading";
+import { GlobalToastContext } from "../../component/toast";
 import { LatencyDNSUrlDefault, LatencyDNSUrlKey, LatencyHTTPUrlDefault, LatencyHTTPUrlKey, LatencyIPUrlDefault, LatencyIPUrlKey, LatencyIPv6Default, LatencyIPv6Key, LatencyStunTCPUrlDefault, LatencyStunTCPUrlKey, LatencyStunUrlDefault, LatencyStunUrlKey } from "../common/apiurl";
-import Loading from "../common/loading";
 import { Nodes, NodesContext } from "../common/nodes";
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
-import { GlobalToastContext } from "../common/toast";
 import { NodeModal } from "../node/modal";
 import { node, use_reqSchema } from "../pbes/api/node_pb";
 import { dns_over_quicSchema, http_testSchema, ipSchema, nat_type, reply, request_protocol, request_protocolSchema, requestsSchema, stunSchema } from "../pbes/node/latency_pb";
@@ -445,48 +445,46 @@ const createLatencyReqByType = (
     }
 }
 
-const InfoBlock: FC<{ label: string, value: React.ReactNode, loading?: boolean, colorClass?: string }> = ({ label, value, loading, colorClass }) => (
-    <div className={styles.infoCard}>
-        <span className={styles.infoLabel}>{label}</span>
-        <div className={`${styles.infoValue} ${colorClass || ''} text-break`}>
-            {loading ? <Spinner animation="border" size="sm" variant="secondary" /> : value || "N/A"}
-        </div>
-    </div>
-);
-
-// Helper function: parse a Go duration string into milliseconds
+// Helper: Parse Go duration string (e.g., "1.2s", "500ms") to milliseconds (number)
 const parseGoDurationToMs = (val: string): number => {
     if (!val || val === "N/A" || val.includes("error") || val.includes("timeout")) return -1;
 
-    // Remove possible surrounding whitespace
     const cleanVal = val.trim();
     const num = parseFloat(cleanVal);
 
     if (isNaN(num)) return -1;
 
-    // Convert based on unit suffix
-    if (cleanVal.endsWith("ns")) return num / 1_000_000;
-    if (cleanVal.endsWith("µs") || cleanVal.endsWith("us")) return num / 1_000;
+    // Convert based on suffix
+    if (cleanVal.endsWith("ns")) return num / 1000000;
+    if (cleanVal.endsWith("µs") || cleanVal.endsWith("us")) return num / 1000;
     if (cleanVal.endsWith("ms")) return num;
-    if (cleanVal.endsWith("s") && !cleanVal.endsWith("ms")) return num * 1_000; // must check ms first
-    if (cleanVal.endsWith("m")) return num * 60 * 1_000; // very rare case
+    if (cleanVal.endsWith("s") && !cleanVal.endsWith("ms")) return num * 1000; // Check "ms" before "s"
+    if (cleanVal.endsWith("m")) return num * 60 * 1000;
 
-    // If no unit is provided, treat it as milliseconds (or consider it abnormal)
     return num;
 };
 
-// Helper function: return a color class based on latency in milliseconds
+// Helper: Get CSS class based on latency value (ms)
 const getLatencyColor = (val: string) => {
     const ms = parseGoDurationToMs(val);
 
-    // -1 indicates invalid or error value, no color applied
-    if (ms < 0) return "";
+    if (ms < 0) return styles['latency-invalid']; // No color for invalid/loading states
 
-    // Latency thresholds
-    if (ms < 100) return styles['latency-good']; // < 100ms: green
-    if (ms < 400) return styles['latency-avg'];  // 100ms–400ms: yellow
-    return styles['latency-bad'];                // > 400ms: red
+    if (ms < 200) return styles['latency-good']; // < 200ms: Green
+    if (ms < 999) return styles['latency-avg'];  // 200ms - 999ms: Yellow
+    return styles['latency-bad'];                // > 999ms: Red
 };
+
+// Helper Component: Display a single block of information
+const InfoBlock: FC<{ label: string, value: React.ReactNode, loading?: boolean, colorClass?: string }> = ({ label, value, loading, colorClass }) => (
+    <div className={styles.infoCard}>
+        <span className={styles.infoLabel}>{label}</span>
+        {/* Use text-break to prevent layout overflow on small screens */}
+        <div className={`${styles.infoValue} ${colorClass || ''} text-break`}>
+            {loading ? <Spinner animation="border" size="sm" variant="secondary" /> : value || "N/A"}
+        </div>
+    </div>
+);
 
 const NodeItemv2: FC<{
     hash: string,
@@ -544,46 +542,66 @@ const NodeItemv2: FC<{
 
     return (
         <Accordion.Item eventKey={hash} className={styles.accordionItem}>
-            {/* 1. Header: Clean and Info-rich */}
             <Accordion.Header className={styles.nodeHeader}>
-                <div className="d-flex w-100 align-items-center justify-content-between pe-3">
-                    <div className="d-flex align-items-center gap-3">
-                        {/* Status Dot (Optional: Could be based on last connectivity check) */}
-                        <i className={`bi bi-hdd-network fs-5 ${latency.tcp.value !== "N/A" && !latency.tcp.value.includes("timeout") ? "text-primary" : "text-muted"}`}></i>
+                {/* 
+                    Main Container Layout:
+                    - Mobile (xs): flex-column (Two rows)
+                    - Desktop (sm+): flex-sm-row (Single row)
+                    - Alignment: Top-aligned on mobile, Centered on desktop
+                */}
+                <div className="d-flex w-100 flex-column flex-sm-row align-items-start align-items-sm-center pe-2">
 
-                        <div className="d-flex flex-column">
-                            <span className="fw-bold">{name}</span>
+                    {/* 
+                        Left Side: Icon + Name 
+                        - mb-2: Adds bottom margin on mobile to separate from stats row
+                        - mb-sm-0: Removes margin on desktop
+                    */}
+                    <div className="d-flex align-items-center gap-3 w-100 mb-2 mb-sm-0">
+                        {/* Status Icon */}
+                        <i className={`bi bi-hdd-network fs-5 flex-shrink-0 ${getLatencyColor(latency.tcp.value) === styles['latency-good']
+                            ? "text-success"
+                            : latency.tcp.value !== "N/A" && !latency.tcp.value.includes("timeout")
+                                ? "text-primary"
+                                : "text-muted"
+                            }`}></i>
+
+                        <div className="d-flex flex-column text-truncate">
+                            <span className="fw-bold text-truncate">{name}</span>
                             <div className="d-flex gap-2 align-items-center" style={{ fontSize: '0.75rem' }}>
-                                <span className="text-muted font-monospace">{hash.substring(0, 8)}</span>
-                                {ipv6 && <Badge bg="info" className="text-dark py-0 px-1">IPv6</Badge>}
+                                <span className="text-muted font-monospace opacity-75">{hash.substring(0, 8)}</span>
+                                {ipv6 && <Badge bg="info" className="text-dark py-0 px-1" style={{ fontSize: '0.65rem' }}>IPv6</Badge>}
                             </div>
                         </div>
                     </div>
 
-                    {/* Collapsed State Summary (Visible only if header supports custom content, 
-                        Bootstrap Accordion Header might need custom toggle handling for complex layouts inside button.
-                        Assuming standard usage, this part renders inside the button) */}
-                    <div className="d-flex gap-3 text-muted small">
-                        <div className="d-flex align-items-center gap-1">
-                            <span className="text-uppercase" style={{ fontSize: '0.7rem', fontWeight: 700 }}>TCP</span>
-                            <span className={`font-monospace ${getLatencyColor(latency.tcp.value)}`}>
-                                {latency.tcp.value}
-                            </span>
-                        </div>
-                        <div className="d-flex align-items-center gap-1">
-                            <span className="text-uppercase" style={{ fontSize: '0.7rem', fontWeight: 700 }}>UDP</span>
-                            <span className={`font-monospace ${getLatencyColor(latency.udp.value)}`}>
-                                {latency.udp.value}
-                            </span>
+                    {/* 
+                        Right Side: Latency Data + Arrow
+                        - Mobile: Full width (w-100), Spread apart (justify-content-between)
+                        - Desktop: Auto width, Right aligned (justify-content-sm-end)
+                    */}
+                    <div className="d-flex w-100 w-sm-auto align-items-center justify-content-between justify-content-sm-end ps-0 ps-sm-2">
+
+                        {/* Stats Block */}
+                        <div className="d-flex gap-4 text-muted small align-items-center">
+                            <div className="d-flex gap-2 align-items-center">
+                                <span className="text-uppercase text-muted" style={{ fontSize: '0.65rem', fontWeight: 700 }}>TCP</span>
+                                <span className={`font-monospace fw-bold ${getLatencyColor(latency.tcp.value)}`}>
+                                    {latency.tcp.value}
+                                </span>
+                            </div>
+                            <div className="d-flex gap-2 align-items-center">
+                                <span className="text-uppercase text-muted" style={{ fontSize: '0.65rem', fontWeight: 700 }}>UDP</span>
+                                <span className={`font-monospace fw-bold ${getLatencyColor(latency.udp.value)}`}>
+                                    {latency.udp.value}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </Accordion.Header>
 
-            <Accordion.Body className="p-4 pt-0">
-                <hr className="my-3 opacity-10" />
-
-                {/* 2. Latency & IP Grid */}
+            <Accordion.Body className={styles.accordionBody}>
+                {/* 1. Main Info Grid (Latency & IP) */}
                 <div className={styles.infoGrid}>
                     <InfoBlock
                         label="TCP Latency"
@@ -597,19 +615,18 @@ const NodeItemv2: FC<{
                         loading={latency.udp.loading}
                         colorClass={getLatencyColor(latency.udp.value)}
                     />
-
                     {latency.ip && (
                         <>
-                            <InfoBlock label="IPv4 Address" value={latency.ip.ipv4} loading={latency.ip.loading} />
-                            <InfoBlock label="IPv6 Address" value={latency.ip.ipv6} loading={latency.ip.loading} />
+                            <InfoBlock label="IPv4" value={latency.ip.ipv4} loading={latency.ip.loading} />
+                            <InfoBlock label="IPv6" value={latency.ip.ipv6} loading={latency.ip.loading} />
                         </>
                     )}
                 </div>
 
-                {/* 3. Advanced Info (STUN) - Conditional Rendering */}
+                {/* 2. Advanced Info (STUN) */}
                 {(latency.stun || latency.stun_tcp) && (
                     <div className="mb-4">
-                        <h6 className="text-muted small fw-bold mb-2">NAT & STUN Details</h6>
+                        <h6 className="text-muted small fw-bold mb-2 ps-1">NAT & STUN Details</h6>
                         <div className={styles.infoGrid}>
                             {latency.stun && (
                                 <>
@@ -625,17 +642,20 @@ const NodeItemv2: FC<{
                     </div>
                 )}
 
-                {/* 4. Action Footer */}
+                {/* 3. Action Footer */}
                 <div className={styles.actionFooter}>
                     <DropdownButton
                         as={ButtonGroup}
                         variant="outline-secondary"
                         size="sm"
+                        // Responsive Title: Icon only on mobile (xs), Icon + Text on desktop (sm+)
                         title={
-                            <>
-                                {isTesting ? <Spinner as="span" animation="border" size="sm" className="me-2" /> : <i className="bi bi-speedometer2 me-2" />}
-                                Test Latency
-                            </>
+                            isTesting
+                                ? <Spinner as="span" animation="border" size="sm" />
+                                : <>
+                                    <i className="bi bi-speedometer2"></i>
+                                    <span className="d-none d-sm-inline ms-2">Test</span>
+                                </>
                         }
                         disabled={isTesting}
                         onSelect={(key) => test(key as LatencyType)}
@@ -648,17 +668,21 @@ const NodeItemv2: FC<{
                         <Dropdown.Item eventKey={LatencyType.IP}>IP Check</Dropdown.Item>
                     </DropdownButton>
 
-                    <Button variant="outline-secondary" size="sm" onClick={onClickEdit}>
-                        <i className="bi bi-pencil me-2" /> Edit Config
+                    <Button variant="outline-secondary" size="sm" onClick={onClickEdit} title="Edit Configuration">
+                        <i className="bi bi-pencil" />
+                        {/* d-none d-sm-inline: Hide text on mobile */}
+                        <span className="d-none d-sm-inline ms-2">Edit</span>
                     </Button>
 
-                    <Button variant="primary" size="sm" onClick={() => setNode(ctx, hash)}>
-                        <i className="bi bi-check2-circle me-2" /> Use Node
+                    <Button variant="primary" size="sm" onClick={() => setNode(ctx, hash)} title="Use Node">
+                        <i className="bi bi-check2-circle" />
+                        {/* d-none d-sm-inline: Hide text on mobile */}
+                        <span className="d-none d-sm-inline ms-2">Use</span>
                     </Button>
                 </div>
             </Accordion.Body>
         </Accordion.Item>
-    )
+    );
 }
 
 function setNode(ctx: { Info: (msg: string) => void, Error: (msg: string) => void }, hash: string) {

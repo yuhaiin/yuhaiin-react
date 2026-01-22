@@ -1,4 +1,4 @@
-import { IFramePage } from "../../common/iframe";
+import { IFramePage } from "../../../component/iframe";
 
 const DocumentsPage = () => {
     return <>
