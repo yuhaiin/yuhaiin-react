@@ -693,8 +693,7 @@ function setNode(ctx: { Info: (msg: string) => void, Error: (msg: string) => voi
         })
 }
 
-
-export const NodeJsonModal = (
+const NodeJsonModal = (
     props: {
         show: boolean,
         plaintext?: boolean,

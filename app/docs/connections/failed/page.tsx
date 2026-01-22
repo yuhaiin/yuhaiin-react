@@ -1,6 +1,7 @@
 "use client"
 
 import { CardList, IconBadge, MainContainer, SettingLabel } from "@/app/component/cardlist"
+import { TimestampZero } from "@/app/component/components"
 import { timestampDate } from "@bufbuild/protobuf/wkt"
 import React, { FC, useMemo, useState } from "react"
 import { Button, Dropdown, Modal, Spinner, ToggleButton, ToggleButtonGroup } from "react-bootstrap"
@@ -10,7 +11,6 @@ import { useProtoSWR } from "../../common/proto"
 import { connections, failed_history } from "../../pbes/api/statistic_pb"
 import { type } from "../../pbes/statistic/config_pb"
 import { ListGroupItemString } from "../components"
-import { TimestampZero } from "../history/page"
 
 
 // --- Component: Individual Failed History Row ---

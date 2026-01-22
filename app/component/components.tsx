@@ -1,6 +1,10 @@
+import { create } from "@bufbuild/protobuf";
+import { TimestampSchema } from "@bufbuild/protobuf/wkt";
 import React, { FC, JSX, useCallback, useEffect, useRef, useState } from "react";
 import { Button, ButtonGroup, Card, Col, Collapse, Dropdown, DropdownMenu, Form, InputGroup, Row } from "react-bootstrap";
 import { useClipboard } from "./clipboard";
+
+export const TimestampZero = create(TimestampSchema, { seconds: BigInt(0), nanos: 0 })
 
 export class Remind {
     label: string

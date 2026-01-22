@@ -1,71 +1,25 @@
 /* =========================================
-   1. Theme Variables (Global Scope for Modals)
-   ========================================= */
-
-:global(:root) {
-    /* --- Default (Dark Mode) --- */
-    --card-inner-border: rgba(255, 255, 255, 0.05);
-    --card-footer-bg: rgba(0, 0, 0, 0.1);
-
-    --list-item-bg: rgba(255, 255, 255, 0.02);
-    --list-item-hover: rgba(255, 255, 255, 0.05);
-    --list-item-border-hover: rgba(255, 255, 255, 0.1);
-
-    --new-item-dashed: rgba(255, 255, 255, 0.2);
-    --new-item-focus: rgba(255, 255, 255, 0.05);
-
-    --input-text-color: #ffffff;
-    --input-placeholder: rgba(255, 255, 255, 0.3);
-
-    --modal-settings-bg: rgba(255, 255, 255, 0.03);
-    --modal-settings-border: rgba(255, 255, 255, 0.05);
-    --modal-error-bg: rgba(220, 53, 69, 0.1);
-    --modal-label-color: var(--bs-secondary-color);
-}
-
-/* --- Light Mode Overrides --- */
-:global([data-bs-theme="light"]) {
-    --card-inner-border: rgba(0, 0, 0, 0.08);
-    --card-footer-bg: rgba(0, 0, 0, 0.03);
-
-    --list-item-bg: rgba(0, 0, 0, 0.03);
-    --list-item-hover: rgba(0, 0, 0, 0.06);
-    --list-item-border-hover: rgba(0, 0, 0, 0.15);
-
-    --new-item-dashed: rgba(0, 0, 0, 0.2);
-    --new-item-focus: rgba(0, 0, 0, 0.05);
-
-    --input-text-color: var(--bs-body-color);
-    --input-placeholder: rgba(0, 0, 0, 0.4);
-
-    --modal-settings-bg: rgba(0, 0, 0, 0.03);
-    --modal-settings-border: rgba(0, 0, 0, 0.08);
-    --modal-error-bg: rgba(220, 53, 69, 0.08);
-    --modal-label-color: rgba(0, 0, 0, 0.6);
-}
-
-/* =========================================
    2. Component Styles
    ========================================= */
 
 .configCard {
-    background: var(--sidebar-bg);
-    border: 1px solid var(--sidebar-border-color);
-    border-radius: 20px;
+    background: var(--sidebar-bg) !important;
+    border: 1px solid var(--sidebar-border-color) !important;
+    border-radius: 20px !important;
     margin-bottom: 2rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
     view-transition-name: config-card-root !important;
 }
 
 .configCard:hover {
-    transform: translateY(-5px);
-    border-color: rgba(99, 102, 241, 0.3);
-    box-shadow: 0 0 30px rgba(99, 102, 241, 0.1);
+    transform: translateY(-5px) !important;
+    border-color: rgba(99, 102, 241, 0.3) !important;
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.1) !important;
 }
 
 .cardHeaderCustom {

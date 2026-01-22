@@ -1,6 +1,113 @@
 @import 'bootstrap/dist/css/bootstrap.css';
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
+:root {
+    --sidebar-gap: 16px;
+
+    /* Rounded corners for card-like appearance */
+    --sidebar-radius: 24px;
+
+    --sidebar-transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Dark Mode: Solid Deep Space Grey */
+html[data-bs-theme="dark"] {
+    /* Solid background, no transparency */
+    --sidebar-bg: var(--bs-body-bg);
+
+    --sidebar-color: #a6a6c0;
+    /* Muted text color */
+    --sidebar-header-color: #ffffff;
+
+    /* Subtle border for definition */
+    --sidebar-border-color: #2b2b40;
+
+    --sidebar-hover-bg: #222233;
+
+    /* Tech Cyan / Neon Teal */
+    --sidebar-active-bg: rgba(0, 255, 213, 0.08);
+    --sidebar-active-color: #00ffd5;
+    --sidebar-active-glow: 0 0 15px rgba(0, 255, 213, 0.1);
+
+    /* heavy shadow for floating effect since bg is solid */
+    --sidebar-box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    --divider-color: #2b2b40;
+
+    /* --- Default (Dark Mode) --- */
+    --card-inner-border: rgba(255, 255, 255, 0.05);
+    --card-footer-bg: rgba(0, 0, 0, 0.1);
+
+    --list-item-bg: rgba(255, 255, 255, 0.02);
+    --list-item-hover: rgba(255, 255, 255, 0.05);
+    --list-item-border-hover: rgba(255, 255, 255, 0.1);
+
+    --new-item-dashed: rgba(255, 255, 255, 0.2);
+    --new-item-focus: rgba(255, 255, 255, 0.05);
+
+    --input-text-color: #ffffff;
+    --input-placeholder: rgba(255, 255, 255, 0.3);
+
+    --modal-settings-bg: rgba(255, 255, 255, 0.03);
+    --modal-settings-border: rgba(255, 255, 255, 0.05);
+    --modal-error-bg: rgba(220, 53, 69, 0.1);
+    --modal-label-color: var(--bs-secondary-color);
+
+    --metric-bg: var(--bs-body-bg);
+    --metric-border: rgba(255, 255, 255, 0.1);
+    --metric-label: #94a3b8;
+    --metric-value: #f8fafc;
+
+    .metricCard {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* Light Mode: Solid White */
+html[data-bs-theme="light"] {
+    /* Solid background */
+    --sidebar-bg: #ffffff;
+
+    --sidebar-color: #64748b;
+    --sidebar-header-color: #0f172a;
+
+    --sidebar-border-color: #e2e8f0;
+
+    --sidebar-hover-bg: #f1f5f9;
+
+    /* Tech Blue */
+    --sidebar-active-bg: #e0f2fe;
+    --sidebar-active-color: #0284c7;
+    --sidebar-active-glow: none;
+    /* Clean look for light mode */
+
+    --sidebar-box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+    --divider-color: #e2e8f0;
+
+
+    --card-inner-border: rgba(0, 0, 0, 0.08);
+    --card-footer-bg: rgba(0, 0, 0, 0.03);
+
+    --list-item-bg: rgba(0, 0, 0, 0.03);
+    --list-item-hover: rgba(0, 0, 0, 0.06);
+    --list-item-border-hover: rgba(0, 0, 0, 0.15);
+
+    --new-item-dashed: rgba(0, 0, 0, 0.2);
+    --new-item-focus: rgba(0, 0, 0, 0.05);
+
+    --input-text-color: var(--bs-body-color);
+    --input-placeholder: rgba(0, 0, 0, 0.4);
+
+    --modal-settings-bg: rgba(0, 0, 0, 0.03);
+    --modal-settings-border: rgba(0, 0, 0, 0.08);
+    --modal-error-bg: rgba(220, 53, 69, 0.08);
+    --modal-label-color: rgba(0, 0, 0, 0.6);
+
+    --metric-bg: #ffffff;
+    --metric-border: rgba(0, 0, 0, 0.08);
+    --metric-label: #64748b;
+    --metric-value: #1e293b;
+}
+
 /* 1. Basic Setup */
 body {
     overflow-x: hidden;
@@ -166,7 +273,8 @@ body {
     box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5) !important;
 }
 
-.btn:focus, .btn:active:focus {
+.btn:focus,
+.btn:active:focus {
     box-shadow: none !important;
     outline: none !important;
 }
@@ -186,16 +294,16 @@ fieldset:disabled .btn {
     background-color: var(--bs-tertiary-bg) !important;
     border-color: var(--sidebar-border-color) !important;
     color: var(--bs-body-color) !important;
-    
+
     /* Standard Bootstrap disabled opacity */
     opacity: 0.65;
-    
+
     /* Prevent interactions */
     pointer-events: none;
     box-shadow: none !important;
-    
+
     /* Ensure no z-index weirdness with input groups when disabled */
-    z-index: 0; 
+    z-index: 0;
 }
 
 /* 
@@ -207,7 +315,8 @@ fieldset:disabled .btn {
     background-color: var(--bs-danger) !important;
     border-color: var(--bs-danger) !important;
     color: #fff !important;
-    opacity: 0.65; /* Fades the red */
+    opacity: 0.65;
+    /* Fades the red */
 }
 
 /* 
@@ -218,7 +327,8 @@ fieldset:disabled .btn {
     background-color: transparent !important;
     border-color: var(--bs-danger) !important;
     color: var(--bs-danger) !important;
-    opacity: 0.5; /* Usually outlines look better a bit more transparent when disabled */
+    opacity: 0.5;
+    /* Usually outlines look better a bit more transparent when disabled */
 }
 
 /* -------------------------------------------------------
@@ -444,16 +554,20 @@ fieldset:disabled .btn {
     background-color: var(--bs-tertiary-bg);
     border: 1px solid var(--sidebar-border-color);
     color: var(--bs-body-color);
-    border-radius: 12px; /* Match button border-radius */
-    margin: 0 4px; /* Add some spacing between items */
+    border-radius: 12px;
+    /* Match button border-radius */
+    margin: 0 4px;
+    /* Add some spacing between items */
     transition: all 0.2s ease;
-    min-width: 40px; /* Ensure a minimum width for clicks */
+    min-width: 40px;
+    /* Ensure a minimum width for clicks */
     text-align: center;
 }
 
 .pagination .page-item:first-child .page-link,
 .pagination .page-item:last-child .page-link {
-    border-radius: 12px; /* Ensure prev/next buttons also have radius */
+    border-radius: 12px;
+    /* Ensure prev/next buttons also have radius */
 }
 
 .pagination .page-item .page-link:hover {
@@ -465,7 +579,8 @@ fieldset:disabled .btn {
 .pagination .page-item.active .page-link {
     background-color: var(--sidebar-active-color) !important;
     border-color: var(--sidebar-active-color) !important;
-    color: #fff !important; /* Force white text for active item */
+    color: #fff !important;
+    /* Force white text for active item */
     box-shadow: none !important;
 }
 
@@ -480,60 +595,60 @@ fieldset:disabled .btn {
 
 /* 1. Define defaults (Light Mode) */
 :root {
-  /* Dark gray thumb for light backgrounds */
-  --scrollbar-thumb: rgba(0, 0, 0, 0.25);
-  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
-  --scrollbar-thumb-active: rgba(0, 0, 0, 0.6);
-  --scrollbar-track: transparent;
+    /* Dark gray thumb for light backgrounds */
+    --scrollbar-thumb: rgba(0, 0, 0, 0.25);
+    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
+    --scrollbar-thumb-active: rgba(0, 0, 0, 0.6);
+    --scrollbar-track: transparent;
 }
 
 /* 2. Override for Dark Mode */
 /* Bootstrap 5.3+ uses this attribute. If you use a different class, change this selector. */
 [data-bs-theme="dark"] {
-  /* Light gray thumb for dark backgrounds */
-  --scrollbar-thumb: rgba(255, 255, 255, 0.2);
-  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
-  --scrollbar-thumb-active: rgba(255, 255, 255, 0.6);
+    /* Light gray thumb for dark backgrounds */
+    --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
+    --scrollbar-thumb-active: rgba(255, 255, 255, 0.6);
 }
 
 /* Also support system preference if no specific theme attribute is set */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-bs-theme="light"]) {
-    --scrollbar-thumb: rgba(255, 255, 255, 0.2);
-    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
-    --scrollbar-thumb-active: rgba(255, 255, 255, 0.6);
-  }
+    :root:not([data-bs-theme="light"]) {
+        --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+        --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
+        --scrollbar-thumb-active: rgba(255, 255, 255, 0.6);
+    }
 }
 
 /* 3. Apply to Firefox */
 * {
-  scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 /* 4. Apply to Webkit (Chrome, Edge, Safari) */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+    width: 8px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--scrollbar-track);
+    background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-thumb);
-  border-radius: 4px;
+    background-color: var(--scrollbar-thumb);
+    border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--scrollbar-thumb-hover);
+    background-color: var(--scrollbar-thumb-hover);
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background-color: var(--scrollbar-thumb-active);
+    background-color: var(--scrollbar-thumb-active);
 }
 
 ::-webkit-scrollbar-corner {
-  background: transparent;
+    background: transparent;
 }

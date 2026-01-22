@@ -119,7 +119,7 @@ export default function Lists() {
             <Button
                 variant='primary'
                 disabled={refresh}
-                className="d-flex align-items-center gap-2 px-3 shadow-sm"
+                className="d-flex align-items-center gap-2 px-3"
                 onClick={() => {
                     setRefresh(true)
                     FetchProtobuf(lists.method.refresh, create(EmptySchema))

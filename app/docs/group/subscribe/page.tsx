@@ -20,34 +20,46 @@ const LinkItem: FC<{
     onDelete: () => void;
 }> = ({ linkData, isUpdating, onUpdate, onDelete }) => {
     return (
-        <>
-            <div className="d-flex align-items-center flex-grow-1 overflow-hidden gap-3">
+        <div
+            className="link-item"
+            style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr auto',
+                gap: '12px',
+                alignItems: 'center',
+                overflow: 'hidden',
+            }}
+        >
+            {/* LEFT */}
+            <div className="d-flex align-items-center gap-3 min-w-0 overflow-hidden">
                 <IconBoxRounded
                     icon="rss-fill"
                     color="#0d6efd"
-                    style={{ width: '40px', height: '40px', border: 'none', marginRight: '0px' }}
+                    style={{ width: 40, height: 40, flexShrink: 0 }}
                 />
 
-                {/* Text Info: min-width: 0 is crucial for text-truncate inside flex items */}
-                <div className="d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
-                    <span className="fw-bold text-truncate">{linkData.name}</span>
-                    <small className="text-muted text-truncate font-monospace opacity-75">
+                <div className="min-w-0 overflow-hidden">
+                    <div className="fw-bold text-truncate">
+                        {linkData.name}
+                    </div>
+                    <small className="text-muted text-truncate d-block">
                         {linkData.url}
                     </small>
                 </div>
             </div>
 
-            {/* Actions: Added flex-shrink-0 and white-space-nowrap */}
-            <div className="d-flex gap-2 ms-3 align-items-center flex-shrink-0 text-nowrap">
+            {/* RIGHT */}
+            <div className="d-flex gap-2 justify-content-end link-actions">
                 <Button
                     variant="outline-primary"
                     size="sm"
                     onClick={onUpdate}
                     disabled={isUpdating}
-                    title="Update Subscription"
-                    style={{ minWidth: '38px' }} // Ensures square shape on mobile
                 >
-                    {isUpdating ? <Spinner size="sm" animation="border" /> : <i className="bi bi-arrow-repeat"></i>}
+                    {isUpdating
+                        ? <Spinner size="sm" animation="border" />
+                        : <i className="bi bi-arrow-repeat" />
+                    }
                     <span className="d-none d-sm-inline ms-2">Update</span>
                 </Button>
 
@@ -55,14 +67,12 @@ const LinkItem: FC<{
                     variant="outline-danger"
                     size="sm"
                     onClick={onDelete}
-                    title="Delete Subscription"
-                    style={{ minWidth: '38px' }} // Ensures square shape on mobile
                 >
-                    <i className="bi bi-trash"></i>
+                    <i className="bi bi-trash" />
                     <span className="d-none d-sm-inline ms-2">Delete</span>
                 </Button>
             </div>
-        </>
+        </div>
     );
 };
 

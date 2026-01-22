@@ -1,6 +1,7 @@
 "use client"
 
 import { CardList, IconBadge, MainContainer, SettingLabel } from "@/app/component/cardlist"
+import { TimestampZero } from "@/app/component/components"
 import { timestampDate } from "@bufbuild/protobuf/wkt"
 import React, { FC, useMemo, useState } from "react"
 import { Button, Dropdown, Modal, Spinner, ToggleButton, ToggleButtonGroup } from "react-bootstrap"
@@ -8,7 +9,6 @@ import Loading from "../../../component/loading"
 import { CustomPagination } from "../../../component/pagination"
 import { useProtoSWR } from "../../common/proto"
 import { ListGroupItemString } from "../../connections/components"
-import { TimestampZero } from "../../connections/history/page"
 import { block_history, rules } from "../../pbes/api/config_pb"
 
 // --- Component: Individual Blocked History Row ---

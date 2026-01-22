@@ -51,7 +51,7 @@ function Test() {
                     <p className="small text-muted mb-3 px-1">
                         Enter a domain or IP address below to see which rule and outbound node would be selected.
                     </p>
-                    <InputGroup size="lg" className="shadow-sm">
+                    <InputGroup size="lg">
                         <Form.Control
                             placeholder="e.g. www.google.com or 8.8.8.8"
                             value={value}

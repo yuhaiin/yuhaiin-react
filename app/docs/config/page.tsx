@@ -120,7 +120,7 @@ function ConfigComponent() {
                             <SettingLabel>System Proxy Integration</SettingLabel>
                             <ToggleButtonGroup
                                 type="checkbox"
-                                className="w-100 shadow-sm"
+                                className="w-100"
                                 value={systemProxy}
                                 onChange={handleSystemProxyChange}
                             >

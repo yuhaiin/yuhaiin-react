@@ -61,23 +61,3 @@
   color: var(--metric-value, #0f172a);
   animation: dataUpdate 0.2s ease-out;
 }
-
-:root {
-  --metric-bg: #ffffff;
-  --metric-border: rgba(0, 0, 0, 0.08);
-  --metric-label: #64748b;
-  --metric-value: #1e293b;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --metric-bg: var(--bs-body-bg);
-    --metric-border: rgba(255, 255, 255, 0.1);
-    --metric-label: #94a3b8;
-    --metric-value: #f8fafc;
-  }
-
-  .metricCard {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-  }
-}

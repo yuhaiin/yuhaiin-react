@@ -1,67 +1,8 @@
 /* =========================================
-   1. CSS Variables & Tech Theme (Solid & Rounded)
-   ========================================= */
-:root {
-    --sidebar-width: 260px;
-    --sidebar-gap: 16px;
-
-    /* Rounded corners for card-like appearance */
-    --sidebar-radius: 24px;
-
-    --sidebar-transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-/* Dark Mode: Solid Deep Space Grey */
-:global(html[data-bs-theme="dark"]) {
-    /* Solid background, no transparency */
-    --sidebar-bg: var(--bs-body-bg);
-
-    --sidebar-color: #a6a6c0;
-    /* Muted text color */
-    --sidebar-header-color: #ffffff;
-
-    /* Subtle border for definition */
-    --sidebar-border-color: #2b2b40;
-
-    --sidebar-hover-bg: #222233;
-
-    /* Tech Cyan / Neon Teal */
-    --sidebar-active-bg: rgba(0, 255, 213, 0.08);
-    --sidebar-active-color: #00ffd5;
-    --sidebar-active-glow: 0 0 15px rgba(0, 255, 213, 0.1);
-
-    /* heavy shadow for floating effect since bg is solid */
-    --sidebar-box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-    --divider-color: #2b2b40;
-}
-
-/* Light Mode: Solid White */
-:global(html[data-bs-theme="light"]) {
-    /* Solid background */
-    --sidebar-bg: #ffffff;
-
-    --sidebar-color: #64748b;
-    --sidebar-header-color: #0f172a;
-
-    --sidebar-border-color: #e2e8f0;
-
-    --sidebar-hover-bg: #f1f5f9;
-
-    /* Tech Blue */
-    --sidebar-active-bg: #e0f2fe;
-    --sidebar-active-color: #0284c7;
-    --sidebar-active-glow: none;
-    /* Clean look for light mode */
-
-    --sidebar-box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
-    --divider-color: #e2e8f0;
-}
-
-/* =========================================
    2. Container & Floating Layout
    ========================================= */
 .sidebar {
-    width: var(--sidebar-width);
+    width: "260px";
     background-color: var(--sidebar-bg);
     color: var(--sidebar-color);
     position: fixed;

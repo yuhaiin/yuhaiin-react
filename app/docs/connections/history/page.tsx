@@ -1,9 +1,10 @@
 "use client"
 
 import { CardList, FilterSearch, IconBadge, MainContainer, SettingLabel } from "@/app/component/cardlist"
+import { TimestampZero } from "@/app/component/components"
 import { FilterTypeSelect } from "@/app/component/switch"
 import { create } from "@bufbuild/protobuf"
-import { timestampDate, TimestampSchema } from "@bufbuild/protobuf/wkt"
+import { timestampDate } from "@bufbuild/protobuf/wkt"
 import React, { FC, useCallback, useMemo, useState } from "react"
 import { Button, Dropdown, Modal, Spinner, ToggleButton, ToggleButtonGroup } from "react-bootstrap"
 import Loading from "../../../component/loading"
@@ -14,8 +15,6 @@ import { all_history, connections } from "../../pbes/api/statistic_pb"
 import { mode } from "../../pbes/config/bypass_pb"
 import { connectionSchema, type, typeSchema } from "../../pbes/statistic/config_pb"
 import { ConnectionInfo, ListGroupItemString } from "../components"
-
-export const TimestampZero = create(TimestampSchema, { seconds: BigInt(0), nanos: 0 })
 
 // --- Component: Individual History Row (Subscribe Style) ---
 const ListItem: FC<{ data: all_history }> = React.memo(({ data }) => {
