@@ -12,8 +12,16 @@ const nextConfig: NextConfig = {
     trailingSlash: true,
     transpilePackages: ['react-bootstrap'],
     experimental: {
-        optimizePackageImports: ['shlex', 'bootstrap-icons', 'bootstrap', '@bufbuild/buf', '@bufbuild/protobuf', 'swr'],
+        optimizePackageImports: [
+            'shlex',
+            'bootstrap-icons', 'bootstrap',
+            '@bufbuild/buf', '@bufbuild/protobuf',
+            'swr',
+            'react-window', 'uplot', 'usehooks-ts',
+        ],
         viewTransition: true,
+        webpackMemoryOptimizations: true,
+        serverSourceMaps: false
     },
 }
 

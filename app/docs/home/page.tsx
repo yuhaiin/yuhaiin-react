@@ -91,7 +91,7 @@ function HomePage() {
         <MainContainer>
             <Card style={{ minHeight: '400px' }}>
                 <CardBody>
-                    <TrafficChartDynamic data={traffic} />
+                    <TrafficChartDynamic data={traffic} minHeight={400} />
                 </CardBody>
             </Card>
         </MainContainer>
@@ -100,7 +100,7 @@ function HomePage() {
     </div>
 }
 
-const TrafficChartDynamic = dynamic(() => import('./TrafficChart'), { ssr: false, loading: () => <Loading /> });
+const TrafficChartDynamic = dynamic(() => import('./TrafficChartv2'), { ssr: false, loading: () => <Loading /> });
 const ActiveNodesDynamic = dynamic(() => import('../group/activates/page'), { ssr: false, loading: () => <Loading /> });
 
 export default HomePage;
