@@ -65,7 +65,7 @@ jobs:
           rm -rf publish/assets
           rm -rf publish/docs
           rm -rf publish/index.html
-          cp -rf out/* publish/
+          cp -rf dist/* publish/
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
