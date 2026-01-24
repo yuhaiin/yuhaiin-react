@@ -34,7 +34,7 @@ jobs:
           CI: false
 
       - run: |
-          cat <<EOF > out/go.mod
+          cat <<EOF > dist/go.mod
           module github.com/yuhaiin/yuhaiin.github.io
 
           go 1.22.0
