@@ -25,3 +25,5 @@ yarn-error.log*
 .next
 out
 /protoc.zip
+dist
+src/vite-env.d.ts

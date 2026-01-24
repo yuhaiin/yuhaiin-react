@@ -1,0 +1,29 @@
+.mobile-toggle-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1030;
+
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+
+    /* Use global vars if available, else fallback */
+    background-color: var(--sidebar-bg, #fff);
+    color: var(--sidebar-color, #333);
+    border: 1px solid var(--sidebar-border-color, #eee);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-toggle-btn:active {
+    transform: scale(0.92);
+    color: var(--sidebar-active-color, #007bff);
+    border-color: var(--sidebar-active-color, #007bff);
+}
