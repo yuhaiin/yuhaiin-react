@@ -109,7 +109,7 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
                 show={modalHash.show}
                 hash={modalHash.hash}
                 point={modalHash.point}
-                readOnly={true}
+                editable={false}
                 onHide={() => setModalHash({ ...modalHash, show: false })}
             />
 
