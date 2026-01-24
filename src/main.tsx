@@ -7,7 +7,7 @@ import { routeTree } from './routeTree.gen';
 const hashHistory = createHashHistory()
 
 // Create a new router instance
-const router = createRouter({ routeTree, history: hashHistory })
+const router = createRouter({ routeTree, history: hashHistory, defaultViewTransition: true })
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
