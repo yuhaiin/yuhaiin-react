@@ -1,16 +1,17 @@
-import { create } from '@bufbuild/protobuf';
-import { FC } from 'react';
-import { SettingInputText } from '../../component/components';
-import { TLSServerComponents } from '../node/tls_server';
-import { quic } from '../pbes/config/inbound_pb';
-import { tls_server_configSchema } from '../pbes/node/protocol_pb';
+import { SettingInputVertical } from '@/app/component/v2/forms'
+import { create } from '@bufbuild/protobuf'
+import { FC } from 'react'
+import { TLSServerComponents } from '../node/tls_server'
+import { quic } from '../pbes/config/inbound_pb'
+import { tls_server_configSchema } from '../pbes/node/protocol_pb'
 
 export const Quic: FC<{ quic: quic, onChange: (x: quic) => void }> = ({ quic, onChange }) => {
     return (
         <>
-            <SettingInputText
+            <SettingInputVertical
                 label='Host'
-                onChange={(e: string) => onChange({ ...quic, host: e })}
+                className='mb-3'
+                onChange={(e) => onChange({ ...quic, host: e })}
                 value={quic.host}
             />
 
@@ -18,4 +19,3 @@ export const Quic: FC<{ quic: quic, onChange: (x: quic) => void }> = ({ quic, on
         </>
     )
 }
-

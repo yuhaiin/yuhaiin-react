@@ -1,20 +1,28 @@
 "use client"
 
-import { CardList, FilterSearch, IconBadge, MainContainer, SettingLabel } from "@/app/component/cardlist"
-import { TimestampZero } from "@/app/component/components"
-import { FilterTypeSelect } from "@/app/component/switch"
+// import { FilterTypeSelect } from "@/app/component/switch"
+import { Button } from "@/app/component/v2/button"
+import { CardList, FilterSearch, IconBadge, MainContainer, SettingLabel } from "@/app/component/v2/card"
+import { Dropdown, DropdownContent, DropdownTrigger } from "@/app/component/v2/dropdown"
+import { SettingTypeSelect } from "@/app/component/v2/forms"
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/app/component/v2/modal"
+import { Spinner } from "@/app/component/v2/spinner"
+import { ToggleGroup, ToggleItem } from "@/app/component/v2/togglegroup"
 import { create } from "@bufbuild/protobuf"
 import { timestampDate } from "@bufbuild/protobuf/wkt"
 import React, { FC, useCallback, useMemo, useState } from "react"
-import { Button, Dropdown, Modal, Spinner, ToggleButton, ToggleButtonGroup } from "react-bootstrap"
+import { ArrowClockwise, ArrowLeftRight, ArrowRepeat, Broadcast, ChevronRight, Clock, InfoCircle, ShieldCheck, SortDown } from "react-bootstrap-icons"
 import Loading from "../../../component/loading"
-import { CustomPagination } from "../../../component/pagination"
+// import { CustomPagination } from "../../../component/pagination"
+import { Pagination } from "@/app/component/v2/pagination"
+import { TimestampZero } from "../../common/nodes"
 import { useProtoSWR } from "../../common/proto"
 import { NodeModal } from "../../node/modal"
 import { all_history, connections } from "../../pbes/api/statistic_pb"
 import { mode } from "../../pbes/config/bypass_pb"
 import { connectionSchema, type, typeSchema } from "../../pbes/statistic/config_pb"
 import { ConnectionInfo, ListGroupItemString } from "../components"
+
 
 // --- Component: Individual History Row (Subscribe Style) ---
 const ListItem: FC<{ data: all_history }> = React.memo(({ data }) => {
@@ -24,7 +32,7 @@ const ListItem: FC<{ data: all_history }> = React.memo(({ data }) => {
             {/* Left Side: Icon + Address & ID (Subscribe style) */}
             <div className="d-flex align-items-center flex-grow-1 overflow-hidden gap-3 w-100 w-md-auto">
                 <div className="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle flex-shrink-0" style={{ width: '42px', height: '42px' }}>
-                    <i className={`bi ${data.connection.type?.connType === type.udp ? 'bi-broadcast' : 'bi-arrow-left-right'} fs-5`}></i>
+                    {data.connection.type?.connType === type.udp ? <Broadcast className="fs-5" /> : <ArrowLeftRight className="fs-5" />}
                 </div>
 
                 <div className="d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
@@ -37,10 +45,10 @@ const ListItem: FC<{ data: all_history }> = React.memo(({ data }) => {
 
             {/* Right Side: Metadata Badges */}
             <div className="d-flex flex-wrap gap-2 align-items-center flex-shrink-0 ms-md-0">
-                <IconBadge icon="bi-shield-check" text={mode[data.connection.mode]} color="info" />
-                <IconBadge icon="bi-arrow-repeat" text={Number(data.count)} color="success" />
-                <IconBadge icon="bi-clock" text={timestampDate(data.time!).toLocaleTimeString()} color="secondary" />
-                <i className="bi bi-chevron-right text-muted opacity-25 ms-2 d-none d-md-block"></i>
+                <IconBadge icon={ShieldCheck} text={mode[data.connection.mode]} color="info" />
+                <IconBadge icon={ArrowRepeat} text={Number(data.count)} color="success" />
+                <IconBadge icon={Clock} text={timestampDate(data.time!).toLocaleTimeString()} color="secondary" />
+                <div className="text-muted opacity-25 ms-2 d-none d-md-block"><ChevronRight /></div>
             </div>
         </>
     );
@@ -102,25 +110,27 @@ function History() {
             />
 
             {/* Details Modal */}
-            <Modal show={!nodeModal.show && modalData.show} onHide={() => setModalData({ show: false })} centered scrollable>
-                <Modal.Header closeButton className="border-0">
-                    <Modal.Title className="fw-bold">Session Detail</Modal.Title>
-                </Modal.Header>
-                <Modal.Body className="pt-0">
-                    <ConnectionInfo
-                        showNodeModal={showNodeModal}
-                        value={modalData.data?.connection ?? create(connectionSchema, {})}
-                        startContent={
-                            <>
-                                <ListGroupItemString itemKey="Total Count" itemValue={modalData.data?.count.toString() ?? "1"} />
-                                <ListGroupItemString itemKey="Last Activity" itemValue={timestampDate(modalData.data?.time ?? TimestampZero).toLocaleString()} />
-                            </>
-                        }
-                    />
-                </Modal.Body>
-                <Modal.Footer className="border-0">
-                    <Button variant="primary" className="w-100" onClick={() => setModalData({ show: false })}>Close</Button>
-                </Modal.Footer>
+            <Modal open={!nodeModal.show && modalData.show} onOpenChange={(open) => !open && setModalData({ show: false })}>
+                <ModalContent>
+                    <ModalHeader closeButton>
+                        <ModalTitle className="fw-bold">Session Detail</ModalTitle>
+                    </ModalHeader>
+                    <ModalBody>
+                        <ConnectionInfo
+                            showNodeModal={showNodeModal}
+                            value={modalData.data?.connection ?? create(connectionSchema, {})}
+                            startContent={
+                                <>
+                                    <ListGroupItemString itemKey="Total Count" itemValue={modalData.data?.count.toString() ?? "1"} />
+                                    <ListGroupItemString itemKey="Last Activity" itemValue={timestampDate(modalData.data?.time ?? TimestampZero).toLocaleString()} />
+                                </>
+                            }
+                        />
+                    </ModalBody>
+                    <ModalFooter className="border-0">
+                        <Button variant="default" className="w-100" onClick={() => setModalData({ show: false })}>Close</Button>
+                    </ModalFooter>
+                </ModalContent>
             </Modal>
 
             {/* --- Top Action Bar --- */}
@@ -128,46 +138,50 @@ function History() {
                 <div>
                     <h4 className="fw-bold mb-1">Connection History</h4>
                     <div className="text-muted d-flex align-items-center small">
-                        <i className="bi bi-info-circle me-2"></i>
+                        <InfoCircle className="me-2" />
                         <span>Showing {values.length} historical records</span>
                     </div>
                 </div>
 
                 <div className="d-flex flex-wrap gap-2 justify-content-end align-items-center">
-                    <FilterSearch onEnter={setFilter} />
+                    <FilterSearch onEnter={setFilter} size="sm" />
 
-                    <FilterTypeSelect
+                    <SettingTypeSelect
                         type={typeSchema}
                         value={netFilter}
                         onChange={setNetFilter}
-                        format={(v) => v.number === 0 ? "All Networks" : v.name}
+                        format={(v) => v === 0 ? "All Networks" : typeSchema.values.find(x => x.number === v)?.name ?? "Unknown"}
+                        className="mb-0"
+                        triggerClassName="py-0"
                     />
 
                     <Button variant="outline-primary" size="sm" onClick={() => mutate()} disabled={isValidating}>
-                        {isValidating ? <Spinner size="sm" animation="border" /> : <i className="bi bi-arrow-clockwise"></i>}
+                        {isValidating ? <Spinner size="sm" /> : <ArrowClockwise />}
                     </Button>
 
                     <Dropdown>
-                        <Dropdown.Toggle variant="outline-secondary" size="sm">
-                            <i className="bi bi-sort-down me-1"></i>
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu align="end" className="p-3 shadow-lg border-0" style={{ minWidth: '220px' }}>
+                        <DropdownTrigger asChild>
+                            <Button variant="outline-secondary" size="sm">
+                                <SortDown className="me-1" />
+                            </Button>
+                        </DropdownTrigger>
+                        <DropdownContent align="end" className="p-3" style={{ minWidth: '220px' }}>
                             <div className="mb-3">
                                 <SettingLabel>Sort Order</SettingLabel>
-                                <ToggleButtonGroup type="radio" name="sortOrder" value={sortOrder} onChange={setSortOrder} className="w-100">
-                                    <ToggleButton id="t-asc" value="asc" variant="outline-secondary" size="sm">Ascending</ToggleButton>
-                                    <ToggleButton id="t-desc" value="desc" variant="outline-secondary" size="sm">Descending</ToggleButton>
-                                </ToggleButtonGroup>
+                                <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-100">
+                                    <ToggleItem value="asc" className="flex-grow-1">Asc</ToggleItem>
+                                    <ToggleItem value="desc" className="flex-grow-1">Desc</ToggleItem>
+                                </ToggleGroup>
                             </div>
                             <div>
                                 <SettingLabel>Sort By</SettingLabel>
-                                <ToggleButtonGroup type="radio" name="sortBy" value={sortBy} onChange={setSortBy} className="w-100">
-                                    <ToggleButton id="s-time" value="Time" variant="outline-secondary" size="sm">Time</ToggleButton>
-                                    <ToggleButton id="s-host" value="Host" variant="outline-secondary" size="sm">Host</ToggleButton>
-                                    <ToggleButton id="s-count" value="Count" variant="outline-secondary" size="sm">Count</ToggleButton>
-                                </ToggleButtonGroup>
+                                <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="w-100">
+                                    <ToggleItem value="Time" className="flex-grow-1">Time</ToggleItem>
+                                    <ToggleItem value="Host" className="flex-grow-1">Host</ToggleItem>
+                                    <ToggleItem value="Count" className="flex-grow-1">Count</ToggleItem>
+                                </ToggleGroup>
                             </div>
-                        </Dropdown.Menu>
+                        </DropdownContent>
                     </Dropdown>
                 </div>
             </div>
@@ -177,7 +191,7 @@ function History() {
                 onClickItem={(v) => setModalData({ show: true, data: v })}
                 renderListItem={(v) => <ListItem data={v} />}
                 footer={
-                    <CustomPagination
+                    <Pagination
                         currentPage={page}
                         totalItems={values.length}
                         pageSize={pageSize}

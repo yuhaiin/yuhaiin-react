@@ -1,15 +1,18 @@
 "use client"
 
-import { CardList, IconBox, IconBoxRounded, MainContainer, SettingLabel, SettingsBox } from "@/app/component/cardlist";
+import { Button } from "@/app/component/v2/button";
+import { CardRowList, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/app/component/v2/card";
+import { SettingInputVertical, SettingSelectVertical } from "@/app/component/v2/forms";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/app/component/v2/modal";
+import { GlobalToastContext } from "@/app/component/v2/toast";
+import { ToggleGroup, ToggleItem } from "@/app/component/v2/togglegroup";
 import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
-import Error from 'next/error';
+import HeaderError from 'next/error';
 import { FC, useContext, useState } from "react";
-import { Button, ButtonGroup, Modal, ToggleButton } from "react-bootstrap";
-import { ConfirmModal } from "../../../component/confirm";
+import { ChevronRight, Files, Globe, HddNetwork, PlusLg, Save, Tags as TagsIcon, Trash } from 'react-bootstrap-icons';
 import Loading from "../../../component/loading";
-import { SettingInputVertical, SettingSelectVertical } from "../../../component/switch";
-import { GlobalToastContext } from "../../../component/toast";
+import { ConfirmModal } from "../../../component/v2/confirm";
 import { Node, Nodes } from "../../common/nodes";
 import { FetchProtobuf, useProtoSWR } from '../../common/proto';
 import { NodeModal } from "../../node/modal";
@@ -25,53 +28,37 @@ const TagItem: FC<{
     const isGlobal = tagData.hash.length === 0 || tagData.hash[0] === "";
     const isMirror = tagData.type === tag_type.mirror;
 
+
     return (
         <>
-            <div className="d-flex align-items-center flex-grow-1 overflow-hidden gap-3">
-                {/* Icon based on type */}
-                <IconBoxRounded
-                    icon={isGlobal ? 'globe' : isMirror ? 'files' : 'hdd-network'}
-                    color={isGlobal ? '#6c757d' : isMirror ? '#0dcaf0' : '#0d6efd'}
-                    style={{ width: '40px', height: '40px', border: 'none', marginRight: '0px' }}
-                />
-
-                {/* Tag Info */}
-                <div className="d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
-                    <span className="fw-bold text-truncate">{tagName}</span>
-                    <div className="d-flex align-items-center gap-2">
-                        {isGlobal ? (
-                            <small className="text-muted opacity-75">Global Fallback</small>
-                        ) : (
-                            <small
-                                className="text-muted text-truncate font-monospace opacity-75 text-decoration-underline"
-                                style={{ cursor: 'pointer' }}
-                                onClick={(e) => {
-                                    if (!isMirror) {
-                                        e.stopPropagation();
-                                        onHashClick(tagData.hash[0]);
-                                    }
-                                }}
-                            >
-                                {isMirror ? `Mirror: ${tagData.hash[0]}` : tagData.hash[0]}
-                            </small>
-                        )}
-                    </div>
-                </div>
+            {isGlobal ? <Globe className="me-3 fs-5 text-secondary" /> : isMirror ? <Files className="me-3 fs-5 text-secondary" /> : <HddNetwork className="me-3 fs-5 text-secondary" />}
+            <div className="d-flex flex-column overflow-hidden flex-grow-1" style={{ minWidth: 0 }}>
+                <span className="fw-medium text-truncate">{tagName}</span>
+                {!isGlobal && (
+                    <small
+                        className="text-muted text-truncate font-monospace opacity-75 text-decoration-underline"
+                        style={{ cursor: 'pointer', fontSize: '0.75rem' }}
+                        onClick={(e) => {
+                            if (!isMirror) {
+                                e.stopPropagation();
+                                onHashClick(tagData.hash[0]);
+                            }
+                        }}
+                    >
+                        {isMirror ? `Mirror: ${tagData.hash[0]}` : tagData.hash[0]}
+                    </small>
+                )}
             </div>
-
-            {/* Actions */}
-            <div className="d-flex gap-2 ms-3 align-items-center flex-shrink-0">
+            <div className="d-flex gap-2 ms-3 align-items-center flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                 <Button
                     variant="outline-danger"
                     size="sm"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete();
-                    }}
+                    className="border-0"
+                    onClick={() => onDelete()}
                 >
-                    <i className="bi bi-trash"></i>
-                    <span className="d-none d-sm-inline ms-2">Delete</span>
+                    <Trash />
                 </Button>
+                <ChevronRight className="text-muted opacity-25 d-none d-md-block" />
             </div>
         </>
     );
@@ -89,41 +76,32 @@ const TagModal: FC<{
     onChangeTag: (x: save_tag_req) => void
 }> = (props) => {
     return (
-        <Modal show={props.show} onHide={props.onHide} centered scrollable>
-            <Modal.Header closeButton className="border-bottom-0 pb-0">
-                <Modal.Title className="fw-bold">{props.isNew ? "Create Tag" : `Edit Tag: ${props.tagItem.tag}`}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body className="pt-2">
-                <div className="d-flex flex-column gap-3">
-                    {/* Mode Toggle */}
-                    <SettingsBox>
-                        <SettingLabel>Tag Type</SettingLabel>
-                        <ButtonGroup className="w-100">
-                            <ToggleButton
-                                id="toggle-node"
-                                type="radio"
-                                variant="outline-primary"
-                                value={tag_type.node}
-                                checked={props.tagItem.type === tag_type.node}
-                                onChange={() => props.onChangeTag({ ...props.tagItem, type: tag_type.node })}
+        <Modal open={props.show} onOpenChange={(open) => !open && props.onHide()}>
+            <ModalContent>
+                <ModalHeader closeButton>
+                    <ModalTitle>{props.isNew ? "Create Tag" : `Edit Tag: ${props.tagItem.tag}`}</ModalTitle>
+                </ModalHeader>
+                <ModalBody>
+                    <div className="d-flex flex-column gap-4">
+                        {/* Mode Toggle */}
+                        <SettingsBox>
+                            <SettingLabel className="mb-2">Tag Type</SettingLabel>
+                            <ToggleGroup
+                                type="single"
+                                value={String(props.tagItem.type)}
+                                onValueChange={(v) => v && props.onChangeTag({ ...props.tagItem, type: Number(v) })}
+                                className="w-100"
                             >
-                                <i className="bi bi-hdd-network me-2"></i>Node
-                            </ToggleButton>
-                            <ToggleButton
-                                id="toggle-mirror"
-                                type="radio"
-                                variant="outline-primary"
-                                value={tag_type.mirror}
-                                checked={props.tagItem.type === tag_type.mirror}
-                                onChange={() => props.onChangeTag({ ...props.tagItem, type: tag_type.mirror })}
-                            >
-                                <i className="bi bi-files me-2"></i>Mirror
-                            </ToggleButton>
-                        </ButtonGroup>
-                    </SettingsBox>
+                                <ToggleItem value={String(tag_type.node)} className="flex-grow-1">
+                                    <HddNetwork className="me-2" />Node
+                                </ToggleItem>
+                                <ToggleItem value={String(tag_type.mirror)} className="flex-grow-1">
+                                    <Files className="me-2" />Mirror
+                                </ToggleItem>
+                            </ToggleGroup>
+                        </SettingsBox>
 
-                    {/* Inputs */}
-                    <SettingsBox>
+                        {/* Inputs */}
                         <div className="d-flex flex-column gap-3">
                             {props.isNew && (
                                 <SettingInputVertical
@@ -144,24 +122,26 @@ const TagModal: FC<{
                                 />
                             ) : (
                                 <div>
-                                    <SettingLabel>Target Node</SettingLabel>
-                                    <Node
-                                        data={props.nodes}
-                                        hash={props.tagItem.hash}
-                                        onChangeNode={(x) => props.onChangeTag({ ...props.tagItem, hash: x })}
-                                    />
+                                    <SettingLabel className="mb-2">Target Node</SettingLabel>
+                                    <div className="p-3 bg-body-tertiary rounded-3 border border-secondary border-opacity-10">
+                                        <Node
+                                            data={props.nodes}
+                                            hash={props.tagItem.hash}
+                                            onChangeNode={(x) => props.onChangeTag({ ...props.tagItem, hash: x })}
+                                        />
+                                    </div>
                                 </div>
                             )}
                         </div>
-                    </SettingsBox>
-                </div>
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="outline-secondary" onClick={props.onHide}>Cancel</Button>
-                <Button variant="primary" onClick={props.onSave} disabled={!props.tagItem.tag || !props.tagItem.hash}>
-                    <i className="bi bi-save me-1"></i> Save
-                </Button>
-            </Modal.Footer>
+                    </div>
+                </ModalBody>
+                <ModalFooter className="border-0">
+                    <Button variant="outline-secondary" onClick={props.onHide}>Cancel</Button>
+                    <Button variant="primary" onClick={props.onSave} disabled={!props.tagItem.tag || !props.tagItem.hash}>
+                        <Save className="me-2" />Save
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
         </Modal>
     );
 };
@@ -179,7 +159,7 @@ function Tags() {
     });
     const [confirmDelete, setConfirmDelete] = useState({ show: false, name: "" });
 
-    if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
+    if (error !== undefined) return <HeaderError statusCode={error.code} title={error.msg} />
     if (isLoading || data === undefined) return <Loading />
 
     const handleSave = () => {
@@ -212,7 +192,8 @@ function Tags() {
             {/* Delete Confirmation */}
             <ConfirmModal
                 show={confirmDelete.show}
-                content={<p>Delete tag <strong>{confirmDelete.name}</strong>?</p>}
+                title="Delete Tag"
+                content={<p className="mb-0">Are you sure you want to delete tag <strong>{confirmDelete.name}</strong>?</p>}
                 onHide={() => setConfirmDelete({ show: false, name: "" })}
                 onOk={() => handleDelete(confirmDelete.name)}
             />
@@ -236,15 +217,36 @@ function Tags() {
                 onSave={handleSave}
             />
 
-            <CardList
-                items={Object.entries(data.tags).sort((a, b) => a[0].localeCompare(b[0]))}
-                onClickItem={([key, value]) => setTagModalData({
-                    show: true,
-                    tag: create(save_tag_reqSchema, { tag: key, hash: value.hash[0], type: value.type }),
-                    isNew: false
-                })}
-                renderListItem={
-                    ([key, value]) =>
+            <CardRowList
+                header={
+                    <div className="d-flex justify-content-between align-items-center w-100">
+                        <IconBox icon={TagsIcon} color="#10b981" title="Tags Management" description={`${Object.keys(data.tags).length} alias and mirror nodes defined`} />
+                        <Button
+                            variant="primary"
+                            onClick={() => setTagModalData({
+                                show: true,
+                                tag: create(save_tag_reqSchema, { tag: "", hash: "", type: tag_type.node }),
+                                isNew: true
+                            })}
+                        >
+                            <PlusLg className="me-2" />Add New Tag
+                        </Button>
+                    </div>
+                }
+                items={Object.keys(data.tags).sort((a, b) => a.localeCompare(b))}
+                onClickItem={(key) => {
+                    const value = data.tags[key];
+                    setTagModalData({
+                        show: true,
+                        tag: create(save_tag_reqSchema, { tag: key, hash: value.hash[0], type: value.type }),
+                        isNew: false
+                    })
+                }}
+                renderListItem={(key) => {
+                    const value = data.tags[key];
+                    const isGlobal = value.hash.length === 0 || value.hash[0] === "";
+                    const isMirror = value.type === tag_type.mirror;
+                    return (
                         <TagItem
                             key={key}
                             tagName={key}
@@ -252,30 +254,18 @@ function Tags() {
                             onDelete={() => setConfirmDelete({ show: true, name: key })}
                             onHashClick={(h) => setModalHash({ hash: h, show: true })}
                         />
-                }
-
-                header={
-                    <>
-                        <div className="d-flex align-items-center">
-                            <IconBox icon="tags" color="#10b981" />
-                            <div>
-                                <h5 className="mb-0 fw-bold">Tags</h5>
-                                <small className="text-muted">Alias and mirror nodes</small>
-                            </div>
-                        </div>
-                        <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => setTagModalData({
-                                show: true,
-                                tag: create(save_tag_reqSchema, { tag: "", hash: "", type: tag_type.node }),
-                                isNew: true
-                            })}
-                        >
-                            <i className="bi bi-plus-lg me-1"></i> Add
-                        </Button>
-                    </>
-                }
+                    )
+                }}
+                onAddNew={(name) => {
+                    if (!data.tags[name]) {
+                        setTagModalData({
+                            show: true,
+                            tag: create(save_tag_reqSchema, { tag: name, hash: "", type: tag_type.node }),
+                            isNew: true
+                        });
+                    }
+                }}
+                adding={isLoading}
             />
         </MainContainer>
     );

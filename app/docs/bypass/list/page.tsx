@@ -1,16 +1,21 @@
-"use client";
+"use client"
 
-import { Card, CardBody, CardFooter, CardHeader, CardRowList, ErrorBox, IconBox, SettingLabel, SettingsBox } from '@/app/component/cardlist';
+import { Badge } from '@/app/component/v2/badge';
+import { Button } from '@/app/component/v2/button';
+import { Card, CardBody, CardFooter, CardHeader, CardRowList, IconBox, MainContainer, SettingLabel, SettingsBox } from '@/app/component/v2/card';
+import { SettingInputVertical, SettingRangeVertical, SettingTypeSelect } from '@/app/component/v2/forms';
+import { InputList } from '@/app/component/v2/listeditor';
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/app/component/v2/modal';
+import { Spinner } from '@/app/component/v2/spinner';
+import { GlobalToastContext } from '@/app/component/v2/toast';
+import { ToggleGroup, ToggleItem } from '@/app/component/v2/togglegroup';
 import { create } from "@bufbuild/protobuf";
 import { EmptySchema, StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { FC, useContext, useEffect, useState } from "react";
-import { Alert, Button, Form, Modal, Spinner } from "react-bootstrap";
+import { ArrowRepeat, CheckLg, ChevronRight, ClockHistory, CloudArrowDown, ExclamationTriangle, FileText, HddNetwork, ListCheck, Save, Sliders2, Trash } from 'react-bootstrap-icons';
 import useSWR from "swr";
-import { NewItemList, SettingInputText } from "../../../component/components";
-import { ConfirmModal } from "../../../component/confirm";
 import Loading, { Error } from "../../../component/loading";
-import { SettingTypeSelect } from "../../../component/switch";
-import { GlobalToastContext } from "../../../component/toast";
+import { ConfirmModal } from "../../../component/v2/confirm";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../common/proto";
 import { lists, save_list_config_requestSchema } from "../../pbes/api/config_pb";
 import { list, list_list_type_enum, list_list_type_enumSchema, list_localSchema, list_remoteSchema, listSchema, refresh_configSchema } from "../../pbes/config/bypass_pb";
@@ -81,149 +86,142 @@ export default function Lists() {
         ? new Date(Number(data.refreshConfig.lastRefreshTime) * 1000).toLocaleString()
         : "Never";
 
-    return <div>
-        <ConfirmModal
-            show={confirm.show}
-            content={<>Are you sure to delete <span className="fw-bold text-danger">{confirm.name}</span>?</>}
-            onOk={() => {
-                deleteList(confirm.name)
-                setConfirm(prev => { return { ...prev, show: false } })
-            }}
-            onHide={() => { setConfirm(prev => { return { ...prev, show: false } }) }}
-        />
+    return (
+        <MainContainer>
+            <ConfirmModal
+                show={confirm.show}
+                title="Delete List"
+                content={<>Are you sure to delete <span className="fw-bold text-danger">{confirm.name}</span>?</>}
+                onOk={() => {
+                    deleteList(confirm.name)
+                    setConfirm(prev => { return { ...prev, show: false } })
+                }}
+                onHide={() => { setConfirm(prev => { return { ...prev, show: false } }) }}
+            />
 
-        <ListsModal
-            name={showdata.name}
-            show={showdata.show}
-            isNew={showdata.new}
-            onHide={(save) => {
-                if (save) {
-                    mutate();
-                }
-                setShowdata(prev => { return { ...prev, show: false } })
-            }}
-            // Pass delete callback to Modal
-            onDelete={(name) => setConfirm({ show: true, name: name })}
-        />
+            <ListsModal
+                name={showdata.name}
+                show={showdata.show}
+                isNew={showdata.new}
+                onHide={(save) => {
+                    if (save) {
+                        mutate();
+                    }
+                    setShowdata(prev => { return { ...prev, show: false } })
+                }}
+                // Pass delete callback to Modal
+                onDelete={(name) => setConfirm({ show: true, name: name })}
+            />
 
-        {/* --- 1. Page Header: Global Status Bar --- */}
-        <div className="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3">
-            <div>
-                <h4 className="fw-bold mb-1">List Management</h4>
-                <div className="text-muted d-flex align-items-center">
-                    <i className="bi bi-clock-history me-2"></i>
-                    <span className="small">Last Synced: <span className="fw-medium text-body">{lastRefreshTime}</span></span>
+            {/* --- 1. Page Header: Global Status Bar --- */}
+            <div className="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3">
+                <div>
+                    <h4 className="fw-bold mb-1">List Management</h4>
+                    <div className="text-muted d-flex align-items-center small">
+                        <ClockHistory className="me-2 opacity-75" />
+                        <span>Last Synced: <span className="fw-medium text-body">{lastRefreshTime}</span></span>
+                    </div>
                 </div>
+
+                <Button
+                    variant='primary'
+                    disabled={refresh}
+                    onClick={() => {
+                        setRefresh(true)
+                        FetchProtobuf(lists.method.refresh, create(EmptySchema))
+                            .then(async ({ error }) => {
+                                if (error === undefined) {
+                                    ctx.Info("refresh successful")
+                                    mutate()
+                                } else {
+                                    ctx.Error(error.msg)
+                                    console.error(error.code, error.msg)
+                                }
+                                setRefresh(false)
+                            })
+                    }}
+                >
+                    {refresh ? <Spinner size="sm" /> : <ArrowRepeat className="me-2" />}
+                    <span>Sync All Resources</span>
+                </Button>
             </div>
 
-            <Button
-                variant='primary'
-                disabled={refresh}
-                className="d-flex align-items-center gap-2 px-3"
-                onClick={() => {
-                    setRefresh(true)
-                    FetchProtobuf(lists.method.refresh, create(EmptySchema))
-                        .then(async ({ error }) => {
-                            if (error === undefined) {
-                                ctx.Info("refresh successful")
-                                mutate()
-                            } else {
-                                ctx.Error(error.msg)
-                                console.error(error.code, error.msg)
-                            }
-                            setRefresh(false)
-                        })
-                }}
-            >
-                {refresh ? <Spinner animation="border" size="sm" as="span" /> : <i className="bi bi-arrow-repeat"></i>}
-                <span>Sync All Resources</span>
-            </Button>
-        </div>
+            <div className="d-flex flex-column gap-4">
+                {/* --- 2. Configuration Card --- */}
+                <Card>
+                    <CardHeader>
+                        <IconBox icon={Sliders2} color="#a855f7" title="Global Settings" description="Auto-fetch Interval & GeoIP" />
+                    </CardHeader>
 
-        {/* --- 2. Configuration Card --- */}
-        <Card >
-            <CardHeader>
-                <IconBox icon="sliders2" color="#a855f7" title="Configuration" description="Auto-fetch Interval & GeoIP" />
-            </CardHeader>
+                    <CardBody>
+                        <div className="row g-4">
+                            {/* Auto-fetch Interval */}
+                            <div className="col-12 col-lg-6">
+                                <SettingRangeVertical
+                                    label="Auto-fetch Interval"
+                                    value={Number(data.refreshConfig?.refreshInterval) / 60}
+                                    min={0}
+                                    max={24 * 30}
+                                    step={1}
+                                    unit="Hours"
+                                    onChange={(v) => mutate(prev => ({
+                                        ...prev,
+                                        refreshConfig: {
+                                            ...prev.refreshConfig,
+                                            refreshInterval: BigInt(v * 60)
+                                        }
+                                    }), false)}
+                                />
+                            </div>
 
-            <CardBody>
-                {/* 1. Auto-fetch Interval (Single Line) */}
-                <div className="mb-4">
-                    <div className="d-flex justify-content-between align-items-end mb-2">
-                        <label className="form-label fw-bold mb-0">Auto-fetch Interval</label>
-                        <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
-                            {data.refreshConfig?.refreshInterval && Number(data.refreshConfig?.refreshInterval) > 0
-                                ? `${Number(data.refreshConfig?.refreshInterval) / 60} Hours`
-                                : "Disabled"}
-                        </span>
-                    </div>
-
-                    {data.refreshConfig?.error && <Alert variant="danger" className="py-2 mb-2"><i className="bi bi-exclamation-circle me-2"></i>{data.refreshConfig.error}</Alert>}
-
-                    <div className="px-1">
-                        <Form.Range
-                            value={Number(data.refreshConfig?.refreshInterval) / 60}
-                            min={0} max={24 * 30} step={1}
-                            style={{ cursor: 'pointer' }}
-                            onChange={(e) => mutate(prev => ({
-                                ...prev,
-                                refreshConfig: {
-                                    ...prev.refreshConfig,
-                                    refreshInterval: BigInt(Number(e.target.value) * 60)
-                                }
-                            }), false)}
-                        />
-                        <div className="d-flex justify-content-between text-muted small mt-1 opacity-75">
-                            <span>Disabled</span>
-                            <span>15 Days</span>
-                            <span>30 Days</span>
+                            {/* GeoIP URL */}
+                            <div className="col-12 col-lg-6 border-start-lg ps-lg-4" style={{ borderColor: 'var(--card-inner-border)' }}>
+                                <SettingInputVertical
+                                    label="Maxmind GeoIP Database URL"
+                                    placeholder="e.g. https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb"
+                                    value={data.maxminddbGeoip?.downloadUrl}
+                                    onChange={(v) => {
+                                        mutate(prev => ({
+                                            ...prev,
+                                            maxminddbGeoip: { ...prev.maxminddbGeoip, downloadUrl: v }
+                                        }), false)
+                                    }}
+                                />
+                                {data.maxminddbGeoip?.error && (
+                                    <div className="mt-2 p-2 bg-danger bg-opacity-10 text-danger rounded small">
+                                        <ExclamationTriangle className="me-2" />{data.maxminddbGeoip.error}
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    </CardBody>
 
-                {/* Divider */}
-                <hr className="border-secondary opacity-10 my-4" />
+                    <CardFooter className="d-flex justify-content-end">
+                        <Button variant='primary' disabled={saving} onClick={handleSaveSettings}>
+                            {saving ? <Spinner size="sm" /> : <><Save className="me-2" />Save Configuration</>}
+                        </Button>
+                    </CardFooter>
+                </Card>
 
-                {/* 2. GeoIP URL (single line) */}
-                <div>
-                    {data.maxminddbGeoip?.error && <Alert variant="danger" className="py-2 mb-2">{data.maxminddbGeoip.error}</Alert>}
-                    <SettingInputText
-                        label="Maxmind GeoIP Database URL"
-                        placeholder="e.g. https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb"
-                        value={data.maxminddbGeoip?.downloadUrl}
-                        onChange={(e) => {
-                            mutate(prev => { return { ...prev, maxminddbGeoip: { ...prev.maxminddbGeoip, downloadUrl: e.toString() } } }, false)
-                        }}
-                    />
-                </div>
-            </CardBody>
-
-            <CardFooter>
-                <div className="d-flex justify-content-end w-100">
-                    <Button variant='outline-primary' disabled={saving} onClick={handleSaveSettings}>
-                        {saving ? <Spinner as="span" animation="border" size="sm" /> : <><i className="bi bi-check2 me-1"></i> Save Configuration</>}
-                    </Button>
-                </div>
-            </CardFooter>
-        </Card>
-
-        <CardRowList
-            items={data.names.sort((a, b) => a.localeCompare(b))}
-            renderListItem={(v) =>
-                <>
-                    <i className="bi bi-file-text me-3 fs-4 text-secondary"></i>
-                    <span className="text-truncate fw-medium flex-grow-1">{v}</span>
-                    <i className="bi bi-chevron-right text-muted opacity-25"></i>
-                </>
-            }
-            onClickItem={(v) => setShowdata({ show: true, name: v, new: false })}
-            onAddNew={handleCreate}
-            adding={saving}
-            header={
-                <IconBox icon="list-check" color="primary" title="Defined Lists" description={`${data.names.length} Lists Available`} />
-            }
-        />
-    </div>
+                <CardRowList
+                    items={data.names.sort((a, b) => a.localeCompare(b))}
+                    renderListItem={(v) =>
+                        <>
+                            <FileText className="me-3 fs-5 text-secondary" />
+                            <span className="text-truncate fw-medium flex-grow-1">{v}</span>
+                            <ChevronRight className="text-muted opacity-25" />
+                        </>
+                    }
+                    onClickItem={(v) => setShowdata({ show: true, name: v, new: false })}
+                    onAddNew={handleCreate}
+                    adding={saving}
+                    header={
+                        <IconBox icon={ListCheck} color="#3b82f6" title="Defined Lists" description={`${data.names.length} Lists Available`} />
+                    }
+                />
+            </div>
+        </MainContainer>
+    )
 }
 
 const ListsModal: FC<{ name: string, show: boolean, isNew?: boolean, onHide: (save?: boolean) => void, onDelete?: (name: string) => void }> =
@@ -259,43 +257,45 @@ const ListsModal: FC<{ name: string, show: boolean, isNew?: boolean, onHide: (sa
                 })
         }
 
-        return <>
-            <Modal show={show} onHide={() => onHide()} centered scrollable size="lg">
-                <Modal.Header closeButton>
-                    <Modal.Title>{name}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {error ?
-                        <Error statusCode={error.code} title={error.msg} /> :
-                        isValidating || isLoading || !data ? <Loading /> :
-                            <Single value={data} onChange={(e) => { mutate(e, false) }} />
-                    }
-                </Modal.Body>
-                <Modal.Footer className="d-flex justify-content-between">
-                    <div>
-                        {!isNew && name !== "bootstrap" && onDelete && (
-                            <Button
-                                variant="outline-danger"
-                                onClick={() => { onHide(false); onDelete(name); }}
-                            >
-                                <i className="bi bi-trash me-1"></i> Delete
-                            </Button>
-                        )}
-                    </div>
+        return (
+            <Modal open={show} onOpenChange={(open) => !open && onHide()}>
+                <ModalContent style={{ maxWidth: '800px' }}>
+                    <ModalHeader closeButton>
+                        <ModalTitle>{name}</ModalTitle>
+                    </ModalHeader>
+                    <ModalBody>
+                        {error ?
+                            <Error statusCode={error.code} title={error.msg} /> :
+                            isValidating || isLoading || !data ? <Loading /> :
+                                <Single value={data} onChange={(e) => { mutate(e, false) }} />
+                        }
+                    </ModalBody>
+                    <ModalFooter className="d-flex justify-content-between">
+                        <div>
+                            {!isNew && name !== "bootstrap" && onDelete && (
+                                <Button
+                                    variant="outline-danger"
+                                    onClick={() => { onHide(false); onDelete(name); }}
+                                >
+                                    <Trash className="me-2" />Delete List
+                                </Button>
+                            )}
+                        </div>
 
-                    <div className="d-flex gap-2">
-                        <Button variant="outline-secondary" onClick={() => onHide()}>Close</Button>
-                        <Button
-                            variant="primary"
-                            disabled={loadding}
-                            onClick={handleSave}
-                        >
-                            {loadding ? <Spinner as="span" animation="border" size="sm" /> : <><i className="bi bi-check-lg me-1"></i> Save</>}
-                        </Button>
-                    </div>
-                </Modal.Footer>
+                        <div className="d-flex gap-2">
+                            <Button variant="outline-secondary" onClick={() => onHide()}>Cancel</Button>
+                            <Button
+                                variant="primary"
+                                disabled={loadding}
+                                onClick={handleSave}
+                            >
+                                {loadding ? <Spinner size="sm" /> : <><CheckLg className="me-2" />Save</>}
+                            </Button>
+                        </div>
+                    </ModalFooter>
+                </ModalContent>
             </Modal>
-        </>
+        )
     }
 
 const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onChange }) => {
@@ -318,9 +318,9 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
         <div className="d-flex flex-column gap-4">
             {/* 1. Top Settings Area */}
             <SettingsBox>
-                <div className="d-flex flex-column gap-4">
-                    {/* Row 1: Content Type */}
-                    <div>
+                <div className="row g-4">
+                    {/* Content Type */}
+                    <div className="col-md-6">
                         <SettingTypeSelect
                             label='Content Type'
                             type={list_list_type_enumSchema}
@@ -329,81 +329,71 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
                         />
                     </div>
 
-                    {/* Divider */}
-                    <hr className="my-0 border-secondary opacity-10" />
-
-                    {/* Row 2: Source Mode */}
-                    <div>
-                        <SettingLabel>
-                            Source Mode
-                        </SettingLabel>
-                        <div className="btn-group w-100" role="group">
-                            <input
-                                type="radio"
-                                className="btn-check"
-                                name="sourceMode"
-                                id="mode-local"
-                                autoComplete="off"
-                                checked={!isRemote}
-                                onChange={() => handleModeChange(false)}
-                            />
-                            <label className={`btn py-2 ${!isRemote ? 'btn-primary' : 'btn-outline-secondary'}`} htmlFor="mode-local">
-                                <i className="bi bi-hdd-network me-2"></i>Local Manual List
-                            </label>
-
-                            <input
-                                type="radio"
-                                className="btn-check"
-                                name="sourceMode"
-                                id="mode-remote"
-                                autoComplete="off"
-                                checked={isRemote}
-                                onChange={() => handleModeChange(true)}
-                            />
-                            <label className={`btn py-2 ${isRemote ? 'btn-primary' : 'btn-outline-secondary'}`} htmlFor="mode-remote">
-                                <i className="bi bi-cloud-arrow-down me-2"></i>Remote Subscribe URL
-                            </label>
-                        </div>
+                    {/* Source Mode */}
+                    <div className="col-md-6">
+                        <SettingLabel className="mb-2">Source Mode</SettingLabel>
+                        <ToggleGroup
+                            type="single"
+                            value={isRemote ? "remote" : "local"}
+                            onValueChange={(v) => v && handleModeChange(v === "remote")}
+                            className="w-100"
+                        >
+                            <ToggleItem value="local" className="flex-grow-1">
+                                <HddNetwork className="me-2" />Local
+                            </ToggleItem>
+                            <ToggleItem value="remote" className="flex-grow-1">
+                                <CloudArrowDown className="me-2" />Remote
+                            </ToggleItem>
+                        </ToggleGroup>
                     </div>
                 </div>
             </SettingsBox>
 
             {/* 2. List Editor Area */}
-            <div>
-                <div className="mb-2 d-flex justify-content-between align-items-end">
+            <div className="d-flex flex-column gap-3">
+                <div className="d-flex justify-content-between align-items-end px-1">
                     <div>
                         <h6 className="fw-bold mb-1">
                             {isRemote ? "Remote Resource URLs" : "Local Rules"}
                         </h6>
-                        <small className="text-muted">
+                        <small className="text-muted opacity-75">
                             {isRemote
                                 ? "Files will be downloaded and updated automatically."
                                 : "Define rules manually (Domain, IP CIDR, etc)."}
                         </small>
                     </div>
-                    <span className="badge bg-secondary bg-opacity-10 text-secondary">
+                    <Badge variant="secondary" pill>
                         {(value.list.case === "remote" ? value.list.value.urls : value.list.value.lists).length} Entries
-                    </span>
+                    </Badge>
                 </div>
 
-                <NewItemList
-                    title=""
-                    textarea
-                    dump
-                    data={value.list.case === "remote" ? value.list.value.urls : value.list.value.lists}
-                    onChange={(x) => {
-                        onChange({
-                            ...value,
-                            list: isRemote ?
-                                { case: "remote", value: create(list_remoteSchema, { urls: x }) } :
-                                { case: "local", value: create(list_localSchema, { lists: x }) }
-                        })
-                    }}
-                />
+                <div className="bg-body-tertiary p-3 rounded-3 border border-secondary border-opacity-10">
+                    <InputList
+                        title={isRemote ? "URL" : "Rule"}
+                        textarea
+                        dump
+                        data={value.list.case === "remote" ? value.list.value.urls : value.list.value.lists}
+                        onChange={(x) => {
+                            onChange({
+                                ...value,
+                                list: isRemote ?
+                                    { case: "remote", value: create(list_remoteSchema, { urls: x }) } :
+                                    { case: "local", value: create(list_localSchema, { lists: x }) }
+                            })
+                        }}
+                    />
+                </div>
             </div>
 
             {/* 3. Error Messages Area */}
-            <ErrorBox msgs={value.errorMsgs} />
+            {value.errorMsgs && value.errorMsgs.length > 0 && (
+                <div className="mt-2">
+                    <SettingLabel className="text-danger mb-2">Error Messages</SettingLabel>
+                    <div className="p-3 bg-danger bg-opacity-10 text-danger rounded-3 small font-monospace">
+                        {value.errorMsgs.map((msg, i) => <div key={i} className="mb-1">• {msg}</div>)}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -1,9 +1,8 @@
-
+import { SettingCheck, SettingInputVertical, SettingSelectVertical, SettingTypeSelect } from "@/app/component/v2/forms";
+import { InputList } from '@/app/component/v2/listeditor';
 import { create } from '@bufbuild/protobuf';
 import { FC, useState } from 'react';
 import { join as shlexJoin, split as shlexSplit } from 'shlex';
-import { NewItemList, SettingInputText } from '../../component/components';
-import { SettingCheck, SettingSelect, SettingTypeSelect } from "../../component/switch";
 import { useProtoSWR } from '../common/proto';
 import { inbound } from '../pbes/api/config_pb';
 import { routeSchema, tun, tun_endpoint_driverSchema, tun_platfrom_platform_darwinSchema, tun_platfromSchema } from '../pbes/config/inbound_pb';
@@ -23,13 +22,13 @@ export const Tun: FC<{ tun: tun, onChange: (x: tun) => void }> = ({ tun, onChang
                 label="Skip Multicast"
             />
 
-            <SettingInputText label='Name' value={tun.name} onChange={(e: string) => onChange({ ...tun, name: e })} />
-            <SettingInputText label='MTU' value={tun.mtu} onChange={(e: string) => { if (!isNaN(Number(e))) onChange({ ...tun, mtu: Number(e) }) }} />
-            <SettingInputText label='IPv4' value={tun.portal} onChange={(e: string) => onChange({ ...tun, portal: e })} />
-            <SettingInputText label='IPv6' value={tun.portalV6} onChange={(e: string) => onChange({ ...tun, portalV6: e })} />
+            <SettingInputVertical label='Name' value={tun.name} onChange={(e: string) => onChange({ ...tun, name: e })} />
+            <SettingInputVertical label='MTU' value={tun.mtu.toString()} onChange={(e: string) => { if (!isNaN(Number(e))) onChange({ ...tun, mtu: Number(e) }) }} />
+            <SettingInputVertical label='IPv4' value={tun.portal} onChange={(e: string) => onChange({ ...tun, portal: e })} />
+            <SettingInputVertical label='IPv6' value={tun.portalV6} onChange={(e: string) => onChange({ ...tun, portalV6: e })} />
 
             {platform?.darwin && platform?.darwin?.networkServices &&
-                <SettingSelect
+                <SettingSelectVertical
                     label='DNS Network Service'
                     emptyChoose
                     emptyChooseName="Default"
@@ -41,7 +40,7 @@ export const Tun: FC<{ tun: tun, onChange: (x: tun) => void }> = ({ tun, onChang
                     })}
                 />
             }
-            <SettingInputText label='Post Up' value={postUp}
+            <SettingInputVertical label='Post Up' value={postUp}
                 onChange={(e: string) => {
                     setPostUp(e)
                     try {
@@ -52,7 +51,7 @@ export const Tun: FC<{ tun: tun, onChange: (x: tun) => void }> = ({ tun, onChang
                     }
                 }
                 } />
-            <SettingInputText label='Post Down' value={postDown}
+            <SettingInputVertical label='Post Down' value={postDown}
                 onChange={(e: string) => {
                     setPostDown(e)
                     try {
@@ -65,7 +64,7 @@ export const Tun: FC<{ tun: tun, onChange: (x: tun) => void }> = ({ tun, onChang
                 } />
             <SettingTypeSelect label='Stack' type={tun_endpoint_driverSchema} value={tun.driver} onChange={(e) => onChange({ ...tun, driver: e })} />
 
-            <NewItemList
+            <InputList
                 title='Routes'
                 textarea
                 dump

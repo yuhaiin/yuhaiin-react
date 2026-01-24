@@ -1,16 +1,18 @@
-"use client";
+"use client"
 
-import { CardRowList, IconBox } from '@/app/component/cardlist';
+import { Button } from '@/app/component/v2/button';
+import { CardRowList, IconBox, MainContainer } from '@/app/component/v2/card';
+import { SettingInputVertical, SettingTypeSelect } from '@/app/component/v2/forms';
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/app/component/v2/modal';
+import { Spinner } from '@/app/component/v2/spinner';
+import { GlobalToastContext } from '@/app/component/v2/toast';
 import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { FC, useContext, useEffect, useState } from "react";
-import { Button, Modal, Spinner } from "react-bootstrap";
+import { CheckLg, ChevronRight, HddNetwork, LayersHalf, PatchCheckFill, Trash } from 'react-bootstrap-icons';
 import useSWR from "swr";
-import { SettingInputText } from "../../../component/components";
-import { ConfirmModal } from "../../../component/confirm";
 import Loading, { Error } from "../../../component/loading";
-import { SettingTypeSelect } from "../../../component/switch";
-import { GlobalToastContext } from "../../../component/toast";
+import { ConfirmModal } from "../../../component/v2/confirm";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../common/proto";
 import { resolver, save_resolverSchema } from "../../pbes/api/config_pb";
 import { dns, dnsSchema, type, typeSchema } from "../../pbes/config/dns_pb";
@@ -20,21 +22,23 @@ import { Server } from "./server";
 
 export default function ResolverComponent() {
     return (
-        <div>
-            <Resolver />
-            <div className="row g-4">
-                <div className="col-lg-6 mt-0">
-                    <Hosts />
+        <MainContainer>
+            <div className="d-flex flex-column gap-4">
+                <Resolver />
+                <div className="row g-4">
+                    <div className="col-lg-6">
+                        <Hosts />
+                    </div>
+                    <div className="col-lg-6">
+                        <Fakedns />
+                    </div>
                 </div>
-                <div className="col-lg-6 mt-0">
-                    <Fakedns />
-                </div>
-            </div>
 
-            <div className="mt-3">
-                <Server />
+                <div>
+                    <Server />
+                </div>
             </div>
-        </div>
+        </MainContainer>
     );
 }
 
@@ -73,7 +77,8 @@ function Resolver() {
     return <>
         <ConfirmModal
             show={confirm.show}
-            content={<>Are you sure to delete {confirm.name}?</>}
+            title="Delete Resolver"
+            content={<>Are you sure to delete <span className="fw-bold text-danger">{confirm.name}</span>?</>}
             onOk={() => {
                 deleteResolver(confirm.name)
                 setConfirm(prev => { return { ...prev, show: false } })
@@ -98,14 +103,15 @@ function Resolver() {
             items={resolvers.names.sort((a, b) => a.localeCompare(b))}
             renderListItem={(v) =>
                 <>
-                    <i className="bi bi-hdd-network me-2"></i>
-                    <span className="flex-grow-1 text-truncate">{v}</span>
-                    {v === 'bootstrap' && <i className="bi bi-patch-check-fill text-primary ms-2" title="System Default"></i>}
+                    <HddNetwork className="me-3 fs-5 text-secondary" />
+                    <span className="flex-grow-1 text-truncate fw-medium">{v}</span>
+                    {v === 'bootstrap' && <PatchCheckFill className="text-primary ms-2" title="System Default" />}
+                    <ChevronRight className="text-muted opacity-25 ms-2" />
                 </>
             }
             onClickItem={(v) => setShowdata({ show: true, name: v, new: false })}
             onAddNew={handleCreate}
-            header={<IconBox icon="layers-half" color="primary" title='Resolvers' description='Upstream Resolvers' />}
+            header={<IconBox icon={LayersHalf} color="#3b82f6" title='Resolvers' description='Upstream DNS Resolvers' />}
         />
     </>
 }
@@ -139,41 +145,69 @@ const ResolverModal: FC<{
                     ctx.Error(error.msg)
                     console.error(error.code, error.msg)
                 }
+                mutate();
             }).finally(() => setSaving(false));
     }
 
     return (
-        <Modal show={show} onHide={() => onHide()} centered>
-            <Modal.Header closeButton>
-                <Modal.Title>{name}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                {error ?
-                    <Error statusCode={error.code} title={error.msg} /> :
-                    isValidating || isLoading || !data ? <Loading /> :
-                        <Single value={data} onChange={(e) => { mutate(e, false) }} />
-                }
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="outline-secondary" onClick={() => onHide()}>Close</Button>
-                {name !== 'bootstrap' && !isNew &&
-                    <Button variant="outline-danger" onClick={() => { onHide(false); onDelete(name); }}>
-                        Remove
-                    </Button>
-                }
-                <Button variant="primary" disabled={saving} onClick={handleSave}>
-                    {saving ? <Spinner as="span" animation="border" size="sm" /> : (isNew ? "Create" : "Update")}
-                </Button>
-            </Modal.Footer>
+        <Modal open={show} onOpenChange={(open) => !open && onHide()}>
+            <ModalContent>
+                <ModalHeader closeButton>
+                    <ModalTitle>{name}</ModalTitle>
+                </ModalHeader>
+                <ModalBody>
+                    {error ?
+                        <Error statusCode={error.code} title={error.msg} /> :
+                        isValidating || isLoading || !data ? <Loading /> :
+                            <Single value={data} onChange={(e) => { mutate(e, false) }} />
+                    }
+                </ModalBody>
+                <ModalFooter className="d-flex justify-content-between">
+                    <div>
+                        {name !== 'bootstrap' && !isNew &&
+                            <Button variant="outline-danger" onClick={() => { onHide(false); onDelete(name); }}>
+                                <Trash className="me-2" />Delete
+                            </Button>
+                        }
+                    </div>
+                    <div className="d-flex gap-2">
+                        <Button variant="outline-secondary" onClick={() => onHide()}>Cancel</Button>
+                        <Button variant="primary" disabled={saving} onClick={handleSave}>
+                            {saving ? <Spinner size="sm" /> : <><CheckLg className="me-2" />{isNew ? "Create" : "Save"}</>}
+                        </Button>
+                    </div>
+                </ModalFooter>
+            </ModalContent>
         </Modal>
     )
 }
 
 const Single: FC<{ value: dns, onChange: (x: dns) => void }> = ({ value, onChange }) => {
-    return <>
-        <SettingInputText placeholder="e.g. tls://8.8.8.8:853" label='Upstream DNS' value={value.host} onChange={(v: string) => onChange({ ...value, host: v })} />
-        <SettingTypeSelect label='Type' type={typeSchema} value={value.type} onChange={(v: number) => onChange({ ...value, type: v })} />
-        <SettingInputText label='Subnet (Optional)' placeholder="e.g. 114.114.114.0/24" value={value.subnet} onChange={(v: string) => onChange({ ...value, subnet: v })} />
-        <SettingInputText className='' label='SNI (Optional)' value={value.tlsServername} onChange={(v: string) => onChange({ ...value, tlsServername: v })} />
-    </>
+    return (
+        <div className="d-flex flex-column gap-4">
+            <SettingInputVertical
+                placeholder="e.g. tls://8.8.8.8:853"
+                label='Upstream DNS'
+                value={value.host}
+                onChange={(v: string) => onChange({ ...value, host: v })}
+            />
+            <SettingTypeSelect
+                label='Type'
+                type={typeSchema}
+                value={value.type}
+                onChange={(v: number) => onChange({ ...value, type: v })}
+            />
+            <SettingInputVertical
+                label='Subnet (Optional)'
+                placeholder="e.g. 114.114.114.0/24"
+                value={value.subnet}
+                onChange={(v: string) => onChange({ ...value, subnet: v })}
+            />
+            <SettingInputVertical
+                label='SNI (Optional)'
+                value={value.tlsServername}
+                onChange={(v: string) => onChange({ ...value, tlsServername: v })}
+            />
+        </div>
+    )
 }

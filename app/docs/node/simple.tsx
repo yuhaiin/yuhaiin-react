@@ -1,43 +1,30 @@
-import { FC, useContext } from "react";
-import { Remind, SettingInputText } from "../../component/components";
-import { InterfacesContext } from "../common/interfaces";
+import { SettingInputVertical } from "@/app/component/v2/forms";
+import { FC } from "react";
 import { fixed } from "../pbes/node/protocol_pb";
 import { NewAlternateHostList, Props } from "./tools";
 
-export const Fixed: FC<Props<fixed>> = ({ value, onChange }) => {
-    const interfaces = useContext(InterfacesContext);
-
-    const reminds = interfaces.map((v) => {
-        if (!v.name) return undefined
-        const r: Remind = {
-            label: v.name,
-            value: v.name,
-            label_children: v.addresses?.map((vv) => !vv ? "" : vv)
-        }
-        return r
-    })
-        .filter((e): e is Exclude<Remind, null | undefined> => !!e)
-
+export const Fixed: FC<Props<fixed>> = ({ value, onChange, editable = true }) => {
     const changeInterface = (e: string) => {
         onChange({ ...value, networkInterface: e })
     }
 
     return <>
-        <SettingInputText
+        <SettingInputVertical
             label="Host"
             value={value.host}
+            disabled={!editable}
             onChange={(e: string) => { onChange({ ...value, host: e }) }
             }
         />
 
-        <SettingInputText
+        <SettingInputVertical
             label='Network Interface'
             value={value.networkInterface}
+            disabled={!editable}
             onChange={changeInterface}
-            reminds={reminds}
         />
 
-        <SettingInputText label="Port" value={value.port} onChange={(e) => {
+        <SettingInputVertical label="Port" value={value.port.toString()} disabled={!editable} onChange={(e) => {
             const port = Number(e)
             if (isNaN(port) || port > 65535 || port < 0) return
             onChange({ ...value, port: port })
@@ -46,6 +33,7 @@ export const Fixed: FC<Props<fixed>> = ({ value, onChange }) => {
         <NewAlternateHostList
             title="AlternateHost"
             data={value.alternateHost}
+            editable={editable}
             onChange={(e) => { onChange({ ...value, alternateHost: e }) }}
         />
     </>

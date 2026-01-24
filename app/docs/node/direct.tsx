@@ -1,28 +1,15 @@
-import { FC, useContext } from "react";
-import { Remind, SettingInputText } from "../../component/components";
-import { InterfacesContext } from "../common/interfaces";
+import { SettingInputVertical } from "@/app/component/v2/forms";
+import { FC } from "react";
 import { direct } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
-export const Directv2: FC<Props<direct>> = ({ value, onChange }) => {
-    const interfaces = useContext(InterfacesContext);
-
+export const Directv2: FC<Props<direct>> = ({ value, onChange, editable = true }) => {
     return <>
-        <SettingInputText
+        <SettingInputVertical
             label='Network Interface'
             value={value.networkInterface}
+            disabled={!editable}
             onChange={(e: string) => { onChange({ ...value, networkInterface: e }) }}
-            reminds={interfaces.map((v) => {
-                if (!v.name) return undefined
-                const r: Remind = {
-                    label: v.name,
-                    value: v.name,
-                    label_children: v.addresses?.map((vv) => !vv ? "" : vv)
-                }
-                return r
-            })
-                .filter((e): e is Exclude<Remind, null | undefined> => !!e)
-            }
         />
     </>
 }

@@ -1,0 +1,179 @@
+/* Dropdown.module.css */
+
+.content {
+    /* Core color: use --bs-body-bg */
+    background-color: var(--bs-body-bg, #ffffff);
+
+    /* Border and shadow */
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    box-shadow: var(--bs-box-shadow, 0 0.5rem 1rem rgba(0, 0, 0, 0.15));
+    border-radius: 0.375rem;
+
+    /* Layout */
+    min-width: 12rem;
+    padding: 0.5rem 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 2000;
+
+    /* Core fix: set dropdown width equal to Trigger width */
+    width: var(--radix-dropdown-menu-trigger-width);
+    max-width: var(--radix-dropdown-menu-trigger-width);
+
+    /* Or if you want a minimum width but not exceeding Trigger width */
+    /* min-width: var(--radix-dropdown-menu-trigger-width); */
+
+
+    /* Animation */
+    animation-duration: 250ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, opacity;
+}
+
+/* Slide up when menu pops up below */
+.content[data-side='bottom'] {
+    animation-name: slideUpAndFade;
+}
+
+/* Slide down when menu pops up above */
+.content[data-side='top'] {
+    animation-name: slideDownAndFade;
+}
+
+.content[data-state='open'] {
+    /* Animation depends on trigger direction, see previous answers */
+}
+
+.content[data-state='closed'] {
+    /* Exit animation: unified simple fade out */
+    animation: fadeOut 150ms ease-in forwards;
+}
+
+@keyframes slideUpAndFade {
+    from {
+        opacity: 0;
+        transform: translateY(4px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes slideDownAndFade {
+    from {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+}
+
+
+/* Scroll Area */
+.scrollArea {
+    max-height: 300px;
+    overflow-y: auto;
+    width: 100%;
+}
+
+/* Base Item Style */
+.item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.375rem 1rem;
+    padding-left: 2.5rem;
+    /* Space on left for icon */
+
+    font-size: 1rem;
+    /* Font color */
+    color: var(--bs-body-color, #212529);
+
+    user-select: none;
+    cursor: pointer;
+    outline: none;
+    background-color: transparent;
+    border: none;
+    text-align: left;
+    text-decoration: none;
+}
+
+/* Hover / Focus / Active State */
+.item:hover,
+.item:focus,
+.item[data-highlighted] {
+    /* Hover background color */
+    background-color: var(--bs-tertiary-bg, #e9ecef);
+    /* Hover text color */
+    color: var(--bs-emphasis-color, #000000);
+}
+
+/* Check Icon Container */
+.iconContainer {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* Icon color: usually Primary color */
+    color: var(--bs-primary, #0d6efd);
+}
+
+/* Group Title Label */
+.label {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    /* Label text color (muted) */
+    color: var(--bs-secondary-color, #6c757d);
+    /* Label background color (slightly darker gray) */
+    background-color: var(--bs-tertiary-bg, #f8f9fa);
+
+    border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+/* Separator */
+.separator {
+    height: 1px;
+    margin: 0.25rem 0;
+    overflow: hidden;
+    background-color: var(--bs-border-color, #dee2e6);
+}

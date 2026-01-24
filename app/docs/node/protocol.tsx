@@ -1,12 +1,14 @@
 "use client"
 
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/app/component/v2/accordion";
+import { Button } from "@/app/component/v2/button";
+import { Card, CardBody } from "@/app/component/v2/card";
+import { Select, SettingInputVertical } from "@/app/component/v2/forms";
 import { create } from "@bufbuild/protobuf";
 import dynamic from "next/dynamic";
 import { FC, useEffect, useState } from 'react';
-import { Button, Card, InputGroup, ListGroup } from "react-bootstrap";
-import { Container, MoveUpDown, Remind, SettingInputText } from "../../component/components";
+import { ArrowDown, ArrowUp, PlusLg, Trash } from "react-bootstrap-icons";
 import Loading from "../../component/loading";
-import { FormSelect, SettingSelect } from "../../component/switch";
 import { point } from "../pbes/node/point_pb";
 import {
     aeadSchema,
@@ -54,60 +56,119 @@ import { Rejectv2 } from './reject';
 import { Props } from './tools';
 
 
-export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: string[] }> =
-    ({ value, onChange, groups }) => {
-        const [newProtocol, setNewProtocol] = useState({ value: Object.keys(protocols)[0] });
+export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: string[], editable?: boolean }> =
+    ({ value, onChange, groups, editable = true }) => {
+        const [newProtocol, setNewProtocol] = useState(Object.keys(protocols)[0]);
+
+        const moveProtocol = (index: number, direction: 'up' | 'down') => {
+            if (!editable) return
+            const next = [...value.protocols];
+            if (direction === 'up') {
+                if (index === 0) return;
+                [next[index - 1], next[index]] = [next[index], next[index - 1]];
+            } else {
+                if (index === next.length - 1) return;
+                [next[index], next[index + 1]] = [next[index + 1], next[index]];
+            }
+            onChange({ ...value, protocols: next });
+        };
+
+        const deleteProtocol = (index: number) => {
+            if (!editable) return
+            const next = [...value.protocols];
+            next.splice(index, 1);
+            onChange({ ...value, protocols: next });
+        };
 
         return <>
-            <SettingInputText
-                label="Name"
-                value={value.name}
-                onChange={(e: string) => { onChange({ ...value, name: e }) }}
-            />
+            <div className="row g-3 mb-4">
+                <div className="col-md-6">
+                    <SettingInputVertical
+                        label="Name"
+                        value={value.name}
+                        disabled={!editable}
+                        onChange={(e: string) => { onChange({ ...value, name: e }) }}
+                    />
+                </div>
+                <div className="col-md-6">
+                    <SettingInputVertical
+                        label="Group"
+                        value={value.group}
+                        disabled={!editable}
+                        onChange={(e: string) => { onChange({ ...value, group: e }) }}
+                    />
+                </div>
+            </div>
 
-            <SettingInputText
-                label="Group"
-                value={value.group}
-                onChange={(e: string) => { onChange({ ...value, group: e }) }}
-                reminds={groups ? groups.map(x => new Remind({ label: x, value: x })) : undefined}
-            />
+            <div className="mb-3">
+                <div className="d-flex justify-content-between align-items-center mb-2 px-1">
+                    <h6 className="fw-bold mb-0 opacity-75">Protocol Chain</h6>
+                    <small className="text-muted">{value.protocols.length} steps</small>
+                </div>
 
-            {/* <SettingInputText
-                label="Hash"
-                value={value.hash}
-                onChange={(e) => { onChange({ ...value, hash: e }) }}
-            /> */}
+                <Accordion type="multiple" className="mb-3">
+                    {
+                        value.protocols.map((x, i) => {
+                            return (
+                                <AccordionItem value={`item-${i}`} key={i}>
+                                    <AccordionTrigger className="fw-bold">
+                                        <div className="d-flex align-items-center gap-2">
+                                            <span className="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2" style={{ fontSize: '0.7rem' }}>{i + 1}</span>
+                                            {x.protocol.case ?? "Unknown"}
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="p-1">
+                                            <Protocol value={value.protocols[i]} editable={editable} onChange={(e) => {
+                                                const next = [...value.protocols];
+                                                next[i] = e;
+                                                onChange({ ...value, protocols: next })
+                                            }} />
 
-            {
-                value.protocols.map((x, i) => {
-                    return <Container
-                        className={i !== 0 ? "mt-2" : ""}
-                        key={i} title={x.protocol.case ?? "Unknown"}
-                        onClose={() => onChange({ ...value, protocols: [...value.protocols.slice(0, i), ...value.protocols.slice(i + 1)] })}
-                        moveUpDown={new MoveUpDown(value.protocols, i, (x) => { onChange({ ...value, protocols: x }) })}
-                    >
-                        <Protocol value={value.protocols[i]} onChange={(e) => {
-                            onChange({ ...value, protocols: [...value.protocols.slice(0, i), e, ...value.protocols.slice(i + 1)] })
-                        }} />
-                    </Container>
-                })
-            }
+                                            {editable && (
+                                                <div className="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
+                                                    <Button variant="outline-secondary" size="sm" onClick={() => moveProtocol(i, 'up')} disabled={i === 0}>
+                                                        <ArrowUp />
+                                                    </Button>
+                                                    <Button variant="outline-secondary" size="sm" onClick={() => moveProtocol(i, 'down')} disabled={i === value.protocols.length - 1}>
+                                                        <ArrowDown />
+                                                    </Button>
+                                                    <Button variant="outline-danger" size="sm" onClick={() => deleteProtocol(i)}>
+                                                        <Trash /> Delete
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            )
+                        })
+                    }
+                </Accordion>
 
-            <ListGroup variant="flush">
-                <ListGroup.Item>
-                    <InputGroup>
-                        <FormSelect value={newProtocol.value} values={Object.keys(protocols)} onChange={(e) => setNewProtocol({ value: e })} />
+                {editable && (
+                    <div className="bg-body-tertiary p-3 rounded-3 d-flex align-items-end gap-3 flex-wrap flex-sm-nowrap">
+                        <div className="flex-grow-1">
+                            <label className="form-label small fw-bold opacity-75">New Protocol Step</label>
+                            <Select
+                                value={newProtocol}
+                                onValueChange={(e) => setNewProtocol(e)}
+                                items={Object.keys(protocols).map(v => ({ value: v, label: v }))}
+                            />
+                        </div>
                         <Button
-                            variant="outline-secondary"
+                            variant="outline-primary"
+                            className="mb-1"
+                            style={{ height: '35px' }}
                             onClick={() => {
-                                onChange({ ...value, protocols: [...value.protocols, protocols[newProtocol.value]] })
+                                onChange({ ...value, protocols: [...value.protocols, protocols[newProtocol]] })
                             }}
                         >
-                            Add
+                            <PlusLg className="me-1" /> Add Step
                         </Button>
-                    </InputGroup>
-                </ListGroup.Item>
-            </ListGroup>
+                    </div>
+                )}
+            </div>
         </>
     }
 
@@ -138,12 +199,13 @@ const LazyQuic = dynamic(() => import("./quic").then(mod => mod.Quicv2), { ssr: 
 const LazyAead = dynamic(() => import("./aead").then(mod => mod.Aead), { ssr: false, loading: () => <Loading /> })
 const LazyCloudflareWarpMasque = dynamic(() => import("./cloudflare_warp_masque").then(mod => mod.CloudflareWarpMasque), { ssr: false, loading: () => <Loading /> })
 
-const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
+const Protocol: FC<Props<protocol>> = ({ value, onChange, editable = true }) => {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const update = (data: any) => onChange({ ...value, protocol: { ...value.protocol, value: data } })
 
     useEffect(() => {
+        if (!editable) return
         switch (value.protocol.case) {
             case "simple":
                 onChange(create(protocolSchema, {
@@ -164,95 +226,103 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange }) => {
     const data = value.protocol
     switch (data.case) {
         case "fixed":
-            return <LazyFixed value={data.value} onChange={(e) => update(e)} />
+            return <LazyFixed value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "direct":
-            return <LazyDirect value={data.value} onChange={(e) => update(e)} />
+            return <LazyDirect value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "drop":
             return Dropv2
         case "tls":
-            return <LazyTls value={data.value} onChange={(e) => update(e)} />
+            return <LazyTls value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "websocket":
-            return <LazyWebsocket value={data.value} onChange={(e) => update(e)} />
+            return <LazyWebsocket value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "shadowsocks":
-            return <LazyShadowsocks value={data.value} onChange={(e) => update(e)} />
+            return <LazyShadowsocks value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "quic":
-            return <LazyQuic value={data.value} onChange={(e) => update(e)} />
+            return <LazyQuic value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "vless":
-            return <LazyVless value={data.value} onChange={(e) => update(e)} />
+            return <LazyVless value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "vmess":
-            return <LazyVmess value={data.value} onChange={(e) => update(e)} />
+            return <LazyVmess value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "trojan":
-            return <LazyTrojan value={data.value} onChange={(e) => update(e)} />
+            return <LazyTrojan value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "shadowsocksr":
-            return <LazyShadowsocksr value={data.value} onChange={(e) => update(e)} />
+            return <LazyShadowsocksr value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "obfsHttp":
-            return <LazyObfsHttp value={data.value} onChange={(e) => update(e)} />
+            return <LazyObfsHttp value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "none":
             return Nonev2
         case "socks5":
-            return <LazySocks5 value={data.value} onChange={(e) => update(e)} />
+            return <LazySocks5 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "http":
-            return <LazyHttp value={data.value} onChange={(e) => update(e)} />
+            return <LazyHttp value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "reject":
             return Rejectv2
         case "yuubinsya":
-            return <LazyYuubinsya value={data.value} onChange={(e) => update(e)} />
+            return <LazyYuubinsya value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "grpc":
-            return <LazyGrpc value={data.value} onChange={(e) => update(e)} />
+            return <LazyGrpc value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "http2":
-            return <LazyHttp2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyHttp2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "reality":
-            return <LazyReality value={data.value} onChange={(e) => update(e)} />
+            return <LazyReality value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "wireguard":
-            return <LazyWireguard value={data.value} onChange={(e) => update(e)} />
+            return <LazyWireguard value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "mux":
-            return <LazyMux value={data.value} onChange={(e) => update(e)} />
+            return <LazyMux value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "bootstrapDnsWarp":
             return BootstrapDnsWarp
         case "tailscale":
-            return <LazyTailscale value={data.value} onChange={(e) => update(e)} />
+            return <LazyTailscale value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "set":
-            return <LazySet value={data.value} onChange={(e) => update(e)} />
+            return <LazySet value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "tlsTermination":
-            return <LazyTlsTermination value={data.value} onChange={(e) => update(e)} />
+            return <LazyTlsTermination value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "httpTermination":
-            return <LazyHttpTermination value={data.value} onChange={(e) => update(e)} />
+            return <LazyHttpTermination value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "httpMock":
             return HttpMock
         case "aead":
-            return <LazyAead value={data.value} onChange={(e) => update(e)} />
+            return <LazyAead value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "networkSplit":
-            return <NetworkSplit value={data.value} onChange={(e) => update(e)} />
+            return <NetworkSplit value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "cloudflareWarpMasque":
-            return <LazyCloudflareWarpMasque value={data.value} onChange={(e) => update(e)} />
+            return <LazyCloudflareWarpMasque value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "proxy":
             return Proxy
         case "fixedv2":
-            return <LazyFixedv2 value={data.value} onChange={(e) => update(e)} />
+            return <LazyFixedv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         default: return Unknown
     }
 }
 
 
-const NetworkSplit: FC<Props<network_split>> = ({ value, onChange }) => {
+const NetworkSplit: FC<Props<network_split>> = ({ value, onChange, editable = true }) => {
     const protocolNames = Object.keys(protocols).filter(x => x !== "networkSplit")
     return <>
-        <SettingSelect label="TCP" value={value.tcp.protocol.case} values={protocolNames}
-            onChange={(e) => { onChange({ ...value, tcp: protocols[e] }) }} />
+        <div className="mb-3">
+            <label className="form-label small fw-bold opacity-75">TCP Protocol</label>
+            <Select value={value.tcp.protocol.case ?? ""} items={protocolNames.map(v => ({ value: v, label: v }))}
+                disabled={!editable}
+                onValueChange={(e) => { onChange({ ...value, tcp: protocols[e] }) }} />
+        </div>
 
-        <Card className="mt-2 mb-2">
-            <Card.Body>
-                <Protocol value={value.tcp} onChange={(e) => { onChange({ ...value, tcp: e }) }} />
-            </Card.Body>
+        <Card className="mb-4">
+            <CardBody>
+                <Protocol value={value.tcp} editable={editable} onChange={(e) => { onChange({ ...value, tcp: e }) }} />
+            </CardBody>
         </Card>
 
-        <SettingSelect label="UDP" value={value.udp.protocol.case} values={protocolNames}
-            onChange={(e) => { onChange({ ...value, udp: protocols[e] }) }} />
+        <div className="mb-3">
+            <label className="form-label small fw-bold opacity-75">UDP Protocol</label>
+            <Select value={value.udp.protocol.case ?? ""} items={protocolNames.map(v => ({ value: v, label: v }))}
+                disabled={!editable}
+                onValueChange={(e) => { onChange({ ...value, udp: protocols[e] }) }} />
+        </div>
 
-        <Card className="mt-2">
-            <Card.Body>
-                <Protocol value={value.udp} onChange={(e) => { onChange({ ...value, udp: e }) }} />
-            </Card.Body>
+        <Card>
+            <CardBody>
+                <Protocol value={value.udp} editable={editable} onChange={(e) => { onChange({ ...value, udp: e }) }} />
+            </CardBody>
         </Card >
     </>
 }

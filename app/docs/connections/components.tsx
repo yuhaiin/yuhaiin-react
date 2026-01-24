@@ -1,5 +1,8 @@
+"use client"
+
+import { DataList, DataListCustomItem, DataListItem } from "@/app/component/v2/datalist";
 import React, { FC, JSX, useEffect, useState } from "react";
-import { ListGroup } from "react-bootstrap";
+import { Check } from "react-bootstrap-icons";
 import useSWR from "swr";
 import { FetchProtobuf, ProtoPath } from "../common/proto";
 import { connections, counter, total_flow } from "../pbes/api/statistic_pb";
@@ -28,119 +31,6 @@ const MetricCard: FC<MetricProps> = ({ label, value, error, color = '#3b82f6' })
         </div>
     );
 };
-
-export const ListGroupItemString: FC<{ itemKey: string, itemValue: string }> =
-    ({ itemKey, itemValue }) => {
-        // Guard clause: do not render if value is empty or undefined
-        if (!itemValue || itemValue === "") return <></>;
-
-        return (
-            <ListGroup.Item className="border-0 border-bottom py-3">
-                {/* 
-                   Layout Strategy:
-                   d-sm-flex: Flex layout on small screens and up (row). Stacks vertically on mobile (column).
-                   justify-content-between: Pushes Key to the left, Value to the right.
-                   align-items-start: Aligns elements to the top. Prevents Key from floating in the middle if Value is multiline.
-                   gap-3: Adds guaranteed spacing between Key and Value so they don't touch.
-                */}
-                <div className="d-sm-flex justify-content-between align-items-start gap-3">
-
-                    {/* Left Side: The Key */}
-                    {/* flex-shrink-0: CRITICAL. Prevents the Key from being squashed by long content on the right. */}
-                    <div
-                        className="endpoint-name notranslate text-capitalize flex-shrink-0 mb-1 mb-sm-0"
-                        style={{
-                            color: 'var(--sidebar-header-color)', // High contrast color
-                            fontWeight: '600',                    // Bold for hierarchy
-                            minWidth: '100px',                    // Ensures a consistent minimum width
-                        }}
-                    >
-                        {itemKey}
-                    </div>
-
-                    {/* Right Side: The Value */}
-                    {/* text-break: Forces long strings (like URLs or Tokens) to wrap instead of overflowing. */}
-                    {/* text-sm-end: Right-aligns text on desktop, Left-aligns on mobile. */}
-                    <div
-                        className="notranslate text-break text-sm-end"
-                        style={{
-                            color: 'var(--sidebar-color)',        // Full opacity for visibility
-                            fontWeight: '400',
-                            flexGrow: 1                           // Allows text to take up remaining space
-                        }}
-                    >
-                        {itemValue}
-                    </div>
-                </div>
-            </ListGroup.Item>
-        );
-    }
-
-export const ConnectionInfo: FC<{
-    value: connection,
-    startContent?: JSX.Element,
-    endContent?: JSX.Element,
-    showNodeModal?: (hash: string) => void,
-}> = ({ value, startContent, endContent, showNodeModal }) => {
-
-    return <>
-        <ListGroup variant="flush" >
-            {startContent}
-            <ListGroupItemString itemKey="Id" itemValue={value.id.toString()} />
-            <ListGroupItemString itemKey="Addr" itemValue={value.addr} />
-            <ListGroupItemString itemKey="Geo" itemValue={value.geo} />
-            <ListGroupItemString itemKey="Type" itemValue={connType[value.type?.connType]} />
-            <ListGroupItemString itemKey="UnderlyingType" itemValue={connType[value.type?.underlyingType]} />
-            <ListGroupItemString itemKey="Inbound" itemValue={value.inboundName} />
-            <ListGroupItemString itemKey="InboundAddr" itemValue={value.inbound} />
-            <ListGroupItemString itemKey="Source" itemValue={value.source} />
-            <ListGroupItemString itemKey="RemoteAddr" itemValue={value.outbound} />
-            <ListGroupItemString itemKey="Remote Geo" itemValue={value.outboundGeo} />
-            <ListGroupItemString itemKey="Interface" itemValue={value.interface} />
-            <ListGroupItemString itemKey="LocalAddr" itemValue={value.localAddr} />
-            <ListGroupItemString itemKey="Destination" itemValue={value.destionation} />
-            <ListGroupItemString itemKey="FakeIP" itemValue={value.fakeIp} />
-            <ListGroupItemString itemKey="Hosts" itemValue={value.hosts} />
-            <ListGroupItemString itemKey="Domain" itemValue={value.domain} />
-            <ListGroupItemString itemKey="IP" itemValue={value.ip} />
-            <ListGroupItemString itemKey="Tag" itemValue={value.tag} />
-            <ListGroupItemString itemKey="Lists" itemValue={value.lists?.join(", ")} />
-            <ListGroupItemString itemKey="Resolver" itemValue={value.resolver} />
-
-            {(value.nodeName || value.hash) &&
-                <ListGroup.Item>
-                    <div className="d-sm-flex">
-                        <div className="endpoint-name flex-grow-1 notranslate text-capitalize">Point</div>
-                        <div className="notranslate text-break" style={{ opacity: 0.6 }}>
-                            {
-                                !showNodeModal
-                                    ?
-                                    <>{value.nodeName ? value.nodeName : value.hash}</>
-                                    :
-                                    <a href="#" onClick={(e) => { e.preventDefault(); showNodeModal(value.hash) }}>
-                                        {value.nodeName ? value.nodeName : value.hash}
-                                    </a>
-                            }
-                        </div>
-                    </div>
-                </ListGroup.Item>
-            }
-
-            <ListGroupItemString itemKey="Protocol" itemValue={value.protocol} />
-            <ListGroupItemString itemKey="Process" itemValue={value.process} />
-            <ListGroupItemString itemKey="TlsServerName" itemValue={value.tlsServerName} />
-            <ListGroupItemString itemKey="HttpHost" itemValue={value.httpHost} />
-            <ListGroupItemString itemKey="Component" itemValue={value.component} />
-            <ListGroupItemString itemKey="Mode" itemValue={mode[value.mode]} />
-            <ListGroupItemString itemKey="UdpMigrateId" itemValue={value.udpMigrateId ? value.udpMigrateId.toString() : ""} />
-            <ListGroupItemString itemKey="Pid" itemValue={value.pid ? value.pid.toString() : ""} />
-            <ListGroupItemString itemKey="Uid" itemValue={value.uid ? value.uid.toString() : ""} />
-            <MatchHistoryItem value={value.matchHistory || []} />
-
-            {endContent}
-        </ListGroup>
-    </>
-}
 
 
 const Unit = {
@@ -311,14 +201,72 @@ export const FlowContainer: FC<{
     return <FlowCard lastFlow={lastFlow} flow_error={flow_error} extra_fields={extra_fields} />
 })
 
+export const ListGroupItemString: FC<{ itemKey: string, itemValue: string }> =
+    ({ itemKey, itemValue }) => {
+        return <DataListItem label={itemKey} value={itemValue} />;
+    }
 
-// Helper components for Icons (SVG) to keep code clean
-// You can also use Bootstrap Icons (bi-check-circle-fill) if installed
-const IconCheck = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-success">
-        <polyline points="20 6 9 17 4 12"></polyline>
-    </svg>
-);
+export const ConnectionInfo: FC<{
+    value: connection,
+    startContent?: JSX.Element,
+    endContent?: JSX.Element,
+    showNodeModal?: (hash: string) => void,
+}> = ({ value, startContent, endContent, showNodeModal }) => {
+
+    return <>
+        <DataList>
+            {startContent}
+            <DataListItem label="Id" value={value.id.toString()} />
+            <DataListItem label="Addr" value={value.addr} />
+            <ListGroupItemString itemKey="Geo" itemValue={value.geo} />
+            <ListGroupItemString itemKey="Type" itemValue={connType[value.type?.connType]} />
+            <ListGroupItemString itemKey="UnderlyingType" itemValue={connType[value.type?.underlyingType]} />
+            <ListGroupItemString itemKey="Inbound" itemValue={value.inboundName} />
+            <ListGroupItemString itemKey="InboundAddr" itemValue={value.inbound} />
+            <ListGroupItemString itemKey="Source" itemValue={value.source} />
+            <ListGroupItemString itemKey="RemoteAddr" itemValue={value.outbound} />
+            <ListGroupItemString itemKey="Remote Geo" itemValue={value.outboundGeo} />
+            <ListGroupItemString itemKey="Interface" itemValue={value.interface} />
+            <ListGroupItemString itemKey="LocalAddr" itemValue={value.localAddr} />
+            <ListGroupItemString itemKey="Destination" itemValue={value.destionation} />
+            <ListGroupItemString itemKey="FakeIP" itemValue={value.fakeIp} />
+            <ListGroupItemString itemKey="Hosts" itemValue={value.hosts} />
+            <ListGroupItemString itemKey="Domain" itemValue={value.domain} />
+            <ListGroupItemString itemKey="IP" itemValue={value.ip} />
+            <ListGroupItemString itemKey="Tag" itemValue={value.tag} />
+            <ListGroupItemString itemKey="Lists" itemValue={value.lists?.join(", ")} />
+            <ListGroupItemString itemKey="Resolver" itemValue={value.resolver} />
+
+            {(value.nodeName || value.hash) &&
+                <DataListItem
+                    label="Point"
+                    value={
+                        !showNodeModal
+                            ?
+                            <>{value.nodeName ? value.nodeName : value.hash}</>
+                            :
+                            <a href="#" onClick={(e) => { e.preventDefault(); showNodeModal(value.hash) }}>
+                                {value.nodeName ? value.nodeName : value.hash}
+                            </a>
+                    }
+                />
+            }
+
+            <ListGroupItemString itemKey="Protocol" itemValue={value.protocol} />
+            <ListGroupItemString itemKey="Process" itemValue={value.process} />
+            <ListGroupItemString itemKey="TlsServerName" itemValue={value.tlsServerName} />
+            <ListGroupItemString itemKey="HttpHost" itemValue={value.httpHost} />
+            <ListGroupItemString itemKey="Component" itemValue={value.component} />
+            <ListGroupItemString itemKey="Mode" itemValue={mode[value.mode]} />
+            <ListGroupItemString itemKey="UdpMigrateId" itemValue={value.udpMigrateId ? value.udpMigrateId.toString() : ""} />
+            <ListGroupItemString itemKey="Pid" itemValue={value.pid ? value.pid.toString() : ""} />
+            <ListGroupItemString itemKey="Uid" itemValue={value.uid ? value.uid.toString() : ""} />
+            <MatchHistoryItem value={value.matchHistory || []} />
+
+            {endContent}
+        </DataList>
+    </>
+}
 
 const IconCross = () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-danger" style={{ opacity: 0.8 }}>
@@ -332,8 +280,8 @@ export const MatchHistoryItem = ({ value }: { value: match_history_entry[] }) =>
     if (!value || value.length === 0) return null;
 
     return (
-        <ListGroup.Item className="border-0 border-bottom py-3">
-            <div className="d-sm-flex justify-content-between align-items-start gap-3">
+        <DataListCustomItem>
+            <div className="d-sm-flex justify-content-between align-items-start gap-3 w-100">
 
                 {/* Left Side: Main Title */}
                 <div
@@ -341,7 +289,8 @@ export const MatchHistoryItem = ({ value }: { value: match_history_entry[] }) =>
                     style={{
                         color: 'var(--sidebar-header-color)',
                         fontWeight: '600',
-                        minWidth: '110px'
+                        minWidth: '110px',
+                        fontSize: '0.875rem' // Match DataList key font size
                     }}
                 >
                     MatchHistory
@@ -416,7 +365,7 @@ export const MatchHistoryItem = ({ value }: { value: match_history_entry[] }) =>
                                                                 backgroundColor: h.matched ? 'rgba(25, 135, 84, 0.1)' : 'rgba(255, 255, 255, 0.05)'
                                                             }}
                                                         >
-                                                            {h.matched ? <IconCheck /> : <IconCross />}
+                                                            {h.matched ? <Check /> : <IconCross />}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -429,6 +378,6 @@ export const MatchHistoryItem = ({ value }: { value: match_history_entry[] }) =>
                     }
                 </div>
             </div>
-        </ListGroup.Item>
+        </DataListCustomItem>
     );
 }

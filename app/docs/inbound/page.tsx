@@ -1,18 +1,21 @@
 "use client"
 
-import { Card, CardBody, CardFooter, CardHeader, CardRowList, ErrorMsg, IconBox, MainContainer, SettingsBox } from '@/app/component/cardlist'
-import { clone, create } from "@bufbuild/protobuf"
-import { StringValueSchema } from "@bufbuild/protobuf/wkt"
-import { FC, useContext, useEffect, useState } from "react"
-import { Button, Modal, Spinner } from "react-bootstrap"
-import useSWR from "swr"
-import Loading, { Error } from "../../component/loading"
-import { SettingSwitchCard } from "../../component/switch"
-import { GlobalToastContext } from "../../component/toast"
-import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../common/proto"
-import { inbound as inboundService } from "../pbes/api/config_pb"
-import { inboundSchema } from "../pbes/config/inbound_pb"
-import { Inbound } from "./inboud"
+import { Button } from "@/app/component/v2/button";
+import { Card, CardBody, CardFooter, CardHeader, ErrorMsg, IconBox, MainContainer, SettingsBox } from '@/app/component/v2/card';
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/app/component/v2/modal';
+import { Spinner } from "@/app/component/v2/spinner";
+import { SwitchCard } from "@/app/component/v2/switch";
+import { clone, create } from "@bufbuild/protobuf";
+import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { FC, useContext, useEffect, useState } from "react";
+import { BoxArrowInRight, CheckLg, ChevronRight, DoorOpen, GearFill, PlusLg, Save, Trash } from 'react-bootstrap-icons';
+import useSWR from "swr";
+import Loading, { Error as ErrorDisplay } from "../../component/loading";
+import { GlobalToastContext } from "../../component/v2/toast";
+import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../common/proto";
+import { inbound as inboundService } from "../pbes/api/config_pb";
+import { inboundSchema } from "../pbes/config/inbound_pb";
+import { Inbound } from "./inboud";
 
 const InboundModal: FC<{
     show: boolean,
@@ -53,35 +56,36 @@ const InboundModal: FC<{
     };
 
     return (
-        <Modal show={show} onHide={() => onHide()} centered size='xl' scrollable>
-            <Modal.Header closeButton className="border-bottom-0 pb-0">
-                <Modal.Title className="fw-bold">{isNew ? "New Inbound" : `Edit Inbound: ${name}`}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body className="pt-2">
-                {error ? <ErrorMsg msg={error.msg} code={error.code} raw={error.raw} /> : isValidating || isLoading || !inbound ? (
-                    <Loading />
-                ) : (
-                    <SettingsBox>
-                        {/* Assuming the Inbound internal component handles its own rows/fields */}
-                        <Inbound inbound={inbound} onChange={(x) => mutate(clone(inboundSchema, x), false)} />
-                    </SettingsBox>
-                )}
-            </Modal.Body>
-            <Modal.Footer className="d-flex justify-content-between">
-                <div>
-                    {!isNew && (
-                        <Button variant="outline-danger" onClick={() => { onHide(); onDelete(); }}>
-                            <i className="bi bi-trash me-2"></i>Delete
-                        </Button>
+        <Modal open={show} onOpenChange={(open) => !open && onHide()}>
+            <ModalContent style={{ maxWidth: '800px' }}>
+                <ModalHeader closeButton className="border-bottom-0 pb-0">
+                    <ModalTitle className="fw-bold">{isNew ? "New Inbound" : `Edit Inbound: ${name}`}</ModalTitle>
+                </ModalHeader>
+                <ModalBody className="pt-2">
+                    {error ? <ErrorMsg msg={error.msg} code={error.code} raw={error.raw} /> : isValidating || isLoading || !inbound ? (
+                        <Loading />
+                    ) : (
+                        <SettingsBox>
+                            <Inbound inbound={inbound} onChange={(x) => mutate(clone(inboundSchema, x), false)} />
+                        </SettingsBox>
                     )}
-                </div>
-                <div className="d-flex gap-2">
-                    <Button variant="outline-secondary" onClick={() => onHide()}>Cancel</Button>
-                    <Button variant="primary" disabled={saving || !inbound} onClick={handleSave}>
-                        {saving ? <Spinner size="sm" animation="border" /> : <><i className="bi bi-check-lg me-1"></i> Save</>}
-                    </Button>
-                </div>
-            </Modal.Footer>
+                </ModalBody>
+                <ModalFooter className="d-flex justify-content-between">
+                    <div>
+                        {!isNew && (
+                            <Button variant="outline-danger" onClick={() => { onDelete(); }}>
+                                <Trash className="me-2" />Delete
+                            </Button>
+                        )}
+                    </div>
+                    <div className="d-flex gap-2">
+                        <Button variant="outline-secondary" onClick={() => onHide()}>Cancel</Button>
+                        <Button variant="outline-secondary" disabled={saving || !inbound} onClick={handleSave}>
+                            {saving ? <Spinner size="sm" /> : <><CheckLg className="me-1" /> Save</>}
+                        </Button>
+                    </div>
+                </ModalFooter>
+            </ModalContent>
         </Modal>
     );
 }
@@ -90,11 +94,11 @@ const InboundItem: FC<{ name: string, }> = ({ name }) => {
     return <>
         <div className="d-flex align-items-center flex-grow-1 overflow-hidden">
             <div className="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style={{ width: '36px', height: '36px' }}>
-                <i className="bi bi-box-arrow-in-right"></i>
+                <BoxArrowInRight />
             </div>
             <span className="text-truncate fw-medium">{name}</span>
         </div>
-        <i className="bi bi-chevron-right text-muted opacity-25"></i>
+        <ChevronRight className="text-muted opacity-25" />
     </>
 }
 
@@ -105,7 +109,7 @@ function InboudComponent() {
     const [saving, setSaving] = useState(false);
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
 
-    if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
+    if (error !== undefined) return <ErrorDisplay statusCode={error.code} title={error.msg} />
     if (isLoading || inbounds === undefined) return <Loading />
 
     const deleteInbound = (name: string) => {
@@ -114,6 +118,7 @@ function InboudComponent() {
                 if (error === undefined) {
                     ctx.Info("Removed successful");
                     mutate();
+                    setShowdata(prev => ({ ...prev, show: false })); // Ensure modal closes on delete
                 } else {
                     ctx.Error(error.msg);
                 }
@@ -149,57 +154,107 @@ function InboudComponent() {
             />
 
             {/* 1. Global Settings Card */}
-            <Card>
+            <Card className="mb-3">
                 <CardHeader>
-                    <IconBox icon="gear-fill" color="#f59e0b" title='Inbound Configuration' description="Global interception & sniffing" />
+                    <IconBox icon={GearFill} color="#f59e0b" title='Inbound Configuration' description="Global interception & sniffing" />
                 </CardHeader>
                 <CardBody>
                     <div className="row g-3">
                         <div className="col-md-4">
-                            <SettingSwitchCard
+                            <SwitchCard
                                 label="DNS Hijack"
                                 description="Intersects DNS requests"
                                 checked={inbounds.hijackDns}
-                                onChange={() => mutate({ ...inbounds, hijackDns: !inbounds.hijackDns }, false)}
+                                onCheckedChange={() => mutate({ ...inbounds, hijackDns: !inbounds.hijackDns }, false)}
+                                className="p-3 rounded-3 h-100 bg-body-tertiary"
                             />
                         </div>
                         <div className="col-md-4">
-                            <SettingSwitchCard
+                            <SwitchCard
                                 label="FakeDNS"
                                 description="Use virtual IP logic"
                                 checked={inbounds.hijackDnsFakeip}
-                                onChange={() => mutate({ ...inbounds, hijackDnsFakeip: !inbounds.hijackDnsFakeip }, false)}
+                                onCheckedChange={() => mutate({ ...inbounds, hijackDnsFakeip: !inbounds.hijackDnsFakeip }, false)}
+                                className="p-3 rounded-3 h-100 bg-body-tertiary"
                             />
                         </div>
                         <div className="col-md-4">
-                            <SettingSwitchCard
+                            <SwitchCard
                                 label="Traffic Sniffing"
                                 description="Inspects protocol types"
                                 checked={!!inbounds.sniff?.enabled}
-                                onChange={() => mutate({ ...inbounds, sniff: { ...inbounds.sniff, enabled: !inbounds.sniff?.enabled } }, false)}
+                                onCheckedChange={() => mutate({ ...inbounds, sniff: { ...inbounds.sniff, enabled: !inbounds.sniff?.enabled } }, false)}
+                                className="p-3 rounded-3 h-100 bg-body-tertiary"
                             />
                         </div>
                     </div>
                 </CardBody>
-                <CardFooter>
-                    <Button variant="primary" disabled={saving} onClick={handleApply}>
-                        {saving ? <Spinner size="sm" animation="border" /> : <><i className="bi bi-save me-1"></i> Apply Settings</>}
+                <CardFooter className="d-flex justify-content-end">
+                    <Button variant="outline-secondary" disabled={saving} onClick={handleApply}>
+                        {saving ? <Spinner size="sm" /> : <><Save className="me-1" /> Apply Settings</>}
                     </Button>
                 </CardFooter>
             </Card>
 
-
             {/* 2. Inbound Service List Card */}
-            <CardRowList
-                items={inbounds.names.sort((a, b) => a.localeCompare(b))}
-                onClickItem={(name) => setShowdata({ show: true, name, new: false })}
-                onAddNew={handleCreate}
-                renderListItem={(name) => (<InboundItem name={name} />)}
-                header={
-                    <IconBox icon="door-open" color="primary" title="Entry Points" description={`${inbounds.names.length} active inbounds`} />
-                }
-                adding={saving}
-            />
+            <Card>
+                <CardHeader>
+                    <IconBox icon={DoorOpen} color="#0d6efd" title="Entry Points" description={`${inbounds.names.length} active inbounds`} />
+                </CardHeader>
+                <CardBody>
+                    <div className="row g-3">
+                        {
+                            inbounds.names.sort((a, b) => a.localeCompare(b)).map((name, index) => (
+                                <div className="col-md-6 col-lg-4" key={index}>
+                                    <div
+                                        className="p-3 rounded-3 h-100 bg-body-tertiary d-flex align-items-center justify-content-between cursor-pointer"
+                                        onClick={() => setShowdata({ show: true, name, new: false })}
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyDown={(e) => { if (e.key === 'Enter') setShowdata({ show: true, name, new: false }) }}
+                                    >
+                                        <InboundItem name={name} />
+                                    </div>
+                                </div>
+                            ))
+                        }
+
+                        {/* Add New Item Input */}
+                        <div className="col-md-6 col-lg-4">
+                            <div className="p-3 rounded-3 h-100 bg-body-tertiary d-flex align-items-center">
+                                <form
+                                    className="d-flex w-100 gap-2"
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        const form = e.target as HTMLFormElement;
+                                        const input = form.elements.namedItem('newInbound') as HTMLInputElement;
+                                        if (input.value) {
+                                            handleCreate(input.value);
+                                            input.value = "";
+                                        }
+                                    }}
+                                >
+                                    <input
+                                        name="newInbound"
+                                        className="form-control form-control-sm bg-transparent border-0 shadow-none px-0"
+                                        placeholder="Create new..."
+                                        autoComplete="off"
+                                    />
+                                    <Button size="sm" type="submit" disabled={saving} className="border-0 bg-transparent text-primary p-0">
+                                        <PlusLg className="fs-5" />
+                                    </Button>
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+                    {inbounds.names.length === 0 && (
+                        <div className="text-center text-muted p-3">
+                            No records found.
+                        </div>
+                    )}
+                </CardBody>
+            </Card>
         </MainContainer>
     );
 }

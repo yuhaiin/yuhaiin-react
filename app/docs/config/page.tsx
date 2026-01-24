@@ -1,17 +1,20 @@
 "use client"
 
-import { Card, CardBody, CardFooter, CardHeader, IconBox, MainContainer, SettingLabel } from '@/app/component/cardlist';
-import { create, DescEnumValue } from '@bufbuild/protobuf';
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { Button, Spinner, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
-import Loading, { Error } from '../../component/loading';
+import { Button } from '@/app/component/v2/button';
+import { Card, CardBody, CardFooter, CardHeader, IconBox, MainContainer, SettingLabel } from '@/app/component/v2/card';
 import {
     SettingEnumSelectVertical,
     SettingInputVertical,
     SettingRangeVertical,
-    SettingSwitchCard
-} from "../../component/switch";
-import { GlobalToastContext } from '../../component/toast';
+    SwitchCard
+} from "@/app/component/v2/forms";
+import { Spinner } from '@/app/component/v2/spinner';
+import { ToggleGroup, ToggleItem } from '@/app/component/v2/togglegroup';
+import { create, DescEnumValue } from '@bufbuild/protobuf';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Cpu, Globe2, JournalText, Save } from 'react-bootstrap-icons';
+import Loading, { Error } from '../../component/loading';
+import { GlobalToastContext } from '../../component/v2/toast';
 import { useInterfaces } from '../common/interfaces';
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
 import { config_service } from '../pbes/api/config_pb';
@@ -32,18 +35,18 @@ function ConfigComponent() {
 
     const getSystemProxy = useCallback((data: Setting) => {
         if (!data?.systemProxy) return [];
-        const x: number[] = [];
-        if (data.systemProxy.http) x.push(1);
-        if (data.systemProxy.socks5) x.push(2);
+        const x: string[] = [];
+        if (data.systemProxy.http) x.push("1");
+        if (data.systemProxy.socks5) x.push("2");
         return x;
     }, []);
 
     const systemProxy = useMemo(() => getSystemProxy(setting), [setting, getSystemProxy]);
 
-    const handleSystemProxyChange = (x: number[]) => {
+    const handleSystemProxyChange = (x: string[]) => {
         setSetting(prev => ({
             ...prev,
-            systemProxy: create(system_proxySchema, { http: x.includes(1), socks5: x.includes(2) })
+            systemProxy: create(system_proxySchema, { http: x.includes("1"), socks5: x.includes("2") })
         }), false);
     };
 
@@ -84,24 +87,24 @@ function ConfigComponent() {
             {/* 1. General Network Settings */}
             <Card>
                 <CardHeader>
-                    <IconBox icon="globe2" color="#3b82f6" title='General Settings' description='Network and system integration' />
+                    <IconBox icon={Globe2} color="#3b82f6" title='General Settings' description='Network and system integration' />
                 </CardHeader>
                 <CardBody>
                     <div className="row g-3">
                         <div className="col-md-6">
-                            <SettingSwitchCard
+                            <SwitchCard
                                 label="Enable IPv6"
                                 description="Global IPv6 traffic support"
                                 checked={setting.ipv6}
-                                onChange={() => setSetting(prev => ({ ...prev, ipv6: !prev.ipv6 }), false)}
+                                onCheckedChange={() => setSetting(prev => ({ ...prev, ipv6: !prev.ipv6 }), false)}
                             />
                         </div>
                         <div className="col-md-6">
-                            <SettingSwitchCard
+                            <SwitchCard
                                 label="Default Interface"
                                 description="Automatically detect exit"
                                 checked={setting.useDefaultInterface}
-                                onChange={() => setSetting(prev => ({ ...prev, useDefaultInterface: !prev.useDefaultInterface }), false)}
+                                onCheckedChange={() => setSetting(prev => ({ ...prev, useDefaultInterface: !prev.useDefaultInterface }), false)}
                             />
                         </div>
 
@@ -118,15 +121,15 @@ function ConfigComponent() {
 
                         <div className="col-12 mt-3">
                             <SettingLabel>System Proxy Integration</SettingLabel>
-                            <ToggleButtonGroup
-                                type="checkbox"
+                            <ToggleGroup
+                                type="multiple"
                                 className="w-100"
                                 value={systemProxy}
-                                onChange={handleSystemProxyChange}
+                                onValueChange={handleSystemProxyChange}
                             >
-                                <ToggleButton id="tbg-http" value={1} variant="outline-primary" className="py-2">HTTP Proxy</ToggleButton>
-                                <ToggleButton id="tbg-socks" value={2} variant="outline-primary" className="py-2">SOCKS5 Proxy</ToggleButton>
-                            </ToggleButtonGroup>
+                                <ToggleItem value="1" className="flex-grow-1 py-1" style={{ height: '40px' }}>HTTP Proxy</ToggleItem>
+                                <ToggleItem value="2" className="flex-grow-1 py-1" style={{ height: '40px' }}>SOCKS5 Proxy</ToggleItem>
+                            </ToggleGroup>
                         </div>
                     </div>
                 </CardBody>
@@ -135,7 +138,7 @@ function ConfigComponent() {
             {/* 2. Logging Card */}
             <Card>
                 <CardHeader>
-                    <IconBox icon="journal-text" color="#10b981" title="Logging (Logcat)" description="Debug and error reporting" />
+                    <IconBox icon={JournalText} color="#10b981" title="Logging (Logcat)" description="Debug and error reporting" />
                 </CardHeader>
                 <CardBody>
                     <div className="row g-3">
@@ -149,27 +152,27 @@ function ConfigComponent() {
                             />
                         </div>
                         <div className="col-md-6">
-                            <SettingSwitchCard
+                            <SwitchCard
                                 label="Persistent Logging"
                                 description="Save logs to disk"
                                 checked={setting.logcat.save}
-                                onChange={() => setSetting(prev => ({ ...prev, logcat: { ...prev.logcat, save: !prev.logcat.save } }), false)}
+                                onCheckedChange={() => setSetting(prev => ({ ...prev, logcat: { ...prev.logcat, save: !prev.logcat.save } }), false)}
                             />
                         </div>
                         <div className="col-md-6">
-                            <SettingSwitchCard
+                            <SwitchCard
                                 label="Ignore Timeouts"
                                 description="Hide timeout errors in logs"
                                 checked={setting.logcat.ignoreTimeoutError}
-                                onChange={() => setSetting(prev => ({ ...prev, logcat: { ...prev.logcat, ignoreTimeoutError: !prev.logcat.ignoreTimeoutError } }), false)}
+                                onCheckedChange={() => setSetting(prev => ({ ...prev, logcat: { ...prev.logcat, ignoreTimeoutError: !prev.logcat.ignoreTimeoutError } }), false)}
                             />
                         </div>
                         <div className="col-md-6">
-                            <SettingSwitchCard
+                            <SwitchCard
                                 label="Ignore DNS Errors"
                                 description="Hide resolution failures"
                                 checked={setting.logcat.ignoreDnsError}
-                                onChange={() => setSetting(prev => ({ ...prev, logcat: { ...prev.logcat, ignoreDnsError: !prev.logcat.ignoreDnsError } }), false)}
+                                onCheckedChange={() => setSetting(prev => ({ ...prev, logcat: { ...prev.logcat, ignoreDnsError: !prev.logcat.ignoreDnsError } }), false)}
                             />
                         </div>
                     </div>
@@ -179,7 +182,7 @@ function ConfigComponent() {
             {/* 3. Advanced Performance Card */}
             <Card>
                 <CardHeader>
-                    <IconBox icon="cpu" color="#f59e0b" title="Performance & Advanced" description="Buffer sizes and concurrency limits" />
+                    <IconBox icon={Cpu} color="#f59e0b" title="Performance & Advanced" description="Buffer sizes and concurrency limits" />
                 </CardHeader>
                 <CardBody>
                     <div className="row g-4">
@@ -189,7 +192,7 @@ function ConfigComponent() {
                                 unit="B"
                                 value={setting.advancedConfig?.udpBufferSize || 2048}
                                 min={2048} max={65536} step={1024}
-                                onChange={(v) => setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, udpBufferSize: v } }), false)}
+                                onChange={(v: number) => setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, udpBufferSize: v } }), false)}
                             />
                         </div>
 
@@ -199,7 +202,7 @@ function ConfigComponent() {
                                 unit="B"
                                 value={setting.advancedConfig?.relayBufferSize || 4096}
                                 min={2048} max={65536} step={1024}
-                                onChange={(v) => setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, relayBufferSize: v } }), false)}
+                                onChange={(v: number) => setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, relayBufferSize: v } }), false)}
                             />
                         </div>
 
@@ -209,7 +212,7 @@ function ConfigComponent() {
                                 unit="Slots"
                                 value={setting.advancedConfig?.udpRingbufferSize || 250}
                                 min={100} max={2000} step={10}
-                                onChange={(v) => setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, udpRingbufferSize: v } }), false)}
+                                onChange={(v: number) => setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, udpRingbufferSize: v } }), false)}
                             />
                         </div>
 
@@ -219,15 +222,15 @@ function ConfigComponent() {
                                 unit="Sems"
                                 value={setting.advancedConfig?.happyeyeballsSemaphore || 250}
                                 min={0} max={10000} step={10}
-                                onChange={(v) => setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, happyeyeballsSemaphore: v } }), false)}
+                                onChange={(v: number) => setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, happyeyeballsSemaphore: v } }), false)}
                             />
                         </div>
                     </div>
                 </CardBody>
 
                 <CardFooter className="d-flex justify-content-end">
-                    <Button variant="primary" disabled={saving} onClick={handleSave}>
-                        {saving ? <Spinner size="sm" animation="border" /> : <><i className="bi bi-save me-2"></i>Apply Advanced Changes</>}
+                    <Button variant="outline-primary" disabled={saving} onClick={handleSave}>
+                        {saving ? <Spinner size="sm" /> : <><Save className="me-2" />Apply Advanced Changes</>}
                     </Button>
                 </CardFooter>
             </Card>

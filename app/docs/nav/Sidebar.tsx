@@ -1,9 +1,9 @@
 "use client"
 
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useEffect, useRef, useState } from 'react';
-import { Collapse, Nav } from 'react-bootstrap';
-import styles from './sidebar.module.css';
+import React, { useEffect, useState } from 'react';
+import { ArrowLeftRight, BoxArrowInDownRight, BoxArrowUpRight, Funnel, Gear, HouseDoor } from 'react-bootstrap-icons';
+import { SidebarCollapsible, SidebarDivider, SidebarItem, SidebarNav, Sidebar as SidebarRoot, SidebarSubLink } from '../../component/v2/sidebar';
 
 interface SidebarProps {
     show: boolean;
@@ -13,9 +13,8 @@ interface SidebarProps {
 function Sidebar({ show, onHide }: SidebarProps) {
     const router = useRouter();
     const pathname = usePathname();
-    const sidebarRef = useRef<HTMLDivElement>(null);
 
-    const handleNavLinkClick = (key: string | null, e: React.SyntheticEvent) => {
+    const handleNavLinkClick = (key: string) => {
         if (key) {
             if (key.startsWith('http')) {
                 window.open(key, '_blank');
@@ -29,186 +28,231 @@ function Sidebar({ show, onHide }: SidebarProps) {
         }
     };
 
-    // Click outside to close (Mobile)
+    return (
+        <SidebarRoot show={show} onHide={onHide}>
+            <SidebarNav>
+                <SidebarItem
+                    onClick={() => handleNavLinkClick('/')}
+                    active={pathname === '/'}
+                    icon={<HouseDoor />}
+                >
+                    HOME
+                </SidebarItem>
+
+                <SidebarGroup
+                    title="OUTBOUND"
+                    icon={<BoxArrowUpRight />}
+                    activePath={pathname}
+                    matchPath="/docs/group/"
+                >
+                    <SelectableLink path="/docs/group/" current={pathname} onSelect={handleNavLinkClick}>
+                        Outbound
+                    </SelectableLink>
+                    <SelectableLink path="/docs/group/subscribe" current={pathname} onSelect={handleNavLinkClick}>
+                        Subscribe
+                    </SelectableLink>
+                    <SelectableLink path="/docs/group/publish" current={pathname} onSelect={handleNavLinkClick}>
+                        Publish
+                    </SelectableLink>
+                    <SelectableLink path="/docs/group/activates" current={pathname} onSelect={handleNavLinkClick}>
+                        Activates
+                    </SelectableLink>
+                </SidebarGroup>
+
+                <SidebarGroup
+                    title="INBOUND"
+                    icon={<BoxArrowInDownRight />}
+                    activePath={pathname}
+                    matchPath="/docs/inbound/"
+                >
+                    <SelectableLink path="/docs/inbound/" current={pathname} onSelect={handleNavLinkClick}>
+                        Config
+                    </SelectableLink>
+                </SidebarGroup>
+
+                <SidebarGroup
+                    title="BYPASS"
+                    icon={<Funnel />}
+                    activePath={pathname}
+                    matchPath="/docs/bypass/"
+                >
+                    <SelectableLink path="/docs/bypass/" current={pathname} onSelect={handleNavLinkClick}>
+                        Rule
+                    </SelectableLink>
+                    <SelectableLink path="/docs/bypass/list" current={pathname} onSelect={handleNavLinkClick}>
+                        List
+                    </SelectableLink>
+                    <SelectableLink path="/docs/bypass/tag" current={pathname} onSelect={handleNavLinkClick}>
+                        Tag
+                    </SelectableLink>
+                    <SidebarDivider />
+                    <SelectableLink path="/docs/bypass/resolver/" current={pathname} onSelect={handleNavLinkClick}>
+                        Resolver
+                    </SelectableLink>
+                    <SidebarDivider />
+                    <SelectableLink path="/docs/bypass/test" current={pathname} onSelect={handleNavLinkClick}>
+                        Test Route
+                    </SelectableLink>
+                    <SelectableLink path="/docs/bypass/block" current={pathname} onSelect={handleNavLinkClick}>
+                        Block History
+                    </SelectableLink>
+                </SidebarGroup>
+
+                <SidebarGroup
+                    title="CONNECTIONS"
+                    icon={<ArrowLeftRight />}
+                    activePath={pathname}
+                    matchPath="/docs/connections/"
+                >
+                    <SelectableLink path="/docs/connections/v2" current={pathname} onSelect={handleNavLinkClick}>
+                        Connections
+                    </SelectableLink>
+                    <SelectableLink path="/docs/connections/history" current={pathname} onSelect={handleNavLinkClick}>
+                        History
+                    </SelectableLink>
+                    <SelectableLink path="/docs/connections/failed" current={pathname} onSelect={handleNavLinkClick}>
+                        Failed History
+                    </SelectableLink>
+                </SidebarGroup>
+
+                <SidebarGroup
+                    title="SETTING"
+                    icon={<Gear />}
+                    activePath={pathname}
+                    matchPath="/docs/config/"
+                >
+                    <SelectableLink path="/docs/config/" current={pathname} onSelect={handleNavLinkClick}>
+                        Config
+                    </SelectableLink>
+                    <SelectableLink path="/docs/webui/" current={pathname} onSelect={handleNavLinkClick}>
+                        WebUI
+                    </SelectableLink>
+                    <SidebarDivider />
+                    <SelectableLink path="/docs/config/backup/" current={pathname} onSelect={handleNavLinkClick}>
+                        Backup
+                    </SelectableLink>
+                    <SidebarDivider />
+                    <SelectableLink path="/docs/config/log/" current={pathname} onSelect={handleNavLinkClick}>
+                        Log
+                    </SelectableLink>
+                    <SidebarDivider />
+                    <SelectableLink path="/docs/config/pprof/" current={pathname} onSelect={handleNavLinkClick}>
+                        Pprof
+                    </SelectableLink>
+                    <SelectableLink path="/docs/config/documents/" current={pathname} onSelect={handleNavLinkClick}>
+                        Documents
+                    </SelectableLink>
+                    <SidebarDivider />
+                    <SelectableLink path="/docs/config/licenses" current={pathname} onSelect={handleNavLinkClick}>
+                        Licenses
+                    </SelectableLink>
+                    <SelectableLink path="/docs/config/about" current={pathname} onSelect={handleNavLinkClick}>
+                        About
+                    </SelectableLink>
+                </SidebarGroup>
+            </SidebarNav>
+        </SidebarRoot>
+    );
+}
+
+// -----------------------------------------------------------------------------
+// Helper Components
+// -----------------------------------------------------------------------------
+
+function SidebarGroup({ title, icon, activePath, matchPath, children }: {
+    title: React.ReactNode;
+    icon: React.ReactNode;
+    activePath: string;
+    matchPath: string;
+    children: React.ReactNode;
+}) {
+    // Determine initially open state based on path
+    const isActive = activePath.startsWith(matchPath);
+    // On desktop we might want it always open, but the new design usually implies collapsible
+    // The original code had `alwaysOpen={window.innerWidth >= 992}`.
+    // Here we can use a state that defaults to true if desktop, but since this is SSR friendly Next.js, 
+    // `window` is not available initially. We'll rely on defaultOpen or controlled state.
+    // For simplicity and robustness, we'll let it be controlled by user interaction + initial state.
+    // We can use `useEffect` to set open if active.
+
+    const [isOpen, setIsOpen] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node) && show) {
-                onHide();
-            }
-        };
-
-        if (show) {
-            document.addEventListener('mousedown', handleClickOutside);
-        } else {
-            document.removeEventListener('mousedown', handleClickOutside);
+        setIsMounted(true);
+        if (window.innerWidth >= 992) {
+            setIsOpen(true);
+        } else if (isActive) {
+            setIsOpen(true);
         }
+    }, []);
 
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [show, onHide]);
+    useEffect(() => {
+        if (isActive && !isOpen) {
+            setIsOpen(true);
+        }
+    }, [isActive]);
+
+    // If not mounted yet (SSR), default to closed or open? 
+    // To avoid hydration mismatch, better to wait for mount or use a hook.
+    // But Collapsible `open` prop is controlled.
+
+    // Simplification: Just use `isActive` to force open? No, user should be able to toggle.
+    // So we use standard state.
 
     return (
-        <>
-            <div ref={sidebarRef} className={`${styles.sidebar} ${show ? styles.show : ''}`}>
-                <Nav
-                    className="flex-column"
-                    activeKey={pathname}
-                    onSelect={handleNavLinkClick}
-                >
-                    <Nav.Item>
-                        <Nav.Link eventKey='/' active={pathname === '/'}><i className="bi bi-house-door"></i>HOME</Nav.Link>
-                    </Nav.Item>
-
-                    <SidebarCollapseItem
-                        title={<><i className="bi bi-box-arrow-up-right"></i>OUTBOUND</>}
-                        eventKey='/docs/group/'
-                        onSelect={handleNavLinkClick}
-                        currentPathname={pathname}
-                        alwaysOpen={window.innerWidth >= 992}
-                    >
-                        <Nav.Link eventKey='/docs/group/' active={pathname === '/docs/group/'}>Outbound</Nav.Link>
-                        <Nav.Link eventKey='/docs/group/subscribe' active={pathname.startsWith('/docs/group/subscribe')}>Subscribe</Nav.Link>
-                        <Nav.Link eventKey='/docs/group/publish' active={pathname.startsWith('/docs/group/publish')}>Publish</Nav.Link>
-                        <Nav.Link eventKey='/docs/group/activates' active={pathname.startsWith('/docs/group/activates')}>Activates</Nav.Link>
-                    </SidebarCollapseItem>
-
-                    <SidebarCollapseItem
-                        title={<><i className="bi bi-box-arrow-in-down-right"></i>INBOUND</>}
-                        eventKey='/docs/inbound/'
-                        onSelect={handleNavLinkClick}
-                        currentPathname={pathname}
-                        alwaysOpen={window.innerWidth >= 992}
-                    >
-                        <Nav.Link eventKey='/docs/inbound/' active={pathname === '/docs/inbound/'}>Config</Nav.Link>
-                    </SidebarCollapseItem>
-
-                    <SidebarCollapseItem
-                        title={<><i className="bi bi-funnel"></i>BYPASS</>}
-                        eventKey='/docs/bypass/'
-                        onSelect={handleNavLinkClick}
-                        currentPathname={pathname}
-                        alwaysOpen={window.innerWidth >= 992}
-                    >
-                        <Nav.Link eventKey='/docs/bypass/' active={pathname === '/docs/bypass/'}>Rule</Nav.Link>
-                        <Nav.Link eventKey='/docs/bypass/list' active={pathname.startsWith('/docs/bypass/list')}>List</Nav.Link>
-                        <Nav.Link eventKey='/docs/bypass/tag' active={pathname.startsWith('/docs/bypass/tag')}>Tag</Nav.Link>
-                        <div className={styles['dropdown-divider']}></div>
-                        <Nav.Link eventKey='/docs/bypass/resolver/' active={pathname.startsWith('/docs/bypass/resolver')}>Resolver</Nav.Link>
-                        <div className={styles['dropdown-divider']}></div>
-                        <Nav.Link eventKey='/docs/bypass/test' active={pathname.startsWith('/docs/bypass/test')}>Test Route</Nav.Link>
-                        <Nav.Link eventKey='/docs/bypass/block' active={pathname.startsWith('/docs/bypass/block')}>Block History</Nav.Link>
-                    </SidebarCollapseItem>
-
-                    <SidebarCollapseItem
-                        title={<><i className="bi bi-arrow-left-right"></i>CONNECTIONS</>}
-                        eventKey='/docs/connections/'
-                        onSelect={handleNavLinkClick}
-                        currentPathname={pathname}
-                        alwaysOpen={window.innerWidth >= 992}
-                    >
-                        <Nav.Link eventKey='/docs/connections/v2' active={pathname.startsWith('/docs/connections/v2')}>Connections</Nav.Link>
-                        <Nav.Link eventKey='/docs/connections/history' active={pathname.startsWith('/docs/connections/history')}>History</Nav.Link>
-                        <Nav.Link eventKey='/docs/connections/failed' active={pathname.startsWith('/docs/connections/failed')}>Failed History</Nav.Link>
-                    </SidebarCollapseItem>
-
-                    <SidebarCollapseItem
-                        title={<><i className="bi bi-gear"></i>SETTING</>}
-                        eventKey='/docs/config/'
-                        onSelect={handleNavLinkClick}
-                        currentPathname={pathname}
-                        alwaysOpen={window.innerWidth >= 992}
-                    >
-                        <Nav.Link eventKey='/docs/config/' active={pathname === '/docs/config/'}>Config</Nav.Link>
-                        <Nav.Link eventKey='/docs/webui/' active={pathname.startsWith('/docs/webui')}>WebUI</Nav.Link>
-                        <div className={styles['dropdown-divider']}></div>
-                        <Nav.Link eventKey='/docs/config/backup/' active={pathname.startsWith('/docs/config/backup')}>Backup</Nav.Link>
-                        <div className={styles['dropdown-divider']}></div>
-                        <Nav.Link eventKey='/docs/config/log/' active={pathname.startsWith('/docs/config/log')}>Log</Nav.Link>
-                        <div className={styles['dropdown-divider']}></div>
-                        <Nav.Link eventKey='/docs/config/pprof/' active={pathname.startsWith('/docs/config/pprof')}>Pprof</Nav.Link>
-                        <Nav.Link eventKey='/docs/config/documents/' active={pathname.startsWith('/docs/config/documents')}>Documents</Nav.Link>
-                        <div className={styles['dropdown-divider']}></div>
-                        <Nav.Link eventKey='/docs/config/licenses' active={pathname.startsWith('/docs/config/licenses')}>Licenses</Nav.Link>
-                        <Nav.Link eventKey='/docs/config/about' active={pathname.startsWith('/docs/config/about')}>About</Nav.Link>
-                    </SidebarCollapseItem>
-                </Nav>
-            </div>
-            {/* Overlay */}
-            <div className={`${styles.overlay} d-lg-none ${show ? styles.show : ''}`} onClick={onHide}></div>
-        </>
+        <SidebarCollapsible
+            title={title}
+            icon={icon}
+            open={isMounted ? isOpen : false}
+            onOpenChange={setIsOpen}
+            active={isActive}
+        >
+            {children}
+        </SidebarCollapsible>
     );
 }
 
 
-interface SidebarCollapseItemProps {
-    title: React.ReactNode;
-    eventKey: string;
+function SelectableLink({ path, current, onSelect, children }: {
+    path: string;
+    current: string;
+    onSelect: (key: string) => void;
     children: React.ReactNode;
-    onSelect: (key: string | null, e: React.SyntheticEvent) => void;
-    currentPathname: string;
-    alwaysOpen?: boolean;
-}
+}) {
+    const isActive = current === path; // Exact match for some?
+    // Original logic:
+    // /docs/group/ -> active === '/docs/group/'
+    // /docs/group/subscribe -> active startsWith
 
-interface ChildProps {
-    active?: boolean;
-    eventKey?: string;
-}
+    // Actually the original logic was mixed.
+    // Nav.Link active={pathname === '/'}
+    // Nav.Link eventKey='/docs/group/subscribe' active={pathname.startsWith('/docs/group/subscribe')}
+    // We should probably replicate that "startsWith" logic for sub items mostly, or strict for index.
 
-function SidebarCollapseItem({ title, eventKey, children, onSelect, currentPathname, alwaysOpen = false }: SidebarCollapseItemProps) {
-    const isChildActive = React.Children.toArray(children).some(child => {
-        if (React.isValidElement(child)) {
-            const element = child as React.ReactElement<ChildProps>;
+    // Refined logic: if path ends with /, strict match? No.
+    // Let's just use `current.startsWith(path)` generally, but for root it might be tricky.
+    // The passed `path` is the eventKey.
 
-            if (element.props.active) {
-                return true;
-            }
-
-            if (typeof element.props.eventKey === 'string' && currentPathname.startsWith(element.props.eventKey || '')) {
-                return true;
-            }
-        }
-        return false;
-    });
-
-    const [open, setOpen] = useState(isChildActive || alwaysOpen);
-
-    useEffect(() => {
-        if (isChildActive && !open) {
-            setOpen(true);
-        }
-    }, [isChildActive, open]);
-
-    const handleClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        setOpen(!open);
-    };
-
-    const handleSelect = (key: string | null, e: React.SyntheticEvent) => {
-        if (key && !e.currentTarget.classList.contains(styles['collapse-toggle'])) {
-            onSelect(key, e);
-        }
+    let active = false;
+    if (path.endsWith('/')) {
+        active = current === path;
+    } else {
+        active = current.startsWith(path);
     }
 
+    // Special case for root? No, these are sublinks.
+    // Original: active={pathname === '/docs/group/'} for 'Outbound'
+    // but active={pathname.startsWith...} for others.
+
     return (
-        <Nav.Item className={styles['collapse-nav-item']}>
-            <Nav.Link
-                onClick={handleClick}
-                aria-controls={`collapse-menu-${eventKey}`}
-                aria-expanded={open}
-                className={`${styles['collapse-toggle']} ${isChildActive ? 'active' : ''}`}
-            >
-                {title}
-                <i className={`bi ${open ? 'bi-chevron-down' : 'bi-chevron-right'} ms-auto ${styles['collapse-icon']}`}></i>
-            </Nav.Link>
-            <Collapse in={open}>
-                <div id={`collapse-menu-${eventKey}`} className={styles['sub-menu']}>
-                    <Nav onSelect={handleSelect} className={styles['sub-menu-nav']} activeKey={currentPathname}>
-                        {children}
-                    </Nav>
-                </div>
-            </Collapse>
-        </Nav.Item>
+        <SidebarSubLink
+            onClick={(e) => { e.preventDefault(); onSelect(path); }}
+            active={active}
+            href={path}
+        >
+            {children}
+        </SidebarSubLink>
     );
 }
 

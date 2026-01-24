@@ -4,13 +4,15 @@ import { useLocalStorage } from "usehooks-ts";
 import { IFramePage } from "../../../component/iframe";
 import { APIUrlDefault, APIUrlKey } from "../../common/apiurl";
 
+import { MainContainer } from "@/app/component/v2/card";
+
 const PprofPage = () => {
     const [apiUrl] = useLocalStorage<string>(APIUrlKey, APIUrlDefault);
 
     return (
-        <>
+        <MainContainer>
             <IFramePage src={apiUrl + "/debug/pprof"} />
-        </>
+        </MainContainer>
     )
 }
 

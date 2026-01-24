@@ -1,0 +1,242 @@
+   /* 2. Base Button Style (Complete rewrite, no Bootstrap dependency)  */
+   .custom-btn {
+       /* Core layout */
+       display: inline-flex;
+       align-items: center;
+       justify-content: center;
+
+       /* Size and typography (Bootstrap defaults) */
+       padding: 0.375rem 0.75rem;
+       font-size: 1rem;
+       line-height: 1.5;
+       font-weight: 500;
+       font-family: inherit;
+
+       /* Eliminate browser default "retro" styles */
+       appearance: none;
+       -webkit-appearance: none;
+       background: none;
+       box-shadow: none;
+       cursor: pointer;
+
+       /* Color application */
+       background-color: var(--bs-tertiary-bg);
+       border: 1px solid var(--sidebar-border-color);
+       color: var(--bs-body-color);
+
+       /* Border radius */
+       border-radius: 12px;
+
+       /* Animation */
+       transition: all 0.2s ease;
+
+       /* Layout corrections */
+       position: relative;
+       text-decoration: none;
+       user-select: none;
+       vertical-align: middle;
+   }
+
+   /* 3. State Interaction (Hover, Active, Focus) */
+
+   /* Hover */
+   .custom-btn:hover {
+       background-color: var(--sidebar-hover-bg);
+       border-color: var(--sidebar-active-color);
+       color: var(--sidebar-active-color);
+       z-index: 2;
+       text-decoration: none;
+   }
+
+   /* Active / Focus / Radix Open State */
+   .custom-btn:active,
+   .custom-btn:focus-visible,
+   .custom-btn[data-state="open"] {
+       /* State when Radix Dropdown is open */
+       background-color: var(--sidebar-hover-bg) !important;
+       border-color: var(--sidebar-active-color) !important;
+       color: var(--sidebar-active-color) !important;
+
+       box-shadow: none !important;
+       outline: none !important;
+       z-index: 3;
+   }
+
+   /* Remove default black outline on click */
+   .custom-btn:focus {
+       outline: none;
+   }
+
+   /* Disabled */
+   .custom-btn:disabled,
+   .custom-btn[aria-disabled="true"] {
+       background-color: var(--bs-tertiary-bg) !important;
+       border-color: var(--sidebar-border-color) !important;
+       color: var(--bs-body-color) !important;
+       opacity: 0.65;
+       pointer-events: none;
+   }
+
+   /* 4. Variant: Danger (Red Solid)  */
+   .custom-btn-danger {
+       background-color: var(--bs-danger) !important;
+       border-color: var(--bs-danger) !important;
+       color: #fff !important;
+   }
+
+   .custom-btn-danger:hover,
+   .custom-btn-danger:active,
+   .custom-btn-danger:focus-visible,
+   .custom-btn-danger[data-state="open"] {
+       /* Dark red */
+       border-color: #b02a37 !important;
+       color: #fff !important;
+       /* Red glow */
+       box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5) !important;
+   }
+
+   .custom-btn-danger:disabled {
+       background-color: var(--bs-danger) !important;
+       border-color: var(--bs-danger) !important;
+       opacity: 0.65;
+   }
+
+   /* 5. Variant: Outline Danger (Red Border)  */
+   .custom-btn-outline-danger {
+       background-color: transparent !important;
+       border: 1px solid var(--bs-danger) !important;
+       color: var(--bs-danger) !important;
+   }
+
+   .custom-btn-outline-danger:hover {
+       background-color: var(--bs-danger) !important;
+       color: #fff !important;
+   }
+
+   .custom-btn-outline-danger:active,
+   .custom-btn-outline-danger:focus-visible,
+   .custom-btn-outline-danger[data-state="open"] {
+       background-color: var(--bs-danger) !important;
+       border-color: #b02a37 !important;
+       color: #fff !important;
+       box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5) !important;
+   }
+
+   .custom-btn-outline-danger:disabled {
+       background-color: transparent !important;
+       color: var(--bs-danger) !important;
+       opacity: 0.5;
+   }
+
+   /* 6. Variant: Primary (Formerly main color, now Secondary gray style)  */
+   .custom-btn-primary {
+       background-color: var(--bs-secondary) !important;
+       border-color: var(--bs-secondary) !important;
+       color: #fff !important;
+   }
+
+   .custom-btn-primary:hover,
+   .custom-btn-primary:active,
+   .custom-btn-primary:focus-visible,
+   .custom-btn-primary[data-state="open"] {
+       background-color: #5c636a !important;
+       /* Darker gray */
+       border-color: #565e64 !important;
+       color: #fff !important;
+       box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.5) !important;
+       opacity: 0.9;
+   }
+
+   .custom-btn-primary:disabled {
+       background-color: var(--bs-secondary) !important;
+       border-color: var(--bs-secondary) !important;
+       opacity: 0.65;
+   }
+
+   /* 7. Variant: Outline Primary (Changed to Secondary gray border style)  */
+   .custom-btn-outline-primary {
+       background-color: transparent !important;
+       border: 1px solid var(--bs-secondary) !important;
+       color: var(--bs-secondary) !important;
+   }
+
+   .custom-btn-outline-primary:hover {
+       background-color: var(--bs-secondary) !important;
+       color: #fff !important;
+   }
+
+   .custom-btn-outline-primary:active,
+   .custom-btn-outline-primary:focus-visible,
+   .custom-btn-outline-primary[data-state="open"] {
+       background-color: var(--bs-secondary) !important;
+       border-color: var(--bs-secondary) !important;
+       color: #fff !important;
+       box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.5) !important;
+   }
+
+   .custom-btn-outline-primary:disabled {
+       background-color: transparent !important;
+       color: var(--bs-secondary) !important;
+       opacity: 0.5;
+   }
+
+   /* 8. Variant: Outline Secondary (Secondary border - default style but explicitly called)  */
+   .custom-btn-outline-secondary {
+       /* Similar to default, but reset just in case */
+       background-color: transparent !important;
+       border: 1px solid var(--sidebar-border-color) !important;
+       color: var(--sidebar-color) !important;
+   }
+
+   .custom-btn-outline-secondary:hover {
+       background-color: var(--sidebar-hover-bg) !important;
+       border-color: var(--sidebar-active-color) !important;
+       color: var(--sidebar-active-color) !important;
+   }
+
+
+   /* Added: Small size button (equivalent to .btn-sm) */
+   .sm {
+       /* Reduce padding */
+       font-size: 0.875rem;
+       /* Reduce font size */
+       border-radius: 12px;
+       /* Reduce radius slightly to fit size */
+   }
+
+   /* 
+   Icon mode: extreme width compression
+   Only effective when size="icon" is used
+*/
+   .icon {
+       padding: 0.4rem;
+
+       /* 3. Force content center, eliminate whitespace from font line-height */
+       display: inline-flex;
+       align-items: center;
+       justify-content: center;
+
+       /* 4. Reset line-height to prevent icon expansion */
+       line-height: 1;
+
+       flex: 0 0 auto !important;
+       width: auto !important;
+   }
+
+   /* 
+   Fine-tuning for Bootstrap Icons (bi-*)
+   Prevent icon font itself from having offset
+*/
+   .icon i,
+   .icon svg {
+       font-size: 1rem;
+       /* Or 0.875rem to follow sm */
+       vertical-align: middle;
+   }
+
+   /* Optional: Extra small size (if you want perfect match with 0.75rem input) */
+   .xs {
+       padding: 0.15rem 0.4rem;
+       font-size: 0.75rem;
+       border-radius: 6px;
+   }

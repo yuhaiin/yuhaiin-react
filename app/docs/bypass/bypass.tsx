@@ -1,11 +1,17 @@
-import { Card, CardBody, CardFooter, CardHeader, CardRowList, IconBox, SettingsBox } from '@/app/component/cardlist';
+"use client"
+
+import { Badge } from '@/app/component/v2/badge';
+import { Button } from '@/app/component/v2/button';
+import { Card, CardBody, CardFooter, CardHeader, CardRowList, IconBox, SettingsBox } from '@/app/component/v2/card';
+import { SettingSelectVertical, SwitchCard } from '@/app/component/v2/forms';
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/app/component/v2/modal';
+import { Spinner } from '@/app/component/v2/spinner';
 import { create } from '@bufbuild/protobuf';
 import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
-import { Button, Form, Modal, Spinner } from 'react-bootstrap';
-import { ConfirmModal } from '../../component/confirm';
+import { ArrowDownUp, ListOl, Save, ShieldCheck, Signpost2 } from 'react-bootstrap-icons';
 import Loading, { Error } from '../../component/loading';
-import { SettingSelectVertical, SettingSwitchCard } from '../../component/switch';
-import { GlobalToastContext } from '../../component/toast';
+import { ConfirmModal } from '../../component/v2/confirm';
+import { GlobalToastContext } from '../../component/v2/toast';
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
 import { change_priority_request_change_priority_operate, change_priority_request_change_priority_operateSchema, change_priority_requestSchema, resolver, rule_indexSchema, rule_save_requestSchema, rules } from '../pbes/api/config_pb';
 import { configv2, mode, resolve_strategy, rulev2Schema, udp_proxy_fqdn_strategy } from '../pbes/config/bypass_pb';
@@ -36,11 +42,11 @@ const BypassComponent: FC<{
     }, [bypass, ctx, refresh, setSaving])
 
     return (
-        <div>
+        <div className="d-flex flex-column gap-4">
             {/* 1. Global Bypass Settings Card */}
             <Card>
                 <CardHeader>
-                    <IconBox icon="shield-check" color="#ec4899" title="Global Bypass Settings" description="DNS Resolution & Strategies" />
+                    <IconBox icon={ShieldCheck} color="#ec4899" title="Global Bypass Settings" description="DNS Resolution & Strategies" />
                 </CardHeader>
                 <CardBody>
                     <div className="row g-4">
@@ -49,18 +55,18 @@ const BypassComponent: FC<{
                             <h6 className="fw-bold mb-3 text-uppercase small text-muted text-opacity-75" style={{ letterSpacing: '0.5px' }}>Resolution Strategy</h6>
 
                             <div className="d-flex flex-column gap-3">
-                                <SettingSwitchCard
+                                <SwitchCard
                                     label="Resolve Locally"
                                     description="Resolve DNS on local device"
                                     checked={bypass.resolveLocally}
-                                    onChange={() => onChange({ ...bypass, resolveLocally: !bypass.resolveLocally })}
+                                    onCheckedChange={() => onChange({ ...bypass, resolveLocally: !bypass.resolveLocally })}
                                 />
 
-                                <SettingSwitchCard
+                                <SwitchCard
                                     label="UDP Proxy FQDN"
                                     description="Skip local resolution for UDP"
                                     checked={bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve}
-                                    onChange={() => onChange({ ...bypass, udpProxyFqdn: bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve ? udp_proxy_fqdn_strategy.resolve : udp_proxy_fqdn_strategy.skip_resolve })}
+                                    onCheckedChange={() => onChange({ ...bypass, udpProxyFqdn: bypass.udpProxyFqdn === udp_proxy_fqdn_strategy.skip_resolve ? udp_proxy_fqdn_strategy.resolve : udp_proxy_fqdn_strategy.skip_resolve })}
                                 />
                             </div>
                         </div>
@@ -91,13 +97,13 @@ const BypassComponent: FC<{
                         </div>
                     </div>
                 </CardBody>
-                <CardFooter>
+                <CardFooter className="d-flex justify-content-end">
                     <Button
                         variant="primary"
                         disabled={saving}
                         onClick={onSave}
                     >
-                        {saving ? <Spinner as="span" size="sm" animation="border" /> : <><i className="bi bi-save me-1"></i> Save Settings</>}
+                        {saving ? <Spinner size="sm" /> : <><Save className="me-2" />Save Configuration</>}
                     </Button>
                 </CardFooter>
             </Card>
@@ -118,22 +124,22 @@ const RuleItem: FC<{
     return (
         <>
             <div className="d-flex align-items-center flex-grow-1 overflow-hidden">
-                <span className="badge bg-secondary bg-opacity-10 text-secondary me-2">#{index + 1}</span>
-                <i className="bi bi-signpost-2 me-2 text-muted"></i>
+                <Badge variant="secondary" className="me-2" style={{ minWidth: '40px' }}>#{index + 1}</Badge>
+                <Signpost2 className="me-2 text-muted" />
                 <span className="text-truncate fw-medium">{name}</span>
             </div>
 
             <div className="d-flex gap-1" onClick={(e) => e.stopPropagation()}>
                 <Button
-                    variant="link"
-                    className="text-primary p-1"
+                    variant="outline-secondary"
+                    size="icon"
                     disabled={isChangePriority}
                     title="Change Priority"
                     onClick={(e) => {
                         e.stopPropagation()
                         onPriority(index)
                     }}>
-                    <i className="bi bi-arrow-down-up"></i>
+                    <ArrowDownUp />
                 </Button>
             </div>
         </>
@@ -222,8 +228,9 @@ const Rulev2Component: FC = () => {
     return <>
         <ConfirmModal
             show={confirmData.show}
+            title="Delete Rule"
             content={
-                <p>Delete rule <strong>{(confirmData.index >= 0 && rules_data.names.length > confirmData.index) ? rules_data.names[confirmData.index] : ""}</strong>?</p>
+                <p className="mb-0">Delete rule <strong>{(confirmData.index >= 0 && rules_data.names.length > confirmData.index) ? rules_data.names[confirmData.index] : ""}</strong>?</p>
             }
             onHide={hideConfirmModal}
             onOk={deleteRule}
@@ -262,7 +269,7 @@ const Rulev2Component: FC = () => {
                 if (!rules_data.names.includes(name)) addNewRule(name)
             }}
             header={
-                <IconBox icon="list-ol" color="primary" title="Bypass Rules" description="Traffic Routing Rules" />
+                <IconBox icon={ListOl} color="#3b82f6" title="Bypass Rules" description="Traffic Routing Rules" />
             }
         />
     </>
@@ -284,58 +291,67 @@ const PriorityModalComponent: FC<{
         setValue(index)
     }, [index, rules])
 
-    return <>
-        <Modal show={show} onHide={onHide} centered>
-            <Modal.Header closeButton>
-                <Modal.Title>Change Rule Priority</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <SettingsBox>
-                    <div className="d-flex align-items-center mb-3">
-                        <span className="badge bg-primary me-2">#{index + 1}</span>
-                        <Form.Control
-                            value={index >= 0 && index < rules.length ? rules[index] : ""}
-                            readOnly
-                            className="bg-transparent border-0 fw-bold text-center"
-                            style={{ color: 'var(--bs-body-color)' }}
-                        />
-                    </div>
+    return (
+        <Modal open={show} onOpenChange={(open) => !open && onHide()}>
+            <ModalContent>
+                <ModalHeader closeButton>
+                    <ModalTitle>Change Rule Priority</ModalTitle>
+                </ModalHeader>
+                <ModalBody>
+                    <SettingsBox>
+                        <div className="d-flex align-items-center mb-3">
+                            <Badge variant="primary" className="me-3">#{index + 1}</Badge>
+                            <span className="fw-bold flex-grow-1 text-center">
+                                {index >= 0 && index < rules.length ? rules[index] : ""}
+                            </span>
+                        </div>
 
-                    <div className="d-flex align-items-center my-3 text-muted">
-                        <hr className="flex-grow-1 opacity-25" />
-                        <small className="mx-2 text-uppercase fw-bold" style={{ fontSize: '0.7rem' }}>Operation</small>
-                        <hr className="flex-grow-1 opacity-25" />
-                    </div>
+                        <div className="d-flex align-items-center my-3 text-muted">
+                            <hr className="flex-grow-1 opacity-25" />
+                            <small className="mx-2 text-uppercase fw-bold opacity-50" style={{ fontSize: '0.65rem', letterSpacing: '0.5px' }}>Operation</small>
+                            <hr className="flex-grow-1 opacity-25" />
+                        </div>
 
-                    <Form.Select className='text-center mb-3' value={operate} onChange={(e) => setOperate(parseInt(e.target.value))}>
-                        {
-                            change_priority_request_change_priority_operateSchema.values.map((v) => (
-                                <option key={v.number} value={v.number}>{v.name}</option>
-                            ))
-                        }
-                    </Form.Select>
+                        <select
+                            className='form-select text-center mb-3 bg-body-tertiary border-secondary border-opacity-10 rounded-3'
+                            value={operate}
+                            onChange={(e) => setOperate(parseInt(e.target.value))}
+                        >
+                            {
+                                change_priority_request_change_priority_operateSchema.values.map((v) => (
+                                    <option key={v.number} value={v.number}>{v.name}</option>
+                                ))
+                            }
+                        </select>
 
-                    <div className="d-flex align-items-center my-3 text-muted">
-                        <hr className="flex-grow-1 opacity-25" />
-                        <small className="mx-2 text-uppercase fw-bold" style={{ fontSize: '0.7rem' }}>Target Rule</small>
-                        <hr className="flex-grow-1 opacity-25" />
-                    </div>
+                        <div className="d-flex align-items-center my-3 text-muted">
+                            <hr className="flex-grow-1 opacity-25" />
+                            <small className="mx-2 text-uppercase fw-bold opacity-50" style={{ fontSize: '0.65rem', letterSpacing: '0.5px' }}>Target Rule</small>
+                            <hr className="flex-grow-1 opacity-25" />
+                        </div>
 
-                    <Form.Select className='text-center' value={value} onChange={(e) => setValue(parseInt(e.target.value))}>
-                        {
-                            rules.map((rule, idx) => (
-                                <option key={idx} value={idx}>#{idx + 1} - {rule}</option>
-                            ))
-                        }
-                    </Form.Select>
-                </SettingsBox>
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="outline-secondary" onClick={onHide}>Cancel</Button>
-                <Button variant="primary" onClick={() => { onChange(value, operate); onHide(); }}>Apply Change</Button>
-            </Modal.Footer>
+                        <select
+                            className='form-select text-center bg-body-tertiary border-secondary border-opacity-10 rounded-3'
+                            value={value}
+                            onChange={(e) => setValue(parseInt(e.target.value))}
+                        >
+                            {
+                                rules.map((rule, idx) => (
+                                    <option key={idx} value={idx}>#{idx + 1} - {rule}</option>
+                                ))
+                            }
+                        </select>
+                    </SettingsBox>
+                </ModalBody>
+                <ModalFooter className="gap-2">
+                    <Button variant="outline-secondary" onClick={onHide}>Cancel</Button>
+                    <Button variant="primary" onClick={() => { onChange(value, operate); onHide(); }}>
+                        Apply Change
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
         </Modal>
-    </>
+    );
 }
 
 export const PriorityModal = React.memo(PriorityModalComponent)

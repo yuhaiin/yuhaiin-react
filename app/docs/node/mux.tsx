@@ -1,13 +1,14 @@
+import { SettingInputVertical } from "@/app/component/v2/forms";
 import { FC } from "react";
-import { SettingInputText } from "../../component/components";
 import { mux } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
-export const Muxv2: FC<Props<mux>> = ({ value, onChange }) => {
+export const Muxv2: FC<Props<mux>> = ({ value, onChange, editable = true }) => {
     return <>
-        <SettingInputText
+        <SettingInputVertical
             label="Concurrency"
-            value={value.concurrency}
+            value={value.concurrency.toString()}
+            disabled={!editable}
             onChange={(e) => { if (!isNaN(Number(e))) onChange({ ...value, concurrency: Number(e) }) }}
         />
     </>

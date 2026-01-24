@@ -1,45 +1,56 @@
 "use client"
 
-import { CardList, IconBadge, MainContainer, SettingLabel } from "@/app/component/cardlist"
-import { TimestampZero } from "@/app/component/components"
-import { timestampDate } from "@bufbuild/protobuf/wkt"
-import React, { FC, useMemo, useState } from "react"
-import { Button, Dropdown, Modal, Spinner, ToggleButton, ToggleButtonGroup } from "react-bootstrap"
-import Loading from "../../../component/loading"
-import { CustomPagination } from "../../../component/pagination"
-import { useProtoSWR } from "../../common/proto"
-import { ListGroupItemString } from "../../connections/components"
-import { block_history, rules } from "../../pbes/api/config_pb"
+import { Badge } from "@/app/component/v2/badge";
+import { Button } from "@/app/component/v2/button";
+import { CardList, MainContainer, SettingLabel } from "@/app/component/v2/card";
+import { DataList } from "@/app/component/v2/datalist";
+import { Dropdown, DropdownContent, DropdownTrigger } from "@/app/component/v2/dropdown";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/app/component/v2/modal";
+import { Pagination } from "@/app/component/v2/pagination";
+import { Spinner } from "@/app/component/v2/spinner";
+import { ToggleGroup, ToggleItem } from "@/app/component/v2/togglegroup";
+import { timestampDate } from "@bufbuild/protobuf/wkt";
+import React, { FC, useMemo, useState } from "react";
+import { ArrowClockwise, ChevronRight, Clock, Ethernet, ShieldSlash, ShieldSlashFill, SlashCircle, SortDown } from 'react-bootstrap-icons';
+import Loading from "../../../component/loading";
+import { TimestampZero } from "../../common/nodes";
+import { useProtoSWR } from "../../common/proto";
+import { ListGroupItemString } from "../../connections/components";
+import { block_history, rules } from "../../pbes/api/config_pb";
 
 // --- Component: Individual Blocked History Row ---
 const ListItem: FC<{ data: block_history }> = React.memo(({ data }) => {
     return (
-        <>
-            <div className="d-flex w-100 flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+        <div className="d-flex w-100 flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
 
-                {/* Left Side: Icon + Host & Process */}
-                <div className="d-flex align-items-center flex-grow-1 overflow-hidden gap-3 w-100 w-md-auto">
-                    <div className="d-flex align-items-center justify-content-center bg-secondary bg-opacity-10 text-secondary rounded-circle flex-shrink-0" style={{ width: '42px', height: '42px' }}>
-                        <i className="bi bi-shield-slash fs-5"></i>
-                    </div>
-
-                    <div className="d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
-                        <span className="fw-bold text-truncate fs-6 opacity-75">{data.host}</span>
-                        <small className="text-muted text-truncate opacity-75 font-monospace">
-                            {data.process || "System Filter"}
-                        </small>
-                    </div>
+            {/* Left Side: Icon + Host & Process */}
+            <div className="d-flex align-items-center flex-grow-1 overflow-hidden gap-3 w-100 w-md-auto">
+                <div className="d-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle flex-shrink-0" style={{ width: '42px', height: '42px' }}>
+                    <ShieldSlash className="fs-5" />
                 </div>
 
-                {/* Right Side: Metadata Badges */}
-                <div className="d-flex flex-wrap gap-2 align-items-center flex-shrink-0">
-                    <IconBadge icon="bi-ethernet" text={data.protocol} color="info" />
-                    <IconBadge icon="bi-slash-circle" text={`${data.blockCount} Blocks`} color="danger" />
-                    <IconBadge icon="bi-clock" text={timestampDate(data.time!).toLocaleTimeString()} color="secondary" />
-                    <i className="bi bi-chevron-right text-muted opacity-25 ms-2 d-none d-md-block"></i>
+                <div className="d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
+                    <span className="fw-bold text-truncate fs-6 opacity-75">{data.host}</span>
+                    <small className="text-muted text-truncate opacity-75 font-monospace">
+                        {data.process || "System Filter"}
+                    </small>
                 </div>
             </div>
-        </>
+
+            {/* Right Side: Metadata Badges */}
+            <div className="d-flex flex-wrap gap-2 align-items-center flex-shrink-0">
+                <Badge variant="info" pill className="d-flex align-items-center gap-1">
+                    <Ethernet /> {data.protocol}
+                </Badge>
+                <Badge variant="danger" pill className="d-flex align-items-center gap-1">
+                    <SlashCircle /> {data.blockCount} Blocks
+                </Badge>
+                <Badge variant="secondary" pill className="d-flex align-items-center gap-1">
+                    <Clock /> {timestampDate(data.time!).toLocaleTimeString()}
+                </Badge>
+                <ChevronRight className="text-muted opacity-25 ms-2 d-none d-md-block" />
+            </div>
+        </div>
     );
 });
 
@@ -47,20 +58,24 @@ const ListItem: FC<{ data: block_history }> = React.memo(({ data }) => {
 const InfoModal: FC<{ data?: block_history, show: boolean, onClose: () => void }> = React.memo(({ data, show, onClose }) => {
     if (!data) return null;
     return (
-        <Modal show={show} onHide={onClose} centered scrollable>
-            <Modal.Header closeButton className="border-0 shadow-none">
-                <Modal.Title className="fw-bold">Blocked Session Details</Modal.Title>
-            </Modal.Header>
-            <Modal.Body className="pt-0">
-                <ListGroupItemString itemKey="Time" itemValue={timestampDate(data.time!).toLocaleString()} />
-                <ListGroupItemString itemKey="Network" itemValue={data.protocol} />
-                <ListGroupItemString itemKey="Host" itemValue={data.host} />
-                <ListGroupItemString itemKey="Total Blocks" itemValue={String(data.blockCount)} />
-                <ListGroupItemString itemKey="Process" itemValue={data.process || "Unknown"} />
-            </Modal.Body>
-            <Modal.Footer className="border-0">
-                <Button variant="outline-secondary" className="w-100" onClick={onClose}>Close</Button>
-            </Modal.Footer>
+        <Modal open={show} onOpenChange={(open) => !open && onClose()}>
+            <ModalContent>
+                <ModalHeader closeButton>
+                    <ModalTitle>Blocked Session Details</ModalTitle>
+                </ModalHeader>
+                <ModalBody>
+                    <DataList>
+                        <ListGroupItemString itemKey="Time" itemValue={timestampDate(data.time!).toLocaleString()} />
+                        <ListGroupItemString itemKey="Network" itemValue={data.protocol} />
+                        <ListGroupItemString itemKey="Host" itemValue={data.host} />
+                        <ListGroupItemString itemKey="Total Blocks" itemValue={String(data.blockCount)} />
+                        <ListGroupItemString itemKey="Process" itemValue={data.process || "Unknown"} />
+                    </DataList>
+                </ModalBody>
+                <ModalFooter className="border-0">
+                    <Button variant="outline-secondary" className="w-100" onClick={onClose}>Close</Button>
+                </ModalFooter>
+            </ModalContent>
         </Modal>
     );
 });
@@ -106,40 +121,42 @@ function BypassBlockHistory() {
                 <div>
                     <h4 className="fw-bold mb-1">Blocked Traffic</h4>
                     <div className="text-muted d-flex align-items-center small">
-                        <i className="bi bi-shield-slash-fill me-2 opacity-50"></i>
+                        <ShieldSlashFill className="me-2 text-danger opacity-75" />
                         <span>Displaying {values.length} connections denied by rules</span>
                     </div>
                 </div>
 
                 <div className="d-flex flex-wrap gap-2 justify-content-end align-items-center">
                     <Button variant="outline-primary" size="sm" onClick={() => mutate()} disabled={isValidating}>
-                        {isValidating ? <Spinner size="sm" animation="border" /> : <i className="bi bi-arrow-clockwise"></i>}
+                        {isValidating ? <Spinner size="sm" /> : <ArrowClockwise />}
                     </Button>
 
                     <Dropdown>
-                        <Dropdown.Toggle variant="outline-secondary" size="sm">
-                            <i className="bi bi-sort-down me-1"></i> Sort
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu align="end" className="p-3 shadow-lg border-0" style={{ minWidth: '220px' }}>
+                        <DropdownTrigger asChild>
+                            <Button variant="outline-secondary" size="sm">
+                                <SortDown className="me-2" />Sort
+                            </Button>
+                        </DropdownTrigger>
+                        <DropdownContent style={{ minWidth: '240px' }} className="p-3">
                             <div className="mb-3">
-                                <SettingLabel>Order</SettingLabel>
-                                <ToggleButtonGroup type="radio" name="sortOrder" value={sortOrder} onChange={setSortOrder} className="w-100">
-                                    <ToggleButton id="b-asc" value="asc" variant="outline-secondary" size="sm">ASC</ToggleButton>
-                                    <ToggleButton id="b-desc" value="desc" variant="outline-secondary" size="sm">DESC</ToggleButton>
-                                </ToggleButtonGroup>
+                                <SettingLabel className="mb-2">Order</SettingLabel>
+                                <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-100">
+                                    <ToggleItem value="asc" className="flex-grow-1">ASC</ToggleItem>
+                                    <ToggleItem value="desc" className="flex-grow-1">DESC</ToggleItem>
+                                </ToggleGroup>
                             </div>
                             <div>
-                                <SettingLabel>By</SettingLabel>
-                                <ToggleButtonGroup type="radio" name="sortBy" value={sortBy} onChange={setSortBy} className="w-100">
-                                    <ToggleButton id="b-time" value="Time" variant="outline-secondary" size="sm">Time</ToggleButton>
-                                    <ToggleButton id="b-host" value="Host" variant="outline-secondary" size="sm">Host</ToggleButton>
-                                    <ToggleButton id="b-count" value="Count" variant="outline-secondary" size="sm">Count</ToggleButton>
+                                <SettingLabel className="mb-2">By</SettingLabel>
+                                <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="d-flex flex-wrap gap-1">
+                                    <ToggleItem value="Time" className="flex-grow-1">Time</ToggleItem>
+                                    <ToggleItem value="Host" className="flex-grow-1">Host</ToggleItem>
+                                    <ToggleItem value="Count" className="flex-grow-1">Count</ToggleItem>
                                     {data.dumpProcessEnabled && (
-                                        <ToggleButton id="b-proc" value="Proc" variant="outline-secondary" size="sm">Proc</ToggleButton>
+                                        <ToggleItem value="Proc" className="flex-grow-1">Proc</ToggleItem>
                                     )}
-                                </ToggleButtonGroup>
+                                </ToggleGroup>
                             </div>
-                        </Dropdown.Menu>
+                        </DropdownContent>
                     </Dropdown>
                 </div>
             </div>
@@ -148,7 +165,7 @@ function BypassBlockHistory() {
                 items={paginatedItems}
                 onClickItem={(item) => setInfo({ show: true, data: item })}
                 renderListItem={(item) => <ListItem data={item} />}
-                footer={<CustomPagination
+                footer={<Pagination
                     currentPage={page}
                     totalItems={values.length}
                     pageSize={pageSize}

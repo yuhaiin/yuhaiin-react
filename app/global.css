@@ -1,5 +1,4 @@
-@import 'bootstrap/dist/css/bootstrap.css';
-@import 'bootstrap-icons/font/bootstrap-icons.css';
+@import './bootstrap.css';
 
 :root {
     --sidebar-gap: 16px;

@@ -1,7 +1,6 @@
 
+import { SettingCheck, SettingInputVertical } from "@/app/component/v2/forms";
 import { FC } from "react";
-import { SettingInputText } from '../../component/components';
-import { SettingCheck } from "../../component/switch";
 import { yuubinsya } from '../pbes/config/inbound_pb';
 
 export const Yuubinsya: FC<{ yuubinsya: yuubinsya, onChange: (x: yuubinsya) => void }> = ({ yuubinsya, onChange }) => {
@@ -11,7 +10,7 @@ export const Yuubinsya: FC<{ yuubinsya: yuubinsya, onChange: (x: yuubinsya) => v
             checked={yuubinsya.udpCoalesce}
             onChange={() => { onChange({ ...yuubinsya, udpCoalesce: !yuubinsya.udpCoalesce }) }}
         />
-        <SettingInputText
+        <SettingInputVertical
             label="Password"
             value={yuubinsya.password}
             onChange={(e: string) => { onChange({ ...yuubinsya, password: e }) }}

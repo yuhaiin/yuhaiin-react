@@ -1,11 +1,16 @@
+"use client"
+
+import { Button } from "@/app/component/v2/button";
+import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/app/component/v2/dropdown";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/app/component/v2/modal";
+import { Spinner } from "@/app/component/v2/spinner";
+import { GlobalToastContext } from "@/app/component/v2/toast";
 import { create, toJsonString } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import React, { FC, useContext, useEffect } from "react";
-import { Button, ButtonGroup, Dropdown, DropdownButton, Modal } from "react-bootstrap";
 import useSWR from 'swr';
 import { useClipboard } from '../../component/clipboard';
-import Loading, { Error } from "../../component/loading";
-import { GlobalToastContext } from "../../component/toast";
+import Loading, { Error as ErrorDisplay } from "../../component/loading";
 import { InterfacesContext, useInterfaces } from "../common/interfaces";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath } from '../common/proto';
 import { node } from "../pbes/api/node_pb";
@@ -21,6 +26,7 @@ const NodeModalComponent: FC<{
     onSave?: () => void,
     groups?: string[],
     onDelete?: () => void,
+    readOnly?: boolean,
     isNew?: boolean
 }> =
     ({ hash, point, editable, show, onHide, onSave, groups, onDelete, isNew }) => {
@@ -49,8 +55,8 @@ const NodeModalComponent: FC<{
             if (!editable) return <></>
 
             return <Button
-                variant="outline-primary"
-                disabled={isValidating || isLoading || error || !editable}
+                variant="outline-secondary"
+                disabled={isValidating || isLoading || !!error || !editable}
                 onClick={() => {
                     if (!nodes) return
                     if (isNew) nodes.hash = ""
@@ -63,7 +69,7 @@ const NodeModalComponent: FC<{
                         })
                 }}
             >
-                Save
+                {isValidating || isLoading ? <Spinner size="sm" /> : "Save"}
             </Button >
         }
 
@@ -75,25 +81,20 @@ const NodeModalComponent: FC<{
         };
 
         return (
-            <>
-                <Modal
-                    show={show}
-                    scrollable
-                    aria-labelledby="contained-modal-title-vcenter"
-                    size='xl'
-                    onHide={() => { onHide() }}
-                    centered
-                >
-                    <Modal.Body>
+            <Modal open={show} onOpenChange={(open) => !open && onHide()}>
+                <ModalContent style={{ maxWidth: '1000px' }}>
+                    <ModalHeader closeButton className="border-bottom-0 pb-0">
+                        <ModalTitle className="fw-bold">{isNew ? "New Node" : `Edit Node: ${nodes?.name || hash}`}</ModalTitle>
+                    </ModalHeader>
 
+                    <ModalBody className="pt-2">
                         <InterfacesContext value={interfaces}>
-                            <fieldset disabled={!editable}>
-                                {error ?
-                                    <>
-                                        <Error statusCode={error.code} title={error.msg} raw={error.raw} />
-                                    </> :
-                                    isValidating || isLoading || !nodes ? <Loading /> :
+                            {error ?
+                                <ErrorDisplay statusCode={error.code} title={error.msg} raw={error.raw} /> :
+                                isValidating || isLoading || !nodes ? <Loading /> :
+                                    <div className="p-1">
                                         <Point
+                                            editable={editable}
                                             value={nodes}
                                             groups={groups}
                                             onChange={(e) => {
@@ -101,41 +102,40 @@ const NodeModalComponent: FC<{
                                                 mutate(prev => { return { ...prev, ...e } }, false)
                                             }}
                                         />
-                                }
-                            </fieldset>
+                                    </div>
+                            }
                         </InterfacesContext>
-                    </Modal.Body>
+                    </ModalBody>
 
-                    <Modal.Footer>
-                        {onDelete &&
-                            <DropdownButton
-                                onSelect={(event) => {
-                                    if (event === "ok" && onDelete) {
-                                        onHide();
-                                        onDelete();
-                                    }
-                                }}
-                                as={ButtonGroup}
-                                variant="outline-danger" // Keep variant for now, will remove if custom styling is enough
-                                title="Remove"
-                            >
-                                <Dropdown.Item eventKey={"ok"}>OK</Dropdown.Item>
-                                <Dropdown.Item eventKey={"cancel"}>Cancel</Dropdown.Item>
-                            </DropdownButton>
-                        }
-                        {(!error && !isValidating && !isLoading && nodes) &&
-                            <Button
-                                variant="outline-primary"
-                                onClick={handleCopyJson}
-                            >
-                                Copy JSON
-                            </Button>
-                        }
-                        <Button variant="outline-primary" onClick={onHide}>Close</Button>
-                        <SaveButton />
-                    </Modal.Footer>
-                </Modal>
-            </>
+                    <ModalFooter className="d-flex justify-content-between">
+                        <div>
+                            {onDelete &&
+                                <Dropdown>
+                                    <DropdownTrigger asChild>
+                                        <Button variant="outline-danger">Remove</Button>
+                                    </DropdownTrigger>
+                                    <DropdownContent>
+                                        <DropdownItem className="text-danger fw-bold" onSelect={() => { onHide(); onDelete(); }}>Confirm Delete</DropdownItem>
+                                        <DropdownItem>Cancel</DropdownItem>
+                                    </DropdownContent>
+                                </Dropdown>
+                            }
+                        </div>
+                        <div className="d-flex gap-2">
+                            {(!error && !isValidating && !isLoading && nodes) &&
+                                <Button
+                                    variant="outline-secondary"
+                                    onClick={handleCopyJson}
+                                >
+                                    Copy JSON
+                                </Button>
+                            }
+                            <Button variant="outline-secondary" onClick={onHide}>Close</Button>
+                            <SaveButton />
+                        </div>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
         );
     }
 

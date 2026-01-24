@@ -1,8 +1,10 @@
+import { create } from "@bufbuild/protobuf";
+import { TimestampSchema } from "@bufbuild/protobuf/wkt";
 import { createContext, FC, useEffect, useState } from "react";
-import { FloatingLabel } from "react-bootstrap";
-import { FormSelect } from "../../component/switch";
+import { SettingSelectVertical } from "../../component/v2/forms";
 import { NodesResponse } from "../pbes/api/node_pb";
 
+export const TimestampZero = create(TimestampSchema, { seconds: BigInt(0), nanos: 0 })
 
 export class Nodes {
     byName: { [key: string]: { [key: string]: string } }
@@ -72,22 +74,21 @@ export const Node: FC<{
     useEffect(() => { setGroup(data.getGroupByHash(hash).group) }, [hash, data])
 
     return <>
-        <FloatingLabel label="Group" className="mb-2" >
-            <FormSelect
-                emptyChoose
-                value={group}
-                onChange={(x) => { setGroup(x) }}
-                values={data.getGroups()}
-            />
-        </FloatingLabel>
+        <SettingSelectVertical
+            label="Group"
+            className="mb-2"
+            emptyChoose
+            value={group}
+            onChange={(x) => { setGroup(x) }}
+            values={data.getGroups()}
+        />
 
-        <FloatingLabel label="Node">
-            <FormSelect
-                emptyChoose
-                value={hash}
-                onChange={(x) => { onChangeNode(x) }}
-                values={data.getNodesByGroup(group)}
-            />
-        </FloatingLabel>
+        <SettingSelectVertical
+            label="Node"
+            emptyChoose
+            value={hash}
+            onChange={(x) => { onChangeNode(x) }}
+            values={data.getNodesByGroup(group)}
+        />
     </>
 }

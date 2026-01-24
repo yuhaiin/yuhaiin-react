@@ -14,7 +14,6 @@ const nextConfig: NextConfig = {
     experimental: {
         optimizePackageImports: [
             'shlex',
-            'bootstrap-icons', 'bootstrap',
             '@bufbuild/buf', '@bufbuild/protobuf',
             'swr',
             'react-window', 'uplot', 'usehooks-ts',

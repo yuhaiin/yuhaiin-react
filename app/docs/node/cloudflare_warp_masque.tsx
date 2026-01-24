@@ -1,38 +1,48 @@
+import { SettingInputVertical } from "@/app/component/v2/forms"
+import { Textarea } from "@/app/component/v2/input"
+import { InputList } from "@/app/component/v2/listeditor"
 import { FC } from "react"
-import { NewItemList, SettingInputText, SettingInputTextarea } from "../../component/components"
 import { cloudflare_warp_masque } from "../pbes/node/protocol_pb"
 import { Props } from "./tools"
 
-export const CloudflareWarpMasque: FC<Props<cloudflare_warp_masque>> = ({ value, onChange }) => {
+export const CloudflareWarpMasque: FC<Props<cloudflare_warp_masque>> = ({ value, onChange, editable = true }) => {
     return <>
-        <SettingInputText
+        <SettingInputVertical
             label="PrivateKey"
             value={value.privateKey}
+            disabled={!editable}
             placeholder="SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY="
             onChange={(e: string) => { onChange({ ...value, privateKey: e }) }}
         />
 
-        <SettingInputText
+        <SettingInputVertical
             label="MTU"
-            value={value.mtu}
+            value={value.mtu.toString()}
+            disabled={!editable}
             onChange={(e) => { if (!isNaN(Number(e))) onChange({ ...value, mtu: Number(e) }) }}
         />
 
-        <SettingInputText
+        <SettingInputVertical
             label="Endpoint"
             value={value.endpoint}
+            disabled={!editable}
             onChange={(e: string) => { onChange({ ...value, endpoint: e }) }}
         />
 
-        <SettingInputTextarea
-            label="EndpointPublicKey"
-            value={value.endpointPublicKey}
-            onChange={(e: string) => { onChange({ ...value, endpointPublicKey: e.replaceAll("\\n", "\n") }) }}
-        />
+        <div className="mb-3">
+            <label className="form-label small fw-bold opacity-75 mb-2">EndpointPublicKey</label>
+            <Textarea
+                rows={3}
+                value={value.endpointPublicKey}
+                readOnly={!editable}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => { onChange({ ...value, endpointPublicKey: e.target.value.replaceAll("\\n", "\n") }) }}
+            />
+        </div>
 
-        <NewItemList
+        <InputList
             title="LocalAddresses"
             data={value.localAddresses}
+            disabled={!editable}
             onChange={(e) => { onChange({ ...value, localAddresses: e }) }}
         />
     </>

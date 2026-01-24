@@ -1,0 +1,133 @@
+/* toast.module.css */
+
+.viewport {
+  position: fixed;
+  top: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 10px;
+  width: 380px;
+  max-width: 100vw;
+  margin: 0;
+  list-style: none;
+  z-index: 2147483647;
+  outline: none;
+}
+
+.root {
+  /* Use opacity and blur for a premium feel */
+  background-color: rgba(var(--bs-body-bg-rgb, 255, 255, 255), 0.7);
+  backdrop-filter: blur(8px);
+
+  border-radius: 8px;
+  border: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.1));
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Sidebar indicator color */
+.info {
+  border-left: 4px solid var(--bs-info);
+}
+
+.error {
+  border-left: 4px solid var(--bs-danger);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background-color: rgba(var(--bs-tertiary-bg-rgb, 248, 249, 250), 0.5);
+  border-bottom: 1px solid var(--bs-border-color-translucent);
+}
+
+.title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--bs-body-color);
+  margin: 0;
+}
+
+.description {
+  padding: 0.75rem 1rem;
+  color: var(--bs-body-color);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.close {
+  background: transparent;
+  border: none;
+  color: var(--bs-secondary-color);
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+  padding: 0 4px;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.close:hover {
+  opacity: 1;
+}
+
+/* --- Animation --- */
+
+.root[data-state='open'] {
+  animation: slideIn 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.root[data-state='closed'] {
+  animation: hide 150ms ease-in forwards;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(calc(100% + 20px));
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes hide {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+/* Swipe interaction animation */
+.root[data-swipe='move'] {
+  transform: translateX(var(--radix-toast-swipe-move-x));
+}
+
+.root[data-swipe='cancel'] {
+  transform: translateX(0);
+  transition: transform 200ms ease-out;
+}
+
+.root[data-swipe='end'] {
+  animation: swipeOut 150ms ease-out forwards;
+}
+
+@keyframes swipeOut {
+  from {
+    transform: translateX(var(--radix-toast-swipe-end-x));
+  }
+
+  to {
+    transform: translateX(calc(100% + 20px));
+  }
+}

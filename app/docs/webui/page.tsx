@@ -1,9 +1,10 @@
 "use client"
 
-import { Card, CardBody, CardHeader, IconBox, MainContainer } from '@/app/component/cardlist';
+import { Card, CardBody, CardHeader, IconBox, MainContainer } from '@/app/component/v2/card';
+import { SettingInputVertical, SwitchCard } from "@/app/component/v2/forms";
 import React from "react";
+import { BroadcastPin, GeoAlt, Globe, HddNetwork, InfoCircle, Link45deg, ShieldShaded, Speedometer2, Terminal } from 'react-bootstrap-icons';
 import { useLocalStorage } from "usehooks-ts";
-import { SettingInputVertical, SettingSwitchCard } from "../../component/switch";
 import {
     APIUrlDefault, APIUrlKey,
     LatencyDNSUrlDefault, LatencyDNSUrlKey,
@@ -16,15 +17,15 @@ import {
 
 // Internal helper for this page to add icons to inputs
 const InputWithIcon: React.FC<{
-    icon: string;
+    icon: React.ElementType;
     label: string;
     value: string;
     onChange: (v: string) => void;
     placeholder: string;
-}> = ({ icon, label, value, onChange, placeholder }) => (
+}> = ({ icon: Icon, label, value, onChange, placeholder }) => (
     <div className="d-flex align-items-start gap-3 mb-4">
-        <div className="bg-light bg-opacity-10 rounded-3 p-2 mt-4 d-none d-sm-block">
-            <i className={`bi ${icon} text-muted fs-5`}></i>
+        <div className="bg-body-tertiary rounded-3 p-2 mt-4 d-none d-sm-block border border-secondary border-opacity-10">
+            <span className="text-muted fs-5 d-flex"><Icon /></span>
         </div>
         <div className="flex-grow-1">
             <SettingInputVertical
@@ -51,11 +52,11 @@ function Setting() {
             {/* 1. API Connection */}
             <Card>
                 <CardHeader>
-                    <IconBox icon="link-45deg" color="#6366f1" title="API Connection" description="Web-controller interface" />
+                    <IconBox icon={Link45deg} color="#6366f1" title="API Connection" description="Web-controller interface" />
                 </CardHeader>
                 <CardBody className="pt-2">
                     <InputWithIcon
-                        icon="bi-hdd-network"
+                        icon={HddNetwork}
                         label="Controller Host"
                         value={url}
                         onChange={setUrl}
@@ -67,50 +68,50 @@ function Setting() {
             {/* 2. Latency Targets */}
             <Card >
                 <CardHeader>
-                    <IconBox icon="speedometer2" color="#10b981" title="Latency Targets" description="Endpoints for connectivity checks" />
+                    <IconBox icon={Speedometer2} color="#10b981" title="Latency Targets" description="Endpoints for connectivity checks" />
                 </CardHeader>
                 <CardBody>
                     {/* Toggle at the top */}
                     <div className="mb-3">
-                        <SettingSwitchCard
+                        <SwitchCard
                             label="IPv6 Testing"
                             description="Use IPv6 resolution for latency checks"
                             checked={latencyIPv6}
-                            onChange={() => setLatencyIPv6(!latencyIPv6)}
+                            onCheckedChange={() => setLatencyIPv6(!latencyIPv6)}
                         />
                     </div>
 
                     {/* Vertical List of Targets */}
                     <InputWithIcon
-                        icon="bi-globe"
+                        icon={Globe}
                         label="HTTP (TCP) Check"
                         value={latencyHTTP}
                         onChange={setLatencyHTTP}
                         placeholder="https://..."
                     />
                     <InputWithIcon
-                        icon="bi-shield-shaded"
+                        icon={ShieldShaded}
                         label="DNS (UDP/DOQ) Check"
                         value={latencyDNS}
                         onChange={setLatencyDNS}
                         placeholder="dns.example.com:853"
                     />
                     <InputWithIcon
-                        icon="bi-geo-alt"
+                        icon={GeoAlt}
                         label="IP Info Service"
                         value={latencyIPUrl}
                         onChange={setLatencyIPUrl}
                         placeholder="http://ip.sb"
                     />
                     <InputWithIcon
-                        icon="bi-broadcast-pin"
+                        icon={BroadcastPin}
                         label="STUN (UDP) Check"
                         value={latencyStunUrl}
                         onChange={setLatencyStunUrl}
                         placeholder="stun.example.com:3478"
                     />
                     <InputWithIcon
-                        icon="bi-terminal"
+                        icon={Terminal}
                         label="STUN (TCP) Check"
                         value={latencyStunTCPUrl}
                         onChange={setLatencyStunTCPUrl}
@@ -120,8 +121,8 @@ function Setting() {
             </Card>
 
             <div className="text-center mt-3 opacity-50 pb-5">
-                <small className="text-muted">
-                    <i className="bi bi-info-circle me-1"></i>
+                <small className="text-muted d-flex align-items-center justify-content-center">
+                    <InfoCircle className="me-1" />
                     These settings are stored locally in your browser cache.
                 </small>
             </div>

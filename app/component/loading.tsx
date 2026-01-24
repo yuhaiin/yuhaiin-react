@@ -1,5 +1,5 @@
 import { CSSProperties, FC } from 'react';
-import { Spinner } from "react-bootstrap";
+import { Spinner } from './v2/spinner';
 
 function Loading(props: { children?: string, code?: number, style?: CSSProperties }) {
     return (

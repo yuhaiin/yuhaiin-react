@@ -1,14 +1,17 @@
 "use client"
 
-import { CardList, IconBox, IconBoxRounded, MainContainer, SettingsBox } from '@/app/component/cardlist';
+import { Button } from '@/app/component/v2/button';
+import { CardList, IconBox, IconBoxRounded, MainContainer, SettingsBox } from '@/app/component/v2/card';
+import { ConfirmModal } from "@/app/component/v2/confirm";
+import { SettingInputVertical } from "@/app/component/v2/forms";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/app/component/v2/modal';
+import { Spinner } from '@/app/component/v2/spinner';
 import { create } from "@bufbuild/protobuf";
-import { FC, useContext, useState } from "react";
-import { Button, Modal, Spinner } from "react-bootstrap";
+import { FC, useContext, useEffect, useState } from "react";
+import { ArrowRepeat, CloudDownload, PlusLg, RssFill, Trash } from 'react-bootstrap-icons';
 import { useClipboard } from '../../../component/clipboard';
-import { ConfirmModal } from "../../../component/confirm";
 import Loading, { Error } from "../../../component/loading";
-import { SettingInputVertical } from "../../../component/switch";
-import { GlobalToastContext } from "../../../component/toast";
+import { GlobalToastContext } from "../../../component/v2/toast";
 import { FetchProtobuf, useProtoSWR } from '../../common/proto';
 import { link_reqSchema, save_link_reqSchema, subscribe } from "../../pbes/api/node_pb";
 import { link, linkSchema, type } from "../../pbes/node/subscribe_pb";
@@ -33,7 +36,7 @@ const LinkItem: FC<{
             {/* LEFT */}
             <div className="d-flex align-items-center gap-3 min-w-0 overflow-hidden">
                 <IconBoxRounded
-                    icon="rss-fill"
+                    icon={RssFill}
                     color="#0d6efd"
                     style={{ width: 40, height: 40, flexShrink: 0 }}
                 />
@@ -57,8 +60,8 @@ const LinkItem: FC<{
                     disabled={isUpdating}
                 >
                     {isUpdating
-                        ? <Spinner size="sm" animation="border" />
-                        : <i className="bi bi-arrow-repeat" />
+                        ? <Spinner size="sm" />
+                        : <ArrowRepeat />
                     }
                     <span className="d-none d-sm-inline ms-2">Update</span>
                 </Button>
@@ -68,7 +71,7 @@ const LinkItem: FC<{
                     size="sm"
                     onClick={onDelete}
                 >
-                    <i className="bi bi-trash" />
+                    <Trash />
                     <span className="d-none d-sm-inline ms-2">Delete</span>
                 </Button>
             </div>
@@ -92,34 +95,36 @@ const AddLinkModal: FC<{
     };
 
     return (
-        <Modal show={show} onHide={onHide} centered>
-            <Modal.Header closeButton className="border-bottom-0 pb-0">
-                <Modal.Title className="fw-bold">Add Subscription</Modal.Title>
-            </Modal.Header>
-            <Modal.Body className="pt-2">
-                <SettingsBox>
-                    <div className="d-flex flex-column gap-3">
-                        <SettingInputVertical
-                            label="Name"
-                            value={newItem.name}
-                            placeholder="e.g., My Server"
-                            onChange={(v) => setNewItem({ ...newItem, name: v })}
-                        />
-                        <SettingInputVertical
-                            label="Subscription URL"
-                            value={newItem.url}
-                            placeholder="https://example.com/sub/..."
-                            onChange={(v) => setNewItem({ ...newItem, url: v })}
-                        />
-                    </div>
-                </SettingsBox>
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="outline-secondary" onClick={onHide}>Cancel</Button>
-                <Button variant="primary" onClick={handleSave} disabled={!newItem.name || !newItem.url}>
-                    <i className="bi bi-plus-lg me-1"></i> Add
-                </Button>
-            </Modal.Footer>
+        <Modal open={show} onOpenChange={(open) => !open && onHide()}>
+            <ModalContent>
+                <ModalHeader closeButton className="border-bottom-0 pb-0">
+                    <ModalTitle className="fw-bold">Add Subscription</ModalTitle>
+                </ModalHeader>
+                <ModalBody className="pt-2">
+                    <SettingsBox>
+                        <div className="d-flex flex-column gap-3">
+                            <SettingInputVertical
+                                label="Name"
+                                value={newItem.name}
+                                placeholder="e.g., My Server"
+                                onChange={(v) => setNewItem({ ...newItem, name: v })}
+                            />
+                            <SettingInputVertical
+                                label="Subscription URL"
+                                value={newItem.url}
+                                placeholder="https://example.com/sub/..."
+                                onChange={(v) => setNewItem({ ...newItem, url: v })}
+                            />
+                        </div>
+                    </SettingsBox>
+                </ModalBody>
+                <ModalFooter>
+                    <Button variant="outline-secondary" onClick={onHide}>Cancel</Button>
+                    <Button variant="primary" onClick={handleSave} disabled={!newItem.name || !newItem.url}>
+                        <PlusLg className="me-1" /> Add
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
         </Modal>
     );
 };
@@ -135,6 +140,12 @@ function Subscribe() {
     const { copy, copied } = useClipboard({
         usePromptAsFallback: true
     });
+
+    useEffect(() => {
+        if (copied) {
+            ctx.Info("Copied to clipboard")
+        }
+    }, [copied, ctx])
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || links === undefined) return <Loading />
@@ -175,6 +186,7 @@ function Subscribe() {
             {/* Delete Confirmation Modal */}
             <ConfirmModal
                 show={confirmDelete.show}
+                title="Delete Subscription"
                 content={<p>Are you sure you want to remove subscription <strong>{confirmDelete.name}</strong>?</p>}
                 onOk={() => {
                     handleDelete(confirmDelete.name);
@@ -205,18 +217,16 @@ function Subscribe() {
                 header={
                     <>
                         <div className="d-flex align-items-center">
-                            <IconBox icon="cloud-download" color="#0ea5e9" />
+                            <IconBox icon={CloudDownload} color="#0ea5e9" />
                             <div>
                                 <h5 className="mb-0 fw-bold">Subscriptions</h5>
                                 <small className="text-muted">Manage remote configuration links</small>
                             </div>
                         </div>
                         <Button
-                            variant="primary"
-                            size="sm"
                             onClick={() => setShowAddModal(true)}
                         >
-                            <i className="bi bi-plus-lg me-1"></i> Add
+                            <PlusLg /> Add
                         </Button>
                     </>
                 }

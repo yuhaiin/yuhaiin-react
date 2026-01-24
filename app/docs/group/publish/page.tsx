@@ -1,16 +1,23 @@
 "use client"
 
-import { CardList, IconBox, MainContainer, SettingLabel, SettingsBox } from '@/app/component/cardlist';
+import { Button } from '@/app/component/v2/button';
+import { CardList, IconBox, MainContainer, SettingLabel, SettingsBox } from '@/app/component/v2/card';
+import { Dropdown, DropdownCheckboxItem, DropdownContent, DropdownGroup, DropdownLabel, DropdownTrigger } from '@/app/component/v2/dropdown';
+import { SettingInputVertical } from "@/app/component/v2/forms";
+import { Input } from '@/app/component/v2/input';
+import { InputGroup } from '@/app/component/v2/inputgroup';
+import { Modal, ModalBody, ModalClose, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/app/component/v2/modal';
+import { Spinner } from '@/app/component/v2/spinner';
+import { Switch } from '@/app/component/v2/switch';
 import { create, toBinary } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import Error from 'next/error';
-import React, { FC, useContext, useEffect, useState } from "react";
-import { Button, Dropdown, Form, InputGroup, Modal, Spinner } from "react-bootstrap";
+import { FC, useContext, useEffect, useState } from "react";
+import { CheckLg, Clipboard as ClipboardIcon, PlusLg, Share, Trash } from 'react-bootstrap-icons';
 import { useClipboard } from '../../../component/clipboard';
-import { ConfirmModal } from "../../../component/confirm";
 import Loading from "../../../component/loading";
-import { SettingInputVertical } from "../../../component/switch";
-import { GlobalToastContext } from "../../../component/toast";
+import { ConfirmModal } from "../../../component/v2/confirm";
+import { GlobalToastContext } from "../../../component/v2/toast";
 import { FetchProtobuf, useProtoSWR } from '../../common/proto';
 import { node, SavePublishRequestSchema, subscribe } from "../../pbes/api/node_pb";
 import { Publish, PublishSchema, YuhaiinUrl_RemoteSchema, YuhaiinUrlSchema } from "../../pbes/node/subscribe_pb";
@@ -71,109 +78,121 @@ const EditModal: FC<{
     };
 
     return (
-        <Modal show={show} onHide={onHide} centered scrollable size="lg">
-            <Modal.Header closeButton className="border-bottom-0 pb-0">
-                <Modal.Title className="fw-bold">{isEdit ? 'Edit' : 'Add'} Publish Config</Modal.Title>
-            </Modal.Header>
-            <Modal.Body className="pt-2">
-                <div className="d-flex flex-column gap-3">
-                    {/* Basic Info Group */}
-                    <SettingsBox>
-                        <div className="row g-3">
-                            <div className="col-md-6">
-                                <SettingInputVertical
-                                    label="Config Identifier"
-                                    value={configName}
-                                    onChange={setConfigName}
-                                    placeholder="e.g., internal-sub"
-                                    className={isEdit ? "opacity-75" : ""} // Dim if disabled
-                                />
+        <Modal open={show} onOpenChange={(o) => { if (!o) onHide() }}>
+            <ModalContent>
+                <ModalHeader closeButton className="border-bottom-0 pb-0">
+                    <ModalTitle className="fw-bold">{isEdit ? 'Edit' : 'Add'} Publish Config</ModalTitle>
+                </ModalHeader>
+                <ModalBody className="pt-2">
+                    <div className="d-flex flex-column gap-3">
+                        {/* Basic Info Group */}
+                        <SettingsBox>
+                            <div className="row g-3">
+                                <div className="col-md-6">
+                                    <SettingInputVertical
+                                        label="Config Identifier"
+                                        value={configName}
+                                        onChange={setConfigName}
+                                        placeholder="e.g., internal-sub"
+                                        className={isEdit ? "opacity-75" : ""} // Dim if disabled
+                                    />
+                                </div>
+                                <div className="col-md-6">
+                                    <SettingInputVertical
+                                        label="Display Name"
+                                        value={newItem.name}
+                                        onChange={v => setNewItem({ ...newItem, name: v })}
+                                        placeholder="e.g., My Subscription"
+                                    />
+                                </div>
                             </div>
-                            <div className="col-md-6">
-                                <SettingInputVertical
-                                    label="Display Name"
-                                    value={newItem.name}
-                                    onChange={v => setNewItem({ ...newItem, name: v })}
-                                    placeholder="e.g., My Subscription"
-                                />
-                            </div>
-                        </div>
-                    </SettingsBox>
+                        </SettingsBox>
 
-                    {/* Server Connection Group */}
-                    <SettingsBox>
-                        <div className="row g-3">
-                            <div className="col-md-8">
-                                <SettingInputVertical
-                                    label="Public Address"
-                                    value={newItem.address}
-                                    onChange={v => setNewItem({ ...newItem, address: v })}
-                                    placeholder="example.com:443"
-                                />
+                        {/* Server Connection Group */}
+                        <SettingsBox>
+                            <div className="row g-3">
+                                <div className="col-md-8">
+                                    <SettingInputVertical
+                                        label="Public Address"
+                                        value={newItem.address}
+                                        onChange={v => setNewItem({ ...newItem, address: v })}
+                                        placeholder="example.com:443"
+                                    />
+                                </div>
+                                <div className="col-md-4 d-flex align-items-end">
+                                    <Switch
+                                        label="Allow Insecure"
+                                        checked={newItem.insecure}
+                                        onCheckedChange={(e) => setNewItem({ ...newItem, insecure: e })}
+                                        className="mb-2"
+                                    />
+                                </div>
+                                <div className="col-md-6">
+                                    <SettingInputVertical
+                                        label="Path"
+                                        value={newItem.path}
+                                        onChange={v => setNewItem({ ...newItem, path: v })}
+                                        placeholder="custom/path"
+                                    />
+                                </div>
+                                <div className="col-md-6">
+                                    <SettingInputVertical
+                                        label="Password"
+                                        value={newItem.password}
+                                        onChange={v => setNewItem({ ...newItem, password: v })}
+                                        placeholder="Optional password"
+                                    />
+                                </div>
                             </div>
-                            <div className="col-md-4 d-flex align-items-end">
-                                <Form.Check
-                                    type="switch"
-                                    label="Allow Insecure"
-                                    checked={newItem.insecure}
-                                    onChange={(e) => setNewItem({ ...newItem, insecure: e.target.checked })}
-                                    className="mb-2"
-                                />
-                            </div>
-                            <div className="col-md-6">
-                                <SettingInputVertical
-                                    label="Path"
-                                    value={newItem.path}
-                                    onChange={v => setNewItem({ ...newItem, path: v })}
-                                    placeholder="custom/path"
-                                />
-                            </div>
-                            <div className="col-md-6">
-                                <SettingInputVertical
-                                    label="Password"
-                                    value={newItem.password}
-                                    onChange={v => setNewItem({ ...newItem, password: v })}
-                                    placeholder="Optional password"
-                                />
-                            </div>
-                        </div>
-                    </SettingsBox>
+                        </SettingsBox>
 
-                    {/* Node Selection */}
-                    <SettingsBox>
-                        <SettingLabel>Select Nodes to Publish</SettingLabel>
-                        <Dropdown className="w-100 mt-1">
-                            <Dropdown.Toggle variant="outline-secondary" className="w-100 d-flex justify-content-between align-items-center">
-                                <span>{selectedNodes.length} Nodes Selected</span>
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu className="w-100 shadow-lg border-0" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                                {nodes.groups.map((g: any) => (
-                                    <React.Fragment key={g.name}>
-                                        <Dropdown.Header className="bg-light bg-opacity-10 py-2">{g.name}</Dropdown.Header>
-                                        {g.nodes.map((n: any) => (
-                                            <div key={n.hash} className="px-3 py-1 dropdown-item" onClick={(e) => { e.stopPropagation(); handleNodeSelect(n.hash); }}>
-                                                <Form.Check
-                                                    type="checkbox"
-                                                    label={n.name}
+                        {/* Node Selection */}
+                        <SettingsBox>
+                            <SettingLabel>Select Nodes to Publish</SettingLabel>
+                            <Dropdown modal={false}>
+                                <DropdownTrigger asChild>
+                                    {/* Use Button component or your div here */}
+                                    <Button className="btn btn-outline-secondary w-100 d-flex justify-content-between align-items-center">
+                                        <span>{selectedNodes.length} Nodes Selected</span>
+                                        <span>▼</span>
+                                    </Button>
+                                </DropdownTrigger>
+
+                                <DropdownContent className="w-100 shadow-lg border-0">
+                                    {nodes.groups.map((g: any) => (
+                                        <DropdownGroup key={g.name}>
+                                            {/* Group Title */}
+                                            <DropdownLabel>{g.name}</DropdownLabel>
+
+                                            {/* Iterate through nodes */}
+                                            {g.nodes.map((n: any) => (
+                                                <DropdownCheckboxItem
+                                                    key={n.hash}
                                                     checked={selectedNodes.includes(n.hash)}
-                                                    onChange={() => { }} // Handled by parent div
-                                                    onClick={(e) => e.stopPropagation()}
-                                                />
-                                            </div>
-                                        ))}
-                                    </React.Fragment>
-                                ))}
-                            </Dropdown.Menu>
-                        </Dropdown>
-                    </SettingsBox>
-                </div>
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="outline-secondary" onClick={onHide}>Cancel</Button>
-                <Button variant="primary" onClick={handleSave} disabled={saving}>
-                    {saving ? <Spinner size="sm" animation="border" /> : <><i className="bi bi-check-lg me-1"></i> Save Config</>}
-                </Button>
-            </Modal.Footer>
+                                                    // Handle click toggle logic
+                                                    onCheckedChange={() => handleNodeSelect(n.hash)}
+                                                    // Key: prevent menu from closing after click
+                                                    onSelect={(e) => e.preventDefault()}
+                                                >
+                                                    {n.name}
+                                                </DropdownCheckboxItem>
+                                            ))}
+                                        </DropdownGroup>
+                                    ))}
+                                </DropdownContent>
+                            </Dropdown>
+                        </SettingsBox>
+                    </div>
+                </ModalBody>
+                <ModalFooter className="border-top-0 pt-0">
+                    <ModalClose asChild>
+                        <Button>Cancel</Button>
+                    </ModalClose>
+                    <Button onClick={handleSave} disabled={saving}>
+                        {saving ? <Spinner size="sm" /> : <><CheckLg className="me-1" /> Save Config</>}
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
         </Modal>
     );
 }
@@ -205,26 +224,33 @@ const PublishItem: FC<{
             </div>
 
             {/* URL Copy Group */}
-            <InputGroup size="sm" className="mx-md-2" style={{ maxWidth: '400px' }}>
-                <Form.Control
+            <InputGroup
+                className="mx-md-2"
+                style={{ maxWidth: '400px' }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <Input
                     readOnly
                     value={encodedUrl}
+                    size='sm'
                     className="bg-dark bg-opacity-10 border-secondary border-opacity-25 font-monospace"
-                    style={{ fontSize: '0.75rem' }}
+                    style={{ fontSize: '0.6rem' }}
                 />
-                <Button variant="outline-secondary" onClick={() => copyAction(encodedUrl)}>
-                    <i className="bi bi-clipboard"></i>
+                <Button
+                    size='icon'
+                    onClick={() => copyAction(encodedUrl)}
+                >
+                    <ClipboardIcon />
                 </Button>
             </InputGroup>
 
-            {/* Actions */}
 
-            <div className="d-flex gap-2 align-items-center ms-auto ms-md-0 flex-shrink-0">
-                <Button variant="outline-danger" size="sm" onClick={onDelete}>
-                    <i className="bi bi-trash"></i>
+            <div className="d-flex gap-2 align-items-center ms-2 flex-shrink-0">
+                <Button size='sm' variant="outline-danger" onClick={(e) => { e.stopPropagation(); onDelete() }} >
+                    <Trash />
                     <span className="d-none d-sm-inline ms-2">Delete</span>
                 </Button>
-            </div>
+            </div >
         </>
     );
 };
@@ -269,8 +295,8 @@ function PublishPage() {
 
             <ConfirmModal
                 show={confirmDelete.show}
-                content={<p>Delete publish configuration <strong>{confirmDelete.name}</strong>?</p>}
-                onHide={() => setConfirmDelete({ show: false, name: '' })}
+                title={<p>Delete publish configuration <strong>{confirmDelete.name}</strong>?</p>}
+                onHide={() => setConfirmDelete(prev => { return { ...prev, show: false } })}
                 onOk={() => { handleRemove(confirmDelete.name); setConfirmDelete({ show: false, name: '' }); }}
             />
 
@@ -290,14 +316,14 @@ function PublishPage() {
                     header={
                         <>
                             <div className="d-flex align-items-center">
-                                <IconBox icon="share" color="#8b5cf6" />
+                                <IconBox icon={Share} color="#8b5cf6" />
                                 <div>
                                     <h5 className="mb-0 fw-bold">Publishing</h5>
                                     <small className="text-muted">Generate subscription URLs for remote clients</small>
                                 </div>
                             </div>
-                            <Button variant="primary" size="sm" onClick={() => setModalState({ show: true, isEdit: false, configName: '', item: undefined })}>
-                                <i className="bi bi-plus-lg me-1"></i> Add
+                            <Button onClick={() => setModalState({ show: true, isEdit: false, configName: '', item: undefined })}>
+                                <PlusLg className="me-1" /> Add
                             </Button>
                         </>
                     }

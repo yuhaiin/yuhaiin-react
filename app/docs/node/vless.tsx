@@ -1,14 +1,14 @@
+import { SettingInputVertical } from "@/app/component/v2/forms";
 import { FC } from "react";
-import { SettingInputText } from "../../component/components";
 import { vless } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
-
-export const Vlessv2: FC<Props<vless>> = ({ value, onChange }) => {
+export const Vlessv2: FC<Props<vless>> = ({ value, onChange, editable = true }) => {
     return <>
-        <SettingInputText
+        <SettingInputVertical
             label="UUID"
             value={value.uuid}
+            disabled={!editable}
             onChange={(e: string) => { onChange({ ...value, uuid: e }) }}
         />
     </>

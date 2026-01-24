@@ -1,13 +1,19 @@
 "use client"
 
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/app/component/v2/accordion";
+import { Badge } from "@/app/component/v2/badge";
+import { Button } from "@/app/component/v2/button";
+import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/app/component/v2/dropdown";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/app/component/v2/modal";
+import { Spinner } from "@/app/component/v2/spinner";
 import { create, fromJsonString } from "@bufbuild/protobuf";
 import { Duration, StringValueSchema } from "@bufbuild/protobuf/wkt";
 import Error from 'next/error';
 import { FC, useContext, useState } from "react";
-import { Accordion, Badge, Button, ButtonGroup, Dropdown, DropdownButton, Form, Modal, Spinner } from "react-bootstrap";
+import { BoxArrowInDown, Check2Circle, ChevronDown, HddNetwork, Pencil, PlusLg, Speedometer2 } from 'react-bootstrap-icons';
 import { useLocalStorage } from "usehooks-ts";
 import Loading from "../../component/loading";
-import { GlobalToastContext } from "../../component/toast";
+import { GlobalToastContext } from "../../component/v2/toast";
 import { LatencyDNSUrlDefault, LatencyDNSUrlKey, LatencyHTTPUrlDefault, LatencyHTTPUrlKey, LatencyIPUrlDefault, LatencyIPUrlKey, LatencyIPv6Default, LatencyIPv6Key, LatencyStunTCPUrlDefault, LatencyStunTCPUrlKey, LatencyStunUrlDefault, LatencyStunUrlKey } from "../common/apiurl";
 import { Nodes, NodesContext } from "../common/nodes";
 import { FetchProtobuf, useProtoSWR } from '../common/proto';
@@ -166,52 +172,61 @@ function Group() {
 
             <div className={styles.pageHeader}>
                 <div className={styles.headerActions}>
-                    <Dropdown
-                        onSelect={(e) => { const i = Number(e); if (!isNaN(i)) setGroupIndex(i) }}
-                    >
-                        <Dropdown.Toggle variant="outline-primary">{groupIndex >= 0 && data.groups.length > groupIndex ? data.groups[groupIndex].name : "GROUP"}</Dropdown.Toggle>
-                        <Dropdown.Menu className={styles.dropdownMenu}>
-                            <Dropdown.Item className={styles.dropdownItem} eventKey={-1}>Select...</Dropdown.Item>
-
-                            {
-                                data.groups?.map((k, i) => {
-                                    return <Dropdown.Item className={styles.dropdownItem} eventKey={i} key={i}>{k.name}</Dropdown.Item>
-                                })
-                            }
-                        </Dropdown.Menu>
+                    <Dropdown>
+                        <DropdownTrigger asChild>
+                            <Button variant="outline-secondary" className="d-flex align-items-center justify-content-between" style={{ minWidth: '150px' }}>
+                                {groupIndex >= 0 && data.groups.length > groupIndex ? data.groups[groupIndex].name : "GROUP"}
+                                <ChevronDown className="ms-2" />
+                            </Button>
+                        </DropdownTrigger>
+                        <DropdownContent className={styles.dropdownMenu}>
+                            <DropdownItem
+                                className={styles.dropdownItem}
+                                onSelect={() => setGroupIndex(-1)}
+                            >
+                                Select...
+                            </DropdownItem>
+                            {data.groups?.map((k, i) => (
+                                <DropdownItem
+                                    className={styles.dropdownItem}
+                                    key={i}
+                                    onSelect={() => setGroupIndex(i)}
+                                >
+                                    {k.name}
+                                </DropdownItem>
+                            ))}
+                        </DropdownContent>
                     </Dropdown>
 
-                    <ButtonGroup>
-                        <Button
-                            variant="outline-primary"
-                            onClick={() => {
-                                setModalData({
-                                    point: create(pointSchema, {
-                                        group: "template_group",
-                                        name: "template_name",
-                                        origin: origin.manual,
-                                    }),
-                                    hash: "new node",
-                                    show: true,
-                                    onDelete: undefined,
-                                    isNew: true
-                                })
-                            }}
-                        >
-                            <i className="bi bi-plus-lg" />&nbsp;New
-                        </Button>
+                    <Button
+                        variant="outline-secondary"
+                        onClick={() => {
+                            setModalData({
+                                point: create(pointSchema, {
+                                    group: "template_group",
+                                    name: "template_name",
+                                    origin: origin.manual,
+                                }),
+                                hash: "new node",
+                                show: true,
+                                onDelete: undefined,
+                                isNew: true
+                            })
+                        }}
+                    >
+                        <PlusLg />&nbsp;New
+                    </Button>
 
-                        <Button
-                            variant="outline-primary"
-                            onClick={() => setImportJson({ data: true })}
-                        >
-                            <i className="bi bi-box-arrow-in-down" />&nbsp;Import
-                        </Button>
-                    </ButtonGroup>
+                    <Button
+                        variant="outline-secondary"
+                        onClick={() => setImportJson({ data: true })}
+                    >
+                        <BoxArrowInDown />&nbsp;Import
+                    </Button>
                 </div>
             </div>
 
-            <Accordion className={styles.accordion} alwaysOpen id="connections">
+            <Accordion type="multiple" className={styles.accordion}>
                 {
                     groupIndex >= 0
                         && data.groups.length > groupIndex
@@ -481,7 +496,7 @@ const InfoBlock: FC<{ label: string, value: React.ReactNode, loading?: boolean, 
         <span className={styles.infoLabel}>{label}</span>
         {/* Use text-break to prevent layout overflow on small screens */}
         <div className={`${styles.infoValue} ${colorClass || ''} text-break`}>
-            {loading ? <Spinner animation="border" size="sm" variant="secondary" /> : value || "N/A"}
+            {loading ? <Spinner size="sm" /> : value || "N/A"}
         </div>
     </div>
 );
@@ -541,8 +556,8 @@ const NodeItemv2: FC<{
     const isTesting = isLoading(latency);
 
     return (
-        <Accordion.Item eventKey={hash} className={styles.accordionItem}>
-            <Accordion.Header className={styles.nodeHeader}>
+        <AccordionItem value={hash} className={styles.accordionItem}>
+            <AccordionTrigger className={styles.nodeHeader}>
                 {/* 
                     Main Container Layout:
                     - Mobile (xs): flex-column (Two rows)
@@ -558,18 +573,18 @@ const NodeItemv2: FC<{
                     */}
                     <div className="d-flex align-items-center gap-3 w-100 mb-2 mb-sm-0">
                         {/* Status Icon */}
-                        <i className={`bi bi-hdd-network fs-5 flex-shrink-0 ${getLatencyColor(latency.tcp.value) === styles['latency-good']
+                        <HddNetwork className={`fs-5 flex-shrink-0 ${getLatencyColor(latency.tcp.value) === styles['latency-good']
                             ? "text-success"
                             : latency.tcp.value !== "N/A" && !latency.tcp.value.includes("timeout")
                                 ? "text-primary"
                                 : "text-muted"
-                            }`}></i>
+                            }`} />
 
                         <div className="d-flex flex-column text-truncate">
                             <span className="fw-bold text-truncate">{name}</span>
                             <div className="d-flex gap-2 align-items-center" style={{ fontSize: '0.75rem' }}>
                                 <span className="text-muted font-monospace opacity-75">{hash.substring(0, 8)}</span>
-                                {ipv6 && <Badge bg="info" className="text-dark py-0 px-1" style={{ fontSize: '0.65rem' }}>IPv6</Badge>}
+                                {ipv6 && <Badge variant="info" className="text-dark py-0 px-1" style={{ fontSize: '0.65rem' }}>IPv6</Badge>}
                             </div>
                         </div>
                     </div>
@@ -598,9 +613,9 @@ const NodeItemv2: FC<{
                         </div>
                     </div>
                 </div>
-            </Accordion.Header>
+            </AccordionTrigger>
 
-            <Accordion.Body className={styles.accordionBody}>
+            <AccordionContent className={styles.accordionBody}>
                 {/* 1. Main Info Grid (Latency & IP) */}
                 <div className={styles.infoGrid}>
                     <InfoBlock
@@ -644,44 +659,50 @@ const NodeItemv2: FC<{
 
                 {/* 3. Action Footer */}
                 <div className={styles.actionFooter}>
-                    <DropdownButton
-                        as={ButtonGroup}
-                        variant="outline-secondary"
-                        size="sm"
-                        // Responsive Title: Icon only on mobile (xs), Icon + Text on desktop (sm+)
-                        title={
-                            isTesting
-                                ? <Spinner as="span" animation="border" size="sm" />
-                                : <>
-                                    <i className="bi bi-speedometer2"></i>
-                                    <span className="d-none d-sm-inline ms-2">Test</span>
-                                </>
-                        }
-                        disabled={isTesting}
-                        onSelect={(key) => test(key as LatencyType)}
-                    >
-                        <Dropdown.Item eventKey={LatencyType.TCP}>TCP Ping</Dropdown.Item>
-                        <Dropdown.Item eventKey={LatencyType.UDP}>UDP Ping</Dropdown.Item>
-                        <Dropdown.Divider />
-                        <Dropdown.Item eventKey={LatencyType.STUN}>STUN Test</Dropdown.Item>
-                        <Dropdown.Item eventKey={LatencyType.STUNTCP}>STUN TCP Test</Dropdown.Item>
-                        <Dropdown.Item eventKey={LatencyType.IP}>IP Check</Dropdown.Item>
-                    </DropdownButton>
+                    <div className="btn-group">
+                        <Dropdown>
+                            <DropdownTrigger asChild>
+                                <Button
+                                    variant="outline-secondary"
+                                    size="sm"
+                                    disabled={isTesting}
+                                    className="d-flex align-items-center gap-2"
+                                >
+                                    {isTesting
+                                        ? <Spinner size="sm" />
+                                        : <>
+                                            <Speedometer2 />
+                                            <span className="d-none d-sm-inline ms-1">Test</span>
+                                        </>
+                                    }
+                                    <ChevronDown className="ms-1" style={{ fontSize: '0.7em' }} />
+                                </Button>
+                            </DropdownTrigger>
+                            <DropdownContent>
+                                <DropdownItem onSelect={() => test(LatencyType.TCP)}>TCP Ping</DropdownItem>
+                                <DropdownItem onSelect={() => test(LatencyType.UDP)}>UDP Ping</DropdownItem>
+                                <div className="dropdown-divider"></div>
+                                <DropdownItem onSelect={() => test(LatencyType.STUN)}>STUN Test</DropdownItem>
+                                <DropdownItem onSelect={() => test(LatencyType.STUNTCP)}>STUN TCP Test</DropdownItem>
+                                <DropdownItem onSelect={() => test(LatencyType.IP)}>IP Check</DropdownItem>
+                            </DropdownContent>
+                        </Dropdown>
+                    </div>
 
                     <Button variant="outline-secondary" size="sm" onClick={onClickEdit} title="Edit Configuration">
-                        <i className="bi bi-pencil" />
+                        <Pencil />
                         {/* d-none d-sm-inline: Hide text on mobile */}
                         <span className="d-none d-sm-inline ms-2">Edit</span>
                     </Button>
 
                     <Button variant="primary" size="sm" onClick={() => setNode(ctx, hash)} title="Use Node">
-                        <i className="bi bi-check2-circle" />
+                        <Check2Circle />
                         {/* d-none d-sm-inline: Hide text on mobile */}
                         <span className="d-none d-sm-inline ms-2">Use</span>
                     </Button>
                 </div>
-            </Accordion.Body>
-        </Accordion.Item>
+            </AccordionContent>
+        </AccordionItem>
     );
 }
 
@@ -724,38 +745,35 @@ const NodeJsonModal = (
         </Button>
     }
     return (
-        <>
-            <Modal
-                show={props.show}
-                aria-labelledby="contained-modal-title-vcenter"
-                size='xl'
-                onHide={() => { props.onHide() }}
-                centered
-            >
+        <Modal
+            open={props.show}
+            onOpenChange={(open) => !open && props.onHide()}
+        >
+            <ModalContent style={{ maxWidth: '800px' }}>
                 {!props.plaintext &&
-                    <Modal.Header closeButton>
-                        <Modal.Title id="contained-modal-title-vcenter">
+                    <ModalHeader closeButton>
+                        <ModalTitle>
                             Import JSON
-                        </Modal.Title>
-                    </Modal.Header>
+                        </ModalTitle>
+                    </ModalHeader>
                 }
 
-                <Modal.Body>
-                    <Form.Control
-                        as="textarea"
+                <ModalBody>
+                    <textarea
+                        className="form-control"
                         readOnly={props.plaintext}
                         value={props.data ? props.data : nodeJson.data}
                         style={{ height: "65vh", fontFamily: "monospace" }}
                         onChange={(e) => { setNodeJson({ data: e.target.value }); }}
                     />
-                </Modal.Body>
+                </ModalBody>
 
 
-                <Modal.Footer>
+                <ModalFooter>
                     <Button variant="outline-secondary" onClick={() => { props.onHide() }}>Close</Button>
                     <Footer />
-                </Modal.Footer>
-            </Modal>
-        </>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
     );
 }

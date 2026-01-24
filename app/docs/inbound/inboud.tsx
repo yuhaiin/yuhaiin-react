@@ -1,8 +1,13 @@
+"use client"
+
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/app/component/v2/accordion";
+import { Button } from "@/app/component/v2/button";
+import { Card, CardBody, CardHeader, SettingLabel } from "@/app/component/v2/card";
+import { Select } from "@/app/component/v2/forms";
+import { SwitchCard } from "@/app/component/v2/switch";
 import { create } from "@bufbuild/protobuf";
 import { FC, useState } from "react";
-import { Button, InputGroup, ListGroup } from "react-bootstrap";
-import { Container, MoveUpDown } from "../../component/components";
-import { FormSelect, SettingCheck } from "../../component/switch";
+import { ArrowDown, ArrowUp, PlusLg, Trash } from "react-bootstrap-icons";
 import {
     aeadSchema,
     grpcSchema,
@@ -26,130 +31,168 @@ import { Transport } from "./transport";
 export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> = ({ inbound, onChange }) => {
     const [newProtocol, setNewProtocol] = useState({ value: "normal" });
 
+    const moveTransport = (index: number, direction: 'up' | 'down') => {
+        const newTransports = [...inbound.transport];
+        if (direction === 'up') {
+            if (index === 0) return;
+            [newTransports[index - 1], newTransports[index]] = [newTransports[index], newTransports[index - 1]];
+        } else {
+            if (index === newTransports.length - 1) return;
+            [newTransports[index], newTransports[index + 1]] = [newTransports[index + 1], newTransports[index]];
+        }
+        onChange({ ...inbound, transport: newTransports });
+    };
+
+    const deleteTransport = (index: number) => {
+        const newTransports = [...inbound.transport];
+        newTransports.splice(index, 1);
+        onChange({ ...inbound, transport: newTransports });
+    };
+
+    const addTransport = () => {
+        const x = { ...inbound, transport: [...inbound.transport] }
+        switch (newProtocol.value) {
+            case "normal":
+                x.transport.push(create(transportSchema, {
+                    transport: { case: "normal", value: create(normalSchema, {}) }
+                }))
+                break
+            case "tlsAuto":
+                x.transport.push(create(transportSchema, {
+                    transport: { case: "tlsAuto", value: create(tls_autoSchema, {}) }
+                }))
+                break
+            case "tls":
+                x.transport.push(create(transportSchema, {
+                    transport: {
+                        case: "tls", value: create(tlsSchema, { tls: create(tls_server_configSchema, {}) })
+                    }
+                }))
+                break
+            case "mux":
+                x.transport.push(create(transportSchema, {
+                    transport: { case: "mux", value: create(muxSchema, {}) }
+                }))
+                break
+            case "http2":
+                x.transport.push(create(transportSchema, {
+                    transport: { case: "http2", value: create(http2Schema, {}) }
+                }))
+                break
+            case "websocket":
+                x.transport.push(create(transportSchema, {
+                    transport: { case: "websocket", value: create(websocketSchema, {}) }
+                }))
+                break
+            case "grpc":
+                x.transport.push(create(transportSchema, {
+                    transport: { case: "grpc", value: create(grpcSchema, {}) }
+                }))
+                break
+            case "reality":
+                x.transport.push(create(transportSchema, {
+                    transport: { case: "reality", value: create(realitySchema, {}) }
+                }))
+                break
+            case "httpMock":
+                x.transport.push(create(transportSchema, {
+                    transport: { case: "httpMock", value: create(http_mockSchema, {}) }
+                }))
+                break
+            case "aead":
+                x.transport.push(create(transportSchema, {
+                    transport: { case: "aead", value: create(aeadSchema, {}) }
+                }))
+                break
+            case "proxy":
+                x.transport.push(create(transportSchema, {
+                    transport: { case: "proxy", value: create(proxySchema, {}) }
+                }))
+                break
+        }
+        onChange(x)
+    };
+
     return <>
-        <SettingCheck
-            label="Enabled"
-            checked={inbound.enabled}
-            onChange={() => { onChange({ ...inbound, enabled: !inbound.enabled }) }}
-        />
+        <div className="mb-3">
+            <SwitchCard
+                label="Enabled"
+                checked={inbound.enabled}
+                onCheckedChange={(c) => { onChange({ ...inbound, enabled: c }) }}
+                className="p-3 rounded-3 bg-body-tertiary"
+            />
+        </div>
 
-        {/* <SettingInputText
-            label="Name"
-            value={inbound.name}
-            onChange={(e) => { onChange({ ...inbound, name: e }) }}
-        /> */}
+        {/* Network Section */}
+        <Card className="mb-3">
+            <CardHeader><span className="fw-bold">Network</span></CardHeader>
+            <CardBody>
+                <Network inbound={inbound} onChange={(x) => { onChange({ ...x }) }} />
+            </CardBody>
+        </Card>
 
-        <Container title="Network" className="mb-2" hideClose>
-            <Network inbound={inbound} onChange={(x) => { onChange({ ...x }) }} />
-        </Container>
+        {/* Transport Section */}
+        <Card className="mb-3">
+            <CardHeader><span className="fw-bold">Transport</span></CardHeader>
+            <CardBody>
+                <Accordion type="multiple" className="mb-3">
+                    {inbound.transport.map((x, i) => (
+                        <AccordionItem value={`item-${i}`} key={i}>
+                            <AccordionTrigger className="fw-bold">
+                                {x.transport.case?.toString() ?? "Unknown"}
+                            </AccordionTrigger>
+                            <AccordionContent>
+                                <div className="p-1">
+                                    <Transport transport={x} onChange={(newTransport) => {
+                                        const newTransports = [...inbound.transport];
+                                        newTransports[i] = newTransport;
+                                        onChange({ ...inbound, transport: newTransports });
+                                    }} />
 
-        <Container title="Transport" className="mb-2" hideClose>
-            <>
-                {
-                    inbound.transport.map((x, i) => {
-                        return <Container
-                            key={i}
-                            className={i !== 0 ? "mt-2" : ""}
-                            title={x.transport.case?.toString() ?? ""}
-                            onClose={() => { onChange({ ...inbound, transport: [...inbound.transport.slice(0, i), ...inbound.transport.slice(i + 1)] }) }}
-                            moveUpDown={new MoveUpDown(inbound.transport, i, (x) => onChange({ ...inbound, transport: x }))}
-                        >
-                            <Transport key={i} transport={x} onChange={(x) => {
-                                onChange({ ...inbound, transport: [...inbound.transport.slice(0, i), x, ...inbound.transport.slice(i + 1)] })
-                            }} />
-                        </Container>
-                    })
-                }
+                                    <div className="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
+                                        <Button variant="outline-primary" size="sm" onClick={() => moveTransport(i, 'up')} disabled={i === 0}>
+                                            <ArrowUp />
+                                        </Button>
+                                        <Button variant="outline-primary" size="sm" onClick={() => moveTransport(i, 'down')} disabled={i === inbound.transport.length - 1}>
+                                            <ArrowDown />
+                                        </Button>
+                                        <Button variant="outline-danger" size="sm" onClick={() => deleteTransport(i)}>
+                                            <Trash className="me-1" /> Delete
+                                        </Button>
+                                    </div>
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
 
-                <ListGroup variant="flush">
-                    <ListGroup.Item>
-                        <InputGroup>
-                            <FormSelect
-                                value={newProtocol.value}
-                                values={[
-                                    "normal", "tls", "mux",
-                                    "http2", "websocket", "grpc",
-                                    "reality", "tlsAuto", "httpMock",
-                                    "aead", "proxy"
-                                ]}
-                                onChange={(e) => setNewProtocol({ value: e })}
-                            />
-                            <Button
-                                variant="outline-success"
-                                onClick={() => {
-                                    const x = { ...inbound, transport: [...inbound.transport] }
-                                    switch (newProtocol.value) {
-                                        case "normal":
-                                            x.transport.push(create(transportSchema, {
-                                                transport: { case: "normal", value: create(normalSchema, {}) }
-                                            }))
-                                            break
-                                        case "tlsAuto":
-                                            x.transport.push(create(transportSchema, {
-                                                transport: { case: "tlsAuto", value: create(tls_autoSchema, {}) }
-                                            }))
-                                            break
-                                        case "tls":
-                                            x.transport.push(create(transportSchema, {
-                                                transport: {
-                                                    case: "tls", value: create(tlsSchema, { tls: create(tls_server_configSchema, {}) })
-                                                }
-                                            }))
-                                            break
-                                        case "mux":
-                                            x.transport.push(create(transportSchema, {
-                                                transport: { case: "mux", value: create(muxSchema, {}) }
-                                            }))
-                                            break
-                                        case "http2":
-                                            x.transport.push(create(transportSchema, {
-                                                transport: { case: "http2", value: create(http2Schema, {}) }
-                                            }))
-                                            break
-                                        case "websocket":
-                                            x.transport.push(create(transportSchema, {
-                                                transport: { case: "websocket", value: create(websocketSchema, {}) }
-                                            }))
-                                            break
-                                        case "grpc":
-                                            x.transport.push(create(transportSchema, {
-                                                transport: { case: "grpc", value: create(grpcSchema, {}) }
-                                            }))
-                                            break
-                                        case "reality":
-                                            x.transport.push(create(transportSchema, {
-                                                transport: { case: "reality", value: create(realitySchema, {}) }
-                                            }))
-                                            break
-                                        case "httpMock":
-                                            x.transport.push(create(transportSchema, {
-                                                transport: { case: "httpMock", value: create(http_mockSchema, {}) }
-                                            }))
-                                        case "aead":
-                                            x.transport.push(create(transportSchema, {
-                                                transport: { case: "aead", value: create(aeadSchema, {}) }
-                                            }))
-                                            break
-                                        case "proxy":
-                                            x.transport.push(create(transportSchema, {
-                                                transport: { case: "proxy", value: create(proxySchema, {}) }
-                                            }))
-                                            break
-                                    }
-                                    onChange(x)
-                                }}
-                            >
-                                <i className="bi bi-plus-lg" />Add
-                            </Button>
-                        </InputGroup>
-                    </ListGroup.Item>
-                </ListGroup>
-            </>
+                <div className="d-flex align-items-center mb-0">
+                    <SettingLabel className="mb-0 text-nowrap me-3" style={{ minWidth: "auto" }}>Type</SettingLabel>
+                    <div className="flex-grow-1 me-2">
+                        <Select
+                            value={newProtocol.value}
+                            onValueChange={(e) => setNewProtocol({ value: e })}
+                            items={[
+                                "normal", "tls", "mux",
+                                "http2", "websocket", "grpc",
+                                "reality", "tlsAuto", "httpMock",
+                                "aead", "proxy"
+                            ].map(v => ({ value: v, label: v }))}
+                        />
+                    </div>
+                    <Button variant="outline-primary" onClick={addTransport}>
+                        <PlusLg className="me-1" /> Add
+                    </Button>
+                </div>
+            </CardBody>
+        </Card>
 
-        </Container>
-
-        <Container title="Protocol" hideClose>
-            <Protocol inbound={inbound} onChange={(x) => { onChange({ ...x }) }} />
-        </Container>
+        {/* Protocol Section */}
+        <Card>
+            <CardHeader><span className="fw-bold">Protocol</span></CardHeader>
+            <CardBody>
+                <Protocol inbound={inbound} onChange={(x) => { onChange({ ...x }) }} />
+            </CardBody>
+        </Card>
     </>
 }

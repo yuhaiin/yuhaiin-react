@@ -2,8 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, ViewTransition } from 'react';
-import { Container } from 'react-bootstrap';
-import { GlobalToastProvider } from './component/toast';
+import { GlobalToastProvider as GlobalToastProviderv2 } from './component/v2/toast';
 import NavBarContainer from './docs/nav/NavBarContainer';
 import './global.css';
 
@@ -54,13 +53,13 @@ export default function RootLayout({
       <body>
         {colorScheme &&
           <NavBarContainer> {/* Updated component name */}
-            <Container className="main-content">
-              <GlobalToastProvider>
+            <div className="main-content">
+              <GlobalToastProviderv2>
                 <ViewTransition>
                   {children}
                 </ViewTransition>
-              </GlobalToastProvider>
-            </Container>
+              </GlobalToastProviderv2>
+            </div>
           </NavBarContainer>
         }
       </body>

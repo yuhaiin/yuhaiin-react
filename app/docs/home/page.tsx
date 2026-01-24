@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardBody, MainContainer } from '@/app/component/cardlist';
+import { Card, CardBody, MainContainer } from '@/app/component/v2/card';
 import { create } from '@bufbuild/protobuf';
 import dynamic from 'next/dynamic';
 import { useCallback, useState } from 'react';

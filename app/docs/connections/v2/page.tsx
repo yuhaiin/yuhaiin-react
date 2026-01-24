@@ -1,20 +1,24 @@
 "use client"
 
-import { IconBadge } from "@/app/component/cardlist";
-import Loading from "@/app/component/loading";
-import { GlobalToastContext } from "@/app/component/toast";
-import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "@/app/docs/common/proto";
-import { ConnectionInfo, FlowContainer, formatBytes } from "@/app/docs/connections/components";
-import { connections, counter, notify_data, notify_remove_connectionsSchema } from "@/app/docs/pbes/api/statistic_pb";
-import { connection, connectionSchema, type } from "@/app/docs/pbes/statistic/config_pb";
-import { create } from "@bufbuild/protobuf";
-import { EmptySchema } from "@bufbuild/protobuf/wkt";
-import React, { FC, useCallback, useContext, useMemo, useState } from "react";
-import { Badge, Button, Modal, Spinner, ToggleButton, ToggleButtonGroup } from "react-bootstrap";
-import useSWRSubscription from 'swr/subscription';
-import { NodeModal } from "../../node/modal";
-import { mode } from "../../pbes/config/bypass_pb";
-import styles from './connections.module.css';
+import Loading from "@/app/component/loading"
+import { Button } from "@/app/component/v2/button"
+import { IconBadge } from "@/app/component/v2/card"
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/app/component/v2/modal"
+import { Spinner } from "@/app/component/v2/spinner"
+import { GlobalToastContext } from "@/app/component/v2/toast"
+import { ToggleGroup, ToggleItem } from "@/app/component/v2/togglegroup"
+import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "@/app/docs/common/proto"
+import { ConnectionInfo, FlowContainer, formatBytes } from "@/app/docs/connections/components"
+import { connections, counter, notify_data, notify_remove_connectionsSchema } from "@/app/docs/pbes/api/statistic_pb"
+import { connection, connectionSchema, type } from "@/app/docs/pbes/statistic/config_pb"
+import { create } from "@bufbuild/protobuf"
+import { EmptySchema } from "@bufbuild/protobuf/wkt"
+import React, { FC, useCallback, useContext, useMemo, useState } from "react"
+import { ArrowDown, ArrowUp, HddNetwork, Power, ShieldCheck, SortDown, SortUp, Tag } from "react-bootstrap-icons"
+import useSWRSubscription from 'swr/subscription'
+import { NodeModal } from "../../node/modal"
+import { mode } from "../../pbes/config/bypass_pb"
+import styles from './connections.module.css'
 
 const processStream = (r: notify_data, prev?: { [key: string]: connection }): { [key: string]: connection } => {
     let data: { [key: string]: connection };
@@ -59,7 +63,7 @@ function Connections() {
         setCounters(cc)
     }, [])
 
-    const [sortBy, setSortBy] = useState("")
+    const [sortBy, setSortBy] = useState("id")
     const changeSortBy = useCallback((value: string) => {
         setSortBy(value)
     }, [setSortBy])
@@ -97,33 +101,25 @@ function Connections() {
 
             <div className="d-flex justify-content-end mb-3">
                 <div className="d-flex align-items-center gap-3 flex-wrap">
-                    <ToggleButtonGroup type="radio" name="sortOrder" value={sortOrder} onChange={changeSortOrder}>
-                        <ToggleButton id="sort-asc" value="asc" variant="outline-secondary">
-                            <i className="bi bi-sort-up"></i> Asc
-                        </ToggleButton>
-                        <ToggleButton id="sort-desc" value="desc" variant="outline-secondary">
-                            <i className="bi bi-sort-down"></i> Desc
-                        </ToggleButton>
-                    </ToggleButtonGroup>
+                    <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && changeSortOrder(v as "asc" | "desc")}>
+                        <ToggleItem value="asc">
+                            <SortUp /> Asc
+                        </ToggleItem>
+                        <ToggleItem value="desc">
+                            <SortDown /> Desc
+                        </ToggleItem>
+                    </ToggleGroup>
 
-                    <ToggleButtonGroup type="radio" name="sortBy" value={sortBy} onChange={changeSortBy}>
-                        <ToggleButton id="sort-id" value="" variant="outline-secondary">
-                            Id
-                        </ToggleButton>
-                        <ToggleButton id="sort-name" value="name" variant="outline-secondary">
-                            Name
-                        </ToggleButton>
-                        <ToggleButton id="sort-download" value="download" variant="outline-secondary">
-                            Download
-                        </ToggleButton>
-                        <ToggleButton id="sort-upload" value="upload" variant="outline-secondary">
-                            Upload
-                        </ToggleButton>
-                    </ToggleButtonGroup>
+                    <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && changeSortBy(v)}>
+                        <ToggleItem value="id">Id</ToggleItem>
+                        <ToggleItem value="name">Name</ToggleItem>
+                        <ToggleItem value="download">Download</ToggleItem>
+                        <ToggleItem value="upload">Upload</ToggleItem>
+                    </ToggleGroup>
                 </div>
             </div>
 
-            <ConnectionList conns={conns} counters={counters} setInfo={setInfo} conn_error={conn_error} sortFields={sortBy} sortOrder={sortOrder} />
+            <ConnectionList conns={conns} counters={counters} setInfo={setInfo} conn_error={conn_error} sortFields={sortBy || "id"} sortOrder={sortOrder} />
         </div>
     );
 }
@@ -202,9 +198,9 @@ const ListItemComponent: FC<{ data: connection, download: number, upload: number
                 <div className={styles['item-details-right']}>
                     <FlowBadge download={download} upload={upload} />
                     <div className={styles['item-details']}>
-                        <IconBadge icon="bi-shield-check" text={mode[data.mode]} />
-                        <IconBadge icon="bi-hdd-network" text={type[data.type?.connType ?? 0]} />
-                        {data.tag && <IconBadge icon="bi-tag" text={data.tag} />}
+                        <IconBadge icon={ShieldCheck} text={mode[data.mode]} />
+                        <IconBadge icon={HddNetwork} text={type[data.type?.connType ?? 0]} />
+                        {data.tag && <IconBadge icon={Tag} text={data.tag} />}
                     </div>
                 </div>
             </li>
@@ -214,15 +210,16 @@ const ListItemComponent: FC<{ data: connection, download: number, upload: number
 const ListItem = React.memo(ListItemComponent)
 
 const FlowBadgeComponent: FC<{ download: number, upload: number }> = ({ download, upload }) => {
+    // Replaced React-Bootstrap Badge with HTML span and bootstrap classes
     return <div className="d-flex gap-2">
-        <Badge pill>
-            <i className={`bi bi-arrow-down ${styles['badge-icon']}`}></i>
+        <span className="badge rounded-pill text-bg-secondary d-flex align-items-center gap-1">
+            <span className={`${styles['badge-icon']}`}><ArrowDown /></span>
             {formatBytes(download)}
-        </Badge>
-        <Badge pill>
-            <i className={`bi bi-arrow-up ${styles['badge-icon']}`}></i>
+        </span>
+        <span className="badge rounded-pill text-bg-primary d-flex align-items-center gap-1">
+            <span className={`${styles['badge-icon']}`}><ArrowUp /></span>
             {formatBytes(upload)}
-        </Badge>
+        </span>
     </div>
 }
 
@@ -249,50 +246,42 @@ const InfoOffcanvasComponent: FC<{
     }, [setClosing, data.id, ctx])
 
     return (
-        <Modal
-            show={show}
-            onHide={handleClose}
-            scrollable
-            centered
-            contentClassName="border-0 shadow-lg"
-        >
-            <Modal.Header closeButton className="border-bottom-0 pb-0">
-                <Modal.Title className="h5 fw-bold">
-                    Connection Details
-                </Modal.Title>
-            </Modal.Header>
+        <Modal open={show} onOpenChange={(open) => !open && handleClose()}>
+            <ModalContent>
+                <ModalHeader closeButton>
+                    <ModalTitle className="h5 fw-bold">
+                        Connection Details
+                    </ModalTitle>
+                </ModalHeader>
 
-            <Modal.Body className="pt-2">
-                <ConnectionInfo value={data} showNodeModal={showNodeModal} />
-            </Modal.Body>
+                <ModalBody className="pt-2">
+                    <ConnectionInfo value={data} showNodeModal={showNodeModal} />
+                </ModalBody>
 
-            <Modal.Footer className="border-top-0 pt-0 pb-3 px-3">
-                <Button
-                    variant="danger"
-                    className="w-100 py-2 d-flex align-items-center justify-content-center notranslate"
-                    disabled={closing}
-                    onClick={closeConnection}
-                >
-                    {closing ? (
-                        <>
-                            <Spinner
-                                as="span"
-                                animation="border"
-                                size="sm"
-                                role="status"
-                                aria-hidden="true"
-                                className="me-2"
-                            />
-                            Disconnecting...
-                        </>
-                    ) : (
-                        <>
-                            <i className="bi bi-power fs-5 me-2"></i>
-                            <span className="fw-bold">Disconnect</span>
-                        </>
-                    )}
-                </Button>
-            </Modal.Footer>
+                <ModalFooter className="border-top-0 pt-0 pb-3 px-3">
+                    <Button
+                        variant="danger"
+                        className="w-100 py-2 d-flex align-items-center justify-content-center notranslate"
+                        disabled={closing}
+                        onClick={closeConnection}
+                    >
+                        {closing ? (
+                            <>
+                                <Spinner
+                                    size="sm"
+                                    className="me-2"
+                                />
+                                Disconnecting...
+                            </>
+                        ) : (
+                            <>
+                                <Power className="fs-5 me-2" />
+                                <span className="fw-bold">Disconnect</span>
+                            </>
+                        )}
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
         </Modal>
     );
 }

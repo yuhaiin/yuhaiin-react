@@ -1,9 +1,12 @@
-import { create } from "@bufbuild/protobuf";
-import dynamic from "next/dynamic";
-import { FC, useEffect, useState } from "react";
-import { Button, InputGroup, ListGroup } from "react-bootstrap";
-import Loading from "../../component/loading";
-import { FormSelect } from "../../component/switch";
+"use client"
+
+import { Button } from "@/app/component/v2/button"
+import { SettingLabel } from "@/app/component/v2/card"
+import { Select } from "@/app/component/v2/forms"
+import { create } from "@bufbuild/protobuf"
+import dynamic from "next/dynamic"
+import { FC, useEffect, useState } from "react"
+import Loading from "../../component/loading"
 import {
     httpSchema,
     inbound,
@@ -15,7 +18,7 @@ import {
     tproxySchema,
     tunSchema,
     yuubinsyaSchema
-} from "../pbes/config/inbound_pb";
+} from "../pbes/config/inbound_pb"
 
 const LazyHTTP = dynamic(() => import("./http").then(mod => mod.HTTP), { ssr: false, loading: () => <Loading /> })
 const LazyReverseHTTP = dynamic(() => import("./http").then(mod => mod.ReverseHTTP), { ssr: false, loading: () => <Loading /> })
@@ -87,58 +90,54 @@ export const Protocol: FC<{ inbound: inbound, onChange: (x: inbound) => void }> 
     }, [inbound]);
 
     return <>
-        <ListGroup variant="flush">
-            <ListGroup.Item>
-                <InputGroup>
-                    <FormSelect
-                        value={newProtocol.value}
-                        values={["http", "reverseHttp", "reverseTcp", "socks5", "mix", "redir", "tun", "yuubinsya", "tproxy"]}
-                        onChange={(e) => setNewProtocol({ value: e })}
-                    />
-                    <Button
-                        variant="outline-success"
-                        onClick={() => {
-                            const x = { ...inbound }
-                            switch (newProtocol.value) {
-                                case "http":
-                                    x.protocol = { case: "http", value: create(httpSchema, {}) }
-                                    break
-                                case "reverseHttp":
-                                    x.protocol = { case: "reverseHttp", value: create(reverse_httpSchema, {}) }
-                                    break
-                                case "reverseTcp":
-                                    x.protocol = { case: "reverseTcp", value: create(reverse_tcpSchema, {}) }
-                                    break
-                                case "socks5":
-                                    x.protocol = { case: "socks5", value: create(socks5Schema, {}) }
-                                    break
-                                case "mix":
-                                    x.protocol = { case: "mix", value: create(mixedSchema, {}) }
-                                    break
-                                case "redir":
-                                    x.protocol = { case: "redir", value: create(redirSchema, {}) }
-                                    break
-                                case "tun":
-                                    x.protocol = { case: "tun", value: create(tunSchema, {}) }
-                                    break
-                                case "yuubinsya":
-                                    x.protocol = { case: "yuubinsya", value: create(yuubinsyaSchema, {}) }
-                                    break
-                                case "tproxy":
-                                    x.protocol = { case: "tproxy", value: create(tproxySchema, {}) }
-                            }
-                            onChange({ ...x })
-                        }}
-                    >
-                        Use
-                    </Button>
-                </InputGroup>
-            </ListGroup.Item>
-        </ListGroup>
-
-        <br />
+        <div className="d-flex align-items-center mb-3">
+            <SettingLabel className="mb-0 text-nowrap me-3" style={{ minWidth: "auto" }}>Protocol</SettingLabel>
+            <div className="flex-grow-1 me-2">
+                <Select
+                    value={newProtocol.value}
+                    onValueChange={(e) => setNewProtocol({ value: e })}
+                    items={["http", "reverseHttp", "reverseTcp", "socks5", "mix", "redir", "tun", "yuubinsya", "tproxy"].map(v => ({ value: v, label: v }))}
+                />
+            </div>
+            <Button
+                variant="outline-primary"
+                onClick={() => {
+                    const x = { ...inbound }
+                    switch (newProtocol.value) {
+                        case "http":
+                            x.protocol = { case: "http", value: create(httpSchema, {}) }
+                            break
+                        case "reverseHttp":
+                            x.protocol = { case: "reverseHttp", value: create(reverse_httpSchema, {}) }
+                            break
+                        case "reverseTcp":
+                            x.protocol = { case: "reverseTcp", value: create(reverse_tcpSchema, {}) }
+                            break
+                        case "socks5":
+                            x.protocol = { case: "socks5", value: create(socks5Schema, {}) }
+                            break
+                        case "mix":
+                            x.protocol = { case: "mix", value: create(mixedSchema, {}) }
+                            break
+                        case "redir":
+                            x.protocol = { case: "redir", value: create(redirSchema, {}) }
+                            break
+                        case "tun":
+                            x.protocol = { case: "tun", value: create(tunSchema, {}) }
+                            break
+                        case "yuubinsya":
+                            x.protocol = { case: "yuubinsya", value: create(yuubinsyaSchema, {}) }
+                            break
+                        case "tproxy":
+                            x.protocol = { case: "tproxy", value: create(tproxySchema, {}) }
+                    }
+                    onChange({ ...x })
+                }}
+            >
+                Use
+            </Button>
+        </div>
 
         <Config inbound={inbound} onChange={(x) => { onChange({ ...x }) }} />
     </>
 }
-

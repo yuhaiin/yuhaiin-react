@@ -1,14 +1,16 @@
 "use client"
 
-import { Card, CardBody, CardFooter, CardHeader, IconBox, ListItem, MainContainer, SettingLabel } from '@/app/component/cardlist'
+import { Button } from "@/app/component/v2/button"
+import { Card, CardBody, CardFooter, CardHeader, IconBox, ListItem, MainContainer, SettingLabel } from '@/app/component/v2/card'
+import { ConfirmModal } from "@/app/component/v2/confirm"
+import { SettingInputVertical, SettingPasswordVertical, SwitchCard } from "@/app/component/v2/forms"
+import { Spinner } from "@/app/component/v2/spinner"
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
 import { useCallback, useContext, useState } from "react"
-import { Button, Spinner } from "react-bootstrap"
-import { ConfirmModal } from "../../../component/confirm"
+import { ArrowClockwise, CloudArrowUp, Hash, InfoCircle, Save, ShieldLock } from "react-bootstrap-icons"
 import Loading, { Error } from "../../../component/loading"
-import { SettingInputVertical, SettingPasswordVertical, SettingSwitchCard } from "../../../component/switch"
-import { GlobalToastContext } from "../../../component/toast"
+import { GlobalToastContext } from "../../../component/v2/toast"
 import { FetchProtobuf, useProtoSWR } from "../../common/proto"
 import { backup } from "../../pbes/api/backup_pb"
 import { restore_optionSchema } from "../../pbes/backup/backup_pb"
@@ -67,6 +69,7 @@ function BackupPage() {
         <MainContainer>
             <ConfirmModal
                 show={showConfirmModal}
+                title="Restore Backup"
                 content={<p className="mb-0">Are you sure you want to restore? This will <strong>overwrite all current configurations</strong>.</p>}
                 onOk={handleRestoreNow}
                 onHide={() => setShowConfirmModal(false)}
@@ -75,7 +78,7 @@ function BackupPage() {
             {/* 1. General Backup Settings */}
             <Card>
                 <CardHeader>
-                    <IconBox icon="shield-lock" color="#3b82f6" title='Backup Instance' description='Identification and timing' />
+                    <IconBox icon={ShieldLock} color="#3b82f6" title='Backup Instance' description='Identification and timing' />
                 </CardHeader>
                 <CardBody>
                     <div className="row g-4">
@@ -91,7 +94,7 @@ function BackupPage() {
                             <SettingInputVertical
                                 label="Backup Interval (Seconds)"
                                 value={data.interval.toString()}
-                                onChange={(v) => {
+                                onChange={(v: string) => {
                                     const val = parseInt(v);
                                     if (!isNaN(val) && val >= 0) setSetting(prev => ({ ...prev, interval: BigInt(val) }), false);
                                 }}
@@ -101,7 +104,7 @@ function BackupPage() {
                         <div className="col-12">
                             <SettingLabel>Last Backup Hash</SettingLabel>
                             <ListItem style={{ cursor: 'default', background: 'rgba(0,0,0,0.1)' }}>
-                                <i className="bi bi-hash me-2 text-muted"></i>
+                                <Hash className="me-2 text-muted" />
                                 <span className="font-monospace small text-truncate opacity-75">
                                     {data.lastBackupHash || "No backup records found"}
                                 </span>
@@ -117,19 +120,19 @@ function BackupPage() {
                     <div className="row g-4">
                         {/* Toggles Row */}
                         <div className="col-md-6">
-                            <SettingSwitchCard
+                            <SwitchCard
                                 label="S3 Backup Enabled"
                                 description="Enable automatic S3 sync"
                                 checked={data.s3.enabled}
-                                onChange={() => setSetting(prev => ({ ...prev, s3: { ...prev.s3, enabled: !prev.s3.enabled } }), false)}
+                                onCheckedChange={() => setSetting(prev => ({ ...prev, s3: { ...prev.s3, enabled: !prev.s3.enabled } }), false)}
                             />
                         </div>
                         <div className="col-md-6">
-                            <SettingSwitchCard
+                            <SwitchCard
                                 label="Use Path Style"
                                 description="Compatibility for MinIO/S3 clones"
                                 checked={data.s3.usePathStyle}
-                                onChange={() => setSetting(prev => ({ ...prev, s3: { ...prev.s3, usePathStyle: !prev.s3.usePathStyle } }), false)}
+                                onCheckedChange={() => setSetting(prev => ({ ...prev, s3: { ...prev.s3, usePathStyle: !prev.s3.usePathStyle } }), false)}
                             />
                         </div>
 
@@ -182,32 +185,32 @@ function BackupPage() {
                 <CardFooter>
                     <div className="d-flex gap-2">
                         <Button
-                            variant="outline-success"
+                            variant="outline-primary"
                             onClick={handleBackupNow}
                             disabled={saving}
                             title="Trigger immediate backup"
                         >
-                            {saving ? <Spinner size="sm" animation="border" /> : <i className="bi bi-cloud-arrow-up"></i>}
+                            {saving ? <Spinner size="sm" /> : <CloudArrowUp className="me-1" />}
                             <span className="ms-2 d-none d-sm-inline">Backup Now</span>
                         </Button>
 
                         <Button
-                            variant="outline-warning"
+                            variant="outline-secondary"
                             onClick={() => setShowConfirmModal(true)}
                             disabled={saving}
                             title="Restore from cloud"
                         >
-                            <i className="bi bi-arrow-clockwise"></i>
+                            <ArrowClockwise className="me-1" />
                             <span className="ms-2 d-none d-sm-inline">Restore Now</span>
                         </Button>
 
                         <Button
-                            variant="primary"
+                            variant="outline-primary"
                             onClick={handleSave}
                             disabled={saving}
                             title="Save configuration changes"
                         >
-                            <i className="bi bi-save"></i>
+                            <Save className="me-1" />
                             <span className="ms-2 d-none d-sm-inline">Save Config</span>
                         </Button>
                     </div>
@@ -216,7 +219,7 @@ function BackupPage() {
 
             <div className="text-center mt-3 opacity-50 pb-5">
                 <small className="text-muted">
-                    <i className="bi bi-info-circle me-1"></i>
+                    <InfoCircle className="me-1" />
                     Backups include all lists, rules, and node configurations.
                 </small>
             </div>

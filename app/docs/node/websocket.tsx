@@ -1,19 +1,21 @@
+import { SettingInputVertical } from "@/app/component/v2/forms";
 import { FC } from "react";
-import { SettingInputText } from "../../component/components";
 import { websocket } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
-export const Websocketv2: FC<Props<websocket>> = ({ value, onChange }) => {
+export const Websocketv2: FC<Props<websocket>> = ({ value, onChange, editable = true }) => {
     return <>
-        <SettingInputText
+        <SettingInputVertical
             label="Host"
             value={value.host}
+            disabled={!editable}
             onChange={(e: string) => { onChange({ ...value, host: e }) }}
         />
 
-        <SettingInputText
+        <SettingInputVertical
             label="Path"
             value={value.path}
+            disabled={!editable}
             onChange={(e: string) => { onChange({ ...value, path: e }) }}
         />
     </>

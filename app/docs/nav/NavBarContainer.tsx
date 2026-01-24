@@ -1,8 +1,9 @@
 "use client"
 
 import React, { useState } from 'react';
+import { List } from 'react-bootstrap-icons';
 import Sidebar from './Sidebar';
-import styles from './sidebar.module.css';
+import styles from './navbar.module.css';
 
 function NavBarContainer({ children }: { children: React.ReactNode }) {
     const [showSidebar, setShowSidebar] = useState(false);
@@ -14,12 +15,12 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
                 onClick={() => setShowSidebar(!showSidebar)}
                 aria-label="Toggle navigation"
             >
-                <i className="bi bi-list"></i>
+                <List />
             </button>
 
             <Sidebar show={showSidebar} onHide={() => setShowSidebar(false)} />
 
-            <main className={styles['main-content']}>
+            <main>
                 {children}
             </main>
         </>

@@ -1,12 +1,13 @@
-"use client";
-
-import { Card, CardBody, CardFooter, CardHeader, IconBox } from '@/app/component/cardlist';
+import { Button } from '@/app/component/v2/button';
+import { Card, CardBody, CardFooter, CardHeader, IconBox } from '@/app/component/v2/card';
+import { SettingInputVertical } from '@/app/component/v2/forms';
+import { InputList } from '@/app/component/v2/listeditor';
+import { Spinner } from '@/app/component/v2/spinner';
+import Switch from '@/app/component/v2/switch';
+import { GlobalToastContext } from '@/app/component/v2/toast';
 import { FC, useContext, useState } from "react";
-import { Button, Form, Spinner } from "react-bootstrap";
-import { NewItemList } from "../../../component/components";
+import { ArrowCounterclockwise, Magic, Save } from 'react-bootstrap-icons';
 import Loading from "../../../component/loading";
-import { SettingInputVertical } from '../../../component/switch';
-import { GlobalToastContext } from "../../../component/toast";
 import { FetchProtobuf, useProtoSWR } from "../../common/proto";
 import { resolver } from "../../pbes/api/config_pb";
 
@@ -42,55 +43,77 @@ export const Fakedns: FC = () => {
         setDirty(true);
     }
 
-    return <Card className={`h-100 d-flex flex-column`}>
-        <CardHeader >
-            <IconBox icon="magic" color="primary" title='FakeDNS' description='Virtual IP Strategy' />
-            <Form.Check
-                type="switch"
-                label="Enabled"
-                checked={data.enabled}
-                onChange={() => handleMutate(prev => ({ ...prev, enabled: !prev.enabled }))}
-            />
-        </CardHeader>
-        <CardBody>
-            <SettingInputVertical label='IPv4 Range' value={data.ipv4Range} onChange={(v: string) => handleMutate(prev => ({ ...prev, ipv4Range: v }))} />
-            <SettingInputVertical label='IPv6 Range' value={data.ipv6Range} onChange={(v: string) => handleMutate(prev => ({ ...prev, ipv6Range: v }))} />
-            <hr className="my-3 opacity-25" />
-            <NewItemList
-                title="Whitelist"
-                textarea
-                dump
-                data={data.whitelist}
-                onChange={(v) => handleMutate(prev => ({ ...prev, whitelist: v }))}
-            />
-            <hr className="my-3 opacity-25" />
-            <NewItemList
-                title="Skip Check List"
-                className="mt-2"
-                textarea
-                dump
-                data={data.skipCheckList ? data.skipCheckList : []}
-                onChange={(v) => handleMutate(prev => ({ ...prev, skipCheckList: v }))}
-            />
-        </CardBody>
+    return (
+        <Card className="h-100 d-flex flex-column">
+            <CardHeader className="d-flex justify-content-between align-items-center">
+                <IconBox icon={Magic} color="#10b981" title='FakeDNS' description='Virtual IP Strategy' />
+                <div className="d-flex align-items-center gap-2">
+                    <span className="small text-muted fw-medium">{data.enabled ? "ACTIVE" : "DISABLED"}</span>
+                    <Switch
+                        checked={data.enabled}
+                        onCheckedChange={() => handleMutate(prev => ({ ...prev, enabled: !prev.enabled }))}
+                    />
+                </div>
+            </CardHeader>
+            <CardBody className="flex-grow-1">
+                <div className="d-flex flex-column gap-4">
+                    <div className="row g-3">
+                        <div className="col-12 col-md-6">
+                            <SettingInputVertical
+                                label='IPv4 Range'
+                                value={data.ipv4Range}
+                                onChange={(v: string) => handleMutate(prev => ({ ...prev, ipv4Range: v }))}
+                            />
+                        </div>
+                        <div className="col-12 col-md-6">
+                            <SettingInputVertical
+                                label='IPv6 Range'
+                                value={data.ipv6Range}
+                                onChange={(v: string) => handleMutate(prev => ({ ...prev, ipv6Range: v }))}
+                            />
+                        </div>
+                    </div>
 
-        <CardFooter className="d-flex justify-content-end gap-2">
-            <Button
-                variant='outline-secondary'
-                size="sm"
-                disabled={!isDirty}
-                onClick={() => mutate()}
-            >
-                <i className="bi bi-arrow-counterclockwise me-1"></i> Reset
-            </Button>
-            <Button
-                variant="primary"
-                size="sm"
-                disabled={saving || !isDirty}
-                onClick={handleSave}
-            >
-                {saving ? <Spinner as="span" size="sm" animation="border" /> : <> <i className="bi bi-cloud-upload me-1" /> Save</>}
-            </Button>
-        </CardFooter>
-    </Card>
+                    <hr className="my-0 border-secondary opacity-10" />
+
+                    <InputList
+                        title="Domain Whitelist"
+                        textarea
+                        dump
+                        data={data.whitelist}
+                        onChange={(v) => handleMutate(prev => ({ ...prev, whitelist: v }))}
+                    />
+
+                    <hr className="my-0 border-secondary opacity-10" />
+
+                    <InputList
+                        title="Skip Check List"
+                        textarea
+                        dump
+                        data={data.skipCheckList ? data.skipCheckList : []}
+                        onChange={(v) => handleMutate(prev => ({ ...prev, skipCheckList: v }))}
+                    />
+                </div>
+            </CardBody>
+
+            <CardFooter className="d-flex justify-content-end gap-2">
+                <Button
+                    variant='outline-secondary'
+                    size="sm"
+                    disabled={!isDirty}
+                    onClick={() => mutate()}
+                >
+                    <ArrowCounterclockwise className="me-2" />Reset
+                </Button>
+                <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={saving || !isDirty}
+                    onClick={handleSave}
+                >
+                    {saving ? <Spinner size="sm" /> : <><Save className="me-2" />Save</>}
+                </Button>
+            </CardFooter>
+        </Card>
+    );
 }

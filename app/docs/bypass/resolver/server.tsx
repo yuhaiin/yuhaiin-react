@@ -1,14 +1,13 @@
-"use client";
-
-import { Card, CardBody, CardFooter, CardHeader, IconBox } from '@/app/component/cardlist';
+import { Button } from '@/app/component/v2/button';
+import { Card, CardBody, CardFooter, CardHeader, IconBox } from '@/app/component/v2/card';
+import { SettingInputVertical } from '@/app/component/v2/forms';
+import { Spinner } from '@/app/component/v2/spinner';
+import { GlobalToastContext } from '@/app/component/v2/toast';
 import { FC, useContext, useState } from "react";
-import { Button, Spinner } from "react-bootstrap";
-import { SettingInputText } from "../../../component/components";
+import { ArrowCounterclockwise, HddRack, Save } from 'react-bootstrap-icons';
 import Loading from "../../../component/loading";
-import { GlobalToastContext } from "../../../component/toast";
 import { FetchProtobuf, useProtoSWR } from "../../common/proto";
 import { resolver } from "../../pbes/api/config_pb";
-
 
 export const Server: FC = () => {
     const ctx = useContext(GlobalToastContext);
@@ -41,31 +40,38 @@ export const Server: FC = () => {
         setDirty(true);
     }
 
-    return <Card className={`d-flex flex-column`}>
-        <CardHeader>
-            <IconBox icon="hdd-rack" color="primary" title='DNS Server' description='Listen and Serve' />
-        </CardHeader>
-        <CardBody className="card-body px-4 py-3 flex-grow-1">
-            <SettingInputText label="Listen Address" value={data.value} onChange={(v: string) => handleMutate(prev => ({ ...prev, value: v }))} />
-        </CardBody>
+    return (
+        <Card className="d-flex flex-column">
+            <CardHeader>
+                <IconBox icon={HddRack} color="#8b5cf6" title='DNS Server' description='Listen and Serve' />
+            </CardHeader>
+            <CardBody className="px-4 py-4">
+                <SettingInputVertical
+                    label="Listen Address"
+                    placeholder="e.g. 127.0.0.1:53"
+                    value={data.value}
+                    onChange={(v: string) => handleMutate(prev => ({ ...prev, value: v }))}
+                />
+            </CardBody>
 
-        <CardFooter className="d-flex justify-content-end gap-2">
-            <Button
-                variant='outline-secondary'
-                size="sm"
-                disabled={!isDirty}
-                onClick={() => mutate()}
-            >
-                <i className="bi bi-arrow-counterclockwise me-1"></i> Reset
-            </Button>
-            <Button
-                variant="primary"
-                size="sm"
-                disabled={saving || !isDirty}
-                onClick={handleSave}
-            >
-                {saving ? <Spinner as="span" size="sm" animation="border" /> : <> <i className="bi bi-cloud-upload me-1" /> Save</>}
-            </Button>
-        </CardFooter>
-    </Card>
+            <CardFooter className="d-flex justify-content-end gap-2">
+                <Button
+                    variant='outline-secondary'
+                    size="sm"
+                    disabled={!isDirty}
+                    onClick={() => mutate()}
+                >
+                    <ArrowCounterclockwise className="me-2" />Reset
+                </Button>
+                <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={saving || !isDirty}
+                    onClick={handleSave}
+                >
+                    {saving ? <Spinner size="sm" /> : <><Save className="me-2" />Save</>}
+                </Button>
+            </CardFooter>
+        </Card>
+    );
 }

@@ -1,10 +1,11 @@
-"use client";
-
-import { Card, CardBody, CardFooter, CardHeader, IconBox } from '@/app/component/cardlist';
+import { Button } from '@/app/component/v2/button';
+import { Card, CardBody, CardFooter, CardHeader, IconBox } from '@/app/component/v2/card';
+import { Input } from '@/app/component/v2/input';
+import { Spinner } from '@/app/component/v2/spinner';
+import { GlobalToastContext } from '@/app/component/v2/toast';
 import { FC, useContext, useState } from "react";
-import { Button, Form, InputGroup, Spinner } from "react-bootstrap";
+import { ArrowCounterclockwise, ArrowRight, PlusLg, Save, SignpostSplit, Trash } from 'react-bootstrap-icons';
 import Loading from "../../../component/loading";
-import { GlobalToastContext } from "../../../component/toast";
 import { FetchProtobuf, useProtoSWR } from "../../common/proto";
 import { resolver } from "../../pbes/api/config_pb";
 
@@ -41,74 +42,99 @@ export const Hosts: FC = () => {
         setDirty(true);
     }
 
-    return <Card className={`h-100`}>
-        <CardHeader>
-            <IconBox icon="signpost-split" color="primary" title="Static Hosts" description="Static Host Mapping" />
-        </CardHeader>
-        <CardBody>
-            {
-                Object.entries(data.hosts)
-                    .sort(([a], [b]) => a.localeCompare(b))
-                    .map(([k, v], i) =>
-                        <InputGroup className="mb-3" key={"hosts" + k}>
-                            <Form.Control value={k} readOnly style={{ background: 'rgba(255,255,255,0.03)', opacity: 0.7 }} />
-                            <InputGroup.Text style={{ backgroundColor: 'transparent', border: 'none', color: 'var(--text-dim)' }}>
-                                <i className="bi bi-chevron-right small"></i>
-                            </InputGroup.Text>
-                            <Form.Control
-                                value={v}
-                                onChange={(e) => handleMutate(prev => { return { ...prev, hosts: { ...prev.hosts, [k]: e.target.value } } })}
+    return (
+        <Card className="h-100 d-flex flex-column">
+            <CardHeader>
+                <IconBox icon={SignpostSplit} color="#3b82f6" title="Static Hosts" description="Local Domain Mappings" />
+            </CardHeader>
+            <CardBody className="flex-grow-1">
+                <div className="d-flex flex-column gap-3">
+                    {Object.entries(data.hosts)
+                        .sort(([a], [b]) => a.localeCompare(b))
+                        .map(([k, v]) => (
+                            <div className="d-flex align-items-center gap-2" key={"hosts" + k}>
+                                <div className="flex-grow-1 d-flex gap-2 align-items-center bg-body-tertiary p-2 rounded border border-secondary border-opacity-10">
+                                    <span className="font-monospace small text-truncate px-2" style={{ flex: 1, minWidth: 0 }}>{k}</span>
+                                    <ArrowRight className="text-muted opacity-25 flex-shrink-0" />
+                                    <Input
+                                        size="sm"
+                                        value={v}
+                                        className="bg-transparent border-0 shadow-none font-monospace text-primary"
+                                        style={{ flex: 1.2, minWidth: 0 }}
+                                        onChange={(e) => handleMutate(prev => ({
+                                            ...prev,
+                                            hosts: { ...prev.hosts, [k]: e.target.value }
+                                        }))}
+                                    />
+                                </div>
+                                <Button
+                                    variant="outline-danger"
+                                    size="icon"
+                                    className="flex-shrink-0 border-0"
+                                    style={{ width: '32px', height: '32px' }}
+                                    onClick={() => handleMutate(prev => {
+                                        const tmp = { ...prev.hosts };
+                                        delete tmp[k];
+                                        return { ...prev, hosts: tmp };
+                                    })}
+                                >
+                                    <Trash />
+                                </Button>
+                            </div>
+                        ))}
+
+                    <div className="d-flex align-items-center gap-2 mt-2 pt-3 border-top border-secondary border-opacity-10">
+                        <div className="flex-grow-1 d-flex gap-2">
+                            <Input
+                                size="sm"
+                                value={newHosts.key}
+                                onChange={(e) => setNewHosts({ ...newHosts, key: e.target.value })}
+                                placeholder="Domain..."
+                                className="flex-grow-1"
                             />
-                            <Button variant='link' className="text-danger p-1 ms-2" onClick={() => {
-                                handleMutate(prev => {
-                                    const tmp = { ...prev.hosts };
-                                    delete tmp[k];
-                                    return { ...prev, hosts: tmp };
-                                })
-                            }}>
-                                <i className="bi bi-x-circle"></i>
-                            </Button>
-                        </InputGroup>
-                    )
-            }
+                            <Input
+                                size="sm"
+                                value={newHosts.value}
+                                onChange={(e) => setNewHosts({ ...newHosts, value: e.target.value })}
+                                placeholder="IP Address..."
+                                className="flex-grow-1"
+                            />
+                        </div>
+                        <Button
+                            variant="primary"
+                            size="icon"
+                            className="flex-shrink-0"
+                            style={{ width: '32px', height: '32px' }}
+                            onClick={() => {
+                                if (newHosts.key === "" || data.hosts[newHosts.key] !== undefined) return
+                                handleMutate(prev => ({ ...prev, hosts: { ...prev.hosts, [newHosts.key]: newHosts.value } }));
+                                setNewHosts({ key: "", value: "" });
+                            }}
+                        >
+                            <PlusLg />
+                        </Button>
+                    </div>
+                </div>
+            </CardBody>
 
-            <InputGroup className="mt-3">
-                <Form.Control value={newHosts.key} onChange={(e) => setNewHosts({ ...newHosts, key: e.target.value })} placeholder="Domain..." />
-                <InputGroup.Text style={{ backgroundColor: 'transparent', border: 'none', color: 'var(--text-dim)' }}>
-                    <i className="bi bi-chevron-right small"></i>
-                </InputGroup.Text>
-                <Form.Control
-                    value={newHosts.value}
-                    onChange={(e) => setNewHosts({ ...newHosts, value: e.target.value })}
-                    placeholder="IP Address..."
-                />
-                <Button variant='outline-primary' onClick={() => {
-                    if (newHosts.key === "" || data.hosts[newHosts.key] !== undefined) return
-                    handleMutate(prev => ({ ...prev, hosts: { ...prev.hosts, [newHosts.key]: newHosts.value } }));
-                    setNewHosts({ key: "", value: "" });
-                }}>
-                    <i className="bi bi-plus-lg"></i>
+            <CardFooter className="d-flex justify-content-end gap-2">
+                <Button
+                    variant='outline-secondary'
+                    size="sm"
+                    disabled={!isDirty}
+                    onClick={() => mutate()}
+                >
+                    <ArrowCounterclockwise className="me-2" />Reset
                 </Button>
-            </InputGroup>
-        </CardBody>
-
-        <CardFooter className="d-flex justify-content-end gap-2">
-            <Button
-                variant='outline-secondary'
-                size="sm"
-                disabled={!isDirty}
-                onClick={() => mutate()}
-            >
-                <i className="bi bi-arrow-counterclockwise me-1"></i> Reset
-            </Button>
-            <Button
-                variant="primary"
-                size="sm"
-                disabled={saving || !isDirty}
-                onClick={handleSave}
-            >
-                {saving ? <Spinner as="span" size="sm" animation="border" /> : <><i className="bi bi-cloud-upload me-1"></i> Save</>}
-            </Button>
-        </CardFooter>
-    </Card>
+                <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={saving || !isDirty}
+                    onClick={handleSave}
+                >
+                    {saving ? <Spinner size="sm" /> : <><Save className="me-2" />Save</>}
+                </Button>
+            </CardFooter>
+        </Card>
+    );
 }

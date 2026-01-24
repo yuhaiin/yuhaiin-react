@@ -1,8 +1,8 @@
 "use client"
 
-import { Card, CardBody, CardFooter, CardHeader, IconBadge, IconBox, IconBoxRounded, ListItem, MainContainer, SettingLabel } from '@/app/component/cardlist';
-import { FC } from "react";
-import { Col, Row } from "react-bootstrap";
+import { Card, CardBody, CardFooter, CardHeader, IconBadge, IconBox, IconBoxRounded, ListItem, MainContainer, SettingLabel } from '@/app/component/v2/card';
+import React, { FC } from "react";
+import { App, BoxArrowUpRight, Calendar3, CodeSlash, Cpu, Git, Github, InfoCircle, Laptop, Layers, PatchCheck, Terminal } from 'react-bootstrap-icons';
 import Loading, { Error } from "../../../component/loading";
 import { useProtoSWR } from "../../common/proto";
 import { config_service } from "../../pbes/api/config_pb";
@@ -10,21 +10,20 @@ import { config_service } from "../../pbes/api/config_pb";
 const InfoRow: FC<{
     label: string;
     value: string;
-    icon?: string;
+    icon?: React.ElementType;
     url?: string;
     isBadge?: boolean;
     isMonospace?: boolean;
 }> = ({ label, value, icon, url, isBadge, isMonospace }) => (
-    <Col xs={12}>
+    <div className="col-12">
         <ListItem style={{ cursor: url ? 'pointer' : 'default' }}>
-
             <div className="d-flex w-100 align-items-center justify-content-between gap-3">
                 <div className="d-flex align-items-center gap-3 overflow-hidden">
                     <IconBoxRounded
-                        icon={icon}
+                        icon={icon || App}
                         color="#3b82f6"
                         className="flex-shrink-0"
-                        style={{ width: '32px', height: '32px', fontSize: '0.9rem', border: "none", marginRight: '0px' }}
+                        style={{ width: '32px', height: '32px', fontSize: '0.9rem', border: "none" }}
                     />
                     <span className="text-muted small fw-bold text-uppercase opacity-75" style={{ minWidth: '90px', fontSize: '0.7rem', letterSpacing: '0.5px' }}>{label}</span>
                 </div>
@@ -32,10 +31,10 @@ const InfoRow: FC<{
                 <div className="text-end overflow-hidden">
                     {url ? (
                         <a href={url} target="_blank" rel="noreferrer" className="text-decoration-none font-monospace text-primary text-truncate d-block">
-                            {value} <i className="bi bi-box-arrow-up-right ms-1" style={{ fontSize: '0.7rem' }}></i>
+                            {value} <BoxArrowUpRight className="ms-1" style={{ fontSize: '0.7rem' }} />
                         </a>
                     ) : isBadge ?
-                        <IconBadge icon={icon} text={value} color="primary" />
+                        <IconBadge icon={icon || App} text={value} color="primary" />
                         : (
                             <span className={`${isMonospace ? 'font-monospace' : ''} text-truncate d-block`} style={{ fontSize: '0.9rem' }}>
                                 {value}
@@ -45,7 +44,7 @@ const InfoRow: FC<{
                 </div>
             </div>
         </ListItem>
-    </Col>
+    </div>
 );
 
 export default function About() {
@@ -58,37 +57,37 @@ export default function About() {
         <MainContainer>
             <Card >
                 <CardHeader>
-                    <IconBox icon="info-circle" color="#6366f1" title='System Information' description='Software version and build environment' />
+                    <IconBox icon={InfoCircle} color="#6366f1" title='System Information' description='Software version and build environment' />
                 </CardHeader>
 
                 <CardBody>
-                    <Row className="g-3">
+                    <div className="row g-3">
                         {/* Primary Build Info */}
-                        <InfoRow label="Version" value={info.version || "Unknown"} icon="patch-check" isBadge />
+                        <InfoRow label="Version" value={info.version || "Unknown"} icon={PatchCheck} isBadge />
                         <InfoRow
                             label="Commit"
                             value={info.commit?.substring(0, 7) || "N/A"}
-                            icon="git"
+                            icon={Git}
                             url={`https://github.com/yuhaiin/yuhaiin/commit/${info.commit}`}
                             isMonospace
                         />
-                        <InfoRow label="Build Time" value={info.buildTime || "N/A"} icon="calendar3" />
+                        <InfoRow label="Build Time" value={info.buildTime || "N/A"} icon={Calendar3} />
 
                         {/* Environment Info */}
-                        <InfoRow label="Go Version" value={info.goVersion || "N/A"} icon="code-slash" isMonospace />
+                        <InfoRow label="Go Version" value={info.goVersion || "N/A"} icon={CodeSlash} isMonospace />
                         <InfoRow
                             label="GitHub"
                             value="yuhaiin/yuhaiin"
-                            icon="github"
+                            icon={Github}
                             url="https://github.com/yuhaiin/yuhaiin"
                         />
 
                         {/* Hardware Info */}
-                        <InfoRow label="OS" value={info.os || "N/A"} icon="cpu" />
-                        <InfoRow label="Arch" value={info.arch || "N/A"} icon="layers" isMonospace />
-                        <InfoRow label="Compiler" value={info.compiler || "N/A"} icon="terminal" />
-                        <InfoRow label="Platform" value={info.platform || "N/A"} icon="laptop" />
-                    </Row>
+                        <InfoRow label="OS" value={info.os || "N/A"} icon={Cpu} />
+                        <InfoRow label="Arch" value={info.arch || "N/A"} icon={Layers} isMonospace />
+                        <InfoRow label="Compiler" value={info.compiler || "N/A"} icon={Terminal} />
+                        <InfoRow label="Platform" value={info.platform || "N/A"} icon={Laptop} />
+                    </div>
                 </CardBody>
 
                 {/* Build Tags / Features Section */}

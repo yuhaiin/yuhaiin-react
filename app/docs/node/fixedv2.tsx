@@ -1,82 +1,106 @@
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/app/component/v2/accordion";
+import { Button } from "@/app/component/v2/button";
+import { SettingCheck, SettingInputVertical } from "@/app/component/v2/forms";
 import { create } from "@bufbuild/protobuf";
-import { FC, useContext } from "react";
-import { Button, InputGroup, Row } from "react-bootstrap";
-import { Container, MoveUpDown, Remind, SettingInputText } from "../../component/components";
-import { SettingCheck } from "../../component/switch";
-import { InterfacesContext } from "../common/interfaces";
+import { FC } from "react";
+import { ArrowDown, ArrowUp, PlusLg, Trash } from "react-bootstrap-icons";
 import { fixedv2, fixedv2_address, fixedv2_addressSchema } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
-export const Fixed: FC<Props<fixedv2>> = ({ value, onChange }) => {
+export const Fixed: FC<Props<fixedv2>> = ({ value, onChange, editable = true }) => {
     return <>
-        <Hosts data={value.addresses} onChange={(x) => onChange({ ...value, addresses: x })} />
-        <SettingCheck label="UDP HappyEyeballs" checked={value.udpHappyEyeballs} onChange={() => { onChange({ ...value, udpHappyEyeballs: !value.udpHappyEyeballs }) }} />
+        <Hosts data={value.addresses} editable={editable} onChange={(x) => onChange({ ...value, addresses: x })} />
+        <SettingCheck label="UDP HappyEyeballs" checked={value.udpHappyEyeballs} disabled={!editable} onChange={() => { onChange({ ...value, udpHappyEyeballs: !value.udpHappyEyeballs }) }} />
     </>
 }
 
-export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[]) => void }> =
-    ({ data, onChange }) => {
-        const interfaces = useContext(InterfacesContext);
+export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[]) => void, editable?: boolean }> =
+    ({ data, onChange, editable = true }) => {
+        const moveItem = (index: number, up: boolean) => {
+            if (!editable) return
+            if (data.length <= 1) return
+            if (up && index === 0) return
+            if (!up && index === data.length - 1) return
+            const next = [...data]
+            const tmp = next[index]
+            next[index] = next[index + (up ? -1 : 1)]
+            next[index + (up ? -1 : 1)] = tmp
+            onChange(next)
+        }
 
-        const reminds = interfaces.map((v) => {
-            if (!v.name) return undefined
-            const r: Remind = {
-                label: v.name,
-                value: v.name,
-                label_children: v.addresses?.map((vv) => !vv ? "" : vv)
-            }
-            return r
-        })
-            .filter((e): e is Exclude<Remind, null | undefined> => !!e)
+        const removeItem = (index: number) => {
+            if (!editable) return
+            const next = [...data]
+            next.splice(index, 1)
+            onChange(next)
+        }
 
-        return <>
-            {
-                data && data.map((v, index) => {
-                    return (
-                        <Row key={index}>
-                            <InputGroup className="mb-2" >
-                                <Container
-                                    moveUpDown={new MoveUpDown(data, index, onChange)}
-                                    title={(index + 1).toString()}
-                                    className="flex-grow-1"
-                                    onClose={() => {
-                                        if (data) { onChange([...data.slice(0, index), ...data.slice(index + 1)]) }
-                                    }}>
-                                    <>
-                                        <SettingInputText
-                                            label="Host"
-                                            value={v.host}
-                                            onChange={(e: string) => { onChange([...data.slice(0, index), { ...v, host: e }, ...data.slice(index + 1)]) }}
-                                        />
+        return <div className="mb-4">
+            <div className="d-flex justify-content-between align-items-center mb-2 px-1">
+                <h6 className="fw-bold mb-0 opacity-75">Hosts</h6>
+                <small className="text-muted">{data.length} entries</small>
+            </div>
 
-                                        <SettingInputText
-                                            label="Network Interface"
-                                            value={v.networkInterface}
-                                            reminds={reminds}
-                                            onChange={(e) => {
-                                                onChange([...data.slice(0, index), { ...v, networkInterface: String(e) }, ...data.slice(index + 1)])
-                                            }}
-                                        />
+            <Accordion type="multiple" className="mb-3">
+                {data.map((v, index) => (
+                    <AccordionItem value={`item-${index}`} key={index}>
+                        <AccordionTrigger className="fw-bold">
+                            {v.host || `Host ${index + 1}`}
+                        </AccordionTrigger>
+                        <AccordionContent>
+                            <div className="p-1">
+                                <SettingInputVertical
+                                    label="Host"
+                                    value={v.host}
+                                    disabled={!editable}
+                                    onChange={(e: string) => {
+                                        const next = [...data]
+                                        next[index] = { ...v, host: e }
+                                        onChange(next)
+                                    }}
+                                />
 
-                                    </>
-                                </Container>
-                            </InputGroup>
-                        </Row>
-                    )
-                })
-            }
+                                <SettingInputVertical
+                                    label="Network Interface"
+                                    value={v.networkInterface}
+                                    disabled={!editable}
+                                    onChange={(e) => {
+                                        const next = [...data]
+                                        next[index] = { ...v, networkInterface: String(e) }
+                                        onChange(next)
+                                    }}
+                                />
 
-            <Row>
-                <InputGroup className="mb-2 justify-content-md-end" >
-                    <Button variant='outline-success' onClick={() => {
+                                {editable && (
+                                    <div className="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
+                                        <Button variant="outline-secondary" size="sm" onClick={() => moveItem(index, true)} disabled={index === 0}>
+                                            <ArrowUp />
+                                        </Button>
+                                        <Button variant="outline-secondary" size="sm" onClick={() => moveItem(index, false)} disabled={index === data.length - 1}>
+                                            <ArrowDown />
+                                        </Button>
+                                        <Button variant="outline-danger" size="sm" onClick={() => removeItem(index)}>
+                                            <Trash /> Delete
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                ))}
+            </Accordion>
+
+            {editable && (
+                <div className="d-flex justify-content-end px-1">
+                    <Button variant='outline-primary' onClick={() => {
                         onChange([...data, create(fixedv2_addressSchema, {
                             host: "",
                             networkInterface: ""
                         })])
                     }} >
-                        <i className="bi bi-plus-lg" />
+                        <PlusLg className="me-1" /> Add Host
                     </Button>
-                </InputGroup>
-            </Row>
-        </>
+                </div>
+            )}
+        </div>
     }

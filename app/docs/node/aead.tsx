@@ -1,19 +1,20 @@
+import { SettingEnumSelectVertical, SettingInputVertical } from "@/app/component/v2/forms";
 import { FC } from "react";
-import { SettingInputText } from "../../component/components";
-import { SettingTypeSelect } from "../../component/switch";
 import { aead, AeadCryptoMethodSchema } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
-export const Aead: FC<Props<aead>> = ({ value, onChange }) => {
+export const Aead: FC<Props<aead>> = ({ value, onChange, editable = true }) => {
     return <>
-        <SettingInputText
+        <SettingInputVertical
             label="Password"
             value={value.password}
+            disabled={!editable}
             onChange={(e: string) => { onChange({ ...value, password: e }) }}
         />
-        <SettingTypeSelect
+        <SettingEnumSelectVertical
             type={AeadCryptoMethodSchema}
             value={value.cryptoMethod}
+            disabled={!editable}
             onChange={(e) => { onChange({ ...value, cryptoMethod: e }) }}
             label="Crypto Method"
         />

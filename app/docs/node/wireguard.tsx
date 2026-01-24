@@ -1,100 +1,136 @@
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/app/component/v2/accordion"
+import { Button } from "@/app/component/v2/button"
+import { SettingInputVertical } from "@/app/component/v2/forms"
+import { InputList } from "@/app/component/v2/listeditor"
 import { create } from "@bufbuild/protobuf"
 import { FC } from "react"
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap"
-import { Container, NewItemList, SettingInputText } from "../../component/components"
+import { PlusLg, Trash } from "react-bootstrap-icons"
 import { wireguard, wireguard_peer_config, wireguard_peer_configSchema } from "../pbes/node/protocol_pb"
 import { Props } from "./tools"
 
-const NewPeersList: FC<{ title: string, data: wireguard_peer_config[], onChange: (x: wireguard_peer_config[]) => void }> =
-    ({ title, data, onChange }) => {
-        return (<Form.Group as={Row} className='mb-3'>
-            <Form.Label column sm={2} className="nowrap">{title}</Form.Label>
+const NewPeersList: FC<{ title: string, data: wireguard_peer_config[], onChange: (x: wireguard_peer_config[]) => void, editable?: boolean }> =
+    ({ title, data, onChange, editable = true }) => {
+        const removeItem = (index: number) => {
+            if (!editable) return
+            const next = [...data]
+            next.splice(index, 1)
+            onChange(next)
+        }
 
-            {
-                data && data.map((v, index) => {
-                    return (
-                        <Col sm={{ span: 10, offset: index !== 0 ? 2 : 0 }} key={index} >
-                            <InputGroup className="mb-2" >
-                                <Container
-                                    title="Peer"
-                                    onClose={() => { onChange([...data.slice(0, index), ...data.slice(index + 1)]) }}>
-                                    <Peer value={v} onChange={(e) => { onChange([...data.slice(0, index), e, ...data.slice(index + 1)]) }} />
-                                </Container>
-                            </InputGroup>
-                        </Col>
-                    )
-                })
-            }
+        return (
+            <div className="mb-4">
+                <div className="d-flex justify-content-between align-items-center mb-2 px-1">
+                    <h6 className="fw-bold mb-0 opacity-75">{title}</h6>
+                    <small className="text-muted">{data.length} peers</small>
+                </div>
 
-            <Col sm={{ span: 10, offset: data?.length !== 0 ? 2 : 0 }}>
-                <InputGroup className="mb-2 justify-content-md-end" >
-                    <Button variant='outline-success' onClick={() => {
-                        onChange([...data, create(wireguard_peer_configSchema, {
-                            allowedIps: ["0.0.0.0/0"],
-                            endpoint: "127.0.0.1:51820",
-                            publicKey: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
-                        })])
-                    }} >
-                        <i className="bi bi-plus-lg" />
-                    </Button>
-                </InputGroup>
-            </Col>
+                <Accordion type="multiple" className="mb-3">
+                    {data.map((v, index) => (
+                        <AccordionItem value={`item-${index}`} key={index}>
+                            <AccordionTrigger className="fw-bold">
+                                {v.endpoint || `Peer ${index + 1}`}
+                            </AccordionTrigger>
+                            <AccordionContent>
+                                <div className="p-1">
+                                    <Peer value={v} editable={editable} onChange={(e) => {
+                                        const next = [...data]
+                                        next[index] = e
+                                        onChange(next)
+                                    }} />
+                                    {editable && (
+                                        <div className="d-flex justify-content-end mt-3 pt-3 border-top">
+                                            <Button variant="outline-danger" size="sm" onClick={() => removeItem(index)}>
+                                                <Trash /> Delete Peer
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
 
-        </Form.Group>)
+                {editable && (
+                    <div className="d-flex justify-content-end px-1">
+                        <Button variant='outline-primary' onClick={() => {
+                            onChange([...data, create(wireguard_peer_configSchema, {
+                                allowedIps: ["0.0.0.0/0"],
+                                endpoint: "127.0.0.1:51820",
+                                publicKey: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
+                            })])
+                        }} >
+                            <PlusLg className="me-1" /> Add Peer
+                        </Button>
+                    </div>
+                )}
+            </div>
+        )
     }
 
-const Peer: FC<Props<wireguard_peer_config>> = ({ value, onChange }) => {
+const Peer: FC<Props<wireguard_peer_config>> = ({ value, onChange, editable = true }) => {
     return <>
-        <SettingInputText
+        <SettingInputVertical
             label="Endpoint"
             value={value.endpoint}
+            disabled={!editable}
             onChange={(e: string) => { onChange({ ...value, endpoint: e }) }}
         />
 
-        <SettingInputText
+        <SettingInputVertical
             label="PublicKey"
             value={value.publicKey}
+            disabled={!editable}
             onChange={(e: string) => { onChange({ ...value, publicKey: e }) }}
         />
 
-        <NewItemList
+        <InputList
             title="AllowedIps"
             data={value.allowedIps}
+            disabled={!editable}
             onChange={(e) => { onChange({ ...value, allowedIps: e }) }}
         />
     </>
 }
 
-export const Wireguardv2: FC<Props<wireguard>> = ({ value, onChange }) => {
+export const Wireguardv2: FC<Props<wireguard>> = ({ value, onChange, editable = true }) => {
     return <>
-        <SettingInputText
+        <SettingInputVertical
             label="SecretKey"
             value={value.secretKey}
+            disabled={!editable}
             placeholder="SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY="
             onChange={(e: string) => { onChange({ ...value, secretKey: e }) }}
         />
 
-        <SettingInputText
+        <SettingInputVertical
             label="MTU"
-            value={value.mtu}
+            value={value.mtu.toString()}
+            disabled={!editable}
             onChange={(e) => { if (!isNaN(Number(e))) onChange({ ...value, mtu: Number(e) }) }}
         />
 
-        <SettingInputText
+        <SettingInputVertical
             label="Reserved"
             value={btoa(String.fromCharCode.apply(null, Array.from(value.reserved)))}
-            onChange={(e: string) => { onChange({ ...value, reserved: Uint8Array.from(atob(e), c => c.charCodeAt(0)) }) }}
+            disabled={!editable}
+            onChange={(e: string) => {
+                try {
+                    onChange({ ...value, reserved: Uint8Array.from(atob(e), c => c.charCodeAt(0)) })
+                } catch (err) { }
+            }}
         />
 
-        <NewItemList
-            title="Endpoint"
+        <InputList
+            title="Local Address"
             data={value.endpoint}
+            disabled={!editable}
             onChange={(e) => { onChange({ ...value, endpoint: e }) }}
         />
 
         <NewPeersList
             title="Peers"
             data={value.peers}
+            editable={editable}
             onChange={(e) => { onChange({ ...value, peers: e }) }}
         />
     </>

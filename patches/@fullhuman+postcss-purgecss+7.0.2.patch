@@ -1,0 +1,22 @@
+diff --git a/node_modules/@fullhuman/postcss-purgecss/lib/postcss-purgecss.js b/node_modules/@fullhuman/postcss-purgecss/lib/postcss-purgecss.js
+index c54db9f..a457506 100644
+--- a/node_modules/@fullhuman/postcss-purgecss/lib/postcss-purgecss.js
++++ b/node_modules/@fullhuman/postcss-purgecss/lib/postcss-purgecss.js
+@@ -83,8 +83,8 @@ async function purgeCSS(opts, root, { result }) {
+             plugin: "postcss-purgecss",
+             text: `purging ${purgeCSS.selectorsRemoved.size} selectors:
+           ${Array.from(purgeCSS.selectorsRemoved)
+-                .map((selector) => selector.trim())
+-                .join("\n  ")}`,
++                    .map((selector) => selector.trim())
++                    .join("\n  ")}`,
+         });
+         purgeCSS.selectorsRemoved.clear();
+     }
+@@ -109,5 +109,4 @@ const purgeCSSPlugin = function (opts) {
+ };
+ purgeCSSPlugin.postcss = true;
+ 
+-exports.default = purgeCSSPlugin;
+-exports.purgeCSSPlugin = purgeCSSPlugin;
++module.exports = purgeCSSPlugin;
