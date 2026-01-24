@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
             'shlex',
             '@bufbuild/buf', '@bufbuild/protobuf',
             'swr',
-            'react-window', 'uplot', 'usehooks-ts',
+            'react-window', 'usehooks-ts',
         ],
         viewTransition: true,
         webpackMemoryOptimizations: true,
