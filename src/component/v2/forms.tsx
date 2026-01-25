@@ -7,6 +7,7 @@ import { clsx } from 'clsx';
 import React, { FC, useId, useMemo, useState } from 'react';
 import { Check, ChevronDown, Eye, EyeSlash } from 'react-bootstrap-icons';
 import { SettingLabel } from './card';
+import { Combobox } from './combobox';
 import {
     Dropdown,
     DropdownCheckboxItem,
@@ -36,7 +37,11 @@ const SettingCheckComponent: FC<{ label: string, checked: boolean, onChange: (c:
 export const SettingCheck = React.memo(SettingCheckComponent)
 
 
-// --- Select Components ---
+export interface Remind {
+    label: string
+    value: string
+    label_children?: string[]
+}
 
 interface SelectItem {
     value: string;
@@ -304,6 +309,7 @@ interface SettingInputVerticalProps extends Omit<InputProps, 'onChange'> {
     label: string;
     // Redefine onChange to match business needs (pass string directly)
     onChange: (val: string) => void;
+    reminds?: Remind[];
 }
 
 export const SettingInputVertical: FC<SettingInputVerticalProps> = React.memo(({
@@ -312,9 +318,11 @@ export const SettingInputVertical: FC<SettingInputVerticalProps> = React.memo(({
     onChange,
     placeholder,
     className,
+    reminds,
     size,      // Receive the previously defined size
     ...rest    // Receive other native properties like disabled, readOnly, type, etc.
 }) => {
+
     const id = useId(); // Auto-generate unique ID
 
     return (
@@ -324,14 +332,26 @@ export const SettingInputVertical: FC<SettingInputVerticalProps> = React.memo(({
                 {label}
             </SettingLabel>
 
-            <Input
-                id={id}
-                size={size}
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                placeholder={placeholder}
-                {...rest} // 2. Spread all other properties
-            />
+            {reminds ? (
+                <Combobox
+                    id={id}
+                    size={size}
+                    value={value}
+                    onChange={onChange}
+                    placeholder={placeholder}
+                    options={reminds.map(r => ({ label: r.label, value: r.value, details: r.label_children }))}
+                    {...rest}
+                />
+            ) : (
+                <Input
+                    id={id}
+                    size={size}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={placeholder}
+                    {...rest} // 2. Spread all other properties
+                />
+            )}
         </div>
     );
 });

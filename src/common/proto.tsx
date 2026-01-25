@@ -71,7 +71,7 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
         url.pathname = ProtoPath(d)
         url.protocol = url.protocol === "https:" ? "wss:" : "ws:"
 
-        let socket: WebSocket;
+        let socket: WebSocket | undefined;
         let closed = false
 
         const connect = () => {

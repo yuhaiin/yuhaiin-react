@@ -1,8 +1,9 @@
+import { InterfacesContext } from "@/common/interfaces";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
 import { Button } from "@/component/v2/button";
-import { SettingCheck, SettingInputVertical } from "@/component/v2/forms";
+import { Remind, SettingCheck, SettingInputVertical } from "@/component/v2/forms";
 import { create } from "@bufbuild/protobuf";
-import { FC } from "react";
+import { FC, useContext } from "react";
 import { ArrowDown, ArrowUp, PlusLg, Trash } from "react-bootstrap-icons";
 import { fixedv2, fixedv2_address, fixedv2_addressSchema } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
@@ -27,6 +28,18 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
             next[index + (up ? -1 : 1)] = tmp
             onChange(next)
         }
+        const interfaces = useContext(InterfacesContext);
+
+        const reminds = interfaces.map((v) => {
+            if (!v.name) return undefined
+            const r: Remind = {
+                label: v.name,
+                value: v.name,
+                label_children: v.addresses?.map((vv) => !vv ? "" : vv)
+            }
+            return r
+        })
+            .filter((e): e is Exclude<Remind, null | undefined> => !!e)
 
         const removeItem = (index: number) => {
             if (!editable) return
@@ -63,6 +76,7 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
                                 <SettingInputVertical
                                     label="Network Interface"
                                     value={v.networkInterface}
+                                    reminds={reminds}
                                     disabled={!editable}
                                     onChange={(e) => {
                                         const next = [...data]

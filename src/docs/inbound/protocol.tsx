@@ -5,8 +5,6 @@ import { SettingLabel } from "@/component/v2/card"
 import { Select } from "@/component/v2/forms"
 import { create } from "@bufbuild/protobuf"
 import { FC, useEffect, useState } from "react"
-import dynamic from "../../component/AsyncComponent"
-import Loading from "../../component/v2/loading"
 import {
     httpSchema,
     inbound,
@@ -19,63 +17,60 @@ import {
     tunSchema,
     yuubinsyaSchema
 } from "../pbes/config/inbound_pb"
-
-const LazyHTTP = dynamic(() => import("./http").then(mod => mod.HTTP), { ssr: false, loading: () => <Loading /> })
-const LazyReverseHTTP = dynamic(() => import("./http").then(mod => mod.ReverseHTTP), { ssr: false, loading: () => <Loading /> })
-const LazyReverseTCP = dynamic(() => import("./tcpudp").then(mod => mod.ReverseTCP), { ssr: false, loading: () => <Loading /> })
-const LazyRedir = dynamic(() => import("./redir").then(mod => mod.Redir), { ssr: false, loading: () => <Loading /> })
-const LazySocks5 = dynamic(() => import("./mixed").then(mod => mod.Socks5), { ssr: false, loading: () => <Loading /> })
-const LazyTProxy = dynamic(() => import("./tproxy").then(mod => mod.TProxy), { ssr: false, loading: () => <Loading /> })
-const LazyMixed = dynamic(() => import("./mixed").then(mod => mod.Mixed), { ssr: false, loading: () => <Loading /> })
-const LazyTun = dynamic(() => import("./tun").then(mod => mod.Tun), { ssr: false, loading: () => <Loading /> })
-const LazyYuubinsya = dynamic(() => import("./yuubinsya").then(mod => mod.Yuubinsya), { ssr: false, loading: () => <Loading /> })
+import { HTTP, ReverseHTTP } from "./http"
+import { Mixed, Socks5 } from "./mixed"
+import { Redir } from "./redir"
+import { ReverseTCP } from "./tcpudp"
+import { TProxy } from "./tproxy"
+import { Tun } from "./tun"
+import { Yuubinsya } from "./yuubinsya"
 
 const Config: FC<{ inbound: inbound, onChange: (x: inbound) => void }> = ({ inbound, onChange }) => {
     switch (inbound.protocol.case) {
         case "http":
-            return <LazyHTTP
+            return <HTTP
                 http={inbound.protocol.value}
                 onChange={(x) => { onChange({ ...inbound, protocol: { case: "http", value: x } }) }}
             />
         case "reverseHttp":
-            return <LazyReverseHTTP
+            return <ReverseHTTP
                 reverse_http={inbound.protocol.value}
                 onChange={(x) => { onChange({ ...inbound, protocol: { case: "reverseHttp", value: x } }) }}
             />
         case "reverseTcp":
-            return <LazyReverseTCP
+            return <ReverseTCP
                 reverse_tcp={inbound.protocol.value}
                 onChange={(x) => { onChange({ ...inbound, protocol: { case: "reverseTcp", value: x } }) }}
             />
         case "socks5":
-            return <LazySocks5
+            return <Socks5
                 socks5={inbound.protocol.value}
                 onChange={(x) => { onChange({ ...inbound, protocol: { case: "socks5", value: x } }) }}
             />
         case "socks4a":
             return <></>
         case "mix":
-            return <LazyMixed
+            return <Mixed
                 mixed={inbound.protocol.value}
                 onChange={(x) => { onChange({ ...inbound, protocol: { case: "mix", value: x } }) }}
             />
         case "redir":
-            return <LazyRedir
+            return <Redir
                 redir={inbound.protocol.value}
                 onChange={(x) => { onChange({ ...inbound, protocol: { case: "redir", value: x } }) }}
             />
         case "tun":
-            return <LazyTun
+            return <Tun
                 tun={inbound.protocol.value}
                 onChange={(x) => { onChange({ ...inbound, protocol: { case: "tun", value: x } }) }}
             />
         case "yuubinsya":
-            return <LazyYuubinsya
+            return <Yuubinsya
                 yuubinsya={inbound.protocol.value}
                 onChange={(x) => { onChange({ ...inbound, protocol: { case: "yuubinsya", value: x } }) }}
             />
         case "tproxy":
-            return <LazyTProxy
+            return <TProxy
                 tproxy={inbound.protocol.value}
                 onChange={(x) => { onChange({ ...inbound, protocol: { case: "tproxy", value: x } }) }}
             />

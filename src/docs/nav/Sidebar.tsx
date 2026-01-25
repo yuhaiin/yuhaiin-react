@@ -155,9 +155,10 @@ function Sidebar({ show, onHide }: SidebarProps) {
     );
 }
 
-// -----------------------------------------------------------------------------
-// Helper Components
-// -----------------------------------------------------------------------------
+const normalizePath = (path: string) => {
+    if (path === '/') return '/';
+    return path.replace(/\/+$/, '');
+};
 
 function SidebarGroup({ title, icon, activePath, matchPath, children }: {
     title: React.ReactNode;
@@ -167,7 +168,7 @@ function SidebarGroup({ title, icon, activePath, matchPath, children }: {
     children: React.ReactNode;
 }) {
     // Determine initially open state based on path
-    const isActive = activePath.startsWith(matchPath);
+    const isActive = normalizePath(activePath).startsWith(normalizePath(matchPath));
     // On desktop we might want it always open, but the new design usually implies collapsible
     // The original code had `alwaysOpen={window.innerWidth >= 992}`.
     // Here we can use a state that defaults to true if desktop, but since this is SSR friendly Next.js, 
@@ -224,22 +225,9 @@ function SelectableLink({ path, current, onSelect, children }: {
     // Original logic:
     // /docs/group/ -> active === '/docs/group/'
     // /docs/group/subscribe -> active startsWith
-
-    // Actually the original logic was mixed.
-    // Nav.Link active={pathname === '/'}
-    // Nav.Link eventKey='/docs/group/subscribe' active={pathname.startsWith('/docs/group/subscribe')}
     // We should probably replicate that "startsWith" logic for sub items mostly, or strict for index.
 
-    // Refined logic: if path ends with /, strict match? No.
-    // Let's just use `current.startsWith(path)` generally, but for root it might be tricky.
-    // The passed `path` is the eventKey.
-
-    let active = false;
-    if (path.endsWith('/')) {
-        active = current === path;
-    } else {
-        active = current.startsWith(path);
-    }
+    const active = normalizePath(current) === normalizePath(path);
 
     // Special case for root? No, these are sublinks.
     // Original: active={pathname === '/docs/group/'} for 'Outbound'

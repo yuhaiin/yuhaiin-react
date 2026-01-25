@@ -7,8 +7,6 @@ import { Select, SettingInputVertical } from "@/component/v2/forms";
 import { create } from "@bufbuild/protobuf";
 import { FC, useEffect, useState } from 'react';
 import { ArrowDown, ArrowUp, PlusLg, Trash } from "react-bootstrap-icons";
-import dynamic from "../../component/AsyncComponent";
-import Loading from "../../component/v2/loading";
 import { point } from "../pbes/node/point_pb";
 import {
     aeadSchema,
@@ -47,13 +45,37 @@ import {
     wireguardSchema,
     yuubinsyaSchema
 } from "../pbes/node/protocol_pb";
+import { Aead } from "./aead";
 import { BootstrapDnsWarp } from "./bootstrap_dns_warp";
+import { CloudflareWarpMasque } from "./cloudflare_warp_masque";
+import { Directv2 } from "./direct";
 import { Dropv2 } from './drop';
+import { Fixed as Fixedv2 } from "./fixedv2";
+import { Grpcv2 } from "./grpc";
+import { HTTPv2, UnWrapHttp } from "./http";
+import { HTTP2v2 } from "./http2";
 import { HttpMock } from "./mock";
+import { Muxv2 } from "./mux";
 import { Nonev2 } from './none';
 import { Proxy } from "./proxy";
+import { Quicv2 } from "./quic";
+import { Realityv2 } from "./reality";
 import { Rejectv2 } from './reject';
+import { Set } from "./set";
+import { ObfsHttpv2, Shadowsocksv2 } from "./shadowsocks";
+import { Shadowsocksrv2 } from "./shadowsocksr";
+import { Fixed } from "./simple";
+import { Socks5v2 } from "./socks5";
+import { Tailscale } from "./tailscale";
+import { Tlsv2 } from "./tls";
+import { UnWrapTls } from "./tls_server";
 import { Props } from './tools';
+import { Trojanv2 } from "./trojan";
+import { Vlessv2 } from "./vless";
+import { Vmessv2 } from "./vmess";
+import { Websocketv2 } from "./websocket";
+import { Wireguardv2 } from "./wireguard";
+import { Yuubinsyav2 } from "./yuubinsta";
 
 
 export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: string[], editable?: boolean }> =
@@ -96,6 +118,7 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                         value={value.group}
                         disabled={!editable}
                         onChange={(e: string) => { onChange({ ...value, group: e }) }}
+                        reminds={groups ? groups.map(x => ({ label: x, value: x })) : undefined}
                     />
                 </div>
             </div>
@@ -172,33 +195,6 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
         </>
     }
 
-const LazyFixed = dynamic(() => import("./simple").then(mod => ({ default: mod.Fixed })), { ssr: false, loading: <Loading /> })
-const LazyFixedv2 = dynamic(() => import("./fixedv2").then(mod => ({ default: mod.Fixed })), { ssr: false, loading: <Loading /> })
-const LazyDirect = dynamic(() => import("./direct").then(mod => ({ default: mod.Directv2 })), { ssr: false, loading: <Loading /> })
-const LazyTls = dynamic(() => import("./tls").then(mod => ({ default: mod.Tlsv2 })), { ssr: false, loading: <Loading /> })
-const LazyWebsocket = dynamic(() => import("./websocket").then(mod => ({ default: mod.Websocketv2 })), { ssr: false, loading: <Loading /> })
-const LazyShadowsocks = dynamic(() => import("./shadowsocks").then(mod => ({ default: mod.Shadowsocksv2 })), { ssr: false, loading: <Loading /> })
-const LazyShadowsocksr = dynamic(() => import("./shadowsocksr").then(mod => ({ default: mod.Shadowsocksrv2 })), { ssr: false, loading: <Loading /> })
-const LazyVless = dynamic(() => import("./vless").then(mod => ({ default: mod.Vlessv2 })), { ssr: false, loading: <Loading /> })
-const LazyVmess = dynamic(() => import("./vmess").then(mod => ({ default: mod.Vmessv2 })), { ssr: false, loading: <Loading /> })
-const LazyTrojan = dynamic(() => import("./trojan").then(mod => ({ default: mod.Trojanv2 })), { ssr: false, loading: <Loading /> })
-const LazyObfsHttp = dynamic(() => import("./shadowsocks").then(mod => ({ default: mod.ObfsHttpv2 })), { ssr: false, loading: <Loading /> })
-const LazySocks5 = dynamic(() => import("./socks5").then(mod => ({ default: mod.Socks5v2 })), { ssr: false, loading: <Loading /> })
-const LazyHttp = dynamic(() => import("./http").then(mod => ({ default: mod.HTTPv2 })), { ssr: false, loading: <Loading /> })
-const LazyYuubinsya = dynamic(() => import("./yuubinsta").then(mod => ({ default: mod.Yuubinsyav2 })), { ssr: false, loading: <Loading /> })
-const LazyGrpc = dynamic(() => import("./grpc").then(mod => ({ default: mod.Grpcv2 })), { ssr: false, loading: <Loading /> })
-const LazyHttp2 = dynamic(() => import("./http2").then(mod => ({ default: mod.HTTP2v2 })), { ssr: false, loading: <Loading /> })
-const LazyReality = dynamic(() => import("./reality").then(mod => ({ default: mod.Realityv2 })), { ssr: false, loading: <Loading /> })
-const LazyWireguard = dynamic(() => import("./wireguard").then(mod => ({ default: mod.Wireguardv2 })), { ssr: false, loading: <Loading /> })
-const LazyMux = dynamic(() => import("./mux").then(mod => ({ default: mod.Muxv2 })), { ssr: false, loading: <Loading /> })
-const LazyTailscale = dynamic(() => import("./tailscale").then(mod => ({ default: mod.Tailscale })), { ssr: false, loading: <Loading /> })
-const LazySet = dynamic(() => import("./set").then(mod => ({ default: mod.Set })), { ssr: false, loading: <Loading /> })
-const LazyTlsTermination = dynamic(() => import("./tls_server").then(mod => ({ default: mod.UnWrapTls })), { ssr: false, loading: <Loading /> })
-const LazyHttpTermination = dynamic(() => import("./http").then(mod => ({ default: mod.UnWrapHttp })), { ssr: false, loading: <Loading /> })
-const LazyQuic = dynamic(() => import("./quic").then(mod => ({ default: mod.Quicv2 })), { ssr: false, loading: <Loading /> })
-const LazyAead = dynamic(() => import("./aead").then(mod => ({ default: mod.Aead })), { ssr: false, loading: <Loading /> })
-const LazyCloudflareWarpMasque = dynamic(() => import("./cloudflare_warp_masque").then(mod => ({ default: mod.CloudflareWarpMasque })), { ssr: false, loading: <Loading /> })
-
 const Protocol: FC<Props<protocol>> = ({ value, onChange, editable = true }) => {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -226,71 +222,71 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange, editable = true }) => 
     const data = value.protocol
     switch (data.case) {
         case "fixed":
-            return <LazyFixed value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Fixed value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "direct":
-            return <LazyDirect value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Directv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "drop":
             return Dropv2
         case "tls":
-            return <LazyTls value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Tlsv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "websocket":
-            return <LazyWebsocket value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Websocketv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "shadowsocks":
-            return <LazyShadowsocks value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Shadowsocksv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "quic":
-            return <LazyQuic value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Quicv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "vless":
-            return <LazyVless value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Vlessv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "vmess":
-            return <LazyVmess value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Vmessv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "trojan":
-            return <LazyTrojan value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Trojanv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "shadowsocksr":
-            return <LazyShadowsocksr value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Shadowsocksrv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "obfsHttp":
-            return <LazyObfsHttp value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <ObfsHttpv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "none":
             return Nonev2
         case "socks5":
-            return <LazySocks5 value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Socks5v2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "http":
-            return <LazyHttp value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <HTTPv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "reject":
             return Rejectv2
         case "yuubinsya":
-            return <LazyYuubinsya value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Yuubinsyav2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "grpc":
-            return <LazyGrpc value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Grpcv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "http2":
-            return <LazyHttp2 value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <HTTP2v2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "reality":
-            return <LazyReality value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Realityv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "wireguard":
-            return <LazyWireguard value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Wireguardv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "mux":
-            return <LazyMux value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Muxv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "bootstrapDnsWarp":
             return BootstrapDnsWarp
         case "tailscale":
-            return <LazyTailscale value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Tailscale value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "set":
-            return <LazySet value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Set value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "tlsTermination":
-            return <LazyTlsTermination value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <UnWrapTls value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "httpTermination":
-            return <LazyHttpTermination value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <UnWrapHttp value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "httpMock":
             return HttpMock
         case "aead":
-            return <LazyAead value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Aead value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "networkSplit":
             return <NetworkSplit value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "cloudflareWarpMasque":
-            return <LazyCloudflareWarpMasque value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <CloudflareWarpMasque value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "proxy":
             return Proxy
         case "fixedv2":
-            return <LazyFixedv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
+            return <Fixedv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         default: return Unknown
     }
 }

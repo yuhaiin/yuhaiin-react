@@ -15,11 +15,12 @@ import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Cpu, Globe2, JournalText, Save } from 'react-bootstrap-icons';
 import { useInterfaces } from '../../common/interfaces';
 import { FetchProtobuf, useProtoSWR } from '../../common/proto';
+import { mapSetting, updateIfPresent } from '../../common/utils';
 import Loading, { Error } from '../../component/v2/loading';
 import { GlobalToastContext } from '../../component/v2/toast';
 import { config_service } from '../pbes/api/config_pb';
-import { advanced_configSchema, setting as Setting, system_proxySchema } from '../pbes/config/config_pb';
-import { log_level, log_levelSchema } from '../pbes/config/log_pb';
+import { advanced_configSchema, setting as Setting, settingSchema, system_proxySchema } from '../pbes/config/config_pb';
+import { log_level, log_levelSchema, logcatSchema } from '../pbes/config/log_pb';
 
 function ConfigComponent() {
     const ctx = useContext(GlobalToastContext);
@@ -30,10 +31,11 @@ function ConfigComponent() {
 
     const interfaces = useInterfaces();
     const [saving, setSaving] = useState(false);
+    const update = mapSetting(setSetting)
 
     // --- Logic Helpers ---
 
-    const getSystemProxy = useCallback((data: Setting) => {
+    const getSystemProxy = useCallback((data?: Setting) => {
         if (!data?.systemProxy) return [];
         const x: string[] = [];
         if (data.systemProxy.http) x.push("1");
@@ -44,7 +46,7 @@ function ConfigComponent() {
     const systemProxy = useMemo(() => getSystemProxy(setting), [setting, getSystemProxy]);
 
     const handleSystemProxyChange = (x: string[]) => {
-        setSetting(prev => ({
+        update(prev => ({
             ...prev,
             systemProxy: create(system_proxySchema, { http: x.includes("1"), socks5: x.includes("2") })
         }), false);
@@ -53,18 +55,31 @@ function ConfigComponent() {
     const LogcatLevelFilter = useCallback((v: DescEnumValue) =>
         v.number !== log_level.verbose && v.number !== log_level.fatal, []);
 
-    // Initialize Advanced Config if missing
+    // Initialize Advanced Config and Logcat if missing
     useEffect(() => {
-        if (!setting || setting.advancedConfig) return;
-        setSetting(prev => ({
-            ...prev,
-            advancedConfig: create(advanced_configSchema, {
-                relayBufferSize: 4096,
-                udpRingbufferSize: 250,
-                udpBufferSize: 2048,
-                happyeyeballsSemaphore: 250
-            })
-        }), false);
+        if (!setting) return;
+        if (setting.advancedConfig && setting.logcat) return;
+
+        update(prev => {
+            const next = { ...prev };
+            if (!next.advancedConfig) {
+                next.advancedConfig = create(advanced_configSchema, {
+                    relayBufferSize: 4096,
+                    udpRingbufferSize: 250,
+                    udpBufferSize: 2048,
+                    happyeyeballsSemaphore: 250
+                });
+            }
+            if (!next.logcat) {
+                next.logcat = create(logcatSchema, {
+                    level: log_level.info,
+                    save: false,
+                    ignoreDnsError: false,
+                    ignoreTimeoutError: false,
+                } as any);
+            }
+            return create(settingSchema, next as any);
+        }, false);
     }, [setting, setSetting]);
 
     const handleSave = () => {
@@ -96,7 +111,7 @@ function ConfigComponent() {
                                 label="Enable IPv6"
                                 description="Global IPv6 traffic support"
                                 checked={setting.ipv6}
-                                onCheckedChange={() => setSetting(prev => ({ ...prev, ipv6: !prev.ipv6 }), false)}
+                                onCheckedChange={() => update(prev => ({ ...prev, ipv6: !prev.ipv6 }), false)}
                             />
                         </div>
                         <div className="col-md-6">
@@ -104,7 +119,7 @@ function ConfigComponent() {
                                 label="Default Interface"
                                 description="Automatically detect exit"
                                 checked={setting.useDefaultInterface}
-                                onCheckedChange={() => setSetting(prev => ({ ...prev, useDefaultInterface: !prev.useDefaultInterface }), false)}
+                                onCheckedChange={() => update(prev => ({ ...prev, useDefaultInterface: !prev.useDefaultInterface }), false)}
                             />
                         </div>
 
@@ -112,8 +127,15 @@ function ConfigComponent() {
                             <div className="col-12 mt-2">
                                 <SettingInputVertical
                                     label="Manual Network Interface"
+                                    reminds={interfaces.map(x => {
+                                        return {
+                                            value: x.name,
+                                            label: x.name,
+                                            label_children: x.addresses
+                                        }
+                                    })}
                                     value={setting.netInterface}
-                                    onChange={(v) => setSetting(prev => ({ ...prev, netInterface: v }), false)}
+                                    onChange={(v) => update(prev => ({ ...prev, netInterface: v }), false)}
                                     placeholder="e.g. eth0, wlan0"
                                 />
                             </div>
@@ -135,7 +157,7 @@ function ConfigComponent() {
                 </CardBody>
             </Card>
 
-            {/* 2. Logging Card */}
+
             <Card>
                 <CardHeader>
                     <IconBox icon={JournalText} color="#10b981" title="Logging (Logcat)" description="Debug and error reporting" />
@@ -146,33 +168,33 @@ function ConfigComponent() {
                             <SettingEnumSelectVertical
                                 label="Log Level"
                                 type={log_levelSchema}
-                                value={setting.logcat.level}
+                                value={setting.logcat?.level ?? log_level.info}
                                 filter={LogcatLevelFilter}
-                                onChange={(v) => setSetting(prev => ({ ...prev, logcat: { ...prev.logcat, level: v } }), false)}
+                                onChange={(v) => update(prev => ({ ...prev, logcat: updateIfPresent(prev.logcat, (l) => create(logcatSchema, { ...l, level: v })) }), false)}
                             />
                         </div>
                         <div className="col-md-6">
                             <SwitchCard
                                 label="Persistent Logging"
                                 description="Save logs to disk"
-                                checked={setting.logcat.save}
-                                onCheckedChange={() => setSetting(prev => ({ ...prev, logcat: { ...prev.logcat, save: !prev.logcat.save } }), false)}
+                                checked={setting.logcat?.save ?? false}
+                                onCheckedChange={() => update(prev => ({ ...prev, logcat: updateIfPresent(prev.logcat, (l) => create(logcatSchema, { ...l, save: !l.save })) }), false)}
                             />
                         </div>
                         <div className="col-md-6">
                             <SwitchCard
                                 label="Ignore Timeouts"
                                 description="Hide timeout errors in logs"
-                                checked={setting.logcat.ignoreTimeoutError}
-                                onCheckedChange={() => setSetting(prev => ({ ...prev, logcat: { ...prev.logcat, ignoreTimeoutError: !prev.logcat.ignoreTimeoutError } }), false)}
+                                checked={setting.logcat?.ignoreTimeoutError ?? false}
+                                onCheckedChange={() => update(prev => ({ ...prev, logcat: updateIfPresent(prev.logcat, (l) => create(logcatSchema, { ...l, ignoreTimeoutError: !l.ignoreTimeoutError })) }), false)}
                             />
                         </div>
                         <div className="col-md-6">
                             <SwitchCard
                                 label="Ignore DNS Errors"
                                 description="Hide resolution failures"
-                                checked={setting.logcat.ignoreDnsError}
-                                onCheckedChange={() => setSetting(prev => ({ ...prev, logcat: { ...prev.logcat, ignoreDnsError: !prev.logcat.ignoreDnsError } }), false)}
+                                checked={setting.logcat?.ignoreDnsError ?? false}
+                                onCheckedChange={() => update(prev => ({ ...prev, logcat: updateIfPresent(prev.logcat, (l) => create(logcatSchema, { ...l, ignoreDnsError: !l.ignoreDnsError })) }), false)}
                             />
                         </div>
                     </div>
@@ -192,7 +214,7 @@ function ConfigComponent() {
                                 unit="B"
                                 value={setting.advancedConfig?.udpBufferSize || 2048}
                                 min={2048} max={65536} step={1024}
-                                onChange={(v: number) => setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, udpBufferSize: v } }), false)}
+                                onChange={(v: number) => update(prev => ({ ...prev, advancedConfig: updateIfPresent(prev.advancedConfig, (c) => create(advanced_configSchema, { ...c, udpBufferSize: v })) }), false)}
                             />
                         </div>
 
@@ -202,7 +224,7 @@ function ConfigComponent() {
                                 unit="B"
                                 value={setting.advancedConfig?.relayBufferSize || 4096}
                                 min={2048} max={65536} step={1024}
-                                onChange={(v: number) => setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, relayBufferSize: v } }), false)}
+                                onChange={(v: number) => update(prev => ({ ...prev, advancedConfig: updateIfPresent(prev.advancedConfig, (c) => create(advanced_configSchema, { ...c, relayBufferSize: v })) }), false)}
                             />
                         </div>
 
@@ -212,7 +234,7 @@ function ConfigComponent() {
                                 unit="Slots"
                                 value={setting.advancedConfig?.udpRingbufferSize || 250}
                                 min={100} max={2000} step={10}
-                                onChange={(v: number) => setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, udpRingbufferSize: v } }), false)}
+                                onChange={(v: number) => update(prev => ({ ...prev, advancedConfig: updateIfPresent(prev.advancedConfig, (c) => create(advanced_configSchema, { ...c, udpRingbufferSize: v })) }), false)}
                             />
                         </div>
 
@@ -222,7 +244,7 @@ function ConfigComponent() {
                                 unit="Sems"
                                 value={setting.advancedConfig?.happyeyeballsSemaphore || 250}
                                 min={0} max={10000} step={10}
-                                onChange={(v: number) => setSetting(prev => ({ ...prev, advancedConfig: { ...prev.advancedConfig, happyeyeballsSemaphore: v } }), false)}
+                                onChange={(v: number) => update(prev => ({ ...prev, advancedConfig: updateIfPresent(prev.advancedConfig, (c) => create(advanced_configSchema, { ...c, happyeyeballsSemaphore: v })) }), false)}
                             />
                         </div>
                     </div>
