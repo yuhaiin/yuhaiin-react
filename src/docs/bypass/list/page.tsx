@@ -15,10 +15,11 @@ import { FC, useContext, useEffect, useState } from "react";
 import { ArrowRepeat, CheckLg, ChevronRight, ClockHistory, CloudArrowDown, ExclamationTriangle, FileText, HddNetwork, ListCheck, Save, Sliders2, Trash } from 'react-bootstrap-icons';
 import useSWR from "swr";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../../common/proto";
+import { mapSetting, updateIfPresent } from "../../../common/utils";
 import { ConfirmModal } from "../../../component/v2/confirm";
 import Loading, { Error } from "../../../component/v2/loading";
 import { lists, save_list_config_requestSchema } from "../../pbes/api/config_pb";
-import { list, list_list_type_enum, list_list_type_enumSchema, list_localSchema, list_remoteSchema, listSchema, refresh_configSchema } from "../../pbes/config/bypass_pb";
+import { list, list_list_type_enum, list_list_type_enumSchema, list_localSchema, list_remoteSchema, listSchema, maxminddb_geoipSchema, refresh_configSchema } from "../../pbes/config/bypass_pb";
 
 
 export default function Lists() {
@@ -29,15 +30,16 @@ export default function Lists() {
     const [confirm, setConfirm] = useState<{ show: boolean, name: string }>({ show: false, name: "" });
     const [refresh, setRefresh] = useState(false)
     const [saving, setSaving] = useState(false)
+    const update = mapSetting(mutate)
 
     useEffect(() => {
         if (!data) return
         if (!data.refreshConfig) {
-            mutate(prev => {
+            update(prev => {
                 return { ...prev, refreshConfig: create(refresh_configSchema, { refreshInterval: BigInt(0), }) }
             }, false)
         }
-    }, [data, mutate])
+    }, [data, update])
 
     if (error !== undefined) return <Loading code={error.code}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />
@@ -124,7 +126,6 @@ export default function Lists() {
                 </div>
 
                 <Button
-                    variant='primary'
                     disabled={refresh}
                     onClick={() => {
                         setRefresh(true)
@@ -164,12 +165,9 @@ export default function Lists() {
                                     max={24 * 30}
                                     step={1}
                                     unit="Hours"
-                                    onChange={(v) => mutate(prev => ({
+                                    onChange={(v) => update(prev => ({
                                         ...prev,
-                                        refreshConfig: {
-                                            ...prev.refreshConfig,
-                                            refreshInterval: BigInt(v * 60)
-                                        }
+                                        refreshConfig: updateIfPresent(prev.refreshConfig, (c) => create(refresh_configSchema, { ...c, refreshInterval: BigInt(v * 60) }))
                                     }), false)}
                                 />
                             </div>
@@ -181,9 +179,9 @@ export default function Lists() {
                                     placeholder="e.g. https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb"
                                     value={data.maxminddbGeoip?.downloadUrl}
                                     onChange={(v) => {
-                                        mutate(prev => ({
+                                        update(prev => ({
                                             ...prev,
-                                            maxminddbGeoip: { ...prev.maxminddbGeoip, downloadUrl: v }
+                                            maxminddbGeoip: updateIfPresent(prev.maxminddbGeoip, (c) => create(maxminddb_geoipSchema, { ...c, downloadUrl: v }))
                                         }), false)
                                     }}
                                 />
@@ -197,7 +195,7 @@ export default function Lists() {
                     </CardBody>
 
                     <CardFooter className="d-flex justify-content-end">
-                        <Button variant='primary' disabled={saving} onClick={handleSaveSettings}>
+                        <Button disabled={saving} onClick={handleSaveSettings}>
                             {saving ? <Spinner size="sm" /> : <><Save className="me-2" />Save Configuration</>}
                         </Button>
                     </CardFooter>
@@ -304,7 +302,7 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
 
     const handleModeChange = (remote: boolean) => {
         if (remote === isRemote) return;
-        const currentData = value.list.case === "remote" ? value.list.value.urls : value.list.value.lists;
+        const currentData = value.list.case === "remote" ? value.list.value.urls : value?.list?.value?.lists ?? [];
 
         onChange({
             ...value,
@@ -363,7 +361,7 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
                         </small>
                     </div>
                     <Badge variant="secondary" pill>
-                        {(value.list.case === "remote" ? value.list.value.urls : value.list.value.lists).length} Entries
+                        {(value.list.case === "remote" ? value.list.value.urls : value?.list?.value?.lists ?? []).length} Entries
                     </Badge>
                 </div>
 
@@ -372,7 +370,7 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
                         title={isRemote ? "URL" : "Rule"}
                         textarea
                         dump
-                        data={value.list.case === "remote" ? value.list.value.urls : value.list.value.lists}
+                        data={value.list.case === "remote" ? value.list.value.urls : value?.list?.value?.lists ?? []}
                         onChange={(x) => {
                             onChange({
                                 ...value,

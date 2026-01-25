@@ -190,8 +190,8 @@ const Rulev2Component: FC = () => {
         setIsChangePriority(true)
         FetchProtobuf(rules.method.change_priority, create(change_priority_requestSchema, {
             operate: operate,
-            source: create(rule_indexSchema, { index: src_index, name: rules_data.names[src_index] }),
-            target: create(rule_indexSchema, { index: dst_index, name: rules_data.names[dst_index] })
+            source: create(rule_indexSchema, { index: src_index, name: rules_data?.names[src_index] }),
+            target: create(rule_indexSchema, { index: dst_index, name: rules_data?.names[dst_index] })
         }),)
             .then(async ({ error }) => {
                 if (error === undefined) {
@@ -209,7 +209,7 @@ const Rulev2Component: FC = () => {
     }, [priorityModal, changePriority])
 
     const deleteRule = useCallback(() => {
-        FetchProtobuf(rules.method.remove, create(rule_indexSchema, { name: rules_data.names[confirmData.index], index: confirmData.index }))
+        FetchProtobuf(rules.method.remove, create(rule_indexSchema, { name: rules_data?.names[confirmData.index], index: confirmData.index }))
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("remove successful")

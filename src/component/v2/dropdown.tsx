@@ -15,6 +15,7 @@ const DropdownContent = ({ className, sideOffset = 4, children, ...props }: Reac
         <DropdownMenuPrimitive.Content
             sideOffset={sideOffset}
             className={clsx(styles.content, className)}
+            onWheel={(e) => e.stopPropagation()}
             {...props}
         >
             {/* You can add a ScrollArea here, or control scrolling directly via className */}

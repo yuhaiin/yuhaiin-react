@@ -88,7 +88,7 @@ const NodeModalComponent: FC<{
                     </ModalHeader>
 
                     <ModalBody className="pt-2">
-                        <InterfacesContext value={interfaces}>
+                        <InterfacesContext.Provider value={interfaces}>
                             {error ?
                                 <ErrorDisplay statusCode={error.code} title={error.msg} raw={error.raw} /> :
                                 isValidating || isLoading || !nodes ? <Loading /> :
@@ -104,7 +104,7 @@ const NodeModalComponent: FC<{
                                         />
                                     </div>
                             }
-                        </InterfacesContext>
+                        </InterfacesContext.Provider>
                     </ModalBody>
 
                     <ModalFooter className="d-flex justify-content-between">

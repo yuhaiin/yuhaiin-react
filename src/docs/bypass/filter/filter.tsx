@@ -105,7 +105,7 @@ const RuleRow: FC<{
         <InputGroup className="mb-3">
             <div style={{ flex: "0 0 130px" }}>
                 <FormSelect
-                    value={rule.object.case}
+                    value={rule.object.case ?? ""}
                     onChange={(e) => handleUpdate(e, "")}
                     triggerClassName="rounded-end-0 border-end-0"
                     values={[

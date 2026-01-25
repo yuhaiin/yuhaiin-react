@@ -47,11 +47,13 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
     }
   };
 
+  const contextValue = React.useMemo(() => ({
+    Info: (text: string) => showMessage(text, 'info'),
+    Error: (text: string) => showMessage(text, 'error')
+  }), [showMessage]);
+
   return (
-    <GlobalToastContext.Provider value={{
-      Info: (text) => showMessage(text, 'info'),
-      Error: (text) => showMessage(text, 'error')
-    }}>
+    <GlobalToastContext.Provider value={contextValue}>
       {children}
 
       <ToastPrimitive.Provider swipeDirection="right" duration={duration}>

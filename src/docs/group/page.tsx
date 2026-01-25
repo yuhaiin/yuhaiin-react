@@ -149,7 +149,7 @@ function Group() {
 
     return (
         <>
-            <NodesContext value={new Nodes(data)}>
+            <NodesContext.Provider value={new Nodes(data)}>
                 <NodeModal
                     show={modalData.show}
                     hash={modalData.hash}
@@ -168,7 +168,7 @@ function Group() {
                     onHide={() => setImportJson({ data: false })}
                     isNew
                 />
-            </NodesContext>
+            </NodesContext.Provider>
 
             <div className={styles.pageHeader}>
                 <div className={styles.headerActions}>
