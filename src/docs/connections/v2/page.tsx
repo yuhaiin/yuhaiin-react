@@ -1,5 +1,6 @@
 "use client"
 
+import { useDelay } from "@/common/hooks"
 import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "@/common/proto"
 import { Button } from "@/component/v2/button"
 import { IconBadge } from "@/component/v2/card"
@@ -13,12 +14,14 @@ import { connections, counter, notify_data, notify_remove_connectionsSchema } fr
 import { connection, connectionSchema, type } from "@/docs/pbes/statistic/config_pb"
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
+import { AnimatePresence, motion } from "framer-motion"
 import React, { FC, useCallback, useContext, useMemo, useState } from "react"
 import { ArrowDown, ArrowUp, HddNetwork, Power, ShieldCheck, SortDown, SortUp, Tag } from "react-bootstrap-icons"
 import useSWRSubscription from 'swr/subscription'
 import { NodeModal } from "../../node/modal"
 import { mode } from "../../pbes/config/bypass_pb"
 import styles from './connections.module.css'
+
 
 const processStream = (r: notify_data, prev?: { [key: string]: connection }): { [key: string]: connection } => {
     let data: { [key: string]: connection };
@@ -50,10 +53,12 @@ function Connections() {
         setInfo(prev => { return { ...prev, show: false } })
     }, [])
 
+    const shouldFetch = useDelay(400)
+
 
     const { data: conns, error: conn_error } =
         useSWRSubscription(
-            ProtoPath(connections.method.notify),
+            shouldFetch ? ProtoPath(connections.method.notify) : null,
             WebsocketProtoServerStream(connections.method.notify, create(EmptySchema, {}), processStream),
             {}
         )
@@ -124,7 +129,6 @@ function Connections() {
     );
 }
 
-
 const ConnectionListComponent: FC<{
     conns: { [key: string]: connection },
     counters: { [key: string]: counter },
@@ -166,17 +170,19 @@ const ConnectionListComponent: FC<{
     if (conns === undefined) return <Loading />
 
     return <ul className={styles['connections-list']}>
-        {
-            values.map((e) => {
-                return <ListItem
-                    data={e}
-                    download={Number(counters[e.id.toString()]?.download ?? 0)}
-                    upload={Number(counters[e.id.toString()]?.upload ?? 0)}
-                    key={e.id}
-                    onClick={() => setInfo({ info: e, show: true })}
-                />
-            })
-        }
+        <AnimatePresence initial={false} mode="popLayout">
+            {
+                values.map((e) => {
+                    return <ListItem
+                        data={e}
+                        download={Number(counters[e.id.toString()]?.download ?? 0)}
+                        upload={Number(counters[e.id.toString()]?.upload ?? 0)}
+                        key={e.id}
+                        onClick={() => setInfo({ info: e, show: true })}
+                    />
+                })
+            }
+        </AnimatePresence>
     </ul>
 }
 
@@ -186,9 +192,14 @@ const ConnectionList = React.memo(ConnectionListComponent)
 const ListItemComponent: FC<{ data: connection, download: number, upload: number, onClick?: () => void }> =
     ({ data, download, upload, onClick }) => {
         return (
-            <li
+            <motion.li
                 className={styles['list-item']}
                 onClick={onClick}
+                layout
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             >
                 <div className={styles['item-main']}>
                     <code className={styles['item-id']}>{data.id.toString()}</code>
@@ -203,7 +214,7 @@ const ListItemComponent: FC<{ data: connection, download: number, upload: number
                         {data.tag && <IconBadge icon={Tag} text={data.tag} />}
                     </div>
                 </div>
-            </li>
+            </motion.li>
         );
     }
 

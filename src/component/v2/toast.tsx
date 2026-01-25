@@ -2,6 +2,7 @@
 
 import * as ToastPrimitive from '@radix-ui/react-toast';
 import { clsx } from 'clsx';
+import { AnimatePresence, motion } from "framer-motion";
 import React, { createContext, useCallback, useState } from 'react';
 import styles from './toast.module.css';
 
@@ -34,16 +35,17 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
   const showMessage = useCallback((text: string, type: 'info' | 'error') => {
     // ID generation with best compatibility: timestamp + random string
     const id = Date.now().toString(36) + Math.random().toString(36).substring(2);
-    setToasts((prev) => [...prev, { text, type, id }]);
+    // Limit max toasts to avoid clutter
+    setToasts((prev) => {
+      const newToasts = [...prev, { text, type, id }];
+      if (newToasts.length > 5) return newToasts.slice(newToasts.length - 5);
+      return newToasts;
+    });
   }, []);
 
   const handleOpenChange = (id: string, open: boolean) => {
     if (!open) {
-      // Delay removal to allow CSS exit animation (data-state='closed') to complete
-      // If removed immediately from the array, the component disappears instantly without animation
-      setTimeout(() => {
-        setToasts((prev) => prev.filter((t) => t.id !== id));
-      }, 300);
+      setToasts((prev) => prev.filter((t) => t.id !== id));
     }
   };
 
@@ -56,31 +58,52 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
     <GlobalToastContext.Provider value={contextValue}>
       {children}
 
-      <ToastPrimitive.Provider swipeDirection="right" duration={duration}>
-        {toasts.map((toast) => (
-          <ToastPrimitive.Root
-            key={toast.id}
-            className={clsx(styles.root, styles[toast.type])}
-            onOpenChange={(open) => handleOpenChange(toast.id, open)}
-          >
-            <div className={styles.header}>
-              <ToastPrimitive.Title className={styles.title}>
-                {toast.type === 'error' ? 'System Error' : 'Notification'}
-              </ToastPrimitive.Title>
+      <ToastPrimitive.Provider duration={duration}>
+        <AnimatePresence mode="popLayout" initial={false}>
+          {toasts.map((toast) => (
+            <ToastPrimitive.Root
+              key={toast.id}
+              asChild
+              forceMount
+              onOpenChange={(open) => handleOpenChange(toast.id, open)}
+            >
+              <motion.li
+                layout
+                initial={{ opacity: 0, x: 200, scale: 0.9 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 200, scale: 0.9, transition: { duration: 0.2 } }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                drag="x"
+                dragConstraints={{ left: 0, right: 300 }}
+                dragElastic={0.05}
+                onDragEnd={(_, info) => {
+                  if (info.offset.x > 100) {
+                    handleOpenChange(toast.id, false);
+                  }
+                }}
+                className={clsx(styles.root, styles[toast.type])}
+                style={{ listStyle: 'none' }} // Ensure checking CSS doesn't fail
+              >
+                <div className={styles.header}>
+                  <ToastPrimitive.Title className={styles.title}>
+                    {toast.type === 'error' ? 'System Error' : 'Notification'}
+                  </ToastPrimitive.Title>
 
-              <div className="d-flex align-items-center gap-2">
-                <small className="text-muted" style={{ fontSize: '0.75rem' }}>just now</small>
-                <ToastPrimitive.Close className={styles.close} aria-label="Close">
-                  <span aria-hidden>×</span>
-                </ToastPrimitive.Close>
-              </div>
-            </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <small className="text-muted" style={{ fontSize: '0.75rem' }}>just now</small>
+                    <ToastPrimitive.Close className={styles.close} aria-label="Close">
+                      <span aria-hidden>×</span>
+                    </ToastPrimitive.Close>
+                  </div>
+                </div>
 
-            <ToastPrimitive.Description className={styles.description}>
-              {toast.text}
-            </ToastPrimitive.Description>
-          </ToastPrimitive.Root>
-        ))}
+                <ToastPrimitive.Description className={styles.description}>
+                  {toast.text}
+                </ToastPrimitive.Description>
+              </motion.li>
+            </ToastPrimitive.Root>
+          ))}
+        </AnimatePresence>
 
         <ToastPrimitive.Viewport className={styles.viewport} />
       </ToastPrimitive.Provider>

@@ -6,17 +6,9 @@
     position: fixed;
     inset: 0;
     z-index: 1050;
-    animation: overlayShow 250ms cubic-bezier(0.16, 1, 0.3, 1);
+    /* Framer motion handles opacity */
 }
 
-.overlay[data-state='open'] {
-    animation: overlayShow 250ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.overlay[data-state='closed'] {
-    /* Exit animation: Fade out */
-    animation: overlayHide 200ms ease-in forwards;
-}
 
 /* Content Container */
 .content {
@@ -31,7 +23,8 @@
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    /* transform is handled by Framer Motion, but we need initial centering? 
+       Framer variants handle x/y/scale. */
     width: 90vw;
     max-width: var(--bs-modal-width, 500px);
     max-height: 85vh;
@@ -42,65 +35,7 @@
 
     overflow: hidden;
     /* Ensure border-radius clips content */
-    animation: contentShow 300ms cubic-bezier(0.16, 1, 0.3, 1);
     will-change: transform, opacity;
-}
-
-.content[data-state='open'] {
-    animation: contentShow 300ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.content[data-state='closed'] {
-    /* Exit animation: Scale down and fade out */
-    /* "forwards" ensures the animation stays at the final frame when finished */
-    animation: contentHide 200ms ease-in forwards;
-}
-
-@keyframes overlayShow {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes overlayHide {
-    from {
-        opacity: 1;
-    }
-
-    to {
-        opacity: 0;
-    }
-}
-
-@keyframes contentShow {
-    from {
-        opacity: 0;
-        /* Rise slightly from below and scale down a bit */
-        transform: translate(-50%, -47%) scale(0.95);
-    }
-
-    to {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-    }
-}
-
-
-@keyframes contentHide {
-    from {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-    }
-
-    to {
-        opacity: 0;
-        /* Drop slightly on exit and scale down */
-        transform: translate(-50%, -48%) scale(0.96);
-    }
 }
 
 .header {

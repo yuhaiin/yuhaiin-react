@@ -51,31 +51,55 @@ export const ListItem: FC<{
 
 // --- List Components ---
 
+import { AnimatePresence, motion } from "framer-motion";
+
+// ... existing imports ...
+
 type CardListProps<T> = {
     items: T[];
     onClickItem?: (item: T, index: number) => void;
     renderListItem: (item: T, index: number) => React.ReactNode;
     footer?: React.ReactNode;
     header?: React.ReactNode;
+    getKey?: (item: T) => string | number;
 };
 
-export function CardList<T>({ items, onClickItem, footer, renderListItem: body, header }: CardListProps<T>) {
+export function CardList<T>({ items, onClickItem, footer, renderListItem: body, header, getKey }: CardListProps<T>) {
     return (
         <Card>
             {header && <CardHeader>{header}</CardHeader>}
             <CardBody>
                 <div className={styles.listContainer}>
                     {items.length > 0 ? (
-                        items.map((child, index) => (
-                            <ListItem key={index} onClick={onClickItem ? () => onClickItem(child, index) : undefined}>
-                                {body(child, index)}
-                            </ListItem>
-                        ))
+                        <AnimatePresence initial={false} mode="popLayout">
+                            {items.map((child, index) => {
+                                const key = getKey ? getKey(child) : index;
+                                return (
+                                    <motion.div
+                                        key={key}
+                                        layout
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: 10, transition: { duration: 0.15 } }}
+                                        transition={{ duration: 0.2 }}
+                                    >
+                                        <ListItem onClick={onClickItem ? () => onClickItem(child, index) : undefined}>
+                                            {body(child, index)}
+                                        </ListItem>
+                                    </motion.div>
+                                );
+                            })}
+                        </AnimatePresence>
                     ) : (
-                        <div className="text-center text-muted p-5 opacity-50">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="text-center text-muted p-5 opacity-50"
+                        >
                             <ClockHistory className="fs-1 d-block mb-2 mx-auto" />
                             No records found.
-                        </div>
+                        </motion.div>
                     )}
                 </div>
             </CardBody>

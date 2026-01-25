@@ -31,11 +31,17 @@ interface SelectProps {
     size?: 'sm' | 'lg';
 }
 
+import { motion } from "framer-motion";
+
 export const Select: FC<SelectProps> = ({ value, onValueChange, items, placeholder, disabled, triggerClassName, contentClassName, viewportClassName, size }) => {
     const internalValue = value === "" ? "___EMPTY___" : value;
 
     return (
-        <SelectPrimitive.Root value={internalValue} onValueChange={(val) => onValueChange(val === "___EMPTY___" ? "" : val)} disabled={disabled}>
+        <SelectPrimitive.Root
+            value={internalValue}
+            onValueChange={(val) => onValueChange(val === "___EMPTY___" ? "" : val)}
+            disabled={disabled}
+        >
             <SelectPrimitive.Trigger className={clsx(styles.selectTrigger, size === 'sm' && styles.selectTriggerSm, triggerClassName, disabled && styles.disabled)} aria-label={placeholder}>
                 <SelectPrimitive.Value placeholder={placeholder} />
                 <SelectPrimitive.Icon>
@@ -43,20 +49,33 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
                 </SelectPrimitive.Icon>
             </SelectPrimitive.Trigger>
             <SelectPrimitive.Portal>
-                <SelectPrimitive.Content className={clsx(styles.selectContent, contentClassName)} position="popper" sideOffset={5} align="start" style={{ width: 'var(--radix-select-trigger-width)' }}>
-                    <SelectPrimitive.Viewport className={clsx(styles.selectViewport, viewportClassName)}>
-                        {items.map((item, index) => {
-                            const itemValue = item.value === "" ? "___EMPTY___" : item.value;
-                            return (
-                                <SelectPrimitive.Item key={`${itemValue}-${index}`} value={itemValue} className={styles.selectItem}>
-                                    <SelectPrimitive.ItemText>{item.label}</SelectPrimitive.ItemText>
-                                    <SelectPrimitive.ItemIndicator className={styles.selectItemIndicator}>
-                                        <Check />
-                                    </SelectPrimitive.ItemIndicator>
-                                </SelectPrimitive.Item>
-                            )
-                        })}
-                    </SelectPrimitive.Viewport>
+                <SelectPrimitive.Content
+                    className={clsx(styles.selectContent, contentClassName)}
+                    position="popper"
+                    sideOffset={5}
+                    align="start"
+                    style={{ width: 'var(--radix-select-trigger-width)' }}
+                    asChild
+                >
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: -2 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ duration: 0.15, ease: "easeOut" }}
+                    >
+                        <SelectPrimitive.Viewport className={clsx(styles.selectViewport, viewportClassName)}>
+                            {items.map((item, index) => {
+                                const itemValue = item.value === "" ? "___EMPTY___" : item.value;
+                                return (
+                                    <SelectPrimitive.Item key={`${itemValue}-${index}`} value={itemValue} className={styles.selectItem}>
+                                        <SelectPrimitive.ItemText>{item.label}</SelectPrimitive.ItemText>
+                                        <SelectPrimitive.ItemIndicator className={styles.selectItemIndicator}>
+                                            <Check />
+                                        </SelectPrimitive.ItemIndicator>
+                                    </SelectPrimitive.Item>
+                                )
+                            })}
+                        </SelectPrimitive.Viewport>
+                    </motion.div>
                 </SelectPrimitive.Content>
             </SelectPrimitive.Portal>
         </SelectPrimitive.Root>

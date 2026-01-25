@@ -1,29 +1,96 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { clsx } from "clsx";
+import { AnimatePresence, motion } from "framer-motion";
 import * as React from "react";
 import styles from "./modal.module.css";
 
-const Modal = DialogPrimitive.Root;
+// --- Context ---
+const ModalContext = React.createContext<{ open: boolean }>({ open: false });
+
+// --- Wrapper ---
+// We wrap DialogPrimitive.Root to capture the open state and pass it down
+const Modal: React.FC<React.ComponentProps<typeof DialogPrimitive.Root>> = ({ children, open, onOpenChange, ...props }) => {
+    return (
+        <DialogPrimitive.Root open={open} onOpenChange={onOpenChange} {...props}>
+            <ModalContext.Provider value={{ open: !!open }}>
+                {children}
+            </ModalContext.Provider>
+        </DialogPrimitive.Root>
+    );
+};
+
 const ModalTrigger = DialogPrimitive.Trigger;
 const ModalPortal = DialogPrimitive.Portal;
 const ModalClose = DialogPrimitive.Close;
 
+
+// --- Animations ---
+const overlayVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+    exit: { opacity: 0, transition: { duration: 0.2 } }
+};
+
+const contentVariants = {
+    hidden: { opacity: 0, scale: 0.95, y: "-48%", x: "-50%" },
+    visible: {
+        opacity: 1,
+        scale: 1,
+        y: "-50%",
+        x: "-50%",
+        transition: {
+            type: "spring",
+            damping: 25,
+            stiffness: 300
+        }
+    },
+    exit: {
+        opacity: 0,
+        scale: 0.95,
+        y: "-48%",
+        x: "-50%",
+        transition: { duration: 0.2 }
+    }
+};
+
+
 // 1. Content Container
-const ModalContent = ({ className, children, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>) => (
-    <ModalPortal>
-        <DialogPrimitive.Overlay className={styles.overlay} />
-        <DialogPrimitive.Content
-            className={clsx(styles.content, className)}
-            {...props}
-        >
-            {children}
-        </DialogPrimitive.Content>
-    </ModalPortal>
-);
+const ModalContent = ({ className, children, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>) => {
+    const { open } = React.useContext(ModalContext);
+
+    return (
+        <AnimatePresence>
+            {open && (
+                <ModalPortal forceMount>
+                    <DialogPrimitive.Overlay asChild forceMount>
+                        <motion.div
+                            className={styles.overlay}
+                            variants={overlayVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                        />
+                    </DialogPrimitive.Overlay>
+                    <DialogPrimitive.Content asChild forceMount>
+                        <motion.div
+                            className={clsx(styles.content, className)}
+                            variants={contentVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                            {...props as any} // Framer Motion types conflict with Radix? usually fine with asChild but here we wrap motion.div
+                        >
+                            {children}
+                        </motion.div>
+                    </DialogPrimitive.Content>
+                </ModalPortal>
+            )}
+        </AnimatePresence>
+    );
+};
 ModalContent.displayName = "ModalContent";
 
 // 2. Header
-
 interface ModalHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
     closeButton?: boolean;
 }

@@ -1,5 +1,6 @@
 "use client"
 
+import { useDelay } from "@/common/hooks"
 import { Button } from "@/component/v2/button"
 import { CardList, IconBadge, MainContainer, SettingLabel } from "@/component/v2/card"
 import { DataList, DataListItem } from "@/component/v2/datalist"
@@ -8,13 +9,13 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { Pagination } from "@/component/v2/pagination"
 import { Spinner } from "@/component/v2/spinner"
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
+import { connections, failed_history } from "@/docs/pbes/api/statistic_pb"
 import { timestampDate } from "@bufbuild/protobuf/wkt"
 import React, { FC, useMemo, useState } from "react"
 import { ArrowClockwise, Bug, BugFill, ChevronRight, Clock, Ethernet, ExclamationOctagon, SortDown } from "react-bootstrap-icons"
 import { TimestampZero } from "../../../common/nodes"
 import { useProtoSWR } from "../../../common/proto"
 import Loading from "../../../component/v2/loading"
-import { connections, failed_history } from "../../pbes/api/statistic_pb"
 import { type } from "../../pbes/statistic/config_pb"
 
 // --- Component: Individual Failed History Row ---
@@ -86,8 +87,9 @@ function FailedHistory() {
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [page, setPage] = useState(1);
     const [info, setInfo] = useState<{ data?: failed_history, show: boolean }>({ show: false });
+    const shouldFetch = useDelay(400);
 
-    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(connections.method.failed_history);
+    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(shouldFetch ? connections.method.failed_history : null);
 
     const values = useMemo(() => {
         if (!data?.objects) return []
@@ -160,6 +162,7 @@ function FailedHistory() {
 
             <CardList
                 items={paginatedItems}
+                getKey={(v) => `${v.host}-${v.time?.seconds}`}
                 onClickItem={(item) => setInfo({ show: true, data: item })}
                 renderListItem={(item) => <ListItem data={item} />}
                 footer={<Pagination currentPage={page} totalItems={values.length} pageSize={pageSize} onPageChange={setPage} />}

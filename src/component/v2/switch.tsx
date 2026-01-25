@@ -2,6 +2,7 @@
 
 import * as SwitchPrimitive from '@radix-ui/react-switch';
 import { clsx } from 'clsx';
+import { motion } from 'framer-motion';
 import * as React from 'react';
 import styles from './switch.module.css';
 
@@ -13,6 +14,12 @@ interface SwitchProps {
   disabled?: boolean;
 }
 
+const transition = {
+  type: "spring" as const, // Fix: Cast to const so it's "spring" not string
+  stiffness: 700,
+  damping: 30
+};
+
 const SwitchComponent: React.FC<SwitchProps> = ({ checked, onCheckedChange, label, description, disabled }) => (
   <div className={clsx(styles.container, disabled && styles.disabled)}>
     {label && (
@@ -22,7 +29,13 @@ const SwitchComponent: React.FC<SwitchProps> = ({ checked, onCheckedChange, labe
       </div>
     )}
     <SwitchPrimitive.Root className={styles.root} checked={checked} onCheckedChange={onCheckedChange} disabled={disabled}>
-      <SwitchPrimitive.Thumb className={styles.thumb} />
+      <SwitchPrimitive.Thumb asChild>
+        <motion.span
+          className={styles.thumb}
+          layout
+          transition={transition}
+        />
+      </SwitchPrimitive.Thumb>
     </SwitchPrimitive.Root>
   </div>
 );
@@ -43,7 +56,13 @@ export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ lab
         {description && <small className="text-muted" style={{ fontSize: '0.8rem' }}>{description}</small>}
       </div>
       <SwitchPrimitive.Root className={styles.root} checked={checked} onCheckedChange={onCheckedChange} disabled={disabled}>
-        <SwitchPrimitive.Thumb className={styles.thumb} />
+        <SwitchPrimitive.Thumb asChild>
+          <motion.span
+            className={styles.thumb}
+            layout
+            transition={transition}
+          />
+        </SwitchPrimitive.Thumb>
       </SwitchPrimitive.Root>
     </div>
   );
@@ -66,7 +85,13 @@ const Switch = ({ className, label, id, ...props }: React.ComponentProps<typeof 
         className={styles.root}
         {...props}
       >
-        <SwitchPrimitive.Thumb className={styles.thumb} />
+        <SwitchPrimitive.Thumb asChild>
+          <motion.span
+            className={styles.thumb}
+            layout
+            transition={transition}
+          />
+        </SwitchPrimitive.Thumb>
       </SwitchPrimitive.Root>
 
       {label && (

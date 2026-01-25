@@ -172,9 +172,9 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
             mode: 1,
             padding: [
                 10, // top
-                5,  // right
+                7,  // right
                 10, // bottom
-                0  // left
+                7  // left
             ],
             series: [
                 { value: (_, rawValue) => data.labels[rawValue] || "" },

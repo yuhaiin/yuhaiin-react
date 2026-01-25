@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from '@/component/v2/button';
-import { CardList, IconBox, MainContainer, SettingLabel, SettingsBox } from '@/component/v2/card';
+import { CardList, IconBox, MainContainer, SettingLabel } from '@/component/v2/card';
 import { Dropdown, DropdownCheckboxItem, DropdownContent, DropdownGroup, DropdownLabel, DropdownTrigger } from '@/component/v2/dropdown';
 import { SettingInputVertical } from "@/component/v2/forms";
 import { Input } from '@/component/v2/input';
@@ -79,99 +79,82 @@ const EditModal: FC<{
 
     return (
         <Modal open={show} onOpenChange={(o) => { if (!o) onHide() }}>
-            <ModalContent>
-                <ModalHeader closeButton className="border-bottom-0 pb-0">
-                    <ModalTitle className="fw-bold">{isEdit ? 'Edit' : 'Add'} Publish Config</ModalTitle>
+            <ModalContent style={{ maxWidth: '600px' }}>
+                <ModalHeader closeButton className="border-bottom pb-3">
+                    <ModalTitle className="fw-bold fs-5">{isEdit ? 'Edit' : 'Add'} Publish Config</ModalTitle>
                 </ModalHeader>
-                <ModalBody className="pt-2">
-                    <div className="d-flex flex-column gap-3">
-                        {/* Basic Info Group */}
-                        <SettingsBox>
-                            <div className="row g-3">
-                                <div className="col-md-6">
-                                    <SettingInputVertical
-                                        label="Config Identifier"
-                                        value={configName}
-                                        onChange={setConfigName}
-                                        placeholder="e.g., internal-sub"
-                                        className={isEdit ? "opacity-75" : ""} // Dim if disabled
-                                    />
-                                </div>
-                                <div className="col-md-6">
-                                    <SettingInputVertical
-                                        label="Display Name"
-                                        value={newItem.name}
-                                        onChange={v => setNewItem({ ...newItem, name: v })}
-                                        placeholder="e.g., My Subscription"
-                                    />
-                                </div>
-                            </div>
-                        </SettingsBox>
+                <ModalBody className="py-4">
+                    <div className="d-flex flex-column gap-4">
+                        {/* 1. Identity Config */}
+                        <div className="d-flex flex-column gap-3">
+                            <SettingInputVertical
+                                label="Config Identifier"
+                                value={configName}
+                                onChange={setConfigName}
+                                placeholder="e.g., internal-sub"
+                                className={isEdit ? "opacity-75" : ""}
+                            />
+                            <SettingInputVertical
+                                label="Display Name"
+                                value={newItem.name}
+                                onChange={v => setNewItem({ ...newItem, name: v })}
+                                placeholder="e.g., My Subscription"
+                            />
+                        </div>
 
-                        {/* Server Connection Group */}
-                        <SettingsBox>
-                            <div className="row g-3">
-                                <div className="col-md-8">
-                                    <SettingInputVertical
-                                        label="Public Address"
-                                        value={newItem.address}
-                                        onChange={v => setNewItem({ ...newItem, address: v })}
-                                        placeholder="example.com:443"
-                                    />
-                                </div>
-                                <div className="col-md-4 d-flex align-items-end">
-                                    <Switch
-                                        label="Allow Insecure"
-                                        checked={newItem.insecure}
-                                        onCheckedChange={(e) => setNewItem({ ...newItem, insecure: e })}
-                                        className="mb-2"
-                                    />
-                                </div>
-                                <div className="col-md-6">
-                                    <SettingInputVertical
-                                        label="Path"
-                                        value={newItem.path}
-                                        onChange={v => setNewItem({ ...newItem, path: v })}
-                                        placeholder="custom/path"
-                                    />
-                                </div>
-                                <div className="col-md-6">
-                                    <SettingInputVertical
-                                        label="Password"
-                                        value={newItem.password}
-                                        onChange={v => setNewItem({ ...newItem, password: v })}
-                                        placeholder="Optional password"
-                                    />
-                                </div>
-                            </div>
-                        </SettingsBox>
+                        {/* 2. Connection Settings */}
+                        <div className="p-3 bg-light rounded-3 border border-opacity-50">
+                            <h6 className="mb-3 text-uppercase text-muted" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.5px' }}>Connection Details</h6>
+                            <div className="d-flex flex-column gap-3">
+                                <SettingInputVertical
+                                    label="Public Address"
+                                    value={newItem.address}
+                                    onChange={v => setNewItem({ ...newItem, address: v })}
+                                    placeholder="example.com:443"
+                                />
 
-                        {/* Node Selection */}
-                        <SettingsBox>
+                                <Switch
+                                    label="Allow Insecure (HTTP)"
+                                    checked={newItem.insecure}
+                                    onCheckedChange={(e) => setNewItem({ ...newItem, insecure: e })}
+                                />
+
+                                <SettingInputVertical
+                                    label="Path"
+                                    value={newItem.path}
+                                    onChange={v => setNewItem({ ...newItem, path: v })}
+                                    placeholder="custom/path"
+                                />
+
+                                <SettingInputVertical
+                                    label="Password"
+                                    value={newItem.password}
+                                    onChange={v => setNewItem({ ...newItem, password: v })}
+                                    placeholder="Optional password"
+                                />
+                            </div>
+                        </div>
+
+                        {/* 3. Node Selection */}
+                        <div>
                             <SettingLabel>Select Nodes to Publish</SettingLabel>
                             <Dropdown modal={false}>
                                 <DropdownTrigger asChild>
-                                    {/* Use Button component or your div here */}
-                                    <Button className="w-100 d-flex justify-content-between align-items-center">
-                                        <span>{selectedNodes.length} Nodes Selected</span>
+                                    <Button className="w-100 d-flex justify-content-between align-items-center py-2" variant="outline-secondary">
+                                        <span className="fw-medium">{selectedNodes.length > 0 ? `${selectedNodes.length} nodes selected` : 'Select nodes...'}</span>
                                         <ChevronDown />
                                     </Button>
                                 </DropdownTrigger>
 
-                                <DropdownContent className="w-100 shadow-lg border-0">
+                                <DropdownContent className="w-100 shadow-lg border-0" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                                     {nodes.groups.map((g: any) => (
                                         <DropdownGroup key={g.name}>
-                                            {/* Group Title */}
-                                            <DropdownLabel>{g.name}</DropdownLabel>
-
-                                            {/* Iterate through nodes */}
+                                            <DropdownLabel className="text-primary sticky-top bg-white">{g.name}</DropdownLabel>
                                             {g.nodes.map((n: any) => (
                                                 <DropdownCheckboxItem
                                                     key={n.hash}
                                                     checked={selectedNodes.includes(n.hash)}
-                                                    // Handle click toggle logic
                                                     onCheckedChange={() => handleNodeSelect(n.hash)}
-                                                    // Key: prevent menu from closing after click
                                                     onSelect={(e) => e.preventDefault()}
                                                 >
                                                     {n.name}
@@ -181,12 +164,12 @@ const EditModal: FC<{
                                     ))}
                                 </DropdownContent>
                             </Dropdown>
-                        </SettingsBox>
+                        </div>
                     </div>
                 </ModalBody>
-                <ModalFooter className="border-top-0 pt-0">
+                <ModalFooter className="border-top pt-3">
                     <ModalClose asChild>
-                        <Button>Cancel</Button>
+                        <Button variant="outline-secondary">Cancel</Button>
                     </ModalClose>
                     <Button onClick={handleSave} disabled={saving}>
                         {saving ? <Spinner size="sm" /> : <><CheckLg className="me-1" /> Save Config</>}

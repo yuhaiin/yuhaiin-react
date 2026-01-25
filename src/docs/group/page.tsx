@@ -9,6 +9,7 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { Spinner } from "@/component/v2/spinner";
 import { create, fromJsonString } from "@bufbuild/protobuf";
 import { Duration, StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { AnimatePresence, motion } from "framer-motion";
 import { FC, useContext, useState } from "react";
 import { BoxArrowInDown, Check2Circle, ChevronDown, HddNetwork, Pencil, PlusLg, Speedometer2 } from 'react-bootstrap-icons';
 import { useLocalStorage } from "usehooks-ts";
@@ -23,6 +24,8 @@ import { node, use_reqSchema } from "../pbes/api/node_pb";
 import { dns_over_quicSchema, http_testSchema, ipSchema, nat_type, reply, request_protocol, request_protocolSchema, requestsSchema, stunSchema } from "../pbes/node/latency_pb";
 import { origin, point, pointSchema } from "../pbes/node/point_pb";
 import styles from './group.module.css';
+
+const MotionAccordionItem = motion(AccordionItem);
 
 const Nanosecond = 1
 const Microsecond = 1000 * Nanosecond
@@ -231,23 +234,25 @@ function Group() {
                     < Accordion type="multiple" style={{
                         boxShadow: ""
                     }}>
-                        {data.groups[groupIndex].nodes
-                            .map((v) => {
-                                return <NodeItemv2
-                                    key={v.hash}
-                                    hash={v.hash}
-                                    name={v.name}
-                                    onClickEdit={() => { openModal(v.hash) }}
-                                    urls={{
-                                        ip: latencyIPUrl,
-                                        tcp: latencyHTTP,
-                                        udp: latencyDNS,
-                                        stun: latencyStunUrl,
-                                        stunTCP: latencyStunTCPUrl,
-                                    }}
-                                />
-                            })
-                        }
+                        <AnimatePresence initial={false} mode="popLayout">
+                            {data.groups[groupIndex].nodes
+                                .map((v) => {
+                                    return <NodeItemv2
+                                        key={v.hash}
+                                        hash={v.hash}
+                                        name={v.name}
+                                        onClickEdit={() => { openModal(v.hash) }}
+                                        urls={{
+                                            ip: latencyIPUrl,
+                                            tcp: latencyHTTP,
+                                            udp: latencyDNS,
+                                            stun: latencyStunUrl,
+                                            stunTCP: latencyStunTCPUrl,
+                                        }}
+                                    />
+                                })
+                            }
+                        </AnimatePresence>
                     </Accordion >
                     :
                     <Card>
@@ -562,7 +567,14 @@ const NodeItemv2: FC<{
     const isTesting = isLoading(latency);
 
     return (
-        <AccordionItem value={hash}>
+        <MotionAccordionItem
+            value={hash}
+            layout
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, x: -10, transition: { duration: 0.2 } }}
+            transition={{ duration: 0.2 }}
+        >
             <AccordionTrigger>
                 <div className="d-flex w-100 flex-column flex-sm-row align-items-start align-items-sm-center pe-2">
 
@@ -701,7 +713,7 @@ const NodeItemv2: FC<{
                     </Button>
                 </div>
             </AccordionContent>
-        </AccordionItem>
+        </MotionAccordionItem>
     );
 }
 

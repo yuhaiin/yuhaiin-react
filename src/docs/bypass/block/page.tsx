@@ -1,5 +1,6 @@
 "use client"
 
+import { useDelay } from "@/common/hooks";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { CardList, MainContainer, SettingLabel } from "@/component/v2/card";
@@ -9,13 +10,13 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { Pagination } from "@/component/v2/pagination";
 import { Spinner } from "@/component/v2/spinner";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
+import { block_history, rules } from "@/docs/pbes/api/config_pb";
 import { timestampDate } from "@bufbuild/protobuf/wkt";
 import React, { FC, useMemo, useState } from "react";
 import { ArrowClockwise, ChevronRight, Clock, Ethernet, ShieldSlash, ShieldSlashFill, SlashCircle, SortDown } from 'react-bootstrap-icons';
 import { TimestampZero } from "../../../common/nodes";
 import { useProtoSWR } from "../../../common/proto";
 import Loading from "../../../component/v2/loading";
-import { block_history, rules } from "../../pbes/api/config_pb";
 
 // --- Component: Individual Blocked History Row ---
 const ListItem: FC<{ data: block_history }> = React.memo(({ data }) => {
@@ -84,8 +85,9 @@ function BypassBlockHistory() {
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [page, setPage] = useState(1);
     const [info, setInfo] = useState<{ data?: block_history, show: boolean }>({ show: false });
+    const shouldFetch = useDelay(400);
 
-    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(rules.method.block_history);
+    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(shouldFetch ? rules.method.block_history : null);
 
     const values = useMemo(() => {
         if (!data?.objects) return []
@@ -146,7 +148,7 @@ function BypassBlockHistory() {
                             </div>
                             <div>
                                 <SettingLabel className="mb-2">By</SettingLabel>
-                                <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="d-flex flex-wrap gap-1">
+                                <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="d-flex flex-wrap">
                                     <ToggleItem value="Time" className="flex-grow-1">Time</ToggleItem>
                                     <ToggleItem value="Host" className="flex-grow-1">Host</ToggleItem>
                                     <ToggleItem value="Count" className="flex-grow-1">Count</ToggleItem>
@@ -162,6 +164,7 @@ function BypassBlockHistory() {
 
             <CardList
                 items={paginatedItems}
+                getKey={(v) => `${v.host}-${v.time?.seconds}`}
                 onClickItem={(item) => setInfo({ show: true, data: item })}
                 renderListItem={(item) => <ListItem data={item} />}
                 footer={<Pagination

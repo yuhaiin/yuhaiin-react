@@ -6,10 +6,10 @@ import type { SWRSubscriptionOptions } from 'swr/subscription';
 import { getApiUrl } from "./apiurl";
 
 export function useProtoSWR<I extends DescMessage, O extends DescMessage>(
-    m: DescMethod & { methodKind: "unary"; input: I; output: O; },
+    m: (DescMethod & { methodKind: "unary"; input: I; output: O; }) | null,
     options?: SWRConfiguration,
 ): SWRResponse<MessageShape<O>, { msg: string, code: number }> {
-    return useSWR(ProtoPath(m), ProtoESFetcher(m), options)
+    return useSWR(m ? ProtoPath(m) : null, m ? ProtoESFetcher(m) : null, options)
 }
 
 export const ProtoPath = (m: DescMethod) => `/${m.parent.typeName}/${m.name}`

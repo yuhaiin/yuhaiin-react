@@ -1,27 +1,32 @@
-// Dropdown.tsx
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
-import { CheckIcon } from "@radix-ui/react-icons"; // Import check icon
+import { CheckIcon } from "@radix-ui/react-icons";
 import { clsx } from "clsx";
+import { motion } from "framer-motion";
 import * as React from "react";
 import styles from "./dropdown.module.css";
 
 const Dropdown = DropdownMenuPrimitive.Root;
 const DropdownTrigger = DropdownMenuPrimitive.Trigger;
-const DropdownGroup = DropdownMenuPrimitive.Group; // Added Group
+const DropdownGroup = DropdownMenuPrimitive.Group;
 
-// ... (DropdownContent remains unchanged, but overflow handling is recommended)
 const DropdownContent = ({ className, sideOffset = 4, children, ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) => (
     <DropdownMenuPrimitive.Portal>
         <DropdownMenuPrimitive.Content
             sideOffset={sideOffset}
-            className={clsx(styles.content, className)}
+            asChild
             onWheel={(e) => e.stopPropagation()}
             {...props}
         >
-            {/* You can add a ScrollArea here, or control scrolling directly via className */}
-            <div className={styles.scrollArea}>
-                {children}
-            </div>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -2 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className={clsx(styles.content, className)}
+            >
+                <div className={styles.scrollArea}>
+                    {children}
+                </div>
+            </motion.div>
         </DropdownMenuPrimitive.Content>
     </DropdownMenuPrimitive.Portal>
 );

@@ -1,7 +1,10 @@
 import { Slot } from "@radix-ui/react-slot";
 import { clsx } from "clsx";
+import { HTMLMotionProps, motion } from "framer-motion";
 import * as React from "react";
 import styles from "./button.module.css";
+
+const MotionSlot = motion(Slot);
 
 export interface ButtonProps
     extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -10,9 +13,13 @@ export interface ButtonProps
     size?: "default" | "sm" | "xs" | "icon"; // Added size property
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+// Combine Motion props with Button props
+// Using Omit to avoid type conflicts if any (though HTMLMotionProps extends HTMLAttributes)
+type CombinedButtonProps = ButtonProps & HTMLMotionProps<"button">;
+
+const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
     ({ className, variant = "default", asChild = false, size = "default", ...props }, ref) => {
-        const Comp = asChild ? Slot : "button"
+        const Comp = asChild ? MotionSlot : motion.button
 
         return (
             <Comp
@@ -31,6 +38,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                     className
                 )}
                 ref={ref}
+                whileHover={{ scale: 1.05, filter: "brightness(1.05)" }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 {...props}
             />
         )

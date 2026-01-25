@@ -1,5 +1,6 @@
 "use client"
 
+import { useDelay } from "@/common/hooks"
 import { Card, CardBody, CardHeader, FilterSearch, IconBox, MainContainer } from '@/component/v2/card'
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
@@ -39,6 +40,7 @@ const Row = ({ index, style, data }: RowComponentProps<{ data: string[] }>) => {
 
 export default function LogComponent() {
     const [searchTerm, setSearchTerm] = useState('');
+    const shouldFetch = useDelay(1000);
 
     const processStream = (r: Logv2, prev?: string[]): string[] => {
         if (prev === undefined) prev = []
@@ -51,7 +53,7 @@ export default function LogComponent() {
 
     const { data: log, error: log_error } =
         useSWRSubscription(
-            ProtoPath(tools.method.log),
+            shouldFetch ? ProtoPath(tools.method.log) : null,
             WebsocketProtoServerStream(tools.method.logv2, create(EmptySchema, {}), processStream),
             {}
         )

@@ -1,6 +1,8 @@
 "use client"
 
 // import { FilterTypeSelect } from "@/component/switch"
+import { useDelay } from "@/common/hooks"
+import { TimestampZero } from "@/common/nodes"
 import { Button } from "@/component/v2/button"
 import { CardList, FilterSearch, IconBadge, MainContainer, SettingLabel } from "@/component/v2/card"
 import { DataListItem } from "@/component/v2/datalist"
@@ -14,7 +16,6 @@ import { create } from "@bufbuild/protobuf"
 import { timestampDate } from "@bufbuild/protobuf/wkt"
 import React, { FC, useCallback, useMemo, useState } from "react"
 import { ArrowClockwise, ArrowLeftRight, ArrowRepeat, Broadcast, ChevronRight, Clock, InfoCircle, ShieldCheck, SortDown } from "react-bootstrap-icons"
-import { TimestampZero } from "../../../common/nodes"
 import { useProtoSWR } from "../../../common/proto"
 import Loading from "../../../component/v2/loading"
 import { NodeModal } from "../../node/modal"
@@ -62,8 +63,9 @@ function History() {
     const [page, setPage] = useState(1);
     const [modalData, setModalData] = useState<{ show: boolean, data?: all_history }>({ show: false });
     const [nodeModal, setNodeModal] = useState<{ show: boolean, hash: string }>({ show: false, hash: "" });
+    const shouldFetch = useDelay(400);
 
-    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(connections.method.all_history);
+    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(shouldFetch ? connections.method.all_history : null);
 
     const showNodeModal = useCallback((hash: string) => {
         setNodeModal({ show: true, hash: hash });
@@ -192,6 +194,7 @@ function History() {
 
             <CardList
                 items={paginatedItems}
+                getKey={(v) => `${v.connection?.id}-${v.time?.seconds}`}
                 onClickItem={(v) => setModalData({ show: true, data: v })}
                 renderListItem={(v) => <ListItem data={v} />}
                 footer={

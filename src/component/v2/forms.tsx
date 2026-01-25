@@ -2,6 +2,7 @@
 
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import { clsx } from 'clsx';
+import { motion } from "framer-motion";
 import React, { FC, useId, useState } from 'react';
 import { Eye, EyeSlash } from 'react-bootstrap-icons';
 import { Button } from './button';
@@ -178,9 +179,18 @@ export const SettingRangeVertical: FC<{
                 step={step}
             >
                 <SliderPrimitive.Track className={styles.SliderTrack}>
-                    <SliderPrimitive.Range className={styles.SliderRange} />
+                    <SliderPrimitive.Range className={styles.SliderRange} asChild>
+                        <motion.span layout transition={{ type: "spring", stiffness: 400, damping: 30 }} />
+                    </SliderPrimitive.Range>
                 </SliderPrimitive.Track>
-                <SliderPrimitive.Thumb className={styles.SliderThumb} />
+                <SliderPrimitive.Thumb className={styles.SliderThumb} asChild>
+                    <motion.span
+                        layout
+                        whileHover={{ scale: 1.2 }}
+                        whileTap={{ scale: 0.9 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    />
+                </SliderPrimitive.Thumb>
             </SliderPrimitive.Root>
 
             <div className="d-flex justify-content-between text-muted opacity-50" style={{ fontSize: '0.7rem', fontWeight: 600 }}>
