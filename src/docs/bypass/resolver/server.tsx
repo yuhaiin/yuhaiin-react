@@ -56,7 +56,6 @@ export const Server: FC = () => {
 
             <CardFooter className="d-flex justify-content-end gap-2">
                 <Button
-                    variant='outline-secondary'
                     size="sm"
                     disabled={!isDirty}
                     onClick={() => mutate()}
@@ -64,7 +63,6 @@ export const Server: FC = () => {
                     <ArrowCounterclockwise className="me-2" />Reset
                 </Button>
                 <Button
-                    variant="primary"
                     size="sm"
                     disabled={saving || !isDirty}
                     onClick={handleSave}

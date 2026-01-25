@@ -33,10 +33,14 @@ const NodeModalComponent: FC<{
         const ctx = useContext(GlobalToastContext);
 
         const interfaces = useInterfaces();
-        const { copy } = useClipboard({
+        const { copy, copied } = useClipboard({
             onCopyError: (e) => ctx.Error(`Failed to copy JSON: ${e.message}`),
             usePromptAsFallback: true, // Use prompt as fallback for older browsers or if clipboard access is denied
         });
+
+        useEffect(() => {
+            if (copied) ctx.Info("Copied JSON to clipboard")
+        }, [copied])
 
         // isValidating becomes true whenever there is an ongoing request whether the data is loaded or not
         // isLoading becomes true when there is an ongoing request and data is not loaded yet.
@@ -55,7 +59,6 @@ const NodeModalComponent: FC<{
             if (!editable) return <></>
 
             return <Button
-                variant="outline-secondary"
                 disabled={isValidating || isLoading || !!error || !editable}
                 onClick={() => {
                     if (!nodes) return
@@ -84,7 +87,7 @@ const NodeModalComponent: FC<{
             <Modal open={show} onOpenChange={(open) => !open && onHide()}>
                 <ModalContent style={{ maxWidth: '1000px' }}>
                     <ModalHeader closeButton className="border-bottom-0 pb-0">
-                        <ModalTitle className="fw-bold">{isNew ? "New Node" : `Edit Node: ${nodes?.name || hash}`}</ModalTitle>
+                        <ModalTitle className="fw-bold">{nodes?.name || hash}</ModalTitle>
                     </ModalHeader>
 
                     <ModalBody className="pt-2">
@@ -124,13 +127,12 @@ const NodeModalComponent: FC<{
                         <div className="d-flex gap-2">
                             {(!error && !isValidating && !isLoading && nodes) &&
                                 <Button
-                                    variant="outline-secondary"
                                     onClick={handleCopyJson}
                                 >
                                     Copy JSON
                                 </Button>
                             }
-                            <Button variant="outline-secondary" onClick={onHide}>Close</Button>
+                            <Button onClick={onHide}>Close</Button>
                             <SaveButton />
                         </div>
                     </ModalFooter>

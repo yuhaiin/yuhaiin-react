@@ -40,11 +40,12 @@
 
 /* Active State (data-state='on') */
 .item[data-state='on'] {
-    background-color: var(--bs-secondary);
-    color: #fff;
-    border-color: var(--bs-secondary);
+    background-color: var(--sidebar-active-bg);
+    color: var(--sidebar-active-color);
+    border-color: var(--sidebar-active-color);
     z-index: 2;
     box-shadow: none;
+    font-weight: 600;
 }
 
 /* Focus State */

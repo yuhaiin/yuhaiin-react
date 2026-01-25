@@ -1,10 +1,11 @@
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardFooter, CardHeader, IconBox } from '@/component/v2/card';
 import { Input } from '@/component/v2/input';
+import { InputGroup, InputGroupText } from '@/component/v2/inputgroup';
 import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { FC, useContext, useState } from "react";
-import { ArrowCounterclockwise, ArrowRight, PlusLg, Save, SignpostSplit, Trash } from 'react-bootstrap-icons';
+import { ArrowCounterclockwise, PlusLg, Save, SignpostSplit, Trash } from 'react-bootstrap-icons';
 import { FetchProtobuf, useProtoSWR } from "../../../common/proto";
 import Loading from "../../../component/v2/loading";
 import { resolver } from "../../pbes/api/config_pb";
@@ -52,26 +53,21 @@ export const Hosts: FC = () => {
                     {Object.entries(data.hosts)
                         .sort(([a], [b]) => a.localeCompare(b))
                         .map(([k, v]) => (
-                            <div className="d-flex align-items-center gap-2" key={"hosts" + k}>
-                                <div className="flex-grow-1 d-flex gap-2 align-items-center bg-body-tertiary p-2 rounded border border-secondary border-opacity-10">
-                                    <span className="font-monospace small text-truncate px-2" style={{ flex: 1, minWidth: 0 }}>{k}</span>
-                                    <ArrowRight className="text-muted opacity-25 flex-shrink-0" />
-                                    <Input
-                                        size="sm"
-                                        value={v}
-                                        className="bg-transparent border-0 shadow-none font-monospace text-primary"
-                                        style={{ flex: 1.2, minWidth: 0 }}
-                                        onChange={(e) => handleMutate(prev => ({
-                                            ...prev,
-                                            hosts: { ...prev.hosts, [k]: e.target.value }
-                                        }))}
-                                    />
-                                </div>
+                            <InputGroup key={"hosts" + k}>
+                                <InputGroupText className="font-monospace small px-2" style={{ flex: 1, minWidth: 0, justifyContent: 'flex-start' }}>
+                                    <span className="text-truncate">{k}</span>
+                                </InputGroupText>
+                                <Input
+                                    value={v}
+                                    className="font-monospace text-primary"
+                                    style={{ flex: 1.2, minWidth: 0 }}
+                                    onChange={(e) => handleMutate(prev => ({
+                                        ...prev,
+                                        hosts: { ...prev.hosts, [k]: e.target.value }
+                                    }))}
+                                />
                                 <Button
                                     variant="outline-danger"
-                                    size="icon"
-                                    className="flex-shrink-0 border-0"
-                                    style={{ width: '32px', height: '32px' }}
                                     onClick={() => handleMutate(prev => {
                                         const tmp = { ...prev.hosts };
                                         delete tmp[k];
@@ -80,46 +76,39 @@ export const Hosts: FC = () => {
                                 >
                                     <Trash />
                                 </Button>
-                            </div>
+                            </InputGroup>
                         ))}
 
-                    <div className="d-flex align-items-center gap-2 mt-2 pt-3 border-top border-secondary border-opacity-10">
-                        <div className="flex-grow-1 d-flex gap-2">
+                    <div className="pt-3 mt-2 border-top border-secondary border-opacity-10">
+                        <InputGroup>
                             <Input
-                                size="sm"
                                 value={newHosts.key}
                                 onChange={(e) => setNewHosts({ ...newHosts, key: e.target.value })}
                                 placeholder="Domain..."
                                 className="flex-grow-1"
                             />
                             <Input
-                                size="sm"
                                 value={newHosts.value}
                                 onChange={(e) => setNewHosts({ ...newHosts, value: e.target.value })}
                                 placeholder="IP Address..."
                                 className="flex-grow-1"
                             />
-                        </div>
-                        <Button
-                            variant="primary"
-                            size="icon"
-                            className="flex-shrink-0"
-                            style={{ width: '32px', height: '32px' }}
-                            onClick={() => {
-                                if (newHosts.key === "" || data.hosts[newHosts.key] !== undefined) return
-                                handleMutate(prev => ({ ...prev, hosts: { ...prev.hosts, [newHosts.key]: newHosts.value } }));
-                                setNewHosts({ key: "", value: "" });
-                            }}
-                        >
-                            <PlusLg />
-                        </Button>
+                            <Button
+                                onClick={() => {
+                                    if (newHosts.key === "" || data.hosts[newHosts.key] !== undefined) return
+                                    handleMutate(prev => ({ ...prev, hosts: { ...prev.hosts, [newHosts.key]: newHosts.value } }));
+                                    setNewHosts({ key: "", value: "" });
+                                }}
+                            >
+                                <PlusLg />
+                            </Button>
+                        </InputGroup>
                     </div>
                 </div>
             </CardBody>
 
             <CardFooter className="d-flex justify-content-end gap-2">
                 <Button
-                    variant='outline-secondary'
                     size="sm"
                     disabled={!isDirty}
                     onClick={() => mutate()}
@@ -127,7 +116,6 @@ export const Hosts: FC = () => {
                     <ArrowCounterclockwise className="me-2" />Reset
                 </Button>
                 <Button
-                    variant="primary"
                     size="sm"
                     disabled={saving || !isDirty}
                     onClick={handleSave}

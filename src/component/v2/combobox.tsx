@@ -130,39 +130,52 @@ export const Combobox: FC<ComboboxProps> = ({
                         sideOffset={5}
                         collisionPadding={10}
                     >
-                        {filteredOptions.map((opt, i) => (
-                            <div
-                                key={`${opt.value}-${i}`}
-                                ref={(el) => {
-                                    if (isKeyboardNav.current && i === highlightedIndex && el) {
-                                        el.scrollIntoView({ block: 'nearest' });
-                                        isKeyboardNav.current = false;
-                                    }
-                                }}
-                                className={styles.suggestionItem}
-                                data-highlighted={i === highlightedIndex}
-                                onClick={() => {
-                                    onChange(opt.value);
-                                    setOpen(false);
-                                }}
-                                onMouseEnter={() => {
-                                    isKeyboardNav.current = false;
-                                    setHighlightedIndex(i);
-                                }}
-                            >
-                                <span className={styles.suggestionLabel}>{opt.label}</span>
-                                {opt.details && opt.details.length > 0 && (
-                                    <div className={styles.suggestionChildren}>
-                                        {opt.details.map((d, di) => (
-                                            <span key={di} className={styles.suggestionChild}>{d}</span>
-                                        ))}
+                        <div style={{
+                            borderRadius: '20px',
+                            overflow: 'hidden',
+                        }}>
+                            <div style={{
+                                width: '100%',
+                                height: '100%',
+                                overflowY: 'auto',
+                                maxHeight: '49vh',
+                            }}>
+                                {filteredOptions.map((opt, i) => (
+                                    <div
+                                        key={`${opt.value}-${i}`}
+                                        ref={(el) => {
+                                            if (isKeyboardNav.current && i === highlightedIndex && el) {
+                                                el.scrollIntoView({ block: 'nearest' });
+                                                isKeyboardNav.current = false;
+                                            }
+                                        }}
+                                        className={styles.suggestionItem}
+                                        data-highlighted={i === highlightedIndex}
+                                        onClick={() => {
+                                            onChange(opt.value);
+                                            setOpen(false);
+                                        }}
+                                        onMouseEnter={() => {
+                                            isKeyboardNav.current = false;
+                                            setHighlightedIndex(i);
+                                        }}
+                                    >
+                                        <span className={styles.suggestionLabel}>{opt.label}</span>
+                                        {opt.details && opt.details.length > 0 && (
+                                            <div className={styles.suggestionChildren}>
+                                                {opt.details.map((d, di) => (
+                                                    <span key={di} className={styles.suggestionChild}>{d}</span>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
-                                )}
+                                ))}
                             </div>
-                        ))}
+                        </div>
                     </Popover.Content>
                 </Popover.Portal>
-            )}
-        </Popover.Root>
+            )
+            }
+        </Popover.Root >
     );
 };

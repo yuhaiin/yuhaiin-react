@@ -134,7 +134,7 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                         value.protocols.map((x, i) => {
                             return (
                                 <AccordionItem value={`item-${i}`} key={i}>
-                                    <AccordionTrigger className="fw-bold">
+                                    <AccordionTrigger>
                                         <div className="d-flex align-items-center gap-2">
                                             <span className="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2" style={{ fontSize: '0.7rem' }}>{i + 1}</span>
                                             {x.protocol.case ?? "Unknown"}
@@ -150,10 +150,10 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
 
                                             {editable && (
                                                 <div className="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
-                                                    <Button variant="outline-secondary" size="sm" onClick={() => moveProtocol(i, 'up')} disabled={i === 0}>
+                                                    <Button size="sm" onClick={() => moveProtocol(i, 'up')} disabled={i === 0}>
                                                         <ArrowUp />
                                                     </Button>
-                                                    <Button variant="outline-secondary" size="sm" onClick={() => moveProtocol(i, 'down')} disabled={i === value.protocols.length - 1}>
+                                                    <Button size="sm" onClick={() => moveProtocol(i, 'down')} disabled={i === value.protocols.length - 1}>
                                                         <ArrowDown />
                                                     </Button>
                                                     <Button variant="outline-danger" size="sm" onClick={() => deleteProtocol(i)}>
@@ -180,7 +180,6 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                             />
                         </div>
                         <Button
-                            variant="outline-primary"
                             className="mb-1"
                             style={{ height: '35px' }}
                             onClick={() => {

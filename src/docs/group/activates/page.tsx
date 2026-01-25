@@ -37,7 +37,7 @@ const ActiveNodeItem: FC<{
                     <div className="d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
                         <div className="d-flex align-items-center gap-2 mb-1">
                             <span className="fw-bold text-truncate fs-6">{v.name}</span>
-                            <Badge variant="primary" className="bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1" style={{ fontSize: '0.65rem' }}>
+                            <Badge className="bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1" style={{ fontSize: '0.65rem' }}>
                                 {v.group}
                             </Badge>
                         </div>

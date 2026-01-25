@@ -57,7 +57,7 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
             <Accordion type="multiple" className="mb-3">
                 {data.map((v, index) => (
                     <AccordionItem value={`item-${index}`} key={index}>
-                        <AccordionTrigger className="fw-bold">
+                        <AccordionTrigger>
                             {v.host || `Host ${index + 1}`}
                         </AccordionTrigger>
                         <AccordionContent>
@@ -87,10 +87,10 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
 
                                 {editable && (
                                     <div className="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
-                                        <Button variant="outline-secondary" size="sm" onClick={() => moveItem(index, true)} disabled={index === 0}>
+                                        <Button size="sm" onClick={() => moveItem(index, true)} disabled={index === 0}>
                                             <ArrowUp />
                                         </Button>
-                                        <Button variant="outline-secondary" size="sm" onClick={() => moveItem(index, false)} disabled={index === data.length - 1}>
+                                        <Button size="sm" onClick={() => moveItem(index, false)} disabled={index === data.length - 1}>
                                             <ArrowDown />
                                         </Button>
                                         <Button variant="outline-danger" size="sm" onClick={() => removeItem(index)}>
@@ -106,7 +106,7 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
 
             {editable && (
                 <div className="d-flex justify-content-end px-1">
-                    <Button variant='outline-primary' onClick={() => {
+                    <Button onClick={() => {
                         onChange([...data, create(fixedv2_addressSchema, {
                             host: "",
                             networkInterface: ""

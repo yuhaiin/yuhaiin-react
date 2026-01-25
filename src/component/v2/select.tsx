@@ -3,7 +3,7 @@
 import { DescEnum, DescEnumValue } from '@bufbuild/protobuf';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { clsx } from 'clsx';
-import React, { FC, useMemo } from 'react';
+import React, { CSSProperties, FC, useMemo } from 'react';
 import { Check, ChevronDown } from 'react-bootstrap-icons';
 import { SettingLabel } from './card';
 import {
@@ -235,7 +235,8 @@ const SettingTypeSelectComponent: FC<{
     className?: string,
     triggerClassName?: string,
     size?: 'sm' | 'lg'
-}> = ({ label, type, value, onChange, filter, format, emptyChoose, disabled, className, triggerClassName, size }) => {
+    style?: CSSProperties
+}> = ({ label, type, value, onChange, filter, format, emptyChoose, disabled, className, triggerClassName, size, style }) => {
     const items: SelectItem[] = useMemo(() => {
         let values = type.values;
         if (filter) values = values.filter(filter);
@@ -247,7 +248,7 @@ const SettingTypeSelectComponent: FC<{
     }
 
     return (
-        <div className={clsx(styles.formRow, disabled && styles.disabled, className)}>
+        <div className={clsx(styles.formRow, disabled && styles.disabled, className)} style={style}>
             {label && <label className={styles.formLabel}>{label}</label>}
             <div className={styles.formControl}>
                 <Select value={String(value)} onValueChange={(val) => onChange(Number(val))} items={items} disabled={disabled} triggerClassName={triggerClassName} size={size} />

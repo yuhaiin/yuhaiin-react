@@ -8,11 +8,11 @@ import { GlobalToastContext } from "@/component/v2/toast";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
-import HeaderError from '../../../component/Error';
 import { FC, useContext, useState } from "react";
 import { ChevronRight, Files, Globe, HddNetwork, PlusLg, Save, Tags as TagsIcon, Trash } from 'react-bootstrap-icons';
 import { Node, Nodes } from "../../../common/nodes";
 import { FetchProtobuf, useProtoSWR } from '../../../common/proto';
+import HeaderError from '../../../component/Error';
 import { ConfirmModal } from "../../../component/v2/confirm";
 import Loading from "../../../component/v2/loading";
 import { NodeModal } from "../../node/modal";
@@ -79,7 +79,7 @@ const TagModal: FC<{
         <Modal open={props.show} onOpenChange={(open) => !open && props.onHide()}>
             <ModalContent>
                 <ModalHeader closeButton>
-                    <ModalTitle>{props.isNew ? "Create Tag" : `Edit Tag: ${props.tagItem.tag}`}</ModalTitle>
+                    <ModalTitle>{props.tagItem.tag}</ModalTitle>
                 </ModalHeader>
                 <ModalBody>
                     <div className="d-flex flex-column gap-4">
@@ -136,8 +136,8 @@ const TagModal: FC<{
                     </div>
                 </ModalBody>
                 <ModalFooter className="border-0">
-                    <Button variant="outline-secondary" onClick={props.onHide}>Cancel</Button>
-                    <Button variant="primary" onClick={props.onSave} disabled={!props.tagItem.tag || !props.tagItem.hash}>
+                    <Button onClick={props.onHide}>Cancel</Button>
+                    <Button onClick={props.onSave} disabled={!props.tagItem.tag || !props.tagItem.hash}>
                         <Save className="me-2" />Save
                     </Button>
                 </ModalFooter>
@@ -222,7 +222,6 @@ function Tags() {
                     <div className="d-flex justify-content-between align-items-center w-100">
                         <IconBox icon={TagsIcon} color="#10b981" title="Tags Management" description={`${Object.keys(data.tags).length} alias and mirror nodes defined`} />
                         <Button
-                            variant="primary"
                             onClick={() => setTagModalData({
                                 show: true,
                                 tag: create(save_tag_reqSchema, { tag: "", hash: "", type: tag_type.node }),

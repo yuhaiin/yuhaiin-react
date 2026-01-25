@@ -59,7 +59,7 @@ const InboundModal: FC<{
         <Modal open={show} onOpenChange={(open) => !open && onHide()}>
             <ModalContent style={{ maxWidth: '800px' }}>
                 <ModalHeader closeButton className="border-bottom-0 pb-0">
-                    <ModalTitle className="fw-bold">{isNew ? "New Inbound" : `Edit Inbound: ${name}`}</ModalTitle>
+                    <ModalTitle className="fw-bold">{name}</ModalTitle>
                 </ModalHeader>
                 <ModalBody className="pt-2">
                     {error ? <ErrorMsg msg={error.msg} code={error.code} raw={error.raw} /> : isValidating || isLoading || !inbound ? (
@@ -79,8 +79,8 @@ const InboundModal: FC<{
                         )}
                     </div>
                     <div className="d-flex gap-2">
-                        <Button variant="outline-secondary" onClick={() => onHide()}>Cancel</Button>
-                        <Button variant="outline-secondary" disabled={saving || !inbound} onClick={handleSave}>
+                        <Button onClick={() => onHide()}>Cancel</Button>
+                        <Button disabled={saving || !inbound} onClick={handleSave}>
                             {saving ? <Spinner size="sm" /> : <><CheckLg className="me-1" /> Save</>}
                         </Button>
                     </div>
@@ -190,7 +190,7 @@ function InboudComponent() {
                     </div>
                 </CardBody>
                 <CardFooter className="d-flex justify-content-end">
-                    <Button variant="outline-secondary" disabled={saving} onClick={handleApply}>
+                    <Button disabled={saving} onClick={handleApply}>
                         {saving ? <Spinner size="sm" /> : <><Save className="me-1" /> Apply Settings</>}
                     </Button>
                 </CardFooter>

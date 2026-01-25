@@ -4,6 +4,7 @@ import { FC, useState } from 'react';
 import { PlusLg, Trash } from 'react-bootstrap-icons';
 import { Button } from './button';
 import { Input, Textarea } from './input';
+import { InputGroup } from './inputgroup';
 
 export const InputList: FC<{
     title: string;
@@ -19,8 +20,11 @@ export const InputList: FC<{
 
     const add = () => {
         if (!newItem || disabled) return;
-        onChange([...data, newItem]);
-        setNewItem("");
+        const lines = newItem.split('\n').map(x => x.trim()).filter(x => x !== "");
+        if (lines.length > 0) {
+            onChange([...data, ...lines]);
+            setNewItem("");
+        }
     }
 
     const remove = (i: number) => {
@@ -30,43 +34,83 @@ export const InputList: FC<{
         onChange(newData);
     }
 
+    const edit = (i: number, val: string) => {
+        if (disabled) return;
+        const newData = [...data];
+        newData[i] = val;
+        onChange(newData);
+    }
+
     return (
         <div className={className}>
             <label className="form-label fw-bold">{title}</label>
             {!disabled && (
-                <div className="d-flex gap-2 mb-2">
-                    {textarea ?
-                        <Textarea
-                            value={newItem}
-                            onChange={(e) => setNewItem(e.target.value)}
-                            placeholder={placeholder || `Add new ${title}`}
-                            rows={3}
-                        /> :
-                        <Input
-                            value={newItem}
-                            onChange={(e) => setNewItem(e.target.value)}
-                            placeholder={placeholder || `Add new ${title}`}
-                            onKeyDown={(e) => { if (e.key === 'Enter') add() }}
-                        />
-                    }
-                    <Button variant="outline-primary" onClick={add} style={{ alignSelf: textarea ? 'flex-start' : 'auto' }}>
+                <InputGroup className="mb-2">
+                    <Textarea
+                        value={newItem}
+                        onChange={(e) => setNewItem(e.target.value)}
+                        placeholder={placeholder || `Add new ${title}${textarea ? " (one per line)" : ""}`}
+                        rows={textarea ? 3 : undefined}
+                        className="flex-grow-1"
+                        style={{
+                            borderTopRightRadius: 0,
+                            borderBottomRightRadius: 0
+                        }}
+                    />
+                    <Button
+                        onClick={add}
+                        style={{
+                            borderTopLeftRadius: 0,
+                            borderBottomLeftRadius: 0,
+                            marginLeft: '-1px'
+                        }}
+                    >
                         <PlusLg />
                     </Button>
-                </div>
+                </InputGroup>
             )}
 
             <div className="d-flex flex-column gap-2">
                 {data.map((item, i) => (
-                    <div key={i} className="d-flex gap-2 align-items-center bg-body-secondary p-2 rounded">
-                        <div className="flex-grow-1 text-break font-monospace small" style={{ minWidth: 0 }}>
-                            {dump ? <pre className="m-0 text-wrap" style={{ whiteSpace: 'pre-wrap' }}>{item}</pre> : item}
-                        </div>
+                    <InputGroup key={i}>
+                        {textarea ? (
+                            <Textarea
+                                value={item}
+                                onChange={(e) => edit(i, e.target.value)}
+                                rows={1} // Start small, can be adjusted
+                                className="flex-grow-1"
+                                disabled={disabled}
+                                style={{
+                                    borderTopRightRadius: 0,
+                                    borderBottomRightRadius: 0
+                                }}
+                            />
+                        ) : (
+                            <Input
+                                value={item}
+                                onChange={(e) => edit(i, e.target.value)}
+                                className="flex-grow-1"
+                                disabled={disabled}
+                                style={{
+                                    borderTopRightRadius: 0,
+                                    borderBottomRightRadius: 0
+                                }}
+                            />
+                        )}
                         {!disabled && (
-                            <Button variant="outline-danger" size="sm" onClick={() => remove(i)}>
+                            <Button
+                                variant="outline-danger"
+                                onClick={() => remove(i)}
+                                style={{
+                                    borderTopLeftRadius: 0,
+                                    borderBottomLeftRadius: 0,
+                                    marginLeft: '-1px' // Merge borders
+                                }}
+                            >
                                 <Trash />
                             </Button>
                         )}
-                    </div>
+                    </InputGroup>
                 ))}
             </div>
         </div>
@@ -115,7 +159,7 @@ export const InputBytesList: FC<{
                         className="font-monospace small shadow-none"
                         style={{ fontSize: '0.85rem' }}
                     />
-                    <Button variant="outline-primary" onClick={add} style={{ alignSelf: 'flex-start' }}>
+                    <Button onClick={add} style={{ alignSelf: 'flex-start' }}>
                         <PlusLg />
                     </Button>
                 </div>

@@ -185,7 +185,6 @@ function BackupPage() {
                 <CardFooter>
                     <div className="d-flex gap-2">
                         <Button
-                            variant="outline-primary"
                             onClick={handleBackupNow}
                             disabled={saving}
                             title="Trigger immediate backup"
@@ -195,7 +194,6 @@ function BackupPage() {
                         </Button>
 
                         <Button
-                            variant="outline-secondary"
                             onClick={() => setShowConfirmModal(true)}
                             disabled={saving}
                             title="Restore from cloud"
@@ -205,7 +203,6 @@ function BackupPage() {
                         </Button>
 
                         <Button
-                            variant="outline-primary"
                             onClick={handleSave}
                             disabled={saving}
                             title="Save configuration changes"

@@ -43,7 +43,7 @@ export const NewAlternateHostList: FC<{ title: string, data: host[], onChange: (
                 <Accordion type="multiple" className="mb-3">
                     {data.map((v, index) => (
                         <AccordionItem value={`item-${index}`} key={index}>
-                            <AccordionTrigger className="fw-bold">
+                            <AccordionTrigger>
                                 {v.host || `Entry ${index + 1}`} {v.port ? `:${v.port}` : ''}
                             </AccordionTrigger>
                             <AccordionContent>
@@ -74,10 +74,10 @@ export const NewAlternateHostList: FC<{ title: string, data: host[], onChange: (
 
                                     {editable && (
                                         <div className="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
-                                            <Button variant="outline-secondary" size="sm" onClick={() => moveItem(index, true)} disabled={index === 0}>
+                                            <Button size="sm" onClick={() => moveItem(index, true)} disabled={index === 0}>
                                                 <ArrowUp />
                                             </Button>
-                                            <Button variant="outline-secondary" size="sm" onClick={() => moveItem(index, false)} disabled={index === data.length - 1}>
+                                            <Button size="sm" onClick={() => moveItem(index, false)} disabled={index === data.length - 1}>
                                                 <ArrowDown />
                                             </Button>
                                             <Button variant="outline-danger" size="sm" onClick={() => removeItem(index)}>
@@ -93,7 +93,7 @@ export const NewAlternateHostList: FC<{ title: string, data: host[], onChange: (
 
                 {editable && (
                     <div className="d-flex justify-content-end px-1">
-                        <Button variant='outline-primary' onClick={() => { onChange([...data, create(hostSchema, {})]) }} >
+                        <Button onClick={() => { onChange([...data, create(hostSchema, {})]) }} >
                             <PlusLg className="me-1" /> Add {title}
                         </Button>
                     </div>

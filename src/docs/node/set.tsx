@@ -89,7 +89,6 @@ export const Set: FC<Props<set>> = ({ value, onChange, editable = true }) => {
             {editable && (
                 <div className="d-flex justify-content-end px-1">
                     <Button
-                        variant="outline-primary"
                         onClick={() => {
                             setModalData({
                                 show: true,
@@ -133,8 +132,8 @@ const SelectModal: FC<{
                     </div>
                 </ModalBody>
                 <ModalFooter className="gap-2">
-                    <Button variant="outline-secondary" onClick={() => { onHide() }}>Cancel</Button>
-                    <Button variant="outline-secondary" onClick={() => { onSave() }}>Apply</Button>
+                    <Button onClick={() => { onHide() }}>Cancel</Button>
+                    <Button onClick={() => { onSave() }}>Apply</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>

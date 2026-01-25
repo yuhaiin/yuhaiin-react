@@ -78,7 +78,6 @@ export const Fakedns: FC = () => {
 
                     <InputList
                         title="Domain Whitelist"
-                        textarea
                         dump
                         data={data.whitelist}
                         onChange={(v) => handleMutate(prev => ({ ...prev, whitelist: v }))}
@@ -88,7 +87,6 @@ export const Fakedns: FC = () => {
 
                     <InputList
                         title="Skip Check List"
-                        textarea
                         dump
                         data={data.skipCheckList ? data.skipCheckList : []}
                         onChange={(v) => handleMutate(prev => ({ ...prev, skipCheckList: v }))}
@@ -98,7 +96,6 @@ export const Fakedns: FC = () => {
 
             <CardFooter className="d-flex justify-content-end gap-2">
                 <Button
-                    variant='outline-secondary'
                     size="sm"
                     disabled={!isDirty}
                     onClick={() => mutate()}
@@ -106,7 +103,6 @@ export const Fakedns: FC = () => {
                     <ArrowCounterclockwise className="me-2" />Reset
                 </Button>
                 <Button
-                    variant="primary"
                     size="sm"
                     disabled={saving || !isDirty}
                     onClick={handleSave}

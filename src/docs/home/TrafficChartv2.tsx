@@ -32,10 +32,10 @@ function makeSmoothPath(u: uPlot, seriesIdx: number, idx0: number, idx1: number)
 
     let pts: [number, number][] = [];
 
+    // 1. Collect valid points
     for (let i = idx0; i <= idx1; i++) {
         const y = ydata[i];
         if (y == null) continue;
-
         pts.push([
             u.valToPos(xdata[i], scaleX, true),
             u.valToPos(y, scaleY, true),
@@ -44,28 +44,97 @@ function makeSmoothPath(u: uPlot, seriesIdx: number, idx0: number, idx1: number)
 
     if (pts.length < 2) return null;
 
+    // --- Strict Monotone Cubic Spline (Fritsch-Carlson) ---
+    const n = pts.length;
+    const tangents: number[] = new Array(n).fill(0);
+    const secants: number[] = new Array(n - 1).fill(0);
+
+    // 1. Calculate secants (slope between points)
+    for (let i = 0; i < n - 1; i++) {
+        const dx = pts[i + 1][0] - pts[i][0];
+        const dy = pts[i + 1][1] - pts[i][1];
+        secants[i] = dy / dx;
+    }
+
+    // 2. Calculate initial tangents
+    for (let i = 0; i < n; i++) {
+        if (i === 0) {
+            tangents[i] = secants[0];
+        } else if (i === n - 1) {
+            tangents[i] = secants[n - 2];
+        } else {
+            // Average of previous and next secant
+            tangents[i] = (secants[i - 1] + secants[i]) / 2;
+
+            // Fix 1: Zero out tangent at peaks/troughs
+            if (secants[i - 1] * secants[i] <= 0) {
+                tangents[i] = 0;
+            }
+        }
+    }
+
+    // 3. Apply "3x Constraint" to prevent overshoot on steep-to-flat transitions
+    // This is the key fix for the negative values issue.
+    for (let i = 0; i < n - 1; i++) {
+        const m = secants[i];
+
+        // Skip flat segments
+        if (m === 0) {
+            tangents[i] = 0;
+            tangents[i + 1] = 0;
+            continue;
+        }
+
+        // Check start point of the segment
+        const alpha = tangents[i] / m;
+        if (Math.abs(alpha) > 3) {
+            tangents[i] = 3 * m;
+        }
+
+        // Check end point of the segment
+        // (Note: we must re-evaluate tangent[i+1] in the context of this segment too)
+        const beta = tangents[i + 1] / m;
+        if (Math.abs(beta) > 3) {
+            tangents[i + 1] = 3 * m;
+        }
+    }
+
+    // --- Draw Path ---
     stroke.moveTo(pts[0][0], pts[0][1]);
 
-    for (let i = 0; i < pts.length - 1; i++) {
-        const p0 = pts[i - 1] ?? pts[i];
-        const p1 = pts[i];
-        const p2 = pts[i + 1];
-        const p3 = pts[i + 2] ?? p2;
+    for (let i = 0; i < n - 1; i++) {
+        const p0 = pts[i];
+        const p1 = pts[i + 1];
+        const dx = p1[0] - p0[0];
 
-        const cp1x = p1[0] + (p2[0] - p0[0]) / 6;
-        const cp1y = p1[1] + (p2[1] - p0[1]) / 6;
-        const cp2x = p2[0] - (p3[0] - p1[0]) / 6;
-        const cp2y = p2[1] - (p3[1] - p1[1]) / 6;
+        // Control Point calculation
+        // CP1 = Start + Tangent * (dx / 3)
+        // CP2 = End - Tangent * (dx / 3)
+        let cp1x = p0[0] + dx / 3;
+        let cp1y = p0[1] + tangents[i] * (dx / 3);
 
-        stroke.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2[0], p2[1]);
+        let cp2x = p1[0] - dx / 3;
+        let cp2y = p1[1] - tangents[i + 1] * (dx / 3);
+
+        // --- Final Safety Net (Floating Point Protection) ---
+        // Even with the math above, floating point errors can rarely cause micro-overshoots.
+        // We clamp the control points strictly within the Y range of the two points.
+        const yMin = Math.min(p0[1], p1[1]);
+        const yMax = Math.max(p0[1], p1[1]);
+
+        cp1y = Math.max(yMin, Math.min(yMax, cp1y));
+        cp2y = Math.max(yMin, Math.min(yMax, cp2y));
+        // ----------------------------------------------------
+
+        stroke.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p1[0], p1[1]);
     }
 
     const fill = new Path2D();
-    const minY = u.valToPos(0, scaleY, true);
+    const zeroY = u.valToPos(0, scaleY, true);
 
     fill.addPath(stroke);
-    fill.lineTo(pts[pts.length - 1][0], minY);
-    fill.lineTo(pts[0][0], minY);
+    fill.lineTo(pts[pts.length - 1][0], zeroY);
+    fill.lineTo(pts[0][0], zeroY);
     fill.closePath();
 
     return { stroke, fill };
@@ -103,14 +172,14 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
             mode: 1,
             padding: [10, 10, 10, 0],
             series: [
-                { value: (self, rawValue) => data.labels[rawValue] || "" },
+                { value: (_, rawValue) => data.labels[rawValue] || "" },
                 {
                     label: "Upload",
                     stroke: "#10b981",
                     fill: "rgba(16, 185, 129, 0.1)",
                     width: 2,
                     points: { show: false },
-                    value: (self, rawValue) => formatBytes(rawValue ?? 0, 2, " ") + '/S',
+                    value: (_, rawValue) => formatBytes(rawValue ?? 0, 2, " ") + '/S',
                     paths: makeSmoothPath
                 },
                 {
@@ -119,7 +188,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                     fill: "rgba(59, 130, 246, 0.1)",
                     width: 2,
                     points: { show: false },
-                    value: (self, rawValue) => formatBytes(rawValue ?? 0, 2, " ") + '/S',
+                    value: (_, rawValue) => formatBytes(rawValue ?? 0, 2, " ") + '/S',
                     paths: makeSmoothPath
                 }
             ],
@@ -131,7 +200,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                     font: '10px sans-serif',
                     grid: { show: true, stroke: "rgba(255, 255, 255, 0.05)", width: 1 },
                     ticks: { show: true, stroke: "rgba(255, 255, 255, 0.05)" },
-                    values: (self, ticks) => ticks.map(v => formatBytes(Number(v), 2, " ") + '/S'),
+                    values: (_, ticks) => ticks.map(v => formatBytes(Number(v), 2, " ") + '/S'),
                     size: 80,
                 }
             ],

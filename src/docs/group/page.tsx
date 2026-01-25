@@ -3,6 +3,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
+import { Card, CardBody } from "@/component/v2/card";
 import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Spinner } from "@/component/v2/spinner";
@@ -174,21 +175,19 @@ function Group() {
                 <div className={styles.headerActions}>
                     <Dropdown>
                         <DropdownTrigger asChild>
-                            <Button variant="outline-secondary" className="d-flex align-items-center justify-content-between" style={{ minWidth: '150px' }}>
+                            <Button className="d-flex align-items-center justify-content-between" style={{ minWidth: '150px' }}>
                                 {groupIndex >= 0 && data.groups.length > groupIndex ? data.groups[groupIndex].name : "GROUP"}
                                 <ChevronDown className="ms-2" />
                             </Button>
                         </DropdownTrigger>
-                        <DropdownContent className={styles.dropdownMenu}>
+                        <DropdownContent>
                             <DropdownItem
-                                className={styles.dropdownItem}
                                 onSelect={() => setGroupIndex(-1)}
                             >
                                 Select...
                             </DropdownItem>
                             {data.groups?.map((k, i) => (
                                 <DropdownItem
-                                    className={styles.dropdownItem}
                                     key={i}
                                     onSelect={() => setGroupIndex(i)}
                                 >
@@ -199,7 +198,6 @@ function Group() {
                     </Dropdown>
 
                     <Button
-                        variant="outline-secondary"
                         onClick={() => {
                             setModalData({
                                 point: create(pointSchema, {
@@ -218,7 +216,6 @@ function Group() {
                     </Button>
 
                     <Button
-                        variant="outline-secondary"
                         onClick={() => setImportJson({ data: true })}
                     >
                         <BoxArrowInDown />&nbsp;Import
@@ -226,12 +223,15 @@ function Group() {
                 </div>
             </div>
 
-            <Accordion type="multiple" className={styles.accordion}>
-                {
-                    groupIndex >= 0
-                        && data.groups.length > groupIndex
-                        && data.groups[groupIndex].nodes.length > 0 ? (
-                        data.groups[groupIndex].nodes
+            {
+                groupIndex >= 0
+                    && data.groups.length > groupIndex
+                    && data.groups[groupIndex].nodes.length > 0
+                    ?
+                    < Accordion type="multiple" style={{
+                        boxShadow: ""
+                    }}>
+                        {data.groups[groupIndex].nodes
                             .map((v) => {
                                 return <NodeItemv2
                                     key={v.hash}
@@ -247,13 +247,17 @@ function Group() {
                                     }}
                                 />
                             })
-                    ) : (
-                        <div className="text-center text-secondary py-3">
-                            {groupIndex === -1 ? "Please select a group to display nodes" : "Current group has no nodes"}
-                        </div>
-                    )
-                }
-            </Accordion>
+                        }
+                    </Accordion >
+                    :
+                    <Card>
+                        <CardBody>
+                            <div className="text-center text-secondary py-3">
+                                {groupIndex === -1 ? "Please select a group to display nodes" : "Current group has no nodes"}
+                            </div>
+                        </CardBody>
+                    </Card>
+            }
         </>
     );
 }
@@ -493,9 +497,11 @@ const getLatencyColor = (val: string) => {
 // Helper Component: Display a single block of information
 const InfoBlock: FC<{ label: string, value: React.ReactNode, loading?: boolean, colorClass?: string }> = ({ label, value, loading, colorClass }) => (
     <div className={styles.infoCard}>
-        <span className={styles.infoLabel}>{label}</span>
-        {/* Use text-break to prevent layout overflow on small screens */}
-        <div className={`${styles.infoValue} ${colorClass || ''} text-break`}>
+        <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.25rem', fontWeight: 700 }}>{label}</span>
+        <div className={colorClass || ''} style={{
+            fontSize: '0.9rem',
+            wordBreak: 'break-all',
+        }}>
             {loading ? <Spinner size="sm" /> : value || "N/A"}
         </div>
     </div>
@@ -556,14 +562,8 @@ const NodeItemv2: FC<{
     const isTesting = isLoading(latency);
 
     return (
-        <AccordionItem value={hash} className={styles.accordionItem}>
-            <AccordionTrigger className={styles.nodeHeader}>
-                {/* 
-                    Main Container Layout:
-                    - Mobile (xs): flex-column (Two rows)
-                    - Desktop (sm+): flex-sm-row (Single row)
-                    - Alignment: Top-aligned on mobile, Centered on desktop
-                */}
+        <AccordionItem value={hash}>
+            <AccordionTrigger>
                 <div className="d-flex w-100 flex-column flex-sm-row align-items-start align-items-sm-center pe-2">
 
                     {/* 
@@ -580,10 +580,10 @@ const NodeItemv2: FC<{
                                 : "text-muted"
                             }`} />
 
-                        <div className="d-flex flex-column text-truncate">
-                            <span className="fw-bold text-truncate">{name}</span>
+                        <div className="d-flex flex-column gap-2 text-truncate">
+                            <span className="text-truncate">{name}</span>
                             <div className="d-flex gap-2 align-items-center" style={{ fontSize: '0.75rem' }}>
-                                <span className="text-muted font-monospace opacity-75">{hash.substring(0, 8)}</span>
+                                <span className="text-muted opacity-75">{hash.substring(0, 8)}</span>
                                 {ipv6 && <Badge variant="info" className="text-dark py-0 px-1" style={{ fontSize: '0.65rem' }}>IPv6</Badge>}
                             </div>
                         </div>
@@ -600,13 +600,13 @@ const NodeItemv2: FC<{
                         <div className="d-flex gap-4 text-muted small align-items-center">
                             <div className="d-flex gap-2 align-items-center">
                                 <span className="text-uppercase text-muted" style={{ fontSize: '0.65rem', fontWeight: 700 }}>TCP</span>
-                                <span className={`font-monospace fw-bold ${getLatencyColor(latency.tcp.value)}`}>
+                                <span className={getLatencyColor(latency.tcp.value)}>
                                     {latency.tcp.value}
                                 </span>
                             </div>
                             <div className="d-flex gap-2 align-items-center">
                                 <span className="text-uppercase text-muted" style={{ fontSize: '0.65rem', fontWeight: 700 }}>UDP</span>
-                                <span className={`font-monospace fw-bold ${getLatencyColor(latency.udp.value)}`}>
+                                <span className={getLatencyColor(latency.udp.value)}>
                                     {latency.udp.value}
                                 </span>
                             </div>
@@ -663,7 +663,6 @@ const NodeItemv2: FC<{
                         <Dropdown>
                             <DropdownTrigger asChild>
                                 <Button
-                                    variant="outline-secondary"
                                     size="sm"
                                     disabled={isTesting}
                                     className="d-flex align-items-center gap-2"
@@ -689,13 +688,13 @@ const NodeItemv2: FC<{
                         </Dropdown>
                     </div>
 
-                    <Button variant="outline-secondary" size="sm" onClick={onClickEdit} title="Edit Configuration">
+                    <Button size="sm" onClick={onClickEdit} title="Edit Configuration">
                         <Pencil />
                         {/* d-none d-sm-inline: Hide text on mobile */}
                         <span className="d-none d-sm-inline ms-2">Edit</span>
                     </Button>
 
-                    <Button variant="primary" size="sm" onClick={() => setNode(ctx, hash)} title="Use Node">
+                    <Button size="sm" onClick={() => setNode(ctx, hash)} title="Use Node">
                         <Check2Circle />
                         {/* d-none d-sm-inline: Hide text on mobile */}
                         <span className="d-none d-sm-inline ms-2">Use</span>
@@ -728,7 +727,7 @@ const NodeJsonModal = (
     const [nodeJson, setNodeJson] = useState({ data: "" });
     const Footer = () => {
         if (!props.onSave) return <></>
-        return <Button variant="outline-primary"
+        return <Button
             onClick={() => {
                 const p = fromJsonString(pointSchema, nodeJson.data);
                 if (props.isNew) p.hash = ""
@@ -770,7 +769,7 @@ const NodeJsonModal = (
 
 
                 <ModalFooter>
-                    <Button variant="outline-secondary" onClick={() => { props.onHide() }}>Close</Button>
+                    <Button onClick={() => { props.onHide() }}>Close</Button>
                     <Footer />
                 </ModalFooter>
             </ModalContent>

@@ -156,15 +156,16 @@ function History() {
                         className="mb-0"
                         triggerClassName="py-0"
                         size="sm"
+                        style={{ minWidth: "120px" }}
                     />
 
-                    <Button variant="outline-primary" size="sm" onClick={() => mutate()} disabled={isValidating}>
+                    <Button size="sm" onClick={() => mutate()} disabled={isValidating}>
                         {isValidating ? <Spinner size="sm" /> : <ArrowClockwise />}
                     </Button>
 
                     <Dropdown>
                         <DropdownTrigger asChild>
-                            <Button variant="outline-secondary" size="sm">
+                            <Button size="sm">
                                 <SortDown className="me-1" />
                             </Button>
                         </DropdownTrigger>

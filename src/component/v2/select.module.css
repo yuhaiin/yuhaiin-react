@@ -4,7 +4,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-radius: 6px;
+    border-radius: 12px;
     padding: 0 12px;
     font-size: 14px;
     line-height: 1;
@@ -38,7 +38,7 @@
 .selectContent {
     overflow: hidden;
     background-color: var(--bs-body-bg);
-    border-radius: 8px;
+    border-radius: 20px;
     border: 1px solid var(--bs-border-color);
     box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
     z-index: 2000;
@@ -80,7 +80,7 @@
     font-size: 14px;
     line-height: 1;
     color: var(--bs-body-color);
-    border-radius: 4px;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     height: 32px;
@@ -94,10 +94,10 @@
 }
 
 .selectItem[data-highlighted] {
-    outline: none;
-    background-color: var(--bs-primary-bg-subtle);
-    border-color: var(--bs-primary-border-subtle);
-    color: var(--bs-body-color);
+    /* Hover background color */
+    background-color: var(--bs-tertiary-bg, #e9ecef);
+    /* Hover text color */
+    color: var(--bs-emphasis-color, #000000);
 }
 
 .selectItemIndicator {
@@ -129,6 +129,7 @@
     display: flex;
     align-items: center;
     margin-bottom: 1rem;
+    flex-wrap: wrap;
 }
 
 .formLabel {
@@ -136,6 +137,14 @@
     flex-shrink: 0;
     margin-right: 1.5rem;
     font-weight: 500;
+}
+
+@media (max-width: 576px) {
+    .formLabel {
+        flex-basis: 100%;
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
 }
 
 .formControl {

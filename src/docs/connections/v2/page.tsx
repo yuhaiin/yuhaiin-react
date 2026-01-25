@@ -86,7 +86,7 @@ function Connections() {
                 editable={false}
                 show={nodeModal.show}
                 hash={nodeModal.hash}
-                onHide={() => setNodeModal({ show: false, hash: "" })}
+                onHide={() => setNodeModal(prev => { return { ...prev, show: false } })}
             />
 
             <FlowContainer onUpdate={updateCounters} />

@@ -6,7 +6,7 @@ import styles from './accordion.module.css';
 
 const Accordion = ({ className, ...props }: React.ComponentProps<typeof AccordionPrimitive.Root>) => (
     <AccordionPrimitive.Root
-        className={clsx(styles.root, className)}
+        className={clsx(styles.accordion, className)}
         {...props}
     />
 );

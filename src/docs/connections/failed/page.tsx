@@ -74,7 +74,7 @@ const InfoModal: FC<{ data?: failed_history, show: boolean, onClose: () => void 
                     </div>
                 </ModalBody>
                 <ModalFooter className="border-0">
-                    <Button variant="outline-secondary" className="w-100" onClick={onClose}>Close</Button>
+                    <Button className="w-100" onClick={onClose}>Close</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
@@ -127,14 +127,14 @@ function FailedHistory() {
                 </div>
 
                 <div className="d-flex flex-wrap gap-2 justify-content-end align-items-center">
-                    <Button variant="outline-secondary" size="sm" onClick={() => mutate()} disabled={isValidating}>
+                    <Button size="sm" onClick={() => mutate()} disabled={isValidating}>
                         {isValidating ? <Spinner size="sm" /> : <ArrowClockwise />}
                     </Button>
 
                     <Dropdown>
                         <DropdownTrigger asChild>
-                            <Button variant="outline-secondary" size="sm">
-                                <SortDown className="me-1" /> Sort
+                            <Button size="sm">
+                                <SortDown />
                             </Button>
                         </DropdownTrigger>
                         <DropdownContent align="end" className="p-3" style={{ minWidth: '220px' }}>

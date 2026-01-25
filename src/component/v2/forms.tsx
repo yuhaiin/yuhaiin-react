@@ -4,6 +4,7 @@ import * as SliderPrimitive from '@radix-ui/react-slider';
 import { clsx } from 'clsx';
 import React, { FC, useId, useState } from 'react';
 import { Eye, EyeSlash } from 'react-bootstrap-icons';
+import { Button } from './button';
 import { SettingLabel } from './card';
 import { Combobox } from './combobox';
 import styles from './forms.module.css';
@@ -135,14 +136,12 @@ export const SettingPasswordVertical: FC<{
                     placeholder={placeholder}
                     style={{ borderRight: 'none', borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
                 />
-                <button
-                    type="button"
-                    className="btn btn-outline-secondary"
+                <Button
                     style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
                     onClick={() => setShow(!show)}
                 >
                     {show ? <EyeSlash /> : <Eye />}
-                </button>
+                </Button>
             </div>
         </div>
     );

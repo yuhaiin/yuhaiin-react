@@ -7,16 +7,22 @@
 }
 
 /* Select Input, Button, or Div as direct children */
+/* Select Input, or Div as direct children */
 .group>input,
-.group>button,
+.group>textarea,
 .group>div {
     position: relative;
     flex: 1 1 auto;
     width: 1%;
     min-width: 0;
-    overflow: hidden;
     /* Ensure children don't overflow rounded/squared corners of the flex item */
 }
+
+.group>button {
+    position: relative;
+    z-index: 2;
+}
+
 
 /* Handle border-radius merge: first element */
 .group> :first-child {

@@ -171,8 +171,8 @@ const ResolverModal: FC<{
                         }
                     </div>
                     <div className="d-flex gap-2">
-                        <Button variant="outline-secondary" onClick={() => onHide()}>Cancel</Button>
-                        <Button variant="primary" disabled={saving} onClick={handleSave}>
+                        <Button onClick={() => onHide()}>Cancel</Button>
+                        <Button disabled={saving} onClick={handleSave}>
                             {saving ? <Spinner size="sm" /> : <><CheckLg className="me-2" />{isNew ? "Create" : "Save"}</>}
                         </Button>
                     </div>
@@ -184,7 +184,7 @@ const ResolverModal: FC<{
 
 const Single: FC<{ value: dns, onChange: (x: dns) => void }> = ({ value, onChange }) => {
     return (
-        <div className="d-flex flex-column gap-4">
+        <div className="d-flex flex-column">
             <SettingInputVertical
                 placeholder="e.g. tls://8.8.8.8:853"
                 label='Upstream DNS'

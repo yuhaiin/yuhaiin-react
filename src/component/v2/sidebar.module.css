@@ -184,6 +184,8 @@
 .subLink:not(.active):hover {
     opacity: 1;
     color: var(--sidebar-active-color);
+    background-color: var(--sidebar-hover-bg);
+    border-radius: 8px;
     transform: translateX(4px);
     transition: transform 0.2s, color 0.2s;
 }

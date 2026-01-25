@@ -138,7 +138,7 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
                 <Accordion type="multiple" className="mb-3">
                     {inbound.transport.map((x, i) => (
                         <AccordionItem value={`item-${i}`} key={i}>
-                            <AccordionTrigger className="fw-bold">
+                            <AccordionTrigger>
                                 {x.transport.case?.toString() ?? "Unknown"}
                             </AccordionTrigger>
                             <AccordionContent>
@@ -150,10 +150,10 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
                                     }} />
 
                                     <div className="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
-                                        <Button variant="outline-primary" size="sm" onClick={() => moveTransport(i, 'up')} disabled={i === 0}>
+                                        <Button size="sm" onClick={() => moveTransport(i, 'up')} disabled={i === 0}>
                                             <ArrowUp />
                                         </Button>
-                                        <Button variant="outline-primary" size="sm" onClick={() => moveTransport(i, 'down')} disabled={i === inbound.transport.length - 1}>
+                                        <Button size="sm" onClick={() => moveTransport(i, 'down')} disabled={i === inbound.transport.length - 1}>
                                             <ArrowDown />
                                         </Button>
                                         <Button variant="outline-danger" size="sm" onClick={() => deleteTransport(i)}>
@@ -180,7 +180,7 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
                             ].map(v => ({ value: v, label: v }))}
                         />
                     </div>
-                    <Button variant="outline-primary" onClick={addTransport}>
+                    <Button onClick={addTransport}>
                         <PlusLg className="me-1" /> Add
                     </Button>
                 </div>

@@ -281,9 +281,8 @@ const ListsModal: FC<{ name: string, show: boolean, isNew?: boolean, onHide: (sa
                         </div>
 
                         <div className="d-flex gap-2">
-                            <Button variant="outline-secondary" onClick={() => onHide()}>Cancel</Button>
+                            <Button onClick={() => onHide()}>Cancel</Button>
                             <Button
-                                variant="primary"
                                 disabled={loadding}
                                 onClick={handleSave}
                             >
@@ -318,7 +317,7 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
             <SettingsBox>
                 <div className="row g-4">
                     {/* Content Type */}
-                    <div className="col-md-6">
+                    <div className="col-12">
                         <SettingTypeSelect
                             label='Content Type'
                             type={list_list_type_enumSchema}
@@ -328,7 +327,7 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
                     </div>
 
                     {/* Source Mode */}
-                    <div className="col-md-6">
+                    <div className="col-12">
                         <SettingLabel className="mb-2">Source Mode</SettingLabel>
                         <ToggleGroup
                             type="single"
@@ -368,7 +367,6 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
                 <div className="bg-body-tertiary p-3 rounded-3 border border-secondary border-opacity-10">
                     <InputList
                         title={isRemote ? "URL" : "Rule"}
-                        textarea
                         dump
                         data={value.list.case === "remote" ? value.list.value.urls : value?.list?.value?.lists ?? []}
                         onChange={(x) => {

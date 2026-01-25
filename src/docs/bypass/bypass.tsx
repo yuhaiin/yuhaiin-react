@@ -99,7 +99,6 @@ const BypassComponent: FC<{
                 </CardBody>
                 <CardFooter className="d-flex justify-content-end">
                     <Button
-                        variant="primary"
                         disabled={saving}
                         onClick={onSave}
                     >
@@ -131,7 +130,6 @@ const RuleItem: FC<{
 
             <div className="d-flex gap-1" onClick={(e) => e.stopPropagation()}>
                 <Button
-                    variant="outline-secondary"
                     size="icon"
                     disabled={isChangePriority}
                     title="Change Priority"
@@ -344,7 +342,7 @@ const PriorityModalComponent: FC<{
                     </SettingsBox>
                 </ModalBody>
                 <ModalFooter className="gap-2">
-                    <Button variant="outline-secondary" onClick={onHide}>Cancel</Button>
+                    <Button onClick={onHide}>Cancel</Button>
                     <Button variant="primary" onClick={() => { onChange(value, operate); onHide(); }}>
                         Apply Change
                     </Button>

@@ -54,7 +54,6 @@ const LinkItem: FC<{
             {/* RIGHT */}
             <div className="d-flex gap-2 justify-content-end link-actions">
                 <Button
-                    variant="outline-primary"
                     size="sm"
                     onClick={onUpdate}
                     disabled={isUpdating}
@@ -119,8 +118,8 @@ const AddLinkModal: FC<{
                     </SettingsBox>
                 </ModalBody>
                 <ModalFooter>
-                    <Button variant="outline-secondary" onClick={onHide}>Cancel</Button>
-                    <Button variant="primary" onClick={handleSave} disabled={!newItem.name || !newItem.url}>
+                    <Button onClick={onHide}>Cancel</Button>
+                    <Button onClick={handleSave} disabled={!newItem.name || !newItem.url}>
                         <PlusLg className="me-1" /> Add
                     </Button>
                 </ModalFooter>

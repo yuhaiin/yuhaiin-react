@@ -72,7 +72,7 @@ const InfoModal: FC<{ data?: block_history, show: boolean, onClose: () => void }
                     </DataList>
                 </ModalBody>
                 <ModalFooter className="border-0">
-                    <Button variant="outline-secondary" className="w-100" onClick={onClose}>Close</Button>
+                    <Button className="w-100" onClick={onClose}>Close</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
@@ -126,14 +126,14 @@ function BypassBlockHistory() {
                 </div>
 
                 <div className="d-flex flex-wrap gap-2 justify-content-end align-items-center">
-                    <Button variant="outline-primary" size="sm" onClick={() => mutate()} disabled={isValidating}>
+                    <Button size="sm" onClick={() => mutate()} disabled={isValidating}>
                         {isValidating ? <Spinner size="sm" /> : <ArrowClockwise />}
                     </Button>
 
                     <Dropdown>
                         <DropdownTrigger asChild>
-                            <Button variant="outline-secondary" size="sm">
-                                <SortDown className="me-2" />Sort
+                            <Button size="sm">
+                                <SortDown />
                             </Button>
                         </DropdownTrigger>
                         <DropdownContent style={{ minWidth: '240px' }} className="p-3">

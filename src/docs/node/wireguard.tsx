@@ -27,7 +27,7 @@ const NewPeersList: FC<{ title: string, data: wireguard_peer_config[], onChange:
                 <Accordion type="multiple" className="mb-3">
                     {data.map((v, index) => (
                         <AccordionItem value={`item-${index}`} key={index}>
-                            <AccordionTrigger className="fw-bold">
+                            <AccordionTrigger>
                                 {v.endpoint || `Peer ${index + 1}`}
                             </AccordionTrigger>
                             <AccordionContent>
@@ -52,7 +52,7 @@ const NewPeersList: FC<{ title: string, data: wireguard_peer_config[], onChange:
 
                 {editable && (
                     <div className="d-flex justify-content-end px-1">
-                        <Button variant='outline-primary' onClick={() => {
+                        <Button onClick={() => {
                             onChange([...data, create(wireguard_peer_configSchema, {
                                 allowedIps: ["0.0.0.0/0"],
                                 endpoint: "127.0.0.1:51820",

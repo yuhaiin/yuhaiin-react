@@ -2,7 +2,7 @@
 
 import { clsx } from "clsx";
 import { ChevronLeft, ChevronRight, ThreeDots } from "react-bootstrap-icons";
-import styles from "./button.module.css";
+import { Button } from "./button";
 
 export interface PaginationProps {
     currentPage: number;
@@ -45,19 +45,25 @@ export function Pagination({
         }
     }
 
-    if (totalPages <= 1) return null;
+    if (totalPages <= 1) return <Button variant="primary" size="icon"
+        style={{
+            minWidth: '32px',
+            height: '32px',
+            padding: '0',
+            fontSize: '12px',
+            fontWeight: 'inherit'
+        }}>1</Button>;
 
     return (
         <div className={clsx("d-flex align-items-center gap-2", className)}>
-            <button
-                className={clsx(styles['custom-btn'], styles.sm, styles['custom-btn-outline-secondary'])}
+            <Button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 aria-label="Previous page"
-                style={{ height: '32px', minWidth: '32px' }}
+                size="icon"
             >
                 <ChevronLeft size={16} />
-            </button>
+            </Button>
 
             <div className="d-flex align-items-center gap-1">
                 {pages.map((item, idx) =>
@@ -66,31 +72,33 @@ export function Pagination({
                             <ThreeDots />
                         </div>
                     ) : (
-                        <button
+                        <Button
                             key={item}
                             onClick={() => onPageChange(item)}
-                            className={clsx(
-                                styles['custom-btn'],
-                                styles.sm,
-                                item === currentPage ? styles['custom-btn-primary'] : styles['custom-btn-outline-secondary']
-                            )}
-                            style={{ minWidth: '32px', height: '32px', padding: '0' }}
+                            size="icon"
+                            variant={item === currentPage ? "primary" : "outline-secondary"}
+                            style={{
+                                minWidth: '32px',
+                                height: '32px',
+                                padding: '0',
+                                fontSize: '12px',
+                                fontWeight: 'inherit'
+                            }}
                         >
                             {item}
-                        </button>
+                        </Button>
                     )
                 )}
             </div>
 
-            <button
-                className={clsx(styles['custom-btn'], styles.sm, styles['custom-btn-outline-secondary'])}
+            <Button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 aria-label="Next page"
-                style={{ height: '32px', minWidth: '32px' }}
+                size="icon"
             >
                 <ChevronRight size={16} />
-            </button>
+            </Button>
         </div>
     );
 }

@@ -95,7 +95,6 @@ export const Protocol: FC<{ inbound: inbound, onChange: (x: inbound) => void }> 
                 />
             </div>
             <Button
-                variant="outline-primary"
                 onClick={() => {
                     const x = { ...inbound }
                     switch (newProtocol.value) {

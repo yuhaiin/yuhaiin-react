@@ -250,7 +250,7 @@ const RuleGroup: FC<{
                     )}
                 </React.Fragment>
             ))}
-            <Button variant="outline-primary" size="sm" onClick={handleAddRule} className="px-3">
+            <Button size="sm" onClick={handleAddRule} className="px-3">
                 <PlusLg className="me-1" />And
             </Button>
         </div>
@@ -312,7 +312,7 @@ const FilterBuilder: FC<{ groups: or[], onUpdateGroups: (groups: or[]) => void }
                 </React.Fragment>
             ))}
             <div className="mt-2">
-                <Button variant="outline-primary" onClick={handleAddGroup} className="px-3">
+                <Button onClick={handleAddGroup} className="px-3">
                     <PlusLg className="me-1" />Or
                 </Button>
             </div>
@@ -430,7 +430,6 @@ export const FilterModal: FC<{
                             {/* 3. Debug Info */}
                             <div className="mt-2">
                                 <Button
-                                    variant="outline-secondary"
                                     className="d-flex align-items-center opacity-75"
                                     onClick={() => setShowDebug(!showDebug)}
                                     style={{ fontSize: '0.8rem' }}
@@ -457,8 +456,8 @@ export const FilterModal: FC<{
                         <Trash className="me-2" />Delete Rule
                     </Button>
                     <div className="d-flex gap-2">
-                        <Button variant="outline-secondary" onClick={onHide}>Cancel</Button>
-                        <Button variant="primary" disabled={loadding} onClick={saveRule}>
+                        <Button onClick={onHide}>Cancel</Button>
+                        <Button disabled={loadding} onClick={saveRule}>
                             {loadding ? <Spinner size="sm" /> : <><CheckLg className="me-2" />Save</>}
                         </Button>
                     </div>

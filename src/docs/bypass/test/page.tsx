@@ -63,7 +63,6 @@ function Test() {
                             onKeyDown={(e) => { if (e.key === 'Enter') handleTest(); }}
                         />
                         <Button
-                            variant="primary"
                             onClick={handleTest}
                             disabled={testing || !value.trim()}
                             style={{ minWidth: '100px' }}
@@ -75,21 +74,23 @@ function Test() {
             </Card>
 
             {/* 2. Loading State */}
-            {testing && (
-                <div className="text-center py-5">
-                    <Spinner size="md" className="mb-3" />
-                    <div className="text-muted small fw-medium">Analyzing routing table...</div>
-                </div>
-            )}
+            {
+                testing && (
+                    <div className="text-center py-5">
+                        <Spinner size="md" className="mb-3" />
+                        <div className="text-muted small fw-medium">Analyzing routing table...</div>
+                    </div>
+                )
+            }
 
             {/* 3. Result Card */}
-            {resp && !testing &&
+            {
+                resp && !testing &&
                 <Card className="animate__animated animate__fadeIn">
                     <CardHeader>
                         <IconBox icon={ClipboardData} color="#10b981" title='Analysis Result' description='Raw decision path metadata' />
 
                         <Button
-                            variant="outline-secondary"
                             size="sm"
                             onClick={() => copy(toJsonString(test_responseSchema, resp, { prettySpaces: 2 }))}
                         >
@@ -122,7 +123,7 @@ function Test() {
                     This tool tests the core logic using the current active configuration.
                 </small>
             </div>
-        </MainContainer>
+        </MainContainer >
     );
 }
 

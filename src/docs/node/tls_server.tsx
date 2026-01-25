@@ -54,7 +54,7 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
 
                 {editable && (
                     <div className="d-flex justify-content-end px-1">
-                        <Button variant='outline-primary'
+                        <Button
                             onClick={() => props.onChange({
                                 ...props.tls, certificates: [...props.tls.certificates, create(certificateSchema, {
                                     cert: new Uint8Array(0),
@@ -109,7 +109,7 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                             <label className="form-label small fw-bold opacity-75">New SNI Hostname</label>
                             <Input value={newSni} onChange={(e) => setNewSni(e.target.value)} />
                         </div>
-                        <Button variant='outline-primary'
+                        <Button
                             className="mb-1"
                             style={{ height: '35px' }}
                             onClick={() => { if (newSni) props.onChange({ ...props.tls, serverNameCertificate: { ...props.tls.serverNameCertificate, [newSni]: create(certificateSchema, {}) } }) }}

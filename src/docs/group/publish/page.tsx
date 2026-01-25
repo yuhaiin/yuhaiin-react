@@ -11,10 +11,10 @@ import { Spinner } from '@/component/v2/spinner';
 import { Switch } from '@/component/v2/switch';
 import { create, toBinary } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
-import Error from '../../../component/Error';
 import { FC, useContext, useEffect, useState } from "react";
-import { CheckLg, Clipboard as ClipboardIcon, PlusLg, Share, Trash } from 'react-bootstrap-icons';
+import { CheckLg, ChevronDown, Clipboard as ClipboardIcon, PlusLg, Share, Trash } from 'react-bootstrap-icons';
 import { FetchProtobuf, useProtoSWR } from '../../../common/proto';
+import Error from '../../../component/Error';
 import { useClipboard } from '../../../component/v2/clipboard';
 import { ConfirmModal } from "../../../component/v2/confirm";
 import Loading from "../../../component/v2/loading";
@@ -152,9 +152,9 @@ const EditModal: FC<{
                             <Dropdown modal={false}>
                                 <DropdownTrigger asChild>
                                     {/* Use Button component or your div here */}
-                                    <Button className="btn btn-outline-secondary w-100 d-flex justify-content-between align-items-center">
+                                    <Button className="w-100 d-flex justify-content-between align-items-center">
                                         <span>{selectedNodes.length} Nodes Selected</span>
-                                        <span>▼</span>
+                                        <ChevronDown />
                                     </Button>
                                 </DropdownTrigger>
 
