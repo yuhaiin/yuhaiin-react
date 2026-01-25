@@ -91,7 +91,7 @@ function HomePage() {
 
         <MainContainer>
             <Card style={{ minHeight: '400px' }}>
-                <CardBody style={{ padding: '0.5rem' }}>
+                <CardBody style={{ padding: '0rem' }}>
                     <TrafficChartDynamic data={traffic} minHeight={400} />
                 </CardBody>
             </Card>

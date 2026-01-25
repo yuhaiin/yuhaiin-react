@@ -170,7 +170,12 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
             width: width,
             height: height,
             mode: 1,
-            padding: [10, 10, 10, 0],
+            padding: [
+                10, // top
+                5,  // right
+                10, // bottom
+                0  // left
+            ],
             series: [
                 { value: (_, rawValue) => data.labels[rawValue] || "" },
                 {
@@ -200,8 +205,9 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                     font: '10px sans-serif',
                     grid: { show: true, stroke: "rgba(255, 255, 255, 0.05)", width: 1 },
                     ticks: { show: true, stroke: "rgba(255, 255, 255, 0.05)" },
-                    values: (_, ticks) => ticks.map(v => formatBytes(Number(v), 2, " ") + '/S'),
-                    size: 80,
+                    values: (_, ticks) => ticks.map(v => formatBytes(Number(v), 0, " ") + '/S'),
+                    size: 65,
+                    gap: 0,
                 }
             ],
             legend: { show: false },
@@ -332,12 +338,12 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                         zIndex: 100,
                         pointerEvents: 'none',
                         backgroundColor: 'rgba(15, 23, 42, 0.9)', // Slate-900 with opacity
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        padding: '8px 12px',
+                        border: '0px solid rgba(255,255,255,0.1)',
+                        padding: '0px',
                         borderRadius: '6px',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06)',
                         color: 'white',
-                        fontSize: '12px',
+                        fontSize: '6px',
                         whiteSpace: 'nowrap',
                         transition: 'opacity 0.1s ease',
                     }}
