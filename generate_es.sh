@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PROTO_PATH=../yuhaiin/pkg/idl
-OUTPUT_PATH=./app/docs/pbes
+OUTPUT_PATH=./src/docs/pbes
 
 
 protoc -I ${PROTO_PATH} --plugin ./node_modules/.bin/protoc-gen-es --es_out ${OUTPUT_PATH} --es_opt target=ts,js_import_style=legacy_commonjs ${PROTO_PATH}/node/node.proto

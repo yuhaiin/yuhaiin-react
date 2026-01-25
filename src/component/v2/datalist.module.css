@@ -1,0 +1,69 @@
+/* DataList.module.css */
+
+.container {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.item {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.1));
+    transition: background-color 0.2s ease;
+}
+
+.item:last-child {
+    border-bottom: none;
+}
+
+/* Layout: vertical stack by default (mobile), horizontal for small screens and above (d-sm-flex) */
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+@media (min-width: 576px) {
+    .content {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+
+/* Key Style */
+.key {
+    flex-shrink: 0;
+    min-width: 120px;
+    font-size: 0.875rem;
+    /* 14px */
+    font-weight: 600;
+    color: var(--sidebar-header-color, #495057);
+    text-transform: capitalize;
+    line-height: 1.5;
+}
+
+/* Value Style */
+.value {
+    flex-grow: 1;
+    font-size: 0.9375rem;
+    /* 15px */
+    font-weight: 400;
+    color: var(--sidebar-color, #212529);
+    line-height: 1.5;
+    word-break: break-all;
+    /* Prevent long strings (like Hash) from breaking the layout */
+}
+
+@media (min-width: 576px) {
+    .value {
+        text-align: right;
+        /* Right-aligned on desktop */
+    }
+}
+
+/* Interaction effect (optional: if you want feedback when item is clicked) */
+.itemInteractive:hover {
+    background-color: var(--bs-tertiary-bg, rgba(0, 0, 0, 0.02));
+}

@@ -1,0 +1,72 @@
+.pageHeader {
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    margin-bottom: 1rem;
+    /* More spacing */
+    flex-wrap: wrap;
+    /* Allow wrapping on smaller screens */
+    gap: 1rem;
+    /* Add gap for spacing when wrapped */
+}
+
+.pageTitle {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+}
+
+.headerActions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* Info Grid inside Body */
+.infoGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.infoCard {
+    background: var(--card-footer-bg);
+    border: 0.5px solid var(--card-inner-border);
+    border-radius: 20px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.infoCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background: var(--card-inner-border);
+}
+
+/* Latency Colors */
+.latency-good {
+    color: #10b981;
+}
+
+.latency-avg {
+    color: #f59e0b;
+}
+
+.latency-bad {
+    color: #ef4444;
+}
+
+.latency-invalid {
+    color: #9ca3af;
+}
+
+/* Action Footer */
+.actionFooter {
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--card-inner-border);
+    justify-content: flex-end;
+}

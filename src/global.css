@@ -1,0 +1,602 @@
+@import './bootstrap.css';
+
+:root {
+    --sidebar-gap: 16px;
+
+    /* Rounded corners for card-like appearance */
+    --sidebar-radius: 24px;
+
+    --sidebar-transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Dark Mode: Solid Deep Space Grey */
+html[data-bs-theme="dark"] {
+    /* Solid background, no transparency */
+    --sidebar-bg: var(--bs-body-bg);
+
+    --sidebar-color: #a6a6c0;
+    /* Muted text color */
+    --sidebar-header-color: #ffffff;
+
+    /* Subtle border for definition */
+    --sidebar-border-color: #2b2b40;
+
+    --sidebar-hover-bg: #222233;
+
+    /* Tech Cyan / Neon Teal */
+    --sidebar-active-bg: rgba(0, 255, 213, 0.08);
+    --sidebar-active-color: #00ffd5;
+    --sidebar-active-glow: 0 0 15px rgba(0, 255, 213, 0.1);
+
+    /* heavy shadow for floating effect since bg is solid */
+    --sidebar-box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    --divider-color: #2b2b40;
+
+    /* --- Default (Dark Mode) --- */
+    --card-inner-border: rgba(255, 255, 255, 0.05);
+    --card-footer-bg: rgba(0, 0, 0, 0.1);
+
+    --list-item-bg: rgba(255, 255, 255, 0.02);
+    --list-item-hover: rgba(255, 255, 255, 0.05);
+    --list-item-border-hover: rgba(255, 255, 255, 0.1);
+
+    --new-item-dashed: rgba(255, 255, 255, 0.2);
+    --new-item-focus: rgba(255, 255, 255, 0.05);
+
+    --input-text-color: #ffffff;
+    --input-placeholder: rgba(255, 255, 255, 0.3);
+
+    --modal-settings-bg: rgba(255, 255, 255, 0.03);
+    --modal-settings-border: rgba(255, 255, 255, 0.05);
+    --modal-error-bg: rgba(220, 53, 69, 0.1);
+    --modal-label-color: var(--bs-secondary-color);
+
+    --metric-bg: var(--bs-body-bg);
+    --metric-border: rgba(255, 255, 255, 0.1);
+    --metric-label: #94a3b8;
+    --metric-value: #f8fafc;
+
+    .metricCard {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* Light Mode: Solid White */
+html[data-bs-theme="light"] {
+    /* Solid background */
+    --sidebar-bg: #ffffff;
+
+    --sidebar-color: #64748b;
+    --sidebar-header-color: #0f172a;
+
+    --sidebar-border-color: #e2e8f0;
+
+    --sidebar-hover-bg: #f1f5f9;
+
+    /* Tech Blue */
+    --sidebar-active-bg: #e0f2fe;
+    --sidebar-active-color: #0284c7;
+    --sidebar-active-glow: none;
+    /* Clean look for light mode */
+
+    --sidebar-box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+    --divider-color: #e2e8f0;
+
+
+    --card-inner-border: rgba(0, 0, 0, 0.08);
+    --card-footer-bg: rgba(0, 0, 0, 0.03);
+
+    --list-item-bg: rgba(0, 0, 0, 0.03);
+    --list-item-hover: rgba(0, 0, 0, 0.06);
+    --list-item-border-hover: rgba(0, 0, 0, 0.15);
+
+    --new-item-dashed: rgba(0, 0, 0, 0.2);
+    --new-item-focus: rgba(0, 0, 0, 0.05);
+
+    --input-text-color: var(--bs-body-color);
+    --input-placeholder: rgba(0, 0, 0, 0.4);
+
+    --modal-settings-bg: rgba(0, 0, 0, 0.03);
+    --modal-settings-border: rgba(0, 0, 0, 0.08);
+    --modal-error-bg: rgba(220, 53, 69, 0.08);
+    --modal-label-color: rgba(0, 0, 0, 0.6);
+
+    --metric-bg: #ffffff;
+    --metric-border: rgba(0, 0, 0, 0.08);
+    --metric-label: #64748b;
+    --metric-value: #1e293b;
+}
+
+/* 1. Basic Setup */
+body {
+    overflow-x: hidden;
+    /* Prevent horizontal scrollbar on body */
+    width: 100%;
+    /* Ensure background color adapts to theme if set in :root */
+    background-color: var(--bs-body-bg);
+}
+
+/* =======================================================
+   Global Component Overrides (Buttons & Switches)
+   ======================================================= */
+
+/* -------------------------------------------------------
+   1. Buttons (Includes Dropdowns & Input Groups)
+   ------------------------------------------------------- */
+
+/* Base Button Style */
+.btn {
+    background-color: var(--bs-tertiary-bg);
+    border: 1px solid var(--sidebar-border-color);
+    color: var(--bs-body-color);
+
+    /* 
+       CRITICAL: Set default radius WITHOUT !important.
+       This allows Bootstrap's Input Group selectors to override 
+       corners (making them square) when buttons are attached to inputs.
+    */
+    border-radius: 12px;
+
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    /* Fix positioning for z-index stacking in Input Groups */
+    position: relative;
+}
+
+/* Hover State */
+.btn:hover {
+    background-color: var(--sidebar-hover-bg);
+    border-color: var(--sidebar-active-color);
+    color: var(--sidebar-active-color);
+
+    /* Ensure hovered button border sits above adjacent input borders */
+    z-index: 2;
+}
+
+/* 
+   Active / Focus / Dropdown Open States
+   We use !important here to override Bootstrap's high-specificity 
+   default blue styles for .btn-primary:active, etc.
+*/
+.btn:active,
+.btn.active,
+.btn:focus-visible,
+.show>.btn.dropdown-toggle,
+/* Target parent .show (Dropdowns) */
+.btn.dropdown-toggle.show
+
+/* Target button .show */
+    {
+    /* Force background to match the hover state */
+    background-color: var(--sidebar-hover-bg) !important;
+    border-color: var(--sidebar-active-color) !important;
+    color: var(--sidebar-active-color) !important;
+
+    /* Remove the default blue focus ring/glow */
+    box-shadow: none !important;
+    outline: none !important;
+
+    /* Highest priority in Input Groups so the active border is fully visible */
+    z-index: 3;
+}
+
+.btn.btn-danger {
+    background-color: var(--bs-danger) !important;
+    border-color: var(--bs-danger) !important;
+    color: #fff !important;
+}
+
+.btn.btn-danger:hover,
+.btn.btn-danger:active,
+.btn.btn-danger.active,
+.btn.btn-danger:focus-visible {
+    background-color: #bb2d3b !important;
+    border-color: #b02a37 !important;
+    color: #fff !important;
+
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5) !important;
+}
+
+.btn.btn-outline-danger {
+    background-color: transparent !important;
+    border-color: var(--bs-danger) !important;
+    color: var(--bs-danger) !important;
+}
+
+.btn.btn-outline-danger:hover {
+    background-color: var(--bs-danger) !important;
+    border-color: var(--bs-danger) !important;
+    color: #fff !important;
+}
+
+.btn.btn-outline-danger:active,
+.btn.btn-outline-danger.active,
+.btn.btn-outline-danger:focus-visible {
+    background-color: var(--bs-danger) !important;
+
+    border-color: var(--bs-danger) !important;
+    color: #fff !important;
+
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5) !important;
+}
+
+.btn:focus,
+.btn:active:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* -------------------------------------------------------
+   Disabled State
+   ------------------------------------------------------- */
+
+/* 
+   General Button Disabled State 
+   Resets style to the base look but with reduced opacity.
+   We use !important to override :hover or :active styles if they persist.
+*/
+.btn:disabled,
+.btn.disabled,
+fieldset:disabled .btn {
+    background-color: var(--bs-tertiary-bg) !important;
+    border-color: var(--sidebar-border-color) !important;
+    color: var(--bs-body-color) !important;
+
+    /* Standard Bootstrap disabled opacity */
+    opacity: 0.65;
+
+    /* Prevent interactions */
+    pointer-events: none;
+    box-shadow: none !important;
+
+    /* Ensure no z-index weirdness with input groups when disabled */
+    z-index: 0;
+}
+
+/* 
+   Danger Button Disabled State 
+   Needs to keep the red background but faded.
+*/
+.btn.btn-danger:disabled,
+.btn.btn-danger.disabled {
+    background-color: var(--bs-danger) !important;
+    border-color: var(--bs-danger) !important;
+    color: #fff !important;
+    opacity: 0.65;
+    /* Fades the red */
+}
+
+/* 
+   Outline Danger Button Disabled State 
+*/
+.btn.btn-outline-danger:disabled,
+.btn.btn-outline-danger.disabled {
+    background-color: transparent !important;
+    border-color: var(--bs-danger) !important;
+    color: var(--bs-danger) !important;
+    opacity: 0.5;
+    /* Usually outlines look better a bit more transparent when disabled */
+}
+
+/* -------------------------------------------------------
+   2. Switches & Checkboxes
+   ------------------------------------------------------- */
+
+/* Default State (Unchecked) */
+.form-check-input {
+    background-color: var(--bs-tertiary-bg);
+    border: 1px solid var(--sidebar-border-color);
+    cursor: pointer;
+
+    /* Smooth transition for color and the switch knob movement */
+    transition: background-position .15s ease-in-out, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Focus State (Remove Blue Glow) */
+.form-check-input:focus {
+    border-color: var(--sidebar-active-color);
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Checked State (Active/On) */
+.form-check-input:checked {
+    background-color: var(--sidebar-active-color) !important;
+    border-color: var(--sidebar-active-color) !important;
+}
+
+/* Active State (While clicking/holding) */
+.form-check-input:active {
+    /* Slight dimming effect for tactile feedback */
+    filter: brightness(90%);
+}
+
+/* =========================================================
+   Global Bootstrap Modal Override
+   Adapting to Sidebar Theme Variables
+   ========================================================= */
+
+/* 1. Animation & Positioning (Mapping .modalContainer logic) */
+/* Override default slide-down. Set initial state for .fade */
+.modal.fade .modal-dialog {
+    transform: translateY(-20px);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Final state when shown */
+.modal.show .modal-dialog {
+    transform: translateY(0);
+}
+
+/* 2. Modal Container (Mapping .modalContainer) */
+.modal-content {
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-color);
+    border-radius: var(--sidebar-radius);
+    border: 1px solid var(--sidebar-border-color);
+    box-shadow: var(--sidebar-box-shadow);
+    overflow: hidden;
+    /* Prevents content from overflowing corners */
+}
+
+/* 3. Header (Mapping .modalHeader) */
+.modal-header {
+    border-bottom: 1px solid var(--sidebar-border-color);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-header .modal-title {
+    font-size: 1.25rem;
+    color: var(--sidebar-header-color);
+    margin: 0;
+    font-weight: 500;
+}
+
+/* 4. Close Button (Mapping .modalCloseButton) */
+/* Heavily override .btn-close to remove SVG and use CSS styling */
+.modal-header .btn-close {
+    background: transparent;
+    /* Remove default Bootstrap SVG */
+    opacity: 1;
+    /* Reset default opacity */
+    padding: 0;
+    margin: 0;
+    margin-left: auto;
+    font-size: 1.5rem;
+    color: var(--sidebar-color);
+    box-shadow: none;
+    /* Remove focus ring */
+    width: auto;
+    height: auto;
+    transition: color 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Use pseudo-element to simulate the '×' icon for color control */
+.modal-header .btn-close::before {
+    content: '×';
+    font-family: sans-serif;
+    font-style: normal;
+    line-height: 1;
+}
+
+.modal-header .btn-close:hover {
+    color: var(--sidebar-active-color);
+    opacity: 1;
+}
+
+/* 5. Body (Mapping .modalBody) */
+.modal-body {
+    padding: 20px;
+    color: var(--sidebar-color);
+}
+
+/* 6. Footer (Mapping .modalFooter) */
+.modal-footer {
+    border-top: 1px solid var(--sidebar-border-color);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Reset margin for children in footer */
+.modal-footer>* {
+    margin: 0;
+}
+
+/* 7. Buttons inside Modal (Mapping .modalButton) */
+/* Scoped to .modal-footer to avoid affecting other buttons on the page */
+.modal-footer .btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    /* Or use var(--sidebar-radius) */
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--sidebar-border-color);
+    background-color: transparent;
+    /* Default transparent */
+    color: var(--sidebar-color);
+    box-shadow: none;
+}
+
+.modal-footer .btn:hover {
+    background-color: var(--sidebar-hover-bg);
+    color: var(--sidebar-active-color);
+    border-color: var(--sidebar-active-color);
+}
+
+/* Primary Action Button (Mapping .modalButton.primary) */
+/* Targeted via .btn-primary */
+.modal-footer .btn-primary {
+    background-color: var(--sidebar-active-bg);
+    color: var(--sidebar-active-color);
+    border-color: var(--sidebar-active-color);
+    box-shadow: var(--sidebar-active-glow);
+}
+
+.modal-footer .btn-primary:hover,
+.modal-footer .btn-primary:active,
+.modal-footer .btn-primary:focus {
+    background-color: var(--sidebar-active-bg) !important;
+    border-color: var(--sidebar-active-color) !important;
+    color: var(--sidebar-active-color) !important;
+    filter: brightness(1.1);
+    /* Slightly brighter on hover */
+}
+
+/* Backdrop Overlay (Mapping .modalOverlay background) */
+.modal-backdrop.show {
+    opacity: 0.5;
+    background-color: #000;
+}
+
+/* =========================================================
+   ListGroup Override (Matches Modal/Sidebar Theme)
+   ========================================================= */
+
+.list-group-item {
+    background-color: var(--sidebar-bg);
+    /* Matches Modal body bg */
+    border-color: var(--sidebar-border-color);
+    /* Matches Modal borders */
+    color: var(--sidebar-color);
+    /* Matches Modal text */
+}
+
+/* Optional: Hover effect for list items if they are actionable */
+.list-group-item-action:hover,
+.list-group-item-action:focus {
+    background-color: var(--sidebar-hover-bg);
+    color: var(--sidebar-active-color);
+}
+
+/* Utility class for the separator lines to match the border color */
+.theme-divider {
+    height: 1px;
+    background-color: var(--sidebar-border-color) !important;
+    opacity: 1;
+    /* Ensure color is visible */
+}
+
+/* Adjust Badges to blend better if needed */
+.badge {
+    font-weight: 500;
+    /* Optional: slightly soften badges */
+    box-shadow: var(--sidebar-box-shadow);
+}
+
+/* =========================================================
+   Pagination Override (Matches Button Theme)
+   ========================================================= */
+
+.pagination .page-item .page-link {
+    background-color: var(--bs-tertiary-bg);
+    border: 1px solid var(--sidebar-border-color);
+    color: var(--bs-body-color);
+    border-radius: 12px;
+    /* Match button border-radius */
+    margin: 0 4px;
+    /* Add some spacing between items */
+    transition: all 0.2s ease;
+    min-width: 40px;
+    /* Ensure a minimum width for clicks */
+    text-align: center;
+}
+
+.pagination .page-item:first-child .page-link,
+.pagination .page-item:last-child .page-link {
+    border-radius: 12px;
+    /* Ensure prev/next buttons also have radius */
+}
+
+.pagination .page-item .page-link:hover {
+    background-color: var(--sidebar-hover-bg);
+    border-color: var(--sidebar-active-color);
+    color: var(--sidebar-active-color);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--sidebar-active-color) !important;
+    border-color: var(--sidebar-active-color) !important;
+    color: #fff !important;
+    /* Force white text for active item */
+    box-shadow: none !important;
+}
+
+.pagination .page-item.disabled .page-link {
+    background-color: var(--bs-tertiary-bg);
+    border-color: var(--sidebar-border-color);
+    color: var(--bs-body-color);
+    opacity: 0.5;
+}
+
+/* global scrollbar */
+
+/* 1. Define defaults (Light Mode) */
+:root {
+    /* Dark gray thumb for light backgrounds */
+    --scrollbar-thumb: rgba(0, 0, 0, 0.25);
+    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
+    --scrollbar-thumb-active: rgba(0, 0, 0, 0.6);
+    --scrollbar-track: transparent;
+}
+
+/* 2. Override for Dark Mode */
+/* Bootstrap 5.3+ uses this attribute. If you use a different class, change this selector. */
+[data-bs-theme="dark"] {
+    /* Light gray thumb for dark backgrounds */
+    --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
+    --scrollbar-thumb-active: rgba(255, 255, 255, 0.6);
+}
+
+/* Also support system preference if no specific theme attribute is set */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-bs-theme="light"]) {
+        --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+        --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
+        --scrollbar-thumb-active: rgba(255, 255, 255, 0.6);
+    }
+}
+
+/* 3. Apply to Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* 4. Apply to Webkit (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-thumb:active {
+    background-color: var(--scrollbar-thumb-active);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}

@@ -1,0 +1,224 @@
+/* Select Styling */
+
+.selectTrigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 12px;
+    padding: 0 12px;
+    font-size: 14px;
+    line-height: 1;
+    height: 38px;
+    gap: 5px;
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    border: 1px solid var(--bs-border-color);
+    width: 100%;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.selectTrigger:hover {
+    background-color: var(--bs-tertiary-bg);
+    border-color: var(--bs-border-color-translucent);
+}
+
+.selectTriggerSm {
+    height: 32px;
+    font-size: 0.875rem;
+    padding: 0 10px;
+}
+
+.selectTrigger:focus,
+.selectTrigger[data-state='open'] {
+    outline: none;
+    border-color: #86b7fe;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.selectContent {
+    overflow: hidden;
+    background-color: var(--bs-body-bg);
+    border-radius: 20px;
+    border: 1px solid var(--bs-border-color);
+    box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 2000;
+    max-height: var(--radix-select-content-available-height);
+
+    /* Animation */
+    transform-origin: var(--radix-select-content-transform-origin);
+    animation-duration: 0.2s;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, opacity;
+}
+
+.selectContent[data-state='open'] {
+    animation-name: slideDownAndFade;
+}
+
+.selectContent[data-state='closed'] {
+    animation-name: slideUpAndFade;
+}
+
+/* Adjust animation direction based on side if needed, currently using a generic scale/fade or directional fade */
+.selectContent[data-side='top'][data-state='open'] {
+    animation-name: slideUpAndFadeIn;
+}
+
+.selectContent[data-side='bottom'][data-state='open'] {
+    animation-name: slideDownAndFadeIn;
+}
+
+.selectViewport {
+    padding: 5px;
+    overflow-y: auto;
+    max-height: 50vh;
+    /* Fallback */
+    max-height: var(--radix-select-content-available-height);
+}
+
+.selectItem {
+    font-size: 14px;
+    line-height: 1;
+    color: var(--bs-body-color);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 35px 0 25px;
+    position: relative;
+    user-select: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    /* Reserve space for border */
+    transition: background-color 0.1s ease, color 0.1s ease, border-color 0.1s ease;
+}
+
+.selectItem[data-highlighted] {
+    /* Hover background color */
+    background-color: var(--bs-tertiary-bg, #e9ecef);
+    /* Hover text color */
+    color: var(--bs-emphasis-color, #000000);
+}
+
+.selectItemIndicator {
+    position: absolute;
+    left: 0;
+    width: 25px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.countBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bs-primary-bg-subtle);
+    color: var(--bs-primary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    height: 20px;
+    min-width: 20px;
+    padding: 0 6px;
+    border-radius: 9999px;
+    line-height: 1;
+}
+
+/* Shared Form Styles needed for the vertical components */
+.formRow {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.formLabel {
+    flex-basis: 150px;
+    flex-shrink: 0;
+    margin-right: 1.5rem;
+    font-weight: 500;
+}
+
+@media (max-width: 576px) {
+    .formLabel {
+        flex-basis: 100%;
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+}
+
+.formControl {
+    flex-grow: 1;
+    min-width: 0;
+    position: relative;
+}
+
+.formVertical {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.formVertical .formLabel {
+    margin-bottom: 0.5rem;
+    flex-basis: auto;
+    margin-right: 0;
+}
+
+.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    filter: grayscale(0.5);
+}
+
+
+/* Animations */
+@keyframes slideDownAndFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes slideUpAndFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Fallback/Generic animations if needed, but the above cover the main Select cases */
+@keyframes slideDownAndFade {
+    from {
+        opacity: 0;
+        transform: translateY(-2px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUpAndFade {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-2px);
+    }
+}
