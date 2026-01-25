@@ -3,14 +3,15 @@
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import { clsx } from 'clsx';
 import { motion } from "framer-motion";
-import React, { FC, useId, useState } from 'react';
-import { Eye, EyeSlash } from 'react-bootstrap-icons';
+import React, { FC, useEffect, useId, useState } from 'react';
+import { ExclamationCircle, Eye, EyeSlash } from 'react-bootstrap-icons';
 import { Button } from './button';
 import { SettingLabel } from './card';
 import { Combobox } from './combobox';
 import styles from './forms.module.css';
 import { Input, InputProps } from './input';
 import SwitchComponent from './switch';
+import { Tooltip } from './tooltip';
 
 // --- Re-export for convenience ---
 export { SwitchCard } from './switch';
@@ -42,31 +43,8 @@ export * from './select';
 
 // --- Input Components ---
 
-/*
-
-export const SettingInputVertical: FC<{
-    label: string;
-    value: string;
-    onChange: (val: string) => void;
-    placeholder?: string;
-    className?: string;
-}> = React.memo(({ label, value, onChange, placeholder, className }) => {
-    return (
-        <div className={className}>
-            <SettingLabel>{label}</SettingLabel>
-            <Form.Control
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                placeholder={placeholder}
-            />
-        </div>
-    );
-});
-
- */
-
 interface SettingInputVerticalProps extends Omit<InputProps, 'onChange'> {
-    label: string;
+    label: React.ReactNode;
     // Redefine onChange to match business needs (pass string directly)
     onChange: (val: string) => void;
     reminds?: Remind[];
@@ -202,3 +180,64 @@ export const SettingRangeVertical: FC<{
 });
 
 
+// --- Byte Array Input Component ---
+
+export const SettingInputBytes: FC<{
+    label: string;
+    value: Uint8Array | undefined;
+    onChange: (val: Uint8Array) => void;
+    placeholder?: string;
+    className?: string;
+    disabled?: boolean;
+}> = React.memo(({ label, value, onChange, placeholder, className, disabled }) => {
+    const toBase64 = (bytes: Uint8Array | undefined) => {
+        if (!bytes || bytes.length === 0) return "";
+        try {
+            return btoa(String.fromCharCode(...bytes));
+        } catch (e) {
+            return "";
+        }
+    };
+
+    const [text, setText] = useState(toBase64(value));
+
+    useEffect(() => {
+        const canonical = toBase64(value);
+        if (canonical !== text) {
+            setText(canonical);
+        }
+    }, [value]);
+
+    const handleChange = (newText: string) => {
+        setText(newText);
+        try {
+            const binary = atob(newText);
+            const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+            onChange(bytes);
+        } catch (e) {
+            // Keep local text active even if invalid base64
+        }
+    };
+
+    const labelWithWarning = (
+        <div className="d-flex align-items-center gap-1">
+            {label}
+            <Tooltip content="Input must be a valid Base64 string to be saved.">
+                <div className="text-danger" style={{ cursor: 'help' }}>
+                    <ExclamationCircle size={12} />
+                </div>
+            </Tooltip>
+        </div>
+    );
+
+    return (
+        <SettingInputVertical
+            label={labelWithWarning}
+            value={text}
+            onChange={handleChange}
+            placeholder={placeholder}
+            className={className}
+            disabled={disabled}
+        />
+    );
+});

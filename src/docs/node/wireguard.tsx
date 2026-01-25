@@ -1,6 +1,6 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion"
 import { Button } from "@/component/v2/button"
-import { SettingInputVertical } from "@/component/v2/forms"
+import { SettingInputBytes, SettingInputVertical } from "@/component/v2/forms"
 import { InputList } from "@/component/v2/listeditor"
 import { create } from "@bufbuild/protobuf"
 import { FC } from "react"
@@ -109,15 +109,11 @@ export const Wireguardv2: FC<Props<wireguard>> = ({ value, onChange, editable = 
             onChange={(e) => { if (!isNaN(Number(e))) onChange({ ...value, mtu: Number(e) }) }}
         />
 
-        <SettingInputVertical
+        <SettingInputBytes
             label="Reserved"
-            value={btoa(String.fromCharCode.apply(null, Array.from(value.reserved)))}
+            value={value.reserved}
             disabled={!editable}
-            onChange={(e: string) => {
-                try {
-                    onChange({ ...value, reserved: Uint8Array.from(atob(e), c => c.charCodeAt(0)) })
-                } catch (err) { }
-            }}
+            onChange={(x) => onChange({ ...value, reserved: x })}
         />
 
         <InputList

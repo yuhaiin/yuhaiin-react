@@ -2,17 +2,34 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { clsx } from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import * as React from "react";
+import { useLastClickPosition } from "../../hooks/use-last-click";
 import styles from "./modal.module.css";
 
 // --- Context ---
-const ModalContext = React.createContext<{ open: boolean }>({ open: false });
+const ModalContext = React.createContext<{ open: boolean, transformOrigin: string }>({ open: false, transformOrigin: 'center center' });
 
 // --- Wrapper ---
 // We wrap DialogPrimitive.Root to capture the open state and pass it down
 const Modal: React.FC<React.ComponentProps<typeof DialogPrimitive.Root>> = ({ children, open, onOpenChange, ...props }) => {
+    const getLastClick = useLastClickPosition();
+    const [origin, setOrigin] = React.useState("center center");
+
+    // Capture origin only when opening
+    React.useEffect(() => {
+        if (open) {
+            const pos = getLastClick();
+            if (pos.x !== 0 || pos.y !== 0) {
+                setOrigin(`${pos.x}px ${pos.y}px`);
+                return;
+            }
+        }
+        // Reset or keep previous? Keeping previous is fine, but if we close and open elsewhere?
+        // If open is false, we don't care.
+    }, [open]);
+
     return (
         <DialogPrimitive.Root open={open} onOpenChange={onOpenChange} {...props}>
-            <ModalContext.Provider value={{ open: !!open }}>
+            <ModalContext.Provider value={{ open: !!open, transformOrigin: origin }}>
                 {children}
             </ModalContext.Provider>
         </DialogPrimitive.Root>
@@ -32,7 +49,7 @@ const overlayVariants = {
 };
 
 const contentVariants = {
-    hidden: { opacity: 0, scale: 0.95, y: "-48%", x: "-50%" },
+    hidden: { opacity: 0, scale: 0.2, y: "-50%", x: "-50%" },
     visible: {
         opacity: 1,
         scale: 1,
@@ -46,8 +63,8 @@ const contentVariants = {
     },
     exit: {
         opacity: 0,
-        scale: 0.95,
-        y: "-48%",
+        scale: 0.2, // Shrink back
+        y: "-50%",
         x: "-50%",
         transition: { duration: 0.2 }
     }
@@ -55,8 +72,8 @@ const contentVariants = {
 
 
 // 1. Content Container
-const ModalContent = ({ className, children, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>) => {
-    const { open } = React.useContext(ModalContext);
+const ModalContent = ({ className, children, style, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>) => {
+    const { open, transformOrigin } = React.useContext(ModalContext);
 
     return (
         <AnimatePresence>
@@ -78,6 +95,7 @@ const ModalContent = ({ className, children, ...props }: React.ComponentProps<ty
                             initial="hidden"
                             animate="visible"
                             exit="exit"
+                            style={{ transformOrigin, ...style }}
                             {...props as any} // Framer Motion types conflict with Radix? usually fine with asChild but here we wrap motion.div
                         >
                             {children}
