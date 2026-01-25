@@ -33,9 +33,9 @@ function RootComponent() {
         }
         const mq = window.matchMedia('(prefers-color-scheme: dark)')
         setColorScheme(mq.matches ? 'dark' : 'light')
-        mq.addEventListener('change', (evt) => {
-            setColorScheme(evt.matches ? 'dark' : 'light')
-        })
+        const listener = (evt: MediaQueryListEvent) => setColorScheme(evt.matches ? 'dark' : 'light');
+        mq.addEventListener('change', listener);
+        return () => mq.removeEventListener('change', listener);
     }, [])
 
     // data-bs-theme needs to be applied to html, but we are in a component inside body.
