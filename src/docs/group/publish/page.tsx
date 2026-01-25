@@ -12,7 +12,7 @@ import { Switch } from '@/component/v2/switch';
 import { create, toBinary } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { FC, useContext, useEffect, useState } from "react";
-import { CheckLg, ChevronDown, Clipboard as ClipboardIcon, PlusLg, Share, Trash } from 'react-bootstrap-icons';
+import { CheckLg, ChevronDown, ClipboardCheck, Clipboard as ClipboardIcon, PlusLg, Share, Trash } from 'react-bootstrap-icons';
 import { FetchProtobuf, useProtoSWR } from '../../../common/proto';
 import Error from '../../../component/Error';
 import { useClipboard } from '../../../component/v2/clipboard';
@@ -186,7 +186,8 @@ const PublishItem: FC<{
     pub: Publish,
     copyAction: (url: string) => void,
     onDelete: () => void
-}> = ({ configKey, pub, copyAction, onDelete }) => {
+    copied: boolean
+}> = ({ configKey, pub, copyAction, onDelete, copied }) => {
     // Generate URL
     const yuhaiinUrlRemote = create(YuhaiinUrl_RemoteSchema, {
         publish: create(PublishSchema, { ...pub, points: [] }),
@@ -223,7 +224,7 @@ const PublishItem: FC<{
                     size='icon'
                     onClick={() => copyAction(encodedUrl)}
                 >
-                    <ClipboardIcon />
+                    {copied ? <ClipboardCheck /> : <ClipboardIcon />}
                 </Button>
             </InputGroup>
 
@@ -292,6 +293,7 @@ function PublishPage() {
                             configKey={name}
                             pub={pub}
                             copyAction={copy}
+                            copied={copied}
                             onDelete={() => setConfirmDelete({ show: true, name: name })}
                         />
                     }

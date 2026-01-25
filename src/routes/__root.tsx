@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { GlobalToastProvider as GlobalToastProviderv2 } from '../component/v2/toast'
 import NavBarContainer from '../docs/nav/NavBarContainer'
+import './root.css'
 
 interface AndroidInterface {
     setRefreshEnabled?: (enabled: boolean) => void
@@ -158,18 +159,15 @@ function RootComponent() {
                                 initial="enter"
                                 animate="center"
                                 exit="exit"
+                                className='motion-content'
                                 transition={{ duration: 0.5, ease: "easeInOut" }} // Slower animation
                                 style={{
                                     height: '100%',
                                     width: '100%',
                                     willChange: 'transform, opacity',
                                     position: 'absolute',
-                                    top: 0,
-                                    left: 0,
                                     overflowY: 'auto',
                                     overflowX: 'hidden',
-                                    padding: '10px',
-                                    paddingRight: '20px',
                                     boxSizing: 'border-box'
                                 }}
                             >

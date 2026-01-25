@@ -11,7 +11,7 @@ import { GlobalToastContext } from "@/component/v2/toast";
 import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { FC, useContext, useState } from "react";
-import { Hash, InfoCircle, LightningChargeFill, Power } from 'react-bootstrap-icons';
+import { Activity, Hash, InfoCircle, LightningChargeFill, Power } from 'react-bootstrap-icons';
 import { NodeModal } from "../../node/modal";
 import { node } from "../../pbes/api/node_pb";
 import { point, pointSchema } from "../../pbes/node/point_pb";
@@ -121,7 +121,7 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
                 onClickItem={(v) => setModalHash({ hash: v.hash, show: true, point: v })}
                 header={
                     <div className="d-flex align-items-center justify-content-between w-100">
-                        <IconBox icon={LightningChargeFill} color="success" title="Active Nodes" description="Live outbound connection instances" />
+                        <IconBox icon={Activity} color="success" title="Active Nodes" description="Live outbound connection instances" />
                         <Badge variant="success" className="bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill">
                             {data.nodes.length} Running
                         </Badge>

@@ -8,7 +8,7 @@ import { GlobalToastContext } from '@/component/v2/toast';
 import { create, toJsonString } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { CheckLg, ClipboardData, Copy, InfoCircle, PlayFill, Terminal } from 'react-bootstrap-icons';
+import { Clipboard, ClipboardCheck, ClipboardData, InfoCircle, PlayFill, Terminal } from 'react-bootstrap-icons';
 import { FetchProtobuf } from "../../../common/proto";
 import { useClipboard } from "../../../component/v2/clipboard";
 import { rules, test_response, test_responseSchema } from "../../pbes/api/config_pb";
@@ -94,8 +94,7 @@ function Test() {
                             size="sm"
                             onClick={() => copy(toJsonString(test_responseSchema, resp, { prettySpaces: 2 }))}
                         >
-                            {copied ? <CheckLg className="text-success me-2" /> : <Copy className="me-2" />}
-                            {copied ? 'Copied' : 'Copy JSON'}
+                            {copied ? <ClipboardCheck /> : <Clipboard />}
                         </Button>
                     </CardHeader>
                     <CardBody>

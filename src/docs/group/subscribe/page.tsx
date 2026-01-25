@@ -31,6 +31,7 @@ const LinkItem: FC<{
                 gap: '12px',
                 alignItems: 'center',
                 overflow: 'hidden',
+                flex: 1,
             }}
         >
             {/* LEFT */}

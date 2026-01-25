@@ -29,7 +29,6 @@
 }
 
 .mainContent {
-    padding-top: 80px;
     /* Space for fixed button */
     min-height: 100vh;
 }

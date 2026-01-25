@@ -1,5 +1,6 @@
 "use client"
 
+import { Button } from '@/component/v2/button';
 import React, { useState } from 'react';
 import { List } from 'react-bootstrap-icons';
 import Sidebar from './Sidebar';
@@ -10,13 +11,22 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
 
     return (
         <>
-            <button
-                className={`${styles['mobile-toggle-btn']} d-lg-none`}
+            <Button
+                style={{
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                    position: 'fixed',
+                    top: '15px',
+                    left: '15px',
+                    zIndex: 1030,
+                    width: '44px',
+                    height: '44px',
+                }}
                 onClick={() => setShowSidebar(!showSidebar)}
                 aria-label="Toggle navigation"
+                className="d-lg-none"
             >
                 <List />
-            </button>
+            </Button>
 
             <Sidebar show={showSidebar} onHide={() => setShowSidebar(false)} />
 
