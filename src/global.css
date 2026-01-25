@@ -138,7 +138,16 @@ body {
     /* Slightly larger padding for better aesthetics */
 
     /* Handle horizontal overflow for internal tables/code blocks */
-    overflow-x: auto;
+    /* overflow-x: auto; */
+    /* Changed to hidden to prevent scrollbar flickering during page transitions */
+    overflow: hidden;
+    /* We might need overflow-y to be auto if content scrolls inside? */
+    /* No, usually main-content is the scroll container? */
+    /* original was overflow-x: auto. */
+    /* Actually, for full page slide, the container should clip the sliding content. */
+
+    position: relative;
+    /* Ensure it is a positioning context */
 
     /* Smooth transition animations */
     transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),

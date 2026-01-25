@@ -31,6 +31,7 @@ export default defineConfig({
                             { match: 'protobuf', chunk: 'protobuf' },
                             { match: 'bootstrap', chunk: 'bootstrap' },
                             { match: 'tanstack', chunk: 'tanstack' },
+                            { match: 'framer-motion', chunk: 'framer-motion' },
                             { match: ['react', 'react-dom'], chunk: 'react' },
                         ];
 
