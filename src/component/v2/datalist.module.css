@@ -4,15 +4,16 @@
     list-style: none;
     padding: 0;
     margin: 0;
-    /* Overall top border (optional, based on UI needs) */
-    border-top: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.1));
 }
 
 .item {
     padding: 1rem 0;
-    /* py-3 */
     border-bottom: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.1));
     transition: background-color 0.2s ease;
+}
+
+.item:last-child {
+    border-bottom: none;
 }
 
 /* Layout: vertical stack by default (mobile), horizontal for small screens and above (d-sm-flex) */

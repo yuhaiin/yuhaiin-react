@@ -3,7 +3,7 @@
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { CardList, MainContainer, SettingLabel } from "@/component/v2/card";
-import { DataList } from "@/component/v2/datalist";
+import { DataList, DataListItem } from "@/component/v2/datalist";
 import { Dropdown, DropdownContent, DropdownTrigger } from "@/component/v2/dropdown";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Pagination } from "@/component/v2/pagination";
@@ -15,7 +15,6 @@ import { ArrowClockwise, ChevronRight, Clock, Ethernet, ShieldSlash, ShieldSlash
 import { TimestampZero } from "../../../common/nodes";
 import { useProtoSWR } from "../../../common/proto";
 import Loading from "../../../component/v2/loading";
-import { ListGroupItemString } from "../../connections/components";
 import { block_history, rules } from "../../pbes/api/config_pb";
 
 // --- Component: Individual Blocked History Row ---
@@ -65,11 +64,11 @@ const InfoModal: FC<{ data?: block_history, show: boolean, onClose: () => void }
                 </ModalHeader>
                 <ModalBody>
                     <DataList>
-                        <ListGroupItemString itemKey="Time" itemValue={timestampDate(data.time!).toLocaleString()} />
-                        <ListGroupItemString itemKey="Network" itemValue={data.protocol} />
-                        <ListGroupItemString itemKey="Host" itemValue={data.host} />
-                        <ListGroupItemString itemKey="Total Blocks" itemValue={String(data.blockCount)} />
-                        <ListGroupItemString itemKey="Process" itemValue={data.process || "Unknown"} />
+                        <DataListItem label="Time" value={timestampDate(data.time!).toLocaleString()} />
+                        <DataListItem label="Network" value={data.protocol} />
+                        <DataListItem label="Host" value={data.host} />
+                        <DataListItem label="Total Blocks" value={String(data.blockCount)} />
+                        <DataListItem label="Process" value={data.process || "Unknown"} />
                     </DataList>
                 </ModalBody>
                 <ModalFooter className="border-0">

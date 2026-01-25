@@ -70,8 +70,8 @@ export default function LogComponent() {
                 <CardHeader className="py-3">
                     <div className="d-flex justify-content-between align-items-center w-100 gap-3">
                         <IconBox icon={Terminal} color="#f59e0b" title="Live Logcat" description="Real-time system events" />
-                        <FilterSearch onEnter={setSearchTerm} style={{ maxWidth: '400px' }} />
-                        <div className="d-flex align-items-center gap-2">
+                        <div className="d-flex align-items-center gap-2 flex-grow-1">
+                            <FilterSearch onEnter={setSearchTerm} className='flex-grow-1' />
                             <span className="badge bg-warning bg-opacity-10 text-warning px-2 py-1 rounded-pill" style={{ fontSize: '0.7rem' }}>
                                 <Broadcast className="me-1" />LIVE
                             </span>

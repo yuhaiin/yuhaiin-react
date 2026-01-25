@@ -196,8 +196,6 @@
 
 .filterSearchWrapper {
   position: relative;
-  width: 100%;
-  max-width: 300px;
 }
 
 .filterSearchIcon {
@@ -214,6 +212,7 @@
   border-radius: 20px;
   background-color: var(--bs-secondary-bg);
   border: 1px solid var(--bs-border-color);
+  width: 100%;
 }
 
 .filterSearchInputSm {

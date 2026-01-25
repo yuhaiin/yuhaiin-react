@@ -2,7 +2,7 @@
 
 import { Button } from "@/component/v2/button"
 import { CardList, IconBadge, MainContainer, SettingLabel } from "@/component/v2/card"
-import { DataList } from "@/component/v2/datalist"
+import { DataList, DataListItem } from "@/component/v2/datalist"
 import { Dropdown, DropdownContent, DropdownTrigger } from "@/component/v2/dropdown"
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal"
 import { Pagination } from "@/component/v2/pagination"
@@ -16,7 +16,6 @@ import { useProtoSWR } from "../../../common/proto"
 import Loading from "../../../component/v2/loading"
 import { connections, failed_history } from "../../pbes/api/statistic_pb"
 import { type } from "../../pbes/statistic/config_pb"
-import { ListGroupItemString } from "../components"
 
 // --- Component: Individual Failed History Row ---
 const ListItem: FC<{ data: failed_history }> = React.memo(({ data }) => {
@@ -60,21 +59,15 @@ const InfoModal: FC<{ data?: failed_history, show: boolean, onClose: () => void 
                 </ModalHeader>
                 <ModalBody>
                     <div>
-                        {/* Note: ListGroupItemString internal uses DataList/DataListItem now, but here we are using it directly.
-                            DataList container is missing here if we use ListGroupItemString raw?
-                            ListGroupItemString returns a DataListItem.
-                            DataListItem needs to be inside a DataList.
-                            So we should wrap it.
-                        */}
                         <DataList>
                             {data && (
                                 <>
-                                    <ListGroupItemString itemKey="Host" itemValue={data.host} />
-                                    <ListGroupItemString itemKey="Network" itemValue={type[data.protocol ?? type.unknown]} />
-                                    <ListGroupItemString itemKey="Failures" itemValue={String(data.failedCount)} />
-                                    <ListGroupItemString itemKey="Last Error" itemValue={data.error} />
-                                    <ListGroupItemString itemKey="Process" itemValue={data.process || "System"} />
-                                    <ListGroupItemString itemKey="Timestamp" itemValue={timestampDate(data.time!).toLocaleString()} />
+                                    <DataListItem label="Host" value={data.host} />
+                                    <DataListItem label="Network" value={type[data.protocol ?? type.unknown]} />
+                                    <DataListItem label="Failures" value={String(data.failedCount)} />
+                                    <DataListItem label="Last Error" value={data.error} />
+                                    <DataListItem label="Process" value={data.process || "System"} />
+                                    <DataListItem label="Timestamp" value={timestampDate(data.time!).toLocaleString()} />
                                 </>
                             )}
                         </DataList>

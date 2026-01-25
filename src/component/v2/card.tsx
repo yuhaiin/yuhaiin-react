@@ -267,17 +267,24 @@ export const IconBoxRounded: FC<{
     </div>
 );
 
-export const FilterSearch: FC<{ onEnter: (str: string) => void, className?: string, style?: React.CSSProperties, size?: 'sm' | 'lg' }> = ({ onEnter, className, style, size }) => {
+export const FilterSearch: FC<{
+    onEnter: (str: string) => void,
+    className?: string,
+    style?: React.CSSProperties, size?: 'sm' | 'lg',
+    inputStyle?: React.CSSProperties,
+    inputClassName?: string,
+}> = ({ onEnter, className, style, size, inputStyle, inputClassName }) => {
     const [filterInput, setFilterInput] = useState('');
     return (
-        <div className={`${styles.filterSearchWrapper} ${className}`} style={style}>
+        <div className={clsx(styles.filterSearchWrapper, className)} style={style}>
             <Search className={`${styles.filterSearchIcon} ${size === 'sm' ? styles.sm : ''}`} style={size === 'sm' ? { left: '0.8rem', fontSize: '0.8rem' } : undefined} />
             <input
                 value={filterInput}
                 onChange={(e) => setFilterInput(e.target.value)}
                 placeholder="Search..."
                 onKeyDown={(e) => e.key === 'Enter' && onEnter(filterInput.toLowerCase())}
-                className={clsx(styles.filterSearchInput, size === 'sm' && styles.filterSearchInputSm)}
+                className={clsx(styles.filterSearchInput, size === 'sm' && styles.filterSearchInputSm, inputClassName)}
+                style={inputStyle}
                 autoComplete="off"
             />
         </div>

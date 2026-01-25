@@ -3,25 +3,25 @@
 // import { FilterTypeSelect } from "@/component/switch"
 import { Button } from "@/component/v2/button"
 import { CardList, FilterSearch, IconBadge, MainContainer, SettingLabel } from "@/component/v2/card"
+import { DataListItem } from "@/component/v2/datalist"
 import { Dropdown, DropdownContent, DropdownTrigger } from "@/component/v2/dropdown"
 import { SettingTypeSelect } from "@/component/v2/forms"
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal"
+import { Pagination } from "@/component/v2/pagination"
 import { Spinner } from "@/component/v2/spinner"
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import { create } from "@bufbuild/protobuf"
 import { timestampDate } from "@bufbuild/protobuf/wkt"
 import React, { FC, useCallback, useMemo, useState } from "react"
 import { ArrowClockwise, ArrowLeftRight, ArrowRepeat, Broadcast, ChevronRight, Clock, InfoCircle, ShieldCheck, SortDown } from "react-bootstrap-icons"
-import Loading from "../../../component/v2/loading"
-// import { CustomPagination } from "../../../component/pagination"
-import { Pagination } from "@/component/v2/pagination"
 import { TimestampZero } from "../../../common/nodes"
 import { useProtoSWR } from "../../../common/proto"
+import Loading from "../../../component/v2/loading"
 import { NodeModal } from "../../node/modal"
 import { all_history, connections } from "../../pbes/api/statistic_pb"
 import { mode } from "../../pbes/config/bypass_pb"
 import { connectionSchema, type, typeSchema } from "../../pbes/statistic/config_pb"
-import { ConnectionInfo, ListGroupItemString } from "../components"
+import { ConnectionInfo } from "../components"
 
 
 // --- Component: Individual History Row (Subscribe Style) ---
@@ -58,7 +58,6 @@ function History() {
     const [sortBy, setSortBy] = useState("Time")
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [filter, setFilter] = useState("");
-    const [filterInput, setFilterInput] = useState("");
     const [netFilter, setNetFilter] = useState<type>(type.unknown);
     const [page, setPage] = useState(1);
     const [modalData, setModalData] = useState<{ show: boolean, data?: all_history }>({ show: false });
@@ -106,11 +105,14 @@ function History() {
                 editable={false}
                 show={nodeModal.show}
                 hash={nodeModal.hash}
-                onHide={() => setNodeModal({ show: false, hash: "" })}
+                onHide={() => setNodeModal(prev => ({ ...prev, show: false }))}
             />
 
             {/* Details Modal */}
-            <Modal open={!nodeModal.show && modalData.show} onOpenChange={(open) => !open && setModalData({ show: false })}>
+            <Modal
+                open={!nodeModal.show && modalData.show}
+                onOpenChange={(open) => !open && setModalData(prev => ({ ...prev, show: false }))}
+            >
                 <ModalContent>
                     <ModalHeader closeButton>
                         <ModalTitle className="fw-bold">Session Detail</ModalTitle>
@@ -121,14 +123,14 @@ function History() {
                             value={modalData.data?.connection ?? create(connectionSchema, {})}
                             startContent={
                                 <>
-                                    <ListGroupItemString itemKey="Total Count" itemValue={modalData.data?.count.toString() ?? "1"} />
-                                    <ListGroupItemString itemKey="Last Activity" itemValue={timestampDate(modalData.data?.time ?? TimestampZero).toLocaleString()} />
+                                    <DataListItem label="Total Count" value={modalData.data?.count.toString() ?? "1"} />
+                                    <DataListItem label="Last Activity" value={timestampDate(modalData.data?.time ?? TimestampZero).toLocaleString()} />
                                 </>
                             }
                         />
                     </ModalBody>
                     <ModalFooter className="border-0">
-                        <Button variant="default" className="w-100" onClick={() => setModalData({ show: false })}>Close</Button>
+                        <Button variant="default" className="w-100" onClick={() => setModalData(prev => ({ ...prev, show: false }))}>Close</Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>
@@ -153,6 +155,7 @@ function History() {
                         format={(v) => v === 0 ? "All Networks" : typeSchema.values.find(x => x.number === v)?.name ?? "Unknown"}
                         className="mb-0"
                         triggerClassName="py-0"
+                        size="sm"
                     />
 
                     <Button variant="outline-primary" size="sm" onClick={() => mutate()} disabled={isValidating}>

@@ -119,7 +119,7 @@ function Connections() {
                 </div>
             </div>
 
-            <ConnectionList conns={conns} counters={counters} setInfo={setInfo} conn_error={conn_error} sortFields={sortBy || "id"} sortOrder={sortOrder} />
+            <ConnectionList conns={conns ?? {}} counters={counters} setInfo={setInfo} conn_error={conn_error} sortFields={sortBy || "id"} sortOrder={sortOrder} />
         </div>
     );
 }

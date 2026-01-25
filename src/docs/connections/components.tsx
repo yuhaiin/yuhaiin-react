@@ -126,14 +126,10 @@ export const useFlow = () => {
             return FetchProtobuf(connections.method.total).then(async ({ data: r, error }) => {
                 if (error) throw error
                 if (r) {
-                    try {
-                        const resp = generateFlow(r, lastFlow)
-                        const flow = new Flow(Number(r.download), resp.download_rate, Number(r.upload), resp.upload_rate, r.counters)
-                        setLastFlow(flow)
-                        return flow
-                    } catch (e) {
-                        throw { msg: e.toString(), code: 500 }
-                    }
+                    const resp = generateFlow(r, lastFlow)
+                    const flow = new Flow(Number(r.download), resp.download_rate, Number(r.upload), resp.upload_rate, r.counters)
+                    setLastFlow(flow)
+                    return flow
                 }
             })
         },
@@ -201,11 +197,6 @@ export const FlowContainer: FC<{
     return <FlowCard lastFlow={lastFlow} flow_error={flow_error} extra_fields={extra_fields} />
 })
 
-export const ListGroupItemString: FC<{ itemKey: string, itemValue: string }> =
-    ({ itemKey, itemValue }) => {
-        return <DataListItem label={itemKey} value={itemValue} />;
-    }
-
 export const ConnectionInfo: FC<{
     value: connection,
     startContent?: JSX.Element,
@@ -218,24 +209,24 @@ export const ConnectionInfo: FC<{
             {startContent}
             <DataListItem label="Id" value={value.id.toString()} />
             <DataListItem label="Addr" value={value.addr} />
-            <ListGroupItemString itemKey="Geo" itemValue={value.geo} />
-            <ListGroupItemString itemKey="Type" itemValue={connType[value.type?.connType]} />
-            <ListGroupItemString itemKey="UnderlyingType" itemValue={connType[value.type?.underlyingType]} />
-            <ListGroupItemString itemKey="Inbound" itemValue={value.inboundName} />
-            <ListGroupItemString itemKey="InboundAddr" itemValue={value.inbound} />
-            <ListGroupItemString itemKey="Source" itemValue={value.source} />
-            <ListGroupItemString itemKey="RemoteAddr" itemValue={value.outbound} />
-            <ListGroupItemString itemKey="Remote Geo" itemValue={value.outboundGeo} />
-            <ListGroupItemString itemKey="Interface" itemValue={value.interface} />
-            <ListGroupItemString itemKey="LocalAddr" itemValue={value.localAddr} />
-            <ListGroupItemString itemKey="Destination" itemValue={value.destionation} />
-            <ListGroupItemString itemKey="FakeIP" itemValue={value.fakeIp} />
-            <ListGroupItemString itemKey="Hosts" itemValue={value.hosts} />
-            <ListGroupItemString itemKey="Domain" itemValue={value.domain} />
-            <ListGroupItemString itemKey="IP" itemValue={value.ip} />
-            <ListGroupItemString itemKey="Tag" itemValue={value.tag} />
-            <ListGroupItemString itemKey="Lists" itemValue={value.lists?.join(", ")} />
-            <ListGroupItemString itemKey="Resolver" itemValue={value.resolver} />
+            <DataListItem label="Geo" value={value.geo} />
+            <DataListItem label="Type" value={value.type?.connType ? connType[value.type?.connType] : undefined} />
+            <DataListItem label="UnderlyingType" value={value.type?.underlyingType ? connType[value.type?.underlyingType] : undefined} />
+            <DataListItem label="Inbound" value={value.inboundName} />
+            <DataListItem label="InboundAddr" value={value.inbound} />
+            <DataListItem label="Source" value={value.source} />
+            <DataListItem label="RemoteAddr" value={value.outbound} />
+            <DataListItem label="Remote Geo" value={value.outboundGeo} />
+            <DataListItem label="Interface" value={value.interface} />
+            <DataListItem label="LocalAddr" value={value.localAddr} />
+            <DataListItem label="Destination" value={value.destionation} />
+            <DataListItem label="FakeIP" value={value.fakeIp} />
+            <DataListItem label="Hosts" value={value.hosts} />
+            <DataListItem label="Domain" value={value.domain} />
+            <DataListItem label="IP" value={value.ip} />
+            <DataListItem label="Tag" value={value.tag} />
+            <DataListItem label="Lists" value={value.lists?.join(", ")} />
+            <DataListItem label="Resolver" value={value.resolver} />
 
             {(value.nodeName || value.hash) &&
                 <DataListItem
@@ -252,15 +243,15 @@ export const ConnectionInfo: FC<{
                 />
             }
 
-            <ListGroupItemString itemKey="Protocol" itemValue={value.protocol} />
-            <ListGroupItemString itemKey="Process" itemValue={value.process} />
-            <ListGroupItemString itemKey="TlsServerName" itemValue={value.tlsServerName} />
-            <ListGroupItemString itemKey="HttpHost" itemValue={value.httpHost} />
-            <ListGroupItemString itemKey="Component" itemValue={value.component} />
-            <ListGroupItemString itemKey="Mode" itemValue={mode[value.mode]} />
-            <ListGroupItemString itemKey="UdpMigrateId" itemValue={value.udpMigrateId ? value.udpMigrateId.toString() : ""} />
-            <ListGroupItemString itemKey="Pid" itemValue={value.pid ? value.pid.toString() : ""} />
-            <ListGroupItemString itemKey="Uid" itemValue={value.uid ? value.uid.toString() : ""} />
+            <DataListItem label="Protocol" value={value.protocol} />
+            <DataListItem label="Process" value={value.process} />
+            <DataListItem label="TlsServerName" value={value.tlsServerName} />
+            <DataListItem label="HttpHost" value={value.httpHost} />
+            <DataListItem label="Component" value={value.component} />
+            <DataListItem label="Mode" value={mode[value.mode]} />
+            <DataListItem label="UdpMigrateId" value={value.udpMigrateId ? value.udpMigrateId.toString() : ""} />
+            <DataListItem label="Pid" value={value.pid ? value.pid.toString() : ""} />
+            <DataListItem label="Uid" value={value.uid ? value.uid.toString() : ""} />
             <MatchHistoryItem value={value.matchHistory || []} />
 
             {endContent}
