@@ -99,7 +99,7 @@
 /* Collapsible Trigger */
 .trigger {
     /* Inherits .item styles usually, but we need specific icon behavior */
-    composes: item;
+    display: flex;
 }
 
 .triggerIcon {

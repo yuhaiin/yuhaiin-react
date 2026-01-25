@@ -8,13 +8,13 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { Spinner } from "@/component/v2/spinner";
 import { create, fromJsonString } from "@bufbuild/protobuf";
 import { Duration, StringValueSchema } from "@bufbuild/protobuf/wkt";
-import Error from '../../component/Error';
 import { FC, useContext, useState } from "react";
 import { BoxArrowInDown, Check2Circle, ChevronDown, HddNetwork, Pencil, PlusLg, Speedometer2 } from 'react-bootstrap-icons';
 import { useLocalStorage } from "usehooks-ts";
 import { LatencyDNSUrlDefault, LatencyDNSUrlKey, LatencyHTTPUrlDefault, LatencyHTTPUrlKey, LatencyIPUrlDefault, LatencyIPUrlKey, LatencyIPv6Default, LatencyIPv6Key, LatencyStunTCPUrlDefault, LatencyStunTCPUrlKey, LatencyStunUrlDefault, LatencyStunUrlKey } from "../../common/apiurl";
 import { Nodes, NodesContext } from "../../common/nodes";
 import { FetchProtobuf, useProtoSWR } from '../../common/proto';
+import Error from '../../component/Error';
 import Loading from "../../component/v2/loading";
 import { GlobalToastContext } from "../../component/v2/toast";
 import { NodeModal } from "../node/modal";
@@ -615,7 +615,7 @@ const NodeItemv2: FC<{
                 </div>
             </AccordionTrigger>
 
-            <AccordionContent className={styles.accordionBody}>
+            <AccordionContent>
                 {/* 1. Main Info Grid (Latency & IP) */}
                 <div className={styles.infoGrid}>
                     <InfoBlock

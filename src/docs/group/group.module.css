@@ -67,11 +67,6 @@
     color: var(--sidebar-color);
 }
 
-
-.accordionBody {
-    padding: 10px;
-}
-
 .accordion :global(.accordion-item:last-of-type .list-group) {
     border-bottom-right-radius: var(--bs-accordion-border-radius);
     border-bottom-left-radius: var(--bs-accordion-border-radius);
