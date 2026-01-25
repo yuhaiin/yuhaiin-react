@@ -133,10 +133,6 @@ body {
     min-height: 100vh;
     height: 100vh;
 
-    padding: 10px;
-    padding-right: 20px;
-    /* Slightly larger padding for better aesthetics */
-
     /* Handle horizontal overflow for internal tables/code blocks */
     /* overflow-x: auto; */
     /* Changed to hidden to prevent scrollbar flickering during page transitions */
