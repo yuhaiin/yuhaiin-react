@@ -22,20 +22,15 @@
     padding: 24px 0;
     overflow-y: auto;
 
-    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
-    will-change: transform;
-
-    /* Mobile: hidden by default */
-    transform: translateX(calc(-100% - var(--sidebar-gap) - 30px));
+    /* Mobile: hidden by default - Handled by Framer Motion now */
+    /* transform: translateX(calc(-100% - var(--sidebar-gap) - 30px)); */
 }
 
 .root::-webkit-scrollbar {
     width: 0px;
 }
 
-.root.show {
-    transform: translateX(0);
-}
+/* .root.show handled by Framer */
 
 /* Nav List (ul/div) */
 .list {
@@ -275,10 +270,10 @@
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     z-index: 1040;
-    display: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    /* Display is handled by React mounting/unmounting */
 }
+
+/* .overlay.show handled by Framer */
 
 .overlay.show {
     display: block;

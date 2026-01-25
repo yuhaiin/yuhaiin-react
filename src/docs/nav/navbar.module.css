@@ -27,3 +27,15 @@
     color: var(--sidebar-active-color, #007bff);
     border-color: var(--sidebar-active-color, #007bff);
 }
+
+.mainContent {
+    padding-top: 80px;
+    /* Space for fixed button */
+    min-height: 100vh;
+}
+
+@media (min-width: 992px) {
+    .mainContent {
+        padding-top: 0;
+    }
+}

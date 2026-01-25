@@ -15,22 +15,67 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
     onHide?: () => void;
 }
 
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
+
+// ... existing imports ...
+
+// Helper hook for media query
+function useMediaQuery(query: string) {
+    const [matches, setMatches] = useState(false);
+    useEffect(() => {
+        const media = window.matchMedia(query);
+        if (media.matches !== matches) {
+            setMatches(media.matches);
+        }
+        const listener = () => setMatches(media.matches);
+        media.addEventListener("change", listener);
+        return () => media.removeEventListener("change", listener);
+    }, [matches, query]);
+    return matches;
+}
+
 const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, show, onHide, children, ...props }, ref) => {
+    const isDesktop = useMediaQuery("(min-width: 992px)");
+
+    // Determine animation state
+    // On Desktop: Always visible (x: 0)
+    // On Mobile: Visible if show=true, else Hidden (x: -100%)
+    const animateState = isDesktop ? "visible" : (show ? "visible" : "hidden");
+
+    const sidebarVariants = {
+        hidden: { x: "calc(-100% - 80px)", opacity: 1 }, // Mobile Hidden: extra offset for margin
+        visible: { x: "0%", opacity: 1 },    // Visible (Desktop or Mobile Open)
+    };
+
     return (
         <>
-            <div
+            <motion.div
                 ref={ref}
-                className={clsx(styles.root, show && styles.show, className)}
-                {...props}
+                className={clsx(styles.root, className)}
+                initial={false} // Prevent initial animation on hydration if possible, or just default.
+                animate={animateState}
+                variants={sidebarVariants}
+                transition={{ type: "spring", stiffness: 400, damping: 40 }}
+                {...(props as any)}
             >
                 {children}
-            </div>
-            {/* Overlay for mobile */}
-            <div
-                className={clsx(styles.overlay, show && styles.show, "d-lg-none")}
-                onClick={onHide}
-                aria-hidden="true"
-            />
+            </motion.div>
+
+            {/* Overlay for mobile - Only render when shown and NOT desktop */}
+            <AnimatePresence>
+                {show && !isDesktop && (
+                    <motion.div
+                        className={clsx(styles.overlay, "d-lg-none")}
+                        onClick={onHide}
+                        aria-hidden="true"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                    />
+                )}
+            </AnimatePresence>
         </>
     );
 });
