@@ -231,7 +231,7 @@ export function CardRowList<T>({
 
 export const IconBadge: FC<{ icon: React.ElementType, text: string | number, color?: "primary" | "secondary" | "success" | "danger" | "warning" | "info" }> = ({ icon: Icon, text, color = "primary" }) => (
     <div className={`d-flex align-items-center gap-1 px-2 py-1 rounded bg-${color} bg-opacity-10 text-${color}`} style={{ fontSize: '0.7rem', fontWeight: 700, whiteSpace: 'nowrap' }}>
-        <Icon />
+        <Icon size={12} />
         <span className="text-uppercase">{text}</span>
     </div>
 );

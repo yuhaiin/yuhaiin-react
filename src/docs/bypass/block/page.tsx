@@ -40,15 +40,15 @@ const ListItem: FC<{ data: block_history }> = React.memo(({ data }) => {
             {/* Right Side: Metadata Badges */}
             <div className="d-flex flex-wrap gap-2 align-items-center flex-shrink-0">
                 <Badge variant="info" pill className="d-flex align-items-center gap-1">
-                    <Network /> {data.protocol}
+                    <Network size={12} /> {data.protocol}
                 </Badge>
                 <Badge variant="danger" pill className="d-flex align-items-center gap-1">
-                    <Ban /> {data.blockCount} Blocks
+                    <Ban size={12} /> {data.blockCount} Blocks
                 </Badge>
                 <Badge variant="secondary" pill className="d-flex align-items-center gap-1">
-                    <Clock /> {timestampDate(data.time!).toLocaleTimeString()}
+                    <Clock size={12} /> {timestampDate(data.time!).toLocaleTimeString()}
                 </Badge>
-                <ChevronRight className="text-muted opacity-25 ms-2 d-none d-md-block" />
+                <ChevronRight className="text-muted opacity-25 ms-2 d-none d-md-block" size={16} />
             </div>
         </div>
     );
