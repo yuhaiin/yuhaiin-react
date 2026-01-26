@@ -45,16 +45,20 @@ const NodeModalComponent: FC<{
 
         // isValidating becomes true whenever there is an ongoing request whether the data is loaded or not
         // isLoading becomes true when there is an ongoing request and data is not loaded yet.
+        // isValidating becomes true whenever there is an ongoing request whether the data is loaded or not
+        // isLoading becomes true when there is an ongoing request and data is not loaded yet.
+        const fetcher = React.useMemo(() => show ? ProtoESFetcher(node.method.get, create(StringValueSchema, { value: hash }), point) : null, [show, hash, point])
         const { data: nodes, error, isLoading, isValidating, mutate } = useSWR(
-            hash === "" ? null : ProtoPath(node.method.get),
-            ProtoESFetcher(node.method.get, create(StringValueSchema, { value: hash }), point),
+            show ? ProtoPath(node.method.get) : null,
+            fetcher,
             {
                 shouldRetryOnError: false,
                 keepPreviousData: false,
                 revalidateOnFocus: false,
             })
 
-        useEffect(() => { mutate(); }, [hash, mutate])
+
+        console.log(nodes, hash, point)
 
         const SaveButton = () => {
             if (!editable) return <></>

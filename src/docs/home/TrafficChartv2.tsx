@@ -1,4 +1,4 @@
-import { FC, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { FC, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 import { formatBytes } from '../connections/components';
@@ -353,4 +353,4 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
     );
 };
 
-export default TrafficChart;
+export default React.memo(TrafficChart);

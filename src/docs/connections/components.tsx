@@ -17,7 +17,7 @@ interface MetricProps {
     color?: string;
 }
 
-const MetricCard: FC<MetricProps> = ({ label, value, error, color = '#3b82f6' }) => {
+const MetricCard: FC<MetricProps> = React.memo(({ label, value, error, color = '#3b82f6' }) => {
     return (
         <div
             className={styles.metricCard}
@@ -30,7 +30,7 @@ const MetricCard: FC<MetricProps> = ({ label, value, error, color = '#3b82f6' })
             </div>
         </div>
     );
-};
+});
 
 
 const Unit = {
