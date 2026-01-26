@@ -51,14 +51,14 @@ function Test() {
                     <IconBox icon={Terminal} color="#f59e0b" title='Rule Testing' description='Simulate traffic to verify routing' />
                 </CardHeader>
                 <CardBody className="p-4">
-                    <p className="small text-muted mb-4 px-1">
+                    <p className="small text-gray-500 mb-4 px-1">
                         Enter a domain or IP address below to see which rule and outbound node would be selected.
                     </p>
-                    <div className="d-flex gap-2">
+                    <div className="flex gap-2">
                         <Input
                             placeholder="e.g. www.google.com or 8.8.8.8"
                             value={value}
-                            className="flex-grow-1"
+                            className="flex-grow"
                             onChange={(e) => setValue(e.target.value)}
                             onKeyDown={(e) => { if (e.key === 'Enter') handleTest(); }}
                         />
@@ -67,7 +67,7 @@ function Test() {
                             disabled={testing || !value.trim()}
                             style={{ minWidth: '100px' }}
                         >
-                            {testing ? <Spinner size="sm" /> : <><Play className="me-1" size={16} /> Run</>}
+                            {testing ? <Spinner size="sm" /> : <><Play className="mr-1" size={16} /> Run</>}
                         </Button>
                     </div>
                 </CardBody>
@@ -78,7 +78,7 @@ function Test() {
                 testing && (
                     <div className="text-center py-5">
                         <Spinner size="md" className="mb-3" />
-                        <div className="text-muted small fw-medium">Analyzing routing table...</div>
+                        <div className="text-gray-500 small font-medium">Analyzing routing table...</div>
                     </div>
                 )
             }
@@ -117,8 +117,8 @@ function Test() {
             }
 
             <div className="text-center mt-4 opacity-50 pb-5">
-                <small className="text-muted italic">
-                    <Info className="me-1" />
+                <small className="text-gray-500 italic">
+                    <Info className="mr-1" />
                     This tool tests the core logic using the current active configuration.
                 </small>
             </div>

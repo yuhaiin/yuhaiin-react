@@ -35,7 +35,7 @@ const LinkItem: FC<{
             }}
         >
             {/* LEFT */}
-            <div className="d-flex align-items-center gap-3 min-w-0 overflow-hidden">
+            <div className="flex items-center gap-3 min-w-0 overflow-hidden">
                 <IconBoxRounded
                     icon={Rss}
                     color="#0d6efd"
@@ -43,17 +43,17 @@ const LinkItem: FC<{
                 />
 
                 <div className="min-w-0 overflow-hidden">
-                    <div className="fw-bold text-truncate">
+                    <div className="font-bold truncate">
                         {linkData.name}
                     </div>
-                    <small className="text-muted text-truncate d-block">
+                    <small className="text-gray-500 truncate block">
                         {linkData.url}
                     </small>
                 </div>
             </div>
 
             {/* RIGHT */}
-            <div className="d-flex gap-2 justify-content-end link-actions">
+            <div className="flex gap-2 justify-end link-actions">
                 <Button
                     size="sm"
                     onClick={onUpdate}
@@ -63,7 +63,7 @@ const LinkItem: FC<{
                         ? <Spinner size="sm" />
                         : <RefreshCw size={16} />
                     }
-                    <span className="d-none d-sm-inline ms-2">Update</span>
+                    <span className="hidden sm:inline ml-2">Update</span>
                 </Button>
 
                 <Button
@@ -72,7 +72,7 @@ const LinkItem: FC<{
                     onClick={onDelete}
                 >
                     <Trash size={16} />
-                    <span className="d-none d-sm-inline ms-2">Delete</span>
+                    <span className="hidden sm:inline ml-2">Delete</span>
                 </Button>
             </div>
         </div>
@@ -97,12 +97,12 @@ const AddLinkModal: FC<{
     return (
         <Modal open={show} onOpenChange={(open) => !open && onHide()}>
             <ModalContent>
-                <ModalHeader closeButton className="border-bottom-0 pb-0">
-                    <ModalTitle className="fw-bold">Add Subscription</ModalTitle>
+                <ModalHeader closeButton className="border-b-0 pb-0">
+                    <ModalTitle className="font-bold">Add Subscription</ModalTitle>
                 </ModalHeader>
                 <ModalBody className="pt-2">
                     <SettingsBox>
-                        <div className="d-flex flex-column gap-3">
+                        <div className="flex flex-col gap-3">
                             <SettingInputVertical
                                 label="Name"
                                 value={newItem.name}
@@ -121,7 +121,7 @@ const AddLinkModal: FC<{
                 <ModalFooter>
                     <Button onClick={onHide}>Cancel</Button>
                     <Button onClick={handleSave} disabled={!newItem.name || !newItem.url}>
-                        <Plus className="me-1" size={16} /> Add
+                        <Plus className="mr-1" size={16} /> Add
                     </Button>
                 </ModalFooter>
             </ModalContent>
@@ -216,11 +216,11 @@ function Subscribe() {
                 }
                 header={
                     <>
-                        <div className="d-flex align-items-center">
+                        <div className="flex items-center">
                             <IconBox icon={CloudDownload} color="#0ea5e9" />
                             <div>
-                                <h5 className="mb-0 fw-bold">Subscriptions</h5>
-                                <small className="text-muted">Manage remote configuration links</small>
+                                <h5 className="mb-0 font-bold">Subscriptions</h5>
+                                <small className="text-gray-500">Manage remote configuration links</small>
                             </div>
                         </div>
                         <Button

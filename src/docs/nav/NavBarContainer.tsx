@@ -23,7 +23,7 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
                 }}
                 onClick={() => setShowSidebar(!showSidebar)}
                 aria-label="Toggle navigation"
-                className="d-lg-none"
+                className="lg:hidden"
             >
                 <Menu />
             </Button>

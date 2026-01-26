@@ -89,8 +89,8 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
                     {toast.type === 'error' ? 'System Error' : 'Notification'}
                   </ToastPrimitive.Title>
 
-                  <div className="d-flex align-items-center gap-2">
-                    <small className="text-muted" style={{ fontSize: '0.75rem' }}>just now</small>
+                  <div className="flex items-center gap-2">
+                    <small className="text-gray-500" style={{ fontSize: '0.75rem' }}>just now</small>
                     <ToastPrimitive.Close className={styles.close} aria-label="Close">
                       <span aria-hidden>×</span>
                     </ToastPrimitive.Close>

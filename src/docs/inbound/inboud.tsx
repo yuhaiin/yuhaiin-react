@@ -119,13 +119,13 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
                 label="Enabled"
                 checked={inbound.enabled}
                 onCheckedChange={(c) => { onChange({ ...inbound, enabled: c }) }}
-                className="p-3 rounded-3 bg-body-tertiary"
+                className="p-3 rounded-lg bg-tertiary"
             />
         </div>
 
         {/* Network Section */}
         <Card className="mb-3">
-            <CardHeader><span className="fw-bold">Network</span></CardHeader>
+            <CardHeader><span className="font-bold">Network</span></CardHeader>
             <CardBody>
                 <Network inbound={inbound} onChange={(x) => { onChange({ ...x }) }} />
             </CardBody>
@@ -133,7 +133,7 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
 
         {/* Transport Section */}
         <Card className="mb-3">
-            <CardHeader><span className="fw-bold">Transport</span></CardHeader>
+            <CardHeader><span className="font-bold">Transport</span></CardHeader>
             <CardBody>
                 <Accordion type="multiple" className="mb-3">
                     {inbound.transport.map((x, i) => (
@@ -149,7 +149,7 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
                                         onChange({ ...inbound, transport: newTransports });
                                     }} />
 
-                                    <div className="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
+                                    <div className="flex justify-end gap-2 mt-3 pt-3 border-t">
                                         <Button size="sm" onClick={() => moveTransport(i, 'up')} disabled={i === 0}>
                                             <ArrowUp size={16} />
                                         </Button>
@@ -157,7 +157,7 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
                                             <ArrowDown size={16} />
                                         </Button>
                                         <Button variant="outline-danger" size="sm" onClick={() => deleteTransport(i)}>
-                                            <Trash className="me-1" size={16} /> Delete
+                                            <Trash className="mr-1" size={16} /> Delete
                                         </Button>
                                     </div>
                                 </div>
@@ -166,9 +166,9 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
                     ))}
                 </Accordion>
 
-                <div className="d-flex align-items-center mb-0">
-                    <SettingLabel className="mb-0 text-nowrap me-3" style={{ minWidth: "auto" }}>Type</SettingLabel>
-                    <div className="flex-grow-1 me-2">
+                <div className="flex items-center mb-0">
+                    <SettingLabel className="mb-0 whitespace-nowrap mr-3" style={{ minWidth: "auto" }}>Type</SettingLabel>
+                    <div className="flex-grow mr-2">
                         <Select
                             value={newProtocol.value}
                             onValueChange={(e) => setNewProtocol({ value: e })}
@@ -181,7 +181,7 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
                         />
                     </div>
                     <Button onClick={addTransport}>
-                        <Plus className="me-1" size={16} /> Add
+                        <Plus className="mr-1" size={16} /> Add
                     </Button>
                 </div>
             </CardBody>
@@ -189,7 +189,7 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
 
         {/* Protocol Section */}
         <Card>
-            <CardHeader><span className="fw-bold">Protocol</span></CardHeader>
+            <CardHeader><span className="font-bold">Protocol</span></CardHeader>
             <CardBody>
                 <Protocol inbound={inbound} onChange={(x) => { onChange({ ...x }) }} />
             </CardBody>

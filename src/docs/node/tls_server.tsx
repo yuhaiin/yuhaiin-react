@@ -24,9 +24,9 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
             />
 
             <div className="mb-4">
-                <div className="d-flex justify-content-between align-items-center mb-2 px-1">
-                    <h6 className="fw-bold mb-0 opacity-75">Certificates</h6>
-                    <small className="text-muted">{props.tls.certificates.length} entries</small>
+                <div className="flex justify-between items-center mb-2 px-1">
+                    <h6 className="font-bold mb-0 opacity-75">Certificates</h6>
+                    <small className="text-gray-500">{props.tls.certificates.length} entries</small>
                 </div>
 
                 {
@@ -34,7 +34,7 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                         return <Card className='mb-3' key={"tls_certificates" + index}>
                             <CardBody>
                                 {editable && (
-                                    <CardTitle className='d-flex justify-content-end mb-3'>
+                                    <CardTitle className='flex justify-end mb-3'>
                                         <Button variant='outline-danger' size="sm" onClick={() => props.onChange({ ...props.tls, certificates: props.tls.certificates.filter((_, i) => i !== index) })}>
                                             <Trash size={16} /> Remove
                                         </Button>
@@ -53,7 +53,7 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                 }
 
                 {editable && (
-                    <div className="d-flex justify-content-end px-1">
+                    <div className="flex justify-end px-1">
                         <Button
                             onClick={() => props.onChange({
                                 ...props.tls, certificates: [...props.tls.certificates, create(certificateSchema, {
@@ -63,16 +63,16 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                                     keyFilePath: "",
                                 })]
                             })} >
-                            <Plus className="me-1" size={16} /> New Certificate
+                            <Plus className="mr-1" size={16} /> New Certificate
                         </Button>
                     </div>
                 )}
             </div>
 
             <div className="mb-4">
-                <div className="d-flex justify-content-between align-items-center mb-2 px-1">
-                    <h6 className="fw-bold mb-0 opacity-75">SNI Certificates</h6>
-                    <small className="text-muted">{Object.keys(props.tls.serverNameCertificate || {}).length} entries</small>
+                <div className="flex justify-between items-center mb-2 px-1">
+                    <h6 className="font-bold mb-0 opacity-75">SNI Certificates</h6>
+                    <small className="text-gray-500">{Object.keys(props.tls.serverNameCertificate || {}).length} entries</small>
                 </div>
 
                 {
@@ -81,8 +81,8 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                         return (
                             <Card className='mb-3' key={"server_name_certificate" + k}>
                                 <CardBody>
-                                    <CardTitle className='d-flex justify-content-between align-items-center mb-3'>
-                                        <span className="fw-bold text-primary">{k}</span>
+                                    <CardTitle className='flex justify-between items-center mb-3'>
+                                        <span className="font-bold text-primary">{k}</span>
                                         {editable && (
                                             <Button variant='outline-danger' size="sm" onClick={() => {
                                                 const serverNameCertificate = { ...props.tls.serverNameCertificate }
@@ -104,9 +104,9 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                 }
 
                 {editable && (
-                    <div className="bg-body-tertiary p-3 rounded-3 d-flex align-items-end gap-3 flex-wrap flex-sm-nowrap">
-                        <div className="flex-grow-1">
-                            <label className="form-label small fw-bold opacity-75">New SNI Hostname</label>
+                    <div className="bg-tertiary p-3 rounded-lg flex items-end gap-3 flex-wrap sm:flex-nowrap">
+                        <div className="flex-grow">
+                            <label className="form-label small font-bold opacity-75">New SNI Hostname</label>
                             <Input value={newSni} onChange={(e) => setNewSni(e.target.value)} />
                         </div>
                         <Button
@@ -114,7 +114,7 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                             style={{ height: '35px' }}
                             onClick={() => { if (newSni) props.onChange({ ...props.tls, serverNameCertificate: { ...props.tls.serverNameCertificate, [newSni]: create(certificateSchema, {}) } }) }}
                         >
-                            <Plus className="me-1" size={16} /> Add SNI
+                            <Plus className="mr-1" size={16} /> Add SNI
                         </Button>
                     </div>
                 )}
@@ -137,7 +137,7 @@ const TLSCertificateComponents = (props: { cert: certificate, onChange: (x: cert
     return (
         <>
             <div className="mb-3">
-                <label className="form-label small fw-bold opacity-75 mb-2">Certificate (PEM)</label>
+                <label className="form-label small font-bold opacity-75 mb-2">Certificate (PEM)</label>
                 <Textarea
                     rows={5}
                     readOnly={!editable}
@@ -149,7 +149,7 @@ const TLSCertificateComponents = (props: { cert: certificate, onChange: (x: cert
             </div>
 
             <div className="mb-3">
-                <label className="form-label small fw-bold opacity-75 mb-2">Private Key (PEM)</label>
+                <label className="form-label small font-bold opacity-75 mb-2">Private Key (PEM)</label>
                 <Textarea
                     rows={5}
                     readOnly={!editable}

@@ -43,7 +43,7 @@ export const InputList: FC<{
 
     return (
         <div className={className}>
-            <label className="form-label fw-bold">{title}</label>
+            <label className="form-label font-bold">{title}</label>
             {!disabled && (
                 <InputGroup className="mb-2">
                     <Textarea
@@ -51,7 +51,7 @@ export const InputList: FC<{
                         onChange={(e) => setNewItem(e.target.value)}
                         placeholder={placeholder || `Add new ${title}${textarea ? " (one per line)" : ""}`}
                         rows={textarea ? 3 : undefined}
-                        className="flex-grow-1"
+                        className="flex-grow"
                         style={{
                             borderTopRightRadius: 0,
                             borderBottomRightRadius: 0
@@ -70,7 +70,7 @@ export const InputList: FC<{
                 </InputGroup>
             )}
 
-            <div className="d-flex flex-column gap-2">
+            <div className="flex flex-col gap-2">
                 {data.map((item, i) => (
                     <InputGroup key={i}>
                         {textarea ? (
@@ -78,7 +78,7 @@ export const InputList: FC<{
                                 value={item}
                                 onChange={(e) => edit(i, e.target.value)}
                                 rows={1} // Start small, can be adjusted
-                                className="flex-grow-1"
+                                className="flex-grow"
                                 disabled={disabled}
                                 style={{
                                     borderTopRightRadius: 0,
@@ -89,7 +89,7 @@ export const InputList: FC<{
                             <Input
                                 value={item}
                                 onChange={(e) => edit(i, e.target.value)}
-                                className="flex-grow-1"
+                                className="flex-grow"
                                 disabled={disabled}
                                 style={{
                                     borderTopRightRadius: 0,
@@ -148,9 +148,9 @@ export const InputBytesList: FC<{
 
     return (
         <div className={className}>
-            <label className="form-label small fw-bold opacity-75 mb-2">{title}</label>
+            <label className="form-label small font-bold opacity-75 mb-2">{title}</label>
             {!disabled && (
-                <div className="d-flex gap-2 mb-3">
+                <div className="flex gap-2 mb-3">
                     <Textarea
                         placeholder={`Paste or type ${title} bytes here...`}
                         value={newItem}
@@ -165,11 +165,11 @@ export const InputBytesList: FC<{
                 </div>
             )}
 
-            <div className="d-flex flex-column gap-3">
+            <div className="flex flex-col gap-3">
                 {(data || []).map((v, i) => (
-                    <div key={i} className="bg-body-secondary p-3 rounded-3 position-relative group">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                            <small className="text-muted fw-bold">ENTRY #{i + 1}</small>
+                    <div key={i} className="bg-body-secondary p-3 rounded-lg relative group">
+                        <div className="flex justify-between items-center mb-2">
+                            <small className="text-gray-500 font-bold">ENTRY #{i + 1}</small>
                             {!disabled && (
                                 <Button variant="outline-danger" size="sm" onClick={() => remove(i)}>
                                     <Trash size={16} />
@@ -187,7 +187,7 @@ export const InputBytesList: FC<{
                     </div>
                 ))}
                 {(!data || data.length === 0) && (
-                    <div className="text-center text-muted fst-italic py-4 opacity-50 border rounded-3 border-dashed">
+                    <div className="text-center text-gray-500 italic py-4 opacity-50 border rounded-lg border-dashed">
                         No {title} entries yet.
                     </div>
                 )}

@@ -31,12 +31,12 @@ const TagItem: FC<{
 
     return (
         <>
-            {isGlobal ? <Globe className="me-3 text-secondary" size={20} /> : isMirror ? <FileStack className="me-3 text-secondary" size={20} /> : <Network className="me-3 text-secondary" size={20} />}
-            <div className="d-flex flex-column overflow-hidden flex-grow-1" style={{ minWidth: 0 }}>
-                <span className="fw-medium text-truncate">{tagName}</span>
+            {isGlobal ? <Globe className="mr-3 text-secondary" size={20} /> : isMirror ? <FileStack className="mr-3 text-secondary" size={20} /> : <Network className="mr-3 text-secondary" size={20} />}
+            <div className="flex flex-col overflow-hidden flex-grow" style={{ minWidth: 0 }}>
+                <span className="font-medium truncate">{tagName}</span>
                 {!isGlobal && (
                     <small
-                        className="text-muted text-truncate font-monospace opacity-75 text-decoration-underline"
+                        className="text-gray-500 truncate font-monospace opacity-75 text-decoration-underline"
                         style={{ cursor: 'pointer', fontSize: '0.75rem' }}
                         onClick={(e) => {
                             if (!isMirror) {
@@ -49,7 +49,7 @@ const TagItem: FC<{
                     </small>
                 )}
             </div>
-            <div className="d-flex gap-2 ms-3 align-items-center flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+            <div className="flex gap-2 ml-3 items-center shrink-0" onClick={(e) => e.stopPropagation()}>
                 <Button
                     variant="outline-danger"
                     size="sm"
@@ -58,7 +58,7 @@ const TagItem: FC<{
                 >
                     <Trash size={16} />
                 </Button>
-                <ChevronRight className="text-muted opacity-25 d-none d-md-block" size={16} />
+                <ChevronRight className="text-gray-500 opacity-25 hidden md:block" size={16} />
             </div>
         </>
     );
@@ -82,7 +82,7 @@ const TagModal: FC<{
                     <ModalTitle>{props.tagItem.tag}</ModalTitle>
                 </ModalHeader>
                 <ModalBody>
-                    <div className="d-flex flex-column gap-4">
+                    <div className="flex flex-col gap-4">
                         {/* Mode Toggle */}
                         <SettingsBox>
                             <SettingLabel className="mb-2">Tag Type</SettingLabel>
@@ -90,19 +90,19 @@ const TagModal: FC<{
                                 type="single"
                                 value={String(props.tagItem.type)}
                                 onValueChange={(v) => v && props.onChangeTag({ ...props.tagItem, type: Number(v) })}
-                                className="w-100"
+                                className="w-full"
                             >
-                                <ToggleItem value={String(tag_type.node)} className="flex-grow-1">
-                                    <Network className="me-2" />Node
+                                <ToggleItem value={String(tag_type.node)} className="flex-grow">
+                                    <Network className="mr-2" />Node
                                 </ToggleItem>
-                                <ToggleItem value={String(tag_type.mirror)} className="flex-grow-1">
-                                    <FileStack className="me-2" />Mirror
+                                <ToggleItem value={String(tag_type.mirror)} className="flex-grow">
+                                    <FileStack className="mr-2" />Mirror
                                 </ToggleItem>
                             </ToggleGroup>
                         </SettingsBox>
 
                         {/* Inputs */}
-                        <div className="d-flex flex-column gap-3">
+                        <div className="flex flex-col gap-3">
                             {props.isNew && (
                                 <SettingInputVertical
                                     label="Tag Name"
@@ -123,7 +123,7 @@ const TagModal: FC<{
                             ) : (
                                 <div>
                                     <SettingLabel className="mb-2">Target Node</SettingLabel>
-                                    <div className="p-3 bg-body-tertiary rounded-3 border border-secondary border-opacity-10">
+                                    <div className="p-3 bg-tertiary rounded-lg border border-secondary border-opacity-10">
                                         <Node
                                             data={props.nodes}
                                             hash={props.tagItem.hash}
@@ -138,7 +138,7 @@ const TagModal: FC<{
                 <ModalFooter className="border-0">
                     <Button onClick={props.onHide}>Cancel</Button>
                     <Button onClick={props.onSave} disabled={!props.tagItem.tag || !props.tagItem.hash}>
-                        <Save className="me-2" size={16} />Save
+                        <Save className="mr-2" size={16} />Save
                     </Button>
                 </ModalFooter>
             </ModalContent>
@@ -219,7 +219,7 @@ function Tags() {
 
             <CardRowList
                 header={
-                    <div className="d-flex justify-content-between align-items-center w-100">
+                    <div className="flex justify-between items-center w-full">
                         <IconBox icon={TagsIcon} color="#10b981" title="Tags Management" description={`${Object.keys(data.tags).length} alias and mirror nodes defined`} />
                         <Button
                             onClick={() => setTagModalData({
@@ -228,7 +228,7 @@ function Tags() {
                                 isNew: true
                             })}
                         >
-                            <Plus className="me-2" />Add New Tag
+                            <Plus className="mr-2" />Add New Tag
                         </Button>
                     </div>
                 }

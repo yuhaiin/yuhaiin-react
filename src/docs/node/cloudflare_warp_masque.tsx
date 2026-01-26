@@ -30,7 +30,7 @@ export const CloudflareWarpMasque: FC<Props<cloudflare_warp_masque>> = ({ value,
         />
 
         <div className="mb-3">
-            <label className="form-label small fw-bold opacity-75 mb-2">EndpointPublicKey</label>
+            <label className="form-label small font-bold opacity-75 mb-2">EndpointPublicKey</label>
             <Textarea
                 rows={3}
                 value={value.endpointPublicKey}

@@ -104,8 +104,8 @@ function Connections() {
             />
 
 
-            <div className="d-flex justify-content-end mb-3">
-                <div className="d-flex align-items-center gap-3 flex-wrap">
+            <div className="flex justify-end mb-3">
+                <div className="flex items-center gap-3 flex-wrap">
                     <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && changeSortOrder(v as "asc" | "desc")}>
                         <ToggleItem value="asc">
                             <ArrowUp size={16} /> Asc
@@ -222,12 +222,12 @@ const ListItem = React.memo(ListItemComponent)
 
 const FlowBadgeComponent: FC<{ download: number, upload: number }> = ({ download, upload }) => {
     // Replaced React-Bootstrap Badge with HTML span and bootstrap classes
-    return <div className="d-flex gap-2">
-        <span className="badge rounded-pill text-bg-secondary d-flex align-items-center gap-1">
+    return <div className="flex gap-2">
+        <span className="badge rounded-full text-bg-secondary flex items-center gap-1">
             <span className={`${styles['badge-icon']}`}><ArrowDown size={12} /></span>
             {formatBytes(download)}
         </span>
-        <span className="badge rounded-pill text-bg-primary d-flex align-items-center gap-1">
+        <span className="badge rounded-full text-bg-primary flex items-center gap-1">
             <span className={`${styles['badge-icon']}`}><ArrowUp size={12} /></span>
             {formatBytes(upload)}
         </span>
@@ -260,7 +260,7 @@ const InfoOffcanvasComponent: FC<{
         <Modal open={show} onOpenChange={(open) => !open && handleClose()}>
             <ModalContent>
                 <ModalHeader closeButton>
-                    <ModalTitle className="h5 fw-bold">
+                    <ModalTitle className="h5 font-bold">
                         Connection Details
                     </ModalTitle>
                 </ModalHeader>
@@ -269,10 +269,10 @@ const InfoOffcanvasComponent: FC<{
                     <ConnectionInfo value={data} showNodeModal={showNodeModal} />
                 </ModalBody>
 
-                <ModalFooter className="border-top-0 pt-0 pb-3 px-3">
+                <ModalFooter className="border-t-0 pt-0 pb-3 px-3">
                     <Button
                         variant="danger"
-                        className="w-100 py-2 d-flex align-items-center justify-content-center notranslate"
+                        className="w-full py-2 flex items-center justify-center notranslate"
                         disabled={closing}
                         onClick={closeConnection}
                     >
@@ -280,14 +280,14 @@ const InfoOffcanvasComponent: FC<{
                             <>
                                 <Spinner
                                     size="sm"
-                                    className="me-2"
+                                    className="mr-2"
                                 />
                                 Disconnecting...
                             </>
                         ) : (
                             <>
-                                <Power className="fs-5 me-2" />
-                                <span className="fw-bold">Disconnect</span>
+                                <Power className="text-xl mr-2" />
+                                <span className="font-bold">Disconnect</span>
                             </>
                         )}
                     </Button>

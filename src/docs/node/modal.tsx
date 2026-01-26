@@ -87,8 +87,8 @@ const NodeModalComponent: FC<{
         return (
             <Modal open={show} onOpenChange={(open) => !open && onHide()}>
                 <ModalContent style={{ maxWidth: '1000px' }}>
-                    <ModalHeader closeButton className="border-bottom-0 pb-0">
-                        <ModalTitle className="fw-bold">{nodes?.name || hash}</ModalTitle>
+                    <ModalHeader closeButton className="border-b-0 pb-0">
+                        <ModalTitle className="font-bold">{nodes?.name || hash}</ModalTitle>
                     </ModalHeader>
 
                     <ModalBody className="pt-2">
@@ -111,7 +111,7 @@ const NodeModalComponent: FC<{
                         </InterfacesContext.Provider>
                     </ModalBody>
 
-                    <ModalFooter className="d-flex justify-content-between">
+                    <ModalFooter className="flex justify-between">
                         <div>
                             {onDelete &&
                                 <Dropdown>
@@ -119,13 +119,13 @@ const NodeModalComponent: FC<{
                                         <Button variant="outline-danger">Remove</Button>
                                     </DropdownTrigger>
                                     <DropdownContent>
-                                        <DropdownItem className="text-danger fw-bold" onSelect={() => { onHide(); onDelete(); }}>Confirm Delete</DropdownItem>
+                                        <DropdownItem className="text-danger font-bold" onSelect={() => { onHide(); onDelete(); }}>Confirm Delete</DropdownItem>
                                         <DropdownItem>Cancel</DropdownItem>
                                     </DropdownContent>
                                 </Dropdown>
                             }
                         </div>
-                        <div className="d-flex gap-2">
+                        <div className="flex gap-2">
                             {(!error && !isValidating && !isLoading && nodes) &&
                                 <Button
                                     onClick={handleCopyJson}

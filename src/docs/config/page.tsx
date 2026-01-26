@@ -145,12 +145,12 @@ function ConfigComponent() {
                             <SettingLabel>System Proxy Integration</SettingLabel>
                             <ToggleGroup
                                 type="multiple"
-                                className="w-100"
+                                className="w-full"
                                 value={systemProxy}
                                 onValueChange={handleSystemProxyChange}
                             >
-                                <ToggleItem value="1" className="flex-grow-1 py-1" style={{ height: '40px' }}>HTTP Proxy</ToggleItem>
-                                <ToggleItem value="2" className="flex-grow-1 py-1" style={{ height: '40px' }}>SOCKS5 Proxy</ToggleItem>
+                                <ToggleItem value="1" className="flex-grow py-1" style={{ height: '40px' }}>HTTP Proxy</ToggleItem>
+                                <ToggleItem value="2" className="flex-grow py-1" style={{ height: '40px' }}>SOCKS5 Proxy</ToggleItem>
                             </ToggleGroup>
                         </div>
                     </div>
@@ -250,9 +250,9 @@ function ConfigComponent() {
                     </div>
                 </CardBody>
 
-                <CardFooter className="d-flex justify-content-end">
+                <CardFooter className="flex justify-end">
                     <Button disabled={saving} onClick={handleSave}>
-                        {saving ? <Spinner size="sm" /> : <><Save className="me-2" size={16} />Apply Advanced Changes</>}
+                        {saving ? <Spinner size="sm" /> : <><Save className="mr-2" size={16} />Apply Advanced Changes</>}
                     </Button>
                 </CardFooter>
             </Card>

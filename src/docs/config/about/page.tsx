@@ -17,26 +17,26 @@ const InfoRow: FC<{
 }> = ({ label, value, icon, url, isBadge, isMonospace }) => (
     <div className="col-12">
         <ListItem style={{ cursor: url ? 'pointer' : 'default' }}>
-            <div className="d-flex w-100 align-items-center justify-content-between gap-3">
-                <div className="d-flex align-items-center gap-3 overflow-hidden">
+            <div className="flex w-full items-center justify-between gap-3">
+                <div className="flex items-center gap-3 overflow-hidden">
                     <IconBoxRounded
                         icon={icon || LayoutGrid}
                         color="#3b82f6"
-                        className="flex-shrink-0"
+                        className="shrink-0"
                         style={{ width: '32px', height: '32px', fontSize: '0.9rem', border: "none" }}
                     />
-                    <span className="text-muted small fw-bold text-uppercase opacity-75" style={{ minWidth: '90px', fontSize: '0.7rem', letterSpacing: '0.5px' }}>{label}</span>
+                    <span className="text-gray-500 small font-bold uppercase opacity-75" style={{ minWidth: '90px', fontSize: '0.7rem', letterSpacing: '0.5px' }}>{label}</span>
                 </div>
 
-                <div className="text-end overflow-hidden">
+                <div className="text-right overflow-hidden">
                     {url ? (
-                        <a href={url} target="_blank" rel="noreferrer" className="text-decoration-none font-monospace text-primary text-truncate d-block">
-                            {value} <ExternalLink className="ms-1" size={12} />
+                        <a href={url} target="_blank" rel="noreferrer" className="text-decoration-none font-monospace text-primary truncate block">
+                            {value} <ExternalLink className="ml-1" size={12} />
                         </a>
                     ) : isBadge ?
                         <IconBadge icon={icon || LayoutGrid} text={value} color="primary" />
                         : (
-                            <span className={`${isMonospace ? 'font-monospace' : ''} text-truncate d-block`} style={{ fontSize: '0.9rem' }}>
+                            <span className={`${isMonospace ? 'font-monospace' : ''} truncate block`} style={{ fontSize: '0.9rem' }}>
                                 {value}
                             </span>
                         )
@@ -92,9 +92,9 @@ export default function About() {
 
                 {/* Build Tags / Features Section */}
                 {info.build && info.build.length > 0 && (
-                    <CardFooter className="p-4 bg-transparent border-top border-secondary border-opacity-10">
-                        <SettingLabel className={"mb-2 d-block text-muted"}>Build Parameters</SettingLabel>
-                        <div className="d-flex flex-wrap gap-2">
+                    <CardFooter className="p-4 bg-transparent border-t border-secondary border-opacity-10">
+                        <SettingLabel className={"mb-2 block text-gray-500"}>Build Parameters</SettingLabel>
+                        <div className="flex flex-wrap gap-2">
                             {info.build.map((tag, idx) => (
                                 <div key={idx} className="px-2 py-1 rounded border font-monospace small text-break">
                                     {tag}
@@ -106,7 +106,7 @@ export default function About() {
             </Card>
 
             <div className="text-center mt-4 opacity-50 pb-5">
-                <small className="text-muted">
+                <small className="text-gray-500">
                     &copy; {new Date().getFullYear()} yuhaiin project. Distributed under MIT License.
                 </small>
             </div>

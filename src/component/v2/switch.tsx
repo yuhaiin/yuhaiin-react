@@ -24,8 +24,8 @@ const SwitchComponent: React.FC<SwitchProps> = ({ checked, onCheckedChange, labe
   <div className={clsx(styles.container, disabled && styles.disabled)}>
     {label && (
       <div className={styles.labelContainer}>
-        <span className="fw-medium">{label}</span>
-        {description && <small className="text-muted" style={{ fontSize: '0.8rem' }}>{description}</small>}
+        <span className="font-medium">{label}</span>
+        {description && <small className="text-gray-500" style={{ fontSize: '0.8rem' }}>{description}</small>}
       </div>
     )}
     <SwitchPrimitive.Root className={styles.root} checked={checked} onCheckedChange={onCheckedChange} disabled={disabled}>
@@ -45,15 +45,15 @@ export default SwitchComponent;
 export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ label, description, checked, onCheckedChange, className, disabled }) => {
   return (
     <div
-      className={clsx(styles.listItem, "justify-content-between", className, disabled && styles.disabled)}
+      className={clsx(styles.listItem, "justify-between", className, disabled && styles.disabled)}
       onClick={() => !disabled && onCheckedChange(!checked)}
       role="button"
       tabIndex={disabled ? -1 : 0}
       onKeyDown={(e) => { if (!disabled && (e.key === 'Enter' || e.key === ' ')) onCheckedChange(!checked); }}
     >
-      <div className="d-flex flex-column">
-        <span className="fw-medium">{label}</span>
-        {description && <small className="text-muted" style={{ fontSize: '0.8rem' }}>{description}</small>}
+      <div className="flex flex-col">
+        <span className="font-medium">{label}</span>
+        {description && <small className="text-gray-500" style={{ fontSize: '0.8rem' }}>{description}</small>}
       </div>
       <SwitchPrimitive.Root className={styles.root} checked={checked} onCheckedChange={onCheckedChange} disabled={disabled}>
         <SwitchPrimitive.Thumb asChild>

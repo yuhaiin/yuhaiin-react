@@ -42,7 +42,7 @@ const BypassComponent: FC<{
     }, [bypass, ctx, refresh, setSaving])
 
     return (
-        <div className="d-flex flex-column gap-4">
+        <div className="flex flex-col gap-4">
             {/* 1. Global Bypass Settings Card */}
             <Card>
                 <CardHeader>
@@ -52,9 +52,9 @@ const BypassComponent: FC<{
                     <div className="row g-4">
                         {/* Left Column: Toggles */}
                         <div className="col-lg-6">
-                            <h6 className="fw-bold mb-3 text-uppercase small text-muted text-opacity-75" style={{ letterSpacing: '0.5px' }}>Resolution Strategy</h6>
+                            <h6 className="font-bold mb-3 uppercase small text-gray-500 text-opacity-75" style={{ letterSpacing: '0.5px' }}>Resolution Strategy</h6>
 
-                            <div className="d-flex flex-column gap-3">
+                            <div className="flex flex-col gap-3">
                                 <SwitchCard
                                     label="Resolve Locally"
                                     description="Resolve DNS on local device"
@@ -72,10 +72,10 @@ const BypassComponent: FC<{
                         </div>
 
                         {/* Right Column: Resolvers */}
-                        <div className="col-lg-6 border-start-lg ps-lg-4" style={{ borderColor: 'var(--card-inner-border)' }}>
-                            <h6 className="fw-bold mb-3 text-uppercase small text-muted text-opacity-75" style={{ letterSpacing: '0.5px' }}>Default Resolvers</h6>
+                        <div className="col-lg-6 border-start-lg lg:pl-4" style={{ borderColor: 'var(--card-inner-border)' }}>
+                            <h6 className="font-bold mb-3 uppercase small text-gray-500 text-opacity-75" style={{ letterSpacing: '0.5px' }}>Default Resolvers</h6>
 
-                            <div className="d-flex flex-column gap-3">
+                            <div className="flex flex-col gap-3">
                                 <SettingSelectVertical
                                     label="Direct Resolver"
                                     value={bypass.directResolver ? bypass.directResolver : ""}
@@ -97,12 +97,12 @@ const BypassComponent: FC<{
                         </div>
                     </div>
                 </CardBody>
-                <CardFooter className="d-flex justify-content-end">
+                <CardFooter className="flex justify-end">
                     <Button
                         disabled={saving}
                         onClick={onSave}
                     >
-                        {saving ? <Spinner size="sm" /> : <><Save className="me-2" />Save Configuration</>}
+                        {saving ? <Spinner size="sm" /> : <><Save className="mr-2" />Save Configuration</>}
                     </Button>
                 </CardFooter>
             </Card>
@@ -122,13 +122,13 @@ const RuleItem: FC<{
 }> = ({ name, index, onPriority, isChangePriority }) => {
     return (
         <>
-            <div className="d-flex align-items-center flex-grow-1 overflow-hidden">
-                <Badge variant="secondary" className="me-2" style={{ minWidth: '40px' }}>#{index + 1}</Badge>
-                <Signpost className="me-2 text-muted" />
-                <span className="text-truncate fw-medium">{name}</span>
+            <div className="flex items-center flex-grow overflow-hidden">
+                <Badge variant="secondary" className="mr-2" style={{ minWidth: '40px' }}>#{index + 1}</Badge>
+                <Signpost className="mr-2 text-gray-500" />
+                <span className="truncate font-medium">{name}</span>
             </div>
 
-            <div className="d-flex gap-1" onClick={(e) => e.stopPropagation()}>
+            <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                 <Button
                     size="icon"
                     disabled={isChangePriority}
@@ -297,21 +297,21 @@ const PriorityModalComponent: FC<{
                 </ModalHeader>
                 <ModalBody>
                     <SettingsBox>
-                        <div className="d-flex align-items-center mb-3">
-                            <Badge variant="primary" className="me-3">#{index + 1}</Badge>
-                            <span className="fw-bold flex-grow-1 text-center">
+                        <div className="flex items-center mb-3">
+                            <Badge variant="primary" className="mr-3">#{index + 1}</Badge>
+                            <span className="font-bold flex-grow text-center">
                                 {index >= 0 && index < rules.length ? rules[index] : ""}
                             </span>
                         </div>
 
-                        <div className="d-flex align-items-center my-3 text-muted">
-                            <hr className="flex-grow-1 opacity-25" />
-                            <small className="mx-2 text-uppercase fw-bold opacity-50" style={{ fontSize: '0.65rem', letterSpacing: '0.5px' }}>Operation</small>
-                            <hr className="flex-grow-1 opacity-25" />
+                        <div className="flex items-center my-3 text-gray-500">
+                            <hr className="flex-grow opacity-25" />
+                            <small className="mx-2 uppercase font-bold opacity-50" style={{ fontSize: '0.65rem', letterSpacing: '0.5px' }}>Operation</small>
+                            <hr className="flex-grow opacity-25" />
                         </div>
 
                         <select
-                            className='form-select text-center mb-3 bg-body-tertiary border-secondary border-opacity-10 rounded-3'
+                            className='form-select text-center mb-3 bg-tertiary border-secondary border-opacity-10 rounded-lg'
                             value={operate}
                             onChange={(e) => setOperate(parseInt(e.target.value))}
                         >
@@ -322,14 +322,14 @@ const PriorityModalComponent: FC<{
                             }
                         </select>
 
-                        <div className="d-flex align-items-center my-3 text-muted">
-                            <hr className="flex-grow-1 opacity-25" />
-                            <small className="mx-2 text-uppercase fw-bold opacity-50" style={{ fontSize: '0.65rem', letterSpacing: '0.5px' }}>Target Rule</small>
-                            <hr className="flex-grow-1 opacity-25" />
+                        <div className="flex items-center my-3 text-gray-500">
+                            <hr className="flex-grow opacity-25" />
+                            <small className="mx-2 uppercase font-bold opacity-50" style={{ fontSize: '0.65rem', letterSpacing: '0.5px' }}>Target Rule</small>
+                            <hr className="flex-grow opacity-25" />
                         </div>
 
                         <select
-                            className='form-select text-center bg-body-tertiary border-secondary border-opacity-10 rounded-3'
+                            className='form-select text-center bg-tertiary border-secondary border-opacity-10 rounded-lg'
                             value={value}
                             onChange={(e) => setValue(parseInt(e.target.value))}
                         >

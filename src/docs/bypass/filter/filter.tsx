@@ -107,7 +107,7 @@ const RuleRow: FC<{
                 <FormSelect
                     value={rule.object.case ?? ""}
                     onChange={(e) => handleUpdate(e, "")}
-                    triggerClassName="rounded-end-0 border-end-0"
+                    triggerClassName="rounded-r-none border-r-0"
                     values={[
                         ["Host", "host"],
                         ["Process", "process"],
@@ -126,7 +126,7 @@ const RuleRow: FC<{
                         value={rule.object.value.list}
                         onChange={(e) => handleUpdate("host", e)}
                         emptyChoose
-                        triggerClassName="rounded-0 border-end-0"
+                        triggerClassName="rounded-none border-r-0"
                         values={valuesContext.Lists}
                     />
                 </div>
@@ -139,7 +139,7 @@ const RuleRow: FC<{
                         values={rule.object.value.names}
                         items={valuesContext.Inbounds}
                         onUpdate={(v) => handleUpdate("inbound", v)}
-                        triggerClassName="rounded-0 border-end-0"
+                        triggerClassName="rounded-none border-r-0"
                     />
                 </div>
             }
@@ -151,7 +151,7 @@ const RuleRow: FC<{
                         value={rule.object.value.list}
                         onChange={(e) => handleUpdate("process", e)}
                         emptyChoose
-                        triggerClassName="rounded-0 border-end-0"
+                        triggerClassName="rounded-none border-r-0"
                         values={valuesContext.Lists}
                     />
                 </div>
@@ -163,7 +163,7 @@ const RuleRow: FC<{
                     <FormSelect
                         value={rule.object.value.network === network_network_type.tcp ? "tcp" : "udp"}
                         onChange={(e) => handleUpdate("network", e)}
-                        triggerClassName="rounded-0 border-end-0"
+                        triggerClassName="rounded-none border-r-0"
                         values={[
                             ["tcp", "tcp"],
                             ["udp", "udp"],
@@ -179,7 +179,7 @@ const RuleRow: FC<{
                         type="text"
                         value={rule.object.value.ports}
                         onChange={(e) => handleUpdate("port", e.target.value)}
-                        className="rounded-0 border-end-0"
+                        className="rounded-none border-r-0"
                     />
                 </div>
             }
@@ -191,13 +191,13 @@ const RuleRow: FC<{
                         type="text"
                         value={rule.object.value.countries}
                         onChange={(e) => handleUpdate("geoip", e.target.value)}
-                        className="rounded-0 border-end-0"
+                        className="rounded-none border-r-0"
                     />
                 </div>
             }
 
             <div style={{ flex: "0 0 42px" }}>
-                <Button variant="outline-danger" onClick={onRemove} size="icon" className="w-100 rounded-start-0 h-100">
+                <Button variant="outline-danger" onClick={onRemove} size="icon" className="w-full rounded-l-none h-full">
                     <X size={16} />
                 </Button>
             </div>
@@ -237,7 +237,7 @@ const RuleGroup: FC<{
     };
 
     return (
-        <div className="border border-secondary border-opacity-10 p-3 rounded-3 bg-body-tertiary bg-opacity-25">
+        <div className="border border-secondary border-opacity-10 p-3 rounded-lg bg-tertiary bg-opacity-25">
             {group.rules.map((rule, index) => (
                 <React.Fragment key={index}>
                     <RuleRow
@@ -246,30 +246,30 @@ const RuleGroup: FC<{
                         onRemove={() => handleRemoveRule(index)}
                     />
                     {index < group.rules.length - 1 && (
-                        <div className="ms-3 mb-3 fw-bold text-primary small text-uppercase">And</div>
+                        <div className="ml-3 mb-3 font-bold text-primary small uppercase">And</div>
                     )}
                 </React.Fragment>
             ))}
             <Button size="sm" onClick={handleAddRule} className="px-3">
-                <Plus className="me-1" size={16} />And
+                <Plus className="mr-1" size={16} />And
             </Button>
         </div>
     );
 };
 
 const OrSeparator: FC = () => (
-    <div className="d-flex align-items-center my-3">
-        <hr className="flex-grow-1 opacity-25" />
-        <span className="mx-3 fw-bold text-muted small text-uppercase" style={{ letterSpacing: '1px' }}>Or</span>
-        <hr className="flex-grow-1 opacity-25" />
+    <div className="flex items-center my-3">
+        <hr className="flex-grow opacity-25" />
+        <span className="mx-3 font-bold text-gray-500 small uppercase" style={{ letterSpacing: '1px' }}>Or</span>
+        <hr className="flex-grow opacity-25" />
     </div>
 );
 
 const RulesSeparator: FC = () => (
-    <div className="d-flex align-items-center my-3">
-        <hr className="flex-grow-1 opacity-25" />
-        <span className="mx-3 fw-bold text-muted small text-uppercase" style={{ letterSpacing: '1px' }}>Rules</span>
-        <hr className="flex-grow-1 opacity-25" />
+    <div className="flex items-center my-3">
+        <hr className="flex-grow opacity-25" />
+        <span className="mx-3 font-bold text-gray-500 small uppercase" style={{ letterSpacing: '1px' }}>Rules</span>
+        <hr className="flex-grow opacity-25" />
     </div>
 );
 
@@ -299,7 +299,7 @@ const FilterBuilder: FC<{ groups: or[], onUpdateGroups: (groups: or[]) => void }
     };
 
     return (
-        <div className="d-flex flex-column gap-2">
+        <div className="flex flex-col gap-2">
             <RulesSeparator />
             {groups.map((group, index) => (
                 <React.Fragment key={index}>
@@ -313,7 +313,7 @@ const FilterBuilder: FC<{ groups: or[], onUpdateGroups: (groups: or[]) => void }
             ))}
             <div className="mt-2">
                 <Button onClick={handleAddGroup} className="px-3">
-                    <Plus className="me-1" size={16} />Or
+                    <Plus className="mr-1" size={16} />Or
                 </Button>
             </div>
         </div>
@@ -368,7 +368,7 @@ export const FilterModal: FC<{
                     ) : isValidating || isLoading || !rule ? (
                         <Loading />
                     ) : (
-                        <div className="d-flex flex-column gap-4">
+                        <div className="flex flex-col gap-4">
                             <SettingsBox>
                                 <div className="row g-4">
                                     <div className="col-md-6">
@@ -430,18 +430,18 @@ export const FilterModal: FC<{
                             {/* 3. Debug Info */}
                             <div className="mt-2">
                                 <Button
-                                    className="d-flex align-items-center opacity-75"
+                                    className="flex items-center opacity-75"
                                     onClick={() => setShowDebug(!showDebug)}
                                     style={{ fontSize: '0.8rem' }}
                                     size="sm"
                                 >
-                                    {showDebug ? <ChevronDown className="me-1" /> : <ChevronRight className="me-1" />}
+                                    {showDebug ? <ChevronDown className="mr-1" /> : <ChevronRight className="mr-1" />}
                                     {showDebug ? "Hide Debug Info" : "Show Debug Info"}
                                 </Button>
 
                                 {showDebug && (
                                     <div className="mt-3">
-                                        <pre className="small bg-body-tertiary p-3 rounded-3 overflow-auto font-monospace border border-secondary border-opacity-10" style={{ maxHeight: '300px', fontSize: '0.75rem' }}>
+                                        <pre className="small bg-tertiary p-3 rounded-lg overflow-auto font-monospace border border-secondary border-opacity-10" style={{ maxHeight: '300px', fontSize: '0.75rem' }}>
                                             {toJsonString(rulev2Schema, rule, { prettySpaces: 2 })}
                                         </pre>
                                     </div>
@@ -451,14 +451,14 @@ export const FilterModal: FC<{
                     )}
                 </ModalBody>
 
-                <ModalFooter className="d-flex justify-content-between gap-2 border-top-0">
+                <ModalFooter className="flex justify-between gap-2 border-t-0">
                     <Button variant="outline-danger" onClick={() => { onHide(); onDelete(); }}>
-                        <Trash className="me-2" size={16} />Delete Rule
+                        <Trash className="mr-2" size={16} />Delete Rule
                     </Button>
-                    <div className="d-flex gap-2">
+                    <div className="flex gap-2">
                         <Button onClick={onHide}>Cancel</Button>
                         <Button disabled={loadding} onClick={saveRule}>
-                            {loadding ? <Spinner size="sm" /> : <><Check className="me-2" size={16} />Save</>}
+                            {loadding ? <Spinner size="sm" /> : <><Check className="mr-2" size={16} />Save</>}
                         </Button>
                     </div>
                 </ModalFooter>

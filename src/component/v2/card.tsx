@@ -95,9 +95,9 @@ export function CardList<T>({ items, onClickItem, footer, renderListItem: body, 
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="text-center text-muted p-5 opacity-50"
+                            className="text-center text-gray-500 p-5 opacity-50"
                         >
-                            <History className="fs-1 d-block mb-2 mx-auto" size={40} />
+                            <History className="text-6xl block mb-2 mx-auto" size={40} />
                             No records found.
                         </motion.div>
                     )}
@@ -105,7 +105,7 @@ export function CardList<T>({ items, onClickItem, footer, renderListItem: body, 
             </CardBody>
             {footer && (
                 <CardFooter>
-                    <div className="d-flex justify-content-center">
+                    <div className="flex justify-center">
                         {footer}
                     </div>
                 </CardFooter>
@@ -138,10 +138,10 @@ export const ErrorBox: FC<{ msgs: string[] }> = ({ msgs }) => {
     if (msgs.length === 0) return null;
     return (
         <div className={styles.errorBox}>
-            <TriangleAlert className="me-3 mt-1 fs-5" />
-            <div className="flex-grow-1">
-                <h6 className="fw-bold mb-2">Configuration Error</h6>
-                <ul className="mb-0 ps-3">
+            <TriangleAlert className="mr-3 mt-1 text-xl" />
+            <div className="flex-grow">
+                <h6 className="font-bold mb-2">Configuration Error</h6>
+                <ul className="mb-0 pl-3">
                     {msgs.map((v, index) => (
                         <li key={index}>{v}</li>
                     ))}
@@ -215,7 +215,7 @@ export function CardRowList<T>({
                 </div>
 
                 {items.length === 0 && !onAddNew && (
-                    <div className="text-center text-muted p-3">
+                    <div className="text-center text-gray-500 p-3">
                         No records found.
                     </div>
                 )}
@@ -230,9 +230,9 @@ export function CardRowList<T>({
 // --- Other Styled Components ---
 
 export const IconBadge: FC<{ icon: React.ElementType, text: string | number, color?: "primary" | "secondary" | "success" | "danger" | "warning" | "info" }> = ({ icon: Icon, text, color = "primary" }) => (
-    <div className={`d-flex align-items-center gap-1 px-2 py-1 rounded bg-${color} bg-opacity-10 text-${color}`} style={{ fontSize: '0.7rem', fontWeight: 700, whiteSpace: 'nowrap' }}>
+    <div className={`flex items-center gap-1 px-2 py-1 rounded bg-${color} bg-opacity-10 text-${color}`} style={{ fontSize: '0.7rem', fontWeight: 700, whiteSpace: 'nowrap' }}>
         <Icon size={12} />
-        <span className="text-uppercase">{text}</span>
+        <span className="uppercase">{text}</span>
     </div>
 );
 
@@ -259,7 +259,7 @@ export const IconBox: FC<{
     description?: string,
     style?: React.CSSProperties
 }> = ({ icon: Icon, color, borderColor, background, className, textClassName, style, title, description }) => (
-    <div className="d-flex align-items-center" style={{ minWidth: 0 }}>
+    <div className="flex items-center" style={{ minWidth: 0 }}>
         <div
             className={clsx(styles.iconBox, className)}
             style={{ color: color, borderColor: borderColor || `${color}33`, background: background || `${color}1A`, ...style }}
@@ -268,8 +268,8 @@ export const IconBox: FC<{
         </div>
         {title &&
             <div className={clsx("overflow-hidden", textClassName)} title={`${title}${description ? ` - ${description}` : ''}`}>
-                <h5 className="mb-0 fw-bold text-truncate">{title}</h5>
-                <small className="text-muted text-truncate d-block">{description}</small>
+                <h5 className="mb-0 font-bold truncate">{title}</h5>
+                <small className="text-gray-500 truncate block">{description}</small>
             </div>
         }
     </div>
@@ -284,7 +284,7 @@ export const IconBoxRounded: FC<{
     style?: React.CSSProperties
 }> = ({ icon: Icon, color, borderColor, background, className, style }) => (
     <div
-        className={`${styles.iconBox} rounded-circle ${className}`}
+        className={`${styles.iconBox} rounded-full ${className}`}
         style={{ color: color, borderColor: borderColor || `${color}33`, background: background || `${color}1A`, ...style }}
     >
         <Icon />

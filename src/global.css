@@ -1,186 +1,322 @@
-@import './bootstrap.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-    --sidebar-gap: 16px;
+/*
+   Extracted from Bootstrap 5.3.8 (bootstrap.css)
+   Preserving variables for compatibility during migration.
+*/
+:root,
+[data-bs-theme=light] {
+  --bs-blue: #0d6efd;
+  --bs-indigo: #6610f2;
+  --bs-purple: #6f42c1;
+  --bs-pink: #d63384;
+  --bs-red: #dc3545;
+  --bs-orange: #fd7e14;
+  --bs-yellow: #ffc107;
+  --bs-green: #198754;
+  --bs-teal: #20c997;
+  --bs-cyan: #0dcaf0;
+  --bs-black: #000;
+  --bs-white: #fff;
+  --bs-gray: #6c757d;
+  --bs-gray-dark: #343a40;
+  --bs-gray-100: #f8f9fa;
+  --bs-gray-200: #e9ecef;
+  --bs-gray-300: #dee2e6;
+  --bs-gray-400: #ced4da;
+  --bs-gray-500: #adb5bd;
+  --bs-gray-600: #6c757d;
+  --bs-gray-700: #495057;
+  --bs-gray-800: #343a40;
+  --bs-gray-900: #212529;
+  --bs-primary: #0d6efd;
+  --bs-secondary: #6c757d;
+  --bs-success: #198754;
+  --bs-info: #0dcaf0;
+  --bs-warning: #ffc107;
+  --bs-danger: #dc3545;
+  --bs-light: #f8f9fa;
+  --bs-dark: #212529;
+  --bs-primary-rgb: 13, 110, 253;
+  --bs-secondary-rgb: 108, 117, 125;
+  --bs-success-rgb: 25, 135, 84;
+  --bs-info-rgb: 13, 202, 240;
+  --bs-warning-rgb: 255, 193, 7;
+  --bs-danger-rgb: 220, 53, 69;
+  --bs-light-rgb: 248, 249, 250;
+  --bs-dark-rgb: 33, 37, 41;
+  --bs-primary-text-emphasis: #052c65;
+  --bs-secondary-text-emphasis: #2b2f32;
+  --bs-success-text-emphasis: #0a3622;
+  --bs-info-text-emphasis: #055160;
+  --bs-warning-text-emphasis: #664d03;
+  --bs-danger-text-emphasis: #58151c;
+  --bs-light-text-emphasis: #495057;
+  --bs-dark-text-emphasis: #495057;
+  --bs-primary-bg-subtle: #cfe2ff;
+  --bs-secondary-bg-subtle: #e2e3e5;
+  --bs-success-bg-subtle: #d1e7dd;
+  --bs-info-bg-subtle: #cff4fc;
+  --bs-warning-bg-subtle: #fff3cd;
+  --bs-danger-bg-subtle: #f8d7da;
+  --bs-light-bg-subtle: #fcfcfd;
+  --bs-dark-bg-subtle: #ced4da;
+  --bs-primary-border-subtle: #9ec5fe;
+  --bs-secondary-border-subtle: #c4c8cb;
+  --bs-success-border-subtle: #a3cfbb;
+  --bs-info-border-subtle: #9eeaf9;
+  --bs-warning-border-subtle: #ffe69c;
+  --bs-danger-border-subtle: #f1aeb5;
+  --bs-light-border-subtle: #e9ecef;
+  --bs-dark-border-subtle: #adb5bd;
+  --bs-white-rgb: 255, 255, 255;
+  --bs-black-rgb: 0, 0, 0;
+  --bs-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+  --bs-body-font-family: var(--bs-font-sans-serif);
+  --bs-body-font-size: 1rem;
+  --bs-body-font-weight: 400;
+  --bs-body-line-height: 1.5;
+  --bs-body-color: #212529;
+  --bs-body-color-rgb: 33, 37, 41;
+  --bs-body-bg: #fff;
+  --bs-body-bg-rgb: 255, 255, 255;
+  --bs-emphasis-color: #000;
+  --bs-emphasis-color-rgb: 0, 0, 0;
+  --bs-secondary-color: rgba(33, 37, 41, 0.75);
+  --bs-secondary-color-rgb: 33, 37, 41;
+  --bs-secondary-bg: #e9ecef;
+  --bs-secondary-bg-rgb: 233, 236, 239;
+  --bs-tertiary-color: rgba(33, 37, 41, 0.5);
+  --bs-tertiary-color-rgb: 33, 37, 41;
+  --bs-tertiary-bg: #f8f9fa;
+  --bs-tertiary-bg-rgb: 248, 249, 250;
+  --bs-heading-color: inherit;
+  --bs-link-color: #0d6efd;
+  --bs-link-color-rgb: 13, 110, 253;
+  --bs-link-decoration: underline;
+  --bs-link-hover-color: #0a58ca;
+  --bs-link-hover-color-rgb: 10, 88, 202;
+  --bs-code-color: #d63384;
+  --bs-highlight-color: #212529;
+  --bs-highlight-bg: #fff3cd;
+  --bs-border-width: 1px;
+  --bs-border-style: solid;
+  --bs-border-color: #dee2e6;
+  --bs-border-color-translucent: rgba(0, 0, 0, 0.175);
+  --bs-border-radius: 0.375rem;
+  --bs-border-radius-sm: 0.25rem;
+  --bs-border-radius-lg: 0.5rem;
+  --bs-border-radius-xl: 1rem;
+  --bs-border-radius-xxl: 2rem;
+  --bs-border-radius-2xl: var(--bs-border-radius-xxl);
+  --bs-border-radius-pill: 50rem;
+  --bs-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  --bs-box-shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --bs-box-shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+  --bs-box-shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.075);
+  --bs-focus-ring-width: 0.25rem;
+  --bs-focus-ring-opacity: 0.25;
+  --bs-focus-ring-color: rgba(13, 110, 253, 0.25);
+  --bs-form-valid-color: #198754;
+  --bs-form-valid-border-color: #198754;
+  --bs-form-invalid-color: #dc3545;
+  --bs-form-invalid-border-color: #dc3545;
 
-    /* Rounded corners for card-like appearance */
-    --sidebar-radius: 24px;
-
-    --sidebar-transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Global custom variables */
+  --sidebar-gap: 16px;
+  --sidebar-radius: 24px;
+  --sidebar-transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* Dark Mode: Solid Deep Space Grey */
+[data-bs-theme=dark] {
+  color-scheme: dark;
+  --bs-body-color: #dee2e6;
+  --bs-body-color-rgb: 222, 226, 230;
+  --bs-body-bg: #212529;
+  --bs-body-bg-rgb: 33, 37, 41;
+  --bs-emphasis-color: #fff;
+  --bs-emphasis-color-rgb: 255, 255, 255;
+  --bs-secondary-color: rgba(222, 226, 230, 0.75);
+  --bs-secondary-color-rgb: 222, 226, 230;
+  --bs-secondary-bg: #343a40;
+  --bs-secondary-bg-rgb: 52, 58, 64;
+  --bs-tertiary-color: rgba(222, 226, 230, 0.5);
+  --bs-tertiary-color-rgb: 222, 226, 230;
+  --bs-tertiary-bg: #2b3035;
+  --bs-tertiary-bg-rgb: 43, 48, 53;
+  --bs-primary-text-emphasis: #6ea8fe;
+  --bs-secondary-text-emphasis: #a7acb1;
+  --bs-success-text-emphasis: #75b798;
+  --bs-info-text-emphasis: #6edff6;
+  --bs-warning-text-emphasis: #ffda6a;
+  --bs-danger-text-emphasis: #ea868f;
+  --bs-light-text-emphasis: #f8f9fa;
+  --bs-dark-text-emphasis: #dee2e6;
+  --bs-primary-bg-subtle: #031633;
+  --bs-secondary-bg-subtle: #161719;
+  --bs-success-bg-subtle: #051b11;
+  --bs-info-bg-subtle: #032830;
+  --bs-warning-bg-subtle: #332701;
+  --bs-danger-bg-subtle: #2c0b0e;
+  --bs-light-bg-subtle: #343a40;
+  --bs-dark-bg-subtle: #1a1d20;
+  --bs-primary-border-subtle: #084298;
+  --bs-secondary-border-subtle: #41464b;
+  --bs-success-border-subtle: #0f5132;
+  --bs-info-border-subtle: #087990;
+  --bs-warning-border-subtle: #997404;
+  --bs-danger-border-subtle: #842029;
+  --bs-light-border-subtle: #495057;
+  --bs-dark-border-subtle: #343a40;
+  --bs-heading-color: inherit;
+  --bs-link-color: #6ea8fe;
+  --bs-link-hover-color: #8bb9fe;
+  --bs-link-color-rgb: 110, 168, 254;
+  --bs-link-hover-color-rgb: 139, 185, 254;
+  --bs-code-color: #e685b5;
+  --bs-highlight-color: #dee2e6;
+  --bs-highlight-bg: #664d03;
+  --bs-border-color: #495057;
+  --bs-border-color-translucent: rgba(255, 255, 255, 0.15);
+  --bs-form-valid-color: #75b798;
+  --bs-form-valid-border-color: #75b798;
+  --bs-form-invalid-color: #ea868f;
+  --bs-form-invalid-border-color: #ea868f;
+}
+
+/* Custom Overrides from original global.css */
+
+/* Dark Mode Overrides */
 html[data-bs-theme="dark"] {
-    /* Solid background, no transparency */
     --sidebar-bg: var(--bs-body-bg);
-
     --sidebar-color: #a6a6c0;
-    /* Muted text color */
     --sidebar-header-color: #ffffff;
-
-    /* Subtle border for definition */
     --sidebar-border-color: #2b2b40;
-
     --sidebar-hover-bg: #222233;
-
-    /* Tech Cyan / Neon Teal */
     --sidebar-active-bg: rgba(0, 255, 213, 0.08);
     --sidebar-active-color: #00ffd5;
     --sidebar-active-glow: 0 0 15px rgba(0, 255, 213, 0.1);
-
-    /* heavy shadow for floating effect since bg is solid */
     --sidebar-box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
     --divider-color: #2b2b40;
-
-    /* --- Default (Dark Mode) --- */
     --card-inner-border: rgba(255, 255, 255, 0.05);
     --card-footer-bg: rgba(0, 0, 0, 0.1);
-
     --list-item-bg: rgba(255, 255, 255, 0.02);
     --list-item-hover: rgba(255, 255, 255, 0.05);
     --list-item-border-hover: rgba(255, 255, 255, 0.1);
-
     --new-item-dashed: rgba(255, 255, 255, 0.2);
     --new-item-focus: rgba(255, 255, 255, 0.05);
-
     --input-text-color: #ffffff;
     --input-placeholder: rgba(255, 255, 255, 0.3);
-
     --modal-settings-bg: rgba(255, 255, 255, 0.03);
     --modal-settings-border: rgba(255, 255, 255, 0.05);
     --modal-error-bg: rgba(220, 53, 69, 0.1);
     --modal-label-color: var(--bs-secondary-color);
-
     --metric-bg: var(--bs-body-bg);
     --metric-border: rgba(255, 255, 255, 0.1);
     --metric-label: #94a3b8;
     --metric-value: #f8fafc;
-
-    .metricCard {
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-    }
 }
 
-/* Light Mode: Solid White */
+/* Light Mode Overrides */
 html[data-bs-theme="light"] {
-    /* Solid background */
     --sidebar-bg: #ffffff;
-
     --sidebar-color: #64748b;
     --sidebar-header-color: #0f172a;
-
     --sidebar-border-color: #e2e8f0;
-
     --sidebar-hover-bg: #f1f5f9;
-
-    /* Tech Blue */
     --sidebar-active-bg: #e0f2fe;
     --sidebar-active-color: #0284c7;
     --sidebar-active-glow: none;
-    /* Clean look for light mode */
-
     --sidebar-box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
     --divider-color: #e2e8f0;
-
-
     --card-inner-border: rgba(0, 0, 0, 0.08);
     --card-footer-bg: rgba(0, 0, 0, 0.03);
-
     --list-item-bg: rgba(0, 0, 0, 0.03);
     --list-item-hover: rgba(0, 0, 0, 0.06);
     --list-item-border-hover: rgba(0, 0, 0, 0.15);
-
     --new-item-dashed: rgba(0, 0, 0, 0.2);
     --new-item-focus: rgba(0, 0, 0, 0.05);
-
     --input-text-color: var(--bs-body-color);
     --input-placeholder: rgba(0, 0, 0, 0.4);
-
     --modal-settings-bg: rgba(0, 0, 0, 0.03);
     --modal-settings-border: rgba(0, 0, 0, 0.08);
     --modal-error-bg: rgba(220, 53, 69, 0.08);
     --modal-label-color: rgba(0, 0, 0, 0.6);
-
     --metric-bg: #ffffff;
     --metric-border: rgba(0, 0, 0, 0.08);
     --metric-label: #64748b;
     --metric-value: #1e293b;
 }
 
-/* 1. Basic Setup */
 body {
     overflow-x: hidden;
-    /* Prevent horizontal scrollbar on body */
     width: 100%;
     /* Ensure background color adapts to theme if set in :root */
     background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    font-family: var(--bs-body-font-family);
 }
 
 /* =======================================================
-   Global Component Overrides (Buttons & Switches)
+   Global Component Overrides (Preserved from original)
    ======================================================= */
 
-/* -------------------------------------------------------
-   1. Buttons (Includes Dropdowns & Input Groups)
-   ------------------------------------------------------- */
-
-/* Base Button Style */
+/* Base Button Style - Re-adding base styles since bootstrap is gone */
 .btn {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
     background-color: var(--bs-tertiary-bg);
     border: 1px solid var(--sidebar-border-color);
     color: var(--bs-body-color);
-
-    /* 
-       CRITICAL: Set default radius WITHOUT !important.
-       This allows Bootstrap's Input Group selectors to override 
-       corners (making them square) when buttons are attached to inputs.
-    */
     border-radius: 12px;
-
     font-weight: 500;
     transition: all 0.2s ease;
-
-    /* Fix positioning for z-index stacking in Input Groups */
     position: relative;
 }
 
-/* Hover State */
 .btn:hover {
     background-color: var(--sidebar-hover-bg);
     border-color: var(--sidebar-active-color);
     color: var(--sidebar-active-color);
-
-    /* Ensure hovered button border sits above adjacent input borders */
     z-index: 2;
 }
 
-/* 
-   Active / Focus / Dropdown Open States
-   We use !important here to override Bootstrap's high-specificity 
-   default blue styles for .btn-primary:active, etc.
-*/
 .btn:active,
 .btn.active,
-.btn:focus-visible,
-.show>.btn.dropdown-toggle,
-/* Target parent .show (Dropdowns) */
-.btn.dropdown-toggle.show
-
-/* Target button .show */
-    {
-    /* Force background to match the hover state */
+.btn:focus-visible {
     background-color: var(--sidebar-hover-bg) !important;
     border-color: var(--sidebar-active-color) !important;
     color: var(--sidebar-active-color) !important;
-
-    /* Remove the default blue focus ring/glow */
     box-shadow: none !important;
     outline: none !important;
-
-    /* Highest priority in Input Groups so the active border is fully visible */
     z-index: 3;
 }
 
+/* Disabled State */
+.btn:disabled,
+.btn.disabled,
+fieldset:disabled .btn {
+    background-color: var(--bs-tertiary-bg) !important;
+    border-color: var(--sidebar-border-color) !important;
+    color: var(--bs-body-color) !important;
+    opacity: 0.65;
+    pointer-events: none;
+    box-shadow: none !important;
+    z-index: 0;
+}
+
+/* Danger Button */
 .btn.btn-danger {
     background-color: var(--bs-danger) !important;
     border-color: var(--bs-danger) !important;
@@ -194,142 +330,46 @@ body {
     background-color: #bb2d3b !important;
     border-color: #b02a37 !important;
     color: #fff !important;
-
     box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5) !important;
 }
 
-.btn.btn-outline-danger {
-    background-color: transparent !important;
-    border-color: var(--bs-danger) !important;
-    color: var(--bs-danger) !important;
-}
-
-.btn.btn-outline-danger:hover {
-    background-color: var(--bs-danger) !important;
-    border-color: var(--bs-danger) !important;
-    color: #fff !important;
-}
-
-.btn.btn-outline-danger:active,
-.btn.btn-outline-danger.active,
-.btn.btn-outline-danger:focus-visible {
-    background-color: var(--bs-danger) !important;
-
-    border-color: var(--bs-danger) !important;
-    color: #fff !important;
-
-    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5) !important;
-}
-
-.btn:focus,
-.btn:active:focus {
-    box-shadow: none !important;
-    outline: none !important;
-}
-
-/* -------------------------------------------------------
-   Disabled State
-   ------------------------------------------------------- */
-
-/* 
-   General Button Disabled State 
-   Resets style to the base look but with reduced opacity.
-   We use !important to override :hover or :active styles if they persist.
-*/
-.btn:disabled,
-.btn.disabled,
-fieldset:disabled .btn {
-    background-color: var(--bs-tertiary-bg) !important;
-    border-color: var(--sidebar-border-color) !important;
-    color: var(--bs-body-color) !important;
-
-    /* Standard Bootstrap disabled opacity */
-    opacity: 0.65;
-
-    /* Prevent interactions */
-    pointer-events: none;
-    box-shadow: none !important;
-
-    /* Ensure no z-index weirdness with input groups when disabled */
-    z-index: 0;
-}
-
-/* 
-   Danger Button Disabled State 
-   Needs to keep the red background but faded.
-*/
-.btn.btn-danger:disabled,
-.btn.btn-danger.disabled {
-    background-color: var(--bs-danger) !important;
-    border-color: var(--bs-danger) !important;
-    color: #fff !important;
-    opacity: 0.65;
-    /* Fades the red */
-}
-
-/* 
-   Outline Danger Button Disabled State 
-*/
-.btn.btn-outline-danger:disabled,
-.btn.btn-outline-danger.disabled {
-    background-color: transparent !important;
-    border-color: var(--bs-danger) !important;
-    color: var(--bs-danger) !important;
-    opacity: 0.5;
-    /* Usually outlines look better a bit more transparent when disabled */
-}
-
-/* -------------------------------------------------------
-   2. Switches & Checkboxes
-   ------------------------------------------------------- */
-
-/* Default State (Unchecked) */
+/* Switches & Checkboxes */
 .form-check-input {
+    width: 1em;
+    height: 1em;
+    margin-top: 0.25em;
+    vertical-align: top;
     background-color: var(--bs-tertiary-bg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
     border: 1px solid var(--sidebar-border-color);
+    appearance: none;
+    -webkit-appearance: none;
+    print-color-adjust: exact;
     cursor: pointer;
-
-    /* Smooth transition for color and the switch knob movement */
     transition: background-position .15s ease-in-out, background-color 0.2s ease, border-color 0.2s ease;
 }
 
-/* Focus State (Remove Blue Glow) */
 .form-check-input:focus {
     border-color: var(--sidebar-active-color);
     box-shadow: none !important;
     outline: none !important;
 }
 
-/* Checked State (Active/On) */
 .form-check-input:checked {
     background-color: var(--sidebar-active-color) !important;
     border-color: var(--sidebar-active-color) !important;
 }
 
-/* Active State (While clicking/holding) */
-.form-check-input:active {
-    /* Slight dimming effect for tactile feedback */
-    filter: brightness(90%);
+.form-check-input[type=checkbox] {
+    border-radius: 0.25em;
+}
+.form-check-input:checked[type=checkbox] {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
 }
 
-/* =========================================================
-   Global Bootstrap Modal Override
-   Adapting to Sidebar Theme Variables
-   ========================================================= */
-
-/* 1. Animation & Positioning (Mapping .modalContainer logic) */
-/* Override default slide-down. Set initial state for .fade */
-.modal.fade .modal-dialog {
-    transform: translateY(-20px);
-    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-/* Final state when shown */
-.modal.show .modal-dialog {
-    transform: translateY(0);
-}
-
-/* 2. Modal Container (Mapping .modalContainer) */
+/* Modal Content Override */
 .modal-content {
     background-color: var(--sidebar-bg);
     color: var(--sidebar-color);
@@ -337,185 +377,71 @@ fieldset:disabled .btn {
     border: 1px solid var(--sidebar-border-color);
     box-shadow: var(--sidebar-box-shadow);
     overflow: hidden;
-    /* Prevents content from overflowing corners */
 }
 
-/* 3. Header (Mapping .modalHeader) */
-.modal-header {
-    border-bottom: 1px solid var(--sidebar-border-color);
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.modal-header .modal-title {
-    font-size: 1.25rem;
-    color: var(--sidebar-header-color);
-    margin: 0;
-    font-weight: 500;
-}
-
-/* 4. Close Button (Mapping .modalCloseButton) */
-/* Heavily override .btn-close to remove SVG and use CSS styling */
-.modal-header .btn-close {
-    background: transparent;
-    /* Remove default Bootstrap SVG */
-    opacity: 1;
-    /* Reset default opacity */
-    padding: 0;
-    margin: 0;
-    margin-left: auto;
-    font-size: 1.5rem;
-    color: var(--sidebar-color);
-    box-shadow: none;
-    /* Remove focus ring */
-    width: auto;
-    height: auto;
-    transition: color 0.2s ease;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Use pseudo-element to simulate the '×' icon for color control */
-.modal-header .btn-close::before {
-    content: '×';
-    font-family: sans-serif;
-    font-style: normal;
-    line-height: 1;
-}
-
-.modal-header .btn-close:hover {
-    color: var(--sidebar-active-color);
-    opacity: 1;
-}
-
-/* 5. Body (Mapping .modalBody) */
-.modal-body {
-    padding: 20px;
-    color: var(--sidebar-color);
-}
-
-/* 6. Footer (Mapping .modalFooter) */
-.modal-footer {
-    border-top: 1px solid var(--sidebar-border-color);
-    padding: 15px 20px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-/* Reset margin for children in footer */
-.modal-footer>* {
-    margin: 0;
-}
-
-/* 7. Buttons inside Modal (Mapping .modalButton) */
-/* Scoped to .modal-footer to avoid affecting other buttons on the page */
-.modal-footer .btn {
-    padding: 10px 20px;
-    border-radius: 10px;
-    /* Or use var(--sidebar-radius) */
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: 1px solid var(--sidebar-border-color);
-    background-color: transparent;
-    /* Default transparent */
-    color: var(--sidebar-color);
-    box-shadow: none;
-}
-
-.modal-footer .btn:hover {
-    background-color: var(--sidebar-hover-bg);
-    color: var(--sidebar-active-color);
-    border-color: var(--sidebar-active-color);
-}
-
-/* Primary Action Button (Mapping .modalButton.primary) */
-/* Targeted via .btn-primary */
-.modal-footer .btn-primary {
-    background-color: var(--sidebar-active-bg);
-    color: var(--sidebar-active-color);
-    border-color: var(--sidebar-active-color);
-    box-shadow: var(--sidebar-active-glow);
-}
-
-.modal-footer .btn-primary:hover,
-.modal-footer .btn-primary:active,
-.modal-footer .btn-primary:focus {
-    background-color: var(--sidebar-active-bg) !important;
-    border-color: var(--sidebar-active-color) !important;
-    color: var(--sidebar-active-color) !important;
-    filter: brightness(1.1);
-    /* Slightly brighter on hover */
-}
-
-/* Backdrop Overlay (Mapping .modalOverlay background) */
-.modal-backdrop.show {
-    opacity: 0.5;
-    background-color: #000;
-}
-
-/* =========================================================
-   ListGroup Override (Matches Modal/Sidebar Theme)
-   ========================================================= */
-
+/* ListGroup Override */
 .list-group-item {
     background-color: var(--sidebar-bg);
-    /* Matches Modal body bg */
     border-color: var(--sidebar-border-color);
-    /* Matches Modal borders */
     color: var(--sidebar-color);
-    /* Matches Modal text */
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--sidebar-border-color);
 }
 
-/* Optional: Hover effect for list items if they are actionable */
+.list-group {
+    display: flex;
+    flex-direction: column;
+    padding-left: 0;
+    margin-bottom: 0;
+    border-radius: var(--bs-border-radius);
+}
+
 .list-group-item-action:hover,
 .list-group-item-action:focus {
     background-color: var(--sidebar-hover-bg);
     color: var(--sidebar-active-color);
 }
 
-/* Utility class for the separator lines to match the border color */
 .theme-divider {
     height: 1px;
     background-color: var(--sidebar-border-color) !important;
     opacity: 1;
-    /* Ensure color is visible */
 }
 
-/* Adjust Badges to blend better if needed */
 .badge {
+    display: inline-block;
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
     font-weight: 500;
-    /* Optional: slightly soften badges */
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: var(--bs-border-radius);
     box-shadow: var(--sidebar-box-shadow);
 }
 
-/* =========================================================
-   Pagination Override (Matches Button Theme)
-   ========================================================= */
+/* Pagination */
+.pagination {
+    display: flex;
+    padding-left: 0;
+    list-style: none;
+}
 
 .pagination .page-item .page-link {
+    position: relative;
+    display: block;
     background-color: var(--bs-tertiary-bg);
     border: 1px solid var(--sidebar-border-color);
     color: var(--bs-body-color);
     border-radius: 12px;
-    /* Match button border-radius */
     margin: 0 4px;
-    /* Add some spacing between items */
+    padding: 0.375rem 0.75rem;
     transition: all 0.2s ease;
     min-width: 40px;
-    /* Ensure a minimum width for clicks */
     text-align: center;
-}
-
-.pagination .page-item:first-child .page-link,
-.pagination .page-item:last-child .page-link {
-    border-radius: 12px;
-    /* Ensure prev/next buttons also have radius */
+    text-decoration: none;
 }
 
 .pagination .page-item .page-link:hover {
@@ -528,7 +454,6 @@ fieldset:disabled .btn {
     background-color: var(--sidebar-active-color) !important;
     border-color: var(--sidebar-active-color) !important;
     color: #fff !important;
-    /* Force white text for active item */
     box-shadow: none !important;
 }
 
@@ -537,29 +462,23 @@ fieldset:disabled .btn {
     border-color: var(--sidebar-border-color);
     color: var(--bs-body-color);
     opacity: 0.5;
+    pointer-events: none;
 }
 
-/* global scrollbar */
-
-/* 1. Define defaults (Light Mode) */
+/* Scrollbar variables */
 :root {
-    /* Dark gray thumb for light backgrounds */
     --scrollbar-thumb: rgba(0, 0, 0, 0.25);
     --scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
     --scrollbar-thumb-active: rgba(0, 0, 0, 0.6);
     --scrollbar-track: transparent;
 }
 
-/* 2. Override for Dark Mode */
-/* Bootstrap 5.3+ uses this attribute. If you use a different class, change this selector. */
 [data-bs-theme="dark"] {
-    /* Light gray thumb for dark backgrounds */
     --scrollbar-thumb: rgba(255, 255, 255, 0.2);
     --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
     --scrollbar-thumb-active: rgba(255, 255, 255, 0.6);
 }
 
-/* Also support system preference if no specific theme attribute is set */
 @media (prefers-color-scheme: dark) {
     :root:not([data-bs-theme="light"]) {
         --scrollbar-thumb: rgba(255, 255, 255, 0.2);
@@ -568,13 +487,11 @@ fieldset:disabled .btn {
     }
 }
 
-/* 3. Apply to Firefox */
 * {
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
-/* 4. Apply to Webkit (Chrome, Edge, Safari) */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -599,4 +516,8 @@ fieldset:disabled .btn {
 
 ::-webkit-scrollbar-corner {
     background: transparent;
+}
+
+.metricCard {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
 }

@@ -104,8 +104,8 @@ function BackupPage() {
                         <div className="col-12">
                             <SettingLabel>Last Backup Hash</SettingLabel>
                             <ListItem style={{ cursor: 'default', background: 'rgba(0,0,0,0.1)' }}>
-                                <Hash className="me-2 text-muted" size={16} />
-                                <span className="font-monospace small text-truncate opacity-75">
+                                <Hash className="mr-2 text-gray-500" size={16} />
+                                <span className="font-monospace small truncate opacity-75">
                                     {data.lastBackupHash || "No backup records found"}
                                 </span>
                             </ListItem>
@@ -183,14 +183,14 @@ function BackupPage() {
                 </CardBody>
 
                 <CardFooter>
-                    <div className="d-flex gap-2">
+                    <div className="flex gap-2">
                         <Button
                             onClick={handleBackupNow}
                             disabled={saving}
                             title="Trigger immediate backup"
                         >
-                            {saving ? <Spinner size="sm" /> : <CloudUpload className="me-1" size={16} />}
-                            <span className="ms-2 d-none d-sm-inline">Backup Now</span>
+                            {saving ? <Spinner size="sm" /> : <CloudUpload className="mr-1" size={16} />}
+                            <span className="ml-2 hidden sm:inline">Backup Now</span>
                         </Button>
 
                         <Button
@@ -198,8 +198,8 @@ function BackupPage() {
                             disabled={saving}
                             title="Restore from cloud"
                         >
-                            <RotateCw className="me-1" size={16} />
-                            <span className="ms-2 d-none d-sm-inline">Restore Now</span>
+                            <RotateCw className="mr-1" size={16} />
+                            <span className="ml-2 hidden sm:inline">Restore Now</span>
                         </Button>
 
                         <Button
@@ -207,16 +207,16 @@ function BackupPage() {
                             disabled={saving}
                             title="Save configuration changes"
                         >
-                            <Save className="me-1" size={16} />
-                            <span className="ms-2 d-none d-sm-inline">Save Config</span>
+                            <Save className="mr-1" size={16} />
+                            <span className="ml-2 hidden sm:inline">Save Config</span>
                         </Button>
                     </div>
                 </CardFooter>
             </Card>
 
             <div className="text-center mt-3 opacity-50 pb-5">
-                <small className="text-muted">
-                    <Info className="me-1" />
+                <small className="text-gray-500">
+                    <Info className="mr-1" />
                     Backups include all lists, rules, and node configurations.
                 </small>
             </div>

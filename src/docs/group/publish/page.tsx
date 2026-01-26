@@ -80,13 +80,13 @@ const EditModal: FC<{
     return (
         <Modal open={show} onOpenChange={(o) => { if (!o) onHide() }}>
             <ModalContent style={{ maxWidth: '600px' }}>
-                <ModalHeader closeButton className="border-bottom pb-3">
-                    <ModalTitle className="fw-bold fs-5">{isEdit ? 'Edit' : 'Add'} Publish Config</ModalTitle>
+                <ModalHeader closeButton className="border-b pb-3">
+                    <ModalTitle className="font-bold text-xl">{isEdit ? 'Edit' : 'Add'} Publish Config</ModalTitle>
                 </ModalHeader>
                 <ModalBody className="py-4">
-                    <div className="d-flex flex-column gap-4">
+                    <div className="flex flex-col gap-4">
                         {/* 1. Identity Config */}
-                        <div className="d-flex flex-column gap-3">
+                        <div className="flex flex-col gap-3">
                             <SettingInputVertical
                                 label="Config Identifier"
                                 value={configName}
@@ -103,9 +103,9 @@ const EditModal: FC<{
                         </div>
 
                         {/* 2. Connection Settings */}
-                        <div className="p-3 bg-light rounded-3 border border-opacity-50">
-                            <h6 className="mb-3 text-uppercase text-muted" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.5px' }}>Connection Details</h6>
-                            <div className="d-flex flex-column gap-3">
+                        <div className="p-3 bg-light rounded-lg border border-opacity-50">
+                            <h6 className="mb-3 uppercase text-gray-500" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.5px' }}>Connection Details</h6>
+                            <div className="flex flex-col gap-3">
                                 <SettingInputVertical
                                     label="Public Address"
                                     value={newItem.address}
@@ -140,13 +140,13 @@ const EditModal: FC<{
                             <SettingLabel>Select Nodes to Publish</SettingLabel>
                             <Dropdown modal={false}>
                                 <DropdownTrigger asChild>
-                                    <Button className="w-100 d-flex justify-content-between align-items-center py-2" variant="outline-secondary">
-                                        <span className="fw-medium">{selectedNodes.length > 0 ? `${selectedNodes.length} nodes selected` : 'Select nodes...'}</span>
+                                    <Button className="w-full flex justify-between items-center py-2" variant="outline-secondary">
+                                        <span className="font-medium">{selectedNodes.length > 0 ? `${selectedNodes.length} nodes selected` : 'Select nodes...'}</span>
                                         <ChevronDown size={16} />
                                     </Button>
                                 </DropdownTrigger>
 
-                                <DropdownContent className="w-100 shadow-lg border-0" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                <DropdownContent className="w-full shadow-lg border-0" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                                     {nodes.groups.map((g: any) => (
                                         <DropdownGroup key={g.name}>
                                             <DropdownLabel className="text-primary sticky-top bg-white">{g.name}</DropdownLabel>
@@ -167,12 +167,12 @@ const EditModal: FC<{
                         </div>
                     </div>
                 </ModalBody>
-                <ModalFooter className="border-top pt-3">
+                <ModalFooter className="border-t pt-3">
                     <ModalClose asChild>
                         <Button variant="outline-secondary">Cancel</Button>
                     </ModalClose>
                     <Button onClick={handleSave} disabled={saving}>
-                        {saving ? <Spinner size="sm" /> : <><Check className="me-1" size={16} /> Save Config</>}
+                        {saving ? <Spinner size="sm" /> : <><Check className="mr-1" size={16} /> Save Config</>}
                     </Button>
                 </ModalFooter>
             </ModalContent>
@@ -200,16 +200,16 @@ const PublishItem: FC<{
 
     return (
         <>
-            <div className="d-flex align-items-center flex-grow-1 overflow-hidden gap-3 w-100 w-md-auto">
-                <div className="d-flex flex-column overflow-hidden">
-                    <span className="fw-bold">{configKey}</span>
-                    <small className="text-muted text-truncate opacity-75">{pub.address}/{pub.path}</small>
+            <div className="flex items-center flex-grow overflow-hidden gap-3 w-full w-md-auto">
+                <div className="flex flex-col overflow-hidden">
+                    <span className="font-bold">{configKey}</span>
+                    <small className="text-gray-500 truncate opacity-75">{pub.address}/{pub.path}</small>
                 </div>
             </div>
 
             {/* URL Copy Group */}
             <InputGroup
-                className="mx-md-2"
+                className="md:mx-2"
                 style={{ maxWidth: '400px' }}
                 onClick={(e) => e.stopPropagation()}
             >
@@ -229,10 +229,10 @@ const PublishItem: FC<{
             </InputGroup>
 
 
-            <div className="d-flex gap-2 align-items-center ms-2 flex-shrink-0">
+            <div className="flex gap-2 items-center ml-2 shrink-0">
                 <Button size='sm' variant="outline-danger" onClick={(e) => { e.stopPropagation(); onDelete() }} >
                     <Trash size={16} />
-                    <span className="d-none d-sm-inline ms-2">Delete</span>
+                    <span className="hidden sm:inline ml-2">Delete</span>
                 </Button>
             </div >
         </>
@@ -300,15 +300,15 @@ function PublishPage() {
                     onClickItem={([name, pub]) => setModalState({ show: true, isEdit: true, configName: name, item: pub })}
                     header={
                         <>
-                            <div className="d-flex align-items-center">
+                            <div className="flex items-center">
                                 <IconBox icon={Share2} color="#8b5cf6" />
                                 <div>
-                                    <h5 className="mb-0 fw-bold">Publishing</h5>
-                                    <small className="text-muted">Generate subscription URLs for remote clients</small>
+                                    <h5 className="mb-0 font-bold">Publishing</h5>
+                                    <small className="text-gray-500">Generate subscription URLs for remote clients</small>
                                 </div>
                             </div>
                             <Button onClick={() => setModalState({ show: true, isEdit: false, configName: '', item: undefined })}>
-                                <Plus className="me-1" size={16} /> Add
+                                <Plus className="mr-1" size={16} /> Add
                             </Button>
                         </>
                     }

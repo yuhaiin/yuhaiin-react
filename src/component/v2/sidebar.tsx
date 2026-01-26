@@ -66,7 +66,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
             <AnimatePresence>
                 {show && !isDesktop && (
                     <motion.div
-                        className={clsx(styles.overlay, "d-lg-none")}
+                        className={clsx(styles.overlay, "lg:hidden")}
                         onClick={onHide}
                         aria-hidden="true"
                         initial={{ opacity: 0 }}

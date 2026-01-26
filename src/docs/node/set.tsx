@@ -35,15 +35,15 @@ export const Set: FC<Props<set>> = ({ value, onChange, editable = true }) => {
         />
 
         <div className="mb-4">
-            <div className="d-flex justify-content-between align-items-center mb-2 px-1">
-                <h6 className="fw-bold mb-0 opacity-75">Nodes</h6>
-                <small className="text-muted">{value.nodes.length} entries</small>
+            <div className="flex justify-between items-center mb-2 px-1">
+                <h6 className="font-bold mb-0 opacity-75">Nodes</h6>
+                <small className="text-gray-500">{value.nodes.length} entries</small>
             </div>
 
-            <div className="border rounded-3 overflow-hidden mb-3 bg-body-tertiary">
+            <div className="border rounded-lg overflow-hidden mb-3 bg-tertiary">
                 {value.nodes.map((x, i) => (
                     <div key={i}
-                        className={clsx("p-3 border-bottom d-flex align-items-center justify-content-between", editable && "cursor-pointer hover-bg-light")}
+                        className={clsx("p-3 border-b flex items-center justify-between", editable && "cursor-pointer hover-bg-light")}
                         style={{ lastChild: { borderBottom: 0 } } as any}
                         onClick={() => {
                             if (!editable) return
@@ -58,10 +58,10 @@ export const Set: FC<Props<set>> = ({ value, onChange, editable = true }) => {
                             })
                         }}
                     >
-                        <div className="text-truncate me-3">
-                            <span className="fw-medium">{groups.getGroupByHash(x).node}</span>
+                        <div className="truncate mr-3">
+                            <span className="font-medium">{groups.getGroupByHash(x).node}</span>
                             <br />
-                            <small className="text-muted opacity-50 font-monospace" style={{ fontSize: '0.7rem' }}>{x}</small>
+                            <small className="text-gray-500 opacity-50 font-monospace" style={{ fontSize: '0.7rem' }}>{x}</small>
                         </div>
 
                         {editable && (
@@ -82,12 +82,12 @@ export const Set: FC<Props<set>> = ({ value, onChange, editable = true }) => {
                 ))}
 
                 {value.nodes.length === 0 && (
-                    <div className="p-4 text-center text-muted fst-italic small">No nodes identified yet.</div>
+                    <div className="p-4 text-center text-gray-500 italic small">No nodes identified yet.</div>
                 )}
             </div>
 
             {editable && (
-                <div className="d-flex justify-content-end px-1">
+                <div className="flex justify-end px-1">
                     <Button
                         onClick={() => {
                             setModalData({
@@ -100,7 +100,7 @@ export const Set: FC<Props<set>> = ({ value, onChange, editable = true }) => {
                             })
                         }}
                     >
-                        <Plus className="me-1" size={16} /> Add Node
+                        <Plus className="mr-1" size={16} /> Add Node
                     </Button>
                 </div>
             )}
@@ -120,7 +120,7 @@ const SelectModal: FC<{
         <Modal open={show} onOpenChange={(open) => !open && onHide()}>
             <ModalContent style={{ maxWidth: '600px' }}>
                 <ModalHeader closeButton>
-                    <ModalTitle className="fw-bold">Select Node</ModalTitle>
+                    <ModalTitle className="font-bold">Select Node</ModalTitle>
                 </ModalHeader>
                 <ModalBody>
                     <div className="p-1">

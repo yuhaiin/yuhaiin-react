@@ -151,17 +151,17 @@ const DropdownSelectComponent: FC<{
                     className={clsx(styles.selectTrigger, triggerClassName)}
                     style={{ cursor: 'pointer' }}
                 >
-                    <div className="d-flex align-items-center gap-2 overflow-hidden">
+                    <div className="flex items-center gap-2 overflow-hidden">
                         {values.length > 0 && (
                             <span className={styles.countBadge}>
                                 {values.length}
                             </span>
                         )}
-                        <span className={clsx("text-truncate", values.length === 0 && "opacity-50")}>
+                        <span className={clsx("truncate", values.length === 0 && "opacity-50")}>
                             {values.length === 0 ? placeholder : values.join(", ")}
                         </span>
                     </div>
-                    <ChevronDown className="opacity-50 flex-shrink-0" size={16} />
+                    <ChevronDown className="opacity-50 shrink-0" size={16} />
                 </div>
             </DropdownTrigger>
             <DropdownContent style={{ minWidth: 'min(300px, 90vw)' }}>

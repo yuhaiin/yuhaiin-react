@@ -70,17 +70,17 @@ export default function LogComponent() {
         <MainContainer style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Card style={{ flex: 1, marginBottom: '0px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <CardHeader className="py-3">
-                    <div className="d-flex justify-content-between align-items-center w-100 gap-3">
+                    <div className="flex justify-between items-center w-full gap-3">
                         <IconBox icon={Terminal} color="#f59e0b" title="Live Logcat" description="Real-time system events" />
-                        <div className="d-flex align-items-center gap-2 flex-grow-1">
-                            <FilterSearch onEnter={setSearchTerm} className='flex-grow-1' />
-                            <span className="badge bg-warning bg-opacity-10 text-warning px-2 py-1 rounded-pill" style={{ fontSize: '0.7rem' }}>
-                                <Radio className="me-1" size={12} />LIVE
+                        <div className="flex items-center gap-2 flex-grow">
+                            <FilterSearch onEnter={setSearchTerm} className='flex-grow' />
+                            <span className="badge bg-warning bg-opacity-10 text-warning px-2 py-1 rounded-full" style={{ fontSize: '0.7rem' }}>
+                                <Radio className="mr-1" size={12} />LIVE
                             </span>
                         </div>
                     </div>
                 </CardHeader>
-                <CardBody className="p-0 bg-body-tertiary" style={{ flex: 1, overflow: 'hidden', borderBottomLeftRadius: 'inherit', borderBottomRightRadius: 'inherit' }}>
+                <CardBody className="p-0 bg-tertiary" style={{ flex: 1, overflow: 'hidden', borderBottomLeftRadius: 'inherit', borderBottomRightRadius: 'inherit' }}>
                     <div style={{ height: '100%', width: '100%', borderRadius: 'inherit' }} className="font-monospace">
                         <List
                             rowCount={filteredLog.length}

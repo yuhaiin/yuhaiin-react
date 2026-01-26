@@ -22,7 +22,7 @@ export const Badge: FC<BadgeProps> = ({ variant = "primary", pill, className, ch
             className={clsx(
                 "badge",
                 `bg-${variant} text-${variant} bg-opacity-10`,
-                pill && "rounded-pill",
+                pill && "rounded-full",
                 className
             )}
             {...props}

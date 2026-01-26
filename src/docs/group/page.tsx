@@ -178,9 +178,9 @@ function Group() {
                 <div className={styles.headerActions}>
                     <Dropdown>
                         <DropdownTrigger asChild>
-                            <Button className="d-flex align-items-center justify-content-between" style={{ minWidth: '150px' }}>
+                            <Button className="flex items-center justify-between" style={{ minWidth: '150px' }}>
                                 {groupIndex >= 0 && data.groups.length > groupIndex ? data.groups[groupIndex].name : "GROUP"}
-                                <ChevronDown className="ms-2" />
+                                <ChevronDown className="ml-2" />
                             </Button>
                         </DropdownTrigger>
                         <DropdownContent>
@@ -576,26 +576,26 @@ const NodeItemv2: FC<{
             transition={{ duration: 0.2 }}
         >
             <AccordionTrigger>
-                <div className="d-flex w-100 flex-column flex-sm-row align-items-start align-items-sm-center pe-2">
+                <div className="flex w-full flex-col sm:flex-row items-start sm:items-center pr-2">
 
                     {/* 
                         Left Side: Icon + Name 
                         - mb-2: Adds bottom margin on mobile to separate from stats row
                         - mb-sm-0: Removes margin on desktop
                     */}
-                    <div className="d-flex align-items-center gap-3 w-100 mb-2 mb-sm-0">
+                    <div className="flex items-center gap-3 w-full mb-2 sm:mb-0">
                         {/* Status Icon */}
-                        <Network className={`fs-5 flex-shrink-0 ${getLatencyColor(latency.tcp.value) === styles['latency-good']
+                        <Network className={`text-xl shrink-0 ${getLatencyColor(latency.tcp.value) === styles['latency-good']
                             ? "text-success"
                             : latency.tcp.value !== "N/A" && !latency.tcp.value.includes("timeout")
                                 ? "text-primary"
-                                : "text-muted"
+                                : "text-gray-500"
                             }`} />
 
-                        <div className="d-flex flex-column gap-2 text-truncate">
-                            <span className="text-truncate">{name}</span>
-                            <div className="d-flex gap-2 align-items-center" style={{ fontSize: '0.75rem' }}>
-                                <span className="text-muted opacity-75">{hash.substring(0, 8)}</span>
+                        <div className="flex flex-col gap-2 truncate">
+                            <span className="truncate">{name}</span>
+                            <div className="flex gap-2 items-center" style={{ fontSize: '0.75rem' }}>
+                                <span className="text-gray-500 opacity-75">{hash.substring(0, 8)}</span>
                                 {ipv6 && <Badge variant="info" className="text-dark py-0 px-1" style={{ fontSize: '0.65rem' }}>IPv6</Badge>}
                             </div>
                         </div>
@@ -606,18 +606,18 @@ const NodeItemv2: FC<{
                         - Mobile: Full width (w-100), Spread apart (justify-content-between)
                         - Desktop: Auto width, Right aligned (justify-content-sm-end)
                     */}
-                    <div className="d-flex w-100 w-sm-auto align-items-center justify-content-between justify-content-sm-end ps-0 ps-sm-2">
+                    <div className="flex w-full w-sm-auto items-center justify-between sm:justify-end pl-0 sm:pl-2">
 
                         {/* Stats Block */}
-                        <div className="d-flex gap-4 text-muted small align-items-center">
-                            <div className="d-flex gap-2 align-items-center">
-                                <span className="text-uppercase text-muted" style={{ fontSize: '0.65rem', fontWeight: 700 }}>TCP</span>
+                        <div className="flex gap-4 text-gray-500 small items-center">
+                            <div className="flex gap-2 items-center">
+                                <span className="uppercase text-gray-500" style={{ fontSize: '0.65rem', fontWeight: 700 }}>TCP</span>
                                 <span className={getLatencyColor(latency.tcp.value)}>
                                     {latency.tcp.value}
                                 </span>
                             </div>
-                            <div className="d-flex gap-2 align-items-center">
-                                <span className="text-uppercase text-muted" style={{ fontSize: '0.65rem', fontWeight: 700 }}>UDP</span>
+                            <div className="flex gap-2 items-center">
+                                <span className="uppercase text-gray-500" style={{ fontSize: '0.65rem', fontWeight: 700 }}>UDP</span>
                                 <span className={getLatencyColor(latency.udp.value)}>
                                     {latency.udp.value}
                                 </span>
@@ -653,7 +653,7 @@ const NodeItemv2: FC<{
                 {/* 2. Advanced Info (STUN) */}
                 {(latency.stun || latency.stun_tcp) && (
                     <div className="mb-4">
-                        <h6 className="text-muted small fw-bold mb-2 ps-1">NAT & STUN Details</h6>
+                        <h6 className="text-gray-500 small font-bold mb-2 pl-1">NAT & STUN Details</h6>
                         <div className={styles.infoGrid}>
                             {latency.stun && (
                                 <>
@@ -677,16 +677,16 @@ const NodeItemv2: FC<{
                                 <Button
                                     size="sm"
                                     disabled={isTesting}
-                                    className="d-flex align-items-center gap-2"
+                                    className="flex items-center gap-2"
                                 >
                                     {isTesting
                                         ? <Spinner size="sm" />
                                         : <>
                                             <Gauge size={16} />
-                                            <span className="d-none d-sm-inline ms-1">Test</span>
+                                            <span className="hidden sm:inline ml-1">Test</span>
                                         </>
                                     }
-                                    <ChevronDown className="ms-1" size={12} />
+                                    <ChevronDown className="ml-1" size={12} />
                                 </Button>
                             </DropdownTrigger>
                             <DropdownContent>
@@ -702,14 +702,14 @@ const NodeItemv2: FC<{
 
                     <Button size="sm" onClick={onClickEdit} title="Edit Configuration">
                         <Pencil size={16} />
-                        {/* d-none d-sm-inline: Hide text on mobile */}
-                        <span className="d-none d-sm-inline ms-2">Edit</span>
+                        {/* hidden d-sm-inline: Hide text on mobile */}
+                        <span className="hidden sm:inline ml-2">Edit</span>
                     </Button>
 
                     <Button size="sm" onClick={() => setNode(ctx, hash)} title="Use Node">
                         <CheckCircle2 size={16} />
-                        {/* d-none d-sm-inline: Hide text on mobile */}
-                        <span className="d-none d-sm-inline ms-2">Use</span>
+                        {/* hidden d-sm-inline: Hide text on mobile */}
+                        <span className="hidden sm:inline ml-2">Use</span>
                     </Button>
                 </div>
             </AccordionContent>

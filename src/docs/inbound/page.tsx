@@ -58,8 +58,8 @@ const InboundModal: FC<{
     return (
         <Modal open={show} onOpenChange={(open) => !open && onHide()}>
             <ModalContent style={{ maxWidth: '800px' }}>
-                <ModalHeader closeButton className="border-bottom-0 pb-0">
-                    <ModalTitle className="fw-bold">{name}</ModalTitle>
+                <ModalHeader closeButton className="border-b-0 pb-0">
+                    <ModalTitle className="font-bold">{name}</ModalTitle>
                 </ModalHeader>
                 <ModalBody className="pt-2">
                     {error ? <ErrorMsg msg={error.msg} code={error.code} raw={error.raw} /> : isValidating || isLoading || !inbound ? (
@@ -70,18 +70,18 @@ const InboundModal: FC<{
                         </SettingsBox>
                     )}
                 </ModalBody>
-                <ModalFooter className="d-flex justify-content-between">
+                <ModalFooter className="flex justify-between">
                     <div>
                         {!isNew && (
                             <Button variant="outline-danger" onClick={() => { onDelete(); }}>
-                                <Trash className="me-2" size={16} />Delete
+                                <Trash className="mr-2" size={16} />Delete
                             </Button>
                         )}
                     </div>
-                    <div className="d-flex gap-2">
+                    <div className="flex gap-2">
                         <Button onClick={() => onHide()}>Cancel</Button>
                         <Button disabled={saving || !inbound} onClick={handleSave}>
-                            {saving ? <Spinner size="sm" /> : <><Check className="me-1" size={16} /> Save</>}
+                            {saving ? <Spinner size="sm" /> : <><Check className="mr-1" size={16} /> Save</>}
                         </Button>
                     </div>
                 </ModalFooter>
@@ -92,13 +92,13 @@ const InboundModal: FC<{
 
 const InboundItem: FC<{ name: string, }> = ({ name }) => {
     return <>
-        <div className="d-flex align-items-center flex-grow-1 overflow-hidden">
-            <div className="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style={{ width: '36px', height: '36px' }}>
+        <div className="flex items-center flex-grow overflow-hidden">
+            <div className="bg-primary bg-opacity-10 text-primary rounded-full flex items-center justify-center mr-3 shrink-0" style={{ width: '36px', height: '36px' }}>
                 <LogIn size={20} />
             </div>
-            <span className="text-truncate fw-medium">{name}</span>
+            <span className="truncate font-medium">{name}</span>
         </div>
-        <ChevronRight className="text-muted opacity-25" size={16} />
+        <ChevronRight className="text-gray-500 opacity-25" size={16} />
     </>
 }
 
@@ -166,7 +166,7 @@ function InboudComponent() {
                                 description="Intersects DNS requests"
                                 checked={inbounds.hijackDns}
                                 onCheckedChange={() => mutate({ ...inbounds, hijackDns: !inbounds.hijackDns }, false)}
-                                className="p-3 rounded-3 h-100 bg-body-tertiary"
+                                className="p-3 rounded-lg h-full bg-tertiary"
                             />
                         </div>
                         <div className="col-md-4">
@@ -175,7 +175,7 @@ function InboudComponent() {
                                 description="Use virtual IP logic"
                                 checked={inbounds.hijackDnsFakeip}
                                 onCheckedChange={() => mutate({ ...inbounds, hijackDnsFakeip: !inbounds.hijackDnsFakeip }, false)}
-                                className="p-3 rounded-3 h-100 bg-body-tertiary"
+                                className="p-3 rounded-lg h-full bg-tertiary"
                             />
                         </div>
                         <div className="col-md-4">
@@ -184,14 +184,14 @@ function InboudComponent() {
                                 description="Inspects protocol types"
                                 checked={!!inbounds.sniff?.enabled}
                                 onCheckedChange={() => mutate({ ...inbounds, sniff: { ...inbounds.sniff, enabled: !inbounds.sniff?.enabled } }, false)}
-                                className="p-3 rounded-3 h-100 bg-body-tertiary"
+                                className="p-3 rounded-lg h-full bg-tertiary"
                             />
                         </div>
                     </div>
                 </CardBody>
-                <CardFooter className="d-flex justify-content-end">
+                <CardFooter className="flex justify-end">
                     <Button disabled={saving} onClick={handleApply}>
-                        {saving ? <Spinner size="sm" /> : <><Save className="me-1" /> Apply Settings</>}
+                        {saving ? <Spinner size="sm" /> : <><Save className="mr-1" /> Apply Settings</>}
                     </Button>
                 </CardFooter>
             </Card>
@@ -207,7 +207,7 @@ function InboudComponent() {
                             inbounds.names.sort((a, b) => a.localeCompare(b)).map((name, index) => (
                                 <div className="col-md-6 col-lg-4" key={index}>
                                     <div
-                                        className="p-3 rounded-3 h-100 bg-body-tertiary d-flex align-items-center justify-content-between cursor-pointer"
+                                        className="p-3 rounded-lg h-full bg-tertiary flex items-center justify-between cursor-pointer"
                                         onClick={() => setShowdata({ show: true, name, new: false })}
                                         role="button"
                                         tabIndex={0}
@@ -221,9 +221,9 @@ function InboudComponent() {
 
                         {/* Add New Item Input */}
                         <div className="col-md-6 col-lg-4">
-                            <div className="p-3 rounded-3 h-100 bg-body-tertiary d-flex align-items-center">
+                            <div className="p-3 rounded-lg h-full bg-tertiary flex items-center">
                                 <form
-                                    className="d-flex w-100 gap-2"
+                                    className="flex w-full gap-2"
                                     onSubmit={(e) => {
                                         e.preventDefault();
                                         const form = e.target as HTMLFormElement;
@@ -249,7 +249,7 @@ function InboudComponent() {
 
                     </div>
                     {inbounds.names.length === 0 && (
-                        <div className="text-center text-muted p-3">
+                        <div className="text-center text-gray-500 p-3">
                             No records found.
                         </div>
                     )}

@@ -14,30 +14,30 @@ const LicenseItem: FC<{ item: License, index: number }> = ({ item, index }) => {
     return (
         <div className="col-12">
             <ListItem style={{ cursor: 'default' }}>
-                <div className="d-flex align-items-center flex-grow-1 overflow-hidden gap-3">
+                <div className="flex items-center flex-grow overflow-hidden gap-3">
                     {/* Index or Icon */}
-                    <div className="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                    <div className="bg-primary bg-opacity-10 text-primary rounded-full flex items-center justify-center shrink-0"
                         style={{ width: '32px', height: '32px', fontSize: '0.85rem', fontWeight: 'bold' }}>
                         {index + 1}
                     </div>
 
                     {/* Content */}
-                    <div className="d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
-                        <div className="d-flex align-items-center gap-2 mb-1">
-                            <span className="fw-bold text-truncate">{item.name}</span>
+                    <div className="flex flex-col overflow-hidden" style={{ minWidth: 0 }}>
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="font-bold truncate">{item.name}</span>
                             <Badge variant="secondary" className="bg-opacity-10 text-secondary border border-secondary border-opacity-25 py-1 px-2" style={{ fontSize: '0.65rem' }}>
                                 {item.license}
                             </Badge>
                         </div>
 
-                        <div className="d-flex flex-column gap-1">
+                        <div className="flex flex-col gap-1">
                             <a href={item.url} target="_blank" rel="noreferrer"
-                                className="text-muted small text-truncate text-decoration-none font-monospace opacity-75 hover-opacity-100">
-                                <Link className="me-1" size={14} />{item.url}
+                                className="text-gray-500 small truncate text-decoration-none font-monospace opacity-75 hover-opacity-100">
+                                <Link className="mr-1" size={14} />{item.url}
                             </a>
                             <a href={item.licenseUrl} target="_blank" rel="noreferrer"
-                                className="text-muted small text-truncate text-decoration-none font-monospace opacity-75">
-                                <ShieldCheck className="me-1" size={14} />License Source
+                                className="text-gray-500 small truncate text-decoration-none font-monospace opacity-75">
+                                <ShieldCheck className="mr-1" size={14} />License Source
                             </a>
                         </div>
                     </div>
@@ -70,7 +70,7 @@ export default function Licenses() {
         <MainContainer style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Card style={{ flex: 1, marginBottom: '0px', display: 'flex', flexDirection: 'column' }}>
                 <CardHeader>
-                    <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center w-100 gap-3">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-3">
                         <IconBox
                             icon={FileText}
                             color="#10b981"
@@ -79,17 +79,17 @@ export default function Licenses() {
                         />
 
                         {/* Top-mounted Tab Navigation styled as a modern toggle bar */}
-                        <div className="bg-body-tertiary p-1 rounded-3 d-inline-flex shadow-sm border border-secondary border-opacity-10" style={{ minWidth: '220px' }}>
+                        <div className="bg-tertiary p-1 rounded-lg inline-flex shadow-sm border border-secondary border-opacity-10" style={{ minWidth: '220px' }}>
                             <ToggleGroup
                                 type="single"
                                 value={activeTab}
                                 onValueChange={(v) => v && setActiveTab(v)}
-                                className="w-100"
+                                className="w-full"
                             >
-                                <ToggleItem value="yuhaiin" className="flex-grow-1 py-1 px-3" style={{ fontSize: '0.85rem' }}>
+                                <ToggleItem value="yuhaiin" className="flex-grow py-1 px-3" style={{ fontSize: '0.85rem' }}>
                                     Core
                                 </ToggleItem>
-                                <ToggleItem value="android" className="flex-grow-1 py-1 px-3" style={{ fontSize: '0.85rem' }}>
+                                <ToggleItem value="android" className="flex-grow py-1 px-3" style={{ fontSize: '0.85rem' }}>
                                     Android
                                 </ToggleItem>
                             </ToggleGroup>
@@ -105,8 +105,8 @@ export default function Licenses() {
             </Card>
 
             <div className="text-center mt-3 opacity-50 pb-5">
-                <small className="text-muted">
-                    <Heart className="text-danger me-1" fill="currentColor" />
+                <small className="text-gray-500">
+                    <Heart className="text-danger mr-1" fill="currentColor" />
                     Built with love and open-source software.
                 </small>
             </div>

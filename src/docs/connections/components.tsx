@@ -272,11 +272,11 @@ export const MatchHistoryItem = ({ value }: { value: match_history_entry[] }) =>
 
     return (
         <DataListCustomItem>
-            <div className="d-sm-flex justify-content-between align-items-start gap-3 w-100">
+            <div className="sm:flex justify-between items-start gap-3 w-full">
 
                 {/* Left Side: Main Title */}
                 <div
-                    className="endpoint-name notranslate text-capitalize flex-shrink-0 mb-3 mb-sm-0"
+                    className="endpoint-name notranslate capitalize shrink-0 mb-3 sm:mb-0"
                     style={{
                         color: 'var(--sidebar-header-color)',
                         fontWeight: '600',
@@ -288,14 +288,14 @@ export const MatchHistoryItem = ({ value }: { value: match_history_entry[] }) =>
                 </div>
 
                 {/* Right Side: Container for Rule Groups */}
-                <div className="flex-grow-1 w-100 d-flex flex-column gap-3">
+                <div className="flex-grow w-full flex flex-col gap-3">
                     {
                         value.map((e: any, i: number) => {
                             return (
                                 /* GROUP CONTAINER: Wraps each Rule in a distinct "Box" */
                                 <div
                                     key={"rule-" + e.ruleName + i}
-                                    className="rounded-3 p-3"
+                                    className="rounded-lg p-3"
                                     style={{
                                         border: '1px solid var(--sidebar-border-color)',
                                         // Use a subtle background (like hover-bg) to separate it from the main background
@@ -304,7 +304,7 @@ export const MatchHistoryItem = ({ value }: { value: match_history_entry[] }) =>
                                 >
                                     {/* Rule Group Header */}
                                     <div
-                                        className="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center"
+                                        className="mb-2 pb-2 border-b flex justify-between items-center"
                                         style={{ borderColor: 'var(--sidebar-border-color)' }}
                                     >
                                         <span style={{
@@ -320,12 +320,12 @@ export const MatchHistoryItem = ({ value }: { value: match_history_entry[] }) =>
                                     </div>
 
                                     {/* Items List inside the Group */}
-                                    <div className="d-flex flex-column gap-2">
+                                    <div className="flex flex-col gap-2">
                                         {e.history && e.history.map((h: any, j: number) => {
                                             return (
                                                 <div
                                                     key={"list-" + h.listName + j}
-                                                    className="d-flex align-items-center justify-content-between"
+                                                    className="flex items-center justify-between"
                                                 >
                                                     {/* List Name */}
                                                     <span
@@ -339,7 +339,7 @@ export const MatchHistoryItem = ({ value }: { value: match_history_entry[] }) =>
                                                     </span>
 
                                                     {/* Status Icon & Label */}
-                                                    <div className="d-flex align-items-center gap-2 ps-3 flex-shrink-0">
+                                                    <div className="flex items-center gap-2 pl-3 shrink-0">
                                                         <span style={{
                                                             fontSize: '0.8rem',
                                                             fontWeight: '500',
@@ -349,7 +349,7 @@ export const MatchHistoryItem = ({ value }: { value: match_history_entry[] }) =>
                                                             {h.matched ? 'Hit' : 'Miss'}
                                                         </span>
                                                         <div
-                                                            className="d-flex align-items-center justify-content-center rounded-circle"
+                                                            className="flex items-center justify-center rounded-full"
                                                             style={{
                                                                 width: '24px',
                                                                 height: '24px',

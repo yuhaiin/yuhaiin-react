@@ -23,7 +23,7 @@ import { Server } from "./server";
 export default function ResolverComponent() {
     return (
         <MainContainer>
-            <div className="d-flex flex-column gap-4">
+            <div className="flex flex-col gap-4">
                 <Resolver />
                 <div className="row g-4">
                     <div className="col-lg-6">
@@ -78,7 +78,7 @@ function Resolver() {
         <ConfirmModal
             show={confirm.show}
             title="Delete Resolver"
-            content={<>Are you sure to delete <span className="fw-bold text-danger">{confirm.name}</span>?</>}
+            content={<>Are you sure to delete <span className="font-bold text-danger">{confirm.name}</span>?</>}
             onOk={() => {
                 deleteResolver(confirm.name)
                 setConfirm(prev => { return { ...prev, show: false } })
@@ -103,10 +103,10 @@ function Resolver() {
             items={resolvers.names.sort((a, b) => a.localeCompare(b))}
             renderListItem={(v) =>
                 <>
-                    <Network className="me-3 text-secondary" size={20} />
-                    <span className="flex-grow-1 text-truncate fw-medium">{v}</span>
-                    {v === 'bootstrap' && <ShieldCheck className="text-primary ms-2" size={16} title="System Default" />}
-                    <ChevronRight className="text-muted opacity-25 ms-2" size={16} />
+                    <Network className="mr-3 text-secondary" size={20} />
+                    <span className="flex-grow truncate font-medium">{v}</span>
+                    {v === 'bootstrap' && <ShieldCheck className="text-primary ml-2" size={16} title="System Default" />}
+                    <ChevronRight className="text-gray-500 opacity-25 ml-2" size={16} />
                 </>
             }
             onClickItem={(v) => setShowdata({ show: true, name: v, new: false })}
@@ -162,18 +162,18 @@ const ResolverModal: FC<{
                             <Single value={data} onChange={(e) => { mutate(e, false) }} />
                     }
                 </ModalBody>
-                <ModalFooter className="d-flex justify-content-between">
+                <ModalFooter className="flex justify-between">
                     <div>
                         {name !== 'bootstrap' && !isNew &&
                             <Button variant="outline-danger" onClick={() => { onHide(false); onDelete(name); }}>
-                                <Trash className="me-2" />Delete
+                                <Trash className="mr-2" />Delete
                             </Button>
                         }
                     </div>
-                    <div className="d-flex gap-2">
+                    <div className="flex gap-2">
                         <Button onClick={() => onHide()}>Cancel</Button>
                         <Button disabled={saving} onClick={handleSave}>
-                            {saving ? <Spinner size="sm" /> : <><Check className="me-2" size={16} />{isNew ? "Create" : "Save"}</>}
+                            {saving ? <Spinner size="sm" /> : <><Check className="mr-2" size={16} />{isNew ? "Create" : "Save"}</>}
                         </Button>
                     </div>
                 </ModalFooter>
@@ -184,7 +184,7 @@ const ResolverModal: FC<{
 
 const Single: FC<{ value: dns, onChange: (x: dns) => void }> = ({ value, onChange }) => {
     return (
-        <div className="d-flex flex-column">
+        <div className="flex flex-col">
             <SettingInputVertical
                 placeholder="e.g. tls://8.8.8.8:853"
                 label='Upstream DNS'

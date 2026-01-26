@@ -44,18 +44,18 @@ export const Hosts: FC = () => {
     }
 
     return (
-        <Card className="h-100 d-flex flex-column">
+        <Card className="h-full flex flex-col">
             <CardHeader>
                 <IconBox icon={Signpost} color="#3b82f6" title="Static Hosts" description="Local Domain Mappings" />
             </CardHeader>
-            <CardBody className="flex-grow-1">
-                <div className="d-flex flex-column gap-3">
+            <CardBody className="flex-grow">
+                <div className="flex flex-col gap-3">
                     {Object.entries(data.hosts)
                         .sort(([a], [b]) => a.localeCompare(b))
                         .map(([k, v]) => (
                             <InputGroup key={"hosts" + k}>
                                 <InputGroupText className="font-monospace small px-2" style={{ flex: 1, minWidth: 0, justifyContent: 'flex-start' }}>
-                                    <span className="text-truncate">{k}</span>
+                                    <span className="truncate">{k}</span>
                                 </InputGroupText>
                                 <Input
                                     value={v}
@@ -79,19 +79,19 @@ export const Hosts: FC = () => {
                             </InputGroup>
                         ))}
 
-                    <div className="pt-3 mt-2 border-top border-secondary border-opacity-10">
+                    <div className="pt-3 mt-2 border-t border-secondary border-opacity-10">
                         <InputGroup>
                             <Input
                                 value={newHosts.key}
                                 onChange={(e) => setNewHosts({ ...newHosts, key: e.target.value })}
                                 placeholder="Domain..."
-                                className="flex-grow-1"
+                                className="flex-grow"
                             />
                             <Input
                                 value={newHosts.value}
                                 onChange={(e) => setNewHosts({ ...newHosts, value: e.target.value })}
                                 placeholder="IP Address..."
-                                className="flex-grow-1"
+                                className="flex-grow"
                             />
                             <Button
                                 onClick={() => {
@@ -107,20 +107,20 @@ export const Hosts: FC = () => {
                 </div>
             </CardBody>
 
-            <CardFooter className="d-flex justify-content-end gap-2">
+            <CardFooter className="flex justify-end gap-2">
                 <Button
                     size="sm"
                     disabled={!isDirty}
                     onClick={() => mutate()}
                 >
-                    <RotateCw className="me-2" size={16} />Reset
+                    <RotateCw className="mr-2" size={16} />Reset
                 </Button>
                 <Button
                     size="sm"
                     disabled={saving || !isDirty}
                     onClick={handleSave}
                 >
-                    {saving ? <Spinner size="sm" /> : <><Save className="me-2" size={16} />Save</>}
+                    {saving ? <Spinner size="sm" /> : <><Save className="mr-2" size={16} />Save</>}
                 </Button>
             </CardFooter>
         </Card>

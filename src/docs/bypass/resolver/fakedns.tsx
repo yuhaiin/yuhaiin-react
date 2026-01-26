@@ -44,19 +44,19 @@ export const Fakedns: FC = () => {
     }
 
     return (
-        <Card className="h-100 d-flex flex-column">
-            <CardHeader className="d-flex justify-content-between align-items-center">
+        <Card className="h-full flex flex-col">
+            <CardHeader className="flex justify-between items-center">
                 <IconBox icon={Wand2} color="#10b981" title='FakeDNS' description='Virtual IP Strategy' />
-                <div className="d-flex align-items-center gap-2">
-                    <span className="small text-muted fw-medium">{data.enabled ? "ACTIVE" : "DISABLED"}</span>
+                <div className="flex items-center gap-2">
+                    <span className="small text-gray-500 font-medium">{data.enabled ? "ACTIVE" : "DISABLED"}</span>
                     <Switch
                         checked={data.enabled}
                         onCheckedChange={() => handleMutate(prev => ({ ...prev, enabled: !prev.enabled }))}
                     />
                 </div>
             </CardHeader>
-            <CardBody className="flex-grow-1">
-                <div className="d-flex flex-column gap-4">
+            <CardBody className="flex-grow">
+                <div className="flex flex-col gap-4">
                     <div className="row g-3">
                         <div className="col-12 col-md-6">
                             <SettingInputVertical
@@ -94,20 +94,20 @@ export const Fakedns: FC = () => {
                 </div>
             </CardBody>
 
-            <CardFooter className="d-flex justify-content-end gap-2">
+            <CardFooter className="flex justify-end gap-2">
                 <Button
                     size="sm"
                     disabled={!isDirty}
                     onClick={() => mutate()}
                 >
-                    <RotateCw className="me-2" size={16} />Reset
+                    <RotateCw className="mr-2" size={16} />Reset
                 </Button>
                 <Button
                     size="sm"
                     disabled={saving || !isDirty}
                     onClick={handleSave}
                 >
-                    {saving ? <Spinner size="sm" /> : <><Save className="me-2" size={16} />Save</>}
+                    {saving ? <Spinner size="sm" /> : <><Save className="mr-2" size={16} />Save</>}
                 </Button>
             </CardFooter>
         </Card>
