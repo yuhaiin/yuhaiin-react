@@ -25,11 +25,11 @@ export default function ResolverComponent() {
         <MainContainer>
             <div className="flex flex-col gap-4">
                 <Resolver />
-                <div className="row g-4">
-                    <div className="col-lg-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div>
                         <Hosts />
                     </div>
-                    <div className="col-lg-6">
+                    <div>
                         <Fakedns />
                     </div>
                 </div>
@@ -78,7 +78,7 @@ function Resolver() {
         <ConfirmModal
             show={confirm.show}
             title="Delete Resolver"
-            content={<>Are you sure to delete <span className="font-bold text-danger">{confirm.name}</span>?</>}
+            content={<>Are you sure to delete <span className="font-bold text-[var(--bs-danger)]">{confirm.name}</span>?</>}
             onOk={() => {
                 deleteResolver(confirm.name)
                 setConfirm(prev => { return { ...prev, show: false } })
@@ -103,9 +103,9 @@ function Resolver() {
             items={resolvers.names.sort((a, b) => a.localeCompare(b))}
             renderListItem={(v) =>
                 <>
-                    <Network className="mr-3 text-secondary" size={20} />
+                    <Network className="mr-3 text-[var(--bs-secondary-color)]" size={20} />
                     <span className="flex-grow truncate font-medium">{v}</span>
-                    {v === 'bootstrap' && <ShieldCheck className="text-primary ml-2" size={16} title="System Default" />}
+                    {v === 'bootstrap' && <ShieldCheck className="text-[var(--bs-primary)] ml-2" size={16} title="System Default" />}
                     <ChevronRight className="text-gray-500 opacity-25 ml-2" size={16} />
                 </>
             }

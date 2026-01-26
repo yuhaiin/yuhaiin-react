@@ -57,15 +57,15 @@ export const Fakedns: FC = () => {
             </CardHeader>
             <CardBody className="flex-grow">
                 <div className="flex flex-col gap-4">
-                    <div className="row g-3">
-                        <div className="col-12 col-md-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
                             <SettingInputVertical
                                 label='IPv4 Range'
                                 value={data.ipv4Range}
                                 onChange={(v: string) => handleMutate(prev => ({ ...prev, ipv4Range: v }))}
                             />
                         </div>
-                        <div className="col-12 col-md-6">
+                        <div>
                             <SettingInputVertical
                                 label='IPv6 Range'
                                 value={data.ipv6Range}
@@ -74,7 +74,7 @@ export const Fakedns: FC = () => {
                         </div>
                     </div>
 
-                    <hr className="my-0 border-secondary opacity-10" />
+                    <hr className="my-0 border-[var(--sidebar-border-color)] opacity-10" />
 
                     <InputList
                         title="Domain Whitelist"
@@ -83,7 +83,7 @@ export const Fakedns: FC = () => {
                         onChange={(v) => handleMutate(prev => ({ ...prev, whitelist: v }))}
                     />
 
-                    <hr className="my-0 border-secondary opacity-10" />
+                    <hr className="my-0 border-[var(--sidebar-border-color)] opacity-10" />
 
                     <InputList
                         title="Skip Check List"

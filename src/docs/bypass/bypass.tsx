@@ -49,10 +49,10 @@ const BypassComponent: FC<{
                     <IconBox icon={ShieldCheck} color="#ec4899" title="Global Bypass Settings" description="DNS Resolution & Strategies" />
                 </CardHeader>
                 <CardBody>
-                    <div className="row g-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         {/* Left Column: Toggles */}
-                        <div className="col-lg-6">
-                            <h6 className="font-bold mb-3 uppercase small text-gray-500 text-opacity-75" style={{ letterSpacing: '0.5px' }}>Resolution Strategy</h6>
+                        <div>
+                            <h6 className="font-bold mb-3 uppercase text-sm text-gray-500 opacity-75 tracking-[0.5px]">Resolution Strategy</h6>
 
                             <div className="flex flex-col gap-3">
                                 <SwitchCard
@@ -72,8 +72,8 @@ const BypassComponent: FC<{
                         </div>
 
                         {/* Right Column: Resolvers */}
-                        <div className="col-lg-6 border-start-lg lg:pl-4" style={{ borderColor: 'var(--card-inner-border)' }}>
-                            <h6 className="font-bold mb-3 uppercase small text-gray-500 text-opacity-75" style={{ letterSpacing: '0.5px' }}>Default Resolvers</h6>
+                        <div className="lg:border-l lg:pl-4 border-[var(--card-inner-border)]">
+                            <h6 className="font-bold mb-3 uppercase text-sm text-gray-500 opacity-75 tracking-[0.5px]">Default Resolvers</h6>
 
                             <div className="flex flex-col gap-3">
                                 <SettingSelectVertical
@@ -123,7 +123,7 @@ const RuleItem: FC<{
     return (
         <>
             <div className="flex items-center flex-grow overflow-hidden">
-                <Badge variant="secondary" className="mr-2" style={{ minWidth: '40px' }}>#{index + 1}</Badge>
+                <Badge variant="secondary" className="mr-2 min-w-[40px]">#{index + 1}</Badge>
                 <Signpost className="mr-2 text-gray-500" />
                 <span className="truncate font-medium">{name}</span>
             </div>
@@ -306,12 +306,12 @@ const PriorityModalComponent: FC<{
 
                         <div className="flex items-center my-3 text-gray-500">
                             <hr className="flex-grow opacity-25" />
-                            <small className="mx-2 uppercase font-bold opacity-50" style={{ fontSize: '0.65rem', letterSpacing: '0.5px' }}>Operation</small>
+                            <small className="mx-2 uppercase font-bold opacity-50 text-[0.65rem] tracking-[0.5px]">Operation</small>
                             <hr className="flex-grow opacity-25" />
                         </div>
 
                         <select
-                            className='form-select text-center mb-3 bg-tertiary border-secondary border-opacity-10 rounded-lg'
+                            className='w-full px-3 py-2 text-center mb-3 bg-[var(--bs-tertiary-bg)] border border-[var(--sidebar-border-color)] rounded-lg outline-none focus:border-[var(--bs-primary)]'
                             value={operate}
                             onChange={(e) => setOperate(parseInt(e.target.value))}
                         >
@@ -324,12 +324,12 @@ const PriorityModalComponent: FC<{
 
                         <div className="flex items-center my-3 text-gray-500">
                             <hr className="flex-grow opacity-25" />
-                            <small className="mx-2 uppercase font-bold opacity-50" style={{ fontSize: '0.65rem', letterSpacing: '0.5px' }}>Target Rule</small>
+                            <small className="mx-2 uppercase font-bold opacity-50 text-[0.65rem] tracking-[0.5px]">Target Rule</small>
                             <hr className="flex-grow opacity-25" />
                         </div>
 
                         <select
-                            className='form-select text-center bg-tertiary border-secondary border-opacity-10 rounded-lg'
+                            className='w-full px-3 py-2 text-center bg-[var(--bs-tertiary-bg)] border border-[var(--sidebar-border-color)] rounded-lg outline-none focus:border-[var(--bs-primary)]'
                             value={value}
                             onChange={(e) => setValue(parseInt(e.target.value))}
                         >

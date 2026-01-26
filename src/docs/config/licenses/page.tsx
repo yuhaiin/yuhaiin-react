@@ -12,7 +12,7 @@ import { License } from "../../pbes/tools/tools_pb";
 
 const LicenseItem: FC<{ item: License, index: number }> = ({ item, index }) => {
     return (
-        <div className="col-12">
+        <div className="w-full">
             <ListItem style={{ cursor: 'default' }}>
                 <div className="flex items-center flex-grow overflow-hidden gap-3">
                     {/* Index or Icon */}
@@ -32,11 +32,11 @@ const LicenseItem: FC<{ item: License, index: number }> = ({ item, index }) => {
 
                         <div className="flex flex-col gap-1">
                             <a href={item.url} target="_blank" rel="noreferrer"
-                                className="text-gray-500 small truncate text-decoration-none font-monospace opacity-75 hover-opacity-100">
+                                className="text-gray-500 small truncate text-decoration-none font-mono opacity-75 hover:opacity-100">
                                 <Link className="mr-1" size={14} />{item.url}
                             </a>
                             <a href={item.licenseUrl} target="_blank" rel="noreferrer"
-                                className="text-gray-500 small truncate text-decoration-none font-monospace opacity-75">
+                                className="text-gray-500 small truncate text-decoration-none font-mono opacity-75 hover:opacity-100">
                                 <ShieldCheck className="mr-1" size={14} />License Source
                             </a>
                         </div>
@@ -49,7 +49,7 @@ const LicenseItem: FC<{ item: License, index: number }> = ({ item, index }) => {
 
 const LicensesList: FC<{ value: License[] }> = ({ value }) => {
     return (
-        <div className="row g-2">
+        <div className="flex flex-col gap-2">
             {value.map((v, i) => (
                 <LicenseItem key={i} item={v} index={i} />
             ))}
@@ -79,7 +79,7 @@ export default function Licenses() {
                         />
 
                         {/* Top-mounted Tab Navigation styled as a modern toggle bar */}
-                        <div className="bg-tertiary p-1 rounded-lg inline-flex shadow-sm border border-secondary border-opacity-10" style={{ minWidth: '220px' }}>
+                        <div className="bg-[var(--bs-tertiary-bg)] p-1 rounded-lg inline-flex shadow-sm border border-[var(--sidebar-border-color)]" style={{ minWidth: '220px' }}>
                             <ToggleGroup
                                 type="single"
                                 value={activeTab}
@@ -106,7 +106,7 @@ export default function Licenses() {
 
             <div className="text-center mt-3 opacity-50 pb-5">
                 <small className="text-gray-500">
-                    <Heart className="text-danger mr-1" fill="currentColor" />
+                    <Heart className="text-red-500 mr-1 inline" fill="currentColor" />
                     Built with love and open-source software.
                 </small>
             </div>

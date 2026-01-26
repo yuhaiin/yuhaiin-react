@@ -159,32 +159,32 @@ function InboudComponent() {
                     <IconBox icon={Settings} color="#f59e0b" title='Inbound Configuration' description="Global interception & sniffing" />
                 </CardHeader>
                 <CardBody>
-                    <div className="row g-3">
-                        <div className="col-md-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
                             <SwitchCard
                                 label="DNS Hijack"
                                 description="Intersects DNS requests"
                                 checked={inbounds.hijackDns}
                                 onCheckedChange={() => mutate({ ...inbounds, hijackDns: !inbounds.hijackDns }, false)}
-                                className="p-3 rounded-lg h-full bg-tertiary"
+                                className="p-3 rounded-lg h-full bg-[var(--bs-tertiary-bg)]"
                             />
                         </div>
-                        <div className="col-md-4">
+                        <div>
                             <SwitchCard
                                 label="FakeDNS"
                                 description="Use virtual IP logic"
                                 checked={inbounds.hijackDnsFakeip}
                                 onCheckedChange={() => mutate({ ...inbounds, hijackDnsFakeip: !inbounds.hijackDnsFakeip }, false)}
-                                className="p-3 rounded-lg h-full bg-tertiary"
+                                className="p-3 rounded-lg h-full bg-[var(--bs-tertiary-bg)]"
                             />
                         </div>
-                        <div className="col-md-4">
+                        <div>
                             <SwitchCard
                                 label="Traffic Sniffing"
                                 description="Inspects protocol types"
                                 checked={!!inbounds.sniff?.enabled}
                                 onCheckedChange={() => mutate({ ...inbounds, sniff: { ...inbounds.sniff, enabled: !inbounds.sniff?.enabled } }, false)}
-                                className="p-3 rounded-lg h-full bg-tertiary"
+                                className="p-3 rounded-lg h-full bg-[var(--bs-tertiary-bg)]"
                             />
                         </div>
                     </div>
@@ -202,12 +202,12 @@ function InboudComponent() {
                     <IconBox icon={DoorOpen} color="#0d6efd" title="Entry Points" description={`${inbounds.names.length} active inbounds`} />
                 </CardHeader>
                 <CardBody>
-                    <div className="row g-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {
                             inbounds.names.sort((a, b) => a.localeCompare(b)).map((name, index) => (
-                                <div className="col-md-6 col-lg-4" key={index}>
+                                <div key={index}>
                                     <div
-                                        className="p-3 rounded-lg h-full bg-tertiary flex items-center justify-between cursor-pointer"
+                                        className="p-3 rounded-lg h-full bg-[var(--bs-tertiary-bg)] flex items-center justify-between cursor-pointer border border-[var(--sidebar-border-color)] hover:border-[var(--sidebar-active-color)] hover:bg-[var(--sidebar-hover-bg)] transition-colors"
                                         onClick={() => setShowdata({ show: true, name, new: false })}
                                         role="button"
                                         tabIndex={0}
@@ -220,10 +220,10 @@ function InboudComponent() {
                         }
 
                         {/* Add New Item Input */}
-                        <div className="col-md-6 col-lg-4">
-                            <div className="p-3 rounded-lg h-full bg-tertiary flex items-center">
+                        <div>
+                            <div className="p-3 rounded-lg h-full bg-[var(--bs-tertiary-bg)] flex items-center border border-[var(--sidebar-border-color)]">
                                 <form
-                                    className="flex w-full gap-2"
+                                    className="flex w-full gap-2 items-center"
                                     onSubmit={(e) => {
                                         e.preventDefault();
                                         const form = e.target as HTMLFormElement;
@@ -236,11 +236,11 @@ function InboudComponent() {
                                 >
                                     <input
                                         name="newInbound"
-                                        className="form-control form-control-sm bg-transparent border-0 shadow-none px-0"
+                                        className="flex-grow bg-transparent border-none text-base outline-none text-[var(--bs-body-color)] placeholder:text-gray-400"
                                         placeholder="Create new..."
                                         autoComplete="off"
                                     />
-                                    <Button size="sm" type="submit" disabled={saving} className="border-0 bg-transparent text-primary p-0">
+                                    <Button size="sm" type="submit" disabled={saving} className="border-0 bg-transparent text-[var(--bs-primary)] p-0 hover:bg-transparent hover:text-[var(--bs-primary)]">
                                         <Plus size={20} />
                                     </Button>
                                 </form>

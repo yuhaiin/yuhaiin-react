@@ -15,7 +15,7 @@ const InfoRow: FC<{
     isBadge?: boolean;
     isMonospace?: boolean;
 }> = ({ label, value, icon, url, isBadge, isMonospace }) => (
-    <div className="col-12">
+    <div className="w-full">
         <ListItem style={{ cursor: url ? 'pointer' : 'default' }}>
             <div className="flex w-full items-center justify-between gap-3">
                 <div className="flex items-center gap-3 overflow-hidden">
@@ -30,13 +30,13 @@ const InfoRow: FC<{
 
                 <div className="text-right overflow-hidden">
                     {url ? (
-                        <a href={url} target="_blank" rel="noreferrer" className="text-decoration-none font-monospace text-primary truncate block">
+                        <a href={url} target="_blank" rel="noreferrer" className="no-underline font-mono text-[var(--bs-primary)] truncate block flex items-center justify-end">
                             {value} <ExternalLink className="ml-1" size={12} />
                         </a>
                     ) : isBadge ?
                         <IconBadge icon={icon || LayoutGrid} text={value} color="primary" />
                         : (
-                            <span className={`${isMonospace ? 'font-monospace' : ''} truncate block`} style={{ fontSize: '0.9rem' }}>
+                            <span className={`${isMonospace ? 'font-mono' : ''} truncate block text-[0.9rem]`}>
                                 {value}
                             </span>
                         )
@@ -61,7 +61,7 @@ export default function About() {
                 </CardHeader>
 
                 <CardBody>
-                    <div className="row g-3">
+                    <div className="flex flex-col gap-3">
                         {/* Primary Build Info */}
                         <InfoRow label="Version" value={info.version || "Unknown"} icon={BadgeCheck} isBadge />
                         <InfoRow
@@ -92,11 +92,11 @@ export default function About() {
 
                 {/* Build Tags / Features Section */}
                 {info.build && info.build.length > 0 && (
-                    <CardFooter className="p-4 bg-transparent border-t border-secondary border-opacity-10">
+                    <CardFooter className="p-4 bg-transparent border-t border-[var(--bs-secondary-bg)] border-opacity-10">
                         <SettingLabel className={"mb-2 block text-gray-500"}>Build Parameters</SettingLabel>
                         <div className="flex flex-wrap gap-2">
                             {info.build.map((tag, idx) => (
-                                <div key={idx} className="px-2 py-1 rounded border font-monospace small text-break">
+                                <div key={idx} className="px-2 py-1 rounded border font-mono text-sm break-all">
                                     {tag}
                                 </div>
                             ))}

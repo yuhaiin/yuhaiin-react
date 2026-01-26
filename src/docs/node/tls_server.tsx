@@ -82,7 +82,7 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                             <Card className='mb-3' key={"server_name_certificate" + k}>
                                 <CardBody>
                                     <CardTitle className='flex justify-between items-center mb-3'>
-                                        <span className="font-bold text-primary">{k}</span>
+                                        <span className="font-bold text-[var(--bs-primary)]">{k}</span>
                                         {editable && (
                                             <Button variant='outline-danger' size="sm" onClick={() => {
                                                 const serverNameCertificate = { ...props.tls.serverNameCertificate }
@@ -104,9 +104,9 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                 }
 
                 {editable && (
-                    <div className="bg-tertiary p-3 rounded-lg flex items-end gap-3 flex-wrap sm:flex-nowrap">
+                    <div className="bg-[var(--bs-tertiary-bg)] p-3 rounded-lg flex items-end gap-3 flex-wrap sm:flex-nowrap">
                         <div className="flex-grow">
-                            <label className="form-label small font-bold opacity-75">New SNI Hostname</label>
+                            <label className="block mb-2 font-bold text-sm opacity-75">New SNI Hostname</label>
                             <Input value={newSni} onChange={(e) => setNewSni(e.target.value)} />
                         </div>
                         <Button
@@ -137,34 +137,32 @@ const TLSCertificateComponents = (props: { cert: certificate, onChange: (x: cert
     return (
         <>
             <div className="mb-3">
-                <label className="form-label small font-bold opacity-75 mb-2">Certificate (PEM)</label>
+                <label className="block mb-2 font-bold text-sm opacity-75">Certificate (PEM)</label>
                 <Textarea
                     rows={5}
                     readOnly={!editable}
-                    className="font-monospace"
-                    style={{ fontSize: '0.8rem' }}
+                    className="font-mono text-[0.8rem]"
                     value={new TextDecoder().decode(props.cert.cert)}
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => props.onChange({ ...props.cert, cert: new TextEncoder().encode(e.target.value) })}
                 />
             </div>
 
             <div className="mb-3">
-                <label className="form-label small font-bold opacity-75 mb-2">Private Key (PEM)</label>
+                <label className="block mb-2 font-bold text-sm opacity-75">Private Key (PEM)</label>
                 <Textarea
                     rows={5}
                     readOnly={!editable}
-                    className="font-monospace"
-                    style={{ fontSize: '0.8rem' }}
+                    className="font-mono text-[0.8rem]"
                     value={new TextDecoder().decode(props.cert.key)}
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => props.onChange({ ...props.cert, key: new TextEncoder().encode(e.target.value) })}
                 />
             </div>
 
-            <div className="row g-3">
-                <div className="col-md-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
                     <SettingInputVertical label='Cert File Path' value={props.cert.certFilePath} disabled={!editable} onChange={(e: string) => props.onChange({ ...props.cert, certFilePath: e })} />
                 </div>
-                <div className="col-md-6">
+                <div>
                     <SettingInputVertical label='Key File Path' value={props.cert.keyFilePath} disabled={!editable} onChange={(e: string) => props.onChange({ ...props.cert, keyFilePath: e })} />
                 </div>
             </div>

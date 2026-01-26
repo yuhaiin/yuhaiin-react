@@ -105,8 +105,8 @@ function ConfigComponent() {
                     <IconBox icon={Globe} color="#3b82f6" title='General Settings' description='Network and system integration' />
                 </CardHeader>
                 <CardBody>
-                    <div className="row g-3">
-                        <div className="col-md-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
                             <SwitchCard
                                 label="Enable IPv6"
                                 description="Global IPv6 traffic support"
@@ -114,7 +114,7 @@ function ConfigComponent() {
                                 onCheckedChange={() => update(prev => ({ ...prev, ipv6: !prev.ipv6 }), false)}
                             />
                         </div>
-                        <div className="col-md-6">
+                        <div>
                             <SwitchCard
                                 label="Default Interface"
                                 description="Automatically detect exit"
@@ -124,7 +124,7 @@ function ConfigComponent() {
                         </div>
 
                         {!setting.useDefaultInterface && (
-                            <div className="col-12 mt-2">
+                            <div className="md:col-span-2 mt-2">
                                 <SettingInputVertical
                                     label="Manual Network Interface"
                                     reminds={interfaces.map(x => {
@@ -141,7 +141,7 @@ function ConfigComponent() {
                             </div>
                         )}
 
-                        <div className="col-12 mt-3">
+                        <div className="md:col-span-2 mt-3">
                             <SettingLabel>System Proxy Integration</SettingLabel>
                             <ToggleGroup
                                 type="multiple"
@@ -163,8 +163,8 @@ function ConfigComponent() {
                     <IconBox icon={NotebookText} color="#10b981" title="Logging (Logcat)" description="Debug and error reporting" />
                 </CardHeader>
                 <CardBody>
-                    <div className="row g-3">
-                        <div className="col-md-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
                             <SettingEnumSelectVertical
                                 label="Log Level"
                                 type={log_levelSchema}
@@ -173,7 +173,7 @@ function ConfigComponent() {
                                 onChange={(v) => update(prev => ({ ...prev, logcat: updateIfPresent(prev.logcat, (l) => create(logcatSchema, { ...l, level: v })) }), false)}
                             />
                         </div>
-                        <div className="col-md-6">
+                        <div>
                             <SwitchCard
                                 label="Persistent Logging"
                                 description="Save logs to disk"
@@ -181,7 +181,7 @@ function ConfigComponent() {
                                 onCheckedChange={() => update(prev => ({ ...prev, logcat: updateIfPresent(prev.logcat, (l) => create(logcatSchema, { ...l, save: !l.save })) }), false)}
                             />
                         </div>
-                        <div className="col-md-6">
+                        <div>
                             <SwitchCard
                                 label="Ignore Timeouts"
                                 description="Hide timeout errors in logs"
@@ -189,7 +189,7 @@ function ConfigComponent() {
                                 onCheckedChange={() => update(prev => ({ ...prev, logcat: updateIfPresent(prev.logcat, (l) => create(logcatSchema, { ...l, ignoreTimeoutError: !l.ignoreTimeoutError })) }), false)}
                             />
                         </div>
-                        <div className="col-md-6">
+                        <div>
                             <SwitchCard
                                 label="Ignore DNS Errors"
                                 description="Hide resolution failures"
@@ -207,8 +207,8 @@ function ConfigComponent() {
                     <IconBox icon={Cpu} color="#f59e0b" title="Performance & Advanced" description="Buffer sizes and concurrency limits" />
                 </CardHeader>
                 <CardBody>
-                    <div className="row g-4">
-                        <div className="col-lg-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
                             <SettingRangeVertical
                                 label="UDP Buffer Size"
                                 unit="B"
@@ -218,7 +218,7 @@ function ConfigComponent() {
                             />
                         </div>
 
-                        <div className="col-lg-6">
+                        <div>
                             <SettingRangeVertical
                                 label="Relay Buffer Size"
                                 unit="B"
@@ -228,7 +228,7 @@ function ConfigComponent() {
                             />
                         </div>
 
-                        <div className="col-lg-6">
+                        <div>
                             <SettingRangeVertical
                                 label="UDP Ring Buffer"
                                 unit="Slots"
@@ -238,7 +238,7 @@ function ConfigComponent() {
                             />
                         </div>
 
-                        <div className="col-lg-6">
+                        <div>
                             <SettingRangeVertical
                                 label="Happy Eyeballs Concurrency"
                                 unit="Sems"

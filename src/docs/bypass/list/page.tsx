@@ -93,7 +93,7 @@ export default function Lists() {
             <ConfirmModal
                 show={confirm.show}
                 title="Delete List"
-                content={<>Are you sure to delete <span className="font-bold text-danger">{confirm.name}</span>?</>}
+                content={<>Are you sure to delete <span className="font-bold text-[var(--bs-danger)]">{confirm.name}</span>?</>}
                 onOk={() => {
                     deleteList(confirm.name)
                     setConfirm(prev => { return { ...prev, show: false } })
@@ -121,7 +121,7 @@ export default function Lists() {
                     <h4 className="font-bold mb-1">List Management</h4>
                     <div className="text-gray-500 flex items-center small">
                         <History className="mr-2 opacity-75" />
-                        <span>Last Synced: <span className="font-medium text-body-text">{lastRefreshTime}</span></span>
+                        <span>Last Synced: <span className="font-medium text-[var(--bs-body-color)]">{lastRefreshTime}</span></span>
                     </div>
                 </div>
 
@@ -155,9 +155,9 @@ export default function Lists() {
                     </CardHeader>
 
                     <CardBody>
-                        <div className="row g-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             {/* Auto-fetch Interval */}
-                            <div className="col-12 col-lg-6">
+                            <div>
                                 <SettingRangeVertical
                                     label="Auto-fetch Interval"
                                     value={Number(data.refreshConfig?.refreshInterval) / 60}
@@ -173,7 +173,7 @@ export default function Lists() {
                             </div>
 
                             {/* GeoIP URL */}
-                            <div className="col-12 col-lg-6 border-start-lg lg:pl-4" style={{ borderColor: 'var(--card-inner-border)' }}>
+                            <div className="lg:border-l lg:pl-4 border-[var(--card-inner-border)]">
                                 <SettingInputVertical
                                     label="Maxmind GeoIP Database URL"
                                     placeholder="e.g. https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb"
@@ -186,7 +186,7 @@ export default function Lists() {
                                     }}
                                 />
                                 {data.maxminddbGeoip?.error && (
-                                    <div className="mt-2 p-2 bg-danger bg-opacity-10 text-danger rounded small">
+                                    <div className="mt-2 p-2 bg-[var(--bs-danger-bg-subtle)] text-[var(--bs-danger-text-emphasis)] rounded text-xs flex items-center">
                                         <TriangleAlert className="mr-2" size={14} />{data.maxminddbGeoip.error}
                                     </div>
                                 )}
@@ -205,7 +205,7 @@ export default function Lists() {
                     items={data.names.sort((a, b) => a.localeCompare(b))}
                     renderListItem={(v) =>
                         <>
-                            <FileText className="mr-3 text-secondary" size={20} />
+                            <FileText className="mr-3 text-[var(--bs-secondary-color)]" size={20} />
                             <span className="truncate font-medium flex-grow">{v}</span>
                             <ChevronRight className="text-gray-500 opacity-25" size={16} />
                         </>
@@ -315,9 +315,9 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
         <div className="flex flex-col gap-4">
             {/* 1. Top Settings Area */}
             <SettingsBox>
-                <div className="row g-4">
+                <div className="grid grid-cols-1 gap-4">
                     {/* Content Type */}
-                    <div className="col-12">
+                    <div>
                         <SettingTypeSelect
                             label='Content Type'
                             type={list_list_type_enumSchema}
@@ -327,7 +327,7 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
                     </div>
 
                     {/* Source Mode */}
-                    <div className="col-12">
+                    <div>
                         <SettingLabel className="mb-2">Source Mode</SettingLabel>
                         <ToggleGroup
                             type="single"
@@ -364,7 +364,7 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
                     </Badge>
                 </div>
 
-                <div className="bg-tertiary p-3 rounded-lg border border-secondary border-opacity-10">
+                <div className="bg-[var(--bs-tertiary-bg)] p-3 rounded-lg border border-[var(--sidebar-border-color)] border-opacity-10">
                     <InputList
                         title={isRemote ? "URL" : "Rule"}
                         dump
@@ -384,8 +384,8 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
             {/* 3. Error Messages Area */}
             {value.errorMsgs && value.errorMsgs.length > 0 && (
                 <div className="mt-2">
-                    <SettingLabel className="text-danger mb-2">Error Messages</SettingLabel>
-                    <div className="p-3 bg-danger bg-opacity-10 text-danger rounded-lg small font-monospace">
+                    <SettingLabel className="text-[var(--bs-danger)] mb-2">Error Messages</SettingLabel>
+                    <div className="p-3 bg-[var(--bs-danger-bg-subtle)] text-[var(--bs-danger-text-emphasis)] rounded-lg text-xs font-mono">
                         {value.errorMsgs.map((msg, i) => <div key={i} className="mb-1">• {msg}</div>)}
                     </div>
                 </div>

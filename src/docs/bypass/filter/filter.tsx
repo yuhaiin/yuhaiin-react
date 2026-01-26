@@ -12,7 +12,7 @@ import { Check, ChevronDown, ChevronRight, Plus, Trash, X } from 'lucide-react';
 import React, { createContext, FC, useContext, useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { FetchProtobuf, ProtoESFetcher, ProtoPath } from '../../../common/proto';
-import Loading from '../../../component/v2/loading';
+import Loading, { Error as ErrorDisplay } from '../../../component/v2/loading';
 import { GlobalToastContext } from '../../../component/v2/toast';
 import { rule_indexSchema, rule_save_requestSchema, rules } from '../../pbes/api/config_pb';
 import { geoipSchema, hostSchema, mode, modeSchema, network_network_type, networkSchema, or, orSchema, portSchema, processSchema, resolve_strategySchema, rule, ruleSchema, rulev2Schema, sourceSchema, udp_proxy_fqdn_strategy, udp_proxy_fqdn_strategySchema } from '../../pbes/config/bypass_pb';
@@ -237,7 +237,7 @@ const RuleGroup: FC<{
     };
 
     return (
-        <div className="border border-secondary border-opacity-10 p-3 rounded-lg bg-tertiary bg-opacity-25">
+        <div className="border border-[var(--sidebar-border-color)] border-opacity-10 p-3 rounded-lg bg-[var(--bs-tertiary-bg)] bg-opacity-25">
             {group.rules.map((rule, index) => (
                 <React.Fragment key={index}>
                     <RuleRow
@@ -246,7 +246,7 @@ const RuleGroup: FC<{
                         onRemove={() => handleRemoveRule(index)}
                     />
                     {index < group.rules.length - 1 && (
-                        <div className="ml-3 mb-3 font-bold text-primary small uppercase">And</div>
+                        <div className="ml-3 mb-3 font-bold text-[var(--bs-primary)] text-sm uppercase">And</div>
                     )}
                 </React.Fragment>
             ))}
@@ -260,7 +260,7 @@ const RuleGroup: FC<{
 const OrSeparator: FC = () => (
     <div className="flex items-center my-3">
         <hr className="flex-grow opacity-25" />
-        <span className="mx-3 font-bold text-gray-500 small uppercase" style={{ letterSpacing: '1px' }}>Or</span>
+        <span className="mx-3 font-bold text-gray-500 text-xs uppercase tracking-[1px]">Or</span>
         <hr className="flex-grow opacity-25" />
     </div>
 );
@@ -268,7 +268,7 @@ const OrSeparator: FC = () => (
 const RulesSeparator: FC = () => (
     <div className="flex items-center my-3">
         <hr className="flex-grow opacity-25" />
-        <span className="mx-3 font-bold text-gray-500 small uppercase" style={{ letterSpacing: '1px' }}>Rules</span>
+        <span className="mx-3 font-bold text-gray-500 text-xs uppercase tracking-[1px]">Rules</span>
         <hr className="flex-grow opacity-25" />
     </div>
 );
@@ -370,8 +370,8 @@ export const FilterModal: FC<{
                     ) : (
                         <div className="flex flex-col gap-4">
                             <SettingsBox>
-                                <div className="row g-4">
-                                    <div className="col-md-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
                                         <SettingEnumSelectVertical
                                             label="Mode"
                                             type={modeSchema}
@@ -381,7 +381,7 @@ export const FilterModal: FC<{
                                             emptyChoose
                                         />
                                     </div>
-                                    <div className="col-md-6">
+                                    <div>
                                         <SettingInputVertical
                                             label="Tag"
                                             value={rule.tag}
@@ -389,7 +389,7 @@ export const FilterModal: FC<{
                                             placeholder="Optional tag"
                                         />
                                     </div>
-                                    <div className="col-md-6">
+                                    <div>
                                         <SettingEnumSelectVertical
                                             label="Resolve Strategy"
                                             type={resolve_strategySchema}
@@ -398,7 +398,7 @@ export const FilterModal: FC<{
                                             emptyChoose
                                         />
                                     </div>
-                                    <div className="col-md-6">
+                                    <div>
                                         <SettingEnumSelectVertical
                                             label="UDP proxy Fqdn"
                                             type={udp_proxy_fqdn_strategySchema}
@@ -408,7 +408,7 @@ export const FilterModal: FC<{
                                             emptyChoose
                                         />
                                     </div>
-                                    <div className="col-12">
+                                    <div className="md:col-span-2">
                                         <SettingSelectVertical
                                             label="Resolver"
                                             value={rule.resolver}
@@ -441,7 +441,7 @@ export const FilterModal: FC<{
 
                                 {showDebug && (
                                     <div className="mt-3">
-                                        <pre className="small bg-tertiary p-3 rounded-lg overflow-auto font-monospace border border-secondary border-opacity-10" style={{ maxHeight: '300px', fontSize: '0.75rem' }}>
+                                        <pre className="small bg-[var(--bs-tertiary-bg)] p-3 rounded-lg overflow-auto font-mono border border-[var(--sidebar-border-color)] border-opacity-10 text-xs" style={{ maxHeight: '300px' }}>
                                             {toJsonString(rulev2Schema, rule, { prettySpaces: 2 })}
                                         </pre>
                                     </div>

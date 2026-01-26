@@ -81,8 +81,8 @@ function BackupPage() {
                     <IconBox icon={ShieldCheck} color="#3b82f6" title='Backup Instance' description='Identification and timing' />
                 </CardHeader>
                 <CardBody>
-                    <div className="row g-4">
-                        <div className="col-md-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
                             <SettingInputVertical
                                 label="Instance Name"
                                 value={data.instanceName}
@@ -90,7 +90,7 @@ function BackupPage() {
                                 placeholder="Unique identifier for this node"
                             />
                         </div>
-                        <div className="col-md-6">
+                        <div>
                             <SettingInputVertical
                                 label="Backup Interval (Seconds)"
                                 value={data.interval.toString()}
@@ -101,11 +101,11 @@ function BackupPage() {
                                 placeholder="e.g. 3600"
                             />
                         </div>
-                        <div className="col-12">
+                        <div className="md:col-span-2">
                             <SettingLabel>Last Backup Hash</SettingLabel>
                             <ListItem style={{ cursor: 'default', background: 'rgba(0,0,0,0.1)' }}>
                                 <Hash className="mr-2 text-gray-500" size={16} />
-                                <span className="font-monospace small truncate opacity-75">
+                                <span className="font-mono text-sm truncate opacity-75">
                                     {data.lastBackupHash || "No backup records found"}
                                 </span>
                             </ListItem>
@@ -117,9 +117,9 @@ function BackupPage() {
             {/* 2. S3 Storage Configuration */}
             <Card>
                 <CardBody>
-                    <div className="row g-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Toggles Row */}
-                        <div className="col-md-6">
+                        <div>
                             <SwitchCard
                                 label="S3 Backup Enabled"
                                 description="Enable automatic S3 sync"
@@ -127,7 +127,7 @@ function BackupPage() {
                                 onCheckedChange={() => setSetting(prev => ({ ...prev, s3: { ...prev.s3, enabled: !prev.s3.enabled } }), false)}
                             />
                         </div>
-                        <div className="col-md-6">
+                        <div>
                             <SwitchCard
                                 label="Use Path Style"
                                 description="Compatibility for MinIO/S3 clones"
@@ -136,7 +136,7 @@ function BackupPage() {
                             />
                         </div>
 
-                        <div className="col-12 mt-2">
+                        <div className="md:col-span-2 mt-2">
                             <SettingInputVertical
                                 label="Endpoint URL"
                                 value={data.s3.endpointUrl}
@@ -145,7 +145,7 @@ function BackupPage() {
                             />
                         </div>
 
-                        <div className="col-md-6">
+                        <div>
                             <SettingInputVertical
                                 label="Bucket Name"
                                 value={data.s3.bucket}
@@ -153,7 +153,7 @@ function BackupPage() {
                                 placeholder="my-backup-bucket"
                             />
                         </div>
-                        <div className="col-md-6">
+                        <div>
                             <SettingInputVertical
                                 label="Region"
                                 value={data.s3.region}
@@ -163,7 +163,7 @@ function BackupPage() {
                         </div>
 
                         {/* Credential Row with Password Toggles */}
-                        <div className="col-md-6">
+                        <div>
                             <SettingPasswordVertical
                                 label="Access Key"
                                 value={data.s3.accessKey}
@@ -171,7 +171,7 @@ function BackupPage() {
                                 placeholder="Enter Access Key"
                             />
                         </div>
-                        <div className="col-md-6">
+                        <div>
                             <SettingPasswordVertical
                                 label="Secret Key"
                                 value={data.s3.secretKey}
@@ -215,8 +215,8 @@ function BackupPage() {
             </Card>
 
             <div className="text-center mt-3 opacity-50 pb-5">
-                <small className="text-gray-500">
-                    <Info className="mr-1" />
+                <small className="text-gray-500 flex items-center justify-center">
+                    <Info className="mr-1" size={16} />
                     Backups include all lists, rules, and node configurations.
                 </small>
             </div>
