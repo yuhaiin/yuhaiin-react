@@ -2,8 +2,8 @@
 
 import * as CollapsiblePrimitive from "@radix-ui/react-collapsible";
 import { clsx } from "clsx";
+import { ChevronRight } from 'lucide-react';
 import React from "react";
-import { ChevronRight } from 'react-bootstrap-icons';
 import styles from "./sidebar.module.css";
 
 /* -------------------------------------------------------------------------- */

@@ -2,8 +2,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/component/v2/button"
 import { SettingInputVertical } from "@/component/v2/forms"
 import { create } from "@bufbuild/protobuf"
+import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react"
 import { FC } from "react"
-import { ArrowDown, ArrowUp, PlusLg, Trash } from "react-bootstrap-icons"
 import { host, hostSchema } from "../pbes/node/protocol_pb"
 
 export type Props<T> = {
@@ -94,7 +94,7 @@ export const NewAlternateHostList: FC<{ title: string, data: host[], onChange: (
                 {editable && (
                     <div className="d-flex justify-content-end px-1">
                         <Button onClick={() => { onChange([...data, create(hostSchema, {})]) }} >
-                            <PlusLg className="me-1" /> Add {title}
+                            <Plus className="me-1" /> Add {title}
                         </Button>
                     </div>
                 )}

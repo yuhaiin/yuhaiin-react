@@ -4,8 +4,8 @@ import { SettingInputVertical } from "@/component/v2/forms"
 import { Input, Textarea } from "@/component/v2/input"
 import { InputList } from "@/component/v2/listeditor"
 import { create } from "@bufbuild/protobuf"
+import { Plus, Trash } from 'lucide-react';
 import { FC, useState } from "react"
-import { PlusLg, Trash } from "react-bootstrap-icons"
 import { certificate, certificateSchema, tls_server_config, tls_termination } from "../pbes/node/protocol_pb"
 import { Props } from "./tools"
 
@@ -63,7 +63,7 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                                     keyFilePath: "",
                                 })]
                             })} >
-                            <PlusLg className="me-1" /> New Certificate
+                            <Plus className="me-1" /> New Certificate
                         </Button>
                     </div>
                 )}
@@ -114,7 +114,7 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                             style={{ height: '35px' }}
                             onClick={() => { if (newSni) props.onChange({ ...props.tls, serverNameCertificate: { ...props.tls.serverNameCertificate, [newSni]: create(certificateSchema, {}) } }) }}
                         >
-                            <PlusLg className="me-1" /> Add SNI
+                            <Plus className="me-1" /> Add SNI
                         </Button>
                     </div>
                 )}

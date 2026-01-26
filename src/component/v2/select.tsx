@@ -3,8 +3,8 @@
 import { DescEnum, DescEnumValue } from '@bufbuild/protobuf';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { clsx } from 'clsx';
+import { Check, ChevronDown } from 'lucide-react';
 import React, { CSSProperties, FC, useMemo } from 'react';
-import { Check, ChevronDown } from 'react-bootstrap-icons';
 import { SettingLabel } from './card';
 import {
     Dropdown,

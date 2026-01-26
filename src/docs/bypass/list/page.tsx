@@ -11,8 +11,8 @@ import { GlobalToastContext } from '@/component/v2/toast';
 import { ToggleGroup, ToggleItem } from '@/component/v2/togglegroup';
 import { create } from "@bufbuild/protobuf";
 import { EmptySchema, StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { Check, ChevronRight, CloudDownload, FileText, History, ListChecks, Network, RefreshCw, Save, SlidersHorizontal, Trash, TriangleAlert } from 'lucide-react';
 import { FC, useContext, useEffect, useState } from "react";
-import { ArrowRepeat, CheckLg, ChevronRight, ClockHistory, CloudArrowDown, ExclamationTriangle, FileText, HddNetwork, ListCheck, Save, Sliders2, Trash } from 'react-bootstrap-icons';
 import useSWR from "swr";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../../common/proto";
 import { mapSetting, updateIfPresent } from "../../../common/utils";
@@ -120,7 +120,7 @@ export default function Lists() {
                 <div>
                     <h4 className="fw-bold mb-1">List Management</h4>
                     <div className="text-muted d-flex align-items-center small">
-                        <ClockHistory className="me-2 opacity-75" />
+                        <History className="me-2 opacity-75" />
                         <span>Last Synced: <span className="fw-medium text-body">{lastRefreshTime}</span></span>
                     </div>
                 </div>
@@ -142,7 +142,7 @@ export default function Lists() {
                             })
                     }}
                 >
-                    {refresh ? <Spinner size="sm" /> : <ArrowRepeat className="me-2" />}
+                    {refresh ? <Spinner size="sm" /> : <RefreshCw className="me-2" />}
                     <span>Sync All Resources</span>
                 </Button>
             </div>
@@ -151,7 +151,7 @@ export default function Lists() {
                 {/* --- 2. Configuration Card --- */}
                 <Card>
                     <CardHeader>
-                        <IconBox icon={Sliders2} color="#a855f7" title="Global Settings" description="Auto-fetch Interval & GeoIP" />
+                        <IconBox icon={SlidersHorizontal} color="#a855f7" title="Global Settings" description="Auto-fetch Interval & GeoIP" />
                     </CardHeader>
 
                     <CardBody>
@@ -187,7 +187,7 @@ export default function Lists() {
                                 />
                                 {data.maxminddbGeoip?.error && (
                                     <div className="mt-2 p-2 bg-danger bg-opacity-10 text-danger rounded small">
-                                        <ExclamationTriangle className="me-2" />{data.maxminddbGeoip.error}
+                                        <TriangleAlert className="me-2" />{data.maxminddbGeoip.error}
                                     </div>
                                 )}
                             </div>
@@ -214,7 +214,7 @@ export default function Lists() {
                     onAddNew={handleCreate}
                     adding={saving}
                     header={
-                        <IconBox icon={ListCheck} color="#3b82f6" title="Defined Lists" description={`${data.names.length} Lists Available`} />
+                        <IconBox icon={ListChecks} color="#3b82f6" title="Defined Lists" description={`${data.names.length} Lists Available`} />
                     }
                 />
             </div>
@@ -286,7 +286,7 @@ const ListsModal: FC<{ name: string, show: boolean, isNew?: boolean, onHide: (sa
                                 disabled={loadding}
                                 onClick={handleSave}
                             >
-                                {loadding ? <Spinner size="sm" /> : <><CheckLg className="me-2" />Save</>}
+                                {loadding ? <Spinner size="sm" /> : <><Check className="me-2" />Save</>}
                             </Button>
                         </div>
                     </ModalFooter>
@@ -336,10 +336,10 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
                             className="w-100"
                         >
                             <ToggleItem value="local" className="flex-grow-1">
-                                <HddNetwork className="me-2" />Local
+                                <Network className="me-2" />Local
                             </ToggleItem>
                             <ToggleItem value="remote" className="flex-grow-1">
-                                <CloudArrowDown className="me-2" />Remote
+                                <CloudDownload className="me-2" />Remote
                             </ToggleItem>
                         </ToggleGroup>
                     </div>

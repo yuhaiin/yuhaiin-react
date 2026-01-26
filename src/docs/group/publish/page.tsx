@@ -11,8 +11,8 @@ import { Spinner } from '@/component/v2/spinner';
 import { Switch } from '@/component/v2/switch';
 import { create, toBinary } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { Check, ChevronDown, Clipboard, ClipboardCheck, Plus, Share2, Trash } from 'lucide-react';
 import { FC, useContext, useEffect, useState } from "react";
-import { CheckLg, ChevronDown, ClipboardCheck, Clipboard as ClipboardIcon, PlusLg, Share, Trash } from 'react-bootstrap-icons';
 import { FetchProtobuf, useProtoSWR } from '../../../common/proto';
 import Error from '../../../component/Error';
 import { useClipboard } from '../../../component/v2/clipboard';
@@ -172,7 +172,7 @@ const EditModal: FC<{
                         <Button variant="outline-secondary">Cancel</Button>
                     </ModalClose>
                     <Button onClick={handleSave} disabled={saving}>
-                        {saving ? <Spinner size="sm" /> : <><CheckLg className="me-1" /> Save Config</>}
+                        {saving ? <Spinner size="sm" /> : <><Check className="me-1" /> Save Config</>}
                     </Button>
                 </ModalFooter>
             </ModalContent>
@@ -224,7 +224,7 @@ const PublishItem: FC<{
                     size='icon'
                     onClick={() => copyAction(encodedUrl)}
                 >
-                    {copied ? <ClipboardCheck /> : <ClipboardIcon />}
+                    {copied ? <ClipboardCheck /> : <Clipboard />}
                 </Button>
             </InputGroup>
 
@@ -301,14 +301,14 @@ function PublishPage() {
                     header={
                         <>
                             <div className="d-flex align-items-center">
-                                <IconBox icon={Share} color="#8b5cf6" />
+                                <IconBox icon={Share2} color="#8b5cf6" />
                                 <div>
                                     <h5 className="mb-0 fw-bold">Publishing</h5>
                                     <small className="text-muted">Generate subscription URLs for remote clients</small>
                                 </div>
                             </div>
                             <Button onClick={() => setModalState({ show: true, isEdit: false, configName: '', item: undefined })}>
-                                <PlusLg className="me-1" /> Add
+                                <Plus className="me-1" /> Add
                             </Button>
                         </>
                     }

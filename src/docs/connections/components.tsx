@@ -1,8 +1,8 @@
 "use client"
 
 import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datalist";
+import { Check } from "lucide-react";
 import React, { FC, JSX, useEffect, useState } from "react";
-import { Check } from "react-bootstrap-icons";
 import useSWR from "swr";
 import { FetchProtobuf, ProtoPath } from "../../common/proto";
 import { connections, counter, total_flow } from "../pbes/api/statistic_pb";

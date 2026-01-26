@@ -1,7 +1,7 @@
 "use client"
 
+import { Plus, Trash } from 'lucide-react';
 import { FC, useState } from 'react';
-import { PlusLg, Trash } from 'react-bootstrap-icons';
 import { Button } from './button';
 import { Input, Textarea } from './input';
 import { InputGroup } from './inputgroup';
@@ -65,7 +65,7 @@ export const InputList: FC<{
                             marginLeft: '-1px'
                         }}
                     >
-                        <PlusLg />
+                        <Plus />
                     </Button>
                 </InputGroup>
             )}
@@ -160,7 +160,7 @@ export const InputBytesList: FC<{
                         style={{ fontSize: '0.85rem' }}
                     />
                     <Button onClick={add} style={{ alignSelf: 'flex-start' }}>
-                        <PlusLg />
+                        <Plus />
                     </Button>
                 </div>
             )}

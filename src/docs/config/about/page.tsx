@@ -1,8 +1,8 @@
 "use client"
 
 import { Card, CardBody, CardFooter, CardHeader, IconBadge, IconBox, IconBoxRounded, ListItem, MainContainer, SettingLabel } from '@/component/v2/card';
+import { BadgeCheck, Calendar, Code, Cpu, ExternalLink, GitBranch, Github, Info, Laptop, Layers, LayoutGrid, Terminal } from 'lucide-react';
 import React, { FC } from "react";
-import { App, BoxArrowUpRight, Calendar3, CodeSlash, Cpu, Git, Github, InfoCircle, Laptop, Layers, PatchCheck, Terminal } from 'react-bootstrap-icons';
 import { useProtoSWR } from "../../../common/proto";
 import Loading, { Error } from "../../../component/v2/loading";
 import { config_service } from "../../pbes/api/config_pb";
@@ -20,7 +20,7 @@ const InfoRow: FC<{
             <div className="d-flex w-100 align-items-center justify-content-between gap-3">
                 <div className="d-flex align-items-center gap-3 overflow-hidden">
                     <IconBoxRounded
-                        icon={icon || App}
+                        icon={icon || LayoutGrid}
                         color="#3b82f6"
                         className="flex-shrink-0"
                         style={{ width: '32px', height: '32px', fontSize: '0.9rem', border: "none" }}
@@ -31,10 +31,10 @@ const InfoRow: FC<{
                 <div className="text-end overflow-hidden">
                     {url ? (
                         <a href={url} target="_blank" rel="noreferrer" className="text-decoration-none font-monospace text-primary text-truncate d-block">
-                            {value} <BoxArrowUpRight className="ms-1" style={{ fontSize: '0.7rem' }} />
+                            {value} <ExternalLink className="ms-1" size={12} />
                         </a>
                     ) : isBadge ?
-                        <IconBadge icon={icon || App} text={value} color="primary" />
+                        <IconBadge icon={icon || LayoutGrid} text={value} color="primary" />
                         : (
                             <span className={`${isMonospace ? 'font-monospace' : ''} text-truncate d-block`} style={{ fontSize: '0.9rem' }}>
                                 {value}
@@ -57,24 +57,24 @@ export default function About() {
         <MainContainer>
             <Card >
                 <CardHeader>
-                    <IconBox icon={InfoCircle} color="#6366f1" title='System Information' description='Software version and build environment' />
+                    <IconBox icon={Info} color="#6366f1" title='System Information' description='Software version and build environment' />
                 </CardHeader>
 
                 <CardBody>
                     <div className="row g-3">
                         {/* Primary Build Info */}
-                        <InfoRow label="Version" value={info.version || "Unknown"} icon={PatchCheck} isBadge />
+                        <InfoRow label="Version" value={info.version || "Unknown"} icon={BadgeCheck} isBadge />
                         <InfoRow
                             label="Commit"
                             value={info.commit?.substring(0, 7) || "N/A"}
-                            icon={Git}
+                            icon={GitBranch}
                             url={`https://github.com/yuhaiin/yuhaiin/commit/${info.commit}`}
                             isMonospace
                         />
-                        <InfoRow label="Build Time" value={info.buildTime || "N/A"} icon={Calendar3} />
+                        <InfoRow label="Build Time" value={info.buildTime || "N/A"} icon={Calendar} />
 
                         {/* Environment Info */}
-                        <InfoRow label="Go Version" value={info.goVersion || "N/A"} icon={CodeSlash} isMonospace />
+                        <InfoRow label="Go Version" value={info.goVersion || "N/A"} icon={Code} isMonospace />
                         <InfoRow
                             label="GitHub"
                             value="yuhaiin/yuhaiin"

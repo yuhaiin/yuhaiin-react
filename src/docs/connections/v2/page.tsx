@@ -15,8 +15,8 @@ import { connection, connectionSchema, type } from "@/docs/pbes/statistic/config
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
 import { AnimatePresence, motion } from "framer-motion"
+import { ArrowDown, ArrowUp, Network, Power, ShieldCheck, Tag } from 'lucide-react'
 import React, { FC, useCallback, useContext, useMemo, useState } from "react"
-import { ArrowDown, ArrowUp, HddNetwork, Power, ShieldCheck, SortDown, SortUp, Tag } from "react-bootstrap-icons"
 import useSWRSubscription from 'swr/subscription'
 import { NodeModal } from "../../node/modal"
 import { mode } from "../../pbes/config/bypass_pb"
@@ -108,10 +108,10 @@ function Connections() {
                 <div className="d-flex align-items-center gap-3 flex-wrap">
                     <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && changeSortOrder(v as "asc" | "desc")}>
                         <ToggleItem value="asc">
-                            <SortUp /> Asc
+                            <ArrowUp /> Asc
                         </ToggleItem>
                         <ToggleItem value="desc">
-                            <SortDown /> Desc
+                            <ArrowDown /> Desc
                         </ToggleItem>
                     </ToggleGroup>
 
@@ -210,7 +210,7 @@ const ListItemComponent: FC<{ data: connection, download: number, upload: number
                     <FlowBadge download={download} upload={upload} />
                     <div className={styles['item-details']}>
                         <IconBadge icon={ShieldCheck} text={mode[data.mode]} />
-                        <IconBadge icon={HddNetwork} text={type[data.type?.connType ?? 0]} />
+                        <IconBadge icon={Network} text={type[data.type?.connType ?? 0]} />
                         {data.tag && <IconBadge icon={Tag} text={data.tag} />}
                     </div>
                 </div>

@@ -10,8 +10,8 @@ import { Spinner } from "@/component/v2/spinner";
 import { create, fromJsonString } from "@bufbuild/protobuf";
 import { Duration, StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { AnimatePresence, motion } from "framer-motion";
+import { CheckCircle2, ChevronDown, Archive, Network, Pencil, Plus, Gauge } from "lucide-react";
 import { FC, useContext, useState } from "react";
-import { BoxArrowInDown, Check2Circle, ChevronDown, HddNetwork, Pencil, PlusLg, Speedometer2 } from 'react-bootstrap-icons';
 import { useLocalStorage } from "usehooks-ts";
 import { LatencyDNSUrlDefault, LatencyDNSUrlKey, LatencyHTTPUrlDefault, LatencyHTTPUrlKey, LatencyIPUrlDefault, LatencyIPUrlKey, LatencyIPv6Default, LatencyIPv6Key, LatencyStunTCPUrlDefault, LatencyStunTCPUrlKey, LatencyStunUrlDefault, LatencyStunUrlKey } from "../../common/apiurl";
 import { Nodes, NodesContext } from "../../common/nodes";
@@ -215,13 +215,13 @@ function Group() {
                             })
                         }}
                     >
-                        <PlusLg />&nbsp;New
+                        <Plus />&nbsp;New
                     </Button>
 
                     <Button
                         onClick={() => setImportJson({ data: true })}
                     >
-                        <BoxArrowInDown />&nbsp;Import
+                        <Archive />&nbsp;Import
                     </Button>
                 </div>
             </div>
@@ -585,7 +585,7 @@ const NodeItemv2: FC<{
                     */}
                     <div className="d-flex align-items-center gap-3 w-100 mb-2 mb-sm-0">
                         {/* Status Icon */}
-                        <HddNetwork className={`fs-5 flex-shrink-0 ${getLatencyColor(latency.tcp.value) === styles['latency-good']
+                        <Network className={`fs-5 flex-shrink-0 ${getLatencyColor(latency.tcp.value) === styles['latency-good']
                             ? "text-success"
                             : latency.tcp.value !== "N/A" && !latency.tcp.value.includes("timeout")
                                 ? "text-primary"
@@ -682,7 +682,7 @@ const NodeItemv2: FC<{
                                     {isTesting
                                         ? <Spinner size="sm" />
                                         : <>
-                                            <Speedometer2 />
+                                            <Gauge />
                                             <span className="d-none d-sm-inline ms-1">Test</span>
                                         </>
                                     }
@@ -707,7 +707,7 @@ const NodeItemv2: FC<{
                     </Button>
 
                     <Button size="sm" onClick={() => setNode(ctx, hash)} title="Use Node">
-                        <Check2Circle />
+                        <CheckCircle2 />
                         {/* d-none d-sm-inline: Hide text on mobile */}
                         <span className="d-none d-sm-inline ms-2">Use</span>
                     </Button>

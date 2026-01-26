@@ -5,8 +5,8 @@ import { InputList } from '@/component/v2/listeditor';
 import { Spinner } from '@/component/v2/spinner';
 import Switch from '@/component/v2/switch';
 import { GlobalToastContext } from '@/component/v2/toast';
+import { RotateCw, Save, Wand2 } from 'lucide-react';
 import { FC, useContext, useState } from "react";
-import { ArrowCounterclockwise, Magic, Save } from 'react-bootstrap-icons';
 import { FetchProtobuf, useProtoSWR } from "../../../common/proto";
 import Loading from "../../../component/v2/loading";
 import { resolver } from "../../pbes/api/config_pb";
@@ -46,7 +46,7 @@ export const Fakedns: FC = () => {
     return (
         <Card className="h-100 d-flex flex-column">
             <CardHeader className="d-flex justify-content-between align-items-center">
-                <IconBox icon={Magic} color="#10b981" title='FakeDNS' description='Virtual IP Strategy' />
+                <IconBox icon={Wand2} color="#10b981" title='FakeDNS' description='Virtual IP Strategy' />
                 <div className="d-flex align-items-center gap-2">
                     <span className="small text-muted fw-medium">{data.enabled ? "ACTIVE" : "DISABLED"}</span>
                     <Switch
@@ -100,7 +100,7 @@ export const Fakedns: FC = () => {
                     disabled={!isDirty}
                     onClick={() => mutate()}
                 >
-                    <ArrowCounterclockwise className="me-2" />Reset
+                    <RotateCw className="me-2" />Reset
                 </Button>
                 <Button
                     size="sm"

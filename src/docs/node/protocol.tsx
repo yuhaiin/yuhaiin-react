@@ -5,8 +5,8 @@ import { Button } from "@/component/v2/button";
 import { Card, CardBody } from "@/component/v2/card";
 import { Select, SettingInputVertical } from "@/component/v2/forms";
 import { create } from "@bufbuild/protobuf";
+import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react";
 import { FC, useEffect, useState } from 'react';
-import { ArrowDown, ArrowUp, PlusLg, Trash } from "react-bootstrap-icons";
 import { point } from "../pbes/node/point_pb";
 import {
     aeadSchema,
@@ -186,7 +186,7 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                                 onChange({ ...value, protocols: [...value.protocols, protocols[newProtocol]] })
                             }}
                         >
-                            <PlusLg className="me-1" /> Add Step
+                            <Plus className="me-1" /> Add Step
                         </Button>
                     </div>
                 )}

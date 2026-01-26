@@ -1,8 +1,8 @@
 "use client"
 
 import { useLocation, useNavigate } from '@tanstack/react-router';
+import { ArrowLeftRight, Download, ExternalLink, Filter, House, Settings } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { ArrowLeftRight, BoxArrowInDownRight, BoxArrowUpRight, Funnel, Gear, HouseDoor } from 'react-bootstrap-icons';
 import { SidebarCollapsible, SidebarDivider, SidebarItem, SidebarNav, Sidebar as SidebarRoot, SidebarSubLink } from '../../component/v2/sidebar';
 
 interface SidebarProps {
@@ -34,14 +34,14 @@ function Sidebar({ show, onHide }: SidebarProps) {
                 <SidebarItem
                     onClick={() => handleNavLinkClick('/')}
                     active={pathname === '/'}
-                    icon={<HouseDoor />}
+                    icon={<House />}
                 >
                     HOME
                 </SidebarItem>
 
                 <SidebarGroup
                     title="OUTBOUND"
-                    icon={<BoxArrowUpRight />}
+                    icon={<ExternalLink />}
                     activePath={pathname}
                     matchPath="/docs/group/"
                 >
@@ -61,7 +61,7 @@ function Sidebar({ show, onHide }: SidebarProps) {
 
                 <SidebarGroup
                     title="INBOUND"
-                    icon={<BoxArrowInDownRight />}
+                    icon={<Download />}
                     activePath={pathname}
                     matchPath="/docs/inbound/"
                 >
@@ -72,7 +72,7 @@ function Sidebar({ show, onHide }: SidebarProps) {
 
                 <SidebarGroup
                     title="BYPASS"
-                    icon={<Funnel />}
+                    icon={<Filter />}
                     activePath={pathname}
                     matchPath="/docs/bypass/"
                 >
@@ -117,7 +117,7 @@ function Sidebar({ show, onHide }: SidebarProps) {
 
                 <SidebarGroup
                     title="SETTING"
-                    icon={<Gear />}
+                    icon={<Settings />}
                     activePath={pathname}
                     matchPath="/docs/config/"
                 >

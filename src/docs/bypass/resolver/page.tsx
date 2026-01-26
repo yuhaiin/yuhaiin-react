@@ -8,8 +8,8 @@ import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { Check, ChevronRight, Layers, Network, ShieldCheck, Trash } from 'lucide-react';
 import { FC, useContext, useEffect, useState } from "react";
-import { CheckLg, ChevronRight, HddNetwork, LayersHalf, PatchCheckFill, Trash } from 'react-bootstrap-icons';
 import useSWR from "swr";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../../common/proto";
 import { ConfirmModal } from "../../../component/v2/confirm";
@@ -103,15 +103,15 @@ function Resolver() {
             items={resolvers.names.sort((a, b) => a.localeCompare(b))}
             renderListItem={(v) =>
                 <>
-                    <HddNetwork className="me-3 fs-5 text-secondary" />
+                    <Network className="me-3 fs-5 text-secondary" />
                     <span className="flex-grow-1 text-truncate fw-medium">{v}</span>
-                    {v === 'bootstrap' && <PatchCheckFill className="text-primary ms-2" title="System Default" />}
+                    {v === 'bootstrap' && <ShieldCheck className="text-primary ms-2" size={16} title="System Default" />}
                     <ChevronRight className="text-muted opacity-25 ms-2" />
                 </>
             }
             onClickItem={(v) => setShowdata({ show: true, name: v, new: false })}
             onAddNew={handleCreate}
-            header={<IconBox icon={LayersHalf} color="#3b82f6" title='Resolvers' description='Upstream DNS Resolvers' />}
+            header={<IconBox icon={Layers} color="#3b82f6" title='Resolvers' description='Upstream DNS Resolvers' />}
         />
     </>
 }
@@ -173,7 +173,7 @@ const ResolverModal: FC<{
                     <div className="d-flex gap-2">
                         <Button onClick={() => onHide()}>Cancel</Button>
                         <Button disabled={saving} onClick={handleSave}>
-                            {saving ? <Spinner size="sm" /> : <><CheckLg className="me-2" />{isNew ? "Create" : "Save"}</>}
+                            {saving ? <Spinner size="sm" /> : <><Check className="me-2" />{isNew ? "Create" : "Save"}</>}
                         </Button>
                     </div>
                 </ModalFooter>

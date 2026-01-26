@@ -3,8 +3,8 @@ import { Button } from "@/component/v2/button"
 import { SettingInputBytes, SettingInputVertical } from "@/component/v2/forms"
 import { InputList } from "@/component/v2/listeditor"
 import { create } from "@bufbuild/protobuf"
+import { Plus, Trash } from "lucide-react"
 import { FC } from "react"
-import { PlusLg, Trash } from "react-bootstrap-icons"
 import { wireguard, wireguard_peer_config, wireguard_peer_configSchema } from "../pbes/node/protocol_pb"
 import { Props } from "./tools"
 
@@ -59,7 +59,7 @@ const NewPeersList: FC<{ title: string, data: wireguard_peer_config[], onChange:
                                 publicKey: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
                             })])
                         }} >
-                            <PlusLg className="me-1" /> Add Peer
+                            <Plus className="me-1" /> Add Peer
                         </Button>
                     </div>
                 )}

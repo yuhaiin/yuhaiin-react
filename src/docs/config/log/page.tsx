@@ -4,8 +4,8 @@ import { useDelay } from "@/common/hooks"
 import { Card, CardBody, CardHeader, FilterSearch, IconBox, MainContainer } from '@/component/v2/card'
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
+import { Radio, Terminal } from 'lucide-react'
 import { FC, useMemo, useState } from "react"
-import { Broadcast, Terminal } from 'react-bootstrap-icons'
 import { List, type RowComponentProps } from 'react-window'
 import useSWRSubscription from "swr/subscription"
 import { ProtoPath, WebsocketProtoServerStream } from "../../../common/proto"
@@ -75,7 +75,7 @@ export default function LogComponent() {
                         <div className="d-flex align-items-center gap-2 flex-grow-1">
                             <FilterSearch onEnter={setSearchTerm} className='flex-grow-1' />
                             <span className="badge bg-warning bg-opacity-10 text-warning px-2 py-1 rounded-pill" style={{ fontSize: '0.7rem' }}>
-                                <Broadcast className="me-1" />LIVE
+                                <Radio className="me-1" size={12} />LIVE
                             </span>
                         </div>
                     </div>

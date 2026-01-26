@@ -1,8 +1,8 @@
 'use client';
 
 import { clsx } from "clsx";
+import { History, Plus, Search, TriangleAlert } from 'lucide-react';
 import React, { FC, useState } from 'react';
-import { ClockHistory, ExclamationTriangleFill, PlusLg, Search } from "react-bootstrap-icons";
 import styles from './card.module.css';
 
 // --- Basic Card Components ---
@@ -97,7 +97,7 @@ export function CardList<T>({ items, onClickItem, footer, renderListItem: body, 
                             exit={{ opacity: 0 }}
                             className="text-center text-muted p-5 opacity-50"
                         >
-                            <ClockHistory className="fs-1 d-block mb-2 mx-auto" />
+                            <History className="fs-1 d-block mb-2 mx-auto" size={40} />
                             No records found.
                         </motion.div>
                     )}
@@ -138,7 +138,7 @@ export const ErrorBox: FC<{ msgs: string[] }> = ({ msgs }) => {
     if (msgs.length === 0) return null;
     return (
         <div className={styles.errorBox}>
-            <ExclamationTriangleFill className="me-3 mt-1 fs-5" />
+            <TriangleAlert className="me-3 mt-1 fs-5" />
             <div className="flex-grow-1">
                 <h6 className="fw-bold mb-2">Configuration Error</h6>
                 <ul className="mb-0 ps-3">
@@ -206,7 +206,7 @@ export function CardRowList<T>({
                                         className={styles.seamlessBtn}
                                         disabled={adding}
                                     >
-                                        {adding ? <div className={styles.spinner} /> : <PlusLg className="fs-5" />}
+                                        {adding ? <div className={styles.spinner} /> : <Plus className="fs-5" />}
                                     </button>
                                 </div>
                             </ListItem>

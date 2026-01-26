@@ -10,8 +10,8 @@ import Loading from "@/component/v2/loading";
 import { GlobalToastContext } from "@/component/v2/toast";
 import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { Activity, Hash, Info, Power, Zap } from 'lucide-react';
 import { FC, useContext, useState } from "react";
-import { Activity, Hash, InfoCircle, LightningChargeFill, Power } from 'react-bootstrap-icons';
 import { NodeModal } from "../../node/modal";
 import { node } from "../../pbes/api/node_pb";
 import { point, pointSchema } from "../../pbes/node/point_pb";
@@ -28,7 +28,7 @@ const ActiveNodeItem: FC<{
                 {/* Left Side: Status Icon + Name & Group */}
                 <div className="d-flex align-items-center flex-grow-1 overflow-hidden gap-3 w-100 w-md-auto">
                     <IconBoxRounded
-                        icon={LightningChargeFill}
+                        icon={Zap}
                         color="#198754"
                         className="flex-shrink-0"
                         style={{ width: '40px', height: '40px', marginRight: '0px', border: "none" }}
@@ -132,7 +132,7 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
             {showFooter &&
                 <div className="text-center mt-4 opacity-50 pb-5">
                     <small className="text-muted">
-                        <InfoCircle className="me-1" />
+                        <Info className="me-1" />
                         Closing a node here will force a reconnection if the rule still requires it.
                     </small>
                 </div>

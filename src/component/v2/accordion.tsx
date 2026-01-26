@@ -1,7 +1,7 @@
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { clsx } from 'clsx';
 import React from 'react';
-import { ChevronDown } from 'react-bootstrap-icons';
+import { ChevronDown } from 'lucide-react';
 import styles from './accordion.module.css';
 
 const Accordion = React.forwardRef<React.ElementRef<typeof AccordionPrimitive.Root>, React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Root>>(({ className, ...props }, ref) => (

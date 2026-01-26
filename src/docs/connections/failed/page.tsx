@@ -11,8 +11,8 @@ import { Spinner } from "@/component/v2/spinner"
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import { connections, failed_history } from "@/docs/pbes/api/statistic_pb"
 import { timestampDate } from "@bufbuild/protobuf/wkt"
+import { ArrowDown, Bug, ChevronRight, Clock, Network, OctagonAlert, RotateCw } from 'lucide-react'
 import React, { FC, useMemo, useState } from "react"
-import { ArrowClockwise, Bug, BugFill, ChevronRight, Clock, Ethernet, ExclamationOctagon, SortDown } from "react-bootstrap-icons"
 import { TimestampZero } from "../../../common/nodes"
 import { useProtoSWR } from "../../../common/proto"
 import Loading from "../../../component/v2/loading"
@@ -40,8 +40,8 @@ const ListItem: FC<{ data: failed_history }> = React.memo(({ data }) => {
 
                 {/* Right Side: Metadata Badges */}
                 <div className="d-flex flex-wrap gap-2 align-items-center flex-shrink-0">
-                    <IconBadge icon={Ethernet} text={type[data.protocol ?? type.unknown]} color="info" />
-                    <IconBadge icon={ExclamationOctagon} text={`${data.failedCount} Fails`} color="warning" />
+                    <IconBadge icon={Network} text={type[data.protocol ?? type.unknown]} color="info" />
+                    <IconBadge icon={OctagonAlert} text={`${data.failedCount} Fails`} color="warning" />
                     <IconBadge icon={Clock} text={timestampDate(data.time!).toLocaleTimeString()} color="secondary" />
                     <div className="text-muted opacity-25 ms-2 d-none d-md-block"><ChevronRight /></div>
                 </div>
@@ -123,20 +123,20 @@ function FailedHistory() {
                 <div>
                     <h4 className="fw-bold mb-1">Failed Connections</h4>
                     <div className="text-muted d-flex align-items-center small">
-                        <BugFill className="text-danger me-2" />
+                        <Bug className="text-danger me-2" />
                         <span>Tracking {values.length} rejected or timed-out requests</span>
                     </div>
                 </div>
 
                 <div className="d-flex flex-wrap gap-2 justify-content-end align-items-center">
                     <Button size="sm" onClick={() => mutate()} disabled={isValidating}>
-                        {isValidating ? <Spinner size="sm" /> : <ArrowClockwise />}
+                        {isValidating ? <Spinner size="sm" /> : <RotateCw />}
                     </Button>
 
                     <Dropdown>
                         <DropdownTrigger asChild>
                             <Button size="sm">
-                                <SortDown />
+                                <ArrowDown />
                             </Button>
                         </DropdownTrigger>
                         <DropdownContent align="end" className="p-3" style={{ minWidth: '220px' }}>

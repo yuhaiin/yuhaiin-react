@@ -6,8 +6,8 @@ import { Card, CardBody, CardHeader, SettingLabel } from "@/component/v2/card";
 import { Select } from "@/component/v2/forms";
 import { SwitchCard } from "@/component/v2/switch";
 import { create } from "@bufbuild/protobuf";
+import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react";
 import { FC, useState } from "react";
-import { ArrowDown, ArrowUp, PlusLg, Trash } from "react-bootstrap-icons";
 import {
     aeadSchema,
     grpcSchema,
@@ -181,7 +181,7 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
                         />
                     </div>
                     <Button onClick={addTransport}>
-                        <PlusLg className="me-1" /> Add
+                        <Plus className="me-1" /> Add
                     </Button>
                 </div>
             </CardBody>

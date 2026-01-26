@@ -14,8 +14,8 @@ import { Spinner } from "@/component/v2/spinner"
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import { create } from "@bufbuild/protobuf"
 import { timestampDate } from "@bufbuild/protobuf/wkt"
+import { ArrowDown, ArrowLeftRight, ChevronRight, Clock, Info, Radio, RefreshCw, RotateCw, ShieldCheck } from 'lucide-react'
 import React, { FC, useCallback, useMemo, useState } from "react"
-import { ArrowClockwise, ArrowLeftRight, ArrowRepeat, Broadcast, ChevronRight, Clock, InfoCircle, ShieldCheck, SortDown } from "react-bootstrap-icons"
 import { useProtoSWR } from "../../../common/proto"
 import Loading from "../../../component/v2/loading"
 import { NodeModal } from "../../node/modal"
@@ -33,7 +33,7 @@ const ListItem: FC<{ data: all_history }> = React.memo(({ data }) => {
             {/* Left Side: Icon + Address & ID (Subscribe style) */}
             <div className="d-flex align-items-center flex-grow-1 overflow-hidden gap-3 w-100 w-md-auto">
                 <div className="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle flex-shrink-0" style={{ width: '42px', height: '42px' }}>
-                    {data.connection.type?.connType === type.udp ? <Broadcast className="fs-5" /> : <ArrowLeftRight className="fs-5" />}
+                    {data.connection.type?.connType === type.udp ? <Radio className="fs-5" /> : <ArrowLeftRight className="fs-5" />}
                 </div>
 
                 <div className="d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
@@ -47,7 +47,7 @@ const ListItem: FC<{ data: all_history }> = React.memo(({ data }) => {
             {/* Right Side: Metadata Badges */}
             <div className="d-flex flex-wrap gap-2 align-items-center flex-shrink-0 ms-md-0">
                 <IconBadge icon={ShieldCheck} text={mode[data.connection.mode]} color="info" />
-                <IconBadge icon={ArrowRepeat} text={Number(data.count)} color="success" />
+                <IconBadge icon={RefreshCw} text={Number(data.count)} color="success" />
                 <IconBadge icon={Clock} text={timestampDate(data.time!).toLocaleTimeString()} color="secondary" />
                 <div className="text-muted opacity-25 ms-2 d-none d-md-block"><ChevronRight /></div>
             </div>
@@ -142,7 +142,7 @@ function History() {
                 <div>
                     <h4 className="fw-bold mb-1">Connection History</h4>
                     <div className="text-muted d-flex align-items-center small">
-                        <InfoCircle className="me-2" />
+                        <Info className="me-2" />
                         <span>Showing {values.length} historical records</span>
                     </div>
                 </div>
@@ -162,13 +162,13 @@ function History() {
                     />
 
                     <Button size="sm" onClick={() => mutate()} disabled={isValidating}>
-                        {isValidating ? <Spinner size="sm" /> : <ArrowClockwise />}
+                        {isValidating ? <Spinner size="sm" /> : <RotateCw />}
                     </Button>
 
                     <Dropdown>
                         <DropdownTrigger asChild>
                             <Button size="sm">
-                                <SortDown className="me-1" />
+                                <ArrowDown className="me-1" />
                             </Button>
                         </DropdownTrigger>
                         <DropdownContent align="end" className="p-3" style={{ minWidth: '220px' }}>

@@ -8,8 +8,8 @@ import { GlobalToastContext } from "@/component/v2/toast";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { ChevronRight, FileStack, Globe, Network, Plus, Save, Tags as TagsIcon, Trash } from 'lucide-react';
 import { FC, useContext, useState } from "react";
-import { ChevronRight, Files, Globe, HddNetwork, PlusLg, Save, Tags as TagsIcon, Trash } from 'react-bootstrap-icons';
 import { Node, Nodes } from "../../../common/nodes";
 import { FetchProtobuf, useProtoSWR } from '../../../common/proto';
 import HeaderError from '../../../component/Error';
@@ -31,7 +31,7 @@ const TagItem: FC<{
 
     return (
         <>
-            {isGlobal ? <Globe className="me-3 fs-5 text-secondary" /> : isMirror ? <Files className="me-3 fs-5 text-secondary" /> : <HddNetwork className="me-3 fs-5 text-secondary" />}
+            {isGlobal ? <Globe className="me-3 fs-5 text-secondary" /> : isMirror ? <FileStack className="me-3 fs-5 text-secondary" /> : <Network className="me-3 fs-5 text-secondary" />}
             <div className="d-flex flex-column overflow-hidden flex-grow-1" style={{ minWidth: 0 }}>
                 <span className="fw-medium text-truncate">{tagName}</span>
                 {!isGlobal && (
@@ -93,10 +93,10 @@ const TagModal: FC<{
                                 className="w-100"
                             >
                                 <ToggleItem value={String(tag_type.node)} className="flex-grow-1">
-                                    <HddNetwork className="me-2" />Node
+                                    <Network className="me-2" />Node
                                 </ToggleItem>
                                 <ToggleItem value={String(tag_type.mirror)} className="flex-grow-1">
-                                    <Files className="me-2" />Mirror
+                                    <FileStack className="me-2" />Mirror
                                 </ToggleItem>
                             </ToggleGroup>
                         </SettingsBox>
@@ -228,7 +228,7 @@ function Tags() {
                                 isNew: true
                             })}
                         >
-                            <PlusLg className="me-2" />Add New Tag
+                            <Plus className="me-2" />Add New Tag
                         </Button>
                     </div>
                 }
