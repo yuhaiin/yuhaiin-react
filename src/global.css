@@ -130,6 +130,7 @@
   --sidebar-gap: 16px;
   --sidebar-radius: 24px;
   --sidebar-transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --radix-collapsible-content-height: auto;
 }
 
 [data-bs-theme=dark] {
@@ -520,4 +521,28 @@ fieldset:disabled .btn {
 
 .metricCard {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes slideDown {
+    from {
+        height: 0;
+        opacity: 0;
+    }
+
+    to {
+        height: var(--radix-collapsible-content-height);
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        height: var(--radix-collapsible-content-height);
+        opacity: 1;
+    }
+
+    to {
+        height: 0;
+        opacity: 0;
+    }
 }

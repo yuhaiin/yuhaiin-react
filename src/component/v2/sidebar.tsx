@@ -48,7 +48,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
             <motion.div
                 ref={ref}
                 className={clsx(
-                    "fixed z-[1050] overflow-y-auto left-[var(--sidebar-gap)] top-[var(--sidebar-gap)] h-[calc(100vh-(var(--sidebar-gap)*2))] w-[260px] rounded-[var(--sidebar-radius)] border border-[var(--sidebar-border-color)] bg-[var(--sidebar-bg)] p-6 shadow-[var(--sidebar-box-shadow)] text-[var(--sidebar-color)] scrollbar-none lg:translate-x-0 lg:shadow-[var(--sidebar-box-shadow)] lg:max-w-none max-w-[calc(100vw-32px)] w-[280px] lg:w-[260px]",
+                    "fixed z-[1050] overflow-y-auto left-[var(--sidebar-gap)] top-[var(--sidebar-gap)] h-[calc(100vh-(var(--sidebar-gap)*2))] w-[260px] rounded-[var(--sidebar-radius)] border border-[var(--sidebar-border-color)] bg-[var(--sidebar-bg)] py-6 shadow-[var(--sidebar-box-shadow)] text-[var(--sidebar-color)] scrollbar-none lg:translate-x-0 lg:shadow-[var(--sidebar-box-shadow)] lg:max-w-none max-w-[calc(100vw-32px)] w-[280px] lg:w-[260px]",
                     className
                 )}
                 initial={false} // Prevent initial animation on hydration if possible, or just default.
@@ -102,14 +102,14 @@ const SidebarItem = React.forwardRef<HTMLAnchorElement, SidebarItemProps>(({ cla
         <a
             ref={ref}
             className={clsx(
-                "group flex items-center w-full px-4.5 py-3 text-[0.95rem] font-medium text-[var(--sidebar-color)] rounded-[14px] transition-all duration-200 border border-transparent tracking-[0.3px] cursor-pointer hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-active-color)]",
+                "group flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-[var(--sidebar-color)] rounded-[14px] transition-all duration-200 border border-transparent tracking-[0.3px] cursor-pointer hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-active-color)]",
                 active && "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-color)] font-semibold shadow-[var(--sidebar-active-glow)] border-transparent",
                 className
             )}
             {...props}
         >
             {icon && (
-                <span className="mr-3.5 flex h-6 w-6 items-center justify-center text-[1.2rem] transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-115 group-hover:-rotate-3">
+                <span className="mr-3.5 flex h-6 w-6 items-center justify-center text-[1.2rem] transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-[1.15] group-hover:-rotate-[5deg]">
                     {icon}
                 </span>
             )}
@@ -153,12 +153,12 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
                 <button
                     type="button"
                     className={clsx(
-                        "group flex items-center w-full px-4.5 py-3 text-[0.95rem] font-medium text-[var(--sidebar-color)] rounded-[14px] transition-all duration-200 border border-transparent tracking-[0.3px] cursor-pointer hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-active-color)]",
+                        "group flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-[var(--sidebar-color)] rounded-[14px] transition-all duration-200 border border-transparent tracking-[0.3px] cursor-pointer hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-active-color)]",
                         active && "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-color)] font-semibold shadow-[var(--sidebar-active-glow)] border-transparent"
                     )}
                 >
                     {icon && (
-                        <span className="mr-3.5 flex h-6 w-6 items-center justify-center text-[1.2rem] transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-115 group-hover:-rotate-3">
+                        <span className="mr-3.5 flex h-6 w-6 items-center justify-center text-[1.2rem] transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-[1.15] group-hover:-rotate-[5deg]">
                             {icon}
                         </span>
                     )}
@@ -195,7 +195,7 @@ const SidebarSubLink = React.forwardRef<HTMLAnchorElement, SidebarSubLinkProps>(
             className={clsx(
                 "relative flex w-full items-center border-none bg-transparent px-3 py-2 text-[0.85rem] text-[var(--sidebar-color)] opacity-80 decoration-0 transition-all duration-200",
                 !active && "hover:translate-x-1 hover:rounded-lg hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-active-color)] hover:opacity-100",
-                active && "font-semibold text-[var(--sidebar-active-color)] opacity-100 transform-none before:absolute before:-left-[5px] before:top-1/2 before:z-10 before:block before:h-[7px] before:w-[7px] before:-translate-y-1/2 before:rounded-full before:border-[2px] before:border-[var(--sidebar-active-color)] before:bg-[var(--sidebar-bg)] before:shadow-[0_0_8px_var(--sidebar-active-color)] before:content-['']",
+                active && "font-semibold text-[var(--sidebar-active-color)] opacity-100 transform-none before:absolute before:-left-[4px] before:top-1/2 before:z-10 before:block before:h-[7px] before:w-[7px] before:-translate-y-1/2 before:rounded-full before:border-[2px] before:border-[var(--sidebar-active-color)] before:bg-[var(--sidebar-bg)] before:shadow-[0_0_8px_var(--sidebar-active-color)] before:content-['']",
                 className
             )}
             {...props}
