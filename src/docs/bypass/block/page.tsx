@@ -24,7 +24,7 @@ const ListItem: FC<{ data: block_history }> = React.memo(({ data }) => {
         <div className="flex w-full flex-col md:flex-row items-start md:items-center justify-between gap-3">
 
             {/* Left Side: Icon + Host & Process */}
-            <div className="flex items-center flex-grow overflow-hidden gap-3 w-full w-md-auto">
+            <div className="flex items-center flex-grow overflow-hidden gap-3 w-full md:w-auto">
                 <div className="flex items-center justify-center bg-danger bg-opacity-10 text-danger rounded-full shrink-0" style={{ width: '42px', height: '42px' }}>
                     <ShieldOff className="text-xl" />
                 </div>

@@ -26,7 +26,7 @@ const ActiveNodeItem: FC<{
             <div className="flex w-full flex-col md:flex-row items-start md:items-center justify-between gap-3">
 
                 {/* Left Side: Status Icon + Name & Group */}
-                <div className="flex items-center flex-grow overflow-hidden gap-3 w-full w-md-auto">
+                <div className="flex items-center flex-grow overflow-hidden gap-3 w-full md:w-auto">
                     <IconBoxRounded
                         icon={Zap}
                         color="#198754"

@@ -4,7 +4,6 @@ import { Button } from '@/component/v2/button';
 import { Menu } from 'lucide-react';
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
-import styles from './navbar.module.css';
 
 function NavBarContainer({ children }: { children: React.ReactNode }) {
     const [showSidebar, setShowSidebar] = useState(false);
@@ -12,33 +11,16 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
     return (
         <>
             <Button
-                style={{
-                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-                    position: 'fixed',
-                    top: '15px',
-                    left: '15px',
-                    zIndex: 1030,
-                    width: '44px',
-                    height: '44px',
-                }}
+                className="fixed top-[15px] left-[15px] z-[1030] w-11 h-11 rounded-[14px] flex items-center justify-center cursor-pointer transition-all duration-200 shadow-[0_4px_15px_rgba(0,0,0,0.1)] bg-[var(--sidebar-bg,#fff)] text-[var(--sidebar-color,#333)] border border-[var(--sidebar-border-color,#eee)] active:scale-92 active:text-[var(--sidebar-active-color,#007bff)] active:border-[var(--sidebar-active-color,#007bff)] lg:hidden"
                 onClick={() => setShowSidebar(!showSidebar)}
                 aria-label="Toggle navigation"
-                className="lg:hidden"
             >
                 <Menu />
             </Button>
 
             <Sidebar show={showSidebar} onHide={() => setShowSidebar(false)} />
 
-            <main style={{
-                // Add padding on mobile to account for the fixed toggle button (approx 60px)
-                // We use a media query check via CSS or simple conditional style if we had the hook,
-                // but since this is SSR component (maybe), CSS solution is better.
-                // However, doing it inline with a class is standard.
-                // Let's use a class "pt-5 mt-4 d-lg-pt-0 d-lg-mt-0"?
-                // Bootstrap doesn't have d-lg-pt-0 easily.
-                // Let's use the styles module.
-            }} className={styles.mainContent}>
+            <main className="min-h-screen lg:pt-0">
                 {children}
             </main>
         </>

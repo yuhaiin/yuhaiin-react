@@ -2,9 +2,9 @@
 
 import * as CollapsiblePrimitive from "@radix-ui/react-collapsible";
 import { clsx } from "clsx";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronRight } from 'lucide-react';
-import React from "react";
-import styles from "./sidebar.module.css";
+import React, { useEffect, useState } from "react";
 
 /* -------------------------------------------------------------------------- */
 /*                                Sidebar Root                                */
@@ -14,11 +14,6 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
     show?: boolean;
     onHide?: () => void;
 }
-
-import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
-
-// ... existing imports ...
 
 // Helper hook for media query
 function useMediaQuery(query: string) {
@@ -52,7 +47,10 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
         <>
             <motion.div
                 ref={ref}
-                className={clsx(styles.root, className)}
+                className={clsx(
+                    "fixed z-[1050] overflow-y-auto left-[var(--sidebar-gap)] top-[var(--sidebar-gap)] h-[calc(100vh-(var(--sidebar-gap)*2))] w-[260px] rounded-[var(--sidebar-radius)] border border-[var(--sidebar-border-color)] bg-[var(--sidebar-bg)] p-6 shadow-[var(--sidebar-box-shadow)] text-[var(--sidebar-color)] scrollbar-none lg:translate-x-0 lg:shadow-[var(--sidebar-box-shadow)] lg:max-w-none max-w-[calc(100vw-32px)] w-[280px] lg:w-[260px]",
+                    className
+                )}
                 initial={false} // Prevent initial animation on hydration if possible, or just default.
                 animate={animateState}
                 variants={sidebarVariants}
@@ -66,7 +64,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
             <AnimatePresence>
                 {show && !isDesktop && (
                     <motion.div
-                        className={clsx(styles.overlay, "lg:hidden")}
+                        className="fixed inset-0 z-[1040] bg-black/50 lg:hidden"
                         onClick={onHide}
                         aria-hidden="true"
                         initial={{ opacity: 0 }}
@@ -86,7 +84,7 @@ Sidebar.displayName = "Sidebar";
 /* -------------------------------------------------------------------------- */
 
 const SidebarNav = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
-    <nav className={clsx(styles.list, className)} ref={ref} {...props} />
+    <nav className={clsx("flex flex-col gap-1.5 px-4 m-0 list-none", className)} ref={ref} {...props} />
 ));
 SidebarNav.displayName = "SidebarNav";
 
@@ -103,10 +101,18 @@ const SidebarItem = React.forwardRef<HTMLAnchorElement, SidebarItemProps>(({ cla
     return (
         <a
             ref={ref}
-            className={clsx(styles.item, active && styles.active, className)}
+            className={clsx(
+                "group flex items-center w-full px-4.5 py-3 text-[0.95rem] font-medium text-[var(--sidebar-color)] rounded-[14px] transition-all duration-200 border border-transparent tracking-[0.3px] cursor-pointer hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-active-color)]",
+                active && "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-color)] font-semibold shadow-[var(--sidebar-active-glow)] border-transparent",
+                className
+            )}
             {...props}
         >
-            {icon && icon}
+            {icon && (
+                <span className="mr-3.5 flex h-6 w-6 items-center justify-center text-[1.2rem] transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-115 group-hover:-rotate-3">
+                    {icon}
+                </span>
+            )}
             {children}
         </a>
     );
@@ -144,15 +150,28 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
             {...props}
         >
             <CollapsiblePrimitive.Trigger asChild>
-                <button type="button" className={clsx(styles.item, styles.trigger, active && styles.active)}>
-                    {icon}
+                <button
+                    type="button"
+                    className={clsx(
+                        "group flex items-center w-full px-4.5 py-3 text-[0.95rem] font-medium text-[var(--sidebar-color)] rounded-[14px] transition-all duration-200 border border-transparent tracking-[0.3px] cursor-pointer hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-active-color)]",
+                        active && "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-color)] font-semibold shadow-[var(--sidebar-active-glow)] border-transparent"
+                    )}
+                >
+                    {icon && (
+                        <span className="mr-3.5 flex h-6 w-6 items-center justify-center text-[1.2rem] transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-115 group-hover:-rotate-3">
+                            {icon}
+                        </span>
+                    )}
                     {title}
-                    <ChevronRight className={styles.triggerIcon} size={16} />
+                    <ChevronRight
+                        className="ml-auto h-auto text-xs opacity-60 transition-transform duration-300 group-data-[state=open]:rotate-90 group-data-[state=open]:text-[var(--sidebar-active-color)] group-data-[state=open]:opacity-100"
+                        size={16}
+                    />
                 </button>
             </CollapsiblePrimitive.Trigger>
 
-            <CollapsiblePrimitive.Content className={styles.content}>
-                <div className={styles.submenu}>
+            <CollapsiblePrimitive.Content className="overflow-hidden data-[state=closed]:animate-slideUp data-[state=open]:animate-slideDown">
+                <div className="relative ml-7 border-l border-[var(--sidebar-border-color)] py-1.5">
                     {children}
                 </div>
             </CollapsiblePrimitive.Content>
@@ -173,7 +192,12 @@ const SidebarSubLink = React.forwardRef<HTMLAnchorElement, SidebarSubLinkProps>(
     return (
         <a
             ref={ref}
-            className={clsx(styles.subLink, active && styles.active, className)}
+            className={clsx(
+                "relative flex w-full items-center border-none bg-transparent px-3 py-2 text-[0.85rem] text-[var(--sidebar-color)] opacity-80 decoration-0 transition-all duration-200",
+                !active && "hover:translate-x-1 hover:rounded-lg hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-active-color)] hover:opacity-100",
+                active && "font-semibold text-[var(--sidebar-active-color)] opacity-100 transform-none before:absolute before:-left-[5px] before:top-1/2 before:z-10 before:block before:h-[7px] before:w-[7px] before:-translate-y-1/2 before:rounded-full before:border-[2px] before:border-[var(--sidebar-active-color)] before:bg-[var(--sidebar-bg)] before:shadow-[0_0_8px_var(--sidebar-active-color)] before:content-['']",
+                className
+            )}
             {...props}
         >
             {children}
@@ -187,7 +211,7 @@ SidebarSubLink.displayName = "SidebarSubLink";
 /* -------------------------------------------------------------------------- */
 
 const SidebarDivider = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-    <div className={clsx(styles.divider, className)} {...props} />
+    <div className={clsx("w-full border-t border-[var(--divider-color)] my-2", className)} {...props} />
 );
 
 export {

@@ -200,7 +200,7 @@ const PublishItem: FC<{
 
     return (
         <>
-            <div className="flex items-center flex-grow overflow-hidden gap-3 w-full w-md-auto">
+            <div className="flex items-center flex-grow overflow-hidden gap-3 w-full md:w-auto">
                 <div className="flex flex-col overflow-hidden">
                     <span className="font-bold">{configKey}</span>
                     <small className="text-gray-500 truncate opacity-75">{pub.address}/{pub.path}</small>

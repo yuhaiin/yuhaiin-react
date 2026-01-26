@@ -31,7 +31,7 @@ const ListItem: FC<{ data: all_history }> = React.memo(({ data }) => {
     return (
         <>
             {/* Left Side: Icon + Address & ID (Subscribe style) */}
-            <div className="flex items-center flex-grow overflow-hidden gap-3 w-full w-md-auto">
+            <div className="flex items-center flex-grow overflow-hidden gap-3 w-full md:w-auto">
                 <div className="flex items-center justify-center bg-primary bg-opacity-10 text-primary rounded-full shrink-0" style={{ width: '42px', height: '42px' }}>
                     {data.connection.type?.connType === type.udp ? <Radio className="text-xl" /> : <ArrowLeftRight className="text-xl" />}
                 </div>

@@ -20,7 +20,6 @@ import React, { FC, useCallback, useContext, useMemo, useState } from "react"
 import useSWRSubscription from 'swr/subscription'
 import { NodeModal } from "../../node/modal"
 import { mode } from "../../pbes/config/bypass_pb"
-import styles from './connections.module.css'
 
 
 const processStream = (r: notify_data, prev?: { [key: string]: connection }): { [key: string]: connection } => {
@@ -169,7 +168,7 @@ const ConnectionListComponent: FC<{
     if (conn_error !== undefined) return <Loading code={conn_error.code}>{conn_error.msg}</Loading>
     if (conns === undefined) return <Loading />
 
-    return <ul className={styles['connections-list']}>
+    return <ul className="list-none p-0 m-0 flex flex-col overflow-hidden mb-8 border border-[var(--sidebar-border-color)] bg-[var(--sidebar-bg)] rounded-[var(--sidebar-radius)] shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]">
         <AnimatePresence initial={false} mode="popLayout">
             {
                 values.map((e) => {
@@ -193,7 +192,7 @@ const ListItemComponent: FC<{ data: connection, download: number, upload: number
     ({ data, download, upload, onClick }) => {
         return (
             <motion.li
-                className={styles['list-item']}
+                className="flex flex-col md:flex-row justify-between items-start md:items-start p-4 md:p-6 border-b border-[var(--sidebar-border-color)] transition-colors duration-200 cursor-pointer last:border-b-0 hover:bg-[var(--sidebar-hover-bg)]"
                 onClick={onClick}
                 layout
                 initial={{ opacity: 0, x: -20 }}
@@ -201,14 +200,14 @@ const ListItemComponent: FC<{ data: connection, download: number, upload: number
                 exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             >
-                <div className={styles['item-main']}>
-                    <code className={styles['item-id']}>{data.id.toString()}</code>
-                    <span className={styles['item-addr']}>{data.addr}</span>
+                <div className="flex flex-col mb-2 md:mb-0">
+                    <code className="font-mono text-sm text-[var(--sidebar-color)]">{data.id.toString()}</code>
+                    <span className="font-medium">{data.addr}</span>
                 </div>
 
-                <div className={styles['item-details-right']}>
+                <div className="flex flex-col items-start md:items-end gap-2">
                     <FlowBadge download={download} upload={upload} />
-                    <div className={styles['item-details']}>
+                    <div className="flex flex-wrap items-center gap-2 text-sm">
                         <IconBadge icon={ShieldCheck} text={mode[data.mode]} />
                         <IconBadge icon={Network} text={type[data.type?.connType ?? 0]} />
                         {data.tag && <IconBadge icon={Tag} text={data.tag} />}
@@ -223,12 +222,12 @@ const ListItem = React.memo(ListItemComponent)
 const FlowBadgeComponent: FC<{ download: number, upload: number }> = ({ download, upload }) => {
     // Replaced React-Bootstrap Badge with HTML span and bootstrap classes
     return <div className="flex gap-2">
-        <span className="badge rounded-full text-bg-secondary flex items-center gap-1">
-            <span className={`${styles['badge-icon']}`}><ArrowDown size={12} /></span>
+        <span className="px-2 py-1 rounded-full flex items-center gap-1 font-medium bg-[#f1f5f9] text-[#64748b] dark:bg-[#2b2b40] dark:text-[#a6a6c0]">
+            <span className="mr-1 text-[0.9em] align-[-0.1em]"><ArrowDown size={12} /></span>
             {formatBytes(download)}
         </span>
-        <span className="badge rounded-full text-bg-primary flex items-center gap-1">
-            <span className={`${styles['badge-icon']}`}><ArrowUp size={12} /></span>
+        <span className="px-2 py-1 rounded-full flex items-center gap-1 font-medium bg-[#f1f5f9] text-[#64748b] dark:bg-[#2b2b40] dark:text-[#a6a6c0]">
+            <span className="mr-1 text-[0.9em] align-[-0.1em]"><ArrowUp size={12} /></span>
             {formatBytes(upload)}
         </span>
     </div>

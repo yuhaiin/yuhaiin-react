@@ -8,7 +8,6 @@ import { FetchProtobuf, ProtoPath } from "../../common/proto";
 import { connections, counter, total_flow } from "../pbes/api/statistic_pb";
 import { mode } from "../pbes/config/bypass_pb";
 import { connection, type as connType, match_history_entry } from "../pbes/statistic/config_pb";
-import styles from './flowcard.module.css';
 
 interface MetricProps {
     label: string;
@@ -20,12 +19,10 @@ interface MetricProps {
 const MetricCard: FC<MetricProps> = ({ label, value, error, color = '#3b82f6' }) => {
     return (
         <div
-            className={styles.metricCard}
-        // Show a blue light line on the left edge of the card
-        // style={{ '--accent-color': color } as React.CSSProperties}
+            className="flex-1 min-w-[200px] relative p-4 bg-card border rounded-2xl flex flex-col justify-center transition-all duration-300 ease-out shadow-sm hover:-translate-y-1 hover:border-indigo-500/30 hover:shadow-lg"
         >
-            <div className={styles.metricCardLabel}>{label}</div>
-            <div className={`${styles.metricCardValue} ${error ? styles.error : ''}`}>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-1">{label}</div>
+            <div className={`text-xl font-bold font-mono text-card-foreground animate-in fade-in zoom-in-95 duration-200 ${error ? 'text-red-500' : ''}`}>
                 {error || value}
             </div>
         </div>
@@ -144,7 +141,7 @@ export const FlowCard: FC<{
     extra_fields?: MetricProps[],
 }> = ({ lastFlow, flow_error, extra_fields }) => {
     return (
-        <div className={`${styles.flowCardGrid} mb-3`}
+        <div className="flex flex-wrap w-full gap-5 mb-3"
             style={{ viewTransitionName: "flow-card-root !important" }}>
             <MetricCard
                 label="Total Download"
@@ -260,7 +257,7 @@ export const ConnectionInfo: FC<{
 }
 
 const IconCross = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-danger" style={{ opacity: 0.8 }}>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-red-500/80">
         <line x1="18" y1="6" x2="6" y2="18"></line>
         <line x1="6" y1="6" x2="18" y2="18"></line>
     </svg>
@@ -276,13 +273,7 @@ export const MatchHistoryItem = ({ value }: { value: match_history_entry[] }) =>
 
                 {/* Left Side: Main Title */}
                 <div
-                    className="endpoint-name notranslate capitalize shrink-0 mb-3 sm:mb-0"
-                    style={{
-                        color: 'var(--sidebar-header-color)',
-                        fontWeight: '600',
-                        minWidth: '110px',
-                        fontSize: '0.875rem' // Match DataList key font size
-                    }}
+                    className="endpoint-name notranslate capitalize shrink-0 mb-3 sm:mb-0 font-semibold min-w-[110px] text-sm text-[var(--sidebar-header-color)]"
                 >
                     MatchHistory
                 </div>
@@ -295,25 +286,13 @@ export const MatchHistoryItem = ({ value }: { value: match_history_entry[] }) =>
                                 /* GROUP CONTAINER: Wraps each Rule in a distinct "Box" */
                                 <div
                                     key={"rule-" + e.ruleName + i}
-                                    className="rounded-lg p-3"
-                                    style={{
-                                        border: '1px solid var(--sidebar-border-color)',
-                                        // Use a subtle background (like hover-bg) to separate it from the main background
-                                        backgroundColor: 'var(--sidebar-hover-bg)',
-                                    }}
+                                    className="rounded-lg p-3 border border-[var(--sidebar-border-color)] bg-[var(--sidebar-hover-bg)]"
                                 >
                                     {/* Rule Group Header */}
                                     <div
-                                        className="mb-2 pb-2 border-b flex justify-between items-center"
-                                        style={{ borderColor: 'var(--sidebar-border-color)' }}
+                                        className="mb-2 pb-2 border-b flex justify-between items-center border-[var(--sidebar-border-color)]"
                                     >
-                                        <span style={{
-                                            fontSize: '0.85rem',
-                                            color: 'var(--sidebar-header-color)', // Brighter color
-                                            fontWeight: '700',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.5px'
-                                        }}>
+                                        <span className="text-[0.85rem] font-bold uppercase tracking-[0.5px] text-[var(--sidebar-header-color)]">
                                             {e.ruleName}
                                         </span>
                                         {/* Optional: Count badge or similar could go here */}
@@ -329,32 +308,18 @@ export const MatchHistoryItem = ({ value }: { value: match_history_entry[] }) =>
                                                 >
                                                     {/* List Name */}
                                                     <span
-                                                        className="notranslate text-break"
-                                                        style={{
-                                                            fontSize: '0.95rem',
-                                                            color: 'var(--sidebar-color)'
-                                                        }}
+                                                        className="notranslate break-all text-[0.95rem] text-[var(--sidebar-color)]"
                                                     >
                                                         {h.listName}
                                                     </span>
 
                                                     {/* Status Icon & Label */}
                                                     <div className="flex items-center gap-2 pl-3 shrink-0">
-                                                        <span style={{
-                                                            fontSize: '0.8rem',
-                                                            fontWeight: '500',
-                                                            color: h.matched ? 'var(--bs-success)' : 'var(--sidebar-color)',
-                                                            opacity: h.matched ? 1 : 0.7
-                                                        }}>
+                                                        <span className={`text-xs font-medium ${h.matched ? 'text-green-500 opacity-100' : 'text-[var(--sidebar-color)] opacity-70'}`}>
                                                             {h.matched ? 'Hit' : 'Miss'}
                                                         </span>
                                                         <div
-                                                            className="flex items-center justify-center rounded-full"
-                                                            style={{
-                                                                width: '24px',
-                                                                height: '24px',
-                                                                backgroundColor: h.matched ? 'rgba(25, 135, 84, 0.1)' : 'rgba(255, 255, 255, 0.05)'
-                                                            }}
+                                                            className={`flex items-center justify-center rounded-full w-6 h-6 ${h.matched ? 'bg-green-500/10' : 'bg-white/5'}`}
                                                         >
                                                             {h.matched ? <Check /> : <IconCross />}
                                                         </div>

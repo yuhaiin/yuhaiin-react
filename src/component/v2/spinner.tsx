@@ -1,16 +1,9 @@
 import { clsx } from "clsx";
 import { motion } from "framer-motion";
 import * as React from "react";
-import styles from "./spinner.module.css";
 
 export interface SpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
     size?: "sm" | "md";
-}
-
-const transition = {
-    repeat: Infinity,
-    ease: "linear",
-    duration: 1
 }
 
 const Spinner = ({ className, size = "md", ...props }: SpinnerProps) => {
@@ -22,7 +15,7 @@ const Spinner = ({ className, size = "md", ...props }: SpinnerProps) => {
     return (
         <div
             className={clsx(
-                styles.spinnerContainer, // New class or reuse generic
+                "inline-flex",
                 className
             )}
             role="status"
@@ -30,8 +23,6 @@ const Spinner = ({ className, size = "md", ...props }: SpinnerProps) => {
             style={{
                 width,
                 height: width,
-                display: 'inline-flex',
-                // Reset any existing spinner styles from external class if needed
                 ...props.style
             }}
         >
@@ -56,11 +47,6 @@ const Spinner = ({ className, size = "md", ...props }: SpinnerProps) => {
                     strokeWidth={strokeWidth}
                     strokeLinecap="round"
                     initial={{ pathLength: 0.75 }}
-                    // Optional: Add "breathing" dash animation
-                    animate={{ pathLength: [0.75, 0.25, 0.75], rotate: [0, 180, 360], strokeDashoffset: [0, -10, 0] }} // Complex breathing
-                // Or simple static partial circle rotating
-                // Let's stick to simple rotating partial circle for now, or the classic "indeterminate"
-                // Simplest clean look: static pathLength, rotating svg.
                 />
             </motion.svg>
             <span style={{ display: "none" }}>Loading...</span>

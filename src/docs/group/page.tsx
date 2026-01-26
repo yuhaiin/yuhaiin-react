@@ -23,7 +23,6 @@ import { NodeModal } from "../node/modal";
 import { node, use_reqSchema } from "../pbes/api/node_pb";
 import { dns_over_quicSchema, http_testSchema, ipSchema, nat_type, reply, request_protocol, request_protocolSchema, requestsSchema, stunSchema } from "../pbes/node/latency_pb";
 import { origin, point, pointSchema } from "../pbes/node/point_pb";
-import styles from './group.module.css';
 
 const MotionAccordionItem = motion(AccordionItem);
 
@@ -174,8 +173,8 @@ function Group() {
                 />
             </NodesContext.Provider>
 
-            <div className={styles.pageHeader}>
-                <div className={styles.headerActions}>
+            <div className="flex justify-end items-center mb-4 flex-wrap gap-4">
+                <div className="flex gap-3">
                     <Dropdown>
                         <DropdownTrigger asChild>
                             <Button className="flex items-center justify-between" style={{ minWidth: '150px' }}>
@@ -492,16 +491,16 @@ const parseGoDurationToMs = (val: string): number => {
 const getLatencyColor = (val: string) => {
     const ms = parseGoDurationToMs(val);
 
-    if (ms < 0) return styles['latency-invalid']; // No color for invalid/loading states
+    if (ms < 0) return "text-gray-400"; // latency-invalid
 
-    if (ms < 200) return styles['latency-good']; // < 200ms: Green
-    if (ms < 999) return styles['latency-avg'];  // 200ms - 999ms: Yellow
-    return styles['latency-bad'];                // > 999ms: Red
+    if (ms < 200) return "text-emerald-500"; // latency-good
+    if (ms < 999) return "text-amber-500";  // latency-avg
+    return "text-red-500";                // latency-bad
 };
 
 // Helper Component: Display a single block of information
 const InfoBlock: FC<{ label: string, value: React.ReactNode, loading?: boolean, colorClass?: string }> = ({ label, value, loading, colorClass }) => (
-    <div className={styles.infoCard}>
+    <div className="bg-[var(--card-footer-bg)] border-[0.5px] border-[var(--card-inner-border)] rounded-[20px] p-4 flex flex-col transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:bg-[var(--card-inner-border)]">
         <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.25rem', fontWeight: 700 }}>{label}</span>
         <div className={colorClass || ''} style={{
             fontSize: '0.9rem',
@@ -585,8 +584,8 @@ const NodeItemv2: FC<{
                     */}
                     <div className="flex items-center gap-3 w-full mb-2 sm:mb-0">
                         {/* Status Icon */}
-                        <Network className={`text-xl shrink-0 ${getLatencyColor(latency.tcp.value) === styles['latency-good']
-                            ? "text-success"
+                        <Network className={`text-xl shrink-0 ${getLatencyColor(latency.tcp.value) === "text-emerald-500"
+                            ? "text-emerald-500"
                             : latency.tcp.value !== "N/A" && !latency.tcp.value.includes("timeout")
                                 ? "text-primary"
                                 : "text-gray-500"
@@ -606,7 +605,7 @@ const NodeItemv2: FC<{
                         - Mobile: Full width (w-100), Spread apart (justify-content-between)
                         - Desktop: Auto width, Right aligned (justify-content-sm-end)
                     */}
-                    <div className="flex w-full w-sm-auto items-center justify-between sm:justify-end pl-0 sm:pl-2">
+                    <div className="flex w-full sm:w-auto items-center justify-between sm:justify-end pl-0 sm:pl-2">
 
                         {/* Stats Block */}
                         <div className="flex gap-4 text-gray-500 small items-center">
@@ -629,7 +628,7 @@ const NodeItemv2: FC<{
 
             <AccordionContent>
                 {/* 1. Main Info Grid (Latency & IP) */}
-                <div className={styles.infoGrid}>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-4 mb-4">
                     <InfoBlock
                         label="TCP Latency"
                         value={latency.tcp.value}
@@ -654,7 +653,7 @@ const NodeItemv2: FC<{
                 {(latency.stun || latency.stun_tcp) && (
                     <div className="mb-4">
                         <h6 className="text-gray-500 small font-bold mb-2 pl-1">NAT & STUN Details</h6>
-                        <div className={styles.infoGrid}>
+                        <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-4 mb-4">
                             {latency.stun && (
                                 <>
                                     <InfoBlock label="NAT Type" value={latency.stun.mapping} loading={latency.stun.loading} />
@@ -670,7 +669,7 @@ const NodeItemv2: FC<{
                 )}
 
                 {/* 3. Action Footer */}
-                <div className={styles.actionFooter}>
+                <div className="flex gap-2 pt-4 border-t border-[var(--card-inner-border)] justify-end">
                     <div className="btn-group">
                         <Dropdown>
                             <DropdownTrigger asChild>

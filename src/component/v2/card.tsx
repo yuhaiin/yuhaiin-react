@@ -1,38 +1,68 @@
 'use client';
 
 import { clsx } from "clsx";
+import { AnimatePresence, motion } from "framer-motion";
 import { History, Plus, Search, TriangleAlert } from 'lucide-react';
 import React, { FC, useState } from 'react';
-import styles from './card.module.css';
 
 // --- Basic Card Components ---
 
 export const Card: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
-    <div className={`${styles.card} ${className ? className : ''}`} style={style}>
+    <div
+        className={clsx(
+            "flex flex-col mb-8 overflow-hidden transition-all duration-300 bg-[var(--sidebar-bg)] border border-[var(--sidebar-border-color)] rounded-[20px] shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] hover:-translate-y-1 hover:border-indigo-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]",
+            className
+        )}
+        style={{ viewTransitionName: 'config-card-root', ...style }}
+    >
         {children}
     </div>
 );
 
 export const CardHeader: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
-    <div className={`${styles.cardHeader} ${className ? className : ''}`} style={style}>
+    <div
+        className={clsx(
+            "flex items-center justify-between px-6 py-5 border-b border-[var(--sidebar-border-color)]",
+            className
+        )}
+        style={style}
+    >
         {children}
     </div>
 );
 
 export const CardBody: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
-    <div className={`${styles.cardBody} ${className || ''}`} style={style}>
+    <div
+        className={clsx(
+            "flex-grow p-6",
+            className
+        )}
+        style={style}
+    >
         {children}
     </div>
 );
 
 export const CardTitle: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
-    <div className={`${styles.cardTitle} ${className || ''}`} style={style}>
+    <div
+        className={clsx(
+            "flex items-center mb-3 text-[1.1rem] font-semibold",
+            className
+        )}
+        style={style}
+    >
         {children}
     </div>
 );
 
 export const CardFooter: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
-    <div className={`${styles.cardFooter} ${className ? className : ''}`} style={style}>
+    <div
+        className={clsx(
+            "px-6 py-4 border-t bg-transparent border-[var(--bs-border-color)]",
+            className
+        )}
+        style={style}
+    >
         {children}
     </div>
 );
@@ -43,17 +73,20 @@ export const ListItem: FC<{
     style?: React.CSSProperties,
     onClick?: () => void
 }> = ({ children, className, style, onClick }) => (
-    <div className={`${styles.listItem} ${className}`} style={style} onClick={onClick}>
+    <div
+        className={clsx(
+            "flex items-center min-h-[72px] p-5 cursor-pointer rounded-xl bg-[var(--list-item-bg)] border border-transparent transition-all duration-200 hover:bg-[var(--list-item-hover)] hover:border-[var(--list-item-border-hover)] hover:-translate-y-0.5",
+            className
+        )}
+        style={style}
+        onClick={onClick}
+    >
         {children}
     </div>
 );
 
 
 // --- List Components ---
-
-import { AnimatePresence, motion } from "framer-motion";
-
-// ... existing imports ...
 
 type CardListProps<T> = {
     items: T[];
@@ -69,7 +102,7 @@ export function CardList<T>({ items, onClickItem, footer, renderListItem: body, 
         <Card>
             {header && <CardHeader>{header}</CardHeader>}
             <CardBody>
-                <div className={styles.listContainer}>
+                <div className="flex flex-col gap-3">
                     {items.length > 0 ? (
                         <AnimatePresence initial={false} mode="popLayout">
                             {items.map((child, index) => {
@@ -123,10 +156,13 @@ interface SettingLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> 
 export const SettingLabel: FC<SettingLabelProps> = ({
     children,
     className,
-    ...props // Receive and pass through all standard label attributes including htmlFor
+    ...props
 }) => (
     <label
-        className={clsx(styles.settingLabel, className)}
+        className={clsx(
+            "block mb-2 text-[0.8125rem] font-medium leading-[1.2] text-[var(--bs-secondary-color,#6c757d)] whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer",
+            className
+        )}
         {...props}
     >
         {children}
@@ -137,7 +173,7 @@ export const SettingLabel: FC<SettingLabelProps> = ({
 export const ErrorBox: FC<{ msgs: string[] }> = ({ msgs }) => {
     if (msgs.length === 0) return null;
     return (
-        <div className={styles.errorBox}>
+        <div className="bg-[var(--modal-error-bg)] border-none p-4 rounded-md flex">
             <TriangleAlert className="mr-3 mt-1 text-xl" />
             <div className="flex-grow">
                 <h6 className="font-bold mb-2">Configuration Error</h6>
@@ -173,10 +209,10 @@ export function CardRowList<T>({
         <Card>
             {header && <CardHeader>{header}</CardHeader>}
             <CardBody>
-                <div className={styles.cardRowGrid}>
+                <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(300px,1fr))] [&>div]:flex [&>div>.listItem]:w-full">
                     {items.map((value, index) =>
                         <div key={index}>
-                            <ListItem onClick={() => onClickItem?.(value, index)}>
+                            <ListItem className="!w-full" onClick={() => onClickItem?.(value, index)}>
                                 {body(value, index)}
                             </ListItem>
                         </div>
@@ -184,13 +220,13 @@ export function CardRowList<T>({
 
                     {onAddNew &&
                         <div>
-                            <ListItem className={styles.newItemBox}>
-                                <div className={styles.inputGroup}>
+                            <ListItem className="!w-full px-5 py-2 border border-dashed border-[var(--bs-border-color)] bg-[var(--bs-secondary-bg)]">
+                                <div className="flex items-center w-full min-h-[42px]">
                                     <input
                                         value={newdata.value}
                                         onChange={(e) => setNewdata({ value: e.target.value })}
                                         placeholder="Create new..."
-                                        className={styles.seamlessInput}
+                                        className="w-full p-2 text-base bg-transparent border-none focus:outline-none"
                                         onKeyDown={(e) => {
                                             if (!newdata.value || adding) return;
                                             if (e.key === 'Enter') onAddNew(newdata.value);
@@ -203,10 +239,14 @@ export function CardRowList<T>({
                                             if (!newdata.value || adding) return;
                                             onAddNew(newdata.value);
                                         }}
-                                        className={styles.seamlessBtn}
+                                        className="p-2 bg-transparent border-none cursor-pointer text-[var(--bs-primary)] disabled:text-[var(--bs-secondary)] disabled:cursor-not-allowed"
                                         disabled={adding}
                                     >
-                                        {adding ? <div className={styles.spinner} /> : <Plus size={20} />}
+                                        {adding ? (
+                                            <div className="inline-block w-5 h-5 align-text-bottom border-2 border-current rounded-full border-r-transparent animate-spin" />
+                                        ) : (
+                                            <Plus size={20} />
+                                        )}
                                     </button>
                                 </div>
                             </ListItem>
@@ -243,7 +283,7 @@ export const MainContainer: FC<{ children: React.ReactNode, className?: string, 
 );
 
 export const SettingsBox: FC<{ children: React.ReactNode }> = ({ children }) => (
-    <div className={styles.settingsBox}>
+    <div className="p-6 transition-colors duration-300 border rounded-lg bg-[var(--modal-settings-bg)] border-[var(--modal-settings-border)]">
         {children}
     </div>
 );
@@ -259,9 +299,12 @@ export const IconBox: FC<{
     description?: string,
     style?: React.CSSProperties
 }> = ({ icon: Icon, color, borderColor, background, className, textClassName, style, title, description }) => (
-    <div className="flex items-center" style={{ minWidth: 0 }}>
+    <div className="flex items-center min-w-0">
         <div
-            className={clsx(styles.iconBox, className)}
+            className={clsx(
+                "flex shrink-0 items-center justify-center w-12 h-12 mr-5 text-xl border rounded-[14px]",
+                className
+            )}
             style={{ color: color, borderColor: borderColor || `${color}33`, background: background || `${color}1A`, ...style }}
         >
             <Icon />
@@ -284,7 +327,10 @@ export const IconBoxRounded: FC<{
     style?: React.CSSProperties
 }> = ({ icon: Icon, color, borderColor, background, className, style }) => (
     <div
-        className={`${styles.iconBox} rounded-full ${className}`}
+        className={clsx(
+            "flex shrink-0 items-center justify-center w-12 h-12 mr-5 text-xl border rounded-full",
+            className
+        )}
         style={{ color: color, borderColor: borderColor || `${color}33`, background: background || `${color}1A`, ...style }}
     >
         <Icon />
@@ -300,8 +346,13 @@ export const FilterSearch: FC<{
 }> = ({ onEnter, className, style, size, inputStyle, inputClassName }) => {
     const [filterInput, setFilterInput] = useState('');
     return (
-        <div className={clsx(styles.filterSearchWrapper, className)} style={style}>
-            <div className={`${styles.filterSearchIcon} ${size === 'sm' ? styles.sm : ''}`} style={size === 'sm' ? { left: '0.8rem' } : undefined}>
+        <div className={clsx("relative", className)} style={style}>
+            <div
+                className={clsx(
+                    "absolute top-1/2 -translate-y-1/2 text-[var(--bs-secondary-color)]",
+                    size === 'sm' ? "left-[0.8rem]" : "left-4"
+                )}
+            >
                 <Search size={size === 'sm' ? 14 : 18} />
             </div>
             <input
@@ -309,7 +360,11 @@ export const FilterSearch: FC<{
                 onChange={(e) => setFilterInput(e.target.value)}
                 placeholder="Search..."
                 onKeyDown={(e) => e.key === 'Enter' && onEnter(filterInput.toLowerCase())}
-                className={clsx(styles.filterSearchInput, size === 'sm' && styles.filterSearchInputSm, inputClassName)}
+                className={clsx(
+                    "w-full bg-[var(--bs-secondary-bg)] border border-[var(--bs-border-color)] rounded-[20px] focus:bg-[var(--bs-body-bg)] focus:border-[var(--bs-primary)] focus:outline-none",
+                    size === 'sm' ? "h-8 pl-10 text-sm" : "h-10 pl-12",
+                    inputClassName
+                )}
                 style={inputStyle}
                 autoComplete="off"
             />
@@ -319,10 +374,9 @@ export const FilterSearch: FC<{
 
 export const ErrorMsg: FC<{ msg: string, code?: string, raw?: string }> = ({ msg, code, raw }) => {
     return (
-        <div className={`${styles.errorBox} ${styles.errorMsg}`}>
-            <h4 className="alert-heading">{code} - {msg}</h4>
-            <pre className="mb-0 small">{raw}</pre>
+        <div className="bg-[var(--modal-error-bg)] border border-[var(--bs-danger-border-subtle)] p-4 rounded-md text-[var(--bs-danger-text-emphasis)] bg-[var(--bs-danger-bg-subtle)]">
+            <h4 className="font-semibold mb-2">{code} - {msg}</h4>
+            <pre className="mb-0 text-sm">{raw}</pre>
         </div>
     );
 };
-
