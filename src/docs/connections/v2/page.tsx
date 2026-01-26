@@ -166,6 +166,10 @@ const ConnectionListComponent: FC<{
         return a.id < b.id ? first : second
     }), [conns, sortFields, counters, sortOrder])
 
+    const handleSelect = useCallback((conn: connection) => {
+        setInfo({ info: conn, show: true })
+    }, [setInfo])
+
     if (conn_error !== undefined) return <Loading code={conn_error.code}>{conn_error.msg}</Loading>
     if (conns === undefined) return <Loading />
 
@@ -178,7 +182,7 @@ const ConnectionListComponent: FC<{
                         download={Number(counters[e.id.toString()]?.download ?? 0)}
                         upload={Number(counters[e.id.toString()]?.upload ?? 0)}
                         key={e.id}
-                        onClick={() => setInfo({ info: e, show: true })}
+                        onSelect={handleSelect}
                     />
                 })
             }
@@ -189,12 +193,12 @@ const ConnectionListComponent: FC<{
 const ConnectionList = React.memo(ConnectionListComponent)
 
 
-const ListItemComponent: FC<{ data: connection, download: number, upload: number, onClick?: () => void }> =
-    ({ data, download, upload, onClick }) => {
+const ListItemComponent: FC<{ data: connection, download: number, upload: number, onSelect?: (conn: connection) => void }> =
+    ({ data, download, upload, onSelect }) => {
         return (
             <motion.li
                 className={styles['list-item']}
-                onClick={onClick}
+                onClick={() => onSelect?.(data)}
                 layout
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
