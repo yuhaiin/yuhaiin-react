@@ -37,12 +37,12 @@ const ActiveNodeItem: FC<{
                     <div className="flex flex-col overflow-hidden" style={{ minWidth: 0 }}>
                         <div className="flex items-center gap-2 mb-1">
                             <span className="font-bold truncate text-base">{v.name}</span>
-                            <Badge className="bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1" style={{ fontSize: '0.65rem' }}>
+                            <Badge className="bg-opacity-10 text-[var(--bs-primary)] border border-[var(--bs-primary)] border-opacity-25 px-2 py-1" style={{ fontSize: '0.65rem' }}>
                                 {v.group}
                             </Badge>
                         </div>
-                        <small className="text-gray-500 truncate font-monospace opacity-75">
-                            <Hash className="mr-1" size={12} />{v.hash}
+                        <small className="text-gray-500 truncate font-mono opacity-75">
+                            <Hash className="mr-1 inline" size={12} />{v.hash}
                         </small>
                     </div>
                 </div>
@@ -94,7 +94,8 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
             {/* Confirmation for Closing Node */}
             <ConfirmModal
                 show={confirmData.show}
-                title={
+                title="Terminate Connection"
+                content={
                     <div className="py-2">
                         <p className="mb-1">Are you sure you want to <strong>terminate</strong> this active node connection?</p>
                         <code className="small text-gray-500">{confirmData.name}</code>
@@ -121,8 +122,8 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
                 onClickItem={(v) => setModalHash({ hash: v.hash, show: true, point: v })}
                 header={
                     <div className="flex items-center justify-between w-full">
-                        <IconBox icon={Activity} color="success" title="Active Nodes" description="Live outbound connection instances" />
-                        <Badge variant="success" className="bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-full">
+                        <IconBox icon={Activity} color="#198754" title="Active Nodes" description="Live outbound connection instances" />
+                        <Badge variant="success" className="bg-opacity-10 text-[var(--bs-success)] border border-[var(--bs-success)] border-opacity-25 px-3 py-2 rounded-full">
                             {data.nodes.length} Running
                         </Badge>
                     </div>
@@ -132,7 +133,7 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
             {showFooter &&
                 <div className="text-center mt-4 opacity-50 pb-5">
                     <small className="text-gray-500">
-                        <Info className="mr-1" />
+                        <Info className="mr-1 inline" />
                         Closing a node here will force a reconnection if the rule still requires it.
                     </small>
                 </div>

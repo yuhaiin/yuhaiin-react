@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from '@/component/v2/button';
+import { clsx } from 'clsx';
 import { Menu } from 'lucide-react';
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
@@ -11,7 +12,7 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
     return (
         <>
             <Button
-                className="fixed top-[15px] left-[15px] z-[1030] w-11 h-11 rounded-[14px] flex items-center justify-center cursor-pointer transition-all duration-200 shadow-[0_4px_15px_rgba(0,0,0,0.1)] bg-[var(--sidebar-bg,#fff)] text-[var(--sidebar-color,#333)] border border-[var(--sidebar-border-color,#eee)] active:scale-92 active:text-[var(--sidebar-active-color,#007bff)] active:border-[var(--sidebar-active-color,#007bff)] lg:hidden"
+                className="fixed top-4 left-4 z-[1030] w-11 h-11 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-200 shadow-md bg-[var(--sidebar-bg)] text-[var(--sidebar-color)] border border-[var(--sidebar-border-color)] active:scale-95 active:text-[var(--sidebar-active-color)] active:border-[var(--sidebar-active-color)] lg:hidden"
                 onClick={() => setShowSidebar(!showSidebar)}
                 aria-label="Toggle navigation"
             >
@@ -20,7 +21,11 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
 
             <Sidebar show={showSidebar} onHide={() => setShowSidebar(false)} />
 
-            <main className="min-h-screen lg:pt-0">
+            <main className={clsx(
+                "min-h-screen transition-all duration-300",
+                "pt-16 px-4 pb-4", // Mobile padding (top for menu button)
+                "lg:pt-4 lg:pl-[296px] lg:pr-4" // Desktop padding (left for sidebar)
+            )}>
                 {children}
             </main>
         </>
