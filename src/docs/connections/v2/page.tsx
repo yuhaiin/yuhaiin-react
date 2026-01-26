@@ -108,10 +108,10 @@ function Connections() {
                 <div className="d-flex align-items-center gap-3 flex-wrap">
                     <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && changeSortOrder(v as "asc" | "desc")}>
                         <ToggleItem value="asc">
-                            <ArrowUp /> Asc
+                            <ArrowUp size={16} /> Asc
                         </ToggleItem>
                         <ToggleItem value="desc">
-                            <ArrowDown /> Desc
+                            <ArrowDown size={16} /> Desc
                         </ToggleItem>
                     </ToggleGroup>
 
@@ -224,11 +224,11 @@ const FlowBadgeComponent: FC<{ download: number, upload: number }> = ({ download
     // Replaced React-Bootstrap Badge with HTML span and bootstrap classes
     return <div className="d-flex gap-2">
         <span className="badge rounded-pill text-bg-secondary d-flex align-items-center gap-1">
-            <span className={`${styles['badge-icon']}`}><ArrowDown /></span>
+            <span className={`${styles['badge-icon']}`}><ArrowDown size={12} /></span>
             {formatBytes(download)}
         </span>
         <span className="badge rounded-pill text-bg-primary d-flex align-items-center gap-1">
-            <span className={`${styles['badge-icon']}`}><ArrowUp /></span>
+            <span className={`${styles['badge-icon']}`}><ArrowUp size={12} /></span>
             {formatBytes(upload)}
         </span>
     </div>

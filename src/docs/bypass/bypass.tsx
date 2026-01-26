@@ -137,7 +137,7 @@ const RuleItem: FC<{
                         e.stopPropagation()
                         onPriority(index)
                     }}>
-                    <ArrowUpDown />
+                    <ArrowUpDown size={16} />
                 </Button>
             </div>
         </>

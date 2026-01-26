@@ -215,13 +215,13 @@ function Group() {
                             })
                         }}
                     >
-                        <Plus />&nbsp;New
+                        <Plus size={16} />&nbsp;New
                     </Button>
 
                     <Button
                         onClick={() => setImportJson({ data: true })}
                     >
-                        <Archive />&nbsp;Import
+                        <Archive size={16} />&nbsp;Import
                     </Button>
                 </div>
             </div>
@@ -682,11 +682,11 @@ const NodeItemv2: FC<{
                                     {isTesting
                                         ? <Spinner size="sm" />
                                         : <>
-                                            <Gauge />
+                                            <Gauge size={16} />
                                             <span className="d-none d-sm-inline ms-1">Test</span>
                                         </>
                                     }
-                                    <ChevronDown className="ms-1" style={{ fontSize: '0.7em' }} />
+                                    <ChevronDown className="ms-1" size={12} />
                                 </Button>
                             </DropdownTrigger>
                             <DropdownContent>
@@ -701,13 +701,13 @@ const NodeItemv2: FC<{
                     </div>
 
                     <Button size="sm" onClick={onClickEdit} title="Edit Configuration">
-                        <Pencil />
+                        <Pencil size={16} />
                         {/* d-none d-sm-inline: Hide text on mobile */}
                         <span className="d-none d-sm-inline ms-2">Edit</span>
                     </Button>
 
                     <Button size="sm" onClick={() => setNode(ctx, hash)} title="Use Node">
-                        <CheckCircle2 />
+                        <CheckCircle2 size={16} />
                         {/* d-none d-sm-inline: Hide text on mobile */}
                         <span className="d-none d-sm-inline ms-2">Use</span>
                     </Button>

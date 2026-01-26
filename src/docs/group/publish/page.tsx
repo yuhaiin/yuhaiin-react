@@ -142,7 +142,7 @@ const EditModal: FC<{
                                 <DropdownTrigger asChild>
                                     <Button className="w-100 d-flex justify-content-between align-items-center py-2" variant="outline-secondary">
                                         <span className="fw-medium">{selectedNodes.length > 0 ? `${selectedNodes.length} nodes selected` : 'Select nodes...'}</span>
-                                        <ChevronDown />
+                                        <ChevronDown size={16} />
                                     </Button>
                                 </DropdownTrigger>
 
@@ -172,7 +172,7 @@ const EditModal: FC<{
                         <Button variant="outline-secondary">Cancel</Button>
                     </ModalClose>
                     <Button onClick={handleSave} disabled={saving}>
-                        {saving ? <Spinner size="sm" /> : <><Check className="me-1" /> Save Config</>}
+                        {saving ? <Spinner size="sm" /> : <><Check className="me-1" size={16} /> Save Config</>}
                     </Button>
                 </ModalFooter>
             </ModalContent>
@@ -224,14 +224,14 @@ const PublishItem: FC<{
                     size='icon'
                     onClick={() => copyAction(encodedUrl)}
                 >
-                    {copied ? <ClipboardCheck /> : <Clipboard />}
+                    {copied ? <ClipboardCheck size={16} /> : <Clipboard size={16} />}
                 </Button>
             </InputGroup>
 
 
             <div className="d-flex gap-2 align-items-center ms-2 flex-shrink-0">
                 <Button size='sm' variant="outline-danger" onClick={(e) => { e.stopPropagation(); onDelete() }} >
-                    <Trash />
+                    <Trash size={16} />
                     <span className="d-none d-sm-inline ms-2">Delete</span>
                 </Button>
             </div >
@@ -308,7 +308,7 @@ function PublishPage() {
                                 </div>
                             </div>
                             <Button onClick={() => setModalState({ show: true, isEdit: false, configName: '', item: undefined })}>
-                                <Plus className="me-1" /> Add
+                                <Plus className="me-1" size={16} /> Add
                             </Button>
                         </>
                     }

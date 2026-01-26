@@ -130,13 +130,13 @@ function FailedHistory() {
 
                 <div className="d-flex flex-wrap gap-2 justify-content-end align-items-center">
                     <Button size="sm" onClick={() => mutate()} disabled={isValidating}>
-                        {isValidating ? <Spinner size="sm" /> : <RotateCw />}
+                        {isValidating ? <Spinner size="sm" /> : <RotateCw size={16} />}
                     </Button>
 
                     <Dropdown>
                         <DropdownTrigger asChild>
                             <Button size="sm">
-                                <ArrowDown />
+                                <ArrowDown size={16} />
                             </Button>
                         </DropdownTrigger>
                         <DropdownContent align="end" className="p-3" style={{ minWidth: '220px' }}>

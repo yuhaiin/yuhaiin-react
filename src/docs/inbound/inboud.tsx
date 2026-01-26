@@ -151,13 +151,13 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
 
                                     <div className="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
                                         <Button size="sm" onClick={() => moveTransport(i, 'up')} disabled={i === 0}>
-                                            <ArrowUp />
+                                            <ArrowUp size={16} />
                                         </Button>
                                         <Button size="sm" onClick={() => moveTransport(i, 'down')} disabled={i === inbound.transport.length - 1}>
-                                            <ArrowDown />
+                                            <ArrowDown size={16} />
                                         </Button>
                                         <Button variant="outline-danger" size="sm" onClick={() => deleteTransport(i)}>
-                                            <Trash className="me-1" /> Delete
+                                            <Trash className="me-1" size={16} /> Delete
                                         </Button>
                                     </div>
                                 </div>
@@ -181,7 +181,7 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
                         />
                     </div>
                     <Button onClick={addTransport}>
-                        <Plus className="me-1" /> Add
+                        <Plus className="me-1" size={16} /> Add
                     </Button>
                 </div>
             </CardBody>

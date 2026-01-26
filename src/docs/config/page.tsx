@@ -252,7 +252,7 @@ function ConfigComponent() {
 
                 <CardFooter className="d-flex justify-content-end">
                     <Button disabled={saving} onClick={handleSave}>
-                        {saving ? <Spinner size="sm" /> : <><Save className="me-2" />Apply Advanced Changes</>}
+                        {saving ? <Spinner size="sm" /> : <><Save className="me-2" size={16} />Apply Advanced Changes</>}
                     </Button>
                 </CardFooter>
             </Card>

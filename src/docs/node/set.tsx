@@ -75,7 +75,7 @@ export const Set: FC<Props<set>> = ({ value, onChange, editable = true }) => {
                                     onChange(create(setSchema, { nodes }))
                                 }}
                             >
-                                <Trash />
+                                <Trash size={16} />
                             </Button>
                         )}
                     </div>
@@ -100,7 +100,7 @@ export const Set: FC<Props<set>> = ({ value, onChange, editable = true }) => {
                             })
                         }}
                     >
-                        <Plus className="me-1" /> Add Node
+                        <Plus className="me-1" size={16} /> Add Node
                     </Button>
                 </div>
             )}

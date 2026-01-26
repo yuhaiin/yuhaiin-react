@@ -206,7 +206,7 @@ export function CardRowList<T>({
                                         className={styles.seamlessBtn}
                                         disabled={adding}
                                     >
-                                        {adding ? <div className={styles.spinner} /> : <Plus className="fs-5" />}
+                                        {adding ? <div className={styles.spinner} /> : <Plus size={20} />}
                                     </button>
                                 </div>
                             </ListItem>
@@ -301,7 +301,9 @@ export const FilterSearch: FC<{
     const [filterInput, setFilterInput] = useState('');
     return (
         <div className={clsx(styles.filterSearchWrapper, className)} style={style}>
-            <Search className={`${styles.filterSearchIcon} ${size === 'sm' ? styles.sm : ''}`} style={size === 'sm' ? { left: '0.8rem', fontSize: '0.8rem' } : undefined} />
+            <div className={`${styles.filterSearchIcon} ${size === 'sm' ? styles.sm : ''}`} style={size === 'sm' ? { left: '0.8rem' } : undefined}>
+                <Search size={size === 'sm' ? 14 : 18} />
+            </div>
             <input
                 value={filterInput}
                 onChange={(e) => setFilterInput(e.target.value)}

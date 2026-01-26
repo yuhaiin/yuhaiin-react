@@ -69,7 +69,7 @@ export function Pagination({
                 {pages.map((item, idx) =>
                     item === 'ellipsis' ? (
                         <div key={'e' + idx} className="d-flex align-items-end justify-content-center text-muted" style={{ width: '32px', height: '32px', paddingBottom: '4px' }}>
-                            <MoreHorizontal />
+                            <MoreHorizontal size={16} />
                         </div>
                     ) : (
                         <Button

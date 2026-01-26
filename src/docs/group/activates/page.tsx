@@ -57,7 +57,7 @@ const ActiveNodeItem: FC<{
                         className="d-flex align-items-center gap-2"
                         style={{ minWidth: '38px' }}
                     >
-                        <Power />
+                        <Power size={16} />
                         <span className="d-none d-sm-inline ms-1">Terminate</span>
                     </Button>
                 </div>

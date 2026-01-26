@@ -173,7 +173,7 @@ const ResolverModal: FC<{
                     <div className="d-flex gap-2">
                         <Button onClick={() => onHide()}>Cancel</Button>
                         <Button disabled={saving} onClick={handleSave}>
-                            {saving ? <Spinner size="sm" /> : <><Check className="me-2" />{isNew ? "Create" : "Save"}</>}
+                            {saving ? <Spinner size="sm" /> : <><Check className="me-2" size={16} />{isNew ? "Create" : "Save"}</>}
                         </Button>
                     </div>
                 </ModalFooter>

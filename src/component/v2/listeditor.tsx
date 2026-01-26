@@ -65,7 +65,7 @@ export const InputList: FC<{
                             marginLeft: '-1px'
                         }}
                     >
-                        <Plus />
+                        <Plus size={18} />
                     </Button>
                 </InputGroup>
             )}
@@ -107,7 +107,7 @@ export const InputList: FC<{
                                     marginLeft: '-1px' // Merge borders
                                 }}
                             >
-                                <Trash />
+                                <Trash size={16} />
                             </Button>
                         )}
                     </InputGroup>
@@ -160,7 +160,7 @@ export const InputBytesList: FC<{
                         style={{ fontSize: '0.85rem' }}
                     />
                     <Button onClick={add} style={{ alignSelf: 'flex-start' }}>
-                        <Plus />
+                        <Plus size={18} />
                     </Button>
                 </div>
             )}
@@ -172,7 +172,7 @@ export const InputBytesList: FC<{
                             <small className="text-muted fw-bold">ENTRY #{i + 1}</small>
                             {!disabled && (
                                 <Button variant="outline-danger" size="sm" onClick={() => remove(i)}>
-                                    <Trash />
+                                    <Trash size={16} />
                                 </Button>
                             )}
                         </div>

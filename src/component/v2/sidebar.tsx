@@ -147,7 +147,7 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
                 <button type="button" className={clsx(styles.item, styles.trigger, active && styles.active)}>
                     {icon}
                     {title}
-                    <ChevronRight className={styles.triggerIcon} />
+                    <ChevronRight className={styles.triggerIcon} size={16} />
                 </button>
             </CollapsiblePrimitive.Trigger>
 

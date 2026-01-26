@@ -56,7 +56,7 @@ const TagItem: FC<{
                     className="border-0"
                     onClick={() => onDelete()}
                 >
-                    <Trash />
+                    <Trash size={16} />
                 </Button>
                 <ChevronRight className="text-muted opacity-25 d-none d-md-block" />
             </div>
@@ -138,7 +138,7 @@ const TagModal: FC<{
                 <ModalFooter className="border-0">
                     <Button onClick={props.onHide}>Cancel</Button>
                     <Button onClick={props.onSave} disabled={!props.tagItem.tag || !props.tagItem.hash}>
-                        <Save className="me-2" />Save
+                        <Save className="me-2" size={16} />Save
                     </Button>
                 </ModalFooter>
             </ModalContent>

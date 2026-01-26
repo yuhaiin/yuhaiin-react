@@ -119,7 +119,7 @@ export const SettingPasswordVertical: FC<{
                     style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
                     onClick={() => setShow(!show)}
                 >
-                    {show ? <EyeOff /> : <Eye />}
+                    {show ? <EyeOff size={16} /> : <Eye size={16} />}
                 </Button>
             </div>
         </div>

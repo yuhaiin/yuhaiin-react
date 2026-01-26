@@ -142,7 +142,7 @@ export default function Lists() {
                             })
                     }}
                 >
-                    {refresh ? <Spinner size="sm" /> : <RefreshCw className="me-2" />}
+                    {refresh ? <Spinner size="sm" /> : <RefreshCw className="me-2" size={16} />}
                     <span>Sync All Resources</span>
                 </Button>
             </div>
@@ -187,7 +187,7 @@ export default function Lists() {
                                 />
                                 {data.maxminddbGeoip?.error && (
                                     <div className="mt-2 p-2 bg-danger bg-opacity-10 text-danger rounded small">
-                                        <TriangleAlert className="me-2" />{data.maxminddbGeoip.error}
+                                        <TriangleAlert className="me-2" size={14} />{data.maxminddbGeoip.error}
                                     </div>
                                 )}
                             </div>
@@ -196,7 +196,7 @@ export default function Lists() {
 
                     <CardFooter className="d-flex justify-content-end">
                         <Button disabled={saving} onClick={handleSaveSettings}>
-                            {saving ? <Spinner size="sm" /> : <><Save className="me-2" />Save Configuration</>}
+                            {saving ? <Spinner size="sm" /> : <><Save className="me-2" size={16} />Save Configuration</>}
                         </Button>
                     </CardFooter>
                 </Card>
@@ -275,7 +275,7 @@ const ListsModal: FC<{ name: string, show: boolean, isNew?: boolean, onHide: (sa
                                     variant="outline-danger"
                                     onClick={() => { onHide(false); onDelete(name); }}
                                 >
-                                    <Trash className="me-2" />Delete List
+                                    <Trash className="me-2" size={16} />Delete List
                                 </Button>
                             )}
                         </div>
@@ -286,7 +286,7 @@ const ListsModal: FC<{ name: string, show: boolean, isNew?: boolean, onHide: (sa
                                 disabled={loadding}
                                 onClick={handleSave}
                             >
-                                {loadding ? <Spinner size="sm" /> : <><Check className="me-2" />Save</>}
+                                {loadding ? <Spinner size="sm" /> : <><Check className="me-2" size={16} />Save</>}
                             </Button>
                         </div>
                     </ModalFooter>

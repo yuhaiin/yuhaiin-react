@@ -60,14 +60,14 @@ export const Server: FC = () => {
                     disabled={!isDirty}
                     onClick={() => mutate()}
                 >
-                    <RotateCw className="me-2" />Reset
+                    <RotateCw className="me-2" size={16} />Reset
                 </Button>
                 <Button
                     size="sm"
                     disabled={saving || !isDirty}
                     onClick={handleSave}
                 >
-                    {saving ? <Spinner size="sm" /> : <><Save className="me-2" />Save</>}
+                    {saving ? <Spinner size="sm" /> : <><Save className="me-2" size={16} />Save</>}
                 </Button>
             </CardFooter>
         </Card>

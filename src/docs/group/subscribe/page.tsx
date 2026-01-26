@@ -61,7 +61,7 @@ const LinkItem: FC<{
                 >
                     {isUpdating
                         ? <Spinner size="sm" />
-                        : <RefreshCw />
+                        : <RefreshCw size={16} />
                     }
                     <span className="d-none d-sm-inline ms-2">Update</span>
                 </Button>
@@ -71,7 +71,7 @@ const LinkItem: FC<{
                     size="sm"
                     onClick={onDelete}
                 >
-                    <Trash />
+                    <Trash size={16} />
                     <span className="d-none d-sm-inline ms-2">Delete</span>
                 </Button>
             </div>
@@ -121,7 +121,7 @@ const AddLinkModal: FC<{
                 <ModalFooter>
                     <Button onClick={onHide}>Cancel</Button>
                     <Button onClick={handleSave} disabled={!newItem.name || !newItem.url}>
-                        <Plus className="me-1" /> Add
+                        <Plus className="me-1" size={16} /> Add
                     </Button>
                 </ModalFooter>
             </ModalContent>
@@ -226,7 +226,7 @@ function Subscribe() {
                         <Button
                             onClick={() => setShowAddModal(true)}
                         >
-                            <Plus /> Add
+                            <Plus size={16} /> Add
                         </Button>
                     </>
                 }

@@ -74,14 +74,14 @@ const InboundModal: FC<{
                     <div>
                         {!isNew && (
                             <Button variant="outline-danger" onClick={() => { onDelete(); }}>
-                                <Trash className="me-2" />Delete
+                                <Trash className="me-2" size={16} />Delete
                             </Button>
                         )}
                     </div>
                     <div className="d-flex gap-2">
                         <Button onClick={() => onHide()}>Cancel</Button>
                         <Button disabled={saving || !inbound} onClick={handleSave}>
-                            {saving ? <Spinner size="sm" /> : <><Check className="me-1" /> Save</>}
+                            {saving ? <Spinner size="sm" /> : <><Check className="me-1" size={16} /> Save</>}
                         </Button>
                     </div>
                 </ModalFooter>
@@ -241,7 +241,7 @@ function InboudComponent() {
                                         autoComplete="off"
                                     />
                                     <Button size="sm" type="submit" disabled={saving} className="border-0 bg-transparent text-primary p-0">
-                                        <Plus className="fs-5" />
+                                        <Plus size={20} />
                                     </Button>
                                 </form>
                             </div>

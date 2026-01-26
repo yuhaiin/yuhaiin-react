@@ -151,13 +151,13 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                                             {editable && (
                                                 <div className="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
                                                     <Button size="sm" onClick={() => moveProtocol(i, 'up')} disabled={i === 0}>
-                                                        <ArrowUp />
+                                                        <ArrowUp size={16} />
                                                     </Button>
                                                     <Button size="sm" onClick={() => moveProtocol(i, 'down')} disabled={i === value.protocols.length - 1}>
-                                                        <ArrowDown />
+                                                        <ArrowDown size={16} />
                                                     </Button>
                                                     <Button variant="outline-danger" size="sm" onClick={() => deleteProtocol(i)}>
-                                                        <Trash /> Delete
+                                                        <Trash size={16} /> Delete
                                                     </Button>
                                                 </div>
                                             )}
@@ -186,7 +186,7 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                                 onChange({ ...value, protocols: [...value.protocols, protocols[newProtocol]] })
                             }}
                         >
-                            <Plus className="me-1" /> Add Step
+                            <Plus className="me-1" size={16} /> Add Step
                         </Button>
                     </div>
                 )}

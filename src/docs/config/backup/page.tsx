@@ -189,7 +189,7 @@ function BackupPage() {
                             disabled={saving}
                             title="Trigger immediate backup"
                         >
-                            {saving ? <Spinner size="sm" /> : <CloudUpload className="me-1" />}
+                            {saving ? <Spinner size="sm" /> : <CloudUpload className="me-1" size={16} />}
                             <span className="ms-2 d-none d-sm-inline">Backup Now</span>
                         </Button>
 
@@ -198,7 +198,7 @@ function BackupPage() {
                             disabled={saving}
                             title="Restore from cloud"
                         >
-                            <RotateCw className="me-1" />
+                            <RotateCw className="me-1" size={16} />
                             <span className="ms-2 d-none d-sm-inline">Restore Now</span>
                         </Button>
 
@@ -207,7 +207,7 @@ function BackupPage() {
                             disabled={saving}
                             title="Save configuration changes"
                         >
-                            <Save className="me-1" />
+                            <Save className="me-1" size={16} />
                             <span className="ms-2 d-none d-sm-inline">Save Config</span>
                         </Button>
                     </div>

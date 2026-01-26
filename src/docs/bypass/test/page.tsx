@@ -67,7 +67,7 @@ function Test() {
                             disabled={testing || !value.trim()}
                             style={{ minWidth: '100px' }}
                         >
-                            {testing ? <Spinner size="sm" /> : <><Play className="me-1" /> Run</>}
+                            {testing ? <Spinner size="sm" /> : <><Play className="me-1" size={16} /> Run</>}
                         </Button>
                     </div>
                 </CardBody>
@@ -94,7 +94,7 @@ function Test() {
                             size="sm"
                             onClick={() => copy(toJsonString(test_responseSchema, resp, { prettySpaces: 2 }))}
                         >
-                            {copied ? <ClipboardCheck /> : <Clipboard />}
+                            {copied ? <ClipboardCheck size={16} /> : <Clipboard size={16} />}
                         </Button>
                     </CardHeader>
                     <CardBody>
