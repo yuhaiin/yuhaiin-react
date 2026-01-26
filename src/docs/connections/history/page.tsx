@@ -14,7 +14,7 @@ import { Spinner } from "@/component/v2/spinner"
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import { create } from "@bufbuild/protobuf"
 import { timestampDate } from "@bufbuild/protobuf/wkt"
-import { ArrowDown, ArrowLeftRight, ChevronRight, Clock, Info, Radio, RefreshCw, RotateCw, ShieldCheck } from 'lucide-react'
+import { ArrowDownWideNarrow, ArrowLeftRight, ChevronRight, Clock, Info, Radio, RefreshCw, RotateCw, ShieldCheck } from 'lucide-react'
 import React, { FC, useCallback, useMemo, useState } from "react"
 import { useProtoSWR } from "../../../common/proto"
 import Loading from "../../../component/v2/loading"
@@ -168,7 +168,7 @@ function History() {
                     <Dropdown>
                         <DropdownTrigger asChild>
                             <Button size="sm">
-                                <ArrowDown className="me-1" size={16} />
+                                <ArrowDownWideNarrow className="me-1" size={16} />
                             </Button>
                         </DropdownTrigger>
                         <DropdownContent align="end" className="p-3" style={{ minWidth: '220px' }}>

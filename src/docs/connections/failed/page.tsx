@@ -11,7 +11,7 @@ import { Spinner } from "@/component/v2/spinner"
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import { connections, failed_history } from "@/docs/pbes/api/statistic_pb"
 import { timestampDate } from "@bufbuild/protobuf/wkt"
-import { ArrowDown, Bug, ChevronRight, Clock, Network, OctagonAlert, RotateCw } from 'lucide-react'
+import { ArrowDownWideNarrow, Bug, ChevronRight, Clock, Network, OctagonAlert, RotateCw } from 'lucide-react'
 import React, { FC, useMemo, useState } from "react"
 import { TimestampZero } from "../../../common/nodes"
 import { useProtoSWR } from "../../../common/proto"
@@ -136,7 +136,7 @@ function FailedHistory() {
                     <Dropdown>
                         <DropdownTrigger asChild>
                             <Button size="sm">
-                                <ArrowDown size={16} />
+                                <ArrowDownWideNarrow size={16} />
                             </Button>
                         </DropdownTrigger>
                         <DropdownContent align="end" className="p-3" style={{ minWidth: '220px' }}>
