@@ -7,8 +7,8 @@ import { SettingSelectVertical, SwitchCard } from '@/component/v2/forms';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { Spinner } from '@/component/v2/spinner';
 import { create } from '@bufbuild/protobuf';
+import { ArrowUpDown, ListOrdered, Save, ShieldCheck, Signpost } from 'lucide-react';
 import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
-import { ArrowDownUp, ListOl, Save, ShieldCheck, Signpost2 } from 'react-bootstrap-icons';
 import { FetchProtobuf, useProtoSWR } from '../../common/proto';
 import { ConfirmModal } from '../../component/v2/confirm';
 import Loading, { Error } from '../../component/v2/loading';
@@ -124,7 +124,7 @@ const RuleItem: FC<{
         <>
             <div className="d-flex align-items-center flex-grow-1 overflow-hidden">
                 <Badge variant="secondary" className="me-2" style={{ minWidth: '40px' }}>#{index + 1}</Badge>
-                <Signpost2 className="me-2 text-muted" />
+                <Signpost className="me-2 text-muted" />
                 <span className="text-truncate fw-medium">{name}</span>
             </div>
 
@@ -137,7 +137,7 @@ const RuleItem: FC<{
                         e.stopPropagation()
                         onPriority(index)
                     }}>
-                    <ArrowDownUp />
+                    <ArrowUpDown size={16} />
                 </Button>
             </div>
         </>
@@ -267,7 +267,7 @@ const Rulev2Component: FC = () => {
                 if (!rules_data.names.includes(name)) addNewRule(name)
             }}
             header={
-                <IconBox icon={ListOl} color="#3b82f6" title="Bypass Rules" description="Traffic Routing Rules" />
+                <IconBox icon={ListOrdered} color="#3b82f6" title="Bypass Rules" description="Traffic Routing Rules" />
             }
         />
     </>

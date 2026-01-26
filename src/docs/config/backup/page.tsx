@@ -7,8 +7,8 @@ import { SettingInputVertical, SettingPasswordVertical, SwitchCard } from "@/com
 import { Spinner } from "@/component/v2/spinner"
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
+import { CloudUpload, Hash, Info, RotateCw, Save, ShieldCheck } from "lucide-react"
 import { useCallback, useContext, useState } from "react"
-import { ArrowClockwise, CloudArrowUp, Hash, InfoCircle, Save, ShieldLock } from "react-bootstrap-icons"
 import { FetchProtobuf, useProtoSWR } from "../../../common/proto"
 import Loading, { Error } from "../../../component/v2/loading"
 import { GlobalToastContext } from "../../../component/v2/toast"
@@ -78,7 +78,7 @@ function BackupPage() {
             {/* 1. General Backup Settings */}
             <Card>
                 <CardHeader>
-                    <IconBox icon={ShieldLock} color="#3b82f6" title='Backup Instance' description='Identification and timing' />
+                    <IconBox icon={ShieldCheck} color="#3b82f6" title='Backup Instance' description='Identification and timing' />
                 </CardHeader>
                 <CardBody>
                     <div className="row g-4">
@@ -104,7 +104,7 @@ function BackupPage() {
                         <div className="col-12">
                             <SettingLabel>Last Backup Hash</SettingLabel>
                             <ListItem style={{ cursor: 'default', background: 'rgba(0,0,0,0.1)' }}>
-                                <Hash className="me-2 text-muted" />
+                                <Hash className="me-2 text-muted" size={16} />
                                 <span className="font-monospace small text-truncate opacity-75">
                                     {data.lastBackupHash || "No backup records found"}
                                 </span>
@@ -189,7 +189,7 @@ function BackupPage() {
                             disabled={saving}
                             title="Trigger immediate backup"
                         >
-                            {saving ? <Spinner size="sm" /> : <CloudArrowUp className="me-1" />}
+                            {saving ? <Spinner size="sm" /> : <CloudUpload className="me-1" size={16} />}
                             <span className="ms-2 d-none d-sm-inline">Backup Now</span>
                         </Button>
 
@@ -198,7 +198,7 @@ function BackupPage() {
                             disabled={saving}
                             title="Restore from cloud"
                         >
-                            <ArrowClockwise className="me-1" />
+                            <RotateCw className="me-1" size={16} />
                             <span className="ms-2 d-none d-sm-inline">Restore Now</span>
                         </Button>
 
@@ -207,7 +207,7 @@ function BackupPage() {
                             disabled={saving}
                             title="Save configuration changes"
                         >
-                            <Save className="me-1" />
+                            <Save className="me-1" size={16} />
                             <span className="ms-2 d-none d-sm-inline">Save Config</span>
                         </Button>
                     </div>
@@ -216,7 +216,7 @@ function BackupPage() {
 
             <div className="text-center mt-3 opacity-50 pb-5">
                 <small className="text-muted">
-                    <InfoCircle className="me-1" />
+                    <Info className="me-1" />
                     Backups include all lists, rules, and node configurations.
                 </small>
             </div>

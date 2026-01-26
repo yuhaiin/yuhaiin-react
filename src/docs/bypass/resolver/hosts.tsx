@@ -4,8 +4,8 @@ import { Input } from '@/component/v2/input';
 import { InputGroup, InputGroupText } from '@/component/v2/inputgroup';
 import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
+import { Plus, RotateCw, Save, Signpost, Trash } from 'lucide-react';
 import { FC, useContext, useState } from "react";
-import { ArrowCounterclockwise, PlusLg, Save, SignpostSplit, Trash } from 'react-bootstrap-icons';
 import { FetchProtobuf, useProtoSWR } from "../../../common/proto";
 import Loading from "../../../component/v2/loading";
 import { resolver } from "../../pbes/api/config_pb";
@@ -46,7 +46,7 @@ export const Hosts: FC = () => {
     return (
         <Card className="h-100 d-flex flex-column">
             <CardHeader>
-                <IconBox icon={SignpostSplit} color="#3b82f6" title="Static Hosts" description="Local Domain Mappings" />
+                <IconBox icon={Signpost} color="#3b82f6" title="Static Hosts" description="Local Domain Mappings" />
             </CardHeader>
             <CardBody className="flex-grow-1">
                 <div className="d-flex flex-column gap-3">
@@ -74,7 +74,7 @@ export const Hosts: FC = () => {
                                         return { ...prev, hosts: tmp };
                                     })}
                                 >
-                                    <Trash />
+                                    <Trash size={16} />
                                 </Button>
                             </InputGroup>
                         ))}
@@ -100,7 +100,7 @@ export const Hosts: FC = () => {
                                     setNewHosts({ key: "", value: "" });
                                 }}
                             >
-                                <PlusLg />
+                                <Plus size={16} />
                             </Button>
                         </InputGroup>
                     </div>
@@ -113,14 +113,14 @@ export const Hosts: FC = () => {
                     disabled={!isDirty}
                     onClick={() => mutate()}
                 >
-                    <ArrowCounterclockwise className="me-2" />Reset
+                    <RotateCw className="me-2" size={16} />Reset
                 </Button>
                 <Button
                     size="sm"
                     disabled={saving || !isDirty}
                     onClick={handleSave}
                 >
-                    {saving ? <Spinner size="sm" /> : <><Save className="me-2" />Save</>}
+                    {saving ? <Spinner size="sm" /> : <><Save className="me-2" size={16} />Save</>}
                 </Button>
             </CardFooter>
         </Card>

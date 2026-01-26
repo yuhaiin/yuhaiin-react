@@ -3,8 +3,8 @@
 import { DescEnum, DescEnumValue } from '@bufbuild/protobuf';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { clsx } from 'clsx';
+import { Check, ChevronDown } from 'lucide-react';
 import React, { CSSProperties, FC, useMemo } from 'react';
-import { Check, ChevronDown } from 'react-bootstrap-icons';
 import { SettingLabel } from './card';
 import {
     Dropdown,
@@ -45,7 +45,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
             <SelectPrimitive.Trigger className={clsx(styles.selectTrigger, size === 'sm' && styles.selectTriggerSm, triggerClassName, disabled && styles.disabled)} aria-label={placeholder}>
                 <SelectPrimitive.Value placeholder={placeholder} />
                 <SelectPrimitive.Icon>
-                    <ChevronDown className="opacity-50" />
+                    <ChevronDown className="opacity-50" size={16} />
                 </SelectPrimitive.Icon>
             </SelectPrimitive.Trigger>
             <SelectPrimitive.Portal>
@@ -69,7 +69,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
                                     <SelectPrimitive.Item key={`${itemValue}-${index}`} value={itemValue} className={styles.selectItem}>
                                         <SelectPrimitive.ItemText>{item.label}</SelectPrimitive.ItemText>
                                         <SelectPrimitive.ItemIndicator className={styles.selectItemIndicator}>
-                                            <Check />
+                                            <Check size={14} />
                                         </SelectPrimitive.ItemIndicator>
                                     </SelectPrimitive.Item>
                                 )
@@ -161,7 +161,7 @@ const DropdownSelectComponent: FC<{
                             {values.length === 0 ? placeholder : values.join(", ")}
                         </span>
                     </div>
-                    <ChevronDown className="opacity-50 flex-shrink-0" />
+                    <ChevronDown className="opacity-50 flex-shrink-0" size={16} />
                 </div>
             </DropdownTrigger>
             <DropdownContent style={{ minWidth: 'min(300px, 90vw)' }}>

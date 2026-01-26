@@ -1,8 +1,8 @@
 "use client"
 
 import { Button } from '@/component/v2/button';
+import { Menu } from 'lucide-react';
 import React, { useState } from 'react';
-import { List } from 'react-bootstrap-icons';
 import Sidebar from './Sidebar';
 import styles from './navbar.module.css';
 
@@ -25,7 +25,7 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
                 aria-label="Toggle navigation"
                 className="d-lg-none"
             >
-                <List />
+                <Menu />
             </Button>
 
             <Sidebar show={showSidebar} onHide={() => setShowSidebar(false)} />

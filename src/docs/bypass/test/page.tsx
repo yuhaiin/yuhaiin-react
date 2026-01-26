@@ -7,8 +7,8 @@ import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { create, toJsonString } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { Clipboard, ClipboardCheck, ClipboardList, Info, Play, Terminal } from 'lucide-react';
 import { useCallback, useContext, useEffect, useState } from "react";
-import { Clipboard, ClipboardCheck, ClipboardData, InfoCircle, PlayFill, Terminal } from 'react-bootstrap-icons';
 import { FetchProtobuf } from "../../../common/proto";
 import { useClipboard } from "../../../component/v2/clipboard";
 import { rules, test_response, test_responseSchema } from "../../pbes/api/config_pb";
@@ -67,7 +67,7 @@ function Test() {
                             disabled={testing || !value.trim()}
                             style={{ minWidth: '100px' }}
                         >
-                            {testing ? <Spinner size="sm" /> : <><PlayFill className="me-1" /> Run</>}
+                            {testing ? <Spinner size="sm" /> : <><Play className="me-1" size={16} /> Run</>}
                         </Button>
                     </div>
                 </CardBody>
@@ -88,13 +88,13 @@ function Test() {
                 resp && !testing &&
                 <Card className="animate__animated animate__fadeIn">
                     <CardHeader>
-                        <IconBox icon={ClipboardData} color="#10b981" title='Analysis Result' description='Raw decision path metadata' />
+                        <IconBox icon={ClipboardList} color="#10b981" title='Analysis Result' description='Raw decision path metadata' />
 
                         <Button
                             size="sm"
                             onClick={() => copy(toJsonString(test_responseSchema, resp, { prettySpaces: 2 }))}
                         >
-                            {copied ? <ClipboardCheck /> : <Clipboard />}
+                            {copied ? <ClipboardCheck size={16} /> : <Clipboard size={16} />}
                         </Button>
                     </CardHeader>
                     <CardBody>
@@ -118,7 +118,7 @@ function Test() {
 
             <div className="text-center mt-4 opacity-50 pb-5">
                 <small className="text-muted italic">
-                    <InfoCircle className="me-1" />
+                    <Info className="me-1" />
                     This tool tests the core logic using the current active configuration.
                 </small>
             </div>

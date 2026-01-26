@@ -7,8 +7,8 @@ import { Spinner } from "@/component/v2/spinner";
 import { SwitchCard } from "@/component/v2/switch";
 import { clone, create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { Check, ChevronRight, DoorOpen, LogIn, Plus, Save, Settings, Trash } from "lucide-react";
 import { FC, useContext, useEffect, useState } from "react";
-import { BoxArrowInRight, CheckLg, ChevronRight, DoorOpen, GearFill, PlusLg, Save, Trash } from 'react-bootstrap-icons';
 import useSWR from "swr";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../common/proto";
 import Loading, { Error as ErrorDisplay } from "../../component/v2/loading";
@@ -74,14 +74,14 @@ const InboundModal: FC<{
                     <div>
                         {!isNew && (
                             <Button variant="outline-danger" onClick={() => { onDelete(); }}>
-                                <Trash className="me-2" />Delete
+                                <Trash className="me-2" size={16} />Delete
                             </Button>
                         )}
                     </div>
                     <div className="d-flex gap-2">
                         <Button onClick={() => onHide()}>Cancel</Button>
                         <Button disabled={saving || !inbound} onClick={handleSave}>
-                            {saving ? <Spinner size="sm" /> : <><CheckLg className="me-1" /> Save</>}
+                            {saving ? <Spinner size="sm" /> : <><Check className="me-1" size={16} /> Save</>}
                         </Button>
                     </div>
                 </ModalFooter>
@@ -94,11 +94,11 @@ const InboundItem: FC<{ name: string, }> = ({ name }) => {
     return <>
         <div className="d-flex align-items-center flex-grow-1 overflow-hidden">
             <div className="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style={{ width: '36px', height: '36px' }}>
-                <BoxArrowInRight />
+                <LogIn size={20} />
             </div>
             <span className="text-truncate fw-medium">{name}</span>
         </div>
-        <ChevronRight className="text-muted opacity-25" />
+        <ChevronRight className="text-muted opacity-25" size={16} />
     </>
 }
 
@@ -156,7 +156,7 @@ function InboudComponent() {
             {/* 1. Global Settings Card */}
             <Card className="mb-3">
                 <CardHeader>
-                    <IconBox icon={GearFill} color="#f59e0b" title='Inbound Configuration' description="Global interception & sniffing" />
+                    <IconBox icon={Settings} color="#f59e0b" title='Inbound Configuration' description="Global interception & sniffing" />
                 </CardHeader>
                 <CardBody>
                     <div className="row g-3">
@@ -241,7 +241,7 @@ function InboudComponent() {
                                         autoComplete="off"
                                     />
                                     <Button size="sm" type="submit" disabled={saving} className="border-0 bg-transparent text-primary p-0">
-                                        <PlusLg className="fs-5" />
+                                        <Plus size={20} />
                                     </Button>
                                 </form>
                             </div>

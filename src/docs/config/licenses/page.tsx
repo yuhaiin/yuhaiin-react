@@ -3,8 +3,8 @@
 import { Badge } from "@/component/v2/badge";
 import { Card, CardBody, CardHeader, IconBox, ListItem, MainContainer } from '@/component/v2/card';
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
+import { FileText, Heart, Link, ShieldCheck } from "lucide-react";
 import { FC, useState } from "react";
-import { FileEarmarkMedical, HeartFill, Link45deg, ShieldCheck } from "react-bootstrap-icons";
 import { useProtoSWR } from "../../../common/proto";
 import Loading, { Error } from "../../../component/v2/loading";
 import { tools } from "../../pbes/api/tools_pb";
@@ -33,11 +33,11 @@ const LicenseItem: FC<{ item: License, index: number }> = ({ item, index }) => {
                         <div className="d-flex flex-column gap-1">
                             <a href={item.url} target="_blank" rel="noreferrer"
                                 className="text-muted small text-truncate text-decoration-none font-monospace opacity-75 hover-opacity-100">
-                                <Link45deg className="me-1" />{item.url}
+                                <Link className="me-1" size={14} />{item.url}
                             </a>
                             <a href={item.licenseUrl} target="_blank" rel="noreferrer"
                                 className="text-muted small text-truncate text-decoration-none font-monospace opacity-75">
-                                <ShieldCheck className="me-1" />License Source
+                                <ShieldCheck className="me-1" size={14} />License Source
                             </a>
                         </div>
                     </div>
@@ -72,7 +72,7 @@ export default function Licenses() {
                 <CardHeader>
                     <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center w-100 gap-3">
                         <IconBox
-                            icon={FileEarmarkMedical}
+                            icon={FileText}
                             color="#10b981"
                             title={`Open Source Licenses (${currentList.length})`}
                             description="Third-party credits and legal info"
@@ -106,7 +106,7 @@ export default function Licenses() {
 
             <div className="text-center mt-3 opacity-50 pb-5">
                 <small className="text-muted">
-                    <HeartFill className="text-danger me-1" />
+                    <Heart className="text-danger me-1" fill="currentColor" />
                     Built with love and open-source software.
                 </small>
             </div>

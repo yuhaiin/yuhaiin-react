@@ -8,8 +8,8 @@ import { InputGroup } from '@/component/v2/inputgroup';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { Spinner } from '@/component/v2/spinner';
 import { create, toJsonString } from '@bufbuild/protobuf';
+import { Check, ChevronDown, ChevronRight, Plus, Trash, X } from 'lucide-react';
 import React, { createContext, FC, useContext, useEffect, useState } from 'react';
-import { CheckLg, ChevronDown, ChevronRight, PlusLg, Trash, XLg } from 'react-bootstrap-icons';
 import useSWR from 'swr';
 import { FetchProtobuf, ProtoESFetcher, ProtoPath } from '../../../common/proto';
 import Loading from '../../../component/v2/loading';
@@ -198,7 +198,7 @@ const RuleRow: FC<{
 
             <div style={{ flex: "0 0 42px" }}>
                 <Button variant="outline-danger" onClick={onRemove} size="icon" className="w-100 rounded-start-0 h-100">
-                    <XLg />
+                    <X size={16} />
                 </Button>
             </div>
         </InputGroup >
@@ -251,7 +251,7 @@ const RuleGroup: FC<{
                 </React.Fragment>
             ))}
             <Button size="sm" onClick={handleAddRule} className="px-3">
-                <PlusLg className="me-1" />And
+                <Plus className="me-1" size={16} />And
             </Button>
         </div>
     );
@@ -313,7 +313,7 @@ const FilterBuilder: FC<{ groups: or[], onUpdateGroups: (groups: or[]) => void }
             ))}
             <div className="mt-2">
                 <Button onClick={handleAddGroup} className="px-3">
-                    <PlusLg className="me-1" />Or
+                    <Plus className="me-1" size={16} />Or
                 </Button>
             </div>
         </div>
@@ -453,12 +453,12 @@ export const FilterModal: FC<{
 
                 <ModalFooter className="d-flex justify-content-between gap-2 border-top-0">
                     <Button variant="outline-danger" onClick={() => { onHide(); onDelete(); }}>
-                        <Trash className="me-2" />Delete Rule
+                        <Trash className="me-2" size={16} />Delete Rule
                     </Button>
                     <div className="d-flex gap-2">
                         <Button onClick={onHide}>Cancel</Button>
                         <Button disabled={loadding} onClick={saveRule}>
-                            {loadding ? <Spinner size="sm" /> : <><CheckLg className="me-2" />Save</>}
+                            {loadding ? <Spinner size="sm" /> : <><Check className="me-2" size={16} />Save</>}
                         </Button>
                     </div>
                 </ModalFooter>

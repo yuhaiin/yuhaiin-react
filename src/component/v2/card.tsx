@@ -1,8 +1,8 @@
 'use client';
 
 import { clsx } from "clsx";
+import { History, Plus, Search, TriangleAlert } from 'lucide-react';
 import React, { FC, useState } from 'react';
-import { ClockHistory, ExclamationTriangleFill, PlusLg, Search } from "react-bootstrap-icons";
 import styles from './card.module.css';
 
 // --- Basic Card Components ---
@@ -97,7 +97,7 @@ export function CardList<T>({ items, onClickItem, footer, renderListItem: body, 
                             exit={{ opacity: 0 }}
                             className="text-center text-muted p-5 opacity-50"
                         >
-                            <ClockHistory className="fs-1 d-block mb-2 mx-auto" />
+                            <History className="fs-1 d-block mb-2 mx-auto" size={40} />
                             No records found.
                         </motion.div>
                     )}
@@ -138,7 +138,7 @@ export const ErrorBox: FC<{ msgs: string[] }> = ({ msgs }) => {
     if (msgs.length === 0) return null;
     return (
         <div className={styles.errorBox}>
-            <ExclamationTriangleFill className="me-3 mt-1 fs-5" />
+            <TriangleAlert className="me-3 mt-1 fs-5" />
             <div className="flex-grow-1">
                 <h6 className="fw-bold mb-2">Configuration Error</h6>
                 <ul className="mb-0 ps-3">
@@ -206,7 +206,7 @@ export function CardRowList<T>({
                                         className={styles.seamlessBtn}
                                         disabled={adding}
                                     >
-                                        {adding ? <div className={styles.spinner} /> : <PlusLg className="fs-5" />}
+                                        {adding ? <div className={styles.spinner} /> : <Plus size={20} />}
                                     </button>
                                 </div>
                             </ListItem>
@@ -231,7 +231,7 @@ export function CardRowList<T>({
 
 export const IconBadge: FC<{ icon: React.ElementType, text: string | number, color?: "primary" | "secondary" | "success" | "danger" | "warning" | "info" }> = ({ icon: Icon, text, color = "primary" }) => (
     <div className={`d-flex align-items-center gap-1 px-2 py-1 rounded bg-${color} bg-opacity-10 text-${color}`} style={{ fontSize: '0.7rem', fontWeight: 700, whiteSpace: 'nowrap' }}>
-        <Icon />
+        <Icon size={12} />
         <span className="text-uppercase">{text}</span>
     </div>
 );
@@ -301,7 +301,9 @@ export const FilterSearch: FC<{
     const [filterInput, setFilterInput] = useState('');
     return (
         <div className={clsx(styles.filterSearchWrapper, className)} style={style}>
-            <Search className={`${styles.filterSearchIcon} ${size === 'sm' ? styles.sm : ''}`} style={size === 'sm' ? { left: '0.8rem', fontSize: '0.8rem' } : undefined} />
+            <div className={`${styles.filterSearchIcon} ${size === 'sm' ? styles.sm : ''}`} style={size === 'sm' ? { left: '0.8rem' } : undefined}>
+                <Search size={size === 'sm' ? 14 : 18} />
+            </div>
             <input
                 value={filterInput}
                 onChange={(e) => setFilterInput(e.target.value)}

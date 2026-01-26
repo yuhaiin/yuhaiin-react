@@ -3,8 +3,8 @@ import { SettingEnumSelectVertical } from "@/component/v2/forms";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { create } from "@bufbuild/protobuf";
 import { clsx } from 'clsx';
+import { Plus, Trash } from 'lucide-react';
 import { FC, useContext, useState } from "react";
-import { PlusLg, Trash } from "react-bootstrap-icons";
 import { Node, Nodes, NodesContext } from "../../common/nodes";
 import { set, set_strategy_typeSchema, setSchema } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
@@ -75,7 +75,7 @@ export const Set: FC<Props<set>> = ({ value, onChange, editable = true }) => {
                                     onChange(create(setSchema, { nodes }))
                                 }}
                             >
-                                <Trash />
+                                <Trash size={16} />
                             </Button>
                         )}
                     </div>
@@ -100,7 +100,7 @@ export const Set: FC<Props<set>> = ({ value, onChange, editable = true }) => {
                             })
                         }}
                     >
-                        <PlusLg className="me-1" /> Add Node
+                        <Plus className="me-1" size={16} /> Add Node
                     </Button>
                 </div>
             )}

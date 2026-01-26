@@ -12,8 +12,8 @@ import { Spinner } from "@/component/v2/spinner";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import { block_history, rules } from "@/docs/pbes/api/config_pb";
 import { timestampDate } from "@bufbuild/protobuf/wkt";
+import { ArrowDownWideNarrow, Ban, ChevronRight, Clock, Network, RotateCw, ShieldOff } from 'lucide-react';
 import React, { FC, useMemo, useState } from "react";
-import { ArrowClockwise, ChevronRight, Clock, Ethernet, ShieldSlash, ShieldSlashFill, SlashCircle, SortDown } from 'react-bootstrap-icons';
 import { TimestampZero } from "../../../common/nodes";
 import { useProtoSWR } from "../../../common/proto";
 import Loading from "../../../component/v2/loading";
@@ -26,7 +26,7 @@ const ListItem: FC<{ data: block_history }> = React.memo(({ data }) => {
             {/* Left Side: Icon + Host & Process */}
             <div className="d-flex align-items-center flex-grow-1 overflow-hidden gap-3 w-100 w-md-auto">
                 <div className="d-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle flex-shrink-0" style={{ width: '42px', height: '42px' }}>
-                    <ShieldSlash className="fs-5" />
+                    <ShieldOff className="fs-5" />
                 </div>
 
                 <div className="d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
@@ -40,15 +40,15 @@ const ListItem: FC<{ data: block_history }> = React.memo(({ data }) => {
             {/* Right Side: Metadata Badges */}
             <div className="d-flex flex-wrap gap-2 align-items-center flex-shrink-0">
                 <Badge variant="info" pill className="d-flex align-items-center gap-1">
-                    <Ethernet /> {data.protocol}
+                    <Network size={12} /> {data.protocol}
                 </Badge>
                 <Badge variant="danger" pill className="d-flex align-items-center gap-1">
-                    <SlashCircle /> {data.blockCount} Blocks
+                    <Ban size={12} /> {data.blockCount} Blocks
                 </Badge>
                 <Badge variant="secondary" pill className="d-flex align-items-center gap-1">
-                    <Clock /> {timestampDate(data.time!).toLocaleTimeString()}
+                    <Clock size={12} /> {timestampDate(data.time!).toLocaleTimeString()}
                 </Badge>
-                <ChevronRight className="text-muted opacity-25 ms-2 d-none d-md-block" />
+                <ChevronRight className="text-muted opacity-25 ms-2 d-none d-md-block" size={16} />
             </div>
         </div>
     );
@@ -122,20 +122,20 @@ function BypassBlockHistory() {
                 <div>
                     <h4 className="fw-bold mb-1">Blocked Traffic</h4>
                     <div className="text-muted d-flex align-items-center small">
-                        <ShieldSlashFill className="me-2 text-danger opacity-75" />
+                        <ShieldOff className="me-2 text-danger opacity-75" />
                         <span>Displaying {values.length} connections denied by rules</span>
                     </div>
                 </div>
 
                 <div className="d-flex flex-wrap gap-2 justify-content-end align-items-center">
                     <Button size="sm" onClick={() => mutate()} disabled={isValidating}>
-                        {isValidating ? <Spinner size="sm" /> : <ArrowClockwise />}
+                        {isValidating ? <Spinner size="sm" /> : <RotateCw size={16} />}
                     </Button>
 
                     <Dropdown>
                         <DropdownTrigger asChild>
                             <Button size="sm">
-                                <SortDown />
+                                <ArrowDownWideNarrow size={16} />
                             </Button>
                         </DropdownTrigger>
                         <DropdownContent style={{ minWidth: '240px' }} className="p-3">

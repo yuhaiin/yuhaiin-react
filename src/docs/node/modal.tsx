@@ -7,9 +7,8 @@ import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import { create, toJsonString } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
-import { ClipboardIcon } from "@radix-ui/react-icons";
+import { Clipboard, ClipboardCheck } from 'lucide-react';
 import React, { FC, useContext, useEffect } from "react";
-import { ClipboardCheck } from "react-bootstrap-icons";
 import useSWR from 'swr';
 import { InterfacesContext, useInterfaces } from "../../common/interfaces";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath } from '../../common/proto';
@@ -131,7 +130,7 @@ const NodeModalComponent: FC<{
                                 <Button
                                     onClick={handleCopyJson}
                                 >
-                                    {copied ? <ClipboardCheck /> : <ClipboardIcon />}
+                                    {copied ? <ClipboardCheck /> : <Clipboard />}
                                 </Button>
                             }
                             <Button onClick={onHide}>Close</Button>

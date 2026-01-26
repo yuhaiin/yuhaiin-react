@@ -2,8 +2,8 @@
 
 import * as CollapsiblePrimitive from "@radix-ui/react-collapsible";
 import { clsx } from "clsx";
+import { ChevronRight } from 'lucide-react';
 import React from "react";
-import { ChevronRight } from 'react-bootstrap-icons';
 import styles from "./sidebar.module.css";
 
 /* -------------------------------------------------------------------------- */
@@ -147,7 +147,7 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
                 <button type="button" className={clsx(styles.item, styles.trigger, active && styles.active)}>
                     {icon}
                     {title}
-                    <ChevronRight className={styles.triggerIcon} />
+                    <ChevronRight className={styles.triggerIcon} size={16} />
                 </button>
             </CollapsiblePrimitive.Trigger>
 

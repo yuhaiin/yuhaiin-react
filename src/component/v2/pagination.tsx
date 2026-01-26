@@ -1,7 +1,7 @@
 'use client';
 
 import { clsx } from "clsx";
-import { ChevronLeft, ChevronRight, ThreeDots } from "react-bootstrap-icons";
+import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { Button } from "./button";
 
 export interface PaginationProps {
@@ -69,7 +69,7 @@ export function Pagination({
                 {pages.map((item, idx) =>
                     item === 'ellipsis' ? (
                         <div key={'e' + idx} className="d-flex align-items-end justify-content-center text-muted" style={{ width: '32px', height: '32px', paddingBottom: '4px' }}>
-                            <ThreeDots />
+                            <MoreHorizontal size={16} />
                         </div>
                     ) : (
                         <Button

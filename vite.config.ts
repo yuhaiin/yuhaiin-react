@@ -20,6 +20,9 @@ export default defineConfig({
             generateScopedName: '[name]__[local]___[hash:base64:5]',
         },
     },
+    server: {
+        allowedHosts: true
+    },
     build: {
         rollupOptions: {
             output: {
@@ -30,6 +33,7 @@ export default defineConfig({
                             { match: 'uplot', chunk: 'uplot' },
                             { match: 'protobuf', chunk: 'protobuf' },
                             { match: 'bootstrap', chunk: 'bootstrap' },
+                            { match: 'lucide', chunk: 'lucide' },
                             { match: 'tanstack', chunk: 'tanstack' },
                             { match: 'framer-motion', chunk: 'framer-motion' },
                             { match: ['react', 'react-dom'], chunk: 'react' },

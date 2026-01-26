@@ -3,8 +3,8 @@
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import { clsx } from 'clsx';
 import { motion } from "framer-motion";
+import { CircleAlert, Eye, EyeOff } from 'lucide-react';
 import React, { FC, useEffect, useId, useState } from 'react';
-import { ExclamationCircle, Eye, EyeSlash } from 'react-bootstrap-icons';
 import { Button } from './button';
 import { SettingLabel } from './card';
 import { Combobox } from './combobox';
@@ -119,7 +119,7 @@ export const SettingPasswordVertical: FC<{
                     style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
                     onClick={() => setShow(!show)}
                 >
-                    {show ? <EyeSlash /> : <Eye />}
+                    {show ? <EyeOff size={16} /> : <Eye size={16} />}
                 </Button>
             </div>
         </div>
@@ -224,7 +224,7 @@ export const SettingInputBytes: FC<{
             {label}
             <Tooltip content="Input must be a valid Base64 string to be saved.">
                 <div className="text-danger" style={{ cursor: 'help' }}>
-                    <ExclamationCircle size={12} />
+                    <CircleAlert size={12} />
                 </div>
             </Tooltip>
         </div>

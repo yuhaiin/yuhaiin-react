@@ -3,8 +3,8 @@ import { Card, CardBody, CardFooter, CardHeader, IconBox } from '@/component/v2/
 import { SettingInputVertical } from '@/component/v2/forms';
 import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
+import { RotateCw, Save, Server as ServerIcon } from 'lucide-react';
 import { FC, useContext, useState } from "react";
-import { ArrowCounterclockwise, HddRack, Save } from 'react-bootstrap-icons';
 import { FetchProtobuf, useProtoSWR } from "../../../common/proto";
 import Loading from "../../../component/v2/loading";
 import { resolver } from "../../pbes/api/config_pb";
@@ -43,7 +43,7 @@ export const Server: FC = () => {
     return (
         <Card className="d-flex flex-column">
             <CardHeader>
-                <IconBox icon={HddRack} color="#8b5cf6" title='DNS Server' description='Listen and Serve' />
+                <IconBox icon={ServerIcon} color="#8b5cf6" title='DNS Server' description='Listen and Serve' />
             </CardHeader>
             <CardBody className="px-4 py-4">
                 <SettingInputVertical
@@ -60,14 +60,14 @@ export const Server: FC = () => {
                     disabled={!isDirty}
                     onClick={() => mutate()}
                 >
-                    <ArrowCounterclockwise className="me-2" />Reset
+                    <RotateCw className="me-2" size={16} />Reset
                 </Button>
                 <Button
                     size="sm"
                     disabled={saving || !isDirty}
                     onClick={handleSave}
                 >
-                    {saving ? <Spinner size="sm" /> : <><Save className="me-2" />Save</>}
+                    {saving ? <Spinner size="sm" /> : <><Save className="me-2" size={16} />Save</>}
                 </Button>
             </CardFooter>
         </Card>

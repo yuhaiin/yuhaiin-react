@@ -3,8 +3,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/component/v2/button";
 import { Remind, SettingCheck, SettingInputVertical } from "@/component/v2/forms";
 import { create } from "@bufbuild/protobuf";
+import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react";
 import { FC, useContext } from "react";
-import { ArrowDown, ArrowUp, PlusLg, Trash } from "react-bootstrap-icons";
 import { fixedv2, fixedv2_address, fixedv2_addressSchema } from "../pbes/node/protocol_pb";
 import { Props } from "./tools";
 
@@ -88,13 +88,13 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
                                 {editable && (
                                     <div className="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
                                         <Button size="sm" onClick={() => moveItem(index, true)} disabled={index === 0}>
-                                            <ArrowUp />
+                                            <ArrowUp size={16} />
                                         </Button>
                                         <Button size="sm" onClick={() => moveItem(index, false)} disabled={index === data.length - 1}>
-                                            <ArrowDown />
+                                            <ArrowDown size={16} />
                                         </Button>
                                         <Button variant="outline-danger" size="sm" onClick={() => removeItem(index)}>
-                                            <Trash /> Delete
+                                            <Trash size={16} /> Delete
                                         </Button>
                                     </div>
                                 )}
@@ -112,7 +112,7 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
                             networkInterface: ""
                         })])
                     }} >
-                        <PlusLg className="me-1" /> Add Host
+                        <Plus className="me-1" size={16} /> Add Host
                     </Button>
                 </div>
             )}

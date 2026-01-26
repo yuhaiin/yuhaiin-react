@@ -6,8 +6,8 @@ import { Card, CardBody, CardHeader, SettingLabel } from "@/component/v2/card";
 import { Select } from "@/component/v2/forms";
 import { SwitchCard } from "@/component/v2/switch";
 import { create } from "@bufbuild/protobuf";
+import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react";
 import { FC, useState } from "react";
-import { ArrowDown, ArrowUp, PlusLg, Trash } from "react-bootstrap-icons";
 import {
     aeadSchema,
     grpcSchema,
@@ -151,13 +151,13 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
 
                                     <div className="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
                                         <Button size="sm" onClick={() => moveTransport(i, 'up')} disabled={i === 0}>
-                                            <ArrowUp />
+                                            <ArrowUp size={16} />
                                         </Button>
                                         <Button size="sm" onClick={() => moveTransport(i, 'down')} disabled={i === inbound.transport.length - 1}>
-                                            <ArrowDown />
+                                            <ArrowDown size={16} />
                                         </Button>
                                         <Button variant="outline-danger" size="sm" onClick={() => deleteTransport(i)}>
-                                            <Trash className="me-1" /> Delete
+                                            <Trash className="me-1" size={16} /> Delete
                                         </Button>
                                     </div>
                                 </div>
@@ -181,7 +181,7 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
                         />
                     </div>
                     <Button onClick={addTransport}>
-                        <PlusLg className="me-1" /> Add
+                        <Plus className="me-1" size={16} /> Add
                     </Button>
                 </div>
             </CardBody>

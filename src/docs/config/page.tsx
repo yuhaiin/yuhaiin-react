@@ -11,8 +11,8 @@ import {
 import { Spinner } from '@/component/v2/spinner';
 import { ToggleGroup, ToggleItem } from '@/component/v2/togglegroup';
 import { create, DescEnumValue } from '@bufbuild/protobuf';
+import { Cpu, Globe, NotebookText, Save } from 'lucide-react';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { Cpu, Globe2, JournalText, Save } from 'react-bootstrap-icons';
 import { useInterfaces } from '../../common/interfaces';
 import { FetchProtobuf, useProtoSWR } from '../../common/proto';
 import { mapSetting, updateIfPresent } from '../../common/utils';
@@ -102,7 +102,7 @@ function ConfigComponent() {
             {/* 1. General Network Settings */}
             <Card>
                 <CardHeader>
-                    <IconBox icon={Globe2} color="#3b82f6" title='General Settings' description='Network and system integration' />
+                    <IconBox icon={Globe} color="#3b82f6" title='General Settings' description='Network and system integration' />
                 </CardHeader>
                 <CardBody>
                     <div className="row g-3">
@@ -160,7 +160,7 @@ function ConfigComponent() {
 
             <Card>
                 <CardHeader>
-                    <IconBox icon={JournalText} color="#10b981" title="Logging (Logcat)" description="Debug and error reporting" />
+                    <IconBox icon={NotebookText} color="#10b981" title="Logging (Logcat)" description="Debug and error reporting" />
                 </CardHeader>
                 <CardBody>
                     <div className="row g-3">
@@ -252,7 +252,7 @@ function ConfigComponent() {
 
                 <CardFooter className="d-flex justify-content-end">
                     <Button disabled={saving} onClick={handleSave}>
-                        {saving ? <Spinner size="sm" /> : <><Save className="me-2" />Apply Advanced Changes</>}
+                        {saving ? <Spinner size="sm" /> : <><Save className="me-2" size={16} />Apply Advanced Changes</>}
                     </Button>
                 </CardFooter>
             </Card>

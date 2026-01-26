@@ -7,8 +7,8 @@ import { SettingInputVertical } from "@/component/v2/forms";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { Spinner } from '@/component/v2/spinner';
 import { create } from "@bufbuild/protobuf";
+import { CloudDownload, Plus, RefreshCw, Rss, Trash } from 'lucide-react';
 import { FC, useContext, useEffect, useState } from "react";
-import { ArrowRepeat, CloudDownload, PlusLg, RssFill, Trash } from 'react-bootstrap-icons';
 import { FetchProtobuf, useProtoSWR } from '../../../common/proto';
 import { useClipboard } from '../../../component/v2/clipboard';
 import Loading, { Error } from "../../../component/v2/loading";
@@ -37,7 +37,7 @@ const LinkItem: FC<{
             {/* LEFT */}
             <div className="d-flex align-items-center gap-3 min-w-0 overflow-hidden">
                 <IconBoxRounded
-                    icon={RssFill}
+                    icon={Rss}
                     color="#0d6efd"
                     style={{ width: 40, height: 40, flexShrink: 0 }}
                 />
@@ -61,7 +61,7 @@ const LinkItem: FC<{
                 >
                     {isUpdating
                         ? <Spinner size="sm" />
-                        : <ArrowRepeat />
+                        : <RefreshCw size={16} />
                     }
                     <span className="d-none d-sm-inline ms-2">Update</span>
                 </Button>
@@ -71,7 +71,7 @@ const LinkItem: FC<{
                     size="sm"
                     onClick={onDelete}
                 >
-                    <Trash />
+                    <Trash size={16} />
                     <span className="d-none d-sm-inline ms-2">Delete</span>
                 </Button>
             </div>
@@ -121,7 +121,7 @@ const AddLinkModal: FC<{
                 <ModalFooter>
                     <Button onClick={onHide}>Cancel</Button>
                     <Button onClick={handleSave} disabled={!newItem.name || !newItem.url}>
-                        <PlusLg className="me-1" /> Add
+                        <Plus className="me-1" size={16} /> Add
                     </Button>
                 </ModalFooter>
             </ModalContent>
@@ -226,7 +226,7 @@ function Subscribe() {
                         <Button
                             onClick={() => setShowAddModal(true)}
                         >
-                            <PlusLg /> Add
+                            <Plus size={16} /> Add
                         </Button>
                     </>
                 }
