@@ -102,7 +102,7 @@ const BypassComponent: FC<{
                         disabled={saving}
                         onClick={onSave}
                     >
-                        {saving ? <Spinner size="sm" /> : <><Save className="me-2" />Save Configuration</>}
+                        {saving ? <Spinner size="sm" /> : <><Save className="me-2" size={16} />Save Configuration</>}
                     </Button>
                 </CardFooter>
             </Card>

@@ -4,7 +4,7 @@ import { SettingInputVertical } from "@/component/v2/forms"
 import { Input, Textarea } from "@/component/v2/input"
 import { InputList } from "@/component/v2/listeditor"
 import { create } from "@bufbuild/protobuf"
-import { Plus, Trash } from 'lucide-react';
+import { Plus, Trash } from 'lucide-react'
 import { FC, useState } from "react"
 import { certificate, certificateSchema, tls_server_config, tls_termination } from "../pbes/node/protocol_pb"
 import { Props } from "./tools"
@@ -36,7 +36,7 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                                 {editable && (
                                     <CardTitle className='d-flex justify-content-end mb-3'>
                                         <Button variant='outline-danger' size="sm" onClick={() => props.onChange({ ...props.tls, certificates: props.tls.certificates.filter((_, i) => i !== index) })}>
-                                            <Trash size={16} /> Remove
+                                            <Trash size={16} className="me-2" /> Remove
                                         </Button>
                                     </CardTitle>
                                 )}

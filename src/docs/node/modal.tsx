@@ -7,7 +7,7 @@ import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import { create, toJsonString } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
-import { Clipboard, ClipboardCheck } from 'lucide-react';
+import { Clipboard, ClipboardCheck, Trash } from 'lucide-react';
 import React, { FC, useContext, useEffect } from "react";
 import useSWR from 'swr';
 import { InterfacesContext, useInterfaces } from "../../common/interfaces";
@@ -116,7 +116,7 @@ const NodeModalComponent: FC<{
                             {onDelete &&
                                 <Dropdown>
                                     <DropdownTrigger asChild>
-                                        <Button variant="outline-danger">Remove</Button>
+                                        <Button variant="outline-danger"><Trash size={16} className="me-2" />Remove</Button>
                                     </DropdownTrigger>
                                     <DropdownContent>
                                         <DropdownItem className="text-danger fw-bold" onSelect={() => { onHide(); onDelete(); }}>Confirm Delete</DropdownItem>
@@ -130,7 +130,7 @@ const NodeModalComponent: FC<{
                                 <Button
                                     onClick={handleCopyJson}
                                 >
-                                    {copied ? <ClipboardCheck /> : <Clipboard />}
+                                    {copied ? <ClipboardCheck size={16} /> : <Clipboard size={16} />}
                                 </Button>
                             }
                             <Button onClick={onHide}>Close</Button>

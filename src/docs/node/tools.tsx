@@ -81,7 +81,7 @@ export const NewAlternateHostList: FC<{ title: string, data: host[], onChange: (
                                                 <ArrowDown size={16} />
                                             </Button>
                                             <Button variant="outline-danger" size="sm" onClick={() => removeItem(index)}>
-                                                <Trash size={16} /> Delete
+                                                <Trash size={16} className="me-2" /> Delete
                                             </Button>
                                         </div>
                                     )}

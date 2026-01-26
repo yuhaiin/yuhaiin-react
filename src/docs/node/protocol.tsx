@@ -157,7 +157,7 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                                                         <ArrowDown size={16} />
                                                     </Button>
                                                     <Button variant="outline-danger" size="sm" onClick={() => deleteProtocol(i)}>
-                                                        <Trash size={16} /> Delete
+                                                        <Trash size={16} className="me-2" /> Delete
                                                     </Button>
                                                 </div>
                                             )}

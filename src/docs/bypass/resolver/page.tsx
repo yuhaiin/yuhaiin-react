@@ -166,7 +166,7 @@ const ResolverModal: FC<{
                     <div>
                         {name !== 'bootstrap' && !isNew &&
                             <Button variant="outline-danger" onClick={() => { onHide(false); onDelete(name); }}>
-                                <Trash className="me-2" />Delete
+                                <Trash className="me-2" size={16} />Delete
                             </Button>
                         }
                     </div>

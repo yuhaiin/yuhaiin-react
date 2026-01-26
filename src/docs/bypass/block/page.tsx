@@ -138,7 +138,7 @@ function BypassBlockHistory() {
                                 <ArrowDownWideNarrow size={16} />
                             </Button>
                         </DropdownTrigger>
-                        <DropdownContent style={{ minWidth: '240px' }} className="p-3">
+                        <DropdownContent style={{ minWidth: '250px' }} className="p-3">
                             <div className="mb-3">
                                 <SettingLabel className="mb-2">Order</SettingLabel>
                                 <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-100">

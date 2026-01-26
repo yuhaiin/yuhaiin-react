@@ -40,7 +40,7 @@ const NewPeersList: FC<{ title: string, data: wireguard_peer_config[], onChange:
                                     {editable && (
                                         <div className="d-flex justify-content-end mt-3 pt-3 border-top">
                                             <Button variant="outline-danger" size="sm" onClick={() => removeItem(index)}>
-                                                <Trash size={16} /> Delete Peer
+                                                <Trash size={16} className="me-2" /> Delete Peer
                                             </Button>
                                         </div>
                                     )}

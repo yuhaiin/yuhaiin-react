@@ -94,7 +94,7 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
                                             <ArrowDown size={16} />
                                         </Button>
                                         <Button variant="outline-danger" size="sm" onClick={() => removeItem(index)}>
-                                            <Trash size={16} /> Delete
+                                            <Trash size={16} className="me-2" /> Delete
                                         </Button>
                                     </div>
                                 )}

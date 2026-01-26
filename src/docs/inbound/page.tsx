@@ -191,7 +191,7 @@ function InboudComponent() {
                 </CardBody>
                 <CardFooter className="d-flex justify-content-end">
                     <Button disabled={saving} onClick={handleApply}>
-                        {saving ? <Spinner size="sm" /> : <><Save className="me-1" /> Apply Settings</>}
+                        {saving ? <Spinner size="sm" /> : <><Save className="me-1" size={16} /> Apply Settings</>}
                     </Button>
                 </CardFooter>
             </Card>

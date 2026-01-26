@@ -171,7 +171,7 @@ function History() {
                                 <ArrowDownWideNarrow className="me-1" size={16} />
                             </Button>
                         </DropdownTrigger>
-                        <DropdownContent align="end" className="p-3" style={{ minWidth: '220px' }}>
+                        <DropdownContent align="end" className="p-3" style={{ minWidth: '250px' }}>
                             <div className="mb-3">
                                 <SettingLabel>Sort Order</SettingLabel>
                                 <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-100">
