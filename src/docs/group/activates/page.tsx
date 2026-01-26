@@ -42,7 +42,7 @@ const ActiveNodeItem: FC<{
                             </Badge>
                         </div>
                         <small className="text-muted text-truncate font-monospace opacity-75">
-                            <Hash className="me-1" />{v.hash}
+                            <Hash className="me-1" size={12} />{v.hash}
                         </small>
                     </div>
                 </div>

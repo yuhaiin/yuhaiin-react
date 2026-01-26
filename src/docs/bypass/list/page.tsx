@@ -205,9 +205,9 @@ export default function Lists() {
                     items={data.names.sort((a, b) => a.localeCompare(b))}
                     renderListItem={(v) =>
                         <>
-                            <FileText className="me-3 fs-5 text-secondary" />
+                            <FileText className="me-3 text-secondary" size={20} />
                             <span className="text-truncate fw-medium flex-grow-1">{v}</span>
-                            <ChevronRight className="text-muted opacity-25" />
+                            <ChevronRight className="text-muted opacity-25" size={16} />
                         </>
                     }
                     onClickItem={(v) => setShowdata({ show: true, name: v, new: false })}

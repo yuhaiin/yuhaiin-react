@@ -31,7 +31,7 @@ const TagItem: FC<{
 
     return (
         <>
-            {isGlobal ? <Globe className="me-3 fs-5 text-secondary" /> : isMirror ? <FileStack className="me-3 fs-5 text-secondary" /> : <Network className="me-3 fs-5 text-secondary" />}
+            {isGlobal ? <Globe className="me-3 text-secondary" size={20} /> : isMirror ? <FileStack className="me-3 text-secondary" size={20} /> : <Network className="me-3 text-secondary" size={20} />}
             <div className="d-flex flex-column overflow-hidden flex-grow-1" style={{ minWidth: 0 }}>
                 <span className="fw-medium text-truncate">{tagName}</span>
                 {!isGlobal && (
@@ -58,7 +58,7 @@ const TagItem: FC<{
                 >
                     <Trash size={16} />
                 </Button>
-                <ChevronRight className="text-muted opacity-25 d-none d-md-block" />
+                <ChevronRight className="text-muted opacity-25 d-none d-md-block" size={16} />
             </div>
         </>
     );

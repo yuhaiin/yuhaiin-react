@@ -94,11 +94,11 @@ const InboundItem: FC<{ name: string, }> = ({ name }) => {
     return <>
         <div className="d-flex align-items-center flex-grow-1 overflow-hidden">
             <div className="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style={{ width: '36px', height: '36px' }}>
-                <LogIn />
+                <LogIn size={20} />
             </div>
             <span className="text-truncate fw-medium">{name}</span>
         </div>
-        <ChevronRight className="text-muted opacity-25" />
+        <ChevronRight className="text-muted opacity-25" size={16} />
     </>
 }
 

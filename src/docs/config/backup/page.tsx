@@ -104,7 +104,7 @@ function BackupPage() {
                         <div className="col-12">
                             <SettingLabel>Last Backup Hash</SettingLabel>
                             <ListItem style={{ cursor: 'default', background: 'rgba(0,0,0,0.1)' }}>
-                                <Hash className="me-2 text-muted" />
+                                <Hash className="me-2 text-muted" size={16} />
                                 <span className="font-monospace small text-truncate opacity-75">
                                     {data.lastBackupHash || "No backup records found"}
                                 </span>

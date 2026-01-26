@@ -103,10 +103,10 @@ function Resolver() {
             items={resolvers.names.sort((a, b) => a.localeCompare(b))}
             renderListItem={(v) =>
                 <>
-                    <Network className="me-3 fs-5 text-secondary" />
+                    <Network className="me-3 text-secondary" size={20} />
                     <span className="flex-grow-1 text-truncate fw-medium">{v}</span>
                     {v === 'bootstrap' && <ShieldCheck className="text-primary ms-2" size={16} title="System Default" />}
-                    <ChevronRight className="text-muted opacity-25 ms-2" />
+                    <ChevronRight className="text-muted opacity-25 ms-2" size={16} />
                 </>
             }
             onClickItem={(v) => setShowdata({ show: true, name: v, new: false })}
