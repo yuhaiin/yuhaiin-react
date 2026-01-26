@@ -12,7 +12,7 @@ import { Spinner } from "@/component/v2/spinner";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import { block_history, rules } from "@/docs/pbes/api/config_pb";
 import { timestampDate } from "@bufbuild/protobuf/wkt";
-import { ArrowDown, Ban, ChevronRight, Clock, Network, RotateCw, ShieldOff } from 'lucide-react';
+import { ArrowDownWideNarrow, Ban, ChevronRight, Clock, Network, RotateCw, ShieldOff } from 'lucide-react';
 import React, { FC, useMemo, useState } from "react";
 import { TimestampZero } from "../../../common/nodes";
 import { useProtoSWR } from "../../../common/proto";
@@ -129,13 +129,13 @@ function BypassBlockHistory() {
 
                 <div className="d-flex flex-wrap gap-2 justify-content-end align-items-center">
                     <Button size="sm" onClick={() => mutate()} disabled={isValidating}>
-                        {isValidating ? <Spinner size="sm" /> : <RotateCw />}
+                        {isValidating ? <Spinner size="sm" /> : <RotateCw size={16} />}
                     </Button>
 
                     <Dropdown>
                         <DropdownTrigger asChild>
                             <Button size="sm">
-                                <ArrowDown />
+                                <ArrowDownWideNarrow size={16} />
                             </Button>
                         </DropdownTrigger>
                         <DropdownContent style={{ minWidth: '240px' }} className="p-3">

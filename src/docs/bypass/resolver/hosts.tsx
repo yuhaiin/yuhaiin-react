@@ -74,7 +74,7 @@ export const Hosts: FC = () => {
                                         return { ...prev, hosts: tmp };
                                     })}
                                 >
-                                    <Trash />
+                                    <Trash size={16} />
                                 </Button>
                             </InputGroup>
                         ))}
