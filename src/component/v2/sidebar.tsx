@@ -102,7 +102,7 @@ const SidebarItem = React.forwardRef<HTMLAnchorElement, SidebarItemProps>(({ cla
         <a
             ref={ref}
             className={clsx(
-                "group flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-[var(--sidebar-color)] rounded-[14px] transition-all duration-200 border border-transparent tracking-[0.3px] cursor-pointer hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-active-color)]",
+                "group flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-[var(--sidebar-color)] rounded-[14px] transition-all duration-200 border border-transparent tracking-[0.3px] cursor-pointer hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-active-color)] decoration-0 no-underline",
                 active && "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-color)] font-semibold shadow-[var(--sidebar-active-glow)] border-transparent",
                 className
             )}
@@ -153,7 +153,7 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
                 <button
                     type="button"
                     className={clsx(
-                        "group flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-[var(--sidebar-color)] rounded-[14px] transition-all duration-200 border border-transparent tracking-[0.3px] cursor-pointer hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-active-color)]",
+                        "group flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-[var(--sidebar-color)] rounded-[14px] transition-all duration-200 border border-transparent tracking-[0.3px] cursor-pointer hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-active-color)] bg-transparent",
                         active && "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-color)] font-semibold shadow-[var(--sidebar-active-glow)] border-transparent"
                     )}
                 >
@@ -193,7 +193,7 @@ const SidebarSubLink = React.forwardRef<HTMLAnchorElement, SidebarSubLinkProps>(
         <a
             ref={ref}
             className={clsx(
-                "relative flex w-full items-center border-none bg-transparent px-3 py-2 text-[0.85rem] text-[var(--sidebar-color)] opacity-80 decoration-0 transition-all duration-200",
+                "relative flex w-full items-center border-none bg-transparent px-3 py-2 text-[0.85rem] text-[var(--sidebar-color)] opacity-80 decoration-0 no-underline transition-all duration-200",
                 !active && "hover:translate-x-1 hover:rounded-lg hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-active-color)] hover:opacity-100",
                 active && "font-semibold text-[var(--sidebar-active-color)] opacity-100 transform-none before:absolute before:-left-[4px] before:top-1/2 before:z-10 before:block before:h-[7px] before:w-[7px] before:-translate-y-1/2 before:rounded-full before:border-[2px] before:border-[var(--sidebar-active-color)] before:bg-[var(--sidebar-bg)] before:shadow-[0_0_8px_var(--sidebar-active-color)] before:content-['']",
                 className
