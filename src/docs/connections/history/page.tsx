@@ -181,10 +181,10 @@ function History() {
                             </div>
                             <div>
                                 <SettingLabel>Sort By</SettingLabel>
-                                <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="w-100">
-                                    <ToggleItem value="Time" className="flex-grow-1">Time</ToggleItem>
-                                    <ToggleItem value="Host" className="flex-grow-1">Host</ToggleItem>
-                                    <ToggleItem value="Count" className="flex-grow-1">Count</ToggleItem>
+                                <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="w-100 text-nowrap">
+                                    <ToggleItem value="Time" className="flex-grow-1 px-3">Time</ToggleItem>
+                                    <ToggleItem value="Host" className="flex-grow-1 px-3">Host</ToggleItem>
+                                    <ToggleItem value="Count" className="flex-grow-1 px-3">Count</ToggleItem>
                                 </ToggleGroup>
                             </div>
                         </DropdownContent>
