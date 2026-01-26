@@ -58,7 +58,7 @@ export const CardTitle: FC<{ children: React.ReactNode, className?: string, styl
 export const CardFooter: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
     <div
         className={clsx(
-            "px-6 py-4 border-t bg-transparent border-[var(--bs-border-color)]",
+            "px-6 py-4 border-t bg-transparent border-[var(--sidebar-border-color)]",
             className
         )}
         style={style}
@@ -75,7 +75,7 @@ export const ListItem: FC<{
 }> = ({ children, className, style, onClick }) => (
     <div
         className={clsx(
-            "flex items-center min-h-[72px] p-5 cursor-pointer rounded-xl bg-[var(--list-item-bg)] border border-transparent transition-all duration-200 hover:bg-[var(--list-item-hover)] hover:border-[var(--list-item-border-hover)] hover:-translate-y-0.5",
+            "flex items-center min-h-[72px] p-5 cursor-pointer rounded-xl bg-[var(--list-item-bg)] border border-transparent transition-all duration-200 hover:bg-[var(--list-item-hover)] hover:border-[var(--list-item-border-hover)] hover:-translate-y-0.5 w-full",
             className
         )}
         style={style}
@@ -209,9 +209,9 @@ export function CardRowList<T>({
         <Card>
             {header && <CardHeader>{header}</CardHeader>}
             <CardBody>
-                <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(300px,1fr))] [&>div]:flex [&>div>.listItem]:w-full">
+                <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
                     {items.map((value, index) =>
-                        <div key={index}>
+                        <div key={index} className="flex w-full">
                             <ListItem className="!w-full" onClick={() => onClickItem?.(value, index)}>
                                 {body(value, index)}
                             </ListItem>
@@ -219,7 +219,7 @@ export function CardRowList<T>({
                     )}
 
                     {onAddNew &&
-                        <div>
+                        <div className="flex w-full">
                             <ListItem className="!w-full px-5 py-2 border border-dashed border-[var(--bs-border-color)] bg-[var(--bs-secondary-bg)]">
                                 <div className="flex items-center w-full min-h-[42px]">
                                     <input

@@ -193,7 +193,7 @@ const SidebarSubLink = React.forwardRef<HTMLAnchorElement, SidebarSubLinkProps>(
         <a
             ref={ref}
             className={clsx(
-                "relative flex w-full items-center border-none bg-transparent px-3 py-2 text-[0.85rem] text-[var(--sidebar-color)] opacity-80 decoration-0 no-underline transition-all duration-200",
+                "relative flex w-full items-center border-none bg-transparent px-3 py-2 pl-6 text-[0.85rem] text-[var(--sidebar-color)] opacity-80 decoration-0 no-underline transition-all duration-200",
                 !active && "hover:translate-x-1 hover:rounded-lg hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-active-color)] hover:opacity-100",
                 active && "font-semibold text-[var(--sidebar-active-color)] opacity-100 transform-none before:absolute before:-left-[4px] before:top-1/2 before:z-10 before:block before:h-[7px] before:w-[7px] before:-translate-y-1/2 before:rounded-full before:border-[2px] before:border-[var(--sidebar-active-color)] before:bg-[var(--sidebar-bg)] before:shadow-[0_0_8px_var(--sidebar-active-color)] before:content-['']",
                 className
