@@ -48,7 +48,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
             <motion.div
                 ref={ref}
                 className={clsx(
-                    "fixed z-[1050] left-sidebar-gap top-sidebar-gap h-[calc(100vh-2*var(--sidebar-gap))] w-[260px] bg-sidebar-bg text-sidebar-color rounded-sidebar-radius border border-sidebar-border shadow-sidebar py-6 overflow-y-auto backdrop-filter-none [&::-webkit-scrollbar]:w-0 bg-red-500",
+                    "fixed z-[1050] left-sidebar-gap top-sidebar-gap h-[calc(100vh-2*var(--sidebar-gap))] w-[260px] bg-sidebar-bg text-sidebar-color rounded-sidebar-radius border border-sidebar-border shadow-sidebar py-6 overflow-y-auto backdrop-filter-none [&::-webkit-scrollbar]:w-0",
                     // Mobile specific overrides
                     "lg:w-[260px] w-[280px] max-w-[calc(100vw-32px)] lg:max-w-none lg:shadow-sidebar shadow-none lg:m-0",
                     className
@@ -106,7 +106,7 @@ const SidebarItem = React.forwardRef<HTMLAnchorElement, SidebarItemProps>(({ cla
             className={clsx(
                 "flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-sidebar-color rounded-[14px] transition-all duration-200 border border-transparent tracking-[0.3px] no-underline cursor-pointer bg-transparent outline-none focus:outline-none",
                 "hover:bg-sidebar-hover hover:text-sidebar-active [&>svg]:hover:scale-[1.15] [&>svg]:hover:-rotate-[5deg]",
-                active && "bg-sidebar-active-bg text-sidebar-active font-semibold shadow-sidebar-active border-transparent",
+                active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold shadow-sidebar-active !border-transparent",
                 className
             )}
             {...props}
@@ -158,7 +158,7 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
                     className={clsx(
                         "group flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-sidebar-color rounded-[14px] transition-all duration-200 border border-transparent tracking-[0.3px] cursor-pointer bg-transparent outline-none focus:outline-none",
                         "hover:bg-sidebar-hover hover:text-sidebar-active [&>span>svg]:hover:scale-[1.15] [&>span>svg]:hover:-rotate-[5deg]",
-                        active && "bg-sidebar-active-bg text-sidebar-active font-semibold shadow-sidebar-active border-transparent"
+                        active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold shadow-sidebar-active !border-transparent"
                     )}
                 >
                     {icon && (
