@@ -5,11 +5,14 @@ import useSWR, { Fetcher, SWRConfiguration, SWRResponse } from 'swr';
 import type { SWRSubscriptionOptions } from 'swr/subscription';
 import { getApiUrl } from "./apiurl";
 
+import { useMemo } from 'react';
+
 export function useProtoSWR<I extends DescMessage, O extends DescMessage>(
     m: (DescMethod & { methodKind: "unary"; input: I; output: O; }) | null,
     options?: SWRConfiguration,
 ): SWRResponse<MessageShape<O>, { msg: string, code: number }> {
-    return useSWR(m ? ProtoPath(m) : null, m ? ProtoESFetcher(m) : null, options)
+    const fetcher = useMemo(() => m ? ProtoESFetcher(m) : null, [m]);
+    return useSWR(m ? ProtoPath(m) : null, fetcher, options)
 }
 
 export const ProtoPath = (m: DescMethod) => `/${m.parent.typeName}/${m.name}`
@@ -88,13 +91,10 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
         const connect = () => {
             if (closed) return
 
-            console.log(`connecting to: ${url}`)
-
             socket = new WebSocket(url)
             socket.binaryType = "arraybuffer";
 
-            socket.addEventListener('open', (e) => {
-                console.log(`connect to: ${url}, event type: ${e.type}`)
+            socket.addEventListener('open', () => {
                 socket?.send(toBinary(d.input, Request))
             })
 
@@ -111,18 +111,15 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
                 }
             })
 
-            socket.addEventListener('error', (e) => {
+            socket.addEventListener('error', () => {
                 const msg = "websocket have some error"
                 next({ msg: msg, code: 500 })
-                console.log(msg, e.type)
             })
 
-            socket.addEventListener('close', (e) => {
-                console.log("websocket closed, code: " + e.code + ", isClosed: ", closed)
+            socket.addEventListener('close', () => {
                 next(null, undefined)
                 if (closed) return
                 else {
-                    console.log("reconnect after 2 seconds")
                     setTimeout(() => connect(), 2000)
                 }
             })
@@ -137,7 +134,6 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
                 timeout = null;
             }
             if (socket !== undefined) {
-                console.log(`close: ${key}`)
                 socket.close()
                 socket = undefined
             }

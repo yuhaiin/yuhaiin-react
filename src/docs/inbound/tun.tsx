@@ -46,8 +46,8 @@ export const Tun: FC<{ tun: tun, onChange: (x: tun) => void }> = ({ tun, onChang
                     try {
                         const cmds = shlexSplit(e)
                         onChange({ ...tun, postUp: cmds })
-                    } catch (e) {
-                        console.log(e)
+                    } catch {
+                        // ignore
                     }
                 }
                 } />
@@ -57,8 +57,8 @@ export const Tun: FC<{ tun: tun, onChange: (x: tun) => void }> = ({ tun, onChang
                     try {
                         const cmds = shlexSplit(e)
                         onChange({ ...tun, postDown: cmds })
-                    } catch (e) {
-                        console.log(e)
+                    } catch {
+                        // ignore
                     }
                 }
                 } />
