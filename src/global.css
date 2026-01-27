@@ -89,6 +89,7 @@ html[data-bs-theme="dark"] {
 }
 
 /* Light Mode: Solid White */
+:root,
 html[data-bs-theme="light"] {
     /* Solid background */
     --sidebar-bg: #ffffff;
