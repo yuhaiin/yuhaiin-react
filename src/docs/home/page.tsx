@@ -48,9 +48,12 @@ const TrafficMonitor = ({ extraFields }: { extraFields: any[] }) => {
         <>
             <div style={{ flexShrink: 0, marginBottom: '1rem' }}>
                 <FlowCard
-                    lastFlow={flow}
                     flow_error={flow_error}
                     extra_fields={extraFields}
+                    download={flow?.DownloadTotalString()}
+                    upload={flow?.UploadTotalString()}
+                    download_rate={flow?.DownloadString()}
+                    upload_rate={flow?.UploadString()}
                 />
             </div>
 

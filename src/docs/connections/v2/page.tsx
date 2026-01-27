@@ -13,7 +13,7 @@ import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
 import { AnimatePresence, motion } from "framer-motion"
 import { ArrowDown, ArrowUp, Network, ShieldCheck, Tag } from 'lucide-react'
-import React, { FC, useCallback, useEffect, useMemo, useReducer, useState } from "react"
+import React, { FC, memo, useCallback, useEffect, useMemo, useReducer, useState } from "react"
 import { NodeModal } from "../../node/modal"
 import styles from './connections.module.css'
 import { InfoModal } from "./info"
@@ -84,8 +84,8 @@ const connReducer = (state: ConnMap, action: ConnAction): ConnMap => {
                         ...item,
                         download,
                         upload,
-                        rawDownload: BigInt(c.download),
-                        rawUpload: BigInt(c.upload)
+                        rawDownload: c.download,
+                        rawUpload: c.upload
                     }
                     hasChange = true
                 }
@@ -93,15 +93,13 @@ const connReducer = (state: ConnMap, action: ConnAction): ConnMap => {
             return hasChange ? next : state
         }
     }
-    return state
 }
 
 const ConnectionMonitor: FC<{
     setInfo: (info: { info: connection, show: boolean }) => void,
     sortBy: string,
     sortOrder: "asc" | "desc",
-    children?: React.ReactNode
-}> = ({ setInfo, children, sortBy, sortOrder }) => {
+}> = ({ setInfo, sortBy, sortOrder }) => {
     const [connMap, dispatch] = useReducer(connReducer, {})
     const [connError, setConnError] = useState<{ msg: string, code: number } | undefined>()
 
@@ -141,8 +139,14 @@ const ConnectionMonitor: FC<{
 
     return (
         <>
-            <FlowCard lastFlow={flow} flow_error={flow_error} />
-            {children}
+            <FlowCard
+                download={flow?.DownloadTotalString()}
+                upload={flow?.UploadTotalString()}
+                download_rate={flow?.DownloadString()}
+                upload_rate={flow?.UploadString()}
+                flow_error={flow_error}
+            />
+
             <ConnectionList
                 connMap={connMap}
                 setInfo={setInfo}
@@ -200,31 +204,32 @@ function Connections() {
                 showNodeModal={showNodeModal}
             />
 
+
+            <div className="d-flex justify-content-end mb-3">
+                <div className="d-flex align-items-center gap-3 flex-wrap">
+                    <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && changeSortOrder(v as "asc" | "desc")}>
+                        <ToggleItem value="asc">
+                            <ArrowUp size={16} /> Asc
+                        </ToggleItem>
+                        <ToggleItem value="desc">
+                            <ArrowDown size={16} /> Desc
+                        </ToggleItem>
+                    </ToggleGroup>
+
+                    <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && changeSortBy(v)}>
+                        <ToggleItem value="id">Id</ToggleItem>
+                        <ToggleItem value="name">Name</ToggleItem>
+                        <ToggleItem value="download">Download</ToggleItem>
+                        <ToggleItem value="upload">Upload</ToggleItem>
+                    </ToggleGroup>
+                </div>
+            </div>
+
             <ConnectionMonitor
                 setInfo={setInfo}
                 sortBy={sortBy}
                 sortOrder={sortOrder}
-            >
-                <div className="d-flex justify-content-end mb-3">
-                    <div className="d-flex align-items-center gap-3 flex-wrap">
-                        <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && changeSortOrder(v as "asc" | "desc")}>
-                            <ToggleItem value="asc">
-                                <ArrowUp size={16} /> Asc
-                            </ToggleItem>
-                            <ToggleItem value="desc">
-                                <ArrowDown size={16} /> Desc
-                            </ToggleItem>
-                        </ToggleGroup>
-
-                        <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && changeSortBy(v)}>
-                            <ToggleItem value="id">Id</ToggleItem>
-                            <ToggleItem value="name">Name</ToggleItem>
-                            <ToggleItem value="download">Download</ToggleItem>
-                            <ToggleItem value="upload">Upload</ToggleItem>
-                        </ToggleGroup>
-                    </div>
-                </div>
-            </ConnectionMonitor>
+            />
         </div>
     );
 }
@@ -256,7 +261,6 @@ const ConnectionListComponent: FC<{
                 case "upload":
                     return a.rawUpload < b.rawUpload ? first : second
             }
-            return 0
         })
     }, [connValues, sortFields, sortOrder])
 
@@ -294,30 +298,36 @@ const ConnectionListComponent: FC<{
 
     if (conn_error !== undefined) return <Loading code={conn_error.code}>{conn_error.msg}</Loading>
 
-    // isLoading removed? ConnMap starts empty. That's fine.
-
     return <ul className={styles['connections-list']}>
         <AnimatePresence initial={false} mode="popLayout">
             {
                 values.map((e) => {
-                    return <ListItem
+                    return <motion.li
                         key={e.conn.id}
-                        id={e.conn.id}
-                        download={e.download}
-                        upload={e.upload}
-                        onSelect={handleSelect}
-                        addr={e.conn.addr}
-                        network={type[e.conn.type?.connType ?? 0]}
-                        tag={e.conn.tag}
-                        bMode={mode[e.conn.mode]}
-                    />
+                        layout
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    >
+                        <ListItem
+                            id={e.conn.id}
+                            download={e.download}
+                            upload={e.upload}
+                            onSelect={handleSelect}
+                            addr={e.conn.addr}
+                            network={type[e.conn.type?.connType ?? 0]}
+                            tag={e.conn.tag}
+                            bMode={mode[e.conn.mode]}
+                        />
+                    </motion.li>
                 })
             }
         </AnimatePresence>
     </ul>
 }
 
-const ConnectionList = React.memo(ConnectionListComponent)
+const ConnectionList = memo(ConnectionListComponent)
 
 
 const ListItemComponent: FC<{
@@ -332,14 +342,9 @@ const ListItemComponent: FC<{
 }> =
     ({ onSelect, download, upload, addr, network, tag, bMode, id }) => {
         return (
-            <motion.li
+            <li
                 className={styles['list-item']}
                 onClick={() => onSelect?.(id)}
-                layout
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             >
                 <div className={styles['item-main']}>
                     <code className={styles['item-id']}>{id.toString()}</code>
@@ -350,7 +355,7 @@ const ListItemComponent: FC<{
                     <ConnectedFlowBadge download={download} upload={upload} />
                     <StaticBadges bMode={bMode} network={network} tag={tag} />
                 </div>
-            </motion.li>
+            </li>
         );
     }
 

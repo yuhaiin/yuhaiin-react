@@ -2,7 +2,7 @@
 
 import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datalist";
 import { Check } from "lucide-react";
-import React, { FC, JSX, useState } from "react";
+import React, { FC, JSX, memo, useState } from "react";
 import useSWR from "swr";
 import { FetchProtobuf, ProtoPath } from "../../common/proto";
 import { connections, counter, total_flow } from "../pbes/api/statistic_pb";
@@ -139,31 +139,34 @@ export const useFlow = () => {
 }
 
 export const FlowCard: FC<{
-    lastFlow?: Flow,
+    download?: string,
+    upload?: string,
+    download_rate?: string,
+    upload_rate?: string,
     flow_error?: { msg: string, code: number },
     extra_fields?: MetricProps[],
-}> = ({ lastFlow, flow_error, extra_fields }) => {
+}> = memo(({ flow_error, extra_fields, download, upload, download_rate, upload_rate }) => {
     return (
         <div className={`${styles.flowCardGrid} mb-3`}
             style={{ viewTransitionName: "flow-card-root !important" }}>
             <MetricCard
                 label="Total Download"
-                value={lastFlow ? lastFlow.DownloadTotalString() : "Loading..."}
+                value={download ? download : "Loading..."}
                 error={flow_error?.msg}
             />
             <MetricCard
                 label="Download Rate"
-                value={lastFlow ? lastFlow.DownloadString() : "Loading..."}
+                value={download_rate ? download_rate : "Loading..."}
                 error={flow_error?.msg}
             />
             <MetricCard
                 label="Total Upload"
-                value={lastFlow ? lastFlow.UploadTotalString() : "Loading..."}
+                value={upload ? upload : "Loading..."}
                 error={flow_error?.msg}
             />
             <MetricCard
                 label="Upload Rate"
-                value={lastFlow ? lastFlow.UploadString() : "Loading..."}
+                value={upload_rate ? upload_rate : "Loading..."}
                 error={flow_error?.msg}
             />
             {
@@ -178,7 +181,7 @@ export const FlowCard: FC<{
             }
         </div>
     );
-}
+})
 
 export const ConnectionInfo: FC<{
     value: connection,
