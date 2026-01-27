@@ -58,8 +58,6 @@ const NodeModalComponent: FC<{
             })
 
 
-        console.log(nodes, hash, point)
-
         const SaveButton = () => {
             if (!editable) return <></>
 

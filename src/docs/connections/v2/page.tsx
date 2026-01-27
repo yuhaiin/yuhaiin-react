@@ -144,7 +144,6 @@ const ConnectionMonitor: FC<{
 }
 
 function Connections() {
-    console.log("Connections Render");
     const [info, setInfo] = useState<{ info: connection, show: boolean }>({
         info: create(connectionSchema, {}), show: false
     });

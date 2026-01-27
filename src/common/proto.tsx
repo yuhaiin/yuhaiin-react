@@ -80,13 +80,10 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
         const connect = () => {
             if (closed) return
 
-            console.log(`connecting to: ${url}`)
-
             socket = new WebSocket(url)
             socket.binaryType = "arraybuffer";
 
-            socket.addEventListener('open', (e) => {
-                console.log(`connect to: ${url}, event type: ${e.type}`)
+            socket.addEventListener('open', () => {
                 socket?.send(toBinary(d.input, Request))
             })
 
@@ -95,18 +92,15 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
                 next(null, prev => { return stream(raw, prev) })
             })
 
-            socket.addEventListener('error', (e) => {
+            socket.addEventListener('error', () => {
                 const msg = "websocket have some error"
                 next({ msg: msg, code: 500 })
-                console.log(msg, e.type)
             })
 
-            socket.addEventListener('close', (e) => {
-                console.log("websocket closed, code: " + e.code + ", isClosed: ", closed)
+            socket.addEventListener('close', () => {
                 next(null, undefined)
                 if (closed) return
                 else {
-                    console.log("reconnect after 2 seconds")
                     setTimeout(() => connect(), 2000)
                 }
             })
@@ -117,7 +111,6 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
         return () => {
             closed = true
             if (socket !== undefined) {
-                console.log(`close: ${key}`)
                 socket.close()
                 socket = undefined
             }
