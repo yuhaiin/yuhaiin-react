@@ -222,7 +222,7 @@ const ListItemComponent: FC<{ data: connection, download: number, upload: number
     ({ data, download, upload, onSelect }) => {
         return (
             <motion.li
-                className="flex flex-col items-start md:flex-row md:justify-between px-6 py-4 border-b border-sidebar-border transition-colors duration-200 cursor-pointer hover:bg-sidebar-hover last:border-b-0"
+                className="flex flex-col items-start md:flex-row md:justify-between px-4 py-3 border-b border-sidebar-border transition-colors duration-200 cursor-pointer hover:bg-sidebar-hover last:border-b-0"
                 onClick={() => onSelect?.(data)}
                 layout
                 initial={{ opacity: 0, x: -20 }}
