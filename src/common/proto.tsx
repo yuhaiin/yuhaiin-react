@@ -61,7 +61,8 @@ export async function FetchProtobuf<I extends DescMessage, O extends DescMessage
 export function WebsocketProtoServerStream<I extends DescMessage, O extends DescMessage, Response>(
     d: DescMethod & { methodKind: "server_streaming"; input: I; output: O; },
     Request: MessageShape<I>,
-    stream: (r: MessageShape<O>, prev?: Response) => Response,
+    stream: (r: MessageShape<O>[], prev?: Response) => Response,
+    options?: { throttle?: number }
 ):
     (key: string, { next }: SWRSubscriptionOptions<Response, { msg: string, code: number }>) => () => void {
     const apiUrl = getApiUrl()
@@ -73,6 +74,16 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
 
         let socket: WebSocket | undefined;
         let closed = false
+        let buffer: MessageShape<O>[] = [];
+        let timeout: ReturnType<typeof setTimeout> | null = null;
+
+        const flush = () => {
+            if (buffer.length === 0) return;
+            const batch = buffer;
+            buffer = [];
+            timeout = null;
+            next(null, prev => { return stream(batch, prev) });
+        };
 
         const connect = () => {
             if (closed) return
@@ -89,7 +100,15 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
 
             socket.addEventListener('message', (event) => {
                 const raw = fromBinary(d.output, new Uint8Array(event.data));
-                next(null, prev => { return stream(raw, prev) })
+
+                if (options?.throttle) {
+                    buffer.push(raw);
+                    if (!timeout) {
+                        timeout = setTimeout(flush, options.throttle);
+                    }
+                } else {
+                    next(null, prev => { return stream([raw], prev) })
+                }
             })
 
             socket.addEventListener('error', (e) => {
@@ -113,6 +132,10 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
 
         return () => {
             closed = true
+            if (timeout) {
+                clearTimeout(timeout);
+                timeout = null;
+            }
             if (socket !== undefined) {
                 console.log(`close: ${key}`)
                 socket.close()
