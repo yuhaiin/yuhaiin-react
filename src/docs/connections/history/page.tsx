@@ -24,10 +24,7 @@ import { mode } from "../../pbes/config/bypass_pb"
 import { connectionSchema, type, typeSchema } from "../../pbes/statistic/config_pb"
 import { ConnectionInfo } from "../components"
 
-const netTypeMap = typeSchema.values.reduce((acc, cur) => {
-    acc[cur.number] = cur.name;
-    return acc;
-}, {} as Record<number, string>);
+const netTypeMap = Object.fromEntries(typeSchema.values.map(({ number, name }) => [number, name]));
 
 // --- Component: Individual History Row (Subscribe Style) ---
 const ListItem: FC<{ data: all_history }> = React.memo(({ data }) => {
