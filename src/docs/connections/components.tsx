@@ -23,8 +23,8 @@ const MetricCard: FC<MetricProps> = ({ label, value, error, color = '#3b82f6' })
                 grow basis-[calc(25%-1.25rem)] min-w-[200px] relative p-4
                 bg-[var(--metric-bg)] border border-[var(--metric-border)] rounded-2xl
                 flex flex-col justify-center
-                transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-                shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)]
+                transition-all duration-300 ease-in-out
+                shadow-md
                 hover:-translate-y-[5px] hover:border-[rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]
             `}
         >
