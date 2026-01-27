@@ -1,10 +1,10 @@
 import { createRootRoute, Outlet, useLocation } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
+import clsx from 'clsx'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { GlobalToastProvider as GlobalToastProviderv2 } from '../component/v2/toast'
 import NavBarContainer from '../docs/nav/NavBarContainer'
-import './root.css'
 
 interface AndroidInterface {
     setRefreshEnabled?: (enabled: boolean) => void
@@ -150,7 +150,19 @@ function RootComponent() {
         <GlobalToastProviderv2>
             {colorScheme &&
                 <NavBarContainer>
-                    <div className="main-content">
+                    <div className={clsx(
+                        // base
+                        'relative w-auto min-h-screen h-screen overflow-hidden box-border',
+                        'transition-[margin-left,max-width,padding] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]',
+
+                        // padding
+                        'pt-[80px] px-[20px] pb-[20px]',
+                        'lg:pt-[20px] lg:pl-[292px] lg:pr-[20px] lg:pb-[20px]',
+
+                        // mobile
+                        'lg:h-screen',
+                        'h-[100dvh] min-h-[100dvh]'
+                    )}>
                         <AnimatePresence mode="popLayout" initial={false} custom={direction}>
                             <motion.div
                                 key={pathname}
@@ -159,17 +171,23 @@ function RootComponent() {
                                 initial="enter"
                                 animate="center"
                                 exit="exit"
-                                className='motion-content'
+                                className={clsx(
+                                    // positioning & size
+                                    'absolute inset-0 box-border h-full w-full',
+
+                                    // scrolling
+                                    'overflow-y-auto overflow-x-hidden',
+
+                                    // performance hints
+                                    'will-change-[transform,opacity]',
+
+                                    // padding - mobile
+                                    'pt-[80px] px-[20px] pb-[20px]',
+
+                                    // padding - desktop
+                                    'lg:pt-[20px] lg:pl-[292px]'
+                                )}
                                 transition={{ duration: 0.5, ease: "easeInOut" }} // Slower animation
-                                style={{
-                                    height: '100%',
-                                    width: '100%',
-                                    willChange: 'transform, opacity',
-                                    position: 'absolute',
-                                    overflowY: 'auto',
-                                    overflowX: 'hidden',
-                                    boxSizing: 'border-box'
-                                }}
                             >
                                 <Outlet />
                             </motion.div>
