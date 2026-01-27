@@ -2,11 +2,9 @@
 > yuhaiin-react@0.1.0 dev
 > vite
 
-Port 5173 is in use, trying another one...
 
-  VITE v7.3.1  ready in 2706 ms
+  VITE v7.3.1  ready in 1696 ms
 
-  ➜  Local:   http://localhost:5174/
+  ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-3:25:14 PM [vite] (client) hmr update /src/docs/nav/NavBarContainer.tsx, /src/global.css
-3:25:32 PM [vite] (client) hmr update /src/routes/root.css
+4:13:53 PM [vite] (client) hmr update /src/global.css, /src/common/proto.tsx
