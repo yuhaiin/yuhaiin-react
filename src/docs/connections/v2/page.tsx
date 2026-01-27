@@ -23,21 +23,23 @@ import { mode } from "../../pbes/config/bypass_pb"
 import styles from './connections.module.css'
 
 
-const processStream = (r: notify_data, prev?: { [key: string]: connection }): { [key: string]: connection } => {
+const processStream = (rs: notify_data[], prev?: { [key: string]: connection }): { [key: string]: connection } => {
     let data: { [key: string]: connection };
     if (prev === undefined) data = {}
     else data = { ...prev }
 
-    switch (r.data.case) {
-        case "notifyNewConnections":
-            r.data.value.
-                connections.
-                sort((a, b) => a.id > b.id ? 1 : -1).
-                forEach((e: connection) => { data[e.id.toString()] = e })
-            break
-        case "notifyRemoveConnections":
-            r.data.value.ids.forEach((e: bigint) => { delete data[e.toString()] })
-            break
+    for (const r of rs) {
+        switch (r.data.case) {
+            case "notifyNewConnections":
+                r.data.value.
+                    connections.
+                    sort((a, b) => a.id > b.id ? 1 : -1).
+                    forEach((e: connection) => { data[e.id.toString()] = e })
+                break
+            case "notifyRemoveConnections":
+                r.data.value.ids.forEach((e: bigint) => { delete data[e.toString()] })
+                break
+        }
     }
 
     return data
