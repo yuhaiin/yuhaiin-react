@@ -23,19 +23,23 @@ import { NodeModal } from "../../node/modal"
 import styles from './connections.module.css'
 
 
-const processStream = (r: notify_data, prev?: { [key: string]: connection }): { [key: string]: connection } => {
-    switch (r.data.case) {
-        case "notifyNewConnections":
-            const data = prev ? { ...prev } : {};
-            r.data.value.
-                connections.
-                sort((a, b) => a.id > b.id ? 1 : -1).
-                forEach((e: connection) => { data[e.id.toString()] = e })
-            return data
-        case "notifyRemoveConnections":
-            const dataRemove = prev ? { ...prev } : {};
-            r.data.value.ids.forEach((e: bigint) => { delete dataRemove[e.toString()] })
-            return dataRemove
+const processStream = (rs: notify_data[], prev?: { [key: string]: connection }): { [key: string]: connection } => {
+    let data: { [key: string]: connection };
+    if (prev === undefined) data = {}
+    else data = { ...prev }
+
+    for (const r of rs) {
+        switch (r.data.case) {
+            case "notifyNewConnections":
+                r.data.value.
+                    connections.
+                    sort((a, b) => a.id > b.id ? 1 : -1).
+                    forEach((e: connection) => { data[e.id.toString()] = e })
+                break
+            case "notifyRemoveConnections":
+                r.data.value.ids.forEach((e: bigint) => { delete data[e.toString()] })
+                break
+        }
     }
 
     return prev ?? {}
@@ -231,10 +235,63 @@ const ConnectionListComponent: FC<{
             rawUpload: bigint
         }
     }
-}> = ({ conns, conn_error, setInfo, isLoading, counters }) => {
+    sortFields?: string,
+    sortOrder?: "asc" | "desc"
+}> = ({ conns, conn_error, setInfo, isLoading, counters, sortFields, sortOrder }) => {
 
-    const handleItemClick = useCallback((e: connection) => {
-        setInfo({ info: e, show: true })
+
+    const connValues = useMemo(() => Object.values(conns ?? {}), [conns])
+
+    const trafficSorted = useMemo(() => {
+        if (sortFields !== "download" && sortFields !== "upload") return []
+
+        return [...connValues].sort((a, b) => {
+            let first = 1;
+            let second = -1;
+
+            if (sortOrder === "asc") {
+                first = -1;
+                second = 1;
+            }
+
+            switch (sortFields) {
+                case "download":
+                    const ad = counters[a.id.toString()]?.download ?? 0
+                    const bd = counters[b.id.toString()]?.download ?? 0
+                    return ad < bd ? first : second
+                case "upload":
+                    const au = counters[a.id.toString()]?.upload ?? 0
+                    const bu = counters[b.id.toString()]?.upload ?? 0
+                    return au < bu ? first : second
+            }
+            return 0
+        })
+    }, [connValues, counters, sortFields, sortOrder])
+
+    const staticSorted = useMemo(() => {
+        if (sortFields === "download" || sortFields === "upload") return []
+
+        return [...connValues].sort((a, b) => {
+            let first = 1;
+            let second = -1;
+
+            if (sortOrder === "asc") {
+                first = -1;
+                second = 1;
+            }
+
+            if (sortFields === "name") {
+                return a.addr < b.addr ? first : second
+            }
+
+            return a.id < b.id ? first : second
+        })
+    }, [connValues, sortFields, sortOrder])
+
+    const values = (sortFields === "download" || sortFields === "upload") ? trafficSorted : staticSorted
+
+    const handleSelect = useCallback((conn: connection) => {
+        setInfo({ info: conn, show: true })
     }, [setInfo])
 
     if (conn_error !== undefined) return <Loading code={conn_error.code}>{conn_error.msg}</Loading>
@@ -243,14 +300,14 @@ const ConnectionListComponent: FC<{
     return <ul className={styles['connections-list']}>
         <AnimatePresence initial={false} mode="popLayout">
             {
-                conns.map((e) => {
+                values.map((e) => {
                     const c = counters[e.id.toString()]
                     return <ListItem
                         data={e}
                         key={e.id}
-                        onSelect={handleItemClick}
                         download={c?.download ?? "0B"}
                         upload={c?.upload ?? "0B"}
+                        onSelect={handleSelect}
                     />
                 })
             }

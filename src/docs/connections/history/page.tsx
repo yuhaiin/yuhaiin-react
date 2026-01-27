@@ -24,6 +24,7 @@ import { mode } from "../../pbes/config/bypass_pb"
 import { connectionSchema, type, typeSchema } from "../../pbes/statistic/config_pb"
 import { ConnectionInfo } from "../components"
 
+const netTypeMap = Object.fromEntries(typeSchema.values.map(({ number, name }) => [number, name]));
 
 // --- Component: Individual History Row (Subscribe Style) ---
 const ListItem: FC<{ data: all_history }> = React.memo(({ data }) => {
@@ -154,7 +155,7 @@ function History() {
                         type={typeSchema}
                         value={netFilter}
                         onChange={setNetFilter}
-                        format={(v) => v === 0 ? "All Networks" : typeSchema.values.find(x => x.number === v)?.name ?? "Unknown"}
+                        format={(v) => v === 0 ? "All Networks" : netTypeMap[v] ?? "Unknown"}
                         className="mb-0"
                         triggerClassName="py-0"
                         size="sm"
