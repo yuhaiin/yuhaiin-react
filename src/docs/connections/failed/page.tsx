@@ -22,10 +22,10 @@ import { type } from "../../pbes/statistic/config_pb"
 const ListItem: FC<{ data: failed_history }> = React.memo(({ data }) => {
     return (
         <>
-            <div className="flex w-full flex-col md:flex-row items-start md:items-center justify-between gap-3">
+            <div className="flex w-full flex-col md:flex-row items-start md:items-center justify-between gap-4">
 
                 {/* Left Side: Icon + Host & Error Preview */}
-                <div className="flex items-center grow overflow-hidden gap-3 w-full md:w-auto">
+                <div className="flex items-center grow overflow-hidden gap-4 w-full md:w-auto">
                     <div className="flex items-center justify-center bg-red-500/10 text-red-500 rounded-full shrink-0" style={{ width: '42px', height: '42px' }}>
                         <Bug className="text-xl" />
                     </div>

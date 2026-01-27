@@ -13,7 +13,7 @@ const variantStyles: Record<string, string> = {
     danger: "bg-red-500/10 text-red-600 dark:text-red-400",
     warning: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
     info: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
-    light: "bg-white/10 text-white",
+    light: "bg-white/10 text-gray-800 dark:text-white",
     dark: "bg-gray-900/10 text-gray-900 dark:text-gray-100 dark:bg-white/10",
 };
 
@@ -21,7 +21,7 @@ export const Badge: FC<BadgeProps> = ({ variant = "primary", pill, className, ch
     return (
         <span
             className={clsx(
-                "inline-flex items-center justify-center px-2.5 py-0.5 text-xs font-bold leading-none",
+                "inline-flex items-center justify-center px-[0.65em] py-[0.35em] text-xs font-bold leading-none",
                 variantStyles[variant] || variantStyles.primary,
                 pill ? "rounded-full" : "rounded",
                 className

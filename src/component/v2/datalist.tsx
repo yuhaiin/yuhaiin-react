@@ -21,14 +21,14 @@ export const DataListItem: FC<DataListItemProps> = ({ label, value, className })
 
     return (
         <li className={clsx("py-4 border-b border-sidebar-border last:border-b-0 transition-colors duration-200", className)}>
-            <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-start sm:gap-4">
+            <div className="flex flex-col gap-1 min-[576px]:flex-row min-[576px]:justify-between min-[576px]:items-start min-[576px]:gap-4">
                 {/* Key */}
                 <div className="notranslate shrink-0 min-w-[120px] text-sm font-semibold text-sidebar-header capitalize leading-normal">
                     {label}
                 </div>
 
                 {/* Value */}
-                <div className="notranslate grow text-[15px] font-normal text-sidebar-color leading-normal break-all sm:text-right">
+                <div className="notranslate grow text-[15px] font-normal text-sidebar-color leading-normal break-all min-[576px]:text-right">
                     {value}
                 </div>
             </div>
