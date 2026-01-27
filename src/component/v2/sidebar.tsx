@@ -4,7 +4,7 @@ import * as CollapsiblePrimitive from "@radix-ui/react-collapsible";
 import { clsx } from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronRight } from 'lucide-react';
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 /* -------------------------------------------------------------------------- */
 /*                                Sidebar Root                                */
@@ -15,34 +15,7 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
     onHide?: () => void;
 }
 
-// Helper hook for media query
-function useMediaQuery(query: string) {
-    const [matches, setMatches] = useState(false);
-    useEffect(() => {
-        const media = window.matchMedia(query);
-        if (media.matches !== matches) {
-            setMatches(media.matches);
-        }
-        const listener = () => setMatches(media.matches);
-        media.addEventListener("change", listener);
-        return () => media.removeEventListener("change", listener);
-    }, [matches, query]);
-    return matches;
-}
-
 const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, show, onHide, children, ...props }, ref) => {
-    const isDesktop = useMediaQuery("(min-width: 992px)");
-
-    // Determine animation state
-    // On Desktop: Always visible (x: 0)
-    // On Mobile: Visible if show=true, else Hidden (x: -100%)
-    const animateState = isDesktop ? "visible" : (show ? "visible" : "hidden");
-
-    const sidebarVariants = {
-        hidden: { x: "calc(-100% - 80px)", opacity: 1 }, // Mobile Hidden: extra offset for margin
-        visible: { x: "0%", opacity: 1 },    // Visible (Desktop or Mobile Open)
-    };
-
     return (
         <>
             <motion.div
@@ -51,11 +24,11 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
                     "fixed z-[1050] left-sidebar-gap top-sidebar-gap h-[calc(100vh-2*var(--sidebar-gap))] w-[260px] bg-sidebar-bg text-sidebar-color rounded-sidebar-radius border border-sidebar-border shadow-sidebar py-6 overflow-y-auto backdrop-filter-none [&::-webkit-scrollbar]:w-0",
                     // Mobile specific overrides
                     "lg:w-[260px] w-[280px] max-w-[calc(100vw-32px)] lg:max-w-none lg:shadow-sidebar shadow-none lg:m-0",
+                    "left-[-300px] lg:left-sidebar-gap",
                     className
                 )}
                 initial={false} // Prevent initial animation on hydration if possible, or just default.
-                animate={animateState}
-                variants={sidebarVariants}
+                animate={show ? { x: 320 } : { x: 0 }}
                 transition={{ type: "spring", stiffness: 400, damping: 40 }}
                 {...(props as any)}
             >
@@ -64,7 +37,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
 
             {/* Overlay for mobile - Only render when shown and NOT desktop */}
             <AnimatePresence>
-                {show && !isDesktop && (
+                {show && (
                     <motion.div
                         className="fixed top-0 left-0 w-full h-full bg-black/50 z-[1040] lg:hidden"
                         onClick={onHide}
@@ -79,6 +52,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
         </>
     );
 });
+
 Sidebar.displayName = "Sidebar";
 
 /* -------------------------------------------------------------------------- */
@@ -104,9 +78,9 @@ const SidebarItem = React.forwardRef<HTMLAnchorElement, SidebarItemProps>(({ cla
         <a
             ref={ref}
             className={clsx(
-                "flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-sidebar-color rounded-[14px] transition-all duration-200 border border-transparent tracking-[0.3px] no-underline cursor-pointer bg-transparent outline-none focus:outline-none",
+                "flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-sidebar-color rounded-[14px] transition-all duration-200 border-none tracking-[0.3px] no-underline cursor-pointer bg-transparent outline-none focus:outline-none",
                 "hover:bg-sidebar-hover hover:text-sidebar-active [&>svg]:hover:scale-[1.15] [&>svg]:hover:-rotate-[5deg]",
-                active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold shadow-sidebar-active !border-transparent",
+                active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold shadow-sidebar-active",
                 className
             )}
             {...props}
@@ -156,9 +130,9 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
                 <button
                     type="button"
                     className={clsx(
-                        "group flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-sidebar-color rounded-[14px] transition-all duration-200 border border-transparent tracking-[0.3px] cursor-pointer bg-transparent outline-none focus:outline-none",
+                        "group flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-sidebar-color rounded-[14px] transition-all duration-200 border-none tracking-[0.3px] cursor-pointer bg-transparent outline-none focus:outline-none",
                         "hover:bg-sidebar-hover hover:text-sidebar-active [&>span>svg]:hover:scale-[1.15] [&>span>svg]:hover:-rotate-[5deg]",
-                        active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold shadow-sidebar-active !border-transparent"
+                        active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold shadow-sidebar-active"
                     )}
                 >
                     {icon && (

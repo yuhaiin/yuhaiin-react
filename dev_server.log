@@ -1,15 +1,12 @@
 
 > yuhaiin-react@0.1.0 dev
-> vite --port 5173
+> vite
 
+Port 5173 is in use, trying another one...
 
-  VITE v7.3.1  ready in 1194 ms
+  VITE v7.3.1  ready in 2706 ms
 
-  ➜  Local:   http://localhost:5173/
+  ➜  Local:   http://localhost:5174/
   ➜  Network: use --host to expose
-6:11:26 PM [vite] (client) hmr update /src/global.css, /src/routes/root.css, /src/component/v2/toast.tsx, /src/docs/group/page.tsx, /src/docs/connections/v2/page.tsx, /src/component/v2/card.tsx, /src/component/v2/button.tsx, /src/component/v2/togglegroup.tsx, /src/component/v2/forms.tsx, /src/component/v2/combobox.tsx, /src/component/v2/modal.tsx, /src/component/v2/spinner.tsx, /src/component/v2/switch.tsx, /src/docs/connections/components.tsx, /src/component/v2/accordion.tsx, /src/component/v2/dropdown.tsx, /src/component/v2/inputgroup.tsx, /src/component/v2/datalist.tsx, /src/component/v2/input.tsx, /src/component/v2/select.tsx, /node_modules/uplot/dist/uPlot.min.css
-6:12:04 PM [vite] (client) hmr update /src/global.css, /src/component/v2/sidebar.tsx
-6:17:32 PM [vite] (client) hmr update /src/global.css, /src/component/v2/sidebar.tsx
-2:31:05 AM [vite] (client) hmr update /src/global.css
-2:31:05 AM [vite] (client) hmr update /src/global.css, /src/component/v2/sidebar.tsx
-11:44:46 AM [vite] (client) hmr update /src/global.css, /src/component/v2/sidebar.tsx
+3:25:14 PM [vite] (client) hmr update /src/docs/nav/NavBarContainer.tsx, /src/global.css
+3:25:32 PM [vite] (client) hmr update /src/routes/root.css

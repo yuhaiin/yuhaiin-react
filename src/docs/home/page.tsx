@@ -44,12 +44,7 @@ function HomePage() {
 
 
 
-    return <div style={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        boxSizing: 'border-box'
-    }}>
+    return <div className="h-full flex flex-col box-border">
         <NodeModal
             show={nodeModal.show}
             hash={nodeModal.point.hash}
@@ -58,7 +53,7 @@ function HomePage() {
             onHide={() => setNodeModal({ ...nodeModal, show: false })}
         />
 
-        <div style={{ flexShrink: 0, marginBottom: '1rem' }}>
+        <div className="shrink-0 mb-4">
             <FlowContainer
                 onFlow={onFlow}
                 extra_fields={[
@@ -67,6 +62,7 @@ function HomePage() {
                         value: now_isLoading ? "loading..." : now_error ? now_error.msg : (now?.tcp ?
                             <a
                                 href="#"
+                                className="text-blue-500 hover:underline"
                                 onClick={() => { if (now?.tcp) setNodeModal({ show: true, point: now.tcp }) }}
                             >
                                 {now.tcp.group}/{now.tcp.name}
@@ -78,6 +74,7 @@ function HomePage() {
                         value: now_isLoading ? "loading..." : now_error ? now_error.msg : (now?.udp ?
                             <a
                                 href="#"
+                                className="text-blue-500 hover:underline"
                                 onClick={() => { if (now?.udp) setNodeModal({ show: true, point: now.udp }) }}
                             >
                                 {now.udp.group}/{now.udp.name}
@@ -90,8 +87,8 @@ function HomePage() {
 
 
         <MainContainer>
-            <Card style={{ minHeight: '400px' }}>
-                <CardBody style={{ padding: '0rem' }}>
+            <Card className="min-h-[400px]">
+                <CardBody className="!p-0">
                     <TrafficChartDynamic data={traffic} minHeight={400} />
                 </CardBody>
             </Card>

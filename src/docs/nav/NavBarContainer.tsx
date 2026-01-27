@@ -11,7 +11,7 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
     return (
         <>
             <Button
-                className="fixed top-[15px] left-[15px] z-[1030] w-[44px] h-[44px] shadow-[0_4px_15px_rgba(0,0,0,0.1)] lg:hidden"
+                className="lg:!hidden !fixed top-[15px] left-[15px] z-[1030] w-[44px] h-[44px] shadow-[0_4px_15px_rgba(0,0,0,0.1)]"
                 onClick={() => setShowSidebar(!showSidebar)}
                 aria-label="Toggle navigation"
             >

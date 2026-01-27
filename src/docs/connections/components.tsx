@@ -8,7 +8,6 @@ import { FetchProtobuf, ProtoPath } from "../../common/proto";
 import { connections, counter, total_flow } from "../pbes/api/statistic_pb";
 import { mode } from "../pbes/config/bypass_pb";
 import { connection, type as connType, match_history_entry } from "../pbes/statistic/config_pb";
-import styles from './flowcard.module.css';
 
 interface MetricProps {
     label: string;
@@ -20,12 +19,17 @@ interface MetricProps {
 const MetricCard: FC<MetricProps> = ({ label, value, error, color = '#3b82f6' }) => {
     return (
         <div
-            className={styles.metricCard}
-        // Show a blue light line on the left edge of the card
-        // style={{ '--accent-color': color } as React.CSSProperties}
+            className={`
+                grow basis-[calc(25%-1.25rem)] min-w-[200px] relative p-4
+                bg-[var(--metric-bg)] border border-[var(--metric-border)] rounded-2xl
+                flex flex-col justify-center
+                transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+                shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)]
+                hover:-translate-y-[5px] hover:border-[rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]
+            `}
         >
-            <div className={styles.metricCardLabel}>{label}</div>
-            <div className={`${styles.metricCardValue} ${error ? styles.error : ''}`}>
+            <div className="text-xs uppercase tracking-wider text-[var(--metric-label,#64748b)] mb-1 font-semibold">{label}</div>
+            <div className={`text-[1.35rem] font-bold font-mono text-[var(--metric-value,#0f172a)] animate-dataUpdate ${error ? 'text-red-500' : ''}`}>
                 {error || value}
             </div>
         </div>
@@ -144,7 +148,7 @@ export const FlowCard: FC<{
     extra_fields?: MetricProps[],
 }> = ({ lastFlow, flow_error, extra_fields }) => {
     return (
-        <div className={`${styles.flowCardGrid} mb-3`}
+        <div className="flex flex-wrap gap-3 w-full mb-3"
             style={{ viewTransitionName: "flow-card-root !important" }}>
             <MetricCard
                 label="Total Download"
