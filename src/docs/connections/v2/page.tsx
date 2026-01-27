@@ -1,26 +1,23 @@
 "use client"
 
 import { useDelay } from "@/common/hooks"
-import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "@/common/proto"
-import { Button } from "@/component/v2/button"
+import { ProtoPath, WebsocketProtoServerStream } from "@/common/proto"
 import { IconBadge } from "@/component/v2/card"
 import Loading from "@/component/v2/loading"
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal"
-import { Spinner } from "@/component/v2/spinner"
-import { GlobalToastContext } from "@/component/v2/toast"
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
-import { ConnectionInfo, FlowContainer, formatBytes } from "@/docs/connections/components"
-import { connections, counter, notify_data, notify_remove_connectionsSchema } from "@/docs/pbes/api/statistic_pb"
+import { FlowContainer, formatBytes } from "@/docs/connections/components"
+import { connections, counter, notify_data } from "@/docs/pbes/api/statistic_pb"
 import { mode } from "@/docs/pbes/config/bypass_pb"
 import { connection, connectionSchema, type } from "@/docs/pbes/statistic/config_pb"
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
 import { AnimatePresence, motion } from "framer-motion"
-import { ArrowDown, ArrowUp, Network, Power, ShieldCheck, Tag } from 'lucide-react'
-import React, { FC, useCallback, useContext, useMemo, useState } from "react"
+import { ArrowDown, ArrowUp, Network, ShieldCheck, Tag } from 'lucide-react'
+import React, { FC, useCallback, useMemo, useState } from "react"
 import useSWRSubscription from 'swr/subscription'
 import { NodeModal } from "../../node/modal"
 import styles from './connections.module.css'
+import { InfoModal } from "./info"
 
 
 const processStream = (rs: notify_data[], prev?: { [key: string]: connection }): { [key: string]: connection } => {
@@ -42,7 +39,7 @@ const processStream = (rs: notify_data[], prev?: { [key: string]: connection }):
         }
     }
 
-    return prev ?? {}
+    return data
 }
 
 const ConnectionMonitor: FC<{
@@ -50,7 +47,7 @@ const ConnectionMonitor: FC<{
     sortBy: string,
     sortOrder: "asc" | "desc",
     children?: React.ReactNode
-}> = ({ setInfo, sortBy, sortOrder, children }) => {
+}> = ({ setInfo, children }) => {
     const [counters, setCounters] = useState<{
         [key: string]: {
             download: string,
@@ -59,7 +56,6 @@ const ConnectionMonitor: FC<{
             rawUpload: bigint
         }
     }>({});
-    const shouldFetch = useDelay(400)
 
     const updateCounters = useCallback((cc: { [key: string]: counter }) => {
         setCounters(prev => {
@@ -97,50 +93,24 @@ const ConnectionMonitor: FC<{
     const notifyRequest = useMemo(() => create(EmptySchema, {}), [])
     const subscribe = useMemo(() => WebsocketProtoServerStream(connections.method.notify, notifyRequest, processStream), [notifyRequest])
 
-    const { data: rawConns, error: conn_error } =
+
+    const shouldFetch = useDelay(400)
+    const { data: conns, error: conn_error } =
         useSWRSubscription(
             shouldFetch ? ProtoPath(connections.method.notify) : null,
             subscribe,
             {}
         )
 
-    // Move sorting logic here to stabilize the list passed to ConnectionList
-    const sortedConns = useMemo(() => Object.values(rawConns ?? {}).sort((a, b) => {
-        let first = 1;
-        let second = -1;
-
-        if (sortOrder === "asc") {
-            first = -1;
-            second = 1;
-        }
-
-        if (sortBy) {
-            switch (sortBy) {
-                case "download":
-                    const ad = counters[a.id.toString()]?.rawDownload ?? BigInt(0)
-                    const bd = counters[b.id.toString()]?.rawDownload ?? BigInt(0)
-                    return ad < bd ? first : second
-                case "upload":
-                    const au = counters[a.id.toString()]?.rawUpload ?? BigInt(0)
-                    const bu = counters[b.id.toString()]?.rawUpload ?? BigInt(0)
-                    return au < bu ? first : second
-                case "name":
-                    return a.addr < b.addr ? first : second
-            }
-        }
-
-        return a.id < b.id ? first : second
-    }), [rawConns, sortBy, sortOrder, (sortBy === "download" || sortBy === "upload") ? counters : null])
-
     return (
         <>
             <FlowContainer onUpdate={updateCounters} />
             {children}
             <ConnectionList
-                conns={sortedConns}
+                conns={conns ?? {}}
                 setInfo={setInfo}
                 conn_error={conn_error}
-                isLoading={rawConns === undefined}
+                isLoading={conns === undefined}
                 counters={counters}
             />
         </>
@@ -186,7 +156,7 @@ function Connections() {
                 onHide={hideNodeModal}
             />
 
-            <InfoOffcanvas
+            <InfoModal
                 data={info.info}
                 show={!nodeModal.show && info.show}
                 onClose={hideInfo}
@@ -223,7 +193,7 @@ function Connections() {
 }
 
 const ConnectionListComponent: FC<{
-    conns: connection[],
+    conns: { [key: string]: connection },
     setInfo: (info: { info: connection, show: boolean }) => void
     conn_error?: { code: number, msg: string },
     isLoading?: boolean,
@@ -238,8 +208,6 @@ const ConnectionListComponent: FC<{
     sortFields?: string,
     sortOrder?: "asc" | "desc"
 }> = ({ conns, conn_error, setInfo, isLoading, counters, sortFields, sortOrder }) => {
-
-
     const connValues = useMemo(() => Object.values(conns ?? {}), [conns])
 
     const trafficSorted = useMemo(() => {
@@ -264,7 +232,6 @@ const ConnectionListComponent: FC<{
                     const bu = counters[b.id.toString()]?.upload ?? 0
                     return au < bu ? first : second
             }
-            return 0
         })
     }, [connValues, counters, sortFields, sortOrder])
 
@@ -290,8 +257,8 @@ const ConnectionListComponent: FC<{
 
     const values = (sortFields === "download" || sortFields === "upload") ? trafficSorted : staticSorted
 
-    const handleSelect = useCallback((conn: connection) => {
-        setInfo({ info: conn, show: true })
+    const handleSelect = useCallback((conn: bigint) => {
+        setInfo({ info: values.find(v => v.id === conn) ?? ({} as connection), show: true })
     }, [setInfo])
 
     if (conn_error !== undefined) return <Loading code={conn_error.code}>{conn_error.msg}</Loading>
@@ -303,11 +270,15 @@ const ConnectionListComponent: FC<{
                 values.map((e) => {
                     const c = counters[e.id.toString()]
                     return <ListItem
-                        data={e}
                         key={e.id}
+                        id={e.id}
                         download={c?.download ?? "0B"}
                         upload={c?.upload ?? "0B"}
                         onSelect={handleSelect}
+                        addr={e.addr.toString()}
+                        network={type[e.type?.connType ?? 0]}
+                        tag={e.tag}
+                        bMode={mode[e.mode]}
                     />
                 })
             }
@@ -319,18 +290,20 @@ const ConnectionList = React.memo(ConnectionListComponent)
 
 
 const ListItemComponent: FC<{
-    data: connection,
-    onSelect?: (c: connection) => void,
+    id: bigint,
+    addr: string,
+    network: string,
+    tag: string,
+    bMode: string,
+    onSelect?: (c: bigint) => void,
     download: string,
     upload: string
 }> =
-    ({ data, onSelect, download, upload }) => {
-        const [network, tag, bMode] = useMemo(() => [type[data.type?.connType ?? 0], data.tag, mode[data.mode]], [data])
-
+    ({ onSelect, download, upload, addr, network, tag, bMode, id }) => {
         return (
             <motion.li
                 className={styles['list-item']}
-                onClick={() => onSelect?.(data)}
+                onClick={() => onSelect?.(id)}
                 layout
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -338,8 +311,8 @@ const ListItemComponent: FC<{
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             >
                 <div className={styles['item-main']}>
-                    <code className={styles['item-id']}>{data.id.toString()}</code>
-                    <span className={styles['item-addr']}>{data.addr}</span>
+                    <code className={styles['item-id']}>{id.toString()}</code>
+                    <span className={styles['item-addr']}>{addr}</span>
                 </div>
 
                 <div className={styles['item-details-right']}>
@@ -374,68 +347,5 @@ const ConnectedFlowBadge: FC<{ download: string, upload: string }> = React.memo(
         </span>
     </div>
 })
-
-const InfoOffcanvasComponent: FC<{
-    data: connection,
-    show: boolean,
-    onClose: () => void,
-    showNodeModal?: (hash: string) => void
-}> = ({ data, show, onClose: handleClose, showNodeModal }) => {
-    const ctx = useContext(GlobalToastContext);
-    const [closing, setClosing] = useState(false);
-
-    const closeConnection = useCallback(() => {
-        setClosing(true)
-        FetchProtobuf(
-            connections.method.close_conn,
-            create(notify_remove_connectionsSchema, { ids: [data.id] }),
-        ).then(({ error }) => {
-            if (error) ctx.Error(`code ${data.id} failed, ${error.code}| ${error.msg}`)
-            else handleClose()
-        }).finally(() => { setClosing(false) })
-    }, [setClosing, data.id, ctx])
-
-    return (
-        <Modal open={show} onOpenChange={(open) => !open && handleClose()}>
-            <ModalContent>
-                <ModalHeader closeButton>
-                    <ModalTitle className="h5 fw-bold">
-                        Connection Details
-                    </ModalTitle>
-                </ModalHeader>
-
-                <ModalBody className="pt-2">
-                    <ConnectionInfo value={data} showNodeModal={showNodeModal} />
-                </ModalBody>
-
-                <ModalFooter className="border-top-0 pt-0 pb-3 px-3">
-                    <Button
-                        variant="danger"
-                        className="w-100 py-2 d-flex align-items-center justify-content-center notranslate"
-                        disabled={closing}
-                        onClick={closeConnection}
-                    >
-                        {closing ? (
-                            <>
-                                <Spinner
-                                    size="sm"
-                                    className="me-2"
-                                />
-                                Disconnecting...
-                            </>
-                        ) : (
-                            <>
-                                <Power className="fs-5 me-2" />
-                                <span className="fw-bold">Disconnect</span>
-                            </>
-                        )}
-                    </Button>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
-    );
-}
-
-const InfoOffcanvas = React.memo(InfoOffcanvasComponent)
 
 export default Connections;
