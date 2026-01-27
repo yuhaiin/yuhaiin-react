@@ -1,8 +1,16 @@
-import { FC, useEffect, useLayoutEffect, useRef, useState, useMemo } from 'react';
+import { FC, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 import { formatBytes } from '../connections/components';
 import { Tooltip } from './tooltip';
+
+const INDICES_CACHE: number[][] = [];
+function getIndices(length: number) {
+    if (!INDICES_CACHE[length]) {
+        INDICES_CACHE[length] = Array.from({ length }, (_, i) => i);
+    }
+    return INDICES_CACHE[length];
+}
 
 function niceMax(value: number) {
     if (value <= 0) return 1;
@@ -154,8 +162,6 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
         download: 0,
     });
 
-    const indices = useMemo(() => Array.from({ length: data.labels.length }, (_, i) => i), [data.labels.length]);
-
     const latestLabelsRef = useRef(data.labels);
     useEffect(() => { latestLabelsRef.current = data.labels; }, [data.labels]);
 
@@ -259,7 +265,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
 
         };
 
-        const initialData = [indices, data.upload, data.download] as [number[], number[], number[]];
+        const initialData = [getIndices(data.labels.length), data.upload, data.download] as [number[], number[], number[]];
 
         const u = new uPlot(opts, initialData, chartRef.current);
         uPlotInst.current = u;
@@ -275,13 +281,13 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
         if (!uPlotInst.current) return;
         const u = uPlotInst.current;
         const yMax = niceMax(data.rawMax);
-        const newData = [indices, data.upload, data.download] as [number[], number[], number[]];
+        const newData = [getIndices(data.labels.length), data.upload, data.download] as [number[], number[], number[]];
 
         u.batch(() => {
             u.setScale('y', { min: 0, max: yMax });
             u.setData(newData);
         });
-    }, [data, indices]);
+    }, [data]);
 
     useEffect(() => {
         if (!wrapperRef.current || !uPlotInst.current) return;
