@@ -206,7 +206,7 @@ export function CardRowList<T>({
                                         value={newdata.value}
                                         onChange={(e) => setNewdata({ value: e.target.value })}
                                         placeholder="Create new..."
-                                        className="w-full p-2 text-base bg-transparent border-0 focus:outline-none placeholder:text-gray-400"
+                                        className="w-full p-2 text-base bg-transparent border-0 focus:outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500"
                                         onKeyDown={(e) => {
                                             if (!newdata.value || adding) return;
                                             if (e.key === 'Enter') onAddNew(newdata.value);
