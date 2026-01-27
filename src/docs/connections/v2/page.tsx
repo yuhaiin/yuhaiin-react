@@ -232,12 +232,12 @@ const ListItemComponent: FC<{ data: connection, download: number, upload: number
             >
                 <div className="flex flex-col">
                     <code className="font-mono text-xs text-sidebar-color">{data.id.toString()}</code>
-                    <span className="font-medium text-sm">{data.addr}</span>
+                    <span className="font-medium text-md">{data.addr}</span>
                 </div>
 
-                <div className="flex flex-col items-start gap-2 mt-2 md:items-end md:mt-0">
+                <div className="flex flex-col items-start gap-2 md:items-end md:mt-0">
                     <FlowBadge download={download} upload={upload} />
-                    <div className="flex gap-2 items-center flex-wrap text-sm mt-1 md:mt-0">
+                    <div className="flex gap-2 items-center flex-wrap text-xs md:mt-0">
                         <IconBadge icon={ShieldCheck} text={mode[data.mode]} />
                         <IconBadge icon={Network} text={type[data.type?.connType ?? 0]} />
                         {data.tag && <IconBadge icon={Tag} text={data.tag} />}
