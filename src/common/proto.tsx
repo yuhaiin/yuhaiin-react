@@ -69,6 +69,7 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
 
     return (key, { next }) => {
         const url = new URL(apiUrl !== "" ? apiUrl : window.location.toString());
+        url.hash = ""
         url.pathname = ProtoPath(d)
         url.protocol = url.protocol === "https:" ? "wss:" : "ws:"
 

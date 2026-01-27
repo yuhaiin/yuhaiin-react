@@ -14,13 +14,13 @@ import { connections, counter, notify_data, notify_remove_connectionsSchema } fr
 import { connection, connectionSchema, type } from "@/docs/pbes/statistic/config_pb"
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
+import { clsx } from "clsx"
 import { AnimatePresence, motion } from "framer-motion"
 import { ArrowDown, ArrowUp, Network, Power, ShieldCheck, Tag } from 'lucide-react'
 import React, { FC, useCallback, useContext, useMemo, useState } from "react"
 import useSWRSubscription from 'swr/subscription'
 import { NodeModal } from "../../node/modal"
 import { mode } from "../../pbes/config/bypass_pb"
-import styles from './connections.module.css'
 
 
 const processStream = (rs: notify_data[], prev?: { [key: string]: connection }): { [key: string]: connection } => {
@@ -106,18 +106,18 @@ function Connections() {
             />
 
 
-            <div className="d-flex justify-content-end mb-3">
-                <div className="d-flex align-items-center gap-3 flex-wrap">
-                    <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && changeSortOrder(v as "asc" | "desc")}>
+            <div className="flex justify-end mb-3">
+                <div className="flex items-center gap-3 flex-wrap">
+                    <ToggleGroup className="flex-nowrap" type="single" value={sortOrder} onValueChange={(v) => v && changeSortOrder(v as "asc" | "desc")}>
                         <ToggleItem value="asc">
-                            <ArrowUp size={16} /> Asc
+                            <div className="flex items-center gap-1 whitespace-nowrap"><ArrowUp size={16} /> Asc</div>
                         </ToggleItem>
                         <ToggleItem value="desc">
-                            <ArrowDown size={16} /> Desc
+                            <div className="flex items-center gap-1 whitespace-nowrap"><ArrowDown size={16} /> Desc</div>
                         </ToggleItem>
                     </ToggleGroup>
 
-                    <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && changeSortBy(v)}>
+                    <ToggleGroup className="flex-nowrap" type="single" value={sortBy} onValueChange={(v) => v && changeSortBy(v)}>
                         <ToggleItem value="id">Id</ToggleItem>
                         <ToggleItem value="name">Name</ToggleItem>
                         <ToggleItem value="download">Download</ToggleItem>
@@ -198,7 +198,7 @@ const ConnectionListComponent: FC<{
     if (conn_error !== undefined) return <Loading code={conn_error.code}>{conn_error.msg}</Loading>
     if (conns === undefined) return <Loading />
 
-    return <ul className={styles['connections-list']}>
+    return <ul className="flex flex-col p-0 m-0 mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]">
         <AnimatePresence initial={false} mode="popLayout">
             {
                 values.map((e) => {
@@ -222,7 +222,7 @@ const ListItemComponent: FC<{ data: connection, download: number, upload: number
     ({ data, download, upload, onSelect }) => {
         return (
             <motion.li
-                className={styles['list-item']}
+                className="flex flex-col items-start md:flex-row md:justify-between px-4 py-3 border-b border-sidebar-border transition-colors duration-200 cursor-pointer hover:bg-sidebar-hover last:border-b-0"
                 onClick={() => onSelect?.(data)}
                 layout
                 initial={{ opacity: 0, x: -20 }}
@@ -230,14 +230,14 @@ const ListItemComponent: FC<{ data: connection, download: number, upload: number
                 exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             >
-                <div className={styles['item-main']}>
-                    <code className={styles['item-id']}>{data.id.toString()}</code>
-                    <span className={styles['item-addr']}>{data.addr}</span>
+                <div className="flex flex-col">
+                    <code className="font-mono text-xs text-sidebar-color">{data.id.toString()}</code>
+                    <span className="font-medium text-md">{data.addr}</span>
                 </div>
 
-                <div className={styles['item-details-right']}>
+                <div className="flex flex-col items-start gap-2 md:items-end md:mt-0">
                     <FlowBadge download={download} upload={upload} />
-                    <div className={styles['item-details']}>
+                    <div className="flex gap-2 items-center flex-wrap text-xs md:mt-0">
                         <IconBadge icon={ShieldCheck} text={mode[data.mode]} />
                         <IconBadge icon={Network} text={type[data.type?.connType ?? 0]} />
                         {data.tag && <IconBadge icon={Tag} text={data.tag} />}
@@ -250,14 +250,19 @@ const ListItemComponent: FC<{ data: connection, download: number, upload: number
 const ListItem = React.memo(ListItemComponent)
 
 const FlowBadgeComponent: FC<{ download: number, upload: number }> = ({ download, upload }) => {
-    // Replaced React-Bootstrap Badge with HTML span and bootstrap classes
-    return <div className="d-flex gap-2">
-        <span className="badge rounded-pill text-bg-secondary d-flex align-items-center gap-1">
-            <span className={`${styles['badge-icon']}`}><ArrowDown size={12} /></span>
+    return <div className="flex gap-2">
+        <span className={clsx(
+            "rounded-full flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium",
+            "bg-slate-100 text-slate-500 dark:bg-[#2b2b40] dark:text-[#a6a6c0]"
+        )}>
+            <ArrowDown size={12} className="mr-1" />
             {formatBytes(download)}
         </span>
-        <span className="badge rounded-pill text-bg-primary d-flex align-items-center gap-1">
-            <span className={`${styles['badge-icon']}`}><ArrowUp size={12} /></span>
+        <span className={clsx(
+            "rounded-full flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium",
+            "bg-slate-100 text-slate-500 dark:bg-[#2b2b40] dark:text-[#a6a6c0]"
+        )}>
+            <ArrowUp size={12} className="mr-1" />
             {formatBytes(upload)}
         </span>
     </div>
@@ -289,7 +294,7 @@ const InfoOffcanvasComponent: FC<{
         <Modal open={show} onOpenChange={(open) => !open && handleClose()}>
             <ModalContent>
                 <ModalHeader closeButton>
-                    <ModalTitle className="h5 fw-bold">
+                    <ModalTitle className="text-lg font-bold">
                         Connection Details
                     </ModalTitle>
                 </ModalHeader>
@@ -298,10 +303,10 @@ const InfoOffcanvasComponent: FC<{
                     <ConnectionInfo value={data} showNodeModal={showNodeModal} />
                 </ModalBody>
 
-                <ModalFooter className="border-top-0 pt-0 pb-3 px-3">
+                <ModalFooter className="border-t-0 pt-0 pb-3 px-3">
                     <Button
                         variant="danger"
-                        className="w-100 py-2 d-flex align-items-center justify-content-center notranslate"
+                        className="w-full py-2 flex items-center justify-center notranslate"
                         disabled={closing}
                         onClick={closeConnection}
                     >
@@ -309,14 +314,14 @@ const InfoOffcanvasComponent: FC<{
                             <>
                                 <Spinner
                                     size="sm"
-                                    className="me-2"
+                                    className="mr-2"
                                 />
                                 Disconnecting...
                             </>
                         ) : (
                             <>
-                                <Power className="fs-5 me-2" />
-                                <span className="fw-bold">Disconnect</span>
+                                <Power className="text-xl mr-2" />
+                                <span className="font-bold">Disconnect</span>
                             </>
                         )}
                     </Button>

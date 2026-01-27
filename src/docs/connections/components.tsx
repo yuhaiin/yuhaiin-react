@@ -1,6 +1,7 @@
 "use client"
 
 import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datalist";
+import { clsx } from "clsx";
 import { Check } from "lucide-react";
 import React, { FC, JSX, useEffect, useState } from "react";
 import useSWR from "swr";
@@ -264,7 +265,7 @@ export const ConnectionInfo: FC<{
 }
 
 const IconCross = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-danger" style={{ opacity: 0.8 }}>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-red-500 opacity-80">
         <line x1="18" y1="6" x2="6" y2="18"></line>
         <line x1="6" y1="6" x2="18" y2="18"></line>
     </svg>
@@ -276,91 +277,64 @@ export const MatchHistoryItem = ({ value }: { value: match_history_entry[] }) =>
 
     return (
         <DataListCustomItem>
-            <div className="d-sm-flex justify-content-between align-items-start gap-3 w-100">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-3 w-full">
 
                 {/* Left Side: Main Title */}
                 <div
-                    className="endpoint-name notranslate text-capitalize flex-shrink-0 mb-3 mb-sm-0"
-                    style={{
-                        color: 'var(--sidebar-header-color)',
-                        fontWeight: '600',
-                        minWidth: '110px',
-                        fontSize: '0.875rem' // Match DataList key font size
-                    }}
+                    className="notranslate capitalize shrink-0 mb-3 sm:mb-0 text-sidebar-header font-semibold min-w-[110px] text-sm"
                 >
                     MatchHistory
                 </div>
 
                 {/* Right Side: Container for Rule Groups */}
-                <div className="flex-grow-1 w-100 d-flex flex-column gap-3">
+                <div className="grow w-full flex flex-col gap-3">
                     {
                         value.map((e: any, i: number) => {
                             return (
                                 /* GROUP CONTAINER: Wraps each Rule in a distinct "Box" */
                                 <div
                                     key={"rule-" + e.ruleName + i}
-                                    className="rounded-3 p-3"
-                                    style={{
-                                        border: '1px solid var(--sidebar-border-color)',
-                                        // Use a subtle background (like hover-bg) to separate it from the main background
-                                        backgroundColor: 'var(--sidebar-hover-bg)',
-                                    }}
+                                    className="rounded-xl p-3 border border-sidebar-border bg-sidebar-hover"
                                 >
                                     {/* Rule Group Header */}
                                     <div
-                                        className="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center"
-                                        style={{ borderColor: 'var(--sidebar-border-color)' }}
+                                        className="mb-2 pb-2 border-b border-sidebar-border flex justify-between items-center"
                                     >
-                                        <span style={{
-                                            fontSize: '0.85rem',
-                                            color: 'var(--sidebar-header-color)', // Brighter color
-                                            fontWeight: '700',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.5px'
-                                        }}>
+                                        <span className="text-xs text-sidebar-header font-bold uppercase tracking-wider">
                                             {e.ruleName}
                                         </span>
-                                        {/* Optional: Count badge or similar could go here */}
                                     </div>
 
                                     {/* Items List inside the Group */}
-                                    <div className="d-flex flex-column gap-2">
+                                    <div className="flex flex-col gap-2">
                                         {e.history && e.history.map((h: any, j: number) => {
                                             return (
                                                 <div
                                                     key={"list-" + h.listName + j}
-                                                    className="d-flex align-items-center justify-content-between"
+                                                    className="flex items-center justify-between"
                                                 >
                                                     {/* List Name */}
                                                     <span
-                                                        className="notranslate text-break"
-                                                        style={{
-                                                            fontSize: '0.95rem',
-                                                            color: 'var(--sidebar-color)'
-                                                        }}
+                                                        className="notranslate break-all text-sm text-sidebar-color"
                                                     >
                                                         {h.listName}
                                                     </span>
 
                                                     {/* Status Icon & Label */}
-                                                    <div className="d-flex align-items-center gap-2 ps-3 flex-shrink-0">
-                                                        <span style={{
-                                                            fontSize: '0.8rem',
-                                                            fontWeight: '500',
-                                                            color: h.matched ? 'var(--bs-success)' : 'var(--sidebar-color)',
-                                                            opacity: h.matched ? 1 : 0.7
-                                                        }}>
+                                                    <div className="flex items-center gap-2 pl-3 shrink-0">
+                                                        <span className={clsx(
+                                                            "text-xs font-medium",
+                                                            h.matched ? "text-green-500 opacity-100" : "text-sidebar-color opacity-70"
+                                                        )}>
                                                             {h.matched ? 'Hit' : 'Miss'}
                                                         </span>
                                                         <div
-                                                            className="d-flex align-items-center justify-content-center rounded-circle"
-                                                            style={{
-                                                                width: '24px',
-                                                                height: '24px',
-                                                                backgroundColor: h.matched ? 'rgba(25, 135, 84, 0.1)' : 'rgba(255, 255, 255, 0.05)'
-                                                            }}
+                                                            className={clsx(
+                                                                "flex items-center justify-center rounded-full w-6 h-6",
+                                                                h.matched ? "bg-green-500/10" : "bg-white/5"
+                                                            )}
                                                         >
-                                                            {h.matched ? <Check /> : <IconCross />}
+                                                            {h.matched ? <Check size={14} /> : <IconCross />}
                                                         </div>
                                                     </div>
                                                 </div>
