@@ -148,7 +148,7 @@ export const FlowCard: FC<{
     extra_fields?: MetricProps[],
 }> = ({ lastFlow, flow_error, extra_fields }) => {
     return (
-        <div className="flex flex-wrap gap-5 w-full mb-3"
+        <div className="flex flex-wrap gap-3 w-full mb-3"
             style={{ viewTransitionName: "flow-card-root !important" }}>
             <MetricCard
                 label="Total Download"
