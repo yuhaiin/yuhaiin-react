@@ -543,7 +543,6 @@ const NodeItemv2: FC<{
         }))
             .then(async ({ data: resp, error }) => {
                 if (error) {
-                    console.log(`test failed ${error.code}| ${error.msg}`)
                     setLoading(false, `${error.code}| ${error.msg}`)
                     return
                 }
@@ -551,7 +550,6 @@ const NodeItemv2: FC<{
                 if (resp && resp.idLatencyMap["latency"]) {
                     const rr = resp.idLatencyMap["latency"]
                     if (rr.reply.case === "error") {
-                        console.log(`test failed ${rr.reply.value.msg}`)
                         setLoading(false, rr.reply.value.msg);
                         return
                     }

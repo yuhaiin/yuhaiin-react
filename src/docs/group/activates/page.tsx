@@ -120,7 +120,6 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
                     }
                     renderListItem={(v) => <ActiveNodeItem v={v} onClose={() => setConfirmData({ show: true, name: v.hash })} />}
                     onClickItem={(v) => {
-                        console.log(v)
                         setModalHash({ hash: v.hash, show: true, point: v })
                     }}
                     header={
