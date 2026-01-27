@@ -22,28 +22,28 @@ import { type } from "../../pbes/statistic/config_pb"
 const ListItem: FC<{ data: failed_history }> = React.memo(({ data }) => {
     return (
         <>
-            <div className="d-flex w-100 flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+            <div className="flex w-full flex-col md:flex-row items-start md:items-center justify-between gap-3">
 
                 {/* Left Side: Icon + Host & Error Preview */}
-                <div className="d-flex align-items-center flex-grow-1 overflow-hidden gap-3 w-100 w-md-auto">
-                    <div className="d-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle flex-shrink-0" style={{ width: '42px', height: '42px' }}>
-                        <Bug className="fs-5" />
+                <div className="flex items-center grow overflow-hidden gap-3 w-full md:w-auto">
+                    <div className="flex items-center justify-center bg-red-500/10 text-red-500 rounded-full shrink-0" style={{ width: '42px', height: '42px' }}>
+                        <Bug className="text-xl" />
                     </div>
 
-                    <div className="d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
-                        <span className="fw-bold text-truncate fs-6 text-danger text-opacity-75">{data.host}</span>
-                        <small className="text-muted text-truncate opacity-75 font-monospace">
+                    <div className="flex flex-col overflow-hidden" style={{ minWidth: 0 }}>
+                        <span className="font-bold truncate text-base text-red-500/75">{data.host}</span>
+                        <small className="text-gray-500 dark:text-gray-400 truncate opacity-75 font-mono">
                             {data.error || "Unknown Error"}
                         </small>
                     </div>
                 </div>
 
                 {/* Right Side: Metadata Badges */}
-                <div className="d-flex flex-wrap gap-2 align-items-center flex-shrink-0">
+                <div className="flex flex-wrap gap-2 items-center shrink-0">
                     <IconBadge icon={Network} text={type[data.protocol ?? type.unknown]} color="info" />
                     <IconBadge icon={OctagonAlert} text={`${data.failedCount} Fails`} color="warning" />
                     <IconBadge icon={Clock} text={timestampDate(data.time!).toLocaleTimeString()} color="secondary" />
-                    <div className="text-muted opacity-25 ms-2 d-none d-md-block"><ChevronRight /></div>
+                    <div className="text-gray-500 dark:text-gray-400 opacity-25 ml-2 hidden md:block"><ChevronRight /></div>
                 </div>
             </div>
         </>
@@ -56,7 +56,7 @@ const InfoModal: FC<{ data?: failed_history, show: boolean, onClose: () => void 
         <Modal open={show} onOpenChange={(open) => !open && onClose()}>
             <ModalContent>
                 <ModalHeader closeButton>
-                    <ModalTitle className="fw-bold text-danger">Failure Details</ModalTitle>
+                    <ModalTitle className="font-bold text-red-500">Failure Details</ModalTitle>
                 </ModalHeader>
                 <ModalBody>
                     <div>
@@ -75,7 +75,7 @@ const InfoModal: FC<{ data?: failed_history, show: boolean, onClose: () => void 
                     </div>
                 </ModalBody>
                 <ModalFooter className="border-0">
-                    <Button className="w-100" onClick={onClose}>Close</Button>
+                    <Button className="w-full" onClick={onClose}>Close</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
@@ -119,16 +119,16 @@ function FailedHistory() {
             <InfoModal data={info.data} show={info.show} onClose={() => setInfo({ ...info, show: false })} />
 
             {/* --- Action Bar --- */}
-            <div className="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3">
+            <div className="flex flex-wrap justify-between items-end mb-4 gap-3">
                 <div>
-                    <h4 className="fw-bold mb-1">Failed Connections</h4>
-                    <div className="text-muted d-flex align-items-center small">
-                        <Bug className="text-danger me-2" />
+                    <h4 className="font-bold mb-1">Failed Connections</h4>
+                    <div className="text-gray-500 dark:text-gray-400 flex items-center text-sm">
+                        <Bug className="text-red-500 mr-2" />
                         <span>Tracking {values.length} rejected or timed-out requests</span>
                     </div>
                 </div>
 
-                <div className="d-flex flex-wrap gap-2 justify-content-end align-items-center">
+                <div className="flex flex-wrap gap-2 justify-end items-center">
                     <Button size="sm" onClick={() => mutate()} disabled={isValidating}>
                         {isValidating ? <Spinner size="sm" /> : <RotateCw size={16} />}
                     </Button>
@@ -142,17 +142,17 @@ function FailedHistory() {
                         <DropdownContent align="end" className="p-3" style={{ minWidth: '250px' }}>
                             <div className="mb-3">
                                 <SettingLabel>Order</SettingLabel>
-                                <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-100">
-                                    <ToggleItem value="asc" className="flex-grow-1">ASC</ToggleItem>
-                                    <ToggleItem value="desc" className="flex-grow-1">DESC</ToggleItem>
+                                <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-full">
+                                    <ToggleItem value="asc" className="grow">ASC</ToggleItem>
+                                    <ToggleItem value="desc" className="grow">DESC</ToggleItem>
                                 </ToggleGroup>
                             </div>
                             <div>
                                 <SettingLabel>By</SettingLabel>
-                                <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="w-100 text-nowrap">
-                                    <ToggleItem value="Time" className="flex-grow-1 px-3">Time</ToggleItem>
-                                    <ToggleItem value="Host" className="flex-grow-1 px-3">Host</ToggleItem>
-                                    <ToggleItem value="Count" className="flex-grow-1 px-3">Count</ToggleItem>
+                                <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="w-full whitespace-nowrap">
+                                    <ToggleItem value="Time" className="grow px-3">Time</ToggleItem>
+                                    <ToggleItem value="Host" className="grow px-3">Host</ToggleItem>
+                                    <ToggleItem value="Count" className="grow px-3">Count</ToggleItem>
                                 </ToggleGroup>
                             </div>
                         </DropdownContent>
