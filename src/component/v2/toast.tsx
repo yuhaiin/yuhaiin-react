@@ -20,7 +20,7 @@ interface ToastContextType {
 }
 
 const initialState: ToastContextType = {
-  Info: () => { },
+  Info: (_s: string) => { },
   Error: (s: string) => { console.error(s) }
 };
 
