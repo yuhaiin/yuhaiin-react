@@ -36,11 +36,16 @@ module.exports = {
         slideUp: {
           'from': { height: 'var(--radix-collapsible-content-height)', opacity: '1' },
           'to': { height: '0', opacity: '0' },
+        },
+        dataUpdate: {
+          '0%': { opacity: '0.6', transform: 'scale(0.98)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
         }
       },
       animation: {
         slideDown: 'slideDown 0.3s ease-out',
         slideUp: 'slideUp 0.3s ease-out',
+        dataUpdate: 'dataUpdate 0.2s ease-out',
       }
     },
   },

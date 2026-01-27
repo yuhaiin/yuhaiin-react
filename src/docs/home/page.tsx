@@ -44,12 +44,7 @@ function HomePage() {
 
 
 
-    return <div style={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        boxSizing: 'border-box'
-    }}>
+    return <div className="h-full flex flex-col box-border">
         <NodeModal
             show={nodeModal.show}
             hash={nodeModal.point.hash}
@@ -58,7 +53,7 @@ function HomePage() {
             onHide={() => setNodeModal({ ...nodeModal, show: false })}
         />
 
-        <div style={{ flexShrink: 0, marginBottom: '1rem' }}>
+        <div className="shrink-0 mb-4">
             <FlowContainer
                 onFlow={onFlow}
                 extra_fields={[
@@ -90,8 +85,8 @@ function HomePage() {
 
 
         <MainContainer>
-            <Card style={{ minHeight: '400px' }}>
-                <CardBody style={{ padding: '0rem' }}>
+            <Card className="min-h-[400px]">
+                <CardBody className="!p-0">
                     <TrafficChartDynamic data={traffic} minHeight={400} />
                 </CardBody>
             </Card>
