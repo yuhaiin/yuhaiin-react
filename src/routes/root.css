@@ -57,8 +57,7 @@
     .motion-content {
         /* --- Fix for overlap by floating button --- */
         /* Button height approx 45px + top 15px = 60px */
-        /* Set to 80px to ensure the page title is fully visible below the button */
-        padding-top: 80px;
+        padding-top: 60px;
         padding-left: 20px;
         padding-bottom: 20px;
     }
