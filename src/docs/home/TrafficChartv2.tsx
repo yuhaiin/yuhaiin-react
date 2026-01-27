@@ -154,7 +154,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
         download: 0,
     });
 
-    const indices = useMemo(() => data.labels.map((_, i) => i), [data.labels.length]);
+    const indices = useMemo(() => Array.from({ length: data.labels.length }, (_, i) => i), [data.labels.length]);
 
     const latestLabelsRef = useRef(data.labels);
     useEffect(() => { latestLabelsRef.current = data.labels; }, [data.labels]);
