@@ -108,7 +108,7 @@ function Connections() {
 
             <div className="flex justify-end mb-3">
                 <div className="flex items-center gap-3 flex-wrap">
-                    <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && changeSortOrder(v as "asc" | "desc")}>
+                    <ToggleGroup className="flex-nowrap" type="single" value={sortOrder} onValueChange={(v) => v && changeSortOrder(v as "asc" | "desc")}>
                         <ToggleItem value="asc">
                             <ArrowUp size={16} /> Asc
                         </ToggleItem>
@@ -117,7 +117,7 @@ function Connections() {
                         </ToggleItem>
                     </ToggleGroup>
 
-                    <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && changeSortBy(v)}>
+                    <ToggleGroup className="flex-nowrap" type="single" value={sortBy} onValueChange={(v) => v && changeSortBy(v)}>
                         <ToggleItem value="id">Id</ToggleItem>
                         <ToggleItem value="name">Name</ToggleItem>
                         <ToggleItem value="download">Download</ToggleItem>
@@ -198,7 +198,7 @@ const ConnectionListComponent: FC<{
     if (conn_error !== undefined) return <Loading code={conn_error.code}>{conn_error.msg}</Loading>
     if (conns === undefined) return <Loading />
 
-    return <ul className="flex flex-col p-0 m-0 mb-8 overflow-hidden rounded-sidebar border border-sidebar-border bg-sidebar-bg shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]">
+    return <ul className="flex flex-col p-0 m-0 mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]">
         <AnimatePresence initial={false} mode="popLayout">
             {
                 values.map((e) => {
@@ -252,17 +252,17 @@ const ListItem = React.memo(ListItemComponent)
 const FlowBadgeComponent: FC<{ download: number, upload: number }> = ({ download, upload }) => {
     return <div className="flex gap-2">
         <span className={clsx(
-            "rounded-full flex items-center gap-1 px-3 py-1 font-medium",
+            "rounded-full flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium",
             "bg-slate-100 text-slate-500 dark:bg-[#2b2b40] dark:text-[#a6a6c0]"
         )}>
-            <span className="mr-1 text-[0.9em] align-[-0.1em]"><ArrowDown size={12} /></span>
+            <ArrowDown size={12} className="mr-1" />
             {formatBytes(download)}
         </span>
         <span className={clsx(
-            "rounded-full flex items-center gap-1 px-3 py-1 font-medium",
+            "rounded-full flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium",
             "bg-slate-100 text-slate-500 dark:bg-[#2b2b40] dark:text-[#a6a6c0]"
         )}>
-            <span className="mr-1 text-[0.9em] align-[-0.1em]"><ArrowUp size={12} /></span>
+            <ArrowUp size={12} className="mr-1" />
             {formatBytes(upload)}
         </span>
     </div>

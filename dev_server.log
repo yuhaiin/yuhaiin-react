@@ -3,8 +3,7 @@
 > vite
 
 
-  VITE v7.3.1  ready in 1696 ms
+  VITE v7.3.1  ready in 3547 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-4:13:53 PM [vite] (client) hmr update /src/global.css, /src/common/proto.tsx
