@@ -2,7 +2,7 @@
 
 import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datalist";
 import { Check } from "lucide-react";
-import React, { FC, JSX, useEffect, useState } from "react";
+import React, { FC, JSX, useState } from "react";
 import useSWR from "swr";
 import { FetchProtobuf, ProtoPath } from "../../common/proto";
 import { connections, counter, total_flow } from "../pbes/api/statistic_pb";
@@ -179,23 +179,6 @@ export const FlowCard: FC<{
         </div>
     );
 }
-
-export const FlowContainer: FC<{
-    onUpdate?: (counters: { [key: string]: counter }) => void
-    onFlow?: (flow: Flow) => void
-    extra_fields?: MetricProps[],
-}> = React.memo((
-    { onUpdate, onFlow, extra_fields }
-) => {
-    const { data: lastFlow, error: flow_error } = useFlow()
-
-    useEffect(() => {
-        if (onUpdate && lastFlow) { onUpdate(lastFlow.counters) }
-        if (onFlow && lastFlow) { onFlow(lastFlow) }
-    }, [onUpdate, onFlow, lastFlow])
-
-    return <FlowCard lastFlow={lastFlow} flow_error={flow_error} extra_fields={extra_fields} />
-})
 
 export const ConnectionInfo: FC<{
     value: connection,

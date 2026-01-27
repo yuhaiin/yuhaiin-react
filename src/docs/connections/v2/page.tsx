@@ -1,11 +1,11 @@
 "use client"
 
 import { useDelay } from "@/common/hooks"
-import { ProtoPath, WebsocketProtoServerStream } from "@/common/proto"
+import { WebsocketProtoServerStream } from "@/common/proto"
 import { IconBadge } from "@/component/v2/card"
 import Loading from "@/component/v2/loading"
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
-import { FlowContainer, formatBytes } from "@/docs/connections/components"
+import { FlowCard, formatBytes, useFlow } from "@/docs/connections/components"
 import { connections, counter, notify_data } from "@/docs/pbes/api/statistic_pb"
 import { mode } from "@/docs/pbes/config/bypass_pb"
 import { connection, connectionSchema, type } from "@/docs/pbes/statistic/config_pb"
@@ -13,33 +13,87 @@ import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
 import { AnimatePresence, motion } from "framer-motion"
 import { ArrowDown, ArrowUp, Network, ShieldCheck, Tag } from 'lucide-react'
-import React, { FC, useCallback, useMemo, useState } from "react"
-import useSWRSubscription from 'swr/subscription'
+import React, { FC, useCallback, useEffect, useMemo, useReducer, useState } from "react"
 import { NodeModal } from "../../node/modal"
 import styles from './connections.module.css'
 import { InfoModal } from "./info"
 
+type ConnItem = {
+    conn: connection
+    download: string
+    upload: string
+    rawDownload: bigint
+    rawUpload: bigint
+}
 
-const processStream = (rs: notify_data[], prev?: { [key: string]: connection }): { [key: string]: connection } => {
-    let data: { [key: string]: connection };
-    if (prev === undefined) data = {}
-    else data = { ...prev }
+type ConnMap = {
+    [id: string]: ConnItem
+}
 
-    for (const r of rs) {
-        switch (r.data.case) {
-            case "notifyNewConnections":
-                r.data.value.
-                    connections.
-                    sort((a, b) => a.id > b.id ? 1 : -1).
-                    forEach((e: connection) => { data[e.id.toString()] = e })
-                break
-            case "notifyRemoveConnections":
-                r.data.value.ids.forEach((e: bigint) => { delete data[e.toString()] })
-                break
+type ConnAction =
+    | { type: 'WS_BATCH', batch: notify_data[] }
+    | { type: 'UPDATE_TRAFFIC', counters: { [key: string]: counter } }
+
+const connReducer = (state: ConnMap, action: ConnAction): ConnMap => {
+    switch (action.type) {
+        case 'WS_BATCH': {
+            const next = { ...state }
+            let hasChange = false
+            for (const r of action.batch) {
+                switch (r.data.case) {
+                    case "notifyNewConnections":
+                        r.data.value.connections.
+                            sort((a, b) => a.id > b.id ? 1 : -1).
+                            forEach((e: connection) => {
+                                const key = e.id.toString()
+                                const existing = next[key]
+                                next[key] = {
+                                    conn: e,
+                                    download: existing?.download ?? "0B",
+                                    upload: existing?.upload ?? "0B",
+                                    rawDownload: existing?.rawDownload ?? BigInt(0),
+                                    rawUpload: existing?.rawUpload ?? BigInt(0),
+                                }
+                                hasChange = true
+                            })
+                        break
+                    case "notifyRemoveConnections":
+                        r.data.value.ids.forEach((e: bigint) => {
+                            delete next[e.toString()]
+                            hasChange = true
+                        })
+                        break
+                }
+            }
+            return hasChange ? next : state
+        }
+        case 'UPDATE_TRAFFIC': {
+            let hasChange = false
+            const next = { ...state }
+
+            for (const key in action.counters) {
+                const c = action.counters[key]
+                const item = next[key]
+                if (!item) continue
+
+                const download = formatBytes(Number(c.download))
+                const upload = formatBytes(Number(c.upload))
+
+                if (item.download !== download || item.upload !== upload) {
+                    next[key] = {
+                        ...item,
+                        download,
+                        upload,
+                        rawDownload: BigInt(c.download),
+                        rawUpload: BigInt(c.upload)
+                    }
+                    hasChange = true
+                }
+            }
+            return hasChange ? next : state
         }
     }
-
-    return data
+    return state
 }
 
 const ConnectionMonitor: FC<{
@@ -47,71 +101,54 @@ const ConnectionMonitor: FC<{
     sortBy: string,
     sortOrder: "asc" | "desc",
     children?: React.ReactNode
-}> = ({ setInfo, children }) => {
-    const [counters, setCounters] = useState<{
-        [key: string]: {
-            download: string,
-            upload: string,
-            rawDownload: bigint,
-            rawUpload: bigint
+}> = ({ setInfo, children, sortBy, sortOrder }) => {
+    const [connMap, dispatch] = useReducer(connReducer, {})
+    const [connError, setConnError] = useState<{ msg: string, code: number } | undefined>()
+
+    const { data: flow, error: flow_error } = useFlow()
+
+    useEffect(() => {
+        if (flow) {
+            dispatch({ type: 'UPDATE_TRAFFIC', counters: flow.counters })
         }
-    }>({});
-
-    const updateCounters = useCallback((cc: { [key: string]: counter }) => {
-        setCounters(prev => {
-            let hasChange = false
-            const next = { ...prev }
-
-            for (const key in cc) {
-                const c = cc[key]
-                const p = prev[key]
-                const download = formatBytes(Number(c.download))
-                const upload = formatBytes(Number(c.upload))
-
-                if (!p || p.upload !== upload || p.download !== download) {
-                    next[key] = {
-                        download,
-                        upload,
-                        rawDownload: c.download,
-                        rawUpload: c.upload,
-                    }
-                    hasChange = true
-                }
-            }
-
-            for (const key in prev) {
-                if (!Object.prototype.hasOwnProperty.call(cc, key)) {
-                    delete next[key]
-                    hasChange = true
-                }
-            }
-
-            return hasChange ? next : prev
-        })
-    }, [])
+    }, [flow])
 
     const notifyRequest = useMemo(() => create(EmptySchema, {}), [])
-    const subscribe = useMemo(() => WebsocketProtoServerStream(connections.method.notify, notifyRequest, processStream), [notifyRequest])
-
-
     const shouldFetch = useDelay(400)
-    const { data: conns, error: conn_error } =
-        useSWRSubscription(
-            shouldFetch ? ProtoPath(connections.method.notify) : null,
-            subscribe,
-            {}
-        )
+
+    useEffect(() => {
+        if (!shouldFetch) return
+
+        const stream = (batch: notify_data[], _prev?: any) => batch
+
+        const subscribe = WebsocketProtoServerStream(connections.method.notify, notifyRequest, stream)
+
+        const unsubscribe = subscribe("connections", {
+            next: (err, updater) => {
+                if (err) {
+                    setConnError(err)
+                } else if (updater) {
+                    const batch = typeof updater === 'function' ? updater(undefined) : updater
+                    if (batch && Array.isArray(batch)) {
+                        dispatch({ type: 'WS_BATCH', batch: batch as notify_data[] })
+                        setConnError(undefined)
+                    }
+                }
+            }
+        })
+        return unsubscribe
+    }, [shouldFetch, notifyRequest])
 
     return (
         <>
-            <FlowContainer onUpdate={updateCounters} />
+            <FlowCard lastFlow={flow} flow_error={flow_error} />
             {children}
             <ConnectionList
-                conns={conns ?? {}}
+                connMap={connMap}
                 setInfo={setInfo}
-                conn_error={conn_error}
-                isLoading={conns === undefined}
-                counters={counters}
+                conn_error={connError}
+                sortFields={sortBy}
+                sortOrder={sortOrder}
             />
         </>
     )
@@ -193,22 +230,13 @@ function Connections() {
 }
 
 const ConnectionListComponent: FC<{
-    conns: { [key: string]: connection },
+    connMap: ConnMap,
     setInfo: (info: { info: connection, show: boolean }) => void
     conn_error?: { code: number, msg: string },
-    isLoading?: boolean,
-    counters: {
-        [key: string]: {
-            download: string,
-            upload: string,
-            rawDownload: bigint,
-            rawUpload: bigint
-        }
-    }
     sortFields?: string,
     sortOrder?: "asc" | "desc"
-}> = ({ conns, conn_error, setInfo, isLoading, counters, sortFields, sortOrder }) => {
-    const connValues = useMemo(() => Object.values(conns ?? {}), [conns])
+}> = ({ connMap, conn_error, setInfo, sortFields, sortOrder }) => {
+    const connValues = useMemo(() => Object.values(connMap), [connMap])
 
     const trafficSorted = useMemo(() => {
         if (sortFields !== "download" && sortFields !== "upload") return []
@@ -224,16 +252,13 @@ const ConnectionListComponent: FC<{
 
             switch (sortFields) {
                 case "download":
-                    const ad = counters[a.id.toString()]?.download ?? 0
-                    const bd = counters[b.id.toString()]?.download ?? 0
-                    return ad < bd ? first : second
+                    return a.rawDownload < b.rawDownload ? first : second
                 case "upload":
-                    const au = counters[a.id.toString()]?.upload ?? 0
-                    const bu = counters[b.id.toString()]?.upload ?? 0
-                    return au < bu ? first : second
+                    return a.rawUpload < b.rawUpload ? first : second
             }
+            return 0
         })
-    }, [connValues, counters, sortFields, sortOrder])
+    }, [connValues, sortFields, sortOrder])
 
     const staticSorted = useMemo(() => {
         if (sortFields === "download" || sortFields === "upload") return []
@@ -248,37 +273,40 @@ const ConnectionListComponent: FC<{
             }
 
             if (sortFields === "name") {
-                return a.addr < b.addr ? first : second
+                return a.conn.addr < b.conn.addr ? first : second
             }
 
-            return a.id < b.id ? first : second
+            return a.conn.id < b.conn.id ? first : second
         })
     }, [connValues, sortFields, sortOrder])
 
     const values = (sortFields === "download" || sortFields === "upload") ? trafficSorted : staticSorted
 
     const handleSelect = useCallback((conn: bigint) => {
-        setInfo({ info: values.find(v => v.id === conn) ?? ({} as connection), show: true })
-    }, [setInfo])
+        const item = connMap[conn.toString()]
+        if (item) {
+            setInfo({ info: item.conn, show: true })
+        }
+    }, [setInfo, connMap])
 
     if (conn_error !== undefined) return <Loading code={conn_error.code}>{conn_error.msg}</Loading>
-    if (isLoading) return <Loading />
+
+    // isLoading removed? ConnMap starts empty. That's fine.
 
     return <ul className={styles['connections-list']}>
         <AnimatePresence initial={false} mode="popLayout">
             {
                 values.map((e) => {
-                    const c = counters[e.id.toString()]
                     return <ListItem
-                        key={e.id}
-                        id={e.id}
-                        download={c?.download ?? "0B"}
-                        upload={c?.upload ?? "0B"}
+                        key={e.conn.id}
+                        id={e.conn.id}
+                        download={e.download}
+                        upload={e.upload}
                         onSelect={handleSelect}
-                        addr={e.addr.toString()}
-                        network={type[e.type?.connType ?? 0]}
-                        tag={e.tag}
-                        bMode={mode[e.mode]}
+                        addr={e.conn.addr}
+                        network={type[e.conn.type?.connType ?? 0]}
+                        tag={e.conn.tag}
+                        bMode={mode[e.conn.mode]}
                     />
                 })
             }
