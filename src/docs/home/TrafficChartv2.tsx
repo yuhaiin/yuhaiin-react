@@ -4,12 +4,14 @@ import 'uplot/dist/uPlot.min.css';
 import { formatBytes } from '../connections/components';
 import { Tooltip } from './tooltip';
 
-const INDICES_CACHE: number[][] = [];
+const INDICES_CACHE = new Map<number, number[]>();
 function getIndices(length: number) {
-    if (!INDICES_CACHE[length]) {
-        INDICES_CACHE[length] = Array.from({ length }, (_, i) => i);
+    let indices = INDICES_CACHE.get(length);
+    if (!indices) {
+        indices = Array.from({ length }, (_, i) => i);
+        INDICES_CACHE.set(length, indices);
     }
-    return INDICES_CACHE[length];
+    return indices;
 }
 
 function niceMax(value: number) {
