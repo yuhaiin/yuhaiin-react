@@ -20,7 +20,7 @@ export const DataListItem: FC<DataListItemProps> = ({ label, value, className })
     }
 
     return (
-        <li className={clsx("py-4 border-b border-sidebar-border last:border-b-0 transition-colors duration-200", className)}>
+        <li className={clsx("py-3 border-b border-sidebar-border last:border-b-0 transition-colors duration-200", className)}>
             <div className="flex flex-col gap-1 min-[576px]:flex-row min-[576px]:justify-between min-[576px]:items-start min-[576px]:gap-4">
                 {/* Key */}
                 <div className="notranslate shrink-0 min-w-[120px] text-sm font-semibold text-sidebar-header capitalize leading-normal">
@@ -38,7 +38,7 @@ export const DataListItem: FC<DataListItemProps> = ({ label, value, className })
 
 // --- Custom Item (for complex content) ---
 export const DataListCustomItem: FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
-    <li className={clsx("py-4 border-b border-sidebar-border last:border-b-0 transition-colors duration-200", className)}>
+    <li className={clsx("py-3 border-b border-sidebar-border last:border-b-0 transition-colors duration-200", className)}>
         {children}
     </li>
 );

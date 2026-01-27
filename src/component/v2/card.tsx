@@ -53,7 +53,7 @@ export const ListItem: FC<{
 }> = ({ children, className, style, onClick }) => (
     <div
         className={clsx(
-            "flex items-center min-h-[72px] p-5 cursor-pointer rounded-xl border border-transparent transition-all duration-200",
+            "flex items-center min-h-[72px] p-4 cursor-pointer rounded-xl border border-transparent transition-all duration-200",
             "bg-[var(--list-item-bg)]",
             "hover:bg-[var(--list-item-hover)] hover:border-[var(--list-item-border-hover)] hover:-translate-y-0.5",
             className
@@ -189,7 +189,7 @@ export function CardRowList<T>({
         <Card>
             {header && <CardHeader>{header}</CardHeader>}
             <CardBody>
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
+                <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
                     {items.map((value, index) =>
                         <div key={index} className="flex">
                             <ListItem className="w-full" onClick={() => onClickItem?.(value, index)}>
