@@ -2,11 +2,11 @@
 
 import { Card, CardBody, MainContainer } from '@/component/v2/card';
 import { create } from '@bufbuild/protobuf';
-import { useCallback, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useProtoSWR } from '../../common/proto';
 import dynamic from '../../component/AsyncComponent';
 import Loading from '../../component/v2/loading';
-import { Flow, FlowContainer } from '../connections/components';
+import { FlowCard, useFlow } from '../connections/components';
 import Activates from '../group/activates/page';
 import { NodeModal } from '../node/modal';
 import { node } from '../pbes/api/node_pb';
@@ -18,10 +18,14 @@ const TrafficMonitor = ({ extraFields }: { extraFields: any[] }) => {
     const [traffic, setTraffic] = useState<{ labels: string[], upload: number[], download: number[], rawMax: number }>
         ({ labels: [], upload: [], download: [], rawMax: 0, });
 
-    const onFlow = useCallback((lastFlow: Flow) => {
-        const upload = lastFlow.upload_rate;
-        const download = lastFlow.download_rate;
-        const time = lastFlow.time.toLocaleTimeString();
+    const { data: flow, error: flow_error } = useFlow()
+
+    useEffect(() => {
+        if (!flow) return
+
+        const upload = flow.upload_rate;
+        const download = flow.download_rate;
+        const time = flow.time.toLocaleTimeString();
         const pointMax = Math.max(upload, download);
 
         setTraffic(prev => {
@@ -38,14 +42,18 @@ const TrafficMonitor = ({ extraFields }: { extraFields: any[] }) => {
 
             return { labels, upload: uploadArr, download: downloadArr, rawMax };
         });
-    }, []);
+    }, [flow])
 
     return (
         <>
             <div style={{ flexShrink: 0, marginBottom: '1rem' }}>
-                <FlowContainer
-                    onFlow={onFlow}
+                <FlowCard
+                    flow_error={flow_error}
                     extra_fields={extraFields}
+                    download={flow?.DownloadTotalString()}
+                    upload={flow?.UploadTotalString()}
+                    download_rate={flow?.DownloadString()}
+                    upload_rate={flow?.UploadString()}
                 />
             </div>
 
