@@ -282,12 +282,15 @@ const ConnectionListComponent: FC<{
 
     const values = (sortFields === "download" || sortFields === "upload") ? trafficSorted : staticSorted
 
+    const connMapRef = React.useRef(connMap)
+    connMapRef.current = connMap
+
     const handleSelect = useCallback((conn: bigint) => {
-        const item = connMap[conn.toString()]
+        const item = connMapRef.current[conn.toString()]
         if (item) {
             setInfo({ info: item.conn, show: true })
         }
-    }, [setInfo, connMap])
+    }, [setInfo])
 
     if (conn_error !== undefined) return <Loading code={conn_error.code}>{conn_error.msg}</Loading>
 
