@@ -110,10 +110,10 @@ function Connections() {
                 <div className="flex items-center gap-3 flex-wrap">
                     <ToggleGroup className="flex-nowrap" type="single" value={sortOrder} onValueChange={(v) => v && changeSortOrder(v as "asc" | "desc")}>
                         <ToggleItem value="asc">
-                            <ArrowUp size={16} /> Asc
+                            <div className="flex items-center gap-1 whitespace-nowrap"><ArrowUp size={16} /> Asc</div>
                         </ToggleItem>
                         <ToggleItem value="desc">
-                            <ArrowDown size={16} /> Desc
+                            <div className="flex items-center gap-1 whitespace-nowrap"><ArrowDown size={16} /> Desc</div>
                         </ToggleItem>
                     </ToggleGroup>
 
@@ -231,8 +231,8 @@ const ListItemComponent: FC<{ data: connection, download: number, upload: number
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             >
                 <div className="flex flex-col">
-                    <code className="font-mono text-sm text-sidebar-color">{data.id.toString()}</code>
-                    <span className="font-medium">{data.addr}</span>
+                    <code className="font-mono text-xs text-sidebar-color">{data.id.toString()}</code>
+                    <span className="font-medium text-sm">{data.addr}</span>
                 </div>
 
                 <div className="flex flex-col items-start gap-2 mt-2 md:items-end md:mt-0">
