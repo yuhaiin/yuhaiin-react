@@ -39,17 +39,9 @@ const Row = ({ index, style, data }: RowComponentProps<{ data: string[] }>) => {
 };
 
 const processStream = (rs: Logv2[], prev?: string[]): string[] => {
-    if (prev === undefined) prev = []
+    const newLogs = rs.flatMap(r => r.log).reverse();
+    const combined = [...newLogs, ...(prev ?? [])];
 
-    const newLogs: string[] = [];
-    for (let i = rs.length - 1; i >= 0; i--) {
-        const r = rs[i];
-        for (let j = r.log.length - 1; j >= 0; j--) {
-            newLogs.push(r.log[j]);
-        }
-    }
-
-    const combined = [...newLogs, ...prev];
     if (combined.length > 10000) {
         return combined.slice(0, 10000);
     }
@@ -60,10 +52,15 @@ export default function LogComponent() {
     const [searchTerm, setSearchTerm] = useState('');
     const shouldFetch = useDelay(1000);
 
+    const subscription = useMemo(() =>
+        WebsocketProtoServerStream(tools.method.logv2, create(EmptySchema, {}), processStream, { throttle: 200 }),
+        []
+    );
+
     const { data: log, error: log_error } =
         useSWRSubscription(
             shouldFetch ? ProtoPath(tools.method.log) : null,
-            WebsocketProtoServerStream(tools.method.logv2, create(EmptySchema, {}), processStream, { throttle: 200 }),
+            subscription,
             {}
         )
 
