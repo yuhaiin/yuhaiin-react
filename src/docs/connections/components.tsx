@@ -20,7 +20,7 @@ const MetricCard: FC<MetricProps> = ({ label, value, error, color = '#3b82f6' })
     return (
         <div
             className={`
-                flex-1 min-w-[200px] relative p-4
+                grow basis-[calc(25%-1.25rem)] min-w-[200px] relative p-4
                 bg-[var(--metric-bg)] border border-[var(--metric-border)] rounded-2xl
                 flex flex-col justify-center
                 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]

@@ -104,9 +104,9 @@ const SidebarItem = React.forwardRef<HTMLAnchorElement, SidebarItemProps>(({ cla
         <a
             ref={ref}
             className={clsx(
-                "flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-sidebar-color rounded-[14px] transition-all duration-200 border border-transparent tracking-[0.3px] no-underline cursor-pointer bg-transparent outline-none focus:outline-none",
+                "flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-sidebar-color rounded-[14px] transition-all duration-200 border-none tracking-[0.3px] no-underline cursor-pointer bg-transparent outline-none focus:outline-none",
                 "hover:bg-sidebar-hover hover:text-sidebar-active [&>svg]:hover:scale-[1.15] [&>svg]:hover:-rotate-[5deg]",
-                active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold shadow-sidebar-active !border-transparent",
+                active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold shadow-sidebar-active",
                 className
             )}
             {...props}
@@ -156,9 +156,9 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
                 <button
                     type="button"
                     className={clsx(
-                        "group flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-sidebar-color rounded-[14px] transition-all duration-200 border border-transparent tracking-[0.3px] cursor-pointer bg-transparent outline-none focus:outline-none",
+                        "group flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-sidebar-color rounded-[14px] transition-all duration-200 border-none tracking-[0.3px] cursor-pointer bg-transparent outline-none focus:outline-none",
                         "hover:bg-sidebar-hover hover:text-sidebar-active [&>span>svg]:hover:scale-[1.15] [&>span>svg]:hover:-rotate-[5deg]",
-                        active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold shadow-sidebar-active !border-transparent"
+                        active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold shadow-sidebar-active"
                     )}
                 >
                     {icon && (

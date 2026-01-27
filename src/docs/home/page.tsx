@@ -62,6 +62,7 @@ function HomePage() {
                         value: now_isLoading ? "loading..." : now_error ? now_error.msg : (now?.tcp ?
                             <a
                                 href="#"
+                                className="text-blue-500 hover:underline"
                                 onClick={() => { if (now?.tcp) setNodeModal({ show: true, point: now.tcp }) }}
                             >
                                 {now.tcp.group}/{now.tcp.name}
@@ -73,6 +74,7 @@ function HomePage() {
                         value: now_isLoading ? "loading..." : now_error ? now_error.msg : (now?.udp ?
                             <a
                                 href="#"
+                                className="text-blue-500 hover:underline"
                                 onClick={() => { if (now?.udp) setNodeModal({ show: true, point: now.udp }) }}
                             >
                                 {now.udp.group}/{now.udp.name}
