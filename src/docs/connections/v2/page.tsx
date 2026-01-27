@@ -139,16 +139,20 @@ const ConnectionListComponent: FC<{
 }> = ({ conns, counters, conn_error, setInfo, sortFields, sortOrder }) => {
 
 
-    const values = useMemo(() => Object.values(conns ?? {}).sort((a, b) => {
-        let first = 1;
-        let second = -1;
+    const connValues = useMemo(() => Object.values(conns ?? {}), [conns])
 
-        if (sortOrder === "asc") {
-            first = -1;
-            second = 1;
-        }
+    const trafficSorted = useMemo(() => {
+        if (sortFields !== "download" && sortFields !== "upload") return []
 
-        if (sortFields) {
+        return [...connValues].sort((a, b) => {
+            let first = 1;
+            let second = -1;
+
+            if (sortOrder === "asc") {
+                first = -1;
+                second = 1;
+            }
+
             switch (sortFields) {
                 case "download":
                     const ad = counters[a.id.toString()]?.download ?? 0
@@ -158,13 +162,32 @@ const ConnectionListComponent: FC<{
                     const au = counters[a.id.toString()]?.upload ?? 0
                     const bu = counters[b.id.toString()]?.upload ?? 0
                     return au < bu ? first : second
-                case "name":
-                    return a.addr < b.addr ? first : second
             }
-        }
+            return 0
+        })
+    }, [connValues, counters, sortFields, sortOrder])
 
-        return a.id < b.id ? first : second
-    }), [conns, sortFields, counters, sortOrder])
+    const staticSorted = useMemo(() => {
+        if (sortFields === "download" || sortFields === "upload") return []
+
+        return [...connValues].sort((a, b) => {
+            let first = 1;
+            let second = -1;
+
+            if (sortOrder === "asc") {
+                first = -1;
+                second = 1;
+            }
+
+            if (sortFields === "name") {
+                return a.addr < b.addr ? first : second
+            }
+
+            return a.id < b.id ? first : second
+        })
+    }, [connValues, sortFields, sortOrder])
+
+    const values = (sortFields === "download" || sortFields === "upload") ? trafficSorted : staticSorted
 
     const handleSelect = useCallback((conn: connection) => {
         setInfo({ info: conn, show: true })
