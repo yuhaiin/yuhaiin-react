@@ -57,7 +57,7 @@
     .motion-content {
         /* --- Fix for overlap by floating button --- */
         /* Button height approx 45px + top 15px = 60px */
-        padding-top: 60px;
+        padding-top: 75px;
         padding-left: 20px;
         padding-bottom: 20px;
     }
