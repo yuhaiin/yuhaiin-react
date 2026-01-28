@@ -54,7 +54,7 @@ export const Hosts: FC = () => {
                         .sort(([a], [b]) => a.localeCompare(b))
                         .map(([k, v]) => (
                             <InputGroup key={"hosts" + k}>
-                                <InputGroupText className="font-mono text-xs px-2 flex-1 min-w-0 justify-start">
+                                <InputGroupText className="font-mono text-xs px-2 flex-1 min-w-0 justify-start dark:bg-[#2b2b40] dark:text-[#a6a6c0] dark:border-gray-700">
                                     <span className="truncate">{k}</span>
                                 </InputGroupText>
                                 <Input

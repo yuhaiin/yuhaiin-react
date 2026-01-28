@@ -107,7 +107,7 @@ const RuleRow: FC<{
                 <FormSelect
                     value={rule.object.case ?? ""}
                     onChange={(e) => handleUpdate(e, "")}
-                    triggerClassName="rounded-r-none border-r-0"
+                    triggerClassName="rounded-r-none border-r-0 focus:z-10 focus:relative hover:z-10 hover:relative"
                     values={[
                         ["Host", "host"],
                         ["Process", "process"],
@@ -126,7 +126,7 @@ const RuleRow: FC<{
                         value={rule.object.value.list}
                         onChange={(e) => handleUpdate("host", e)}
                         emptyChoose
-                        triggerClassName="rounded-none border-r-0"
+                        triggerClassName="rounded-none border-r-0 focus:z-10 focus:relative hover:z-10 hover:relative"
                         values={valuesContext.Lists}
                     />
                 </div>
@@ -139,7 +139,7 @@ const RuleRow: FC<{
                         values={rule.object.value.names}
                         items={valuesContext.Inbounds}
                         onUpdate={(v) => handleUpdate("inbound", v)}
-                        triggerClassName="rounded-none border-r-0"
+                        triggerClassName="rounded-none border-r-0 focus:z-10 focus:relative hover:z-10 hover:relative"
                     />
                 </div>
             }
@@ -151,7 +151,7 @@ const RuleRow: FC<{
                         value={rule.object.value.list}
                         onChange={(e) => handleUpdate("process", e)}
                         emptyChoose
-                        triggerClassName="rounded-none border-r-0"
+                        triggerClassName="rounded-none border-r-0 focus:z-10 focus:relative hover:z-10 hover:relative"
                         values={valuesContext.Lists}
                     />
                 </div>
@@ -163,7 +163,7 @@ const RuleRow: FC<{
                     <FormSelect
                         value={rule.object.value.network === network_network_type.tcp ? "tcp" : "udp"}
                         onChange={(e) => handleUpdate("network", e)}
-                        triggerClassName="rounded-none border-r-0"
+                        triggerClassName="rounded-none border-r-0 focus:z-10 focus:relative hover:z-10 hover:relative"
                         values={[
                             ["tcp", "tcp"],
                             ["udp", "udp"],
@@ -179,7 +179,7 @@ const RuleRow: FC<{
                         type="text"
                         value={rule.object.value.ports}
                         onChange={(e) => handleUpdate("port", e.target.value)}
-                        className="rounded-none border-r-0"
+                        className="rounded-none border-r-0 focus:z-10 focus:relative hover:z-10 hover:relative"
                     />
                 </div>
             }
@@ -191,13 +191,13 @@ const RuleRow: FC<{
                         type="text"
                         value={rule.object.value.countries}
                         onChange={(e) => handleUpdate("geoip", e.target.value)}
-                        className="rounded-none border-r-0"
+                        className="rounded-none border-r-0 focus:z-10 focus:relative hover:z-10 hover:relative"
                     />
                 </div>
             }
 
             <div className="flex-[0_0_42px]">
-                <Button variant="outline-danger" onClick={onRemove} size="icon" className="w-full rounded-l-none h-full">
+                <Button variant="outline-danger" onClick={onRemove} size="icon" className="w-full rounded-l-none h-full focus:z-10 focus:relative hover:z-10 hover:relative">
                     <X size={16} />
                 </Button>
             </div>

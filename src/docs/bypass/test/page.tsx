@@ -116,9 +116,9 @@ function Test() {
                 </Card>
             }
 
-            <div className="text-center mt-6 opacity-50 pb-12">
-                <small className="text-gray-500 dark:text-gray-400 italic">
-                    <Info className="mr-1" />
+            <div className="flex justify-center mt-6 opacity-50 pb-12">
+                <small className="text-gray-500 dark:text-gray-400 italic flex items-center">
+                    <Info className="mr-1" size={14} />
                     This tool tests the core logic using the current active configuration.
                 </small>
             </div>

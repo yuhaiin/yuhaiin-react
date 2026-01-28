@@ -333,12 +333,12 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
                             type="single"
                             value={isRemote ? "remote" : "local"}
                             onValueChange={(v) => v && handleModeChange(v === "remote")}
-                            className="w-full"
+                            className="w-full flex-nowrap"
                         >
-                            <ToggleItem value="local" className="flex-grow">
+                            <ToggleItem value="local" className="flex-grow whitespace-nowrap">
                                 <Network className="mr-2" />Local
                             </ToggleItem>
-                            <ToggleItem value="remote" className="flex-grow">
+                            <ToggleItem value="remote" className="flex-grow whitespace-nowrap">
                                 <CloudDownload className="mr-2" />Remote
                             </ToggleItem>
                         </ToggleGroup>

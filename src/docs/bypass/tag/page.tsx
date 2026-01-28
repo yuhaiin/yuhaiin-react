@@ -90,12 +90,12 @@ const TagModal: FC<{
                                 type="single"
                                 value={String(props.tagItem.type)}
                                 onValueChange={(v) => v && props.onChangeTag({ ...props.tagItem, type: Number(v) })}
-                                className="w-full"
+                                className="w-full flex-nowrap"
                             >
-                                <ToggleItem value={String(tag_type.node)} className="flex-grow">
+                                <ToggleItem value={String(tag_type.node)} className="flex-grow whitespace-nowrap">
                                     <Network className="mr-2" />Node
                                 </ToggleItem>
-                                <ToggleItem value={String(tag_type.mirror)} className="flex-grow">
+                                <ToggleItem value={String(tag_type.mirror)} className="flex-grow whitespace-nowrap">
                                     <FileStack className="mr-2" />Mirror
                                 </ToggleItem>
                             </ToggleGroup>

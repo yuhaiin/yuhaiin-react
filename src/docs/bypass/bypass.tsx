@@ -5,6 +5,7 @@ import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardFooter, CardHeader, CardRowList, IconBox, SettingsBox } from '@/component/v2/card';
 import { SettingSelectVertical, SwitchCard } from '@/component/v2/forms';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
+import { Select } from '@/component/v2/select';
 import { Spinner } from '@/component/v2/spinner';
 import { create } from '@bufbuild/protobuf';
 import { ArrowUpDown, ListOrdered, Save, ShieldCheck, Signpost } from 'lucide-react';
@@ -310,17 +311,15 @@ const PriorityModalComponent: FC<{
                             <hr className="flex-grow opacity-25" />
                         </div>
 
-                        <select
-                            className='w-full p-2 mb-4 text-center border rounded-md bg-secondary/10 border-gray-500/10 focus:outline-none focus:ring-2 focus:ring-ring'
-                            value={operate}
-                            onChange={(e) => setOperate(parseInt(e.target.value))}
-                        >
-                            {
-                                change_priority_request_change_priority_operateSchema.values.map((v) => (
-                                    <option key={v.number} value={v.number}>{v.name}</option>
-                                ))
-                            }
-                        </select>
+                        <Select
+                            value={String(operate)}
+                            onValueChange={(val) => setOperate(parseInt(val))}
+                            items={change_priority_request_change_priority_operateSchema.values.map((v) => ({
+                                value: String(v.number),
+                                label: v.name
+                            }))}
+                            triggerClassName="w-full text-center justify-center mb-4 bg-secondary/10 border-gray-500/10"
+                        />
 
                         <div className="flex items-center my-4 text-gray-500 dark:text-gray-400">
                             <hr className="flex-grow opacity-25" />
@@ -328,17 +327,15 @@ const PriorityModalComponent: FC<{
                             <hr className="flex-grow opacity-25" />
                         </div>
 
-                        <select
-                            className='w-full p-2 text-center border rounded-md bg-secondary/10 border-gray-500/10 focus:outline-none focus:ring-2 focus:ring-ring'
-                            value={value}
-                            onChange={(e) => setValue(parseInt(e.target.value))}
-                        >
-                            {
-                                rules.map((rule, idx) => (
-                                    <option key={idx} value={idx}>#{idx + 1} - {rule}</option>
-                                ))
-                            }
-                        </select>
+                        <Select
+                            value={String(value)}
+                            onValueChange={(val) => setValue(parseInt(val))}
+                            items={rules.map((rule, idx) => ({
+                                value: String(idx),
+                                label: `#${idx + 1} - ${rule}`
+                            }))}
+                            triggerClassName="w-full text-center justify-center bg-secondary/10 border-gray-500/10"
+                        />
                     </SettingsBox>
                 </ModalBody>
                 <ModalFooter className="gap-2">
