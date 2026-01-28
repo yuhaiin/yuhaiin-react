@@ -1,9 +1,9 @@
 'use client';
 
 import { clsx } from "clsx";
-import { AnimatePresence, motion } from "framer-motion";
 import { History, Plus, Search, TriangleAlert } from 'lucide-react';
 import React, { FC, useState } from 'react';
+import { AnimatePresence, motion } from "framer-motion";
 import { Badge } from "./badge";
 
 // --- Basic Card Components ---
@@ -22,7 +22,7 @@ export const Card: FC<{ children: React.ReactNode, className?: string, style?: R
 );
 
 export const CardHeader: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
-    <div className={clsx("flex items-center justify-between px-3 py-3 border-b border-sidebar-border", className)} style={style}>
+    <div className={clsx("flex items-center justify-between px-6 py-5 border-b border-sidebar-border", className)} style={style}>
         {children}
     </div>
 );

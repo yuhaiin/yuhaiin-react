@@ -24,7 +24,7 @@ const InputWithIcon: React.FC<{
     placeholder: string;
 }> = ({ icon: Icon, label, value, onChange, placeholder }) => (
     <div className="flex items-start gap-3 mb-4">
-        <div className="bg-gray-100 dark:bg-[#18181b] rounded-lg p-2 mt-4 hidden sm:block border border-gray-500/10">
+        <div className="bg-gray-500/10 rounded-lg p-2 mt-4 hidden sm:block border border-gray-500/10">
             <span className="text-gray-500 dark:text-gray-400 text-lg flex"><Icon /></span>
         </div>
         <div className="flex-grow">
