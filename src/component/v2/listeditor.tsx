@@ -155,7 +155,7 @@ export const InputBytesList: FC<{
                         value={newItem}
                         onChange={(e) => setNewItem(e.target.value)}
                         rows={3}
-                        className="text-sm font-mono shadow-none !text-[0.85rem]"
+                        className="font-mono shadow-none text-[0.85rem]"
                     />
                     <Button onClick={add} style={{ alignSelf: 'flex-start' }}>
                         <Plus size={18} />
