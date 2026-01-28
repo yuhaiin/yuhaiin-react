@@ -18,6 +18,7 @@
     align-items: center;
     justify-content: center;
     margin-right: -1px;
+    white-space: nowrap;
     /* Overlap borders */
 }
 

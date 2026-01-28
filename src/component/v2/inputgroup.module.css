@@ -62,3 +62,18 @@
     border: 1px solid #dee2e6;
     border-radius: 12px;
 }
+
+/* Remove default background in dark mode via CSS variable or transparent if overridden */
+@media (prefers-color-scheme: dark) {
+    .text {
+        background-color: transparent; /* Allow utility classes to take over or set default dark bg */
+        border-color: var(--bs-border-color);
+        color: var(--bs-body-color);
+    }
+}
+
+[data-bs-theme="dark"] .text {
+    background-color: transparent;
+    border-color: var(--bs-border-color);
+    color: var(--bs-body-color);
+}
