@@ -52,7 +52,7 @@ export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ lab
   return (
     <div
       className={clsx(
-          "flex items-center cursor-pointer px-6 py-5 rounded-[12px] bg-tertiary-bg border border-sidebar-border transition-all duration-200 mb-2 hover:bg-sidebar-hover hover:border-sidebar-active hover:-translate-y-[2px] justify-between",
+          "flex items-center cursor-pointer px-3 py-3 rounded-[12px] bg-tertiary-bg border border-sidebar-border transition-all duration-200 mb-2 hover:bg-sidebar-hover hover:border-sidebar-active hover:-translate-y-[2px] justify-between",
           className,
           disabled && "opacity-60 pointer-events-none grayscale-[0.5]"
         )}

@@ -41,7 +41,7 @@ const ToggleItem = ({ className, children, value, ...props }: React.ComponentPro
         <ToggleGroupPrimitive.Item
             className={clsx(
                 "bg-transparent text-sidebar-color border border-sidebar-border py-[6px] px-[12px] text-sm font-medium cursor-pointer transition-all duration-200 flex items-center justify-center -mr-[1px] whitespace-nowrap first:rounded-l-[12px] last:rounded-r-[12px] last:mr-0",
-                "hover:bg-sidebar-hover hover:z-[1]",
+                "hover:!bg-sidebar-hover hover:z-[1]",
                 "data-[state=on]:bg-transparent data-[state=on]:text-sidebar-active data-[state=on]:border-sidebar-active data-[state=on]:z-[2] data-[state=on]:shadow-none data-[state=on]:font-semibold",
                 "focus-visible:outline-2 focus-visible:outline-[var(--bs-secondary)] focus-visible:-outline-offset-2 focus-visible:z-[3]",
                 className

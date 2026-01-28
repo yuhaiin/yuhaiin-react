@@ -40,7 +40,7 @@ const DropdownItem = ({ className, ...props }: React.ComponentProps<typeof Dropd
     <DropdownMenuPrimitive.Item
         className={clsx(
             "relative flex items-center w-full py-1.5 px-4 pl-10 text-base text-body-color select-none cursor-pointer outline-none bg-transparent border-none text-left no-underline rounded-[20px]",
-            "hover:bg-tertiary-bg hover:text-emphasis focus:bg-tertiary-bg focus:text-emphasis data-[highlighted]:bg-tertiary-bg data-[highlighted]:text-emphasis",
+            "hover:!bg-tertiary-bg hover:text-emphasis focus:!bg-tertiary-bg focus:text-emphasis data-[highlighted]:!bg-tertiary-bg data-[highlighted]:text-emphasis",
             className
         )}
         {...props}
@@ -66,7 +66,7 @@ const DropdownCheckboxItem = ({ className, children, checked, ...props }: React.
     <DropdownMenuPrimitive.CheckboxItem
         className={clsx(
             "relative flex items-center w-full py-1.5 px-4 pl-10 text-base text-body-color select-none cursor-pointer outline-none bg-transparent border-none text-left no-underline rounded-[20px]",
-            "hover:bg-tertiary-bg hover:text-emphasis focus:bg-tertiary-bg focus:text-emphasis data-[highlighted]:bg-tertiary-bg data-[highlighted]:text-emphasis",
+            "hover:!bg-tertiary-bg hover:text-emphasis focus:!bg-tertiary-bg focus:text-emphasis data-[highlighted]:!bg-tertiary-bg data-[highlighted]:text-emphasis",
             className
         )}
         checked={checked}

@@ -88,7 +88,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
                                         key={`${itemValue}-${index}`}
                                         value={itemValue}
                                         className={clsx(
-                                            "text-sm leading-none text-body-color rounded-[20px] flex items-center h-8 pl-[25px] pr-[35px] relative select-none cursor-pointer border border-transparent transition-colors duration-100 ease-linear data-[highlighted]:bg-tertiary-bg data-[highlighted]:text-body-color"
+                                            "text-sm leading-none text-body-color rounded-[20px] flex items-center h-8 pl-[25px] pr-[35px] relative select-none cursor-pointer transition-colors duration-100 ease-linear data-[highlighted]:bg-tertiary-bg data-[highlighted]:text-body-color"
                                         )}
                                     >
                                         <SelectPrimitive.ItemText>{item.label}</SelectPrimitive.ItemText>

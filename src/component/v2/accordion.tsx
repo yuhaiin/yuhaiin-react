@@ -20,7 +20,7 @@ const AccordionItem = React.forwardRef<React.ElementRef<typeof AccordionPrimitiv
     <AccordionPrimitive.Item
         ref={ref}
         className={clsx(
-            "border border-sidebar-border bg-body overflow-hidden -mt-[1px] first:mt-0 first:rounded-t-[20px] last:rounded-b-[20px]",
+            "border border-sidebar-border bg-[var(--bs-card-bg)] overflow-hidden -mt-[1px] first:mt-0 first:rounded-t-[20px] last:rounded-b-[20px]",
             "focus-within:relative focus-within:z-10 focus-within:border-sidebar-active hover:relative hover:z-10 hover:border-sidebar-active",
             className
         )}
@@ -35,7 +35,7 @@ const AccordionTrigger = React.forwardRef<React.ElementRef<typeof AccordionPrimi
             ref={ref}
             className={clsx(
                 "flex-1 flex items-center justify-between p-4 text-base font-medium leading-none text-sidebar-color bg-transparent border-none cursor-pointer transition-all duration-200 ease-in-out w-full text-left group",
-                "hover:bg-sidebar-hover hover:text-sidebar-active",
+                "hover:!bg-sidebar-hover hover:text-sidebar-active",
                 "data-[state=open]:bg-sidebar-hover data-[state=open]:text-sidebar-active data-[state=open]:border-b data-[state=open]:border-sidebar-border",
                 className
             )}
