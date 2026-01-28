@@ -37,7 +37,7 @@ const AccordionTrigger = React.forwardRef<React.ElementRef<typeof AccordionPrimi
             ref={ref}
             className={clsx(
                 "group flex-1 flex items-center justify-between p-4 text-base font-medium leading-none text-sidebar-color bg-transparent border-0 cursor-pointer transition-all duration-200 w-full text-left",
-                "hover:bg-sidebar-hover hover:text-sidebar-active",
+                "hover:!bg-sidebar-hover hover:!text-sidebar-active",
                 "data-[state=open]:bg-sidebar-hover data-[state=open]:text-sidebar-active data-[state=open]:border-b data-[state=open]:border-sidebar-border",
                 className
             )}

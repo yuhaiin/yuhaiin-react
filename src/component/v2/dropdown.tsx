@@ -40,9 +40,9 @@ const DropdownItem = ({ className, ...props }: React.ComponentProps<typeof Dropd
     <DropdownMenuPrimitive.Item
         className={clsx(
             "relative flex items-center w-full py-1.5 px-4 pl-10 text-base text-[var(--bs-body-color,#212529)] select-none cursor-pointer outline-none bg-transparent border-0 text-left no-underline rounded-[20px]",
-            "hover:bg-[var(--bs-tertiary-bg,#e9ecef)] hover:text-[var(--bs-emphasis-color,#000000)]",
-            "focus:bg-[var(--bs-tertiary-bg,#e9ecef)] focus:text-[var(--bs-emphasis-color,#000000)]",
-            "data-[highlighted]:bg-[var(--bs-tertiary-bg,#e9ecef)] data-[highlighted]:text-[var(--bs-emphasis-color,#000000)]",
+            "hover:!bg-[var(--bs-tertiary-bg,#e9ecef)] hover:!text-[var(--bs-emphasis-color,#000000)]",
+            "focus:!bg-[var(--bs-tertiary-bg,#e9ecef)] focus:!text-[var(--bs-emphasis-color,#000000)]",
+            "data-[highlighted]:!bg-[var(--bs-tertiary-bg,#e9ecef)] data-[highlighted]:!text-[var(--bs-emphasis-color,#000000)]",
             className
         )}
         {...props}
@@ -68,9 +68,9 @@ const DropdownCheckboxItem = ({ className, children, checked, ...props }: React.
     <DropdownMenuPrimitive.CheckboxItem
         className={clsx(
             "relative flex items-center w-full py-1.5 px-4 pl-10 text-base text-[var(--bs-body-color,#212529)] select-none cursor-pointer outline-none bg-transparent border-0 text-left no-underline rounded-[20px]",
-            "hover:bg-[var(--bs-tertiary-bg,#e9ecef)] hover:text-[var(--bs-emphasis-color,#000000)]",
-            "focus:bg-[var(--bs-tertiary-bg,#e9ecef)] focus:text-[var(--bs-emphasis-color,#000000)]",
-            "data-[highlighted]:bg-[var(--bs-tertiary-bg,#e9ecef)] data-[highlighted]:text-[var(--bs-emphasis-color,#000000)]",
+            "hover:!bg-[var(--bs-tertiary-bg,#e9ecef)] hover:!text-[var(--bs-emphasis-color,#000000)]",
+            "focus:!bg-[var(--bs-tertiary-bg,#e9ecef)] focus:!text-[var(--bs-emphasis-color,#000000)]",
+            "data-[highlighted]:!bg-[var(--bs-tertiary-bg,#e9ecef)] data-[highlighted]:!text-[var(--bs-emphasis-color,#000000)]",
             className
         )}
         checked={checked}

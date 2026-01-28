@@ -86,7 +86,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
                                 const itemValue = item.value === "" ? "___EMPTY___" : item.value;
                                 return (
                                     <SelectPrimitive.Item key={`${itemValue}-${index}`} value={itemValue} className={clsx(
-                                        "text-[14px] leading-none text-[var(--bs-body-color)] rounded-[20px] flex items-center h-[32px] pl-[25px] pr-[35px] relative select-none cursor-pointer border border-transparent transition-colors duration-100 ease",
+                                        "text-[14px] leading-none text-[var(--bs-body-color)] rounded-[20px] flex items-center h-[32px] pl-[25px] pr-[35px] relative select-none cursor-pointer transition-colors duration-100 ease",
                                         "data-[highlighted]:bg-[var(--bs-tertiary-bg,#e9ecef)] data-[highlighted]:text-[var(--bs-emphasis-color,#000000)]"
                                     )}>
                                         <SelectPrimitive.ItemText>{item.label}</SelectPrimitive.ItemText>
