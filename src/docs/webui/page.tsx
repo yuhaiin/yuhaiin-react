@@ -51,7 +51,7 @@ function Setting() {
         <MainContainer>
             {/* 1. API Connection */}
             <Card>
-                <CardHeader>
+                <CardHeader className="py-3">
                     <IconBox icon={Link} color="#6366f1" title="API Connection" description="Web-controller interface" />
                 </CardHeader>
                 <CardBody className="pt-2">
@@ -67,7 +67,7 @@ function Setting() {
 
             {/* 2. Latency Targets */}
             <Card >
-                <CardHeader>
+                <CardHeader className="py-3">
                     <IconBox icon={Gauge} color="#10b981" title="Latency Targets" description="Endpoints for connectivity checks" />
                 </CardHeader>
                 <CardBody>

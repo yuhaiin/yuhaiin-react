@@ -68,7 +68,7 @@ export default function Licenses() {
     return (
         <MainContainer className="h-full flex flex-col">
             <Card className="flex-1 mb-0 flex flex-col">
-                <CardHeader>
+                <CardHeader className="py-3">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-3">
                         <IconBox
                             icon={FileText}
@@ -78,7 +78,7 @@ export default function Licenses() {
                         />
 
                         {/* Top-mounted Tab Navigation styled as a modern toggle bar */}
-                        <div className="bg-gray-100 dark:bg-[#18181b] p-1 rounded-lg inline-flex shadow-sm min-w-[220px]">
+                        <div className="bg-transparent p-1 rounded-lg inline-flex min-w-[220px]">
                             <ToggleGroup
                                 type="single"
                                 value={activeTab}

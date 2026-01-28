@@ -81,7 +81,7 @@ function BackupPage() {
 
             {/* 1. General Backup Settings */}
             <Card>
-                <CardHeader>
+                <CardHeader className="py-3">
                     <IconBox icon={ShieldCheck} color="#3b82f6" title='Backup Instance' description='Identification and timing' />
                 </CardHeader>
                 <CardBody>

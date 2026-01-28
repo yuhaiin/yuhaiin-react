@@ -57,7 +57,7 @@ export default function About() {
     return (
         <MainContainer>
             <Card >
-                <CardHeader>
+                <CardHeader className="py-3">
                     <IconBox icon={Info} color="#6366f1" title='System Information' description='Software version and build environment' />
                 </CardHeader>
 

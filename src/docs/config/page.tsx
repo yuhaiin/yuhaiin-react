@@ -101,7 +101,7 @@ function ConfigComponent() {
         <MainContainer>
             {/* 1. General Network Settings */}
             <Card>
-                <CardHeader>
+                <CardHeader className="py-3">
                     <IconBox icon={Globe} color="#3b82f6" title='General Settings' description='Network and system integration' />
                 </CardHeader>
                 <CardBody>
@@ -160,7 +160,7 @@ function ConfigComponent() {
 
 
             <Card>
-                <CardHeader>
+                <CardHeader className="py-3">
                     <IconBox icon={NotebookText} color="#10b981" title="Logging (Logcat)" description="Debug and error reporting" />
                 </CardHeader>
                 <CardBody>
@@ -204,7 +204,7 @@ function ConfigComponent() {
 
             {/* 3. Advanced Performance Card */}
             <Card>
-                <CardHeader>
+                <CardHeader className="py-3">
                     <IconBox icon={Cpu} color="#f59e0b" title="Performance & Advanced" description="Buffer sizes and concurrency limits" />
                 </CardHeader>
                 <CardBody>
