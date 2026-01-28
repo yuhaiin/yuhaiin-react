@@ -149,7 +149,7 @@ const EditModal: FC<{
                                 <DropdownContent className="w-full shadow-lg border-0" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                                     {nodes.groups.map((g: any) => (
                                         <DropdownGroup key={g.name}>
-                                            <DropdownLabel className="text-blue-500 sticky top-0 bg-white dark:bg-[var(--sidebar-bg)]">{g.name}</DropdownLabel>
+                                            <DropdownLabel className="text-blue-500 sticky top-0 bg-sidebar-bg">{g.name}</DropdownLabel>
                                             {g.nodes.map((n: any) => (
                                                 <DropdownCheckboxItem
                                                     key={n.hash}
@@ -209,7 +209,7 @@ const PublishItem: FC<{
 
             {/* URL Copy Group */}
             <InputGroup
-                className="md:mx-2"
+                className="md:mx-2 w-full"
                 style={{ maxWidth: '400px' }}
                 onClick={(e) => e.stopPropagation()}
             >
@@ -217,7 +217,7 @@ const PublishItem: FC<{
                     readOnly
                     value={encodedUrl}
                     size='sm'
-                    className="bg-gray-900/10 dark:bg-white/10 border-gray-500/25 font-mono"
+                    className="bg-gray-900/10 dark:bg-white/10 border-gray-500/25 font-mono flex-1 w-full min-w-0"
                     style={{ fontSize: '0.6rem' }}
                 />
                 <Button

@@ -178,8 +178,10 @@ function Group() {
                     <Dropdown>
                         <DropdownTrigger asChild>
                             <Button className="flex items-center justify-between" style={{ minWidth: '150px' }}>
-                                {groupIndex >= 0 && data.groups.length > groupIndex ? data.groups[groupIndex].name : "GROUP"}
-                                <ChevronDown className="ml-2" />
+                                <span className="flex-1 text-left truncate">
+                                    {groupIndex >= 0 && data.groups.length > groupIndex ? data.groups[groupIndex].name : "GROUP"}
+                                </span>
+                                <ChevronDown className="ml-2 shrink-0" />
                             </Button>
                         </DropdownTrigger>
                         <DropdownContent>
