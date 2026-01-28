@@ -12,7 +12,6 @@
 .group>textarea,
 .group>div {
     position: relative;
-    flex: 1 1 auto;
     width: 1%;
     min-width: 0;
     /* Ensure children don't overflow rounded/squared corners of the flex item */
@@ -61,4 +60,20 @@
     background-color: #e9ecef;
     border: 1px solid #dee2e6;
     border-radius: 12px;
+}
+
+/* Remove default background in dark mode via CSS variable or transparent if overridden */
+@media (prefers-color-scheme: dark) {
+    .text {
+        /* Allow utility classes to take over or set default dark bg */
+        background-color: transparent;
+        border-color: var(--bs-border-color);
+        color: var(--bs-body-color);
+    }
+}
+
+[data-bs-theme="dark"] .text {
+    background-color: transparent;
+    border-color: var(--bs-border-color);
+    color: var(--bs-body-color);
 }

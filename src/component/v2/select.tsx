@@ -29,12 +29,19 @@ interface SelectProps {
     contentClassName?: string;
     viewportClassName?: string;
     size?: 'sm' | 'lg';
+    groupPosition?: 'first' | 'middle' | 'last' | 'single';
 }
 
 import { motion } from "framer-motion";
 
-export const Select: FC<SelectProps> = ({ value, onValueChange, items, placeholder, disabled, triggerClassName, contentClassName, viewportClassName, size }) => {
+export const Select: FC<SelectProps> = ({ value, onValueChange, items, placeholder, disabled, triggerClassName, contentClassName, viewportClassName, size, groupPosition }) => {
     const internalValue = value === "" ? "___EMPTY___" : value;
+
+    const radiusClass =
+        groupPosition === 'first' ? '!rounded-r-none !border-r-0' :
+            groupPosition === 'last' ? '!rounded-l-none' :
+                groupPosition === 'middle' ? '!rounded-none !border-r-0' :
+                    '';
 
     return (
         <SelectPrimitive.Root
@@ -42,7 +49,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
             onValueChange={(val) => onValueChange(val === "___EMPTY___" ? "" : val)}
             disabled={disabled}
         >
-            <SelectPrimitive.Trigger className={clsx(styles.selectTrigger, size === 'sm' && styles.selectTriggerSm, triggerClassName, disabled && styles.disabled)} aria-label={placeholder}>
+            <SelectPrimitive.Trigger className={clsx(styles.selectTrigger, size === 'sm' && styles.selectTriggerSm, radiusClass, triggerClassName, disabled && styles.disabled)} aria-label={placeholder}>
                 <SelectPrimitive.Value placeholder={placeholder} />
                 <SelectPrimitive.Icon>
                     <ChevronDown className="opacity-50" size={16} />
@@ -123,8 +130,9 @@ const FormSelectComponent: FC<{
     emptyChoose?: boolean,
     emptyChooseName?: string,
     disabled?: boolean,
-    triggerClassName?: string
-}> = ({ value, values, onChange, format, emptyChoose, emptyChooseName, disabled, triggerClassName }) => {
+    triggerClassName?: string,
+    groupPosition?: 'first' | 'middle' | 'last' | 'single'
+}> = ({ value, values, onChange, format, emptyChoose, emptyChooseName, disabled, triggerClassName, groupPosition }) => {
     const items: SelectItem[] = values.map((v) => {
         const itemValue = typeof v === 'string' ? v : v[1];
         const itemLabel = typeof v === 'string' ? v : v[0];
@@ -133,7 +141,7 @@ const FormSelectComponent: FC<{
     if (emptyChoose) {
         items.unshift({ value: "", label: emptyChooseName ?? "Choose..." });
     }
-    return <Select value={value} onValueChange={onChange} items={items} disabled={disabled} triggerClassName={triggerClassName} />;
+    return <Select value={value} onValueChange={onChange} items={items} disabled={disabled} triggerClassName={triggerClassName} groupPosition={groupPosition} />;
 }
 export const FormSelect = React.memo(FormSelectComponent);
 
@@ -142,13 +150,20 @@ const DropdownSelectComponent: FC<{
     items: string[],
     onUpdate: (x: string[]) => void,
     triggerClassName?: string,
-    placeholder?: string
-}> = ({ values, items, onUpdate, triggerClassName, placeholder = "Choose..." }) => {
+    placeholder?: string,
+    groupPosition?: 'first' | 'middle' | 'last' | 'single'
+}> = ({ values, items, onUpdate, triggerClassName, placeholder = "Choose...", groupPosition }) => {
+    const radiusClass =
+        groupPosition === 'first' ? '!rounded-r-none !border-r-0' :
+            groupPosition === 'last' ? '!rounded-l-none' :
+                groupPosition === 'middle' ? '!rounded-none !border-r-0' :
+                    '';
+
     return (
         <Dropdown>
             <DropdownTrigger asChild>
                 <div
-                    className={clsx(styles.selectTrigger, triggerClassName)}
+                    className={clsx(styles.selectTrigger, radiusClass, triggerClassName)}
                     style={{ cursor: 'pointer' }}
                 >
                     <div className="d-flex align-items-center gap-2 overflow-hidden">

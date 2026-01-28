@@ -41,11 +41,11 @@ export const Server: FC = () => {
     }
 
     return (
-        <Card className="d-flex flex-column">
+        <Card className="flex flex-col">
             <CardHeader>
                 <IconBox icon={ServerIcon} color="#8b5cf6" title='DNS Server' description='Listen and Serve' />
             </CardHeader>
-            <CardBody className="px-4 py-4">
+            <CardBody className="p-6">
                 <SettingInputVertical
                     label="Listen Address"
                     placeholder="e.g. 127.0.0.1:53"
@@ -54,20 +54,20 @@ export const Server: FC = () => {
                 />
             </CardBody>
 
-            <CardFooter className="d-flex justify-content-end gap-2">
+            <CardFooter className="flex justify-end gap-2">
                 <Button
                     size="sm"
                     disabled={!isDirty}
                     onClick={() => mutate()}
                 >
-                    <RotateCw className="me-2" size={16} />Reset
+                    <RotateCw className="mr-2" size={16} />Reset
                 </Button>
                 <Button
                     size="sm"
                     disabled={saving || !isDirty}
                     onClick={handleSave}
                 >
-                    {saving ? <Spinner size="sm" /> : <><Save className="me-2" size={16} />Save</>}
+                    {saving ? <Spinner size="sm" /> : <><Save className="mr-2" size={16} />Save</>}
                 </Button>
             </CardFooter>
         </Card>

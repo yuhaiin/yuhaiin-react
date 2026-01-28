@@ -16,14 +16,22 @@ export interface InputProps extends InputPropsWithoutSize {
 
     // (Optional) If you really need the native numeric 'size' that controls width, expose it with another name
     htmlSize?: number;
+
+    groupPosition?: 'first' | 'middle' | 'last' | 'single';
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-    ({ className, size = "default", htmlSize, ...props }, ref) => {
+    ({ className, size = "default", htmlSize, groupPosition, ...props }, ref) => {
 
         // 4. Important: destructure size.
         // Since HTML tags don't accept size="sm", we shouldn't pass it to <input>
         // ...props now contains native properties like onClick, onChange, value, etc., excluding size
+
+        const radiusClass =
+            groupPosition === 'first' ? '!rounded-r-none !border-r-0' :
+                groupPosition === 'last' ? '!rounded-l-none' :
+                    groupPosition === 'middle' ? '!rounded-none !border-r-0' :
+                        '';
 
         return (
             <input
@@ -36,6 +44,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         // Apply CSS based on the size string
                         [styles.sm]: size === "sm",
                     },
+                    radiusClass,
                     className
                 )}
                 {...props}

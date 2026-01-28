@@ -60,7 +60,7 @@ const ToggleItem = ({ className, children, value, ...props }: React.ComponentPro
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
             )}
-            <span style={{ position: 'relative', zIndex: 2 }}>
+            <span style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {children}
             </span>
         </ToggleGroupPrimitive.Item>
