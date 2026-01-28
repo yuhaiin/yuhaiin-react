@@ -2,7 +2,6 @@ import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group";
 import { clsx } from "clsx";
 import { LayoutGroup, motion } from "framer-motion";
 import React, { createContext, useContext, useId } from "react";
-import styles from "./togglegroup.module.css";
 
 /* -------------------------------------------------------------------------- */
 /*                                ToggleGroup                                 */
@@ -15,7 +14,7 @@ const ToggleGroup = ({ className, children, value, noSlide, ...props }: React.Co
 
     return (
         <ToggleGroupPrimitive.Root
-            className={clsx(styles.root, className)}
+            className={clsx("inline-flex bg-transparent rounded-full", className)}
             value={value as any}
             {...props}
         >
@@ -44,7 +43,14 @@ const ToggleItem = ({ className, children, value, ...props }: React.ComponentPro
 
     return (
         <ToggleGroupPrimitive.Item
-            className={clsx(styles.item, className)}
+            className={clsx(
+                "bg-transparent text-sidebar-color border border-sidebar-border py-[6px] px-[12px] text-[0.875rem] font-medium cursor-pointer transition-all duration-200 flex items-center justify-center -mr-px whitespace-nowrap",
+                "first:rounded-l-[12px] last:rounded-r-[12px] last:mr-0",
+                "hover:!bg-sidebar-hover hover:z-10",
+                "data-[state=on]:bg-transparent data-[state=on]:text-sidebar-active data-[state=on]:border-sidebar-active data-[state=on]:z-20 data-[state=on]:shadow-none data-[state=on]:font-semibold",
+                "focus-visible:outline-2 focus-visible:outline-[var(--bs-secondary)] focus-visible:outline-offset-2 focus-visible:z-30",
+                className
+            )}
             value={value}
             {...props}
             style={{ position: 'relative', zIndex: 1, ...props.style }}
@@ -52,7 +58,6 @@ const ToggleItem = ({ className, children, value, ...props }: React.ComponentPro
             {isActive && (
                 <motion.div
                     layoutId={indicatorLayoutId} // Unique layoutId per group OR undefined to disable sliding
-                    className={styles.indicator}
                     style={{
                         position: 'absolute',
                         inset: 0,

@@ -19,7 +19,7 @@ export const Tooltip: FC<{ children: ReactNode, content: ReactNode }> = ({ child
     const hide = () => setVisible(false);
 
     return (
-        <div onMouseEnter={show} onMouseLeave={hide} onFocus={show} onBlur={hide} style={{ display: 'inline-flex' }}>
+        <div onMouseEnter={show} onMouseLeave={hide} onFocus={show} onBlur={hide} className="inline-flex">
             {children}
             {createPortal(
                 <AnimatePresence>
@@ -29,36 +29,16 @@ export const Tooltip: FC<{ children: ReactNode, content: ReactNode }> = ({ child
                             animate={{ opacity: 1, scale: 1, y: "-100%", x: "-50%" }}
                             exit={{ opacity: 0, scale: 0.2, y: "-100%", x: "-50%" }}
                             transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                            className="fixed p-[6px_10px] text-xs leading-normal text-white bg-black/85 rounded whitespace-normal text-center shadow-[0_2px_10px_rgba(0,0,0,0.2)] z-[9999] max-w-[200px] pointer-events-none origin-[center_bottom]"
                             style={{
-                                position: 'fixed',
                                 left: coords.left,
                                 top: coords.top,
-                                transformOrigin: 'center bottom',
                                 // transform is handled by motion (x/y)
-                                backgroundColor: 'rgba(0,0,0,0.85)',
-                                color: '#fff',
-                                padding: '6px 10px',
-                                borderRadius: '4px',
-                                fontSize: '0.75rem',
-                                pointerEvents: 'none',
-                                zIndex: 9999,
-                                maxWidth: 200,
-                                whiteSpace: 'normal',
-                                boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
-                                textAlign: 'center'
                             }}
                         >
                             {content}
                             {/* Arrow */}
-                            <div style={{
-                                position: 'absolute',
-                                bottom: -4,
-                                left: '50%',
-                                transform: 'translateX(-50%)',
-                                borderWidth: '4px 4px 0',
-                                borderStyle: 'solid',
-                                borderColor: 'rgba(0,0,0,0.85) transparent transparent transparent'
-                            }} />
+                            <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 border-t-[4px] border-x-[4px] border-b-0 border-solid border-[rgba(0,0,0,0.85)_transparent_transparent_transparent]" />
                         </motion.div>
                     )}
                 </AnimatePresence>,

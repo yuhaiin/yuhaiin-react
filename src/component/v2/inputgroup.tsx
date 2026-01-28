@@ -1,6 +1,5 @@
 import { clsx } from "clsx";
 import * as React from "react";
-import styles from "./inputgroup.module.css";
 
 const InputGroupContext = React.createContext<{}>({});
 
@@ -37,7 +36,22 @@ const InputGroup = React.forwardRef<
     });
 
     return (
-        <div ref={ref} className={clsx(styles.group, className)} {...props}>
+        <div
+            ref={ref}
+            className={clsx(
+                "relative flex flex-wrap items-stretch w-full",
+                "[&>input]:relative [&>input]:w-[1%] [&>input]:min-w-0",
+                "[&>textarea]:relative [&>textarea]:w-[1%] [&>textarea]:min-w-0",
+                "[&>div]:relative [&>div]:w-[1%] [&>div]:min-w-0",
+                "[&>button]:relative [&>button]:z-[2]",
+                "[&>:first-child]:!rounded-r-none",
+                "[&>:last-child]:!rounded-l-none",
+                "[&>:not(:first-child):not(:last-child)]:!rounded-none",
+                "[&>input:focus]:z-[3] [&>button:focus]:z-[3]",
+                className
+            )}
+            {...props}
+        >
             {childrenWithProps}
         </div>
     );
@@ -60,7 +74,18 @@ const InputGroupText = React.forwardRef<
         groupPosition === 'middle' ? 'rounded-none border-r-0' :
         ''; // single -> keep default radius
 
-    return <div ref={ref} className={clsx(styles.text, radiusClass, className)} {...props} />
+    return (
+        <div
+            ref={ref}
+            className={clsx(
+                "flex items-center py-1.5 px-3 text-base font-normal leading-normal text-[#212529] text-center whitespace-nowrap bg-[#e9ecef] border border-[#dee2e6] rounded-[12px]",
+                "dark:bg-transparent dark:border-[var(--bs-border-color)] dark:text-[var(--bs-body-color)]",
+                radiusClass,
+                className
+            )}
+            {...props}
+        />
+    )
 });
 InputGroupText.displayName = "InputGroupText";
 
