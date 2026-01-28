@@ -19,9 +19,9 @@ const NewPeersList: FC<{ title: string, data: wireguard_peer_config[], onChange:
 
         return (
             <div className="mb-4">
-                <div className="d-flex justify-content-between align-items-center mb-2 px-1">
-                    <h6 className="fw-bold mb-0 opacity-75">{title}</h6>
-                    <small className="text-muted">{data.length} peers</small>
+                <div className="flex justify-between items-center mb-2 px-1">
+                    <h6 className="font-bold mb-0 opacity-75">{title}</h6>
+                    <small className="text-gray-500 dark:text-gray-400">{data.length} peers</small>
                 </div>
 
                 <Accordion type="multiple" className="mb-3">
@@ -38,9 +38,9 @@ const NewPeersList: FC<{ title: string, data: wireguard_peer_config[], onChange:
                                         onChange(next)
                                     }} />
                                     {editable && (
-                                        <div className="d-flex justify-content-end mt-3 pt-3 border-top">
+                                        <div className="flex justify-end mt-3 pt-3">
                                             <Button variant="outline-danger" size="sm" onClick={() => removeItem(index)}>
-                                                <Trash size={16} className="me-2" /> Delete Peer
+                                                <Trash size={16} className="mr-2" /> Delete Peer
                                             </Button>
                                         </div>
                                     )}
@@ -51,7 +51,7 @@ const NewPeersList: FC<{ title: string, data: wireguard_peer_config[], onChange:
                 </Accordion>
 
                 {editable && (
-                    <div className="d-flex justify-content-end px-1">
+                    <div className="flex justify-end px-1">
                         <Button onClick={() => {
                             onChange([...data, create(wireguard_peer_configSchema, {
                                 allowedIps: ["0.0.0.0/0"],
@@ -59,7 +59,7 @@ const NewPeersList: FC<{ title: string, data: wireguard_peer_config[], onChange:
                                 publicKey: "SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY=",
                             })])
                         }} >
-                            <Plus className="me-1" size={16} /> Add Peer
+                            <Plus className="mr-1" size={16} /> Add Peer
                         </Button>
                     </div>
                 )}
