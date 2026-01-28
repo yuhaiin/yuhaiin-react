@@ -148,7 +148,7 @@ function BypassBlockHistory() {
                             </div>
                             <div>
                                 <SettingLabel className="mb-2">By</SettingLabel>
-                                <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="flex flex-wrap">
+                                <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="flex flex-wrap w-full">
                                     <ToggleItem value="Time" className="grow">Time</ToggleItem>
                                     <ToggleItem value="Host" className="grow">Host</ToggleItem>
                                     <ToggleItem value="Count" className="grow">Count</ToggleItem>

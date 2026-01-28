@@ -678,6 +678,8 @@ const NodeItemv2: FC<{
                                     size="sm"
                                     disabled={isTesting}
                                     className="d-flex align-items-center gap-2"
+                                    whileTap={{ scale: 1 }}
+                                    whileHover={{ scale: 1 }}
                                 >
                                     {isTesting
                                         ? <Spinner size="sm" />
