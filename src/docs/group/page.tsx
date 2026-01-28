@@ -10,7 +10,7 @@ import { Spinner } from "@/component/v2/spinner";
 import { create, fromJsonString } from "@bufbuild/protobuf";
 import { Duration, StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle2, ChevronDown, Archive, Network, Pencil, Plus, Gauge } from "lucide-react";
+import { Archive, CheckCircle2, ChevronDown, Gauge, Network, Pencil, Plus } from "lucide-react";
 import { FC, useContext, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { LatencyDNSUrlDefault, LatencyDNSUrlKey, LatencyHTTPUrlDefault, LatencyHTTPUrlKey, LatencyIPUrlDefault, LatencyIPUrlKey, LatencyIPv6Default, LatencyIPv6Key, LatencyStunTCPUrlDefault, LatencyStunTCPUrlKey, LatencyStunUrlDefault, LatencyStunUrlKey } from "../../common/apiurl";
@@ -23,7 +23,6 @@ import { NodeModal } from "../node/modal";
 import { node, use_reqSchema } from "../pbes/api/node_pb";
 import { dns_over_quicSchema, http_testSchema, ipSchema, nat_type, reply, request_protocol, request_protocolSchema, requestsSchema, stunSchema } from "../pbes/node/latency_pb";
 import { origin, point, pointSchema } from "../pbes/node/point_pb";
-import styles from './group.module.css';
 
 const MotionAccordionItem = motion(AccordionItem);
 
@@ -34,7 +33,7 @@ const Second = 1000 * Millisecond
 const Minute = 60 * Second
 const Hour = 60 * Minute
 
-function durationToStroing(x: Duration): string {
+function durationToString(x: Duration): string {
     if (x.nanos === 0 && Number(x.seconds) === 0) return "timeout"
     const total = Number(x.seconds) * Second + x.nanos * Nanosecond;
     if (total >= Hour) return `${total / Hour} h`
@@ -174,13 +173,15 @@ function Group() {
                 />
             </NodesContext.Provider>
 
-            <div className={styles.pageHeader}>
-                <div className={styles.headerActions}>
+            <div className="flex justify-end items-center mb-4 flex-wrap gap-4">
+                <div className="flex gap-3">
                     <Dropdown>
                         <DropdownTrigger asChild>
-                            <Button className="d-flex align-items-center justify-content-between" style={{ minWidth: '150px' }}>
-                                {groupIndex >= 0 && data.groups.length > groupIndex ? data.groups[groupIndex].name : "GROUP"}
-                                <ChevronDown className="ms-2" />
+                            <Button className="flex items-center justify-between" style={{ minWidth: '150px' }}>
+                                <span className="flex-1 text-left truncate">
+                                    {groupIndex >= 0 && data.groups.length > groupIndex ? data.groups[groupIndex].name : "GROUP"}
+                                </span>
+                                <ChevronDown className="ml-2 shrink-0" />
                             </Button>
                         </DropdownTrigger>
                         <DropdownContent>
@@ -242,6 +243,7 @@ function Group() {
                                         hash={v.hash}
                                         name={v.name}
                                         onClickEdit={() => { openModal(v.hash) }}
+                                        ipv6={latencyIPv6}
                                         urls={{
                                             ip: latencyIPUrl,
                                             tcp: latencyHTTP,
@@ -257,7 +259,7 @@ function Group() {
                     :
                     <Card>
                         <CardBody>
-                            <div className="text-center text-secondary py-3">
+                            <div className="text-center text-gray-500 py-3">
                                 {groupIndex === -1 ? "Please select a group to display nodes" : "Current group has no nodes"}
                             </div>
                         </CardBody>
@@ -330,7 +332,7 @@ const createLatencyReqByType = (
                 },
                 setResult: (r: reply) => {
                     if (r.reply.case === "latency") {
-                        const value = durationToStroing(r.reply.value)
+                        const value = durationToString(r.reply.value)
                         setState((prev) => { return { ...prev, tcp: { value: value, loading: false } } })
                     }
                 }
@@ -344,7 +346,7 @@ const createLatencyReqByType = (
                 },
                 setResult: (r: reply) => {
                     if (r.reply.case === "latency") {
-                        const value = durationToStroing(r.reply.value)
+                        const value = durationToString(r.reply.value)
                         setState((prev) => { return { ...prev, udp: { value: value, loading: false } } })
                     }
                 }
@@ -492,16 +494,16 @@ const parseGoDurationToMs = (val: string): number => {
 const getLatencyColor = (val: string) => {
     const ms = parseGoDurationToMs(val);
 
-    if (ms < 0) return styles['latency-invalid']; // No color for invalid/loading states
+    if (ms < 0) return 'text-[#9ca3af]'; // invalid: #9ca3af
 
-    if (ms < 200) return styles['latency-good']; // < 200ms: Green
-    if (ms < 999) return styles['latency-avg'];  // 200ms - 999ms: Yellow
-    return styles['latency-bad'];                // > 999ms: Red
+    if (ms < 200) return 'text-[#10b981]'; // < 200ms: Green (#10b981)
+    if (ms < 999) return 'text-[#f59e0b]';  // 200ms - 999ms: Yellow (#f59e0b)
+    return 'text-[#ef4444]';                // > 999ms: Red (#ef4444)
 };
 
 // Helper Component: Display a single block of information
 const InfoBlock: FC<{ label: string, value: React.ReactNode, loading?: boolean, colorClass?: string }> = ({ label, value, loading, colorClass }) => (
-    <div className={styles.infoCard}>
+    <div className="bg-[var(--card-footer-bg)] border-[0.5px] border-[var(--card-inner-border)] rounded-[20px] p-4 flex flex-col transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:bg-[var(--card-inner-border)]">
         <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.25rem', fontWeight: 700 }}>{label}</span>
         <div className={colorClass || ''} style={{
             fontSize: '0.9rem',
@@ -576,27 +578,27 @@ const NodeItemv2: FC<{
             transition={{ duration: 0.2 }}
         >
             <AccordionTrigger>
-                <div className="d-flex w-100 flex-column flex-sm-row align-items-start align-items-sm-center pe-2">
+                <div className="flex w-full flex-col sm:flex-row items-start sm:items-center pr-2">
 
                     {/* 
                         Left Side: Icon + Name 
                         - mb-2: Adds bottom margin on mobile to separate from stats row
                         - mb-sm-0: Removes margin on desktop
                     */}
-                    <div className="d-flex align-items-center gap-3 w-100 mb-2 mb-sm-0">
+                    <div className="flex items-center gap-3 w-full mb-2 sm:mb-0">
                         {/* Status Icon */}
-                        <Network className={`fs-5 flex-shrink-0 ${getLatencyColor(latency.tcp.value) === styles['latency-good']
-                            ? "text-success"
-                            : latency.tcp.value !== "N/A" && !latency.tcp.value.includes("timeout")
-                                ? "text-primary"
-                                : "text-muted"
-                            }`} />
+                        <Network className={`text-xl flex-shrink-0 ${(() => {
+                            const ms = parseGoDurationToMs(latency.tcp.value);
+                            if (ms < 0) return "text-gray-500";
+                            if (ms < 200) return "text-green-500";
+                            return "text-blue-500";
+                        })()}`} />
 
-                        <div className="d-flex flex-column gap-2 text-truncate">
-                            <span className="text-truncate">{name}</span>
-                            <div className="d-flex gap-2 align-items-center" style={{ fontSize: '0.75rem' }}>
-                                <span className="text-muted opacity-75">{hash.substring(0, 8)}</span>
-                                {ipv6 && <Badge variant="info" className="text-dark py-0 px-1" style={{ fontSize: '0.65rem' }}>IPv6</Badge>}
+                        <div className="flex flex-col gap-2 truncate">
+                            <span className="truncate">{name}</span>
+                            <div className="flex gap-2 items-center" style={{ fontSize: '0.75rem' }}>
+                                <span className="text-gray-500 opacity-75">{hash.substring(0, 8)}</span>
+                                {ipv6 && <Badge variant="info" className="text-gray-900 py-0 px-1" style={{ fontSize: '0.65rem' }}>IPv6</Badge>}
                             </div>
                         </div>
                     </div>
@@ -606,18 +608,18 @@ const NodeItemv2: FC<{
                         - Mobile: Full width (w-100), Spread apart (justify-content-between)
                         - Desktop: Auto width, Right aligned (justify-content-sm-end)
                     */}
-                    <div className="d-flex w-100 w-sm-auto align-items-center justify-content-between justify-content-sm-end ps-0 ps-sm-2">
+                    <div className="flex w-full sm:w-auto items-center justify-between sm:justify-end pl-0 sm:pl-2">
 
                         {/* Stats Block */}
-                        <div className="d-flex gap-4 text-muted small align-items-center">
-                            <div className="d-flex gap-2 align-items-center">
-                                <span className="text-uppercase text-muted" style={{ fontSize: '0.65rem', fontWeight: 700 }}>TCP</span>
+                        <div className="flex gap-4 text-gray-500 text-sm items-center">
+                            <div className="flex gap-2 items-center">
+                                <span className="uppercase text-gray-500" style={{ fontSize: '0.65rem', fontWeight: 700 }}>TCP</span>
                                 <span className={getLatencyColor(latency.tcp.value)}>
                                     {latency.tcp.value}
                                 </span>
                             </div>
-                            <div className="d-flex gap-2 align-items-center">
-                                <span className="text-uppercase text-muted" style={{ fontSize: '0.65rem', fontWeight: 700 }}>UDP</span>
+                            <div className="flex gap-2 items-center">
+                                <span className="uppercase text-gray-500" style={{ fontSize: '0.65rem', fontWeight: 700 }}>UDP</span>
                                 <span className={getLatencyColor(latency.udp.value)}>
                                     {latency.udp.value}
                                 </span>
@@ -629,7 +631,7 @@ const NodeItemv2: FC<{
 
             <AccordionContent>
                 {/* 1. Main Info Grid (Latency & IP) */}
-                <div className={styles.infoGrid}>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-4 mb-4">
                     <InfoBlock
                         label="TCP Latency"
                         value={latency.tcp.value}
@@ -653,8 +655,8 @@ const NodeItemv2: FC<{
                 {/* 2. Advanced Info (STUN) */}
                 {(latency.stun || latency.stun_tcp) && (
                     <div className="mb-4">
-                        <h6 className="text-muted small fw-bold mb-2 ps-1">NAT & STUN Details</h6>
-                        <div className={styles.infoGrid}>
+                        <h6 className="text-gray-500 text-sm font-bold mb-2 pl-1">NAT & STUN Details</h6>
+                        <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-4 mb-4">
                             {latency.stun && (
                                 <>
                                     <InfoBlock label="NAT Type" value={latency.stun.mapping} loading={latency.stun.loading} />
@@ -670,14 +672,14 @@ const NodeItemv2: FC<{
                 )}
 
                 {/* 3. Action Footer */}
-                <div className={styles.actionFooter}>
+                <div className="flex gap-2 pt-4 border-t border-[var(--card-inner-border)] justify-end">
                     <div className="btn-group">
                         <Dropdown>
                             <DropdownTrigger asChild>
                                 <Button
                                     size="sm"
                                     disabled={isTesting}
-                                    className="d-flex align-items-center gap-2"
+                                    className="flex items-center gap-2"
                                     whileTap={{ scale: 1 }}
                                     whileHover={{ scale: 1 }}
                                 >
@@ -685,16 +687,16 @@ const NodeItemv2: FC<{
                                         ? <Spinner size="sm" />
                                         : <>
                                             <Gauge size={16} />
-                                            <span className="d-none d-sm-inline ms-1">Test</span>
+                                            <span className="hidden sm:inline ml-1">Test</span>
                                         </>
                                     }
-                                    <ChevronDown className="ms-1" size={12} />
+                                    <ChevronDown className="ml-1" size={12} />
                                 </Button>
                             </DropdownTrigger>
                             <DropdownContent>
                                 <DropdownItem onSelect={() => test(LatencyType.TCP)}>TCP Ping</DropdownItem>
                                 <DropdownItem onSelect={() => test(LatencyType.UDP)}>UDP Ping</DropdownItem>
-                                <div className="dropdown-divider"></div>
+                                <div className="h-px bg-[var(--divider-color)] my-1"></div>
                                 <DropdownItem onSelect={() => test(LatencyType.STUN)}>STUN Test</DropdownItem>
                                 <DropdownItem onSelect={() => test(LatencyType.STUNTCP)}>STUN TCP Test</DropdownItem>
                                 <DropdownItem onSelect={() => test(LatencyType.IP)}>IP Check</DropdownItem>
@@ -705,13 +707,13 @@ const NodeItemv2: FC<{
                     <Button size="sm" onClick={onClickEdit} title="Edit Configuration">
                         <Pencil size={16} />
                         {/* d-none d-sm-inline: Hide text on mobile */}
-                        <span className="d-none d-sm-inline ms-2">Edit</span>
+                        <span className="hidden sm:inline ml-2">Edit</span>
                     </Button>
 
                     <Button size="sm" onClick={() => setNode(ctx, hash)} title="Use Node">
                         <CheckCircle2 size={16} />
                         {/* d-none d-sm-inline: Hide text on mobile */}
-                        <span className="d-none d-sm-inline ms-2">Use</span>
+                        <span className="hidden sm:inline ml-2">Use</span>
                     </Button>
                 </div>
             </AccordionContent>
@@ -773,7 +775,7 @@ const NodeJsonModal = (
 
                 <ModalBody>
                     <textarea
-                        className="form-control"
+                        className="w-full bg-transparent border border-[var(--sidebar-border-color)] rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none text-[var(--sidebar-color)]"
                         readOnly={props.plaintext}
                         value={props.data ? props.data : nodeJson.data}
                         style={{ height: "65vh", fontFamily: "monospace" }}
