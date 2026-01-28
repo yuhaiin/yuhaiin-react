@@ -50,24 +50,24 @@ function Test() {
                 <CardHeader>
                     <IconBox icon={Terminal} color="#f59e0b" title='Rule Testing' description='Simulate traffic to verify routing' />
                 </CardHeader>
-                <CardBody className="p-4">
-                    <p className="small text-muted mb-4 px-1">
+                <CardBody className="p-6">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-6 px-1">
                         Enter a domain or IP address below to see which rule and outbound node would be selected.
                     </p>
-                    <div className="d-flex gap-2">
+                    <div className="flex gap-2">
                         <Input
                             placeholder="e.g. www.google.com or 8.8.8.8"
                             value={value}
-                            className="flex-grow-1"
+                            className="flex-grow"
                             onChange={(e) => setValue(e.target.value)}
                             onKeyDown={(e) => { if (e.key === 'Enter') handleTest(); }}
                         />
                         <Button
                             onClick={handleTest}
                             disabled={testing || !value.trim()}
-                            style={{ minWidth: '100px' }}
+                            className="min-w-[100px]"
                         >
-                            {testing ? <Spinner size="sm" /> : <><Play className="me-1" size={16} /> Run</>}
+                            {testing ? <Spinner size="sm" /> : <><Play className="mr-1" size={16} /> Run</>}
                         </Button>
                     </div>
                 </CardBody>
@@ -76,9 +76,9 @@ function Test() {
             {/* 2. Loading State */}
             {
                 testing && (
-                    <div className="text-center py-5">
+                    <div className="text-center py-12">
                         <Spinner size="md" className="mb-3" />
-                        <div className="text-muted small fw-medium">Analyzing routing table...</div>
+                        <div className="text-gray-500 dark:text-gray-400 text-xs font-medium">Analyzing routing table...</div>
                     </div>
                 )
             }
@@ -86,7 +86,7 @@ function Test() {
             {/* 3. Result Card */}
             {
                 resp && !testing &&
-                <Card className="animate__animated animate__fadeIn">
+                <Card className="animate-dataUpdate">
                     <CardHeader>
                         <IconBox icon={ClipboardList} color="#10b981" title='Analysis Result' description='Raw decision path metadata' />
 
@@ -100,7 +100,7 @@ function Test() {
                     <CardBody>
                         <SettingsBox>
                             <pre
-                                className="mb-0 font-monospace"
+                                className="mb-0 font-mono"
                                 style={{
                                     whiteSpace: 'pre-wrap',
                                     wordBreak: 'break-all',
@@ -116,9 +116,9 @@ function Test() {
                 </Card>
             }
 
-            <div className="text-center mt-4 opacity-50 pb-5">
-                <small className="text-muted italic">
-                    <Info className="me-1" />
+            <div className="text-center mt-6 opacity-50 pb-12">
+                <small className="text-gray-500 dark:text-gray-400 italic">
+                    <Info className="mr-1" />
                     This tool tests the core logic using the current active configuration.
                 </small>
             </div>

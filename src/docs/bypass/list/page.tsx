@@ -93,7 +93,7 @@ export default function Lists() {
             <ConfirmModal
                 show={confirm.show}
                 title="Delete List"
-                content={<>Are you sure to delete <span className="fw-bold text-danger">{confirm.name}</span>?</>}
+                content={<>Are you sure to delete <span className="font-bold text-red-500">{confirm.name}</span>?</>}
                 onOk={() => {
                     deleteList(confirm.name)
                     setConfirm(prev => { return { ...prev, show: false } })
@@ -116,12 +116,12 @@ export default function Lists() {
             />
 
             {/* --- 1. Page Header: Global Status Bar --- */}
-            <div className="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3">
+            <div className="flex flex-wrap justify-between items-end mb-6 gap-4">
                 <div>
-                    <h4 className="fw-bold mb-1">List Management</h4>
-                    <div className="text-muted d-flex align-items-center small">
-                        <History className="me-2 opacity-75" />
-                        <span>Last Synced: <span className="fw-medium text-body">{lastRefreshTime}</span></span>
+                    <h4 className="font-bold mb-1">List Management</h4>
+                    <div className="text-gray-500 dark:text-gray-400 flex items-center text-xs">
+                        <History className="mr-2 opacity-75" />
+                        <span>Last Synced: <span className="font-medium text-foreground">{lastRefreshTime}</span></span>
                     </div>
                 </div>
 
@@ -142,12 +142,12 @@ export default function Lists() {
                             })
                     }}
                 >
-                    {refresh ? <Spinner size="sm" /> : <RefreshCw className="me-2" size={16} />}
+                    {refresh ? <Spinner size="sm" /> : <RefreshCw className="mr-2" size={16} />}
                     <span>Sync All Resources</span>
                 </Button>
             </div>
 
-            <div className="d-flex flex-column gap-4">
+            <div className="flex flex-col gap-6">
                 {/* --- 2. Configuration Card --- */}
                 <Card>
                     <CardHeader>
@@ -155,9 +155,9 @@ export default function Lists() {
                     </CardHeader>
 
                     <CardBody>
-                        <div className="row g-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* Auto-fetch Interval */}
-                            <div className="col-12 col-lg-6">
+                            <div>
                                 <SettingRangeVertical
                                     label="Auto-fetch Interval"
                                     value={Number(data.refreshConfig?.refreshInterval) / 60}
@@ -173,7 +173,7 @@ export default function Lists() {
                             </div>
 
                             {/* GeoIP URL */}
-                            <div className="col-12 col-lg-6 border-start-lg ps-lg-4" style={{ borderColor: 'var(--card-inner-border)' }}>
+                            <div className="lg:border-l lg:pl-6 border-[var(--card-inner-border)]">
                                 <SettingInputVertical
                                     label="Maxmind GeoIP Database URL"
                                     placeholder="e.g. https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb"
@@ -186,17 +186,17 @@ export default function Lists() {
                                     }}
                                 />
                                 {data.maxminddbGeoip?.error && (
-                                    <div className="mt-2 p-2 bg-danger bg-opacity-10 text-danger rounded small">
-                                        <TriangleAlert className="me-2" size={14} />{data.maxminddbGeoip.error}
+                                    <div className="mt-2 p-2 bg-red-500/10 text-red-500 rounded text-xs">
+                                        <TriangleAlert className="mr-2" size={14} />{data.maxminddbGeoip.error}
                                     </div>
                                 )}
                             </div>
                         </div>
                     </CardBody>
 
-                    <CardFooter className="d-flex justify-content-end">
+                    <CardFooter className="flex justify-end">
                         <Button disabled={saving} onClick={handleSaveSettings}>
-                            {saving ? <Spinner size="sm" /> : <><Save className="me-2" size={16} />Save Configuration</>}
+                            {saving ? <Spinner size="sm" /> : <><Save className="mr-2" size={16} />Save Configuration</>}
                         </Button>
                     </CardFooter>
                 </Card>
@@ -205,9 +205,9 @@ export default function Lists() {
                     items={data.names.sort((a, b) => a.localeCompare(b))}
                     renderListItem={(v) =>
                         <>
-                            <FileText className="me-3 text-secondary" size={20} />
-                            <span className="text-truncate fw-medium flex-grow-1">{v}</span>
-                            <ChevronRight className="text-muted opacity-25" size={16} />
+                            <FileText className="mr-4 text-gray-500 dark:text-gray-400" size={20} />
+                            <span className="truncate font-medium flex-grow">{v}</span>
+                            <ChevronRight className="text-gray-500 dark:text-gray-400 opacity-25" size={16} />
                         </>
                     }
                     onClickItem={(v) => setShowdata({ show: true, name: v, new: false })}
@@ -268,25 +268,25 @@ const ListsModal: FC<{ name: string, show: boolean, isNew?: boolean, onHide: (sa
                                 <Single value={data} onChange={(e) => { mutate(e, false) }} />
                         }
                     </ModalBody>
-                    <ModalFooter className="d-flex justify-content-between">
+                    <ModalFooter className="flex justify-between">
                         <div>
                             {!isNew && name !== "bootstrap" && onDelete && (
                                 <Button
                                     variant="outline-danger"
                                     onClick={() => { onHide(false); onDelete(name); }}
                                 >
-                                    <Trash className="me-2" size={16} />Delete List
+                                    <Trash className="mr-2" size={16} />Delete List
                                 </Button>
                             )}
                         </div>
 
-                        <div className="d-flex gap-2">
+                        <div className="flex gap-2">
                             <Button onClick={() => onHide()}>Cancel</Button>
                             <Button
                                 disabled={loadding}
                                 onClick={handleSave}
                             >
-                                {loadding ? <Spinner size="sm" /> : <><Check className="me-2" size={16} />Save</>}
+                                {loadding ? <Spinner size="sm" /> : <><Check className="mr-2" size={16} />Save</>}
                             </Button>
                         </div>
                     </ModalFooter>
@@ -312,12 +312,12 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
     };
 
     return (
-        <div className="d-flex flex-column gap-4">
+        <div className="flex flex-col gap-6">
             {/* 1. Top Settings Area */}
             <SettingsBox>
-                <div className="row g-4">
+                <div className="grid grid-cols-1 gap-6">
                     {/* Content Type */}
-                    <div className="col-12">
+                    <div>
                         <SettingTypeSelect
                             label='Content Type'
                             type={list_list_type_enumSchema}
@@ -327,19 +327,19 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
                     </div>
 
                     {/* Source Mode */}
-                    <div className="col-12">
+                    <div>
                         <SettingLabel className="mb-2">Source Mode</SettingLabel>
                         <ToggleGroup
                             type="single"
                             value={isRemote ? "remote" : "local"}
                             onValueChange={(v) => v && handleModeChange(v === "remote")}
-                            className="w-100"
+                            className="w-full"
                         >
-                            <ToggleItem value="local" className="flex-grow-1">
-                                <Network className="me-2" />Local
+                            <ToggleItem value="local" className="flex-grow">
+                                <Network className="mr-2" />Local
                             </ToggleItem>
-                            <ToggleItem value="remote" className="flex-grow-1">
-                                <CloudDownload className="me-2" />Remote
+                            <ToggleItem value="remote" className="flex-grow">
+                                <CloudDownload className="mr-2" />Remote
                             </ToggleItem>
                         </ToggleGroup>
                     </div>
@@ -347,13 +347,13 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
             </SettingsBox>
 
             {/* 2. List Editor Area */}
-            <div className="d-flex flex-column gap-3">
-                <div className="d-flex justify-content-between align-items-end px-1">
+            <div className="flex flex-col gap-4">
+                <div className="flex justify-between items-end px-1">
                     <div>
-                        <h6 className="fw-bold mb-1">
+                        <h6 className="font-bold mb-1">
                             {isRemote ? "Remote Resource URLs" : "Local Rules"}
                         </h6>
-                        <small className="text-muted opacity-75">
+                        <small className="text-gray-500 dark:text-gray-400 opacity-75">
                             {isRemote
                                 ? "Files will be downloaded and updated automatically."
                                 : "Define rules manually (Domain, IP CIDR, etc)."}
@@ -364,7 +364,7 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
                     </Badge>
                 </div>
 
-                <div className="bg-body-tertiary p-3 rounded-3 border border-secondary border-opacity-10">
+                <div className="bg-secondary/10 p-4 rounded-md border border-gray-500/10">
                     <InputList
                         title={isRemote ? "URL" : "Rule"}
                         dump
@@ -384,8 +384,8 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
             {/* 3. Error Messages Area */}
             {value.errorMsgs && value.errorMsgs.length > 0 && (
                 <div className="mt-2">
-                    <SettingLabel className="text-danger mb-2">Error Messages</SettingLabel>
-                    <div className="p-3 bg-danger bg-opacity-10 text-danger rounded-3 small font-monospace">
+                    <SettingLabel className="text-red-500 mb-2">Error Messages</SettingLabel>
+                    <div className="p-4 bg-red-500/10 text-red-500 rounded-md text-xs font-mono">
                         {value.errorMsgs.map((msg, i) => <div key={i} className="mb-1">• {msg}</div>)}
                     </div>
                 </div>
