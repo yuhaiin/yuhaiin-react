@@ -1,6 +1,5 @@
 import { clsx } from "clsx";
 import * as React from "react";
-import styles from "./input.module.css";
 
 // 1. Get all property types for native Input
 type NativeInputProps = React.InputHTMLAttributes<HTMLInputElement>;
@@ -19,6 +18,8 @@ export interface InputProps extends InputPropsWithoutSize {
 
     groupPosition?: 'first' | 'middle' | 'last' | 'single';
 }
+
+export const baseInputStyles = "block w-full px-[0.875rem] h-[38px] text-[0.9375rem] font-normal leading-[1.5] text-body-color bg-body border border-sidebar-border rounded-[6px] shadow-[inset_0_0.5px_0px_rgba(0,0,0,0.05)] appearance-none outline-none transition-all duration-150 ease-in-out focus:border-[#86b7fe] focus:shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)] focus:z-[2] focus:outline-none read-only:bg-tertiary-bg read-only:border-[rgba(0,0,0,0.1)] read-only:cursor-default read-only:focus:border-sidebar-border read-only:focus:shadow-[0_0_0_3px_rgba(0,0,0,0.04)] disabled:bg-secondary-bg disabled:text-secondary disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none placeholder:font-normal dark:bg-body dark:border-sidebar-border";
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
     ({ className, size = "default", htmlSize, groupPosition, ...props }, ref) => {
@@ -39,10 +40,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 // Pass to the native size attribute if width control is needed
                 size={htmlSize}
                 className={clsx(
-                    styles.input,
+                    baseInputStyles,
                     {
                         // Apply CSS based on the size string
-                        [styles.sm]: size === "sm",
+                        "!px-[0.625rem] !py-1 !text-[0.8125rem] !rounded-[6px] !h-auto": size === "sm",
                     },
                     radiusClass,
                     className
@@ -63,7 +64,9 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTML
             <textarea
                 ref={ref}
                 className={clsx(
-                    styles.input,
+                    // Reuse base styles but override height and padding for textarea
+                    baseInputStyles,
+                    "!h-auto !py-2",
                     className
                 )}
                 {...props}

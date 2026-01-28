@@ -12,7 +12,6 @@ import {
     DropdownContent,
     DropdownTrigger
 } from './dropdown';
-import styles from './select.module.css';
 
 export interface SelectItem {
     value: string;
@@ -49,7 +48,16 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
             onValueChange={(val) => onValueChange(val === "___EMPTY___" ? "" : val)}
             disabled={disabled}
         >
-            <SelectPrimitive.Trigger className={clsx(styles.selectTrigger, size === 'sm' && styles.selectTriggerSm, radiusClass, triggerClassName, disabled && styles.disabled)} aria-label={placeholder}>
+            <SelectPrimitive.Trigger
+                className={clsx(
+                    "flex items-center justify-between rounded-[12px] px-3 text-sm h-[38px] gap-[5px] bg-body text-body-color border border-sidebar-border w-full transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-tertiary-bg hover:border-[var(--bs-border-color-translucent)] focus:outline-none focus:border-[#86b7fe] data-[state=open]:outline-none data-[state=open]:border-[#86b7fe]",
+                    size === 'sm' && "h-8 !text-[0.875rem] px-[10px]",
+                    radiusClass,
+                    triggerClassName,
+                    disabled && "opacity-60 pointer-events-none grayscale-[0.5]"
+                )}
+                aria-label={placeholder}
+            >
                 <SelectPrimitive.Value placeholder={placeholder} />
                 <SelectPrimitive.Icon>
                     <ChevronDown className="opacity-50" size={16} />
@@ -57,7 +65,10 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
             </SelectPrimitive.Trigger>
             <SelectPrimitive.Portal>
                 <SelectPrimitive.Content
-                    className={clsx(styles.selectContent, contentClassName)}
+                    className={clsx(
+                        "overflow-hidden bg-body rounded-[20px] border border-sidebar-border shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_10px_15px_-3px_rgba(0,0,0,0.1)] z-[2000] max-h-[var(--radix-select-content-available-height)] will-change-[transform,opacity] data-[state=open]:animate-slideDownAndFade data-[state=closed]:animate-slideUpAndFade origin-[var(--radix-select-content-transform-origin)] animate-duration-200",
+                        contentClassName
+                    )}
                     position="popper"
                     sideOffset={5}
                     align="start"
@@ -69,13 +80,19 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         transition={{ duration: 0.15, ease: "easeOut" }}
                     >
-                        <SelectPrimitive.Viewport className={clsx(styles.selectViewport, viewportClassName)}>
+                        <SelectPrimitive.Viewport className={clsx("p-[5px] overflow-y-auto max-h-[50vh]", viewportClassName)}>
                             {items.map((item, index) => {
                                 const itemValue = item.value === "" ? "___EMPTY___" : item.value;
                                 return (
-                                    <SelectPrimitive.Item key={`${itemValue}-${index}`} value={itemValue} className={styles.selectItem}>
+                                    <SelectPrimitive.Item
+                                        key={`${itemValue}-${index}`}
+                                        value={itemValue}
+                                        className={clsx(
+                                            "text-sm leading-none text-body-color rounded-[20px] flex items-center h-8 pl-[25px] pr-[35px] relative select-none cursor-pointer border border-transparent transition-colors duration-100 ease-linear data-[highlighted]:bg-tertiary-bg data-[highlighted]:text-body-color"
+                                        )}
+                                    >
                                         <SelectPrimitive.ItemText>{item.label}</SelectPrimitive.ItemText>
-                                        <SelectPrimitive.ItemIndicator className={styles.selectItemIndicator}>
+                                        <SelectPrimitive.ItemIndicator className="absolute left-0 w-[25px] inline-flex items-center justify-center">
                                             <Check size={14} />
                                         </SelectPrimitive.ItemIndicator>
                                     </SelectPrimitive.Item>
@@ -111,9 +128,9 @@ const SettingSelectComponent: FC<{
         items.unshift({ value: "", label: emptyChooseName ?? "Choose..." });
     }
     return (
-        <div className={clsx(styles.formRow, disabled && styles.disabled)}>
-            <label className={styles.formLabel}>{label}</label>
-            <div className={styles.formControl}>
+        <div className={clsx("flex items-center mb-4 flex-wrap", disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
+            <label className="basis-[150px] shrink-0 mr-6 font-medium sm:basis-full sm:mr-0 sm:mb-2">{label}</label>
+            <div className="grow min-w-0 relative">
                 <Select value={value} onValueChange={onChange} items={items} disabled={disabled} />
             </div>
         </div>
@@ -163,16 +180,20 @@ const DropdownSelectComponent: FC<{
         <Dropdown>
             <DropdownTrigger asChild>
                 <div
-                    className={clsx(styles.selectTrigger, radiusClass, triggerClassName)}
+                    className={clsx(
+                        "flex items-center justify-between rounded-[12px] px-3 text-sm h-[38px] gap-[5px] bg-body text-body-color border border-sidebar-border w-full transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-tertiary-bg hover:border-[var(--bs-border-color-translucent)] focus:outline-none focus:border-[#86b7fe] data-[state=open]:outline-none data-[state=open]:border-[#86b7fe]",
+                        radiusClass,
+                        triggerClassName
+                    )}
                     style={{ cursor: 'pointer' }}
                 >
-                    <div className="d-flex align-items-center gap-2 overflow-hidden">
+                    <div className="flex items-center gap-2 overflow-hidden">
                         {values.length > 0 && (
-                            <span className={styles.countBadge}>
+                            <span className="inline-flex items-center justify-center bg-[var(--bs-primary-bg-subtle)] text-primary text-xs font-semibold h-5 min-w-[20px] px-[6px] rounded-full leading-none">
                                 {values.length}
                             </span>
                         )}
-                        <span className={clsx("text-truncate", values.length === 0 && "opacity-50")}>
+                        <span className={clsx("truncate", values.length === 0 && "opacity-50")}>
                             {values.length === 0 ? placeholder : values.join(", ")}
                         </span>
                     </div>
@@ -218,8 +239,8 @@ const SettingSelectVerticalComponent: FC<{
         items.unshift({ value: "", label: emptyChooseName ?? "Choose..." });
     }
     return (
-        <div className={clsx(styles.formVertical, className, disabled && styles.disabled)}>
-            <SettingLabel className={styles.formLabel}>{label}</SettingLabel>
+        <div className={clsx("flex flex-col mb-4 relative", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
+            <SettingLabel className="mb-2 font-medium block basis-auto mr-0">{label}</SettingLabel>
             <Select value={value} onValueChange={onChange} items={items} disabled={disabled} />
         </div>
     );
@@ -248,8 +269,8 @@ const SettingEnumSelectVerticalComponent: FC<{
     }
 
     return (
-        <div className={clsx(styles.formVertical, className, disabled && styles.disabled)}>
-            <SettingLabel className={styles.formLabel}>{label}</SettingLabel>
+        <div className={clsx("flex flex-col mb-4 relative", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
+            <SettingLabel className="mb-2 font-medium block basis-auto mr-0">{label}</SettingLabel>
             <Select value={String(value)} onValueChange={(val) => onChange(Number(val))} items={items} disabled={disabled} />
         </div>
     );
@@ -282,9 +303,9 @@ const SettingTypeSelectComponent: FC<{
     }
 
     return (
-        <div className={clsx(styles.formRow, disabled && styles.disabled, className)} style={style}>
-            {label && <label className={styles.formLabel}>{label}</label>}
-            <div className={styles.formControl}>
+        <div className={clsx("flex items-center mb-4 flex-wrap", disabled && "opacity-60 pointer-events-none grayscale-[0.5]", className)} style={style}>
+            {label && <label className="basis-[150px] shrink-0 mr-6 font-medium sm:basis-full sm:mr-0 sm:mb-2">{label}</label>}
+            <div className="grow min-w-0 relative">
                 <Select value={String(value)} onValueChange={(val) => onChange(Number(val))} items={items} disabled={disabled} triggerClassName={triggerClassName} size={size} />
             </div>
         </div>

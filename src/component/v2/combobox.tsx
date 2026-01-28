@@ -1,7 +1,7 @@
 
 import * as Popover from '@radix-ui/react-popover';
+import { clsx } from 'clsx';
 import React, { FC, useEffect, useState } from 'react';
-import styles from './forms.module.css';
 import { Input, InputProps } from './input';
 
 export interface ComboboxItem {
@@ -122,7 +122,13 @@ export const Combobox: FC<ComboboxProps> = ({
             {filteredOptions.length > 0 && (
                 <Popover.Portal>
                     <Popover.Content
-                        className={styles.popoverContent}
+                        className={clsx(
+                            "w-[var(--radix-popover-trigger-width)] max-h-[50vh] bg-body rounded-[20px] border border-sidebar-border shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_10px_15px_-3px_rgba(0,0,0,0.1)] z-[2000] p-1 will-change-[transform,opacity]",
+                            "data-[state=open]:data-[side=top]:animate-slideDownAndFade",
+                            "data-[state=open]:data-[side=right]:animate-slideLeftAndFade",
+                            "data-[state=open]:data-[side=bottom]:animate-slideUpAndFade",
+                            "data-[state=open]:data-[side=left]:animate-slideRightAndFade"
+                        )}
                         onWheel={(e) => e.stopPropagation()}
                         onOpenAutoFocus={(e) => e.preventDefault()}
                         onCloseAutoFocus={(e) => e.preventDefault()}
@@ -149,7 +155,11 @@ export const Combobox: FC<ComboboxProps> = ({
                                                 isKeyboardNav.current = false;
                                             }
                                         }}
-                                        className={styles.suggestionItem}
+                                        className={clsx(
+                                            "px-3 py-2 cursor-pointer rounded-[20px] text-[0.9rem] transition-colors duration-150 text-body-color group",
+                                            "hover:bg-tertiary-bg hover:text-body-color",
+                                            i === highlightedIndex && "bg-tertiary-bg text-body-color" // simplified data-highlighted logic
+                                        )}
                                         data-highlighted={i === highlightedIndex}
                                         onClick={() => {
                                             onChange(opt.value);
@@ -160,11 +170,11 @@ export const Combobox: FC<ComboboxProps> = ({
                                             setHighlightedIndex(i);
                                         }}
                                     >
-                                        <span className={styles.suggestionLabel}>{opt.label}</span>
+                                        <span className="font-medium block">{opt.label}</span>
                                         {opt.details && opt.details.length > 0 && (
-                                            <div className={styles.suggestionChildren}>
+                                            <div className="pl-0 mt-[2px] font-mono text-[0.75em] text-secondary whitespace-nowrap overflow-hidden text-ellipsis group-hover:text-secondary">
                                                 {opt.details.map((d, di) => (
-                                                    <span key={di} className={styles.suggestionChild}>{d}</span>
+                                                    <span key={di} className="inline-block mr-1.5 [&:not(:last-child)]:after:content-[',']">{d}</span>
                                                 ))}
                                             </div>
                                         )}

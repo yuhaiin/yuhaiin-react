@@ -3,7 +3,6 @@ import { clsx } from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import * as React from "react";
 import { useLastClickPosition } from "../../hooks/use-last-click";
-import styles from "./modal.module.css";
 
 // --- Context ---
 const ModalContext = React.createContext<{ open: boolean, transformOrigin: string }>({ open: false, transformOrigin: 'center center' });
@@ -81,7 +80,7 @@ const ModalContent = ({ className, children, style, ...props }: React.ComponentP
                 <ModalPortal forceMount>
                     <DialogPrimitive.Overlay asChild forceMount>
                         <motion.div
-                            className={styles.overlay}
+                            className="fixed inset-0 z-[1050] bg-black/50"
                             variants={overlayVariants}
                             initial="hidden"
                             animate="visible"
@@ -90,7 +89,10 @@ const ModalContent = ({ className, children, style, ...props }: React.ComponentP
                     </DialogPrimitive.Overlay>
                     <DialogPrimitive.Content asChild forceMount>
                         <motion.div
-                            className={clsx(styles.content, className)}
+                            className={clsx(
+                                "fixed top-1/2 left-1/2 w-[90vw] max-w-[var(--bs-modal-width,500px)] max-h-[85vh] p-[5px] flex flex-col overflow-hidden outline-none bg-body text-body-color border border-sidebar-border rounded-[32px] shadow-[var(--bs-modal-box-shadow)] z-[1055] will-change-[transform,opacity]",
+                                className
+                            )}
                             variants={contentVariants}
                             initial="hidden"
                             animate="visible"
@@ -119,11 +121,11 @@ const ModalHeader = ({
     closeButton = false, // Hidden by default
     ...props
 }: ModalHeaderProps) => (
-    <div className={clsx(styles.header, className)} {...props}>
+    <div className={clsx("flex items-center justify-between p-[var(--bs-modal-header-padding,1rem_1rem)] border-b border-sidebar-border", className)} {...props}>
         {children}
 
         {closeButton && (
-            <DialogPrimitive.Close className={styles.closeButton} aria-label="Close">
+            <DialogPrimitive.Close className="bg-transparent border-none cursor-pointer text-2xl leading-none p-2 ml-auto -mr-2 -mt-2 -mb-2 text-secondary opacity-50 transition-opacity duration-200 hover:opacity-100 hover:text-body-color focus:outline-none flex items-center justify-center" aria-label="Close">
                 {/* Use a standard multiplication sign, or replace with Cross2Icon from @radix-ui/react-icons */}
                 <span aria-hidden="true">×</span>
             </DialogPrimitive.Close>
@@ -134,7 +136,7 @@ const ModalHeader = ({
 // 3. Title (Must use DialogPrimitive.Title for accessibility)
 const ModalTitle = ({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) => (
     <DialogPrimitive.Title
-        className={clsx(styles.title, className)}
+        className={clsx("m-0 text-xl font-medium leading-[var(--bs-modal-title-line-height,1.5)]", className)}
         {...props}
     />
 );
@@ -142,12 +144,12 @@ ModalTitle.displayName = "ModalTitle";
 
 // 4. Body
 const ModalBody = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-    <div className={clsx(styles.body, className)} {...props} />
+    <div className={clsx("relative flex-auto p-[var(--bs-modal-inner-padding,1rem)] overflow-y-auto", className)} {...props} />
 );
 
 // 5. Footer
 const ModalFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-    <div className={clsx(styles.footer, className)} {...props} />
+    <div className={clsx("flex flex-wrap items-center justify-end p-[calc(var(--bs-modal-inner-padding,1rem)*0.75)] border-t border-sidebar-border gap-2", className)} {...props} />
 );
 
 export {

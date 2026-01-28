@@ -1,22 +1,10 @@
 import { clsx } from "clsx";
 import * as React from "react";
-import styles from "./inputgroup.module.css";
-
-const InputGroupContext = React.createContext<{}>({});
 
 const InputGroup = React.forwardRef<
     HTMLDivElement,
     React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => {
-
-    // We need to clone children to pass index/position?
-    // Actually, context is better if we want to avoid cloning, but children need to know their position.
-    // CSS-only approach using :first-child etc is standard, but the issue is *child components* (like Select)
-    // have inner elements with border-radius.
-
-    // The user suggested: "Modify the FormSelect / Input components to accept a 'group position' prop".
-    // This implies we should pass this prop manually or automatically.
-    // To do it automatically, we can map children.
 
     const count = React.Children.count(children);
     const childrenWithProps = React.Children.map(children, (child, index) => {
@@ -26,18 +14,38 @@ const InputGroup = React.forwardRef<
             if (index === count - 1) position = "last";
             if (count === 1) position = "single";
 
-            // We pass a special prop or context?
-            // The prompt says "Modify... to accept a 'group position' prop... automatically change style".
-            // So we clone and pass `groupPosition`.
-            // Note: Custom components like FormSelect need to accept this prop. Native elements (div, button) won't care unless we wrap or use context.
-            // But FormSelect/Input are the main concern.
             return React.cloneElement(child as React.ReactElement<any>, { groupPosition: position });
         }
         return child;
     });
 
     return (
-        <div ref={ref} className={clsx(styles.group, className)} {...props}>
+        <div
+            ref={ref}
+            className={clsx(
+                "relative flex flex-wrap items-stretch w-full",
+                // Children positioning & z-index
+                "[&>button]:relative [&>button]:z-[2] [&>button:focus]:z-[3]",
+                "[&>input]:relative [&>input]:z-[1] [&>input:focus]:z-[3]",
+
+                // Border radius handling for direct children (fallback for components that don't handle groupPosition)
+                "[&>:first-child]:rounded-r-none",
+                "[&>:last-child]:rounded-l-none",
+                "[&>:not(:first-child):not(:last-child)]:rounded-none",
+
+                // Border merging (negative margin)
+                "[&>:not(:first-child)]:ml-[-1px]",
+
+                // Flex sizing for inputs and generic divs (but allow overrides)
+                "[&>input]:w-[1%] [&>input]:min-w-0 [&>input]:flex-auto",
+                "[&>textarea]:w-[1%] [&>textarea]:min-w-0 [&>textarea]:flex-auto",
+                // We apply this to divs too, but InputGroupText will override it
+                "[&>div]:w-[1%] [&>div]:min-w-0 [&>div]:flex-auto",
+
+                className
+            )}
+            {...props}
+        >
             {childrenWithProps}
         </div>
     );
@@ -48,19 +56,29 @@ const InputGroupText = React.forwardRef<
     HTMLDivElement,
     React.HTMLAttributes<HTMLDivElement> & { groupPosition?: string }
 >(({ className, groupPosition, ...props }, ref) => {
-    // InputGroupText is simple, usually just needs to respect CSS :first-child etc.
-    // But if we want to be explicit:
-    // Actually, InputGroupText in `inputgroup.module.css` already handles standard borders.
-    // Let's just pass through for now or apply specific classes if needed.
 
-    // Logic for radius based on position:
     const radiusClass =
-        groupPosition === 'first' ? 'rounded-r-none border-r-0' :
-        groupPosition === 'last' ? 'rounded-l-none' :
-        groupPosition === 'middle' ? 'rounded-none border-r-0' :
-        ''; // single -> keep default radius
+        groupPosition === 'first' ? '!rounded-r-none !border-r-0' :
+        groupPosition === 'last' ? '!rounded-l-none' :
+        groupPosition === 'middle' ? '!rounded-none !border-r-0' :
+        '';
 
-    return <div ref={ref} className={clsx(styles.text, radiusClass, className)} {...props} />
+    return (
+        <div
+            ref={ref}
+            className={clsx(
+                // Base
+                "flex items-center px-3 py-1.5 text-base font-normal leading-[1.5] text-center whitespace-nowrap bg-tertiary-bg border border-sidebar-border rounded-[12px] text-[#212529]",
+                // Dark mode
+                "dark:bg-transparent dark:border-sidebar-border dark:text-body-color",
+                // Fix sizing to prevent growing if InputGroup applies growth to all divs
+                "!w-auto !flex-none",
+                radiusClass,
+                className
+            )}
+            {...props}
+        />
+    )
 });
 InputGroupText.displayName = "InputGroupText";
 
