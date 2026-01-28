@@ -38,9 +38,9 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
     const internalValue = value === "" ? "___EMPTY___" : value;
 
     const radiusClass =
-        groupPosition === 'first' ? 'rounded-r-none border-r-0' :
-            groupPosition === 'last' ? 'rounded-l-none' :
-                groupPosition === 'middle' ? 'rounded-none border-r-0' :
+        groupPosition === 'first' ? '!rounded-r-none !border-r-0' :
+            groupPosition === 'last' ? '!rounded-l-none' :
+                groupPosition === 'middle' ? '!rounded-none !border-r-0' :
                     '';
 
     return (
@@ -154,9 +154,9 @@ const DropdownSelectComponent: FC<{
     groupPosition?: 'first' | 'middle' | 'last' | 'single'
 }> = ({ values, items, onUpdate, triggerClassName, placeholder = "Choose...", groupPosition }) => {
     const radiusClass =
-        groupPosition === 'first' ? 'rounded-r-none border-r-0' :
-            groupPosition === 'last' ? 'rounded-l-none' :
-                groupPosition === 'middle' ? 'rounded-none border-r-0' :
+        groupPosition === 'first' ? '!rounded-r-none !border-r-0' :
+            groupPosition === 'last' ? '!rounded-l-none' :
+                groupPosition === 'middle' ? '!rounded-none !border-r-0' :
                     '';
 
     return (
