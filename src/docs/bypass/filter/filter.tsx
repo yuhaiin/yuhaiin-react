@@ -385,7 +385,6 @@ export const FilterModal: FC<{
                                             value={rule.mode}
                                             onChange={(v) => setRule({ ...rule, mode: v }, false)}
                                             filter={(v) => v.number !== mode.bypass}
-                                            emptyChoose
                                         />
                                     </div>
                                     <div>
@@ -402,7 +401,6 @@ export const FilterModal: FC<{
                                             type={resolve_strategySchema}
                                             value={rule.resolveStrategy}
                                             onChange={(v) => setRule({ ...rule, resolveStrategy: v }, false)}
-                                            emptyChoose
                                         />
                                     </div>
                                     <div>
@@ -412,7 +410,6 @@ export const FilterModal: FC<{
                                             value={rule.udpProxyFqdnStrategy}
                                             onChange={(v) => setRule({ ...rule, udpProxyFqdnStrategy: v }, false)}
                                             format={(v) => v === udp_proxy_fqdn_strategy.udp_proxy_fqdn_strategy_default ? "global" : udp_proxy_fqdn_strategySchema.values.find(x => x.number === v)?.name || ""}
-                                            emptyChoose
                                         />
                                     </div>
                                     <div className="col-span-1 md:col-span-2">

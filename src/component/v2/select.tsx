@@ -254,19 +254,14 @@ const SettingEnumSelectVerticalComponent: FC<{
     onChange: (val: number) => void;
     filter?: (v: DescEnumValue) => boolean;
     format?: (v: number) => string;
-    emptyChoose?: boolean;
     className?: string;
     disabled?: boolean;
-}> = ({ label, type, value, onChange, filter, format, emptyChoose, className, disabled }) => {
+}> = ({ label, type, value, onChange, filter, format, className, disabled }) => {
     const items: SelectItem[] = useMemo(() => {
         let values = type.values;
         if (filter) values = values.filter(filter);
         return values.map(v => ({ value: String(v.number), label: format ? format(v.number) : v.name }));
     }, [type, filter, format]);
-
-    if (emptyChoose) {
-        items.unshift({ value: "", label: "Choose..." });
-    }
 
     return (
         <div className={clsx("flex flex-col mb-4 relative", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
