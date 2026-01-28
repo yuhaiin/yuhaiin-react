@@ -4,8 +4,6 @@ import React from 'react';
 import { Button } from './button';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from './modal';
 
-// Verified: No external CSS module needed as Modal components handle styling.
-
 interface ConfirmModalProps {
   content?: React.ReactNode;
   show: boolean;

@@ -50,7 +50,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
         >
             <SelectPrimitive.Trigger
                 className={clsx(
-                    "flex items-center justify-between rounded-[12px] px-3 text-sm h-[38px] gap-[5px] bg-body text-body-color border border-sidebar-border w-full transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-tertiary-bg hover:border-[var(--bs-border-color-translucent)] focus:outline-none focus:border-[#86b7fe] data-[state=open]:outline-none data-[state=open]:border-[#86b7fe]",
+                    "flex items-center justify-between rounded-[12px] px-3 text-sm h-[38px] gap-[5px] bg-body text-body-color border border-sidebar-border w-full transition-colors duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:!bg-tertiary-bg hover:border-[var(--bs-border-color-translucent)] focus:outline-none focus:border-[#86b7fe] focus:shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)] data-[state=open]:outline-none data-[state=open]:border-[#86b7fe] data-[state=open]:shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)]",
                     size === 'sm' && "h-8 !text-[0.875rem] px-[10px]",
                     radiusClass,
                     triggerClassName,
@@ -88,7 +88,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
                                         key={`${itemValue}-${index}`}
                                         value={itemValue}
                                         className={clsx(
-                                            "text-sm leading-none text-body-color rounded-[20px] flex items-center h-8 pl-[25px] pr-[35px] relative select-none cursor-pointer transition-colors duration-100 ease-linear data-[highlighted]:bg-tertiary-bg data-[highlighted]:text-body-color"
+                                            "text-sm leading-none text-body-color rounded-[20px] flex items-center h-8 pl-[25px] pr-[35px] relative select-none cursor-pointer transition-colors duration-100 ease-linear data-[highlighted]:!bg-tertiary-bg data-[highlighted]:text-body-color focus:outline-none"
                                         )}
                                     >
                                         <SelectPrimitive.ItemText>{item.label}</SelectPrimitive.ItemText>
@@ -181,7 +181,7 @@ const DropdownSelectComponent: FC<{
             <DropdownTrigger asChild>
                 <div
                     className={clsx(
-                        "flex items-center justify-between rounded-[12px] px-3 text-sm h-[38px] gap-[5px] bg-body text-body-color border border-sidebar-border w-full transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-tertiary-bg hover:border-[var(--bs-border-color-translucent)] focus:outline-none focus:border-[#86b7fe] data-[state=open]:outline-none data-[state=open]:border-[#86b7fe]",
+                        "flex items-center justify-between rounded-[12px] px-3 text-sm h-[38px] gap-[5px] bg-body text-body-color border border-sidebar-border w-full transition-colors duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:!bg-tertiary-bg hover:border-[var(--bs-border-color-translucent)] focus:outline-none focus:border-[#86b7fe] focus:shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)] data-[state=open]:outline-none data-[state=open]:border-[#86b7fe] data-[state=open]:shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)]",
                         radiusClass,
                         triggerClassName
                     )}

@@ -8,7 +8,8 @@ import React, { FC, useEffect, useId, useState } from 'react';
 import { Button } from './button';
 import { SettingLabel } from './card';
 import { Combobox } from './combobox';
-import { Input, InputProps, baseInputStyles } from './input';
+import styles from './forms.module.css';
+import { Input, InputProps } from './input';
 import SwitchComponent from './switch';
 import { Tooltip } from './tooltip';
 
@@ -20,9 +21,9 @@ export { SwitchCard } from './switch';
 const SettingCheckComponent: FC<{ label: string, checked: boolean, onChange: (c: boolean) => void, className?: string, disabled?: boolean }> =
     ({ label, checked, onChange, className, disabled }) => {
         return (
-            <div className={clsx("flex items-center mb-4", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
-                <label className="basis-[150px] shrink-0 mr-6 font-medium">{label}</label>
-                <div className="grow min-w-0 relative">
+            <div className={clsx(styles.formRow, className, disabled && styles.disabled)}>
+                <label className={styles.formLabel}>{label}</label>
+                <div className={styles.formControl}>
                     <SwitchComponent checked={checked} onCheckedChange={onChange} disabled={disabled} />
                 </div>
             </div>
@@ -63,7 +64,7 @@ export const SettingInputVertical: FC<SettingInputVerticalProps> = React.memo(({
     const id = useId(); // Auto-generate unique ID
 
     return (
-        <div className={clsx("flex flex-col mb-4 relative", className)}>
+        <div className={`${styles.formVertical} ${className || ''}`}>
             {/* 1. Associate Label and Input */}
             <SettingLabel htmlFor={id} style={{ marginBottom: '0.5rem', display: 'block' }}>
                 {label}
@@ -103,18 +104,19 @@ export const SettingPasswordVertical: FC<{
     const [show, setShow] = useState(false);
 
     return (
-        <div className={clsx("flex flex-col mb-4 relative", className)}>
-            <SettingLabel className="mb-2 font-medium block">{label}</SettingLabel>
+        <div className={`${styles.formVertical} ${className}`}>
+            <SettingLabel className={styles.formLabel}>{label}</SettingLabel>
             <div style={{ display: 'flex' }}>
                 <input
                     type={show ? "text" : "password"}
-                    className={clsx(baseInputStyles, "!border-r-0 !rounded-r-none")}
+                    className={styles.input}
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={placeholder}
+                    style={{ borderRight: 'none', borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
                 />
                 <Button
-                    className="!rounded-l-none"
+                    style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
                     onClick={() => setShow(!show)}
                 >
                     {show ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -138,28 +140,28 @@ export const SettingRangeVertical: FC<{
     className?: string;
 }> = React.memo(({ label, value, min, max, step, unit, onChange, className }) => {
     return (
-        <div className={clsx("flex flex-col mb-4 relative", className)}>
-            <div className="flex justify-between items-center mb-1">
-                <SettingLabel className="mb-0 font-medium">{label}</SettingLabel>
-                <div className="text-primary font-bold font-mono text-sm bg-primary/10 px-2 py-1 rounded">
+        <div className={`${styles.formVertical} ${className}`}>
+            <div className="d-flex justify-content-between align-items-center mb-1">
+                <SettingLabel className={`${styles.formLabel} mb-0`}>{label}</SettingLabel>
+                <div className="text-primary fw-bold font-monospace small bg-primary bg-opacity-10 px-2 py-1 rounded">
                     {value.toLocaleString()} {unit}
                 </div>
             </div>
 
             <SliderPrimitive.Root
-                className="relative flex items-center select-none touch-none w-full h-5"
+                className={styles.SliderRoot}
                 value={[value]}
                 onValueChange={(newValue) => onChange(newValue[0])}
                 min={min}
                 max={max}
                 step={step}
             >
-                <SliderPrimitive.Track className="bg-secondary-bg relative grow rounded-full h-[3px]">
-                    <SliderPrimitive.Range className="absolute bg-primary rounded-full h-full" asChild>
+                <SliderPrimitive.Track className={styles.SliderTrack}>
+                    <SliderPrimitive.Range className={styles.SliderRange} asChild>
                         <motion.span layout transition={{ type: "spring", stiffness: 400, damping: 30 }} />
                     </SliderPrimitive.Range>
                 </SliderPrimitive.Track>
-                <SliderPrimitive.Thumb className="block w-5 h-5 bg-white shadow-[0_2px_5px_-1px_rgba(0,0,0,0.1)] rounded-[10px] border border-sidebar-border hover:bg-body focus:outline-none focus:shadow-[0_0_0_5px_var(--bs-primary-bg-subtle)]" asChild>
+                <SliderPrimitive.Thumb className={styles.SliderThumb} asChild>
                     <motion.span
                         layout
                         whileHover={{ scale: 1.2 }}
@@ -169,7 +171,7 @@ export const SettingRangeVertical: FC<{
                 </SliderPrimitive.Thumb>
             </SliderPrimitive.Root>
 
-            <div className="flex justify-between text-muted opacity-50 text-[0.7rem] font-semibold">
+            <div className="d-flex justify-content-between text-muted opacity-50" style={{ fontSize: '0.7rem', fontWeight: 600 }}>
                 <span>MIN: {min.toLocaleString()}</span>
                 <span>MAX: {max.toLocaleString()}</span>
             </div>
@@ -218,10 +220,10 @@ export const SettingInputBytes: FC<{
     };
 
     const labelWithWarning = (
-        <div className="flex items-center gap-1">
+        <div className="d-flex align-items-center gap-1">
             {label}
             <Tooltip content="Input must be a valid Base64 string to be saved.">
-                <div className="text-danger cursor-help">
+                <div className="text-danger" style={{ cursor: 'help' }}>
                     <CircleAlert size={12} />
                 </div>
             </Tooltip>

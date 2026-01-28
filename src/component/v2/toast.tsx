@@ -4,6 +4,7 @@ import * as ToastPrimitive from '@radix-ui/react-toast';
 import { clsx } from 'clsx';
 import { AnimatePresence, motion } from "framer-motion";
 import React, { createContext, useCallback, useState } from 'react';
+import styles from './toast.module.css';
 
 // --- Types ---
 
@@ -80,29 +81,23 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
                     handleOpenChange(toast.id, false);
                   }
                 }}
-                className={clsx(
-                    "bg-[rgba(var(--bs-body-bg-rgb),0.7)] backdrop-blur-[8px] rounded-[8px] border border-[var(--bs-border-color-translucent)] shadow-[0_0.5rem_1rem_rgba(0,0,0,0.1)] flex flex-col overflow-hidden",
-                    {
-                        "!border-l-[4px] !border-l-info": toast.type === 'info',
-                        "!border-l-[4px] !border-l-danger": toast.type === 'error'
-                    }
-                )}
+                className={clsx(styles.root, styles[toast.type])}
                 style={{ listStyle: 'none' }} // Ensure checking CSS doesn't fail
               >
-                <div className="flex justify-between items-center px-3 py-2 bg-[rgba(var(--bs-tertiary-bg-rgb),0.5)] border-b border-[var(--bs-border-color-translucent)]">
-                  <ToastPrimitive.Title className="text-[0.85rem] font-bold text-body-color m-0">
+                <div className={styles.header}>
+                  <ToastPrimitive.Title className={styles.title}>
                     {toast.type === 'error' ? 'System Error' : 'Notification'}
                   </ToastPrimitive.Title>
 
-                  <div className="flex items-center gap-2">
+                  <div className="d-flex align-items-center gap-2">
                     <small className="text-muted" style={{ fontSize: '0.75rem' }}>just now</small>
-                    <ToastPrimitive.Close className="bg-transparent border-none text-secondary cursor-pointer opacity-50 transition-opacity duration-200 p-[0_4px] text-[1.2rem] leading-none hover:opacity-100" aria-label="Close">
+                    <ToastPrimitive.Close className={styles.close} aria-label="Close">
                       <span aria-hidden>×</span>
                     </ToastPrimitive.Close>
                   </div>
                 </div>
 
-                <ToastPrimitive.Description className="p-[0.75rem_1rem] text-body-color text-[0.9rem] leading-[1.4]">
+                <ToastPrimitive.Description className={styles.description}>
                   {toast.text}
                 </ToastPrimitive.Description>
               </motion.li>
@@ -110,7 +105,7 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
           ))}
         </AnimatePresence>
 
-        <ToastPrimitive.Viewport className="fixed top-0 right-0 flex flex-col p-5 gap-[10px] w-[380px] max-w-[100vw] m-0 list-none z-[2147483647] outline-none" />
+        <ToastPrimitive.Viewport className={styles.viewport} />
       </ToastPrimitive.Provider>
     </GlobalToastContext.Provider>
   );

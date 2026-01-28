@@ -55,7 +55,7 @@ export function Pagination({
         }}>1</Button>;
 
     return (
-        <div className={clsx("flex items-center gap-2", className)}>
+        <div className={clsx("d-flex align-items-center gap-2", className)}>
             <Button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
@@ -65,10 +65,10 @@ export function Pagination({
                 <ChevronLeft size={16} />
             </Button>
 
-            <div className="flex items-center gap-1">
+            <div className="d-flex align-items-center gap-1">
                 {pages.map((item, idx) =>
                     item === 'ellipsis' ? (
-                        <div key={'e' + idx} className="flex items-end justify-center text-secondary" style={{ width: '32px', height: '32px', paddingBottom: '4px' }}>
+                        <div key={'e' + idx} className="d-flex align-items-end justify-content-center text-muted" style={{ width: '32px', height: '32px', paddingBottom: '4px' }}>
                             <MoreHorizontal size={16} />
                         </div>
                     ) : (

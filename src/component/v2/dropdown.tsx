@@ -39,8 +39,8 @@ DropdownContent.displayName = "DropdownContent";
 const DropdownItem = ({ className, ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Item>) => (
     <DropdownMenuPrimitive.Item
         className={clsx(
-            "relative flex items-center w-full py-1.5 px-4 pl-10 text-base text-body-color select-none cursor-pointer outline-none bg-transparent border-none text-left no-underline rounded-[20px]",
-            "hover:!bg-tertiary-bg hover:text-emphasis focus:!bg-tertiary-bg focus:text-emphasis data-[highlighted]:!bg-tertiary-bg data-[highlighted]:text-emphasis",
+            "relative flex items-center w-full py-1.5 px-4 pl-10 text-base text-body-color select-none cursor-pointer outline-none bg-transparent border-none text-left no-underline rounded-[20px] transition-colors duration-100 ease-linear",
+            "hover:!bg-tertiary-bg hover:text-emphasis focus:!bg-tertiary-bg focus:text-emphasis data-[highlighted]:!bg-tertiary-bg data-[highlighted]:text-emphasis focus:outline-none",
             className
         )}
         {...props}
@@ -65,8 +65,8 @@ DropdownLabel.displayName = "DropdownLabel";
 const DropdownCheckboxItem = ({ className, children, checked, ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.CheckboxItem>) => (
     <DropdownMenuPrimitive.CheckboxItem
         className={clsx(
-            "relative flex items-center w-full py-1.5 px-4 pl-10 text-base text-body-color select-none cursor-pointer outline-none bg-transparent border-none text-left no-underline rounded-[20px]",
-            "hover:!bg-tertiary-bg hover:text-emphasis focus:!bg-tertiary-bg focus:text-emphasis data-[highlighted]:!bg-tertiary-bg data-[highlighted]:text-emphasis",
+            "relative flex items-center w-full py-1.5 px-4 pl-10 text-base text-body-color select-none cursor-pointer outline-none bg-transparent border-none text-left no-underline rounded-[20px] transition-colors duration-100 ease-linear",
+            "hover:!bg-tertiary-bg hover:text-emphasis focus:!bg-tertiary-bg focus:text-emphasis data-[highlighted]:!bg-tertiary-bg data-[highlighted]:text-emphasis focus:outline-none",
             className
         )}
         checked={checked}
