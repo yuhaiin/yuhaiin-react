@@ -128,7 +128,7 @@ function BackupPage() {
                                 label="S3 Backup Enabled"
                                 description="Enable automatic S3 sync"
                                 checked={data.s3?.enabled ?? false}
-                                onCheckedChange={() => update(prev => create(backup_optionSchema, { ...prev, s3: create(s3Schema, { ...prev.s3, enabled: !prev.s3?.enabled } as any) } as any), false)}
+                                onCheckedChange={() => update(prev => create(backup_optionSchema, { ...prev, s3: create(s3Schema, { ...(prev.s3 ?? {}), enabled: !prev.s3?.enabled }) }), false)}
                             />
                         </div>
                         <div>
@@ -136,7 +136,7 @@ function BackupPage() {
                                 label="Use Path Style"
                                 description="Compatibility for MinIO/S3 clones"
                                 checked={data.s3?.usePathStyle ?? false}
-                                onCheckedChange={() => update(prev => create(backup_optionSchema, { ...prev, s3: create(s3Schema, { ...prev.s3, usePathStyle: !prev.s3?.usePathStyle } as any) } as any), false)}
+                                onCheckedChange={() => update(prev => create(backup_optionSchema, { ...prev, s3: create(s3Schema, { ...(prev.s3 ?? {}), usePathStyle: !prev.s3?.usePathStyle }) }), false)}
                             />
                         </div>
 
@@ -144,7 +144,7 @@ function BackupPage() {
                             <SettingInputVertical
                                 label="Endpoint URL"
                                 value={data.s3?.endpointUrl ?? ""}
-                                onChange={(v) => update(prev => create(backup_optionSchema, { ...prev, s3: create(s3Schema, { ...prev.s3, endpointUrl: v } as any) } as any), false)}
+                                onChange={(v) => update(prev => create(backup_optionSchema, { ...prev, s3: create(s3Schema, { ...(prev.s3 ?? {}), endpointUrl: v }) }), false)}
                                 placeholder="https://s3.amazonaws.com"
                             />
                         </div>
@@ -153,7 +153,7 @@ function BackupPage() {
                             <SettingInputVertical
                                 label="Bucket Name"
                                 value={data.s3?.bucket ?? ""}
-                                onChange={(v) => update(prev => create(backup_optionSchema, { ...prev, s3: create(s3Schema, { ...prev.s3, bucket: v } as any) } as any), false)}
+                                onChange={(v) => update(prev => create(backup_optionSchema, { ...prev, s3: create(s3Schema, { ...(prev.s3 ?? {}), bucket: v }) }), false)}
                                 placeholder="my-backup-bucket"
                             />
                         </div>
@@ -161,7 +161,7 @@ function BackupPage() {
                             <SettingInputVertical
                                 label="Region"
                                 value={data.s3?.region ?? ""}
-                                onChange={(v) => update(prev => create(backup_optionSchema, { ...prev, s3: create(s3Schema, { ...prev.s3, region: v } as any) } as any), false)}
+                                onChange={(v) => update(prev => create(backup_optionSchema, { ...prev, s3: create(s3Schema, { ...(prev.s3 ?? {}), region: v }) }), false)}
                                 placeholder="us-east-1"
                             />
                         </div>
@@ -171,7 +171,7 @@ function BackupPage() {
                             <SettingPasswordVertical
                                 label="Access Key"
                                 value={data.s3?.accessKey ?? ""}
-                                onChange={(v) => update(prev => create(backup_optionSchema, { ...prev, s3: create(s3Schema, { ...prev.s3, accessKey: v } as any) } as any), false)}
+                                onChange={(v) => update(prev => create(backup_optionSchema, { ...prev, s3: create(s3Schema, { ...(prev.s3 ?? {}), accessKey: v }) }), false)}
                                 placeholder="Enter Access Key"
                             />
                         </div>
@@ -179,7 +179,7 @@ function BackupPage() {
                             <SettingPasswordVertical
                                 label="Secret Key"
                                 value={data.s3?.secretKey ?? ""}
-                                onChange={(v) => update(prev => create(backup_optionSchema, { ...prev, s3: create(s3Schema, { ...prev.s3, secretKey: v } as any) } as any), false)}
+                                onChange={(v) => update(prev => create(backup_optionSchema, { ...prev, s3: create(s3Schema, { ...(prev.s3 ?? {}), secretKey: v }) }), false)}
                                 placeholder="Enter Secret Key"
                             />
                         </div>
