@@ -23,11 +23,11 @@ const InputWithIcon: React.FC<{
     onChange: (v: string) => void;
     placeholder: string;
 }> = ({ icon: Icon, label, value, onChange, placeholder }) => (
-    <div className="d-flex align-items-start gap-3 mb-4">
-        <div className="bg-body-tertiary rounded-3 p-2 mt-4 d-none d-sm-block border border-secondary border-opacity-10">
-            <span className="text-muted fs-5 d-flex"><Icon /></span>
+    <div className="flex items-start gap-3 mb-4">
+        <div className="bg-gray-100 dark:bg-[#18181b] rounded-lg p-2 mt-4 hidden sm:block border border-gray-500/10">
+            <span className="text-gray-500 dark:text-gray-400 text-lg flex"><Icon /></span>
         </div>
-        <div className="flex-grow-1">
+        <div className="flex-grow">
             <SettingInputVertical
                 label={label}
                 value={value}
@@ -120,9 +120,9 @@ function Setting() {
                 </CardBody>
             </Card>
 
-            <div className="text-center mt-3 opacity-50 pb-5">
-                <small className="text-muted d-flex align-items-center justify-content-center">
-                    <Info className="me-1" />
+            <div className="text-center mt-3 opacity-50 pb-20">
+                <small className="text-gray-500 dark:text-gray-400 flex items-center justify-center">
+                    <Info className="mr-1" />
                     These settings are stored locally in your browser cache.
                 </small>
             </div>
