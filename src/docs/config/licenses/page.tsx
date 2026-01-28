@@ -31,12 +31,14 @@ const LicenseItem: FC<{ item: License, index: number }> = ({ item, index }) => {
 
                         <div className="flex flex-col gap-1">
                             <a href={item.url} target="_blank" rel="noreferrer"
-                                className="text-gray-500 dark:text-gray-400 text-sm truncate no-underline font-mono opacity-75 hover:opacity-100">
-                                <Link className="mr-1" size={14} />{item.url}
+                                className="flex items-center text-gray-500 dark:text-gray-400 text-sm no-underline font-mono opacity-75 hover:opacity-100 min-w-0">
+                                <Link className="mr-1 shrink-0" size={14} />
+                                <span className="truncate">{item.url}</span>
                             </a>
                             <a href={item.licenseUrl} target="_blank" rel="noreferrer"
-                                className="text-gray-500 dark:text-gray-400 text-sm truncate no-underline font-mono opacity-75">
-                                <ShieldCheck className="mr-1" size={14} />License Source
+                                className="flex items-center text-gray-500 dark:text-gray-400 text-sm no-underline font-mono opacity-75 min-w-0">
+                                <ShieldCheck className="mr-1 shrink-0" size={14} />
+                                <span className="truncate">License Source</span>
                             </a>
                         </div>
                     </div>
