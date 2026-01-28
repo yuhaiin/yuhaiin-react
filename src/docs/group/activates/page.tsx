@@ -121,7 +121,7 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
                 onClickItem={(v) => setModalHash({ hash: v.hash, show: true, point: v })}
                 header={
                     <div className="flex items-center justify-between w-full">
-                        <IconBox icon={Activity} color="success" title="Active Nodes" description="Live outbound connection instances" />
+                        <IconBox icon={Activity} color="#198754" title="Active Nodes" description="Live outbound connection instances" />
                         <Badge variant="success" className="bg-opacity-10 text-green-600 border border-green-600 border-opacity-25 px-3 py-2 rounded-full">
                             {data.nodes.length} Running
                         </Badge>
