@@ -123,9 +123,10 @@ export const Combobox: FC<ComboboxProps> = ({
                 <Popover.Portal>
                     <Popover.Content
                         className={clsx(
-                            "w-[var(--radix-popover-trigger-width)] max-h-[50vh] bg-[var(--bs-body-bg)] rounded-[20px] border border-[var(--bs-border-color)] shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_10px_15px_-3px_rgba(0,0,0,0.1)] z-[2000] p-1 will-change-[transform,opacity]",
+                            "w-[var(--radix-popover-trigger-width)] max-h-[50vh] bg-[var(--bs-body-bg)] rounded-[20px] border border-[var(--bs-border-color)] shadow-lg z-[2000] p-1 will-change-[transform,opacity]",
                             "data-[state=open]:data-[side=top]:animate-slideDownAndFade data-[state=open]:data-[side=right]:animate-slideLeftAndFade data-[state=open]:data-[side=bottom]:animate-slideUpAndFade data-[state=open]:data-[side=left]:animate-slideRightAndFade"
                         )}
+
                         onWheel={(e) => e.stopPropagation()}
                         onOpenAutoFocus={(e) => e.preventDefault()}
                         onCloseAutoFocus={(e) => e.preventDefault()}
