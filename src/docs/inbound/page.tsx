@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardFooter, CardHeader, ErrorMsg, IconBox, MainContainer, SettingsBox } from '@/component/v2/card';
+import { Card, CardBody, CardFooter, CardHeader, ErrorMsg, IconBox, ListItem, MainContainer, SettingsBox } from '@/component/v2/card';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { Spinner } from "@/component/v2/spinner";
 import { SwitchCard } from "@/component/v2/switch";
@@ -205,23 +205,22 @@ function InboudComponent() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {
                             inbounds.names.sort((a, b) => a.localeCompare(b)).map((name) => (
-                                <div key={name}>
-                                    <div
-                                        className="p-4 rounded-lg h-full bg-gray-100 dark:bg-[#2b2b40] flex items-center justify-between cursor-pointer"
+                                <div key={name} className="h-full">
+                                    <ListItem
+                                        className="h-full justify-between p-4"
                                         onClick={() => setShowdata({ show: true, name, new: false })}
-                                        role="button"
-                                        tabIndex={0}
-                                        onKeyDown={(e) => { if (e.key === 'Enter') setShowdata({ show: true, name, new: false }) }}
+                                        // role="button" handled by ListItem (via onClick? actually no, ListItem is a div)
+                                        // But ListItem has cursor-pointer and hover effects
                                     >
                                         <InboundItem name={name} />
-                                    </div>
+                                    </ListItem>
                                 </div>
                             ))
                         }
 
                         {/* Add New Item Input */}
-                        <div>
-                            <div className="p-4 rounded-lg h-full bg-gray-100 dark:bg-[#2b2b40] flex items-center">
+                        <div className="h-full">
+                            <ListItem className="h-full p-4 border-dashed border-sidebar-border bg-[var(--bs-secondary-bg)]">
                                 <form
                                     className="flex w-full gap-2"
                                     onSubmit={(e) => {
