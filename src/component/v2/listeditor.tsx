@@ -12,10 +12,9 @@ export const InputList: FC<{
     onChange: (data: string[]) => void;
     className?: string;
     textarea?: boolean;
-    dump?: boolean;
     placeholder?: string;
     disabled?: boolean;
-}> = ({ title, data, onChange, className, textarea, dump, placeholder, disabled }) => {
+}> = ({ title, data, onChange, className, textarea, placeholder, disabled }) => {
     const [newItem, setNewItem] = useState("");
 
     const add = () => {

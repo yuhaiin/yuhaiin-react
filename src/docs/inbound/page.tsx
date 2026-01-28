@@ -209,8 +209,6 @@ function InboudComponent() {
                                     <ListItem
                                         className="h-full justify-between p-4"
                                         onClick={() => setShowdata({ show: true, name, new: false })}
-                                        // role="button" handled by ListItem (via onClick? actually no, ListItem is a div)
-                                        // But ListItem has cursor-pointer and hover effects
                                     >
                                         <InboundItem name={name} />
                                     </ListItem>
@@ -243,9 +241,8 @@ function InboudComponent() {
                                         <Plus size={20} />
                                     </Button>
                                 </form>
-                            </div>
+                            </ListItem>
                         </div>
-
                     </div>
                     {inbounds.names.length === 0 && (
                         <div className="text-center text-gray-500 p-4">
