@@ -139,7 +139,7 @@ function FailedHistory() {
                                 <ArrowDownWideNarrow size={16} />
                             </Button>
                         </DropdownTrigger>
-                        <DropdownContent align="end" className="p-3" style={{ minWidth: '250px' }}>
+                        <DropdownContent align="end" className="p-3" style={{ minWidth: '320px' }}>
                             <div className="mb-3">
                                 <SettingLabel>Order</SettingLabel>
                                 <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-full">

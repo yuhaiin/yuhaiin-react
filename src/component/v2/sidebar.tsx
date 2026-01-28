@@ -21,7 +21,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
             <motion.div
                 ref={ref}
                 className={clsx(
-                    "fixed z-[1050] left-sidebar-gap top-sidebar-gap h-[calc(100vh-2*var(--sidebar-gap))] w-[260px] bg-sidebar-bg text-sidebar-color rounded-sidebar-radius border border-sidebar-border shadow-sidebar py-6 overflow-y-auto backdrop-filter-none [&::-webkit-scrollbar]:w-0",
+                    "fixed z-[1050] top-sidebar-gap h-[calc(100vh-2*var(--sidebar-gap))] w-[260px] bg-sidebar-bg text-sidebar-color rounded-sidebar-radius border border-sidebar-border shadow-sidebar py-6 overflow-y-auto backdrop-filter-none [&::-webkit-scrollbar]:w-0",
                     // Mobile specific overrides
                     "lg:w-[260px] w-[280px] max-w-[calc(100vw-32px)] lg:max-w-none lg:shadow-sidebar shadow-none lg:m-0",
                     "left-[-300px] lg:left-sidebar-gap",
