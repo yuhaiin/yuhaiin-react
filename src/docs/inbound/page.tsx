@@ -204,8 +204,8 @@ function InboudComponent() {
                 <CardBody>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {
-                            inbounds.names.sort((a, b) => a.localeCompare(b)).map((name, index) => (
-                                <div key={index}>
+                            inbounds.names.sort((a, b) => a.localeCompare(b)).map((name) => (
+                                <div key={name}>
                                     <div
                                         className="p-4 rounded-lg h-full bg-gray-100 dark:bg-[#2b2b40] flex items-center justify-between cursor-pointer"
                                         onClick={() => setShowdata({ show: true, name, new: false })}
