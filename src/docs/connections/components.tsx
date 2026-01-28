@@ -17,7 +17,7 @@ interface MetricProps {
     color?: string;
 }
 
-const MetricCard: FC<MetricProps> = ({ label, value, error, color = '#3b82f6' }) => {
+const MetricCard: FC<MetricProps> = ({ label, value, error }) => {
     return (
         <div
             className={`

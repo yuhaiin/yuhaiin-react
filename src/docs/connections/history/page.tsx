@@ -32,25 +32,25 @@ const ListItem: FC<{ data: all_history }> = React.memo(({ data }) => {
     return (
         <>
             {/* Left Side: Icon + Address & ID (Subscribe style) */}
-            <div className="d-flex align-items-center flex-grow-1 overflow-hidden gap-3 w-100 w-md-auto">
-                <div className="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle flex-shrink-0" style={{ width: '42px', height: '42px' }}>
-                    {data.connection.type?.connType === type.udp ? <Radio className="fs-5" /> : <ArrowLeftRight className="fs-5" />}
+            <div className="flex items-center grow overflow-hidden gap-4 w-full md:w-auto">
+                <div className="flex items-center justify-center bg-blue-500/10 text-blue-500 rounded-full shrink-0" style={{ width: '42px', height: '42px' }}>
+                    {data.connection.type?.connType === type.udp ? <Radio className="text-xl" /> : <ArrowLeftRight className="text-xl" />}
                 </div>
 
-                <div className="d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
-                    <span className="fw-bold text-truncate fs-6">{data.connection.addr}</span>
-                    <small className="text-muted font-monospace opacity-75">
+                <div className="flex flex-col overflow-hidden" style={{ minWidth: 0 }}>
+                    <span className="font-bold truncate text-base">{data.connection.addr}</span>
+                    <small className="text-gray-500 dark:text-gray-400 font-mono opacity-75">
                         ID: #{data.connection.id.toString()} • {type[data.connection.type?.connType ?? 0]}
                     </small>
                 </div>
             </div>
 
             {/* Right Side: Metadata Badges */}
-            <div className="d-flex flex-wrap gap-2 align-items-center flex-shrink-0 ms-md-0">
+            <div className="flex flex-wrap gap-2 items-center shrink-0 md:ml-0">
                 <IconBadge icon={ShieldCheck} text={mode[data.connection.mode]} color="info" />
                 <IconBadge icon={RefreshCw} text={Number(data.count)} color="success" />
                 <IconBadge icon={Clock} text={timestampDate(data.time!).toLocaleTimeString()} color="secondary" />
-                <div className="text-muted opacity-25 ms-2 d-none d-md-block"><ChevronRight /></div>
+                <div className="text-gray-500 dark:text-gray-400 opacity-25 ml-2 hidden md:block"><ChevronRight /></div>
             </div>
         </>
     );
@@ -118,7 +118,7 @@ function History() {
             >
                 <ModalContent>
                     <ModalHeader closeButton>
-                        <ModalTitle className="fw-bold">Session Detail</ModalTitle>
+                        <ModalTitle className="font-bold">Session Detail</ModalTitle>
                     </ModalHeader>
                     <ModalBody>
                         <ConnectionInfo
@@ -133,22 +133,22 @@ function History() {
                         />
                     </ModalBody>
                     <ModalFooter className="border-0">
-                        <Button variant="default" className="w-100" onClick={() => setModalData(prev => ({ ...prev, show: false }))}>Close</Button>
+                        <Button variant="default" className="w-full" onClick={() => setModalData(prev => ({ ...prev, show: false }))}>Close</Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>
 
             {/* --- Top Action Bar --- */}
-            <div className="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3">
+            <div className="flex flex-wrap justify-between items-end mb-4 gap-3">
                 <div>
-                    <h4 className="fw-bold mb-1">Connection History</h4>
-                    <div className="text-muted d-flex align-items-center small">
-                        <Info className="me-2" />
+                    <h4 className="font-bold mb-1">Connection History</h4>
+                    <div className="text-gray-500 dark:text-gray-400 flex items-center text-sm">
+                        <Info className="mr-2" />
                         <span>Showing {values.length} historical records</span>
                     </div>
                 </div>
 
-                <div className="d-flex flex-wrap gap-2 justify-content-end align-items-center">
+                <div className="flex flex-wrap gap-2 justify-end items-center">
                     <FilterSearch onEnter={setFilter} size="sm" />
 
                     <SettingTypeSelect
@@ -169,23 +169,23 @@ function History() {
                     <Dropdown>
                         <DropdownTrigger asChild>
                             <Button size="sm">
-                                <ArrowDownWideNarrow className="me-1" size={16} />
+                                <ArrowDownWideNarrow className="mr-1" size={16} />
                             </Button>
                         </DropdownTrigger>
-                        <DropdownContent align="end" className="p-3" style={{ minWidth: '250px' }}>
+                        <DropdownContent align="end" className="p-3" style={{ minWidth: '320px' }}>
                             <div className="mb-3">
                                 <SettingLabel>Sort Order</SettingLabel>
-                                <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-100">
-                                    <ToggleItem value="asc" className="flex-grow-1">Asc</ToggleItem>
-                                    <ToggleItem value="desc" className="flex-grow-1">Desc</ToggleItem>
+                                <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-full">
+                                    <ToggleItem value="asc" className="grow">Asc</ToggleItem>
+                                    <ToggleItem value="desc" className="grow">Desc</ToggleItem>
                                 </ToggleGroup>
                             </div>
                             <div>
                                 <SettingLabel>Sort By</SettingLabel>
-                                <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="w-100 text-nowrap">
-                                    <ToggleItem value="Time" className="flex-grow-1 px-3">Time</ToggleItem>
-                                    <ToggleItem value="Host" className="flex-grow-1 px-3">Host</ToggleItem>
-                                    <ToggleItem value="Count" className="flex-grow-1 px-3">Count</ToggleItem>
+                                <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="w-full whitespace-nowrap">
+                                    <ToggleItem value="Time" className="grow px-3">Time</ToggleItem>
+                                    <ToggleItem value="Host" className="grow px-3">Host</ToggleItem>
+                                    <ToggleItem value="Count" className="grow px-3">Count</ToggleItem>
                                 </ToggleGroup>
                             </div>
                         </DropdownContent>
