@@ -99,13 +99,13 @@ export default function Licenses() {
                 </CardHeader>
 
                 <CardBody className="p-4 flex-1 overflow-auto rounded-b-[inherit]">
-                    <div className="mt-2">
+                    <div>
                         <LicensesList value={currentList} />
                     </div>
                 </CardBody>
             </Card>
 
-            <div className="text-center mt-3 opacity-50 pb-20">
+            <div className="text-center mt-1 opacity-50">
                 <small className="text-gray-500 dark:text-gray-400">
                     <Heart className="text-red-500 mr-1 inline" fill="currentColor" />
                     Built with love and open-source software.
