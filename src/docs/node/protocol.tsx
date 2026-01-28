@@ -152,7 +152,7 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                                             }} />
 
                                             {editable && (
-                                                <div className="flex justify-end gap-2 mt-3 pt-3 border-t">
+                                                <div className="flex justify-end gap-2 mt-3 pt-3">
                                                     <Button size="sm" onClick={() => moveProtocol(i, 'up')} disabled={i === 0}>
                                                         <ArrowUp size={16} />
                                                     </Button>

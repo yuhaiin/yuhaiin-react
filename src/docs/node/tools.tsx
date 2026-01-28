@@ -73,7 +73,7 @@ export const NewAlternateHostList: FC<{ title: string, data: host[], onChange: (
                                     />
 
                                     {editable && (
-                                        <div className="flex justify-end gap-2 mt-3 pt-3 border-t">
+                                        <div className="flex justify-end gap-2 mt-3 pt-3">
                                             <Button size="sm" onClick={() => moveItem(index, true)} disabled={index === 0}>
                                                 <ArrowUp size={16} />
                                             </Button>

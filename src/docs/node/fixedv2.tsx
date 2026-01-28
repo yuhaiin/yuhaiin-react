@@ -86,7 +86,7 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
                                 />
 
                                 {editable && (
-                                    <div className="flex justify-end gap-2 mt-3 pt-3 border-t">
+                                    <div className="flex justify-end gap-2 mt-3 pt-3">
                                         <Button size="sm" onClick={() => moveItem(index, true)} disabled={index === 0}>
                                             <ArrowUp size={16} />
                                         </Button>
