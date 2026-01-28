@@ -177,7 +177,7 @@ function Group() {
                 <div className="flex gap-3">
                     <Dropdown>
                         <DropdownTrigger asChild>
-                            <Button className="flex items-center justify-between" style={{ minWidth: '150px' }}>
+                            <Button className="flex items-center justify-between min-w-[150px]">
                                 <span className="flex-1 text-left truncate">
                                     {groupIndex >= 0 && data.groups.length > groupIndex ? data.groups[groupIndex].name : "GROUP"}
                                 </span>
@@ -232,9 +232,7 @@ function Group() {
                     && data.groups.length > groupIndex
                     && data.groups[groupIndex].nodes.length > 0
                     ?
-                    < Accordion type="multiple" style={{
-                        boxShadow: ""
-                    }}>
+                    < Accordion type="multiple">
                         <AnimatePresence initial={false} mode="popLayout">
                             {data.groups[groupIndex].nodes
                                 .map((v) => {
@@ -504,11 +502,8 @@ const getLatencyColor = (val: string) => {
 // Helper Component: Display a single block of information
 const InfoBlock: FC<{ label: string, value: React.ReactNode, loading?: boolean, colorClass?: string }> = ({ label, value, loading, colorClass }) => (
     <div className="bg-[var(--card-footer-bg)] border-[0.5px] border-[var(--card-inner-border)] rounded-[20px] p-4 flex flex-col transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:bg-[var(--card-inner-border)]">
-        <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.25rem', fontWeight: 700 }}>{label}</span>
-        <div className={colorClass || ''} style={{
-            fontSize: '0.9rem',
-            wordBreak: 'break-all',
-        }}>
+        <span className="text-xs uppercase mb-1 font-bold">{label}</span>
+        <div className={`${colorClass || ''} text-[0.9rem] break-all`}>
             {loading ? <Spinner size="sm" /> : value || "N/A"}
         </div>
     </div>
@@ -596,9 +591,9 @@ const NodeItemv2: FC<{
 
                         <div className="flex flex-col gap-2 truncate">
                             <span className="truncate">{name}</span>
-                            <div className="flex gap-2 items-center" style={{ fontSize: '0.75rem' }}>
+                            <div className="flex gap-2 items-center text-xs">
                                 <span className="text-gray-500 opacity-75">{hash.substring(0, 8)}</span>
-                                {ipv6 && <Badge variant="info" className="text-gray-900 py-0 px-1" style={{ fontSize: '0.65rem' }}>IPv6</Badge>}
+                                {ipv6 && <Badge variant="info" className="text-gray-900 py-0 px-1 text-[0.65rem]">IPv6</Badge>}
                             </div>
                         </div>
                     </div>
@@ -613,13 +608,13 @@ const NodeItemv2: FC<{
                         {/* Stats Block */}
                         <div className="flex gap-4 text-gray-500 text-sm items-center">
                             <div className="flex gap-2 items-center">
-                                <span className="uppercase text-gray-500" style={{ fontSize: '0.65rem', fontWeight: 700 }}>TCP</span>
+                                <span className="uppercase text-gray-500 text-[0.65rem] font-bold">TCP</span>
                                 <span className={getLatencyColor(latency.tcp.value)}>
                                     {latency.tcp.value}
                                 </span>
                             </div>
                             <div className="flex gap-2 items-center">
-                                <span className="uppercase text-gray-500" style={{ fontSize: '0.65rem', fontWeight: 700 }}>UDP</span>
+                                <span className="uppercase text-gray-500 text-[0.65rem] font-bold">UDP</span>
                                 <span className={getLatencyColor(latency.udp.value)}>
                                     {latency.udp.value}
                                 </span>
@@ -673,7 +668,7 @@ const NodeItemv2: FC<{
 
                 {/* 3. Action Footer */}
                 <div className="flex gap-2 pt-4 border-t border-[var(--card-inner-border)] justify-end">
-                    <div className="btn-group">
+                    <div className="inline-flex">
                         <Dropdown>
                             <DropdownTrigger asChild>
                                 <Button
@@ -764,7 +759,7 @@ const NodeJsonModal = (
             open={props.show}
             onOpenChange={(open) => !open && props.onHide()}
         >
-            <ModalContent style={{ maxWidth: '800px' }}>
+            <ModalContent className="max-w-[800px]">
                 {!props.plaintext &&
                     <ModalHeader closeButton>
                         <ModalTitle>
@@ -775,10 +770,9 @@ const NodeJsonModal = (
 
                 <ModalBody>
                     <textarea
-                        className="w-full bg-transparent border border-[var(--sidebar-border-color)] rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none text-[var(--sidebar-color)]"
+                        className="w-full bg-transparent border border-[var(--sidebar-border-color)] rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none text-[var(--sidebar-color)] h-[65vh] font-mono"
                         readOnly={props.plaintext}
                         value={props.data ? props.data : nodeJson.data}
-                        style={{ height: "65vh", fontFamily: "monospace" }}
                         onChange={(e) => { setNodeJson({ data: e.target.value }); }}
                     />
                 </ModalBody>

@@ -57,7 +57,7 @@ const InboundModal: FC<{
 
     return (
         <Modal open={show} onOpenChange={(open) => !open && onHide()}>
-            <ModalContent style={{ maxWidth: '800px' }}>
+            <ModalContent className="max-w-[800px]">
                 <ModalHeader closeButton className="border-b-0 pb-0">
                     <ModalTitle className="font-bold">{name}</ModalTitle>
                 </ModalHeader>
