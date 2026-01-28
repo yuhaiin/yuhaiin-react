@@ -306,7 +306,7 @@ const PriorityModalComponent: FC<{
 
                         <div className="flex items-center my-4 text-gray-500 dark:text-gray-400">
                             <hr className="flex-grow opacity-25" />
-                            <small className="mx-4 uppercase font-bold opacity-50 tracking-[0.5px]" style={{ fontSize: '0.65rem' }}>Operation</small>
+                            <small className="mx-4 uppercase font-bold opacity-50 tracking-[0.5px] text-[0.65rem]">Operation</small>
                             <hr className="flex-grow opacity-25" />
                         </div>
 
@@ -324,7 +324,7 @@ const PriorityModalComponent: FC<{
 
                         <div className="flex items-center my-4 text-gray-500 dark:text-gray-400">
                             <hr className="flex-grow opacity-25" />
-                            <small className="mx-4 uppercase font-bold opacity-50 tracking-[0.5px]" style={{ fontSize: '0.65rem' }}>Target Rule</small>
+                            <small className="mx-4 uppercase font-bold opacity-50 tracking-[0.5px] text-[0.65rem]">Target Rule</small>
                             <hr className="flex-grow opacity-25" />
                         </div>
 

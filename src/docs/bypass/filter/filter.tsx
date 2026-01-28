@@ -430,9 +430,8 @@ export const FilterModal: FC<{
                             {/* 3. Debug Info */}
                             <div className="mt-2">
                                 <Button
-                                    className="flex items-center opacity-75"
+                                    className="flex items-center opacity-75 text-[0.8rem]"
                                     onClick={() => setShowDebug(!showDebug)}
-                                    style={{ fontSize: '0.8rem' }}
                                     size="sm"
                                 >
                                     {showDebug ? <ChevronDown className="mr-1" /> : <ChevronRight className="mr-1" />}
