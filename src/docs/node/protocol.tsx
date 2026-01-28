@@ -1,6 +1,7 @@
 "use client"
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
+import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { Card, CardBody } from "@/component/v2/card";
 import { Select, SettingInputVertical } from "@/component/v2/forms";
@@ -103,8 +104,8 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
         };
 
         return <>
-            <div className="row g-3 mb-4">
-                <div className="col-md-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                <div>
                     <SettingInputVertical
                         label="Name"
                         value={value.name}
@@ -112,7 +113,7 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                         onChange={(e: string) => { onChange({ ...value, name: e }) }}
                     />
                 </div>
-                <div className="col-md-6">
+                <div>
                     <SettingInputVertical
                         label="Group"
                         value={value.group}
@@ -124,9 +125,9 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
             </div>
 
             <div className="mb-3">
-                <div className="d-flex justify-content-between align-items-center mb-2 px-1">
-                    <h6 className="fw-bold mb-0 opacity-75">Protocol Chain</h6>
-                    <small className="text-muted">{value.protocols.length} steps</small>
+                <div className="flex justify-between items-center mb-2 px-1">
+                    <h6 className="font-bold mb-0 opacity-75">Protocol Chain</h6>
+                    <small className="text-gray-500 dark:text-gray-400">{value.protocols.length} steps</small>
                 </div>
 
                 <Accordion type="multiple" className="mb-3">
@@ -135,8 +136,10 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                             return (
                                 <AccordionItem value={`item-${i}`} key={i}>
                                     <AccordionTrigger>
-                                        <div className="d-flex align-items-center gap-2">
-                                            <span className="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2" style={{ fontSize: '0.7rem' }}>{i + 1}</span>
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="primary" pill className="text-[0.7rem] px-2">
+                                                {i + 1}
+                                            </Badge>
                                             {x.protocol.case ?? "Unknown"}
                                         </div>
                                     </AccordionTrigger>
@@ -149,7 +152,7 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                                             }} />
 
                                             {editable && (
-                                                <div className="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
+                                                <div className="flex justify-end gap-2 mt-3 pt-3 border-t">
                                                     <Button size="sm" onClick={() => moveProtocol(i, 'up')} disabled={i === 0}>
                                                         <ArrowUp size={16} />
                                                     </Button>
@@ -170,9 +173,9 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                 </Accordion>
 
                 {editable && (
-                    <div className="bg-body-tertiary p-3 rounded-3 d-flex align-items-end gap-3 flex-wrap flex-sm-nowrap">
-                        <div className="flex-grow-1">
-                            <label className="form-label small fw-bold opacity-75">New Protocol Step</label>
+                    <div className="bg-gray-100 dark:bg-[#2b2b40] p-3 rounded-lg flex items-end gap-3 flex-wrap sm:flex-nowrap">
+                        <div className="flex-1 w-full">
+                            <label className="block text-sm font-bold opacity-75 mb-2">New Protocol Step</label>
                             <Select
                                 value={newProtocol}
                                 onValueChange={(e) => setNewProtocol(e)}
@@ -186,7 +189,7 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                                 onChange({ ...value, protocols: [...value.protocols, protocols[newProtocol]] })
                             }}
                         >
-                            <Plus className="me-1" size={16} /> Add Step
+                            <Plus className="mr-1" size={16} /> Add Step
                         </Button>
                     </div>
                 )}
@@ -295,7 +298,7 @@ const NetworkSplit: FC<Props<network_split>> = ({ value, onChange, editable = tr
     const protocolNames = Object.keys(protocols).filter(x => x !== "networkSplit")
     return <>
         <div className="mb-3">
-            <label className="form-label small fw-bold opacity-75">TCP Protocol</label>
+            <label className="block text-sm font-bold opacity-75 mb-2">TCP Protocol</label>
             <Select value={value.tcp?.protocol.case ?? ""} items={protocolNames.map(v => ({ value: v, label: v }))}
                 disabled={!editable}
                 onValueChange={(e) => { onChange({ ...value, tcp: protocols[e] }) }} />
@@ -308,7 +311,7 @@ const NetworkSplit: FC<Props<network_split>> = ({ value, onChange, editable = tr
         </Card>
 
         <div className="mb-3">
-            <label className="form-label small fw-bold opacity-75">UDP Protocol</label>
+            <label className="block text-sm font-bold opacity-75 mb-2">UDP Protocol</label>
             <Select value={value.udp?.protocol.case ?? ""} items={protocolNames.map(v => ({ value: v, label: v }))}
                 disabled={!editable}
                 onValueChange={(e) => { onChange({ ...value, udp: protocols[e] }) }} />
@@ -322,7 +325,7 @@ const NetworkSplit: FC<Props<network_split>> = ({ value, onChange, editable = tr
     </>
 }
 
-const Unknown = <div className="text-center my-2" style={{ opacity: '0.4' }}>Not Implement</div>
+const Unknown = <div className="text-center my-2 opacity-40">Not Implement</div>
 
 
 const tlsConfig = create(tls_configSchema, {
