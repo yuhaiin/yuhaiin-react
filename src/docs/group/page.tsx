@@ -585,12 +585,12 @@ const NodeItemv2: FC<{
                     */}
                     <div className="flex items-center gap-3 w-full mb-2 sm:mb-0">
                         {/* Status Icon */}
-                        <Network className={`text-xl flex-shrink-0 ${getLatencyColor(latency.tcp.value) === 'text-[#10b981]'
-                            ? "text-green-500"
-                            : latency.tcp.value !== "N/A" && !latency.tcp.value.includes("timeout")
-                                ? "text-blue-500"
-                                : "text-gray-500"
-                            }`} />
+                        <Network className={`text-xl flex-shrink-0 ${(() => {
+                            const ms = parseGoDurationToMs(latency.tcp.value);
+                            if (ms < 0) return "text-gray-500";
+                            if (ms < 200) return "text-green-500";
+                            return "text-blue-500";
+                        })()}`} />
 
                         <div className="flex flex-col gap-2 truncate">
                             <span className="truncate">{name}</span>
