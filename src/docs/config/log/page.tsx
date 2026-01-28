@@ -1,6 +1,7 @@
 "use client"
 
 import { useDelay } from "@/common/hooks"
+import { Badge } from "@/component/v2/badge"
 import { Card, CardBody, CardHeader, FilterSearch, IconBox, MainContainer } from '@/component/v2/card'
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
@@ -14,11 +15,11 @@ import { tools } from "../../pbes/api/tools_pb"
 import { Logv2 } from "../../pbes/tools/tools_pb"
 
 const HighlightLogLine: FC<{ line: string }> = ({ line }) => {
-    if (line.includes('ERROR')) return <span style={{ color: '#ff4d4f' }}>{line}</span>; // Red
-    if (line.includes('WARN')) return <span style={{ color: '#faad14' }}>{line}</span>;  // Orange/Yellow
-    if (line.includes('INFO')) return <span style={{ color: '#1890ff' }}>{line}</span>;  // Blue
-    if (line.includes("DEBUG")) return <span style={{ color: '#52c41a' }}>{line}</span>; // Green
-    return <span className="font-monospace">{line}</span>;
+    if (line.includes('ERROR')) return <span className="text-red-500">{line}</span>; // Red
+    if (line.includes('WARN')) return <span className="text-amber-500">{line}</span>;  // Orange/Yellow
+    if (line.includes('INFO')) return <span className="text-blue-500">{line}</span>;  // Blue
+    if (line.includes("DEBUG")) return <span className="text-green-500">{line}</span>; // Green
+    return <span className="font-mono">{line}</span>;
 }
 
 const Row = ({ index, style, data }: RowComponentProps<{ data: string[] }>) => {
@@ -26,13 +27,8 @@ const Row = ({ index, style, data }: RowComponentProps<{ data: string[] }>) => {
     return (
         <div style={{
             ...restStyle,
-            width: 'max-content',
-            fontSize: '13px',
-            lineHeight: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            paddingLeft: '1rem'
-        }} className="font-monospace">
+            width: 'max-content'
+        }} className="text-[13px] leading-5 flex items-center pl-4 font-mono">
             {data[index] && <HighlightLogLine line={data[index]} />}
         </div>
     );
@@ -73,21 +69,21 @@ export default function LogComponent() {
     if (log_error) { return <Error statusCode={log_error.code} title={log_error.msg} /> }
 
     return (
-        <MainContainer style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <Card style={{ flex: 1, marginBottom: '0px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <MainContainer className="h-full flex flex-col">
+            <Card className="flex-1 mb-0 flex flex-col overflow-hidden">
                 <CardHeader className="py-3">
-                    <div className="d-flex justify-content-between align-items-center w-100 gap-3">
+                    <div className="flex justify-between items-center w-full gap-3">
                         <IconBox icon={Terminal} color="#f59e0b" title="Live Logcat" description="Real-time system events" />
-                        <div className="d-flex align-items-center gap-2 flex-grow-1">
-                            <FilterSearch onEnter={setSearchTerm} className='flex-grow-1' />
-                            <span className="badge bg-warning bg-opacity-10 text-warning px-2 py-1 rounded-pill" style={{ fontSize: '0.7rem' }}>
-                                <Radio className="me-1" size={12} />LIVE
-                            </span>
+                        <div className="flex items-center gap-2 flex-grow">
+                            <FilterSearch onEnter={setSearchTerm} className='flex-grow' />
+                            <Badge variant="warning" pill className="text-[0.7rem] px-2 py-1">
+                                <Radio className="mr-1" size={12} />LIVE
+                            </Badge>
                         </div>
                     </div>
                 </CardHeader>
-                <CardBody className="p-0 bg-body-tertiary" style={{ flex: 1, overflow: 'hidden', borderBottomLeftRadius: 'inherit', borderBottomRightRadius: 'inherit' }}>
-                    <div style={{ height: '100%', width: '100%', borderRadius: 'inherit' }} className="font-monospace">
+                <CardBody className="p-0 bg-gray-100 dark:bg-[#18181b] flex-1 overflow-hidden rounded-b-[inherit]">
+                    <div className="h-full w-full rounded-[inherit] font-mono">
                         <List
                             rowCount={filteredLog.length}
                             rowHeight={20}
