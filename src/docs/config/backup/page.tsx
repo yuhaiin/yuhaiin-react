@@ -128,7 +128,7 @@ function BackupPage() {
                                 label="S3 Backup Enabled"
                                 description="Enable automatic S3 sync"
                                 checked={data.s3?.enabled ?? false}
-                                onCheckedChange={() => update(prev => create(backup_optionSchema, { ...prev, s3: create(s3Schema, { ...(prev.s3 ?? {}), enabled: !prev.s3?.enabled }) }), false)}
+                                onCheckedChange={() => update(prev => create(backup_optionSchema, { ...prev, s3: create(s3Schema, { ...prev.s3, enabled: !prev.s3?.enabled } as any) } as any), false)}
                             />
                         </div>
                         <div>

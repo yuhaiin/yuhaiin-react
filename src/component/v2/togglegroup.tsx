@@ -8,9 +8,9 @@ import styles from "./togglegroup.module.css";
 /*                                ToggleGroup                                 */
 /* -------------------------------------------------------------------------- */
 
-const ToggleGroupContext = createContext<{ value?: string | string[], layoutId: string }>({ layoutId: "default" });
+const ToggleGroupContext = createContext<{ value?: string | string[], layoutId: string, noSlide?: boolean }>({ layoutId: "default" });
 
-const ToggleGroup = ({ className, children, value, ...props }: React.ComponentProps<typeof ToggleGroupPrimitive.Root>) => {
+const ToggleGroup = ({ className, children, value, noSlide, ...props }: React.ComponentProps<typeof ToggleGroupPrimitive.Root> & { noSlide?: boolean }) => {
     const layoutId = useId();
 
     return (
@@ -19,7 +19,7 @@ const ToggleGroup = ({ className, children, value, ...props }: React.ComponentPr
             value={value as any}
             {...props}
         >
-            <ToggleGroupContext.Provider value={{ value, layoutId }}>
+            <ToggleGroupContext.Provider value={{ value, layoutId, noSlide }}>
                 <LayoutGroup id={layoutId}>
                     {children}
                 </LayoutGroup>
@@ -38,6 +38,10 @@ const ToggleItem = ({ className, children, value, ...props }: React.ComponentPro
     const context = useContext(ToggleGroupContext);
     const isActive = context.value === value || (Array.isArray(context.value) && context.value.includes(value));
 
+    // If noSlide is true, we do NOT pass a layoutId to motion.div.
+    // This disables the shared layout animation (the sliding effect).
+    const indicatorLayoutId = context.noSlide ? undefined : `${context.layoutId}-indicator`;
+
     return (
         <ToggleGroupPrimitive.Item
             className={clsx(styles.item, className)}
@@ -47,7 +51,7 @@ const ToggleItem = ({ className, children, value, ...props }: React.ComponentPro
         >
             {isActive && (
                 <motion.div
-                    layoutId={`${context.layoutId}-indicator`} // Unique layoutId per group
+                    layoutId={indicatorLayoutId} // Unique layoutId per group OR undefined to disable sliding
                     className={styles.indicator}
                     style={{
                         position: 'absolute',
@@ -57,6 +61,9 @@ const ToggleItem = ({ className, children, value, ...props }: React.ComponentPro
                         zIndex: -1,
                         boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
                     }}
+                    initial={context.noSlide ? { opacity: 0, scale: 0.95 } : undefined}
+                    animate={context.noSlide ? { opacity: 1, scale: 1 } : undefined}
+                    exit={context.noSlide ? { opacity: 0, scale: 0.95 } : undefined}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
             )}

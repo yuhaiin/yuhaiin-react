@@ -78,7 +78,7 @@ export default function Licenses() {
                         />
 
                         {/* Top-mounted Tab Navigation styled as a modern toggle bar */}
-                        <div className="bg-gray-100 dark:bg-[#18181b] p-1 rounded-lg inline-flex shadow-sm border border-gray-500/10 min-w-[220px]">
+                        <div className="bg-gray-100 dark:bg-[#18181b] p-1 rounded-lg inline-flex shadow-sm min-w-[220px]">
                             <ToggleGroup
                                 type="single"
                                 value={activeTab}
