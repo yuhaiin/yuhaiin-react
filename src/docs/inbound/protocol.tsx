@@ -85,9 +85,9 @@ export const Protocol: FC<{ inbound: inbound, onChange: (x: inbound) => void }> 
     }, [inbound]);
 
     return <>
-        <div className="d-flex align-items-center mb-3">
-            <SettingLabel className="mb-0 text-nowrap me-3" style={{ minWidth: "auto" }}>Protocol</SettingLabel>
-            <div className="flex-grow-1 me-2">
+        <div className="flex items-center mb-4">
+            <SettingLabel className="mb-0 whitespace-nowrap mr-4" style={{ minWidth: "auto" }}>Protocol</SettingLabel>
+            <div className="grow mr-2">
                 <Select
                     value={newProtocol.value}
                     onValueChange={(e) => setNewProtocol({ value: e })}

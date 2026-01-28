@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardFooter, CardHeader, ErrorMsg, IconBox, MainContainer, SettingsBox } from '@/component/v2/card';
+import { Card, CardBody, CardFooter, CardHeader, ErrorMsg, IconBox, ListItem, MainContainer, SettingsBox } from '@/component/v2/card';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { Spinner } from "@/component/v2/spinner";
 import { SwitchCard } from "@/component/v2/switch";
@@ -58,8 +58,8 @@ const InboundModal: FC<{
     return (
         <Modal open={show} onOpenChange={(open) => !open && onHide()}>
             <ModalContent style={{ maxWidth: '800px' }}>
-                <ModalHeader closeButton className="border-bottom-0 pb-0">
-                    <ModalTitle className="fw-bold">{name}</ModalTitle>
+                <ModalHeader closeButton className="border-b-0 pb-0">
+                    <ModalTitle className="font-bold">{name}</ModalTitle>
                 </ModalHeader>
                 <ModalBody className="pt-2">
                     {error ? <ErrorMsg msg={error.msg} code={error.code} raw={error.raw} /> : isValidating || isLoading || !inbound ? (
@@ -70,18 +70,18 @@ const InboundModal: FC<{
                         </SettingsBox>
                     )}
                 </ModalBody>
-                <ModalFooter className="d-flex justify-content-between">
+                <ModalFooter className="flex justify-between">
                     <div>
                         {!isNew && (
                             <Button variant="outline-danger" onClick={() => { onDelete(); }}>
-                                <Trash className="me-2" size={16} />Delete
+                                <Trash className="mr-2" size={16} />Delete
                             </Button>
                         )}
                     </div>
-                    <div className="d-flex gap-2">
+                    <div className="flex gap-2">
                         <Button onClick={() => onHide()}>Cancel</Button>
                         <Button disabled={saving || !inbound} onClick={handleSave}>
-                            {saving ? <Spinner size="sm" /> : <><Check className="me-1" size={16} /> Save</>}
+                            {saving ? <Spinner size="sm" /> : <><Check className="mr-1" size={16} /> Save</>}
                         </Button>
                     </div>
                 </ModalFooter>
@@ -92,13 +92,13 @@ const InboundModal: FC<{
 
 const InboundItem: FC<{ name: string, }> = ({ name }) => {
     return <>
-        <div className="d-flex align-items-center flex-grow-1 overflow-hidden">
-            <div className="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style={{ width: '36px', height: '36px' }}>
+        <div className="flex items-center grow overflow-hidden">
+            <div className="bg-blue-600/10 text-blue-600 rounded-full flex items-center justify-center mr-4 shrink-0 w-9 h-9">
                 <LogIn size={20} />
             </div>
-            <span className="text-truncate fw-medium">{name}</span>
+            <span className="truncate font-medium">{name}</span>
         </div>
-        <ChevronRight className="text-muted opacity-25" size={16} />
+        <ChevronRight className="text-gray-500 opacity-25" size={16} />
     </>
 }
 
@@ -154,44 +154,44 @@ function InboudComponent() {
             />
 
             {/* 1. Global Settings Card */}
-            <Card className="mb-3">
+            <Card className="mb-4">
                 <CardHeader>
                     <IconBox icon={Settings} color="#f59e0b" title='Inbound Configuration' description="Global interception & sniffing" />
                 </CardHeader>
                 <CardBody>
-                    <div className="row g-3">
-                        <div className="col-md-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
                             <SwitchCard
                                 label="DNS Hijack"
                                 description="Intersects DNS requests"
                                 checked={inbounds.hijackDns}
                                 onCheckedChange={() => mutate({ ...inbounds, hijackDns: !inbounds.hijackDns }, false)}
-                                className="p-3 rounded-3 h-100 bg-body-tertiary"
+                                className="p-4 rounded-lg h-full bg-gray-100 dark:bg-[#2b2b40]"
                             />
                         </div>
-                        <div className="col-md-4">
+                        <div>
                             <SwitchCard
                                 label="FakeDNS"
                                 description="Use virtual IP logic"
                                 checked={inbounds.hijackDnsFakeip}
                                 onCheckedChange={() => mutate({ ...inbounds, hijackDnsFakeip: !inbounds.hijackDnsFakeip }, false)}
-                                className="p-3 rounded-3 h-100 bg-body-tertiary"
+                                className="p-4 rounded-lg h-full bg-gray-100 dark:bg-[#2b2b40]"
                             />
                         </div>
-                        <div className="col-md-4">
+                        <div>
                             <SwitchCard
                                 label="Traffic Sniffing"
                                 description="Inspects protocol types"
                                 checked={!!inbounds.sniff?.enabled}
                                 onCheckedChange={() => mutate({ ...inbounds, sniff: { ...inbounds.sniff, enabled: !inbounds.sniff?.enabled } }, false)}
-                                className="p-3 rounded-3 h-100 bg-body-tertiary"
+                                className="p-4 rounded-lg h-full bg-gray-100 dark:bg-[#2b2b40]"
                             />
                         </div>
                     </div>
                 </CardBody>
-                <CardFooter className="d-flex justify-content-end">
+                <CardFooter className="flex justify-end">
                     <Button disabled={saving} onClick={handleApply}>
-                        {saving ? <Spinner size="sm" /> : <><Save className="me-1" size={16} /> Apply Settings</>}
+                        {saving ? <Spinner size="sm" /> : <><Save className="mr-1" size={16} /> Apply Settings</>}
                     </Button>
                 </CardFooter>
             </Card>
@@ -202,28 +202,25 @@ function InboudComponent() {
                     <IconBox icon={DoorOpen} color="#0d6efd" title="Entry Points" description={`${inbounds.names.length} active inbounds`} />
                 </CardHeader>
                 <CardBody>
-                    <div className="row g-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {
-                            inbounds.names.sort((a, b) => a.localeCompare(b)).map((name, index) => (
-                                <div className="col-md-6 col-lg-4" key={index}>
-                                    <div
-                                        className="p-3 rounded-3 h-100 bg-body-tertiary d-flex align-items-center justify-content-between cursor-pointer"
+                            inbounds.names.sort((a, b) => a.localeCompare(b)).map((name) => (
+                                <div key={name} className="h-full">
+                                    <ListItem
+                                        className="h-full justify-between p-4"
                                         onClick={() => setShowdata({ show: true, name, new: false })}
-                                        role="button"
-                                        tabIndex={0}
-                                        onKeyDown={(e) => { if (e.key === 'Enter') setShowdata({ show: true, name, new: false }) }}
                                     >
                                         <InboundItem name={name} />
-                                    </div>
+                                    </ListItem>
                                 </div>
                             ))
                         }
 
                         {/* Add New Item Input */}
-                        <div className="col-md-6 col-lg-4">
-                            <div className="p-3 rounded-3 h-100 bg-body-tertiary d-flex align-items-center">
+                        <div className="h-full">
+                            <ListItem className="h-full p-4 border-dashed border-sidebar-border bg-[var(--bs-secondary-bg)]">
                                 <form
-                                    className="d-flex w-100 gap-2"
+                                    className="flex w-full gap-2"
                                     onSubmit={(e) => {
                                         e.preventDefault();
                                         const form = e.target as HTMLFormElement;
@@ -236,20 +233,19 @@ function InboudComponent() {
                                 >
                                     <input
                                         name="newInbound"
-                                        className="form-control form-control-sm bg-transparent border-0 shadow-none px-0"
+                                        className="w-full bg-transparent border-none shadow-none px-0 outline-none text-sm text-[var(--input-text-color)] placeholder:text-[var(--input-placeholder)]"
                                         placeholder="Create new..."
                                         autoComplete="off"
                                     />
-                                    <Button size="sm" type="submit" disabled={saving} className="border-0 bg-transparent text-primary p-0">
+                                    <Button size="sm" type="submit" disabled={saving} className="border-none bg-transparent text-blue-600 p-0 hover:bg-transparent hover:text-blue-500">
                                         <Plus size={20} />
                                     </Button>
                                 </form>
-                            </div>
+                            </ListItem>
                         </div>
-
                     </div>
                     {inbounds.names.length === 0 && (
-                        <div className="text-center text-muted p-3">
+                        <div className="text-center text-gray-500 p-4">
                             No records found.
                         </div>
                     )}
