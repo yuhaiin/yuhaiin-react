@@ -86,7 +86,7 @@ const NodeModalComponent: FC<{
 
         return (
             <Modal open={show} onOpenChange={(open) => !open && onHide()}>
-                <ModalContent className="max-w-[1000px] w-full">
+                <ModalContent className="!max-w-[1000px] !w-fit md:min-w-[600px] min-w-[90vw]">
                     <ModalHeader closeButton className="border-b-0 pb-0">
                         <ModalTitle className="font-bold">{nodes?.name || hash}</ModalTitle>
                     </ModalHeader>
