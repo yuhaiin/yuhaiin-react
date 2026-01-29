@@ -3,7 +3,7 @@
 import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datalist";
 import { clsx } from "clsx";
 import { Check } from "lucide-react";
-import React, { FC, JSX, useState, memo } from "react";
+import React, { FC, JSX, useEffect, useState } from "react";
 import useSWR from "swr";
 import { FetchProtobuf, ProtoPath } from "../../common/proto";
 import { connections, counter, total_flow } from "../pbes/api/statistic_pb";
@@ -144,34 +144,31 @@ export const useFlow = () => {
 }
 
 export const FlowCard: FC<{
-    download?: string,
-    upload?: string,
-    download_rate?: string,
-    upload_rate?: string,
+    lastFlow?: Flow,
     flow_error?: { msg: string, code: number },
     extra_fields?: MetricProps[],
-}> = memo(({ download, upload, download_rate, upload_rate, flow_error, extra_fields }) => {
+}> = ({ lastFlow, flow_error, extra_fields }) => {
     return (
         <div className="flex flex-wrap gap-3 w-full mb-3"
             style={{ viewTransitionName: "flow-card-root !important" }}>
             <MetricCard
                 label="Total Download"
-                value={download || "Loading..."}
+                value={lastFlow ? lastFlow.DownloadTotalString() : "Loading..."}
                 error={flow_error?.msg}
             />
             <MetricCard
                 label="Download Rate"
-                value={download_rate || "Loading..."}
+                value={lastFlow ? lastFlow.DownloadString() : "Loading..."}
                 error={flow_error?.msg}
             />
             <MetricCard
                 label="Total Upload"
-                value={upload || "Loading..."}
+                value={lastFlow ? lastFlow.UploadTotalString() : "Loading..."}
                 error={flow_error?.msg}
             />
             <MetricCard
                 label="Upload Rate"
-                value={upload_rate || "Loading..."}
+                value={lastFlow ? lastFlow.UploadString() : "Loading..."}
                 error={flow_error?.msg}
             />
             {
@@ -186,6 +183,23 @@ export const FlowCard: FC<{
             }
         </div>
     );
+}
+
+export const FlowContainer: FC<{
+    onUpdate?: (counters: { [key: string]: counter }) => void
+    onFlow?: (flow: Flow) => void
+    extra_fields?: MetricProps[],
+}> = React.memo((
+    { onUpdate, onFlow, extra_fields }
+) => {
+    const { data: lastFlow, error: flow_error } = useFlow()
+
+    useEffect(() => {
+        if (onUpdate && lastFlow) { onUpdate(lastFlow.counters) }
+        if (onFlow && lastFlow) { onFlow(lastFlow) }
+    }, [onUpdate, onFlow, lastFlow])
+
+    return <FlowCard lastFlow={lastFlow} flow_error={flow_error} extra_fields={extra_fields} />
 })
 
 export const ConnectionInfo: FC<{

@@ -247,14 +247,11 @@ export function CardRowList<T>({
 
 // --- Other Styled Components ---
 
-export const IconBadge: FC<{ icon: React.ElementType, text: string | number, color?: "primary" | "secondary" | "success" | "danger" | "warning" | "info" }> = ({ icon: Icon, text, color = "primary" }) => (
-    <Badge variant={color} className="flex items-center gap-1 !px-2 !py-1 text-[0.7rem] uppercase whitespace-nowrap">
+export const IconBadge: FC<{ icon: React.ElementType, text: string | number, color?: "primary" | "secondary" | "success" | "danger" | "warning" | "info" }> = React.memo(({ icon: Icon, text, color = "primary" }) => (    <Badge variant={color} className="flex items-center gap-1 !px-2 !py-1 text-[0.7rem] uppercase whitespace-nowrap">
         <Icon size={12} />
         <span>{text}</span>
     </Badge>
-);
-
-export const MainContainer: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
+));export const MainContainer: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
     <div className={className} style={style}>
         {children}
     </div>

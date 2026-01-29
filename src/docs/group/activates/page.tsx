@@ -5,14 +5,14 @@ import Error from '@/component/Error';
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { CardList, IconBox, IconBoxRounded, MainContainer } from "@/component/v2/card";
-import { ConfirmModal } from "@/component/v2/confirm";
+import { ConfirmModal } from '@/component/v2/confirm';
 import Loading from "@/component/v2/loading";
 import { GlobalToastContext } from "@/component/v2/toast";
+import { NodeModal } from '@/docs/node/modal';
 import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { Activity, Hash, Info, Power, Zap } from 'lucide-react';
-import { FC, useContext, useState } from "react";
-import { NodeModal } from "../../node/modal";
+import { FC, memo, useContext, useState } from "react";
 import { node } from "../../pbes/api/node_pb";
 import { point, pointSchema } from "../../pbes/node/point_pb";
 
@@ -90,7 +90,7 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
     };
 
     return (
-        <MainContainer>
+        <>
             {/* Confirmation for Closing Node */}
             <ConfirmModal
                 show={confirmData.show}
@@ -113,32 +113,34 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
                 onHide={() => setModalHash({ ...modalHash, show: false })}
             />
 
-            <CardList
-                items={data.nodes
-                    .sort((a, b) => a.hash.localeCompare(b.hash))
-                }
-                renderListItem={(v) => <ActiveNodeItem v={v} onClose={() => setConfirmData({ show: true, name: v.hash })} />}
-                onClickItem={(v) => setModalHash({ hash: v.hash, show: true, point: v })}
-                header={
-                    <div className="flex items-center justify-between w-full">
-                        <IconBox icon={Activity} color="#198754" title="Active Nodes" description="Live outbound connection instances" />
-                        <Badge variant="success" className="bg-opacity-10 text-green-600 border border-green-600 border-opacity-25 px-3 py-2 rounded-full">
-                            {data.nodes.length} Running
-                        </Badge>
+            <MainContainer>
+                <CardList
+                    items={data.nodes
+                        .sort((a, b) => a.hash.localeCompare(b.hash))
+                    }
+                    renderListItem={(v) => <ActiveNodeItem v={v} onClose={() => setConfirmData({ show: true, name: v.hash })} />}
+                    onClickItem={(v) => setModalHash({ hash: v.hash, show: true, point: v })}
+                    header={
+                        <div className="flex items-center justify-between w-full">
+                            <IconBox icon={Activity} color="#198754" title="Active Nodes" description="Live outbound connection instances" />
+                            <Badge variant="success" className="bg-opacity-10 text-green-600 border border-green-600 border-opacity-25 px-3 py-2 rounded-full">
+                                {data.nodes.length} Running
+                            </Badge>
+                        </div>
+                    }
+                />
+
+                {showFooter &&
+                    <div className="text-center mt-4 opacity-50 pb-5">
+                        <small className="text-gray-500 text-sm flex items-center justify-center">
+                            <Info className="mr-1" size={16} />
+                            Closing a node here will force a reconnection if the rule still requires it.
+                        </small>
                     </div>
                 }
-            />
-
-            {showFooter &&
-                <div className="text-center mt-4 opacity-50 pb-5">
-                    <small className="text-gray-500 text-sm flex items-center justify-center">
-                        <Info className="mr-1" size={16} />
-                        Closing a node here will force a reconnection if the rule still requires it.
-                    </small>
-                </div>
-            }
-        </MainContainer>
+            </MainContainer>
+        </>
     );
 }
 
-export default Activates;
+export default memo(Activates);

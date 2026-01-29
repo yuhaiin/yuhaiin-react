@@ -1,110 +1,52 @@
 "use client"
 
 import { useDelay } from "@/common/hooks"
-import { ProtoPath, WebsocketProtoServerStream } from "@/common/proto"
+import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "@/common/proto"
+import { Button } from "@/component/v2/button"
 import { IconBadge } from "@/component/v2/card"
 import Loading from "@/component/v2/loading"
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal"
+import { Spinner } from "@/component/v2/spinner"
+import { GlobalToastContext } from "@/component/v2/toast"
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
-import { FlowCard, useFlow } from "@/docs/connections/components"
-import { connections, counter, notify_data } from "@/docs/pbes/api/statistic_pb"
-import { mode } from "@/docs/pbes/config/bypass_pb"
+import { ConnectionInfo, FlowContainer, formatBytes } from "@/docs/connections/components"
+import { connections, counter, notify_data, notify_remove_connectionsSchema } from "@/docs/pbes/api/statistic_pb"
 import { connection, connectionSchema, type } from "@/docs/pbes/statistic/config_pb"
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
 import { clsx } from "clsx"
 import { AnimatePresence, motion } from "framer-motion"
-import { ArrowDown, ArrowUp, Network, ShieldCheck, Tag } from 'lucide-react'
-import React, { FC, useCallback, useEffect, useMemo, useReducer, useState } from "react"
+import { ArrowDown, ArrowUp, Network, Power, ShieldCheck, Tag } from 'lucide-react'
+import React, { FC, useCallback, useContext, useMemo, useState } from "react"
 import useSWRSubscription from 'swr/subscription'
 import { NodeModal } from "../../node/modal"
-import { InfoModal } from "./info"
+import { mode } from "../../pbes/config/bypass_pb"
 
-type ConnItem = {
-    conn: connection
-    download: string
-    upload: string
-    rawDownload: bigint
-    rawUpload: bigint
-}
 
-type ConnMap = {
-    [id: string]: ConnItem
-}
+const processStream = (rs: notify_data[], prev?: { [key: string]: connection }): { [key: string]: connection } => {
+    let data: { [key: string]: connection };
+    if (prev === undefined) data = {}
+    else data = { ...prev }
 
-type ConnAction =
-    | { type: 'WS_BATCH', batch: notify_data[] }
-    | { type: 'UPDATE_TRAFFIC', counters: { [key: string]: counter } }
-
-const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-const connReducer = (state: ConnMap, action: ConnAction): ConnMap => {
-    switch (action.type) {
-        case 'WS_BATCH': {
-            const next = { ...state }
-            let hasChange = false
-            for (const r of action.batch) {
-                switch (r.data.case) {
-                    case "notifyNewConnections":
-                        r.data.value.connections.
-                            sort((a, b) => a.id > b.id ? 1 : -1).
-                            forEach((e: connection) => {
-                                const key = e.id.toString()
-                                const existing = next[key]
-                                next[key] = {
-                                    conn: e,
-                                    download: existing?.download ?? "0B",
-                                    upload: existing?.upload ?? "0B",
-                                    rawDownload: existing?.rawDownload ?? BigInt(0),
-                                    rawUpload: existing?.rawUpload ?? BigInt(0),
-                                }
-                                hasChange = true
-                            })
-                        break
-                    case "notifyRemoveConnections":
-                        r.data.value.ids.forEach((e: bigint) => {
-                            delete next[e.toString()]
-                            hasChange = true
-                        })
-                        break
-                }
-            }
-            return hasChange ? next : state
-        }
-        case 'UPDATE_TRAFFIC': {
-            let hasChange = false
-            const next = { ...state }
-
-            for (const key in action.counters) {
-                const c = action.counters[key]
-                const item = next[key]
-                if (!item) continue
-
-                const download = formatBytes(Number(c.download))
-                const upload = formatBytes(Number(c.upload))
-
-                if (item.download !== download || item.upload !== upload) {
-                    next[key] = {
-                        ...item,
-                        download,
-                        upload,
-                        rawDownload: c.download,
-                        rawUpload: c.upload
-                    }
-                    hasChange = true
-                }
-            }
-            return hasChange ? next : state
+    for (const r of rs) {
+        switch (r.data.case) {
+            case "notifyNewConnections":
+                r.data.value.
+                    connections.
+                    sort((a, b) => a.id > b.id ? 1 : -1).
+                    forEach((e: connection) => { data[e.id.toString()] = e })
+                break
+            case "notifyRemoveConnections":
+                r.data.value.ids.forEach((e: bigint) => { delete data[e.toString()] })
+                break
         }
     }
+
+    return data
 }
 
 function Connections() {
+    const [counters, setCounters] = useState<{ [key: string]: counter }>({});
     const [info, setInfo] = useState<{ info: connection, show: boolean }>({
         info: create(connectionSchema, {}), show: false
     });
@@ -114,36 +56,19 @@ function Connections() {
     }, [])
 
     const shouldFetch = useDelay(400)
-    const [connMap, dispatch] = useReducer(connReducer, {})
 
-    // Note: WebsocketProtoServerStream in Main expects a stream function that returns the accumulated state.
-    // But here we use reducer. We can pass a dummy accumulator or modify WebsocketProtoServerStream usage.
-    // Ideally we just want the stream to fire events.
-    // Main's WebsocketProtoServerStream: (..., stream: (r: O[], prev: R) => R, ...)
-    // It calls next(null, prev => stream(batch, prev)).
-    // So we can return undefined.
 
-    const { error: conn_error } = useSWRSubscription(
-        shouldFetch ? ProtoPath(connections.method.notify) : null,
-        (key, options) => {
-             // We use a custom adapter here or just use the existing one but ignore return
-             return WebsocketProtoServerStream(connections.method.notify, create(EmptySchema, {}),
-                (batch) => {
-                    dispatch({ type: 'WS_BATCH', batch })
-                    return []
-                }
-             )(key, options)
-        },
-        {}
-    )
+    const { data: conns, error: conn_error } =
+        useSWRSubscription(
+            shouldFetch ? ProtoPath(connections.method.notify) : null,
+            WebsocketProtoServerStream(connections.method.notify, create(EmptySchema, {}), processStream),
+            {}
+        )
 
-    const { data: flow, error: flow_error } = useFlow()
 
-    useEffect(() => {
-        if (flow) {
-            dispatch({ type: 'UPDATE_TRAFFIC', counters: flow.counters })
-        }
-    }, [flow])
+    const updateCounters = useCallback((cc: { [key: string]: counter }) => {
+        setCounters(cc)
+    }, [])
 
     const [sortBy, setSortBy] = useState("id")
     const changeSortBy = useCallback((value: string) => {
@@ -151,7 +76,7 @@ function Connections() {
     }, [setSortBy])
 
 
-    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc"); // 'asc' | 'desc'
     const changeSortOrder = useCallback((value: "asc" | "desc") => {
         setSortOrder(value)
     }, [setSortOrder])
@@ -162,10 +87,6 @@ function Connections() {
         setNodeModal({ show: true, hash: hash });
     }, []);
 
-    const handleSelect = useCallback((conn: connection) => {
-         setInfo({ info: conn, show: true })
-    }, [])
-
     return (
         <div>
             <NodeModal
@@ -175,15 +96,9 @@ function Connections() {
                 onHide={() => setNodeModal(prev => { return { ...prev, show: false } })}
             />
 
-            <FlowCard
-                download={flow?.DownloadTotalString()}
-                upload={flow?.UploadTotalString()}
-                download_rate={flow?.DownloadString()}
-                upload_rate={flow?.UploadString()}
-                flow_error={flow_error}
-            />
+            <FlowContainer onUpdate={updateCounters} />
 
-            <InfoModal
+            <InfoOffcanvas
                 data={info.info}
                 show={!nodeModal.show && info.show}
                 onClose={hideInfo}
@@ -211,28 +126,22 @@ function Connections() {
                 </div>
             </div>
 
-            <ConnectionList
-                connMap={connMap}
-                conn_error={conn_error}
-                sortFields={sortBy || "id"}
-                sortOrder={sortOrder}
-                onSelect={handleSelect}
-            />
+            <ConnectionList conns={conns ?? {}} counters={counters} setInfo={setInfo} conn_error={conn_error} sortFields={sortBy || "id"} sortOrder={sortOrder} />
         </div>
     );
 }
 
 const ConnectionListComponent: FC<{
-    connMap: ConnMap,
-    setInfo?: (info: { info: connection, show: boolean }) => void // Optional? No, used for select
-    onSelect: (conn: connection) => void
+    conns: { [key: string]: connection },
+    counters: { [key: string]: counter },
+    setInfo: (info: { info: connection, show: boolean }) => void
     conn_error?: { code: number, msg: string },
     sortFields?: string,
     sortOrder?: "asc" | "desc"
-}> = ({ connMap, conn_error, onSelect, sortFields, sortOrder }) => {
+}> = ({ conns, counters, conn_error, setInfo, sortFields, sortOrder }) => {
 
 
-    const connValues = useMemo(() => Object.values(connMap), [connMap])
+    const connValues = useMemo(() => Object.values(conns ?? {}), [conns])
 
     const trafficSorted = useMemo(() => {
         if (sortFields !== "download" && sortFields !== "upload") return []
@@ -248,13 +157,17 @@ const ConnectionListComponent: FC<{
 
             switch (sortFields) {
                 case "download":
-                    return a.rawDownload < b.rawDownload ? first : second
+                    const ad = counters[a.id.toString()]?.download ?? 0
+                    const bd = counters[b.id.toString()]?.download ?? 0
+                    return ad < bd ? first : second
                 case "upload":
-                    return a.rawUpload < b.rawUpload ? first : second
+                    const au = counters[a.id.toString()]?.upload ?? 0
+                    const bu = counters[b.id.toString()]?.upload ?? 0
+                    return au < bu ? first : second
             }
             return 0
         })
-    }, [connValues, sortFields, sortOrder])
+    }, [connValues, counters, sortFields, sortOrder])
 
     const staticSorted = useMemo(() => {
         if (sortFields === "download" || sortFields === "upload") return []
@@ -269,31 +182,32 @@ const ConnectionListComponent: FC<{
             }
 
             if (sortFields === "name") {
-                return a.conn.addr < b.conn.addr ? first : second
+                return a.addr < b.addr ? first : second
             }
 
-            return a.conn.id < b.conn.id ? first : second
+            return a.id < b.id ? first : second
         })
     }, [connValues, sortFields, sortOrder])
 
     const values = (sortFields === "download" || sortFields === "upload") ? trafficSorted : staticSorted
 
+    const handleSelect = useCallback((conn: connection) => {
+        setInfo({ info: conn, show: true })
+    }, [setInfo])
+
     if (conn_error !== undefined) return <Loading code={conn_error.code}>{conn_error.msg}</Loading>
+    if (conns === undefined) return <Loading />
 
     return <ul className="flex flex-col p-0 m-0 mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]">
         <AnimatePresence initial={false} mode="popLayout">
             {
                 values.map((e) => {
                     return <ListItem
-                        key={e.conn.id}
-                        id={e.conn.id}
-                        addr={e.conn.addr}
-                        network={type[e.conn.type?.connType ?? 0]}
-                        tag={e.conn.tag}
-                        bMode={mode[e.conn.mode]}
-                        download={e.download}
-                        upload={e.upload}
-                        onSelect={() => onSelect(e.conn)}
+                        data={e}
+                        download={Number(counters[e.id.toString()]?.download ?? 0)}
+                        upload={Number(counters[e.id.toString()]?.upload ?? 0)}
+                        key={e.id}
+                        onSelect={handleSelect}
                     />
                 })
             }
@@ -304,21 +218,12 @@ const ConnectionListComponent: FC<{
 const ConnectionList = React.memo(ConnectionListComponent)
 
 
-const ListItemComponent: FC<{
-    id: bigint,
-    addr: string,
-    network: string,
-    tag: string,
-    bMode: string,
-    download: string,
-    upload: string,
-    onSelect: () => void
-}> =
-    ({ id, addr, network, tag, bMode, download, upload, onSelect }) => {
+const ListItemComponent: FC<{ data: connection, download: number, upload: number, onSelect?: (conn: connection) => void }> =
+    ({ data, download, upload, onSelect }) => {
         return (
             <motion.li
                 className="flex flex-col items-start md:flex-row md:justify-between px-4 py-3 border-b border-sidebar-border transition-colors duration-200 cursor-pointer hover:bg-sidebar-hover last:border-b-0"
-                onClick={onSelect}
+                onClick={() => onSelect?.(data)}
                 layout
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -326,16 +231,16 @@ const ListItemComponent: FC<{
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             >
                 <div className="flex flex-col">
-                    <code className="font-mono text-xs text-sidebar-color">{id.toString()}</code>
-                    <span className="font-medium text-md">{addr}</span>
+                    <code className="font-mono text-xs text-sidebar-color">{data.id.toString()}</code>
+                    <span className="font-medium text-md">{data.addr}</span>
                 </div>
 
                 <div className="flex flex-col items-start gap-2 md:items-end md:mt-0">
                     <FlowBadge download={download} upload={upload} />
                     <div className="flex gap-2 items-center flex-wrap text-xs md:mt-0">
-                        <IconBadge icon={ShieldCheck} text={bMode} />
-                        <IconBadge icon={Network} text={network} />
-                        {tag && <IconBadge icon={Tag} text={tag} />}
+                        <IconBadge icon={ShieldCheck} text={mode[data.mode]} />
+                        <IconBadge icon={Network} text={type[data.type?.connType ?? 0]} />
+                        {data.tag && <IconBadge icon={Tag} text={data.tag} />}
                     </div>
                 </div>
             </motion.li>
@@ -344,25 +249,88 @@ const ListItemComponent: FC<{
 
 const ListItem = React.memo(ListItemComponent)
 
-const FlowBadgeComponent: FC<{ download: string, upload: string }> = ({ download, upload }) => {
+const FlowBadgeComponent: FC<{ download: number, upload: number }> = ({ download, upload }) => {
     return <div className="flex gap-2">
         <span className={clsx(
             "rounded-full flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium",
             "bg-slate-100 text-slate-500 dark:bg-[#2b2b40] dark:text-[#a6a6c0]"
         )}>
             <ArrowDown size={12} className="mr-1" />
-            {download}
+            {formatBytes(download)}
         </span>
         <span className={clsx(
             "rounded-full flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium",
             "bg-slate-100 text-slate-500 dark:bg-[#2b2b40] dark:text-[#a6a6c0]"
         )}>
             <ArrowUp size={12} className="mr-1" />
-            {upload}
+            {formatBytes(upload)}
         </span>
     </div>
 }
 
 const FlowBadge = React.memo(FlowBadgeComponent)
+
+const InfoOffcanvasComponent: FC<{
+    data: connection,
+    show: boolean,
+    onClose: () => void,
+    showNodeModal?: (hash: string) => void
+}> = ({ data, show, onClose: handleClose, showNodeModal }) => {
+    const ctx = useContext(GlobalToastContext);
+    const [closing, setClosing] = useState(false);
+
+    const closeConnection = useCallback(() => {
+        setClosing(true)
+        FetchProtobuf(
+            connections.method.close_conn,
+            create(notify_remove_connectionsSchema, { ids: [data.id] }),
+        ).then(({ error }) => {
+            if (error) ctx.Error(`code ${data.id} failed, ${error.code}| ${error.msg}`)
+            else handleClose()
+        }).finally(() => { setClosing(false) })
+    }, [setClosing, data.id, ctx])
+
+    return (
+        <Modal open={show} onOpenChange={(open) => !open && handleClose()}>
+            <ModalContent>
+                <ModalHeader closeButton>
+                    <ModalTitle className="text-lg font-bold">
+                        Connection Details
+                    </ModalTitle>
+                </ModalHeader>
+
+                <ModalBody className="pt-2">
+                    <ConnectionInfo value={data} showNodeModal={showNodeModal} />
+                </ModalBody>
+
+                <ModalFooter className="border-t-0 pt-0 pb-3 px-3">
+                    <Button
+                        variant="danger"
+                        className="w-full py-2 flex items-center justify-center notranslate"
+                        disabled={closing}
+                        onClick={closeConnection}
+                    >
+                        {closing ? (
+                            <>
+                                <Spinner
+                                    size="sm"
+                                    className="mr-2"
+                                />
+                                Disconnecting...
+                            </>
+                        ) : (
+                            <>
+                                <Power className="text-xl mr-2" />
+                                <span className="font-bold">Disconnect</span>
+                            </>
+                        )}
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
+}
+
+const InfoOffcanvas = React.memo(InfoOffcanvasComponent)
 
 export default Connections;

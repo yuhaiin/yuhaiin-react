@@ -2,32 +2,25 @@
 
 import { Card, CardBody, MainContainer } from '@/component/v2/card';
 import { create } from '@bufbuild/protobuf';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useProtoSWR } from '../../common/proto';
 import dynamic from '../../component/AsyncComponent';
 import Loading from '../../component/v2/loading';
-import { FlowCard, useFlow } from '../connections/components';
+import { Flow, FlowContainer } from '../connections/components';
 import Activates from '../group/activates/page';
 import { NodeModal } from '../node/modal';
 import { node } from '../pbes/api/node_pb';
 import { pointSchema } from '../pbes/node/point_pb';
 
-function HomePage() {
-    const [nodeModal, setNodeModal] = useState({ show: false, point: create(pointSchema, {}) });
-    const { data: now, error: now_error, isLoading: now_isLoading } = useProtoSWR(node.method.now)
-
+const TrafficMonitor = ({ extraFields }: { extraFields: any[] }) => {
     const MAX_POINTS = 120;
     const [traffic, setTraffic] = useState<{ labels: string[], upload: number[], download: number[], rawMax: number }>
         ({ labels: [], upload: [], download: [], rawMax: 0, });
 
-    const { data: flow, error: flow_error } = useFlow()
-
-    useEffect(() => {
-        if (!flow) return
-
-        const upload = flow.upload_rate;
-        const download = flow.download_rate;
-        const time = flow.time.toLocaleTimeString();
+    const onFlow = useCallback((lastFlow: Flow) => {
+        const upload = lastFlow.upload_rate;
+        const download = lastFlow.download_rate;
+        const time = lastFlow.time.toLocaleTimeString();
         const pointMax = Math.max(upload, download);
 
         setTraffic(prev => {
@@ -44,16 +37,37 @@ function HomePage() {
 
             return { labels, upload: uploadArr, download: downloadArr, rawMax };
         });
-    }, [flow]);
+    }, []);
+
+    return (
+        <>
+            <div className="shrink-0 mb-4">
+                <FlowContainer
+                    onFlow={onFlow}
+                    extra_fields={extraFields}
+                />
+            </div>
+
+            <MainContainer>
+                <Card className="min-h-[400px]">
+                    <CardBody className="!p-0">
+                        <TrafficChartDynamic data={traffic} minHeight={400} />
+                    </CardBody>
+                </Card>
+            </MainContainer>
+        </>
+    );
+};
+
+function HomePage() {
+    const [nodeModal, setNodeModal] = useState({ show: false, point: create(pointSchema, {}) });
+    const { data: now, error: now_error, isLoading: now_isLoading } = useProtoSWR(node.method.now)
 
     const extraFields = useMemo(() => [
         {
             label: "TCP Endpoint",
             value: now_isLoading ? "loading..." : now_error ? now_error.msg : (now?.tcp ?
-                <a
-                    href="#"
-                    className="text-blue-500 hover:underline"
-                    onClick={() => { if (now?.tcp) setNodeModal({ show: true, point: now.tcp }) }}
+                <a href="#" className="text-blue-500 hover:underline" onClick={() => { if (now?.tcp) setNodeModal({ show: true, point: now.tcp }) }}
                 >
                     {now.tcp.group}/{now.tcp.name}
                 </a> : "N/A"),
@@ -62,10 +76,7 @@ function HomePage() {
         {
             label: "UDP Endpoint",
             value: now_isLoading ? "loading..." : now_error ? now_error.msg : (now?.udp ?
-                <a
-                    href="#"
-                    className="text-blue-500 hover:underline"
-                    onClick={() => { if (now?.udp) setNodeModal({ show: true, point: now.udp }) }}
+                <a href="#" className="text-blue-500 hover:underline" onClick={() => { if (now?.udp) setNodeModal({ show: true, point: now.udp }) }}
                 >
                     {now.udp.group}/{now.udp.name}
                 </a> : "N/A"),
@@ -82,26 +93,7 @@ function HomePage() {
             onHide={() => setNodeModal({ ...nodeModal, show: false })}
         />
 
-        <div className="shrink-0 mb-4">
-            <FlowCard
-                flow_error={flow_error}
-                extra_fields={extraFields}
-                download={flow?.DownloadTotalString()}
-                upload={flow?.UploadTotalString()}
-                download_rate={flow?.DownloadString()}
-                upload_rate={flow?.UploadString()}
-            />
-        </div>
-
-
-        <MainContainer>
-            <Card className="min-h-[400px]">
-                <CardBody className="!p-0">
-                    <TrafficChartDynamic data={traffic} minHeight={400} />
-                </CardBody>
-            </Card>
-        </MainContainer>
-
+        <TrafficMonitor extraFields={extraFields} />
         <Activates showFooter={false} />
     </div>
 }
