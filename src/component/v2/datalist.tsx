@@ -1,10 +1,9 @@
 import { clsx } from 'clsx';
 import React, { FC } from 'react';
-import styles from './datalist.module.css';
 
 // --- Base List Container ---
 export const DataList: FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
-    <ul className={clsx(styles.container, className)}>{children}</ul>
+    <ul className={clsx("list-none p-0 m-0", className)}>{children}</ul>
 );
 
 // --- Key-Value Item ---
@@ -20,17 +19,16 @@ export const DataListItem: FC<DataListItemProps> = ({ label, value, className })
         return null;
     }
 
-
     return (
-        <li className={clsx(styles.item, className)}>
-            <div className={styles.content}>
+        <li className={clsx("py-3 border-b border-sidebar-border last:border-b-0 transition-colors duration-200", className)}>
+            <div className="flex flex-col gap-1 min-[576px]:flex-row min-[576px]:justify-between min-[576px]:items-start min-[576px]:gap-4">
                 {/* Key */}
-                <div className={clsx(styles.key, "notranslate")}>
+                <div className="notranslate shrink-0 min-w-[120px] text-sm font-semibold text-sidebar-header capitalize leading-normal">
                     {label}
                 </div>
 
                 {/* Value */}
-                <div className={clsx(styles.value, "notranslate")}>
+                <div className="notranslate grow text-[15px] font-normal text-sidebar-color leading-normal break-all min-[576px]:text-right">
                     {value}
                 </div>
             </div>
@@ -40,7 +38,7 @@ export const DataListItem: FC<DataListItemProps> = ({ label, value, className })
 
 // --- Custom Item (for complex content) ---
 export const DataListCustomItem: FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
-    <li className={clsx(styles.item, className)}>
+    <li className={clsx("py-3 border-b border-sidebar-border last:border-b-0 transition-colors duration-200", className)}>
         {children}
     </li>
 );

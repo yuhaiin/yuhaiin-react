@@ -1,11 +1,9 @@
 import { SettingInputVertical } from '@/component/v2/forms';
 import { InputList } from '@/component/v2/listeditor';
-import { FC, useState } from 'react';
+import { FC } from 'react';
 import { reality } from '../pbes/config/inbound_pb';
 
 export const Reality: FC<{ reality: reality, onChange: (x: reality) => void }> = ({ reality, onChange }) => {
-    const [newShortID, setNewShortID] = useState({ value: "" });
-
     return (
         <>
             <SettingInputVertical readOnly label='Protocol' value={"Reality"} onChange={() => { }} />

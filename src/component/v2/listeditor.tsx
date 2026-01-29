@@ -43,7 +43,7 @@ export const InputList: FC<{
 
     return (
         <div className={className}>
-            <label className="form-label fw-bold">{title}</label>
+            <label className="block mb-2 font-bold">{title}</label>
             {!disabled && (
                 <InputGroup className="mb-2">
                     <Textarea
@@ -51,7 +51,7 @@ export const InputList: FC<{
                         onChange={(e) => setNewItem(e.target.value)}
                         placeholder={placeholder || `Add new ${title}${textarea ? " (one per line)" : ""}`}
                         rows={textarea ? 3 : undefined}
-                        className="flex-grow-1"
+                        className="grow"
                         style={{
                             borderTopRightRadius: 0,
                             borderBottomRightRadius: 0
@@ -70,7 +70,7 @@ export const InputList: FC<{
                 </InputGroup>
             )}
 
-            <div className="d-flex flex-column gap-2">
+            <div className="flex flex-col gap-2">
                 {data.map((item, i) => (
                     <InputGroup key={i}>
                         {textarea ? (
@@ -78,7 +78,7 @@ export const InputList: FC<{
                                 value={item}
                                 onChange={(e) => edit(i, e.target.value)}
                                 rows={1} // Start small, can be adjusted
-                                className="flex-grow-1"
+                                className="grow"
                                 disabled={disabled}
                                 style={{
                                     borderTopRightRadius: 0,
@@ -89,7 +89,7 @@ export const InputList: FC<{
                             <Input
                                 value={item}
                                 onChange={(e) => edit(i, e.target.value)}
-                                className="flex-grow-1"
+                                className="grow"
                                 disabled={disabled}
                                 style={{
                                     borderTopRightRadius: 0,
@@ -148,16 +148,15 @@ export const InputBytesList: FC<{
 
     return (
         <div className={className}>
-            <label className="form-label small fw-bold opacity-75 mb-2">{title}</label>
+            <label className="block mb-2 text-sm font-bold opacity-75">{title}</label>
             {!disabled && (
-                <div className="d-flex gap-2 mb-3">
+                <div className="flex gap-2 mb-3">
                     <Textarea
                         placeholder={`Paste or type ${title} bytes here...`}
                         value={newItem}
                         onChange={(e) => setNewItem(e.target.value)}
                         rows={3}
-                        className="font-monospace small shadow-none"
-                        style={{ fontSize: '0.85rem' }}
+                        className="font-mono shadow-none text-[0.85rem]"
                     />
                     <Button onClick={add} style={{ alignSelf: 'flex-start' }}>
                         <Plus size={18} />
@@ -165,11 +164,11 @@ export const InputBytesList: FC<{
                 </div>
             )}
 
-            <div className="d-flex flex-column gap-3">
+            <div className="flex flex-col gap-3">
                 {(data || []).map((v, i) => (
-                    <div key={i} className="bg-body-secondary p-3 rounded-3 position-relative group">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                            <small className="text-muted fw-bold">ENTRY #{i + 1}</small>
+                    <div key={i} className="relative p-3 rounded-lg bg-[var(--bs-secondary-bg)] group">
+                        <div className="flex items-center justify-between mb-2">
+                            <small className="font-bold text-[var(--bs-secondary-color)]">ENTRY #{i + 1}</small>
                             {!disabled && (
                                 <Button variant="outline-danger" size="sm" onClick={() => remove(i)}>
                                     <Trash size={16} />
@@ -181,13 +180,13 @@ export const InputBytesList: FC<{
                             onChange={(e) => edit(i, e.target.value)}
                             readOnly={disabled}
                             rows={3}
-                            className="bg-transparent border-0 font-monospace small shadow-none p-0"
+                            className="p-0 text-sm font-mono bg-transparent border-0 shadow-none"
                             style={{ fontSize: '0.8rem', lineHeight: '1.4' }}
                         />
                     </div>
                 ))}
                 {(!data || data.length === 0) && (
-                    <div className="text-center text-muted fst-italic py-4 opacity-50 border rounded-3 border-dashed">
+                    <div className="py-4 italic text-center border border-dashed rounded-lg opacity-50 text-[var(--bs-secondary-color)]">
                         No {title} entries yet.
                     </div>
                 )}

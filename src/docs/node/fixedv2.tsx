@@ -49,9 +49,9 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
         }
 
         return <div className="mb-4">
-            <div className="d-flex justify-content-between align-items-center mb-2 px-1">
-                <h6 className="fw-bold mb-0 opacity-75">Hosts</h6>
-                <small className="text-muted">{data.length} entries</small>
+            <div className="flex justify-between items-center mb-2 px-1">
+                <h6 className="font-bold mb-0 opacity-75">Hosts</h6>
+                <small className="text-gray-500 dark:text-gray-400">{data.length} entries</small>
             </div>
 
             <Accordion type="multiple" className="mb-3">
@@ -86,7 +86,7 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
                                 />
 
                                 {editable && (
-                                    <div className="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
+                                    <div className="flex justify-end gap-2 mt-3 pt-3">
                                         <Button size="sm" onClick={() => moveItem(index, true)} disabled={index === 0}>
                                             <ArrowUp size={16} />
                                         </Button>
@@ -94,7 +94,7 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
                                             <ArrowDown size={16} />
                                         </Button>
                                         <Button variant="outline-danger" size="sm" onClick={() => removeItem(index)}>
-                                            <Trash size={16} className="me-2" /> Delete
+                                            <Trash size={16} className="mr-2" /> Delete
                                         </Button>
                                     </div>
                                 )}
@@ -105,14 +105,14 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
             </Accordion>
 
             {editable && (
-                <div className="d-flex justify-content-end px-1">
+                <div className="flex justify-end px-1">
                     <Button onClick={() => {
                         onChange([...data, create(fixedv2_addressSchema, {
                             host: "",
                             networkInterface: ""
                         })])
                     }} >
-                        <Plus className="me-1" size={16} /> Add Host
+                        <Plus className="mr-1" size={16} /> Add Host
                     </Button>
                 </div>
             )}

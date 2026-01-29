@@ -12,8 +12,10 @@ import { NodeModal } from '../node/modal';
 import { node } from '../pbes/api/node_pb';
 import { pointSchema } from '../pbes/node/point_pb';
 
+function HomePage() {
+    const [nodeModal, setNodeModal] = useState({ show: false, point: create(pointSchema, {}) });
+    const { data: now, error: now_error, isLoading: now_isLoading } = useProtoSWR(node.method.now)
 
-const TrafficMonitor = ({ extraFields }: { extraFields: any[] }) => {
     const MAX_POINTS = 120;
     const [traffic, setTraffic] = useState<{ labels: string[], upload: number[], download: number[], rawMax: number }>
         ({ labels: [], upload: [], download: [], rawMax: 0, });
@@ -42,35 +44,7 @@ const TrafficMonitor = ({ extraFields }: { extraFields: any[] }) => {
 
             return { labels, upload: uploadArr, download: downloadArr, rawMax };
         });
-    }, [flow])
-
-    return (
-        <>
-            <div style={{ flexShrink: 0, marginBottom: '1rem' }}>
-                <FlowCard
-                    flow_error={flow_error}
-                    extra_fields={extraFields}
-                    download={flow?.DownloadTotalString()}
-                    upload={flow?.UploadTotalString()}
-                    download_rate={flow?.DownloadString()}
-                    upload_rate={flow?.UploadString()}
-                />
-            </div>
-
-            <MainContainer>
-                <Card style={{ minHeight: '400px' }}>
-                    <CardBody style={{ padding: '0rem' }}>
-                        <TrafficChartDynamic data={traffic} minHeight={400} />
-                    </CardBody>
-                </Card>
-            </MainContainer>
-        </>
-    );
-};
-
-function HomePage() {
-    const [nodeModal, setNodeModal] = useState({ show: false, point: create(pointSchema, {}) });
-    const { data: now, error: now_error, isLoading: now_isLoading } = useProtoSWR(node.method.now)
+    }, [flow]);
 
     const extraFields = useMemo(() => [
         {
@@ -78,6 +52,7 @@ function HomePage() {
             value: now_isLoading ? "loading..." : now_error ? now_error.msg : (now?.tcp ?
                 <a
                     href="#"
+                    className="text-blue-500 hover:underline"
                     onClick={() => { if (now?.tcp) setNodeModal({ show: true, point: now.tcp }) }}
                 >
                     {now.tcp.group}/{now.tcp.name}
@@ -89,6 +64,7 @@ function HomePage() {
             value: now_isLoading ? "loading..." : now_error ? now_error.msg : (now?.udp ?
                 <a
                     href="#"
+                    className="text-blue-500 hover:underline"
                     onClick={() => { if (now?.udp) setNodeModal({ show: true, point: now.udp }) }}
                 >
                     {now.udp.group}/{now.udp.name}
@@ -97,12 +73,7 @@ function HomePage() {
         }
     ], [now, now_isLoading, now_error]);
 
-    return <div style={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        boxSizing: 'border-box'
-    }}>
+    return <div className="h-full flex flex-col box-border">
         <NodeModal
             show={nodeModal.show}
             hash={nodeModal.point.hash}
@@ -111,7 +82,25 @@ function HomePage() {
             onHide={() => setNodeModal({ ...nodeModal, show: false })}
         />
 
-        <TrafficMonitor extraFields={extraFields} />
+        <div className="shrink-0 mb-4">
+            <FlowCard
+                flow_error={flow_error}
+                extra_fields={extraFields}
+                download={flow?.DownloadTotalString()}
+                upload={flow?.UploadTotalString()}
+                download_rate={flow?.DownloadString()}
+                upload_rate={flow?.UploadString()}
+            />
+        </div>
+
+
+        <MainContainer>
+            <Card className="min-h-[400px]">
+                <CardBody className="!p-0">
+                    <TrafficChartDynamic data={traffic} minHeight={400} />
+                </CardBody>
+            </Card>
+        </MainContainer>
 
         <Activates showFooter={false} />
     </div>

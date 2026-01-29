@@ -23,7 +23,7 @@ function Sidebar({ show, onHide }: SidebarProps) {
             }
         }
         // Auto-close on mobile
-        if (window.innerWidth < 992) {
+        if (window.innerWidth < 1024) {
             onHide();
         }
     };
@@ -181,7 +181,7 @@ function SidebarGroup({ title, icon, activePath, matchPath, children }: {
 
     useEffect(() => {
         setIsMounted(true);
-        if (window.innerWidth >= 992) {
+        if (window.innerWidth >= 1024) {
             setIsOpen(true);
         } else if (isActive) {
             setIsOpen(true);
