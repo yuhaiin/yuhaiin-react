@@ -53,7 +53,6 @@ const TagItem: FC<{
                 <Button
                     variant="outline-danger"
                     size="sm"
-                    className="border-0"
                     onClick={() => onDelete()}
                 >
                     <Trash size={16} />

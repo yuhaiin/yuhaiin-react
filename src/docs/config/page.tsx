@@ -150,8 +150,8 @@ function ConfigComponent() {
                                 onValueChange={handleSystemProxyChange}
                                 noSlide
                             >
-                                <ToggleItem value="1" className="flex-grow py-1" style={{ height: '40px' }}>HTTP Proxy</ToggleItem>
-                                <ToggleItem value="2" className="flex-grow py-1" style={{ height: '40px' }}>SOCKS5 Proxy</ToggleItem>
+                                <ToggleItem value="1" className="flex-grow py-1 h-10">HTTP Proxy</ToggleItem>
+                                <ToggleItem value="2" className="flex-grow py-1 h-10">SOCKS5 Proxy</ToggleItem>
                             </ToggleGroup>
                         </div>
                     </div>

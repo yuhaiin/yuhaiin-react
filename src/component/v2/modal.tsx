@@ -90,7 +90,7 @@ const ModalContent = ({ className, children, style, ...props }: React.ComponentP
                     <DialogPrimitive.Content asChild forceMount>
                         <motion.div
                             className={clsx(
-                                "fixed top-1/2 left-1/2 w-[90vw] max-w-[var(--bs-modal-width,500px)] max-h-[85vh] z-[1055] flex flex-col outline-none overflow-hidden bg-[var(--bs-body-bg)] text-[var(--bs-modal-color)] border border-[var(--bs-modal-border-color)] rounded-[32px] shadow-[var(--bs-modal-box-shadow)] p-[5px] will-change-[transform,opacity]",
+                                "fixed top-1/2 left-1/2 w-[90vw] max-w-[var(--bs-modal-width,500px)] max-h-[85vh] z-[1055] flex flex-col outline-none overflow-hidden bg-[var(--bs-body-bg)] text-[var(--bs-modal-color)] border border-sidebar-border rounded-[32px] shadow-[var(--bs-modal-box-shadow)] p-[5px] will-change-[transform,opacity]",
                                 className
                             )}
                             variants={contentVariants}

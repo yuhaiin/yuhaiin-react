@@ -177,7 +177,7 @@ const SidebarSubLink = React.forwardRef<HTMLAnchorElement, SidebarSubLinkProps>(
                 "relative flex items-center w-full pl-[24px] pr-[12px] py-[8px] text-[0.85rem] text-sidebar-color opacity-80 transition-colors duration-200 no-underline cursor-pointer bg-transparent border-none",
                 "hover:opacity-100 hover:text-sidebar-active hover:bg-sidebar-hover hover:rounded-[8px] hover:translate-x-[4px]",
                 // Active state
-                active && "text-sidebar-active opacity-100 font-semibold hover:translate-x-0",
+                active && "!text-sidebar-active opacity-100 font-semibold hover:translate-x-0",
                 // Dot indicator
                 active && "before:content-[''] before:absolute before:left-[-4px] before:top-1/2 before:-translate-y-1/2 before:w-[7px] before:h-[7px] before:rounded-full before:bg-sidebar-bg before:border-2 before:border-sidebar-active before:shadow-sidebar-active before:z-10",
                 className

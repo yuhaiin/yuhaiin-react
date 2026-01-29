@@ -124,7 +124,7 @@ const RuleItem: FC<{
     return (
         <>
             <div className="flex items-center flex-grow overflow-hidden">
-                <Badge variant="secondary" className="mr-2" style={{ minWidth: '40px' }}>#{index + 1}</Badge>
+                <Badge variant="secondary" className="mr-2 min-w-[40px]">#{index + 1}</Badge>
                 <Signpost className="mr-2 text-gray-500 dark:text-gray-400" />
                 <span className="truncate font-medium">{name}</span>
             </div>

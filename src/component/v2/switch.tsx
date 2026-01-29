@@ -22,9 +22,9 @@ const transition = {
 const SwitchComponent: React.FC<SwitchProps> = ({ checked, onCheckedChange, label, description, disabled }) => (
   <div className={clsx("flex items-center justify-between", disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
     {label && (
-      <div className="flex flex-col mr-4">
-        <span className="fw-medium">{label}</span>
-        {description && <small className="text-muted" style={{ fontSize: '0.8rem' }}>{description}</small>}
+      <div className="mr-4">
+        <div className="font-medium leading-tight">{label}</div>
+        {description && <div className="text-gray-500 text-xs mt-0.5">{description}</div>}
       </div>
     )}
     <SwitchPrimitive.Root
@@ -56,7 +56,7 @@ export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ lab
     <div
       className={clsx(
         "flex items-center cursor-pointer px-3 py-3 rounded-[12px] bg-[var(--bs-tertiary-bg)] border border-sidebar-border transition-all duration-200 mb-2 hover:bg-sidebar-hover hover:border-sidebar-active hover:-translate-y-[2px]",
-        "justify-content-between",
+        "justify-between",
         className,
         disabled && "opacity-60 pointer-events-none grayscale-[0.5]"
       )}
@@ -65,9 +65,9 @@ export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ lab
       tabIndex={disabled ? -1 : 0}
       onKeyDown={(e) => { if (!disabled && (e.key === 'Enter' || e.key === ' ')) onCheckedChange(!checked); }}
     >
-      <div className="d-flex flex-column">
-        <span className="fw-medium">{label}</span>
-        {description && <small className="text-muted" style={{ fontSize: '0.8rem' }}>{description}</small>}
+      <div className="mr-4">
+        <div className="font-medium leading-tight">{label}</div>
+        {description && <div className="text-gray-500 text-xs mt-0.5">{description}</div>}
       </div>
       <SwitchPrimitive.Root
         className={clsx(

@@ -143,9 +143,9 @@ export const SettingRangeVertical: FC<{
 }> = React.memo(({ label, value, min, max, step, unit, onChange, className }) => {
     return (
         <div className={clsx("flex flex-col mb-4 relative", className)}>
-            <div className="d-flex justify-content-between align-items-center mb-1">
+            <div className="flex justify-between items-center mb-1">
                 <SettingLabel className="mb-0 font-medium">{label}</SettingLabel>
-                <div className="text-primary fw-bold font-monospace small bg-primary bg-opacity-10 px-2 py-1 rounded">
+                <div className="text-blue-500 font-bold font-mono text-sm bg-blue-500/10 px-2 py-1 rounded">
                     {value.toLocaleString()} {unit}
                 </div>
             </div>
@@ -173,7 +173,7 @@ export const SettingRangeVertical: FC<{
                 </SliderPrimitive.Thumb>
             </SliderPrimitive.Root>
 
-            <div className="d-flex justify-content-between text-muted opacity-50" style={{ fontSize: '0.7rem', fontWeight: 600 }}>
+            <div className="flex justify-between text-gray-500 opacity-50" style={{ fontSize: '0.7rem', fontWeight: 600 }}>
                 <span>MIN: {min.toLocaleString()}</span>
                 <span>MAX: {max.toLocaleString()}</span>
             </div>
@@ -222,10 +222,10 @@ export const SettingInputBytes: FC<{
     };
 
     const labelWithWarning = (
-        <div className="d-flex align-items-center gap-1">
+        <div className="flex items-center gap-1">
             {label}
             <Tooltip content="Input must be a valid Base64 string to be saved.">
-                <div className="text-danger" style={{ cursor: 'help' }}>
+                <div className="text-red-500" style={{ cursor: 'help' }}>
                     <CircleAlert size={12} />
                 </div>
             </Tooltip>
