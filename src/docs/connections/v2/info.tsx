@@ -36,7 +36,7 @@ export const InfoModal: FC<{
         <Modal open={show} onOpenChange={(open) => !open && handleClose()}>
             <ModalContent>
                 <ModalHeader closeButton>
-                    <ModalTitle className="h5 fw-bold">
+                    <ModalTitle className="text-lg font-bold">
                         Connection Details
                     </ModalTitle>
                 </ModalHeader>
@@ -45,10 +45,10 @@ export const InfoModal: FC<{
                     <ConnectionInfo value={data} showNodeModal={showNodeModal} />
                 </ModalBody>
 
-                <ModalFooter className="border-top-0 pt-0 pb-3 px-3">
+                <ModalFooter className="border-t-0 pt-0 pb-3 px-3">
                     <Button
                         variant="danger"
-                        className="w-100 py-2 d-flex align-items-center justify-content-center notranslate"
+                        className="w-full py-2 flex items-center justify-center notranslate"
                         disabled={closing}
                         onClick={closeConnection}
                     >
@@ -56,14 +56,14 @@ export const InfoModal: FC<{
                             <>
                                 <Spinner
                                     size="sm"
-                                    className="me-2"
+                                    className="mr-2"
                                 />
                                 Disconnecting...
                             </>
                         ) : (
                             <>
-                                <Power className="fs-5 me-2" />
-                                <span className="fw-bold">Disconnect</span>
+                                <Power className="text-xl mr-2" />
+                                <span className="font-bold">Disconnect</span>
                             </>
                         )}
                     </Button>

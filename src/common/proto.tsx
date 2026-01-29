@@ -1,11 +1,10 @@
 "use client"
 
 import { clone, DescMessage, DescMethod, fromBinary, MessageShape, toBinary } from "@bufbuild/protobuf";
+import { useMemo } from 'react';
 import useSWR, { Fetcher, SWRConfiguration, SWRResponse } from 'swr';
 import type { SWRSubscriptionOptions } from 'swr/subscription';
 import { getApiUrl } from "./apiurl";
-
-import { useMemo } from 'react';
 
 export function useProtoSWR<I extends DescMessage, O extends DescMessage>(
     m: (DescMethod & { methodKind: "unary"; input: I; output: O; }) | null,

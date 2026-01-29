@@ -1,21 +1,22 @@
 "use client"
 
 import { useDelay } from "@/common/hooks"
-import { WebsocketProtoServerStream } from "@/common/proto"
+import { ProtoPath, WebsocketProtoServerStream } from "@/common/proto"
 import { IconBadge } from "@/component/v2/card"
 import Loading from "@/component/v2/loading"
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
-import { FlowCard, formatBytes, useFlow } from "@/docs/connections/components"
+import { FlowCard, useFlow } from "@/docs/connections/components"
 import { connections, counter, notify_data } from "@/docs/pbes/api/statistic_pb"
 import { mode } from "@/docs/pbes/config/bypass_pb"
 import { connection, connectionSchema, type } from "@/docs/pbes/statistic/config_pb"
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
+import { clsx } from "clsx"
 import { AnimatePresence, motion } from "framer-motion"
 import { ArrowDown, ArrowUp, Network, ShieldCheck, Tag } from 'lucide-react'
-import React, { FC, memo, useCallback, useEffect, useMemo, useReducer, useState } from "react"
+import React, { FC, useCallback, useEffect, useMemo, useReducer, useState } from "react"
+import useSWRSubscription from 'swr/subscription'
 import { NodeModal } from "../../node/modal"
-import styles from './connections.module.css'
 import { InfoModal } from "./info"
 
 type ConnItem = {
@@ -33,6 +34,14 @@ type ConnMap = {
 type ConnAction =
     | { type: 'WS_BATCH', batch: notify_data[] }
     | { type: 'UPDATE_TRAFFIC', counters: { [key: string]: counter } }
+
+const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
 
 const connReducer = (state: ConnMap, action: ConnAction): ConnMap => {
     switch (action.type) {
@@ -95,69 +104,6 @@ const connReducer = (state: ConnMap, action: ConnAction): ConnMap => {
     }
 }
 
-const ConnectionMonitor: FC<{
-    setInfo: (info: { info: connection, show: boolean }) => void,
-    sortBy: string,
-    sortOrder: "asc" | "desc",
-}> = ({ setInfo, sortBy, sortOrder }) => {
-    const [connMap, dispatch] = useReducer(connReducer, {})
-    const [connError, setConnError] = useState<{ msg: string, code: number } | undefined>()
-
-    const { data: flow, error: flow_error } = useFlow()
-
-    useEffect(() => {
-        if (flow) {
-            dispatch({ type: 'UPDATE_TRAFFIC', counters: flow.counters })
-        }
-    }, [flow])
-
-    const notifyRequest = useMemo(() => create(EmptySchema, {}), [])
-    const shouldFetch = useDelay(400)
-
-    useEffect(() => {
-        if (!shouldFetch) return
-
-        const stream = (batch: notify_data[], _prev?: any) => batch
-
-        const subscribe = WebsocketProtoServerStream(connections.method.notify, notifyRequest, stream)
-
-        const unsubscribe = subscribe("connections", {
-            next: (err, updater) => {
-                if (err) {
-                    setConnError(err)
-                } else if (updater) {
-                    const batch = typeof updater === 'function' ? updater(undefined) : updater
-                    if (batch && Array.isArray(batch)) {
-                        dispatch({ type: 'WS_BATCH', batch: batch as notify_data[] })
-                        setConnError(undefined)
-                    }
-                }
-            }
-        })
-        return unsubscribe
-    }, [shouldFetch, notifyRequest])
-
-    return (
-        <>
-            <FlowCard
-                download={flow?.DownloadTotalString()}
-                upload={flow?.UploadTotalString()}
-                download_rate={flow?.DownloadString()}
-                upload_rate={flow?.UploadString()}
-                flow_error={flow_error}
-            />
-
-            <ConnectionList
-                connMap={connMap}
-                setInfo={setInfo}
-                conn_error={connError}
-                sortFields={sortBy}
-                sortOrder={sortOrder}
-            />
-        </>
-    )
-}
-
 function Connections() {
     const [info, setInfo] = useState<{ info: connection, show: boolean }>({
         info: create(connectionSchema, {}), show: false
@@ -167,13 +113,45 @@ function Connections() {
         setInfo(prev => { return { ...prev, show: false } })
     }, [])
 
+    const shouldFetch = useDelay(400)
+    const [connMap, dispatch] = useReducer(connReducer, {})
+
+    // Note: WebsocketProtoServerStream in Main expects a stream function that returns the accumulated state.
+    // But here we use reducer. We can pass a dummy accumulator or modify WebsocketProtoServerStream usage.
+    // Ideally we just want the stream to fire events.
+    // Main's WebsocketProtoServerStream: (..., stream: (r: O[], prev: R) => R, ...)
+    // It calls next(null, prev => stream(batch, prev)).
+    // So we can return undefined.
+
+    const { error: conn_error } = useSWRSubscription(
+        shouldFetch ? ProtoPath(connections.method.notify) : null,
+        (key, options) => {
+             // We use a custom adapter here or just use the existing one but ignore return
+             return WebsocketProtoServerStream(connections.method.notify, create(EmptySchema, {}),
+                (batch) => {
+                    dispatch({ type: 'WS_BATCH', batch })
+                    return []
+                }
+             )(key, options)
+        },
+        {}
+    )
+
+    const { data: flow, error: flow_error } = useFlow()
+
+    useEffect(() => {
+        if (flow) {
+            dispatch({ type: 'UPDATE_TRAFFIC', counters: flow.counters })
+        }
+    }, [flow])
+
     const [sortBy, setSortBy] = useState("id")
     const changeSortBy = useCallback((value: string) => {
         setSortBy(value)
     }, [setSortBy])
 
 
-    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc"); // 'asc' | 'desc'
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const changeSortOrder = useCallback((value: "asc" | "desc") => {
         setSortOrder(value)
     }, [setSortOrder])
@@ -184,8 +162,8 @@ function Connections() {
         setNodeModal({ show: true, hash: hash });
     }, []);
 
-    const hideNodeModal = useCallback(() => {
-        setNodeModal(prev => { return { ...prev, show: false } })
+    const handleSelect = useCallback((conn: connection) => {
+         setInfo({ info: conn, show: true })
     }, [])
 
     return (
@@ -194,7 +172,15 @@ function Connections() {
                 editable={false}
                 show={nodeModal.show}
                 hash={nodeModal.hash}
-                onHide={hideNodeModal}
+                onHide={() => setNodeModal(prev => { return { ...prev, show: false } })}
+            />
+
+            <FlowCard
+                download={flow?.DownloadTotalString()}
+                upload={flow?.UploadTotalString()}
+                download_rate={flow?.DownloadString()}
+                upload_rate={flow?.UploadString()}
+                flow_error={flow_error}
             />
 
             <InfoModal
@@ -205,18 +191,18 @@ function Connections() {
             />
 
 
-            <div className="d-flex justify-content-end mb-3">
-                <div className="d-flex align-items-center gap-3 flex-wrap">
-                    <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && changeSortOrder(v as "asc" | "desc")}>
+            <div className="flex justify-end mb-3">
+                <div className="flex items-center gap-3 flex-wrap">
+                    <ToggleGroup className="flex-nowrap" type="single" value={sortOrder} onValueChange={(v) => v && changeSortOrder(v as "asc" | "desc")}>
                         <ToggleItem value="asc">
-                            <ArrowUp size={16} /> Asc
+                            <div className="flex items-center gap-1 whitespace-nowrap"><ArrowUp size={16} /> Asc</div>
                         </ToggleItem>
                         <ToggleItem value="desc">
-                            <ArrowDown size={16} /> Desc
+                            <div className="flex items-center gap-1 whitespace-nowrap"><ArrowDown size={16} /> Desc</div>
                         </ToggleItem>
                     </ToggleGroup>
 
-                    <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && changeSortBy(v)}>
+                    <ToggleGroup className="flex-nowrap" type="single" value={sortBy} onValueChange={(v) => v && changeSortBy(v)}>
                         <ToggleItem value="id">Id</ToggleItem>
                         <ToggleItem value="name">Name</ToggleItem>
                         <ToggleItem value="download">Download</ToggleItem>
@@ -225,10 +211,12 @@ function Connections() {
                 </div>
             </div>
 
-            <ConnectionMonitor
-                setInfo={setInfo}
-                sortBy={sortBy}
+            <ConnectionList
+                connMap={connMap}
+                conn_error={conn_error}
+                sortFields={sortBy || "id"}
                 sortOrder={sortOrder}
+                onSelect={handleSelect}
             />
         </div>
     );
@@ -236,11 +224,14 @@ function Connections() {
 
 const ConnectionListComponent: FC<{
     connMap: ConnMap,
-    setInfo: (info: { info: connection, show: boolean }) => void
+    setInfo?: (info: { info: connection, show: boolean }) => void // Optional? No, used for select
+    onSelect: (conn: connection) => void
     conn_error?: { code: number, msg: string },
     sortFields?: string,
     sortOrder?: "asc" | "desc"
-}> = ({ connMap, conn_error, setInfo, sortFields, sortOrder }) => {
+}> = ({ connMap, conn_error, onSelect, sortFields, sortOrder }) => {
+
+
     const connValues = useMemo(() => Object.values(connMap), [connMap])
 
     const trafficSorted = useMemo(() => {
@@ -261,6 +252,7 @@ const ConnectionListComponent: FC<{
                 case "upload":
                     return a.rawUpload < b.rawUpload ? first : second
             }
+            return 0
         })
     }, [connValues, sortFields, sortOrder])
 
@@ -286,48 +278,30 @@ const ConnectionListComponent: FC<{
 
     const values = (sortFields === "download" || sortFields === "upload") ? trafficSorted : staticSorted
 
-    const connMapRef = React.useRef(connMap)
-    connMapRef.current = connMap
-
-    const handleSelect = useCallback((conn: bigint) => {
-        const item = connMapRef.current[conn.toString()]
-        if (item) {
-            setInfo({ info: item.conn, show: true })
-        }
-    }, [setInfo])
-
     if (conn_error !== undefined) return <Loading code={conn_error.code}>{conn_error.msg}</Loading>
 
-    return <ul className={styles['connections-list']}>
+    return <ul className="flex flex-col p-0 m-0 mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]">
         <AnimatePresence initial={false} mode="popLayout">
             {
                 values.map((e) => {
-                    return <motion.li
+                    return <ListItem
                         key={e.conn.id}
-                        layout
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
-                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                    >
-                        <ListItem
-                            id={e.conn.id}
-                            download={e.download}
-                            upload={e.upload}
-                            onSelect={handleSelect}
-                            addr={e.conn.addr}
-                            network={type[e.conn.type?.connType ?? 0]}
-                            tag={e.conn.tag}
-                            bMode={mode[e.conn.mode]}
-                        />
-                    </motion.li>
+                        id={e.conn.id}
+                        addr={e.conn.addr}
+                        network={type[e.conn.type?.connType ?? 0]}
+                        tag={e.conn.tag}
+                        bMode={mode[e.conn.mode]}
+                        download={e.download}
+                        upload={e.upload}
+                        onSelect={() => onSelect(e.conn)}
+                    />
                 })
             }
         </AnimatePresence>
     </ul>
 }
 
-const ConnectionList = memo(ConnectionListComponent)
+const ConnectionList = React.memo(ConnectionListComponent)
 
 
 const ListItemComponent: FC<{
@@ -336,52 +310,59 @@ const ListItemComponent: FC<{
     network: string,
     tag: string,
     bMode: string,
-    onSelect?: (c: bigint) => void,
     download: string,
-    upload: string
+    upload: string,
+    onSelect: () => void
 }> =
-    ({ onSelect, download, upload, addr, network, tag, bMode, id }) => {
+    ({ id, addr, network, tag, bMode, download, upload, onSelect }) => {
         return (
-            <li
-                className={styles['list-item']}
-                onClick={() => onSelect?.(id)}
+            <motion.li
+                className="flex flex-col items-start md:flex-row md:justify-between px-4 py-3 border-b border-sidebar-border transition-colors duration-200 cursor-pointer hover:bg-sidebar-hover last:border-b-0"
+                onClick={onSelect}
+                layout
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             >
-                <div className={styles['item-main']}>
-                    <code className={styles['item-id']}>{id.toString()}</code>
-                    <span className={styles['item-addr']}>{addr}</span>
+                <div className="flex flex-col">
+                    <code className="font-mono text-xs text-sidebar-color">{id.toString()}</code>
+                    <span className="font-medium text-md">{addr}</span>
                 </div>
 
-                <div className={styles['item-details-right']}>
-                    <ConnectedFlowBadge download={download} upload={upload} />
-                    <StaticBadges bMode={bMode} network={network} tag={tag} />
+                <div className="flex flex-col items-start gap-2 md:items-end md:mt-0">
+                    <FlowBadge download={download} upload={upload} />
+                    <div className="flex gap-2 items-center flex-wrap text-xs md:mt-0">
+                        <IconBadge icon={ShieldCheck} text={bMode} />
+                        <IconBadge icon={Network} text={network} />
+                        {tag && <IconBadge icon={Tag} text={tag} />}
+                    </div>
                 </div>
-            </li>
+            </motion.li>
         );
     }
 
-const StaticBadges: FC<{ bMode: string, network: string, tag?: string }> = React.memo(
-    ({ bMode, network, tag }) => (
-        <div className={styles['item-details']}>
-            <IconBadge icon={ShieldCheck} text={bMode} />
-            <IconBadge icon={Network} text={network} />
-            {tag && <IconBadge icon={Tag} text={tag} />}
-        </div>
-    )
-)
-
 const ListItem = React.memo(ListItemComponent)
 
-const ConnectedFlowBadge: FC<{ download: string, upload: string }> = React.memo(({ download, upload }) => {
-    return <div className="d-flex gap-2">
-        <span className="badge rounded-pill text-bg-secondary d-flex align-items-center gap-1">
-            <span className={`${styles['badge-icon']}`}><ArrowDown size={12} /></span>
+const FlowBadgeComponent: FC<{ download: string, upload: string }> = ({ download, upload }) => {
+    return <div className="flex gap-2">
+        <span className={clsx(
+            "rounded-full flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium",
+            "bg-slate-100 text-slate-500 dark:bg-[#2b2b40] dark:text-[#a6a6c0]"
+        )}>
+            <ArrowDown size={12} className="mr-1" />
             {download}
         </span>
-        <span className="badge rounded-pill text-bg-primary d-flex align-items-center gap-1">
-            <span className={`${styles['badge-icon']}`}><ArrowUp size={12} /></span>
+        <span className={clsx(
+            "rounded-full flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium",
+            "bg-slate-100 text-slate-500 dark:bg-[#2b2b40] dark:text-[#a6a6c0]"
+        )}>
+            <ArrowUp size={12} className="mr-1" />
             {upload}
         </span>
     </div>
-})
+}
+
+const FlowBadge = React.memo(FlowBadgeComponent)
 
 export default Connections;

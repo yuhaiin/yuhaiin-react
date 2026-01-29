@@ -1,14 +1,14 @@
 "use client"
 
 import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datalist";
+import { clsx } from "clsx";
 import { Check } from "lucide-react";
-import React, { FC, JSX, memo, useState } from "react";
+import React, { FC, JSX, useState, memo } from "react";
 import useSWR from "swr";
 import { FetchProtobuf, ProtoPath } from "../../common/proto";
 import { connections, counter, total_flow } from "../pbes/api/statistic_pb";
 import { mode } from "../pbes/config/bypass_pb";
 import { connection, type as connType, match_history_entry } from "../pbes/statistic/config_pb";
-import styles from './flowcard.module.css';
 
 interface MetricProps {
     label: string;
@@ -17,20 +17,25 @@ interface MetricProps {
     color?: string;
 }
 
-const MetricCard: FC<MetricProps> = React.memo(({ label, value, error, color = '#3b82f6' }) => {
+const MetricCard: FC<MetricProps> = ({ label, value, error }) => {
     return (
         <div
-            className={styles.metricCard}
-        // Show a blue light line on the left edge of the card
-        // style={{ '--accent-color': color } as React.CSSProperties}
+            className={`
+                grow basis-[calc(25%-1.25rem)] min-w-[200px] relative p-4
+                bg-[var(--metric-bg)] border border-[var(--metric-border)] rounded-2xl
+                flex flex-col justify-center
+                transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+                shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)]
+                hover:-translate-y-[5px] hover:border-[rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]
+            `}
         >
-            <div className={styles.metricCardLabel}>{label}</div>
-            <div className={`${styles.metricCardValue} ${error ? styles.error : ''}`}>
+            <div className="text-xs uppercase tracking-wider text-[var(--metric-label,#64748b)] mb-1 font-semibold">{label}</div>
+            <div className={`text-[1.35rem] font-bold font-mono text-[var(--metric-value,#0f172a)] animate-dataUpdate ${error ? 'text-red-500' : ''}`}>
                 {error || value}
             </div>
         </div>
     );
-});
+};
 
 
 const Unit = {
@@ -145,28 +150,28 @@ export const FlowCard: FC<{
     upload_rate?: string,
     flow_error?: { msg: string, code: number },
     extra_fields?: MetricProps[],
-}> = memo(({ flow_error, extra_fields, download, upload, download_rate, upload_rate }) => {
+}> = memo(({ download, upload, download_rate, upload_rate, flow_error, extra_fields }) => {
     return (
-        <div className={`${styles.flowCardGrid} mb-3`}
+        <div className="flex flex-wrap gap-3 w-full mb-3"
             style={{ viewTransitionName: "flow-card-root !important" }}>
             <MetricCard
                 label="Total Download"
-                value={download ? download : "Loading..."}
+                value={download || "Loading..."}
                 error={flow_error?.msg}
             />
             <MetricCard
                 label="Download Rate"
-                value={download_rate ? download_rate : "Loading..."}
+                value={download_rate || "Loading..."}
                 error={flow_error?.msg}
             />
             <MetricCard
                 label="Total Upload"
-                value={upload ? upload : "Loading..."}
+                value={upload || "Loading..."}
                 error={flow_error?.msg}
             />
             <MetricCard
                 label="Upload Rate"
-                value={upload_rate ? upload_rate : "Loading..."}
+                value={upload_rate || "Loading..."}
                 error={flow_error?.msg}
             />
             {
@@ -246,7 +251,7 @@ export const ConnectionInfo: FC<{
 }
 
 const IconCross = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-danger" style={{ opacity: 0.8 }}>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-red-500 opacity-80">
         <line x1="18" y1="6" x2="6" y2="18"></line>
         <line x1="6" y1="6" x2="18" y2="18"></line>
     </svg>
@@ -258,91 +263,64 @@ export const MatchHistoryItem = ({ value }: { value: match_history_entry[] }) =>
 
     return (
         <DataListCustomItem>
-            <div className="d-sm-flex justify-content-between align-items-start gap-3 w-100">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-3 w-full">
 
                 {/* Left Side: Main Title */}
                 <div
-                    className="endpoint-name notranslate text-capitalize flex-shrink-0 mb-3 mb-sm-0"
-                    style={{
-                        color: 'var(--sidebar-header-color)',
-                        fontWeight: '600',
-                        minWidth: '110px',
-                        fontSize: '0.875rem' // Match DataList key font size
-                    }}
+                    className="notranslate capitalize shrink-0 mb-3 sm:mb-0 text-sidebar-header font-semibold min-w-[110px] text-sm"
                 >
                     MatchHistory
                 </div>
 
                 {/* Right Side: Container for Rule Groups */}
-                <div className="flex-grow-1 w-100 d-flex flex-column gap-3">
+                <div className="grow w-full flex flex-col gap-3">
                     {
                         value.map((e: any, i: number) => {
                             return (
                                 /* GROUP CONTAINER: Wraps each Rule in a distinct "Box" */
                                 <div
                                     key={"rule-" + e.ruleName + i}
-                                    className="rounded-3 p-3"
-                                    style={{
-                                        border: '1px solid var(--sidebar-border-color)',
-                                        // Use a subtle background (like hover-bg) to separate it from the main background
-                                        backgroundColor: 'var(--sidebar-hover-bg)',
-                                    }}
+                                    className="rounded-xl p-3 border border-sidebar-border bg-sidebar-hover"
                                 >
                                     {/* Rule Group Header */}
                                     <div
-                                        className="mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center"
-                                        style={{ borderColor: 'var(--sidebar-border-color)' }}
+                                        className="mb-2 pb-2 border-b border-sidebar-border flex justify-between items-center"
                                     >
-                                        <span style={{
-                                            fontSize: '0.85rem',
-                                            color: 'var(--sidebar-header-color)', // Brighter color
-                                            fontWeight: '700',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.5px'
-                                        }}>
+                                        <span className="text-xs text-sidebar-header font-bold uppercase tracking-wider">
                                             {e.ruleName}
                                         </span>
-                                        {/* Optional: Count badge or similar could go here */}
                                     </div>
 
                                     {/* Items List inside the Group */}
-                                    <div className="d-flex flex-column gap-2">
+                                    <div className="flex flex-col gap-2">
                                         {e.history && e.history.map((h: any, j: number) => {
                                             return (
                                                 <div
                                                     key={"list-" + h.listName + j}
-                                                    className="d-flex align-items-center justify-content-between"
+                                                    className="flex items-center justify-between"
                                                 >
                                                     {/* List Name */}
                                                     <span
-                                                        className="notranslate text-break"
-                                                        style={{
-                                                            fontSize: '0.95rem',
-                                                            color: 'var(--sidebar-color)'
-                                                        }}
+                                                        className="notranslate break-all text-sm text-sidebar-color"
                                                     >
                                                         {h.listName}
                                                     </span>
 
                                                     {/* Status Icon & Label */}
-                                                    <div className="d-flex align-items-center gap-2 ps-3 flex-shrink-0">
-                                                        <span style={{
-                                                            fontSize: '0.8rem',
-                                                            fontWeight: '500',
-                                                            color: h.matched ? 'var(--bs-success)' : 'var(--sidebar-color)',
-                                                            opacity: h.matched ? 1 : 0.7
-                                                        }}>
+                                                    <div className="flex items-center gap-2 pl-3 shrink-0">
+                                                        <span className={clsx(
+                                                            "text-xs font-medium",
+                                                            h.matched ? "text-green-500 opacity-100" : "text-sidebar-color opacity-70"
+                                                        )}>
                                                             {h.matched ? 'Hit' : 'Miss'}
                                                         </span>
                                                         <div
-                                                            className="d-flex align-items-center justify-content-center rounded-circle"
-                                                            style={{
-                                                                width: '24px',
-                                                                height: '24px',
-                                                                backgroundColor: h.matched ? 'rgba(25, 135, 84, 0.1)' : 'rgba(255, 255, 255, 0.05)'
-                                                            }}
+                                                            className={clsx(
+                                                                "flex items-center justify-center rounded-full w-6 h-6",
+                                                                h.matched ? "bg-green-500/10" : "bg-white/5"
+                                                            )}
                                                         >
-                                                            {h.matched ? <Check /> : <IconCross />}
+                                                            {h.matched ? <Check size={14} /> : <IconCross />}
                                                         </div>
                                                     </div>
                                                 </div>

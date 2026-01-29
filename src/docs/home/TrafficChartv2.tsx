@@ -140,7 +140,7 @@ function makeSmoothPath(u: uPlot, seriesIdx: number, idx0: number, idx1: number)
     return { stroke, fill };
 }
 
-const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
+const TrafficChart: FC<TrafficChartProps> = memo(({ data, minHeight }) => {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<HTMLDivElement>(null);
     const uPlotInst = useRef<uPlot | null>(null);
@@ -304,52 +304,23 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
             <Tooltip {...tooltip} />
             <div
                 ref={wrapperRef}
+                className="relative w-full h-full flex-auto flex flex-col min-w-0"
                 style={{
-                    position: 'relative',
-                    width: '100%',
-                    height: '100%',
                     minHeight: minHeight,
-                    flex: '1 1 auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    minWidth: 0,
                 }}
             >
                 <div
                     ref={chartRef}
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        overflow: 'hidden'
-                    }}
+                    className="absolute top-0 left-0 w-full h-full overflow-hidden"
                 />
 
                 <div
                     ref={tooltipRef}
-                    style={{
-                        position: 'absolute',
-                        display: 'none',
-                        top: 0,
-                        left: 0,
-                        zIndex: 100,
-                        pointerEvents: 'none',
-                        backgroundColor: 'rgba(15, 23, 42, 0.9)', // Slate-900 with opacity
-                        border: '0px solid rgba(255,255,255,0.1)',
-                        padding: '0px',
-                        borderRadius: '6px',
-                        boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06)',
-                        color: 'white',
-                        fontSize: '6px',
-                        whiteSpace: 'nowrap',
-                        transition: 'opacity 0.1s ease',
-                    }}
+                    className="absolute hidden top-0 left-0 z-[100] pointer-events-none bg-slate-900/90 border-0 p-0 rounded-md shadow-md text-white text-[6px] whitespace-nowrap transition-opacity duration-100"
                 />
             </div >
         </>
     );
-};
+});
 
-export default memo(TrafficChart);
+export default TrafficChart;

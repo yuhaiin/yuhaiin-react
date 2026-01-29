@@ -12,31 +12,22 @@ interface TooltipProps {
 export const Tooltip: React.FC<TooltipProps> = ({ label, upload, download, left, top, visible }) => {
     return (
         <div
+            className={`absolute pointer-events-none bg-black p-2 rounded text-white text-xs min-w-[120px] z-10 ${visible ? 'block' : 'hidden'}`}
             style={{
-                position: 'absolute',
                 left,
                 top,
-                display: visible ? 'block' : 'none',
-                pointerEvents: 'none',
-                background: 'rgba(0,0,0,1)',
-                padding: 8,
-                borderRadius: 4,
-                color: '#fff',
-                fontSize: 12,
-                minWidth: 120,
-                zIndex: 10,
             }}
         >
-            <div style={{ fontWeight: 600, marginBottom: 4, color: '#f1f5f9' }}>{label}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                <div style={{ width: 8, height: 8, background: '#10b981', borderRadius: '50%' }} />
-                <span style={{ color: '#cbd5e1' }}>Upload:</span>
-                <span style={{ fontWeight: 500 }}>{formatBytes(upload ?? 0, 2, ' ') + '/S'}</span>
+            <div className="font-semibold mb-1 text-slate-100">{label}</div>
+            <div className="flex items-center gap-2 mb-0.5">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                <span className="text-slate-300">Upload:</span>
+                <span className="font-medium">{formatBytes(upload ?? 0, 2, ' ') + '/S'}</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 8, height: 8, background: '#3b82f6', borderRadius: '50%' }} />
-                <span style={{ color: '#cbd5e1' }}>Download:</span>
-                <span style={{ fontWeight: 500 }}>{formatBytes(download ?? 0, 2, ' ') + '/S'}</span>
+            <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                <span className="text-slate-300">Download:</span>
+                <span className="font-medium">{formatBytes(download ?? 0, 2, ' ') + '/S'}</span>
             </div>
         </div>
     );
