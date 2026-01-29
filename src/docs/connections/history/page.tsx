@@ -156,7 +156,7 @@ function History() {
                         value={netFilter}
                         onChange={setNetFilter}
                         format={(v) => v === 0 ? "All Networks" : netTypeMap[v] ?? "Unknown"}
-                        className="mb-0"
+                        className="!mb-0"
                         triggerClassName="py-0"
                         size="sm"
                         style={{ minWidth: "120px" }}

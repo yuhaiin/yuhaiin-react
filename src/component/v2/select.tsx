@@ -49,7 +49,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
             disabled={disabled}
         >
             <SelectPrimitive.Trigger className={clsx(
-                "flex items-center justify-between rounded-[12px] px-[12px] text-[14px] leading-none h-[38px] gap-[5px] bg-[var(--bs-body-bg)] text-[var(--bs-body-color)] border border-[var(--bs-border-color)] w-full transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]",
+                "flex items-center justify-between rounded-[12px] px-[12px] text-[14px] leading-none h-[38px] gap-[5px] bg-[var(--bs-body-bg)] text-[var(--bs-body-color)] border border-[var(--bs-border-color)] w-full transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] cursor-pointer",
                 "hover:bg-[var(--bs-tertiary-bg)] hover:border-[var(--bs-border-color-translucent)]",
                 "focus:outline-none focus:border-[#86b7fe] data-[state=open]:outline-none data-[state=open]:border-[#86b7fe] data-[state=open]:transition-all",
                 size === 'sm' && "h-[32px] text-[0.875rem] px-[10px]",
@@ -179,13 +179,12 @@ const DropdownSelectComponent: FC<{
             <DropdownTrigger asChild>
                 <div
                     className={clsx(
-                        "flex items-center justify-between rounded-[12px] px-[12px] text-[14px] leading-none h-[38px] gap-[5px] bg-[var(--bs-body-bg)] text-[var(--bs-body-color)] border border-[var(--bs-border-color)] w-full transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]",
+                        "flex items-center justify-between rounded-[12px] px-[12px] text-[14px] leading-none h-[38px] gap-[5px] bg-[var(--bs-body-bg)] text-[var(--bs-body-color)] border border-[var(--bs-border-color)] w-full transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] cursor-pointer",
                         "hover:bg-[var(--bs-tertiary-bg)] hover:border-[var(--bs-border-color-translucent)]",
                         "focus:outline-none focus:border-[#86b7fe] data-[state=open]:outline-none data-[state=open]:border-[#86b7fe] data-[state=open]:transition-all",
                         radiusClass,
                         triggerClassName
                     )}
-                    style={{ cursor: 'pointer' }}
                 >
                     <div className="d-flex align-items-center gap-2 overflow-hidden">
                         {values.length > 0 && (
