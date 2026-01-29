@@ -237,7 +237,11 @@ const ConnectionListComponent: FC<{
     }, [setInfo])
 
     if (conn_error !== undefined) return <Loading code={conn_error.code}>{conn_error.msg}</Loading>
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> origin/jules-553909422092277362-c663bd9f
     return <ul className="flex flex-col p-0 m-0 mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]">
         <AnimatePresence initial={false} mode="popLayout">
             {
