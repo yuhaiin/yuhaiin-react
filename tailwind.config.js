@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const plugin = require('tailwindcss/plugin');
+
 module.exports = {
   content: [
     "./index.html",
@@ -94,5 +96,34 @@ module.exports = {
       }
     },
   },
-  plugins: [],
+  plugins: [
+    plugin(function ({ addBase }) {
+      addBase({
+        '*': {
+          'scrollbar-width': 'thin',
+          'scrollbar-color': 'var(--scrollbar-thumb) var(--scrollbar-track)',
+        },
+        '::-webkit-scrollbar': {
+          width: '8px',
+          height: '8px',
+        },
+        '::-webkit-scrollbar-track': {
+          background: 'var(--scrollbar-track)',
+        },
+        '::-webkit-scrollbar-thumb': {
+          'background-color': 'var(--scrollbar-thumb)',
+          'border-radius': '4px',
+        },
+        '::-webkit-scrollbar-thumb:hover': {
+          'background-color': 'var(--scrollbar-thumb-hover)',
+        },
+        '::-webkit-scrollbar-thumb:active': {
+          'background-color': 'var(--scrollbar-thumb-active)',
+        },
+        '::-webkit-scrollbar-corner': {
+          background: 'transparent',
+        },
+      });
+    }),
+  ],
 }
