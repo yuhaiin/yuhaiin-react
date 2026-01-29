@@ -62,7 +62,7 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
     d: DescMethod & { methodKind: "server_streaming"; input: I; output: O; },
     Request: MessageShape<I>,
     stream: (r: MessageShape<O>[], prev?: Response) => Response,
-    options?: { throttle?: number }
+    options?: { throttle?: number, onDisconnect?: () => void }
 ):
     (key: string, { next }: SWRSubscriptionOptions<Response, { msg: string, code: number }>) => () => void {
     const apiUrl = getApiUrl()
@@ -120,6 +120,10 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
 
             socket.addEventListener('close', (e) => {
                 console.log("websocket closed, code: " + e.code + ", isClosed: ", closed)
+                // Only call onDisconnect on unexpected closes, not when component unmounts
+                if (!closed) {
+                    options?.onDisconnect?.()
+                }
                 next(null, undefined)
                 if (closed) return
                 else {
