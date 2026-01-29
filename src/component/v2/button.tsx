@@ -66,7 +66,7 @@ const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
 
         const sizeStyles = {
             default: "",
-            sm: "text-sm rounded-[12px]", // .sm: font-size 0.875rem, radius 12px
+            sm: "h-8 px-3 text-sm rounded-[12px]", // .sm: h-8 (32px), font-size 0.875rem, radius 12px
             xs: "py-[0.15rem] px-[0.4rem] text-xs rounded-[6px]", // .xs
             icon: "p-[0.4rem] inline-flex items-center justify-center leading-none flex-none w-auto [&>i]:text-[1rem] [&>i]:align-middle [&>svg]:text-[1rem] [&>svg]:align-middle" // .icon
         };
