@@ -11,7 +11,7 @@ import { create, fromJsonString } from "@bufbuild/protobuf";
 import { Duration, StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { AnimatePresence, motion } from "framer-motion";
 import { Archive, CheckCircle2, ChevronDown, Gauge, Network, Pencil, Plus } from "lucide-react";
-import { FC, useContext, useState } from "react";
+import { FC, useContext, useState, useMemo } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { LatencyDNSUrlDefault, LatencyDNSUrlKey, LatencyHTTPUrlDefault, LatencyHTTPUrlKey, LatencyIPUrlDefault, LatencyIPUrlKey, LatencyIPv6Default, LatencyIPv6Key, LatencyStunTCPUrlDefault, LatencyStunTCPUrlKey, LatencyStunUrlDefault, LatencyStunUrlKey } from "../../common/apiurl";
 import { Nodes, NodesContext } from "../../common/nodes";
@@ -128,6 +128,9 @@ function Group() {
 
     const { data, error, isLoading, mutate } = useProtoSWR(node.method.list)
 
+    const [emptyNodes] = useState(() => new Nodes());
+    const nodes = useMemo(() => (data ? new Nodes(data) : emptyNodes), [data, emptyNodes]);
+
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || data === undefined) return <Loading />
 
@@ -152,7 +155,7 @@ function Group() {
 
     return (
         <>
-            <NodesContext.Provider value={new Nodes(data)}>
+            <NodesContext.Provider value={nodes}>
                 <NodeModal
                     show={modalData.show}
                     hash={modalData.hash}
