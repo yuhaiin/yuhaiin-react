@@ -21,143 +21,6 @@ interface TrafficChartProps {
     minHeight: number;
 }
 
-let bufSize = 0;
-let xBuf = new Float64Array(0);
-let yBuf = new Float64Array(0);
-let tangentsBuf = new Float64Array(0);
-let secantsBuf = new Float64Array(0);
-
-function ensureBuffer(size: number) {
-    if (bufSize < size) {
-        bufSize = size + 1024;
-        xBuf = new Float64Array(bufSize);
-        yBuf = new Float64Array(bufSize);
-        tangentsBuf = new Float64Array(bufSize);
-        secantsBuf = new Float64Array(bufSize);
-    }
-}
-
-function makeSmoothPath(u: uPlot, seriesIdx: number, idx0: number, idx1: number) {
-    const s = u.series[seriesIdx];
-    const xdata = u.data[0];
-    const ydata = u.data[seriesIdx];
-    const scaleX = 'x';
-    const scaleY = s.scale!;
-
-    const stroke = new Path2D();
-
-    // 1. Collect valid points
-    let cnt = 0;
-    ensureBuffer(idx1 - idx0 + 1);
-
-    for (let i = idx0; i <= idx1; i++) {
-        const y = ydata[i];
-        if (y == null) continue;
-        xBuf[cnt] = u.valToPos(xdata[i], scaleX, true);
-        yBuf[cnt] = u.valToPos(y, scaleY, true);
-        cnt++;
-    }
-
-    if (cnt < 2) return null;
-
-    // --- Strict Monotone Cubic Spline (Fritsch-Carlson) ---
-    const n = cnt;
-    // Note: buffers are reused and pre-allocated via ensureBuffer
-
-    // 1. Calculate secants (slope between points)
-    for (let i = 0; i < n - 1; i++) {
-        const dx = xBuf[i + 1] - xBuf[i];
-        const dy = yBuf[i + 1] - yBuf[i];
-        secantsBuf[i] = dy / dx;
-    }
-
-    // 2. Calculate initial tangents
-    for (let i = 0; i < n; i++) {
-        if (i === 0) {
-            tangentsBuf[i] = secantsBuf[0];
-        } else if (i === n - 1) {
-            tangentsBuf[i] = secantsBuf[n - 2];
-        } else {
-            // Average of previous and next secant
-            tangentsBuf[i] = (secantsBuf[i - 1] + secantsBuf[i]) / 2;
-
-            // Fix 1: Zero out tangent at peaks/troughs
-            if (secantsBuf[i - 1] * secantsBuf[i] <= 0) {
-                tangentsBuf[i] = 0;
-            }
-        }
-    }
-
-    // 3. Apply "3x Constraint" to prevent overshoot on steep-to-flat transitions
-    // This is the key fix for the negative values issue.
-    for (let i = 0; i < n - 1; i++) {
-        const m = secantsBuf[i];
-
-        // Skip flat segments
-        if (m === 0) {
-            tangentsBuf[i] = 0;
-            tangentsBuf[i + 1] = 0;
-            continue;
-        }
-
-        // Check start point of the segment
-        const alpha = tangentsBuf[i] / m;
-        if (Math.abs(alpha) > 3) {
-            tangentsBuf[i] = 3 * m;
-        }
-
-        // Check end point of the segment
-        // (Note: we must re-evaluate tangent[i+1] in the context of this segment too)
-        const beta = tangentsBuf[i + 1] / m;
-        if (Math.abs(beta) > 3) {
-            tangentsBuf[i + 1] = 3 * m;
-        }
-    }
-
-    // --- Draw Path ---
-    stroke.moveTo(xBuf[0], yBuf[0]);
-
-    for (let i = 0; i < n - 1; i++) {
-        const p0x = xBuf[i];
-        const p0y = yBuf[i];
-        const p1x = xBuf[i + 1];
-        const p1y = yBuf[i + 1];
-
-        const dx = p1x - p0x;
-
-        // Control Point calculation
-        // CP1 = Start + Tangent * (dx / 3)
-        // CP2 = End - Tangent * (dx / 3)
-        let cp1x = p0x + dx / 3;
-        let cp1y = p0y + tangentsBuf[i] * (dx / 3);
-
-        let cp2x = p1x - dx / 3;
-        let cp2y = p1y - tangentsBuf[i + 1] * (dx / 3);
-
-        // --- Final Safety Net (Floating Point Protection) ---
-        // Even with the math above, floating point errors can rarely cause micro-overshoots.
-        // We clamp the control points strictly within the Y range of the two points.
-        const yMin = Math.min(p0y, p1y);
-        const yMax = Math.max(p0y, p1y);
-
-        cp1y = Math.max(yMin, Math.min(yMax, cp1y));
-        cp2y = Math.max(yMin, Math.min(yMax, cp2y));
-        // ----------------------------------------------------
-
-        stroke.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p1x, p1y);
-    }
-
-    const fill = new Path2D();
-    const zeroY = u.valToPos(0, scaleY, true);
-
-    fill.addPath(stroke);
-    fill.lineTo(xBuf[n - 1], zeroY);
-    fill.lineTo(xBuf[0], zeroY);
-    fill.closePath();
-
-    return { stroke, fill };
-}
-
 const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<HTMLDivElement>(null);
@@ -175,6 +38,146 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
 
     const latestLabelsRef = useRef(data.labels);
     useEffect(() => { latestLabelsRef.current = data.labels; }, [data.labels]);
+
+    // Use a factory to create a closure for buffers, ensuring each chart instance has its own
+    const makeSmoothPath = useMemo(() => {
+        let bufSize = 0;
+        let xBuf = new Float64Array(0);
+        let yBuf = new Float64Array(0);
+        let tangentsBuf = new Float64Array(0);
+        let secantsBuf = new Float64Array(0);
+
+        function ensureBuffer(size: number) {
+            if (bufSize < size) {
+                bufSize = size + 1024;
+                xBuf = new Float64Array(bufSize);
+                yBuf = new Float64Array(bufSize);
+                tangentsBuf = new Float64Array(bufSize);
+                secantsBuf = new Float64Array(bufSize);
+            }
+        }
+
+        return function makeSmoothPathImpl(u: uPlot, seriesIdx: number, idx0: number, idx1: number) {
+            const s = u.series[seriesIdx];
+            const xdata = u.data[0];
+            const ydata = u.data[seriesIdx];
+            const scaleX = 'x';
+            const scaleY = s.scale!;
+
+            const stroke = new Path2D();
+
+            // 1. Collect valid points
+            let cnt = 0;
+            ensureBuffer(idx1 - idx0 + 1);
+
+            for (let i = idx0; i <= idx1; i++) {
+                const y = ydata[i];
+                if (y == null) continue;
+                xBuf[cnt] = u.valToPos(xdata[i], scaleX, true);
+                yBuf[cnt] = u.valToPos(y, scaleY, true);
+                cnt++;
+            }
+
+            if (cnt < 2) return null;
+
+            // --- Strict Monotone Cubic Spline (Fritsch-Carlson) ---
+            const n = cnt;
+            // Note: buffers are reused and pre-allocated via ensureBuffer
+
+            // 1. Calculate secants (slope between points)
+            for (let i = 0; i < n - 1; i++) {
+                const dx = xBuf[i + 1] - xBuf[i];
+                const dy = yBuf[i + 1] - yBuf[i];
+                secantsBuf[i] = dy / dx;
+            }
+
+            // 2. Calculate initial tangents
+            for (let i = 0; i < n; i++) {
+                if (i === 0) {
+                    tangentsBuf[i] = secantsBuf[0];
+                } else if (i === n - 1) {
+                    tangentsBuf[i] = secantsBuf[n - 2];
+                } else {
+                    // Average of previous and next secant
+                    tangentsBuf[i] = (secantsBuf[i - 1] + secantsBuf[i]) / 2;
+
+                    // Fix 1: Zero out tangent at peaks/troughs
+                    if (secantsBuf[i - 1] * secantsBuf[i] <= 0) {
+                        tangentsBuf[i] = 0;
+                    }
+                }
+            }
+
+            // 3. Apply "3x Constraint" to prevent overshoot on steep-to-flat transitions
+            // This is the key fix for the negative values issue.
+            for (let i = 0; i < n - 1; i++) {
+                const m = secantsBuf[i];
+
+                // Skip flat segments
+                if (m === 0) {
+                    tangentsBuf[i] = 0;
+                    tangentsBuf[i + 1] = 0;
+                    continue;
+                }
+
+                // Check start point of the segment
+                const alpha = tangentsBuf[i] / m;
+                if (Math.abs(alpha) > 3) {
+                    tangentsBuf[i] = 3 * m;
+                }
+
+                // Check end point of the segment
+                // (Note: we must re-evaluate tangent[i+1] in the context of this segment too)
+                const beta = tangentsBuf[i + 1] / m;
+                if (Math.abs(beta) > 3) {
+                    tangentsBuf[i + 1] = 3 * m;
+                }
+            }
+
+            // --- Draw Path ---
+            stroke.moveTo(xBuf[0], yBuf[0]);
+
+            for (let i = 0; i < n - 1; i++) {
+                const p0x = xBuf[i];
+                const p0y = yBuf[i];
+                const p1x = xBuf[i + 1];
+                const p1y = yBuf[i + 1];
+
+                const dx = p1x - p0x;
+
+                // Control Point calculation
+                // CP1 = Start + Tangent * (dx / 3)
+                // CP2 = End - Tangent * (dx / 3)
+                let cp1x = p0x + dx / 3;
+                let cp1y = p0y + tangentsBuf[i] * (dx / 3);
+
+                let cp2x = p1x - dx / 3;
+                let cp2y = p1y - tangentsBuf[i + 1] * (dx / 3);
+
+                // --- Final Safety Net (Floating Point Protection) ---
+                // Even with the math above, floating point errors can rarely cause micro-overshoots.
+                // We clamp the control points strictly within the Y range of the two points.
+                const yMin = Math.min(p0y, p1y);
+                const yMax = Math.max(p0y, p1y);
+
+                cp1y = Math.max(yMin, Math.min(yMax, cp1y));
+                cp2y = Math.max(yMin, Math.min(yMax, cp2y));
+                // ----------------------------------------------------
+
+                stroke.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p1x, p1y);
+            }
+
+            const fill = new Path2D();
+            const zeroY = u.valToPos(0, scaleY, true);
+
+            fill.addPath(stroke);
+            fill.lineTo(xBuf[n - 1], zeroY);
+            fill.lineTo(xBuf[0], zeroY);
+            fill.closePath();
+
+            return { stroke, fill };
+        }
+    }, []);
 
     useLayoutEffect(() => {
         if (!wrapperRef.current || !chartRef.current) return;
@@ -286,7 +289,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
             uPlotInst.current = null;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [makeSmoothPath]); // Add makeSmoothPath to dependency array
 
     useEffect(() => {
         if (!uPlotInst.current) return;
