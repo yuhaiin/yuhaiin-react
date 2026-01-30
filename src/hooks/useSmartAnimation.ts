@@ -1,5 +1,5 @@
 import { useLocation } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 const ROUTE_ORDER = [
     '/',
@@ -60,15 +60,19 @@ const getRouteIndex = (path: string) => {
 
 export function useSmartAnimation() {
     const pathname = useLocation({ select: (location) => location.pathname });
-    const [prevPath, setPrevPath] = useState(pathname);
     const [direction, setDirection] = useState(0);
+    const prevPathnameRef = useRef(pathname);
 
-    if (prevPath !== pathname) {
-        const prevIndex = getRouteIndex(prevPath);
-        const currentIndex = getRouteIndex(pathname);
-        setDirection(currentIndex > prevIndex ? 1 : -1);
-        setPrevPath(pathname);
-    }
+    useEffect(() => {
+        const prevPath = prevPathnameRef.current;
+        if (prevPath !== pathname) {
+            const prevIndex = getRouteIndex(prevPath);
+            const currentIndex = getRouteIndex(pathname);
+            setDirection(currentIndex > prevIndex ? 1 : -1);
+        }
+        // Update the ref to the current pathname for the next render cycle
+        prevPathnameRef.current = pathname;
+    }, [pathname]);
 
     return direction;
 }
