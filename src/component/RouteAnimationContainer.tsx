@@ -16,7 +16,7 @@ export function RouteAnimationContainer({ children }: { children: React.ReactNod
         return <>{children}</>;
     }
 
-    const Component = match.component as React.ComponentType<any>;
+    const Component = match.component as React.ComponentType<{}>;
 
     return (
         <AnimationProvider value={{ direction }}>
