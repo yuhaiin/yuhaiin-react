@@ -128,7 +128,8 @@ function Group() {
 
     const { data, error, isLoading, mutate } = useProtoSWR(node.method.list)
 
-    const nodes = useMemo(() => data ? new Nodes(data) : new Nodes(), [data]);
+    const [emptyNodes] = useState(() => new Nodes());
+    const nodes = useMemo(() => (data ? new Nodes(data) : emptyNodes), [data, emptyNodes]);
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || data === undefined) return <Loading />
