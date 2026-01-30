@@ -2,7 +2,7 @@
 
 import * as SwitchPrimitive from '@radix-ui/react-switch';
 import { clsx } from 'clsx';
-import { motion } from 'framer-motion';
+import { motion, Transition } from 'framer-motion';
 import * as React from 'react';
 
 interface SwitchProps {
@@ -13,8 +13,8 @@ interface SwitchProps {
   disabled?: boolean;
 }
 
-const transition = {
-  type: "spring" as const, // Fix: Cast to const so it's "spring" not string
+const transition: Transition = {
+  type: "spring",
   stiffness: 700,
   damping: 30
 };
