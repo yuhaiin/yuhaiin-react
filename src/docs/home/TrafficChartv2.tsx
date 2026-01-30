@@ -179,7 +179,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
 
         function ensureBuffer(size: number) {
             if (bufSize < size) {
-                bufSize = size + 1024;
+                bufSize = size + BUFFER_GROWTH_SIZE;
                 buffers = {
                     xBuf: new Float64Array(bufSize),
                     yBuf: new Float64Array(bufSize),
