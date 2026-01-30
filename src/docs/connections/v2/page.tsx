@@ -1,6 +1,6 @@
 "use client"
 
-import { useDelay } from "@/common/hooks"
+import { useDelay, useThrottle } from "@/common/hooks"
 import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "@/common/proto"
 import { Button } from "@/component/v2/button"
 import { IconBadge } from "@/component/v2/card"
@@ -226,11 +226,13 @@ const ConnectionListComponent: FC<{
 
     const connValues = useMemo(() => Object.values(conns ?? {}), [conns])
 
+    const throttledConnValues = useThrottle(connValues, 1000)
+
     // Sort by traffic (uses rawDownload/rawUpload from merged state)
     const trafficSorted = useMemo(() => {
         if (sortFields !== "download" && sortFields !== "upload") return []
 
-        return [...connValues].sort((a, b) => {
+        return [...throttledConnValues].sort((a, b) => {
             let first = 1;
             let second = -1;
 
@@ -247,13 +249,13 @@ const ConnectionListComponent: FC<{
             }
             return 0
         })
-    }, [connValues, sortFields, sortOrder])
+    }, [throttledConnValues, sortFields, sortOrder])
 
     // Sort by static fields (id, name)
     const staticSorted = useMemo(() => {
         if (sortFields === "download" || sortFields === "upload") return []
 
-        return [...connValues].sort((a, b) => {
+        return [...throttledConnValues].sort((a, b) => {
             let first = 1;
             let second = -1;
 
@@ -268,9 +270,15 @@ const ConnectionListComponent: FC<{
 
             return a.conn.id < b.conn.id ? first : second
         })
-    }, [connValues, sortFields, sortOrder])
+    }, [throttledConnValues, sortFields, sortOrder])
 
-    const values = (sortFields === "download" || sortFields === "upload") ? trafficSorted : staticSorted
+    const sortedValues = (sortFields === "download" || sortFields === "upload") ? trafficSorted : staticSorted
+
+    const values = useMemo(() => {
+        return sortedValues
+            .map(item => conns[item.conn.id.toString()])
+            .filter((item): item is MergedConnection => item !== undefined)
+    }, [sortedValues, conns])
 
     const handleSelect = useCallback((conn: connection) => {
         setInfo({ info: conn, show: true })
