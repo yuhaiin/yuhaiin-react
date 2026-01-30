@@ -3,6 +3,7 @@ import { useMatches, Outlet } from '@tanstack/react-router';
 import { AnimationProvider } from '@/context/AnimationContext';
 import { useSmartAnimation } from '@/hooks/useSmartAnimation';
 import React from 'react';
+import clsx from 'clsx';
 
 const variants = {
     enter: (direction: number) => ({
@@ -47,7 +48,16 @@ export function RouteAnimationContainer({ children }: { children: React.ReactNod
             <AnimatePresence mode="popLayout" initial={false} custom={direction}>
                 <motion.div
                     key={match.id}
-                    className="w-full h-full"
+                    className={clsx(
+                        // Crucial for popLayout: absolute positioning to allow overlap
+                        'absolute inset-0',
+                        // Size and box model
+                        'w-full h-full box-border',
+                        // Scrolling (if we want the scroll container to animate)
+                        'overflow-y-auto overflow-x-hidden',
+                        // Performance hints
+                        'will-change-[transform,opacity]'
+                    )}
                     custom={direction}
                     variants={variants}
                     initial="enter"

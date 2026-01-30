@@ -5,14 +5,8 @@ export function AnimatedRoute({ children, className }: { children: ReactNode, cl
     return (
         <div
             className={clsx(
-                // positioning & size
-                'absolute inset-0 box-border h-full w-full',
-
-                // scrolling
-                'overflow-y-auto overflow-x-hidden',
-
-                // performance hints
-                'will-change-[transform,opacity]',
+                // layout
+                'w-full h-full',
 
                 // padding - mobile
                 'pt-[80px] px-[20px] pb-[20px]',
