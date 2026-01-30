@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useMatches, Outlet } from '@tanstack/react-router';
+import { useMatches } from '@tanstack/react-router';
 import { AnimationProvider } from '@/context/AnimationContext';
 import { useSmartAnimation } from '@/hooks/useSmartAnimation';
 import React from 'react';
