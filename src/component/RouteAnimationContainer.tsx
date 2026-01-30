@@ -9,14 +9,19 @@ export function RouteAnimationContainer({ children }: { children: React.ReactNod
     const matches = useMatches();
 
     // matches[0] is the root route. matches[1] is the child route (e.g. docs, or home).
-    // We want to render the component of the child route.
     const match = matches[1];
 
     if (!match) {
         return <>{children}</>;
     }
 
-    const Component = match.component as React.ComponentType<{}>;
+    // Accessing component from the route definition associated with the match
+    // We cast to any because the strict type might not expose .route.component directly on RouteMatch in all versions
+    const Component = (match as any).route?.component || (match as any).component;
+
+    if (!Component) {
+        return <>{children}</>;
+    }
 
     return (
         <AnimationProvider value={{ direction }}>
