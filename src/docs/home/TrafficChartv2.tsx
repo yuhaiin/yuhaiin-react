@@ -21,7 +21,22 @@ interface TrafficChartProps {
     minHeight: number;
 }
 
-function makeSmoothPath(u: uPlot, seriesIdx: number, idx0: number, idx1: number) {
+interface Buffers {
+    xBuf: Float64Array;
+    yBuf: Float64Array;
+    tangentsBuf: Float64Array;
+    secantsBuf: Float64Array;
+}
+
+type EnsureBufferFn = (size: number) => Buffers;
+
+function makeSmoothPathCore(
+    u: uPlot,
+    seriesIdx: number,
+    idx0: number,
+    idx1: number,
+    ensureBuffer: EnsureBufferFn
+) {
     const s = u.series[seriesIdx];
     const xdata = u.data[0];
     const ydata = u.data[seriesIdx];
@@ -30,111 +45,105 @@ function makeSmoothPath(u: uPlot, seriesIdx: number, idx0: number, idx1: number)
 
     const stroke = new Path2D();
 
-    let pts: [number, number][] = [];
-
     // 1. Collect valid points
+    let cnt = 0;
+    const { xBuf, yBuf, tangentsBuf, secantsBuf } = ensureBuffer(idx1 - idx0 + 1);
+
     for (let i = idx0; i <= idx1; i++) {
         const y = ydata[i];
         if (y == null) continue;
-        pts.push([
-            u.valToPos(xdata[i], scaleX, true),
-            u.valToPos(y, scaleY, true),
-        ]);
+        xBuf[cnt] = u.valToPos(xdata[i], scaleX, true);
+        yBuf[cnt] = u.valToPos(y, scaleY, true);
+        cnt++;
     }
 
-    if (pts.length < 2) return null;
+    if (cnt < 2) return null;
 
     // --- Strict Monotone Cubic Spline (Fritsch-Carlson) ---
-    const n = pts.length;
-    const tangents: number[] = new Array(n).fill(0);
-    const secants: number[] = new Array(n - 1).fill(0);
+    const n = cnt;
 
     // 1. Calculate secants (slope between points)
     for (let i = 0; i < n - 1; i++) {
-        const dx = pts[i + 1][0] - pts[i][0];
-        const dy = pts[i + 1][1] - pts[i][1];
-        secants[i] = dy / dx;
+        const dx = xBuf[i + 1] - xBuf[i];
+        const dy = yBuf[i + 1] - yBuf[i];
+        secantsBuf[i] = dy / dx;
     }
 
     // 2. Calculate initial tangents
     for (let i = 0; i < n; i++) {
         if (i === 0) {
-            tangents[i] = secants[0];
+            tangentsBuf[i] = secantsBuf[0];
         } else if (i === n - 1) {
-            tangents[i] = secants[n - 2];
+            tangentsBuf[i] = secantsBuf[n - 2];
         } else {
             // Average of previous and next secant
-            tangents[i] = (secants[i - 1] + secants[i]) / 2;
+            tangentsBuf[i] = (secantsBuf[i - 1] + secantsBuf[i]) / 2;
 
             // Fix 1: Zero out tangent at peaks/troughs
-            if (secants[i - 1] * secants[i] <= 0) {
-                tangents[i] = 0;
+            if (secantsBuf[i - 1] * secantsBuf[i] <= 0) {
+                tangentsBuf[i] = 0;
             }
         }
     }
 
     // 3. Apply "3x Constraint" to prevent overshoot on steep-to-flat transitions
-    // This is the key fix for the negative values issue.
     for (let i = 0; i < n - 1; i++) {
-        const m = secants[i];
+        const m = secantsBuf[i];
 
         // Skip flat segments
         if (m === 0) {
-            tangents[i] = 0;
-            tangents[i + 1] = 0;
+            tangentsBuf[i] = 0;
+            tangentsBuf[i + 1] = 0;
             continue;
         }
 
         // Check start point of the segment
-        const alpha = tangents[i] / m;
+        const alpha = tangentsBuf[i] / m;
         if (Math.abs(alpha) > 3) {
-            tangents[i] = 3 * m;
+            tangentsBuf[i] = 3 * m;
         }
 
         // Check end point of the segment
-        // (Note: we must re-evaluate tangent[i+1] in the context of this segment too)
-        const beta = tangents[i + 1] / m;
+        const beta = tangentsBuf[i + 1] / m;
         if (Math.abs(beta) > 3) {
-            tangents[i + 1] = 3 * m;
+            tangentsBuf[i + 1] = 3 * m;
         }
     }
 
     // --- Draw Path ---
-    stroke.moveTo(pts[0][0], pts[0][1]);
+    stroke.moveTo(xBuf[0], yBuf[0]);
 
     for (let i = 0; i < n - 1; i++) {
-        const p0 = pts[i];
-        const p1 = pts[i + 1];
-        const dx = p1[0] - p0[0];
+        const p0x = xBuf[i];
+        const p0y = yBuf[i];
+        const p1x = xBuf[i + 1];
+        const p1y = yBuf[i + 1];
+
+        const dx = p1x - p0x;
 
         // Control Point calculation
-        // CP1 = Start + Tangent * (dx / 3)
-        // CP2 = End - Tangent * (dx / 3)
-        let cp1x = p0[0] + dx / 3;
-        let cp1y = p0[1] + tangents[i] * (dx / 3);
+        let cp1x = p0x + dx / 3;
+        let cp1y = p0y + tangentsBuf[i] * (dx / 3);
 
-        let cp2x = p1[0] - dx / 3;
-        let cp2y = p1[1] - tangents[i + 1] * (dx / 3);
+        let cp2x = p1x - dx / 3;
+        let cp2y = p1y - tangentsBuf[i + 1] * (dx / 3);
 
         // --- Final Safety Net (Floating Point Protection) ---
-        // Even with the math above, floating point errors can rarely cause micro-overshoots.
-        // We clamp the control points strictly within the Y range of the two points.
-        const yMin = Math.min(p0[1], p1[1]);
-        const yMax = Math.max(p0[1], p1[1]);
+        const yMin = Math.min(p0y, p1y);
+        const yMax = Math.max(p0y, p1y);
 
         cp1y = Math.max(yMin, Math.min(yMax, cp1y));
         cp2y = Math.max(yMin, Math.min(yMax, cp2y));
-        // ----------------------------------------------------
 
-        stroke.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p1[0], p1[1]);
+        stroke.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p1x, p1y);
     }
 
     const fill = new Path2D();
     const zeroY = u.valToPos(0, scaleY, true);
 
     fill.addPath(stroke);
-    fill.lineTo(pts[pts.length - 1][0], zeroY);
-    fill.lineTo(pts[0][0], zeroY);
+    fill.lineTo(xBuf[n - 1], zeroY);
+    fill.lineTo(xBuf[0], zeroY);
     fill.closePath();
 
     return { stroke, fill };
@@ -157,6 +166,33 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
 
     const latestLabelsRef = useRef(data.labels);
     useEffect(() => { latestLabelsRef.current = data.labels; }, [data.labels]);
+
+    // Use a factory to create a closure for buffers, ensuring each chart instance has its own
+    const makeSmoothPath = useMemo(() => {
+        let bufSize = 0;
+        let buffers: Buffers = {
+            xBuf: new Float64Array(0),
+            yBuf: new Float64Array(0),
+            tangentsBuf: new Float64Array(0),
+            secantsBuf: new Float64Array(0),
+        };
+
+        function ensureBuffer(size: number) {
+            if (bufSize < size) {
+                bufSize = size + BUFFER_GROWTH_SIZE;
+                buffers = {
+                    xBuf: new Float64Array(bufSize),
+                    yBuf: new Float64Array(bufSize),
+                    tangentsBuf: new Float64Array(bufSize),
+                    secantsBuf: new Float64Array(bufSize),
+                };
+            }
+            return buffers;
+        }
+
+        return (u: uPlot, seriesIdx: number, idx0: number, idx1: number) =>
+            makeSmoothPathCore(u, seriesIdx, idx0, idx1, ensureBuffer);
+    }, []);
 
     useLayoutEffect(() => {
         if (!wrapperRef.current || !chartRef.current) return;
@@ -268,7 +304,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
             uPlotInst.current = null;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [makeSmoothPath]);
 
     useEffect(() => {
         if (!uPlotInst.current) return;
