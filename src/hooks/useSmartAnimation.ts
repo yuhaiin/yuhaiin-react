@@ -49,8 +49,10 @@ const getRouteIndex = (path: string) => {
         // Or if route is prefix and next char is /
         if (normalizedPath.startsWith(route) && route.length > bestMatchLength) {
             // Basic prefix check might be enough if routes are distinct enough
-            bestMatchLength = route.length;
-            index = i;
+            if (route === '/' || normalizedPath.length === route.length || normalizedPath[route.length] === '/') {
+                bestMatchLength = route.length;
+                index = i;
+            }
         }
     }
     return index !== -1 ? index : 0; // Default to 0 if not found
