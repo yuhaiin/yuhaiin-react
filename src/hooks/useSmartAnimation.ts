@@ -1,0 +1,72 @@
+import { useLocation } from '@tanstack/react-router';
+import { useState } from 'react';
+
+const ROUTE_ORDER = [
+    '/',
+    '/docs/group',
+    '/docs/group/subscribe',
+    '/docs/group/publish',
+    '/docs/group/activates',
+    '/docs/inbound',
+    '/docs/bypass',
+    '/docs/bypass/list',
+    '/docs/bypass/tag',
+    '/docs/bypass/resolver',
+    '/docs/bypass/test',
+    '/docs/bypass/block',
+    '/docs/connections/v2',
+    '/docs/connections/history',
+    '/docs/connections/failed',
+    '/docs/config',
+    '/docs/webui',
+    '/docs/config/backup',
+    '/docs/config/log',
+    '/docs/config/pprof',
+    '/docs/config/documents',
+    '/docs/config/licenses',
+    '/docs/config/about',
+];
+
+const normalizePath = (path: string) => {
+    if (path === '/') return '/';
+    return path.replace(/\/+$/, '');
+};
+
+const getRouteIndex = (path: string) => {
+    const normalizedPath = normalizePath(path);
+
+    // Try exact match first
+    let index = ROUTE_ORDER.indexOf(normalizedPath);
+    if (index !== -1) return index;
+
+    // Try finding the closest match (e.g., sub-routes)
+    // We iterate and find the longest prefix match in ROUTE_ORDER
+    let bestMatchLength = 0;
+    for (let i = 0; i < ROUTE_ORDER.length; i++) {
+        const route = ROUTE_ORDER[i];
+        // Ensure we match segment boundaries (e.g. /docs/group match /docs/group/sub but not /docs/group-foo)
+        // Since we normalized, we check if normalizedPath starts with route + '/'
+        // Or if route is prefix and next char is /
+        if (normalizedPath.startsWith(route) && route.length > bestMatchLength) {
+            // Basic prefix check might be enough if routes are distinct enough
+            bestMatchLength = route.length;
+            index = i;
+        }
+    }
+    return index !== -1 ? index : 0; // Default to 0 if not found
+};
+
+export function useSmartAnimation() {
+    const pathname = useLocation({ select: (location) => location.pathname });
+    const [prevPath, setPrevPath] = useState(pathname);
+    const [direction, setDirection] = useState(0);
+
+    if (prevPath !== pathname) {
+        const prevIndex = getRouteIndex(prevPath);
+        const currentIndex = getRouteIndex(pathname);
+        setDirection(currentIndex > prevIndex ? 1 : -1);
+        setPrevPath(pathname);
+    }
+
+    return direction;
+}
