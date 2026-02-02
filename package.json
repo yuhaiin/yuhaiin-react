@@ -22,7 +22,8 @@
     "swr": "^2.3.3",
     "typescript": "^5.8.3",
     "uplot": "^1.6.32",
-    "usehooks-ts": "^3.1.1"
+    "usehooks-ts": "^3.1.1",
+    "wouter": "^3.9.0"
   },
   "scripts": {
     "dev": "vite",
@@ -32,9 +33,6 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.18",
-    "@tanstack/react-router": "^1.157.2",
-    "@tanstack/router-devtools": "^1.157.2",
-    "@tanstack/router-plugin": "^1.157.2",
     "@vitejs/plugin-react": "^5.1.2",
     "baseline-browser-mapping": "^2.8.32",
     "eslint": "^9.25.0",

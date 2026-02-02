@@ -1,8 +1,8 @@
 "use client"
 
-import { useLocation, useNavigate } from '@tanstack/react-router';
 import { ArrowLeftRight, Download, ExternalLink, Filter, House, Settings } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'wouter';
 import { SidebarCollapsible, SidebarDivider, SidebarItem, SidebarNav, Sidebar as SidebarRoot, SidebarSubLink } from '../../component/v2/sidebar';
 
 interface SidebarProps {
@@ -11,15 +11,14 @@ interface SidebarProps {
 }
 
 function Sidebar({ show, onHide }: SidebarProps) {
-    const navigate = useNavigate();
-    const pathname = useLocation({ select: (location) => location.pathname });
+    const [pathname, navigate] = useLocation();
 
     const handleNavLinkClick = (key: string) => {
         if (key) {
             if (key.startsWith('http')) {
                 window.open(key, '_blank');
             } else {
-                navigate({ to: key });
+                navigate(key);
             }
         }
         // Auto-close on mobile
