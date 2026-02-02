@@ -46,7 +46,7 @@ const LinkItem: FC<{
             <div className="flex gap-2 justify-end">
                 <Button
                     size="sm"
-                    onClick={onUpdate}
+                    onClick={(e) => { e.stopPropagation(); onUpdate() }}
                     disabled={isUpdating}
                 >
                     {isUpdating
@@ -59,7 +59,7 @@ const LinkItem: FC<{
                 <Button
                     variant="outline-danger"
                     size="sm"
-                    onClick={onDelete}
+                    onClick={(e) => { e.stopPropagation(); onDelete() }}
                 >
                     <Trash size={16} />
                     <span className="hidden sm:inline ml-2">Delete</span>

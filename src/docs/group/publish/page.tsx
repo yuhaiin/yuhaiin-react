@@ -26,43 +26,35 @@ const EditModal: FC<{
     show: boolean,
     isEdit: boolean,
     onHide: () => void,
-    item?: Publish,
-    configName?: string,
+    item: Publish,
+    configName: string,
     nodes: any,
     mutatePub: () => void,
-}> = ({ show, isEdit, onHide, item, configName: initialConfigName, nodes, mutatePub }) => {
+}> = ({ show, isEdit, onHide, item, nodes, configName: cn, mutatePub }) => {
     const ctx = useContext(GlobalToastContext);
 
-    const [newItem, setNewItem] = useState(item ? create(PublishSchema, item) : create(PublishSchema, {
-        name: "",
-        path: "",
-        password: "",
-        points: [],
-        address: typeof window !== 'undefined' ? window.location.host : '',
-        insecure: typeof window !== 'undefined' ? window.location.protocol !== 'https:' : true,
-    }));
+    const [newItem, setNewItem] = useState(item);
+    const [configName, setConfigName] = useState(cn);
 
-    const [configName, setConfigName] = useState(initialConfigName || "");
-    const [selectedNodes, setSelectedNodes] = useState<string[]>(item?.points || []);
+    useEffect(() => {
+        setNewItem(item)
+    }, [item])
+
+    useEffect(() => {
+        setConfigName(cn)
+    }, [cn])
+
     const [saving, setSaving] = useState(false);
 
     const handleNodeSelect = (hash: string) => {
-        setSelectedNodes(prev =>
-            prev.includes(hash) ? prev.filter(h => h !== hash) : [...prev, hash]
-        );
+        setNewItem(prev => {
+            return { ...prev, points: prev.points.includes(hash) ? [...prev.points.filter(h => h !== hash)] : [...prev.points, hash] }
+        });
     };
 
     const handleSave = () => {
-        if (!configName || !newItem.name) {
-            ctx.Error("Configuration Name and Subscription Name are required.");
-            return;
-        }
-
         setSaving(true);
-        const req = create(SavePublishRequestSchema, {
-            name: configName,
-            publish: create(PublishSchema, { ...newItem, points: selectedNodes }),
-        });
+        const req = create(SavePublishRequestSchema, { name: newItem.name, publish: newItem, });
 
         FetchProtobuf(subscribe.method.save_publish, req)
             .then(({ error }) => {
@@ -141,7 +133,7 @@ const EditModal: FC<{
                             <Dropdown modal={false}>
                                 <DropdownTrigger asChild>
                                     <Button className="w-full flex justify-between items-center py-2" variant="outline-secondary">
-                                        <span className="font-medium">{selectedNodes.length > 0 ? `${selectedNodes.length} nodes selected` : 'Select nodes...'}</span>
+                                        <span className="font-medium">{newItem.points.length > 0 ? `${newItem.points.length} nodes selected` : 'Select nodes...'}</span>
                                         <ChevronDown size={16} />
                                     </Button>
                                 </DropdownTrigger>
@@ -153,7 +145,7 @@ const EditModal: FC<{
                                             {g.nodes.map((n: any) => (
                                                 <DropdownCheckboxItem
                                                     key={n.hash}
-                                                    checked={selectedNodes.includes(n.hash)}
+                                                    checked={newItem.points.includes(n.hash)}
                                                     onCheckedChange={() => handleNodeSelect(n.hash)}
                                                     onSelect={(e) => e.preventDefault()}
                                                 >
@@ -244,7 +236,7 @@ function PublishPage() {
     const { data: publishes, error: errPub, isLoading: loadingPub, mutate: mutatePub } = useProtoSWR(subscribe.method.list_publish);
     const { data: nodes, error: errNodes, isLoading: loadingNodes } = useProtoSWR(node.method.list);
 
-    const [modalState, setModalState] = useState({ show: false, isEdit: false, configName: '', item: undefined as Publish | undefined });
+    const [modalState, setModalState] = useState({ show: false, isEdit: false, configName: '', item: create(PublishSchema, {}) });
     const [confirmDelete, setConfirmDelete] = useState({ show: false, name: '' });
 
     const { copy, copied } = useClipboard({
@@ -307,7 +299,7 @@ function PublishPage() {
                                     <small className="text-gray-500">Generate subscription URLs for remote clients</small>
                                 </div>
                             </div>
-                            <Button onClick={() => setModalState({ show: true, isEdit: false, configName: '', item: undefined })}>
+                            <Button onClick={() => setModalState({ show: true, isEdit: false, configName: '', item: create(PublishSchema, {}) })}>
                                 <Plus className="mr-1" size={16} /> Add
                             </Button>
                         </>
