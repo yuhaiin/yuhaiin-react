@@ -3,20 +3,29 @@ import { clsx } from "clsx";
 import { HTMLMotionProps, motion } from "framer-motion";
 import * as React from "react";
 
-const MotionSlot = motion(Slot);
+const MotionSlot = motion.create(Slot);
 
 export interface ButtonProps
     extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     asChild?: boolean
     variant?: "default" | "danger" | "outline-danger" | "outline-secondary" | "primary" | "outline-primary";
     size?: "default" | "sm" | "xs" | "icon";
+    groupPosition?: "first" | "middle" | "last" | "single";
 }
 
 type CombinedButtonProps = ButtonProps & HTMLMotionProps<"button">;
 
 const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
-    ({ className, variant = "default", asChild = false, size = "default", ...props }, ref) => {
+    ({ className, variant = "default", asChild = false, size = "default", groupPosition, ...props }, ref) => {
         const Comp = asChild ? MotionSlot : motion.button
+
+        const radiusClasses = {
+            first: '!rounded-r-none !border-r-0',
+            last: '!rounded-l-none',
+            middle: '!rounded-none !border-r-0',
+            single: '',
+        };
+        const radiusClass = groupPosition ? radiusClasses[groupPosition] : '';
 
         const baseStyles = "inline-flex items-center justify-center py-1.5 px-3 text-base leading-normal font-medium font-inherit appearance-none shadow-none cursor-pointer border rounded-[12px] transition-all duration-200 relative no-underline select-none align-middle focus:outline-none disabled:opacity-65 disabled:pointer-events-none aria-disabled:opacity-65 aria-disabled:pointer-events-none";
 
@@ -77,6 +86,7 @@ const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
                     baseStyles,
                     variantStyles[variant],
                     sizeStyles[size],
+                    radiusClass,
                     className
                 )}
                 ref={ref}
