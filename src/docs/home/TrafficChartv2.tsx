@@ -4,6 +4,8 @@ import 'uplot/dist/uPlot.min.css';
 import { formatBytes } from '../connections/components';
 import { Tooltip } from './tooltip';
 
+const BUFFER_GROWTH_SIZE = 1024;
+
 function niceMax(value: number) {
     if (value <= 0) return 1;
     const exp = Math.floor(Math.log10(value));
