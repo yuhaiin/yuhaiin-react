@@ -325,7 +325,6 @@ const createLatencyReqByType = (
                 setLoading: (loading: boolean, error?: string) => {
                     setLoading((prev) => ({ ...prev, tcp: loading }))
                     if (error) {
-                        setLoading((prev) => ({ ...prev, tcp: false }))
                         setValues((prev) => ({ ...prev, tcp: error }))
                     }
                 },
@@ -343,7 +342,6 @@ const createLatencyReqByType = (
                 setLoading: (loading: boolean, error?: string) => {
                     setLoading((prev) => ({ ...prev, udp: loading }))
                     if (error) {
-                        setLoading((prev) => ({ ...prev, udp: false }))
                         setValues((prev) => ({ ...prev, udp: error }))
                     }
                 },
@@ -361,7 +359,6 @@ const createLatencyReqByType = (
                 setLoading: (loading: boolean, error?: string) => {
                     setLoading((prev) => ({ ...prev, ip: loading }))
                     if (error) {
-                        setLoading((prev) => ({ ...prev, ip: false }))
                         setValues((prev) => ({ ...prev, ip: { ipv4: error, ipv6: error } }))
                     }
                 },
@@ -380,7 +377,6 @@ const createLatencyReqByType = (
                 setLoading: (loading: boolean, error?: string) => {
                     setLoading((prev) => ({ ...prev, stun_tcp: loading }))
                     if (error) {
-                        setLoading((prev) => ({ ...prev, stun_tcp: false }))
                         setValues((prev) => ({ ...prev, stun_tcp: { ip: error } }))
                     }
                 },
@@ -398,7 +394,6 @@ const createLatencyReqByType = (
                 setLoading: (loading: boolean, error?: string) => {
                     setLoading((prev) => ({ ...prev, stun: loading }))
                     if (error) {
-                        setLoading((prev) => ({ ...prev, stun: false }))
                         setValues((prev) => ({ ...prev, stun: { mapping: error, filtering: error, mappedAddress: error } }))
                     }
                 },
