@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useLocation } from 'wouter';
 import { Card, CardBody, CardFooter, CardHeader, CardTitle } from '@/component/v2/card';
 import { Input } from '@/component/v2/input';
 import { Button } from '@/component/v2/button';
@@ -9,7 +8,6 @@ import { AuthTokenKey } from '@/common/apiurl';
 export default function LoginPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [, setLocation] = useLocation();
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
@@ -20,7 +18,9 @@ export default function LoginPage() {
         localStorage.setItem(AuthTokenKey, token);
 
         // Redirect to home
-        setLocation('/');
+        // We use window.location.hash directly because wouter's setLocation hook
+        // is overridden by the animation router in App.tsx to be read-only.
+        window.location.hash = '/';
     };
 
     return (
