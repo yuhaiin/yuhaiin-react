@@ -9,7 +9,7 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { Spinner } from '@/component/v2/spinner';
 import { create, toJsonString } from '@bufbuild/protobuf';
 import { Check, ChevronDown, ChevronRight, Plus, Trash, X } from 'lucide-react';
-import React, { createContext, FC, useContext, useEffect, useState } from 'react';
+import React, { createContext, FC, useContext, useState } from 'react';
 import useSWR from 'swr';
 import { FetchProtobuf, ProtoESFetcher, ProtoPath } from '../../../common/proto';
 import Loading from '../../../component/v2/loading';
@@ -340,12 +340,10 @@ export const FilterModal: FC<{
     const [showDebug, setShowDebug] = useState(false);
 
     const { data: rule, error, isLoading, isValidating, mutate: setRule } = useSWR(
-        name === "" ? undefined : ProtoPath(rules.method.get),
+        (name === "" || !show) ? undefined : [ProtoPath(rules.method.get), index, name],
         ProtoESFetcher(rules.method.get, create(rule_indexSchema, { index, name })),
         { shouldRetryOnError: false, keepPreviousData: false, revalidateOnFocus: false }
     )
-
-    useEffect(() => { setRule(); }, [name, index, setRule])
 
     const saveRule = () => {
         setLoadding(true)
