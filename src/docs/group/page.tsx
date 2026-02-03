@@ -52,39 +52,34 @@ enum LatencyType {
     STUNTCP = "stun-tcp",
 }
 
-type latencyStatus = {
-    tcp: {
-        loading: boolean,
-        value: string
-    }
-    udp: {
-        loading: boolean,
-        value: string
-    }
+type LatencyValues = {
+    tcp: string
+    udp: string
     ip?: {
-        loading: boolean,
         ipv4: string,
         ipv6: string
     }
     stun?: {
-        loading: boolean,
         mapping: string,
         filtering: string,
         mappedAddress: string
     }
     stun_tcp?: {
-        loading: boolean,
         ip: string
     }
 }
 
-function isLoading(x: latencyStatus): boolean {
-    return x.tcp.loading || x.udp.loading || x.ip?.loading || x.stun?.loading || x.stun_tcp?.loading || false
+type LatencyLoading = {
+    tcp: boolean
+    udp: boolean
+    ip: boolean
+    stun: boolean
+    stun_tcp: boolean
 }
 
-// function isAllLoading(x: latencyStatus): boolean {
-//     return x.tcp.loading && x.udp.loading && (x.ip ? x.ip?.loading : false) && (x.stun ? x.stun.loading : false) && (x.stun_tcp ? x.stun_tcp.loading : false)
-// }
+function isAnyLoading(x: LatencyLoading): boolean {
+    return x.tcp || x.udp || x.ip || x.stun || x.stun_tcp
+}
 
 const getNatTypeString = (x: nat_type): string => {
     switch (x) {
@@ -313,8 +308,8 @@ type Request = {
 
 const createLatencyReqByType = (
     type: LatencyType,
-    latency: latencyStatus,
-    setState: (x: (x: latencyStatus) => latencyStatus) => void,
+    setLoading: (x: (x: LatencyLoading) => LatencyLoading) => void,
+    setValues: (x: (x: LatencyValues) => LatencyValues) => void,
     urls: {
         tcp: string,
         udp: string,
@@ -328,13 +323,16 @@ const createLatencyReqByType = (
             return {
                 request: createLatencyRequest({ case: "http", url: urls.tcp }),
                 setLoading: (loading: boolean, error?: string) => {
-                    setState((prev) => { return { ...prev, tcp: { ...prev.tcp, loading: loading } } })
-                    if (error) setState((prev) => { return { ...prev, tcp: { loading: false, value: error } } })
+                    setLoading((prev) => ({ ...prev, tcp: loading }))
+                    if (error) {
+                        setValues((prev) => ({ ...prev, tcp: error }))
+                    }
                 },
                 setResult: (r: reply) => {
                     if (r.reply.case === "latency") {
                         const value = durationToString(r.reply.value)
-                        setState((prev) => { return { ...prev, tcp: { value: value, loading: false } } })
+                        setValues((prev) => ({ ...prev, tcp: value }))
+                        setLoading((prev) => ({ ...prev, tcp: false }))
                     }
                 }
             }
@@ -342,13 +340,16 @@ const createLatencyReqByType = (
             return {
                 request: createLatencyRequest({ case: "dnsOverQuic", host: urls.udp, targetDomain: "www.google.com" }),
                 setLoading: (loading: boolean, error?: string) => {
-                    setState((prev) => { return { ...prev, udp: { ...prev.udp, loading: loading } } })
-                    if (error) setState((prev) => { return { ...prev, udp: { loading: false, value: error } } })
+                    setLoading((prev) => ({ ...prev, udp: loading }))
+                    if (error) {
+                        setValues((prev) => ({ ...prev, udp: error }))
+                    }
                 },
                 setResult: (r: reply) => {
                     if (r.reply.case === "latency") {
                         const value = durationToString(r.reply.value)
-                        setState((prev) => { return { ...prev, udp: { value: value, loading: false } } })
+                        setValues((prev) => ({ ...prev, udp: value }))
+                        setLoading((prev) => ({ ...prev, udp: false }))
                     }
                 }
             }
@@ -356,38 +357,17 @@ const createLatencyReqByType = (
             return {
                 request: createLatencyRequest({ case: "ip", url: urls.ip }),
                 setLoading: (loading: boolean, error?: string) => {
-                    setState((prev) => {
-                        return {
-                            ...prev, ip: {
-                                loading: loading,
-                                ipv4: latency.ip ? latency.ip.ipv4 : "N/A",
-                                ipv6: latency.ip ? latency.ip.ipv6 : "N/A"
-                            }
-                        }
-                    })
-                    if (error) setState((prev) => {
-                        return {
-                            ...prev, ip: {
-                                loading: false,
-                                ipv4: error,
-                                ipv6: error
-                            }
-                        }
-                    })
+                    setLoading((prev) => ({ ...prev, ip: loading }))
+                    if (error) {
+                        setValues((prev) => ({ ...prev, ip: { ipv4: error, ipv6: error } }))
+                    }
                 },
                 setResult: (r: reply) => {
                     if (r.reply.case === "ip") {
                         const ipv4 = r.reply.value.ipv4
                         const ipv6 = r.reply.value.ipv6
-                        setState((prev) => {
-                            return {
-                                ...prev, ip: {
-                                    ipv4: ipv4,
-                                    ipv6: ipv6,
-                                    loading: false
-                                }
-                            }
-                        })
+                        setValues((prev) => ({ ...prev, ip: { ipv4, ipv6 } }))
+                        setLoading((prev) => ({ ...prev, ip: false }))
                     }
                 }
             }
@@ -395,34 +375,16 @@ const createLatencyReqByType = (
             return {
                 request: createLatencyRequest({ case: "stun", host: urls.stunTCP, tcp: true }),
                 setLoading: (loading: boolean, error?: string) => {
-                    setState((prev) => {
-                        return {
-                            ...prev, stun_tcp: {
-                                loading: loading,
-                                ip: latency.stun_tcp ? latency.stun_tcp.ip : "N/A"
-                            }
-                        }
-                    })
-                    if (error) setState((prev) => {
-                        return {
-                            ...prev, stun_tcp: {
-                                loading: false,
-                                ip: error
-                            }
-                        }
-                    })
+                    setLoading((prev) => ({ ...prev, stun_tcp: loading }))
+                    if (error) {
+                        setValues((prev) => ({ ...prev, stun_tcp: { ip: error } }))
+                    }
                 },
                 setResult: (r: reply) => {
                     if (r.reply.case === "stun") {
                         const ip = r.reply.value.mappedAddress
-                        setState((prev) => {
-                            return {
-                                ...prev, stun_tcp: {
-                                    ip: ip,
-                                    loading: false
-                                }
-                            }
-                        })
+                        setValues((prev) => ({ ...prev, stun_tcp: { ip } }))
+                        setLoading((prev) => ({ ...prev, stun_tcp: false }))
                     }
                 }
             }
@@ -430,42 +392,18 @@ const createLatencyReqByType = (
             return {
                 request: createLatencyRequest({ case: "stun", host: urls.stun, tcp: false }),
                 setLoading: (loading: boolean, error?: string) => {
-                    setState((prev) => {
-                        return {
-                            ...prev, stun: {
-                                loading: loading,
-                                mappedAddress: latency.stun ? latency.stun.mappedAddress : "N/A",
-                                mapping: latency.stun ? latency.stun.mapping : "N/A",
-                                filtering: latency.stun ? latency.stun.filtering : "N/A"
-                            }
-                        }
-                    })
-                    if (error) setState((prev) => {
-                        return {
-                            ...prev, stun: {
-                                loading: false,
-                                mappedAddress: error,
-                                mapping: error,
-                                filtering: error
-                            }
-                        }
-                    })
+                    setLoading((prev) => ({ ...prev, stun: loading }))
+                    if (error) {
+                        setValues((prev) => ({ ...prev, stun: { mapping: error, filtering: error, mappedAddress: error } }))
+                    }
                 },
                 setResult: (r: reply) => {
                     if (r.reply.case === "stun") {
                         const mapping = getNatTypeString(r.reply.value.Mapping)
                         const filtering = getNatTypeString(r.reply.value.Filtering)
                         const mappedAddress = r.reply.value.mappedAddress
-                        setState((prev) => {
-                            return {
-                                ...prev, stun: {
-                                    loading: false,
-                                    mapping: mapping,
-                                    filtering: filtering,
-                                    mappedAddress: mappedAddress
-                                }
-                            }
-                        })
+                        setValues((prev) => ({ ...prev, stun: { mapping, filtering, mappedAddress } }))
+                        setLoading((prev) => ({ ...prev, stun: false }))
                     }
                 }
             }
@@ -526,10 +464,24 @@ const NodeItemv2: FC<{
     ipv6?: boolean,
 }> = ({ hash, name, onClickEdit, ipv6, urls }) => {
     const ctx = useContext(GlobalToastContext);
-    const [latency, setLatency] = useLocalStorage<latencyStatus>(`latency-${hash}`, { tcp: { loading: false, value: "N/A" }, udp: { loading: false, value: "N/A" } })
+
+    // Persistent state: Latency Values only
+    const [latencyValues, setLatencyValues] = useLocalStorage<LatencyValues>(`latency-v2-${hash}`, {
+        tcp: "N/A",
+        udp: "N/A"
+    });
+
+    // Transient state: Loading indicators
+    const [latencyLoading, setLatencyLoading] = useState<LatencyLoading>({
+        tcp: false,
+        udp: false,
+        ip: false,
+        stun: false,
+        stun_tcp: false
+    });
 
     const test = (type: LatencyType) => {
-        const { request, setLoading, setResult } = createLatencyReqByType(type, latency, setLatency, urls)
+        const { request, setLoading, setResult } = createLatencyReqByType(type, setLatencyLoading, setLatencyValues, urls)
 
         setLoading(true)
 
@@ -564,7 +516,7 @@ const NodeItemv2: FC<{
             })
     }
 
-    const isTesting = isLoading(latency);
+    const isTesting = isAnyLoading(latencyLoading);
 
     return (
         <MotionAccordionItem
@@ -586,7 +538,7 @@ const NodeItemv2: FC<{
                     <div className="flex items-center gap-3 w-full mb-2 sm:mb-0">
                         {/* Status Icon */}
                         <Network className={`text-xl flex-shrink-0 ${(() => {
-                            const ms = parseGoDurationToMs(latency.tcp.value);
+                            const ms = parseGoDurationToMs(latencyValues.tcp);
                             if (ms < 0) return "text-gray-500";
                             if (ms < 200) return "text-green-500";
                             return "text-blue-500";
@@ -612,14 +564,14 @@ const NodeItemv2: FC<{
                         <div className="flex gap-4 text-gray-500 text-sm items-center">
                             <div className="flex gap-2 items-center">
                                 <span className="uppercase text-gray-500 text-[0.65rem] font-bold">TCP</span>
-                                <span className={getLatencyColor(latency.tcp.value)}>
-                                    {latency.tcp.value}
+                                <span className={getLatencyColor(latencyValues.tcp)}>
+                                    {latencyValues.tcp}
                                 </span>
                             </div>
                             <div className="flex gap-2 items-center">
                                 <span className="uppercase text-gray-500 text-[0.65rem] font-bold">UDP</span>
-                                <span className={getLatencyColor(latency.udp.value)}>
-                                    {latency.udp.value}
+                                <span className={getLatencyColor(latencyValues.udp)}>
+                                    {latencyValues.udp}
                                 </span>
                             </div>
                         </div>
@@ -632,38 +584,38 @@ const NodeItemv2: FC<{
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-4 mb-4">
                     <InfoBlock
                         label="TCP Latency"
-                        value={latency.tcp.value}
-                        loading={latency.tcp.loading}
-                        colorClass={getLatencyColor(latency.tcp.value)}
+                        value={latencyValues.tcp}
+                        loading={latencyLoading.tcp}
+                        colorClass={getLatencyColor(latencyValues.tcp)}
                     />
                     <InfoBlock
                         label="UDP Latency"
-                        value={latency.udp.value}
-                        loading={latency.udp.loading}
-                        colorClass={getLatencyColor(latency.udp.value)}
+                        value={latencyValues.udp}
+                        loading={latencyLoading.udp}
+                        colorClass={getLatencyColor(latencyValues.udp)}
                     />
-                    {latency.ip && (
+                    {(latencyValues.ip || latencyLoading.ip) && (
                         <>
-                            <InfoBlock label="IPv4" value={latency.ip.ipv4} loading={latency.ip.loading} />
-                            <InfoBlock label="IPv6" value={latency.ip.ipv6} loading={latency.ip.loading} />
+                            <InfoBlock label="IPv4" value={latencyValues.ip?.ipv4} loading={latencyLoading.ip} />
+                            <InfoBlock label="IPv6" value={latencyValues.ip?.ipv6} loading={latencyLoading.ip} />
                         </>
                     )}
                 </div>
 
                 {/* 2. Advanced Info (STUN) */}
-                {(latency.stun || latency.stun_tcp) && (
+                {(latencyValues.stun || latencyLoading.stun || latencyValues.stun_tcp || latencyLoading.stun_tcp) && (
                     <div className="mb-4">
                         <h6 className="text-gray-500 text-sm font-bold mb-2 pl-1">NAT & STUN Details</h6>
                         <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-4 mb-4">
-                            {latency.stun && (
+                            {(latencyValues.stun || latencyLoading.stun) && (
                                 <>
-                                    <InfoBlock label="NAT Type" value={latency.stun.mapping} loading={latency.stun.loading} />
-                                    <InfoBlock label="Filtering" value={latency.stun.filtering} loading={latency.stun.loading} />
-                                    <InfoBlock label="Mapped Address" value={latency.stun.mappedAddress} loading={latency.stun.loading} />
+                                    <InfoBlock label="NAT Type" value={latencyValues.stun?.mapping} loading={latencyLoading.stun} />
+                                    <InfoBlock label="Filtering" value={latencyValues.stun?.filtering} loading={latencyLoading.stun} />
+                                    <InfoBlock label="Mapped Address" value={latencyValues.stun?.mappedAddress} loading={latencyLoading.stun} />
                                 </>
                             )}
-                            {latency.stun_tcp && (
-                                <InfoBlock label="STUN TCP IP" value={latency.stun_tcp.ip} loading={latency.stun_tcp.loading} />
+                            {(latencyValues.stun_tcp || latencyLoading.stun_tcp) && (
+                                <InfoBlock label="STUN TCP IP" value={latencyValues.stun_tcp?.ip} loading={latencyLoading.stun_tcp} />
                             )}
                         </div>
                     </div>
