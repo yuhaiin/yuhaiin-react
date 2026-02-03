@@ -3,7 +3,7 @@
 import { clone, DescMessage, DescMethod, fromBinary, MessageShape, toBinary } from "@bufbuild/protobuf";
 import useSWR, { Fetcher, SWRConfiguration, SWRResponse } from 'swr';
 import type { SWRSubscriptionOptions } from 'swr/subscription';
-import { getApiUrl } from "./apiurl";
+import { AuthTokenKey, getApiUrl } from "./apiurl";
 
 export function useProtoSWR<I extends DescMessage, O extends DescMessage>(
     m: (DescMethod & { methodKind: "unary"; input: I; output: O; }) | null,
@@ -15,7 +15,7 @@ export function useProtoSWR<I extends DescMessage, O extends DescMessage>(
 export const ProtoPath = (m: DescMethod) => `/${m.parent.typeName}/${m.name}`
 
 function getAuthHeaders(): HeadersInit {
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem(AuthTokenKey);
     return token ? { 'Authorization': `Basic ${token}` } : {};
 }
 
@@ -92,7 +92,7 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
         url.pathname = ProtoPath(d)
         url.protocol = url.protocol === "https:" ? "wss:" : "ws:"
 
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem(AuthTokenKey);
         if (token) {
             url.searchParams.set("token", token);
         }

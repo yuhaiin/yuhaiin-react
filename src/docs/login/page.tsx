@@ -3,6 +3,7 @@ import { Card, CardBody, CardFooter, CardHeader, CardTitle } from '@/component/v
 import { Input } from '@/component/v2/input';
 import { Button } from '@/component/v2/button';
 import { Lock, LogIn, User } from 'lucide-react';
+import { AuthTokenKey } from '@/common/apiurl';
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
@@ -14,7 +15,7 @@ export default function LoginPage() {
 
         // Basic Auth Encoding
         const token = btoa(`${username}:${password}`);
-        localStorage.setItem('auth_token', token);
+        localStorage.setItem(AuthTokenKey, token);
 
         // Redirect to home
         window.location.hash = '/';

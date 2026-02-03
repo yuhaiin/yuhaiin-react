@@ -1,5 +1,6 @@
 export let APIUrlDefault = ""
 export let APIUrlKey = "api_url_v2"
+export let AuthTokenKey = "auth_token"
 
 export function getApiUrl() {
     let apiUrl = localStorage.getItem(APIUrlKey)
