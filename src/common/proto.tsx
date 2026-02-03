@@ -3,7 +3,7 @@
 import { clone, DescMessage, DescMethod, fromBinary, MessageShape, toBinary } from "@bufbuild/protobuf";
 import useSWR, { Fetcher, SWRConfiguration, SWRResponse } from 'swr';
 import type { SWRSubscriptionOptions } from 'swr/subscription';
-import { getApiUrl } from "./apiurl";
+import { AuthTokenKey, getApiUrl } from "./apiurl";
 
 export function useProtoSWR<I extends DescMessage, O extends DescMessage>(
     m: (DescMethod & { methodKind: "unary"; input: I; output: O; }) | null,
@@ -14,6 +14,19 @@ export function useProtoSWR<I extends DescMessage, O extends DescMessage>(
 
 export const ProtoPath = (m: DescMethod) => `/${m.parent.typeName}/${m.name}`
 
+function getAuthHeaders(): HeadersInit {
+    const token = localStorage.getItem(AuthTokenKey);
+    return token ? { 'Authorization': `Basic ${token}` } : {};
+}
+
+function handleUnauthorized(status: number) {
+    if (status === 401) {
+        if (window.location.hash !== '#/login') {
+            window.location.hash = '/login';
+        }
+    }
+}
+
 export function ProtoESFetcher<I extends DescMessage, O extends DescMessage>(
     d: DescMethod & { methodKind: "unary"; input: I; output: O; },
     body?: MessageShape<I>, default_response?: MessageShape<O>): Fetcher<MessageShape<O>, string> {
@@ -23,10 +36,14 @@ export function ProtoESFetcher<I extends DescMessage, O extends DescMessage>(
             `${getApiUrl()}${ProtoPath(d)}`,
             {
                 method: "POST",
+                headers: getAuthHeaders(),
                 body: body ? toBinary(d.input, body) : undefined,
             },
         ).then(async r => {
-            if (!r.ok) throw { code: r.status, msg: r.statusText, raw: r.text() }
+            if (!r.ok) {
+                handleUnauthorized(r.status);
+                throw { code: r.status, msg: r.statusText, raw: r.text() }
+            }
             return fromBinary(d.output, new Uint8Array(await r.arrayBuffer()))
         })
     }
@@ -42,10 +59,12 @@ export async function FetchProtobuf<I extends DescMessage, O extends DescMessage
     const r = await fetch(`${getApiUrl()}${ProtoPath(d)}`,
         {
             method: "POST",
+            headers: getAuthHeaders(),
             body: body ? toBinary(d.input, body) : undefined,
         })
 
     if (!r.ok) {
+        handleUnauthorized(r.status);
         return {
             error: {
                 code: r.status,
@@ -72,6 +91,11 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
         url.hash = ""
         url.pathname = ProtoPath(d)
         url.protocol = url.protocol === "https:" ? "wss:" : "ws:"
+
+        const token = localStorage.getItem(AuthTokenKey);
+        if (token) {
+            url.searchParams.set("token", token);
+        }
 
         let socket: WebSocket | undefined;
         let closed = false
