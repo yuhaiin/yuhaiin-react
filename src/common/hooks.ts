@@ -13,23 +13,20 @@ export function useDelay(ms: number) {
 
 export function useThrottle<T>(value: T, interval: number): T {
     const [throttledValue, setThrottledValue] = useState<T>(value);
-    const lastUpdated = useRef<number>(Date.now());
+    const latestValue = useRef(value);
+
+    // Capture the latest value on every render without triggering effects
+    useEffect(() => {
+        latestValue.current = value;
+    });
 
     useEffect(() => {
-        const now = Date.now();
-        const timeSinceLastUpdate = now - lastUpdated.current;
+        const timer = setInterval(() => {
+            setThrottledValue(latestValue.current);
+        }, interval);
 
-        if (timeSinceLastUpdate >= interval) {
-            setThrottledValue(value);
-            lastUpdated.current = now;
-        } else {
-            const id = setTimeout(() => {
-                setThrottledValue(value);
-                lastUpdated.current = Date.now();
-            }, interval - timeSinceLastUpdate);
-            return () => clearTimeout(id);
-        }
-    }, [value, interval]);
+        return () => clearInterval(timer);
+    }, [interval]);
 
     return throttledValue;
 }
