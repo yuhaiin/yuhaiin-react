@@ -24,7 +24,7 @@ import { node, use_reqSchema } from "../pbes/api/node_pb";
 import { dns_over_quicSchema, http_testSchema, ipSchema, nat_type, reply, request_protocol, request_protocolSchema, requestsSchema, stunSchema } from "../pbes/node/latency_pb";
 import { origin, point, pointSchema } from "../pbes/node/point_pb";
 
-const MotionAccordionItem = motion(AccordionItem);
+const MotionAccordionItem = motion.create(AccordionItem);
 
 const Nanosecond = 1
 const Microsecond = 1000 * Nanosecond
