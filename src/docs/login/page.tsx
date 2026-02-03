@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { AuthTokenKey } from '@/common/apiurl';
+import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardFooter, CardHeader, CardTitle } from '@/component/v2/card';
 import { Input } from '@/component/v2/input';
-import { Button } from '@/component/v2/button';
 import { Lock, LogIn, User } from 'lucide-react';
-import { AuthTokenKey } from '@/common/apiurl';
+import { useState } from 'react';
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
@@ -62,7 +62,7 @@ export default function LoginPage() {
                         </div>
                     </CardBody>
                     <CardFooter className="flex justify-end pt-2">
-                        <Button type="submit" variant="primary" className="w-full !rounded-lg h-10">
+                        <Button type="submit" className="w-full !rounded-lg h-10">
                             Sign In
                         </Button>
                     </CardFooter>
