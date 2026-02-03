@@ -61,47 +61,50 @@ function AppContent() {
         }
     }, [colorScheme])
 
+    const isLogin = location === '/login';
+    const content = (
+        <div className={clsx(
+            'relative w-auto min-h-screen h-screen overflow-hidden box-border',
+            'transition-[margin-left,max-width,padding] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]',
+            !isLogin && 'pt-[80px] px-[20px] pb-[20px]',
+            !isLogin && 'lg:pt-[20px] lg:pl-[292px] lg:pr-[20px] lg:pb-[20px]',
+            !isLogin && 'lg:h-screen',
+            'h-[100dvh] min-h-[100dvh]'
+        )}>
+            <AnimatePresence mode="popLayout" initial={false} custom={direction}>
+                <motion.div
+                    key={location}
+                    custom={direction}
+                    variants={variants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    className={clsx(
+                        'absolute inset-0 box-border h-full w-full',
+                        'overflow-y-auto overflow-x-hidden',
+                        'will-change-[transform,opacity]',
+                        !isLogin && 'pt-[80px] px-[20px] pb-[20px]',
+                        !isLogin && 'lg:pt-[20px] lg:pl-[292px]'
+                    )}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                >
+                    <Router hook={() => [location, () => {}] as const}>
+                        <Switch>
+                            {appRoutes.map(({ path, component }) => (
+                                <Route key={path} path={path} component={component} />
+                            ))}
+                        </Switch>
+                    </Router>
+                </motion.div>
+            </AnimatePresence>
+        </div>
+    );
+
     return (
         <GlobalToastProvider>
-            {colorScheme &&
-                <NavBarContainer>
-                    <div className={clsx(
-                        'relative w-auto min-h-screen h-screen overflow-hidden box-border',
-                        'transition-[margin-left,max-width,padding] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]',
-                        'pt-[80px] px-[20px] pb-[20px]',
-                        'lg:pt-[20px] lg:pl-[292px] lg:pr-[20px] lg:pb-[20px]',
-                        'lg:h-screen',
-                        'h-[100dvh] min-h-[100dvh]'
-                    )}>
-                        <AnimatePresence mode="popLayout" initial={false} custom={direction}>
-                            <motion.div
-                                key={location}
-                                custom={direction}
-                                variants={variants}
-                                initial="enter"
-                                animate="center"
-                                exit="exit"
-                                className={clsx(
-                                    'absolute inset-0 box-border h-full w-full',
-                                    'overflow-y-auto overflow-x-hidden',
-                                    'will-change-[transform,opacity]',
-                                    'pt-[80px] px-[20px] pb-[20px]',
-                                    'lg:pt-[20px] lg:pl-[292px]'
-                                )}
-                                transition={{ duration: 0.5, ease: "easeInOut" }}
-                            >
-                                <Router hook={() => [location, () => {}] as const}>
-                                    <Switch>
-                                        {appRoutes.map(({ path, component }) => (
-                                            <Route key={path} path={path} component={component} />
-                                        ))}
-                                    </Switch>
-                                </Router>
-                            </motion.div>
-                        </AnimatePresence>
-                    </div>
-                </NavBarContainer>
-            }
+            {colorScheme && (
+                isLogin ? content : <NavBarContainer>{content}</NavBarContainer>
+            )}
         </GlobalToastProvider>
     )
 }

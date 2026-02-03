@@ -22,8 +22,10 @@ import BypassTestPage from '@/docs/bypass/test/page';
 import BypassResolverPage from '@/docs/bypass/resolver/page';
 import BypassTagPage from '@/docs/bypass/tag/page';
 import BypassListPage from '@/docs/bypass/list/page';
+import LoginPage from '@/docs/login/page';
 
 export const appRoutes = [
+    { path: "/login", component: LoginPage },
     { path: "/", component: HomePage },
     { path: "/docs/group", component: GroupPage },
     { path: "/docs/group/subscribe", component: GroupSubscribePage },
