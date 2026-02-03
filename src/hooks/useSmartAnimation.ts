@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 
 export const ROUTE_ORDER = [
     '/',
@@ -53,17 +53,16 @@ const getRouteIndex = (path: string) => {
 
 export function useSmartAnimation() {
     const [location] = useLocation();
+    const prevLocationRef = useRef(location);
 
-    // We need to store the *previous* location to compare.
-    const [prevPath, setPrevPath] = useState(location);
-    const [direction, setDirection] = useState(0);
+    const prevIndex = getRouteIndex(prevLocationRef.current);
+    const currentIndex = getRouteIndex(location);
+    const direction = prevLocationRef.current === location ? 0 : currentIndex > prevIndex ? 1 : -1;
 
-    if (prevPath !== location) {
-        const prevIndex = getRouteIndex(prevPath);
-        const currentIndex = getRouteIndex(location);
-        setDirection(currentIndex > prevIndex ? 1 : -1);
-        setPrevPath(location);
-    }
+    useEffect(() => {
+        // Update the ref to the current location after the render is committed.
+        prevLocationRef.current = location;
+    }, [location]);
 
     return { direction, location };
 }
