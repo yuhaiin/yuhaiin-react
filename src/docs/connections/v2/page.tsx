@@ -1,6 +1,6 @@
 "use client"
 
-import { useDelay } from "@/common/hooks"
+import { useDelay, useThrottle } from "@/common/hooks"
 import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "@/common/proto"
 import { Button } from "@/component/v2/button"
 import { IconBadge } from "@/component/v2/card"
@@ -224,7 +224,9 @@ const ConnectionListComponent: FC<{
     isLoading?: boolean,
 }> = ({ conns, conn_error, setInfo, sortFields, sortOrder, isLoading }) => {
 
-    const connValues = useMemo(() => Object.values(conns ?? {}), [conns])
+    const throttledConns = useThrottle(conns, 1000)
+
+    const connValues = useMemo(() => Object.values(throttledConns ?? {}), [throttledConns])
 
     // Sort by traffic (uses rawDownload/rawUpload from merged state)
     const trafficSorted = useMemo(() => {
@@ -270,7 +272,10 @@ const ConnectionListComponent: FC<{
         })
     }, [connValues, sortFields, sortOrder])
 
-    const values = (sortFields === "download" || sortFields === "upload") ? trafficSorted : staticSorted
+    const values = useMemo(() => {
+        const sorted = (sortFields === "download" || sortFields === "upload") ? trafficSorted : staticSorted
+        return sorted.map((e) => conns[e.conn.id.toString()]).filter((e) => e !== undefined)
+    }, [trafficSorted, staticSorted, conns, sortFields])
 
     const handleSelect = useCallback((conn: connection) => {
         setInfo({ info: conn, show: true })
