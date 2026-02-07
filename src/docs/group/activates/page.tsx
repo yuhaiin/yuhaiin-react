@@ -73,6 +73,11 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
     const [modalHash, setModalHash] = useState({ hash: "", show: false, point: create(pointSchema, {}) });
     const [confirmData, setConfirmData] = useState({ show: false, name: "" });
 
+    const sortedNodes = useMemo(() => {
+        if (!data) return [];
+        return [...data.nodes].sort((a, b) => a.hash.localeCompare(b.hash));
+    }, [data]);
+
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || data == undefined) return <Loading />
 
@@ -88,10 +93,6 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
                 setConfirmData({ show: false, name: "" });
             });
     };
-
-    const sortedNodes = useMemo(() => {
-        return [...data.nodes].sort((a, b) => a.hash.localeCompare(b.hash));
-    }, [data.nodes]);
 
     return (
         <MainContainer>
