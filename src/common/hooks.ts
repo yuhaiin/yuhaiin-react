@@ -13,21 +13,36 @@ export function useDelay(ms: number) {
 
 export function useThrottle<T>(value: T, interval = 500): T {
     const [throttledValue, setThrottledValue] = useState<T>(value);
-    const lastExecuted = useRef<number>(0);
+    const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+    const nextValue = useRef<T | null>(null);
+    const hasNextValue = useRef(false);
 
     useEffect(() => {
-        if (Date.now() >= lastExecuted.current + interval) {
-            lastExecuted.current = Date.now();
+        if (!timeoutRef.current) {
             setThrottledValue(value);
+            const timeoutCallback = () => {
+                if (hasNextValue.current) {
+                    hasNextValue.current = false;
+                    setThrottledValue(nextValue.current as T);
+                    timeoutRef.current = setTimeout(timeoutCallback, interval);
+                } else {
+                    timeoutRef.current = undefined;
+                }
+            };
+            timeoutRef.current = setTimeout(timeoutCallback, interval);
         } else {
-            const timerId = setTimeout(() => {
-                lastExecuted.current = Date.now();
-                setThrottledValue(value);
-            }, interval - (Date.now() - lastExecuted.current));
-
-            return () => clearTimeout(timerId);
+            nextValue.current = value;
+            hasNextValue.current = true;
         }
     }, [value, interval]);
+
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        };
+    }, []);
 
     return throttledValue;
 }
