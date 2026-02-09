@@ -1,6 +1,6 @@
 "use client"
 
-import { useDelay } from "@/common/hooks"
+import { useContainerDimensions, useDelay, useWindowWidth } from "@/common/hooks"
 import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "@/common/proto"
 import { Button } from "@/component/v2/button"
 import { IconBadge } from "@/component/v2/card"
@@ -15,9 +15,9 @@ import { connection, connectionSchema, type } from "@/docs/pbes/statistic/config
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
 import { clsx } from "clsx"
-import { AnimatePresence, motion } from "framer-motion"
 import { ArrowDown, ArrowUp, Network, Power, ShieldCheck, Tag } from 'lucide-react'
-import React, { FC, useCallback, useContext, useMemo, useState } from "react"
+import React, { FC, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import { List, ListChildComponentProps } from 'react-window'
 import useSWRSubscription from 'swr/subscription'
 import { NodeModal } from "../../node/modal"
 import { mode } from "../../pbes/config/bypass_pb"
@@ -165,7 +165,7 @@ function Connections() {
     }, []);
 
     return (
-        <div>
+        <div className="flex flex-col h-full overflow-hidden">
             <NodeModal
                 editable={false}
                 show={nodeModal.show}
@@ -173,7 +173,9 @@ function Connections() {
                 onHide={() => setNodeModal(prev => { return { ...prev, show: false } })}
             />
 
-            <FlowContainer onUpdate={updateCounters} />
+            <div className="shrink-0">
+                <FlowContainer onUpdate={updateCounters} />
+            </div>
 
             <InfoOffcanvas
                 data={info.info}
@@ -183,7 +185,7 @@ function Connections() {
             />
 
 
-            <div className="flex justify-end mb-3">
+            <div className="flex justify-end mb-3 shrink-0">
                 <div className="flex items-center gap-3 flex-wrap">
                     <ToggleGroup className="flex-nowrap" type="single" value={sortOrder} onValueChange={(v) => v && changeSortOrder(v as "asc" | "desc")}>
                         <ToggleItem value="asc">
@@ -203,14 +205,16 @@ function Connections() {
                 </div>
             </div>
 
-            <ConnectionList
-                conns={connsMap}
-                setInfo={setInfo}
-                conn_error={conn_error}
-                sortFields={sortBy || "id"}
-                sortOrder={sortOrder}
-                isLoading={isConnected === undefined && !conn_error}
-            />
+            <div className="flex-1 min-h-0 relative">
+                <ConnectionList
+                    conns={connsMap}
+                    setInfo={setInfo}
+                    conn_error={conn_error}
+                    sortFields={sortBy || "id"}
+                    sortOrder={sortOrder}
+                    isLoading={isConnected === undefined && !conn_error}
+                />
+            </div>
         </div>
     );
 }
@@ -276,30 +280,59 @@ const ConnectionListComponent: FC<{
         setInfo({ info: conn, show: true })
     }, [setInfo])
 
+    const containerRef = useRef<HTMLDivElement>(null);
+    const { width, height } = useContainerDimensions(containerRef);
+    const windowWidth = useWindowWidth();
+    const isMobile = windowWidth < 768;
+    const itemSize = isMobile ? 110 : 70;
+
+    const itemData = useMemo(() => ({
+        items: values,
+        handleSelect
+    }), [values, handleSelect]);
+
     if (conn_error !== undefined) return <Loading code={conn_error.code}>{conn_error.msg}</Loading>
     if (isLoading) return <Loading />
 
-    return <ul className="flex flex-col p-0 m-0 mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]">
-        <AnimatePresence initial={false} mode="popLayout">
-            {
-                values.map((e) => (
-                    <motion.li
-                        key={e.conn.id}
-                        className="flex flex-col items-start md:flex-row md:justify-between px-4 py-3 border-b border-sidebar-border transition-colors duration-200 cursor-pointer hover:bg-sidebar-hover last:border-b-0"
-                        onClick={() => handleSelect(e.conn)}
-                        layout
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
-                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                    >
-                        <ListItemContent data={e} />
-                    </motion.li>
-                ))
-            }
-        </AnimatePresence>
-    </ul>
+    return (
+        <div
+            ref={containerRef}
+            className="h-full w-full rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)] overflow-hidden"
+        >
+            <List
+                height={height}
+                itemCount={values.length}
+                itemSize={itemSize}
+                width={width}
+                itemData={itemData}
+            >
+                {Row}
+            </List>
+        </div>
+    )
 }
+
+const Row = ({ index, style, data }: ListChildComponentProps<{ items: MergedConnection[], handleSelect: (c: connection) => void }>) => {
+    const { items, handleSelect } = data;
+    const e = items[index];
+    if (!e) return null;
+
+    const isLast = index === items.length - 1;
+
+    return (
+        <div
+            style={style}
+            className={clsx(
+                "flex flex-col items-start md:flex-row md:justify-between px-4 py-3 border-b border-sidebar-border transition-colors duration-200 cursor-pointer hover:bg-sidebar-hover",
+                isLast && "border-b-0"
+            )}
+            onClick={() => handleSelect(e.conn)}
+        >
+            <ListItemContent data={e} />
+        </div>
+    )
+}
+
 
 const ConnectionList = React.memo(ConnectionListComponent)
 
