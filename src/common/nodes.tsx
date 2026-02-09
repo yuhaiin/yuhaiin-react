@@ -64,7 +64,7 @@ export const getNodeName = (hash: string, data?: NodesResponse) => {
         nodesCache.set(data, nodes)
     }
 
-    return nodes.getGroupByHash(hash).node || ""
+    return nodes.getGroupByHash(hash).node ?? ""
 }
 
 
