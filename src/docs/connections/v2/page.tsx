@@ -1,6 +1,6 @@
 "use client"
 
-import { useDelay } from "@/common/hooks"
+import { useContainerDimensions, useDelay, useWindowWidth } from "@/common/hooks"
 import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "@/common/proto"
 import { Button } from "@/component/v2/button"
 import { IconBadge } from "@/component/v2/card"
@@ -333,35 +333,6 @@ const Row = ({ index, style, data }: ListChildComponentProps<{ items: MergedConn
     )
 }
 
-function useContainerDimensions(ref: React.RefObject<HTMLDivElement | null>) {
-    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-
-    useEffect(() => {
-        if (!ref.current) return;
-
-        const observer = new ResizeObserver(entries => {
-            if (!entries || entries.length === 0) return;
-            const { width, height } = entries[0].contentRect;
-            setDimensions({ width, height });
-        });
-
-        observer.observe(ref.current);
-        return () => observer.disconnect();
-    }, [ref]);
-
-    return dimensions;
-}
-
-function useWindowWidth() {
-    const [width, setWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
-
-    useEffect(() => {
-        const handleResize = () => setWidth(window.innerWidth);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-    return width;
-}
 
 const ConnectionList = React.memo(ConnectionListComponent)
 
