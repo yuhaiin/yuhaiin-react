@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 export function useDelay(ms: number) {
     const [isReady, setIsReady] = useState(false);
@@ -13,36 +13,64 @@ export function useDelay(ms: number) {
 
 export function useThrottle<T>(value: T, interval = 500): T {
     const [throttledValue, setThrottledValue] = useState<T>(value);
-    const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-    const nextValue = useRef<T | null>(null);
-    const hasNextValue = useRef(false);
+    const lastExecuted = useRef<number>(Date.now());
 
     useEffect(() => {
-        if (!timeoutRef.current) {
+        if (Date.now() >= lastExecuted.current + interval) {
+            lastExecuted.current = Date.now();
             setThrottledValue(value);
-            const timeoutCallback = () => {
-                if (hasNextValue.current) {
-                    hasNextValue.current = false;
-                    setThrottledValue(nextValue.current as T);
-                    timeoutRef.current = setTimeout(timeoutCallback, interval);
-                } else {
-                    timeoutRef.current = undefined;
-                }
-            };
-            timeoutRef.current = setTimeout(timeoutCallback, interval);
         } else {
-            nextValue.current = value;
-            hasNextValue.current = true;
+            const timerId = setTimeout(() => {
+                lastExecuted.current = Date.now();
+                setThrottledValue(value);
+            }, interval - (Date.now() - lastExecuted.current));
+
+            return () => clearTimeout(timerId);
         }
     }, [value, interval]);
 
-    useEffect(() => {
-        return () => {
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-            }
-        };
-    }, []);
-
     return throttledValue;
+}
+
+interface Size {
+  width: number
+  height: number
+}
+
+export function useElementSize<T extends HTMLElement = HTMLDivElement>(): [
+  (node: T | null) => void,
+  Size,
+] {
+  // Mutable values like 'ref.current' aren't valid dependencies
+  // because mutating them doesn't re-render the component.
+  // Instead, we use a state as a ref to be reactive.
+  const [ref, setRef] = useState<T | null>(null)
+  const [size, setSize] = useState<Size>({
+    width: 0,
+    height: 0,
+  })
+
+  // Prevent too many rendering using useCallback
+  const handleSize = useCallback(() => {
+    setSize({
+      width: ref?.offsetWidth || 0,
+      height: ref?.offsetHeight || 0,
+    })
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ref?.offsetHeight, ref?.offsetWidth])
+
+  useEffect(() => {
+    window.addEventListener('resize', handleSize)
+    return () => {
+      window.removeEventListener('resize', handleSize)
+    }
+  }, [handleSize])
+
+  useEffect(() => {
+    handleSize()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ref?.offsetHeight, ref?.offsetWidth])
+
+  return [setRef, size]
 }

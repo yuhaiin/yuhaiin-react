@@ -4,6 +4,7 @@ import { clsx } from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { History, Plus, Search, TriangleAlert } from 'lucide-react';
 import React, { FC, useState } from 'react';
+import { useElementSize } from '@/common/hooks';
 import { Badge } from "./badge";
 
 // --- Basic Card Components ---
