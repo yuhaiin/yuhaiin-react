@@ -17,7 +17,7 @@ import { EmptySchema } from "@bufbuild/protobuf/wkt"
 import { clsx } from "clsx"
 import { ArrowDown, ArrowUp, Network, Power, ShieldCheck, Tag } from 'lucide-react'
 import React, { FC, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
-import { FixedSizeList as List, ListChildComponentProps } from 'react-window'
+import { List, ListChildComponentProps } from 'react-window'
 import useSWRSubscription from 'swr/subscription'
 import { NodeModal } from "../../node/modal"
 import { mode } from "../../pbes/config/bypass_pb"
