@@ -3,7 +3,9 @@
 import { clsx } from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { History, Plus, Search, TriangleAlert } from 'lucide-react';
-import React, { FC, useState } from 'react';
+import React, { FC, useMemo, useState } from 'react';
+import { Grid } from 'react-window';
+import { useResizeObserver } from 'usehooks-ts';
 import { Badge } from "./badge";
 
 // --- Basic Card Components ---
@@ -244,6 +246,167 @@ export function CardRowList<T>({
     );
 }
 
+// --- Virtualized Row List ---
+
+interface VirtualCellProps {
+    columnIndex: number;
+    rowIndex: number;
+    style: React.CSSProperties;
+    data: {
+        items: any[];
+        onAddNew?: (name: string) => void;
+        adding?: boolean;
+        newItemValue: string;
+        setNewItemValue: (v: string) => void;
+        body: (item: any, index: number) => React.ReactNode;
+        onClickItem?: (item: any, index: number) => void;
+        GAP: number;
+        columnCount: number;
+    };
+}
+
+const VirtualCell = ({ columnIndex, rowIndex, style, data }: VirtualCellProps) => {
+    const { items, onAddNew, adding, newItemValue, setNewItemValue, body, onClickItem, GAP, columnCount } = data;
+    const index = rowIndex * columnCount + columnIndex;
+    const totalItems = items.length + (onAddNew ? 1 : 0);
+
+    if (index >= totalItems) return null;
+
+    // Adjust style
+    const cellStyle = {
+        ...style,
+        width: style.width - GAP,
+        height: style.height - GAP,
+    };
+
+    const isAddNew = onAddNew && index === items.length;
+    const item = isAddNew ? null : items[index];
+
+    return (
+        <div style={cellStyle}>
+            {isAddNew ? (
+                <div className="flex h-full">
+                    <ListItem className="w-full h-full border border-dashed border-sidebar-border bg-[var(--bs-secondary-bg)] px-5 py-2">
+                        <div className="flex items-center w-full min-h-[42px]">
+                            <input
+                                value={newItemValue}
+                                onChange={(e) => setNewItemValue(e.target.value)}
+                                placeholder="Create new..."
+                                className="w-full p-2 text-base bg-transparent border-0 focus:outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                                onKeyDown={(e) => {
+                                    if (!newItemValue || adding) return;
+                                    if (e.key === 'Enter') onAddNew(newItemValue);
+                                }}
+                                autoComplete="off"
+                                disabled={adding}
+                            />
+                            <button
+                                onClick={() => {
+                                    if (!newItemValue || adding) return;
+                                    onAddNew(newItemValue);
+                                }}
+                                className="p-2 bg-transparent border-0 text-blue-600 dark:text-blue-400 cursor-pointer disabled:text-gray-500 disabled:cursor-not-allowed"
+                                disabled={adding}
+                            >
+                                {adding ? (
+                                    <div className="inline-block w-5 h-5 align-text-bottom border-2 border-current border-r-transparent rounded-full animate-spin" />
+                                ) : <Plus size={20} />}
+                            </button>
+                        </div>
+                    </ListItem>
+                </div>
+            ) : (
+                <div className="flex h-full">
+                    <ListItem className="w-full h-full" onClick={() => onClickItem?.(item, index)}>
+                        {body(item, index)}
+                    </ListItem>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export function VirtualCardRowList<T>({
+    items,
+    onClickItem,
+    footer,
+    renderListItem: body,
+    header,
+    onAddNew,
+    adding,
+    height = 600
+}: CardRowListProps<T> & { height?: number }) {
+    const [newdata, setNewdata] = useState({ value: '' });
+    const { ref: containerRef, width = 0 } = useResizeObserver({
+        box: 'border-box',
+    });
+
+    // Virtualization constants
+    const GAP = 16;
+    const MIN_WIDTH = 300;
+
+    // Safety check for width
+    const effectiveWidth = width || 1200;
+
+    let columnCount = Math.floor((effectiveWidth + GAP) / (MIN_WIDTH + GAP));
+    if (columnCount < 1) columnCount = 1;
+
+    // Calculate column width to fill available space
+    const columnWidth = effectiveWidth / columnCount;
+
+    // Row height = item height (72px) + gap
+    const ITEM_HEIGHT = 72;
+    const ROW_HEIGHT = ITEM_HEIGHT + GAP;
+
+    const totalItems = items.length + (onAddNew ? 1 : 0);
+    const rowCount = Math.ceil(totalItems / columnCount);
+
+    const itemData = useMemo(() => ({
+        items,
+        onAddNew,
+        adding,
+        newItemValue: newdata.value,
+        setNewItemValue: (v: string) => setNewdata({ value: v }),
+        body,
+        onClickItem,
+        GAP,
+        columnCount
+    }), [items, onAddNew, adding, newdata.value, body, onClickItem, GAP, columnCount]);
+
+    return (
+        <Card>
+            {header && <CardHeader>{header}</CardHeader>}
+            <CardBody>
+                <div ref={containerRef} style={{ height: height, width: '100%' }}>
+                    {width > 0 && (
+                        <Grid
+                            columnCount={columnCount}
+                            columnWidth={columnWidth}
+                            height={height}
+                            rowCount={rowCount}
+                            rowHeight={ROW_HEIGHT}
+                            width={width}
+                            itemData={itemData}
+                            style={{ overflowX: 'hidden' }}
+                        >
+                            {VirtualCell}
+                        </Grid>
+                    )}
+                    {/* Placeholder for loading/initial render */}
+                    {width === 0 && <div style={{ height: height }} />}
+                </div>
+
+                {items.length === 0 && !onAddNew && (
+                    <div className="text-center text-gray-500 dark:text-gray-400 p-3">
+                        No records found.
+                    </div>
+                )}
+            </CardBody>
+
+            {footer && <CardFooter>{footer}</CardFooter>}
+        </Card>
+    );
+}
 
 // --- Other Styled Components ---
 
