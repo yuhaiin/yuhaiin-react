@@ -20,7 +20,12 @@ export function useContainerDimensions(ref: React.RefObject<HTMLDivElement | nul
         const observer = new ResizeObserver(entries => {
             if (!entries || entries.length === 0) return;
             const { width, height } = entries[0].contentRect;
-            setDimensions({ width, height });
+            setDimensions(currentDimensions => {
+                if (currentDimensions.width === width && currentDimensions.height === height) {
+                    return currentDimensions;
+                }
+                return { width, height };
+            });
         });
 
         observer.observe(ref.current);
