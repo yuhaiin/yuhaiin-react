@@ -4,8 +4,8 @@ import { clsx } from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { History, Plus, Search, TriangleAlert } from 'lucide-react';
 import React, { FC, useMemo, useState } from 'react';
-import { FixedSizeGrid } from 'react-window';
-import { useElementSize } from 'usehooks-ts';
+import { Grid } from 'react-window';
+import { useResizeObserver } from 'usehooks-ts';
 import { Badge } from "./badge";
 
 // --- Basic Card Components ---
@@ -337,7 +337,9 @@ export function VirtualCardRowList<T>({
     height = 600
 }: CardRowListProps<T> & { height?: number }) {
     const [newdata, setNewdata] = useState({ value: '' });
-    const [containerRef, { width }] = useElementSize();
+    const { ref: containerRef, width = 0 } = useResizeObserver({
+        box: 'border-box',
+    });
 
     // Virtualization constants
     const GAP = 16;
@@ -377,7 +379,7 @@ export function VirtualCardRowList<T>({
             <CardBody>
                 <div ref={containerRef} style={{ height: height, width: '100%' }}>
                     {width > 0 && (
-                        <FixedSizeGrid
+                        <Grid
                             columnCount={columnCount}
                             columnWidth={columnWidth}
                             height={height}
@@ -388,7 +390,7 @@ export function VirtualCardRowList<T>({
                             style={{ overflowX: 'hidden' }}
                         >
                             {VirtualCell}
-                        </FixedSizeGrid>
+                        </Grid>
                     )}
                     {/* Placeholder for loading/initial render */}
                     {width === 0 && <div style={{ height: height }} />}
