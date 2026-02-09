@@ -56,7 +56,7 @@ export const NodesContext = createContext<Nodes>(new Nodes())
 const nodesCache = new WeakMap<NodesResponse, Nodes>()
 
 export const getNodeName = (hash: string, data?: NodesResponse) => {
-    if (data === undefined || hash === "") return ""
+    if (!data || hash === "") return ""
 
     let nodes = nodesCache.get(data)
     if (!nodes) {
@@ -64,7 +64,7 @@ export const getNodeName = (hash: string, data?: NodesResponse) => {
         nodesCache.set(data, nodes)
     }
 
-    return nodes.getGroupByHash(hash).node ?? ""
+    return nodes.getGroupByHash(hash).node || ""
 }
 
 
