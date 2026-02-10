@@ -9,7 +9,7 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { Spinner } from "@/component/v2/spinner";
 import { create, fromJsonString } from "@bufbuild/protobuf";
 import { Duration, StringValueSchema } from "@bufbuild/protobuf/wkt";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from 'motion/react';
 import { Archive, CheckCircle2, ChevronDown, Gauge, Network, Pencil, Plus } from "lucide-react";
 import { FC, useContext, useState, useMemo } from "react";
 import { useLocalStorage } from "usehooks-ts";

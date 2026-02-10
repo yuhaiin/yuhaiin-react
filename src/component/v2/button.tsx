@@ -1,6 +1,6 @@
 import { Slot } from "@radix-ui/react-slot";
 import { clsx } from "clsx";
-import { HTMLMotionProps, motion } from "framer-motion";
+import { HTMLMotionProps, motion } from 'motion/react';
 import * as React from "react";
 
 const MotionSlot = motion.create(Slot);

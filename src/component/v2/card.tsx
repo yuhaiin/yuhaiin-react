@@ -1,7 +1,7 @@
 'use client';
 
 import { clsx } from "clsx";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from 'motion/react';
 import { History, Plus, Search, TriangleAlert } from 'lucide-react';
 import React, { FC, useState } from 'react';
 import { Badge } from "./badge";

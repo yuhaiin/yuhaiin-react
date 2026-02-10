@@ -27,9 +27,9 @@ function HomePage() {
         const pointMax = Math.max(upload, download);
 
         setTraffic(prev => {
-            let labels = [...prev.labels, time];
-            let uploadArr = [...prev.upload, upload];
-            let downloadArr = [...prev.download, download];
+            const labels = [...prev.labels, time];
+            const uploadArr = [...prev.upload, upload];
+            const downloadArr = [...prev.download, download];
             let rawMax = Math.max(prev.rawMax, pointMax);
 
             if (labels.length > MAX_POINTS) {

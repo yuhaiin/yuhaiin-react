@@ -1,7 +1,7 @@
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { CheckIcon } from "@radix-ui/react-icons";
 import { clsx } from "clsx";
-import { motion } from "framer-motion";
+import { motion } from 'motion/react';
 import * as React from "react";
 
 const Dropdown = DropdownMenuPrimitive.Root;
