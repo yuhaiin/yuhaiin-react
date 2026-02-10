@@ -2,7 +2,7 @@
 
 import * as ToastPrimitive from '@radix-ui/react-toast';
 import { clsx } from 'clsx';
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from 'motion/react';
 import React, { createContext, useCallback, useState } from 'react';
 
 // --- Types ---

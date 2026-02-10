@@ -15,7 +15,7 @@ import { connection, connectionSchema, type } from "@/docs/pbes/statistic/config
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
 import { clsx } from "clsx"
-import { AnimatePresence, motion } from "framer-motion"
+import { AnimatePresence, motion } from 'motion/react'
 import { ArrowDown, ArrowUp, Network, Power, ShieldCheck, Tag } from 'lucide-react'
 import React, { FC, useCallback, useContext, useMemo, useState } from "react"
 import useSWRSubscription from 'swr/subscription'
@@ -44,7 +44,7 @@ type ConnectionAction =
 const connectionsReducer = (state: ConnectionsState, action: ConnectionAction): ConnectionsState => {
     switch (action.type) {
         case 'NOTIFY': {
-            let next = { ...state }
+            const next = { ...state }
             for (const r of action.data) {
                 switch (r.data.case) {
                     case "notifyNewConnections": {

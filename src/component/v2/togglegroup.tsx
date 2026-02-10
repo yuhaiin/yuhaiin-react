@@ -1,6 +1,6 @@
 import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group";
 import { clsx } from "clsx";
-import { LayoutGroup, motion } from "framer-motion";
+import { LayoutGroup, motion } from 'motion/react';
 import React, { createContext, useContext, useId } from "react";
 
 /* -------------------------------------------------------------------------- */

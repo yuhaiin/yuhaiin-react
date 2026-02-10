@@ -124,10 +124,10 @@ function makeSmoothPathCore(
         const dx = p1x - p0x;
 
         // Control Point calculation
-        let cp1x = p0x + dx / 3;
+        const cp1x = p0x + dx / 3;
         let cp1y = p0y + tangentsBuf[i] * (dx / 3);
 
-        let cp2x = p1x - dx / 3;
+        const cp2x = p1x - dx / 3;
         let cp2y = p1y - tangentsBuf[i + 1] * (dx / 3);
 
         // --- Final Safety Net (Floating Point Protection) ---
@@ -324,7 +324,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
         if (!wrapperRef.current || !uPlotInst.current) return;
         const resizeObserver = new ResizeObserver(entries => {
             if (!uPlotInst.current) return;
-            for (let entry of entries) {
+            for (const entry of entries) {
                 const { width, height } = entry.contentRect;
                 if (width > 0 && height > 0) {
                     uPlotInst.current.setSize({ width, height });

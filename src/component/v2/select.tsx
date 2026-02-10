@@ -31,7 +31,7 @@ interface SelectProps {
     groupPosition?: 'first' | 'middle' | 'last' | 'single';
 }
 
-import { motion } from "framer-motion";
+import { motion } from 'motion/react';
 
 export const Select: FC<SelectProps> = ({ value, onValueChange, items, placeholder, disabled, triggerClassName, contentClassName, viewportClassName, size, groupPosition }) => {
     const internalValue = value === "" ? "___EMPTY___" : value;

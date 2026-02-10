@@ -35,8 +35,8 @@ export default defineConfig({
                             { match: 'bootstrap', chunk: 'bootstrap' },
                             { match: 'lucide', chunk: 'lucide' },
                             { match: 'tanstack', chunk: 'tanstack' },
-                            { match: 'framer-motion', chunk: 'framer-motion' },
-                            { match: ['react', 'react-dom'], chunk: 'react' },
+                            { match: 'motion', chunk: 'motion' },
+                            { match: ['react', 'react-dom', 'scheduler'], chunk: 'react' },
                         ];
 
                         for (const { match, chunk } of rules) {
