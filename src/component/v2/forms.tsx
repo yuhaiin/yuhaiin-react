@@ -131,8 +131,10 @@ export const SettingPasswordVertical: FC<{
 
 // --- Slider/Range Components ---
 
+const springConfig = { mass: 0.8, stiffness: 75, damping: 15 };
+
 const AnimatedNumber = ({ value }: { value: number }) => {
-    const spring = useSpring(value, { mass: 0.8, stiffness: 75, damping: 15 });
+    const spring = useSpring(value, springConfig);
     const display = useTransform(spring, (current) => Math.round(current).toLocaleString());
 
     useEffect(() => {
