@@ -2,7 +2,7 @@
 
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import { clsx } from 'clsx';
-import { motion } from 'motion/react';
+import { motion, useSpring, useTransform } from 'motion/react';
 import { CircleAlert, Eye, EyeOff } from 'lucide-react';
 import React, { FC, useEffect, useId, useState } from 'react';
 import { Button } from './button';
@@ -131,6 +131,17 @@ export const SettingPasswordVertical: FC<{
 
 // --- Slider/Range Components ---
 
+const AnimatedNumber = ({ value }: { value: number }) => {
+    const spring = useSpring(value, { mass: 0.8, stiffness: 75, damping: 15 });
+    const display = useTransform(spring, (current) => Math.round(current).toLocaleString());
+
+    useEffect(() => {
+        spring.set(value);
+    }, [spring, value]);
+
+    return <motion.span>{display}</motion.span>;
+};
+
 export const SettingRangeVertical: FC<{
     label: string;
     value: number;
@@ -146,7 +157,7 @@ export const SettingRangeVertical: FC<{
             <div className="flex justify-between items-center mb-1">
                 <SettingLabel className="mb-0 font-medium">{label}</SettingLabel>
                 <div className="text-blue-500 font-bold font-mono text-sm bg-blue-500/10 px-2 py-1 rounded">
-                    {value.toLocaleString()} {unit}
+                    <AnimatedNumber value={value} /> {unit}
                 </div>
             </div>
 
