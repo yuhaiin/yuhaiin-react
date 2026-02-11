@@ -71,13 +71,15 @@ export const getNodeName = (hash: string, data?: NodesResponse) => {
 export const Node: FC<{
     hash: string,
     data: Nodes,
-    onChangeNode: (x: string) => void
-}> = ({ hash, data, onChangeNode }) => {
+    onChangeNode: (x: string) => void,
+    disabled?: boolean
+}> = ({ hash, data, onChangeNode, disabled }) => {
     const [group, setGroup] = useState("")
     useEffect(() => { setGroup(data.getGroupByHash(hash).group) }, [hash, data])
 
     return <>
         <SettingSelectVertical
+            disabled={disabled}
             label="Group"
             className="mb-2"
             emptyChoose
@@ -87,6 +89,7 @@ export const Node: FC<{
         />
 
         <SettingSelectVertical
+            disabled={disabled}
             label="Node"
             emptyChoose
             value={hash}
