@@ -8,7 +8,7 @@ import { SwitchCard } from "@/component/v2/switch";
 import { clone, create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { Check, ChevronRight, DoorOpen, LogIn, Plus, Save, Settings, Trash } from "lucide-react";
-import { FC, useContext, useEffect, useState } from "react";
+import { FC, useContext, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../common/proto";
 import Loading, { Error as ErrorDisplay } from "../../component/v2/loading";
@@ -105,6 +105,10 @@ const InboundItem: FC<{ name: string, }> = ({ name }) => {
 function InboudComponent() {
     const ctx = useContext(GlobalToastContext);
     const { data: inbounds, error, isLoading, mutate } = useProtoSWR(inboundService.method.list);
+
+    const sortedNames = useMemo(() => {
+        return [...(inbounds?.names ?? [])].sort((a, b) => a.localeCompare(b));
+    }, [inbounds?.names]);
 
     const [saving, setSaving] = useState(false);
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
@@ -204,7 +208,7 @@ function InboudComponent() {
                 <CardBody>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {
-                            inbounds.names.sort((a, b) => a.localeCompare(b)).map((name) => (
+                            sortedNames.map((name) => (
                                 <div key={name} className="h-full">
                                     <ListItem
                                         className="h-full justify-between p-4"
