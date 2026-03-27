@@ -2,7 +2,7 @@
 
 import { Badge } from '@/component/v2/badge';
 import { Button } from '@/component/v2/button';
-import { Card, CardBody, CardFooter, CardHeader, CardRowList, IconBox, SettingsBox } from '@/component/v2/card';
+import { Card, CardBody, CardFooter, CardHeader, IconBox, SettingsBox, VirtualCardRowList } from '@/component/v2/card';
 import { SettingSelectVertical, SwitchCard } from '@/component/v2/forms';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { Select } from '@/component/v2/select';
@@ -251,7 +251,7 @@ const Rulev2Component: FC = () => {
             onChange={onChangePriority}
         />
 
-        <CardRowList
+        <VirtualCardRowList
             items={rules_data.names}
             onClickItem={(_, index) => { setFilterModal({ show: true, index: index }) }}
             renderListItem={(name, index) => (
