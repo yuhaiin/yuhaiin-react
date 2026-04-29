@@ -19,7 +19,13 @@ export const InputList: FC<{
 
     const add = () => {
         if (!newItem || disabled) return;
-        const lines = newItem.split('\n').map(x => x.trim()).filter(x => x !== "");
+        const lines: string[] = [];
+        for (const line of newItem.split('\n')) {
+            const trimmed = line.trim();
+            if (trimmed !== "") {
+                lines.push(trimmed);
+            }
+        }
         if (lines.length > 0) {
             onChange([...data, ...lines]);
             setNewItem("");
