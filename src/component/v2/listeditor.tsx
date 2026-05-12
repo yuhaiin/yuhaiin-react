@@ -20,12 +20,17 @@ export const InputList: FC<{
     const add = () => {
         if (!newItem || disabled) return;
         const lines: string[] = [];
-        for (const line of newItem.split('\n')) {
-            const trimmed = line.trim();
-            if (trimmed !== "") {
-                lines.push(trimmed);
+        let start = 0;
+        while (true) {
+            const end = newItem.indexOf('\n', start);
+            const line = (end === -1 ? newItem.substring(start) : newItem.substring(start, end)).trim();
+            if (line !== "") {
+                lines.push(line);
             }
+            if (end === -1) break;
+            start = end + 1;
         }
+
         if (lines.length > 0) {
             onChange([...data, ...lines]);
             setNewItem("");
