@@ -691,24 +691,6 @@ const NodeJsonModal = (
 ) => {
     const ctx = useContext(GlobalToastContext);
     const [nodeJson, setNodeJson] = useState({ data: "" });
-    const Footer = () => {
-        if (!props.onSave) return <></>
-        return <Button
-            onClick={() => {
-                const p = fromJsonString(pointSchema, nodeJson.data);
-                if (props.isNew) p.hash = ""
-                FetchProtobuf(node.method.save, p)
-                    .then(async ({ error }) => {
-                        if (error === undefined) {
-                            ctx.Info("save successful")
-                            if (props.onSave !== undefined) props.onSave();
-                        } else ctx.Error(error.msg)
-                    })
-            }}
-        >
-            Save
-        </Button>
-    }
     return (
         <Modal
             open={props.show}
@@ -735,7 +717,23 @@ const NodeJsonModal = (
 
                 <ModalFooter>
                     <Button onClick={() => { props.onHide() }}>Close</Button>
-                    <Footer />
+                    {props.onSave && (
+                        <Button
+                            onClick={() => {
+                                const p = fromJsonString(pointSchema, nodeJson.data);
+                                if (props.isNew) p.hash = ""
+                                FetchProtobuf(node.method.save, p)
+                                    .then(async ({ error }) => {
+                                        if (error === undefined) {
+                                            ctx.Info("save successful")
+                                            props.onSave?.();
+                                        } else ctx.Error(error.msg)
+                                    })
+                            }}
+                        >
+                            Save
+                        </Button>
+                    )}
                 </ModalFooter>
             </ModalContent>
         </Modal>

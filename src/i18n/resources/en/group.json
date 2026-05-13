@@ -1,0 +1,8 @@
+{
+  "group": "GROUP",
+  "select": "Select...",
+  "new": "New",
+  "import": "Import",
+  "selectGroup": "Please select a group to display nodes",
+  "emptyGroup": "Current group has no nodes"
+}

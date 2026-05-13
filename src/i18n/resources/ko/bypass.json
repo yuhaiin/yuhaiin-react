@@ -1,0 +1,5 @@
+{
+  "blockedTraffic": "차단된 트래픽",
+  "details": "차단된 세션 세부 정보",
+  "displayingDenied": "규칙에 의해 거부된 연결 {{count}}개 표시 중"
+}

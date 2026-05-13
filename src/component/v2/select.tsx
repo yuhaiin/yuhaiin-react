@@ -5,6 +5,7 @@ import * as SelectPrimitive from '@radix-ui/react-select';
 import { clsx } from 'clsx';
 import { Check, ChevronDown } from 'lucide-react';
 import React, { CSSProperties, FC, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SettingLabel } from './card';
 import {
     Dropdown,
@@ -124,9 +125,10 @@ const SettingSelectComponent: FC<{
     emptyChooseName?: string,
     disabled?: boolean
 }> = ({ label, value, values, onChange, emptyChoose, emptyChooseName, disabled }) => {
+    const { t } = useTranslation('common');
     const items: SelectItem[] = values.map(v => ({ value: v, label: v }));
     if (emptyChoose) {
-        items.unshift({ value: "", label: emptyChooseName ?? "Choose..." });
+        items.unshift({ value: "", label: emptyChooseName ?? t('state.choose') });
     }
     return (
         <div className={clsx("flex items-center mb-4 flex-wrap", disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
@@ -151,13 +153,14 @@ const FormSelectComponent: FC<{
     triggerClassName?: string,
     groupPosition?: 'first' | 'middle' | 'last' | 'single'
 }> = ({ value, values, onChange, format, emptyChoose, emptyChooseName, disabled, triggerClassName, groupPosition }) => {
+    const { t } = useTranslation('common');
     const items: SelectItem[] = values.map((v) => {
         const itemValue = typeof v === 'string' ? v : v[1];
         const itemLabel = typeof v === 'string' ? v : v[0];
         return { value: itemValue, label: format ? format(itemLabel) : itemLabel };
     });
     if (emptyChoose) {
-        items.unshift({ value: "", label: emptyChooseName ?? "Choose..." });
+        items.unshift({ value: "", label: emptyChooseName ?? t('state.choose') });
     }
     return <Select value={value} onValueChange={onChange} items={items} disabled={disabled} triggerClassName={triggerClassName} groupPosition={groupPosition} />;
 }
@@ -170,7 +173,9 @@ const DropdownSelectComponent: FC<{
     triggerClassName?: string,
     placeholder?: string,
     groupPosition?: 'first' | 'middle' | 'last' | 'single'
-}> = ({ values, items, onUpdate, triggerClassName, placeholder = "Choose...", groupPosition }) => {
+}> = ({ values, items, onUpdate, triggerClassName, placeholder, groupPosition }) => {
+    const { t } = useTranslation('common');
+    const resolvedPlaceholder = placeholder ?? t('state.choose');
     const radiusClass =
         groupPosition === 'first' ? 'rounded-r-none border-r-0' :
             groupPosition === 'last' ? 'rounded-l-none' :
@@ -197,7 +202,7 @@ const DropdownSelectComponent: FC<{
                             </span>
                         )}
                         <span className={clsx("truncate", values.length === 0 && "opacity-50")}>
-                            {values.length === 0 ? placeholder : values.join(", ")}
+                            {values.length === 0 ? resolvedPlaceholder : values.join(", ")}
                         </span>
                     </div>
                     <ChevronDown className="opacity-50 flex-shrink-0" size={16} />

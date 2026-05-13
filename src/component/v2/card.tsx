@@ -4,6 +4,7 @@ import { clsx } from "clsx";
 import { AnimatePresence, motion } from 'motion/react';
 import { History, Plus, Search, TriangleAlert } from 'lucide-react';
 import React, { FC, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Badge } from "./badge";
 import { ui } from "./styles";
 
@@ -121,6 +122,7 @@ export function CardList<T>({
     animationLimit = 100,
     density = "normal"
 }: CardListProps<T>) {
+    const { t } = useTranslation('common');
     const shouldAnimate = animated === true || (animated === "auto" && items.length <= animationLimit);
 
     const renderItem = (child: T, index: number) => {
@@ -163,7 +165,7 @@ export function CardList<T>({
                     ) : (
                         <div className="text-center text-ui-muted p-5 opacity-50">
                             <History className="block mb-2 mx-auto" size={40} />
-                            No records found.
+                            {t('state.noRecords')}
                         </div>
                     )}
                 </div>
@@ -202,12 +204,14 @@ export const SettingLabel: FC<SettingLabelProps> = ({
 );
 
 export const ErrorBox: FC<{ msgs: string[] }> = ({ msgs }) => {
+    const { t } = useTranslation('common');
+
     if (msgs.length === 0) return null;
     return (
         <div className="flex items-start gap-3 p-4 rounded-ui-sm bg-ui-danger-soft border-0 text-ui-danger">
             <TriangleAlert className="mt-1" size={20} />
             <div className="grow">
-                <h6 className="font-bold mb-2">Configuration Error</h6>
+                <h6 className="font-bold mb-2">{t('state.configurationError', { defaultValue: 'Configuration Error' })}</h6>
                 <ul className="mb-0 pl-4 list-disc">
                     {msgs.map((v, index) => (
                         <li key={index}>{v}</li>
@@ -237,6 +241,7 @@ export function CardRowList<T>({
     animationLimit = 100,
     density = "normal"
 }: CardRowListProps<T>) {
+    const { t } = useTranslation('common');
     const [newdata, setNewdata] = useState({ value: '' });
     const shouldAnimate = animated === true || (animated === "auto" && items.length <= animationLimit);
 
@@ -285,7 +290,7 @@ export function CardRowList<T>({
                                     <input
                                         value={newdata.value}
                                         onChange={(e) => setNewdata({ value: e.target.value })}
-                                        placeholder="Create new..."
+                                        placeholder={t('state.createNew')}
                                         className="w-full p-2 text-base bg-transparent border-0 focus:outline-none placeholder:text-ui-muted"
                                         onKeyDown={(e) => {
                                             if (!newdata.value || adding) return;
@@ -317,7 +322,7 @@ export function CardRowList<T>({
 
                 {items.length === 0 && !onAddNew && (
                     <div className="text-center text-ui-muted p-3">
-                        No records found.
+                        {t('state.noRecords')}
                     </div>
                 )}
             </CardBody>
@@ -398,6 +403,7 @@ export const FilterSearch: FC<{
     inputStyle?: React.CSSProperties,
     inputClassName?: string,
 }> = ({ onEnter, className, style, size, inputStyle, inputClassName }) => {
+    const { t } = useTranslation('common');
     const [filterInput, setFilterInput] = useState('');
     return (
         <div className={clsx("relative", className)} style={style}>
@@ -409,7 +415,7 @@ export const FilterSearch: FC<{
             <input
                 value={filterInput}
                 onChange={(e) => setFilterInput(e.target.value)}
-                placeholder="Search..."
+                placeholder={t('state.search')}
                 onKeyDown={(e) => e.key === 'Enter' && onEnter(filterInput.toLowerCase())}
                 className={clsx(
                     "w-full bg-ui-surface-muted border border-ui-border rounded-full focus:bg-ui-bg focus:border-ui-primary focus:outline-none transition-colors",

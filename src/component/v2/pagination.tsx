@@ -2,6 +2,7 @@
 
 import { clsx } from "clsx";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "./button";
 
 export interface PaginationProps {
@@ -19,6 +20,7 @@ export function Pagination({
     onPageChange,
     className
 }: PaginationProps) {
+    const { t } = useTranslation('common');
     const totalPages = Math.ceil(totalItems / pageSize);
     const pages: (number | 'ellipsis')[] = [];
 
@@ -59,7 +61,7 @@ export function Pagination({
             <Button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                aria-label="Previous page"
+                aria-label={t('pagination.previous')}
                 size="icon"
             >
                 <ChevronLeft size={16} />
@@ -94,7 +96,7 @@ export function Pagination({
             <Button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                aria-label="Next page"
+                aria-label={t('pagination.next')}
                 size="icon"
             >
                 <ChevronRight size={16} />

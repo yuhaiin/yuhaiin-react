@@ -1,0 +1,10 @@
+{
+  "save": {
+    "success": "Configuration saved successfully",
+    "failed": "Save failed: {{message}}"
+  },
+  "general": {
+    "title": "General Settings",
+    "description": "Network and system integration"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "tcpEndpoint": "TCP Endpoint",
+  "udpEndpoint": "UDP Endpoint",
+  "upload": "Upload",
+  "download": "Download"
+}

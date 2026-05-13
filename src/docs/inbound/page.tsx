@@ -42,8 +42,9 @@ const InboundModal: FC<{
     const handleSave = () => {
         if (!inbound) return;
         setSaving(true);
-        inbound.name = name;
-        FetchProtobuf(inboundService.method.save, inbound)
+        const next = clone(inboundSchema, inbound);
+        next.name = name;
+        FetchProtobuf(inboundService.method.save, next)
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("Save successful");

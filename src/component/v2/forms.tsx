@@ -5,6 +5,7 @@ import { clsx } from 'clsx';
 import { motion } from 'motion/react';
 import { CircleAlert, Eye, EyeOff } from 'lucide-react';
 import React, { FC, useEffect, useId, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from './button';
 import { SettingLabel } from './card';
 import { Combobox } from './combobox';
@@ -101,6 +102,7 @@ export const SettingPasswordVertical: FC<{
     placeholder?: string;
     className?: string;
 }> = React.memo(({ label, value, onChange, placeholder, className }) => {
+    const { t } = useTranslation('common');
     const [show, setShow] = useState(false);
 
     return (
@@ -118,7 +120,7 @@ export const SettingPasswordVertical: FC<{
                     type="button"
                     groupPosition="last"
                     onClick={() => setShow(!show)}
-                    aria-label={show ? "Hide password" : "Show password"}
+                    aria-label={show ? t('form.hidePassword') : t('form.showPassword')}
                 >
                     {show ? <EyeOff size={16} /> : <Eye size={16} />}
                 </Button>
@@ -140,6 +142,7 @@ export const SettingRangeVertical: FC<{
     onChange: (val: number) => void;
     className?: string;
 }> = React.memo(({ label, value, min, max, step, unit, onChange, className }) => {
+    const { t } = useTranslation('common');
     return (
         <div className={clsx("flex flex-col mb-4 relative", className)}>
             <div className="flex justify-between items-center mb-1">
@@ -173,8 +176,8 @@ export const SettingRangeVertical: FC<{
             </SliderPrimitive.Root>
 
             <div className="flex justify-between text-ui-muted opacity-50 text-[0.7rem] font-semibold">
-                <span>MIN: {min.toLocaleString()}</span>
-                <span>MAX: {max.toLocaleString()}</span>
+                <span>{t('form.min')}: {min.toLocaleString()}</span>
+                <span>{t('form.max')}: {max.toLocaleString()}</span>
             </div>
         </div>
     );
@@ -191,6 +194,7 @@ export const SettingInputBytes: FC<{
     className?: string;
     disabled?: boolean;
 }> = React.memo(({ label, value, onChange, placeholder, className, disabled }) => {
+    const { t } = useTranslation('common');
     const toBase64 = (bytes: Uint8Array | undefined) => {
         if (!bytes || bytes.length === 0) return "";
         try {
@@ -223,7 +227,7 @@ export const SettingInputBytes: FC<{
     const labelWithWarning = (
         <div className="flex items-center gap-1">
             {label}
-            <Tooltip content="Input must be a valid Base64 string to be saved.">
+            <Tooltip content={t('form.base64Warning')}>
                 <div className="text-ui-danger cursor-help">
                     <CircleAlert size={12} />
                 </div>

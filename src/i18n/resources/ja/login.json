@@ -1,0 +1,8 @@
+{
+  "title": "ログイン",
+  "username": "ユーザー名",
+  "password": "パスワード",
+  "usernamePlaceholder": "ユーザー名を入力",
+  "passwordPlaceholder": "パスワードを入力",
+  "signIn": "サインイン"
+}

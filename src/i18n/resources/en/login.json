@@ -1,0 +1,8 @@
+{
+  "title": "Login",
+  "username": "Username",
+  "password": "Password",
+  "usernamePlaceholder": "Enter username",
+  "passwordPlaceholder": "Enter password",
+  "signIn": "Sign In"
+}

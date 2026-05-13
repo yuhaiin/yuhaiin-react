@@ -1,8 +1,6 @@
 import { clsx } from "clsx";
 import * as React from "react";
 
-const InputGroupContext = React.createContext<{}>({});
-
 const InputGroup = React.forwardRef<
     HTMLDivElement,
     React.HTMLAttributes<HTMLDivElement>
@@ -30,7 +28,7 @@ const InputGroup = React.forwardRef<
             // So we clone and pass `groupPosition`.
             // Note: Custom components like FormSelect need to accept this prop. Native elements (div, button) won't care unless we wrap or use context.
             // But FormSelect/Input are the main concern.
-            return React.cloneElement(child as React.ReactElement<any>, { groupPosition: position });
+            return React.cloneElement(child as React.ReactElement<{ groupPosition?: string }>, { groupPosition: position });
         }
         return child;
     });

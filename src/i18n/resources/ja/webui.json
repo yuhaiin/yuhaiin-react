@@ -1,0 +1,24 @@
+{
+  "api": {
+    "title": "API 接続",
+    "description": "Web コントローラーインターフェイス",
+    "controllerHost": "コントローラーホスト"
+  },
+  "latency": {
+    "title": "遅延測定ターゲット",
+    "description": "接続確認用エンドポイント",
+    "ipv6": "IPv6 テスト",
+    "ipv6Description": "遅延チェックに IPv6 解決を使用",
+    "http": "HTTP (TCP) チェック",
+    "dns": "DNS (UDP/DOQ) チェック",
+    "ip": "IP 情報サービス",
+    "stunUdp": "STUN (UDP) チェック",
+    "stunTcp": "STUN (TCP) チェック"
+  },
+  "language": {
+    "title": "言語",
+    "description": "ブラウザーに自動追従するか、固定言語を選択します",
+    "preference": "言語設定"
+  },
+  "localNotice": "これらの設定はブラウザーのローカルキャッシュに保存されます。"
+}

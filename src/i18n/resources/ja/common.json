@@ -1,0 +1,41 @@
+{
+  "action": {
+    "cancel": "キャンセル",
+    "close": "閉じる",
+    "ok": "OK",
+    "save": "保存",
+    "remove": "削除",
+    "confirmDelete": "削除を確認"
+  },
+  "state": {
+    "loading": "読み込み中...",
+    "notAvailable": "該当なし",
+    "unknown": "不明",
+    "noRecords": "レコードがありません。",
+    "createNew": "新規作成...",
+    "search": "検索...",
+    "choose": "選択...",
+    "configurationError": "設定エラー"
+  },
+  "toast": {
+    "notification": "通知",
+    "systemError": "システムエラー",
+    "justNow": "たった今"
+  },
+  "pagination": {
+    "previous": "前のページ",
+    "next": "次のページ"
+  },
+  "form": {
+    "hidePassword": "パスワードを隠す",
+    "showPassword": "パスワードを表示",
+    "base64Warning": "保存するには有効な Base64 文字列を入力してください。",
+    "min": "最小",
+    "max": "最大"
+  },
+  "language": {
+    "title": "言語",
+    "auto": "自動",
+    "preference": "言語設定"
+  }
+}

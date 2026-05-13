@@ -2,6 +2,7 @@
 
 import { ArrowLeftRight, Download, ExternalLink, Filter, House, Settings } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
 import { SidebarCollapsible, SidebarDivider, SidebarItem, SidebarNav, Sidebar as SidebarRoot, SidebarSubLink } from '../../component/v2/sidebar';
 
@@ -11,6 +12,7 @@ interface SidebarProps {
 }
 
 function Sidebar({ show, onHide }: SidebarProps) {
+    const { t } = useTranslation('nav');
     const [pathname, navigate] = useLocation();
 
     const handleNavLinkClick = (key: string) => {
@@ -35,11 +37,11 @@ function Sidebar({ show, onHide }: SidebarProps) {
                     active={pathname === '/'}
                     icon={<House />}
                 >
-                    HOME
+                    {t('home')}
                 </SidebarItem>
 
                 <SidebarGroup
-                    title="OUTBOUND"
+                    title={t('outbound')}
                     icon={<ExternalLink />}
                     activePath={pathname}
                     matchPath="/docs/group/"
@@ -59,7 +61,7 @@ function Sidebar({ show, onHide }: SidebarProps) {
                 </SidebarGroup>
 
                 <SidebarGroup
-                    title="INBOUND"
+                    title={t('inbound')}
                     icon={<Download />}
                     activePath={pathname}
                     matchPath="/docs/inbound/"
@@ -70,7 +72,7 @@ function Sidebar({ show, onHide }: SidebarProps) {
                 </SidebarGroup>
 
                 <SidebarGroup
-                    title="BYPASS"
+                    title={t('bypass')}
                     icon={<Filter />}
                     activePath={pathname}
                     matchPath="/docs/bypass/"
@@ -98,7 +100,7 @@ function Sidebar({ show, onHide }: SidebarProps) {
                 </SidebarGroup>
 
                 <SidebarGroup
-                    title="CONNECTIONS"
+                    title={t('connections')}
                     icon={<ArrowLeftRight />}
                     activePath={pathname}
                     matchPath="/docs/connections/"
@@ -115,7 +117,7 @@ function Sidebar({ show, onHide }: SidebarProps) {
                 </SidebarGroup>
 
                 <SidebarGroup
-                    title="SETTING"
+                    title={t('setting')}
                     icon={<Settings />}
                     activePath={pathname}
                     matchPath="/docs/config/"

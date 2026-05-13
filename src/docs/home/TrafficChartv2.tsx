@@ -1,4 +1,5 @@
-import { FC, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 import { formatBytes } from '../connections/components';
@@ -152,6 +153,7 @@ function makeSmoothPathCore(
 }
 
 const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
+    const { t } = useTranslation('home');
     const wrapperRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<HTMLDivElement>(null);
     const uPlotInst = useRef<uPlot | null>(null);
@@ -165,35 +167,41 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
         download: 0,
     });
     const indices = useMemo(() => Array.from({ length: data.labels.length }, (_, i) => i), [data.labels.length]);
-
-    const latestLabelsRef = useRef(data.labels);
-    useEffect(() => { latestLabelsRef.current = data.labels; }, [data.labels]);
-
-    // Use a factory to create a closure for buffers, ensuring each chart instance has its own
-    const makeSmoothPath = useMemo(() => {
-        let bufSize = 0;
-        let buffers: Buffers = {
+    const bufferStateRef = useRef<{
+        bufSize: number;
+        buffers: Buffers;
+    }>({
+        bufSize: 0,
+        buffers: {
             xBuf: new Float64Array(0),
             yBuf: new Float64Array(0),
             tangentsBuf: new Float64Array(0),
             secantsBuf: new Float64Array(0),
-        };
+        },
+    });
 
-        function ensureBuffer(size: number) {
-            if (bufSize < size) {
-                bufSize = size + BUFFER_GROWTH_SIZE;
-                buffers = {
-                    xBuf: new Float64Array(bufSize),
-                    yBuf: new Float64Array(bufSize),
-                    tangentsBuf: new Float64Array(bufSize),
-                    secantsBuf: new Float64Array(bufSize),
+    const latestLabelsRef = useRef(data.labels);
+    useEffect(() => { latestLabelsRef.current = data.labels; }, [data.labels]);
+
+    const makeSmoothPath = useCallback((u: uPlot, seriesIdx: number, idx0: number, idx1: number) => {
+        const ensureBuffer = (size: number) => {
+            const state = bufferStateRef.current;
+            if (state.bufSize < size) {
+                const nextSize = size + BUFFER_GROWTH_SIZE;
+                bufferStateRef.current = {
+                    bufSize: nextSize,
+                    buffers: {
+                        xBuf: new Float64Array(nextSize),
+                        yBuf: new Float64Array(nextSize),
+                        tangentsBuf: new Float64Array(nextSize),
+                        secantsBuf: new Float64Array(nextSize),
+                    },
                 };
             }
-            return buffers;
-        }
+            return bufferStateRef.current.buffers;
+        };
 
-        return (u: uPlot, seriesIdx: number, idx0: number, idx1: number) =>
-            makeSmoothPathCore(u, seriesIdx, idx0, idx1, ensureBuffer);
+        return makeSmoothPathCore(u, seriesIdx, idx0, idx1, ensureBuffer);
     }, []);
 
     useLayoutEffect(() => {
@@ -218,7 +226,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
             series: [
                 { value: (_, rawValue) => data.labels[rawValue] || "" },
                 {
-                    label: "Upload",
+                    label: t('upload'),
                     stroke: "#10b981",
                     fill: "rgba(16, 185, 129, 0.1)",
                     width: 2,
@@ -227,7 +235,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                     paths: makeSmoothPath
                 },
                 {
-                    label: "Download",
+                    label: t('download'),
                     stroke: "#3b82f6",
                     fill: "rgba(59, 130, 246, 0.1)",
                     width: 2,
@@ -305,8 +313,9 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
             u.destroy();
             uPlotInst.current = null;
         };
+        // The chart receives live data through the separate update effect below.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [makeSmoothPath]);
+    }, [makeSmoothPath, t]);
 
     useEffect(() => {
         if (!uPlotInst.current) return;

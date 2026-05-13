@@ -3,6 +3,7 @@
 import { Card, CardBody, MainContainer } from '@/component/v2/card';
 import { create } from '@bufbuild/protobuf';
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useProtoSWR } from '../../common/proto';
 import dynamic from '../../component/AsyncComponent';
 import Loading from '../../component/v2/loading';
@@ -13,6 +14,7 @@ import { node } from '../pbes/api/node_pb';
 import { pointSchema } from '../pbes/node/point_pb';
 
 function HomePage() {
+    const { t } = useTranslation(['home', 'common']);
     const [nodeModal, setNodeModal] = useState({ show: false, point: create(pointSchema, {}) });
     const { data: now, error: now_error, isLoading: now_isLoading } = useProtoSWR(node.method.now)
 
@@ -58,27 +60,27 @@ function HomePage() {
                 onFlow={onFlow}
                 extra_fields={[
                     {
-                        label: "TCP Endpoint",
-                        value: now_isLoading ? "loading..." : now_error ? now_error.msg : (now?.tcp ?
+                        label: t('tcpEndpoint'),
+                        value: now_isLoading ? t('common:state.loading') : now_error ? now_error.msg : (now?.tcp ?
                             <a
                                 href="#"
                                 className="text-blue-500 hover:underline"
                                 onClick={() => { if (now?.tcp) setNodeModal({ show: true, point: now.tcp }) }}
                             >
                                 {now.tcp.group}/{now.tcp.name}
-                            </a> : "N/A"),
+                            </a> : t('common:state.notAvailable')),
                         error: now_error ? now_error.msg : undefined
                     },
                     {
-                        label: "UDP Endpoint",
-                        value: now_isLoading ? "loading..." : now_error ? now_error.msg : (now?.udp ?
+                        label: t('udpEndpoint'),
+                        value: now_isLoading ? t('common:state.loading') : now_error ? now_error.msg : (now?.udp ?
                             <a
                                 href="#"
                                 className="text-blue-500 hover:underline"
                                 onClick={() => { if (now?.udp) setNodeModal({ show: true, point: now.udp }) }}
                             >
                                 {now.udp.group}/{now.udp.name}
-                            </a> : "N/A"),
+                            </a> : t('common:state.notAvailable')),
                         error: now_error ? now_error.msg : undefined
                     }
                 ]}

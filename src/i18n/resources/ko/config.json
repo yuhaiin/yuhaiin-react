@@ -1,0 +1,10 @@
+{
+  "save": {
+    "success": "설정이 저장되었습니다",
+    "failed": "저장 실패: {{message}}"
+  },
+  "general": {
+    "title": "일반 설정",
+    "description": "네트워크 및 시스템 통합"
+  }
+}

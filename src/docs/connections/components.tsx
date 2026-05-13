@@ -4,6 +4,7 @@ import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datal
 import { clsx } from "clsx";
 import { Check } from "lucide-react";
 import React, { FC, JSX, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import { FetchProtobuf, ProtoPath } from "../../common/proto";
 import { connections, counter, total_flow } from "../pbes/api/statistic_pb";
@@ -155,27 +156,28 @@ export const FlowCard: FC<{
     flow_error?: { msg: string, code: number },
     extra_fields?: MetricProps[],
 }> = ({ lastFlow, flow_error, extra_fields }) => {
+    const { t } = useTranslation(['connections', 'common']);
     return (
         <div className="flex flex-wrap gap-3 w-full mb-3"
             style={{ viewTransitionName: "flow-card-root !important" }}>
             <MetricCard
-                label="Total Download"
-                value={lastFlow ? lastFlow.DownloadTotalString() : "Loading..."}
+                label={t('totalDownload')}
+                value={lastFlow ? lastFlow.DownloadTotalString() : t('common:state.loading')}
                 error={flow_error?.msg}
             />
             <MetricCard
-                label="Download Rate"
-                value={lastFlow ? lastFlow.DownloadString() : "Loading..."}
+                label={t('downloadRate')}
+                value={lastFlow ? lastFlow.DownloadString() : t('common:state.loading')}
                 error={flow_error?.msg}
             />
             <MetricCard
-                label="Total Upload"
-                value={lastFlow ? lastFlow.UploadTotalString() : "Loading..."}
+                label={t('totalUpload')}
+                value={lastFlow ? lastFlow.UploadTotalString() : t('common:state.loading')}
                 error={flow_error?.msg}
             />
             <MetricCard
-                label="Upload Rate"
-                value={lastFlow ? lastFlow.UploadString() : "Loading..."}
+                label={t('uploadRate')}
+                value={lastFlow ? lastFlow.UploadString() : t('common:state.loading')}
                 error={flow_error?.msg}
             />
             {
@@ -183,7 +185,7 @@ export const FlowCard: FC<{
                     <MetricCard
                         key={`extra-field-${index}`}
                         label={field.label}
-                        value={field.value || "Loading..."}
+                        value={field.value || t('common:state.loading')}
                         error={field.error}
                     />
                 ))

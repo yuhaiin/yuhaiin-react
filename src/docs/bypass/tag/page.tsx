@@ -242,8 +242,6 @@ function Tags() {
                 }}
                 renderListItem={(key) => {
                     const value = data.tags[key];
-                    const isGlobal = value.hash.length === 0 || value.hash[0] === "";
-                    const isMirror = value.type === tag_type.mirror;
                     return (
                         <TagItem
                             key={key}

@@ -3,9 +3,11 @@
 import { Button } from '@/component/v2/button';
 import { Menu } from 'lucide-react';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 
 function NavBarContainer({ children }: { children: React.ReactNode }) {
+    const { t } = useTranslation('nav');
     const [showSidebar, setShowSidebar] = useState(false);
 
     return (
@@ -13,7 +15,7 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
             <Button
                 className="lg:!hidden !fixed top-[15px] left-[15px] z-[1030] w-[44px] h-[44px] shadow-[0_4px_15px_rgba(0,0,0,0.1)]"
                 onClick={() => setShowSidebar(!showSidebar)}
-                aria-label="Toggle navigation"
+                aria-label={t('toggle')}
             >
                 <Menu />
             </Button>
