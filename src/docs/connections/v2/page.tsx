@@ -1,6 +1,6 @@
 "use client"
 
-import { useDelay } from "@/common/hooks"
+import { useDelay, usePageVisible } from "@/common/hooks"
 import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "@/common/proto"
 import { Button } from "@/component/v2/button"
 import { IconBadge } from "@/component/v2/card"
@@ -10,130 +10,201 @@ import { Spinner } from "@/component/v2/spinner"
 import { GlobalToastContext } from "@/component/v2/toast"
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import { ConnectionInfo, FlowContainer, formatBytes } from "@/docs/connections/components"
-import { connections, notify_data, notify_remove_connectionsSchema } from "@/docs/pbes/api/statistic_pb"
+import { connections, counter, notify_data, notify_remove_connectionsSchema } from "@/docs/pbes/api/statistic_pb"
 import { connection, connectionSchema, type } from "@/docs/pbes/statistic/config_pb"
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
 import { clsx } from "clsx"
-import { AnimatePresence, motion } from 'motion/react'
 import { ArrowDown, ArrowUp, Network, Power, ShieldCheck, Tag } from 'lucide-react'
-import React, { FC, useCallback, useContext, useMemo, useState } from "react"
+import { AnimatePresence, motion } from 'motion/react'
+import React, { FC, useCallback, useContext, useMemo, useState, useSyncExternalStore } from "react"
+import { List, type RowComponentProps } from 'react-window'
 import useSWRSubscription from 'swr/subscription'
 import { NodeModal } from "../../node/modal"
 import { mode } from "../../pbes/config/bypass_pb"
 
+type ConnectionsState = { [key: string]: connection }
 
-// Merged connection type that combines connection data with counter data
-interface MergedConnection {
-    conn: connection
-    download: string
-    upload: string
-    rawDownload: bigint
-    rawUpload: bigint
-}
-
-// State stored as a Map for O(1) lookups
-type ConnectionsState = { [key: string]: MergedConnection }
-
-// Action types for the reducer
 type ConnectionAction =
     | { type: 'NOTIFY'; data: notify_data[] }
-    | { type: 'UPDATE_COUNTERS'; counters: { [key: string]: { download: bigint; upload: bigint } } }
     | { type: 'RESET' }
+
+type CounterRecord = {
+    download: bigint
+    upload: bigint
+    downloadLabel: string
+    uploadLabel: string
+}
+
+const ZERO_COUNTER: CounterRecord = {
+    download: BigInt(0),
+    upload: BigInt(0),
+    downloadLabel: "0B",
+    uploadLabel: "0B",
+}
+
+const CONNECTION_ROW_HEIGHT = 72
+const CONNECTION_ROW_HEIGHT_MOBILE = 112
+const CONNECTION_LIST_MAX_HEIGHT = 720
+const ANIMATED_LIST_LIMIT = 100
+
+class ConnectionCountersStore {
+    private counters = new Map<string, CounterRecord>()
+    private listeners = new Map<string, Set<() => void>>()
+    private allListeners = new Set<() => void>()
+    private version = 0
+
+    getSnapshot = (id: string) => {
+        return this.counters.get(id) ?? ZERO_COUNTER
+    }
+
+    getVersion = () => {
+        return this.version
+    }
+
+    subscribe = (id: string, listener: () => void) => {
+        let listeners = this.listeners.get(id)
+        if (!listeners) {
+            listeners = new Set()
+            this.listeners.set(id, listeners)
+        }
+
+        listeners.add(listener)
+        return () => {
+            listeners?.delete(listener)
+            if (listeners?.size === 0) this.listeners.delete(id)
+        }
+    }
+
+    subscribeAll = (listener: () => void) => {
+        this.allListeners.add(listener)
+        return () => this.allListeners.delete(listener)
+    }
+
+    updateMany(next: { [key: string]: counter }) {
+        let hasChange = false
+        const changedIds: string[] = []
+
+        for (const key in next) {
+            const value = next[key]
+            const existing = this.counters.get(key)
+            const downloadLabel = formatBytes(Number(value.download))
+            const uploadLabel = formatBytes(Number(value.upload))
+
+            if (
+                existing?.download === value.download &&
+                existing?.upload === value.upload &&
+                existing.downloadLabel === downloadLabel &&
+                existing.uploadLabel === uploadLabel
+            ) {
+                continue
+            }
+
+            this.counters.set(key, {
+                download: value.download,
+                upload: value.upload,
+                downloadLabel,
+                uploadLabel,
+            })
+            changedIds.push(key)
+            hasChange = true
+        }
+
+        if (!hasChange) return
+        this.version++
+        changedIds.forEach(id => this.listeners.get(id)?.forEach(listener => listener()))
+        this.allListeners.forEach(listener => listener())
+    }
+
+    delete(id: string) {
+        if (!this.counters.delete(id)) return
+        this.version++
+        this.listeners.get(id)?.forEach(listener => listener())
+        this.allListeners.forEach(listener => listener())
+    }
+
+    clear() {
+        if (this.counters.size === 0) return
+        const ids = Array.from(this.counters.keys())
+        this.counters.clear()
+        this.version++
+        ids.forEach(id => this.listeners.get(id)?.forEach(listener => listener()))
+        this.allListeners.forEach(listener => listener())
+    }
+}
 
 const connectionsReducer = (state: ConnectionsState, action: ConnectionAction): ConnectionsState => {
     switch (action.type) {
         case 'NOTIFY': {
-            const next = { ...state }
+            let next = state
+            let changed = false
+
+            const ensureNext = () => {
+                if (next === state) next = { ...state }
+                changed = true
+            }
+
             for (const r of action.data) {
                 switch (r.data.case) {
                     case "notifyNewConnections": {
                         r.data.value.connections.forEach((conn: connection) => {
                             const key = conn.id.toString()
-                            const existing = state[key]
-                            next[key] = {
-                                conn,
-                                download: existing?.download ?? "0B",
-                                upload: existing?.upload ?? "0B",
-                                rawDownload: existing?.rawDownload ?? BigInt(0),
-                                rawUpload: existing?.rawUpload ?? BigInt(0),
-                            }
+                            if (state[key] === conn) return
+                            ensureNext()
+                            next[key] = conn
                         })
                         break
                     }
                     case "notifyRemoveConnections": {
                         r.data.value.ids.forEach((id: bigint) => {
-                            delete next[id.toString()]
+                            const key = id.toString()
+                            if (!state[key]) return
+                            ensureNext()
+                            delete next[key]
                         })
                         break
                     }
                 }
             }
-            return next
+
+            return changed ? next : state
         }
-        case 'UPDATE_COUNTERS': {
-            const { counters } = action
-            let hasChange = false
-            const next = { ...state }
-
-            for (const key in counters) {
-                const existing = state[key]
-                if (!existing) continue
-
-                const c = counters[key]
-                const download = formatBytes(Number(c.download))
-                const upload = formatBytes(Number(c.upload))
-
-                if (existing.download !== download || existing.upload !== upload) {
-                    next[key] = {
-                        ...existing,
-                        download,
-                        upload,
-                        rawDownload: c.download,
-                        rawUpload: c.upload,
-                    }
-                    hasChange = true
-                }
-            }
-
-            return hasChange ? next : state
-        }
-        case 'RESET': {
+        case 'RESET':
             return {}
-        }
         default:
             return state
     }
 }
 
 function Connections() {
-    const [info, setInfo] = useState<{ info: connection, show: boolean }>({
-        info: create(connectionSchema, {}), show: false
-    });
-
-    const hideInfo = useCallback(() => {
-        setInfo(prev => { return { ...prev, show: false } })
-    }, [])
-
+    const [info, setInfo] = useState<{ id: string, show: boolean }>({ id: "", show: false });
     const shouldFetch = useDelay(400)
+    const isPageVisible = usePageVisible()
     const [connsMap, dispatch] = React.useReducer(connectionsReducer, {})
+    const countersStore = useMemo(() => new ConnectionCountersStore(), [])
     const subscriptionId = React.useId()
 
-    // Process WebSocket stream - dispatches actions
-    const processStream = useCallback((rs: notify_data[], _prev?: boolean): boolean => {
+    const selectedConnection = info.id ? connsMap[info.id] : undefined
+    const hideInfo = useCallback(() => setInfo(prev => ({ ...prev, show: false })), [])
+
+    const processStream = useCallback((rs: notify_data[]): boolean => {
+        for (const r of rs) {
+            if (r.data.case === "notifyRemoveConnections") {
+                r.data.value.ids.forEach((id: bigint) => countersStore.delete(id.toString()))
+            }
+        }
         dispatch({ type: 'NOTIFY', data: rs })
         return true
-    }, [])
+    }, [countersStore])
 
-    // Handle disconnect - reset state
     const onDisconnect = useCallback(() => {
+        countersStore.clear()
         dispatch({ type: 'RESET' })
-    }, [])
+    }, [countersStore])
 
-    // Callback for FlowContainer - only updates changed counter fields
-    const updateCounters = useCallback((cc: { [key: string]: { download: bigint; upload: bigint } }) => {
-        dispatch({ type: 'UPDATE_COUNTERS', counters: cc })
-    }, [])
+    const updateCounters = useCallback((cc: { [key: string]: counter }) => {
+        countersStore.updateMany(cc)
+    }, [countersStore])
 
     const subscribe = useMemo(() =>
         WebsocketProtoServerStream(connections.method.notify, create(EmptySchema, {}), processStream, { onDisconnect }),
@@ -148,17 +219,7 @@ function Connections() {
         )
 
     const [sortBy, setSortBy] = useState("id")
-    const changeSortBy = useCallback((value: string) => {
-        setSortBy(value)
-    }, [setSortBy])
-
-
-    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc"); // 'asc' | 'desc'
-    const changeSortOrder = useCallback((value: "asc" | "desc") => {
-        setSortOrder(value)
-    }, [setSortOrder])
-
-
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [nodeModal, setNodeModal] = useState<{ show: boolean, hash: string }>({ show: false, hash: "" });
     const showNodeModal = useCallback((hash: string) => {
         setNodeModal({ show: true, hash: hash });
@@ -170,22 +231,21 @@ function Connections() {
                 editable={false}
                 show={nodeModal.show}
                 hash={nodeModal.hash}
-                onHide={() => setNodeModal(prev => { return { ...prev, show: false } })}
+                onHide={() => setNodeModal(prev => ({ ...prev, show: false }))}
             />
 
-            <FlowContainer onUpdate={updateCounters} />
+            <FlowContainer onUpdate={updateCounters} enabled={isPageVisible} />
 
             <InfoOffcanvas
-                data={info.info}
-                show={!nodeModal.show && info.show}
+                data={selectedConnection ?? create(connectionSchema, {})}
+                show={!nodeModal.show && info.show && selectedConnection !== undefined}
                 onClose={hideInfo}
                 showNodeModal={showNodeModal}
             />
 
-
             <div className="flex justify-end mb-3">
                 <div className="flex items-center gap-3 flex-wrap">
-                    <ToggleGroup className="flex-nowrap" type="single" value={sortOrder} onValueChange={(v) => v && changeSortOrder(v as "asc" | "desc")}>
+                    <ToggleGroup className="flex-nowrap" type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")}>
                         <ToggleItem value="asc">
                             <div className="flex items-center gap-1 whitespace-nowrap"><ArrowUp size={16} /> Asc</div>
                         </ToggleItem>
@@ -194,7 +254,7 @@ function Connections() {
                         </ToggleItem>
                     </ToggleGroup>
 
-                    <ToggleGroup className="flex-nowrap" type="single" value={sortBy} onValueChange={(v) => v && changeSortBy(v)}>
+                    <ToggleGroup className="flex-nowrap" type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)}>
                         <ToggleItem value="id">Id</ToggleItem>
                         <ToggleItem value="name">Name</ToggleItem>
                         <ToggleItem value="download">Download</ToggleItem>
@@ -205,6 +265,7 @@ function Connections() {
 
             <ConnectionList
                 conns={connsMap}
+                countersStore={countersStore}
                 setInfo={setInfo}
                 conn_error={conn_error}
                 sortFields={sortBy || "id"}
@@ -215,107 +276,196 @@ function Connections() {
     );
 }
 
+const compareBigInt = (a: bigint, b: bigint, sortOrder?: "asc" | "desc") => {
+    if (a === b) return 0
+    const result = a < b ? -1 : 1
+    return sortOrder === "asc" ? result : -result
+}
+
+const compareString = (a: string, b: string, sortOrder?: "asc" | "desc") => {
+    const result = a.localeCompare(b)
+    return sortOrder === "asc" ? result : -result
+}
+
 const ConnectionListComponent: FC<{
-    conns: { [key: string]: MergedConnection },
-    setInfo: (info: { info: connection, show: boolean }) => void
+    conns: ConnectionsState,
+    countersStore: ConnectionCountersStore,
+    setInfo: (info: { id: string, show: boolean }) => void
     conn_error?: { code: number, msg: string },
     sortFields?: string,
     sortOrder?: "asc" | "desc",
     isLoading?: boolean,
-}> = ({ conns, conn_error, setInfo, sortFields, sortOrder, isLoading }) => {
+}> = ({ conns, countersStore, conn_error, setInfo, sortFields, sortOrder, isLoading }) => {
+    const isTrafficSort = sortFields === "download" || sortFields === "upload"
+    const subscribeSortCounters = useCallback((listener: () => void) => {
+        if (!isTrafficSort) return () => { }
+        return countersStore.subscribeAll(listener)
+    }, [countersStore, isTrafficSort])
+    const getSortCounterVersion = useCallback(() => {
+        return isTrafficSort ? countersStore.getVersion() : 0
+    }, [countersStore, isTrafficSort])
+    const counterVersion = useSyncExternalStore(subscribeSortCounters, getSortCounterVersion, getSortCounterVersion)
+    const isCompactLayout = useMediaQuery("(max-width: 767px)")
+    const rowHeight = isCompactLayout ? CONNECTION_ROW_HEIGHT_MOBILE : CONNECTION_ROW_HEIGHT
+    const ids = useMemo(() => Object.keys(conns ?? {}), [conns])
 
-    const connValues = useMemo(() => Object.values(conns ?? {}), [conns])
+    const sortedIds = useMemo(() => {
+        void counterVersion;
+        return [...ids].sort((a, b) => {
+            const first = conns[a]
+            const second = conns[b]
 
-    // Sort by traffic (uses rawDownload/rawUpload from merged state)
-    const trafficSorted = useMemo(() => {
-        if (sortFields !== "download" && sortFields !== "upload") return []
-
-        return [...connValues].sort((a, b) => {
-            let first = 1;
-            let second = -1;
-
-            if (sortOrder === "asc") {
-                first = -1;
-                second = 1;
-            }
+            if (!first || !second) return 0
 
             switch (sortFields) {
+                case "name":
+                    return compareString(first.addr ?? "", second.addr ?? "", sortOrder)
                 case "download":
-                    return a.rawDownload < b.rawDownload ? first : second
+                    return compareBigInt(countersStore.getSnapshot(a).download, countersStore.getSnapshot(b).download, sortOrder)
                 case "upload":
-                    return a.rawUpload < b.rawUpload ? first : second
+                    return compareBigInt(countersStore.getSnapshot(a).upload, countersStore.getSnapshot(b).upload, sortOrder)
+                default:
+                    return compareBigInt(first.id, second.id, sortOrder)
             }
-            return 0
         })
-    }, [connValues, sortFields, sortOrder])
+    }, [ids, conns, sortFields, sortOrder, countersStore, counterVersion])
 
-    // Sort by static fields (id, name)
-    const staticSorted = useMemo(() => {
-        if (sortFields === "download" || sortFields === "upload") return []
-
-        return [...connValues].sort((a, b) => {
-            let first = 1;
-            let second = -1;
-
-            if (sortOrder === "asc") {
-                first = -1;
-                second = 1;
-            }
-
-            if (sortFields === "name") {
-                return a.conn.addr < b.conn.addr ? first : second
-            }
-
-            return a.conn.id < b.conn.id ? first : second
-        })
-    }, [connValues, sortFields, sortOrder])
-
-    const values = (sortFields === "download" || sortFields === "upload") ? trafficSorted : staticSorted
-
-    const handleSelect = useCallback((conn: connection) => {
-        setInfo({ info: conn, show: true })
+    const handleSelect = useCallback((id: string) => {
+        setInfo({ id, show: true })
     }, [setInfo])
 
     if (conn_error !== undefined) return <Loading code={conn_error.code}>{conn_error.msg}</Loading>
     if (isLoading) return <Loading />
 
-    return <ul className="flex flex-col p-0 m-0 mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]">
-        <AnimatePresence initial={false} mode="popLayout">
-            {
-                values.map((e) => (
-                    <motion.li
-                        key={e.conn.id}
-                        className="flex flex-col items-start md:flex-row md:justify-between px-4 py-3 border-b border-sidebar-border transition-colors duration-200 cursor-pointer hover:bg-sidebar-hover last:border-b-0"
-                        onClick={() => handleSelect(e.conn)}
-                        layout
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
-                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                    >
-                        <ListItemContent data={e} />
-                    </motion.li>
-                ))
-            }
-        </AnimatePresence>
-    </ul>
+    if (sortedIds.length === 0) {
+        return <div className="p-6 mb-8 text-center text-gray-500 rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg">
+            No active connections.
+        </div>
+    }
+
+    const listHeight = Math.min(Math.max(sortedIds.length * rowHeight, rowHeight), CONNECTION_LIST_MAX_HEIGHT)
+
+    if (sortedIds.length <= ANIMATED_LIST_LIMIT) {
+        return <ul className="flex flex-col p-0 m-0 mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]">
+            <AnimatePresence initial={false} mode="popLayout">
+                {sortedIds.map((id) => {
+                    const conn = conns[id]
+                    if (!conn) return null
+
+                    return (
+                        <AnimatedConnectionRow
+                            key={id}
+                            id={id}
+                            conn={conn}
+                            countersStore={countersStore}
+                            onSelect={handleSelect}
+                        />
+                    )
+                })}
+            </AnimatePresence>
+        </ul>
+    }
+
+    return <div className="p-0 m-0 mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl transition-all duration-300 hover:border-indigo-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]">
+        <List
+            className="w-full"
+            rowCount={sortedIds.length}
+            rowHeight={rowHeight}
+            rowComponent={ConnectionRow}
+            rowProps={{ ids: sortedIds, conns, countersStore, onSelect: handleSelect }}
+            overscanCount={6}
+            style={{ height: listHeight }}
+        />
+    </div>
 }
 
 const ConnectionList = React.memo(ConnectionListComponent)
 
+const useMediaQuery = (query: string) => {
+    const [matches, setMatches] = useState(() => {
+        if (typeof window === "undefined") return false
+        return window.matchMedia(query).matches
+    })
 
-// Static inner content - memoized separately to avoid re-renders
-const ListItemContent: FC<{ data: MergedConnection }> = React.memo(({ data }) => {
-    const { conn, download, upload } = data
+    React.useEffect(() => {
+        const mediaQuery = window.matchMedia(query)
+        const update = () => setMatches(mediaQuery.matches)
+
+        update()
+        mediaQuery.addEventListener("change", update)
+        return () => mediaQuery.removeEventListener("change", update)
+    }, [query])
+
+    return matches
+}
+
+const AnimatedConnectionRow: FC<{
+    id: string,
+    conn: connection,
+    countersStore: ConnectionCountersStore,
+    onSelect: (id: string) => void,
+}> = ({ id, conn, countersStore, onSelect }) => {
+    const counter = useSyncExternalStore(
+        useCallback((listener) => countersStore.subscribe(id, listener), [countersStore, id]),
+        useCallback(() => countersStore.getSnapshot(id), [countersStore, id]),
+        () => ZERO_COUNTER,
+    )
+
+    return (
+        <motion.li
+            className="flex flex-col items-start md:flex-row md:justify-between px-4 py-3 border-b border-sidebar-border transition-colors duration-200 cursor-pointer hover:bg-sidebar-hover last:border-b-0"
+            onClick={() => onSelect(id)}
+            layout
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
+            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+        >
+            <ListItemContent conn={conn} counter={counter} />
+        </motion.li>
+    )
+}
+
+type ConnectionRowProps = {
+    ids: string[],
+    conns: ConnectionsState,
+    countersStore: ConnectionCountersStore,
+    onSelect: (id: string) => void,
+}
+
+const ConnectionRow = ({ index, style, ids, conns, countersStore, onSelect, ariaAttributes }: RowComponentProps<ConnectionRowProps>) => {
+    const id = ids[index]
+    const conn = conns[id]
+    const counter = useSyncExternalStore(
+        useCallback((listener) => countersStore.subscribe(id, listener), [countersStore, id]),
+        useCallback(() => countersStore.getSnapshot(id), [countersStore, id]),
+        () => ZERO_COUNTER,
+    )
+
+    if (!conn) return null
+
+    return (
+        <div {...ariaAttributes} style={style}>
+            <div
+                className="flex h-full flex-col items-start md:flex-row md:justify-between px-4 py-3 border-b border-sidebar-border transition-colors duration-200 cursor-pointer hover:bg-sidebar-hover last:border-b-0"
+                onClick={() => onSelect(id)}
+            >
+                <ListItemContent conn={conn} counter={counter} />
+            </div>
+        </div>
+    )
+}
+
+const ListItemContent: FC<{ conn: connection, counter: CounterRecord }> = React.memo(({ conn, counter }) => {
     return (
         <>
-            <div className="flex flex-col">
+            <div className="flex min-w-0 flex-col">
                 <code className="font-mono text-xs text-sidebar-color">{conn.id.toString()}</code>
-                <span className="font-medium text-md">{conn.addr}</span>
+                <span className="font-medium text-md truncate">{conn.addr}</span>
             </div>
 
             <div className="flex flex-col items-start gap-2 md:items-end md:mt-0">
-                <FlowBadge download={download} upload={upload} />
+                <FlowBadge download={counter.downloadLabel} upload={counter.uploadLabel} />
                 <div className="flex gap-2 items-center flex-wrap text-xs md:mt-0">
                     <IconBadge icon={ShieldCheck} text={mode[conn.mode]} />
                     <IconBadge icon={Network} text={type[conn.type?.connType ?? 0]} />
@@ -365,7 +515,7 @@ const InfoOffcanvasComponent: FC<{
             if (error) ctx.Error(`code ${data.id} failed, ${error.code}| ${error.msg}`)
             else handleClose()
         }).finally(() => { setClosing(false) })
-    }, [setClosing, data.id, ctx])
+    }, [setClosing, data.id, ctx, handleClose])
 
     return (
         <Modal open={show} onOpenChange={(open) => !open && handleClose()}>

@@ -3,7 +3,7 @@
 import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datalist";
 import { clsx } from "clsx";
 import { Check } from "lucide-react";
-import React, { FC, JSX, useEffect, useState } from "react";
+import React, { FC, JSX, useEffect, useRef } from "react";
 import useSWR from "swr";
 import { FetchProtobuf, ProtoPath } from "../../common/proto";
 import { connections, counter, total_flow } from "../pbes/api/statistic_pb";
@@ -122,8 +122,15 @@ const generateFlow = (flow: total_flow, prev: Flow): { upload_rate: number, down
 }
 
 
-export const useFlow = () => {
-    const [lastFlow, setLastFlow] = useState<Flow>(new Flow(0, 0, 0, 0, {}));
+type UseFlowOptions = {
+    enabled?: boolean,
+    refreshInterval?: number,
+}
+
+export const useFlow = (options?: UseFlowOptions) => {
+    const enabled = options?.enabled ?? true;
+    const refreshInterval = options?.refreshInterval ?? 2000;
+    const lastFlowRef = useRef<Flow>(new Flow(0, 0, 0, 0, {}));
 
     return useSWR(
         ProtoPath(connections.method.total),
@@ -131,15 +138,15 @@ export const useFlow = () => {
             return FetchProtobuf(connections.method.total).then(async ({ data: r, error }) => {
                 if (error) throw error
                 if (r) {
-                    const resp = generateFlow(r, lastFlow)
+                    const resp = generateFlow(r, lastFlowRef.current)
                     const flow = new Flow(Number(r.download), resp.download_rate, Number(r.upload), resp.upload_rate, r.counters)
-                    setLastFlow(flow)
+                    lastFlowRef.current = flow
                     return flow
                 }
             })
         },
         {
-            refreshInterval: 2000,
+            refreshInterval: enabled ? refreshInterval : 0,
         })
 }
 
@@ -189,10 +196,12 @@ export const FlowContainer: FC<{
     onUpdate?: (counters: { [key: string]: counter }) => void
     onFlow?: (flow: Flow) => void
     extra_fields?: MetricProps[],
+    enabled?: boolean,
+    refreshInterval?: number,
 }> = React.memo((
-    { onUpdate, onFlow, extra_fields }
+    { onUpdate, onFlow, extra_fields, enabled, refreshInterval }
 ) => {
-    const { data: lastFlow, error: flow_error } = useFlow()
+    const { data: lastFlow, error: flow_error } = useFlow({ enabled, refreshInterval })
 
     useEffect(() => {
         if (onUpdate && lastFlow) { onUpdate(lastFlow.counters) }

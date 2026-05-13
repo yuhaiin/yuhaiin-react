@@ -11,7 +11,7 @@ const PprofPage = () => {
 
     return (
         <MainContainer>
-            <IFramePage src={apiUrl + "/debug/pprof"} />
+            <IFramePage src={apiUrl + "/debug/pprof"} appearance="light" />
         </MainContainer>
     )
 }

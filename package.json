@@ -32,6 +32,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
+    "style:audit": "node scripts/style-audit.mjs",
     "postinstall": "patch-package"
   },
   "devDependencies": {
