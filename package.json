@@ -24,7 +24,7 @@
     "react-window": "^2.2.7",
     "shlex": "^3",
     "swr": "^2.4.1",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.0",
     "uplot": "^1.6.32",
     "usehooks-ts": "^3.1.1",
     "wouter": "^3.9.0"
