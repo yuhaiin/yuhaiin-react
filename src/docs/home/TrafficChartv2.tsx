@@ -167,7 +167,11 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
     const indices = useMemo(() => Array.from({ length: data.labels.length }, (_, i) => i), [data.labels.length]);
 
     const latestLabelsRef = useRef(data.labels);
+    const latestUploadRef = useRef(data.upload);
+    const latestDownloadRef = useRef(data.download);
     useEffect(() => { latestLabelsRef.current = data.labels; }, [data.labels]);
+    useEffect(() => { latestUploadRef.current = data.upload; }, [data.upload]);
+    useEffect(() => { latestDownloadRef.current = data.download; }, [data.download]);
 
     // Use a factory to create a closure for buffers, ensuring each chart instance has its own
     const makeSmoothPath = useMemo(() => {
@@ -273,8 +277,8 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                         }
 
                         const label = latestLabelsRef.current[idx] || '';
-                        const upload = u.data[1][idx] ?? 0;
-                        const download = u.data[2][idx] ?? 0;
+                        const upload = latestUploadRef.current[idx] ?? 0;
+                        const download = latestDownloadRef.current[idx] ?? 0;
 
                         const chartLeft = u.bbox.left;
                         const chartTop = u.bbox.top;

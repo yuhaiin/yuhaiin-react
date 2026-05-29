@@ -3,7 +3,7 @@
 import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datalist";
 import { clsx } from "clsx";
 import { Check } from "lucide-react";
-import React, { FC, JSX, useEffect, useState } from "react";
+import React, { FC, JSX, useEffect, useRef } from "react";
 import useSWR from "swr";
 import { FetchProtobuf, ProtoPath } from "../../common/proto";
 import { connections, counter, total_flow } from "../pbes/api/statistic_pb";
@@ -123,24 +123,31 @@ const generateFlow = (flow: total_flow, prev: Flow): { upload_rate: number, down
 
 
 export const useFlow = () => {
-    const [lastFlow, setLastFlow] = useState<Flow>(new Flow(0, 0, 0, 0, {}));
+    const lastFlowRef = useRef<Flow | undefined>(undefined);
 
-    return useSWR(
+    const response = useSWR(
         ProtoPath(connections.method.total),
         async () => {
             return FetchProtobuf(connections.method.total).then(async ({ data: r, error }) => {
                 if (error) throw error
+                if (!r) return lastFlowRef.current ?? new Flow(0, 0, 0, 0, {})
                 if (r) {
-                    const resp = generateFlow(r, lastFlow)
+                    const resp = generateFlow(r, lastFlowRef.current ?? new Flow(0, 0, 0, 0, {}))
                     const flow = new Flow(Number(r.download), resp.download_rate, Number(r.upload), resp.upload_rate, r.counters)
-                    setLastFlow(flow)
+                    lastFlowRef.current = flow
                     return flow
                 }
             })
         },
         {
             refreshInterval: 2000,
+            keepPreviousData: true,
         })
+
+    return {
+        ...response,
+        data: response.data ?? lastFlowRef.current,
+    }
 }
 
 export const FlowCard: FC<{
@@ -199,7 +206,7 @@ export const FlowContainer: FC<{
         if (onFlow && lastFlow) { onFlow(lastFlow) }
     }, [onUpdate, onFlow, lastFlow])
 
-    return <FlowCard lastFlow={lastFlow} flow_error={flow_error} extra_fields={extra_fields} />
+    return <FlowCard lastFlow={lastFlow} flow_error={lastFlow ? undefined : flow_error} extra_fields={extra_fields} />
 })
 
 export const ConnectionInfo: FC<{
