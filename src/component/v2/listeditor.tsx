@@ -72,30 +72,16 @@ export const InputList: FC<{
             <div className="flex flex-col gap-2">
                 {data.map((item, i) => (
                     <InputGroup key={i}>
-                        {textarea ? (
-                            <Textarea
-                                value={item}
-                                onChange={(e) => edit(i, e.target.value)}
-                                rows={1} // Start small, can be adjusted
-                                className="grow"
-                                disabled={disabled}
-                                style={{
-                                    borderTopRightRadius: 0,
-                                    borderBottomRightRadius: 0
-                                }}
-                            />
-                        ) : (
-                            <Input
-                                value={item}
-                                onChange={(e) => edit(i, e.target.value)}
-                                className="grow"
-                                disabled={disabled}
-                                style={{
-                                    borderTopRightRadius: 0,
-                                    borderBottomRightRadius: 0
-                                }}
-                            />
-                        )}
+                        <Input
+                            value={item}
+                            onChange={(e) => edit(i, e.target.value)}
+                            className="grow"
+                            disabled={disabled}
+                            style={{
+                                borderTopRightRadius: 0,
+                                borderBottomRightRadius: 0
+                            }}
+                        />
                         {!disabled && (
                             <Button
                                 variant="outline-danger"
