@@ -8,13 +8,13 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { Select } from '@/component/v2/select';
 import { Spinner } from '@/component/v2/spinner';
 import { create } from '@bufbuild/protobuf';
-import { ArrowUpDown, ListOrdered, Save, ShieldCheck, Signpost } from 'lucide-react';
+import { ArrowUpDown, ListOrdered, Power, Save, ShieldCheck, Signpost } from 'lucide-react';
 import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
 import { FetchProtobuf, useProtoSWR } from '../../common/proto';
 import { ConfirmModal } from '../../component/v2/confirm';
 import Loading, { Error } from '../../component/v2/loading';
 import { GlobalToastContext } from '../../component/v2/toast';
-import { change_priority_request_change_priority_operate, change_priority_request_change_priority_operateSchema, change_priority_requestSchema, resolver, rule_indexSchema, rule_save_requestSchema, rules } from '../pbes/api/config_pb';
+import { change_priority_request_change_priority_operate, change_priority_request_change_priority_operateSchema, change_priority_requestSchema, resolver, rule_indexSchema, rule_save_requestSchema, rules, type rule_item } from '../pbes/api/config_pb';
 import { configv2, mode, resolve_strategy, rulev2Schema, udp_proxy_fqdn_strategy } from '../pbes/config/bypass_pb';
 import { FilterModal } from './filter/filter';
 
@@ -119,17 +119,24 @@ const RuleItem: FC<{
     name: string,
     index: number,
     onPriority: (index: number) => void,
-    isChangePriority: boolean
-}> = ({ name, index, onPriority, isChangePriority }) => {
+    onToggleDisabled: (index: number, name: string, disabled: boolean) => void,
+    disabled: boolean,
+    isChangePriority: boolean,
+    isToggleDisabled: boolean,
+}> = ({ name, index, onPriority, onToggleDisabled, disabled, isChangePriority, isToggleDisabled }) => {
     return (
         <>
-            <div className="flex items-center flex-grow overflow-hidden">
+            <div className={`flex items-center flex-grow overflow-hidden ${disabled ? "opacity-60" : ""}`}>
                 <Badge variant="secondary" className="mr-2 min-w-[40px]">#{index + 1}</Badge>
                 <Signpost className="mr-2 text-gray-500 dark:text-gray-400" />
                 <span className="truncate font-medium">{name}</span>
+                {disabled && <Badge variant="warning" className="ml-2">Disabled</Badge>}
             </div>
 
             <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                <Button size="icon" variant={disabled ? "outline-primary" : "outline-secondary"} disabled={isToggleDisabled} title={disabled ? "Enable Rule" : "Disable Rule"} onClick={() => onToggleDisabled(index, name, !disabled)}>
+                    <Power size={16} />
+                </Button>
                 <Button
                     size="icon"
                     disabled={isChangePriority}
@@ -153,6 +160,7 @@ const Rulev2Component: FC = () => {
     const [confirmData, setConfirmData] = useState({ show: false, index: -1 });
     const [priorityModal, setPriorityModal] = useState({ show: false, index: -1 });
     const [isChangePriority, setIsChangePriority] = useState(false)
+    const [disablingIndex, setDisablingIndex] = useState(-1)
 
     const { data: rules_data, error, isLoading, mutate } = useProtoSWR(rules.method.list)
 
@@ -167,6 +175,7 @@ const Rulev2Component: FC = () => {
                 tag: "",
                 udpProxyFqdnStrategy: udp_proxy_fqdn_strategy.udp_proxy_fqdn_strategy_default,
                 rules: [],
+                disabled: false,
             })
         }),)
             .then(async ({ error }) => {
@@ -180,6 +189,31 @@ const Rulev2Component: FC = () => {
                 setAdding(false)
             })
     }
+
+    const setRuleDisabled = useCallback((index: number, name: string, disabled: boolean) => {
+        setDisablingIndex(index)
+        FetchProtobuf(rules.method.get, create(rule_indexSchema, { index, name }))
+            .then(async ({ data, error }) => {
+                if (error !== undefined || data === undefined) {
+                    ctx.Error(error?.msg ?? "get rule failed")
+                    return
+                }
+
+                const { error: saveError } = await FetchProtobuf(rules.method.save, create(rule_save_requestSchema, {
+                    index: create(rule_indexSchema, { index, name }),
+                    rule: { ...data, disabled },
+                }))
+
+                if (saveError === undefined) {
+                    ctx.Info(disabled ? "rule disabled" : "rule enabled")
+                    mutate()
+                } else {
+                    ctx.Error(saveError.msg)
+                    console.error(saveError.code, saveError.msg)
+                }
+            })
+            .finally(() => setDisablingIndex(-1))
+    }, [ctx, mutate])
 
     const hideFilterModal = useCallback(() => { setFilterModal(prev => { return { ...prev, show: false, } }) }, [])
     const hideConfirmModal = useCallback(() => { setConfirmData(prev => { return { ...prev, show: false, } }) }, [])
@@ -224,12 +258,16 @@ const Rulev2Component: FC = () => {
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || rules_data === undefined) return <Loading />
 
+    const ruleItems: Pick<rule_item, "name" | "disabled">[] = rules_data.items.length > 0
+        ? rules_data.items
+        : rules_data.names.map((name) => ({ name, disabled: false }));
+
     return <>
         <ConfirmModal
             show={confirmData.show}
             title="Delete Rule"
             content={
-                <p className="mb-0">Delete rule <strong>{(confirmData.index >= 0 && rules_data.names.length > confirmData.index) ? rules_data.names[confirmData.index] : ""}</strong>?</p>
+                <p className="mb-0">Delete rule <strong>{(confirmData.index >= 0 && ruleItems.length > confirmData.index) ? ruleItems[confirmData.index].name : ""}</strong>?</p>
             }
             onHide={hideConfirmModal}
             onOk={deleteRule}
@@ -238,9 +276,10 @@ const Rulev2Component: FC = () => {
         <FilterModal
             show={filterModal.show}
             onHide={hideFilterModal}
-            name={(filterModal.index >= 0 && rules_data.names.length > filterModal.index) ? rules_data.names[filterModal.index] : ""}
+            name={(filterModal.index >= 0 && ruleItems.length > filterModal.index) ? ruleItems[filterModal.index].name : ""}
             index={filterModal.index}
             onDelete={() => setConfirmData({ show: true, index: filterModal.index })}
+            onSaved={() => mutate()}
         />
 
         <PriorityModal
@@ -252,20 +291,23 @@ const Rulev2Component: FC = () => {
         />
 
         <CardRowList
-            items={rules_data.names}
+            items={ruleItems}
             onClickItem={(_, index) => { setFilterModal({ show: true, index: index }) }}
-            renderListItem={(name, index) => (
+            renderListItem={(item, index) => (
                 <RuleItem
                     key={index}
-                    name={name}
+                    name={item.name}
                     index={index}
                     onPriority={(idx) => { setPriorityModal({ show: true, index: idx }) }}
+                    onToggleDisabled={setRuleDisabled}
+                    disabled={item.disabled}
                     isChangePriority={isChangePriority}
+                    isToggleDisabled={disablingIndex === index}
                 />
             )}
             adding={adding}
             onAddNew={(name) => {
-                if (!rules_data.names.includes(name)) addNewRule(name)
+                if (!ruleItems.some((rule) => rule.name === name)) addNewRule(name)
             }}
             header={
                 <IconBox icon={ListOrdered} color="#3b82f6" title="Bypass Rules" description="Traffic Routing Rules" />

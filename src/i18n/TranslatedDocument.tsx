@@ -3,6 +3,7 @@ import { translateInterpolatedText } from './autoTranslate';
 import { SupportedLanguage } from './languages';
 
 const originalText = new WeakMap<Text, string>();
+const renderedText = new WeakMap<Text, string>();
 const translatedAttributes = ['placeholder', 'aria-label', 'title'] as const;
 
 function normalizeText(value: string) {
@@ -19,14 +20,24 @@ function translateTextNode(node: Text, language: SupportedLanguage) {
     const element = node.parentElement;
     if (shouldSkipElement(element)) return;
 
-    const source = originalText.get(node) ?? node.nodeValue ?? '';
-    const trimmed = normalizeText(source);
-    if (!trimmed) return;
+    const current = node.nodeValue ?? '';
+    const previousRendered = renderedText.get(node);
+    let source = originalText.get(node);
 
-    if (!originalText.has(node)) originalText.set(node, source);
+    if (source === undefined || (previousRendered !== undefined && current !== previousRendered)) {
+        source = current;
+        originalText.set(node, source);
+    }
+
+    const trimmed = normalizeText(source);
+    if (!trimmed) {
+        renderedText.set(node, source);
+        return;
+    }
 
     const translated = translateInterpolatedText(trimmed, language);
     if (!translated) {
+        renderedText.set(node, source);
         if (node.nodeValue !== source) node.nodeValue = source;
         return;
     }
@@ -34,6 +45,7 @@ function translateTextNode(node: Text, language: SupportedLanguage) {
     const leading = source.match(/^\s*/)?.[0] ?? '';
     const trailing = source.match(/\s*$/)?.[0] ?? '';
     const next = `${leading}${translated}${trailing}`;
+    renderedText.set(node, next);
     if (node.nodeValue !== next) node.nodeValue = next;
 }
 

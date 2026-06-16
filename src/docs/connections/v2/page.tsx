@@ -1,6 +1,6 @@
 "use client"
 
-import { useDelay, usePageVisible } from "@/common/hooks"
+import { useDelay } from "@/common/hooks"
 import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "@/common/proto"
 import { Button } from "@/component/v2/button"
 import { IconBadge } from "@/component/v2/card"
@@ -18,8 +18,8 @@ import { clsx } from "clsx"
 import { ArrowDown, ArrowUp, Network, Power, ShieldCheck, Tag } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import React, { FC, useCallback, useContext, useMemo, useState, useSyncExternalStore } from "react"
-import { List, type RowComponentProps } from 'react-window'
 import useSWRSubscription from 'swr/subscription'
+import { VList } from "virtua"
 import { NodeModal } from "../../node/modal"
 import { mode } from "../../pbes/config/bypass_pb"
 
@@ -179,7 +179,6 @@ const connectionsReducer = (state: ConnectionsState, action: ConnectionAction): 
 function Connections() {
     const [info, setInfo] = useState<{ id: string, show: boolean }>({ id: "", show: false });
     const shouldFetch = useDelay(400)
-    const isPageVisible = usePageVisible()
     const [connsMap, dispatch] = React.useReducer(connectionsReducer, {})
     const countersStore = useMemo(() => new ConnectionCountersStore(), [])
     const subscriptionId = React.useId()
@@ -234,7 +233,7 @@ function Connections() {
                 onHide={() => setNodeModal(prev => ({ ...prev, show: false }))}
             />
 
-            <FlowContainer onUpdate={updateCounters} enabled={isPageVisible} />
+            <FlowContainer onUpdate={updateCounters} />
 
             <InfoOffcanvas
                 data={selectedConnection ?? create(connectionSchema, {})}
@@ -367,15 +366,22 @@ const ConnectionListComponent: FC<{
     }
 
     return <div className="p-0 m-0 mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl transition-all duration-300 hover:border-indigo-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]">
-        <List
-            className="w-full"
-            rowCount={sortedIds.length}
-            rowHeight={rowHeight}
-            rowComponent={ConnectionRow}
-            rowProps={{ ids: sortedIds, conns, countersStore, onSelect: handleSelect }}
-            overscanCount={6}
-            style={{ height: listHeight }}
-        />
+        <VList
+            data={sortedIds}
+            itemSize={rowHeight}
+            bufferSize={rowHeight * 6}
+            style={{ height: listHeight, width: "100%" }}
+        >
+            {(id) => (
+                <ConnectionRow
+                    key={id}
+                    id={id}
+                    conn={conns[id]}
+                    countersStore={countersStore}
+                    onSelect={handleSelect}
+                />
+            )}
+        </VList>
     </div>
 }
 
@@ -427,15 +433,13 @@ const AnimatedConnectionRow: FC<{
 }
 
 type ConnectionRowProps = {
-    ids: string[],
-    conns: ConnectionsState,
+    id: string,
+    conn?: connection,
     countersStore: ConnectionCountersStore,
     onSelect: (id: string) => void,
 }
 
-const ConnectionRow = ({ index, style, ids, conns, countersStore, onSelect, ariaAttributes }: RowComponentProps<ConnectionRowProps>) => {
-    const id = ids[index]
-    const conn = conns[id]
+const ConnectionRow = ({ id, conn, countersStore, onSelect }: ConnectionRowProps) => {
     const counter = useSyncExternalStore(
         useCallback((listener) => countersStore.subscribe(id, listener), [countersStore, id]),
         useCallback(() => countersStore.getSnapshot(id), [countersStore, id]),
@@ -445,13 +449,11 @@ const ConnectionRow = ({ index, style, ids, conns, countersStore, onSelect, aria
     if (!conn) return null
 
     return (
-        <div {...ariaAttributes} style={style}>
-            <div
-                className="flex h-full flex-col items-start md:flex-row md:justify-between px-4 py-3 border-b border-sidebar-border transition-colors duration-200 cursor-pointer hover:bg-sidebar-hover last:border-b-0"
-                onClick={() => onSelect(id)}
-            >
-                <ListItemContent conn={conn} counter={counter} />
-            </div>
+        <div
+            className="flex h-full flex-col items-start md:flex-row md:justify-between px-4 py-3 border-b border-sidebar-border transition-colors duration-200 cursor-pointer hover:bg-sidebar-hover last:border-b-0"
+            onClick={() => onSelect(id)}
+        >
+            <ListItemContent conn={conn} counter={counter} />
         </div>
     )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardBody, CardFooter, CardHeader, IconBadge, IconBox, IconBoxRounded, ListItem, MainContainer, SettingLabel } from '@/component/v2/card';
-import { BadgeCheck, Calendar, Code, Cpu, ExternalLink, GitBranch, Github, Info, Laptop, Layers, LayoutGrid, Terminal } from 'lucide-react';
+import { BadgeCheck, Calendar, Code, Cpu, ExternalLink, GitBranch, GitFork, Info, Laptop, Layers, LayoutGrid, Terminal } from 'lucide-react';
 import React, { FC } from "react";
 import { useProtoSWR } from "../../../common/proto";
 import Loading, { Error } from "../../../component/v2/loading";
@@ -79,7 +79,7 @@ export default function About() {
                         <InfoRow
                             label="GitHub"
                             value="yuhaiin/yuhaiin"
-                            icon={Github}
+                            icon={GitFork}
                             url="https://github.com/yuhaiin/yuhaiin"
                         />
 

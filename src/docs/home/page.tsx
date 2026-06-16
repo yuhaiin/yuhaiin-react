@@ -2,7 +2,7 @@
 
 import { Card, CardBody, MainContainer } from '@/component/v2/card';
 import { create } from '@bufbuild/protobuf';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useProtoSWR } from '../../common/proto';
 import dynamic from '../../component/AsyncComponent';
@@ -16,7 +16,13 @@ import { pointSchema } from '../pbes/node/point_pb';
 function HomePage() {
     const { t } = useTranslation(['home', 'common']);
     const [nodeModal, setNodeModal] = useState({ show: false, point: create(pointSchema, {}) });
-    const { data: now, error: now_error, isLoading: now_isLoading } = useProtoSWR(node.method.now)
+    const { data: now, error: now_error, isLoading: now_isLoading, mutate: refreshNow } = useProtoSWR(node.method.now, {
+        revalidateOnMount: false,
+    })
+
+    useEffect(() => {
+        void refreshNow()
+    }, [refreshNow])
 
     const MAX_POINTS = 120;
     const [traffic, setTraffic] = useState<{ labels: string[], upload: number[], download: number[], rawMax: number }>

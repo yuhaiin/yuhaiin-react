@@ -1,6 +1,8 @@
 import { clsx } from "clsx";
 import * as React from "react";
 
+type GroupPosition = "first" | "middle" | "last" | "single";
+
 const InputGroup = React.forwardRef<
     HTMLDivElement,
     React.HTMLAttributes<HTMLDivElement>
@@ -16,9 +18,29 @@ const InputGroup = React.forwardRef<
     // To do it automatically, we can map children.
 
     const count = React.Children.count(children);
+    const cloneWithGroupPosition = (element: React.ReactElement<any>, position: GroupPosition) => {
+        if (typeof element.type !== "string") {
+            return React.cloneElement(element, { groupPosition: position });
+        }
+
+        const childElements = React.Children.toArray(element.props.children);
+        if (childElements.length !== 1) {
+            return element;
+        }
+
+        const onlyChild = childElements[0];
+        if (!React.isValidElement(onlyChild) || typeof onlyChild.type === "string") {
+            return element;
+        }
+
+        return React.cloneElement(element, {
+            children: React.cloneElement(onlyChild as React.ReactElement<any>, { groupPosition: position }),
+        });
+    };
+
     const childrenWithProps = React.Children.map(children, (child, index) => {
         if (React.isValidElement(child)) {
-            let position = "middle";
+            let position: GroupPosition = "middle";
             if (index === 0) position = "first";
             if (index === count - 1) position = "last";
             if (count === 1) position = "single";
@@ -28,7 +50,7 @@ const InputGroup = React.forwardRef<
             // So we clone and pass `groupPosition`.
             // Note: Custom components like FormSelect need to accept this prop. Native elements (div, button) won't care unless we wrap or use context.
             // But FormSelect/Input are the main concern.
-            return React.cloneElement(child as React.ReactElement<{ groupPosition?: string }>, { groupPosition: position });
+            return cloneWithGroupPosition(child as React.ReactElement<any>, position);
         }
         return child;
     });

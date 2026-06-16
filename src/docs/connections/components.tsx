@@ -3,10 +3,9 @@
 import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datalist";
 import { clsx } from "clsx";
 import { Check } from "lucide-react";
-import React, { FC, JSX, useEffect, useRef } from "react";
+import React, { FC, JSX, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import useSWR from "swr";
-import { FetchProtobuf, ProtoPath } from "../../common/proto";
+import { FetchProtobuf } from "../../common/proto";
 import { connections, counter, total_flow } from "../pbes/api/statistic_pb";
 import { mode } from "../pbes/config/bypass_pb";
 import { connection, type as connType, match_history_entry } from "../pbes/statistic/config_pb";
@@ -128,27 +127,103 @@ type UseFlowOptions = {
     refreshInterval?: number,
 }
 
+type FlowPollingState = {
+    data?: Flow,
+    error?: { msg: string, code: number },
+    isLoading: boolean,
+    isValidating: boolean,
+}
+
+const createFlow = (raw: total_flow, prev?: Flow) => {
+    const baseline = prev ?? new Flow(0, 0, 0, 0, {})
+    const rates = generateFlow(raw, baseline)
+    return new Flow(Number(raw.download), rates.download_rate, Number(raw.upload), rates.upload_rate, raw.counters)
+}
+
 export const useFlow = (options?: UseFlowOptions) => {
     const enabled = options?.enabled ?? true;
     const refreshInterval = options?.refreshInterval ?? 2000;
-    const lastFlowRef = useRef<Flow>(new Flow(0, 0, 0, 0, {}));
+    const lastFlowRef = useRef<Flow | undefined>(undefined);
+    const [state, setState] = useState<FlowPollingState>({
+        isLoading: enabled,
+        isValidating: false,
+    })
 
-    return useSWR(
-        ProtoPath(connections.method.total),
-        async () => {
-            return FetchProtobuf(connections.method.total).then(async ({ data: r, error }) => {
-                if (error) throw error
-                if (r) {
-                    const resp = generateFlow(r, lastFlowRef.current)
-                    const flow = new Flow(Number(r.download), resp.download_rate, Number(r.upload), resp.upload_rate, r.counters)
+    useEffect(() => {
+        if (!enabled) {
+            setState(prev => ({
+                ...prev,
+                isLoading: false,
+                isValidating: false,
+            }))
+            return
+        }
+
+        let stopped = false
+        let timer: ReturnType<typeof window.setTimeout> | undefined
+
+        const poll = async () => {
+            setState(prev => ({
+                ...prev,
+                isLoading: !prev.data,
+                isValidating: true,
+            }))
+
+            try {
+                const { data, error } = await FetchProtobuf(connections.method.total)
+                if (stopped) return
+
+                if (error) {
+                    setState(prev => ({
+                        ...prev,
+                        error,
+                        isLoading: false,
+                        isValidating: false,
+                    }))
+                } else if (data) {
+                    const flow = createFlow(data, lastFlowRef.current)
                     lastFlowRef.current = flow
-                    return flow
+
+                    setState({
+                        data: flow,
+                        error: undefined,
+                        isLoading: false,
+                        isValidating: false,
+                    })
+                } else {
+                    setState(prev => ({
+                        ...prev,
+                        error: { code: 500, msg: "empty flow response" },
+                        isLoading: false,
+                        isValidating: false,
+                    }))
                 }
-            })
-        },
-        {
-            refreshInterval: enabled ? refreshInterval : 0,
-        })
+            } catch (error) {
+                if (stopped) return
+                const message = error instanceof Error ? error.message : "failed to fetch flow"
+                setState(prev => ({
+                    ...prev,
+                    error: { code: 500, msg: message },
+                    isLoading: false,
+                    isValidating: false,
+                }))
+            }
+
+            timer = window.setTimeout(poll, refreshInterval)
+        }
+
+        void poll()
+
+        return () => {
+            stopped = true
+            if (timer) window.clearTimeout(timer)
+        }
+    }, [enabled, refreshInterval])
+
+    return {
+        ...state,
+        data: state.data ?? lastFlowRef.current,
+    }
 }
 
 export const FlowCard: FC<{
@@ -210,7 +285,7 @@ export const FlowContainer: FC<{
         if (onFlow && lastFlow) { onFlow(lastFlow) }
     }, [onUpdate, onFlow, lastFlow])
 
-    return <FlowCard lastFlow={lastFlow} flow_error={flow_error} extra_fields={extra_fields} />
+    return <FlowCard lastFlow={lastFlow} flow_error={lastFlow ? undefined : flow_error} extra_fields={extra_fields} />
 })
 
 export const ConnectionInfo: FC<{
