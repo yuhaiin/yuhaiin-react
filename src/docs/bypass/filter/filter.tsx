@@ -2,7 +2,7 @@
 
 import { Button } from '@/component/v2/button';
 import { ErrorMsg, SettingLabel, SettingsBox } from '@/component/v2/card';
-import { DropdownSelect, FormSelect, SettingEnumSelectVertical, SettingInputVertical, SettingSelectVertical } from '@/component/v2/forms';
+import { DropdownSelect, FormSelect, SettingEnumSelectVertical, SettingInputVertical, SettingSelectVertical, SwitchCard } from '@/component/v2/forms';
 import { Input } from '@/component/v2/input';
 import { InputGroup } from '@/component/v2/inputgroup';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
@@ -332,8 +332,9 @@ export const FilterModal: FC<{
     name: string,
     show: boolean,
     onHide: () => void,
-    onDelete: () => void
-}> = ({ index, name, show, onHide, onDelete }) => {
+    onDelete: () => void,
+    onSaved?: () => void
+}> = ({ index, name, show, onHide, onDelete, onSaved }) => {
     const ctx = useContext(GlobalToastContext);
     const filterContext = useContext(FilterContext);
     const [loadding, setLoadding] = useState(false);
@@ -352,6 +353,7 @@ export const FilterModal: FC<{
                 if (error === undefined) {
                     ctx.Info(`save ${name} successful`)
                     setRule()
+                    onSaved?.()
                     onHide()
                 } else {
                     ctx.Error(error.msg)
@@ -376,6 +378,14 @@ export const FilterModal: FC<{
                         <div className="flex flex-col gap-6">
                             <SettingsBox>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <SwitchCard
+                                            label="Disabled"
+                                            description="Ignore this rule during routing"
+                                            checked={rule.disabled}
+                                            onCheckedChange={(checked) => setRule({ ...rule, disabled: checked }, false)}
+                                        />
+                                    </div>
                                     <div>
                                         <SettingEnumSelectVertical
                                             label="Mode"
