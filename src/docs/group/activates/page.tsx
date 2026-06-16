@@ -11,7 +11,7 @@ import { GlobalToastContext } from "@/component/v2/toast";
 import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { Activity, Hash, Info, Power, Zap } from 'lucide-react';
-import { FC, useContext, useState } from "react";
+import { FC, useContext, useMemo, useState } from "react";
 import { NodeModal } from "../../node/modal";
 import { node } from "../../pbes/api/node_pb";
 import { point, pointSchema } from "../../pbes/node/point_pb";
@@ -73,6 +73,11 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
     const [modalHash, setModalHash] = useState({ hash: "", show: false, point: create(pointSchema, {}) });
     const [confirmData, setConfirmData] = useState({ show: false, name: "" });
 
+    const sortedNodes = useMemo(() => {
+        if (!data) return [];
+        return [...data.nodes].sort((a, b) => a.hash.localeCompare(b.hash));
+    }, [data]);
+
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || data == undefined) return <Loading />
 
@@ -114,9 +119,7 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
             />
 
             <CardList
-                items={data.nodes
-                    .sort((a, b) => a.hash.localeCompare(b.hash))
-                }
+                items={sortedNodes}
                 renderListItem={(v) => <ActiveNodeItem v={v} onClose={() => setConfirmData({ show: true, name: v.hash })} />}
                 onClickItem={(v) => setModalHash({ hash: v.hash, show: true, point: v })}
                 header={

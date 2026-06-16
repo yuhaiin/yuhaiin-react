@@ -105,7 +105,7 @@ export function useClipboard({
         } catch (e) {
             if (usePromptAsFallback) {
                 try {
-                    // eslint-disable-next-line no-alert -- prompt as fallback in case of copy error
+
                     window.prompt(promptFallbackText, valueToCopy);
                 } catch (e2) {
                     handleCopyError(e2 as Error);

@@ -1,7 +1,7 @@
 import { Router, Switch, Route } from 'wouter';
 import { useHashLocation } from '@/hooks/useHashLocation';
 import { useSmartAnimation } from '@/hooks/useSmartAnimation';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { GlobalToastProvider } from '@/component/v2/toast';

@@ -13,6 +13,7 @@ import { ToggleGroup, ToggleItem } from '@/component/v2/togglegroup';
 import { create, DescEnumValue } from '@bufbuild/protobuf';
 import { Cpu, Globe, NotebookText, Save } from 'lucide-react';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useInterfaces } from '../../common/interfaces';
 import { FetchProtobuf, useProtoSWR } from '../../common/proto';
 import { mapSetting, updateIfPresent } from '../../common/utils';
@@ -23,6 +24,7 @@ import { advanced_configSchema, setting as Setting, settingSchema, system_proxyS
 import { log_level, log_levelSchema, logcatSchema } from '../pbes/config/log_pb';
 
 function ConfigComponent() {
+    const { t } = useTranslation('config');
     const ctx = useContext(GlobalToastContext);
     const { data: setting, error, isLoading, mutate: setSetting } = useProtoSWR(config_service.method.load, {
         revalidateOnFocus: false,
@@ -86,9 +88,9 @@ function ConfigComponent() {
         setSaving(true);
         FetchProtobuf(config_service.method.save, setting)
             .then(({ error }) => {
-                if (error) ctx.Error(`Save failed: ${error.msg}`);
+                if (error) ctx.Error(t('save.failed', { message: error.msg }));
                 else {
-                    ctx.Info("Configuration saved successfully");
+                    ctx.Info(t('save.success'));
                     setSetting();
                 }
             }).finally(() => setSaving(false));

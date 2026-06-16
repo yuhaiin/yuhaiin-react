@@ -1,0 +1,24 @@
+{
+  "api": {
+    "title": "API Connection",
+    "description": "Web-controller interface",
+    "controllerHost": "Controller Host"
+  },
+  "latency": {
+    "title": "Latency Targets",
+    "description": "Endpoints for connectivity checks",
+    "ipv6": "IPv6 Testing",
+    "ipv6Description": "Use IPv6 resolution for latency checks",
+    "http": "HTTP (TCP) Check",
+    "dns": "DNS (UDP/DOQ) Check",
+    "ip": "IP Info Service",
+    "stunUdp": "STUN (UDP) Check",
+    "stunTcp": "STUN (TCP) Check"
+  },
+  "language": {
+    "title": "Language",
+    "description": "Automatically follow the browser or choose a fixed language",
+    "preference": "Language Preference"
+  },
+  "localNotice": "These settings are stored locally in your browser cache."
+}

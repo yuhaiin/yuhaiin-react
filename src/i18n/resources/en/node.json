@@ -1,0 +1,5 @@
+{
+  "saveSuccess": "save successful",
+  "copySuccess": "Copied JSON to clipboard",
+  "copyFailed": "Failed to copy JSON: {{message}}"
+}

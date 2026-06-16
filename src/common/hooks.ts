@@ -13,17 +13,18 @@ export function useDelay(ms: number) {
 
 export function useThrottle<T>(value: T, interval = 500): T {
     const [throttledValue, setThrottledValue] = useState<T>(value);
-    const lastExecuted = useRef<number>(Date.now());
+    const lastExecuted = useRef<number>(0);
 
     useEffect(() => {
-        if (Date.now() >= lastExecuted.current + interval) {
-            lastExecuted.current = Date.now();
+        const now = Date.now();
+        if (now >= lastExecuted.current + interval) {
+            lastExecuted.current = now;
             setThrottledValue(value);
         } else {
             const timerId = setTimeout(() => {
                 lastExecuted.current = Date.now();
                 setThrottledValue(value);
-            }, interval - (Date.now() - lastExecuted.current));
+            }, interval - (now - lastExecuted.current));
 
             return () => clearTimeout(timerId);
         }
@@ -73,4 +74,20 @@ export function useElementSize<T extends HTMLElement = HTMLDivElement>(): [
   }, [ref?.offsetHeight, ref?.offsetWidth])
 
   return [setRef, size]
+}
+
+export function usePageVisible() {
+    const [isVisible, setIsVisible] = useState(() => {
+        if (typeof document === "undefined") return true;
+        return document.visibilityState === "visible";
+    });
+
+    useEffect(() => {
+        const update = () => setIsVisible(document.visibilityState === "visible");
+
+        document.addEventListener("visibilitychange", update);
+        return () => document.removeEventListener("visibilitychange", update);
+    }, []);
+
+    return isVisible;
 }

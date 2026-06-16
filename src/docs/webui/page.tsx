@@ -1,9 +1,13 @@
 "use client"
 
-import { Card, CardBody, CardHeader, IconBox, MainContainer } from '@/component/v2/card';
+import { Card, CardBody, CardHeader, IconBox, MainContainer, SettingLabel } from '@/component/v2/card';
 import { SettingInputVertical, SwitchCard } from "@/component/v2/forms";
-import { Gauge, Globe, Info, Link, MapPin, Network, Radio, Shield, Terminal } from 'lucide-react';
+import { Select } from '@/component/v2/select';
+import { useLanguage } from '@/i18n/LanguageProvider';
+import { languageOptions } from '@/i18n/languages';
+import { Gauge, Globe, Info, Languages, Link, MapPin, Network, Radio, Shield, Terminal } from 'lucide-react';
 import React from "react";
+import { useTranslation } from 'react-i18next';
 import { useLocalStorage } from "usehooks-ts";
 import {
     APIUrlDefault, APIUrlKey,
@@ -39,6 +43,8 @@ const InputWithIcon: React.FC<{
 );
 
 function Setting() {
+    const { t } = useTranslation('webui');
+    const { preference, setPreference } = useLanguage();
     const [url, setUrl] = useLocalStorage(APIUrlKey, APIUrlDefault);
     const [latencyHTTP, setLatencyHTTP] = useLocalStorage(LatencyHTTPUrlKey, LatencyHTTPUrlDefault);
     const [latencyDNS, setLatencyDNS] = useLocalStorage(LatencyDNSUrlKey, LatencyDNSUrlDefault);
@@ -52,12 +58,12 @@ function Setting() {
             {/* 1. API Connection */}
             <Card>
                 <CardHeader className="py-3">
-                    <IconBox icon={Link} color="#6366f1" title="API Connection" description="Web-controller interface" />
+                    <IconBox icon={Link} color="#6366f1" title={t('api.title')} description={t('api.description')} />
                 </CardHeader>
                 <CardBody className="pt-2">
                     <InputWithIcon
                         icon={Network}
-                        label="Controller Host"
+                        label={t('api.controllerHost')}
                         value={url}
                         onChange={setUrl}
                         placeholder="http://127.0.0.1:50051"
@@ -65,17 +71,36 @@ function Setting() {
                 </CardBody>
             </Card>
 
+            <Card>
+                <CardHeader className="py-3">
+                    <IconBox icon={Languages} color="#8b5cf6" title={t('language.title')} description={t('language.description')} />
+                </CardHeader>
+                <CardBody className="pt-2">
+                    <div className="flex flex-col mb-4">
+                        <SettingLabel className="mb-2 block">{t('language.preference')}</SettingLabel>
+                        <Select
+                            value={preference}
+                            onValueChange={(value) => setPreference(value as typeof preference)}
+                            items={languageOptions.map((option) => ({
+                                value: option.value,
+                                label: option.value === 'auto' ? t('common:language.auto') : option.label,
+                            }))}
+                        />
+                    </div>
+                </CardBody>
+            </Card>
+
             {/* 2. Latency Targets */}
             <Card >
                 <CardHeader className="py-3">
-                    <IconBox icon={Gauge} color="#10b981" title="Latency Targets" description="Endpoints for connectivity checks" />
+                    <IconBox icon={Gauge} color="#10b981" title={t('latency.title')} description={t('latency.description')} />
                 </CardHeader>
                 <CardBody>
                     {/* Toggle at the top */}
                     <div className="mb-3">
                         <SwitchCard
-                            label="IPv6 Testing"
-                            description="Use IPv6 resolution for latency checks"
+                            label={t('latency.ipv6')}
+                            description={t('latency.ipv6Description')}
                             checked={latencyIPv6}
                             onCheckedChange={() => setLatencyIPv6(!latencyIPv6)}
                         />
@@ -84,35 +109,35 @@ function Setting() {
                     {/* Vertical List of Targets */}
                     <InputWithIcon
                         icon={Globe}
-                        label="HTTP (TCP) Check"
+                        label={t('latency.http')}
                         value={latencyHTTP}
                         onChange={setLatencyHTTP}
                         placeholder="https://..."
                     />
                     <InputWithIcon
                         icon={Shield}
-                        label="DNS (UDP/DOQ) Check"
+                        label={t('latency.dns')}
                         value={latencyDNS}
                         onChange={setLatencyDNS}
                         placeholder="dns.example.com:853"
                     />
                     <InputWithIcon
                         icon={MapPin}
-                        label="IP Info Service"
+                        label={t('latency.ip')}
                         value={latencyIPUrl}
                         onChange={setLatencyIPUrl}
                         placeholder="http://ip.sb"
                     />
                     <InputWithIcon
                         icon={Radio}
-                        label="STUN (UDP) Check"
+                        label={t('latency.stunUdp')}
                         value={latencyStunUrl}
                         onChange={setLatencyStunUrl}
                         placeholder="stun.example.com:3478"
                     />
                     <InputWithIcon
                         icon={Terminal}
-                        label="STUN (TCP) Check"
+                        label={t('latency.stunTcp')}
                         value={latencyStunTCPUrl}
                         onChange={setLatencyStunTCPUrl}
                         placeholder="stun.example.com:3478"
@@ -123,7 +148,7 @@ function Setting() {
             <div className="text-center mt-3 opacity-50 pb-20">
                 <small className="text-gray-500 dark:text-gray-400 flex items-center justify-center">
                     <Info className="mr-1" />
-                    These settings are stored locally in your browser cache.
+                    {t('localNotice')}
                 </small>
             </div>
         </MainContainer>

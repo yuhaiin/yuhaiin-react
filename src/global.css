@@ -126,107 +126,144 @@
     --sidebar-radius: 24px;
 
     --sidebar-transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    --radius-ui-xs: 6px;
+    --radius-ui-sm: 8px;
+    --radius-ui-md: 12px;
+    --radius-ui-lg: 16px;
+    --radius-ui-xl: 20px;
+    --height-field: 38px;
+    --height-field-sm: 32px;
+    --height-list-row: 72px;
+    --size-icon-lg: 42px;
+    --shadow-inner-subtle: inset 0 0.5px 0 rgba(0, 0, 0, 0.05);
 }
 
-/* Dark Mode: Solid Deep Space Grey */
+/* Dark Mode: restrained graphite */
 html[data-bs-theme="dark"] {
-    --bs-body-color: #dee2e6;
-    --bs-body-color-rgb: 222, 226, 230;
-    --bs-body-bg: #212529;
-    --bs-body-bg-rgb: 33, 37, 41;
-    --bs-emphasis-color: #fff;
-    --bs-emphasis-color-rgb: 255, 255, 255;
-    --bs-secondary-color: rgba(222, 226, 230, 0.75);
-    --bs-secondary-color-rgb: 222, 226, 230;
-    --bs-secondary-bg: #343a40;
-    --bs-secondary-bg-rgb: 52, 58, 64;
-    --bs-tertiary-color: rgba(222, 226, 230, 0.5);
-    --bs-tertiary-color-rgb: 222, 226, 230;
-    --bs-tertiary-bg: #2b3035;
-    --bs-tertiary-bg-rgb: 43, 48, 53;
-    --bs-primary-text-emphasis: #6ea8fe;
-    --bs-secondary-text-emphasis: #a7acb1;
-    --bs-success-text-emphasis: #75b798;
-    --bs-info-text-emphasis: #6edff6;
-    --bs-warning-text-emphasis: #ffda6a;
-    --bs-danger-text-emphasis: #ea868f;
-    --bs-light-text-emphasis: #f8f9fa;
-    --bs-dark-text-emphasis: #dee2e6;
-    --bs-primary-bg-subtle: #031633;
-    --bs-secondary-bg-subtle: #161719;
-    --bs-success-bg-subtle: #051b11;
-    --bs-info-bg-subtle: #032830;
-    --bs-warning-bg-subtle: #332701;
-    --bs-danger-bg-subtle: #2c0b0e;
-    --bs-light-bg-subtle: #343a40;
-    --bs-dark-bg-subtle: #1a1d20;
-    --bs-primary-border-subtle: #084298;
-    --bs-secondary-border-subtle: #41464b;
-    --bs-success-border-subtle: #0f5132;
-    --bs-info-border-subtle: #087990;
-    --bs-warning-border-subtle: #997404;
-    --bs-danger-border-subtle: #842029;
-    --bs-light-border-subtle: #495057;
-    --bs-dark-border-subtle: #343a40;
+    --bs-body-color: #e4e7ec;
+    --bs-body-color-rgb: 228, 231, 236;
+    --bs-body-bg: #181a1f;
+    --bs-body-bg-rgb: 24, 26, 31;
+    --bs-emphasis-color: #f5f7fa;
+    --bs-emphasis-color-rgb: 245, 247, 250;
+    --bs-secondary-color: rgba(228, 231, 236, 0.72);
+    --bs-secondary-color-rgb: 228, 231, 236;
+    --bs-secondary-bg: #262a31;
+    --bs-secondary-bg-rgb: 38, 42, 49;
+    --bs-tertiary-color: rgba(228, 231, 236, 0.52);
+    --bs-tertiary-color-rgb: 228, 231, 236;
+    --bs-tertiary-bg: #202329;
+    --bs-tertiary-bg-rgb: 32, 35, 41;
+    --bs-primary-text-emphasis: #9bc2e6;
+    --bs-secondary-text-emphasis: #aab1bd;
+    --bs-success-text-emphasis: #8fc7a8;
+    --bs-info-text-emphasis: #8ecbd6;
+    --bs-warning-text-emphasis: #e5bd75;
+    --bs-danger-text-emphasis: #ef9aa2;
+    --bs-light-text-emphasis: #f5f7fa;
+    --bs-dark-text-emphasis: #d7dce4;
+    --bs-primary-bg-subtle: rgba(116, 161, 202, 0.14);
+    --bs-secondary-bg-subtle: #1d2026;
+    --bs-success-bg-subtle: rgba(143, 199, 168, 0.12);
+    --bs-info-bg-subtle: rgba(142, 203, 214, 0.12);
+    --bs-warning-bg-subtle: rgba(229, 189, 117, 0.14);
+    --bs-danger-bg-subtle: rgba(239, 154, 162, 0.12);
+    --bs-light-bg-subtle: #2b3038;
+    --bs-dark-bg-subtle: #15171b;
+    --bs-primary-border-subtle: rgba(116, 161, 202, 0.36);
+    --bs-secondary-border-subtle: #3a404a;
+    --bs-success-border-subtle: rgba(143, 199, 168, 0.32);
+    --bs-info-border-subtle: rgba(142, 203, 214, 0.32);
+    --bs-warning-border-subtle: rgba(229, 189, 117, 0.34);
+    --bs-danger-border-subtle: rgba(239, 154, 162, 0.32);
+    --bs-light-border-subtle: #424954;
+    --bs-dark-border-subtle: #303640;
     --bs-heading-color: inherit;
-    --bs-link-color: #6ea8fe;
-    --bs-link-hover-color: #8bb9fe;
-    --bs-link-color-rgb: 110, 168, 254;
-    --bs-link-hover-color-rgb: 139, 185, 254;
-    --bs-code-color: #e685b5;
-    --bs-highlight-color: #dee2e6;
-    --bs-highlight-bg: #664d03;
-    --bs-border-color: #495057;
-    --bs-border-color-translucent: rgba(255, 255, 255, 0.15);
-    --bs-form-valid-color: #75b798;
-    --bs-form-valid-border-color: #75b798;
-    --bs-form-invalid-color: #ea868f;
-    --bs-form-invalid-border-color: #ea868f;
+    --bs-link-color: #9bc2e6;
+    --bs-link-hover-color: #b4d2ef;
+    --bs-link-color-rgb: 155, 194, 230;
+    --bs-link-hover-color-rgb: 180, 210, 239;
+    --bs-code-color: #dda0bc;
+    --bs-highlight-color: #e4e7ec;
+    --bs-highlight-bg: rgba(229, 189, 117, 0.22);
+    --bs-border-color: #343a44;
+    --bs-border-color-translucent: rgba(228, 231, 236, 0.14);
+    --bs-form-valid-color: #8fc7a8;
+    --bs-form-valid-border-color: #8fc7a8;
+    --bs-form-invalid-color: #ef9aa2;
+    --bs-form-invalid-border-color: #ef9aa2;
 
     /* Solid background, no transparency */
     --sidebar-bg: var(--bs-body-bg);
 
-    --sidebar-color: #a6a6c0;
+    --sidebar-color: #aab1bd;
     /* Muted text color */
-    --sidebar-header-color: #ffffff;
+    --sidebar-header-color: #f5f7fa;
 
     /* Subtle border for definition */
-    --sidebar-border-color: #2b2b40;
+    --sidebar-border-color: #343a44;
 
-    --sidebar-hover-bg: #222233;
+    --sidebar-hover-bg: #22262d;
 
-    /* Tech Cyan / Neon Teal */
-    --sidebar-active-bg: rgba(0, 255, 213, 0.08);
-    --sidebar-active-color: #00ffd5;
-    --sidebar-active-glow: 0 0 15px rgba(0, 255, 213, 0.1);
+    --sidebar-active-bg: rgba(116, 161, 202, 0.14);
+    --sidebar-active-color: #9bc2e6;
+    --sidebar-active-glow: none;
 
-    /* heavy shadow for floating effect since bg is solid */
-    --sidebar-box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-    --divider-color: #2b2b40;
+    --sidebar-box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.72);
+    --divider-color: #343a44;
 
     /* --- Default (Dark Mode) --- */
-    --card-inner-border: rgba(255, 255, 255, 0.05);
-    --card-footer-bg: rgba(0, 0, 0, 0.1);
+    --card-inner-border: rgba(228, 231, 236, 0.07);
+    --card-footer-bg: rgba(0, 0, 0, 0.14);
 
-    --list-item-bg: rgba(255, 255, 255, 0.02);
-    --list-item-hover: rgba(255, 255, 255, 0.05);
-    --list-item-border-hover: rgba(255, 255, 255, 0.1);
+    --list-item-bg: rgba(228, 231, 236, 0.035);
+    --list-item-hover: rgba(228, 231, 236, 0.07);
+    --list-item-border-hover: rgba(228, 231, 236, 0.12);
 
-    --new-item-dashed: rgba(255, 255, 255, 0.2);
-    --new-item-focus: rgba(255, 255, 255, 0.05);
+    --new-item-dashed: rgba(228, 231, 236, 0.22);
+    --new-item-focus: rgba(228, 231, 236, 0.07);
 
-    --input-text-color: #ffffff;
-    --input-placeholder: rgba(255, 255, 255, 0.3);
+    --input-text-color: #f5f7fa;
+    --input-placeholder: rgba(228, 231, 236, 0.42);
 
-    --modal-settings-bg: rgba(255, 255, 255, 0.03);
-    --modal-settings-border: rgba(255, 255, 255, 0.05);
-    --modal-error-bg: rgba(220, 53, 69, 0.1);
+    --modal-settings-bg: rgba(228, 231, 236, 0.04);
+    --modal-settings-border: rgba(228, 231, 236, 0.08);
+    --modal-error-bg: rgba(239, 154, 162, 0.12);
     --modal-label-color: var(--bs-secondary-color);
 
     --metric-bg: var(--bs-body-bg);
-    --metric-border: rgba(255, 255, 255, 0.1);
-    --metric-label: #94a3b8;
-    --metric-value: #f8fafc;
+    --metric-border: rgba(228, 231, 236, 0.12);
+    --metric-label: #aab1bd;
+    --metric-value: #f5f7fa;
+
+    --color-bg: var(--bs-body-bg);
+    --color-fg: var(--bs-body-color);
+    --color-muted: #aab1bd;
+    --color-heading: #f5f7fa;
+    --color-surface: var(--bs-body-bg);
+    --color-surface-muted: #22262d;
+    --color-list-row: var(--list-item-bg);
+    --color-list-row-hover: var(--list-item-hover);
+    --color-list-row-border-hover: var(--list-item-border-hover);
+    --color-border: #343a44;
+    --color-hover: #22262d;
+    --color-primary: #9bc2e6;
+    --color-primary-soft: rgba(116, 161, 202, 0.14);
+    --color-danger: #ef9aa2;
+    --color-danger-soft: rgba(239, 154, 162, 0.12);
+    --color-success: #8fc7a8;
+    --color-success-soft: rgba(143, 199, 168, 0.12);
+    --color-warning: #e5bd75;
+    --color-warning-soft: rgba(229, 189, 117, 0.14);
+    --color-info: #8ecbd6;
+    --color-info-soft: rgba(142, 203, 214, 0.12);
+    --color-chip: #262a31;
+    --color-chip-fg: #aab1bd;
+    --color-focus: rgba(155, 194, 230, 0.28);
+    --shadow-card: 0 18px 40px -20px rgba(0, 0, 0, 0.72);
+    --shadow-elevated: 0 20px 48px -24px rgba(0, 0, 0, 0.78);
+    --shadow-focus: 0 0 0 3px var(--color-focus);
 }
 
 /* Light Mode: Solid White */
@@ -274,6 +311,34 @@ html[data-bs-theme="light"] {
     --metric-border: rgba(0, 0, 0, 0.08);
     --metric-label: #64748b;
     --metric-value: #1e293b;
+
+    --color-bg: var(--bs-body-bg);
+    --color-fg: var(--bs-body-color);
+    --color-muted: #64748b;
+    --color-heading: #0f172a;
+    --color-surface: #ffffff;
+    --color-surface-muted: #f1f5f9;
+    --color-list-row: var(--list-item-bg);
+    --color-list-row-hover: var(--list-item-hover);
+    --color-list-row-border-hover: var(--list-item-border-hover);
+    --color-border: #e2e8f0;
+    --color-hover: #f1f5f9;
+    --color-primary: #0284c7;
+    --color-primary-soft: #e0f2fe;
+    --color-danger: #dc3545;
+    --color-danger-soft: rgba(220, 53, 69, 0.1);
+    --color-success: #198754;
+    --color-success-soft: rgba(25, 135, 84, 0.12);
+    --color-warning: #d97706;
+    --color-warning-soft: rgba(245, 158, 11, 0.14);
+    --color-info: #0891b2;
+    --color-info-soft: rgba(8, 145, 178, 0.12);
+    --color-chip: #f1f5f9;
+    --color-chip-fg: #64748b;
+    --color-focus: rgba(2, 132, 199, 0.25);
+    --shadow-card: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+    --shadow-elevated: 0 0 30px rgba(99, 102, 241, 0.1);
+    --shadow-focus: 0 0 0 3px var(--color-focus);
 }
 
 /* 1. Basic Setup */
@@ -312,6 +377,15 @@ html[data-bs-theme="light"] {
 
     a:hover {
         color: var(--bs-link-hover-color);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, ::before, ::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            scroll-behavior: auto !important;
+            transition-duration: 0.01ms !important;
+        }
     }
 }
 

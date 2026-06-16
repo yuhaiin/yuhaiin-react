@@ -2,13 +2,15 @@
 
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import { clsx } from 'clsx';
-import { motion } from "framer-motion";
+import { motion } from 'motion/react';
 import { CircleAlert, Eye, EyeOff } from 'lucide-react';
 import React, { FC, useEffect, useId, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from './button';
 import { SettingLabel } from './card';
 import { Combobox } from './combobox';
 import { Input, InputProps } from './input';
+import { ui } from './styles';
 import SwitchComponent from './switch';
 import { Tooltip } from './tooltip';
 
@@ -65,7 +67,7 @@ export const SettingInputVertical: FC<SettingInputVerticalProps> = React.memo(({
     return (
         <div className={clsx("flex flex-col mb-4 relative", className)}>
             {/* 1. Associate Label and Input */}
-            <SettingLabel htmlFor={id} style={{ marginBottom: '0.5rem', display: 'block' }}>
+            <SettingLabel htmlFor={id} className="mb-2 block">
                 {label}
             </SettingLabel>
 
@@ -100,26 +102,25 @@ export const SettingPasswordVertical: FC<{
     placeholder?: string;
     className?: string;
 }> = React.memo(({ label, value, onChange, placeholder, className }) => {
+    const { t } = useTranslation('common');
     const [show, setShow] = useState(false);
 
     return (
         <div className={clsx("flex flex-col mb-4 relative", className)}>
             <SettingLabel className="mb-2 basis-auto mr-0 font-medium">{label}</SettingLabel>
-            <div style={{ display: 'flex' }}>
-                <input
+            <div className="flex">
+                <Input
                     type={show ? "text" : "password"}
-                    className={clsx(
-                        "flex items-center justify-between rounded-md px-[15px] text-[14px] leading-none h-[38px] gap-[5px] bg-[var(--bs-body-bg)] text-[var(--bs-body-color)] border-[0.5px] border-[var(--bs-border-color)] w-full",
-                        "focus:outline-none focus:border-[var(--bs-primary)] focus:shadow-[0_0_0_2px_var(--bs-primary-bg-subtle)]"
-                    )}
+                    groupPosition="first"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={placeholder}
-                    style={{ borderRight: 'none', borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
                 />
                 <Button
-                    style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                    type="button"
+                    groupPosition="last"
                     onClick={() => setShow(!show)}
+                    aria-label={show ? t('form.hidePassword') : t('form.showPassword')}
                 >
                     {show ? <EyeOff size={16} /> : <Eye size={16} />}
                 </Button>
@@ -141,11 +142,12 @@ export const SettingRangeVertical: FC<{
     onChange: (val: number) => void;
     className?: string;
 }> = React.memo(({ label, value, min, max, step, unit, onChange, className }) => {
+    const { t } = useTranslation('common');
     return (
         <div className={clsx("flex flex-col mb-4 relative", className)}>
             <div className="flex justify-between items-center mb-1">
                 <SettingLabel className="mb-0 font-medium">{label}</SettingLabel>
-                <div className="text-blue-500 font-bold font-mono text-sm bg-blue-500/10 px-2 py-1 rounded">
+                <div className="text-ui-primary font-bold font-mono text-sm bg-ui-primary-soft px-2 py-1 rounded-ui-xs">
                     {value.toLocaleString()} {unit}
                 </div>
             </div>
@@ -158,12 +160,12 @@ export const SettingRangeVertical: FC<{
                 max={max}
                 step={step}
             >
-                <SliderPrimitive.Track className="bg-[var(--bs-secondary-bg)] relative grow rounded-full h-[3px]">
-                    <SliderPrimitive.Range className="absolute bg-[var(--bs-primary)] rounded-full h-full" asChild>
+                <SliderPrimitive.Track className="bg-ui-surface-muted relative grow rounded-full h-[3px]">
+                    <SliderPrimitive.Range className="absolute bg-ui-primary rounded-full h-full" asChild>
                         <motion.span layout transition={{ type: "spring", stiffness: 400, damping: 30 }} />
                     </SliderPrimitive.Range>
                 </SliderPrimitive.Track>
-                <SliderPrimitive.Thumb className="block w-[20px] h-[20px] bg-white shadow-[0_2px_5px_-1px_rgba(0,0,0,0.1)] rounded-[10px] border border-[var(--bs-border-color)] hover:bg-[var(--bs-body-bg)] focus:outline-none focus:shadow-[0_0_0_5px_var(--bs-primary-bg-subtle)]" asChild>
+                <SliderPrimitive.Thumb className={clsx("block w-[20px] h-[20px] bg-ui-bg shadow-ui-card rounded-full border border-ui-border hover:bg-ui-surface", ui.focusRing)} asChild>
                     <motion.span
                         layout
                         whileHover={{ scale: 1.2 }}
@@ -173,9 +175,9 @@ export const SettingRangeVertical: FC<{
                 </SliderPrimitive.Thumb>
             </SliderPrimitive.Root>
 
-            <div className="flex justify-between text-gray-500 opacity-50" style={{ fontSize: '0.7rem', fontWeight: 600 }}>
-                <span>MIN: {min.toLocaleString()}</span>
-                <span>MAX: {max.toLocaleString()}</span>
+            <div className="flex justify-between text-ui-muted opacity-50 text-[0.7rem] font-semibold">
+                <span>{t('form.min')}: {min.toLocaleString()}</span>
+                <span>{t('form.max')}: {max.toLocaleString()}</span>
             </div>
         </div>
     );
@@ -192,11 +194,12 @@ export const SettingInputBytes: FC<{
     className?: string;
     disabled?: boolean;
 }> = React.memo(({ label, value, onChange, placeholder, className, disabled }) => {
+    const { t } = useTranslation('common');
     const toBase64 = (bytes: Uint8Array | undefined) => {
         if (!bytes || bytes.length === 0) return "";
         try {
             return btoa(String.fromCharCode(...bytes));
-        } catch (e) {
+        } catch {
             return "";
         }
     };
@@ -216,7 +219,7 @@ export const SettingInputBytes: FC<{
             const binary = atob(newText);
             const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
             onChange(bytes);
-        } catch (e) {
+        } catch {
             // Keep local text active even if invalid base64
         }
     };
@@ -224,8 +227,8 @@ export const SettingInputBytes: FC<{
     const labelWithWarning = (
         <div className="flex items-center gap-1">
             {label}
-            <Tooltip content="Input must be a valid Base64 string to be saved.">
-                <div className="text-red-500" style={{ cursor: 'help' }}>
+            <Tooltip content={t('form.base64Warning')}>
+                <div className="text-ui-danger cursor-help">
                     <CircleAlert size={12} />
                 </div>
             </Tooltip>

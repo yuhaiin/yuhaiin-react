@@ -21,7 +21,7 @@ export const HTTPv2: FC<Props<http>> = ({ value, onChange, editable = true }) =>
     </>
 }
 
-export const UnWrapHttp: FC<Props<http_termination>> = ({ /*value, onChange*/ }) => {
+export const UnWrapHttp: FC<Props<http_termination>> = () => {
     return <>
     </>
 }

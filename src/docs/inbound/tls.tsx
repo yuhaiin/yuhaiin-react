@@ -59,8 +59,8 @@ export const TLSAuto: FC<{ tls: tls_auto, onChange: (x: tls_auto) => void }> = (
 
         <SettingTextareaVertical label='CA Cert' value={new TextDecoder().decode(tls.caCert)} readonly />
         <SettingTextareaVertical label='CA Key' value={new TextDecoder().decode(tls.caKey)} readonly />
-        <SettingInputVertical label='ECH Config' value={tls.ech ? btoa(String.fromCharCode(...tls.ech?.config)) : ""} readOnly onChange={() => { }} />
-        <SettingInputVertical label='ECH Key' value={tls.ech ? btoa(String.fromCharCode(...tls.ech?.privateKey)) : ""} readOnly onChange={() => { }} />
+        <SettingInputVertical label='ECH Config' value={tls.ech ? btoa(String.fromCharCode(...(tls.ech?.config ?? []))) : ""} readOnly onChange={() => { }} />
+        <SettingInputVertical label='ECH Key' value={tls.ech ? btoa(String.fromCharCode(...(tls.ech?.privateKey ?? []))) : ""} readOnly onChange={() => { }} />
 
         <Button variant='outline-danger' onClick={() => onChange({
             ...tls,

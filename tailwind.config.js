@@ -9,6 +9,32 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        ui: {
+          bg: 'var(--color-bg)',
+          fg: 'var(--color-fg)',
+          muted: 'var(--color-muted)',
+          heading: 'var(--color-heading)',
+          surface: 'var(--color-surface)',
+          'surface-muted': 'var(--color-surface-muted)',
+          list: 'var(--color-list-row)',
+          'list-hover': 'var(--color-list-row-hover)',
+          'list-border-hover': 'var(--color-list-row-border-hover)',
+          border: 'var(--color-border)',
+          hover: 'var(--color-hover)',
+          primary: 'var(--color-primary)',
+          'primary-soft': 'var(--color-primary-soft)',
+          danger: 'var(--color-danger)',
+          'danger-soft': 'var(--color-danger-soft)',
+          success: 'var(--color-success)',
+          'success-soft': 'var(--color-success-soft)',
+          warning: 'var(--color-warning)',
+          'warning-soft': 'var(--color-warning-soft)',
+          info: 'var(--color-info)',
+          'info-soft': 'var(--color-info-soft)',
+          chip: 'var(--color-chip)',
+          'chip-fg': 'var(--color-chip-fg)',
+          focus: 'var(--color-focus)',
+        },
         sidebar: {
           bg: 'var(--sidebar-bg)',
           color: 'var(--sidebar-color)',
@@ -22,13 +48,26 @@ module.exports = {
       },
       spacing: {
         'sidebar-gap': 'var(--sidebar-gap)',
+        field: 'var(--height-field)',
+        'field-sm': 'var(--height-field-sm)',
+        'list-row': 'var(--height-list-row)',
+        'icon-lg': 'var(--size-icon-lg)',
       },
       borderRadius: {
         'sidebar-radius': 'var(--sidebar-radius)',
+        'ui-xs': 'var(--radius-ui-xs)',
+        'ui-sm': 'var(--radius-ui-sm)',
+        'ui-md': 'var(--radius-ui-md)',
+        'ui-lg': 'var(--radius-ui-lg)',
+        'ui-xl': 'var(--radius-ui-xl)',
       },
       boxShadow: {
         'sidebar': 'var(--sidebar-box-shadow)',
         'sidebar-active': 'var(--sidebar-active-glow)',
+        'ui-card': 'var(--shadow-card)',
+        'ui-elevated': 'var(--shadow-elevated)',
+        'ui-focus': 'var(--shadow-focus)',
+        'inner-subtle': 'var(--shadow-inner-subtle)',
       },
       keyframes: {
         slideDown: {

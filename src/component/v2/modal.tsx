@@ -1,8 +1,9 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { clsx } from "clsx";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from 'motion/react';
 import * as React from "react";
 import { useLastClickPosition } from "../../hooks/use-last-click";
+import { ui } from "./styles";
 
 // --- Context ---
 const ModalContext = React.createContext<{ open: boolean, transformOrigin: string }>({ open: false, transformOrigin: 'center center' });
@@ -90,7 +91,7 @@ const ModalContent = ({ className, children, style, ...props }: React.ComponentP
                     <DialogPrimitive.Content asChild forceMount>
                         <motion.div
                             className={clsx(
-                                "fixed top-1/2 left-1/2 w-[90vw] max-w-[var(--bs-modal-width,500px)] max-h-[85vh] z-[1055] flex flex-col outline-none overflow-hidden bg-[var(--bs-body-bg)] text-[var(--bs-modal-color)] border border-sidebar-border rounded-[32px] shadow-[var(--bs-modal-box-shadow)] p-[5px] will-change-[transform,opacity]",
+                                "fixed top-1/2 left-1/2 w-[90vw] max-w-[var(--bs-modal-width,500px)] max-h-[85vh] z-[1055] flex flex-col outline-none overflow-hidden bg-ui-surface text-ui-fg border border-ui-border rounded-ui-xl shadow-ui-elevated p-[5px] will-change-[transform,opacity]",
                                 className
                             )}
                             variants={contentVariants}
@@ -121,11 +122,11 @@ const ModalHeader = ({
     closeButton = false, // Hidden by default
     ...props
 }: ModalHeaderProps) => (
-    <div className={clsx("flex items-center justify-between p-[var(--bs-modal-header-padding,1rem_1rem)] border-b border-[var(--sidebar-border-color,#dee2e6)]", className)} {...props}>
+    <div className={clsx("flex items-center justify-between p-4 border-b border-ui-border", className)} {...props}>
         {children}
 
         {closeButton && (
-            <DialogPrimitive.Close className="flex items-center justify-center p-2 -m-2 ml-auto text-2xl leading-none text-[var(--bs-secondary-color,#6c757d)] opacity-50 transition-opacity duration-200 bg-transparent border-0 cursor-pointer hover:opacity-100 hover:text-[var(--bs-body-color,#000)] hover:no-underline focus:outline-none" aria-label="Close">
+            <DialogPrimitive.Close className={clsx("flex items-center justify-center p-2 -m-2 ml-auto text-2xl leading-none text-ui-muted opacity-60 transition-opacity duration-200 bg-transparent border-0 cursor-pointer hover:opacity-100 hover:text-ui-fg hover:no-underline", ui.focusRing)} aria-label="Close">
                 {/* Use a standard multiplication sign, or replace with Cross2Icon from @radix-ui/react-icons */}
                 <span aria-hidden="true">×</span>
             </DialogPrimitive.Close>
@@ -136,7 +137,7 @@ const ModalHeader = ({
 // 3. Title (Must use DialogPrimitive.Title for accessibility)
 const ModalTitle = ({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) => (
     <DialogPrimitive.Title
-        className={clsx("m-0 leading-[var(--bs-modal-title-line-height,1.5)] text-[1.25rem] font-medium", className)}
+        className={clsx("m-0 leading-normal text-[1.25rem] font-medium text-ui-heading", className)}
         {...props}
     />
 );
@@ -144,12 +145,25 @@ ModalTitle.displayName = "ModalTitle";
 
 // 4. Body
 const ModalBody = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-    <div className={clsx("relative flex-auto p-[var(--bs-modal-inner-padding,1rem)] overflow-y-auto", className)} {...props} />
+    <div className={clsx("relative flex-auto p-4 overflow-y-auto", className)} {...props} />
 );
 
 // 5. Footer
-const ModalFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-    <div className={clsx("flex flex-wrap items-center justify-end p-[calc(var(--bs-modal-inner-padding,1rem)*0.75)] border-t border-sidebar-border gap-2", className)} {...props} />
+interface ModalFooterProps extends React.HTMLAttributes<HTMLDivElement> {
+    bordered?: boolean;
+    compact?: boolean;
+}
+
+const ModalFooter = ({ className, bordered = true, compact = false, ...props }: ModalFooterProps) => (
+    <div
+        className={clsx(
+            "flex flex-wrap items-center justify-end gap-2",
+            compact ? "p-3" : "p-4",
+            bordered && "border-t border-ui-border",
+            className
+        )}
+        {...props}
+    />
 );
 
 export {

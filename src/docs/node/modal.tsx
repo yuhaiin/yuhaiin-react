@@ -5,10 +5,11 @@ import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/comp
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
-import { create, toJsonString } from "@bufbuild/protobuf";
+import { clone, create, toJsonString } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { Clipboard, ClipboardCheck, Trash } from 'lucide-react';
 import React, { FC, useContext, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { InterfacesContext, useInterfaces } from "../../common/interfaces";
 import { FetchProtobuf, ProtoESFetcher, ProtoPath } from '../../common/proto';
@@ -31,17 +32,18 @@ const NodeModalComponent: FC<{
     isNew?: boolean
 }> =
     ({ hash, point, editable, show, onHide, onSave, groups, onDelete, isNew }) => {
+        const { t } = useTranslation(['node', 'common']);
         const ctx = useContext(GlobalToastContext);
 
         const interfaces = useInterfaces();
         const { copy, copied } = useClipboard({
-            onCopyError: (e) => ctx.Error(`Failed to copy JSON: ${e.message}`),
+            onCopyError: (e) => ctx.Error(t('copyFailed', { message: e.message })),
             usePromptAsFallback: true, // Use prompt as fallback for older browsers or if clipboard access is denied
         });
 
         useEffect(() => {
-            if (copied) ctx.Info("Copied JSON to clipboard")
-        }, [copied])
+            if (copied) ctx.Info(t('copySuccess'))
+        }, [copied, ctx, t])
 
         // isValidating becomes true whenever there is an ongoing request whether the data is loaded or not
         // isLoading becomes true when there is an ongoing request and data is not loaded yet.
@@ -55,27 +57,6 @@ const NodeModalComponent: FC<{
             })
 
         useEffect(() => { mutate(); }, [hash, mutate])
-
-        const SaveButton = () => {
-            if (!editable) return <></>
-
-            return <Button
-                disabled={isValidating || isLoading || !!error || !editable}
-                onClick={() => {
-                    if (!nodes) return
-                    if (isNew) nodes.hash = ""
-                    FetchProtobuf(node.method.save, nodes)
-                        .then(async ({ error }) => {
-                            if (!error) {
-                                ctx.Info("save successful")
-                                if (onSave) onSave();
-                            } else ctx.Error(error.msg)
-                        })
-                }}
-            >
-                {isValidating || isLoading ? <Spinner size="sm" /> : "Save"}
-            </Button >
-        }
 
         const handleCopyJson = () => {
             if (nodes) {
@@ -116,11 +97,11 @@ const NodeModalComponent: FC<{
                             {onDelete &&
                                 <Dropdown>
                                     <DropdownTrigger asChild>
-                                        <Button variant="outline-danger"><Trash size={16} className="mr-2" />Remove</Button>
+                                        <Button variant="outline-danger"><Trash size={16} className="mr-2" />{t('common:action.remove')}</Button>
                                     </DropdownTrigger>
                                     <DropdownContent>
-                                        <DropdownItem className="text-red-500 font-bold" onSelect={() => { onHide(); onDelete(); }}>Confirm Delete</DropdownItem>
-                                        <DropdownItem>Cancel</DropdownItem>
+                                        <DropdownItem className="text-red-500 font-bold" onSelect={() => { onHide(); onDelete(); }}>{t('common:action.confirmDelete')}</DropdownItem>
+                                        <DropdownItem>{t('common:action.cancel')}</DropdownItem>
                                     </DropdownContent>
                                 </Dropdown>
                             }
@@ -133,8 +114,26 @@ const NodeModalComponent: FC<{
                                     {copied ? <ClipboardCheck size={16} /> : <Clipboard size={16} />}
                                 </Button>
                             }
-                            <Button onClick={onHide}>Close</Button>
-                            <SaveButton />
+                            <Button onClick={onHide}>{t('common:action.close')}</Button>
+                            {editable && (
+                                <Button
+                                    disabled={isValidating || isLoading || !!error}
+                                    onClick={() => {
+                                        if (!nodes) return
+                                        const next = clone(pointSchema, nodes);
+                                        if (isNew) next.hash = ""
+                                        FetchProtobuf(node.method.save, next)
+                                            .then(async ({ error }) => {
+                                                if (!error) {
+                                                    ctx.Info(t('saveSuccess'))
+                                                    if (onSave) onSave();
+                                                } else ctx.Error(error.msg)
+                                            })
+                                    }}
+                                >
+                                    {isValidating || isLoading ? <Spinner size="sm" /> : t('common:action.save')}
+                                </Button>
+                            )}
                         </div>
                     </ModalFooter>
                 </ModalContent>

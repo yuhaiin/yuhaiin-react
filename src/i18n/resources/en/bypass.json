@@ -1,0 +1,5 @@
+{
+  "blockedTraffic": "Blocked Traffic",
+  "details": "Blocked Session Details",
+  "displayingDenied": "Displaying {{count}} connections denied by rules"
+}

@@ -78,7 +78,7 @@ jobs:
           enable_jekyll: false
 
       - name: upload_static
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: statics
           path: |

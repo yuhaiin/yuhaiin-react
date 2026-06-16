@@ -1,0 +1,9 @@
+{
+  "home": "HOME",
+  "outbound": "OUTBOUND",
+  "inbound": "INBOUND",
+  "bypass": "BYPASS",
+  "connections": "CONNECTIONS",
+  "setting": "SETTING",
+  "toggle": "Toggle navigation"
+}

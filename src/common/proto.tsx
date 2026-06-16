@@ -77,14 +77,21 @@ export async function FetchProtobuf<I extends DescMessage, O extends DescMessage
     return { data: fromBinary(d.output, new Uint8Array(await r.arrayBuffer())) }
 }
 
+type WebsocketStreamOptions = {
+    throttle?: number,
+    onDisconnect?: () => void,
+    reconnectDelayMs?: number,
+}
+
 export function WebsocketProtoServerStream<I extends DescMessage, O extends DescMessage, Response>(
     d: DescMethod & { methodKind: "server_streaming"; input: I; output: O; },
     Request: MessageShape<I>,
     stream: (r: MessageShape<O>[], prev?: Response) => Response,
-    options?: { throttle?: number, onDisconnect?: () => void }
+    options?: WebsocketStreamOptions
 ):
     (key: string, { next }: SWRSubscriptionOptions<Response, { msg: string, code: number }>) => () => void {
     const apiUrl = getApiUrl()
+    const reconnectDelayMs = options?.reconnectDelayMs ?? 2000
 
     return (key, { next }) => {
         const url = new URL(apiUrl !== "" ? apiUrl : window.location.toString());
@@ -97,12 +104,29 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
             url.searchParams.set("token", token);
         }
 
-        let socket: WebSocket | undefined;
+        let socket: WebSocket | null = null;
         let closed = false
         let buffer: MessageShape<O>[] = [];
         let timeout: ReturnType<typeof setTimeout> | null = null;
+        let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+        let generation = 0;
+
+        const clearFlushTimer = () => {
+            if (timeout) {
+                clearTimeout(timeout);
+                timeout = null;
+            }
+        }
+
+        const clearReconnectTimer = () => {
+            if (reconnectTimer) {
+                clearTimeout(reconnectTimer);
+                reconnectTimer = null;
+            }
+        }
 
         const flush = () => {
+            if (closed) return;
             if (buffer.length === 0) return;
             const batch = buffer;
             buffer = [];
@@ -110,20 +134,53 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
             next(null, prev => { return stream(batch, prev) });
         };
 
+        const cleanupSocket = () => {
+            if (!socket) return
+
+            const current = socket;
+            current.onopen = null;
+            current.onmessage = null;
+            current.onerror = null;
+            current.onclose = null;
+
+            if (current.readyState === WebSocket.CONNECTING || current.readyState === WebSocket.OPEN) {
+                current.close()
+            }
+
+            if (socket === current) {
+                socket = null
+            }
+        }
+
+        const scheduleReconnect = () => {
+            if (closed || reconnectTimer) return
+            console.log(`reconnect after ${reconnectDelayMs}ms`)
+            reconnectTimer = setTimeout(() => {
+                reconnectTimer = null
+                connect()
+            }, reconnectDelayMs)
+        }
+
         const connect = () => {
             if (closed) return
 
             console.log(`connecting to: ${url}`)
 
-            socket = new WebSocket(url)
-            socket.binaryType = "arraybuffer";
+            const currentGeneration = generation
+            const currentSocket = new WebSocket(url)
+            socket = currentSocket
+            currentSocket.binaryType = "arraybuffer";
 
-            socket.addEventListener('open', (e) => {
+            const isCurrent = () => !closed && socket === currentSocket && generation === currentGeneration
+
+            currentSocket.onopen = (e) => {
+                if (!isCurrent()) return
                 console.log(`connect to: ${url}, event type: ${e.type}`)
-                socket?.send(toBinary(d.input, Request))
-            })
+                currentSocket.send(toBinary(d.input, Request))
+            }
 
-            socket.addEventListener('message', (event) => {
+            currentSocket.onmessage = (event) => {
+                if (!isCurrent()) return
                 const raw = fromBinary(d.output, new Uint8Array(event.data));
 
                 if (options?.throttle) {
@@ -134,42 +191,46 @@ export function WebsocketProtoServerStream<I extends DescMessage, O extends Desc
                 } else {
                     next(null, prev => { return stream([raw], prev) })
                 }
-            })
+            }
 
-            socket.addEventListener('error', (e) => {
+            currentSocket.onerror = (e) => {
+                if (!isCurrent()) return
                 const msg = "websocket have some error"
                 next({ msg: msg, code: 500 })
                 console.log(msg, e.type)
-            })
+            }
 
-            socket.addEventListener('close', (e) => {
+            currentSocket.onclose = (e) => {
+                if (!isCurrent()) return
                 console.log("websocket closed, code: " + e.code + ", isClosed: ", closed)
-                // Only call onDisconnect on unexpected closes, not when component unmounts
-                if (!closed) {
-                    options?.onDisconnect?.()
+
+                currentSocket.onopen = null;
+                currentSocket.onmessage = null;
+                currentSocket.onerror = null;
+                currentSocket.onclose = null;
+
+                if (socket === currentSocket) {
+                    socket = null
                 }
+
+                clearFlushTimer()
+                buffer = []
+                options?.onDisconnect?.()
                 next(null, undefined)
-                if (closed) return
-                else {
-                    console.log("reconnect after 2 seconds")
-                    setTimeout(() => connect(), 2000)
-                }
-            })
+                scheduleReconnect()
+            }
         }
 
         connect()
 
         return () => {
             closed = true
-            if (timeout) {
-                clearTimeout(timeout);
-                timeout = null;
-            }
-            if (socket !== undefined) {
-                console.log(`close: ${key}`)
-                socket.close()
-                socket = undefined
-            }
+            generation++
+            buffer = []
+            clearFlushTimer()
+            clearReconnectTimer()
+            console.log(`close: ${key}`)
+            cleanupSocket()
         }
     }
 }

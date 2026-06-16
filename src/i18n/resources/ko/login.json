@@ -1,0 +1,8 @@
+{
+  "title": "로그인",
+  "username": "사용자 이름",
+  "password": "비밀번호",
+  "usernamePlaceholder": "사용자 이름 입력",
+  "passwordPlaceholder": "비밀번호 입력",
+  "signIn": "로그인"
+}

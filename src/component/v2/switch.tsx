@@ -2,7 +2,7 @@
 
 import * as SwitchPrimitive from '@radix-ui/react-switch';
 import { clsx } from 'clsx';
-import { motion, Transition } from 'framer-motion';
+import { motion, Transition } from 'motion/react';
 import * as React from 'react';
 
 interface SwitchProps {

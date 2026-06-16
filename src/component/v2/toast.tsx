@@ -2,8 +2,9 @@
 
 import * as ToastPrimitive from '@radix-ui/react-toast';
 import { clsx } from 'clsx';
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from 'motion/react';
 import React, { createContext, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // --- Types ---
 
@@ -29,6 +30,7 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
   children,
   duration = 4000
 }) => {
+  const { t } = useTranslation('common');
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const showMessage = useCallback((text: string, type: 'info' | 'error') => {
@@ -89,12 +91,12 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
               >
                 <div className="flex justify-between items-center py-[0.5rem] px-[0.75rem] bg-[rgba(var(--bs-tertiary-bg-rgb,248,249,250),0.5)] border-b border-[var(--bs-border-color-translucent)]">
                   <ToastPrimitive.Title className="text-[0.85rem] font-bold text-[var(--bs-body-color)] m-0">
-                    {toast.type === 'error' ? 'System Error' : 'Notification'}
+                    {toast.type === 'error' ? t('toast.systemError') : t('toast.notification')}
                   </ToastPrimitive.Title>
 
                   <div className="d-flex align-items-center gap-2">
-                    <small className="text-muted" style={{ fontSize: '0.75rem' }}>just now</small>
-                    <ToastPrimitive.Close className="bg-transparent border-0 text-[var(--bs-secondary-color)] cursor-pointer opacity-50 transition-opacity duration-200 px-[4px] text-[1.2rem] leading-none hover:opacity-100" aria-label="Close">
+                    <small className="text-muted" style={{ fontSize: '0.75rem' }}>{t('toast.justNow')}</small>
+                    <ToastPrimitive.Close className="bg-transparent border-0 text-[var(--bs-secondary-color)] cursor-pointer opacity-50 transition-opacity duration-200 px-[4px] text-[1.2rem] leading-none hover:opacity-100" aria-label={t('action.close')}>
                       <span aria-hidden>×</span>
                     </ToastPrimitive.Close>
                   </div>

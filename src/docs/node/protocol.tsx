@@ -26,6 +26,7 @@ import {
     network_splitSchema,
     noneSchema,
     obfs_httpSchema,
+    point_as_endpointSchema,
     protocol,
     protocolSchema,
     proxySchema,
@@ -58,6 +59,7 @@ import { HTTP2v2 } from "./http2";
 import { HttpMock } from "./mock";
 import { Muxv2 } from "./mux";
 import { Nonev2 } from './none';
+import { PointAsEndpoint } from "./point_as_endpoint";
 import { Proxy } from "./proxy";
 import { Quicv2 } from "./quic";
 import { Realityv2 } from "./reality";
@@ -289,6 +291,8 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange, editable = true }) => 
             return Proxy
         case "fixedv2":
             return <Fixedv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
+        case "pointAsEndpoint":
+            return <PointAsEndpoint value={data.value} editable={editable} onChange={(e) => update(e)} />
         default: return Unknown
     }
 }
@@ -652,5 +656,13 @@ SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY
             case: "proxy",
             value: create(proxySchema, {})
         }
-    })
+    }),
+    "pointAsEndpoint": create(protocolSchema, {
+        protocol: {
+            case: "pointAsEndpoint",
+            value: create(point_as_endpointSchema, {
+                hash: ""
+            })
+        }
+    }),
 }

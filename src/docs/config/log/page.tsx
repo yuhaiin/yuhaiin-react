@@ -2,12 +2,14 @@
 
 import { useDelay } from "@/common/hooks"
 import { Badge } from "@/component/v2/badge"
+import { Button } from "@/component/v2/button"
 import { Card, CardBody, CardHeader, FilterSearch, IconBox, MainContainer } from '@/component/v2/card'
+import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import { create } from "@bufbuild/protobuf"
 import { EmptySchema } from "@bufbuild/protobuf/wkt"
 import { clsx } from "clsx"
-import { Radio, Terminal } from 'lucide-react'
-import { FC, memo, useEffect, useMemo, useRef, useState } from "react"
+import { Radio, Terminal, Trash2 } from 'lucide-react'
+import { FC, memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
 import useSWRSubscription from "swr/subscription"
 import { VList, type VListHandle } from "virtua"
 import { ProtoPath, WebsocketProtoServerStream } from "../../../common/proto"
@@ -15,6 +17,8 @@ import { Error } from "../../../component/v2/loading"
 import { tools } from "../../pbes/api/tools_pb"
 import { Logv2 } from "../../pbes/tools/tools_pb"
 
+const LOG_RETENTION_OPTIONS = [500, 2000, 10000] as const
+type LogRetention = typeof LOG_RETENTION_OPTIONS[number]
 type LogLevel = "ERROR" | "WARN" | "INFO" | "DEBUG" | "FATAL" | "TRACE" | "LOG";
 
 type ParsedLogLine = {
@@ -128,6 +132,76 @@ const parseLogLine = (line: string): ParsedLogLine => {
     return { time, displayTime: formatLogTime(time), level, message, source, details };
 }
 
+class LogRingBuffer {
+    private entries: LogEntry[]
+    private head = 0
+    private count = 0
+    private version = 0
+    private nextId = 0
+
+    constructor(private capacity: number) {
+        this.entries = new Array(capacity)
+    }
+
+    get size() {
+        return this.count
+    }
+
+    get currentVersion() {
+        return this.version
+    }
+
+    get(index: number) {
+        if (index < 0 || index >= this.count) return undefined
+        return this.entries[(this.head + index) % this.capacity]
+    }
+
+    append(values: string[]) {
+        if (values.length === 0 || this.capacity <= 0) return this.version
+
+        for (let i = values.length - 1; i >= 0; i--) {
+            const line = values[i]
+            this.head = (this.head - 1 + this.capacity) % this.capacity
+            this.entries[this.head] = {
+                id: ++this.nextId,
+                line,
+                parsed: parseLogLine(line),
+            }
+            if (this.count < this.capacity) this.count++
+        }
+
+        this.version++
+        return this.version
+    }
+
+    setCapacity(capacity: number) {
+        if (this.capacity === capacity) return this.version
+
+        const keep = Math.min(this.count, capacity)
+        const next = new Array<LogEntry>(capacity)
+        for (let i = 0; i < keep; i++) {
+            const entry = this.get(i)
+            if (entry) next[i] = entry
+        }
+
+        this.capacity = capacity
+        this.entries = next
+        this.head = 0
+        this.count = keep
+        this.version++
+        return this.version
+    }
+
+    clear() {
+        if (this.count === 0) return this.version
+        this.entries = new Array(this.capacity)
+        this.head = 0
+        this.count = 0
+        this.version++
+        return this.version
+    }
+}
+
 const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
     const { parsed } = entry;
     const style = levelStyles[parsed.level];
@@ -167,46 +241,51 @@ const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
     );
 });
 
-const processStream = (rs: Logv2[], prev?: LogEntry[]): LogEntry[] => {
-    const newLines = rs.flatMap(r => r.log).reverse();
-    const startId = prev?.[0]?.id ?? 0;
-    const newLogs = newLines.map((line, index) => ({
-        id: startId + newLines.length - index,
-        line,
-        parsed: parseLogLine(line),
-    }));
-    const combined = [...newLogs, ...(prev ?? [])];
-
-    if (combined.length > 10000) {
-        return combined.slice(0, 10000);
-    }
-    return combined;
-}
-
 export default function LogComponent() {
     const [searchTerm, setSearchTerm] = useState('');
+    const deferredSearchTerm = useDeferredValue(searchTerm)
+    const [retention, setRetention] = useState<LogRetention>(2000)
+    const [localVersion, setLocalVersion] = useState(0)
+    const [logBuffer] = useState(() => new LogRingBuffer(retention))
     const logListRef = useRef<VListHandle>(null);
     const followLatestRef = useRef(true);
     const shouldFetch = useDelay(1000);
 
+    const processStream = useCallback((rs: Logv2[]): number => {
+        const newLogs = rs.flatMap(r => r.log).reverse();
+        return logBuffer.append(newLogs)
+    }, [logBuffer])
+
     const subscription = useMemo(() =>
         WebsocketProtoServerStream(tools.method.logv2, create(EmptySchema, {}), processStream, { throttle: 200 }),
-        []
+        [processStream]
     );
 
-    const { data: log, error: log_error } =
+    const { data: streamVersion, error: log_error } =
         useSWRSubscription(
             shouldFetch ? ProtoPath(tools.method.log) : null,
             subscription,
             {}
         )
 
-    const filteredLog = useMemo(() => {
-        if (!log) return [];
-        if (!searchTerm) return log;
-        return log.filter(entry => entry.line.toLowerCase().includes(searchTerm.toLowerCase()));
-    }, [log, searchTerm]);
-    const latestLogId = filteredLog[0]?.id;
+    const version = Math.max(streamVersion ?? 0, localVersion, logBuffer.currentVersion)
+
+    const visibleLog = useMemo(() => {
+        void version;
+        const search = deferredSearchTerm.trim().toLowerCase()
+        const entries: LogEntry[] = []
+
+        for (let i = 0; i < logBuffer.size; i++) {
+            const entry = logBuffer.get(i)
+            if (!entry) continue
+            if (!search || entry.line.toLowerCase().includes(search)) {
+                entries.push(entry)
+            }
+        }
+
+        return entries
+    }, [logBuffer, version, deferredSearchTerm])
+    const latestLogId = visibleLog[0]?.id;
 
     useEffect(() => {
         if (!followLatestRef.current) return;
@@ -216,7 +295,18 @@ export default function LogComponent() {
         });
 
         return () => cancelAnimationFrame(frame);
-    }, [filteredLog.length, latestLogId]);
+    }, [visibleLog.length, latestLogId]);
+
+    const changeRetention = useCallback((value: string) => {
+        const next = Number(value) as LogRetention
+        if (!LOG_RETENTION_OPTIONS.includes(next)) return
+        setRetention(next)
+        setLocalVersion(logBuffer.setCapacity(next))
+    }, [logBuffer])
+
+    const clearLogs = useCallback(() => {
+        setLocalVersion(logBuffer.clear())
+    }, [logBuffer])
 
     if (log_error) { return <Error statusCode={log_error.code} title={log_error.msg} /> }
 
@@ -232,8 +322,16 @@ export default function LogComponent() {
                             description="Real-time system events"
                             className="!mr-3 !h-10 !w-10 !rounded-[10px]"
                         />
-                        <div className="flex items-center gap-2 flex-grow">
+                        <div className="flex items-center gap-2 flex-grow justify-end">
                             <FilterSearch onEnter={setSearchTerm} className='flex-grow' />
+                            <ToggleGroup className="flex-nowrap" type="single" value={String(retention)} onValueChange={(v) => v && changeRetention(v)}>
+                                {LOG_RETENTION_OPTIONS.map(value => (
+                                    <ToggleItem key={value} value={String(value)}>{value}</ToggleItem>
+                                ))}
+                            </ToggleGroup>
+                            <Button size="sm" variant="outline-secondary" onClick={clearLogs}>
+                                <Trash2 size={14} />
+                            </Button>
                             <Badge variant="warning" pill className="text-[0.7rem] px-2 py-1">
                                 <Radio className="mr-1" size={12} />LIVE
                             </Badge>
@@ -244,7 +342,7 @@ export default function LogComponent() {
                     <div className="h-full min-h-0 w-full rounded-[inherit] font-mono">
                         <VList
                             ref={logListRef}
-                            data={filteredLog}
+                            data={visibleLog}
                             itemSize={72}
                             bufferSize={360}
                             shift

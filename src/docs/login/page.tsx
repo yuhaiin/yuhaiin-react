@@ -4,8 +4,10 @@ import { Card, CardBody, CardFooter, CardHeader, CardTitle } from '@/component/v
 import { Input } from '@/component/v2/input';
 import { Lock, LogIn, User } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function LoginPage() {
+    const { t } = useTranslation('login');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
@@ -29,18 +31,18 @@ export default function LoginPage() {
                 <CardHeader>
                     <CardTitle className="text-xl">
                         <LogIn className="mr-2" size={24} />
-                        Login
+                        {t('title')}
                     </CardTitle>
                 </CardHeader>
                 <form onSubmit={handleLogin}>
                     <CardBody className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Username</label>
+                            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('username')}</label>
                             <div className="relative">
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <Input
                                     className="pl-10"
-                                    placeholder="Enter username"
+                                    placeholder={t('usernamePlaceholder')}
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                     autoFocus
@@ -48,13 +50,13 @@ export default function LoginPage() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Password</label>
+                            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('password')}</label>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <Input
                                     type="password"
                                     className="pl-10"
-                                    placeholder="Enter password"
+                                    placeholder={t('passwordPlaceholder')}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
@@ -63,7 +65,7 @@ export default function LoginPage() {
                     </CardBody>
                     <CardFooter className="flex justify-end pt-2">
                         <Button type="submit" className="w-full !rounded-lg h-10">
-                            Sign In
+                            {t('signIn')}
                         </Button>
                     </CardFooter>
                 </form>

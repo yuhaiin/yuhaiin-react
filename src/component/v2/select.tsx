@@ -5,6 +5,7 @@ import * as SelectPrimitive from '@radix-ui/react-select';
 import { clsx } from 'clsx';
 import { Check, ChevronDown } from 'lucide-react';
 import React, { CSSProperties, FC, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SettingLabel } from './card';
 import {
     Dropdown,
@@ -12,6 +13,7 @@ import {
     DropdownContent,
     DropdownTrigger
 } from './dropdown';
+import { ui } from './styles';
 
 export interface SelectItem {
     value: string;
@@ -31,15 +33,15 @@ interface SelectProps {
     groupPosition?: 'first' | 'middle' | 'last' | 'single';
 }
 
-import { motion } from "framer-motion";
+import { motion } from 'motion/react';
 
 export const Select: FC<SelectProps> = ({ value, onValueChange, items, placeholder, disabled, triggerClassName, contentClassName, viewportClassName, size, groupPosition }) => {
     const internalValue = value === "" ? "___EMPTY___" : value;
 
     const radiusClass =
-        groupPosition === 'first' ? '!rounded-r-none !border-r-0' :
-            groupPosition === 'last' ? '!rounded-l-none' :
-                groupPosition === 'middle' ? '!rounded-none !border-r-0' :
+        groupPosition === 'first' ? 'rounded-r-none border-r-0' :
+            groupPosition === 'last' ? 'rounded-l-none' :
+                groupPosition === 'middle' ? 'rounded-none border-r-0' :
                     '';
 
     return (
@@ -49,23 +51,24 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
             disabled={disabled}
         >
             <SelectPrimitive.Trigger className={clsx(
-                "flex items-center justify-between rounded-[12px] px-[12px] text-[14px] leading-none h-[38px] gap-[5px] bg-[var(--bs-body-bg)] text-[var(--bs-body-color)] border border-[var(--bs-border-color)] w-full transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] cursor-pointer",
-                "hover:bg-[var(--bs-tertiary-bg)] hover:border-[var(--bs-border-color-translucent)]",
-                "focus:outline-none focus:border-[#86b7fe] data-[state=open]:outline-none data-[state=open]:border-[#86b7fe] data-[state=open]:transition-all",
-                size === 'sm' && "h-[32px] text-[0.875rem] px-[10px]",
+                "flex items-center justify-between rounded-ui-md px-3 text-sm leading-none h-field gap-[5px] bg-ui-bg text-ui-fg border border-ui-border w-full cursor-pointer",
+                ui.interactive,
+                ui.focusRing,
+                "hover:bg-ui-surface-muted hover:border-ui-border data-[state=open]:border-ui-primary",
+                size === 'sm' && "h-field-sm text-[0.875rem] px-2.5",
                 radiusClass,
                 triggerClassName,
-                disabled && "opacity-60 pointer-events-none grayscale-[0.5]"
+                disabled && "opacity-60 pointer-events-none"
             )} aria-label={placeholder}>
                 <SelectPrimitive.Value placeholder={placeholder} />
                 <SelectPrimitive.Icon>
-                    <ChevronDown className="opacity-50" size={16} />
+                    <ChevronDown className="opacity-50 shrink-0" size={16} />
                 </SelectPrimitive.Icon>
             </SelectPrimitive.Trigger>
             <SelectPrimitive.Portal>
                 <SelectPrimitive.Content
                     className={clsx(
-                        "overflow-hidden bg-[var(--bs-body-bg)] rounded-[20px] border border-[var(--bs-border-color)] shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_10px_15px_-3px_rgba(0,0,0,0.1)] z-[2000] max-h-[var(--radix-select-content-available-height)] origin-[var(--radix-select-content-transform-origin)] will-change-[transform,opacity]",
+                        "overflow-hidden bg-ui-surface rounded-ui-xl border border-ui-border shadow-ui-elevated z-[2000] max-h-[var(--radix-select-content-available-height)] origin-[var(--radix-select-content-transform-origin)] will-change-[transform,opacity]",
                         "data-[state=open]:animate-slideDownAndFade data-[state=closed]:animate-slideUpAndFade",
                         "data-[side=top]:data-[state=open]:animate-slideUpAndFadeIn data-[side=bottom]:data-[state=open]:animate-slideDownAndFadeIn",
                         contentClassName
@@ -86,8 +89,9 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
                                 const itemValue = item.value === "" ? "___EMPTY___" : item.value;
                                 return (
                                     <SelectPrimitive.Item key={`${itemValue}-${index}`} value={itemValue} className={clsx(
-                                        "text-[14px] leading-none text-[var(--bs-body-color)] rounded-[20px] flex items-center h-[32px] pl-[25px] pr-[35px] relative select-none cursor-pointer transition-colors duration-100 ease",
-                                        "data-[highlighted]:bg-[var(--bs-tertiary-bg,#e9ecef)] data-[highlighted]:text-[var(--bs-emphasis-color,#000000)]"
+                                        "text-sm leading-none text-ui-fg rounded-ui-md flex items-center h-field-sm pl-[25px] pr-[35px] relative select-none cursor-pointer",
+                                        "data-[highlighted]:bg-ui-hover data-[highlighted]:text-ui-heading",
+                                        ui.interactive
                                     )}>
                                         <SelectPrimitive.ItemText>{item.label}</SelectPrimitive.ItemText>
                                         <SelectPrimitive.ItemIndicator className="absolute left-0 w-[25px] inline-flex items-center justify-center">
@@ -121,9 +125,10 @@ const SettingSelectComponent: FC<{
     emptyChooseName?: string,
     disabled?: boolean
 }> = ({ label, value, values, onChange, emptyChoose, emptyChooseName, disabled }) => {
+    const { t } = useTranslation('common');
     const items: SelectItem[] = values.map(v => ({ value: v, label: v }));
     if (emptyChoose) {
-        items.unshift({ value: "", label: emptyChooseName ?? "Choose..." });
+        items.unshift({ value: "", label: emptyChooseName ?? t('state.choose') });
     }
     return (
         <div className={clsx("flex items-center mb-4 flex-wrap", disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
@@ -148,13 +153,14 @@ const FormSelectComponent: FC<{
     triggerClassName?: string,
     groupPosition?: 'first' | 'middle' | 'last' | 'single'
 }> = ({ value, values, onChange, format, emptyChoose, emptyChooseName, disabled, triggerClassName, groupPosition }) => {
+    const { t } = useTranslation('common');
     const items: SelectItem[] = values.map((v) => {
         const itemValue = typeof v === 'string' ? v : v[1];
         const itemLabel = typeof v === 'string' ? v : v[0];
         return { value: itemValue, label: format ? format(itemLabel) : itemLabel };
     });
     if (emptyChoose) {
-        items.unshift({ value: "", label: emptyChooseName ?? "Choose..." });
+        items.unshift({ value: "", label: emptyChooseName ?? t('state.choose') });
     }
     return <Select value={value} onValueChange={onChange} items={items} disabled={disabled} triggerClassName={triggerClassName} groupPosition={groupPosition} />;
 }
@@ -167,11 +173,13 @@ const DropdownSelectComponent: FC<{
     triggerClassName?: string,
     placeholder?: string,
     groupPosition?: 'first' | 'middle' | 'last' | 'single'
-}> = ({ values, items, onUpdate, triggerClassName, placeholder = "Choose...", groupPosition }) => {
+}> = ({ values, items, onUpdate, triggerClassName, placeholder, groupPosition }) => {
+    const { t } = useTranslation('common');
+    const resolvedPlaceholder = placeholder ?? t('state.choose');
     const radiusClass =
-        groupPosition === 'first' ? '!rounded-r-none !border-r-0' :
-            groupPosition === 'last' ? '!rounded-l-none' :
-                groupPosition === 'middle' ? '!rounded-none !border-r-0' :
+        groupPosition === 'first' ? 'rounded-r-none border-r-0' :
+            groupPosition === 'last' ? 'rounded-l-none' :
+                groupPosition === 'middle' ? 'rounded-none border-r-0' :
                     '';
 
     return (
@@ -179,27 +187,28 @@ const DropdownSelectComponent: FC<{
             <DropdownTrigger asChild>
                 <div
                     className={clsx(
-                        "flex items-center justify-between rounded-[12px] px-[12px] text-[14px] leading-none h-[38px] gap-[5px] bg-[var(--bs-body-bg)] text-[var(--bs-body-color)] border border-[var(--bs-border-color)] w-full transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] cursor-pointer",
-                        "hover:bg-[var(--bs-tertiary-bg)] hover:border-[var(--bs-border-color-translucent)]",
-                        "focus:outline-none focus:border-[#86b7fe] data-[state=open]:outline-none data-[state=open]:border-[#86b7fe] data-[state=open]:transition-all",
+                        "flex items-center justify-between rounded-ui-md px-3 text-sm leading-none h-field gap-[5px] bg-ui-bg text-ui-fg border border-ui-border w-full cursor-pointer",
+                        ui.interactive,
+                        ui.focusRing,
+                        "hover:bg-ui-surface-muted hover:border-ui-border data-[state=open]:border-ui-primary",
                         radiusClass,
                         triggerClassName
                     )}
                 >
-                    <div className="d-flex align-items-center gap-2 overflow-hidden">
+                    <div className="flex items-center gap-2 overflow-hidden min-w-0">
                         {values.length > 0 && (
-                            <span className="inline-flex items-center justify-center bg-[var(--bs-primary-bg-subtle)] text-[var(--bs-primary)] text-[0.75rem] font-semibold h-[20px] min-w-[20px] px-[6px] rounded-full leading-none">
+                            <span className="inline-flex items-center justify-center bg-ui-primary-soft text-ui-primary text-[0.75rem] font-semibold h-[20px] min-w-[20px] px-[6px] rounded-full leading-none">
                                 {values.length}
                             </span>
                         )}
-                        <span className={clsx("text-truncate", values.length === 0 && "opacity-50")}>
-                            {values.length === 0 ? placeholder : values.join(", ")}
+                        <span className={clsx("truncate", values.length === 0 && "opacity-50")}>
+                            {values.length === 0 ? resolvedPlaceholder : values.join(", ")}
                         </span>
                     </div>
                     <ChevronDown className="opacity-50 flex-shrink-0" size={16} />
                 </div>
             </DropdownTrigger>
-            <DropdownContent style={{ minWidth: 'min(300px, 90vw)' }}>
+            <DropdownContent className="min-w-[min(300px,90vw)]">
                 {items.map((v) => (
                     <DropdownCheckboxItem
                         key={v}

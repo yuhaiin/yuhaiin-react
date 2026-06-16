@@ -1,0 +1,41 @@
+{
+  "action": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "ok": "OK",
+    "save": "Save",
+    "remove": "Remove",
+    "confirmDelete": "Confirm Delete"
+  },
+  "state": {
+    "loading": "Loading...",
+    "notAvailable": "N/A",
+    "unknown": "Unknown",
+    "noRecords": "No records found.",
+    "createNew": "Create new...",
+    "search": "Search...",
+    "choose": "Choose...",
+    "configurationError": "Configuration Error"
+  },
+  "toast": {
+    "notification": "Notification",
+    "systemError": "System Error",
+    "justNow": "just now"
+  },
+  "pagination": {
+    "previous": "Previous page",
+    "next": "Next page"
+  },
+  "form": {
+    "hidePassword": "Hide password",
+    "showPassword": "Show password",
+    "base64Warning": "Input must be a valid Base64 string to be saved.",
+    "min": "MIN",
+    "max": "MAX"
+  },
+  "language": {
+    "title": "Language",
+    "auto": "Auto",
+    "preference": "Language Preference"
+  }
+}

@@ -2,7 +2,7 @@
 
 import * as CollapsiblePrimitive from "@radix-ui/react-collapsible";
 import { clsx } from "clsx";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from 'motion/react';
 import { ChevronRight } from 'lucide-react';
 import React from "react";
 
@@ -174,10 +174,10 @@ const SidebarSubLink = React.forwardRef<HTMLAnchorElement, SidebarSubLinkProps>(
         <a
             ref={ref}
             className={clsx(
-                "relative flex items-center w-full pl-[24px] pr-[12px] py-[8px] text-[0.85rem] text-sidebar-color opacity-80 transition-colors duration-200 no-underline cursor-pointer bg-transparent border-none",
-                "hover:opacity-100 hover:text-sidebar-active hover:bg-sidebar-hover hover:rounded-[8px] hover:translate-x-[4px]",
+                "relative flex items-center w-full pl-[24px] pr-[12px] py-[8px] text-[0.85rem] text-sidebar-color opacity-80 transition-[color,background-color,opacity,padding] duration-200 no-underline cursor-pointer bg-transparent border-none rounded-[8px]",
+                "hover:opacity-100 hover:text-sidebar-active hover:bg-sidebar-hover hover:pl-[28px] hover:pr-[8px]",
                 // Active state
-                active && "!text-sidebar-active opacity-100 font-semibold hover:translate-x-0",
+                active && "!text-sidebar-active opacity-100 font-semibold hover:pl-[24px] hover:pr-[12px]",
                 // Dot indicator
                 active && "before:content-[''] before:absolute before:left-[-4px] before:top-1/2 before:-translate-y-1/2 before:w-[7px] before:h-[7px] before:rounded-full before:bg-sidebar-bg before:border-2 before:border-sidebar-active before:shadow-sidebar-active before:z-10",
                 className

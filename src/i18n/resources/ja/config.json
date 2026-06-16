@@ -1,0 +1,10 @@
+{
+  "save": {
+    "success": "設定を保存しました",
+    "failed": "保存に失敗しました: {{message}}"
+  },
+  "general": {
+    "title": "一般設定",
+    "description": "ネットワークとシステム連携"
+  }
+}
