@@ -1,6 +1,6 @@
 "use client"
 
-import { useDelay, usePageVisible } from "@/common/hooks"
+import { useDelay } from "@/common/hooks"
 import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "@/common/proto"
 import { Button } from "@/component/v2/button"
 import { IconBadge } from "@/component/v2/card"
@@ -179,7 +179,6 @@ const connectionsReducer = (state: ConnectionsState, action: ConnectionAction): 
 function Connections() {
     const [info, setInfo] = useState<{ id: string, show: boolean }>({ id: "", show: false });
     const shouldFetch = useDelay(400)
-    const isPageVisible = usePageVisible()
     const [connsMap, dispatch] = React.useReducer(connectionsReducer, {})
     const countersStore = useMemo(() => new ConnectionCountersStore(), [])
     const subscriptionId = React.useId()
@@ -234,7 +233,7 @@ function Connections() {
                 onHide={() => setNodeModal(prev => ({ ...prev, show: false }))}
             />
 
-            <FlowContainer onUpdate={updateCounters} enabled={isPageVisible} />
+            <FlowContainer onUpdate={updateCounters} />
 
             <InfoOffcanvas
                 data={selectedConnection ?? create(connectionSchema, {})}
