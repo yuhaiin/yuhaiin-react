@@ -6,6 +6,9 @@ import { formatBytes } from '../connections/components';
 import { Tooltip } from './tooltip';
 
 const BUFFER_GROWTH_SIZE = 1024;
+const TOOLTIP_WIDTH = 176;
+const TOOLTIP_HEIGHT = 72;
+const TOOLTIP_GAP = 12;
 
 function niceMax(value: number) {
     if (value <= 0) return 1;
@@ -157,7 +160,6 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<HTMLDivElement>(null);
     const uPlotInst = useRef<uPlot | null>(null);
-    const tooltipRef = useRef<HTMLDivElement>(null);
     const [tooltip, setTooltip] = useState({
         visible: false,
         left: 0,
@@ -286,14 +288,31 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
 
                         const chartLeft = u.bbox.left;
                         const chartTop = u.bbox.top;
+                        const wrapperRect = wrapperRef.current?.getBoundingClientRect();
+                        const viewportWidth = window.innerWidth;
+                        const viewportHeight = window.innerHeight;
+                        const originLeft = wrapperRect?.left ?? 0;
+                        const originTop = wrapperRect?.top ?? 0;
 
-                        let left = chartLeft + cursorLeft + 20;
-                        if (left > u.width - 150) left = chartLeft + cursorLeft - 160;
+                        let left = originLeft + chartLeft + cursorLeft + TOOLTIP_GAP;
+                        if (left + TOOLTIP_WIDTH > viewportWidth - TOOLTIP_GAP) {
+                            left = originLeft + chartLeft + cursorLeft - TOOLTIP_WIDTH - TOOLTIP_GAP;
+                        }
+
+                        let top = originTop + chartTop + cursorTop - TOOLTIP_HEIGHT / 2;
+                        if (top + TOOLTIP_HEIGHT > viewportHeight - TOOLTIP_GAP) {
+                            top = originTop + chartTop + cursorTop - TOOLTIP_HEIGHT - TOOLTIP_GAP;
+                        }
+
+                        const maxLeft = Math.max(TOOLTIP_GAP, viewportWidth - TOOLTIP_WIDTH - TOOLTIP_GAP);
+                        const maxTop = Math.max(TOOLTIP_GAP, viewportHeight - TOOLTIP_HEIGHT - TOOLTIP_GAP);
+                        left = Math.min(Math.max(left, TOOLTIP_GAP), maxLeft);
+                        top = Math.min(Math.max(top, TOOLTIP_GAP), maxTop);
 
                         setTooltip({
                             visible: true,
                             left,
-                            top: chartTop + cursorTop,
+                            top,
                             label,
                             upload,
                             download,
@@ -347,26 +366,19 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
     }, []);
 
     return (
-        <>
-            <Tooltip {...tooltip} />
+        <div
+            ref={wrapperRef}
+            className="relative w-full h-full flex-auto flex flex-col min-w-0"
+            style={{
+                minHeight: minHeight,
+            }}
+        >
             <div
-                ref={wrapperRef}
-                className="relative w-full h-full flex-auto flex flex-col min-w-0"
-                style={{
-                    minHeight: minHeight,
-                }}
-            >
-                <div
-                    ref={chartRef}
-                    className="absolute top-0 left-0 w-full h-full overflow-hidden"
-                />
-
-                <div
-                    ref={tooltipRef}
-                    className="absolute hidden top-0 left-0 z-[100] pointer-events-none bg-slate-900/90 border-0 p-0 rounded-md shadow-md text-white text-[6px] whitespace-nowrap transition-opacity duration-100"
-                />
-            </div >
-        </>
+                ref={chartRef}
+                className="absolute top-0 left-0 w-full h-full overflow-hidden"
+            />
+            <Tooltip {...tooltip} />
+        </div>
     );
 };
 

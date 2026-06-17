@@ -20,7 +20,7 @@ function Test() {
     const [testing, setTesting] = useState(false);
 
     // Clipboard hook for copying results
-    const { copy, copied } = useClipboard({ usePromptAsFallback: true });
+    const { copy, copied, manualCopyModal } = useClipboard({ usePromptAsFallback: true });
 
     useEffect(() => {
         if (copied) ctx.Info("Result copied to clipboard!");
@@ -45,6 +45,8 @@ function Test() {
 
     return (
         <MainContainer>
+            {manualCopyModal}
+
             {/* 1. Input Card */}
             <Card className="mb-4">
                 <CardHeader>

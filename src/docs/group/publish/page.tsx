@@ -239,7 +239,7 @@ function PublishPage() {
     const [modalState, setModalState] = useState({ show: false, isEdit: false, configName: '', item: create(PublishSchema, {}) });
     const [confirmDelete, setConfirmDelete] = useState({ show: false, name: '' });
 
-    const { copy, copied } = useClipboard({
+    const { copy, copied, manualCopyModal } = useClipboard({
         onCopyError: (e) => ctx.Error(e.message),
         usePromptAsFallback: true,
     });
@@ -259,6 +259,8 @@ function PublishPage() {
 
     return (
         <>
+            {manualCopyModal}
+
             <EditModal
                 show={modalState.show}
                 isEdit={modalState.isEdit}

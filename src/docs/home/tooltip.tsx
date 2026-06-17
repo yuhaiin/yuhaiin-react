@@ -1,4 +1,5 @@
 import { formatBytes } from "../connections/components";
+import { createPortal } from "react-dom";
 
 interface TooltipProps {
     label?: string;
@@ -10,9 +11,11 @@ interface TooltipProps {
 }
 
 export const Tooltip: React.FC<TooltipProps> = ({ label, upload, download, left, top, visible }) => {
-    return (
+    if (typeof document === "undefined") return null;
+
+    return createPortal(
         <div
-            className={`absolute pointer-events-none bg-black p-2 rounded text-white text-xs min-w-[120px] z-10 ${visible ? 'block' : 'hidden'}`}
+            className={`fixed pointer-events-none bg-black p-2 rounded text-white text-xs w-[176px] z-[2147483646] shadow-md ${visible ? 'block' : 'hidden'}`}
             style={{
                 left,
                 top,
@@ -29,6 +32,7 @@ export const Tooltip: React.FC<TooltipProps> = ({ label, upload, download, left,
                 <span className="text-slate-300">Download:</span>
                 <span className="font-medium">{formatBytes(download ?? 0, 2, ' ') + '/S'}</span>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };

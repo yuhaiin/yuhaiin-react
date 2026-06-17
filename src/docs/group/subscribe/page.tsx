@@ -127,7 +127,7 @@ function Subscribe() {
     const [updating, setUpdating] = useState<{ [key: string]: boolean }>({});
     const [showAddModal, setShowAddModal] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState<{ show: boolean, name: string }>({ show: false, name: "" });
-    const { copy, copied } = useClipboard({
+    const { copy, copied, manualCopyModal } = useClipboard({
         usePromptAsFallback: true
     });
 
@@ -173,6 +173,8 @@ function Subscribe() {
 
     return (
         <MainContainer>
+            {manualCopyModal}
+
             {/* Delete Confirmation Modal */}
             <ConfirmModal
                 show={confirmDelete.show}

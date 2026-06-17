@@ -36,7 +36,7 @@ const NodeModalComponent: FC<{
         const ctx = useContext(GlobalToastContext);
 
         const interfaces = useInterfaces();
-        const { copy, copied } = useClipboard({
+        const { copy, copied, manualCopyModal } = useClipboard({
             onCopyError: (e) => ctx.Error(t('copyFailed', { message: e.message })),
             usePromptAsFallback: true, // Use prompt as fallback for older browsers or if clipboard access is denied
         });
@@ -66,78 +66,82 @@ const NodeModalComponent: FC<{
         };
 
         return (
-            <Modal open={show} onOpenChange={(open) => !open && onHide()}>
-                <ModalContent className="!max-w-[1000px] !w-fit md:min-w-[600px] min-w-[90vw]">
-                    <ModalHeader closeButton className="border-b-0 pb-0">
-                        <ModalTitle className="font-bold">{nodes?.name || hash}</ModalTitle>
-                    </ModalHeader>
+            <>
+                {manualCopyModal}
 
-                    <ModalBody className="pt-2">
-                        <InterfacesContext.Provider value={interfaces}>
-                            {error ?
-                                <ErrorDisplay statusCode={error.code} title={error.msg} raw={error.raw} /> :
-                                isValidating || isLoading || !nodes ? <Loading /> :
-                                    <div className="p-1">
-                                        <Point
-                                            editable={editable}
-                                            value={nodes}
-                                            groups={groups}
-                                            onChange={(e) => {
-                                                if (!editable) return
-                                                mutate(prev => { return { ...prev, ...e } }, false)
-                                            }}
-                                        />
-                                    </div>
-                            }
-                        </InterfacesContext.Provider>
-                    </ModalBody>
+                <Modal open={show} onOpenChange={(open) => !open && onHide()}>
+                    <ModalContent className="!max-w-[1000px] !w-fit md:min-w-[600px] min-w-[90vw]">
+                        <ModalHeader closeButton className="border-b-0 pb-0">
+                            <ModalTitle className="font-bold">{nodes?.name || hash}</ModalTitle>
+                        </ModalHeader>
 
-                    <ModalFooter className="flex justify-between">
-                        <div>
-                            {onDelete &&
-                                <Dropdown>
-                                    <DropdownTrigger asChild>
-                                        <Button variant="outline-danger"><Trash size={16} className="mr-2" />{t('common:action.remove')}</Button>
-                                    </DropdownTrigger>
-                                    <DropdownContent>
-                                        <DropdownItem className="text-red-500 font-bold" onSelect={() => { onHide(); onDelete(); }}>{t('common:action.confirmDelete')}</DropdownItem>
-                                        <DropdownItem>{t('common:action.cancel')}</DropdownItem>
-                                    </DropdownContent>
-                                </Dropdown>
-                            }
-                        </div>
-                        <div className="flex gap-2">
-                            {(!error && !isValidating && !isLoading && nodes) &&
-                                <Button
-                                    onClick={handleCopyJson}
-                                >
-                                    {copied ? <ClipboardCheck size={16} /> : <Clipboard size={16} />}
-                                </Button>
-                            }
-                            <Button onClick={onHide}>{t('common:action.close')}</Button>
-                            {editable && (
-                                <Button
-                                    disabled={isValidating || isLoading || !!error}
-                                    onClick={() => {
-                                        if (!nodes) return
-                                        const next = clone(pointSchema, nodes);
-                                        if (isNew) next.hash = ""
-                                        FetchProtobuf(node.method.save, next)
-                                            .then(async ({ error }) => {
-                                                if (!error) {
-                                                    ctx.Info(t('saveSuccess'))
-                                                    if (onSave) onSave();
-                                                } else ctx.Error(error.msg)
-                                            })
-                                    }}
-                                >
-                                    {isValidating || isLoading ? <Spinner size="sm" /> : t('common:action.save')}
-                                </Button>
-                            )}
-                        </div>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
+                        <ModalBody className="pt-2">
+                            <InterfacesContext.Provider value={interfaces}>
+                                {error ?
+                                    <ErrorDisplay statusCode={error.code} title={error.msg} raw={error.raw} /> :
+                                    isValidating || isLoading || !nodes ? <Loading /> :
+                                        <div className="p-1">
+                                            <Point
+                                                editable={editable}
+                                                value={nodes}
+                                                groups={groups}
+                                                onChange={(e) => {
+                                                    if (!editable) return
+                                                    mutate(prev => { return { ...prev, ...e } }, false)
+                                                }}
+                                            />
+                                        </div>
+                                }
+                            </InterfacesContext.Provider>
+                        </ModalBody>
+
+                        <ModalFooter className="flex justify-between">
+                            <div>
+                                {onDelete &&
+                                    <Dropdown>
+                                        <DropdownTrigger asChild>
+                                            <Button variant="outline-danger"><Trash size={16} className="mr-2" />{t('common:action.remove')}</Button>
+                                        </DropdownTrigger>
+                                        <DropdownContent>
+                                            <DropdownItem className="text-red-500 font-bold" onSelect={() => { onHide(); onDelete(); }}>{t('common:action.confirmDelete')}</DropdownItem>
+                                            <DropdownItem>{t('common:action.cancel')}</DropdownItem>
+                                        </DropdownContent>
+                                    </Dropdown>
+                                }
+                            </div>
+                            <div className="flex gap-2">
+                                {(!error && !isValidating && !isLoading && nodes) &&
+                                    <Button
+                                        onClick={handleCopyJson}
+                                    >
+                                        {copied ? <ClipboardCheck size={16} /> : <Clipboard size={16} />}
+                                    </Button>
+                                }
+                                <Button onClick={onHide}>{t('common:action.close')}</Button>
+                                {editable && (
+                                    <Button
+                                        disabled={isValidating || isLoading || !!error}
+                                        onClick={() => {
+                                            if (!nodes) return
+                                            const next = clone(pointSchema, nodes);
+                                            if (isNew) next.hash = ""
+                                            FetchProtobuf(node.method.save, next)
+                                                .then(async ({ error }) => {
+                                                    if (!error) {
+                                                        ctx.Info(t('saveSuccess'))
+                                                        if (onSave) onSave();
+                                                    } else ctx.Error(error.msg)
+                                                })
+                                        }}
+                                    >
+                                        {isValidating || isLoading ? <Spinner size="sm" /> : t('common:action.save')}
+                                    </Button>
+                                )}
+                            </div>
+                        </ModalFooter>
+                    </ModalContent>
+                </Modal>
+            </>
         );
     }
 
