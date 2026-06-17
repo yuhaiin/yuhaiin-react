@@ -28,9 +28,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         // ...props now contains native properties like onClick, onChange, value, etc., excluding size
 
         const radiusClass =
-            groupPosition === 'first' ? 'rounded-r-none border-r-0' :
-                groupPosition === 'last' ? 'rounded-l-none' :
-                    groupPosition === 'middle' ? 'rounded-none border-r-0' :
+            groupPosition === 'first' ? '!rounded-r-none !border-r-0' :
+                groupPosition === 'last' ? '!rounded-l-none' :
+                    groupPosition === 'middle' ? '!rounded-none !border-r-0' :
                         '';
 
         return (

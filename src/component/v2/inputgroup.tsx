@@ -89,9 +89,9 @@ const InputGroupText = React.forwardRef<
 
     // Logic for radius based on position:
     const radiusClass =
-        groupPosition === 'first' ? 'rounded-r-none border-r-0' :
-        groupPosition === 'last' ? 'rounded-l-none' :
-        groupPosition === 'middle' ? 'rounded-none border-r-0' :
+        groupPosition === 'first' ? '!rounded-r-none !border-r-0' :
+        groupPosition === 'last' ? '!rounded-l-none' :
+        groupPosition === 'middle' ? '!rounded-none !border-r-0' :
         ''; // single -> keep default radius
 
     return (

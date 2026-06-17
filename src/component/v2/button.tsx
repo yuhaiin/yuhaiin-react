@@ -30,9 +30,9 @@ const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
         const Comp = asChild ? (hasMotionProps ? MotionSlot : Slot) : (hasMotionProps ? motion.button : "button");
 
         const radiusClasses = {
-            first: 'rounded-r-none border-r-0',
-            last: 'rounded-l-none',
-            middle: 'rounded-none border-r-0',
+            first: '!rounded-r-none !border-r-0',
+            last: '!rounded-l-none',
+            middle: '!rounded-none !border-r-0',
             single: '',
         };
         const radiusClass = groupPosition ? radiusClasses[groupPosition] : '';
