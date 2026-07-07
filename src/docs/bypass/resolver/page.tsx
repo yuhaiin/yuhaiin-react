@@ -1,5 +1,6 @@
 "use client"
 
+import { Badge } from '@/component/v2/badge';
 import { Button } from '@/component/v2/button';
 import { CardRowList, IconBox, MainContainer } from '@/component/v2/card';
 import { SettingInputVertical, SettingTypeSelect } from '@/component/v2/forms';
@@ -8,17 +9,51 @@ import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
-import { Check, ChevronRight, Layers, Network, ShieldCheck, Trash } from 'lucide-react';
+import { Check, ChevronRight, Layers, Network, Trash } from 'lucide-react';
 import { FC, useContext, useEffect, useState } from "react";
 import useSWR from "swr";
-import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../../common/proto";
+import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR, useProtoSWRRequest } from "../../../common/proto";
 import { ConfirmModal } from "../../../component/v2/confirm";
 import Loading, { Error } from "../../../component/v2/loading";
-import { resolver, save_resolverSchema } from "../../pbes/api/config_pb";
+import { page_requestSchema, resolver, resolver_item, save_resolverSchema } from "../../pbes/api/config_pb";
 import { dns, dnsSchema, type, typeSchema } from "../../pbes/config/dns_pb";
 import { Fakedns } from "./fakedns";
 import { Hosts } from "./hosts";
 import { Server } from "./server";
+
+const PAGE_SIZE = 8;
+
+const ResolverItem: FC<{ item: resolver_item }> = ({ item }) => {
+    return (
+        <>
+            <div className="grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(190px,0.34fr)_minmax(0,1fr)] md:items-center">
+                <div className="flex min-w-0 items-center">
+                    <Network className="mr-4 text-gray-500 dark:text-gray-400 shrink-0" size={20} />
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <span className="truncate font-medium">{item.name}</span>
+                        <Badge variant="info" className="shrink-0">{item.type}</Badge>
+                        {item.system && <Badge variant="primary" className="shrink-0">System</Badge>}
+                    </div>
+                </div>
+                <div className="grid min-w-0 gap-2 text-xs text-ui-muted sm:grid-cols-3">
+                    <div className="min-w-0">
+                        <span className="mr-1 text-ui-muted/70">Host</span>
+                        <span className="truncate font-mono font-medium text-ui-fg">{item.host || "-"}</span>
+                    </div>
+                    <div className="min-w-0">
+                        <span className="mr-1 text-ui-muted/70">Subnet</span>
+                        <span className="truncate font-mono font-medium text-ui-fg">{item.subnet || "-"}</span>
+                    </div>
+                    <div className="min-w-0">
+                        <span className="mr-1 text-ui-muted/70">TLS</span>
+                        <span className="truncate font-mono font-medium text-ui-fg">{item.tlsServername || "-"}</span>
+                    </div>
+                </div>
+            </div>
+            <ChevronRight className="text-gray-500 dark:text-gray-400 opacity-25 ml-2 shrink-0" size={16} />
+        </>
+    )
+}
 
 export default function ResolverComponent() {
     return (
@@ -44,12 +79,20 @@ export default function ResolverComponent() {
 
 function Resolver() {
     const ctx = useContext(GlobalToastContext);
-    const { data: resolvers, error, isLoading, mutate } = useProtoSWR(resolver.method.list)
+    const [page, setPage] = useState(1);
+    const { data: resolvers, error, isLoading, mutate } = useProtoSWRRequest(
+        resolver.method.list_page,
+        create(page_requestSchema, { page, pageSize: PAGE_SIZE }),
+    )
+    const { data: allResolvers, mutate: mutateAllResolvers } = useProtoSWR(resolver.method.list, { revalidateOnFocus: false })
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
     const [confirm, setConfirm] = useState<{ show: boolean, name: string }>({ show: false, name: "" });
 
     if (error !== undefined) return <Loading code={error.code}>{error.msg}</Loading>
     if (isLoading || resolvers === undefined) return <Loading />
+    const resolverItems: resolver_item[] = resolvers.items.length > 0
+        ? resolvers.items
+        : resolvers.names.map((name) => ({ name, type: "", host: "", subnet: "", tlsServername: "", system: name === "bootstrap" }));
 
     const deleteResolver = (name: string) => {
         FetchProtobuf(resolver.method.remove, create(StringValueSchema, { value: name }),)
@@ -57,6 +100,7 @@ function Resolver() {
                 if (error === undefined) {
                     ctx.Info("remove successful")
                     mutate()
+                    mutateAllResolvers()
                 } else {
                     ctx.Error(error.msg)
                     console.error(error.code, error.msg)
@@ -65,7 +109,7 @@ function Resolver() {
     }
 
     const handleCreate = (v: string) => {
-        if (resolvers.names.includes(v)) return;
+        if (allResolvers?.names.includes(v) || resolvers.names.includes(v)) return;
 
         if (showdata.name === v && showdata.new) {
             setShowdata(prev => { return { ...prev, show: true } })
@@ -93,6 +137,7 @@ function Resolver() {
             onHide={(save) => {
                 if (save) {
                     mutate();
+                    mutateAllResolvers();
                 }
                 setShowdata(prev => { return { ...prev, show: false } })
             }}
@@ -100,16 +145,16 @@ function Resolver() {
         />
 
         <CardRowList
-            items={resolvers.names.sort((a, b) => a.localeCompare(b))}
-            renderListItem={(v) =>
-                <>
-                    <Network className="mr-4 text-gray-500 dark:text-gray-400" size={20} />
-                    <span className="flex-grow truncate font-medium">{v}</span>
-                    {v === 'bootstrap' && <ShieldCheck className="text-blue-500 ml-2" size={16} title="System Default" />}
-                    <ChevronRight className="text-gray-500 dark:text-gray-400 opacity-25 ml-2" size={16} />
-                </>
-            }
-            onClickItem={(v) => setShowdata({ show: true, name: v, new: false })}
+            layout="list"
+            paginated
+            pageSize={PAGE_SIZE}
+            currentPage={resolvers.page?.page || page}
+            totalItems={resolvers.page?.total ?? resolvers.names.length}
+            onPageChange={setPage}
+            items={resolverItems}
+            getKey={(item) => item.name}
+            renderListItem={(item) => <ResolverItem item={item} />}
+            onClickItem={(item) => setShowdata({ show: true, name: item.name, new: false })}
             onAddNew={handleCreate}
             header={<IconBox icon={Layers} color="#3b82f6" title='Resolvers' description='Upstream DNS Resolvers' />}
         />

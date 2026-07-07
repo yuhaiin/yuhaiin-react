@@ -12,6 +12,15 @@ export function useProtoSWR<I extends DescMessage, O extends DescMessage>(
     return useSWR(m ? ProtoPath(m) : null, m ? ProtoESFetcher(m) : null, options)
 }
 
+export function useProtoSWRRequest<I extends DescMessage, O extends DescMessage>(
+    m: (DescMethod & { methodKind: "unary"; input: I; output: O; }) | null,
+    body?: MessageShape<I>,
+    options?: SWRConfiguration,
+): SWRResponse<MessageShape<O>, { msg: string, code: number }> {
+    const key = m ? `${ProtoPath(m)}:${body ? Array.from(toBinary(m.input, body)).join(".") : ""}` : null;
+    return useSWR(key, m ? ProtoESFetcher(m, body) : null, options)
+}
+
 export const ProtoPath = (m: DescMethod) => `/${m.parent.typeName}/${m.name}`
 
 function getAuthHeaders(): HeadersInit {

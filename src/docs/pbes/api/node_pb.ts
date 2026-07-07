@@ -20,7 +20,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file api/node.proto.
  */
 export const file_api_node: GenFile = /*@__PURE__*/
-  fileDesc("Cg5hcGkvbm9kZS5wcm90bxIQeXVoYWlpbi5hcGkubm9kZSJQCghub3dfcmVzcBIhCgN0Y3AYASABKAsyFC55dWhhaWluLnBvaW50LnBvaW50EiEKA3VkcBgCIAEoCzIULnl1aGFpaW4ucG9pbnQucG9pbnQiLQoHdXNlX3JlcRIMCgRoYXNoGAMgASgJSgQIARACSgQIAhADUgN0Y3BSA3VkcCK2AQoNTm9kZXNSZXNwb25zZRI1CgZncm91cHMYASADKAsyJS55dWhhaWluLmFwaS5ub2RlLk5vZGVzUmVzcG9uc2UuR3JvdXAaIgoETm9kZRIMCgRoYXNoGAEgASgJEgwKBG5hbWUYAiABKAkaSgoFR3JvdXASDAoEbmFtZRgBIAEoCRIzCgVub2RlcxgDIAMoCzIkLnl1aGFpaW4uYXBpLm5vZGUuTm9kZXNSZXNwb25zZS5Ob2RlIjkKEmFjdGl2YXRlc19yZXNwb25zZRIjCgVub2RlcxgBIAMoCzIULnl1aGFpaW4ucG9pbnQucG9pbnQiTwoSU2F2ZVB1Ymxpc2hSZXF1ZXN0EgwKBG5hbWUYASABKAkSKwoHcHVibGlzaBgCIAEoCzIaLnl1aGFpaW4uc3Vic2NyaWJlLlB1Ymxpc2girAEKE0xpc3RQdWJsaXNoUmVzcG9uc2USRwoJcHVibGlzaGVzGAEgAygLMjQueXVoYWlpbi5hcGkubm9kZS5MaXN0UHVibGlzaFJlc3BvbnNlLlB1Ymxpc2hlc0VudHJ5GkwKDlB1Ymxpc2hlc0VudHJ5EgsKA2tleRgBIAEoCRIpCgV2YWx1ZRgCIAEoCzIaLnl1aGFpaW4uc3Vic2NyaWJlLlB1Ymxpc2g6AjgBIj4KDlB1Ymxpc2hSZXF1ZXN0EgwKBG5hbWUYASABKAkSEAoIcGFzc3dvcmQYAiABKAkSDAoEcGF0aBgDIAEoCSI3Cg9QdWJsaXNoUmVzcG9uc2USJAoGcG9pbnRzGAEgAygLMhQueXVoYWlpbi5wb2ludC5wb2ludCI3Cg1zYXZlX2xpbmtfcmVxEiYKBWxpbmtzGAEgAygLMhcueXVoYWlpbi5zdWJzY3JpYmUubGluayIZCghsaW5rX3JlcRINCgVuYW1lcxgBIAMoCSKTAQoOZ2V0X2xpbmtzX3Jlc3ASOgoFbGlua3MYASADKAsyKy55dWhhaWluLmFwaS5ub2RlLmdldF9saW5rc19yZXNwLkxpbmtzRW50cnkaRQoKTGlua3NFbnRyeRILCgNrZXkYASABKAkSJgoFdmFsdWUYAiABKAsyFy55dWhhaWluLnN1YnNjcmliZS5saW5rOgI4ASJOCgxzYXZlX3RhZ19yZXESCwoDdGFnGAEgASgJEiMKBHR5cGUYAyABKA4yFS55dWhhaWluLnRhZy50YWdfdHlwZRIMCgRoYXNoGAIgASgJIogBCg10YWdzX3Jlc3BvbnNlEjcKBHRhZ3MYASADKAsyKS55dWhhaWluLmFwaS5ub2RlLnRhZ3NfcmVzcG9uc2UuVGFnc0VudHJ5Gj4KCVRhZ3NFbnRyeRILCgNrZXkYASABKAkSIAoFdmFsdWUYAiABKAsyES55dWhhaWluLnRhZy50YWdzOgI4ATK0BAoEbm9kZRI5CgNub3cSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGi55dWhhaWluLmFwaS5ub2RlLm5vd19yZXNwEjYKA3VzZRIZLnl1aGFpaW4uYXBpLm5vZGUudXNlX3JlcRoULnl1aGFpaW4ucG9pbnQucG9pbnQSOQoDZ2V0EhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhQueXVoYWlpbi5wb2ludC5wb2ludBIyCgRzYXZlEhQueXVoYWlpbi5wb2ludC5wb2ludBoULnl1aGFpaW4ucG9pbnQucG9pbnQSPgoGcmVtb3ZlEhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5Ej8KBGxpc3QSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaHy55dWhhaWluLmFwaS5ub2RlLk5vZGVzUmVzcG9uc2USSQoJYWN0aXZhdGVzEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GiQueXVoYWlpbi5hcGkubm9kZS5hY3RpdmF0ZXNfcmVzcG9uc2USPQoFY2xvc2USHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSPwoHbGF0ZW5jeRIZLnl1aGFpaW4ubGF0ZW5jeS5yZXF1ZXN0cxoZLnl1aGFpaW4ubGF0ZW5jeS5yZXNwb25zZTK+BAoJc3Vic2NyaWJlEj8KBHNhdmUSHy55dWhhaWluLmFwaS5ub2RlLnNhdmVfbGlua19yZXEaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSPAoGcmVtb3ZlEhoueXVoYWlpbi5hcGkubm9kZS5saW5rX3JlcRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI8CgZ1cGRhdGUSGi55dWhhaWluLmFwaS5ub2RlLmxpbmtfcmVxGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5Ej8KA2dldBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRogLnl1aGFpaW4uYXBpLm5vZGUuZ2V0X2xpbmtzX3Jlc3ASRgoOcmVtb3ZlX3B1Ymxpc2gSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSTQoMbGlzdF9wdWJsaXNoEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GiUueXVoYWlpbi5hcGkubm9kZS5MaXN0UHVibGlzaFJlc3BvbnNlEkwKDHNhdmVfcHVibGlzaBIkLnl1aGFpaW4uYXBpLm5vZGUuU2F2ZVB1Ymxpc2hSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5Ek4KB3B1Ymxpc2gSIC55dWhhaWluLmFwaS5ub2RlLlB1Ymxpc2hSZXF1ZXN0GiEueXVoYWlpbi5hcGkubm9kZS5QdWJsaXNoUmVzcG9uc2UyxgEKA3RhZxI+CgRzYXZlEh4ueXVoYWlpbi5hcGkubm9kZS5zYXZlX3RhZ19yZXEaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSPgoGcmVtb3ZlEhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5Ej8KBGxpc3QSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaHy55dWhhaWluLmFwaS5ub2RlLnRhZ3NfcmVzcG9uc2VCNVorZ2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL2FwaZIDBdI+AhADYghlZGl0aW9uc3DoBw", [file_google_protobuf_empty, file_google_protobuf_wrappers, file_node_point, file_node_subscribe, file_node_latency, file_node_tag, file_google_protobuf_go_features]);
+  fileDesc("Cg5hcGkvbm9kZS5wcm90bxIQeXVoYWlpbi5hcGkubm9kZSJQCghub3dfcmVzcBIhCgN0Y3AYASABKAsyFC55dWhhaWluLnBvaW50LnBvaW50EiEKA3VkcBgCIAEoCzIULnl1aGFpaW4ucG9pbnQucG9pbnQiLQoHdXNlX3JlcRIMCgRoYXNoGAMgASgJSgQIARACSgQIAhADUgN0Y3BSA3VkcCK2AQoNTm9kZXNSZXNwb25zZRI1CgZncm91cHMYASADKAsyJS55dWhhaWluLmFwaS5ub2RlLk5vZGVzUmVzcG9uc2UuR3JvdXAaIgoETm9kZRIMCgRoYXNoGAEgASgJEgwKBG5hbWUYAiABKAkaSgoFR3JvdXASDAoEbmFtZRgBIAEoCRIzCgVub2RlcxgDIAMoCzIkLnl1aGFpaW4uYXBpLm5vZGUuTm9kZXNSZXNwb25zZS5Ob2RlIjkKEmFjdGl2YXRlc19yZXNwb25zZRIjCgVub2RlcxgBIAMoCzIULnl1aGFpaW4ucG9pbnQucG9pbnQiTwoSU2F2ZVB1Ymxpc2hSZXF1ZXN0EgwKBG5hbWUYASABKAkSKwoHcHVibGlzaBgCIAEoCzIaLnl1aGFpaW4uc3Vic2NyaWJlLlB1Ymxpc2girAEKE0xpc3RQdWJsaXNoUmVzcG9uc2USRwoJcHVibGlzaGVzGAEgAygLMjQueXVoYWlpbi5hcGkubm9kZS5MaXN0UHVibGlzaFJlc3BvbnNlLlB1Ymxpc2hlc0VudHJ5GkwKDlB1Ymxpc2hlc0VudHJ5EgsKA2tleRgBIAEoCRIpCgV2YWx1ZRgCIAEoCzIaLnl1aGFpaW4uc3Vic2NyaWJlLlB1Ymxpc2g6AjgBIj4KDlB1Ymxpc2hSZXF1ZXN0EgwKBG5hbWUYASABKAkSEAoIcGFzc3dvcmQYAiABKAkSDAoEcGF0aBgDIAEoCSI3Cg9QdWJsaXNoUmVzcG9uc2USJAoGcG9pbnRzGAEgAygLMhQueXVoYWlpbi5wb2ludC5wb2ludCI3Cg1zYXZlX2xpbmtfcmVxEiYKBWxpbmtzGAEgAygLMhcueXVoYWlpbi5zdWJzY3JpYmUubGluayIZCghsaW5rX3JlcRINCgVuYW1lcxgBIAMoCSKTAQoOZ2V0X2xpbmtzX3Jlc3ASOgoFbGlua3MYASADKAsyKy55dWhhaWluLmFwaS5ub2RlLmdldF9saW5rc19yZXNwLkxpbmtzRW50cnkaRQoKTGlua3NFbnRyeRILCgNrZXkYASABKAkSJgoFdmFsdWUYAiABKAsyFy55dWhhaWluLnN1YnNjcmliZS5saW5rOgI4ASJOCgxzYXZlX3RhZ19yZXESCwoDdGFnGAEgASgJEiMKBHR5cGUYAyABKA4yFS55dWhhaWluLnRhZy50YWdfdHlwZRIMCgRoYXNoGAIgASgJIt0BCg10YWdzX3Jlc3BvbnNlEjcKBHRhZ3MYASADKAsyKS55dWhhaWluLmFwaS5ub2RlLnRhZ3NfcmVzcG9uc2UuVGFnc0VudHJ5EikKBWl0ZW1zGAIgAygLMhoueXVoYWlpbi5hcGkubm9kZS50YWdfaXRlbRIoCgRwYWdlGAMgASgLMhoueXVoYWlpbi5hcGkubm9kZS50YWdfcGFnZRo+CglUYWdzRW50cnkSCwoDa2V5GAEgASgJEiAKBXZhbHVlGAIgASgLMhEueXVoYWlpbi50YWcudGFnczoCOAEiOAoIdGFnX2l0ZW0SDAoEbmFtZRgBIAEoCRIeCgN0YWcYAiABKAsyES55dWhhaWluLnRhZy50YWdzIk0KEHRhZ19wYWdlX3JlcXVlc3QSDAoEcGFnZRgBIAEoDRIcCglwYWdlX3NpemUYAiABKA1SCXBhZ2Vfc2l6ZRINCgVxdWVyeRgDIAEoCSJFCgh0YWdfcGFnZRIMCgRwYWdlGAEgASgNEhwKCXBhZ2Vfc2l6ZRgCIAEoDVIJcGFnZV9zaXplEg0KBXRvdGFsGAMgASgNMrQECgRub2RlEjkKA25vdxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoaLnl1aGFpaW4uYXBpLm5vZGUubm93X3Jlc3ASNgoDdXNlEhkueXVoYWlpbi5hcGkubm9kZS51c2VfcmVxGhQueXVoYWlpbi5wb2ludC5wb2ludBI5CgNnZXQSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFC55dWhhaWluLnBvaW50LnBvaW50EjIKBHNhdmUSFC55dWhhaWluLnBvaW50LnBvaW50GhQueXVoYWlpbi5wb2ludC5wb2ludBI+CgZyZW1vdmUSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSPwoEbGlzdBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRofLnl1aGFpaW4uYXBpLm5vZGUuTm9kZXNSZXNwb25zZRJJCglhY3RpdmF0ZXMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaJC55dWhhaWluLmFwaS5ub2RlLmFjdGl2YXRlc19yZXNwb25zZRI9CgVjbG9zZRIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI/CgdsYXRlbmN5EhkueXVoYWlpbi5sYXRlbmN5LnJlcXVlc3RzGhkueXVoYWlpbi5sYXRlbmN5LnJlc3BvbnNlMr4ECglzdWJzY3JpYmUSPwoEc2F2ZRIfLnl1aGFpaW4uYXBpLm5vZGUuc2F2ZV9saW5rX3JlcRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI8CgZyZW1vdmUSGi55dWhhaWluLmFwaS5ub2RlLmxpbmtfcmVxGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EjwKBnVwZGF0ZRIaLnl1aGFpaW4uYXBpLm5vZGUubGlua19yZXEaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSPwoDZ2V0EhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GiAueXVoYWlpbi5hcGkubm9kZS5nZXRfbGlua3NfcmVzcBJGCg5yZW1vdmVfcHVibGlzaBIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJNCgxsaXN0X3B1Ymxpc2gSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaJS55dWhhaWluLmFwaS5ub2RlLkxpc3RQdWJsaXNoUmVzcG9uc2USTAoMc2F2ZV9wdWJsaXNoEiQueXVoYWlpbi5hcGkubm9kZS5TYXZlUHVibGlzaFJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSTgoHcHVibGlzaBIgLnl1aGFpaW4uYXBpLm5vZGUuUHVibGlzaFJlcXVlc3QaIS55dWhhaWluLmFwaS5ub2RlLlB1Ymxpc2hSZXNwb25zZTKYAgoDdGFnEj4KBHNhdmUSHi55dWhhaWluLmFwaS5ub2RlLnNhdmVfdGFnX3JlcRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI+CgZyZW1vdmUSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSPwoEbGlzdBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRofLnl1aGFpaW4uYXBpLm5vZGUudGFnc19yZXNwb25zZRJQCglsaXN0X3BhZ2USIi55dWhhaWluLmFwaS5ub2RlLnRhZ19wYWdlX3JlcXVlc3QaHy55dWhhaWluLmFwaS5ub2RlLnRhZ3NfcmVzcG9uc2VCNVorZ2l0aHViLmNvbS9Bc3V0b3J1ZmEveXVoYWlpbi9wa2cvcHJvdG9zL2FwaZIDBdI+AhADYghlZGl0aW9uc3DoBw", [file_google_protobuf_empty, file_google_protobuf_wrappers, file_node_point, file_node_subscribe, file_node_latency, file_node_tag, file_google_protobuf_go_features]);
 
 /**
  * @generated from message yuhaiin.api.node.now_resp
@@ -308,6 +308,16 @@ export type tags_response = Message<"yuhaiin.api.node.tags_response"> & {
    * @generated from field: map<string, yuhaiin.tag.tags> tags = 1;
    */
   tags: { [key: string]: tags };
+
+  /**
+   * @generated from field: repeated yuhaiin.api.node.tag_item items = 2;
+   */
+  items: tag_item[];
+
+  /**
+   * @generated from field: yuhaiin.api.node.tag_page page = 3;
+   */
+  page?: tag_page | undefined;
 };
 
 /**
@@ -316,6 +326,82 @@ export type tags_response = Message<"yuhaiin.api.node.tags_response"> & {
  */
 export const tags_responseSchema: GenMessage<tags_response> = /*@__PURE__*/
   messageDesc(file_api_node, 12);
+
+/**
+ * @generated from message yuhaiin.api.node.tag_item
+ */
+export type tag_item = Message<"yuhaiin.api.node.tag_item"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * @generated from field: yuhaiin.tag.tags tag = 2;
+   */
+  tag?: tags | undefined;
+};
+
+/**
+ * Describes the message yuhaiin.api.node.tag_item.
+ * Use `create(tag_itemSchema)` to create a new message.
+ */
+export const tag_itemSchema: GenMessage<tag_item> = /*@__PURE__*/
+  messageDesc(file_api_node, 13);
+
+/**
+ * @generated from message yuhaiin.api.node.tag_page_request
+ */
+export type tag_page_request = Message<"yuhaiin.api.node.tag_page_request"> & {
+  /**
+   * @generated from field: uint32 page = 1;
+   */
+  page: number;
+
+  /**
+   * @generated from field: uint32 page_size = 2 [json_name = "page_size"];
+   */
+  pageSize: number;
+
+  /**
+   * @generated from field: string query = 3;
+   */
+  query: string;
+};
+
+/**
+ * Describes the message yuhaiin.api.node.tag_page_request.
+ * Use `create(tag_page_requestSchema)` to create a new message.
+ */
+export const tag_page_requestSchema: GenMessage<tag_page_request> = /*@__PURE__*/
+  messageDesc(file_api_node, 14);
+
+/**
+ * @generated from message yuhaiin.api.node.tag_page
+ */
+export type tag_page = Message<"yuhaiin.api.node.tag_page"> & {
+  /**
+   * @generated from field: uint32 page = 1;
+   */
+  page: number;
+
+  /**
+   * @generated from field: uint32 page_size = 2 [json_name = "page_size"];
+   */
+  pageSize: number;
+
+  /**
+   * @generated from field: uint32 total = 3;
+   */
+  total: number;
+};
+
+/**
+ * Describes the message yuhaiin.api.node.tag_page.
+ * Use `create(tag_pageSchema)` to create a new message.
+ */
+export const tag_pageSchema: GenMessage<tag_page> = /*@__PURE__*/
+  messageDesc(file_api_node, 15);
 
 /**
  * @generated from service yuhaiin.api.node.node
@@ -495,6 +581,14 @@ export const tag: GenService<{
   list: {
     methodKind: "unary";
     input: typeof EmptySchema;
+    output: typeof tags_responseSchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.api.node.tag.list_page
+   */
+  list_page: {
+    methodKind: "unary";
+    input: typeof tag_page_requestSchema;
     output: typeof tags_responseSchema;
   },
 }> = /*@__PURE__*/

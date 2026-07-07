@@ -1,5 +1,6 @@
 "use client"
 
+import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { CardRowList, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
 import { SettingInputVertical, SettingSelectVertical } from "@/component/v2/forms";
@@ -11,43 +12,58 @@ import { StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { ChevronRight, FileStack, Globe, Network, Plus, Save, Tags as TagsIcon, Trash } from 'lucide-react';
 import { FC, useContext, useState } from "react";
 import { Node, Nodes } from "../../../common/nodes";
-import { FetchProtobuf, useProtoSWR } from '../../../common/proto';
+import { FetchProtobuf, useProtoSWR, useProtoSWRRequest } from '../../../common/proto';
 import HeaderError from '../../../component/Error';
 import { ConfirmModal } from "../../../component/v2/confirm";
 import Loading from "../../../component/v2/loading";
 import { NodeModal } from "../../node/modal";
-import { node, save_tag_req, save_tag_reqSchema, tag, tags_response } from "../../pbes/api/node_pb";
-import { tag_type } from "../../pbes/node/tag_pb";
+import { node, save_tag_req, save_tag_reqSchema, tag, tag_item, tag_page_requestSchema, tags_response } from "../../pbes/api/node_pb";
+import { tag_type, type tags } from "../../pbes/node/tag_pb";
 
 const TagItem: FC<{
     tagName: string,
-    tagData: any,
+    tagData: tags,
     onDelete: () => void,
     onHashClick: (h: string) => void
 }> = ({ tagName, tagData, onDelete, onHashClick }) => {
     const isGlobal = tagData.hash.length === 0 || tagData.hash[0] === "";
     const isMirror = tagData.type === tag_type.mirror;
+    const target = tagData.hash[0] ?? "";
 
 
     return (
         <>
-            {isGlobal ? <Globe className="mr-4 text-gray-500 dark:text-gray-400" size={20} /> : isMirror ? <FileStack className="mr-4 text-gray-500 dark:text-gray-400" size={20} /> : <Network className="mr-4 text-gray-500 dark:text-gray-400" size={20} />}
-            <div className="flex flex-col overflow-hidden flex-grow min-w-0">
-                <span className="font-medium truncate">{tagName}</span>
-                {!isGlobal && (
-                    <small
-                        className="text-gray-500 dark:text-gray-400 truncate font-mono opacity-75 underline"
-                        style={{ cursor: 'pointer', fontSize: '0.75rem' }}
-                        onClick={(e) => {
-                            if (!isMirror) {
-                                e.stopPropagation();
-                                onHashClick(tagData.hash[0]);
-                            }
-                        }}
-                    >
-                        {isMirror ? `Mirror: ${tagData.hash[0]}` : tagData.hash[0]}
-                    </small>
-                )}
+            <div className="grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(190px,0.34fr)_minmax(0,1fr)] md:items-center">
+                <div className="flex min-w-0 items-center">
+                    {isGlobal ? <Globe className="mr-4 text-gray-500 dark:text-gray-400" size={20} /> : isMirror ? <FileStack className="mr-4 text-gray-500 dark:text-gray-400" size={20} /> : <Network className="mr-4 text-gray-500 dark:text-gray-400" size={20} />}
+                    <span className="font-medium truncate">{tagName}</span>
+                </div>
+                <div className="grid min-w-0 gap-2 text-xs text-ui-muted sm:grid-cols-3">
+                    <div className="min-w-0">
+                        <span className="mr-1 text-ui-muted/70">Type</span>
+                        <Badge variant={isGlobal ? "primary" : isMirror ? "info" : "secondary"} className="shrink-0">
+                            {isGlobal ? "Global" : isMirror ? "Mirror" : "Node"}
+                        </Badge>
+                    </div>
+                    {!isGlobal && (
+                        <button
+                            className="min-w-0 truncate border-0 bg-transparent p-0 text-left font-mono font-medium text-ui-fg underline"
+                            style={{ cursor: 'pointer' }}
+                            onClick={(e) => {
+                                if (!isMirror) {
+                                    e.stopPropagation();
+                                    onHashClick(tagData.hash[0]);
+                                }
+                            }}
+                        >
+                            <span className="mr-1 font-sans font-normal text-ui-muted/70">{isMirror ? "Mirror" : "Target"}</span>
+                            {target}
+                        </button>
+                    )}
+                    {isGlobal && (
+                        <div className="min-w-0 truncate text-ui-muted sm:col-span-2">Applies without a fixed node target</div>
+                    )}
+                </div>
             </div>
             <div className="flex gap-2 ml-4 items-center flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                 <Button
@@ -62,6 +78,8 @@ const TagItem: FC<{
         </>
     );
 };
+
+const PAGE_SIZE = 8;
 
 // --- Component: Tag Edit/Add Modal ---
 const TagModal: FC<{
@@ -147,7 +165,12 @@ const TagModal: FC<{
 
 function Tags() {
     const ctx = useContext(GlobalToastContext);
-    const { data, error, isLoading, mutate } = useProtoSWR(tag.method.list);
+    const [page, setPage] = useState(1);
+    const { data, error, isLoading, mutate } = useProtoSWRRequest(
+        tag.method.list_page,
+        create(tag_page_requestSchema, { page, pageSize: PAGE_SIZE }),
+    );
+    const { data: allTags, mutate: mutateAllTags } = useProtoSWR(tag.method.list, { revalidateOnFocus: false });
     const { data: nodes } = useProtoSWR(node.method.list);
 
     const [modalHash, setModalHash] = useState({ hash: "", show: false });
@@ -169,6 +192,7 @@ function Tags() {
                 else {
                     ctx.Info("Tag saved successfully");
                     mutate();
+                    mutateAllTags();
                     setTagModalData(prev => ({ ...prev, show: false }));
                 }
             });
@@ -181,10 +205,17 @@ function Tags() {
                 else {
                     ctx.Info("Tag removed");
                     mutate();
+                    mutateAllTags();
                 }
                 setConfirmDelete({ show: false, name: "" });
             });
     };
+
+    const visibleTags: tag_item[] = data.items.length > 0
+        ? data.items
+        : Object.entries(data.tags).map(([name, value]) => ({ name, tag: value }));
+    const modalTags = allTags ?? data;
+    const totalTags = data.page?.total ?? visibleTags.length;
 
     return (
         <MainContainer>
@@ -208,7 +239,7 @@ function Tags() {
             <TagModal
                 show={tagModalData.show}
                 nodes={new Nodes(nodes)}
-                data={data}
+                data={modalTags}
                 tagItem={tagModalData.tag}
                 isNew={tagModalData.isNew}
                 onHide={() => setTagModalData(prev => ({ ...prev, show: false }))}
@@ -219,7 +250,7 @@ function Tags() {
             <CardRowList
                 header={
                     <div className="flex justify-between items-center w-full">
-                        <IconBox icon={TagsIcon} color="#10b981" title="Tags Management" description={`${Object.keys(data.tags).length} alias and mirror nodes defined`} />
+                        <IconBox icon={TagsIcon} color="#10b981" title="Tags Management" description={`${totalTags} alias and mirror nodes defined`} />
                         <Button
                             onClick={() => setTagModalData({
                                 show: true,
@@ -231,29 +262,38 @@ function Tags() {
                         </Button>
                     </div>
                 }
-                items={Object.keys(data.tags).sort((a, b) => a.localeCompare(b))}
-                onClickItem={(key) => {
-                    const value = data.tags[key];
+                layout="list"
+                paginated
+                pageSize={PAGE_SIZE}
+                currentPage={data.page?.page || page}
+                totalItems={totalTags}
+                onPageChange={setPage}
+                items={visibleTags}
+                getKey={(item) => item.name}
+                onClickItem={(item) => {
+                    const value = item.tag;
+                    if (!value) return;
                     setTagModalData({
                         show: true,
-                        tag: create(save_tag_reqSchema, { tag: key, hash: value.hash[0], type: value.type }),
+                        tag: create(save_tag_reqSchema, { tag: item.name, hash: value.hash[0], type: value.type }),
                         isNew: false
                     })
                 }}
-                renderListItem={(key) => {
-                    const value = data.tags[key];
+                renderListItem={(item) => {
+                    const value = item.tag;
+                    if (!value) return null;
                     return (
                         <TagItem
-                            key={key}
-                            tagName={key}
+                            key={item.name}
+                            tagName={item.name}
                             tagData={value}
-                            onDelete={() => setConfirmDelete({ show: true, name: key })}
+                            onDelete={() => setConfirmDelete({ show: true, name: item.name })}
                             onHashClick={(h) => setModalHash({ hash: h, show: true })}
                         />
                     )
                 }}
                 onAddNew={(name) => {
-                    if (!data.tags[name]) {
+                    if (!modalTags.tags[name] && !data.tags[name]) {
                         setTagModalData({
                             show: true,
                             tag: create(save_tag_reqSchema, { tag: name, hash: "", type: tag_type.node }),

@@ -22,7 +22,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file api/config.proto.
  */
 export const file_api_config: GenFile = /*@__PURE__*/
-  fileDesc("ChBhcGkvY29uZmlnLnByb3RvEhJ5dWhhaWluLmFwaS5jb25maWci0AEKDXRlc3RfcmVzcG9uc2USKQoEbW9kZRgBIAEoCzIbLnl1aGFpaW4uYnlwYXNzLm1vZGVfY29uZmlnEh4KCmFmdGVyX2FkZHIYAyABKAlSCmFmdGVyX2FkZHISSgoMbWF0Y2hfcmVzdWx0GAQgAygLMiYueXVoYWlpbi5zdGF0aXN0aWMubWF0Y2hfaGlzdG9yeV9lbnRyeVIMbWF0Y2hfcmVzdWx0Eg0KBWxpc3RzGAUgAygJEgsKA2lwcxgGIAMoCUoECAIQA1IGcmVhc29uIowBCg1ibG9ja19oaXN0b3J5EhAKCHByb3RvY29sGAEgASgJEgwKBGhvc3QYAiABKAkSKAoEdGltZRgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDwoHcHJvY2VzcxgEIAEoCRIgCgtibG9ja19jb3VudBgFIAEoBFILYmxvY2tfY291bnQifAoSYmxvY2tfaGlzdG9yeV9saXN0EjIKB29iamVjdHMYASADKAsyIS55dWhhaWluLmFwaS5jb25maWcuYmxvY2tfaGlzdG9yeRIyChRkdW1wX3Byb2Nlc3NfZW5hYmxlZBgCIAEoCFIUZHVtcF9wcm9jZXNzX2VuYWJsZWQisQEKDWxpc3RfcmVzcG9uc2USDQoFbmFtZXMYASADKAkSSQoPbWF4bWluZGRiX2dlb2lwGAIgASgLMh8ueXVoYWlpbi5ieXBhc3MubWF4bWluZGRiX2dlb2lwUg9tYXhtaW5kZGJfZ2VvaXASRgoOcmVmcmVzaF9jb25maWcYAyABKAsyHi55dWhhaWluLmJ5cGFzcy5yZWZyZXNoX2NvbmZpZ1IOcmVmcmVzaF9jb25maWcikQEKGHNhdmVfbGlzdF9jb25maWdfcmVxdWVzdBJJCg9tYXhtaW5kZGJfZ2VvaXAYASABKAsyHy55dWhhaWluLmJ5cGFzcy5tYXhtaW5kZGJfZ2VvaXBSD21heG1pbmRkYl9nZW9pcBIqChByZWZyZXNoX2ludGVydmFsGAIgASgEUhByZWZyZXNoX2ludGVydmFsIisKCXJ1bGVfaXRlbRIMCgRuYW1lGAEgASgJEhAKCGRpc2FibGVkGAIgASgIIkwKDXJ1bGVfcmVzcG9uc2USDQoFbmFtZXMYASADKAkSLAoFaXRlbXMYAiADKAsyHS55dWhhaWluLmFwaS5jb25maWcucnVsZV9pdGVtIikKCnJ1bGVfaW5kZXgSDQoFaW5kZXgYASABKA0SDAoEbmFtZRgCIAEoCSJoChFydWxlX3NhdmVfcmVxdWVzdBItCgVpbmRleBgBIAEoCzIeLnl1aGFpaW4uYXBpLmNvbmZpZy5ydWxlX2luZGV4EiQKBHJ1bGUYAiABKAsyFi55dWhhaWluLmJ5cGFzcy5ydWxldjIimwIKF2NoYW5nZV9wcmlvcml0eV9yZXF1ZXN0Ei4KBnNvdXJjZRgBIAEoCzIeLnl1aGFpaW4uYXBpLmNvbmZpZy5ydWxlX2luZGV4Ei4KBnRhcmdldBgCIAEoCzIeLnl1aGFpaW4uYXBpLmNvbmZpZy5ydWxlX2luZGV4ElQKB29wZXJhdGUYAyABKA4yQy55dWhhaWluLmFwaS5jb25maWcuY2hhbmdlX3ByaW9yaXR5X3JlcXVlc3QuY2hhbmdlX3ByaW9yaXR5X29wZXJhdGUiSgoXY2hhbmdlX3ByaW9yaXR5X29wZXJhdGUSDAoIRXhjaGFuZ2UQABIQCgxJbnNlcnRCZWZvcmUQARIPCgtJbnNlcnRBZnRlchACIpcBChFpbmJvdW5kc19yZXNwb25zZRINCgVuYW1lcxgBIAMoCRIeCgpoaWphY2tfZG5zGAIgASgIUgpoaWphY2tfZG5zEiwKEWhpamFja19kbnNfZmFrZWlwGAMgASgIUhFoaWphY2tfZG5zX2Zha2VpcBIlCgVzbmlmZhgEIAEoCzIWLnl1aGFpaW4uaW5ib3VuZC5zbmlmZiKjAQoWcGxhdGZvcm1faW5mb19yZXNwb25zZRJKCgZkYXJ3aW4YASABKAsyOi55dWhhaWluLmFwaS5jb25maWcucGxhdGZvcm1faW5mb19yZXNwb25zZS5wbGF0Zm9ybV9kYXJ3aW4aPQoPcGxhdGZvcm1fZGFyd2luEioKEG5ldHdvcmtfc2VydmljZXMYASADKAlSEG5ldHdvcmtfc2VydmljZXMiHQoMcmVzb2x2ZV9saXN0Eg0KBW5hbWVzGAEgAygJIkEKDXNhdmVfcmVzb2x2ZXISDAoEbmFtZRgBIAEoCRIiCghyZXNvbHZlchgCIAEoCzIQLnl1aGFpaW4uZG5zLmRucyJqCgVIb3N0cxIzCgVob3N0cxgBIAMoCzIkLnl1aGFpaW4uYXBpLmNvbmZpZy5Ib3N0cy5Ib3N0c0VudHJ5GiwKCkhvc3RzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ATK4AQoOY29uZmlnX3NlcnZpY2USNwoEbG9hZBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoXLnl1aGFpaW4uY29uZmlnLnNldHRpbmcSNwoEc2F2ZRIXLnl1aGFpaW4uY29uZmlnLnNldHRpbmcaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSNAoEaW5mbxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoULnl1aGFpaW4uY29uZmlnLmluZm8yiwMKBWxpc3RzEkEKBGxpc3QSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaIS55dWhhaWluLmFwaS5jb25maWcubGlzdF9yZXNwb25zZRI5CgNnZXQSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFC55dWhhaWluLmJ5cGFzcy5saXN0EjQKBHNhdmUSFC55dWhhaWluLmJ5cGFzcy5saXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5Ej4KBnJlbW92ZRIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI5CgdyZWZyZXNoEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5ElMKC3NhdmVfY29uZmlnEiwueXVoYWlpbi5hcGkuY29uZmlnLnNhdmVfbGlzdF9jb25maWdfcmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eTKBBQoFcnVsZXMSQQoEbGlzdBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRohLnl1aGFpaW4uYXBpLmNvbmZpZy5ydWxlX3Jlc3BvbnNlEj0KA2dldBIeLnl1aGFpaW4uYXBpLmNvbmZpZy5ydWxlX2luZGV4GhYueXVoYWlpbi5ieXBhc3MucnVsZXYyEkUKBHNhdmUSJS55dWhhaWluLmFwaS5jb25maWcucnVsZV9zYXZlX3JlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSQAoGcmVtb3ZlEh4ueXVoYWlpbi5hcGkuY29uZmlnLnJ1bGVfaW5kZXgaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSVgoPY2hhbmdlX3ByaW9yaXR5EisueXVoYWlpbi5hcGkuY29uZmlnLmNoYW5nZV9wcmlvcml0eV9yZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EjoKBmNvbmZpZxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoYLnl1aGFpaW4uYnlwYXNzLmNvbmZpZ3YyEj8KC3NhdmVfY29uZmlnEhgueXVoYWlpbi5ieXBhc3MuY29uZmlndjIaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSRwoEdGVzdBIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRohLnl1aGFpaW4uYXBpLmNvbmZpZy50ZXN0X3Jlc3BvbnNlEk8KDWJsb2NrX2hpc3RvcnkSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaJi55dWhhaWluLmFwaS5jb25maWcuYmxvY2tfaGlzdG9yeV9saXN0MqgDCgdpbmJvdW5kEkUKBGxpc3QSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaJS55dWhhaWluLmFwaS5jb25maWcuaW5ib3VuZHNfcmVzcG9uc2USPQoDZ2V0EhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhgueXVoYWlpbi5pbmJvdW5kLmluYm91bmQSOgoEc2F2ZRIYLnl1aGFpaW4uaW5ib3VuZC5pbmJvdW5kGhgueXVoYWlpbi5pbmJvdW5kLmluYm91bmQSPgoGcmVtb3ZlEhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EkYKBWFwcGx5EiUueXVoYWlpbi5hcGkuY29uZmlnLmluYm91bmRzX3Jlc3BvbnNlGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5ElMKDXBsYXRmb3JtX2luZm8SFi5nb29nbGUucHJvdG9idWYuRW1wdHkaKi55dWhhaWluLmFwaS5jb25maWcucGxhdGZvcm1faW5mb19yZXNwb25zZTKHBQoIcmVzb2x2ZXISQAoEbGlzdBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRogLnl1aGFpaW4uYXBpLmNvbmZpZy5yZXNvbHZlX2xpc3QSNQoDZ2V0EhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhAueXVoYWlpbi5kbnMuZG5zEjsKBHNhdmUSIS55dWhhaWluLmFwaS5jb25maWcuc2F2ZV9yZXNvbHZlchoQLnl1aGFpaW4uZG5zLmRucxI+CgZyZW1vdmUSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSOgoFaG9zdHMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGS55dWhhaWluLmFwaS5jb25maWcuSG9zdHMSPwoKc2F2ZV9ob3N0cxIZLnl1aGFpaW4uYXBpLmNvbmZpZy5Ib3N0cxoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI+CgdmYWtlZG5zEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhsueXVoYWlpbi5kbnMuZmFrZWRuc19jb25maWcSQwoMc2F2ZV9mYWtlZG5zEhsueXVoYWlpbi5kbnMuZmFrZWRuc19jb25maWcaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSPgoGc2VydmVyEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlEkMKC3NhdmVfc2VydmVyEhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5QjVaK2dpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9hcGmSAwXSPgIQA2IIZWRpdGlvbnNw6Ac", [file_config_config, file_config_bypass, file_config_dns, file_config_inbound, file_google_protobuf_empty, file_google_protobuf_wrappers, file_google_protobuf_timestamp, file_google_protobuf_go_features, file_statistic_config]);
+  fileDesc("ChBhcGkvY29uZmlnLnByb3RvEhJ5dWhhaWluLmFwaS5jb25maWci0AEKDXRlc3RfcmVzcG9uc2USKQoEbW9kZRgBIAEoCzIbLnl1aGFpaW4uYnlwYXNzLm1vZGVfY29uZmlnEh4KCmFmdGVyX2FkZHIYAyABKAlSCmFmdGVyX2FkZHISSgoMbWF0Y2hfcmVzdWx0GAQgAygLMiYueXVoYWlpbi5zdGF0aXN0aWMubWF0Y2hfaGlzdG9yeV9lbnRyeVIMbWF0Y2hfcmVzdWx0Eg0KBWxpc3RzGAUgAygJEgsKA2lwcxgGIAMoCUoECAIQA1IGcmVhc29uIowBCg1ibG9ja19oaXN0b3J5EhAKCHByb3RvY29sGAEgASgJEgwKBGhvc3QYAiABKAkSKAoEdGltZRgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDwoHcHJvY2VzcxgEIAEoCRIgCgtibG9ja19jb3VudBgFIAEoBFILYmxvY2tfY291bnQifAoSYmxvY2tfaGlzdG9yeV9saXN0EjIKB29iamVjdHMYASADKAsyIS55dWhhaWluLmFwaS5jb25maWcuYmxvY2tfaGlzdG9yeRIyChRkdW1wX3Byb2Nlc3NfZW5hYmxlZBgCIAEoCFIUZHVtcF9wcm9jZXNzX2VuYWJsZWQiSQoMcGFnZV9yZXF1ZXN0EgwKBHBhZ2UYASABKA0SHAoJcGFnZV9zaXplGAIgASgNUglwYWdlX3NpemUSDQoFcXVlcnkYAyABKAkiSgoNcGFnZV9yZXNwb25zZRIMCgRwYWdlGAEgASgNEhwKCXBhZ2Vfc2l6ZRgCIAEoDVIJcGFnZV9zaXplEg0KBXRvdGFsGAMgASgNIpACCg1saXN0X3Jlc3BvbnNlEg0KBW5hbWVzGAEgAygJEkkKD21heG1pbmRkYl9nZW9pcBgCIAEoCzIfLnl1aGFpaW4uYnlwYXNzLm1heG1pbmRkYl9nZW9pcFIPbWF4bWluZGRiX2dlb2lwEkYKDnJlZnJlc2hfY29uZmlnGAMgASgLMh4ueXVoYWlpbi5ieXBhc3MucmVmcmVzaF9jb25maWdSDnJlZnJlc2hfY29uZmlnEi8KBHBhZ2UYBCABKAsyIS55dWhhaWluLmFwaS5jb25maWcucGFnZV9yZXNwb25zZRIsCgVpdGVtcxgFIAMoCzIdLnl1aGFpaW4uYXBpLmNvbmZpZy5saXN0X2l0ZW0iigEKCWxpc3RfaXRlbRIMCgRuYW1lGAEgASgJEgwKBHR5cGUYAiABKAkSDgoGc291cmNlGAMgASgJEh4KCml0ZW1fY291bnQYBCABKA1SCml0ZW1fY291bnQSIAoLZXJyb3JfY291bnQYBSABKA1SC2Vycm9yX2NvdW50Eg8KB3ByZXZpZXcYBiABKAkikQEKGHNhdmVfbGlzdF9jb25maWdfcmVxdWVzdBJJCg9tYXhtaW5kZGJfZ2VvaXAYASABKAsyHy55dWhhaWluLmJ5cGFzcy5tYXhtaW5kZGJfZ2VvaXBSD21heG1pbmRkYl9nZW9pcBIqChByZWZyZXNoX2ludGVydmFsGAIgASgEUhByZWZyZXNoX2ludGVydmFsIocBCglydWxlX2l0ZW0SDAoEbmFtZRgBIAEoCRIQCghkaXNhYmxlZBgCIAEoCBINCgVpbmRleBgDIAEoDRIMCgRtb2RlGAQgASgJEgsKA3RhZxgFIAEoCRIQCghyZXNvbHZlchgGIAEoCRIeCgpydWxlX2NvdW50GAcgASgNUgpydWxlX2NvdW50In0KDXJ1bGVfcmVzcG9uc2USDQoFbmFtZXMYASADKAkSLAoFaXRlbXMYAiADKAsyHS55dWhhaWluLmFwaS5jb25maWcucnVsZV9pdGVtEi8KBHBhZ2UYAyABKAsyIS55dWhhaWluLmFwaS5jb25maWcucGFnZV9yZXNwb25zZSIpCgpydWxlX2luZGV4Eg0KBWluZGV4GAEgASgNEgwKBG5hbWUYAiABKAkiaAoRcnVsZV9zYXZlX3JlcXVlc3QSLQoFaW5kZXgYASABKAsyHi55dWhhaWluLmFwaS5jb25maWcucnVsZV9pbmRleBIkCgRydWxlGAIgASgLMhYueXVoYWlpbi5ieXBhc3MucnVsZXYyIpsCChdjaGFuZ2VfcHJpb3JpdHlfcmVxdWVzdBIuCgZzb3VyY2UYASABKAsyHi55dWhhaWluLmFwaS5jb25maWcucnVsZV9pbmRleBIuCgZ0YXJnZXQYAiABKAsyHi55dWhhaWluLmFwaS5jb25maWcucnVsZV9pbmRleBJUCgdvcGVyYXRlGAMgASgOMkMueXVoYWlpbi5hcGkuY29uZmlnLmNoYW5nZV9wcmlvcml0eV9yZXF1ZXN0LmNoYW5nZV9wcmlvcml0eV9vcGVyYXRlIkoKF2NoYW5nZV9wcmlvcml0eV9vcGVyYXRlEgwKCEV4Y2hhbmdlEAASEAoMSW5zZXJ0QmVmb3JlEAESDwoLSW5zZXJ0QWZ0ZXIQAiL5AQoRaW5ib3VuZHNfcmVzcG9uc2USDQoFbmFtZXMYASADKAkSHgoKaGlqYWNrX2RucxgCIAEoCFIKaGlqYWNrX2RucxIsChFoaWphY2tfZG5zX2Zha2VpcBgDIAEoCFIRaGlqYWNrX2Ruc19mYWtlaXASJQoFc25pZmYYBCABKAsyFi55dWhhaWluLmluYm91bmQuc25pZmYSLwoEcGFnZRgFIAEoCzIhLnl1aGFpaW4uYXBpLmNvbmZpZy5wYWdlX3Jlc3BvbnNlEi8KBWl0ZW1zGAYgAygLMiAueXVoYWlpbi5hcGkuY29uZmlnLmluYm91bmRfaXRlbSJ0CgxpbmJvdW5kX2l0ZW0SDAoEbmFtZRgBIAEoCRIPCgdlbmFibGVkGAIgASgIEg8KB25ldHdvcmsYAyABKAkSDgoGbGlzdGVuGAQgASgJEhAKCHByb3RvY29sGAUgASgJEhIKCnRyYW5zcG9ydHMYBiADKAkiowEKFnBsYXRmb3JtX2luZm9fcmVzcG9uc2USSgoGZGFyd2luGAEgASgLMjoueXVoYWlpbi5hcGkuY29uZmlnLnBsYXRmb3JtX2luZm9fcmVzcG9uc2UucGxhdGZvcm1fZGFyd2luGj0KD3BsYXRmb3JtX2RhcndpbhIqChBuZXR3b3JrX3NlcnZpY2VzGAEgAygJUhBuZXR3b3JrX3NlcnZpY2VzIoABCgxyZXNvbHZlX2xpc3QSDQoFbmFtZXMYASADKAkSLwoEcGFnZRgCIAEoCzIhLnl1aGFpaW4uYXBpLmNvbmZpZy5wYWdlX3Jlc3BvbnNlEjAKBWl0ZW1zGAMgAygLMiEueXVoYWlpbi5hcGkuY29uZmlnLnJlc29sdmVyX2l0ZW0igQEKDXJlc29sdmVyX2l0ZW0SDAoEbmFtZRgBIAEoCRIMCgR0eXBlGAIgASgJEgwKBGhvc3QYAyABKAkSDgoGc3VibmV0GAQgASgJEiYKDnRsc19zZXJ2ZXJuYW1lGAUgASgJUg50bHNfc2VydmVybmFtZRIOCgZzeXN0ZW0YBiABKAgiQQoNc2F2ZV9yZXNvbHZlchIMCgRuYW1lGAEgASgJEiIKCHJlc29sdmVyGAIgASgLMhAueXVoYWlpbi5kbnMuZG5zImoKBUhvc3RzEjMKBWhvc3RzGAEgAygLMiQueXVoYWlpbi5hcGkuY29uZmlnLkhvc3RzLkhvc3RzRW50cnkaLAoKSG9zdHNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBMrgBCg5jb25maWdfc2VydmljZRI3CgRsb2FkEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhcueXVoYWlpbi5jb25maWcuc2V0dGluZxI3CgRzYXZlEhcueXVoYWlpbi5jb25maWcuc2V0dGluZxoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI0CgRpbmZvEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhQueXVoYWlpbi5jb25maWcuaW5mbzLdAwoFbGlzdHMSQQoEbGlzdBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRohLnl1aGFpaW4uYXBpLmNvbmZpZy5saXN0X3Jlc3BvbnNlElAKCWxpc3RfcGFnZRIgLnl1aGFpaW4uYXBpLmNvbmZpZy5wYWdlX3JlcXVlc3QaIS55dWhhaWluLmFwaS5jb25maWcubGlzdF9yZXNwb25zZRI5CgNnZXQSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFC55dWhhaWluLmJ5cGFzcy5saXN0EjQKBHNhdmUSFC55dWhhaWluLmJ5cGFzcy5saXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5Ej4KBnJlbW92ZRIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI5CgdyZWZyZXNoEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5ElMKC3NhdmVfY29uZmlnEiwueXVoYWlpbi5hcGkuY29uZmlnLnNhdmVfbGlzdF9jb25maWdfcmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eTLTBQoFcnVsZXMSQQoEbGlzdBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRohLnl1aGFpaW4uYXBpLmNvbmZpZy5ydWxlX3Jlc3BvbnNlElAKCWxpc3RfcGFnZRIgLnl1aGFpaW4uYXBpLmNvbmZpZy5wYWdlX3JlcXVlc3QaIS55dWhhaWluLmFwaS5jb25maWcucnVsZV9yZXNwb25zZRI9CgNnZXQSHi55dWhhaWluLmFwaS5jb25maWcucnVsZV9pbmRleBoWLnl1aGFpaW4uYnlwYXNzLnJ1bGV2MhJFCgRzYXZlEiUueXVoYWlpbi5hcGkuY29uZmlnLnJ1bGVfc2F2ZV9yZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EkAKBnJlbW92ZRIeLnl1aGFpaW4uYXBpLmNvbmZpZy5ydWxlX2luZGV4GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5ElYKD2NoYW5nZV9wcmlvcml0eRIrLnl1aGFpaW4uYXBpLmNvbmZpZy5jaGFuZ2VfcHJpb3JpdHlfcmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI6CgZjb25maWcSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGC55dWhhaWluLmJ5cGFzcy5jb25maWd2MhI/CgtzYXZlX2NvbmZpZxIYLnl1aGFpaW4uYnlwYXNzLmNvbmZpZ3YyGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EkcKBHRlc3QSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaIS55dWhhaWluLmFwaS5jb25maWcudGVzdF9yZXNwb25zZRJPCg1ibG9ja19oaXN0b3J5EhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GiYueXVoYWlpbi5hcGkuY29uZmlnLmJsb2NrX2hpc3RvcnlfbGlzdDL+AwoHaW5ib3VuZBJFCgRsaXN0EhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GiUueXVoYWlpbi5hcGkuY29uZmlnLmluYm91bmRzX3Jlc3BvbnNlElQKCWxpc3RfcGFnZRIgLnl1aGFpaW4uYXBpLmNvbmZpZy5wYWdlX3JlcXVlc3QaJS55dWhhaWluLmFwaS5jb25maWcuaW5ib3VuZHNfcmVzcG9uc2USPQoDZ2V0EhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhgueXVoYWlpbi5pbmJvdW5kLmluYm91bmQSOgoEc2F2ZRIYLnl1aGFpaW4uaW5ib3VuZC5pbmJvdW5kGhgueXVoYWlpbi5pbmJvdW5kLmluYm91bmQSPgoGcmVtb3ZlEhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EkYKBWFwcGx5EiUueXVoYWlpbi5hcGkuY29uZmlnLmluYm91bmRzX3Jlc3BvbnNlGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5ElMKDXBsYXRmb3JtX2luZm8SFi5nb29nbGUucHJvdG9idWYuRW1wdHkaKi55dWhhaWluLmFwaS5jb25maWcucGxhdGZvcm1faW5mb19yZXNwb25zZTLYBQoIcmVzb2x2ZXISQAoEbGlzdBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRogLnl1aGFpaW4uYXBpLmNvbmZpZy5yZXNvbHZlX2xpc3QSTwoJbGlzdF9wYWdlEiAueXVoYWlpbi5hcGkuY29uZmlnLnBhZ2VfcmVxdWVzdBogLnl1aGFpaW4uYXBpLmNvbmZpZy5yZXNvbHZlX2xpc3QSNQoDZ2V0EhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhAueXVoYWlpbi5kbnMuZG5zEjsKBHNhdmUSIS55dWhhaWluLmFwaS5jb25maWcuc2F2ZV9yZXNvbHZlchoQLnl1aGFpaW4uZG5zLmRucxI+CgZyZW1vdmUSHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSOgoFaG9zdHMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGS55dWhhaWluLmFwaS5jb25maWcuSG9zdHMSPwoKc2F2ZV9ob3N0cxIZLnl1aGFpaW4uYXBpLmNvbmZpZy5Ib3N0cxoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRI+CgdmYWtlZG5zEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhsueXVoYWlpbi5kbnMuZmFrZWRuc19jb25maWcSQwoMc2F2ZV9mYWtlZG5zEhsueXVoYWlpbi5kbnMuZmFrZWRuc19jb25maWcaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSPgoGc2VydmVyEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlEkMKC3NhdmVfc2VydmVyEhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlGhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5QjVaK2dpdGh1Yi5jb20vQXN1dG9ydWZhL3l1aGFpaW4vcGtnL3Byb3Rvcy9hcGmSAwXSPgIQA2IIZWRpdGlvbnNw6Ac", [file_config_config, file_config_bypass, file_config_dns, file_config_inbound, file_google_protobuf_empty, file_google_protobuf_wrappers, file_google_protobuf_timestamp, file_google_protobuf_go_features, file_statistic_config]);
 
 /**
  * @generated from message yuhaiin.api.config.test_response
@@ -121,6 +121,60 @@ export const block_history_listSchema: GenMessage<block_history_list> = /*@__PUR
   messageDesc(file_api_config, 2);
 
 /**
+ * @generated from message yuhaiin.api.config.page_request
+ */
+export type page_request = Message<"yuhaiin.api.config.page_request"> & {
+  /**
+   * @generated from field: uint32 page = 1;
+   */
+  page: number;
+
+  /**
+   * @generated from field: uint32 page_size = 2 [json_name = "page_size"];
+   */
+  pageSize: number;
+
+  /**
+   * @generated from field: string query = 3;
+   */
+  query: string;
+};
+
+/**
+ * Describes the message yuhaiin.api.config.page_request.
+ * Use `create(page_requestSchema)` to create a new message.
+ */
+export const page_requestSchema: GenMessage<page_request> = /*@__PURE__*/
+  messageDesc(file_api_config, 3);
+
+/**
+ * @generated from message yuhaiin.api.config.page_response
+ */
+export type page_response = Message<"yuhaiin.api.config.page_response"> & {
+  /**
+   * @generated from field: uint32 page = 1;
+   */
+  page: number;
+
+  /**
+   * @generated from field: uint32 page_size = 2 [json_name = "page_size"];
+   */
+  pageSize: number;
+
+  /**
+   * @generated from field: uint32 total = 3;
+   */
+  total: number;
+};
+
+/**
+ * Describes the message yuhaiin.api.config.page_response.
+ * Use `create(page_responseSchema)` to create a new message.
+ */
+export const page_responseSchema: GenMessage<page_response> = /*@__PURE__*/
+  messageDesc(file_api_config, 4);
+
+/**
  * @generated from message yuhaiin.api.config.list_response
  */
 export type list_response = Message<"yuhaiin.api.config.list_response"> & {
@@ -141,6 +195,16 @@ export type list_response = Message<"yuhaiin.api.config.list_response"> & {
    * @generated from field: yuhaiin.bypass.refresh_config refresh_config = 3 [json_name = "refresh_config"];
    */
   refreshConfig?: refresh_config | undefined;
+
+  /**
+   * @generated from field: yuhaiin.api.config.page_response page = 4;
+   */
+  page?: page_response | undefined;
+
+  /**
+   * @generated from field: repeated yuhaiin.api.config.list_item items = 5;
+   */
+  items: list_item[];
 };
 
 /**
@@ -148,7 +212,49 @@ export type list_response = Message<"yuhaiin.api.config.list_response"> & {
  * Use `create(list_responseSchema)` to create a new message.
  */
 export const list_responseSchema: GenMessage<list_response> = /*@__PURE__*/
-  messageDesc(file_api_config, 3);
+  messageDesc(file_api_config, 5);
+
+/**
+ * @generated from message yuhaiin.api.config.list_item
+ */
+export type list_item = Message<"yuhaiin.api.config.list_item"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string type = 2;
+   */
+  type: string;
+
+  /**
+   * @generated from field: string source = 3;
+   */
+  source: string;
+
+  /**
+   * @generated from field: uint32 item_count = 4 [json_name = "item_count"];
+   */
+  itemCount: number;
+
+  /**
+   * @generated from field: uint32 error_count = 5 [json_name = "error_count"];
+   */
+  errorCount: number;
+
+  /**
+   * @generated from field: string preview = 6;
+   */
+  preview: string;
+};
+
+/**
+ * Describes the message yuhaiin.api.config.list_item.
+ * Use `create(list_itemSchema)` to create a new message.
+ */
+export const list_itemSchema: GenMessage<list_item> = /*@__PURE__*/
+  messageDesc(file_api_config, 6);
 
 /**
  * @generated from message yuhaiin.api.config.save_list_config_request
@@ -170,7 +276,7 @@ export type save_list_config_request = Message<"yuhaiin.api.config.save_list_con
  * Use `create(save_list_config_requestSchema)` to create a new message.
  */
 export const save_list_config_requestSchema: GenMessage<save_list_config_request> = /*@__PURE__*/
-  messageDesc(file_api_config, 4);
+  messageDesc(file_api_config, 7);
 
 /**
  * @generated from message yuhaiin.api.config.rule_item
@@ -185,6 +291,31 @@ export type rule_item = Message<"yuhaiin.api.config.rule_item"> & {
    * @generated from field: bool disabled = 2;
    */
   disabled: boolean;
+
+  /**
+   * @generated from field: uint32 index = 3;
+   */
+  index: number;
+
+  /**
+   * @generated from field: string mode = 4;
+   */
+  mode: string;
+
+  /**
+   * @generated from field: string tag = 5;
+   */
+  tag: string;
+
+  /**
+   * @generated from field: string resolver = 6;
+   */
+  resolver: string;
+
+  /**
+   * @generated from field: uint32 rule_count = 7 [json_name = "rule_count"];
+   */
+  ruleCount: number;
 };
 
 /**
@@ -192,7 +323,7 @@ export type rule_item = Message<"yuhaiin.api.config.rule_item"> & {
  * Use `create(rule_itemSchema)` to create a new message.
  */
 export const rule_itemSchema: GenMessage<rule_item> = /*@__PURE__*/
-  messageDesc(file_api_config, 5);
+  messageDesc(file_api_config, 8);
 
 /**
  * @generated from message yuhaiin.api.config.rule_response
@@ -207,6 +338,11 @@ export type rule_response = Message<"yuhaiin.api.config.rule_response"> & {
    * @generated from field: repeated yuhaiin.api.config.rule_item items = 2;
    */
   items: rule_item[];
+
+  /**
+   * @generated from field: yuhaiin.api.config.page_response page = 3;
+   */
+  page?: page_response | undefined;
 };
 
 /**
@@ -214,7 +350,7 @@ export type rule_response = Message<"yuhaiin.api.config.rule_response"> & {
  * Use `create(rule_responseSchema)` to create a new message.
  */
 export const rule_responseSchema: GenMessage<rule_response> = /*@__PURE__*/
-  messageDesc(file_api_config, 6);
+  messageDesc(file_api_config, 9);
 
 /**
  * @generated from message yuhaiin.api.config.rule_index
@@ -236,7 +372,7 @@ export type rule_index = Message<"yuhaiin.api.config.rule_index"> & {
  * Use `create(rule_indexSchema)` to create a new message.
  */
 export const rule_indexSchema: GenMessage<rule_index> = /*@__PURE__*/
-  messageDesc(file_api_config, 7);
+  messageDesc(file_api_config, 10);
 
 /**
  * @generated from message yuhaiin.api.config.rule_save_request
@@ -258,7 +394,7 @@ export type rule_save_request = Message<"yuhaiin.api.config.rule_save_request"> 
  * Use `create(rule_save_requestSchema)` to create a new message.
  */
 export const rule_save_requestSchema: GenMessage<rule_save_request> = /*@__PURE__*/
-  messageDesc(file_api_config, 8);
+  messageDesc(file_api_config, 11);
 
 /**
  * @generated from message yuhaiin.api.config.change_priority_request
@@ -285,7 +421,7 @@ export type change_priority_request = Message<"yuhaiin.api.config.change_priorit
  * Use `create(change_priority_requestSchema)` to create a new message.
  */
 export const change_priority_requestSchema: GenMessage<change_priority_request> = /*@__PURE__*/
-  messageDesc(file_api_config, 9);
+  messageDesc(file_api_config, 12);
 
 /**
  * @generated from enum yuhaiin.api.config.change_priority_request.change_priority_operate
@@ -311,7 +447,7 @@ export enum change_priority_request_change_priority_operate {
  * Describes the enum yuhaiin.api.config.change_priority_request.change_priority_operate.
  */
 export const change_priority_request_change_priority_operateSchema: GenEnum<change_priority_request_change_priority_operate> = /*@__PURE__*/
-  enumDesc(file_api_config, 9, 0);
+  enumDesc(file_api_config, 12, 0);
 
 /**
  * @generated from message yuhaiin.api.config.inbounds_response
@@ -336,6 +472,16 @@ export type inbounds_response = Message<"yuhaiin.api.config.inbounds_response"> 
    * @generated from field: yuhaiin.inbound.sniff sniff = 4;
    */
   sniff?: sniff | undefined;
+
+  /**
+   * @generated from field: yuhaiin.api.config.page_response page = 5;
+   */
+  page?: page_response | undefined;
+
+  /**
+   * @generated from field: repeated yuhaiin.api.config.inbound_item items = 6;
+   */
+  items: inbound_item[];
 };
 
 /**
@@ -343,7 +489,49 @@ export type inbounds_response = Message<"yuhaiin.api.config.inbounds_response"> 
  * Use `create(inbounds_responseSchema)` to create a new message.
  */
 export const inbounds_responseSchema: GenMessage<inbounds_response> = /*@__PURE__*/
-  messageDesc(file_api_config, 10);
+  messageDesc(file_api_config, 13);
+
+/**
+ * @generated from message yuhaiin.api.config.inbound_item
+ */
+export type inbound_item = Message<"yuhaiin.api.config.inbound_item"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * @generated from field: bool enabled = 2;
+   */
+  enabled: boolean;
+
+  /**
+   * @generated from field: string network = 3;
+   */
+  network: string;
+
+  /**
+   * @generated from field: string listen = 4;
+   */
+  listen: string;
+
+  /**
+   * @generated from field: string protocol = 5;
+   */
+  protocol: string;
+
+  /**
+   * @generated from field: repeated string transports = 6;
+   */
+  transports: string[];
+};
+
+/**
+ * Describes the message yuhaiin.api.config.inbound_item.
+ * Use `create(inbound_itemSchema)` to create a new message.
+ */
+export const inbound_itemSchema: GenMessage<inbound_item> = /*@__PURE__*/
+  messageDesc(file_api_config, 14);
 
 /**
  * @generated from message yuhaiin.api.config.platform_info_response
@@ -360,7 +548,7 @@ export type platform_info_response = Message<"yuhaiin.api.config.platform_info_r
  * Use `create(platform_info_responseSchema)` to create a new message.
  */
 export const platform_info_responseSchema: GenMessage<platform_info_response> = /*@__PURE__*/
-  messageDesc(file_api_config, 11);
+  messageDesc(file_api_config, 15);
 
 /**
  * @generated from message yuhaiin.api.config.platform_info_response.platform_darwin
@@ -377,7 +565,7 @@ export type platform_info_response_platform_darwin = Message<"yuhaiin.api.config
  * Use `create(platform_info_response_platform_darwinSchema)` to create a new message.
  */
 export const platform_info_response_platform_darwinSchema: GenMessage<platform_info_response_platform_darwin> = /*@__PURE__*/
-  messageDesc(file_api_config, 11, 0);
+  messageDesc(file_api_config, 15, 0);
 
 /**
  * @generated from message yuhaiin.api.config.resolve_list
@@ -387,6 +575,16 @@ export type resolve_list = Message<"yuhaiin.api.config.resolve_list"> & {
    * @generated from field: repeated string names = 1;
    */
   names: string[];
+
+  /**
+   * @generated from field: yuhaiin.api.config.page_response page = 2;
+   */
+  page?: page_response | undefined;
+
+  /**
+   * @generated from field: repeated yuhaiin.api.config.resolver_item items = 3;
+   */
+  items: resolver_item[];
 };
 
 /**
@@ -394,7 +592,49 @@ export type resolve_list = Message<"yuhaiin.api.config.resolve_list"> & {
  * Use `create(resolve_listSchema)` to create a new message.
  */
 export const resolve_listSchema: GenMessage<resolve_list> = /*@__PURE__*/
-  messageDesc(file_api_config, 12);
+  messageDesc(file_api_config, 16);
+
+/**
+ * @generated from message yuhaiin.api.config.resolver_item
+ */
+export type resolver_item = Message<"yuhaiin.api.config.resolver_item"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string type = 2;
+   */
+  type: string;
+
+  /**
+   * @generated from field: string host = 3;
+   */
+  host: string;
+
+  /**
+   * @generated from field: string subnet = 4;
+   */
+  subnet: string;
+
+  /**
+   * @generated from field: string tls_servername = 5 [json_name = "tls_servername"];
+   */
+  tlsServername: string;
+
+  /**
+   * @generated from field: bool system = 6;
+   */
+  system: boolean;
+};
+
+/**
+ * Describes the message yuhaiin.api.config.resolver_item.
+ * Use `create(resolver_itemSchema)` to create a new message.
+ */
+export const resolver_itemSchema: GenMessage<resolver_item> = /*@__PURE__*/
+  messageDesc(file_api_config, 17);
 
 /**
  * @generated from message yuhaiin.api.config.save_resolver
@@ -416,7 +656,7 @@ export type save_resolver = Message<"yuhaiin.api.config.save_resolver"> & {
  * Use `create(save_resolverSchema)` to create a new message.
  */
 export const save_resolverSchema: GenMessage<save_resolver> = /*@__PURE__*/
-  messageDesc(file_api_config, 13);
+  messageDesc(file_api_config, 18);
 
 /**
  * @generated from message yuhaiin.api.config.Hosts
@@ -433,7 +673,7 @@ export type Hosts = Message<"yuhaiin.api.config.Hosts"> & {
  * Use `create(HostsSchema)` to create a new message.
  */
 export const HostsSchema: GenMessage<Hosts> = /*@__PURE__*/
-  messageDesc(file_api_config, 14);
+  messageDesc(file_api_config, 19);
 
 /**
  * @generated from service yuhaiin.api.config.config_service
@@ -476,6 +716,14 @@ export const lists: GenService<{
   list: {
     methodKind: "unary";
     input: typeof EmptySchema;
+    output: typeof list_responseSchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.api.config.lists.list_page
+   */
+  list_page: {
+    methodKind: "unary";
+    input: typeof page_requestSchema;
     output: typeof list_responseSchema;
   },
   /**
@@ -531,6 +779,14 @@ export const rules: GenService<{
   list: {
     methodKind: "unary";
     input: typeof EmptySchema;
+    output: typeof rule_responseSchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.api.config.rules.list_page
+   */
+  list_page: {
+    methodKind: "unary";
+    input: typeof page_requestSchema;
     output: typeof rule_responseSchema;
   },
   /**
@@ -613,6 +869,14 @@ export const inbound: GenService<{
     output: typeof inbounds_responseSchema;
   },
   /**
+   * @generated from rpc yuhaiin.api.config.inbound.list_page
+   */
+  list_page: {
+    methodKind: "unary";
+    input: typeof page_requestSchema;
+    output: typeof inbounds_responseSchema;
+  },
+  /**
    * @generated from rpc yuhaiin.api.config.inbound.get
    */
   get: {
@@ -665,6 +929,14 @@ export const resolver: GenService<{
   list: {
     methodKind: "unary";
     input: typeof EmptySchema;
+    output: typeof resolve_listSchema;
+  },
+  /**
+   * @generated from rpc yuhaiin.api.config.resolver.list_page
+   */
+  list_page: {
+    methodKind: "unary";
+    input: typeof page_requestSchema;
     output: typeof resolve_listSchema;
   },
   /**

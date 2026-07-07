@@ -1,19 +1,20 @@
 "use client"
 
+import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardFooter, CardHeader, ErrorMsg, IconBox, ListItem, MainContainer, SettingsBox } from '@/component/v2/card';
+import { Card, CardBody, CardFooter, CardHeader, CardRowList, ErrorMsg, IconBox, MainContainer, SettingsBox } from '@/component/v2/card';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { Spinner } from "@/component/v2/spinner";
 import { SwitchCard } from "@/component/v2/switch";
 import { clone, create } from "@bufbuild/protobuf";
 import { StringValueSchema } from "@bufbuild/protobuf/wkt";
-import { Check, ChevronRight, DoorOpen, LogIn, Plus, Save, Settings, Trash } from "lucide-react";
+import { Check, ChevronRight, DoorOpen, LogIn, Save, Settings, Trash } from "lucide-react";
 import { FC, useContext, useEffect, useState } from "react";
 import useSWR from "swr";
-import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../common/proto";
+import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR, useProtoSWRRequest } from "../../common/proto";
 import Loading, { Error as ErrorDisplay } from "../../component/v2/loading";
 import { GlobalToastContext } from "../../component/v2/toast";
-import { inbound as inboundService } from "../pbes/api/config_pb";
+import { inbound as inboundService, inbound_item, page_requestSchema } from "../pbes/api/config_pb";
 import { inboundSchema } from "../pbes/config/inbound_pb";
 import { Inbound } from "./inboud";
 
@@ -91,21 +92,53 @@ const InboundModal: FC<{
     );
 }
 
-const InboundItem: FC<{ name: string, }> = ({ name }) => {
+const InboundItem: FC<{ item: inbound_item, }> = ({ item }) => {
     return <>
-        <div className="flex items-center grow overflow-hidden">
-            <div className="bg-blue-600/10 text-blue-600 rounded-full flex items-center justify-center mr-4 shrink-0 w-9 h-9">
-                <LogIn size={20} />
+        <div className="grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(180px,0.38fr)_minmax(0,1fr)] md:items-center">
+            <div className="flex min-w-0 items-center">
+                <div className="bg-blue-600/10 text-blue-600 rounded-full flex items-center justify-center mr-4 shrink-0 w-9 h-9">
+                    <LogIn size={20} />
+                </div>
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                    <span className="truncate font-medium">{item.name}</span>
+                    <Badge variant={item.enabled ? "success" : "muted"} className="shrink-0">
+                        {item.enabled ? "Enabled" : "Disabled"}
+                    </Badge>
+                </div>
             </div>
-            <span className="truncate font-medium">{name}</span>
+            <div className="grid min-w-0 gap-2 text-xs text-ui-muted sm:grid-cols-2 lg:grid-cols-4">
+                <div className="min-w-0">
+                    <span className="mr-1 text-ui-muted/70">Protocol</span>
+                    <span className="font-medium text-ui-fg">{item.protocol || "-"}</span>
+                </div>
+                <div className="min-w-0">
+                    <span className="mr-1 text-ui-muted/70">Network</span>
+                    <span className="font-medium text-ui-fg">{item.network || "-"}</span>
+                </div>
+                <div className="min-w-0">
+                    <span className="mr-1 text-ui-muted/70">Listen</span>
+                    <span className="truncate font-mono font-medium text-ui-fg">{item.listen || "-"}</span>
+                </div>
+                <div className="min-w-0">
+                    <span className="mr-1 text-ui-muted/70">Transport</span>
+                    <span className="truncate font-mono font-medium text-ui-fg">{item.transports.join(" / ") || "-"}</span>
+                </div>
+            </div>
         </div>
         <ChevronRight className="text-gray-500 opacity-25" size={16} />
     </>
 }
 
+const PAGE_SIZE = 8;
+
 function InboudComponent() {
     const ctx = useContext(GlobalToastContext);
-    const { data: inbounds, error, isLoading, mutate } = useProtoSWR(inboundService.method.list);
+    const [page, setPage] = useState(1);
+    const { data: inbounds, error, isLoading, mutate } = useProtoSWRRequest(
+        inboundService.method.list_page,
+        create(page_requestSchema, { page, pageSize: PAGE_SIZE }),
+    );
+    const { data: allInbounds, mutate: mutateAllInbounds } = useProtoSWR(inboundService.method.list, { revalidateOnFocus: false });
 
     const [saving, setSaving] = useState(false);
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
@@ -119,6 +152,7 @@ function InboudComponent() {
                 if (error === undefined) {
                     ctx.Info("Removed successful");
                     mutate();
+                    mutateAllInbounds();
                     setShowdata(prev => ({ ...prev, show: false })); // Ensure modal closes on delete
                 } else {
                     ctx.Error(error.msg);
@@ -133,13 +167,19 @@ function InboudComponent() {
                 if (error === undefined) ctx.Info("Settings applied successfully");
                 else ctx.Error(error.msg);
                 mutate();
+                mutateAllInbounds();
             })
             .finally(() => setSaving(false));
     };
 
     const handleCreate = (v: string) => {
-        if (!inbounds.names.includes(v)) setShowdata({ show: true, name: v, new: true });
+        if (!allInbounds?.names.includes(v) && !inbounds.names.includes(v)) setShowdata({ show: true, name: v, new: true });
     };
+
+    const totalInbounds = inbounds.page?.total ?? inbounds.names.length;
+    const inboundItems: inbound_item[] = inbounds.items.length > 0
+        ? inbounds.items
+        : inbounds.names.map((name) => ({ name, enabled: false, network: "", listen: "", protocol: "", transports: [] }));
 
     return (
         <MainContainer>
@@ -148,7 +188,10 @@ function InboudComponent() {
                 name={showdata.name}
                 isNew={showdata.new}
                 onHide={(save) => {
-                    if (save) mutate();
+                    if (save) {
+                        mutate();
+                        mutateAllInbounds();
+                    }
                     setShowdata(prev => ({ ...prev, show: false }));
                 }}
                 onDelete={() => deleteInbound(showdata.name)}
@@ -198,60 +241,21 @@ function InboudComponent() {
             </Card>
 
             {/* 2. Inbound Service List Card */}
-            <Card>
-                <CardHeader>
-                    <IconBox icon={DoorOpen} color="#0d6efd" title="Entry Points" description={`${inbounds.names.length} active inbounds`} />
-                </CardHeader>
-                <CardBody>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {
-                            inbounds.names.sort((a, b) => a.localeCompare(b)).map((name) => (
-                                <div key={name} className="h-full">
-                                    <ListItem
-                                        className="h-full justify-between p-4"
-                                        onClick={() => setShowdata({ show: true, name, new: false })}
-                                    >
-                                        <InboundItem name={name} />
-                                    </ListItem>
-                                </div>
-                            ))
-                        }
-
-                        {/* Add New Item Input */}
-                        <div className="h-full">
-                            <ListItem className="h-full p-4 border-dashed border-sidebar-border bg-[var(--bs-secondary-bg)]">
-                                <form
-                                    className="flex w-full gap-2"
-                                    onSubmit={(e) => {
-                                        e.preventDefault();
-                                        const form = e.target as HTMLFormElement;
-                                        const input = form.elements.namedItem('newInbound') as HTMLInputElement;
-                                        if (input.value) {
-                                            handleCreate(input.value);
-                                            input.value = "";
-                                        }
-                                    }}
-                                >
-                                    <input
-                                        name="newInbound"
-                                        className="w-full bg-transparent border-none shadow-none px-0 outline-none text-sm text-[var(--input-text-color)] placeholder:text-[var(--input-placeholder)]"
-                                        placeholder="Create new..."
-                                        autoComplete="off"
-                                    />
-                                    <Button size="sm" type="submit" disabled={saving} className="border-none bg-transparent text-blue-600 p-0 hover:bg-transparent hover:text-blue-500">
-                                        <Plus size={20} />
-                                    </Button>
-                                </form>
-                            </ListItem>
-                        </div>
-                    </div>
-                    {inbounds.names.length === 0 && (
-                        <div className="text-center text-gray-500 p-4">
-                            No records found.
-                        </div>
-                    )}
-                </CardBody>
-            </Card>
+            <CardRowList
+                layout="list"
+                paginated
+                pageSize={PAGE_SIZE}
+                currentPage={inbounds.page?.page || page}
+                totalItems={totalInbounds}
+                onPageChange={setPage}
+                items={inboundItems}
+                getKey={(item) => item.name}
+                renderListItem={(item) => <InboundItem item={item} />}
+                onClickItem={(item) => setShowdata({ show: true, name: item.name, new: false })}
+                onAddNew={handleCreate}
+                adding={saving}
+                header={<IconBox icon={DoorOpen} color="#0d6efd" title="Entry Points" description={`${totalInbounds} active inbounds`} />}
+            />
         </MainContainer>
     );
 }

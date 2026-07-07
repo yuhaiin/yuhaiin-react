@@ -9,12 +9,12 @@ import { Select } from '@/component/v2/select';
 import { Spinner } from '@/component/v2/spinner';
 import { create } from '@bufbuild/protobuf';
 import { ArrowUpDown, ListOrdered, Power, Save, ShieldCheck, Signpost } from 'lucide-react';
-import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
-import { FetchProtobuf, useProtoSWR } from '../../common/proto';
+import React, { FC, useCallback, useContext, useState } from 'react';
+import { FetchProtobuf, useProtoSWR, useProtoSWRRequest } from '../../common/proto';
 import { ConfirmModal } from '../../component/v2/confirm';
 import Loading, { Error } from '../../component/v2/loading';
 import { GlobalToastContext } from '../../component/v2/toast';
-import { change_priority_request_change_priority_operate, change_priority_request_change_priority_operateSchema, change_priority_requestSchema, resolver, rule_indexSchema, rule_save_requestSchema, rules, type rule_item } from '../pbes/api/config_pb';
+import { change_priority_request_change_priority_operate, change_priority_request_change_priority_operateSchema, change_priority_requestSchema, page_requestSchema, resolver, rule_indexSchema, rule_save_requestSchema, rules, type rule_item } from '../pbes/api/config_pb';
 import { configv2, mode, resolve_strategy, rulev2Schema, udp_proxy_fqdn_strategy } from '../pbes/config/bypass_pb';
 import { FilterModal } from './filter/filter';
 
@@ -115,22 +115,50 @@ const BypassComponent: FC<{
 
 export const Bypass = React.memo(BypassComponent)
 
+const PAGE_SIZE = 8;
+
 const RuleItem: FC<{
     name: string,
     index: number,
+    mode: string,
+    tag: string,
+    resolver: string,
+    ruleCount: number,
     onPriority: (index: number) => void,
     onToggleDisabled: (index: number, name: string, disabled: boolean) => void,
     disabled: boolean,
     isChangePriority: boolean,
     isToggleDisabled: boolean,
-}> = ({ name, index, onPriority, onToggleDisabled, disabled, isChangePriority, isToggleDisabled }) => {
+}> = ({ name, index, mode, tag, resolver, ruleCount, onPriority, onToggleDisabled, disabled, isChangePriority, isToggleDisabled }) => {
     return (
         <>
-            <div className={`flex items-center flex-grow overflow-hidden ${disabled ? "opacity-60" : ""}`}>
-                <Badge variant="secondary" className="mr-2 min-w-[40px]">#{index + 1}</Badge>
-                <Signpost className="mr-2 text-gray-500 dark:text-gray-400" />
-                <span className="truncate font-medium">{name}</span>
-                {disabled && <Badge variant="warning" className="ml-2">Disabled</Badge>}
+            <div className={`grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(210px,0.36fr)_minmax(0,1fr)] md:items-center ${disabled ? "opacity-60" : ""}`}>
+                <div className="flex min-w-0 items-center">
+                    <Badge variant="secondary" className="mr-2 min-w-[40px]">#{index + 1}</Badge>
+                    <Signpost className="mr-2 text-gray-500 dark:text-gray-400" />
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <span className="truncate font-medium">{name}</span>
+                        {disabled && <Badge variant="warning" className="shrink-0">Disabled</Badge>}
+                    </div>
+                </div>
+                <div className="grid min-w-0 gap-2 text-xs text-ui-muted sm:grid-cols-4">
+                    <div className="min-w-0">
+                        <span className="mr-1 text-ui-muted/70">Mode</span>
+                        <span className="font-medium text-ui-fg">{mode || "-"}</span>
+                    </div>
+                    <div className="min-w-0">
+                        <span className="mr-1 text-ui-muted/70">Rules</span>
+                        <span className="font-medium text-ui-fg">{ruleCount}</span>
+                    </div>
+                    <div className="min-w-0">
+                        <span className="mr-1 text-ui-muted/70">Tag</span>
+                        <span className="truncate font-medium text-ui-fg">{tag || "-"}</span>
+                    </div>
+                    <div className="min-w-0">
+                        <span className="mr-1 text-ui-muted/70">Resolver</span>
+                        <span className="truncate font-medium text-ui-fg">{resolver || "-"}</span>
+                    </div>
+                </div>
             </div>
 
             <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
@@ -162,7 +190,16 @@ const Rulev2Component: FC = () => {
     const [isChangePriority, setIsChangePriority] = useState(false)
     const [disablingIndex, setDisablingIndex] = useState(-1)
 
-    const { data: rules_data, error, isLoading, mutate } = useProtoSWR(rules.method.list)
+    const [page, setPage] = useState(1)
+    const { data: rules_data, error, isLoading, mutate } = useProtoSWRRequest(
+        rules.method.list_page,
+        create(page_requestSchema, { page, pageSize: PAGE_SIZE }),
+    )
+    const { data: allRulesData, mutate: mutateAllRules } = useProtoSWR(rules.method.list, { revalidateOnFocus: false })
+
+    const ruleNameByIndex = useCallback((index: number) => {
+        return allRulesData?.names[index] ?? rules_data?.items.find((item) => item.index === index)?.name ?? rules_data?.names[index] ?? "";
+    }, [allRulesData?.names, rules_data?.items, rules_data?.names])
 
     const addNewRule = (name: string) => {
         setAdding(true)
@@ -182,6 +219,7 @@ const Rulev2Component: FC = () => {
                 if (error === undefined) {
                     ctx.Info("Add rule successful")
                     mutate()
+                    mutateAllRules()
                 } else {
                     ctx.Error(error.msg)
                     console.error(error.code, error.msg)
@@ -207,67 +245,72 @@ const Rulev2Component: FC = () => {
                 if (saveError === undefined) {
                     ctx.Info(disabled ? "rule disabled" : "rule enabled")
                     mutate()
+                    mutateAllRules()
                 } else {
                     ctx.Error(saveError.msg)
                     console.error(saveError.code, saveError.msg)
                 }
             })
             .finally(() => setDisablingIndex(-1))
-    }, [ctx, mutate])
+    }, [ctx, mutate, mutateAllRules])
 
     const hideFilterModal = useCallback(() => { setFilterModal(prev => { return { ...prev, show: false, } }) }, [])
     const hideConfirmModal = useCallback(() => { setConfirmData(prev => { return { ...prev, show: false, } }) }, [])
     const hidePriorityModal = useCallback(() => { setPriorityModal(prev => { return { ...prev, show: false, } }) }, [])
 
     const changePriority = useCallback((src_index: number, dst_index: number, operate: change_priority_request_change_priority_operate) => {
+        if (!allRulesData) return;
         setIsChangePriority(true)
         FetchProtobuf(rules.method.change_priority, create(change_priority_requestSchema, {
             operate: operate,
-            source: create(rule_indexSchema, { index: src_index, name: rules_data?.names[src_index] }),
-            target: create(rule_indexSchema, { index: dst_index, name: rules_data?.names[dst_index] })
+            source: create(rule_indexSchema, { index: src_index, name: allRulesData.names[src_index] }),
+            target: create(rule_indexSchema, { index: dst_index, name: allRulesData.names[dst_index] })
         }),)
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("change priority successful")
                     mutate()
+                    mutateAllRules()
                 } else {
                     ctx.Error(error.msg)
                     console.error(error.code, error.msg)
                 }
             }).finally(() => setIsChangePriority(false))
-    }, [ctx, mutate, rules_data?.names])
+    }, [allRulesData, ctx, mutate, mutateAllRules])
 
     const onChangePriority = useCallback((index: number, operate: change_priority_request_change_priority_operate) => {
         changePriority(priorityModal.index, index, operate)
     }, [priorityModal, changePriority])
 
     const deleteRule = useCallback(() => {
-        FetchProtobuf(rules.method.remove, create(rule_indexSchema, { name: rules_data?.names[confirmData.index], index: confirmData.index }))
+        FetchProtobuf(rules.method.remove, create(rule_indexSchema, { name: ruleNameByIndex(confirmData.index), index: confirmData.index }))
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("remove successful")
                     mutate()
+                    mutateAllRules()
                 } else {
                     ctx.Error(error.msg)
                     console.error(error.code, error.msg)
                 }
             })
-    }, [rules_data, confirmData, ctx, mutate])
+    }, [confirmData, ctx, mutate, mutateAllRules, ruleNameByIndex])
 
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || rules_data === undefined) return <Loading />
 
-    const ruleItems: Pick<rule_item, "name" | "disabled">[] = rules_data.items.length > 0
+    const ruleItems: Pick<rule_item, "name" | "disabled" | "index" | "mode" | "tag" | "resolver" | "ruleCount">[] = rules_data.items.length > 0
         ? rules_data.items
-        : rules_data.names.map((name) => ({ name, disabled: false }));
+        : rules_data.names.map((name, index) => ({ name, disabled: false, index, mode: "", tag: "", resolver: "", ruleCount: 0 }));
+    const totalRules = rules_data.page?.total ?? ruleItems.length;
 
     return <>
         <ConfirmModal
             show={confirmData.show}
             title="Delete Rule"
             content={
-                <p className="mb-0">Delete rule <strong>{(confirmData.index >= 0 && ruleItems.length > confirmData.index) ? ruleItems[confirmData.index].name : ""}</strong>?</p>
+                <p className="mb-0">Delete rule <strong>{confirmData.index >= 0 ? ruleNameByIndex(confirmData.index) : ""}</strong>?</p>
             }
             onHide={hideConfirmModal}
             onOk={deleteRule}
@@ -276,28 +319,43 @@ const Rulev2Component: FC = () => {
         <FilterModal
             show={filterModal.show}
             onHide={hideFilterModal}
-            name={(filterModal.index >= 0 && ruleItems.length > filterModal.index) ? ruleItems[filterModal.index].name : ""}
+            name={filterModal.index >= 0 ? ruleNameByIndex(filterModal.index) : ""}
             index={filterModal.index}
             onDelete={() => setConfirmData({ show: true, index: filterModal.index })}
-            onSaved={() => mutate()}
+            onSaved={() => {
+                mutate()
+                mutateAllRules()
+            }}
         />
 
         <PriorityModal
             show={priorityModal.show}
             onHide={hidePriorityModal}
             index={priorityModal.index}
-            rules={rules_data.names}
+            rules={allRulesData?.names ?? rules_data.names}
             onChange={onChangePriority}
         />
 
         <CardRowList
+            layout="list"
+            paginated
+            pageSize={PAGE_SIZE}
+            currentPage={rules_data.page?.page || page}
+            totalItems={totalRules}
+            onPageChange={setPage}
             items={ruleItems}
+            getKey={(item) => item.name}
+            getItemIndex={(item) => item.index}
             onClickItem={(_, index) => { setFilterModal({ show: true, index: index }) }}
             renderListItem={(item, index) => (
                 <RuleItem
                     key={index}
                     name={item.name}
                     index={index}
+                    mode={item.mode}
+                    tag={item.tag}
+                    resolver={item.resolver}
+                    ruleCount={item.ruleCount}
                     onPriority={(idx) => { setPriorityModal({ show: true, index: idx }) }}
                     onToggleDisabled={setRuleDisabled}
                     disabled={item.disabled}
@@ -307,10 +365,10 @@ const Rulev2Component: FC = () => {
             )}
             adding={adding}
             onAddNew={(name) => {
-                if (!ruleItems.some((rule) => rule.name === name)) addNewRule(name)
+                if (!allRulesData?.names.includes(name) && !ruleItems.some((rule) => rule.name === name)) addNewRule(name)
             }}
             header={
-                <IconBox icon={ListOrdered} color="#3b82f6" title="Bypass Rules" description="Traffic Routing Rules" />
+                <IconBox icon={ListOrdered} color="#3b82f6" title="Bypass Rules" description={`${totalRules} Traffic Routing Rules`} />
             }
         />
     </>
@@ -325,12 +383,9 @@ const PriorityModalComponent: FC<{
     onHide: () => void,
     onChange: (index: number, operate: change_priority_request_change_priority_operate) => void
 }> = ({ index, rules, show, onHide, onChange }) => {
-    const [value, setValue] = useState(index)
+    const [target, setTarget] = useState({ index, value: index })
     const [operate, setOperate] = useState(change_priority_request_change_priority_operate.Exchange)
-
-    useEffect(() => {
-        setValue(index)
-    }, [index, rules])
+    const value = target.index === index ? target.value : index;
 
     return (
         <Modal open={show} onOpenChange={(open) => !open && onHide()}>
@@ -371,7 +426,7 @@ const PriorityModalComponent: FC<{
 
                         <Select
                             value={String(value)}
-                            onValueChange={(val) => setValue(parseInt(val))}
+                            onValueChange={(val) => setTarget({ index, value: parseInt(val) })}
                             items={rules.map((rule, idx) => ({
                                 value: String(idx),
                                 label: `#${idx + 1} - ${rule}`

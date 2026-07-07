@@ -57,12 +57,14 @@ export function Pagination({
         }}>1</Button>;
 
     return (
-        <div className={clsx("flex items-center gap-2", className)}>
+        <div className={clsx("flex items-center gap-1.5", className)}>
             <Button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 aria-label={t('pagination.previous')}
                 size="icon"
+                variant="outline-secondary"
+                className="h-8 min-w-8 rounded-ui-sm"
             >
                 <ChevronLeft size={16} />
             </Button>
@@ -79,6 +81,7 @@ export function Pagination({
                             onClick={() => onPageChange(item)}
                             size="icon"
                             variant={item === currentPage ? "primary" : "outline-secondary"}
+                            className="h-8 min-w-8 rounded-ui-sm"
                             style={{
                                 minWidth: '32px',
                                 height: '32px',
@@ -98,6 +101,8 @@ export function Pagination({
                 disabled={currentPage === totalPages}
                 aria-label={t('pagination.next')}
                 size="icon"
+                variant="outline-secondary"
+                className="h-8 min-w-8 rounded-ui-sm"
             >
                 <ChevronRight size={16} />
             </Button>

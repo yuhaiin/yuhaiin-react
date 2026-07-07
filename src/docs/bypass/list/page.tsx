@@ -14,17 +14,56 @@ import { EmptySchema, StringValueSchema } from "@bufbuild/protobuf/wkt";
 import { Check, ChevronRight, CloudDownload, FileText, History, ListChecks, Network, RefreshCw, Save, SlidersHorizontal, Trash, TriangleAlert } from 'lucide-react';
 import { FC, useContext, useEffect, useState } from "react";
 import useSWR from "swr";
-import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR } from "../../../common/proto";
+import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR, useProtoSWRRequest } from "../../../common/proto";
 import { mapSetting, updateIfPresent } from "../../../common/utils";
 import { ConfirmModal } from "../../../component/v2/confirm";
 import Loading, { Error } from "../../../component/v2/loading";
-import { lists, save_list_config_requestSchema } from "../../pbes/api/config_pb";
+import { list_item, lists, page_requestSchema, save_list_config_requestSchema } from "../../pbes/api/config_pb";
 import { list, list_list_type_enum, list_list_type_enumSchema, list_localSchema, list_remoteSchema, listSchema, maxminddb_geoipSchema, refresh_configSchema } from "../../pbes/config/bypass_pb";
 
+const PAGE_SIZE = 8;
+
+const ListItemRow: FC<{ item: list_item }> = ({ item }) => {
+    return (
+        <>
+            <div className="grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(190px,0.36fr)_minmax(0,1fr)] md:items-center">
+                <div className="flex min-w-0 items-center">
+                    <FileText className="mr-4 text-gray-500 dark:text-gray-400 shrink-0" size={20} />
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <span className="truncate font-medium">{item.name}</span>
+                        <Badge variant="secondary" className="shrink-0">{item.type}</Badge>
+                        {item.errorCount > 0 && <Badge variant="danger" className="shrink-0">{item.errorCount} errors</Badge>}
+                    </div>
+                </div>
+                <div className="grid min-w-0 gap-2 text-xs text-ui-muted sm:grid-cols-3">
+                    <div className="min-w-0">
+                        <span className="mr-1 text-ui-muted/70">Source</span>
+                        <span className="font-medium text-ui-fg">{item.source || "-"}</span>
+                    </div>
+                    <div className="min-w-0">
+                        <span className="mr-1 text-ui-muted/70">Entries</span>
+                        <span className="font-medium text-ui-fg">{item.itemCount}</span>
+                    </div>
+                    <div className="min-w-0">
+                        <span className="mr-1 text-ui-muted/70">Preview</span>
+                        <span className="truncate font-mono font-medium text-ui-fg">{item.preview || "-"}</span>
+                    </div>
+                </div>
+            </div>
+            <ChevronRight className="text-gray-500 dark:text-gray-400 opacity-25 shrink-0" size={16} />
+        </>
+    )
+}
 
 export default function Lists() {
     const ctx = useContext(GlobalToastContext);
-    const { data, error, isLoading, mutate } = useProtoSWR(lists.method.list, { revalidateOnFocus: false })
+    const [page, setPage] = useState(1)
+    const { data, error, isLoading, mutate } = useProtoSWRRequest(
+        lists.method.list_page,
+        create(page_requestSchema, { page, pageSize: PAGE_SIZE }),
+        { revalidateOnFocus: false }
+    )
+    const { data: allLists, mutate: mutateAllLists } = useProtoSWR(lists.method.list, { revalidateOnFocus: false })
 
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
     const [confirm, setConfirm] = useState<{ show: boolean, name: string }>({ show: false, name: "" });
@@ -50,6 +89,7 @@ export default function Lists() {
                 if (error === undefined) {
                     ctx.Info("remove successful")
                     mutate()
+                    mutateAllLists()
                 } else {
                     ctx.Error(error.msg)
                     console.error(error.code, error.msg)
@@ -67,6 +107,7 @@ export default function Lists() {
                 if (error === undefined) {
                     ctx.Info("save successful")
                     mutate()
+                    mutateAllLists()
                 } else {
                     ctx.Error(error.msg)
                     console.error(error.code, error.msg)
@@ -76,7 +117,7 @@ export default function Lists() {
     }
 
     const handleCreate = (v: string) => {
-        if (data.names.includes(v)) return;
+        if (allLists?.names.includes(v) || data.names.includes(v)) return;
         if (showdata.name === v && showdata.new) {
             setShowdata(prev => { return { ...prev, show: true } })
         } else {
@@ -87,6 +128,10 @@ export default function Lists() {
     const lastRefreshTime = data?.refreshConfig?.lastRefreshTime
         ? new Date(Number(data.refreshConfig.lastRefreshTime) * 1000).toLocaleString()
         : "Never";
+    const totalLists = data.page?.total ?? data.names.length;
+    const listItems: list_item[] = data.items.length > 0
+        ? data.items
+        : data.names.map((name) => ({ name, type: "", source: "", itemCount: 0, errorCount: 0, preview: "" }));
 
     return (
         <MainContainer>
@@ -108,6 +153,7 @@ export default function Lists() {
                 onHide={(save) => {
                     if (save) {
                         mutate();
+                        mutateAllLists();
                     }
                     setShowdata(prev => { return { ...prev, show: false } })
                 }}
@@ -134,6 +180,7 @@ export default function Lists() {
                                 if (error === undefined) {
                                     ctx.Info("refresh successful")
                                     mutate()
+                                    mutateAllLists()
                                 } else {
                                     ctx.Error(error.msg)
                                     console.error(error.code, error.msg)
@@ -202,19 +249,20 @@ export default function Lists() {
                 </Card>
 
                 <CardRowList
-                    items={data.names.sort((a, b) => a.localeCompare(b))}
-                    renderListItem={(v) =>
-                        <>
-                            <FileText className="mr-4 text-gray-500 dark:text-gray-400" size={20} />
-                            <span className="truncate font-medium flex-grow">{v}</span>
-                            <ChevronRight className="text-gray-500 dark:text-gray-400 opacity-25" size={16} />
-                        </>
-                    }
-                    onClickItem={(v) => setShowdata({ show: true, name: v, new: false })}
+                    layout="list"
+                    paginated
+                    pageSize={PAGE_SIZE}
+                    currentPage={data.page?.page || page}
+                    totalItems={totalLists}
+                    onPageChange={setPage}
+                    items={listItems}
+                    getKey={(item) => item.name}
+                    renderListItem={(item) => <ListItemRow item={item} />}
+                    onClickItem={(item) => setShowdata({ show: true, name: item.name, new: false })}
                     onAddNew={handleCreate}
                     adding={saving}
                     header={
-                        <IconBox icon={ListChecks} color="#3b82f6" title="Defined Lists" description={`${data.names.length} Lists Available`} />
+                        <IconBox icon={ListChecks} color="#3b82f6" title="Defined Lists" description={`${totalLists} Lists Available`} />
                     }
                 />
             </div>

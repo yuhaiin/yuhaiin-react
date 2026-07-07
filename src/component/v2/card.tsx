@@ -6,6 +6,7 @@ import { History, Plus, Search, TriangleAlert } from 'lucide-react';
 import React, { FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from "./badge";
+import { Pagination } from './pagination';
 import { ui } from "./styles";
 
 type Density = "compact" | "normal";
@@ -227,6 +228,13 @@ export const ErrorBox: FC<{ msgs: string[] }> = ({ msgs }) => {
 type CardRowListProps<T> = CardListProps<T> & {
     onAddNew?: (name: string) => void;
     adding?: boolean;
+    layout?: "grid" | "list";
+    paginated?: boolean;
+    pageSize?: number;
+    currentPage?: number;
+    totalItems?: number;
+    onPageChange?: (page: number) => void;
+    getItemIndex?: (item: T, localIndex: number) => number;
 };
 
 export function CardRowList<T>({
@@ -239,28 +247,107 @@ export function CardRowList<T>({
     adding,
     animated = "auto",
     animationLimit = 100,
-    density = "normal"
+    density = "normal",
+    getKey,
+    layout = "grid",
+    paginated = false,
+    pageSize = 8,
+    currentPage,
+    totalItems,
+    onPageChange,
+    getItemIndex
 }: CardRowListProps<T>) {
     const { t } = useTranslation('common');
     const [newdata, setNewdata] = useState({ value: '' });
+    const [localPage, setLocalPage] = useState(1);
     const shouldAnimate = animated === true || (animated === "auto" && items.length <= animationLimit);
+    const controlledPage = currentPage !== undefined && onPageChange !== undefined;
+    const itemTotal = paginated ? (totalItems ?? items.length) : items.length;
+    const totalPages = Math.max(1, Math.ceil(itemTotal / pageSize));
+    const pageValue = controlledPage ? currentPage : localPage;
+    const safePage = Math.min(Math.max(pageValue, 1), totalPages);
+    const start = paginated && !controlledPage ? (safePage - 1) * pageSize : 0;
+    const visibleItems = paginated && !controlledPage ? items.slice(start, start + pageSize) : items;
 
-    const renderRowItem = (value: T, index: number) => {
+    const changePage = (page: number) => {
+        const next = Math.min(Math.max(page, 1), totalPages);
+        if (controlledPage) onPageChange(next);
+        else setLocalPage(next);
+    };
+
+    const submitNewData = () => {
+        const value = newdata.value.trim();
+        if (!value || adding) return;
+        onAddNew?.(value);
+        setNewdata({ value: '' });
+    };
+
+    const renderAddNew = (compact = false) => (
+        <div
+            className={clsx(
+                "group flex items-center rounded-ui-md border border-dashed border-ui-border bg-ui-surface-muted/70 transition-colors duration-200",
+                "hover:border-ui-primary/40 hover:bg-ui-primary-soft/50",
+                compact ? "min-h-[42px] px-3" : "min-h-[50px] px-4"
+            )}
+        >
+            <div className="flex items-center w-full">
+                <input
+                    value={newdata.value}
+                    onChange={(e) => setNewdata({ value: e.target.value })}
+                    placeholder={t('state.createNew')}
+                    className="w-full min-w-0 py-2 text-sm font-medium bg-transparent border-0 focus:outline-none placeholder:text-ui-muted"
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') submitNewData();
+                    }}
+                    autoComplete="off"
+                    disabled={adding}
+                />
+                <button
+                    onClick={submitNewData}
+                    className={clsx(
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-ui-sm bg-transparent border-0 text-ui-primary cursor-pointer transition-colors",
+                        "hover:bg-ui-surface disabled:text-ui-muted disabled:cursor-not-allowed",
+                        ui.focusRing
+                    )}
+                    disabled={!newdata.value.trim() || adding}
+                >
+                    {adding ? (
+                        <div className="inline-block w-5 h-5 align-text-bottom border-2 border-current border-r-transparent rounded-full animate-spin" />
+                    ) : <Plus size={20} />}
+                </button>
+            </div>
+        </div>
+    );
+
+    const renderRowItem = (value: T, localIndex: number) => {
+        const index = getItemIndex ? getItemIndex(value, localIndex) : start + localIndex;
+        const key = getKey ? getKey(value) : index;
         const item = (
             <div className="flex">
-                <ListItem density={density} className="w-full" onClick={() => onClickItem?.(value, index)}>
+                <ListItem
+                    density={density}
+                    className={clsx(
+                        "w-full",
+                        layout === "list" && [
+                            "min-h-[56px] rounded-ui-md bg-transparent px-3.5 py-2",
+                            "border-ui-border/60 shadow-none hover:bg-ui-surface-muted hover:border-ui-primary/25",
+                            "hover:translate-x-0.5 transition-[background-color,border-color,transform] duration-150"
+                        ]
+                    )}
+                    onClick={() => onClickItem?.(value, index)}
+                >
                     {body(value, index)}
                 </ListItem>
             </div>
         );
 
         if (!shouldAnimate) {
-            return <React.Fragment key={index}>{item}</React.Fragment>;
+            return <React.Fragment key={key}>{item}</React.Fragment>;
         }
 
         return (
             <motion.div
-                key={index}
+                key={key}
                 layout
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -273,49 +360,29 @@ export function CardRowList<T>({
     };
 
     return (
-        <Card density={density}>
+        <Card density={density} className={layout === "list" ? "shadow-none" : undefined}>
             {header && <CardHeader>{header}</CardHeader>}
-            <CardBody density={density}>
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(min(300px,100%),1fr))] gap-4">
+            <CardBody density={density} className={layout === "list" ? "px-4 py-4" : undefined}>
+                {onAddNew && layout === "list" && (
+                    <div className="mb-3">
+                        {renderAddNew(true)}
+                    </div>
+                )}
+
+                <div className={clsx(
+                    layout === "list"
+                        ? "flex flex-col gap-1.5"
+                        : "grid grid-cols-[repeat(auto-fill,minmax(min(300px,100%),1fr))] gap-4"
+                )}>
                     {shouldAnimate ? (
                         <AnimatePresence initial={false} mode="popLayout">
-                            {items.map(renderRowItem)}
+                            {visibleItems.map(renderRowItem)}
                         </AnimatePresence>
-                    ) : items.map(renderRowItem)}
+                    ) : visibleItems.map(renderRowItem)}
 
-                    {onAddNew &&
+                    {onAddNew && layout === "grid" &&
                         <div className="flex">
-                            <ListItem density={density} className="w-full border border-dashed border-ui-border bg-ui-surface-muted px-5 py-2">
-                                <div className="flex items-center w-full min-h-[42px]">
-                                    <input
-                                        value={newdata.value}
-                                        onChange={(e) => setNewdata({ value: e.target.value })}
-                                        placeholder={t('state.createNew')}
-                                        className="w-full p-2 text-base bg-transparent border-0 focus:outline-none placeholder:text-ui-muted"
-                                        onKeyDown={(e) => {
-                                            if (!newdata.value || adding) return;
-                                            if (e.key === 'Enter') onAddNew(newdata.value);
-                                        }}
-                                        autoComplete="off"
-                                        disabled={adding}
-                                    />
-                                    <button
-                                        onClick={() => {
-                                            if (!newdata.value || adding) return;
-                                            onAddNew(newdata.value);
-                                        }}
-                                        className={clsx(
-                                            "p-2 bg-transparent border-0 text-ui-primary cursor-pointer disabled:text-ui-muted disabled:cursor-not-allowed",
-                                            ui.focusRing
-                                        )}
-                                        disabled={adding}
-                                    >
-                                        {adding ? (
-                                            <div className="inline-block w-5 h-5 align-text-bottom border-2 border-current border-r-transparent rounded-full animate-spin" />
-                                        ) : <Plus size={20} />}
-                                    </button>
-                                </div>
-                            </ListItem>
+                            {renderAddNew()}
                         </div>
                     }
                 </div>
@@ -327,7 +394,27 @@ export function CardRowList<T>({
                 )}
             </CardBody>
 
-            {footer && <CardFooter compact={density === "compact"}>{footer}</CardFooter>}
+            {(footer || paginated) && (
+                <CardFooter compact={density === "compact"} className={clsx(
+                    "flex flex-wrap items-center justify-between gap-3",
+                    layout === "list" && "px-4 py-3"
+                )}>
+                    <div className="text-xs font-medium text-ui-muted">
+                        {paginated && (totalPages > 1 ? `${itemTotal} items · page ${safePage}/${totalPages}` : `${itemTotal} items`)}
+                    </div>
+                    <div className="flex items-center gap-3">
+                        {footer}
+                        {paginated && totalPages > 1 && (
+                            <Pagination
+                                currentPage={safePage}
+                                totalItems={itemTotal}
+                                pageSize={pageSize}
+                                onPageChange={changePage}
+                            />
+                        )}
+                    </div>
+                </CardFooter>
+            )}
         </Card>
     );
 }
