@@ -5,19 +5,19 @@ import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/comp
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
-import { clone, create, toJsonString } from "@bufbuild/protobuf";
-import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { clone, create, toJsonString } from "@/common/plain";
+import { StringValueSchema } from "@/common/plain";
 import { Clipboard, ClipboardCheck, Trash } from 'lucide-react';
-import React, { FC, useContext, useEffect } from "react";
+import React, { FC, useContext, useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { InterfacesContext, useInterfaces } from "../../common/interfaces";
-import { FetchProtobuf, ProtoESFetcher, ProtoPath } from '../../common/proto';
+import { FetchHTTP, HttpFetcher, ApiPath } from '../../common/http';
 import { useClipboard } from '../../component/v2/clipboard';
 import Loading, { Error as ErrorDisplay } from "../../component/v2/loading";
-import { node } from "../pbes/api/node_pb";
-import { point, pointSchema } from "../pbes/node/point_pb";
-import { Point } from "./protocol";
+import { node } from "@/common/api";
+import { point, pointSchema } from "../schema/node/point";
+import { Point, normalizePoint, toPlainPoint } from "./protocol";
 
 const NodeModalComponent: FC<{
     hash: string,
@@ -34,6 +34,7 @@ const NodeModalComponent: FC<{
     ({ hash, point, editable, show, onHide, onSave, groups, onDelete, isNew }) => {
         const { t } = useTranslation(['node', 'common']);
         const ctx = useContext(GlobalToastContext);
+        const [draftPoint, setDraftPoint] = useState<point | undefined>(undefined);
 
         const interfaces = useInterfaces();
         const { copy, copied, manualCopyModal } = useClipboard({
@@ -45,18 +46,32 @@ const NodeModalComponent: FC<{
             if (copied) ctx.Info(t('copySuccess'))
         }, [copied, ctx, t])
 
+        const hasLocalPoint = point !== undefined || isNew;
+        const shouldFetch = show && !hasLocalPoint && hash !== "";
+
         // isValidating becomes true whenever there is an ongoing request whether the data is loaded or not
         // isLoading becomes true when there is an ongoing request and data is not loaded yet.
-        const { data: nodes, error, isLoading, isValidating, mutate } = useSWR(
-            hash === "" ? null : ProtoPath(node.method.get),
-            ProtoESFetcher(node.method.get, create(StringValueSchema, { value: hash }), point),
+        const { data: rawNodes, error, isLoading, isValidating, mutate } = useSWR(
+            shouldFetch ? `${ApiPath(node.method.get)}:${hash}` : null,
+            shouldFetch ? HttpFetcher(node.method.get, create(StringValueSchema, { value: hash })) : null,
             {
                 shouldRetryOnError: false,
                 keepPreviousData: false,
                 revalidateOnFocus: false,
             })
+        const nodes = draftPoint ?? (rawNodes ? normalizePoint(rawNodes) : undefined);
 
-        useEffect(() => { mutate(); }, [hash, mutate])
+        useEffect(() => {
+            if (!hasLocalPoint) {
+                setDraftPoint(undefined);
+                return;
+            }
+            setDraftPoint(normalizePoint(point ?? create(pointSchema, {})));
+        }, [hash, point, hasLocalPoint])
+
+        useEffect(() => {
+            if (shouldFetch) void mutate();
+        }, [shouldFetch, mutate])
 
         const handleCopyJson = () => {
             if (nodes) {
@@ -87,7 +102,11 @@ const NodeModalComponent: FC<{
                                                 groups={groups}
                                                 onChange={(e) => {
                                                     if (!editable) return
-                                                    mutate(prev => { return { ...prev, ...e } }, false)
+                                                    if (hasLocalPoint) {
+                                                        setDraftPoint(prev => normalizePoint({ ...(prev ?? {}), ...e }));
+                                                    } else {
+                                                        mutate(prev => normalizePoint({ ...(prev ?? {}), ...e }), false)
+                                                    }
                                                 }}
                                             />
                                         </div>
@@ -123,9 +142,9 @@ const NodeModalComponent: FC<{
                                         disabled={isValidating || isLoading || !!error}
                                         onClick={() => {
                                             if (!nodes) return
-                                            const next = clone(pointSchema, nodes);
+                                            const next = toPlainPoint(clone(pointSchema, nodes));
                                             if (isNew) next.hash = ""
-                                            FetchProtobuf(node.method.save, next)
+                                            FetchHTTP(node.method.save, next)
                                                 .then(async ({ error }) => {
                                                     if (!error) {
                                                         ctx.Info(t('saveSuccess'))

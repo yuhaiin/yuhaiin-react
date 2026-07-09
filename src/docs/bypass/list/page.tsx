@@ -9,19 +9,77 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { ToggleGroup, ToggleItem } from '@/component/v2/togglegroup';
-import { create } from "@bufbuild/protobuf";
-import { EmptySchema, StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { create } from "@/common/plain";
+import { EmptySchema, StringValueSchema } from "@/common/plain";
 import { Check, ChevronRight, CloudDownload, FileText, History, ListChecks, Network, RefreshCw, Save, SlidersHorizontal, Trash, TriangleAlert } from 'lucide-react';
 import { FC, useContext, useEffect, useState } from "react";
 import useSWR from "swr";
-import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR, useProtoSWRRequest } from "../../../common/proto";
+import { FetchHTTP, HttpFetcher, ApiPath, useHttpSWR, useHttpSWRRequest } from "../../../common/http";
 import { mapSetting, updateIfPresent } from "../../../common/utils";
 import { ConfirmModal } from "../../../component/v2/confirm";
 import Loading, { Error } from "../../../component/v2/loading";
-import { list_item, lists, page_requestSchema, save_list_config_requestSchema } from "../../pbes/api/config_pb";
-import { list, list_list_type_enum, list_list_type_enumSchema, list_localSchema, list_remoteSchema, listSchema, maxminddb_geoipSchema, refresh_configSchema } from "../../pbes/config/bypass_pb";
+import { list_item, lists } from "@/common/api";
+import { list, list_list_type_enum, list_list_type_enumSchema, list_localSchema, list_remoteSchema, listSchema, maxminddb_geoipSchema, refresh_configSchema } from "../../schema/config/bypass";
 
 const PAGE_SIZE = 8;
+
+const normalizeList = (value: list): list => {
+    const listType = value.listType ?? value.type ?? list_list_type_enum.host;
+    const errorMsgs = value.errorMsgs ?? value.error_msgs ?? [];
+
+    if (value.list?.case) {
+        const current = {
+            ...value,
+            listType,
+            errorMsgs,
+            list: { ...value.list, value: value.list.value ?? {} },
+        };
+        if (current.list.case === "remote") {
+            current.list.value = create(list_remoteSchema, { urls: current.list.value.urls ?? [] });
+        } else {
+            current.list = {
+                case: "local",
+                value: create(list_localSchema, { lists: current.list.value.lists ?? [] }),
+            };
+        }
+        return current;
+    }
+
+    if (value.remote) {
+        return {
+            ...value,
+            listType,
+            errorMsgs,
+            list: {
+                case: "remote",
+                value: create(list_remoteSchema, { urls: value.remote.urls ?? [] }),
+            },
+        };
+    }
+
+    return {
+        ...value,
+        listType,
+        errorMsgs,
+        list: {
+            case: "local",
+            value: create(list_localSchema, { lists: value.local?.lists ?? [] }),
+        },
+    };
+};
+
+const toPlainList = (value: list): list => {
+    const normalized = normalizeList(value);
+    const { list: listValue, listType, errorMsgs, local, remote, type, error_msgs, ...rest } = normalized;
+    return {
+        ...rest,
+        type: listType,
+        error_msgs: errorMsgs,
+        ...(listValue.case === "remote"
+            ? { remote: create(list_remoteSchema, { urls: listValue.value?.urls ?? [] }) }
+            : { local: create(list_localSchema, { lists: listValue.value?.lists ?? [] }) }),
+    };
+};
 
 const ListItemRow: FC<{ item: list_item }> = ({ item }) => {
     return (
@@ -58,12 +116,12 @@ const ListItemRow: FC<{ item: list_item }> = ({ item }) => {
 export default function Lists() {
     const ctx = useContext(GlobalToastContext);
     const [page, setPage] = useState(1)
-    const { data, error, isLoading, mutate } = useProtoSWRRequest(
+    const { data, error, isLoading, mutate } = useHttpSWRRequest(
         lists.method.list_page,
-        create(page_requestSchema, { page, pageSize: PAGE_SIZE }),
+        { page, pageSize: PAGE_SIZE },
         { revalidateOnFocus: false }
     )
-    const { data: allLists, mutate: mutateAllLists } = useProtoSWR(lists.method.list, { revalidateOnFocus: false })
+    const { data: allLists, mutate: mutateAllLists } = useHttpSWR(lists.method.list, { revalidateOnFocus: false })
 
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
     const [confirm, setConfirm] = useState<{ show: boolean, name: string }>({ show: false, name: "" });
@@ -84,7 +142,7 @@ export default function Lists() {
     if (isLoading || data === undefined) return <Loading />
 
     const deleteList = (name: string) => {
-        FetchProtobuf(lists.method.remove, create(StringValueSchema, { value: name }),)
+        FetchHTTP(lists.method.remove, create(StringValueSchema, { value: name }),)
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("remove successful")
@@ -99,10 +157,10 @@ export default function Lists() {
 
     const handleSaveSettings = () => {
         setSaving(true)
-        FetchProtobuf(lists.method.save_config, create(save_list_config_requestSchema, {
+        FetchHTTP(lists.method.save_config, {
             refreshInterval: data.refreshConfig?.refreshInterval,
             maxminddbGeoip: data.maxminddbGeoip
-        }))
+        })
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("save successful")
@@ -175,7 +233,7 @@ export default function Lists() {
                     disabled={refresh}
                     onClick={() => {
                         setRefresh(true)
-                        FetchProtobuf(lists.method.refresh, create(EmptySchema))
+                        FetchHTTP(lists.method.refresh, create(EmptySchema))
                             .then(async ({ error }) => {
                                 if (error === undefined) {
                                     ctx.Info("refresh successful")
@@ -275,21 +333,22 @@ const ListsModal: FC<{ name: string, show: boolean, isNew?: boolean, onHide: (sa
         const ctx = useContext(GlobalToastContext);
         const [loadding, setLoadding] = useState(false);
 
-        const { data, error, isLoading, isValidating, mutate } = useSWR(name === "" ? undefined : ProtoPath(lists.method.get),
-            ProtoESFetcher(
+        const { data, error, isLoading, isValidating, mutate } = useSWR(name === "" ? undefined : ApiPath(lists.method.get),
+            HttpFetcher(
                 lists.method.get,
                 create(StringValueSchema, { value: name }),
-                isNew ? create(listSchema, {
-                    name: name, listType: list_list_type_enum.host, list: { case: "local", value: create(list_localSchema, { lists: [] }) }
-                }) : undefined
+                isNew ? normalizeList(create(listSchema, {
+                    name: name, type: list_list_type_enum.host, local: create(list_localSchema, { lists: [] })
+                })) : undefined
             ),
             { shouldRetryOnError: false, keepPreviousData: false, revalidateOnFocus: false })
 
         useEffect(() => { mutate(); }, [name, isNew, mutate])
 
         const handleSave = () => {
+            if (!data) return;
             setLoadding(true)
-            FetchProtobuf(lists.method.save, data)
+            FetchHTTP(lists.method.save, toPlainList(data))
                 .then(async ({ error }) => {
                     if (error === undefined) {
                         ctx.Info("save successful")
@@ -313,7 +372,7 @@ const ListsModal: FC<{ name: string, show: boolean, isNew?: boolean, onHide: (sa
                         {error ?
                             <Error statusCode={error.code} title={error.msg} /> :
                             isValidating || isLoading || !data ? <Loading /> :
-                                <Single value={data} onChange={(e) => { mutate(e, false) }} />
+                                <Single value={normalizeList(data)} onChange={(e) => { mutate(normalizeList(e), false) }} />
                         }
                     </ModalBody>
                     <ModalFooter className="flex justify-between">
@@ -344,15 +403,16 @@ const ListsModal: FC<{ name: string, show: boolean, isNew?: boolean, onHide: (sa
     }
 
 const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onChange }) => {
+    const current = normalizeList(value);
 
-    const isRemote = value.list.case === "remote";
+    const isRemote = current.list.case === "remote";
 
     const handleModeChange = (remote: boolean) => {
         if (remote === isRemote) return;
-        const currentData = value.list.case === "remote" ? value.list.value.urls : value?.list?.value?.lists ?? [];
+        const currentData = current.list.case === "remote" ? current.list.value.urls ?? [] : current.list.value?.lists ?? [];
 
         onChange({
-            ...value,
+            ...current,
             list: remote ?
                 { case: "remote", value: create(list_remoteSchema, { urls: currentData }) } :
                 { case: "local", value: create(list_localSchema, { lists: currentData }) }
@@ -369,8 +429,8 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
                         <SettingTypeSelect
                             label='Content Type'
                             type={list_list_type_enumSchema}
-                            value={value.listType}
-                            onChange={(v) => onChange({ ...value, listType: v })}
+                            value={current.listType}
+                            onChange={(v) => onChange({ ...current, listType: v })}
                         />
                     </div>
 
@@ -408,7 +468,7 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
                         </small>
                     </div>
                     <Badge variant="secondary" pill>
-                        {(value.list.case === "remote" ? value.list.value.urls : value?.list?.value?.lists ?? []).length} Entries
+                        {(current.list.case === "remote" ? current.list.value.urls ?? [] : current.list.value?.lists ?? []).length} Entries
                     </Badge>
                 </div>
 
@@ -416,10 +476,10 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
                     <InputList
                         title={isRemote ? "URL" : "Rule"}
                         dump
-                        data={value.list.case === "remote" ? value.list.value.urls : value?.list?.value?.lists ?? []}
+                        data={current.list.case === "remote" ? current.list.value.urls ?? [] : current.list.value?.lists ?? []}
                         onChange={(x) => {
                             onChange({
-                                ...value,
+                                ...current,
                                 list: isRemote ?
                                     { case: "remote", value: create(list_remoteSchema, { urls: x }) } :
                                     { case: "local", value: create(list_localSchema, { lists: x }) }
@@ -430,11 +490,11 @@ const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onCha
             </div>
 
             {/* 3. Error Messages Area */}
-            {value.errorMsgs && value.errorMsgs.length > 0 && (
+            {current.errorMsgs && current.errorMsgs.length > 0 && (
                 <div className="mt-2">
                     <SettingLabel className="text-red-500 mb-2">Error Messages</SettingLabel>
                     <div className="p-4 bg-red-500/10 text-red-500 rounded-md text-xs font-mono">
-                        {value.errorMsgs.map((msg, i) => <div key={i} className="mb-1">• {msg}</div>)}
+                        {current.errorMsgs.map((msg, i) => <div key={i} className="mb-1">• {msg}</div>)}
                     </div>
                 </div>
             )}

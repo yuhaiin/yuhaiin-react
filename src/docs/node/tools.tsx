@@ -1,10 +1,10 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion"
 import { Button } from "@/component/v2/button"
 import { SettingInputVertical } from "@/component/v2/forms"
-import { create } from "@bufbuild/protobuf"
+import { create } from "@/common/plain"
 import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react"
 import { FC } from "react"
-import { host, hostSchema } from "../pbes/node/protocol_pb"
+import { host, hostSchema } from "../schema/node/protocol"
 
 export type Props<T> = {
     value: T,
@@ -14,12 +14,13 @@ export type Props<T> = {
 
 export const NewAlternateHostList: FC<{ title: string, data: host[], onChange: (x: host[]) => void, editable?: boolean }> =
     ({ title, data, onChange, editable = true }) => {
+        const items = Array.isArray(data) ? data : [];
         const moveItem = (index: number, up: boolean) => {
             if (!editable) return
-            if (data.length <= 1) return
+            if (items.length <= 1) return
             if (up && index === 0) return
-            if (!up && index === data.length - 1) return
-            const next = [...data]
+            if (!up && index === items.length - 1) return
+            const next = [...items]
             const tmp = next[index]
             next[index] = next[index + (up ? -1 : 1)]
             next[index + (up ? -1 : 1)] = tmp
@@ -28,7 +29,7 @@ export const NewAlternateHostList: FC<{ title: string, data: host[], onChange: (
 
         const removeItem = (index: number) => {
             if (!editable) return
-            const next = [...data]
+            const next = [...items]
             next.splice(index, 1)
             onChange(next)
         }
@@ -37,11 +38,11 @@ export const NewAlternateHostList: FC<{ title: string, data: host[], onChange: (
             <div className="mb-4">
                 <div className="flex justify-between items-center mb-2 px-1">
                     <h6 className="font-bold mb-0 opacity-75">{title}</h6>
-                    <small className="text-gray-500 dark:text-gray-400">{data.length} entries</small>
+                    <small className="text-gray-500 dark:text-gray-400">{items.length} entries</small>
                 </div>
 
                 <Accordion type="multiple" className="mb-3">
-                    {data.map((v, index) => (
+                    {items.map((v, index) => (
                         <AccordionItem value={`item-${index}`} key={index}>
                             <AccordionTrigger>
                                 {v.host || `Entry ${index + 1}`} {v.port ? `:${v.port}` : ''}
@@ -53,7 +54,7 @@ export const NewAlternateHostList: FC<{ title: string, data: host[], onChange: (
                                         value={v.host}
                                         disabled={!editable}
                                         onChange={(e: string) => {
-                                            const next = [...data]
+                                            const next = [...items]
                                             next[index] = { ...v, host: e }
                                             onChange(next)
                                         }}
@@ -66,7 +67,7 @@ export const NewAlternateHostList: FC<{ title: string, data: host[], onChange: (
                                         onChange={(e) => {
                                             const port = Number(e)
                                             if (isNaN(port) || port < 0 || port > 65535) return
-                                            const next = [...data]
+                                            const next = [...items]
                                             next[index] = { ...v, port }
                                             onChange(next)
                                         }}
@@ -74,12 +75,12 @@ export const NewAlternateHostList: FC<{ title: string, data: host[], onChange: (
 
                                     {editable && (
                                         <div className="flex justify-end gap-2 mt-3 pt-3">
-                                            <Button size="sm" onClick={() => moveItem(index, true)} disabled={index === 0}>
-                                                <ArrowUp size={16} />
-                                            </Button>
-                                            <Button size="sm" onClick={() => moveItem(index, false)} disabled={index === data.length - 1}>
-                                                <ArrowDown size={16} />
-                                            </Button>
+                                        <Button size="sm" onClick={() => moveItem(index, true)} disabled={index === 0}>
+                                            <ArrowUp size={16} />
+                                        </Button>
+                                        <Button size="sm" onClick={() => moveItem(index, false)} disabled={index === items.length - 1}>
+                                            <ArrowDown size={16} />
+                                        </Button>
                                             <Button variant="outline-danger" size="sm" onClick={() => removeItem(index)}>
                                                 <Trash size={16} className="mr-2" /> Delete
                                             </Button>
@@ -91,11 +92,11 @@ export const NewAlternateHostList: FC<{ title: string, data: host[], onChange: (
                     ))}
                 </Accordion>
 
-                {editable && (
-                    <div className="flex justify-end px-1">
-                        <Button onClick={() => { onChange([...data, create(hostSchema, {})]) }} >
-                            <Plus className="mr-1" size={16} /> Add {title}
-                        </Button>
+            {editable && (
+                <div className="flex justify-end px-1">
+                    <Button onClick={() => { onChange([...items, create(hostSchema, {})]) }} >
+                        <Plus className="mr-1" size={16} /> Add {title}
+                    </Button>
                     </div>
                 )}
             </div>

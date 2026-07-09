@@ -7,15 +7,15 @@ import { Input } from '@/component/v2/input';
 import { InputGroup } from '@/component/v2/inputgroup';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { Spinner } from '@/component/v2/spinner';
-import { create, toJsonString } from '@bufbuild/protobuf';
+import { create, toJsonString } from '@/common/plain';
 import { Check, ChevronDown, ChevronRight, Plus, Trash, X } from 'lucide-react';
 import React, { createContext, FC, useContext, useState } from 'react';
 import useSWR from 'swr';
-import { FetchProtobuf, ProtoESFetcher, ProtoPath } from '../../../common/proto';
+import { FetchHTTP, HttpFetcher, ApiPath } from '../../../common/http';
 import Loading from '../../../component/v2/loading';
 import { GlobalToastContext } from '../../../component/v2/toast';
-import { rule_indexSchema, rule_save_requestSchema, rules } from '../../pbes/api/config_pb';
-import { geoipSchema, hostSchema, mode, modeSchema, network_network_type, networkSchema, or, orSchema, portSchema, processSchema, resolve_strategySchema, rule, ruleSchema, rulev2Schema, sourceSchema, udp_proxy_fqdn_strategy, udp_proxy_fqdn_strategySchema } from '../../pbes/config/bypass_pb';
+import { rules } from "@/common/api";
+import { geoipSchema, hostSchema, mode, modeSchema, network_network_type, networkSchema, or, orSchema, portSchema, processSchema, resolve_strategySchema, rule, ruleSchema, rulev2Schema, sourceSchema, udp_proxy_fqdn_strategy, udp_proxy_fqdn_strategySchema } from '../../schema/config/bypass';
 
 const Values = {
     Inbounds: [] as string[],
@@ -25,11 +25,90 @@ const Values = {
 
 export const FilterContext = createContext(Values)
 
+const defaultRule = (): rule => create(ruleSchema, {
+    object: {
+        case: "host",
+        value: create(hostSchema, { list: "" })
+    }
+});
+
+const normalizeRule = (value?: rule): rule => {
+    if (!value) return defaultRule();
+    if (value.object?.case) {
+        const object = { ...value.object, value: value.object.value ?? {} };
+        if (object.case === "inbound") {
+            object.value = {
+                ...object.value,
+                names: Array.isArray(object.value.names)
+                    ? object.value.names
+                    : object.value.name
+                        ? [object.value.name]
+                        : [],
+            };
+        }
+        return { ...value, object };
+    }
+
+    for (const key of ["host", "process", "inbound", "network", "port", "geoip"]) {
+        if (value[key] !== undefined && value[key] !== null) {
+            const objectValue = key === "inbound"
+                ? {
+                    ...value[key],
+                    names: Array.isArray(value[key].names)
+                        ? value[key].names
+                        : value[key].name
+                            ? [value[key].name]
+                            : [],
+                }
+                : value[key];
+            return { ...value, object: { case: key, value: objectValue } };
+        }
+    }
+
+    return defaultRule();
+};
+
+const toPlainRule = (value?: rule): rule => {
+    const normalized = normalizeRule(value);
+    const { object, host, process, inbound, network, port, geoip, ...rest } = normalized;
+    return object?.case ? { ...rest, [object.case]: object.value ?? {} } : rest;
+};
+
+const normalizeGroup = (value?: or): or => ({
+    ...value,
+    rules: Array.isArray(value?.rules) ? value.rules.map(normalizeRule) : [],
+});
+
+const normalizeRulev2 = (value: rulev2): rulev2 => ({
+    ...value,
+    resolveStrategy: value.resolveStrategy ?? value.resolve_strategy,
+    udpProxyFqdnStrategy: value.udpProxyFqdnStrategy ?? value.udp_proxy_fqdn_strategy,
+    rules: Array.isArray(value?.rules) ? value.rules.map(normalizeGroup) : [],
+});
+
+const toPlainRulev2 = (value: rulev2): rulev2 => {
+    const normalized = normalizeRulev2(value);
+    return {
+        name: normalized.name,
+        mode: normalized.mode,
+        tag: normalized.tag,
+        resolve_strategy: normalized.resolveStrategy,
+        udp_proxy_fqdn_strategy: normalized.udpProxyFqdnStrategy,
+        resolver: normalized.resolver,
+        rules: normalized.rules.map((group) => ({
+            ...group,
+            rules: (Array.isArray(group?.rules) ? group.rules : []).map(toPlainRule),
+        })),
+        disabled: normalized.disabled,
+    };
+};
+
 const RuleRow: FC<{
     rule: rule;
     onUpdate: (updatedRule: rule) => void;
     onRemove: () => void;
 }> = ({ rule, onUpdate, onRemove }) => {
+    const current = normalizeRule(rule);
     const handleUpdate = (v: string, value: string | string[]) => {
         if (typeof value === 'string') {
             switch (v) {
@@ -53,7 +132,7 @@ const RuleRow: FC<{
                     onUpdate(create(ruleSchema, {
                         object: {
                             case: "inbound",
-                            value: create(sourceSchema, { name: value })
+                            value: create(sourceSchema, { names: value ? [value] : [] })
                         }
                     }))
                     break;
@@ -105,7 +184,7 @@ const RuleRow: FC<{
         <InputGroup className="mb-4">
             <div className="flex-[0_0_130px]">
                 <FormSelect
-                    value={rule.object.case ?? ""}
+                    value={current.object.case ?? ""}
                     onChange={(e) => handleUpdate(e, "")}
                     triggerClassName="focus:z-10 focus:relative hover:z-10 hover:relative"
                     groupPosition="first"
@@ -121,10 +200,10 @@ const RuleRow: FC<{
             </div>
 
             {
-                rule.object.case == "host" &&
+                current.object.case == "host" &&
                 <div className="flex-1">
                     <FormSelect
-                        value={rule.object.value.list}
+                        value={current.object.value.list ?? ""}
                         onChange={(e) => handleUpdate("host", e)}
                         emptyChoose
                         triggerClassName="focus:z-10 focus:relative hover:z-10 hover:relative"
@@ -135,10 +214,10 @@ const RuleRow: FC<{
             }
 
             {
-                rule.object.case == "inbound" &&
+                current.object.case == "inbound" &&
                 <div className="flex-1">
                     <DropdownSelect
-                        values={rule.object.value.names}
+                        values={current.object.value.names ?? []}
                         items={valuesContext.Inbounds}
                         onUpdate={(v) => handleUpdate("inbound", v)}
                         triggerClassName="focus:z-10 focus:relative hover:z-10 hover:relative"
@@ -148,10 +227,10 @@ const RuleRow: FC<{
             }
 
             {
-                rule.object.case == "process" &&
+                current.object.case == "process" &&
                 <div className="flex-1">
                     <FormSelect
-                        value={rule.object.value.list}
+                        value={current.object.value.list ?? ""}
                         onChange={(e) => handleUpdate("process", e)}
                         emptyChoose
                         triggerClassName="focus:z-10 focus:relative hover:z-10 hover:relative"
@@ -162,10 +241,10 @@ const RuleRow: FC<{
             }
 
             {
-                rule.object.case == "network" &&
+                current.object.case == "network" &&
                 <div className="flex-1">
                     <FormSelect
-                        value={rule.object.value.network === network_network_type.tcp ? "tcp" : "udp"}
+                        value={current.object.value.network === network_network_type.tcp ? "tcp" : "udp"}
                         onChange={(e) => handleUpdate("network", e)}
                         triggerClassName="focus:z-10 focus:relative hover:z-10 hover:relative"
                         groupPosition="middle"
@@ -178,11 +257,11 @@ const RuleRow: FC<{
             }
 
             {
-                rule.object.case == "port" &&
+                current.object.case == "port" &&
                 <div className="flex-1">
                     <Input
                         type="text"
-                        value={rule.object.value.ports}
+                        value={current.object.value.ports ?? ""}
                         onChange={(e) => handleUpdate("port", e.target.value)}
                         className="focus:z-10 focus:relative hover:z-10 hover:relative"
                         groupPosition="middle"
@@ -191,11 +270,11 @@ const RuleRow: FC<{
             }
 
             {
-                rule.object.case == "geoip" &&
+                current.object.case == "geoip" &&
                 <div className="flex-1">
                     <Input
                         type="text"
-                        value={rule.object.value.countries}
+                        value={current.object.value.countries ?? ""}
                         onChange={(e) => handleUpdate("geoip", e.target.value)}
                         className="focus:z-10 focus:relative hover:z-10 hover:relative"
                         groupPosition="middle"
@@ -217,42 +296,37 @@ const RuleGroup: FC<{
     onUpdateGroup: (updatedGroup: or) => void;
     onRemoveGroup: () => void;
 }> = ({ group, onUpdateGroup, onRemoveGroup }) => {
+    const current = normalizeGroup(group);
 
     const handleUpdateRule = (index: number, updatedRule: rule) => {
-        onUpdateGroup({ ...group, rules: [...group.rules.map((rule, i) => index === i ? updatedRule : rule)] });
+        onUpdateGroup({ ...current, rules: [...current.rules.map((rule, i) => index === i ? updatedRule : rule)] });
     };
 
     const handleAddRule = () => {
         onUpdateGroup({
-            ...group, rules: [...group.rules,
-            create(ruleSchema, {
-                object: {
-                    case: "host",
-                    value: create(hostSchema, { list: "" })
-                }
-            })]
+            ...current, rules: [...current.rules, defaultRule()]
         });
     };
 
     const handleRemoveRule = (index: number) => {
-        if (group.rules.length === 1) {
+        if (current.rules.length === 1) {
             onRemoveGroup();
         } else {
-            const newRules = group.rules.filter((_, i) => i !== index);
-            onUpdateGroup({ ...group, rules: newRules });
+            const newRules = current.rules.filter((_, i) => i !== index);
+            onUpdateGroup({ ...current, rules: newRules });
         }
     };
 
     return (
         <div className="border border-gray-500/10 p-4 rounded-md bg-secondary/10">
-            {group.rules.map((rule, index) => (
+            {current.rules.map((rule, index) => (
                 <React.Fragment key={index}>
                     <RuleRow
                         rule={rule}
                         onUpdate={(updatedRule) => handleUpdateRule(index, updatedRule)}
                         onRemove={() => handleRemoveRule(index)}
                     />
-                    {index < group.rules.length - 1 && (
+                    {index < current.rules.length - 1 && (
                         <div className="ml-4 mb-4 font-bold text-blue-500 text-xs uppercase">And</div>
                     )}
                 </React.Fragment>
@@ -281,34 +355,28 @@ const RulesSeparator: FC = () => (
 );
 
 const FilterBuilder: FC<{ groups: or[], onUpdateGroups: (groups: or[]) => void }> = ({ groups, onUpdateGroups }) => {
+    const currentGroups = Array.isArray(groups) ? groups.map(normalizeGroup) : [];
     const handleUpdateGroup = (index: number, updatedGroup: or) => {
-        onUpdateGroups([...groups.map((group, i) => index === i ? updatedGroup : group)]);
+        onUpdateGroups([...currentGroups.map((group, i) => index === i ? updatedGroup : group)]);
     };
 
     const handleAddGroup = () => {
         onUpdateGroups([
-            ...groups,
+            ...currentGroups,
             create(orSchema, {
-                rules: [
-                    create(ruleSchema, {
-                        object: {
-                            case: "host",
-                            value: create(hostSchema, { list: "" })
-                        }
-                    })
-                ]
+                rules: [defaultRule()]
             })
         ]);
     };
 
     const handleRemoveGroup = (index: number) => {
-        onUpdateGroups([...groups.filter((_, i) => i !== index)]);
+        onUpdateGroups([...currentGroups.filter((_, i) => i !== index)]);
     };
 
     return (
         <div className="flex flex-col gap-2">
             <RulesSeparator />
-            {groups.map((group, index) => (
+            {currentGroups.map((group, index) => (
                 <React.Fragment key={index}>
                     {index > 0 && <OrSeparator />}
                     <RuleGroup
@@ -341,14 +409,16 @@ export const FilterModal: FC<{
     const [showDebug, setShowDebug] = useState(false);
 
     const { data: rule, error, isLoading, isValidating, mutate: setRule } = useSWR(
-        (name === "" || !show) ? undefined : [ProtoPath(rules.method.get), index, name],
-        ProtoESFetcher(rules.method.get, create(rule_indexSchema, { index, name })),
+        (name === "" || !show) ? undefined : [ApiPath(rules.method.get), index, name],
+        HttpFetcher(rules.method.get, { index, name }),
         { shouldRetryOnError: false, keepPreviousData: false, revalidateOnFocus: false }
     )
+    const currentRule = rule ? normalizeRulev2(rule) : undefined;
 
     const saveRule = () => {
+        if (!currentRule) return;
         setLoadding(true)
-        FetchProtobuf(rules.method.save, create(rule_save_requestSchema, { index: create(rule_indexSchema, { index, name }), rule: rule }))
+        FetchHTTP(rules.method.save, { index: { index, name }, rule: toPlainRulev2(currentRule) })
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info(`save ${name} successful`)
@@ -366,13 +436,13 @@ export const FilterModal: FC<{
         <Modal open={show} onOpenChange={(open) => !open && onHide()}>
             <ModalContent style={{ maxWidth: '800px' }}>
                 <ModalHeader closeButton>
-                    <ModalTitle>{rule ? rule.name : "Loading..."}</ModalTitle>
+                    <ModalTitle>{currentRule ? currentRule.name : "Loading..."}</ModalTitle>
                 </ModalHeader>
 
                 <ModalBody>
                     {error ? (
                         <ErrorMsg msg={error.msg} code={error.code} raw={error.raw} />
-                    ) : isValidating || isLoading || !rule ? (
+                    ) : isValidating || isLoading || !currentRule ? (
                         <Loading />
                     ) : (
                         <div className="flex flex-col gap-6">
@@ -382,24 +452,24 @@ export const FilterModal: FC<{
                                         <SwitchCard
                                             label="Disabled"
                                             description="Ignore this rule during routing"
-                                            checked={rule.disabled}
-                                            onCheckedChange={(checked) => setRule({ ...rule, disabled: checked }, false)}
+                                            checked={currentRule.disabled}
+                                            onCheckedChange={(checked) => setRule({ ...currentRule, disabled: checked }, false)}
                                         />
                                     </div>
                                     <div>
                                         <SettingEnumSelectVertical
                                             label="Mode"
                                             type={modeSchema}
-                                            value={rule.mode}
-                                            onChange={(v) => setRule({ ...rule, mode: v }, false)}
+                                            value={currentRule.mode}
+                                            onChange={(v) => setRule({ ...currentRule, mode: v }, false)}
                                             filter={(v) => v.number !== mode.bypass}
                                         />
                                     </div>
                                     <div>
                                         <SettingInputVertical
                                             label="Tag"
-                                            value={rule.tag}
-                                            onChange={(v) => setRule({ ...rule, tag: v }, false)}
+                                            value={currentRule.tag}
+                                            onChange={(v) => setRule({ ...currentRule, tag: v }, false)}
                                             placeholder="Optional tag"
                                         />
                                     </div>
@@ -407,25 +477,25 @@ export const FilterModal: FC<{
                                         <SettingEnumSelectVertical
                                             label="Resolve Strategy"
                                             type={resolve_strategySchema}
-                                            value={rule.resolveStrategy}
-                                            onChange={(v) => setRule({ ...rule, resolveStrategy: v }, false)}
+                                            value={currentRule.resolveStrategy}
+                                            onChange={(v) => setRule({ ...currentRule, resolveStrategy: v }, false)}
                                         />
                                     </div>
                                     <div>
                                         <SettingEnumSelectVertical
                                             label="UDP proxy Fqdn"
                                             type={udp_proxy_fqdn_strategySchema}
-                                            value={rule.udpProxyFqdnStrategy}
-                                            onChange={(v) => setRule({ ...rule, udpProxyFqdnStrategy: v }, false)}
+                                            value={currentRule.udpProxyFqdnStrategy}
+                                            onChange={(v) => setRule({ ...currentRule, udpProxyFqdnStrategy: v }, false)}
                                             format={(v) => v === udp_proxy_fqdn_strategy.udp_proxy_fqdn_strategy_default ? "global" : udp_proxy_fqdn_strategySchema.values.find(x => x.number === v)?.name || ""}
                                         />
                                     </div>
                                     <div className="col-span-1 md:col-span-2">
                                         <SettingSelectVertical
                                             label="Resolver"
-                                            value={rule.resolver}
+                                            value={currentRule.resolver}
                                             values={filterContext.Resolvers}
-                                            onChange={(v) => setRule({ ...rule, resolver: v }, false)}
+                                            onChange={(v) => setRule({ ...currentRule, resolver: v }, false)}
                                             emptyChoose
                                             emptyChooseName="Global Default"
                                         />
@@ -436,7 +506,7 @@ export const FilterModal: FC<{
                             {/* 2. Rules Builder Area */}
                             <SettingsBox>
                                 <SettingLabel className="mb-0">Rule Entries</SettingLabel>
-                                <FilterBuilder groups={rule.rules} onUpdateGroups={(groups) => { setRule({ ...rule, rules: groups }, false) }} />
+                                <FilterBuilder groups={currentRule.rules} onUpdateGroups={(groups) => { setRule({ ...currentRule, rules: groups }, false) }} />
                             </SettingsBox>
 
                             {/* 3. Debug Info */}
@@ -453,7 +523,7 @@ export const FilterModal: FC<{
                                 {showDebug && (
                                     <div className="mt-3">
                                         <pre className="text-xs bg-gray-100 dark:bg-zinc-800 p-3 rounded-md overflow-auto font-mono border border-gray-500/10" style={{ maxHeight: '300px', fontSize: '0.75rem' }}>
-                                            {toJsonString(rulev2Schema, rule, { prettySpaces: 2 })}
+                                            {toJsonString(rulev2Schema, toPlainRulev2(currentRule), { prettySpaces: 2 })}
                                         </pre>
                                     </div>
                                 )}

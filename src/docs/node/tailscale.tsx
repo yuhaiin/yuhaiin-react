@@ -1,29 +1,35 @@
 import { SettingInputVertical } from "@/component/v2/forms";
 import { FC } from "react";
-import { tailscale } from "../pbes/node/protocol_pb";
+import { tailscale } from "../schema/node/protocol";
 import { Props } from "./tools";
 
 export const Tailscale: FC<Props<tailscale>> = ({ value, onChange, editable = true }) => {
+    const current = {
+        ...value,
+        authKey: value?.authKey ?? "",
+        hostname: value?.hostname ?? "",
+        controlUrl: value?.controlUrl ?? "",
+    };
     return <>
         <SettingInputVertical
             label="Auth Key"
-            value={value.authKey}
+            value={current.authKey}
             disabled={!editable}
-            onChange={(e: string) => { onChange({ ...value, authKey: e }) }}
+            onChange={(e: string) => { onChange({ ...current, authKey: e }) }}
         />
 
         <SettingInputVertical
             label="Hostname"
-            value={value.hostname}
+            value={current.hostname}
             disabled={!editable}
-            onChange={(e: string) => { onChange({ ...value, hostname: e }) }}
+            onChange={(e: string) => { onChange({ ...current, hostname: e }) }}
         />
 
         <SettingInputVertical
             label="Control URL"
-            value={value.controlUrl}
+            value={current.controlUrl}
             disabled={!editable}
-            onChange={(e: string) => { onChange({ ...value, controlUrl: e }) }}
+            onChange={(e: string) => { onChange({ ...current, controlUrl: e }) }}
         />
     </>
 }

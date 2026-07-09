@@ -1,6 +1,6 @@
 import { SettingInputVertical } from "@/component/v2/forms";
 import { FC } from "react";
-import { trojan } from "../pbes/node/protocol_pb";
+import { trojan } from "../schema/node/protocol";
 import { Props } from "./tools";
 
 export const Trojanv2: FC<Props<trojan>> = ({ value, onChange, editable = true }) => {

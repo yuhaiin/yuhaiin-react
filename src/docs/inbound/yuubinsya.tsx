@@ -1,7 +1,7 @@
 
 import { SettingCheck, SettingInputVertical } from "@/component/v2/forms";
 import { FC } from "react";
-import { yuubinsya } from '../pbes/config/inbound_pb';
+import { yuubinsya } from '../schema/config/inbound';
 
 export const Yuubinsya: FC<{ yuubinsya: yuubinsya, onChange: (x: yuubinsya) => void }> = ({ yuubinsya, onChange }) => {
     return <>

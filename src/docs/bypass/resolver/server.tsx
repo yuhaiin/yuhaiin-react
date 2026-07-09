@@ -5,15 +5,15 @@ import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { RotateCw, Save, Server as ServerIcon } from 'lucide-react';
 import { FC, useContext, useState } from "react";
-import { FetchProtobuf, useProtoSWR } from "../../../common/proto";
+import { FetchHTTP, useHttpSWR } from "../../../common/http";
 import Loading from "../../../component/v2/loading";
-import { resolver } from "../../pbes/api/config_pb";
+import { resolver } from "@/common/api";
 
 export const Server: FC = () => {
     const ctx = useContext(GlobalToastContext);
     const [saving, setSaving] = useState(false);
     const [isDirty, setDirty] = useState(false);
-    const { data, error, isLoading, mutate } = useProtoSWR(resolver.method.server, {
+    const { data, error, isLoading, mutate } = useHttpSWR(resolver.method.server, {
         onSuccess: () => setDirty(false)
     });
 
@@ -22,7 +22,7 @@ export const Server: FC = () => {
 
     const handleSave = () => {
         setSaving(true)
-        FetchProtobuf(resolver.method.save_server, data)
+        FetchHTTP(resolver.method.save_server, data)
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("save server successful")

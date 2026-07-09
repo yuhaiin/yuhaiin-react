@@ -6,17 +6,17 @@ import { Card, CardBody, CardFooter, CardHeader, CardRowList, ErrorMsg, IconBox,
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { Spinner } from "@/component/v2/spinner";
 import { SwitchCard } from "@/component/v2/switch";
-import { clone, create } from "@bufbuild/protobuf";
-import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { clone, create } from "@/common/plain";
+import { StringValueSchema } from "@/common/plain";
 import { Check, ChevronRight, DoorOpen, LogIn, Save, Settings, Trash } from "lucide-react";
 import { FC, useContext, useEffect, useState } from "react";
 import useSWR from "swr";
-import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR, useProtoSWRRequest } from "../../common/proto";
+import { FetchHTTP, HttpFetcher, ApiPath, useHttpSWR, useHttpSWRRequest } from "../../common/http";
 import Loading, { Error as ErrorDisplay } from "../../component/v2/loading";
 import { GlobalToastContext } from "../../component/v2/toast";
-import { inbound as inboundService, inbound_item, page_requestSchema } from "../pbes/api/config_pb";
-import { inboundSchema } from "../pbes/config/inbound_pb";
-import { Inbound } from "./inboud";
+import { inbound as inboundService, inbound_item } from "@/common/api";
+import { inboundSchema, type inbound as inboundConfig } from "../schema/config/inbound";
+import { Inbound, normalizeInbound, toPlainInbound } from "./inboud";
 
 const InboundModal: FC<{
     show: boolean,
@@ -27,25 +27,34 @@ const InboundModal: FC<{
 }> = ({ show, name, onHide, onDelete, isNew }) => {
     const ctx = useContext(GlobalToastContext);
     const [saving, setSaving] = useState(false);
+    const [draftInbound, setDraftInbound] = useState<inboundConfig | undefined>(undefined);
+    const shouldFetch = name !== "" && !isNew;
 
-    const { data: inbound, error, isLoading, isValidating, mutate } = useSWR(
-        name === "" ? undefined : ProtoPath(inboundService.method.get),
-        ProtoESFetcher(
+    const { data: fetchedInbound, error, isLoading, isValidating, mutate } = useSWR(
+        shouldFetch ? `${ApiPath(inboundService.method.get)}:${name}` : null,
+        shouldFetch ? HttpFetcher(
             inboundService.method.get,
             create(StringValueSchema, { value: name }),
-            isNew ? create(inboundSchema, { name: name, enabled: false }) : undefined
-        ),
+        ) : null,
         { shouldRetryOnError: false, keepPreviousData: false, revalidateOnFocus: false }
     )
 
-    useEffect(() => { mutate(); }, [name, isNew, mutate])
+    useEffect(() => {
+        if (isNew && name !== "") {
+            setDraftInbound(normalizeInbound(create(inboundSchema, { name, enabled: false })));
+            return;
+        }
+        setDraftInbound(undefined);
+    }, [name, isNew])
+
+    const inbound = isNew ? draftInbound : fetchedInbound;
 
     const handleSave = () => {
         if (!inbound) return;
         setSaving(true);
-        const next = clone(inboundSchema, inbound);
+        const next = toPlainInbound(clone(inboundSchema, inbound));
         next.name = name;
-        FetchProtobuf(inboundService.method.save, next)
+        FetchHTTP(inboundService.method.save, next)
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("Save successful");
@@ -68,7 +77,14 @@ const InboundModal: FC<{
                         <Loading />
                     ) : (
                         <SettingsBox>
-                            <Inbound inbound={inbound} onChange={(x) => mutate(clone(inboundSchema, x), false)} />
+                            <Inbound
+                                inbound={inbound}
+                                onChange={(x) => {
+                                    const next = clone(inboundSchema, x);
+                                    if (isNew) setDraftInbound(next);
+                                    else mutate(next, false);
+                                }}
+                            />
                         </SettingsBox>
                     )}
                 </ModalBody>
@@ -134,11 +150,11 @@ const PAGE_SIZE = 8;
 function InboudComponent() {
     const ctx = useContext(GlobalToastContext);
     const [page, setPage] = useState(1);
-    const { data: inbounds, error, isLoading, mutate } = useProtoSWRRequest(
+    const { data: inbounds, error, isLoading, mutate } = useHttpSWRRequest(
         inboundService.method.list_page,
-        create(page_requestSchema, { page, pageSize: PAGE_SIZE }),
+        { page, pageSize: PAGE_SIZE },
     );
-    const { data: allInbounds, mutate: mutateAllInbounds } = useProtoSWR(inboundService.method.list, { revalidateOnFocus: false });
+    const { data: allInbounds, mutate: mutateAllInbounds } = useHttpSWR(inboundService.method.list, { revalidateOnFocus: false });
 
     const [saving, setSaving] = useState(false);
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
@@ -147,7 +163,7 @@ function InboudComponent() {
     if (isLoading || inbounds === undefined) return <Loading />
 
     const deleteInbound = (name: string) => {
-        FetchProtobuf(inboundService.method.remove, create(StringValueSchema, { value: name }))
+        FetchHTTP(inboundService.method.remove, create(StringValueSchema, { value: name }))
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("Removed successful");
@@ -162,7 +178,7 @@ function InboudComponent() {
 
     const handleApply = () => {
         setSaving(true);
-        FetchProtobuf(inboundService.method.apply, inbounds)
+        FetchHTTP(inboundService.method.apply, inbounds)
             .then(async ({ error }) => {
                 if (error === undefined) ctx.Info("Settings applied successfully");
                 else ctx.Error(error.msg);

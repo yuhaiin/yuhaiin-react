@@ -5,10 +5,10 @@ import { clsx } from "clsx";
 import { Check } from "lucide-react";
 import React, { FC, JSX, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FetchProtobuf } from "../../common/proto";
-import { connections, counter, total_flow } from "../pbes/api/statistic_pb";
-import { mode } from "../pbes/config/bypass_pb";
-import { connection, type as connType, match_history_entry } from "../pbes/statistic/config_pb";
+import { connectionTotalRoute, counter, total_flow } from "@/common/api";
+import { fetchJsonRoute, HttpError } from "@/common/http";
+import { mode } from "../schema/config/bypass";
+import { connection, type as connType, match_history_entry } from "../schema/statistic/config";
 
 interface MetricProps {
     label: string;
@@ -170,17 +170,10 @@ export const useFlow = (options?: UseFlowOptions) => {
             }))
 
             try {
-                const { data, error } = await FetchProtobuf(connections.method.total)
+                const data = await fetchJsonRoute(connectionTotalRoute)
                 if (stopped) return
 
-                if (error) {
-                    setState(prev => ({
-                        ...prev,
-                        error,
-                        isLoading: false,
-                        isValidating: false,
-                    }))
-                } else if (data) {
+                if (data) {
                     const flow = createFlow(data, lastFlowRef.current)
                     lastFlowRef.current = flow
 
@@ -200,10 +193,13 @@ export const useFlow = (options?: UseFlowOptions) => {
                 }
             } catch (error) {
                 if (stopped) return
-                const message = error instanceof Error ? error.message : "failed to fetch flow"
+                const httpError = error as Partial<HttpError>
+                const message = typeof httpError.msg === "string"
+                    ? httpError.msg
+                    : error instanceof Error ? error.message : "failed to fetch flow"
                 setState(prev => ({
                     ...prev,
-                    error: { code: 500, msg: message },
+                    error: { code: typeof httpError.code === "number" ? httpError.code : 500, msg: message },
                     isLoading: false,
                     isValidating: false,
                 }))
@@ -294,11 +290,15 @@ export const ConnectionInfo: FC<{
     endContent?: JSX.Element,
     showNodeModal?: (hash: string) => void,
 }> = ({ value, startContent, endContent, showNodeModal }) => {
+    const formatInteger = (v: unknown) => {
+        if (typeof v === "bigint" || typeof v === "number" || typeof v === "string") return v.toString();
+        return "";
+    }
 
     return <>
         <DataList>
             {startContent}
-            <DataListItem label="Id" value={value.id.toString()} />
+            <DataListItem label="Id" value={formatInteger(value.id)} />
             <DataListItem label="Addr" value={value.addr} />
             <DataListItem label="Geo" value={value.geo} />
             <DataListItem label="Type" value={value.type?.connType ? connType[value.type?.connType] : undefined} />
@@ -340,9 +340,9 @@ export const ConnectionInfo: FC<{
             <DataListItem label="HttpHost" value={value.httpHost} />
             <DataListItem label="Component" value={value.component} />
             <DataListItem label="Mode" value={mode[value.mode]} />
-            <DataListItem label="UdpMigrateId" value={value.udpMigrateId ? value.udpMigrateId.toString() : ""} />
-            <DataListItem label="Pid" value={value.pid ? value.pid.toString() : ""} />
-            <DataListItem label="Uid" value={value.uid ? value.uid.toString() : ""} />
+            <DataListItem label="UdpMigrateId" value={formatInteger(value.udpMigrateId)} />
+            <DataListItem label="Pid" value={formatInteger(value.pid)} />
+            <DataListItem label="Uid" value={formatInteger(value.uid)} />
             <MatchHistoryItem value={value.matchHistory || []} />
 
             {endContent}

@@ -1,22 +1,22 @@
 "use client";
 
 import { Card, CardBody, MainContainer } from '@/component/v2/card';
-import { create } from '@bufbuild/protobuf';
+import { create } from '@/common/plain';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useProtoSWR } from '../../common/proto';
+import { useHttpSWR } from '../../common/http';
 import dynamic from '../../component/AsyncComponent';
 import Loading from '../../component/v2/loading';
 import { Flow, FlowContainer } from '../connections/components';
 import Activates from '../group/activates/page';
 import { NodeModal } from '../node/modal';
-import { node } from '../pbes/api/node_pb';
-import { pointSchema } from '../pbes/node/point_pb';
+import { node } from "@/common/api";
+import { pointSchema } from '../schema/node/point';
 
 function HomePage() {
     const { t } = useTranslation(['home', 'common']);
     const [nodeModal, setNodeModal] = useState({ show: false, point: create(pointSchema, {}) });
-    const { data: now, error: now_error, isLoading: now_isLoading, mutate: refreshNow } = useProtoSWR(node.method.now, {
+    const { data: now, error: now_error, isLoading: now_isLoading, mutate: refreshNow } = useHttpSWR(node.method.now, {
         revalidateOnMount: false,
     })
 

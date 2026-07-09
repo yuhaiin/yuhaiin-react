@@ -1,6 +1,6 @@
 import { SettingCheck, SettingEnumSelectVertical, SettingInputVertical } from "@/component/v2/forms"
 import { FC } from "react"
-import { reverse_tcp, tcp_udp_controlSchema, tcpudp } from "../pbes/config/inbound_pb"
+import { reverse_tcp, tcp_udp_controlSchema, tcpudp } from "../schema/config/inbound"
 
 export const ReverseTCP: FC<{ reverse_tcp: reverse_tcp, onChange: (x: reverse_tcp) => void }> = ({ reverse_tcp, onChange }) => {
     return (

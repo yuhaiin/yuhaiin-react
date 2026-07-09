@@ -9,14 +9,12 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { Pagination } from "@/component/v2/pagination"
 import { Spinner } from "@/component/v2/spinner"
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
-import { connections, failed_history } from "@/docs/pbes/api/statistic_pb"
-import { timestampDate } from "@bufbuild/protobuf/wkt"
+import { failed_history, failedHistoryRoute } from "@/common/api"
+import { useJsonSWR } from "@/common/http"
 import { ArrowDownWideNarrow, Bug, ChevronRight, Clock, Network, OctagonAlert, RotateCw } from 'lucide-react'
 import React, { FC, useMemo, useState } from "react"
-import { TimestampZero } from "../../../common/nodes"
-import { useProtoSWR } from "../../../common/proto"
 import Loading from "../../../component/v2/loading"
-import { type } from "../../pbes/statistic/config_pb"
+import { type } from "../../schema/statistic/config"
 
 // --- Component: Individual Failed History Row ---
 const ListItem: FC<{ data: failed_history }> = React.memo(({ data }) => {
@@ -39,10 +37,10 @@ const ListItem: FC<{ data: failed_history }> = React.memo(({ data }) => {
                 </div>
 
                 {/* Right Side: Metadata Badges */}
-                <div className="flex flex-wrap gap-2 items-center shrink-0">
+                    <div className="flex flex-wrap gap-2 items-center shrink-0">
                     <IconBadge icon={Network} text={type[data.protocol ?? type.unknown]} color="info" />
                     <IconBadge icon={OctagonAlert} text={`${data.failedCount} Fails`} color="warning" />
-                    <IconBadge icon={Clock} text={timestampDate(data.time!).toLocaleTimeString()} color="secondary" />
+                    <IconBadge icon={Clock} text={(data.time ?? new Date(0)).toLocaleTimeString()} color="secondary" />
                     <div className="text-gray-500 dark:text-gray-400 opacity-25 ml-2 hidden md:block"><ChevronRight /></div>
                 </div>
             </div>
@@ -68,7 +66,7 @@ const InfoModal: FC<{ data?: failed_history, show: boolean, onClose: () => void 
                                     <DataListItem label="Failures" value={String(data.failedCount)} />
                                     <DataListItem label="Last Error" value={data.error} />
                                     <DataListItem label="Process" value={data.process || "System"} />
-                                    <DataListItem label="Timestamp" value={timestampDate(data.time!).toLocaleString()} />
+                                    <DataListItem label="Timestamp" value={(data.time ?? new Date(0)).toLocaleString()} />
                                 </>
                             )}
                         </DataList>
@@ -89,7 +87,7 @@ function FailedHistory() {
     const [info, setInfo] = useState<{ data?: failed_history, show: boolean }>({ show: false });
     const shouldFetch = useDelay(400);
 
-    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(shouldFetch ? connections.method.failed_history : null);
+    const { data, error, isLoading, isValidating, mutate } = useJsonSWR(shouldFetch ? failedHistoryRoute : null);
 
     const values = useMemo(() => {
         if (!data?.objects) return []
@@ -100,10 +98,10 @@ function FailedHistory() {
             if (sortBy === "Host") return a.host < b.host ? first : second;
             if (sortBy === "Count") return Number(a.failedCount) < Number(b.failedCount) ? first : second;
 
-            const aTime = a.time ?? TimestampZero;
-            const bTime = b.time ?? TimestampZero;
-            if (aTime.seconds < bTime.seconds) return first;
-            if (aTime.seconds > bTime.seconds) return second;
+            const aTime = a.time?.getTime() ?? 0;
+            const bTime = b.time?.getTime() ?? 0;
+            if (aTime < bTime) return first;
+            if (aTime > bTime) return second;
             return 0;
         })
     }, [data, sortBy, sortOrder]);
@@ -162,7 +160,7 @@ function FailedHistory() {
 
             <CardList
                 items={paginatedItems}
-                getKey={(v) => `${v.host}-${v.time?.seconds}`}
+                getKey={(v) => `${v.host}-${v.time?.toISOString() ?? "unknown"}`}
                 onClickItem={(item) => setInfo({ show: true, data: item })}
                 renderListItem={(item) => <ListItem data={item} />}
                 footer={<Pagination currentPage={page} totalItems={values.length} pageSize={pageSize} onPageChange={setPage} />}

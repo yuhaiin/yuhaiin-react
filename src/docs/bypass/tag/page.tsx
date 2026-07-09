@@ -7,18 +7,24 @@ import { SettingInputVertical, SettingSelectVertical } from "@/component/v2/form
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { GlobalToastContext } from "@/component/v2/toast";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
-import { create } from "@bufbuild/protobuf";
-import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { create } from "@/common/plain";
+import { StringValueSchema } from "@/common/plain";
 import { ChevronRight, FileStack, Globe, Network, Plus, Save, Tags as TagsIcon, Trash } from 'lucide-react';
 import { FC, useContext, useState } from "react";
 import { Node, Nodes } from "../../../common/nodes";
-import { FetchProtobuf, useProtoSWR, useProtoSWRRequest } from '../../../common/proto';
+import { FetchHTTP, useHttpSWR, useHttpSWRRequest } from '../../../common/http';
 import HeaderError from '../../../component/Error';
 import { ConfirmModal } from "../../../component/v2/confirm";
 import Loading from "../../../component/v2/loading";
 import { NodeModal } from "../../node/modal";
-import { node, save_tag_req, save_tag_reqSchema, tag, tag_item, tag_page_requestSchema, tags_response } from "../../pbes/api/node_pb";
-import { tag_type, type tags } from "../../pbes/node/tag_pb";
+import { node, save_tag_req, tag, tag_item, tags_response } from "@/common/api";
+import { tag_type, type tags } from "../../schema/node/tag";
+
+const normalizeTag = (value?: tags): tags => ({
+    ...(value ?? {}),
+    type: value?.type ?? tag_type.node,
+    hash: Array.isArray(value?.hash) ? value.hash : value?.hash ? [value.hash] : [],
+});
 
 const TagItem: FC<{
     tagName: string,
@@ -26,9 +32,10 @@ const TagItem: FC<{
     onDelete: () => void,
     onHashClick: (h: string) => void
 }> = ({ tagName, tagData, onDelete, onHashClick }) => {
-    const isGlobal = tagData.hash.length === 0 || tagData.hash[0] === "";
-    const isMirror = tagData.type === tag_type.mirror;
-    const target = tagData.hash[0] ?? "";
+    const current = normalizeTag(tagData);
+    const isGlobal = current.hash.length === 0 || current.hash[0] === "";
+    const isMirror = current.type === tag_type.mirror;
+    const target = current.hash[0] ?? "";
 
 
     return (
@@ -52,7 +59,7 @@ const TagItem: FC<{
                             onClick={(e) => {
                                 if (!isMirror) {
                                     e.stopPropagation();
-                                    onHashClick(tagData.hash[0]);
+                                    onHashClick(current.hash[0]);
                                 }
                             }}
                         >
@@ -166,17 +173,17 @@ const TagModal: FC<{
 function Tags() {
     const ctx = useContext(GlobalToastContext);
     const [page, setPage] = useState(1);
-    const { data, error, isLoading, mutate } = useProtoSWRRequest(
+    const { data, error, isLoading, mutate } = useHttpSWRRequest(
         tag.method.list_page,
-        create(tag_page_requestSchema, { page, pageSize: PAGE_SIZE }),
+        { page, pageSize: PAGE_SIZE },
     );
-    const { data: allTags, mutate: mutateAllTags } = useProtoSWR(tag.method.list, { revalidateOnFocus: false });
-    const { data: nodes } = useProtoSWR(node.method.list);
+    const { data: allTags, mutate: mutateAllTags } = useHttpSWR(tag.method.list, { revalidateOnFocus: false });
+    const { data: nodes } = useHttpSWR(node.method.list);
 
     const [modalHash, setModalHash] = useState({ hash: "", show: false });
     const [tagModalData, setTagModalData] = useState({
         show: false,
-        tag: create(save_tag_reqSchema, { tag: "", hash: "", type: tag_type.node }),
+        tag: { tag: "", hash: "", type: tag_type.node } as save_tag_req,
         isNew: true
     });
     const [confirmDelete, setConfirmDelete] = useState({ show: false, name: "" });
@@ -186,7 +193,7 @@ function Tags() {
 
     const handleSave = () => {
         if (tagModalData.tag.tag === "" || tagModalData.tag.hash === "") return;
-        FetchProtobuf(tag.method.save, tagModalData.tag)
+        FetchHTTP(tag.method.save, tagModalData.tag)
             .then(async ({ error }) => {
                 if (error !== undefined) ctx.Error(`Save failed: ${error.msg}`);
                 else {
@@ -199,7 +206,7 @@ function Tags() {
     };
 
     const handleDelete = (name: string) => {
-        FetchProtobuf(tag.method.remove, create(StringValueSchema, { value: name }))
+        FetchHTTP(tag.method.remove, create(StringValueSchema, { value: name }))
             .then(async ({ error }) => {
                 if (error !== undefined) ctx.Error(`Delete failed: ${error.msg}`);
                 else {
@@ -254,7 +261,7 @@ function Tags() {
                         <Button
                             onClick={() => setTagModalData({
                                 show: true,
-                                tag: create(save_tag_reqSchema, { tag: "", hash: "", type: tag_type.node }),
+                                tag: { tag: "", hash: "", type: tag_type.node },
                                 isNew: true
                             })}
                         >
@@ -271,16 +278,16 @@ function Tags() {
                 items={visibleTags}
                 getKey={(item) => item.name}
                 onClickItem={(item) => {
-                    const value = item.tag;
+                    const value = normalizeTag(item.tag);
                     if (!value) return;
                     setTagModalData({
                         show: true,
-                        tag: create(save_tag_reqSchema, { tag: item.name, hash: value.hash[0], type: value.type }),
+                        tag: { tag: item.name, hash: value.hash[0] ?? "", type: value.type },
                         isNew: false
                     })
                 }}
                 renderListItem={(item) => {
-                    const value = item.tag;
+                    const value = normalizeTag(item.tag);
                     if (!value) return null;
                     return (
                         <TagItem
@@ -296,7 +303,7 @@ function Tags() {
                     if (!modalTags.tags[name] && !data.tags[name]) {
                         setTagModalData({
                             show: true,
-                            tag: create(save_tag_reqSchema, { tag: name, hash: "", type: tag_type.node }),
+                            tag: { tag: name, hash: "", type: tag_type.node },
                             isNew: true
                         });
                     }

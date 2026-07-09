@@ -1,6 +1,6 @@
 'use client';
 
-import { DescEnum, DescEnumValue } from '@bufbuild/protobuf';
+import { DescEnum, DescEnumValue } from '@/common/plain';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { clsx } from 'clsx';
 import { Check, ChevronDown } from 'lucide-react';
@@ -37,6 +37,7 @@ import { motion } from 'motion/react';
 
 export const Select: FC<SelectProps> = ({ value, onValueChange, items, placeholder, disabled, triggerClassName, contentClassName, viewportClassName, size, groupPosition }) => {
     const internalValue = value === "" ? "___EMPTY___" : value;
+    const safeItems = Array.isArray(items) ? items : [];
 
     const radiusClass =
         groupPosition === 'first' ? '!rounded-r-none !border-r-0' :
@@ -85,7 +86,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
                         transition={{ duration: 0.15, ease: "easeOut" }}
                     >
                         <SelectPrimitive.Viewport className={clsx("p-[5px] overflow-y-auto max-h-[50vh] max-h-[var(--radix-select-content-available-height)]", viewportClassName)}>
-                            {items.map((item, index) => {
+                            {safeItems.map((item, index) => {
                                 const itemValue = item.value === "" ? "___EMPTY___" : item.value;
                                 return (
                                     <SelectPrimitive.Item key={`${itemValue}-${index}`} value={itemValue} className={clsx(
@@ -126,7 +127,8 @@ const SettingSelectComponent: FC<{
     disabled?: boolean
 }> = ({ label, value, values, onChange, emptyChoose, emptyChooseName, disabled }) => {
     const { t } = useTranslation('common');
-    const items: SelectItem[] = values.map(v => ({ value: v, label: v }));
+    const safeValues = Array.isArray(values) ? values : [];
+    const items: SelectItem[] = safeValues.map(v => ({ value: v, label: v }));
     if (emptyChoose) {
         items.unshift({ value: "", label: emptyChooseName ?? t('state.choose') });
     }
@@ -154,7 +156,8 @@ const FormSelectComponent: FC<{
     groupPosition?: 'first' | 'middle' | 'last' | 'single'
 }> = ({ value, values, onChange, format, emptyChoose, emptyChooseName, disabled, triggerClassName, groupPosition }) => {
     const { t } = useTranslation('common');
-    const items: SelectItem[] = values.map((v) => {
+    const safeValues = Array.isArray(values) ? values : [];
+    const items: SelectItem[] = safeValues.map((v) => {
         const itemValue = typeof v === 'string' ? v : v[1];
         const itemLabel = typeof v === 'string' ? v : v[0];
         return { value: itemValue, label: format ? format(itemLabel) : itemLabel };
@@ -175,6 +178,8 @@ const DropdownSelectComponent: FC<{
     groupPosition?: 'first' | 'middle' | 'last' | 'single'
 }> = ({ values, items, onUpdate, triggerClassName, placeholder, groupPosition }) => {
     const { t } = useTranslation('common');
+    const safeValues = Array.isArray(values) ? values : [];
+    const safeItems = Array.isArray(items) ? items : [];
     const resolvedPlaceholder = placeholder ?? t('state.choose');
     const radiusClass =
         groupPosition === 'first' ? '!rounded-r-none !border-r-0' :
@@ -196,25 +201,25 @@ const DropdownSelectComponent: FC<{
                     )}
                 >
                     <div className="flex items-center gap-2 overflow-hidden min-w-0">
-                        {values.length > 0 && (
+                        {safeValues.length > 0 && (
                             <span className="inline-flex items-center justify-center bg-ui-primary-soft text-ui-primary text-[0.75rem] font-semibold h-[20px] min-w-[20px] px-[6px] rounded-full leading-none">
-                                {values.length}
+                                {safeValues.length}
                             </span>
                         )}
-                        <span className={clsx("truncate", values.length === 0 && "opacity-50")}>
-                            {values.length === 0 ? resolvedPlaceholder : values.join(", ")}
+                        <span className={clsx("truncate", safeValues.length === 0 && "opacity-50")}>
+                            {safeValues.length === 0 ? resolvedPlaceholder : safeValues.join(", ")}
                         </span>
                     </div>
                     <ChevronDown className="opacity-50 flex-shrink-0" size={16} />
                 </div>
             </DropdownTrigger>
             <DropdownContent className="min-w-[min(300px,90vw)]">
-                {items.map((v) => (
+                {safeItems.map((v) => (
                     <DropdownCheckboxItem
                         key={v}
-                        checked={values.includes(v)}
+                        checked={safeValues.includes(v)}
                         onSelect={(e) => e.preventDefault()}
-                        onCheckedChange={() => onUpdate(values.includes(v) ? values.filter((x) => x !== v) : [...values, v])}
+                        onCheckedChange={() => onUpdate(safeValues.includes(v) ? safeValues.filter((x) => x !== v) : [...safeValues, v])}
                     >
                         {v}
                     </DropdownCheckboxItem>
@@ -237,7 +242,8 @@ const SettingSelectVerticalComponent: FC<{
     className?: string;
     disabled?: boolean;
 }> = ({ label, value, values, onChange, emptyChoose, emptyChooseName, format, className, disabled }) => {
-    const items: SelectItem[] = values.map(v => {
+    const safeValues = Array.isArray(values) ? values : [];
+    const items: SelectItem[] = safeValues.map(v => {
         const itemValue = typeof v === 'string' ? v : v[1];
         const itemLabel = typeof v === 'string' ? v : v[0];
         return { value: itemValue, label: format ? format(itemLabel) : itemLabel };

@@ -3,11 +3,11 @@ import { SettingLabel } from '@/component/v2/card'
 import { SettingCheck, SettingInputVertical } from "@/component/v2/forms"
 import { Textarea } from '@/component/v2/input'
 import { InputList } from '@/component/v2/listeditor'
-import { create } from '@bufbuild/protobuf'
+import { create } from '@/common/plain'
 import { FC, useId } from 'react'
 import { TLSServerComponents } from '../node/tls_server'
-import { ech_config, ech_configSchema, tls, tls_auto } from '../pbes/config/inbound_pb'
-import { tls_server_configSchema } from '../pbes/node/protocol_pb'
+import { ech_config, ech_configSchema, tls, tls_auto } from '../schema/config/inbound'
+import { tls_server_configSchema } from '../schema/node/protocol'
 
 // Inline Helper
 const SettingTextareaVertical: FC<{ label: string, value: string, readonly?: boolean, onChange?: (v: string) => void }> = ({ label, value, readonly, onChange }) => {

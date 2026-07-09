@@ -1,7 +1,7 @@
 import { SettingEnumSelectVertical, SettingInputVertical } from "@/component/v2/forms"
 import { FC } from "react"
-import { aead } from "../pbes/config/inbound_pb"
-import { AeadCryptoMethodSchema } from "../pbes/node/protocol_pb"
+import { aead } from "../schema/config/inbound"
+import { AeadCryptoMethodSchema } from "../schema/node/protocol"
 
 export const Aead: FC<{ aead: aead, onChange: (x: aead) => void }> = ({ aead, onChange }) => {
     return <>

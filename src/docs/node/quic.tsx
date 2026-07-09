@@ -1,7 +1,7 @@
 import { SettingInputVertical } from "@/component/v2/forms"
-import { create } from "@bufbuild/protobuf"
+import { create } from "@/common/plain"
 import { FC } from "react"
-import { quic, tls_configSchema } from "../pbes/node/protocol_pb"
+import { quic, tls_configSchema } from "../schema/node/protocol"
 import { TlsConfigv2 } from "./tls"
 import { Props } from "./tools"
 

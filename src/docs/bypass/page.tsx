@@ -1,20 +1,20 @@
 "use client"
 
 import { useCallback } from "react";
-import { useProtoSWR } from "../../common/proto";
+import { useHttpSWR } from "../../common/http";
 import Loading from "../../component/v2/loading";
-import { inbound, lists, resolver, rules } from "../pbes/api/config_pb";
-import { configv2 } from "../pbes/config/bypass_pb";
+import { inbound, lists, resolver, rules } from "@/common/api";
+import { configv2 } from "../schema/config/bypass";
 import { Bypass } from "./bypass";
 import { FilterContext } from "./filter/filter";
 
 function BypassComponent() {
-    const { data: listsData } = useProtoSWR(lists.method.list, { revalidateOnFocus: false })
-    const { data: inboundsData } = useProtoSWR(inbound.method.list, { revalidateOnFocus: false })
-    const { data: resolvers } = useProtoSWR(resolver.method.list, { revalidateOnFocus: false })
+    const { data: listsData } = useHttpSWR(lists.method.list, { revalidateOnFocus: false })
+    const { data: inboundsData } = useHttpSWR(inbound.method.list, { revalidateOnFocus: false })
+    const { data: resolvers } = useHttpSWR(resolver.method.list, { revalidateOnFocus: false })
 
     const { data: setting, error, isLoading, mutate: setSetting } =
-        useProtoSWR(rules.method.config, { revalidateOnFocus: false })
+        useHttpSWR(rules.method.config, { revalidateOnFocus: false })
 
     const onChangeSetting = useCallback((x: configv2) => {
         setSetting(x, false)

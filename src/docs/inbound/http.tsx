@@ -1,9 +1,9 @@
 import { SettingInputVertical } from "@/component/v2/forms"
-import { create } from "@bufbuild/protobuf"
+import { create } from "@/common/plain"
 import { FC } from "react"
 import { TlsConfigv2 } from "../node/tls"
-import { http, reverse_http } from "../pbes/config/inbound_pb"
-import { tls_configSchema } from "../pbes/node/protocol_pb"
+import { http, reverse_http } from "../schema/config/inbound"
+import { tls_configSchema } from "../schema/node/protocol"
 
 export const HTTP: FC<{ http: http, onChange: (x: http) => void }> = ({ http, onChange }) => {
     return (

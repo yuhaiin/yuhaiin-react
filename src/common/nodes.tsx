@@ -1,8 +1,8 @@
-import { create } from "@bufbuild/protobuf";
-import { TimestampSchema } from "@bufbuild/protobuf/wkt";
+import { create } from "@/common/plain";
+import { TimestampSchema } from "@/common/plain";
 import { createContext, FC, useEffect, useState } from "react";
 import { SettingSelectVertical } from "../component/v2/forms";
-import { NodesResponse } from "../docs/pbes/api/node_pb";
+import { NodesResponse } from "@/common/api";
 
 export const TimestampZero = create(TimestampSchema, { seconds: BigInt(0), nanos: 0 })
 

@@ -1,36 +1,43 @@
 import { SettingInputVertical } from "@/component/v2/forms";
 import { FC } from "react";
-import { socks5 } from "../pbes/node/protocol_pb";
+import { socks5 } from "../schema/node/protocol";
 import { Props } from "./tools";
 
 export const Socks5v2: FC<Props<socks5>> = ({ value, onChange, editable = true }) => {
+    const current = {
+        ...value,
+        hostname: value?.hostname ?? "",
+        user: value?.user ?? "",
+        password: value?.password ?? "",
+        overridePort: typeof value?.overridePort === "number" ? value.overridePort : 0,
+    };
     return <>
         <SettingInputVertical
             label="Hostname"
-            value={value.hostname}
+            value={current.hostname}
             disabled={!editable}
             placeholder="127.0.0.1"
-            onChange={(e: string) => { onChange({ ...value, hostname: e }) }}
+            onChange={(e: string) => { onChange({ ...current, hostname: e }) }}
         />
 
         <SettingInputVertical
             label="User"
-            value={value.user}
+            value={current.user}
             disabled={!editable}
-            onChange={(e: string) => { onChange({ ...value, user: e }) }}
+            onChange={(e: string) => { onChange({ ...current, user: e }) }}
         />
 
         <SettingInputVertical
             label="Password"
-            value={value.password}
+            value={current.password}
             disabled={!editable}
-            onChange={(e: string) => { onChange({ ...value, password: e }) }}
+            onChange={(e: string) => { onChange({ ...current, password: e }) }}
         />
 
-        <SettingInputVertical label="Override Port" value={value.overridePort.toString()} disabled={!editable} onChange={(e: string) => {
+        <SettingInputVertical label="Override Port" value={current.overridePort.toString()} disabled={!editable} onChange={(e: string) => {
             const port = Number(e)
             if (isNaN(port) || port > 65535 || port < 0) return
-            onChange({ ...value, overridePort: port })
+            onChange({ ...current, overridePort: port })
         }} />
     </>
 }

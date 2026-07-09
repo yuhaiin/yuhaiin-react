@@ -10,13 +10,17 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { Pagination } from "@/component/v2/pagination";
 import { Spinner } from "@/component/v2/spinner";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
-import { block_history, rules } from "@/docs/pbes/api/config_pb";
-import { timestampDate } from "@bufbuild/protobuf/wkt";
+import { block_history, rules } from "@/common/api";
 import { ArrowDownWideNarrow, Ban, ChevronRight, Clock, Network, RotateCw, ShieldOff } from 'lucide-react';
 import React, { FC, useMemo, useState } from "react";
-import { TimestampZero } from "../../../common/nodes";
-import { useProtoSWR } from "../../../common/proto";
+import { useHttpSWR } from "../../../common/http";
 import Loading from "../../../component/v2/loading";
+
+const ZeroDate = new Date(0);
+
+function historyDate(value?: Date): Date {
+    return value ?? ZeroDate;
+}
 
 // --- Component: Individual Blocked History Row ---
 const ListItem: FC<{ data: block_history }> = React.memo(({ data }) => {
@@ -46,7 +50,7 @@ const ListItem: FC<{ data: block_history }> = React.memo(({ data }) => {
                     <Ban size={12} /> {data.blockCount} Blocks
                 </Badge>
                 <Badge variant="secondary" pill className="flex items-center gap-1">
-                    <Clock size={12} /> {timestampDate(data.time!).toLocaleTimeString()}
+                    <Clock size={12} /> {historyDate(data.time).toLocaleTimeString()}
                 </Badge>
                 <ChevronRight className="text-gray-500 dark:text-gray-400 opacity-25 ml-2 hidden md:block" size={16} />
             </div>
@@ -65,7 +69,7 @@ const InfoModal: FC<{ data?: block_history, show: boolean, onClose: () => void }
                 </ModalHeader>
                 <ModalBody>
                     <DataList>
-                        <DataListItem label="Time" value={timestampDate(data.time!).toLocaleString()} />
+                        <DataListItem label="Time" value={historyDate(data.time).toLocaleString()} />
                         <DataListItem label="Network" value={data.protocol} />
                         <DataListItem label="Host" value={data.host} />
                         <DataListItem label="Total Blocks" value={String(data.blockCount)} />
@@ -87,7 +91,7 @@ function BypassBlockHistory() {
     const [info, setInfo] = useState<{ data?: block_history, show: boolean }>({ show: false });
     const shouldFetch = useDelay(400);
 
-    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(shouldFetch ? rules.method.block_history : null);
+    const { data, error, isLoading, isValidating, mutate } = useHttpSWR(shouldFetch ? rules.method.block_history : null);
 
     const values = useMemo(() => {
         if (!data?.objects) return []
@@ -99,10 +103,10 @@ function BypassBlockHistory() {
             if (sortBy === "Count") return Number(a.blockCount) < Number(b.blockCount) ? first : second;
             if (sortBy === "Proc") return (a.process ?? "") < (b.process ?? "") ? first : second;
 
-            const aTime = a.time ?? TimestampZero;
-            const bTime = b.time ?? TimestampZero;
-            if (aTime.seconds < bTime.seconds) return first;
-            if (aTime.seconds > bTime.seconds) return second;
+            const aTime = historyDate(a.time).getTime();
+            const bTime = historyDate(b.time).getTime();
+            if (aTime < bTime) return first;
+            if (aTime > bTime) return second;
             return 0;
         })
     }, [data, sortBy, sortOrder]);

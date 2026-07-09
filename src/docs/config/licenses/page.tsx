@@ -5,10 +5,10 @@ import { Card, CardBody, CardHeader, IconBox, ListItem, MainContainer } from '@/
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import { FileText, Heart, Link, ShieldCheck } from "lucide-react";
 import { FC, useState } from "react";
-import { useProtoSWR } from "../../../common/proto";
+import { useHttpSWR } from "../../../common/http";
 import Loading, { Error } from "../../../component/v2/loading";
-import { tools } from "../../pbes/api/tools_pb";
-import { License } from "../../pbes/tools/tools_pb";
+import { tools } from "@/common/api";
+import { License } from "../../schema/tools/tools";
 
 const LicenseItem: FC<{ item: License, index: number }> = ({ item, index }) => {
     return (
@@ -59,7 +59,7 @@ const LicensesList: FC<{ value: License[] }> = ({ value }) => {
 };
 
 export default function Licenses() {
-    const { data, isLoading, isValidating, error } = useProtoSWR(tools.method.licenses, { revalidateOnFocus: false });
+    const { data, isLoading, isValidating, error } = useHttpSWR(tools.method.licenses, { revalidateOnFocus: false });
     const [activeTab, setActiveTab] = useState("yuhaiin");
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />

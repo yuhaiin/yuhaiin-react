@@ -1,6 +1,6 @@
 import { SettingInputVertical } from "@/component/v2/forms";
 import { FC } from "react";
-import { shadowsocksr } from "../pbes/node/protocol_pb";
+import { shadowsocksr } from "../schema/node/protocol";
 import { Props } from "./tools";
 
 export const Shadowsocksrv2: FC<Props<shadowsocksr>> = ({ value, onChange, editable = true }) => {

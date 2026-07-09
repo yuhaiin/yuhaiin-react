@@ -8,34 +8,35 @@ import { InputGroup } from './inputgroup';
 
 export const InputList: FC<{
     title: string;
-    data: string[];
+    data?: string[] | null;
     onChange: (data: string[]) => void;
     className?: string;
     textarea?: boolean;
     placeholder?: string;
     disabled?: boolean;
 }> = ({ title, data, onChange, className, textarea, placeholder, disabled }) => {
+    const items = Array.isArray(data) ? data : [];
     const [newItem, setNewItem] = useState("");
 
     const add = () => {
         if (!newItem || disabled) return;
         const lines = newItem.split('\n').map(x => x.trim()).filter(x => x !== "");
         if (lines.length > 0) {
-            onChange([...data, ...lines]);
+            onChange([...items, ...lines]);
             setNewItem("");
         }
     }
 
     const remove = (i: number) => {
         if (disabled) return;
-        const newData = [...data];
+        const newData = [...items];
         newData.splice(i, 1);
         onChange(newData);
     }
 
     const edit = (i: number, val: string) => {
         if (disabled) return;
-        const newData = [...data];
+        const newData = [...items];
         newData[i] = val;
         onChange(newData);
     }
@@ -70,7 +71,7 @@ export const InputList: FC<{
             )}
 
             <div className="flex flex-col gap-2">
-                {data.map((item, i) => (
+                {items.map((item, i) => (
                     <InputGroup key={i}>
                         <Input
                             value={item}
@@ -109,24 +110,25 @@ export const InputBytesList: FC<{
     className?: string;
     disabled?: boolean;
 }> = ({ title, data = [], onChange, className, disabled }) => {
+    const items = Array.isArray(data) ? data : [];
     const [newItem, setNewItem] = useState("");
 
     const add = () => {
         if (!newItem.trim() || disabled) return;
-        onChange([...(data || []), new TextEncoder().encode(newItem)]);
+        onChange([...items, new TextEncoder().encode(newItem)]);
         setNewItem("");
     }
 
     const remove = (i: number) => {
         if (disabled) return;
-        const newData = [...(data || [])];
+        const newData = [...items];
         newData.splice(i, 1);
         onChange(newData);
     }
 
     const edit = (i: number, val: string) => {
         if (disabled) return;
-        const newData = [...(data || [])];
+        const newData = [...items];
         newData[i] = new TextEncoder().encode(val);
         onChange(newData);
     }
@@ -150,7 +152,7 @@ export const InputBytesList: FC<{
             )}
 
             <div className="flex flex-col gap-3">
-                {(data || []).map((v, i) => (
+                {items.map((v, i) => (
                     <div key={i} className="relative p-3 rounded-lg bg-[var(--bs-secondary-bg)] group">
                         <div className="flex items-center justify-between mb-2">
                             <small className="font-bold text-[var(--bs-secondary-color)]">ENTRY #{i + 1}</small>
@@ -170,7 +172,7 @@ export const InputBytesList: FC<{
                         />
                     </div>
                 ))}
-                {(!data || data.length === 0) && (
+                {items.length === 0 && (
                     <div className="py-4 italic text-center border border-dashed rounded-lg opacity-50 text-[var(--bs-secondary-color)]">
                         No {title} entries yet.
                     </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { FetchProtobuf, useProtoSWR } from '@/common/proto';
+import { FetchHTTP, useHttpSWR } from '@/common/http';
 import Error from '@/component/Error';
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
@@ -8,13 +8,13 @@ import { CardList, IconBox, IconBoxRounded, MainContainer } from "@/component/v2
 import { ConfirmModal } from "@/component/v2/confirm";
 import Loading from "@/component/v2/loading";
 import { GlobalToastContext } from "@/component/v2/toast";
-import { create } from "@bufbuild/protobuf";
-import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { create } from "@/common/plain";
+import { StringValueSchema } from "@/common/plain";
 import { Activity, Hash, Info, Power, Zap } from 'lucide-react';
 import { FC, useContext, useMemo, useState } from "react";
 import { NodeModal } from "../../node/modal";
-import { node } from "../../pbes/api/node_pb";
-import { point, pointSchema } from "../../pbes/node/point_pb";
+import { node } from "@/common/api";
+import { point, pointSchema } from "../../schema/node/point";
 
 // --- Component: Individual Active Node Row ---
 const ActiveNodeItem: FC<{
@@ -68,7 +68,7 @@ const ActiveNodeItem: FC<{
 
 function Activates({ showFooter = true }: { showFooter?: boolean }) {
     const ctx = useContext(GlobalToastContext);
-    const { data, error, isLoading, mutate } = useProtoSWR(node.method.activates);
+    const { data, error, isLoading, mutate } = useHttpSWR(node.method.activates);
 
     const [modalHash, setModalHash] = useState({ hash: "", show: false, point: create(pointSchema, {}) });
     const [confirmData, setConfirmData] = useState({ show: false, name: "" });
@@ -82,7 +82,7 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
     if (isLoading || data == undefined) return <Loading />
 
     const handleCloseNode = (hash: string) => {
-        FetchProtobuf(node.method.close, create(StringValueSchema, { value: hash }))
+        FetchHTTP(node.method.close, create(StringValueSchema, { value: hash }))
             .then(async ({ error }) => {
                 if (error !== undefined) {
                     ctx.Error(`Failed to close node: ${error.msg}`);

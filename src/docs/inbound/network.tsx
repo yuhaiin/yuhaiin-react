@@ -3,21 +3,22 @@
 import { Button } from "@/component/v2/button"
 import { SettingLabel } from "@/component/v2/card"
 import { Select } from "@/component/v2/forms"
-import { create } from "@bufbuild/protobuf"
+import { create } from "@/common/plain"
 import { FC, useEffect, useState } from "react"
 import {
     emptySchema,
     inbound,
     quicSchema,
     tcpudpSchema
-} from "../pbes/config/inbound_pb"
+} from "../schema/config/inbound"
 import { Quic } from "./quic"
 import { TcpUdp } from "./tcpudp"
 
 export const Network: FC<{ inbound: inbound, onChange: (x: inbound) => void }> = ({ inbound, onChange }) => {
-    const [newProtocol, setNewProtocol] = useState({ value: inbound.network.case?.toString() ?? "tcpudp" });
+    const network = inbound.network ?? { case: "tcpudp", value: create(tcpudpSchema, {}) };
+    const [newProtocol, setNewProtocol] = useState({ value: network.case?.toString() ?? "tcpudp" });
     useEffect(() => {
-        setNewProtocol({ value: inbound.network.case ? inbound.network.case.toString() : "tcpudp" });
+        setNewProtocol({ value: network.case ? network.case.toString() : "tcpudp" });
     }, [inbound]);
 
     return (<>
@@ -57,12 +58,13 @@ export const Network: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
 
 
 const Config: FC<{ inbound: inbound, onChange: (x: inbound) => void }> = ({ inbound, onChange }) => {
-    switch (inbound.network.case) {
+    const network = inbound.network ?? { case: "tcpudp", value: create(tcpudpSchema, {}) };
+    switch (network.case) {
         case "tcpudp":
-            return <TcpUdp protocol={inbound.network.value} onChange={(x) => { onChange({ ...inbound, network: { case: "tcpudp", value: x } }) }}></TcpUdp>
+            return <TcpUdp protocol={network.value} onChange={(x) => { onChange({ ...inbound, network: { case: "tcpudp", value: x } }) }}></TcpUdp>
         case "quic":
             return <Quic
-                quic={inbound.network.value}
+                quic={network.value}
                 onChange={(x) => { onChange({ ...inbound, network: { case: "quic", value: x } }) }}
             />
         case "empty":

@@ -1,15 +1,16 @@
 import { Button } from "@/component/v2/button";
 import { SettingEnumSelectVertical } from "@/component/v2/forms";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
-import { create } from "@bufbuild/protobuf";
+import { create } from "@/common/plain";
 import { clsx } from 'clsx';
 import { Plus, Trash } from 'lucide-react';
 import { FC, useContext, useState } from "react";
 import { Node, Nodes, NodesContext } from "../../common/nodes";
-import { set, set_strategy_typeSchema, setSchema } from "../pbes/node/protocol_pb";
+import { set, set_strategy_typeSchema, setSchema } from "../schema/node/protocol";
 import { Props } from "./tools";
 
 export const Set: FC<Props<set>> = ({ value, onChange, editable = true }) => {
+    const current = { ...value, nodes: Array.isArray(value?.nodes) ? value.nodes : [], strategy: typeof value?.strategy === "number" ? value.strategy : 0 };
     const groups = useContext(NodesContext);
     const [modalData, setModalData] = useState<{ show: boolean, hash: string, onSave: (x: string) => void }>({ show: false, hash: "", onSave: () => { } });
 
@@ -26,22 +27,22 @@ export const Set: FC<Props<set>> = ({ value, onChange, editable = true }) => {
             }}
         />
 
-        <SettingEnumSelectVertical
-            label="Mode"
-            type={set_strategy_typeSchema}
-            value={value.strategy}
-            disabled={!editable}
-            onChange={(v) => onChange({ ...value, strategy: v })}
-        />
+            <SettingEnumSelectVertical
+                label="Mode"
+                type={set_strategy_typeSchema}
+                value={current.strategy}
+                disabled={!editable}
+                onChange={(v) => onChange({ ...current, strategy: v })}
+            />
 
-        <div className="mb-4">
-            <div className="flex justify-between items-center mb-2 px-1">
-                <h6 className="font-bold mb-0 opacity-75">Nodes</h6>
-                <small className="text-gray-500 dark:text-gray-400">{value.nodes.length} entries</small>
-            </div>
+            <div className="mb-4">
+                <div className="flex justify-between items-center mb-2 px-1">
+                    <h6 className="font-bold mb-0 opacity-75">Nodes</h6>
+                    <small className="text-gray-500 dark:text-gray-400">{current.nodes.length} entries</small>
+                </div>
 
-            <div className="border rounded-lg overflow-hidden mb-3 bg-gray-100 dark:bg-[#2b2b40]">
-                {value.nodes.map((x, i) => (
+                <div className="border rounded-lg overflow-hidden mb-3 bg-gray-100 dark:bg-[#2b2b40]">
+                    {current.nodes.map((x, i) => (
                     <div key={i}
                         className={clsx(
                             "p-3 border-b flex items-center justify-between last:border-b-0",
@@ -53,7 +54,7 @@ export const Set: FC<Props<set>> = ({ value, onChange, editable = true }) => {
                                 show: true,
                                 hash: x,
                                 onSave: (x: string) => {
-                                    const nodes = [...value.nodes]
+                                    const nodes = [...current.nodes]
                                     nodes[i] = x
                                     onChange(create(setSchema, { nodes }))
                                 }
@@ -72,7 +73,7 @@ export const Set: FC<Props<set>> = ({ value, onChange, editable = true }) => {
                                 size="sm"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    const nodes = [...value.nodes]
+                                    const nodes = [...current.nodes]
                                     nodes.splice(i, 1)
                                     onChange(create(setSchema, { nodes }))
                                 }}
@@ -83,7 +84,7 @@ export const Set: FC<Props<set>> = ({ value, onChange, editable = true }) => {
                     </div>
                 ))}
 
-                {value.nodes.length === 0 && (
+                {current.nodes.length === 0 && (
                     <div className="p-4 text-center text-gray-500 dark:text-gray-400 italic text-sm">No nodes identified yet.</div>
                 )}
             </div>
@@ -96,8 +97,8 @@ export const Set: FC<Props<set>> = ({ value, onChange, editable = true }) => {
                                 show: true,
                                 hash: "",
                                 onSave: (x: string) => {
-                                    if (value.nodes.includes(x)) return
-                                    onChange(create(setSchema, { nodes: [...value.nodes, x] }))
+                                    if (current.nodes.includes(x)) return
+                                    onChange(create(setSchema, { nodes: [...current.nodes, x] }))
                                 }
                             })
                         }}

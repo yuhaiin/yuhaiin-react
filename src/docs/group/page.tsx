@@ -7,22 +7,22 @@ import { Card, CardBody } from "@/component/v2/card";
 import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Spinner } from "@/component/v2/spinner";
-import { create, fromJsonString } from "@bufbuild/protobuf";
-import { Duration, StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { create, fromJsonString } from "@/common/plain";
+import { Duration, StringValueSchema } from "@/common/plain";
 import { AnimatePresence, motion } from 'motion/react';
 import { Archive, CheckCircle2, ChevronDown, Gauge, Network, Pencil, Plus } from "lucide-react";
 import { FC, useContext, useState, useMemo } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { LatencyDNSUrlDefault, LatencyDNSUrlKey, LatencyHTTPUrlDefault, LatencyHTTPUrlKey, LatencyIPUrlDefault, LatencyIPUrlKey, LatencyIPv6Default, LatencyIPv6Key, LatencyStunTCPUrlDefault, LatencyStunTCPUrlKey, LatencyStunUrlDefault, LatencyStunUrlKey } from "../../common/apiurl";
 import { Nodes, NodesContext } from "../../common/nodes";
-import { FetchProtobuf, useProtoSWR } from '../../common/proto';
+import { FetchHTTP, useHttpSWR } from '../../common/http';
 import Error from '../../component/Error';
 import Loading from "../../component/v2/loading";
 import { GlobalToastContext } from "../../component/v2/toast";
 import { NodeModal } from "../node/modal";
-import { node, use_reqSchema } from "../pbes/api/node_pb";
-import { dns_over_quicSchema, http_testSchema, ipSchema, nat_type, reply, request_protocol, request_protocolSchema, requestsSchema, stunSchema } from "../pbes/node/latency_pb";
-import { origin, point, pointSchema } from "../pbes/node/point_pb";
+import { node } from "@/common/api";
+import { dns_over_quicSchema, http_testSchema, ipSchema, nat_type, reply, request_protocol, requestsSchema, stunSchema } from "../schema/node/latency";
+import { origin, point, pointSchema } from "../schema/node/point";
 
 const MotionAccordionItem = motion.create(AccordionItem);
 
@@ -121,7 +121,7 @@ function Group() {
     const [latencyStunUrl] = useLocalStorage(LatencyStunUrlKey, LatencyStunUrlDefault);
     const [latencyStunTCPUrl] = useLocalStorage(LatencyStunTCPUrlKey, LatencyStunTCPUrlDefault);
 
-    const { data, error, isLoading, mutate } = useProtoSWR(node.method.list)
+    const { data, error, isLoading, mutate } = useHttpSWR(node.method.list)
 
     const [emptyNodes] = useState(() => new Nodes());
     const nodes = useMemo(() => (data ? new Nodes(data) : emptyNodes), [data, emptyNodes]);
@@ -135,7 +135,7 @@ function Group() {
             hash: hash,
             show: true,
             onDelete: () => {
-                FetchProtobuf(node.method.remove, create(StringValueSchema, { value: hash }))
+                FetchHTTP(node.method.remove, create(StringValueSchema, { value: hash }))
                     .then(async ({ error }) => {
                         if (error !== undefined) {
                             ctx.Error(`Delete Node ${hash} Failed ${error.code}| ${error.msg}`)
@@ -275,28 +275,13 @@ const createLatencyRequest = (r:
 ): request_protocol => {
     switch (r.case) {
         case "http":
-            return create(request_protocolSchema, { protocol: { case: "http", value: create(http_testSchema, { url: r.url }) } })
+            return { http: create(http_testSchema, { url: r.url }) }
         case "dnsOverQuic":
-            return create(request_protocolSchema, {
-                protocol: {
-                    case: "dnsOverQuic",
-                    value: create(dns_over_quicSchema, { host: r.host, targetDomain: r.targetDomain })
-                }
-            })
+            return { dnsOverQuic: create(dns_over_quicSchema, { host: r.host, target_name: r.targetDomain, targetDomain: r.targetDomain }) }
         case "ip":
-            return create(request_protocolSchema, {
-                protocol: {
-                    case: "ip",
-                    value: create(ipSchema, { url: r.url, userAgent: r.userAgent })
-                }
-            })
+            return { ip: create(ipSchema, { url: r.url, user_agent: r.userAgent, userAgent: r.userAgent }) }
         case "stun":
-            return create(request_protocolSchema, {
-                protocol: {
-                    case: "stun",
-                    value: create(stunSchema, { host: r.host, tcp: r.tcp })
-                }
-            })
+            return { stun: create(stunSchema, { host: r.host, tcp: r.tcp }) }
     }
 }
 
@@ -329,7 +314,7 @@ const createLatencyReqByType = (
                     }
                 },
                 setResult: (r: reply) => {
-                    if (r.reply.case === "latency") {
+                    if (r.reply?.case === "latency") {
                         const value = durationToString(r.reply.value)
                         setValues((prev) => ({ ...prev, tcp: value }))
                         setLoading((prev) => ({ ...prev, tcp: false }))
@@ -346,7 +331,7 @@ const createLatencyReqByType = (
                     }
                 },
                 setResult: (r: reply) => {
-                    if (r.reply.case === "latency") {
+                    if (r.reply?.case === "latency") {
                         const value = durationToString(r.reply.value)
                         setValues((prev) => ({ ...prev, udp: value }))
                         setLoading((prev) => ({ ...prev, udp: false }))
@@ -363,9 +348,9 @@ const createLatencyReqByType = (
                     }
                 },
                 setResult: (r: reply) => {
-                    if (r.reply.case === "ip") {
-                        const ipv4 = r.reply.value.ipv4
-                        const ipv6 = r.reply.value.ipv6
+                    if (r.reply?.case === "ip") {
+                        const ipv4 = r.reply.value?.ipv4 ?? ""
+                        const ipv6 = r.reply.value?.ipv6 ?? ""
                         setValues((prev) => ({ ...prev, ip: { ipv4, ipv6 } }))
                         setLoading((prev) => ({ ...prev, ip: false }))
                     }
@@ -381,8 +366,8 @@ const createLatencyReqByType = (
                     }
                 },
                 setResult: (r: reply) => {
-                    if (r.reply.case === "stun") {
-                        const ip = r.reply.value.mappedAddress
+                    if (r.reply?.case === "stun") {
+                        const ip = r.reply.value?.mappedAddress ?? ""
                         setValues((prev) => ({ ...prev, stun_tcp: { ip } }))
                         setLoading((prev) => ({ ...prev, stun_tcp: false }))
                     }
@@ -398,10 +383,10 @@ const createLatencyReqByType = (
                     }
                 },
                 setResult: (r: reply) => {
-                    if (r.reply.case === "stun") {
-                        const mapping = getNatTypeString(r.reply.value.Mapping)
-                        const filtering = getNatTypeString(r.reply.value.Filtering)
-                        const mappedAddress = r.reply.value.mappedAddress
+                    if (r.reply?.case === "stun") {
+                        const mapping = getNatTypeString(r.reply.value?.Mapping)
+                        const filtering = getNatTypeString(r.reply.value?.Filtering)
+                        const mappedAddress = r.reply.value?.mappedAddress ?? ""
                         setValues((prev) => ({ ...prev, stun: { mapping, filtering, mappedAddress } }))
                         setLoading((prev) => ({ ...prev, stun: false }))
                     }
@@ -485,7 +470,7 @@ const NodeItemv2: FC<{
 
         setLoading(true)
 
-        FetchProtobuf(node.method.latency, create(requestsSchema, {
+        FetchHTTP(node.method.latency, create(requestsSchema, {
             requests: [{
                 hash: hash,
                 id: "latency",
@@ -502,9 +487,12 @@ const NodeItemv2: FC<{
 
                 if (resp && resp.idLatencyMap["latency"]) {
                     const rr = resp.idLatencyMap["latency"]
-                    if (rr.reply.case === "error") {
-                        console.log(`test failed ${rr.reply.value.msg}`)
-                        setLoading(false, rr.reply.value.msg);
+                    const replyCase = rr.reply?.case;
+                    const replyValue = rr.reply?.value ?? {};
+                    if (replyCase === "error") {
+                        const msg = replyValue.msg ?? "latency failed";
+                        console.log(`test failed ${msg}`)
+                        setLoading(false, msg);
                         return
                     }
 
@@ -672,7 +660,7 @@ const NodeItemv2: FC<{
 }
 
 function setNode(ctx: { Info: (msg: string) => void, Error: (msg: string) => void }, hash: string) {
-    FetchProtobuf(node.method.use, create(use_reqSchema, { hash: hash, }))
+    FetchHTTP(node.method.use, { hash: hash })
         .then(async ({ error }) => {
             if (error !== undefined) ctx.Error(`change node failed, ${error.code}| ${error.msg}`)
             else ctx.Info(`Change Node To ${hash} Successful`)
@@ -722,7 +710,7 @@ const NodeJsonModal = (
                             onClick={() => {
                                 const p = fromJsonString(pointSchema, nodeJson.data);
                                 if (props.isNew) p.hash = ""
-                                FetchProtobuf(node.method.save, p)
+                                FetchHTTP(node.method.save, p)
                                     .then(async ({ error }) => {
                                         if (error === undefined) {
                                             ctx.Info("save successful")

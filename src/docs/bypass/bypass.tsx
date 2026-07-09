@@ -7,15 +7,15 @@ import { SettingSelectVertical, SwitchCard } from '@/component/v2/forms';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { Select } from '@/component/v2/select';
 import { Spinner } from '@/component/v2/spinner';
-import { create } from '@bufbuild/protobuf';
+import { create } from '@/common/plain';
 import { ArrowUpDown, ListOrdered, Power, Save, ShieldCheck, Signpost } from 'lucide-react';
 import React, { FC, useCallback, useContext, useState } from 'react';
-import { FetchProtobuf, useProtoSWR, useProtoSWRRequest } from '../../common/proto';
+import { FetchHTTP, useHttpSWR, useHttpSWRRequest } from '../../common/http';
 import { ConfirmModal } from '../../component/v2/confirm';
 import Loading, { Error } from '../../component/v2/loading';
 import { GlobalToastContext } from '../../component/v2/toast';
-import { change_priority_request_change_priority_operate, change_priority_request_change_priority_operateSchema, change_priority_requestSchema, page_requestSchema, resolver, rule_indexSchema, rule_save_requestSchema, rules, type rule_item } from '../pbes/api/config_pb';
-import { configv2, mode, resolve_strategy, rulev2Schema, udp_proxy_fqdn_strategy } from '../pbes/config/bypass_pb';
+import { change_priority_request_change_priority_operate, change_priority_request_change_priority_operateSchema, resolver, rules, type rule_item } from "@/common/api";
+import { configv2, mode, resolve_strategy, rulev2Schema, udp_proxy_fqdn_strategy } from '../schema/config/bypass';
 import { FilterModal } from './filter/filter';
 
 const BypassComponent: FC<{
@@ -23,7 +23,7 @@ const BypassComponent: FC<{
     onChange: (x: configv2) => void,
     refresh: () => void
 }> = ({ bypass, onChange, refresh }) => {
-    const { data: resolvers } = useProtoSWR(resolver.method.list)
+    const { data: resolvers } = useHttpSWR(resolver.method.list)
     const resolverListValues = resolvers ? resolvers.names.sort((a, b) => a.localeCompare(b)) : [];
 
     const ctx = useContext(GlobalToastContext);
@@ -31,7 +31,7 @@ const BypassComponent: FC<{
 
     const onSave = useCallback(() => {
         setSaving(true)
-        FetchProtobuf(rules.method.save_config, bypass)
+        FetchHTTP(rules.method.save_config, bypass)
             .then(async ({ error }) => {
                 if (error !== undefined) ctx.Error(`save config failed, ${error.code}| ${error.msg}`)
                 else {
@@ -191,11 +191,11 @@ const Rulev2Component: FC = () => {
     const [disablingIndex, setDisablingIndex] = useState(-1)
 
     const [page, setPage] = useState(1)
-    const { data: rules_data, error, isLoading, mutate } = useProtoSWRRequest(
+    const { data: rules_data, error, isLoading, mutate } = useHttpSWRRequest(
         rules.method.list_page,
-        create(page_requestSchema, { page, pageSize: PAGE_SIZE }),
+        { page, pageSize: PAGE_SIZE },
     )
-    const { data: allRulesData, mutate: mutateAllRules } = useProtoSWR(rules.method.list, { revalidateOnFocus: false })
+    const { data: allRulesData, mutate: mutateAllRules } = useHttpSWR(rules.method.list, { revalidateOnFocus: false })
 
     const ruleNameByIndex = useCallback((index: number) => {
         return allRulesData?.names[index] ?? rules_data?.items.find((item) => item.index === index)?.name ?? rules_data?.names[index] ?? "";
@@ -203,7 +203,7 @@ const Rulev2Component: FC = () => {
 
     const addNewRule = (name: string) => {
         setAdding(true)
-        FetchProtobuf(rules.method.save, create(rule_save_requestSchema, {
+        FetchHTTP(rules.method.save, {
             rule: create(rulev2Schema, {
                 name: name,
                 mode: mode.proxy,
@@ -214,7 +214,7 @@ const Rulev2Component: FC = () => {
                 rules: [],
                 disabled: false,
             })
-        }),)
+        },)
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("Add rule successful")
@@ -230,17 +230,17 @@ const Rulev2Component: FC = () => {
 
     const setRuleDisabled = useCallback((index: number, name: string, disabled: boolean) => {
         setDisablingIndex(index)
-        FetchProtobuf(rules.method.get, create(rule_indexSchema, { index, name }))
+        FetchHTTP(rules.method.get, { index, name })
             .then(async ({ data, error }) => {
                 if (error !== undefined || data === undefined) {
                     ctx.Error(error?.msg ?? "get rule failed")
                     return
                 }
 
-                const { error: saveError } = await FetchProtobuf(rules.method.save, create(rule_save_requestSchema, {
-                    index: create(rule_indexSchema, { index, name }),
+                const { error: saveError } = await FetchHTTP(rules.method.save, {
+                    index: { index, name },
                     rule: { ...data, disabled },
-                }))
+                })
 
                 if (saveError === undefined) {
                     ctx.Info(disabled ? "rule disabled" : "rule enabled")
@@ -261,11 +261,11 @@ const Rulev2Component: FC = () => {
     const changePriority = useCallback((src_index: number, dst_index: number, operate: change_priority_request_change_priority_operate) => {
         if (!allRulesData) return;
         setIsChangePriority(true)
-        FetchProtobuf(rules.method.change_priority, create(change_priority_requestSchema, {
+        FetchHTTP(rules.method.change_priority, {
             operate: operate,
-            source: create(rule_indexSchema, { index: src_index, name: allRulesData.names[src_index] }),
-            target: create(rule_indexSchema, { index: dst_index, name: allRulesData.names[dst_index] })
-        }),)
+            source: { index: src_index, name: allRulesData.names[src_index] },
+            target: { index: dst_index, name: allRulesData.names[dst_index] }
+        },)
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("change priority successful")
@@ -283,7 +283,7 @@ const Rulev2Component: FC = () => {
     }, [priorityModal, changePriority])
 
     const deleteRule = useCallback(() => {
-        FetchProtobuf(rules.method.remove, create(rule_indexSchema, { name: ruleNameByIndex(confirmData.index), index: confirmData.index }))
+        FetchHTTP(rules.method.remove, { name: ruleNameByIndex(confirmData.index), index: confirmData.index })
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("remove successful")

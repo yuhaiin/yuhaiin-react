@@ -6,9 +6,9 @@ import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { Plus, RotateCw, Save, Signpost, Trash } from 'lucide-react';
 import { FC, useContext, useState } from "react";
-import { FetchProtobuf, useProtoSWR } from "../../../common/proto";
+import { FetchHTTP, useHttpSWR } from "../../../common/http";
 import Loading from "../../../component/v2/loading";
-import { resolver } from "../../pbes/api/config_pb";
+import { resolver } from "@/common/api";
 
 export const Hosts: FC = () => {
     const ctx = useContext(GlobalToastContext);
@@ -16,7 +16,7 @@ export const Hosts: FC = () => {
     const [saving, setSaving] = useState(false);
     const [isDirty, setDirty] = useState(false);
 
-    const { data, error, isLoading, mutate } = useProtoSWR(resolver.method.hosts, {
+    const { data, error, isLoading, mutate } = useHttpSWR(resolver.method.hosts, {
         onSuccess: () => setDirty(false)
     })
 
@@ -25,7 +25,7 @@ export const Hosts: FC = () => {
 
     const handleSave = () => {
         setSaving(true)
-        FetchProtobuf(resolver.method.save_hosts, data)
+        FetchHTTP(resolver.method.save_hosts, data)
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("save hosts successful")

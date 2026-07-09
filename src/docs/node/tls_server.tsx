@@ -3,39 +3,45 @@ import { Card, CardBody, CardTitle } from "@/component/v2/card"
 import { SettingInputVertical } from "@/component/v2/forms"
 import { Input, Textarea } from "@/component/v2/input"
 import { InputList } from "@/component/v2/listeditor"
-import { create } from "@bufbuild/protobuf"
+import { create } from "@/common/plain"
 import { Plus, Trash } from 'lucide-react'
 import { FC, useState } from "react"
-import { certificate, certificateSchema, tls_server_config, tls_termination, tls_server_configSchema } from "../pbes/node/protocol_pb"
+import { certificate, certificateSchema, tls_server_config, tls_termination, tls_server_configSchema } from "../schema/node/protocol"
 import { Props } from "./tools"
 
 export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (x: tls_server_config) => void, editable?: boolean }) => {
     const [newSni, setNewSni] = useState("www.example.com")
     const { editable = true } = props;
+    const tls = {
+        ...props.tls,
+        certificates: Array.isArray(props.tls?.certificates) ? props.tls.certificates : [],
+        nextProtos: Array.isArray(props.tls?.nextProtos) ? props.tls.nextProtos : [],
+        serverNameCertificate: props.tls?.serverNameCertificate ?? {},
+    };
 
     return (
         <>
             <InputList
                 title='Next Protos'
                 className='mb-4'
-                data={props.tls?.nextProtos ?? []}
+                data={tls.nextProtos}
                 disabled={!editable}
-                onChange={(e) => props.onChange({ ...props.tls, nextProtos: e })}
+                onChange={(e) => props.onChange({ ...tls, nextProtos: e })}
             />
 
             <div className="mb-4">
                 <div className="flex justify-between items-center mb-2 px-1">
                     <h6 className="font-bold mb-0 opacity-75">Certificates</h6>
-                    <small className="text-gray-500 dark:text-gray-400">{props.tls.certificates.length} entries</small>
+                    <small className="text-gray-500 dark:text-gray-400">{tls.certificates.length} entries</small>
                 </div>
 
                 {
-                    props.tls && props.tls.certificates.map((v, index) => {
+                    tls.certificates.map((v, index) => {
                         return <Card className='mb-3' key={"tls_certificates" + index}>
                             <CardBody>
                                 {editable && (
                                     <CardTitle className='flex justify-end mb-3'>
-                                        <Button variant='outline-danger' size="sm" onClick={() => props.onChange({ ...props.tls, certificates: props.tls.certificates.filter((_, i) => i !== index) })}>
+                                        <Button variant='outline-danger' size="sm" onClick={() => props.onChange({ ...tls, certificates: tls.certificates.filter((_, i) => i !== index) })}>
                                             <Trash size={16} className="mr-2" /> Remove
                                         </Button>
                                     </CardTitle>
@@ -44,7 +50,7 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                                     cert={create(certificateSchema, v)}
                                     editable={editable}
                                     onChange={(e) => {
-                                        props.onChange({ ...props.tls, certificates: [...props.tls.certificates.slice(0, index), e, ...props.tls.certificates.slice(index + 1)] })
+                                        props.onChange({ ...tls, certificates: [...tls.certificates.slice(0, index), e, ...tls.certificates.slice(index + 1)] })
                                     }
                                     } />
                             </CardBody>
@@ -56,7 +62,7 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                     <div className="flex justify-end px-1">
                         <Button
                             onClick={() => props.onChange({
-                                ...props.tls, certificates: [...props.tls.certificates, create(certificateSchema, {
+                                ...tls, certificates: [...tls.certificates, create(certificateSchema, {
                                     cert: new Uint8Array(0),
                                     key: new Uint8Array(0),
                                     certFilePath: "",
@@ -72,12 +78,11 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
             <div className="mb-4">
                 <div className="flex justify-between items-center mb-2 px-1">
                     <h6 className="font-bold mb-0 opacity-75">SNI Certificates</h6>
-                    <small className="text-gray-500 dark:text-gray-400">{Object.keys(props.tls.serverNameCertificate || {}).length} entries</small>
+                    <small className="text-gray-500 dark:text-gray-400">{Object.keys(tls.serverNameCertificate).length} entries</small>
                 </div>
 
                 {
-                    props.tls && props.tls.serverNameCertificate
-                    && Object.entries(props.tls.serverNameCertificate).map(([k, v]) => {
+                    Object.entries(tls.serverNameCertificate).map(([k, v]) => {
                         return (
                             <Card className='mb-3' key={"server_name_certificate" + k}>
                                 <CardBody>
@@ -85,9 +90,9 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                                         <span className="font-bold text-primary">{k}</span>
                                         {editable && (
                                             <Button variant='outline-danger' size="sm" onClick={() => {
-                                                const serverNameCertificate = { ...props.tls.serverNameCertificate }
+                                                const serverNameCertificate = { ...tls.serverNameCertificate }
                                                 delete serverNameCertificate[k]
-                                                props.onChange({ ...props.tls, serverNameCertificate })
+                                                props.onChange({ ...tls, serverNameCertificate })
                                             }}>
                                                 <Trash size={16} />
                                             </Button>
@@ -95,7 +100,7 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                                     </CardTitle>
                                     <TLSCertificateComponents cert={create(certificateSchema, v)}
                                         editable={editable}
-                                        onChange={(e) => { props.onChange({ ...props.tls, serverNameCertificate: { ...props.tls.serverNameCertificate, [k]: e } }) }}
+                                        onChange={(e) => { props.onChange({ ...tls, serverNameCertificate: { ...tls.serverNameCertificate, [k]: e } }) }}
                                     />
                                 </CardBody>
                             </Card>
@@ -112,7 +117,7 @@ export const TLSServerComponents = (props: { tls: tls_server_config, onChange: (
                         <Button
                             className="mb-1"
                             style={{ height: '35px' }}
-                            onClick={() => { if (newSni) props.onChange({ ...props.tls, serverNameCertificate: { ...props.tls.serverNameCertificate, [newSni]: create(certificateSchema, {}) } }) }}
+                            onClick={() => { if (newSni) props.onChange({ ...tls, serverNameCertificate: { ...tls.serverNameCertificate, [newSni]: create(certificateSchema, {}) } }) }}
                         >
                             <Plus className="mr-1" size={16} /> Add SNI
                         </Button>

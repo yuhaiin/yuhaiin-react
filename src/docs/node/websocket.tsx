@@ -1,6 +1,6 @@
 import { SettingInputVertical } from "@/component/v2/forms";
 import { FC } from "react";
-import { websocket } from "../pbes/node/protocol_pb";
+import { websocket } from "../schema/node/protocol";
 import { Props } from "./tools";
 
 export const Websocketv2: FC<Props<websocket>> = ({ value, onChange, editable = true }) => {

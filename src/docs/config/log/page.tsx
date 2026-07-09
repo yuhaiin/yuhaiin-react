@@ -5,17 +5,17 @@ import { Badge } from "@/component/v2/badge"
 import { Button } from "@/component/v2/button"
 import { Card, CardBody, CardHeader, FilterSearch, IconBox, MainContainer } from '@/component/v2/card'
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
-import { create } from "@bufbuild/protobuf"
-import { EmptySchema } from "@bufbuild/protobuf/wkt"
+import { create } from "@/common/plain"
+import { EmptySchema } from "@/common/plain"
 import { clsx } from "clsx"
 import { Radio, Terminal, Trash2 } from 'lucide-react'
 import { FC, memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
 import useSWRSubscription from "swr/subscription"
 import { VList, type VListHandle } from "virtua"
-import { ProtoPath, WebsocketProtoServerStream } from "../../../common/proto"
+import { ApiPath, HttpServerStream } from "../../../common/http"
 import { Error } from "../../../component/v2/loading"
-import { tools } from "../../pbes/api/tools_pb"
-import { Logv2 } from "../../pbes/tools/tools_pb"
+import { tools } from "@/common/api"
+import { Logv2 } from "../../schema/tools/tools"
 
 const LOG_RETENTION_OPTIONS = [500, 2000, 10000] as const
 type LogRetention = typeof LOG_RETENTION_OPTIONS[number]
@@ -257,13 +257,13 @@ export default function LogComponent() {
     }, [logBuffer])
 
     const subscription = useMemo(() =>
-        WebsocketProtoServerStream(tools.method.logv2, create(EmptySchema, {}), processStream, { throttle: 200 }),
+        HttpServerStream(tools.method.logv2, create(EmptySchema, {}), processStream, { throttle: 200 }),
         [processStream]
     );
 
     const { data: streamVersion, error: log_error } =
         useSWRSubscription(
-            shouldFetch ? ProtoPath(tools.method.log) : null,
+            shouldFetch ? ApiPath(tools.method.log) : null,
             subscription,
             {}
         )

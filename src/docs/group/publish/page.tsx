@@ -9,18 +9,33 @@ import { InputGroup } from '@/component/v2/inputgroup';
 import { Modal, ModalBody, ModalClose, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { Spinner } from '@/component/v2/spinner';
 import { Switch } from '@/component/v2/switch';
-import { create, toBinary } from "@bufbuild/protobuf";
-import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { create, toBinary } from "@/common/plain";
+import { StringValueSchema } from "@/common/plain";
 import { Check, ChevronDown, Clipboard, ClipboardCheck, Plus, Share2, Trash } from 'lucide-react';
 import { FC, useContext, useEffect, useState } from "react";
-import { FetchProtobuf, useProtoSWR } from '../../../common/proto';
+import { FetchHTTP, useHttpSWR } from '../../../common/http';
 import Error from '../../../component/Error';
 import { useClipboard } from '../../../component/v2/clipboard';
 import { ConfirmModal } from "../../../component/v2/confirm";
 import Loading from "../../../component/v2/loading";
 import { GlobalToastContext } from "../../../component/v2/toast";
-import { node, SavePublishRequestSchema, subscribe } from "../../pbes/api/node_pb";
-import { Publish, PublishSchema, YuhaiinUrl_RemoteSchema, YuhaiinUrlSchema } from "../../pbes/node/subscribe_pb";
+import { node, subscribe } from "@/common/api";
+import { Publish, PublishSchema, YuhaiinUrl_RemoteSchema, YuhaiinUrlSchema } from "../../schema/node/subscribe";
+
+const emptyPublish = (): Publish => create(PublishSchema, {
+    name: "",
+    address: "",
+    insecure: false,
+    path: "",
+    password: "",
+    points: [],
+});
+
+const normalizePublish = (value?: Publish): Publish => ({
+    ...emptyPublish(),
+    ...(value ?? {}),
+    points: Array.isArray(value?.points) ? value.points : [],
+});
 
 const EditModal: FC<{
     show: boolean,
@@ -33,11 +48,11 @@ const EditModal: FC<{
 }> = ({ show, isEdit, onHide, item, nodes, configName: cn, mutatePub }) => {
     const ctx = useContext(GlobalToastContext);
 
-    const [newItem, setNewItem] = useState(item);
+    const [newItem, setNewItem] = useState(() => normalizePublish(item));
     const [configName, setConfigName] = useState(cn);
 
     useEffect(() => {
-        setNewItem(item)
+        setNewItem(normalizePublish(item))
     }, [item])
 
     useEffect(() => {
@@ -48,15 +63,16 @@ const EditModal: FC<{
 
     const handleNodeSelect = (hash: string) => {
         setNewItem(prev => {
-            return { ...prev, points: prev.points.includes(hash) ? [...prev.points.filter(h => h !== hash)] : [...prev.points, hash] }
+            const points = Array.isArray(prev.points) ? prev.points : [];
+            return { ...prev, points: points.includes(hash) ? points.filter(h => h !== hash) : [...points, hash] }
         });
     };
 
     const handleSave = () => {
         setSaving(true);
-        const req = create(SavePublishRequestSchema, { name: newItem.name, publish: newItem, });
+        const req = { name: newItem.name, publish: newItem };
 
-        FetchProtobuf(subscribe.method.save_publish, req)
+        FetchHTTP(subscribe.method.save_publish, req)
             .then(({ error }) => {
                 if (error) {
                     ctx.Error(`Failed to save: ${error.msg}`);
@@ -139,10 +155,10 @@ const EditModal: FC<{
                                 </DropdownTrigger>
 
                                 <DropdownContent className="w-full shadow-lg border-0" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                                    {nodes.groups.map((g: any) => (
+                                    {(nodes.groups ?? []).map((g: any) => (
                                         <DropdownGroup key={g.name}>
                                             <DropdownLabel className="text-blue-500 sticky top-0 bg-sidebar-bg">{g.name}</DropdownLabel>
-                                            {g.nodes.map((n: any) => (
+                                            {(g.nodes ?? []).map((n: any) => (
                                                 <DropdownCheckboxItem
                                                     key={n.hash}
                                                     checked={newItem.points.includes(n.hash)}
@@ -233,10 +249,10 @@ const PublishItem: FC<{
 
 function PublishPage() {
     const ctx = useContext(GlobalToastContext);
-    const { data: publishes, error: errPub, isLoading: loadingPub, mutate: mutatePub } = useProtoSWR(subscribe.method.list_publish);
-    const { data: nodes, error: errNodes, isLoading: loadingNodes } = useProtoSWR(node.method.list);
+    const { data: publishes, error: errPub, isLoading: loadingPub, mutate: mutatePub } = useHttpSWR(subscribe.method.list_publish);
+    const { data: nodes, error: errNodes, isLoading: loadingNodes } = useHttpSWR(node.method.list);
 
-    const [modalState, setModalState] = useState({ show: false, isEdit: false, configName: '', item: create(PublishSchema, {}) });
+    const [modalState, setModalState] = useState({ show: false, isEdit: false, configName: '', item: emptyPublish() });
     const [confirmDelete, setConfirmDelete] = useState({ show: false, name: '' });
 
     const { copy, copied, manualCopyModal } = useClipboard({
@@ -250,8 +266,10 @@ function PublishPage() {
     if (errNodes) return <Error statusCode={errNodes.code} title={errNodes.msg} />
     if (loadingPub || loadingNodes || !publishes || !nodes) return <Loading />
 
+    const publishEntries = Object.entries(publishes.publishes ?? {}).map(([name, pub]) => [name, normalizePublish(pub as Publish)] as const);
+
     const handleRemove = (name: string) => {
-        FetchProtobuf(subscribe.method.remove_publish, create(StringValueSchema, { value: name })).then(({ error }) => {
+        FetchHTTP(subscribe.method.remove_publish, create(StringValueSchema, { value: name })).then(({ error }) => {
             if (error) ctx.Error(`Failed to remove: ${error.msg}`);
             else { ctx.Info("Removed successfully."); mutatePub(); }
         });
@@ -280,7 +298,7 @@ function PublishPage() {
 
             <MainContainer>
                 <CardList
-                    items={Object.entries(publishes.publishes)}
+                    items={publishEntries}
                     renderListItem={([name, pub]) =>
                         <PublishItem
                             key={name}
@@ -291,7 +309,7 @@ function PublishPage() {
                             onDelete={() => setConfirmDelete({ show: true, name: name })}
                         />
                     }
-                    onClickItem={([name, pub]) => setModalState({ show: true, isEdit: true, configName: name, item: pub })}
+                    onClickItem={([name, pub]) => setModalState({ show: true, isEdit: true, configName: name, item: normalizePublish(pub) })}
                     header={
                         <>
                             <div className="flex items-center">
@@ -301,7 +319,7 @@ function PublishPage() {
                                     <small className="text-gray-500">Generate subscription URLs for remote clients</small>
                                 </div>
                             </div>
-                            <Button onClick={() => setModalState({ show: true, isEdit: false, configName: '', item: create(PublishSchema, {}) })}>
+                            <Button onClick={() => setModalState({ show: true, isEdit: false, configName: '', item: emptyPublish() })}>
                                 <Plus className="mr-1" size={16} /> Add
                             </Button>
                         </>

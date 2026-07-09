@@ -10,23 +10,23 @@ import {
 } from "@/component/v2/forms";
 import { Spinner } from '@/component/v2/spinner';
 import { ToggleGroup, ToggleItem } from '@/component/v2/togglegroup';
-import { create, DescEnumValue } from '@bufbuild/protobuf';
+import { create, DescEnumValue } from '@/common/plain';
 import { Cpu, Globe, NotebookText, Save } from 'lucide-react';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useInterfaces } from '../../common/interfaces';
-import { FetchProtobuf, useProtoSWR } from '../../common/proto';
+import { FetchHTTP, useHttpSWR } from '../../common/http';
 import { mapSetting, updateIfPresent } from '../../common/utils';
 import Loading, { Error } from '../../component/v2/loading';
 import { GlobalToastContext } from '../../component/v2/toast';
-import { config_service } from '../pbes/api/config_pb';
-import { advanced_configSchema, setting as Setting, settingSchema, system_proxySchema } from '../pbes/config/config_pb';
-import { log_level, log_levelSchema, logcatSchema } from '../pbes/config/log_pb';
+import { config_service } from "@/common/api";
+import { advanced_configSchema, setting as Setting, settingSchema, system_proxySchema } from '../schema/config/config';
+import { log_level, log_levelSchema, logcatSchema } from '../schema/config/log';
 
 function ConfigComponent() {
     const { t } = useTranslation('config');
     const ctx = useContext(GlobalToastContext);
-    const { data: setting, error, isLoading, mutate: setSetting } = useProtoSWR(config_service.method.load, {
+    const { data: setting, error, isLoading, mutate: setSetting } = useHttpSWR(config_service.method.load, {
         revalidateOnFocus: false,
         use: []
     });
@@ -86,7 +86,7 @@ function ConfigComponent() {
 
     const handleSave = () => {
         setSaving(true);
-        FetchProtobuf(config_service.method.save, setting)
+        FetchHTTP(config_service.method.save, setting)
             .then(({ error }) => {
                 if (error) ctx.Error(t('save.failed', { message: error.msg }));
                 else {

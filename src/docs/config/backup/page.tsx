@@ -5,24 +5,24 @@ import { Card, CardBody, CardFooter, CardHeader, IconBox, ListItem, MainContaine
 import { ConfirmModal } from "@/component/v2/confirm"
 import { SettingInputVertical, SettingPasswordVertical, SwitchCard } from "@/component/v2/forms"
 import { Spinner } from "@/component/v2/spinner"
-import { create } from "@bufbuild/protobuf"
-import { EmptySchema } from "@bufbuild/protobuf/wkt"
+import { create } from "@/common/plain"
+import { EmptySchema } from "@/common/plain"
 import { CloudUpload, Hash, Info, RotateCw, Save, ShieldCheck } from "lucide-react"
 import { useCallback, useContext, useState } from "react"
-import { FetchProtobuf, useProtoSWR } from "../../../common/proto"
+import { FetchHTTP, useHttpSWR } from "../../../common/http"
 import { mapSetting } from "../../../common/utils"
 import Loading, { Error } from "../../../component/v2/loading"
 import { GlobalToastContext } from "../../../component/v2/toast"
-import { backup } from "../../pbes/api/backup_pb"
-import { restore_optionSchema } from "../../pbes/backup/backup_pb"
-import { backup_optionSchema, s3Schema } from "../../pbes/config/config_pb"
+import { backup } from "@/common/api"
+import { restore_optionSchema } from "../../schema/backup/backup"
+import { backup_optionSchema, s3Schema } from "../../schema/config/config"
 
 function BackupPage() {
     const ctx = useContext(GlobalToastContext);
     const [saving, setSaving] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-    const { data, error, isLoading, mutate: setSetting } = useProtoSWR(backup.method.get, {
+    const { data, error, isLoading, mutate: setSetting } = useHttpSWR(backup.method.get, {
         revalidateOnFocus: false
     });
 
@@ -32,7 +32,7 @@ function BackupPage() {
 
     const handleSave = useCallback(() => {
         setSaving(true);
-        FetchProtobuf(backup.method.save, data)
+        FetchHTTP(backup.method.save, data)
             .then(({ error }) => {
                 if (error) ctx.Error(`Save failed: ${error.msg}`);
                 else {
@@ -44,7 +44,7 @@ function BackupPage() {
 
     const handleBackupNow = useCallback(() => {
         setSaving(true);
-        FetchProtobuf(backup.method.backup, create(EmptySchema, {}))
+        FetchHTTP(backup.method.backup, create(EmptySchema, {}))
             .then(({ error }) => {
                 if (error) ctx.Error(`Backup failed: ${error.msg}`);
                 else {
@@ -56,7 +56,7 @@ function BackupPage() {
 
     const handleRestoreNow = useCallback(() => {
         setSaving(true);
-        FetchProtobuf(backup.method.restore, create(restore_optionSchema, { all: true }))
+        FetchHTTP(backup.method.restore, create(restore_optionSchema, { all: true }))
             .then(({ error }) => {
                 if (error) ctx.Error(`Restore failed: ${error.msg}`);
                 else {

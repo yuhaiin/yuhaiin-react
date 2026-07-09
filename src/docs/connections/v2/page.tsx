@@ -1,7 +1,7 @@
 "use client"
 
 import { useDelay } from "@/common/hooks"
-import { FetchProtobuf, ProtoPath, WebsocketProtoServerStream } from "@/common/proto"
+import { jsonSSESubscription, postJSON } from "@/common/http"
 import { Button } from "@/component/v2/button"
 import { IconBadge } from "@/component/v2/card"
 import Loading from "@/component/v2/loading"
@@ -10,10 +10,9 @@ import { Spinner } from "@/component/v2/spinner"
 import { GlobalToastContext } from "@/component/v2/toast"
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import { ConnectionInfo, FlowContainer, formatBytes } from "@/docs/connections/components"
-import { connections, counter, notify_data, notify_remove_connectionsSchema } from "@/docs/pbes/api/statistic_pb"
-import { connection, connectionSchema, type } from "@/docs/pbes/statistic/config_pb"
-import { create } from "@bufbuild/protobuf"
-import { EmptySchema } from "@bufbuild/protobuf/wkt"
+import { counter, normalizeConnection, notify_data } from "@/common/api"
+import { connection, connectionSchema, type } from "@/docs/schema/statistic/config"
+import { create } from "@/common/plain"
 import { clsx } from "clsx"
 import { ArrowDown, ArrowUp, Network, Power, ShieldCheck, Tag } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
@@ -21,7 +20,7 @@ import React, { FC, useCallback, useContext, useMemo, useState, useSyncExternalS
 import useSWRSubscription from 'swr/subscription'
 import { VList } from "virtua"
 import { NodeModal } from "../../node/modal"
-import { mode } from "../../pbes/config/bypass_pb"
+import { mode } from "../../schema/config/bypass"
 
 type ConnectionsState = { [key: string]: connection }
 
@@ -47,6 +46,41 @@ const CONNECTION_ROW_HEIGHT = 72
 const CONNECTION_ROW_HEIGHT_MOBILE = 112
 const CONNECTION_LIST_MAX_HEIGHT = 720
 const ANIMATED_LIST_LIMIT = 100
+const CONNECTION_EVENTS_PATH = "/api/v1/connections/events"
+
+function asRecord(value: unknown): Record<string, unknown> {
+    return value !== null && typeof value === "object" ? value as Record<string, unknown> : {}
+}
+
+function decodeConnectionEvent(event: string, raw: unknown): notify_data | undefined {
+    const value = asRecord(raw)
+    switch (event) {
+        case "connections_added": {
+            const rawConnections = Array.isArray(value.connections) ? value.connections : []
+            return {
+                data: {
+                    case: "notifyNewConnections",
+                    value: {
+                        connections: rawConnections.map((conn) => normalizeConnection(conn)),
+                    },
+                },
+            }
+        }
+        case "connections_removed": {
+            const ids = Array.isArray(value.ids) ? value.ids : []
+            return {
+                data: {
+                    case: "notifyRemoveConnections",
+                    value: {
+                        ids: ids.map((id) => BigInt(typeof id === "string" || typeof id === "number" ? id : 0)),
+                    },
+                },
+            }
+        }
+        default:
+            return undefined
+    }
+}
 
 class ConnectionCountersStore {
     private counters = new Map<string, CounterRecord>()
@@ -206,13 +240,13 @@ function Connections() {
     }, [countersStore])
 
     const subscribe = useMemo(() =>
-        WebsocketProtoServerStream(connections.method.notify, create(EmptySchema, {}), processStream, { onDisconnect }),
+        jsonSSESubscription(CONNECTION_EVENTS_PATH, decodeConnectionEvent, processStream, { onDisconnect }),
         [processStream, onDisconnect]
     )
 
     const { data: isConnected, error: conn_error } =
         useSWRSubscription(
-            shouldFetch ? `${ProtoPath(connections.method.notify)}#${subscriptionId}` : null,
+            shouldFetch ? `${CONNECTION_EVENTS_PATH}#${subscriptionId}` : null,
             subscribe,
             {}
         )
@@ -510,13 +544,14 @@ const InfoOffcanvasComponent: FC<{
 
     const closeConnection = useCallback(() => {
         setClosing(true)
-        FetchProtobuf(
-            connections.method.close_conn,
-            create(notify_remove_connectionsSchema, { ids: [data.id] }),
-        ).then(({ error }) => {
-            if (error) ctx.Error(`code ${data.id} failed, ${error.code}| ${error.msg}`)
-            else handleClose()
-        }).finally(() => { setClosing(false) })
+        postJSON("/api/v1/connections:close", { ids: [Number(data.id)] })
+            .then(handleClose)
+            .catch((error) => {
+                const code = typeof error?.code === "number" ? error.code : 500
+                const msg = typeof error?.msg === "string" ? error.msg : "failed to disconnect"
+                ctx.Error(`code ${data.id} failed, ${code}| ${msg}`)
+            })
+            .finally(() => { setClosing(false) })
     }, [setClosing, data.id, ctx, handleClose])
 
     return (

@@ -5,12 +5,11 @@ import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardHeader, SettingLabel } from "@/component/v2/card";
 import { Select } from "@/component/v2/forms";
 import { SwitchCard } from "@/component/v2/switch";
-import { create } from "@bufbuild/protobuf";
+import { create } from "@/common/plain";
 import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react";
 import { FC, useState } from "react";
 import {
     aeadSchema,
-    grpcSchema,
     http2Schema,
     http_mockSchema,
     inbound,
@@ -22,17 +21,68 @@ import {
     tlsSchema,
     transportSchema,
     websocketSchema
-} from "../pbes/config/inbound_pb";
-import { tls_server_configSchema } from "../pbes/node/protocol_pb";
+} from "../schema/config/inbound";
+import { tls_server_configSchema } from "../schema/node/protocol";
 import { Network } from "./network";
 import { Protocol } from "./protocol";
 import { Transport } from "./transport";
+import { toPlainTun } from "./tun";
+
+const oneofCases = <T extends Record<string, any>>(value: T, cases: string[], fallback: string) => {
+    if (value?.case && value.value !== undefined) return value;
+    for (const key of cases) {
+        if (value?.[key] !== undefined && value[key] !== null) {
+            return { case: key, value: value[key] };
+        }
+    }
+    return { case: fallback, value: {} };
+};
+
+const transportCases = ["normal", "tls", "mux", "http2", "websocket", "reality", "tlsAuto", "httpMock", "aead", "proxy"];
+const networkCases = ["empty", "tcpudp", "quic"];
+const protocolCases = ["http", "reverseHttp", "reverseTcp", "socks5", "socks4a", "mix", "redir", "tun", "yuubinsya", "tproxy", "none"];
+
+const normalizeTransport = (value: transport): transport => ({
+    ...value,
+    transport: oneofCases(value?.transport ?? value, transportCases, "normal"),
+});
+
+export const normalizeInbound = (value: inbound): inbound => ({
+    ...value,
+    network: oneofCases(value?.network ?? value, networkCases, "tcpudp"),
+    protocol: oneofCases(value?.protocol ?? value, protocolCases, "yuubinsya"),
+    transport: Array.isArray(value?.transport) ? value.transport.map(normalizeTransport) : [],
+});
+
+const plainOneof = <T extends Record<string, any>>(value: T, oneofKey: string, cases: string[]) => {
+    const { [oneofKey]: oneof, ...rest } = value;
+    for (const key of cases) delete rest[key];
+    if (oneof?.case) rest[oneof.case] = oneof.value ?? {};
+    return rest;
+};
+
+const toPlainTransport = (value: transport): transport => plainOneof(normalizeTransport(value), "transport", transportCases);
+
+export const toPlainInbound = (value: inbound): inbound => {
+    const normalized = normalizeInbound(value);
+    const protocol = normalized.protocol?.case === "tun"
+        ? { ...normalized.protocol, value: toPlainTun(normalized.protocol.value ?? {}) }
+        : normalized.protocol;
+    const withPlainProtocolValue = { ...normalized, protocol };
+    const withoutNetwork = plainOneof(withPlainProtocolValue, "network", networkCases);
+    const withoutProtocol = plainOneof(withoutNetwork, "protocol", protocolCases);
+    return {
+        ...withoutProtocol,
+        transport: normalized.transport.map(toPlainTransport),
+    };
+};
 
 export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> = ({ inbound, onChange }) => {
+    const current = normalizeInbound(inbound);
     const [newProtocol, setNewProtocol] = useState({ value: "normal" });
 
     const moveTransport = (index: number, direction: 'up' | 'down') => {
-        const newTransports = [...inbound.transport];
+        const newTransports = [...current.transport];
         if (direction === 'up') {
             if (index === 0) return;
             [newTransports[index - 1], newTransports[index]] = [newTransports[index], newTransports[index - 1]];
@@ -40,17 +90,17 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
             if (index === newTransports.length - 1) return;
             [newTransports[index], newTransports[index + 1]] = [newTransports[index + 1], newTransports[index]];
         }
-        onChange({ ...inbound, transport: newTransports });
+        onChange({ ...current, transport: newTransports });
     };
 
     const deleteTransport = (index: number) => {
-        const newTransports = [...inbound.transport];
+        const newTransports = [...current.transport];
         newTransports.splice(index, 1);
-        onChange({ ...inbound, transport: newTransports });
+        onChange({ ...current, transport: newTransports });
     };
 
     const addTransport = () => {
-        const x = { ...inbound, transport: [...inbound.transport] }
+        const x = { ...current, transport: [...current.transport] }
         switch (newProtocol.value) {
             case "normal":
                 x.transport.push(create(transportSchema, {
@@ -84,11 +134,6 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
                     transport: { case: "websocket", value: create(websocketSchema, {}) }
                 }))
                 break
-            case "grpc":
-                x.transport.push(create(transportSchema, {
-                    transport: { case: "grpc", value: create(grpcSchema, {}) }
-                }))
-                break
             case "reality":
                 x.transport.push(create(transportSchema, {
                     transport: { case: "reality", value: create(realitySchema, {}) }
@@ -117,8 +162,8 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
         <div className="mb-4">
             <SwitchCard
                 label="Enabled"
-                checked={inbound.enabled}
-                onCheckedChange={(c) => { onChange({ ...inbound, enabled: c }) }}
+                checked={current.enabled}
+                onCheckedChange={(c) => { onChange({ ...current, enabled: c }) }}
                 className="p-4 rounded-lg bg-gray-100 dark:bg-[#2b2b40]"
             />
         </div>
@@ -127,7 +172,7 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
         <Card className="mb-4">
             <CardHeader><span className="font-bold">Network</span></CardHeader>
             <CardBody>
-                <Network inbound={inbound} onChange={(x) => { onChange({ ...x }) }} />
+                <Network inbound={current} onChange={(x) => { onChange(normalizeInbound(x)) }} />
             </CardBody>
         </Card>
 
@@ -136,24 +181,24 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
             <CardHeader><span className="font-bold">Transport</span></CardHeader>
             <CardBody>
                 <Accordion type="multiple" className="mb-4">
-                    {inbound.transport.map((x, i) => (
+                    {current.transport.map((x, i) => (
                         <AccordionItem value={`item-${i}`} key={i}>
                             <AccordionTrigger>
-                                {x.transport.case?.toString() ?? "Unknown"}
+                                {x.transport?.case?.toString() ?? "Unknown"}
                             </AccordionTrigger>
                             <AccordionContent>
                                 <div className="p-1">
                                     <Transport transport={x} onChange={(newTransport) => {
-                                        const newTransports = [...inbound.transport];
+                                        const newTransports = [...current.transport];
                                         newTransports[i] = newTransport;
-                                        onChange({ ...inbound, transport: newTransports });
+                                        onChange({ ...current, transport: newTransports });
                                     }} />
 
                                     <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
                                         <Button size="sm" onClick={() => moveTransport(i, 'up')} disabled={i === 0}>
                                             <ArrowUp size={16} />
                                         </Button>
-                                        <Button size="sm" onClick={() => moveTransport(i, 'down')} disabled={i === inbound.transport.length - 1}>
+                                        <Button size="sm" onClick={() => moveTransport(i, 'down')} disabled={i === current.transport.length - 1}>
                                             <ArrowDown size={16} />
                                         </Button>
                                         <Button variant="outline-danger" size="sm" onClick={() => deleteTransport(i)}>
@@ -174,7 +219,7 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
                             onValueChange={(e) => setNewProtocol({ value: e })}
                             items={[
                                 "normal", "tls", "mux",
-                                "http2", "websocket", "grpc",
+                                "http2", "websocket",
                                 "reality", "tlsAuto", "httpMock",
                                 "aead", "proxy"
                             ].map(v => ({ value: v, label: v }))}
@@ -191,7 +236,7 @@ export const Inbound: FC<{ inbound: inbound, onChange: (x: inbound) => void }> =
         <Card>
             <CardHeader><span className="font-bold">Protocol</span></CardHeader>
             <CardBody>
-                <Protocol inbound={inbound} onChange={(x) => { onChange({ ...x }) }} />
+                <Protocol inbound={current} onChange={(x) => { onChange(normalizeInbound(x)) }} />
             </CardBody>
         </Card>
     </>

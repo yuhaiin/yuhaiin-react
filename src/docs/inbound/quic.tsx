@@ -1,9 +1,9 @@
 import { SettingInputVertical } from '@/component/v2/forms'
-import { create } from '@bufbuild/protobuf'
+import { create } from '@/common/plain'
 import { FC } from 'react'
 import { TLSServerComponents } from '../node/tls_server'
-import { quic } from '../pbes/config/inbound_pb'
-import { tls_server_configSchema } from '../pbes/node/protocol_pb'
+import { quic } from '../schema/config/inbound'
+import { tls_server_configSchema } from '../schema/node/protocol'
 
 export const Quic: FC<{ quic: quic, onChange: (x: quic) => void }> = ({ quic, onChange }) => {
     return (

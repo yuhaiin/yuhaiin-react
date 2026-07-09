@@ -7,16 +7,16 @@ import { SettingInputVertical, SettingTypeSelect } from '@/component/v2/forms';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
-import { create } from "@bufbuild/protobuf";
-import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { create } from "@/common/plain";
+import { StringValueSchema } from "@/common/plain";
 import { Check, ChevronRight, Layers, Network, Trash } from 'lucide-react';
 import { FC, useContext, useEffect, useState } from "react";
 import useSWR from "swr";
-import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR, useProtoSWRRequest } from "../../../common/proto";
+import { FetchHTTP, HttpFetcher, ApiPath, useHttpSWR, useHttpSWRRequest } from "../../../common/http";
 import { ConfirmModal } from "../../../component/v2/confirm";
 import Loading, { Error } from "../../../component/v2/loading";
-import { page_requestSchema, resolver, resolver_item, save_resolverSchema } from "../../pbes/api/config_pb";
-import { dns, dnsSchema, type, typeSchema } from "../../pbes/config/dns_pb";
+import { resolver, resolver_item } from "@/common/api";
+import { dns, dnsSchema, type, typeSchema } from "../../schema/config/dns";
 import { Fakedns } from "./fakedns";
 import { Hosts } from "./hosts";
 import { Server } from "./server";
@@ -80,11 +80,11 @@ export default function ResolverComponent() {
 function Resolver() {
     const ctx = useContext(GlobalToastContext);
     const [page, setPage] = useState(1);
-    const { data: resolvers, error, isLoading, mutate } = useProtoSWRRequest(
+    const { data: resolvers, error, isLoading, mutate } = useHttpSWRRequest(
         resolver.method.list_page,
-        create(page_requestSchema, { page, pageSize: PAGE_SIZE }),
+        { page, pageSize: PAGE_SIZE },
     )
-    const { data: allResolvers, mutate: mutateAllResolvers } = useProtoSWR(resolver.method.list, { revalidateOnFocus: false })
+    const { data: allResolvers, mutate: mutateAllResolvers } = useHttpSWR(resolver.method.list, { revalidateOnFocus: false })
     const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
     const [confirm, setConfirm] = useState<{ show: boolean, name: string }>({ show: false, name: "" });
 
@@ -95,7 +95,7 @@ function Resolver() {
         : resolvers.names.map((name) => ({ name, type: "", host: "", subnet: "", tlsServername: "", system: name === "bootstrap" }));
 
     const deleteResolver = (name: string) => {
-        FetchProtobuf(resolver.method.remove, create(StringValueSchema, { value: name }),)
+        FetchHTTP(resolver.method.remove, create(StringValueSchema, { value: name }),)
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("remove successful")
@@ -168,8 +168,8 @@ const ResolverModal: FC<{
     const ctx = useContext(GlobalToastContext);
     const [saving, setSaving] = useState(false);
 
-    const { data, error, isLoading, isValidating, mutate } = useSWR(name === "" ? undefined : ProtoPath(resolver.method.get),
-        ProtoESFetcher(
+    const { data, error, isLoading, isValidating, mutate } = useSWR(name === "" ? undefined : ApiPath(resolver.method.get),
+        HttpFetcher(
             resolver.method.get,
             create(StringValueSchema, { value: name }),
             isNew ? create(dnsSchema, { host: "8.8.8.8", type: type.udp }) : undefined
@@ -180,8 +180,8 @@ const ResolverModal: FC<{
 
     const handleSave = () => {
         setSaving(true);
-        FetchProtobuf(resolver.method.save,
-            create(save_resolverSchema, { name: name, resolver: data }))
+        FetchHTTP(resolver.method.save,
+            { name: name, resolver: data })
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("save successful")

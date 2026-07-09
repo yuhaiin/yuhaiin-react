@@ -1,7 +1,7 @@
 import { SettingInputVertical } from '@/component/v2/forms';
 import { InputList } from '@/component/v2/listeditor';
 import { FC } from 'react';
-import { reality } from '../pbes/config/inbound_pb';
+import { reality } from '../schema/config/inbound';
 
 export const Reality: FC<{ reality: reality, onChange: (x: reality) => void }> = ({ reality, onChange }) => {
     return (

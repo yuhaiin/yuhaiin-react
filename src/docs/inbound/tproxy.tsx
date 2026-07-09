@@ -1,6 +1,6 @@
 import { SettingCheck, SettingInputVertical } from '@/component/v2/forms';
 import { FC } from "react";
-import { tproxy } from '../pbes/config/inbound_pb';
+import { tproxy } from '../schema/config/inbound';
 
 
 export const TProxy: FC<{ tproxy: tproxy, onChange: (x: tproxy) => void }> = ({ tproxy, onChange }) => {

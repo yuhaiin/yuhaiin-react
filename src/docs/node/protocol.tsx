@@ -5,10 +5,10 @@ import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { Card, CardBody } from "@/component/v2/card";
 import { Select, SettingInputVertical } from "@/component/v2/forms";
-import { create } from "@bufbuild/protobuf";
+import { create } from "@/common/plain";
 import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react";
 import { FC, useEffect, useState } from 'react';
-import { point } from "../pbes/node/point_pb";
+import { point } from "../schema/node/point";
 import {
     aeadSchema,
     cloudflare_warp_masqueSchema,
@@ -16,7 +16,6 @@ import {
     dropSchema,
     fixedSchema,
     fixedv2Schema,
-    grpcSchema,
     http2Schema,
     http_mockSchema,
     http_terminationSchema,
@@ -46,14 +45,13 @@ import {
     websocketSchema,
     wireguardSchema,
     yuubinsyaSchema
-} from "../pbes/node/protocol_pb";
+} from "../schema/node/protocol";
 import { Aead } from "./aead";
 import { BootstrapDnsWarp } from "./bootstrap_dns_warp";
 import { CloudflareWarpMasque } from "./cloudflare_warp_masque";
 import { Directv2 } from "./direct";
 import { Dropv2 } from './drop';
 import { Fixed as Fixedv2 } from "./fixedv2";
-import { Grpcv2 } from "./grpc";
 import { HTTPv2, UnWrapHttp } from "./http";
 import { HTTP2v2 } from "./http2";
 import { HttpMock } from "./mock";
@@ -80,14 +78,631 @@ import { Websocketv2 } from "./websocket";
 import { Wireguardv2 } from "./wireguard";
 import { Yuubinsyav2 } from "./yuubinsta";
 
+const protocolCaseAliases = [
+    ["shadowsocks", "shadowsocks"],
+    ["shadowsocksr", "shadowsocksr"],
+    ["vmess", "vmess"],
+    ["websocket", "websocket"],
+    ["quic", "quic"],
+    ["obfsHttp", "obfs_http"],
+    ["trojan", "trojan"],
+    ["simple", "simple"],
+    ["none", "none"],
+    ["socks5", "socks5"],
+    ["http", "http"],
+    ["direct", "direct"],
+    ["reject", "reject"],
+    ["yuubinsya", "yuubinsya"],
+    ["http2", "http2"],
+    ["reality", "reality"],
+    ["tls", "tls"],
+    ["wireguard", "wireguard"],
+    ["mux", "mux"],
+    ["drop", "drop"],
+    ["vless", "vless"],
+    ["bootstrapDnsWarp", "bootstrap_dns_warp"],
+    ["tailscale", "tailscale"],
+    ["set", "set"],
+    ["tlsTermination", "tls_termination"],
+    ["httpTermination", "http_termination"],
+    ["httpMock", "http_mock"],
+    ["aead", "aead"],
+    ["fixed", "fixed"],
+    ["networkSplit", "network_split"],
+    ["cloudflareWarpMasque", "cloudflare_warp_masque"],
+    ["proxy", "proxy"],
+    ["fixedv2", "fixedv2"],
+    ["pointAsEndpoint", "point_as_endpoint"],
+] as const;
+
+const protocolJsonName = (caseName: string) => protocolCaseAliases.find(([name]) => name === caseName)?.[1] ?? caseName;
+
+function asRecord(value: unknown): Record<string, unknown> {
+    return value !== null && typeof value === "object" ? value as Record<string, unknown> : {};
+}
+
+function firstField(value: Record<string, unknown>, ...names: string[]): unknown {
+    for (const name of names) {
+        const raw = value[name];
+        if (raw !== undefined && raw !== null) return raw;
+    }
+    return undefined;
+}
+
+function boolField(value: Record<string, unknown>, ...names: string[]): boolean {
+    return Boolean(firstField(value, ...names));
+}
+
+function stringField(value: Record<string, unknown>, ...names: string[]): string {
+    const raw = firstField(value, ...names);
+    return typeof raw === "string" ? raw : "";
+}
+
+function stringListField(value: Record<string, unknown>, ...names: string[]): string[] {
+    const raw = firstField(value, ...names);
+    return Array.isArray(raw) ? raw.filter((item): item is string => typeof item === "string") : [];
+}
+
+function numberField(value: Record<string, unknown>, ...names: string[]): number {
+    const raw = firstField(value, ...names);
+    if (typeof raw === "number" && Number.isFinite(raw)) return raw;
+    if (typeof raw === "string" && raw !== "") {
+        const parsed = Number(raw);
+        return Number.isFinite(parsed) ? parsed : 0;
+    }
+    return 0;
+}
+
+function arrayField(value: Record<string, unknown>, ...names: string[]): unknown[] {
+    const raw = firstField(value, ...names);
+    return Array.isArray(raw) ? raw : [];
+}
+
+function bytesField(value: Record<string, unknown>, ...names: string[]): Uint8Array {
+    const raw = firstField(value, ...names);
+    if (raw instanceof Uint8Array) return raw;
+    if (Array.isArray(raw)) return Uint8Array.from(raw.filter((item): item is number => typeof item === "number"));
+    if (typeof raw !== "string" || raw === "") return new Uint8Array(0);
+    try {
+        return Uint8Array.from(atob(raw), (char) => char.charCodeAt(0));
+    } catch {
+        return new TextEncoder().encode(raw);
+    }
+}
+
+function bytesListField(value: Record<string, unknown>, ...names: string[]): Uint8Array[] {
+    const raw = firstField(value, ...names);
+    if (!Array.isArray(raw)) return [];
+    return raw.map((item) => bytesField({ value: item }, "value"));
+}
+
+function bytesToBase64(value: unknown): string {
+    if (typeof value === "string") return value;
+    const bytes = value instanceof Uint8Array
+        ? value
+        : Array.isArray(value)
+            ? Uint8Array.from(value.filter((item): item is number => typeof item === "number"))
+            : new Uint8Array(0);
+    let binary = "";
+    bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+    return btoa(binary);
+}
+
+function normalizeCertificate(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        cert: bytesField(current, "cert"),
+        key: bytesField(current, "key"),
+        certFilePath: stringField(current, "certFilePath", "cert_file_path"),
+        keyFilePath: stringField(current, "keyFilePath", "key_file_path"),
+    };
+}
+
+function toPlainCertificate(value: unknown): Record<string, unknown> {
+    const current = normalizeCertificate(value);
+    return {
+        ...current,
+        cert: bytesToBase64(current.cert),
+        key: bytesToBase64(current.key),
+        cert_file_path: current.certFilePath,
+        key_file_path: current.keyFilePath,
+    };
+}
+
+function normalizeTlsConfig(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        enable: boolField(current, "enable"),
+        serverNames: stringListField(current, "serverNames", "servernames", "server_names"),
+        caCert: bytesListField(current, "caCert", "ca_cert"),
+        insecureSkipVerify: boolField(current, "insecureSkipVerify", "insecure_skip_verify"),
+        nextProtos: stringListField(current, "nextProtos", "next_protos"),
+        echConfig: bytesField(current, "echConfig", "ech_config"),
+    };
+}
+
+function toPlainTlsConfig(value: unknown): Record<string, unknown> {
+    const current = normalizeTlsConfig(value);
+    return {
+        ...current,
+        servernames: current.serverNames,
+        ca_cert: Array.isArray(current.caCert) ? current.caCert.map(bytesToBase64) : [],
+        insecure_skip_verify: current.insecureSkipVerify,
+        next_protos: current.nextProtos,
+        ech_config: bytesToBase64(current.echConfig),
+    };
+}
+
+function normalizeTlsServerConfig(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    const certs = firstField(current, "certificates");
+    const sniCerts = asRecord(firstField(current, "serverNameCertificate", "server_name_certificate"));
+    return {
+        ...current,
+        certificates: Array.isArray(certs) ? certs.map(normalizeCertificate) : [],
+        nextProtos: stringListField(current, "nextProtos", "next_protos"),
+        serverNameCertificate: Object.fromEntries(Object.entries(sniCerts).map(([name, cert]) => [name, normalizeCertificate(cert)])),
+    };
+}
+
+function toPlainTlsServerConfig(value: unknown): Record<string, unknown> {
+    const current = normalizeTlsServerConfig(value);
+    const sniCerts = asRecord(current.serverNameCertificate);
+    return {
+        ...current,
+        certificates: Array.isArray(current.certificates) ? current.certificates.map(toPlainCertificate) : [],
+        next_protos: current.nextProtos,
+        serverNameCertificate: Object.fromEntries(Object.entries(sniCerts).map(([name, cert]) => [name, toPlainCertificate(cert)])),
+    };
+}
+
+function normalizeTlsTermination(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        tls: normalizeTlsServerConfig(firstField(current, "tls")),
+    };
+}
+
+function toPlainTlsTermination(value: unknown): Record<string, unknown> {
+    const current = normalizeTlsTermination(value);
+    return {
+        ...current,
+        tls: toPlainTlsServerConfig(current.tls),
+    };
+}
+
+function normalizeHost(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        host: stringField(current, "host"),
+        port: numberField(current, "port"),
+    };
+}
+
+function normalizeFixed(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        host: stringField(current, "host"),
+        networkInterface: stringField(current, "networkInterface", "network_interface"),
+        port: numberField(current, "port"),
+        alternateHost: arrayField(current, "alternateHost", "alternate_host").map(normalizeHost),
+    };
+}
+
+function toPlainFixed(value: unknown): Record<string, unknown> {
+    const current = normalizeFixed(value);
+    return {
+        ...current,
+        network_interface: current.networkInterface,
+        alternate_host: Array.isArray(current.alternateHost) ? current.alternateHost.map(normalizeHost) : [],
+    };
+}
+
+function normalizeFixedv2Address(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        host: stringField(current, "host"),
+        networkInterface: stringField(current, "networkInterface", "network_interface"),
+    };
+}
+
+function toPlainFixedv2Address(value: unknown): Record<string, unknown> {
+    const current = normalizeFixedv2Address(value);
+    return {
+        ...current,
+        network_interface: current.networkInterface,
+    };
+}
+
+function normalizeFixedv2(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        addresses: arrayField(current, "addresses").map(normalizeFixedv2Address),
+        udpHappyEyeballs: boolField(current, "udpHappyEyeballs", "udp_happy_eyeballs"),
+    };
+}
+
+function toPlainFixedv2(value: unknown): Record<string, unknown> {
+    const current = normalizeFixedv2(value);
+    return {
+        ...current,
+        addresses: Array.isArray(current.addresses) ? current.addresses.map(toPlainFixedv2Address) : [],
+        udp_happy_eyeballs: current.udpHappyEyeballs,
+    };
+}
+
+function normalizeWireguardPeer(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        publicKey: stringField(current, "publicKey", "public_key"),
+        preSharedKey: stringField(current, "preSharedKey", "pre_shared_key"),
+        endpoint: stringField(current, "endpoint"),
+        keepAlive: numberField(current, "keepAlive", "keep_alive"),
+        allowedIps: stringListField(current, "allowedIps", "allowed_ips"),
+    };
+}
+
+function toPlainWireguardPeer(value: unknown): Record<string, unknown> {
+    const current = normalizeWireguardPeer(value);
+    return {
+        ...current,
+        publicKey: current.publicKey,
+        preSharedKey: current.preSharedKey,
+        keepAlive: current.keepAlive,
+        allowedIps: current.allowedIps,
+    };
+}
+
+function normalizeWireguard(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        secretKey: stringField(current, "secretKey", "secret_key"),
+        endpoint: stringListField(current, "endpoint"),
+        peers: arrayField(current, "peers").map(normalizeWireguardPeer),
+        mtu: numberField(current, "mtu"),
+        reserved: bytesField(current, "reserved"),
+    };
+}
+
+function toPlainWireguard(value: unknown): Record<string, unknown> {
+    const current = normalizeWireguard(value);
+    return {
+        ...current,
+        secretKey: current.secretKey,
+        endpoint: current.endpoint,
+        peers: Array.isArray(current.peers) ? current.peers.map(toPlainWireguardPeer) : [],
+        mtu: current.mtu,
+        reserved: bytesToBase64(current.reserved),
+    };
+}
+
+function normalizeSet(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        nodes: stringListField(current, "nodes"),
+        strategy: numberField(current, "strategy"),
+    };
+}
+
+function normalizeDirect(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        networkInterface: stringField(current, "networkInterface", "network_interface"),
+    };
+}
+
+function toPlainDirect(value: unknown): Record<string, unknown> {
+    const current = normalizeDirect(value);
+    return {
+        ...current,
+        network_interface: current.networkInterface,
+    };
+}
+
+function normalizeSocks5(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        hostname: stringField(current, "hostname"),
+        user: stringField(current, "user"),
+        password: stringField(current, "password"),
+        overridePort: numberField(current, "overridePort", "override_port"),
+    };
+}
+
+function toPlainSocks5(value: unknown): Record<string, unknown> {
+    const current = normalizeSocks5(value);
+    return {
+        ...current,
+        override_port: current.overridePort,
+    };
+}
+
+function normalizeVmess(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        uuid: stringField(current, "uuid", "id"),
+        alterId: stringField(current, "alterId", "aid"),
+        security: stringField(current, "security"),
+    };
+}
+
+function toPlainVmess(value: unknown): Record<string, unknown> {
+    const current = normalizeVmess(value);
+    return {
+        ...current,
+        id: current.uuid,
+        aid: current.alterId,
+    };
+}
+
+function normalizeYuubinsya(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        password: stringField(current, "password"),
+        udpOverStream: boolField(current, "udpOverStream", "udp_over_stream"),
+        udpCoalesce: boolField(current, "udpCoalesce", "udp_coalesce"),
+    };
+}
+
+function toPlainYuubinsya(value: unknown): Record<string, unknown> {
+    const current = normalizeYuubinsya(value);
+    return {
+        ...current,
+        udp_over_stream: current.udpOverStream,
+        udp_coalesce: current.udpCoalesce,
+    };
+}
+
+function normalizeReality(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        serverName: stringField(current, "serverName", "server_name"),
+        publicKey: stringField(current, "publicKey", "public_key"),
+        mldsa65Verify: stringField(current, "mldsa65Verify", "mldsa65_verify"),
+        shortId: stringField(current, "shortId", "short_id"),
+        debug: boolField(current, "debug"),
+    };
+}
+
+function toPlainReality(value: unknown): Record<string, unknown> {
+    const current = normalizeReality(value);
+    return {
+        ...current,
+        server_name: current.serverName,
+        public_key: current.publicKey,
+        mldsa65_verify: current.mldsa65Verify,
+        short_id: current.shortId,
+    };
+}
+
+function normalizeConcurrency(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        concurrency: numberField(current, "concurrency"),
+    };
+}
+
+function normalizeHttpMock(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        data: bytesField(current, "data"),
+    };
+}
+
+function toPlainHttpMock(value: unknown): Record<string, unknown> {
+    const current = normalizeHttpMock(value);
+    return {
+        ...current,
+        data: bytesToBase64(current.data),
+    };
+}
+
+function normalizeAead(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        password: stringField(current, "password"),
+        cryptoMethod: numberField(current, "cryptoMethod", "crypto_method"),
+    };
+}
+
+function toPlainAead(value: unknown): Record<string, unknown> {
+    const current = normalizeAead(value);
+    return {
+        ...current,
+        crypto_method: current.cryptoMethod,
+    };
+}
+
+function normalizeCloudflareWarpMasque(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        privateKey: stringField(current, "privateKey", "private_key"),
+        endpoint: stringField(current, "endpoint"),
+        endpointPublicKey: stringField(current, "endpointPublicKey", "endpoint_public_key"),
+        localAddresses: stringListField(current, "localAddresses", "local_addresses"),
+        mtu: numberField(current, "mtu"),
+    };
+}
+
+function toPlainCloudflareWarpMasque(value: unknown): Record<string, unknown> {
+    const current = normalizeCloudflareWarpMasque(value);
+    return {
+        ...current,
+        private_key: current.privateKey,
+        endpoint_public_key: current.endpointPublicKey,
+        local_addresses: current.localAddresses,
+    };
+}
+
+function normalizeTailscale(value: unknown): Record<string, unknown> {
+    const current = asRecord(value);
+    return {
+        ...current,
+        authKey: stringField(current, "authKey", "auth_key"),
+        hostname: stringField(current, "hostname"),
+        controlUrl: stringField(current, "controlUrl", "control_url"),
+        debug: boolField(current, "debug"),
+    };
+}
+
+function toPlainTailscale(value: unknown): Record<string, unknown> {
+    const current = normalizeTailscale(value);
+    return {
+        ...current,
+        auth_key: current.authKey,
+        control_url: current.controlUrl,
+    };
+}
+
+function normalizeNetworkSplit(value: network_split | undefined): network_split {
+    const current = value ?? {};
+    return {
+        ...current,
+        tcp: current.tcp ? normalizeProtocol(current.tcp) : undefined,
+        udp: current.udp ? normalizeProtocol(current.udp) : undefined,
+    };
+}
+
+function normalizeProtocolValue(caseName: string, value: unknown): unknown {
+    if (caseName === "networkSplit") return normalizeNetworkSplit(value as network_split | undefined);
+    if (caseName === "direct") return normalizeDirect(value);
+    if (caseName === "socks5") return normalizeSocks5(value);
+    if (caseName === "vmess") return normalizeVmess(value);
+    if (caseName === "yuubinsya") return normalizeYuubinsya(value);
+    if (caseName === "reality") return normalizeReality(value);
+    if (caseName === "http2" || caseName === "mux") return normalizeConcurrency(value);
+    if (caseName === "fixed" || caseName === "simple") return normalizeFixed(value);
+    if (caseName === "fixedv2") return normalizeFixedv2(value);
+    if (caseName === "wireguard") return normalizeWireguard(value);
+    if (caseName === "set") return normalizeSet(value);
+    if (caseName === "httpMock") return normalizeHttpMock(value);
+    if (caseName === "aead") return normalizeAead(value);
+    if (caseName === "cloudflareWarpMasque") return normalizeCloudflareWarpMasque(value);
+    if (caseName === "tailscale") return normalizeTailscale(value);
+    if (caseName === "tls") return normalizeTlsConfig(value);
+    if (caseName === "quic") {
+        const current = asRecord(value);
+        return { ...current, tls: normalizeTlsConfig(firstField(current, "tls")) };
+    }
+    if (caseName === "tlsTermination") return normalizeTlsTermination(value);
+    return value ?? {};
+}
+
+export function normalizeProtocol(value: protocol | undefined): protocol {
+    const current = value ?? {};
+    if (current.protocol?.case) {
+        return {
+            ...current,
+            protocol: {
+                ...current.protocol,
+                value: normalizeProtocolValue(current.protocol.case, current.protocol.value),
+            },
+        };
+    }
+
+    for (const [caseName, jsonName] of protocolCaseAliases) {
+        const raw = current[caseName] ?? current[jsonName];
+        if (raw !== undefined && raw !== null) {
+            return {
+                ...current,
+                protocol: {
+                    case: caseName,
+                    value: normalizeProtocolValue(caseName, raw),
+                },
+            };
+        }
+    }
+
+    return { ...current, protocol: { case: "none", value: create(noneSchema, {}) } };
+}
+
+export function normalizePoint(value: point | undefined): point {
+    const current = value ?? {};
+    return {
+        ...current,
+        protocols: Array.isArray(current.protocols) ? current.protocols.map(normalizeProtocol) : [],
+    };
+}
+
+function toPlainProtocolValue(caseName: string, value: unknown): unknown {
+    if (caseName === "direct") return toPlainDirect(value);
+    if (caseName === "socks5") return toPlainSocks5(value);
+    if (caseName === "vmess") return toPlainVmess(value);
+    if (caseName === "yuubinsya") return toPlainYuubinsya(value);
+    if (caseName === "reality") return toPlainReality(value);
+    if (caseName === "http2" || caseName === "mux") return normalizeConcurrency(value);
+    if (caseName === "fixed" || caseName === "simple") return toPlainFixed(value);
+    if (caseName === "fixedv2") return toPlainFixedv2(value);
+    if (caseName === "wireguard") return toPlainWireguard(value);
+    if (caseName === "set") return normalizeSet(value);
+    if (caseName === "httpMock") return toPlainHttpMock(value);
+    if (caseName === "aead") return toPlainAead(value);
+    if (caseName === "cloudflareWarpMasque") return toPlainCloudflareWarpMasque(value);
+    if (caseName === "tailscale") return toPlainTailscale(value);
+    if (caseName === "tls") return toPlainTlsConfig(value);
+    if (caseName === "quic") {
+        const current = asRecord(value);
+        return { ...current, tls: toPlainTlsConfig(firstField(current, "tls")) };
+    }
+    if (caseName === "tlsTermination") return toPlainTlsTermination(value);
+    if (caseName !== "networkSplit") return value ?? {};
+
+    const current = normalizeNetworkSplit(value as network_split | undefined);
+    return {
+        ...current,
+        tcp: current.tcp ? toPlainProtocol(current.tcp) : undefined,
+        udp: current.udp ? toPlainProtocol(current.udp) : undefined,
+    };
+}
+
+export function toPlainProtocol(value: protocol | undefined): protocol {
+    const current = normalizeProtocol(value);
+    const next: Record<string, unknown> = { ...current };
+    delete next.protocol;
+    for (const [caseName, jsonName] of protocolCaseAliases) {
+        delete next[caseName];
+        delete next[jsonName];
+    }
+    next[protocolJsonName(current.protocol.case)] = toPlainProtocolValue(current.protocol.case, current.protocol.value);
+    return next;
+}
+
+export function toPlainPoint(value: point | undefined): point {
+    const current = normalizePoint(value);
+    return {
+        ...current,
+        protocols: current.protocols.map(toPlainProtocol),
+    };
+}
+
 
 export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: string[], editable?: boolean }> =
     ({ value, onChange, groups, editable = true }) => {
+        const current = normalizePoint(value);
         const [newProtocol, setNewProtocol] = useState(Object.keys(protocols)[0]);
 
         const moveProtocol = (index: number, direction: 'up' | 'down') => {
             if (!editable) return
-            const next = [...value.protocols];
+            const next = [...current.protocols];
             if (direction === 'up') {
                 if (index === 0) return;
                 [next[index - 1], next[index]] = [next[index], next[index - 1]];
@@ -95,14 +710,14 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                 if (index === next.length - 1) return;
                 [next[index], next[index + 1]] = [next[index + 1], next[index]];
             }
-            onChange({ ...value, protocols: next });
+            onChange({ ...current, protocols: next });
         };
 
         const deleteProtocol = (index: number) => {
             if (!editable) return
-            const next = [...value.protocols];
+            const next = [...current.protocols];
             next.splice(index, 1);
-            onChange({ ...value, protocols: next });
+            onChange({ ...current, protocols: next });
         };
 
         return <>
@@ -110,17 +725,17 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                 <div>
                     <SettingInputVertical
                         label="Name"
-                        value={value.name}
+                        value={current.name ?? ""}
                         disabled={!editable}
-                        onChange={(e: string) => { onChange({ ...value, name: e }) }}
+                        onChange={(e: string) => { onChange({ ...current, name: e }) }}
                     />
                 </div>
                 <div>
                     <SettingInputVertical
                         label="Group"
-                        value={value.group}
+                        value={current.group ?? ""}
                         disabled={!editable}
-                        onChange={(e: string) => { onChange({ ...value, group: e }) }}
+                        onChange={(e: string) => { onChange({ ...current, group: e }) }}
                         reminds={groups ? groups.map(x => ({ label: x, value: x })) : undefined}
                     />
                 </div>
@@ -129,12 +744,12 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
             <div className="mb-3">
                 <div className="flex justify-between items-center mb-2 px-1">
                     <h6 className="font-bold mb-0 opacity-75">Protocol Chain</h6>
-                    <small className="text-gray-500 dark:text-gray-400">{value.protocols.length} steps</small>
+                    <small className="text-gray-500 dark:text-gray-400">{current.protocols.length} steps</small>
                 </div>
 
                 <Accordion type="multiple" className="mb-3">
                     {
-                        value.protocols.map((x, i) => {
+                        current.protocols.map((x, i) => {
                             return (
                                 <AccordionItem value={`item-${i}`} key={i}>
                                     <AccordionTrigger>
@@ -147,10 +762,10 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                                     </AccordionTrigger>
                                     <AccordionContent>
                                         <div className="p-1">
-                                            <Protocol value={value.protocols[i]} editable={editable} onChange={(e) => {
-                                                const next = [...value.protocols];
+                                            <Protocol value={current.protocols[i]} editable={editable} onChange={(e) => {
+                                                const next = [...current.protocols];
                                                 next[i] = e;
-                                                onChange({ ...value, protocols: next })
+                                                onChange({ ...current, protocols: next })
                                             }} />
 
                                             {editable && (
@@ -158,7 +773,7 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                                                     <Button size="sm" onClick={() => moveProtocol(i, 'up')} disabled={i === 0}>
                                                         <ArrowUp size={16} />
                                                     </Button>
-                                                    <Button size="sm" onClick={() => moveProtocol(i, 'down')} disabled={i === value.protocols.length - 1}>
+                                                    <Button size="sm" onClick={() => moveProtocol(i, 'down')} disabled={i === current.protocols.length - 1}>
                                                         <ArrowDown size={16} />
                                                     </Button>
                                                     <Button variant="outline-danger" size="sm" onClick={() => deleteProtocol(i)}>
@@ -188,7 +803,7 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
                             className="mb-1"
                             style={{ height: '35px' }}
                             onClick={() => {
-                                onChange({ ...value, protocols: [...value.protocols, protocols[newProtocol]] })
+                                onChange({ ...current, protocols: [...current.protocols, protocols[newProtocol]] })
                             }}
                         >
                             <Plus className="mr-1" size={16} /> Add Step
@@ -200,30 +815,31 @@ export const Point: FC<{ value: point, onChange: (x: point) => void, groups?: st
     }
 
 const Protocol: FC<Props<protocol>> = ({ value, onChange, editable = true }) => {
+    const current = normalizeProtocol(value);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const update = (data: any) => onChange({ ...value, protocol: { ...value.protocol, value: data } })
+    const update = (data: any) => onChange({ ...current, protocol: { ...current.protocol, value: data } })
 
     useEffect(() => {
         if (!editable) return
-        switch (value.protocol.case) {
+        switch (current.protocol.case) {
             case "simple":
                 onChange(create(protocolSchema, {
                     protocol: {
                         case: "fixed",
                         value: create(fixedSchema, {
-                            host: value.protocol.value.host,
-                            networkInterface: value.protocol.value.networkInterface,
-                            alternateHost: value.protocol.value.alternateHost,
-                            port: value.protocol.value.port
+                            host: current.protocol.value.host,
+                            networkInterface: current.protocol.value.networkInterface,
+                            alternateHost: current.protocol.value.alternateHost,
+                            port: current.protocol.value.port
                         })
                     }
                 }))
                 break
         }
-    }, [value.protocol.case])
+    }, [current.protocol.case])
 
-    const data = value.protocol
+    const data = current.protocol
     switch (data.case) {
         case "fixed":
             return <Fixed value={data.value} editable={editable} onChange={(e) => update(e)} />
@@ -259,8 +875,6 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange, editable = true }) => 
             return Rejectv2
         case "yuubinsya":
             return <Yuubinsyav2 value={data.value} editable={editable} onChange={(e) => update(e)} />
-        case "grpc":
-            return <Grpcv2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "http2":
             return <HTTP2v2 value={data.value} editable={editable} onChange={(e) => update(e)} />
         case "reality":
@@ -299,31 +913,32 @@ const Protocol: FC<Props<protocol>> = ({ value, onChange, editable = true }) => 
 
 
 const NetworkSplit: FC<Props<network_split>> = ({ value, onChange, editable = true }) => {
+    const current = normalizeNetworkSplit(value);
     const protocolNames = Object.keys(protocols).filter(x => x !== "networkSplit")
     return <>
         <div className="mb-3">
             <label className="block text-sm font-bold opacity-75 mb-2">TCP Protocol</label>
-            <Select value={value.tcp?.protocol.case ?? ""} items={protocolNames.map(v => ({ value: v, label: v }))}
+            <Select value={current.tcp?.protocol.case ?? ""} items={protocolNames.map(v => ({ value: v, label: v }))}
                 disabled={!editable}
-                onValueChange={(e) => { onChange({ ...value, tcp: protocols[e] }) }} />
+                onValueChange={(e) => { onChange({ ...current, tcp: protocols[e] }) }} />
         </div>
 
         <Card className="mb-4">
             <CardBody>
-                {value.tcp && <Protocol value={value.tcp} editable={editable} onChange={(e) => { onChange({ ...value, tcp: e }) }} />}
+                {current.tcp && <Protocol value={current.tcp} editable={editable} onChange={(e) => { onChange({ ...current, tcp: e }) }} />}
             </CardBody>
         </Card>
 
         <div className="mb-3">
             <label className="block text-sm font-bold opacity-75 mb-2">UDP Protocol</label>
-            <Select value={value.udp?.protocol.case ?? ""} items={protocolNames.map(v => ({ value: v, label: v }))}
+            <Select value={current.udp?.protocol.case ?? ""} items={protocolNames.map(v => ({ value: v, label: v }))}
                 disabled={!editable}
-                onValueChange={(e) => { onChange({ ...value, udp: protocols[e] }) }} />
+                onValueChange={(e) => { onChange({ ...current, udp: protocols[e] }) }} />
         </div>
 
         <Card>
             <CardBody>
-                {value.udp && <Protocol value={value.udp} editable={editable} onChange={(e) => { onChange({ ...value, udp: e }) }} />}
+                {current.udp && <Protocol value={current.udp} editable={editable} onChange={(e) => { onChange({ ...current, udp: e }) }} />}
             </CardBody>
         </Card >
     </>
@@ -558,12 +1173,6 @@ SHVqHEGI7k2+OQ/oWMmWY2EQObbRQjRBdDPimh0h1WY
             value: create(vlessSchema, {
                 uuid: "c48619fe-8f02-49e0-b9e9-edf763e17e21",
             })
-        }
-    }),
-    "grpc": create(protocolSchema, {
-        protocol: {
-            case: "grpc",
-            value: create(grpcSchema, { tls: tlsConfig })
         }
     }),
     "http2": create(protocolSchema, {

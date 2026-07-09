@@ -1,6 +1,6 @@
 import { FC, useContext } from "react";
 import { Node, NodesContext } from "../../common/nodes";
-import { point_as_endpoint } from "../pbes/node/protocol_pb";
+import { point_as_endpoint } from "../schema/node/protocol";
 import { Props } from "./tools";
 
 export const PointAsEndpoint: FC<Props<point_as_endpoint>> = ({ value, onChange, editable = true }) => {

@@ -2,7 +2,6 @@
 
 // import { FilterTypeSelect } from "@/component/switch"
 import { useDelay } from "@/common/hooks"
-import { TimestampZero } from "@/common/nodes"
 import { Button } from "@/component/v2/button"
 import { CardList, FilterSearch, IconBadge, MainContainer, SettingLabel } from "@/component/v2/card"
 import { DataListItem } from "@/component/v2/datalist"
@@ -12,16 +11,15 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { Pagination } from "@/component/v2/pagination"
 import { Spinner } from "@/component/v2/spinner"
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
-import { create } from "@bufbuild/protobuf"
-import { timestampDate } from "@bufbuild/protobuf/wkt"
+import { create } from "@/common/plain"
 import { ArrowDownWideNarrow, ArrowLeftRight, ChevronRight, Clock, Info, Radio, RefreshCw, RotateCw, ShieldCheck } from 'lucide-react'
 import React, { FC, useCallback, useMemo, useState } from "react"
-import { useProtoSWR } from "../../../common/proto"
+import { useJsonSWR } from "@/common/http"
 import Loading from "../../../component/v2/loading"
 import { NodeModal } from "../../node/modal"
-import { all_history, connections } from "../../pbes/api/statistic_pb"
-import { mode } from "../../pbes/config/bypass_pb"
-import { connectionSchema, type, typeSchema } from "../../pbes/statistic/config_pb"
+import { all_history, allHistoryRoute } from "@/common/api"
+import { mode } from "../../schema/config/bypass"
+import { connectionSchema, type, typeSchema } from "../../schema/statistic/config"
 import { ConnectionInfo } from "../components"
 
 const netTypeMap = Object.fromEntries(typeSchema.values.map(({ number, name }) => [number, name]));
@@ -49,7 +47,7 @@ const ListItem: FC<{ data: all_history }> = React.memo(({ data }) => {
             <div className="flex flex-wrap gap-2 items-center shrink-0 md:ml-0">
                 <IconBadge icon={ShieldCheck} text={mode[data.connection.mode]} color="info" />
                 <IconBadge icon={RefreshCw} text={Number(data.count)} color="success" />
-                <IconBadge icon={Clock} text={timestampDate(data.time!).toLocaleTimeString()} color="secondary" />
+                <IconBadge icon={Clock} text={(data.time ?? new Date(0)).toLocaleTimeString()} color="secondary" />
                 <div className="text-gray-500 dark:text-gray-400 opacity-25 ml-2 hidden md:block"><ChevronRight /></div>
             </div>
         </>
@@ -66,7 +64,7 @@ function History() {
     const [nodeModal, setNodeModal] = useState<{ show: boolean, hash: string }>({ show: false, hash: "" });
     const shouldFetch = useDelay(400);
 
-    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(shouldFetch ? connections.method.all_history : null);
+    const { data, error, isLoading, isValidating, mutate } = useJsonSWR(shouldFetch ? allHistoryRoute : null);
 
     const showNodeModal = useCallback((hash: string) => {
         setNodeModal({ show: true, hash: hash });
@@ -88,10 +86,10 @@ function History() {
                 if (sortBy === "Host") return (a.connection?.addr ?? "") < (b.connection?.addr ?? "") ? first : second;
                 if (sortBy === "Count") return Number(a.count) < Number(b.count) ? first : second;
 
-                const aTime = a.time ?? TimestampZero;
-                const bTime = b.time ?? TimestampZero;
-                if (aTime.seconds < bTime.seconds) return first;
-                if (aTime.seconds > bTime.seconds) return second;
+                const aTime = a.time?.getTime() ?? 0;
+                const bTime = b.time?.getTime() ?? 0;
+                if (aTime < bTime) return first;
+                if (aTime > bTime) return second;
                 return 0;
             })
     }, [data, filter, netFilter, sortBy, sortOrder]);
@@ -127,7 +125,7 @@ function History() {
                             startContent={
                                 <>
                                     <DataListItem label="Total Count" value={modalData.data?.count.toString() ?? "1"} />
-                                    <DataListItem label="Last Activity" value={timestampDate(modalData.data?.time ?? TimestampZero).toLocaleString()} />
+                                    <DataListItem label="Last Activity" value={(modalData.data?.time ?? new Date(0)).toLocaleString()} />
                                 </>
                             }
                         />
@@ -195,7 +193,7 @@ function History() {
 
             <CardList
                 items={paginatedItems}
-                getKey={(v) => `${v.connection?.id}-${v.time?.seconds}`}
+                getKey={(v) => `${v.connection?.id}-${v.time?.toISOString() ?? "unknown"}`}
                 onClickItem={(v) => setModalData({ show: true, data: v })}
                 renderListItem={(v) => <ListItem data={v} />}
                 footer={

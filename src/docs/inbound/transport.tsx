@@ -1,21 +1,22 @@
 import { FC } from "react"
-import { transport } from "../pbes/config/inbound_pb"
+import { transport } from "../schema/config/inbound"
 import { Aead } from "./aead"
 import { Reality } from "./reality"
 import { Tls, TLSAuto } from "./tls"
 
 export const Transport: FC<{ transport: transport, onChange: (x: transport) => void }> = ({ transport, onChange }) => {
-    switch (transport.transport.case) {
+    const current = transport.transport ?? { case: "normal", value: {} };
+    switch (current.case) {
         case "normal":
             return <><div className="text-center opacity-40">Normal</div></>
         case "tls":
             return <Tls
-                tls={transport.transport.value}
+                tls={current.value}
                 onChange={(x) => { onChange({ ...transport, transport: { case: "tls", value: x } }) }}
             />
         case "tlsAuto":
             return <TLSAuto
-                tls={transport.transport.value}
+                tls={current.value}
                 onChange={(x) => { onChange({ ...transport, transport: { case: "tlsAuto", value: x } }) }}
             />
         case "mux":
@@ -24,18 +25,16 @@ export const Transport: FC<{ transport: transport, onChange: (x: transport) => v
             return <><div className="text-center opacity-40">HTTP2</div></>
         case "websocket":
             return <><div className="text-center opacity-40">Websocket</div></>
-        case "grpc":
-            return <><div className="text-center opacity-40">Grpc</div></>
         case "reality":
             return <Reality
-                reality={transport.transport.value}
+                reality={current.value}
                 onChange={(x) => { onChange({ ...transport, transport: { case: "reality", value: x } }) }}
             />
         case "httpMock":
             return <><div className="text-center opacity-40">HTTP MOCK</div></>
         case "aead":
             return <Aead
-                aead={transport.transport.value}
+                aead={current.value}
                 onChange={(x) => { onChange({ ...transport, transport: { case: "aead", value: x } }) }}
             />
         case "proxy":

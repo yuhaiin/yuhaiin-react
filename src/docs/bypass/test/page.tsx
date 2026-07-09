@@ -5,13 +5,21 @@ import { Card, CardBody, CardHeader, IconBox, MainContainer, SettingsBox } from 
 import { Input } from '@/component/v2/input';
 import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
-import { create, toJsonString } from "@bufbuild/protobuf";
-import { StringValueSchema } from "@bufbuild/protobuf/wkt";
+import { create } from "@/common/plain";
+import { StringValueSchema } from "@/common/plain";
 import { Clipboard, ClipboardCheck, ClipboardList, Info, Play, Terminal } from 'lucide-react';
 import { useCallback, useContext, useEffect, useState } from "react";
-import { FetchProtobuf } from "../../../common/proto";
+import { FetchHTTP } from "../../../common/http";
 import { useClipboard } from "../../../component/v2/clipboard";
-import { rules, test_response, test_responseSchema } from "../../pbes/api/config_pb";
+import { rules, test_response } from "@/common/api";
+
+function formatTestResponse(value: test_response): string {
+    return JSON.stringify(value, (_key, v) => {
+        if (typeof v === "bigint") return v.toString();
+        if (v instanceof Date) return v.toISOString();
+        return v;
+    }, 2);
+}
 
 function Test() {
     const ctx = useContext(GlobalToastContext);
@@ -32,7 +40,7 @@ function Test() {
         setTesting(true);
         setResp(undefined);
 
-        FetchProtobuf(
+        FetchHTTP(
             rules.method.test,
             create(StringValueSchema, { value })
         )
@@ -94,7 +102,7 @@ function Test() {
 
                         <Button
                             size="sm"
-                            onClick={() => copy(toJsonString(test_responseSchema, resp, { prettySpaces: 2 }))}
+                            onClick={() => copy(formatTestResponse(resp))}
                         >
                             {copied ? <ClipboardCheck size={16} /> : <Clipboard size={16} />}
                         </Button>
@@ -111,7 +119,7 @@ function Test() {
                                     overflowY: 'auto'
                                 }}
                             >
-                                {toJsonString(test_responseSchema, resp, { prettySpaces: 2 })}
+                                {formatTestResponse(resp)}
                             </pre>
                         </SettingsBox>
                     </CardBody>

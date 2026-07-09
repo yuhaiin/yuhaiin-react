@@ -2,27 +2,33 @@ import { InterfacesContext } from "@/common/interfaces";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
 import { Button } from "@/component/v2/button";
 import { Remind, SettingCheck, SettingInputVertical } from "@/component/v2/forms";
-import { create } from "@bufbuild/protobuf";
+import { create } from "@/common/plain";
 import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react";
 import { FC, useContext } from "react";
-import { fixedv2, fixedv2_address, fixedv2_addressSchema } from "../pbes/node/protocol_pb";
+import { fixedv2, fixedv2_address, fixedv2_addressSchema } from "../schema/node/protocol";
 import { Props } from "./tools";
 
 export const Fixed: FC<Props<fixedv2>> = ({ value, onChange, editable = true }) => {
+    const current = {
+        ...value,
+        addresses: Array.isArray(value?.addresses) ? value.addresses : [],
+        udpHappyEyeballs: Boolean(value?.udpHappyEyeballs),
+    };
     return <>
-        <Hosts data={value.addresses} editable={editable} onChange={(x) => onChange({ ...value, addresses: x })} />
-        <SettingCheck label="UDP HappyEyeballs" checked={value.udpHappyEyeballs} disabled={!editable} onChange={() => { onChange({ ...value, udpHappyEyeballs: !value.udpHappyEyeballs }) }} />
+        <Hosts data={current.addresses} editable={editable} onChange={(x) => onChange({ ...current, addresses: x })} />
+        <SettingCheck label="UDP HappyEyeballs" checked={current.udpHappyEyeballs} disabled={!editable} onChange={() => { onChange({ ...current, udpHappyEyeballs: !current.udpHappyEyeballs }) }} />
     </>
 }
 
 export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[]) => void, editable?: boolean }> =
     ({ data, onChange, editable = true }) => {
+        const items = Array.isArray(data) ? data : [];
         const moveItem = (index: number, up: boolean) => {
             if (!editable) return
-            if (data.length <= 1) return
+            if (items.length <= 1) return
             if (up && index === 0) return
-            if (!up && index === data.length - 1) return
-            const next = [...data]
+            if (!up && index === items.length - 1) return
+            const next = [...items]
             const tmp = next[index]
             next[index] = next[index + (up ? -1 : 1)]
             next[index + (up ? -1 : 1)] = tmp
@@ -43,7 +49,7 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
 
         const removeItem = (index: number) => {
             if (!editable) return
-            const next = [...data]
+            const next = [...items]
             next.splice(index, 1)
             onChange(next)
         }
@@ -51,11 +57,11 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
         return <div className="mb-4">
             <div className="flex justify-between items-center mb-2 px-1">
                 <h6 className="font-bold mb-0 opacity-75">Hosts</h6>
-                <small className="text-gray-500 dark:text-gray-400">{data.length} entries</small>
+                <small className="text-gray-500 dark:text-gray-400">{items.length} entries</small>
             </div>
 
             <Accordion type="multiple" className="mb-3">
-                {data.map((v, index) => (
+                {items.map((v, index) => (
                     <AccordionItem value={`item-${index}`} key={index}>
                         <AccordionTrigger>
                             {v.host || `Host ${index + 1}`}
@@ -67,7 +73,7 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
                                     value={v.host}
                                     disabled={!editable}
                                     onChange={(e: string) => {
-                                        const next = [...data]
+                                        const next = [...items]
                                         next[index] = { ...v, host: e }
                                         onChange(next)
                                     }}
@@ -79,7 +85,7 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
                                     reminds={reminds}
                                     disabled={!editable}
                                     onChange={(e) => {
-                                        const next = [...data]
+                                        const next = [...items]
                                         next[index] = { ...v, networkInterface: String(e) }
                                         onChange(next)
                                     }}
@@ -87,12 +93,12 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
 
                                 {editable && (
                                     <div className="flex justify-end gap-2 mt-3 pt-3">
-                                        <Button size="sm" onClick={() => moveItem(index, true)} disabled={index === 0}>
-                                            <ArrowUp size={16} />
-                                        </Button>
-                                        <Button size="sm" onClick={() => moveItem(index, false)} disabled={index === data.length - 1}>
-                                            <ArrowDown size={16} />
-                                        </Button>
+                                    <Button size="sm" onClick={() => moveItem(index, true)} disabled={index === 0}>
+                                        <ArrowUp size={16} />
+                                    </Button>
+                                    <Button size="sm" onClick={() => moveItem(index, false)} disabled={index === items.length - 1}>
+                                        <ArrowDown size={16} />
+                                    </Button>
                                         <Button variant="outline-danger" size="sm" onClick={() => removeItem(index)}>
                                             <Trash size={16} className="mr-2" /> Delete
                                         </Button>
@@ -107,7 +113,7 @@ export const Hosts: FC<{ data: fixedv2_address[], onChange: (x: fixedv2_address[
             {editable && (
                 <div className="flex justify-end px-1">
                     <Button onClick={() => {
-                        onChange([...data, create(fixedv2_addressSchema, {
+                        onChange([...items, create(fixedv2_addressSchema, {
                             host: "",
                             networkInterface: ""
                         })])

@@ -6,15 +6,15 @@ import { ConfirmModal } from "@/component/v2/confirm";
 import { SettingInputVertical } from "@/component/v2/forms";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { Spinner } from '@/component/v2/spinner';
-import { create } from "@bufbuild/protobuf";
+import { create } from "@/common/plain";
 import { CloudDownload, Plus, RefreshCw, Rss, Trash } from 'lucide-react';
 import { FC, useContext, useEffect, useState } from "react";
-import { FetchProtobuf, useProtoSWR } from '../../../common/proto';
+import { FetchHTTP, useHttpSWR } from '../../../common/http';
 import { useClipboard } from '../../../component/v2/clipboard';
 import Loading, { Error } from "../../../component/v2/loading";
 import { GlobalToastContext } from "../../../component/v2/toast";
-import { link_reqSchema, save_link_reqSchema, subscribe } from "../../pbes/api/node_pb";
-import { link, linkSchema, type } from "../../pbes/node/subscribe_pb";
+import { subscribe } from "@/common/api";
+import { link, linkSchema, type } from "../../schema/node/subscribe";
 
 const LinkItem: FC<{
     linkData: link;
@@ -122,7 +122,7 @@ const AddLinkModal: FC<{
 
 function Subscribe() {
     const ctx = useContext(GlobalToastContext);
-    const { data: links, error, isLoading, mutate } = useProtoSWR(subscribe.method.get);
+    const { data: links, error, isLoading, mutate } = useHttpSWR(subscribe.method.get);
 
     const [updating, setUpdating] = useState<{ [key: string]: boolean }>({});
     const [showAddModal, setShowAddModal] = useState(false);
@@ -143,7 +143,7 @@ function Subscribe() {
     // Update Logic
     const handleUpdate = (name: string) => {
         setUpdating(prev => ({ ...prev, [name]: true }));
-        FetchProtobuf(subscribe.method.update, create(link_reqSchema, { names: [name] }))
+        FetchHTTP(subscribe.method.update, { names: [name] })
             .then(async ({ error }) => {
                 if (error !== undefined) ctx.Error(`Update failed ${error.code}| ${error.msg}`)
                 else ctx.Info(`Update successfully`);
@@ -153,7 +153,7 @@ function Subscribe() {
 
     // Delete Logic
     const handleDelete = (name: string) => {
-        FetchProtobuf(subscribe.method.remove, create(link_reqSchema, { names: [name] }))
+        FetchHTTP(subscribe.method.remove, { names: [name] })
             .then(async ({ error }) => {
                 if (error !== undefined) ctx.Error(`delete ${name} failed, ${error.code}| ${error.msg}`)
                 else mutate()
@@ -162,9 +162,9 @@ function Subscribe() {
 
     // Add Logic
     const handleAdd = (item: link) => {
-        FetchProtobuf(
+        FetchHTTP(
             subscribe.method.save,
-            create(save_link_reqSchema, { links: [item] }))
+            { links: [item] })
             .then(async ({ error }) => {
                 if (error !== undefined) ctx.Error(`save link ${item.url} failed, ${error.code}| ${error.msg}`)
                 else mutate()

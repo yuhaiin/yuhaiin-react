@@ -7,16 +7,16 @@ import Switch from '@/component/v2/switch';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { RotateCw, Save, Wand2 } from 'lucide-react';
 import { FC, useContext, useState } from "react";
-import { FetchProtobuf, useProtoSWR } from "../../../common/proto";
+import { FetchHTTP, useHttpSWR } from "../../../common/http";
 import Loading from "../../../component/v2/loading";
-import { resolver } from "../../pbes/api/config_pb";
+import { resolver } from "@/common/api";
 
 export const Fakedns: FC = () => {
     const ctx = useContext(GlobalToastContext);
     const [saving, setSaving] = useState(false);
     const [isDirty, setDirty] = useState(false);
 
-    const { data, error, isLoading, mutate } = useProtoSWR(resolver.method.fakedns, {
+    const { data, error, isLoading, mutate } = useHttpSWR(resolver.method.fakedns, {
         onSuccess: () => setDirty(false)
     });
 
@@ -25,7 +25,7 @@ export const Fakedns: FC = () => {
 
     const handleSave = () => {
         setSaving(true)
-        FetchProtobuf(resolver.method.save_fakedns, data)
+        FetchHTTP(resolver.method.save_fakedns, data)
             .then(async ({ error }) => {
                 if (error === undefined) {
                     ctx.Info("save fakedns successful")
