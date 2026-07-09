@@ -1,13 +1,12 @@
 import { createContext } from "react";
-import { tools } from "@/common/api";
-import { Interface } from "../docs/schema/tools/tools";
-import { useHttpSWR } from "./http";
+import useSWR from "swr";
+import { getInterfaces } from "@/api/tools";
+import type { InterfaceInfo } from "@/contract/tools";
 
-export const InterfacesContext = createContext<Interface[]>([])
+export const InterfacesContext = createContext<InterfaceInfo[]>([])
 
-export function useInterfaces(): Interface[] {
-    const { data: iffs } =
-        useHttpSWR(tools.method.get_interface, { revalidateOnFocus: false })
+export function useInterfaces(): InterfaceInfo[] {
+    const { data: iffs } = useSWR("/api/v2/tools/interfaces", getInterfaces, { revalidateOnFocus: false })
 
     return iffs ? iffs.interfaces : []
 }

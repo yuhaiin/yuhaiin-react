@@ -1,3 +1,4 @@
+import { getFakeDNS, saveFakeDNS } from '@/api/resolvers';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardFooter, CardHeader, IconBox } from '@/component/v2/card';
 import { SettingInputVertical } from '@/component/v2/forms';
@@ -5,18 +6,18 @@ import { InputList } from '@/component/v2/listeditor';
 import { Spinner } from '@/component/v2/spinner';
 import Switch from '@/component/v2/switch';
 import { GlobalToastContext } from '@/component/v2/toast';
+import { FakeDNS, normalizeFakeDNS } from '@/contract/resolver';
 import { RotateCw, Save, Wand2 } from 'lucide-react';
 import { FC, useContext, useState } from "react";
-import { FetchHTTP, useHttpSWR } from "../../../common/http";
+import useSWR from "swr";
 import Loading from "../../../component/v2/loading";
-import { resolver } from "@/common/api";
 
 export const Fakedns: FC = () => {
     const ctx = useContext(GlobalToastContext);
     const [saving, setSaving] = useState(false);
     const [isDirty, setDirty] = useState(false);
 
-    const { data, error, isLoading, mutate } = useHttpSWR(resolver.method.fakedns, {
+    const { data, error, isLoading, mutate } = useSWR("/api/v2/resolver/fakedns", getFakeDNS, {
         onSuccess: () => setDirty(false)
     });
 
@@ -25,21 +26,17 @@ export const Fakedns: FC = () => {
 
     const handleSave = () => {
         setSaving(true)
-        FetchHTTP(resolver.method.save_fakedns, data)
-            .then(async ({ error }) => {
-                if (error === undefined) {
-                    ctx.Info("save fakedns successful")
-                } else {
-                    ctx.Error(error.msg)
-                    console.error(error.code, error.msg)
-                }
+        saveFakeDNS(data)
+            .then(() => {
+                ctx.Info("save fakedns successful")
                 mutate()
-                setSaving(false)
             })
+            .catch((error) => ctx.Error(error.msg ?? String(error)))
+            .finally(() => setSaving(false))
     }
 
-    const handleMutate = (mutator: (prev: typeof data) => typeof data) => {
-        mutate(mutator, false);
+    const handleMutate = (mutator: (prev: FakeDNS) => FakeDNS) => {
+        mutate(prev => mutator(normalizeFakeDNS(prev)), false);
         setDirty(true);
     }
 
@@ -78,7 +75,6 @@ export const Fakedns: FC = () => {
 
                     <InputList
                         title="Domain Whitelist"
-                        dump
                         data={data.whitelist}
                         onChange={(v) => handleMutate(prev => ({ ...prev, whitelist: v }))}
                     />
@@ -87,7 +83,6 @@ export const Fakedns: FC = () => {
 
                     <InputList
                         title="Skip Check List"
-                        dump
                         data={data.skipCheckList ? data.skipCheckList : []}
                         onChange={(v) => handleMutate(prev => ({ ...prev, skipCheckList: v }))}
                     />

@@ -1,1 +1,0 @@
-export const BootstrapDnsWarp = < div className="text-center my-2" style={{ opacity: '0.4' }}> BootstrapDnsWarp</div >

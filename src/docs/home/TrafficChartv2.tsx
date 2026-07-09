@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState 
 import { useTranslation } from 'react-i18next';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
-import { formatBytes } from '../connections/components';
+import { formatBytes } from './format';
 import { Tooltip } from './tooltip';
 
 const BUFFER_GROWTH_SIZE = 1024;

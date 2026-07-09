@@ -1,0 +1,88 @@
+import { requestJSON } from "@/api/client";
+import { LatencyDNSUrlDefault, LatencyHTTPUrlDefault, LatencyIPUrlDefault, LatencyStunTCPUrlDefault, LatencyStunUrlDefault, normalizeLatencyDNSUrl } from "@/common/apiurl";
+import type { Node, NodeLatencyRequest, NodeLatencyResponse, NodeList } from "@/contract/node";
+import { normalizeNode } from "@/contract/node";
+
+export async function listNodes(query?: string | { page?: number; pageSize?: number; query?: string }): Promise<NodeList> {
+  const params = typeof query === "string"
+    ? { query }
+    : {
+      page: query?.page,
+      page_size: query?.pageSize,
+      query: query?.query,
+    };
+  const data = await requestJSON<NodeList>("GET", "/api/v2/nodes", undefined, params);
+  return {
+    items: (data.items ?? []).map((item) => normalizeNode(item)),
+    page: data.page ?? { page: 1, pageSize: 0, total: 0 },
+  };
+}
+
+export async function getNode(id: string): Promise<Node> {
+  return normalizeNode(await requestJSON<Node>("GET", `/api/v2/nodes/${encodeURIComponent(id)}`));
+}
+
+export async function createNode(node: Node): Promise<Node> {
+  return normalizeNode(await requestJSON<Node>("POST", "/api/v2/nodes", normalizeNode(node)));
+}
+
+export async function saveNode(node: Node): Promise<Node> {
+  const normalized = normalizeNode(node);
+  return normalizeNode(await requestJSON<Node>("PUT", `/api/v2/nodes/${encodeURIComponent(normalized.id)}`, normalized));
+}
+
+export async function deleteNode(id: string): Promise<void> {
+  await requestJSON<void>("DELETE", `/api/v2/nodes/${encodeURIComponent(id)}`);
+}
+
+export async function selectedNodes(): Promise<{ tcp?: Node; udp?: Node }> {
+  const data = await requestJSON<{ tcp?: Node; udp?: Node }>("GET", "/api/v2/nodes/selected");
+  return {
+    tcp: data.tcp ? normalizeNode(data.tcp) : undefined,
+    udp: data.udp ? normalizeNode(data.udp) : undefined,
+  };
+}
+
+export async function activeNodes(): Promise<{ items: Node[] }> {
+  const data = await requestJSON<{ items?: Node[] }>("GET", "/api/v2/nodes/active");
+  return { items: (data.items ?? []).map(item => normalizeNode(item)) };
+}
+
+export async function useNode(id: string): Promise<void> {
+  await requestJSON<void>("POST", `/api/v2/nodes/${encodeURIComponent(id)}/use`);
+}
+
+export async function closeNode(id: string): Promise<void> {
+  await requestJSON<void>("POST", `/api/v2/nodes/${encodeURIComponent(id)}/close`);
+}
+
+export type NodeLatencyType = "tcp" | "udp" | "ip" | "stun" | "stun_tcp";
+
+export type NodeLatencyOptions = {
+  tcpURL?: string;
+  udpHost?: string;
+  ipURL?: string;
+  stunHost?: string;
+  stunTCPHost?: string;
+  ipv6?: boolean;
+};
+
+export async function latencyNode(id: string, type: NodeLatencyType = "tcp", options: NodeLatencyOptions = {}): Promise<NodeLatencyResponse> {
+  const body = createLatencyBody(type, options);
+  return requestJSON<NodeLatencyResponse>("POST", `/api/v2/nodes/${encodeURIComponent(id)}/latency`, body);
+}
+
+function createLatencyBody(type: NodeLatencyType, options: NodeLatencyOptions): NodeLatencyRequest {
+  switch (type) {
+    case "tcp":
+      return { type, url: options.tcpURL || LatencyHTTPUrlDefault, ipv6: options.ipv6 ?? true };
+    case "udp":
+      return { type: "doq", host: normalizeLatencyDNSUrl(options.udpHost || LatencyDNSUrlDefault), targetDomain: "www.google.com", ipv6: options.ipv6 ?? true };
+    case "ip":
+      return { type, url: options.ipURL || LatencyIPUrlDefault, ipv6: options.ipv6 ?? true };
+    case "stun":
+      return { type, host: options.stunHost || LatencyStunUrlDefault, tcp: false, ipv6: options.ipv6 ?? true };
+    case "stun_tcp":
+      return { type, host: options.stunTCPHost || LatencyStunTCPUrlDefault, tcp: true, ipv6: options.ipv6 ?? true };
+  }
+}

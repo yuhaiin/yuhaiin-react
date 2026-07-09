@@ -1,1 +1,0 @@
-export const HttpMock = < div className="text-center my-2" style={{ opacity: '0.4' }}> HTTP MOCK</div >

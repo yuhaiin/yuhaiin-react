@@ -1,10 +1,10 @@
 "use client"
 
+import { getInfo } from "@/api/settings";
 import { Card, CardBody, CardFooter, CardHeader, IconBadge, IconBox, IconBoxRounded, ListItem, MainContainer, SettingLabel } from '@/component/v2/card';
 import { BadgeCheck, Calendar, Code, Cpu, ExternalLink, GitBranch, GitFork, Info, Laptop, Layers, LayoutGrid, Terminal } from 'lucide-react';
 import React, { FC } from "react";
-import { runtimeInfoRoute } from "@/common/api";
-import { useJsonSWR } from "@/common/http";
+import useSWR from "swr";
 import Loading, { Error } from "../../../component/v2/loading";
 
 const InfoRow: FC<{
@@ -49,7 +49,7 @@ const InfoRow: FC<{
 );
 
 export default function About() {
-    const { data: info, isLoading, isValidating, error } = useJsonSWR(runtimeInfoRoute);
+    const { data: info, isLoading, isValidating, error } = useSWR("/api/v2/info", getInfo);
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || isValidating || !info) return <Loading />

@@ -1,6 +1,5 @@
 'use client';
 
-import { DescEnum, DescEnumValue } from '@/common/plain';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { clsx } from 'clsx';
 import { Check, ChevronDown } from 'lucide-react';
@@ -14,6 +13,15 @@ import {
     DropdownTrigger
 } from './dropdown';
 import { ui } from './styles';
+
+export type DescEnumValue = {
+    number: number;
+    name: string;
+};
+
+export type DescEnum = {
+    values: DescEnumValue[];
+};
 
 export interface SelectItem {
     value: string;

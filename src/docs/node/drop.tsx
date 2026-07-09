@@ -1,1 +1,0 @@
-export const Dropv2 = < div className="text-center my-2" style={{ opacity: '0.4' }}> Drop</div >

@@ -1,19 +1,17 @@
 "use client"
 
+import { testRule } from '@/api/route';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader, IconBox, MainContainer, SettingsBox } from '@/component/v2/card';
 import { Input } from '@/component/v2/input';
 import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
-import { create } from "@/common/plain";
-import { StringValueSchema } from "@/common/plain";
+import type { RuleTestResponse } from '@/contract/route';
 import { Clipboard, ClipboardCheck, ClipboardList, Info, Play, Terminal } from 'lucide-react';
 import { useCallback, useContext, useEffect, useState } from "react";
-import { FetchHTTP } from "../../../common/http";
 import { useClipboard } from "../../../component/v2/clipboard";
-import { rules, test_response } from "@/common/api";
 
-function formatTestResponse(value: test_response): string {
+function formatTestResponse(value: RuleTestResponse): string {
     return JSON.stringify(value, (_key, v) => {
         if (typeof v === "bigint") return v.toString();
         if (v instanceof Date) return v.toISOString();
@@ -24,7 +22,7 @@ function formatTestResponse(value: test_response): string {
 function Test() {
     const ctx = useContext(GlobalToastContext);
     const [value, setValue] = useState("");
-    const [resp, setResp] = useState<test_response | undefined>(undefined);
+    const [resp, setResp] = useState<RuleTestResponse | undefined>(undefined);
     const [testing, setTesting] = useState(false);
 
     // Clipboard hook for copying results
@@ -40,14 +38,9 @@ function Test() {
         setTesting(true);
         setResp(undefined);
 
-        FetchHTTP(
-            rules.method.test,
-            create(StringValueSchema, { value })
-        )
-            .then(async ({ data, error }) => {
-                if (error) ctx.Error(`Test failed: ${error.code} | ${error.msg}`);
-                else setResp(data);
-            })
+        testRule(value)
+            .then(setResp)
+            .catch((error) => ctx.Error(`Test failed: ${error.code ?? 500} | ${error.msg ?? error}`))
             .finally(() => setTesting(false));
     }, [value, ctx]);
 

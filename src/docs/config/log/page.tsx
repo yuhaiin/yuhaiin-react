@@ -1,21 +1,15 @@
 "use client"
 
-import { useDelay } from "@/common/hooks"
+import { AuthTokenKey, getApiUrl } from "@/common/apiurl"
 import { Badge } from "@/component/v2/badge"
 import { Button } from "@/component/v2/button"
 import { Card, CardBody, CardHeader, FilterSearch, IconBox, MainContainer } from '@/component/v2/card'
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
-import { create } from "@/common/plain"
-import { EmptySchema } from "@/common/plain"
+import type { LogBatch } from "@/contract/tools"
 import { clsx } from "clsx"
 import { Radio, Terminal, Trash2 } from 'lucide-react'
 import { FC, memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
-import useSWRSubscription from "swr/subscription"
 import { VList, type VListHandle } from "virtua"
-import { ApiPath, HttpServerStream } from "../../../common/http"
-import { Error } from "../../../component/v2/loading"
-import { tools } from "@/common/api"
-import { Logv2 } from "../../schema/tools/tools"
 
 const LOG_RETENTION_OPTIONS = [500, 2000, 10000] as const
 type LogRetention = typeof LOG_RETENTION_OPTIONS[number]
@@ -34,6 +28,17 @@ type LogEntry = {
     id: number;
     line: string;
     parsed: ParsedLogLine;
+}
+
+function logsURL() {
+    const apiUrl = getApiUrl();
+    const base = apiUrl !== "" ? apiUrl : window.location.toString();
+    const url = new URL(base);
+    url.hash = "";
+    url.pathname = "/api/v2/tools/logs/v2";
+    const token = localStorage.getItem(AuthTokenKey);
+    if (token) url.searchParams.set("token", token);
+    return url.toString();
 }
 
 const levelStyles: Record<LogLevel, { bar: string; badge: string; text: string }> = {
@@ -112,13 +117,13 @@ const formatLogTime = (value?: string) => {
     if (!value) return undefined;
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleTimeString(undefined, {
+    const time = date.toLocaleTimeString(undefined, {
         hour12: false,
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
-        fractionalSecondDigits: 3,
     });
+    return `${time}.${String(date.getMilliseconds()).padStart(3, "0")}`;
 }
 
 const parseLogLine = (line: string): ParsedLogLine => {
@@ -247,28 +252,36 @@ export default function LogComponent() {
     const [retention, setRetention] = useState<LogRetention>(2000)
     const [localVersion, setLocalVersion] = useState(0)
     const [logBuffer] = useState(() => new LogRingBuffer(retention))
+    const [logError, setLogError] = useState<{ code: number, msg: string } | undefined>()
+    const [streamNonce, setStreamNonce] = useState(0)
     const logListRef = useRef<VListHandle>(null);
     const followLatestRef = useRef(true);
-    const shouldFetch = useDelay(1000);
 
-    const processStream = useCallback((rs: Logv2[]): number => {
-        const newLogs = rs.flatMap(r => r.log).reverse();
-        return logBuffer.append(newLogs)
-    }, [logBuffer])
+    useEffect(() => {
+        let reconnectTimer: number | undefined;
+        const source = new EventSource(logsURL());
+        const onLog = (event: MessageEvent<string>) => {
+            try {
+                const batch = JSON.parse(event.data) as LogBatch;
+                setLocalVersion(logBuffer.append([...(batch.log ?? [])].reverse()));
+                setLogError(undefined);
+            } catch (error) {
+                setLogError({ code: 500, msg: error instanceof globalThis.Error ? error.message : "decode log failed" });
+            }
+        };
+        source.addEventListener("log", onLog);
+        source.onerror = () => {
+            setLogError({ code: 500, msg: "log stream disconnected" });
+            source.close();
+            reconnectTimer = window.setTimeout(() => setStreamNonce((value) => value + 1), 2000);
+        };
+        return () => {
+            source.close();
+            if (reconnectTimer !== undefined) window.clearTimeout(reconnectTimer);
+        };
+    }, [logBuffer, streamNonce])
 
-    const subscription = useMemo(() =>
-        HttpServerStream(tools.method.logv2, create(EmptySchema, {}), processStream, { throttle: 200 }),
-        [processStream]
-    );
-
-    const { data: streamVersion, error: log_error } =
-        useSWRSubscription(
-            shouldFetch ? ApiPath(tools.method.log) : null,
-            subscription,
-            {}
-        )
-
-    const version = Math.max(streamVersion ?? 0, localVersion, logBuffer.currentVersion)
+    const version = Math.max(localVersion, logBuffer.currentVersion)
 
     const visibleLog = useMemo(() => {
         void version;
@@ -308,8 +321,6 @@ export default function LogComponent() {
         setLocalVersion(logBuffer.clear())
     }, [logBuffer])
 
-    if (log_error) { return <Error statusCode={log_error.code} title={log_error.msg} /> }
-
     return (
         <MainContainer className="h-full min-h-0 flex flex-col">
             <Card className="flex-1 min-h-0 mb-0 flex flex-col overflow-hidden">
@@ -332,11 +343,16 @@ export default function LogComponent() {
                             <Button size="sm" variant="outline-secondary" onClick={clearLogs}>
                                 <Trash2 size={14} />
                             </Button>
-                            <Badge variant="warning" pill className="text-[0.7rem] px-2 py-1">
-                                <Radio className="mr-1" size={12} />LIVE
+                            <Badge variant={logError ? "danger" : "warning"} pill className="text-[0.7rem] px-2 py-1">
+                                <Radio className="mr-1" size={12} />{logError ? "RECONNECTING" : "LIVE"}
                             </Badge>
                         </div>
                     </div>
+                    {logError && (
+                        <div className="mt-2 rounded-ui-lg border border-ui-danger/30 bg-ui-danger/10 px-3 py-2 text-xs text-ui-danger">
+                            {logError.msg}. Retrying...
+                        </div>
+                    )}
                 </CardHeader>
                 <CardBody className="!p-0 bg-gray-100 dark:bg-[#18181b] flex-1 min-h-0 overflow-hidden rounded-b-[inherit]">
                     <div className="h-full min-h-0 w-full rounded-[inherit] font-mono">
