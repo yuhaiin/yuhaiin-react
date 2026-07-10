@@ -113,10 +113,10 @@ const TagModal: FC<{
                                 <div>
                                     <SettingLabel className="mb-2">Tag Type</SettingLabel>
                                     <ToggleGroup type="single" value={draft.type} onValueChange={(type) => type && setDraft(prev => ({ ...prev, type, hash: type === prev.type ? prev.hash : "" }))}>
-                                        <ToggleItem value="node" className="flex-grow">
+                                        <ToggleItem value="node" className="min-w-[96px]">
                                             <Network size={18} className="mr-2" />Node
                                         </ToggleItem>
-                                        <ToggleItem value="mirror" className="flex-grow">
+                                        <ToggleItem value="mirror" className="min-w-[108px]">
                                             <Copy size={18} className="mr-2" />Mirror
                                         </ToggleItem>
                                     </ToggleGroup>
@@ -223,31 +223,30 @@ function Tags() {
                 onClickItem={(item) => setEditing(item)}
                 renderListItem={(item) => (
                     <div className="flex w-full items-center justify-between gap-3">
-                        <div className="flex min-w-0 flex-col">
-                            <div className="flex items-center gap-2">
+                        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1.5">
+                            <div className="flex min-w-0 items-center gap-2">
                                 <span className="font-bold truncate">{item.name}</span>
-                                <Badge variant="info">{item.type}</Badge>
+                                <Badge variant="info" className="shrink-0">{item.type}</Badge>
                             </div>
-                            <div className="mt-1 flex flex-wrap gap-2">
-                                {item.hash.length === 0 ? (
-                                    <small className="text-gray-500">-</small>
-                                ) : item.hash.map(hash => item.type === "node" ? (
+                            {item.hash.length === 0 ? (
+                                <span className="text-sm text-ui-muted">-</span>
+                            ) : item.hash.map(hash => item.type === "node" ? (
+                                <span key={hash} className="min-w-0">
                                     <Button
-                                        key={hash}
                                         size="xs"
                                         variant="outline-secondary"
-                                        className="font-mono"
+                                        className="max-w-[220px] font-mono"
                                         onClick={(event) => {
                                             event.stopPropagation();
                                             setNodeModal({ show: true, id: hash });
                                         }}
                                     >
-                                        {hash}
+                                        <span className="truncate">{hash}</span>
                                     </Button>
-                                ) : (
-                                    <small key={hash} className="rounded-full border border-ui-border bg-ui-surface-muted px-2 py-1 font-mono text-gray-500">{hash}</small>
-                                ))}
-                            </div>
+                                </span>
+                            ) : (
+                                <span key={hash} className="max-w-[220px] truncate rounded-full border border-ui-border bg-ui-surface-muted px-2.5 py-1 text-sm font-mono text-ui-muted">{hash}</span>
+                            ))}
                         </div>
                         <Button size="sm" variant="outline-danger" onClick={(e) => { e.stopPropagation(); remove(item); }}>
                             <Trash size={16} />

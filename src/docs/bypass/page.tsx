@@ -150,11 +150,23 @@ function BypassComponent() {
                                     <Badge variant="info">{item.mode}</Badge>
                                 </div>
                                 {item.disabled && <Badge variant="secondary">disabled</Badge>}
-                                <div className="mt-3 grid gap-1 text-sm text-ui-muted">
-                                    <div><span className="mr-1">Mode</span><span className="font-semibold text-ui-fg">{item.mode || "-"}</span></div>
-                                    <div><span className="mr-1">Rules</span><span className="font-semibold text-ui-fg">{item.ruleCount}</span></div>
-                                    <div><span className="mr-1">Tag</span><span className="font-semibold text-ui-fg">{item.tag || "-"}</span></div>
-                                    <div><span className="mr-1">Resolver</span><span className="font-semibold text-ui-fg">{item.resolver || "-"}</span></div>
+                                <div className="mt-2 flex min-w-0 flex-wrap gap-x-4 gap-y-1 text-sm text-ui-muted">
+                                    <span className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
+                                        <span>Mode</span>
+                                        <span className="font-semibold text-ui-fg">{item.mode || "-"}</span>
+                                    </span>
+                                    <span className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
+                                        <span>Rules</span>
+                                        <span className="font-semibold text-ui-fg">{item.ruleCount}</span>
+                                    </span>
+                                    <span className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
+                                        <span>Tag</span>
+                                        <span className="font-semibold text-ui-fg">{item.tag || "-"}</span>
+                                    </span>
+                                    <span className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
+                                        <span>Resolver</span>
+                                        <span className="font-semibold text-ui-fg">{item.resolver || "-"}</span>
+                                    </span>
                                 </div>
                             </div>
                         </div>

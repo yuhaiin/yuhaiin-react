@@ -7,7 +7,7 @@ import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { Card, CardBody, MainContainer } from "@/component/v2/card";
 import { DataList, DataListItem } from "@/component/v2/datalist";
-import { Dropdown, DropdownContent, DropdownItem, DropdownLabel, DropdownTrigger } from "@/component/v2/dropdown";
+import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
 import { Textarea } from "@/component/v2/input";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Spinner } from "@/component/v2/spinner";
@@ -443,7 +443,6 @@ export default function Group() {
                         </Button>
                     </DropdownTrigger>
                     <DropdownContent align="end" className="min-w-[180px] max-w-[260px]">
-                        <DropdownLabel>Groups</DropdownLabel>
                         {groups.length === 0 ? (
                             <DropdownItem disabled>No groups</DropdownItem>
                         ) : groups.map(group => {

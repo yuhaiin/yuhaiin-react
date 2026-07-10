@@ -204,63 +204,79 @@ export const ConnectionInfo: FC<{
     endContent?: React.ReactNode;
     showNodeModal?: (id: string) => void;
 }> = ({ value, startContent, endContent, showNodeModal }) => {
+    const { t } = useTranslation(["connections", "common"]);
     const pointLabel = value.nodeName || value.nodeId || value.outbound;
     const pointId = value.nodeId || value.outbound;
     const display = (value?: string) => value ? value.split("_").join(" ").toUpperCase() : "";
+    const label = (key: string) => t(`detail.${key}`, { defaultValue: key });
+    const hasValue = (next: React.ReactNode) => next !== undefined && next !== null && next !== "";
+    const renderRows = (rows: { label: string; value?: React.ReactNode | null }[]) => rows
+        .filter(row => hasValue(row.value))
+        .map(row => <DataListItem key={row.label} label={label(row.label)} value={row.value} />);
+
+    const basicRows = renderRows([
+        { label: "Id", value: value.id },
+        { label: "Addr", value: value.addr },
+        { label: "Geo", value: value.geo },
+        { label: "Mode", value: display(value.mode) },
+        { label: "Type", value: display(value.network?.connType) },
+        { label: "UnderlyingType", value: display(value.network?.underlyingType) },
+        { label: "Protocol", value: value.protocol },
+        { label: "Component", value: value.component },
+    ]);
+    const pathRows = renderRows([
+        { label: "Inbound", value: value.inboundName || value.inbound },
+        { label: "InboundAddr", value: value.inbound },
+        { label: "Source", value: value.source },
+        { label: "Interface", value: value.interface },
+        { label: "LocalAddr", value: value.localAddr },
+        { label: "RemoteAddr", value: value.outbound },
+        { label: "RemoteGeo", value: value.outboundGeo },
+        { label: "Destination", value: value.destination },
+        {
+            label: "Point",
+            value: showNodeModal && pointId
+                ? <a href="#" onClick={(event) => { event.preventDefault(); showNodeModal(pointId); }}>{pointLabel}</a>
+                : pointLabel,
+        },
+    ]);
+    const routeRows = renderRows([
+        { label: "FakeIP", value: value.fakeIp },
+        { label: "Hosts", value: value.hosts },
+        { label: "Domain", value: value.domain },
+        { label: "IP", value: value.ip },
+        { label: "Tag", value: value.tag },
+        { label: "Lists", value: value.lists?.join(", ") },
+        { label: "Resolver", value: value.resolver },
+    ]);
+    const processRows = renderRows([
+        { label: "Process", value: value.process },
+        { label: "Pid", value: value.pid },
+        { label: "Uid", value: value.uid },
+        { label: "UdpMigrateId", value: value.udpMigrateId },
+    ]);
+    const tlsRows = renderRows([
+        { label: "TlsServerName", value: value.tlsServerName },
+        { label: "HttpHost", value: value.httpHost },
+    ]);
 
     return (
         <div className="space-y-4">
-            <ConnectionSection title="Basic">
+            <ConnectionSection title={label("Basic")}>
                 {startContent}
-                <DataListItem label="Id" value={value.id} />
-                <DataListItem label="Addr" value={value.addr} />
-                <DataListItem label="Geo" value={value.geo} />
-                <DataListItem label="Mode" value={display(value.mode)} />
-                <DataListItem label="Type" value={display(value.network?.connType)} />
-                <DataListItem label="UnderlyingType" value={display(value.network?.underlyingType)} />
-                <DataListItem label="Protocol" value={value.protocol} />
-                <DataListItem label="Component" value={value.component} />
+                {basicRows}
                 {endContent}
             </ConnectionSection>
-            <ConnectionSection title="Path">
-                <DataListItem label="Inbound" value={value.inboundName || value.inbound} />
-                <DataListItem label="InboundAddr" value={value.inbound} />
-                <DataListItem label="Source" value={value.source} />
-                <DataListItem label="Interface" value={value.interface} />
-                <DataListItem label="LocalAddr" value={value.localAddr} />
-                <DataListItem label="RemoteAddr" value={value.outbound} />
-                <DataListItem label="Remote Geo" value={value.outboundGeo} />
-                <DataListItem label="Destination" value={value.destination} />
-                {pointLabel && (
-                    <DataListItem
-                        label="Point"
-                        value={showNodeModal && pointId
-                            ? <a href="#" onClick={(event) => { event.preventDefault(); showNodeModal(pointId); }}>{pointLabel}</a>
-                            : pointLabel}
-                    />
-                )}
-            </ConnectionSection>
-            <ConnectionSection title="Route">
-                <DataListItem label="FakeIP" value={value.fakeIp} />
-                <DataListItem label="Hosts" value={value.hosts} />
-                <DataListItem label="Domain" value={value.domain} />
-                <DataListItem label="IP" value={value.ip} />
-                <DataListItem label="Tag" value={value.tag} />
-                <DataListItem label="Lists" value={value.lists?.join(", ")} />
-                <DataListItem label="Resolver" value={value.resolver} />
-                <MatchHistoryItem value={value.matchHistory ?? []} />
-            </ConnectionSection>
-            <ConnectionSection title="Process">
-                <DataListItem label="Process" value={value.process} />
-                <DataListItem label="Pid" value={value.pid} />
-                <DataListItem label="Uid" value={value.uid} />
-                <DataListItem label="UdpMigrateId" value={value.udpMigrateId} />
-            </ConnectionSection>
-            {(value.tlsServerName || value.httpHost) && (
-                <ConnectionSection title="TLS / HTTP">
-                    <DataListItem label="TlsServerName" value={value.tlsServerName} />
-                    <DataListItem label="HttpHost" value={value.httpHost} />
+            {pathRows.length > 0 && <ConnectionSection title={label("Path")}>{pathRows}</ConnectionSection>}
+            {(routeRows.length > 0 || (value.matchHistory?.length ?? 0) > 0) && (
+                <ConnectionSection title={label("Route")}>
+                    {routeRows}
+                    <MatchHistoryItem value={value.matchHistory ?? []} />
                 </ConnectionSection>
+            )}
+            {processRows.length > 0 && <ConnectionSection title={label("Process")}>{processRows}</ConnectionSection>}
+            {tlsRows.length > 0 && (
+                <ConnectionSection title={label("TlsHttp")}>{tlsRows}</ConnectionSection>
             )}
         </div>
     );
@@ -276,19 +292,21 @@ const ConnectionSection: FC<{ title: string; children: React.ReactNode }> = ({ t
 );
 
 const MatchHistoryItem: FC<{ value: MatchHistoryEntry[] }> = ({ value }) => {
+    const { t } = useTranslation(["connections", "common"]);
     if (!value || value.length === 0) return null;
+    const label = (key: string) => t(`detail.${key}`, { defaultValue: key });
 
     return (
         <DataListCustomItem>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
                 <div className="notranslate shrink-0 text-sm font-semibold capitalize text-sidebar-header sm:min-w-[120px]">
-                    MatchHistory
+                    {label("MatchHistory")}
                 </div>
                 <div className="flex w-full grow flex-col gap-3">
                     {value.map((entry, index) => (
                         <div key={`${entry.ruleName}-${index}`} className="rounded-xl border border-sidebar-border bg-sidebar-hover p-3">
                             <div className="mb-2 border-b border-sidebar-border pb-2 text-xs font-bold uppercase tracking-wider text-sidebar-header">
-                                {entry.ruleName || "Rule"}
+                                {entry.ruleName || label("Rule")}
                             </div>
                             <div className="flex flex-col gap-2">
                                 {(entry.history ?? []).map((item, itemIndex) => (
@@ -296,7 +314,7 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[] }> = ({ value }) => {
                                         <span className="notranslate break-all text-sm text-sidebar-color">{item.listName || "-"}</span>
                                         <div className="flex shrink-0 items-center gap-2">
                                             <span className={clsx("text-xs font-medium", item.matched ? "text-green-500" : "text-sidebar-color opacity-70")}>
-                                                {item.matched ? "Hit" : "Miss"}
+                                                {item.matched ? label("Hit") : label("Miss")}
                                             </span>
                                             <div className={clsx("flex h-6 w-6 items-center justify-center rounded-full", item.matched ? "bg-green-500/10 text-green-500" : "bg-white/5 text-red-500")}>
                                                 {item.matched ? <Check size={14} /> : <X size={14} />}

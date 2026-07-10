@@ -22,7 +22,7 @@ const DropdownContent = ({ className, sideOffset = 4, children, ...props }: Reac
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.15, ease: "easeOut" }}
                 className={clsx(
-                    "bg-ui-surface border border-ui-border shadow-ui-elevated rounded-ui-xl min-w-[12rem] py-2 flex flex-col z-[2000] w-[var(--radix-dropdown-menu-trigger-width)] max-w-[var(--radix-dropdown-menu-trigger-width)] will-change-[transform,opacity]",
+                    "bg-ui-surface border border-ui-border shadow-ui-elevated rounded-ui-xl min-w-[12rem] py-1.5 flex flex-col z-[2000] w-[var(--radix-dropdown-menu-trigger-width)] max-w-[var(--radix-dropdown-menu-trigger-width)] will-change-[transform,opacity]",
                     "data-[side=bottom]:animate-slideUpAndFade data-[side=top]:animate-slideDownAndFade data-[state=closed]:animate-fadeOut",
                     className
                 )}
@@ -40,7 +40,7 @@ DropdownContent.displayName = "DropdownContent";
 const DropdownItem = ({ className, ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Item>) => (
     <DropdownMenuPrimitive.Item
         className={clsx(
-            "relative flex items-center w-full py-1.5 px-4 pl-10 text-base text-ui-fg select-none cursor-pointer outline-none bg-transparent border-0 text-left no-underline rounded-ui-md",
+            "relative flex items-center w-full py-1.5 px-3 text-[0.95rem] text-ui-fg select-none cursor-pointer outline-none bg-transparent border-0 text-left no-underline rounded-ui-sm",
             "hover:bg-ui-hover hover:text-ui-heading focus:bg-ui-hover focus:text-ui-heading",
             "data-[highlighted]:bg-ui-hover data-[highlighted]:text-ui-heading",
             ui.interactive,
@@ -56,7 +56,7 @@ DropdownItem.displayName = "DropdownItem";
 const DropdownLabel = ({ className, ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Label>) => (
     <DropdownMenuPrimitive.Label
         className={clsx(
-            "py-2 px-4 text-xs font-bold uppercase tracking-[0.5px] text-ui-muted bg-ui-surface-muted border-b border-ui-border",
+            "px-3 py-2 text-xs font-bold uppercase tracking-[0.5px] text-ui-muted bg-ui-surface-muted border-b border-ui-border",
             className
         )}
         {...props}
@@ -68,7 +68,7 @@ DropdownLabel.displayName = "DropdownLabel";
 const DropdownCheckboxItem = ({ className, children, checked, ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.CheckboxItem>) => (
     <DropdownMenuPrimitive.CheckboxItem
         className={clsx(
-            "relative flex items-center w-full py-1.5 px-4 pl-10 text-base text-ui-fg select-none cursor-pointer outline-none bg-transparent border-0 text-left no-underline rounded-ui-md",
+            "relative flex items-center w-full py-1.5 px-3 pl-9 text-[0.95rem] text-ui-fg select-none cursor-pointer outline-none bg-transparent border-0 text-left no-underline rounded-ui-sm",
             "hover:bg-ui-hover hover:text-ui-heading focus:bg-ui-hover focus:text-ui-heading",
             "data-[highlighted]:bg-ui-hover data-[highlighted]:text-ui-heading",
             ui.interactive,

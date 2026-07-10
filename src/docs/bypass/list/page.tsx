@@ -29,19 +29,26 @@ function Lists() {
     const [editing, setEditing] = useState<string | null>(null);
     const [creating, setCreating] = useState(false);
     const [creatingName, setCreatingName] = useState("");
-    const { data, error, isLoading, isValidating, mutate } = useSWR(
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const { data, error, isLoading, mutate } = useSWR(
         ["/api/v2/route/lists", page, query],
         () => listRouteLists({ page, pageSize: PAGE_SIZE, query }),
         { revalidateOnFocus: false },
     );
 
-    const refresh = () => {
-        refreshRouteLists()
-            .then(() => {
-                ctx.Info("refresh started");
-                mutate();
-            })
-            .catch((err) => ctx.Error(err.msg ?? String(err)));
+    const refresh = async () => {
+        if (isRefreshing) return;
+        setIsRefreshing(true);
+        try {
+            await refreshRouteLists();
+            ctx.Info("refresh successful");
+            await mutate();
+        } catch (err) {
+            const e = err as { msg?: string };
+            ctx.Error(e.msg ?? String(err));
+        } finally {
+            setIsRefreshing(false);
+        }
     };
 
     const saved = () => {
@@ -59,8 +66,8 @@ function Lists() {
             <ListConfigCard />
             <div className="flex justify-end mb-3 gap-2">
                 <FilterSearch onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
-                <Button size="sm" onClick={refresh}>
-                    {isValidating ? <Spinner size="sm" className="mr-2" /> : <RefreshCw size={16} className="mr-2" />}
+                <Button size="sm" onClick={refresh} disabled={isRefreshing}>
+                    {isRefreshing ? <Spinner size="sm" className="mr-2" /> : <RefreshCw size={16} className="mr-2" />}
                     Sync All Resources
                 </Button>
             </div>
@@ -83,19 +90,19 @@ function Lists() {
                                     <Badge variant="secondary" className="shrink-0">{item.type || "-"}</Badge>
                                     {item.errorCount > 0 && <Badge variant="danger" className="shrink-0">{item.errorCount} errors</Badge>}
                                 </div>
-                                <div className="mt-3 grid min-w-0 gap-1.5 text-sm text-ui-muted">
-                                    <div className="min-w-0">
-                                        <span className="mr-1 text-ui-muted/80">Source</span>
+                                <div className="mt-2 flex min-w-0 flex-wrap gap-x-4 gap-y-1 text-sm text-ui-muted">
+                                    <span className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
+                                        <span className="text-ui-muted/80">Source</span>
                                         <span className="font-semibold text-ui-fg">{item.source || "-"}</span>
-                                    </div>
-                                    <div className="min-w-0">
-                                        <span className="mr-1 text-ui-muted/80">Entries</span>
+                                    </span>
+                                    <span className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
+                                        <span className="text-ui-muted/80">Entries</span>
                                         <span className="font-semibold text-ui-fg">{item.itemCount}</span>
-                                    </div>
-                                    <div className="min-w-0">
-                                        <span className="mr-1 text-ui-muted/80">Preview</span>
-                                        <span className="break-all font-mono font-semibold text-ui-fg">{item.preview || "-"}</span>
-                                    </div>
+                                    </span>
+                                    <span className="inline-flex min-w-0 flex-1 basis-[260px] items-center gap-1">
+                                        <span className="shrink-0 text-ui-muted/80">Preview</span>
+                                        <span className="min-w-0 truncate font-mono font-semibold text-ui-fg">{item.preview || "-"}</span>
+                                    </span>
                                 </div>
                             </div>
                         </div>
