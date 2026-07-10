@@ -21,7 +21,7 @@ const subscriptionTypes = ["reserve", "trojan", "vmess", "shadowsocks", "shadows
 
 const LinkItem: FC<{ linkData: Link; isUpdating: boolean; onUpdate: () => void; onDelete: () => void }> = ({ linkData, isUpdating, onUpdate, onDelete }) => {
     return (
-        <div className="grid grid-cols-[1fr_auto] gap-3 items-center overflow-hidden flex-1">
+        <div className="grid flex-1 gap-3 overflow-hidden sm:grid-cols-[1fr_auto] sm:items-center">
             <div className="flex items-center gap-3 min-w-0 overflow-hidden">
                 <IconBoxRounded icon={Rss} color="#0d6efd" style={{ width: 40, height: 40, flexShrink: 0 }} />
                 <div className="min-w-0 overflow-hidden">

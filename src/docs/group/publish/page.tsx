@@ -185,12 +185,12 @@ function PublishPage() {
                 items={[...data.items].sort((a, b) => a.name.localeCompare(b.name))}
                 onClickItem={(pub) => setEditing({ show: true, isEdit: true, value: pub })}
                 renderListItem={(pub) => (
-                    <div className="flex items-center justify-between w-full gap-3">
-                        <div className="flex flex-col overflow-hidden">
+                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex min-w-0 flex-col overflow-hidden">
                             <span className="font-bold">{pub.name}</span>
                             <small className="text-gray-500 truncate">{pub.address}/{pub.path} • {pub.points.length} nodes</small>
                         </div>
-                        <Button variant="outline-danger" size="sm" onClick={(e) => { e.stopPropagation(); setConfirmDelete({ show: true, name: pub.name }); }}>
+                        <Button className="self-end sm:self-auto" variant="outline-danger" size="sm" onClick={(e) => { e.stopPropagation(); setConfirmDelete({ show: true, name: pub.name }); }}>
                             <Trash size={16} />
                         </Button>
                     </div>

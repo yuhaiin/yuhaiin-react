@@ -219,7 +219,7 @@ function Tags() {
                 getKey={(v) => v.name}
                 onClickItem={(item) => setEditing(item)}
                 renderListItem={(item) => (
-                    <div className="flex w-full items-center justify-between gap-3">
+                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1.5">
                             <div className="flex min-w-0 items-center gap-2">
                                 <span className="font-bold truncate">{item.name}</span>
@@ -245,16 +245,16 @@ function Tags() {
                                 <span key={hash} className="max-w-[220px] truncate rounded-full border border-ui-border bg-ui-surface-muted px-2.5 py-1 text-sm font-mono text-ui-muted">{hash}</span>
                             ))}
                         </div>
-                        <Button size="sm" variant="outline-danger" onClick={(e) => { e.stopPropagation(); remove(item); }}>
+                        <Button className="self-end sm:self-auto" size="sm" variant="outline-danger" onClick={(e) => { e.stopPropagation(); remove(item); }}>
                             <Trash size={16} />
                         </Button>
                     </div>
                 )}
                 header={
-                    <div className="flex w-full items-center justify-between gap-3">
+                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <IconBox icon={TagsIcon} color="#8b5cf6" title="Tags Management" description={`${data.page.total} aliases and mirrors`} />
-                        <div className="flex items-center gap-2">
-                            <FilterSearch onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
+                        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
+                            <FilterSearch className="min-w-0 flex-1 sm:w-[180px] sm:flex-none" onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
                             <Button size="sm" onClick={() => setAdding(true)}><Plus size={16} className="mr-1" /> Add</Button>
                         </div>
                     </div>

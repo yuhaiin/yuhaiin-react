@@ -36,7 +36,7 @@ export const Card: FC<{
 );
 
 export const CardHeader: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
-    <div className={clsx("flex items-center justify-between px-3 py-3 border-b border-ui-border", className)} style={style}>
+    <div className={clsx("flex flex-wrap items-center justify-between gap-3 px-3 py-3 border-b border-ui-border", className)} style={style}>
         {children}
     </div>
 );

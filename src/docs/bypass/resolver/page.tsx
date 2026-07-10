@@ -147,7 +147,7 @@ function ResolverList() {
             renderListItem={(item) => <ResolverItem item={item} />}
             onClickItem={(item) => setShowdata({ show: true, id: item.id, new: false })}
             header={
-                <div className="flex w-full items-center justify-between gap-3">
+                <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <IconBox icon={Layers} color="#3b82f6" title='Resolvers' description='Upstream DNS Resolvers' />
                     <Button size="sm" onClick={handleCreate}><Plus size={16} className="mr-1" /> Add</Button>
                 </div>

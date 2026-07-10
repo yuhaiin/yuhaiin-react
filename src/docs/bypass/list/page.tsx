@@ -84,7 +84,7 @@ function Lists() {
                 items={data.items}
                 getKey={(v) => v.name}
                 renderListItem={(item) => (
-                    <div className="flex w-full items-center justify-between gap-3">
+                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex min-w-0 flex-1 items-start gap-3">
                             <FileText className="mt-1 shrink-0 text-ui-muted" size={20} />
                             <div className="min-w-0 flex-1">
@@ -114,10 +114,10 @@ function Lists() {
                 )}
                 onClickItem={(item) => setEditing(item.name)}
                 header={
-                    <div className="flex w-full items-center justify-between gap-3">
+                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <IconBox icon={List} color="#2563eb" title="Defined Lists" description={`${data.page.total} lists available`} />
-                        <div className="flex shrink-0 items-center gap-2">
-                            <FilterSearch onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
+                        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
+                            <FilterSearch className="min-w-0 flex-1 sm:w-[180px] sm:flex-none" onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
                             <Button size="sm" onClick={refresh} disabled={isRefreshing}>
                                 {isRefreshing ? <Spinner size="sm" className="mr-2" /> : <RefreshCw size={16} className="mr-2" />}
                                 Sync All Resources

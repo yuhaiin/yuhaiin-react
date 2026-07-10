@@ -136,7 +136,7 @@ function BypassComponent() {
                 items={data.items}
                 getKey={(v) => `${v.name}-${v.index}`}
                 renderListItem={(item) => (
-                    <div className="flex w-full items-center justify-between gap-3">
+                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex min-w-0 flex-1 items-start gap-3">
                             <Badge variant="secondary" className="mt-0.5 shrink-0">#{item.index}</Badge>
                             <Route className="mt-0.5 shrink-0 text-ui-muted" size={22} />
@@ -166,7 +166,7 @@ function BypassComponent() {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                        <div className="flex w-full shrink-0 flex-wrap justify-end gap-2 sm:w-auto sm:flex-nowrap">
                             <Button
                                 size="sm"
                                 variant="outline-secondary"
@@ -204,11 +204,11 @@ function BypassComponent() {
                 )}
                 onClickItem={(item) => setEditing(item)}
                 header={
-                    <div className="flex items-center justify-between w-full">
+                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <IconBox icon={Route} color="#3b82f6" title="Route Rules" description="Routing policy and matching order" />
-                        <div className="flex items-center gap-2">
+                        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
                             {isValidating && <Spinner size="sm" />}
-                            <FilterSearch onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
+                            <FilterSearch className="min-w-0 flex-1 sm:w-[180px] sm:flex-none" onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
                             <Button size="sm" onClick={() => setCreating(true)}><Plus size={16} className="mr-1" /> Add</Button>
                         </div>
                     </div>
