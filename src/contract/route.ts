@@ -60,6 +60,14 @@ export type RouteListConfig = {
   };
 };
 
+export type RouteListActivationStatus = {
+  hostIndexRefreshAt: number;
+};
+
+export function normalizeRouteListActivationStatus(value: Partial<RouteListActivationStatus> | undefined): RouteListActivationStatus {
+  return { hostIndexRefreshAt: value?.hostIndexRefreshAt ?? 0 };
+}
+
 export type ListItem = {
   name: string;
   type: string;

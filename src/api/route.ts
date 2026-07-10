@@ -1,6 +1,6 @@
 import { requestJSON } from "@/api/client";
-import type { BlockHistoryList, RouteConfig, RouteList, RouteListConfig, RouteListDetail, RouteRule, RuleList, RuleTestResponse, TagList } from "@/contract/route";
-import { normalizeListItem, normalizeRouteConfig, normalizeRouteList, normalizeRouteListConfig, normalizeRule, normalizeRuleItem, normalizeTagItem } from "@/contract/route";
+import type { BlockHistoryList, RouteConfig, RouteList, RouteListActivationStatus, RouteListConfig, RouteListDetail, RouteRule, RuleList, RuleTestResponse, TagList } from "@/contract/route";
+import { normalizeListItem, normalizeRouteConfig, normalizeRouteList, normalizeRouteListActivationStatus, normalizeRouteListConfig, normalizeRule, normalizeRuleItem, normalizeTagItem } from "@/contract/route";
 
 export async function listRouteLists(params?: { page?: number; pageSize?: number; query?: string }): Promise<RouteList> {
   const data = await requestJSON<RouteList>("GET", "/api/v2/route/lists", undefined, {
@@ -21,6 +21,10 @@ export async function saveRouteListConfig(config: RouteListConfig): Promise<Rout
 
 export async function refreshRouteLists(): Promise<void> {
   await requestJSON<void>("POST", "/api/v2/route/lists/refresh");
+}
+
+export async function getRouteListActivationStatus(): Promise<RouteListActivationStatus> {
+  return normalizeRouteListActivationStatus(await requestJSON<RouteListActivationStatus>("GET", "/api/v2/route/lists/activation"));
 }
 
 export async function createRouteList(list: RouteListDetail): Promise<RouteListDetail> {

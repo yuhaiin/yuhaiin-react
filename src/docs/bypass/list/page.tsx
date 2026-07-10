@@ -1,6 +1,6 @@
 "use client"
 
-import { createRouteList, deleteRouteList, getRouteList, getRouteListConfig, listRouteLists, refreshRouteLists, saveRouteList, saveRouteListConfig } from "@/api/route";
+import { createRouteList, deleteRouteList, getRouteList, getRouteListActivationStatus, getRouteListConfig, listRouteLists, refreshRouteLists, saveRouteList, saveRouteListConfig } from "@/api/route";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardFooter, CardHeader, CardRowList, FilterSearch, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
@@ -11,7 +11,7 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
-import type { RouteListDetail } from "@/contract/route";
+import type { RouteListActivationStatus, RouteListDetail } from "@/contract/route";
 import { createDefaultRouteList, normalizeRouteList } from "@/contract/route";
 import { Check, ChevronRight, Clock, CloudDownload, FileText, List, Network, Plus, RefreshCw, Save, Trash, TriangleAlert } from "lucide-react";
 import type { CSSProperties } from "react";
@@ -30,6 +30,14 @@ function Lists() {
     const [creating, setCreating] = useState(false);
     const [creatingName, setCreatingName] = useState("");
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const { data: activation, mutate: mutateActivation } = useSWR(
+        "/api/v2/route/lists/activation",
+        getRouteListActivationStatus,
+        {
+            revalidateOnFocus: false,
+            refreshInterval: (status) => status?.hostIndexRefreshAt > Date.now() ? 1000 : 0,
+        },
+    );
     const { data, error, isLoading, mutate } = useSWR(
         ["/api/v2/route/lists", page, query],
         () => listRouteLists({ page, pageSize: PAGE_SIZE, query }),
@@ -42,7 +50,7 @@ function Lists() {
         try {
             await refreshRouteLists();
             ctx.Info("refresh successful");
-            await mutate();
+            await Promise.all([mutate(), mutateActivation()]);
         } catch (err) {
             const e = err as { msg?: string };
             ctx.Error(e.msg ?? String(err));
@@ -53,6 +61,7 @@ function Lists() {
 
     const saved = () => {
         mutate();
+        void mutateActivation();
         setEditing(null);
         setCreating(false);
         setCreatingName("");
@@ -64,6 +73,7 @@ function Lists() {
     return (
         <MainContainer>
             <ListConfigCard />
+            <ListActivationProgress status={activation} />
             <CardRowList
                 layout="list"
                 paginated
@@ -120,6 +130,37 @@ function Lists() {
             <ListEditorModal name={editing} onSaved={saved} onClose={() => setEditing(null)} />
             <CreateListModal open={creating} initialName={creatingName} onSaved={saved} onClose={() => setCreating(false)} />
         </MainContainer>
+    );
+}
+
+function ListActivationProgress({ status }: { status?: RouteListActivationStatus }) {
+    const target = status?.hostIndexRefreshAt ?? 0;
+    const [now, setNow] = useState(Date.now());
+    const remaining = Math.max(0, target - now);
+
+    useEffect(() => {
+        if (remaining <= 0) return;
+        const timer = window.setInterval(() => setNow(Date.now()), 250);
+        return () => window.clearInterval(timer);
+    }, [remaining]);
+
+    if (remaining <= 0) return null;
+
+    const progress = Math.min(100, Math.max(0, ((60_000 - remaining) / 60_000) * 100));
+    const seconds = Math.ceil(remaining / 1000);
+    return (
+        <Card className="mb-4 border-ui-primary/35 bg-ui-primary/5">
+            <CardBody>
+                <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+                    <span className="font-semibold text-ui-heading">Applying list changes to host matching</span>
+                    <span className="shrink-0 text-ui-muted">{seconds}s remaining</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-ui-primary/15" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)} aria-label="List activation progress">
+                    <div className="h-full rounded-full bg-ui-primary transition-[width] duration-200" style={{ width: `${progress}%` }} />
+                </div>
+                <p className="mt-2 mb-0 text-xs text-ui-muted">Process lists are updated immediately. New host-list matches apply after this index rebuild finishes.</p>
+            </CardBody>
+        </Card>
     );
 }
 
