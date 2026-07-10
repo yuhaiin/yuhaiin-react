@@ -13,7 +13,7 @@ import { GlobalToastContext } from "@/component/v2/toast";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import type { RouteListDetail } from "@/contract/route";
 import { createDefaultRouteList, normalizeRouteList } from "@/contract/route";
-import { Check, ChevronRight, Clock, CloudDownload, FileText, List, Network, RefreshCw, Save, Trash, TriangleAlert } from "lucide-react";
+import { Check, ChevronRight, Clock, CloudDownload, FileText, List, Network, Plus, RefreshCw, Save, Trash, TriangleAlert } from "lucide-react";
 import type { CSSProperties } from "react";
 import { useContext, useEffect, useState } from "react";
 import useSWR from "swr";
@@ -64,13 +64,6 @@ function Lists() {
     return (
         <MainContainer>
             <ListConfigCard />
-            <div className="flex justify-end mb-3 gap-2">
-                <FilterSearch onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
-                <Button size="sm" onClick={refresh} disabled={isRefreshing}>
-                    {isRefreshing ? <Spinner size="sm" className="mr-2" /> : <RefreshCw size={16} className="mr-2" />}
-                    Sync All Resources
-                </Button>
-            </div>
             <CardRowList
                 layout="list"
                 paginated
@@ -110,16 +103,19 @@ function Lists() {
                     </div>
                 )}
                 onClickItem={(item) => setEditing(item.name)}
-                onAddNew={(name) => {
-                    if (data.items.some((item) => item.name === name)) {
-                        ctx.Error(`list ${name} already exists`);
-                        return;
-                    }
-                    setCreatingName(name);
-                    setCreating(true);
-                }}
-                adding={false}
-                header={<IconBox icon={List} color="#2563eb" title="Defined Lists" description={`${data.page.total} lists available`} />}
+                header={
+                    <div className="flex w-full items-center justify-between gap-3">
+                        <IconBox icon={List} color="#2563eb" title="Defined Lists" description={`${data.page.total} lists available`} />
+                        <div className="flex shrink-0 items-center gap-2">
+                            <FilterSearch onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
+                            <Button size="sm" onClick={refresh} disabled={isRefreshing}>
+                                {isRefreshing ? <Spinner size="sm" className="mr-2" /> : <RefreshCw size={16} className="mr-2" />}
+                                Sync All Resources
+                            </Button>
+                            <Button size="sm" onClick={() => { setCreatingName(""); setCreating(true); }}><Plus size={16} className="mr-1" /> Add</Button>
+                        </div>
+                    </div>
+                }
             />
             <ListEditorModal name={editing} onSaved={saved} onClose={() => setEditing(null)} />
             <CreateListModal open={creating} initialName={creatingName} onSaved={saved} onClose={() => setCreating(false)} />

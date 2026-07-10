@@ -11,7 +11,7 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { createDefaultResolver, normalizeResolver, Resolver, ResolverType } from "@/contract/resolver";
-import { Check, ChevronRight, Layers, Network, Trash } from 'lucide-react';
+import { Check, ChevronRight, Layers, Network, Plus, Trash } from 'lucide-react';
 import { FC, useContext, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import Loading, { Error as ErrorDisplay } from "../../../component/v2/loading";
@@ -100,13 +100,7 @@ function ResolverList() {
     if (apiError) return <Loading code={apiError.code}>{apiError.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />
 
-    const handleCreate = (id: string) => {
-        if (items.some((item) => item.id === id)) {
-            ctx.Error(`Resolver ${id} already exists`);
-            return;
-        }
-        setShowdata({ show: true, id, new: true });
-    };
+    const handleCreate = () => setShowdata({ show: true, id: "", new: true });
 
     const handleDelete = (id: string) => {
         deleteResolver(id)
@@ -152,8 +146,12 @@ function ResolverList() {
             getKey={(item) => item.id}
             renderListItem={(item) => <ResolverItem item={item} />}
             onClickItem={(item) => setShowdata({ show: true, id: item.id, new: false })}
-            onAddNew={handleCreate}
-            header={<IconBox icon={Layers} color="#3b82f6" title='Resolvers' description='Upstream DNS Resolvers' />}
+            header={
+                <div className="flex w-full items-center justify-between gap-3">
+                    <IconBox icon={Layers} color="#3b82f6" title='Resolvers' description='Upstream DNS Resolvers' />
+                    <Button size="sm" onClick={handleCreate}><Plus size={16} className="mr-1" /> Add</Button>
+                </div>
+            }
         />
     </>
 }

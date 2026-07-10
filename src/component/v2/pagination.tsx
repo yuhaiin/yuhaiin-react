@@ -47,48 +47,39 @@ export function Pagination({
         }
     }
 
-    if (totalPages <= 1) return <Button variant="primary" size="icon"
-        style={{
-            minWidth: '32px',
-            height: '32px',
-            padding: '0',
-            fontSize: '12px',
-            fontWeight: 'inherit'
-        }}>1</Button>;
+    const controlClass = "h-8 min-w-8 rounded-ui-md border-ui-border bg-transparent text-ui-muted hover:bg-ui-surface-muted hover:text-ui-fg";
+    const pageClass = "h-8 min-w-8 rounded-ui-md border-transparent bg-transparent text-ui-muted hover:border-ui-border hover:bg-ui-surface-muted hover:text-ui-fg";
+    const activePageClass = "!border-ui-primary/50 !bg-ui-primary-soft !text-ui-primary font-semibold shadow-none";
+
+    if (totalPages <= 1) return <Button variant="outline-secondary" size="icon" className={`${pageClass} ${activePageClass}`}>1</Button>;
 
     return (
-        <div className={clsx("flex items-center gap-1.5", className)}>
+        <div className={clsx("flex items-center gap-0.5", className)}>
             <Button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 aria-label={t('pagination.previous')}
                 size="icon"
                 variant="outline-secondary"
-                className="h-8 min-w-8 rounded-ui-sm"
+                className={controlClass}
             >
                 <ChevronLeft size={16} />
             </Button>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
                 {pages.map((item, idx) =>
                     item === 'ellipsis' ? (
-                        <div key={'e' + idx} className="flex items-end justify-center pb-1 text-[var(--bs-secondary-color)] w-[32px] h-[32px]">
-                            <MoreHorizontal size={16} />
+                        <div key={'e' + idx} className="flex h-8 w-6 items-center justify-center text-ui-muted">
+                            <MoreHorizontal size={15} />
                         </div>
                     ) : (
                         <Button
                             key={item}
                             onClick={() => onPageChange(item)}
                             size="icon"
-                            variant={item === currentPage ? "primary" : "outline-secondary"}
-                            className="h-8 min-w-8 rounded-ui-sm"
-                            style={{
-                                minWidth: '32px',
-                                height: '32px',
-                                padding: '0',
-                                fontSize: '12px',
-                                fontWeight: 'inherit'
-                            }}
+                            variant="outline-secondary"
+                            className={`${pageClass} ${item === currentPage ? activePageClass : ""}`}
+                            aria-current={item === currentPage ? "page" : undefined}
                         >
                             {item}
                         </Button>
@@ -102,7 +93,7 @@ export function Pagination({
                 aria-label={t('pagination.next')}
                 size="icon"
                 variant="outline-secondary"
-                className="h-8 min-w-8 rounded-ui-sm"
+                className={controlClass}
             >
                 <ChevronRight size={16} />
             </Button>

@@ -132,10 +132,6 @@ function BypassComponent() {
     return (
         <MainContainer>
             <RouteConfigCard resolvers={editorOptions.resolvers} />
-            <div className="flex justify-end mb-3 gap-2">
-                <FilterSearch onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
-                <Button size="sm" variant="outline-primary" onClick={() => setCreating(true)}><Plus size={16} /></Button>
-            </div>
             <CardList
                 items={data.items}
                 getKey={(v) => `${v.name}-${v.index}`}
@@ -210,7 +206,11 @@ function BypassComponent() {
                 header={
                     <div className="flex items-center justify-between w-full">
                         <IconBox icon={Route} color="#3b82f6" title="Route Rules" description="Routing policy and matching order" />
-                        {isValidating && <Spinner size="sm" />}
+                        <div className="flex items-center gap-2">
+                            {isValidating && <Spinner size="sm" />}
+                            <FilterSearch onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
+                            <Button size="sm" onClick={() => setCreating(true)}><Plus size={16} className="mr-1" /> Add</Button>
+                        </div>
                     </div>
                 }
                 footer={<Pagination currentPage={data.page.page || page} totalItems={data.page.total} pageSize={data.page.pageSize || PAGE_SIZE} onPageChange={setPage} />}

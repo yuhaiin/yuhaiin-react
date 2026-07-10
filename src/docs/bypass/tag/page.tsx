@@ -208,9 +208,6 @@ function Tags() {
         <MainContainer>
             <NodeModal show={nodeModal.show} id={nodeModal.id} readOnly onHide={() => setNodeModal({ show: false })} />
             <TagModal show={adding || editing !== undefined} item={editing} onHide={() => { setAdding(false); setEditing(undefined); }} onSaved={mutate} />
-            <div className="flex justify-end mb-3">
-                <FilterSearch onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
-            </div>
             <CardRowList
                 layout="list"
                 paginated
@@ -256,9 +253,10 @@ function Tags() {
                 header={
                     <div className="flex w-full items-center justify-between gap-3">
                         <IconBox icon={TagsIcon} color="#8b5cf6" title="Tags Management" description={`${data.page.total} aliases and mirrors`} />
-                        <Button onClick={() => setAdding(true)}>
-                            <Plus size={16} className="mr-1" /> Add
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <FilterSearch onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
+                            <Button size="sm" onClick={() => setAdding(true)}><Plus size={16} className="mr-1" /> Add</Button>
+                        </div>
                     </div>
                 }
             />
