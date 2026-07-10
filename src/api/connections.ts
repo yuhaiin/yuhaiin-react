@@ -1,5 +1,5 @@
 import { requestJSON } from "@/api/client";
-import type { AllHistoryList, Connections, FailedHistoryList, TotalFlow, TrafficSeries } from "@/contract/connection";
+import type { AllHistoryList, Connections, FailedHistoryList, TelemetrySummary, TotalFlow, TrafficSeries } from "@/contract/connection";
 import { normalizeAllHistory, normalizeConnection, normalizeFailedHistory } from "@/contract/connection";
 
 export async function getTotalFlow(): Promise<TotalFlow> {
@@ -11,6 +11,14 @@ export async function getTraffic(interval: TrafficSeries["interval"], from: Date
     interval,
     from: from.toISOString(),
     to: to.toISOString(),
+  });
+}
+
+export async function getTelemetry(from: Date, to: Date, limit = 6): Promise<TelemetrySummary> {
+  return requestJSON<TelemetrySummary>("GET", "/api/v2/connections/telemetry", undefined, {
+    from: from.toISOString(),
+    to: to.toISOString(),
+    limit,
   });
 }
 

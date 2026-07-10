@@ -20,6 +20,22 @@ export type TrafficSeries = {
   items: TrafficPoint[];
 };
 
+export type TelemetryItem = {
+  value: string;
+  download: string;
+  upload: string;
+  failures: string;
+};
+
+export type TelemetryGroup = {
+  dimension: "protocol" | "outbound" | "process" | "rule" | "tag" | "destination";
+  items: TelemetryItem[];
+};
+
+export type TelemetrySummary = {
+  groups: TelemetryGroup[];
+};
+
 export type Connection = {
   id: string;
   addr: string;

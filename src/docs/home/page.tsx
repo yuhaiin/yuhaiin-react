@@ -1,6 +1,6 @@
 "use client";
 
-import { getTraffic } from "@/api/connections";
+import { getTelemetry, getTraffic } from "@/api/connections";
 import { selectedNodes } from "@/api/nodes";
 import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardHeader, MainContainer } from "@/component/v2/card";
@@ -11,6 +11,7 @@ import dynamic from "../../component/AsyncComponent";
 import { Flow, FlowContainer } from "../connections/components";
 import Activates from "../group/activates/page";
 import { NodeModal } from "../node/modal";
+import TelemetryOverview from "./TelemetryOverview";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
@@ -38,6 +39,14 @@ function HomePage() {
     const { data: trafficHistory, error: trafficHistoryError } = useSWR(isLiveTraffic ? null : ["/api/v2/connections/traffic", range.key], () => {
         const to = new Date();
         return getTraffic(range.interval!, new Date(to.getTime() - range.durationMs!), to);
+    }, {
+        refreshInterval: 30000,
+        revalidateOnFocus: false,
+    });
+    const telemetryRange = isLiveTraffic ? trafficRanges[1] : range;
+    const { data: telemetry, error: telemetryError } = useSWR(["/api/v2/connections/telemetry", telemetryRange.key], () => {
+        const to = new Date();
+        return getTelemetry(new Date(to.getTime() - telemetryRange.durationMs!), to);
     }, {
         refreshInterval: 30000,
         revalidateOnFocus: false,
@@ -126,6 +135,18 @@ function HomePage() {
                     {isLiveTraffic
                         ? <TrafficChartDynamic data={traffic} minHeight={400} />
                         : <TrafficHistoryChartDynamic data={trafficHistory} error={trafficHistoryError?.msg} minHeight={400} />}
+                </CardBody>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <div>
+                        <div className="font-medium text-ui-heading">Traffic breakdown</div>
+                        <div className="mt-0.5 text-xs text-ui-muted">Top traffic and failures for selected time range</div>
+                    </div>
+                </CardHeader>
+                <CardBody>
+                    <TelemetryOverview data={telemetry} error={telemetryError?.msg} />
                 </CardBody>
             </Card>
         </MainContainer>
