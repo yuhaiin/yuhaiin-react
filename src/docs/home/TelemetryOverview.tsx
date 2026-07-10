@@ -6,6 +6,7 @@ const titles: Record<TelemetryGroup["dimension"], string> = {
     protocol: "Protocol",
     inbound: "Inbound",
     source: "Source address",
+    addr: "Address",
     outbound: "Outbound node",
     process: "Process",
     rule: "Rule",
