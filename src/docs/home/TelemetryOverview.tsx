@@ -4,6 +4,8 @@ import { formatBytes } from "./format";
 
 const titles: Record<TelemetryGroup["dimension"], string> = {
     protocol: "Protocol",
+    inbound: "Inbound",
+    source: "Source address",
     outbound: "Outbound node",
     process: "Process",
     rule: "Rule",

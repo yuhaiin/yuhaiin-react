@@ -28,7 +28,7 @@ export type TelemetryItem = {
 };
 
 export type TelemetryGroup = {
-  dimension: "protocol" | "outbound" | "process" | "rule" | "tag" | "destination";
+  dimension: "protocol" | "inbound" | "source" | "outbound" | "process" | "rule" | "tag" | "destination";
   items: TelemetryItem[];
 };
 
