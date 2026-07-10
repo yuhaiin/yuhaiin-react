@@ -1,6 +1,6 @@
 "use client"
 
-import { useDelay } from "@/common/hooks";
+import { blockHistory } from "@/api/route";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { CardList, MainContainer, SettingLabel } from "@/component/v2/card";
@@ -10,16 +10,25 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { Pagination } from "@/component/v2/pagination";
 import { Spinner } from "@/component/v2/spinner";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
-import { block_history, rules } from "@/docs/pbes/api/config_pb";
-import { timestampDate } from "@bufbuild/protobuf/wkt";
+import type { BlockHistory } from "@/contract/route";
 import { ArrowDownWideNarrow, Ban, ChevronRight, Clock, Network, RotateCw, ShieldOff } from 'lucide-react';
 import React, { FC, useMemo, useState } from "react";
-import { TimestampZero } from "../../../common/nodes";
-import { useProtoSWR } from "../../../common/proto";
+import useSWR from "swr";
 import Loading from "../../../component/v2/loading";
 
+const ZeroDate = new Date(0);
+
+function historyDate(value?: string): Date {
+    return value ? new Date(value) : ZeroDate;
+}
+
+function formatProtocolLabel(value?: string) {
+    if (!value) return "Unknown";
+    return value.split("_").join("/").toUpperCase();
+}
+
 // --- Component: Individual Blocked History Row ---
-const ListItem: FC<{ data: block_history }> = React.memo(({ data }) => {
+const ListItem: FC<{ data: BlockHistory }> = React.memo(({ data }) => {
     return (
         <div className="flex w-full flex-col md:flex-row items-start md:items-center justify-between gap-4">
 
@@ -40,13 +49,13 @@ const ListItem: FC<{ data: block_history }> = React.memo(({ data }) => {
             {/* Right Side: Metadata Badges */}
             <div className="flex flex-wrap gap-2 items-center shrink-0">
                 <Badge variant="info" pill className="flex items-center gap-1">
-                    <Network size={12} /> {data.protocol}
+                    <Network size={12} /> {formatProtocolLabel(data.protocol)}
                 </Badge>
                 <Badge variant="danger" pill className="flex items-center gap-1">
                     <Ban size={12} /> {data.blockCount} Blocks
                 </Badge>
                 <Badge variant="secondary" pill className="flex items-center gap-1">
-                    <Clock size={12} /> {timestampDate(data.time!).toLocaleTimeString()}
+                    <Clock size={12} /> {historyDate(data.time).toLocaleTimeString()}
                 </Badge>
                 <ChevronRight className="text-gray-500 dark:text-gray-400 opacity-25 ml-2 hidden md:block" size={16} />
             </div>
@@ -55,7 +64,7 @@ const ListItem: FC<{ data: block_history }> = React.memo(({ data }) => {
 });
 
 // --- Component: Details Modal ---
-const InfoModal: FC<{ data?: block_history, show: boolean, onClose: () => void }> = React.memo(({ data, show, onClose }) => {
+const InfoModal: FC<{ data?: BlockHistory, show: boolean, onClose: () => void }> = React.memo(({ data, show, onClose }) => {
     if (!data) return null;
     return (
         <Modal open={show} onOpenChange={(open) => !open && onClose()}>
@@ -65,8 +74,8 @@ const InfoModal: FC<{ data?: block_history, show: boolean, onClose: () => void }
                 </ModalHeader>
                 <ModalBody>
                     <DataList>
-                        <DataListItem label="Time" value={timestampDate(data.time!).toLocaleString()} />
-                        <DataListItem label="Network" value={data.protocol} />
+                        <DataListItem label="Time" value={historyDate(data.time).toLocaleString()} />
+                        <DataListItem label="Network" value={formatProtocolLabel(data.protocol)} />
                         <DataListItem label="Host" value={data.host} />
                         <DataListItem label="Total Blocks" value={String(data.blockCount)} />
                         <DataListItem label="Process" value={data.process || "Unknown"} />
@@ -84,14 +93,13 @@ function BypassBlockHistory() {
     const [sortBy, setSortBy] = useState("Time");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [page, setPage] = useState(1);
-    const [info, setInfo] = useState<{ data?: block_history, show: boolean }>({ show: false });
-    const shouldFetch = useDelay(400);
+    const [info, setInfo] = useState<{ data?: BlockHistory, show: boolean }>({ show: false });
 
-    const { data, error, isLoading, isValidating, mutate } = useProtoSWR(shouldFetch ? rules.method.block_history : null);
+    const { data, error, isLoading, isValidating, mutate } = useSWR("/api/v2/route/rules/block-history", blockHistory);
 
     const values = useMemo(() => {
-        if (!data?.objects) return []
-        return data.objects.filter(v => v.time).sort((a, b) => {
+        if (!data?.items) return []
+        return data.items.filter(v => v.time).sort((a, b) => {
             const first = sortOrder === "asc" ? -1 : 1;
             const second = sortOrder === "asc" ? 1 : -1;
 
@@ -99,10 +107,10 @@ function BypassBlockHistory() {
             if (sortBy === "Count") return Number(a.blockCount) < Number(b.blockCount) ? first : second;
             if (sortBy === "Proc") return (a.process ?? "") < (b.process ?? "") ? first : second;
 
-            const aTime = a.time ?? TimestampZero;
-            const bTime = b.time ?? TimestampZero;
-            if (aTime.seconds < bTime.seconds) return first;
-            if (aTime.seconds > bTime.seconds) return second;
+            const aTime = historyDate(a.time).getTime();
+            const bTime = historyDate(b.time).getTime();
+            if (aTime < bTime) return first;
+            if (aTime > bTime) return second;
             return 0;
         })
     }, [data, sortBy, sortOrder]);
@@ -164,7 +172,7 @@ function BypassBlockHistory() {
 
             <CardList
                 items={paginatedItems}
-                getKey={(v) => `${v.host}-${v.time?.seconds}`}
+                getKey={(v) => `${v.host}-${v.time}`}
                 onClickItem={(item) => setInfo({ show: true, data: item })}
                 renderListItem={(item) => <ListItem data={item} />}
                 footer={<Pagination

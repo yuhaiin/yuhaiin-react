@@ -1,11 +1,11 @@
 "use client"
 
+import { getInfo } from "@/api/settings";
 import { Card, CardBody, CardFooter, CardHeader, IconBadge, IconBox, IconBoxRounded, ListItem, MainContainer, SettingLabel } from '@/component/v2/card';
 import { BadgeCheck, Calendar, Code, Cpu, ExternalLink, GitBranch, GitFork, Info, Laptop, Layers, LayoutGrid, Terminal } from 'lucide-react';
 import React, { FC } from "react";
-import { useProtoSWR } from "../../../common/proto";
+import useSWR from "swr";
 import Loading, { Error } from "../../../component/v2/loading";
-import { config_service } from "../../pbes/api/config_pb";
 
 const InfoRow: FC<{
     label: string;
@@ -49,7 +49,7 @@ const InfoRow: FC<{
 );
 
 export default function About() {
-    const { data: info, isLoading, isValidating, error } = useProtoSWR(config_service.method.info);
+    const { data: info, isLoading, isValidating, error } = useSWR("/api/v2/info", getInfo);
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || isValidating || !info) return <Loading />

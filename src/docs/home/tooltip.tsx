@@ -1,4 +1,4 @@
-import { formatBytes } from "../connections/components";
+import { formatBytes } from "./format";
 import { createPortal } from "react-dom";
 
 interface TooltipProps {

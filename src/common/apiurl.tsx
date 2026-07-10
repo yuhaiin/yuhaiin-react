@@ -12,6 +12,14 @@ export const LatencyHTTPUrlDefault = "https://clients3.google.com/generate_204"
 export const LatencyDNSUrlKey = "latency_dns_url_v2"
 
 export const LatencyDNSUrlDefault = "dns.nextdns.io:853"
+export const BadLatencyDNSUrlDefault = "223.5.5.5:53"
+
+export function normalizeLatencyDNSUrl(value?: string) {
+    const trimmed = (value ?? "").trim()
+    if (!trimmed || trimmed === BadLatencyDNSUrlDefault) return LatencyDNSUrlDefault
+    return trimmed
+}
+
 export const LatencyHTTPUrlKey = "latency_http_url_v2"
 
 export const LatencyIPv6Default = true

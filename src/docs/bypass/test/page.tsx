@@ -1,22 +1,133 @@
 "use client"
 
+import { testRule } from '@/api/route';
+import { Badge } from '@/component/v2/badge';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader, IconBox, MainContainer, SettingsBox } from '@/component/v2/card';
 import { Input } from '@/component/v2/input';
 import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
-import { create, toJsonString } from "@bufbuild/protobuf";
-import { StringValueSchema } from "@bufbuild/protobuf/wkt";
-import { Clipboard, ClipboardCheck, ClipboardList, Info, Play, Terminal } from 'lucide-react';
-import { useCallback, useContext, useEffect, useState } from "react";
-import { FetchProtobuf } from "../../../common/proto";
+import type { RuleTestResponse } from '@/contract/route';
+import { CheckCircle2, Clipboard, ClipboardCheck, ClipboardList, GitBranch, Info, ListChecks, Play, Tags, Terminal, XCircle } from 'lucide-react';
+import { type ElementType, type ReactNode, useCallback, useContext, useEffect, useState } from "react";
 import { useClipboard } from "../../../component/v2/clipboard";
-import { rules, test_response, test_responseSchema } from "../../pbes/api/config_pb";
+
+function formatTestResponse(value: RuleTestResponse): string {
+    return JSON.stringify(value, (_key, v) => {
+        if (typeof v === "bigint") return v.toString();
+        if (v instanceof Date) return v.toISOString();
+        return v;
+    }, 2);
+}
+
+function displayValue(value: string | undefined): string {
+    return value?.trim() || "-";
+}
+
+function ResultSection({ title, icon: Icon, children }: { title: string; icon: ElementType; children: ReactNode }) {
+    return (
+        <div className="rounded-ui-lg border border-ui-border bg-ui-surface-muted/60 p-4">
+            <div className="mb-3 flex items-center gap-2 text-sm font-bold text-ui-heading">
+                <Icon size={16} className="text-ui-primary" />
+                {title}
+            </div>
+            {children}
+        </div>
+    );
+}
+
+function EmptyResult({ children }: { children: ReactNode }) {
+    return (
+        <div className="rounded-ui-md border border-dashed border-ui-border px-3 py-4 text-center text-sm font-medium text-ui-muted">
+            {children}
+        </div>
+    );
+}
+
+function ChipList({ items, empty }: { items: string[]; empty: string }) {
+    if (items.length === 0) return <EmptyResult>{empty}</EmptyResult>;
+
+    return (
+        <div className="flex flex-wrap gap-2">
+            {items.map((item) => (
+                <Badge key={item} variant="secondary" className="max-w-full font-mono">
+                    <span className="truncate">{item}</span>
+                </Badge>
+            ))}
+        </div>
+    );
+}
+
+function ResultView({ value }: { value: RuleTestResponse }) {
+    const hasHistory = value.matchResult.length > 0;
+
+    return (
+        <div className="grid gap-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-ui-lg border border-ui-border bg-ui-list px-4 py-3">
+                    <div className="mb-1 text-xs font-bold uppercase tracking-[0.5px] text-ui-muted">Mode</div>
+                    <Badge variant="info" className="text-sm">{displayValue(value.mode)}</Badge>
+                </div>
+                <div className="rounded-ui-lg border border-ui-border bg-ui-list px-4 py-3">
+                    <div className="mb-1 text-xs font-bold uppercase tracking-[0.5px] text-ui-muted">Tag</div>
+                    <div className="truncate font-semibold text-ui-heading">{displayValue(value.tag)}</div>
+                </div>
+                <div className="rounded-ui-lg border border-ui-border bg-ui-list px-4 py-3">
+                    <div className="mb-1 text-xs font-bold uppercase tracking-[0.5px] text-ui-muted">Resolver</div>
+                    <div className="truncate font-semibold text-ui-heading">{displayValue(value.resolver)}</div>
+                </div>
+                <div className="rounded-ui-lg border border-ui-border bg-ui-list px-4 py-3">
+                    <div className="mb-1 text-xs font-bold uppercase tracking-[0.5px] text-ui-muted">After Address</div>
+                    <div className="truncate font-mono font-semibold text-ui-heading">{displayValue(value.afterAddr)}</div>
+                </div>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+                <ResultSection title="Matched Lists" icon={ListChecks}>
+                    <ChipList items={value.lists ?? []} empty="No matched lists." />
+                </ResultSection>
+
+                <ResultSection title="Resolved IPs" icon={Tags}>
+                    <ChipList items={value.ips ?? []} empty="No resolved IPs." />
+                </ResultSection>
+            </div>
+
+            <ResultSection title="Match History" icon={GitBranch}>
+                {!hasHistory ? (
+                    <EmptyResult>No match history.</EmptyResult>
+                ) : (
+                    <div className="grid gap-3">
+                        {value.matchResult.map((result, index) => (
+                            <div key={`${result.ruleName}-${index}`} className="rounded-ui-md border border-ui-border bg-ui-surface px-3 py-3">
+                                <div className="mb-2 flex min-w-0 items-center gap-2">
+                                    <Badge variant="secondary">#{index + 1}</Badge>
+                                    <span className="truncate font-bold text-ui-heading">{displayValue(result.ruleName)}</span>
+                                </div>
+                                {result.history.length === 0 ? (
+                                    <div className="text-sm font-medium text-ui-muted">No list checks.</div>
+                                ) : (
+                                    <div className="flex flex-wrap gap-2">
+                                        {result.history.map((history) => (
+                                            <Badge key={`${result.ruleName}-${history.listName}`} variant={history.matched ? "success" : "secondary"} className="max-w-full gap-1 font-mono">
+                                                {history.matched ? <CheckCircle2 size={13} /> : <XCircle size={13} />}
+                                                <span className="truncate">{history.listName}</span>
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </ResultSection>
+        </div>
+    );
+}
 
 function Test() {
     const ctx = useContext(GlobalToastContext);
     const [value, setValue] = useState("");
-    const [resp, setResp] = useState<test_response | undefined>(undefined);
+    const [resp, setResp] = useState<RuleTestResponse | undefined>(undefined);
     const [testing, setTesting] = useState(false);
 
     // Clipboard hook for copying results
@@ -32,14 +143,9 @@ function Test() {
         setTesting(true);
         setResp(undefined);
 
-        FetchProtobuf(
-            rules.method.test,
-            create(StringValueSchema, { value })
-        )
-            .then(async ({ data, error }) => {
-                if (error) ctx.Error(`Test failed: ${error.code} | ${error.msg}`);
-                else setResp(data);
-            })
+        testRule(value)
+            .then(setResp)
+            .catch((error) => ctx.Error(`Test failed: ${error.code ?? 500} | ${error.msg ?? error}`))
             .finally(() => setTesting(false));
     }, [value, ctx]);
 
@@ -94,25 +200,14 @@ function Test() {
 
                         <Button
                             size="sm"
-                            onClick={() => copy(toJsonString(test_responseSchema, resp, { prettySpaces: 2 }))}
+                            onClick={() => copy(formatTestResponse(resp))}
                         >
                             {copied ? <ClipboardCheck size={16} /> : <Clipboard size={16} />}
                         </Button>
                     </CardHeader>
                     <CardBody>
                         <SettingsBox>
-                            <pre
-                                className="mb-0 font-mono"
-                                style={{
-                                    whiteSpace: 'pre-wrap',
-                                    wordBreak: 'break-all',
-                                    fontSize: '0.85rem',
-                                    maxHeight: '500px',
-                                    overflowY: 'auto'
-                                }}
-                            >
-                                {toJsonString(test_responseSchema, resp, { prettySpaces: 2 })}
-                            </pre>
+                            <ResultView value={resp} />
                         </SettingsBox>
                     </CardBody>
                 </Card>

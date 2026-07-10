@@ -1,14 +1,14 @@
 "use client"
 
+import { getLicenses } from "@/api/tools";
 import { Badge } from "@/component/v2/badge";
 import { Card, CardBody, CardHeader, IconBox, ListItem, MainContainer } from '@/component/v2/card';
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
+import type { License } from "@/contract/tools";
 import { FileText, Heart, Link, ShieldCheck } from "lucide-react";
 import { FC, useState } from "react";
-import { useProtoSWR } from "../../../common/proto";
+import useSWR from "swr";
 import Loading, { Error } from "../../../component/v2/loading";
-import { tools } from "../../pbes/api/tools_pb";
-import { License } from "../../pbes/tools/tools_pb";
 
 const LicenseItem: FC<{ item: License, index: number }> = ({ item, index }) => {
     return (
@@ -59,7 +59,7 @@ const LicensesList: FC<{ value: License[] }> = ({ value }) => {
 };
 
 export default function Licenses() {
-    const { data, isLoading, isValidating, error } = useProtoSWR(tools.method.licenses, { revalidateOnFocus: false });
+    const { data, isLoading, isValidating, error } = useSWR("/api/v2/tools/licenses", getLicenses, { revalidateOnFocus: false });
     const [activeTab, setActiveTab] = useState("yuhaiin");
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />

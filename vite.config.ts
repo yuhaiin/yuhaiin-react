@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 
 // https://vitejs.dev/config/
@@ -23,6 +24,9 @@ export default defineConfig({
     },
     resolve: {
         tsconfigPaths: true,
+        alias: {
+            '@': fileURLToPath(new URL('./src', import.meta.url)),
+        },
     },
     build: {
         rollupOptions: {
@@ -32,7 +36,6 @@ export default defineConfig({
                         const rules: Array<{ match: string | string[]; chunk: string }> = [
                             { match: 'radix', chunk: 'radix-ui' },
                             { match: 'uplot', chunk: 'uplot' },
-                            { match: 'protobuf', chunk: 'protobuf' },
                             { match: 'bootstrap', chunk: 'bootstrap' },
                             { match: 'lucide', chunk: 'lucide' },
                             { match: 'tanstack', chunk: 'tanstack' },

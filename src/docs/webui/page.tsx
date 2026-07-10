@@ -15,6 +15,7 @@ import {
     LatencyHTTPUrlDefault, LatencyHTTPUrlKey,
     LatencyIPUrlDefault, LatencyIPUrlKey,
     LatencyIPv6Default, LatencyIPv6Key,
+    normalizeLatencyDNSUrl,
     LatencyStunTCPUrlDefault, LatencyStunTCPUrlKey,
     LatencyStunUrlDefault, LatencyStunUrlKey
 } from "../../common/apiurl";
@@ -117,9 +118,9 @@ function Setting() {
                     <InputWithIcon
                         icon={Shield}
                         label={t('latency.dns')}
-                        value={latencyDNS}
+                        value={normalizeLatencyDNSUrl(latencyDNS)}
                         onChange={setLatencyDNS}
-                        placeholder="dns.example.com:853"
+                        placeholder="dns.nextdns.io:853"
                     />
                     <InputWithIcon
                         icon={MapPin}

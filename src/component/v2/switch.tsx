@@ -19,39 +19,45 @@ const transition: Transition = {
   damping: 30
 };
 
-const SwitchComponent: React.FC<SwitchProps> = ({ checked, onCheckedChange, label, description, disabled }) => (
-  <div className={clsx("flex items-center justify-between", disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
-    {label && (
-      <div className="mr-4">
-        <div className="font-medium leading-tight">{label}</div>
-        {description && <div className="text-gray-500 text-xs mt-0.5">{description}</div>}
-      </div>
-    )}
-    <SwitchPrimitive.Root
-      className={clsx(
-        "w-[42px] h-[25px] bg-[var(--bs-secondary-bg,#e9ecef)] rounded-full relative shadow-[inset_0_0.125rem_0.25rem_rgba(0,0,0,0.075)] flex items-center p-[2px] border border-[var(--bs-border-color)] cursor-pointer transition-colors duration-150 ease-in-out",
-        "data-[state=checked]:bg-[var(--bs-primary,#0d6efd)] data-[state=checked]:justify-end",
-        "disabled:opacity-50 disabled:cursor-not-allowed",
-        "focus-visible:outline-none focus-visible:shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)]"
+const SwitchComponent: React.FC<SwitchProps> = ({ checked, onCheckedChange, label, description, disabled }) => {
+  const isChecked = Boolean(checked);
+
+  return (
+    <div className={clsx("flex items-center justify-between", disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
+      {label && (
+        <div className="mr-4">
+          <div className="font-medium leading-tight">{label}</div>
+          {description && <div className="text-gray-500 text-xs mt-0.5">{description}</div>}
+        </div>
       )}
-      checked={checked}
-      onCheckedChange={onCheckedChange}
-      disabled={disabled}
-    >
-      <SwitchPrimitive.Thumb asChild>
-        <motion.span
-          className="block w-[21px] h-[21px] bg-white rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.1)] will-change-[transform]"
-          layout
-          transition={transition}
-        />
-      </SwitchPrimitive.Thumb>
-    </SwitchPrimitive.Root>
-  </div>
-);
+      <SwitchPrimitive.Root
+        className={clsx(
+          "w-[42px] h-[25px] bg-[var(--bs-secondary-bg,#e9ecef)] rounded-full relative shadow-[inset_0_0.125rem_0.25rem_rgba(0,0,0,0.075)] flex items-center p-[2px] border border-[var(--bs-border-color)] cursor-pointer transition-colors duration-150 ease-in-out",
+          "data-[state=checked]:bg-[var(--bs-primary,#0d6efd)] data-[state=checked]:justify-end",
+          "disabled:opacity-50 disabled:cursor-not-allowed",
+          "focus-visible:outline-none focus-visible:shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)]"
+        )}
+        checked={isChecked}
+        onCheckedChange={onCheckedChange}
+        disabled={disabled}
+      >
+        <SwitchPrimitive.Thumb asChild>
+          <motion.span
+            className="block w-[21px] h-[21px] bg-white rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.1)] will-change-[transform]"
+            layout
+            transition={transition}
+          />
+        </SwitchPrimitive.Thumb>
+      </SwitchPrimitive.Root>
+    </div>
+  );
+};
 
 export default SwitchComponent;
 
 export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ label, description, checked, onCheckedChange, className, disabled }) => {
+  const isChecked = Boolean(checked);
+
   return (
     <div
       className={clsx(
@@ -60,10 +66,10 @@ export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ lab
         className,
         disabled && "opacity-60 pointer-events-none grayscale-[0.5]"
       )}
-      onClick={() => !disabled && onCheckedChange(!checked)}
+      onClick={() => !disabled && onCheckedChange(!isChecked)}
       role="button"
       tabIndex={disabled ? -1 : 0}
-      onKeyDown={(e) => { if (!disabled && (e.key === 'Enter' || e.key === ' ')) onCheckedChange(!checked); }}
+      onKeyDown={(e) => { if (!disabled && (e.key === 'Enter' || e.key === ' ')) onCheckedChange(!isChecked); }}
     >
       <div className="mr-4">
         <div className="font-medium leading-tight">{label}</div>
@@ -76,7 +82,7 @@ export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ lab
           "disabled:opacity-50 disabled:cursor-not-allowed",
           "focus-visible:outline-none focus-visible:shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)]"
         )}
-        checked={checked}
+        checked={isChecked}
         onCheckedChange={onCheckedChange}
         disabled={disabled}
       >
@@ -101,6 +107,10 @@ const Switch = ({ className, label, id, ...props }: React.ComponentProps<typeof 
   // Generate a unique ID to associate the Label (if id is not passed from outside)
   const generatedId = React.useId();
   const switchId = id || generatedId;
+  const switchProps = {
+    ...props,
+    ...("checked" in props ? { checked: Boolean(props.checked) } : {}),
+  };
 
   return (
     <div className={clsx("flex items-center gap-2 cursor-pointer", className)}>
@@ -112,7 +122,7 @@ const Switch = ({ className, label, id, ...props }: React.ComponentProps<typeof 
           "disabled:opacity-50 disabled:cursor-not-allowed",
           "focus-visible:outline-none focus-visible:shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)]"
         )}
-        {...props}
+        {...switchProps}
       >
         <SwitchPrimitive.Thumb asChild>
           <motion.span

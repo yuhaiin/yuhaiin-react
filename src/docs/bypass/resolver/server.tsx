@@ -1,3 +1,4 @@
+import { getResolverServer, saveResolverServer } from '@/api/resolvers';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardFooter, CardHeader, IconBox } from '@/component/v2/card';
 import { SettingInputVertical } from '@/component/v2/forms';
@@ -5,15 +6,14 @@ import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { RotateCw, Save, Server as ServerIcon } from 'lucide-react';
 import { FC, useContext, useState } from "react";
-import { FetchProtobuf, useProtoSWR } from "../../../common/proto";
+import useSWR from "swr";
 import Loading from "../../../component/v2/loading";
-import { resolver } from "../../pbes/api/config_pb";
 
 export const Server: FC = () => {
     const ctx = useContext(GlobalToastContext);
     const [saving, setSaving] = useState(false);
     const [isDirty, setDirty] = useState(false);
-    const { data, error, isLoading, mutate } = useProtoSWR(resolver.method.server, {
+    const { data, error, isLoading, mutate } = useSWR("/api/v2/resolver/server", getResolverServer, {
         onSuccess: () => setDirty(false)
     });
 
@@ -22,17 +22,13 @@ export const Server: FC = () => {
 
     const handleSave = () => {
         setSaving(true)
-        FetchProtobuf(resolver.method.save_server, data)
-            .then(async ({ error }) => {
-                if (error === undefined) {
-                    ctx.Info("save server successful")
-                } else {
-                    ctx.Error(error.msg)
-                    console.error(error.code, error.msg)
-                }
+        saveResolverServer(data)
+            .then(() => {
+                ctx.Info("save server successful")
                 mutate()
-                setSaving(false)
             })
+            .catch((error) => ctx.Error(error.msg ?? String(error)))
+            .finally(() => setSaving(false))
     }
 
     const handleMutate = (mutator: (prev: typeof data) => typeof data) => {
@@ -49,8 +45,8 @@ export const Server: FC = () => {
                 <SettingInputVertical
                     label="Listen Address"
                     placeholder="e.g. 127.0.0.1:53"
-                    value={data.value}
-                    onChange={(v: string) => handleMutate(prev => ({ ...prev, value: v }))}
+                    value={data.server}
+                    onChange={(v: string) => handleMutate(prev => ({ ...prev, server: v }))}
                 />
             </CardBody>
 

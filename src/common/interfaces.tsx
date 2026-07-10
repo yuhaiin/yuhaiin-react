@@ -1,13 +1,12 @@
 import { createContext } from "react";
-import { tools } from "../docs/pbes/api/tools_pb";
-import { Interface } from "../docs/pbes/tools/tools_pb";
-import { useProtoSWR } from "./proto";
+import useSWR from "swr";
+import { getInterfaces } from "@/api/tools";
+import type { InterfaceInfo } from "@/contract/tools";
 
-export const InterfacesContext = createContext<Interface[]>([])
+export const InterfacesContext = createContext<InterfaceInfo[]>([])
 
-export function useInterfaces(): Interface[] {
-    const { data: iffs } =
-        useProtoSWR(tools.method.get_interface, { revalidateOnFocus: false })
+export function useInterfaces(): InterfaceInfo[] {
+    const { data: iffs } = useSWR("/api/v2/tools/interfaces", getInterfaces, { revalidateOnFocus: false })
 
     return iffs ? iffs.interfaces : []
 }

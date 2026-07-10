@@ -1,443 +1,362 @@
 "use client"
 
-import { Badge } from '@/component/v2/badge';
-import { Button } from '@/component/v2/button';
-import { Card, CardBody, CardFooter, CardHeader, CardRowList, IconBox, MainContainer, SettingLabel, SettingsBox } from '@/component/v2/card';
-import { SettingInputVertical, SettingRangeVertical, SettingTypeSelect } from '@/component/v2/forms';
-import { InputList } from '@/component/v2/listeditor';
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
-import { Spinner } from '@/component/v2/spinner';
-import { GlobalToastContext } from '@/component/v2/toast';
-import { ToggleGroup, ToggleItem } from '@/component/v2/togglegroup';
-import { create } from "@bufbuild/protobuf";
-import { EmptySchema, StringValueSchema } from "@bufbuild/protobuf/wkt";
-import { Check, ChevronRight, CloudDownload, FileText, History, ListChecks, Network, RefreshCw, Save, SlidersHorizontal, Trash, TriangleAlert } from 'lucide-react';
-import { FC, useContext, useEffect, useState } from "react";
+import { createRouteList, deleteRouteList, getRouteList, getRouteListConfig, listRouteLists, refreshRouteLists, saveRouteList, saveRouteListConfig } from "@/api/route";
+import { Badge } from "@/component/v2/badge";
+import { Button } from "@/component/v2/button";
+import { Card, CardBody, CardFooter, CardHeader, CardRowList, FilterSearch, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
+import { SettingInputVertical, SettingRangeVertical, SettingSelectVertical } from "@/component/v2/forms";
+import { InputList } from "@/component/v2/listeditor";
+import Loading from "@/component/v2/loading";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
+import { Spinner } from "@/component/v2/spinner";
+import { GlobalToastContext } from "@/component/v2/toast";
+import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
+import type { RouteListDetail } from "@/contract/route";
+import { createDefaultRouteList, normalizeRouteList } from "@/contract/route";
+import { Check, ChevronRight, Clock, CloudDownload, FileText, List, Network, Plus, RefreshCw, Save, Trash, TriangleAlert } from "lucide-react";
+import type { CSSProperties } from "react";
+import { useContext, useEffect, useState } from "react";
 import useSWR from "swr";
-import { FetchProtobuf, ProtoESFetcher, ProtoPath, useProtoSWR, useProtoSWRRequest } from "../../../common/proto";
-import { mapSetting, updateIfPresent } from "../../../common/utils";
-import { ConfirmModal } from "../../../component/v2/confirm";
-import Loading, { Error } from "../../../component/v2/loading";
-import { list_item, lists, page_requestSchema, save_list_config_requestSchema } from "../../pbes/api/config_pb";
-import { list, list_list_type_enum, list_list_type_enumSchema, list_localSchema, list_remoteSchema, listSchema, maxminddb_geoipSchema, refresh_configSchema } from "../../pbes/config/bypass_pb";
 
+const routeListTypes = ["host", "process", "cidr", "domain", "regexp", "keyword", "suffix"];
+const sourceTypes = ["local", "remote"];
 const PAGE_SIZE = 8;
 
-const ListItemRow: FC<{ item: list_item }> = ({ item }) => {
-    return (
-        <>
-            <div className="grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(190px,0.36fr)_minmax(0,1fr)] md:items-center">
-                <div className="flex min-w-0 items-center">
-                    <FileText className="mr-4 text-gray-500 dark:text-gray-400 shrink-0" size={20} />
-                    <div className="flex min-w-0 flex-wrap items-center gap-2">
-                        <span className="truncate font-medium">{item.name}</span>
-                        <Badge variant="secondary" className="shrink-0">{item.type}</Badge>
-                        {item.errorCount > 0 && <Badge variant="danger" className="shrink-0">{item.errorCount} errors</Badge>}
-                    </div>
-                </div>
-                <div className="grid min-w-0 gap-2 text-xs text-ui-muted sm:grid-cols-3">
-                    <div className="min-w-0">
-                        <span className="mr-1 text-ui-muted/70">Source</span>
-                        <span className="font-medium text-ui-fg">{item.source || "-"}</span>
-                    </div>
-                    <div className="min-w-0">
-                        <span className="mr-1 text-ui-muted/70">Entries</span>
-                        <span className="font-medium text-ui-fg">{item.itemCount}</span>
-                    </div>
-                    <div className="min-w-0">
-                        <span className="mr-1 text-ui-muted/70">Preview</span>
-                        <span className="truncate font-mono font-medium text-ui-fg">{item.preview || "-"}</span>
-                    </div>
-                </div>
-            </div>
-            <ChevronRight className="text-gray-500 dark:text-gray-400 opacity-25 shrink-0" size={16} />
-        </>
-    )
-}
-
-export default function Lists() {
+function Lists() {
     const ctx = useContext(GlobalToastContext);
-    const [page, setPage] = useState(1)
-    const { data, error, isLoading, mutate } = useProtoSWRRequest(
-        lists.method.list_page,
-        create(page_requestSchema, { page, pageSize: PAGE_SIZE }),
-        { revalidateOnFocus: false }
-    )
-    const { data: allLists, mutate: mutateAllLists } = useProtoSWR(lists.method.list, { revalidateOnFocus: false })
+    const [page, setPage] = useState(1);
+    const [query, setQuery] = useState("");
+    const [editing, setEditing] = useState<string | null>(null);
+    const [creating, setCreating] = useState(false);
+    const [creatingName, setCreatingName] = useState("");
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const { data, error, isLoading, mutate } = useSWR(
+        ["/api/v2/route/lists", page, query],
+        () => listRouteLists({ page, pageSize: PAGE_SIZE, query }),
+        { revalidateOnFocus: false },
+    );
 
-    const [showdata, setShowdata] = useState({ show: false, name: "", new: false });
-    const [confirm, setConfirm] = useState<{ show: boolean, name: string }>({ show: false, name: "" });
-    const [refresh, setRefresh] = useState(false)
-    const [saving, setSaving] = useState(false)
-    const update = mapSetting(mutate)
-
-    useEffect(() => {
-        if (!data) return
-        if (!data.refreshConfig) {
-            update(prev => {
-                return { ...prev, refreshConfig: create(refresh_configSchema, { refreshInterval: BigInt(0), }) }
-            }, false)
-        }
-    }, [data, update])
-
-    if (error !== undefined) return <Loading code={error.code}>{error.msg}</Loading>
-    if (isLoading || data === undefined) return <Loading />
-
-    const deleteList = (name: string) => {
-        FetchProtobuf(lists.method.remove, create(StringValueSchema, { value: name }),)
-            .then(async ({ error }) => {
-                if (error === undefined) {
-                    ctx.Info("remove successful")
-                    mutate()
-                    mutateAllLists()
-                } else {
-                    ctx.Error(error.msg)
-                    console.error(error.code, error.msg)
-                }
-            })
-    }
-
-    const handleSaveSettings = () => {
-        setSaving(true)
-        FetchProtobuf(lists.method.save_config, create(save_list_config_requestSchema, {
-            refreshInterval: data.refreshConfig?.refreshInterval,
-            maxminddbGeoip: data.maxminddbGeoip
-        }))
-            .then(async ({ error }) => {
-                if (error === undefined) {
-                    ctx.Info("save successful")
-                    mutate()
-                    mutateAllLists()
-                } else {
-                    ctx.Error(error.msg)
-                    console.error(error.code, error.msg)
-                }
-                setSaving(false)
-            })
-    }
-
-    const handleCreate = (v: string) => {
-        if (allLists?.names.includes(v) || data.names.includes(v)) return;
-        if (showdata.name === v && showdata.new) {
-            setShowdata(prev => { return { ...prev, show: true } })
-        } else {
-            setShowdata({ show: true, name: v, new: true })
+    const refresh = async () => {
+        if (isRefreshing) return;
+        setIsRefreshing(true);
+        try {
+            await refreshRouteLists();
+            ctx.Info("refresh successful");
+            await mutate();
+        } catch (err) {
+            const e = err as { msg?: string };
+            ctx.Error(e.msg ?? String(err));
+        } finally {
+            setIsRefreshing(false);
         }
     };
 
-    const lastRefreshTime = data?.refreshConfig?.lastRefreshTime
-        ? new Date(Number(data.refreshConfig.lastRefreshTime) * 1000).toLocaleString()
-        : "Never";
-    const totalLists = data.page?.total ?? data.names.length;
-    const listItems: list_item[] = data.items.length > 0
-        ? data.items
-        : data.names.map((name) => ({ name, type: "", source: "", itemCount: 0, errorCount: 0, preview: "" }));
+    const saved = () => {
+        mutate();
+        setEditing(null);
+        setCreating(false);
+        setCreatingName("");
+    };
+
+    if (error) return <Loading code={error.code}>{error.msg}</Loading>
+    if (isLoading || !data) return <Loading />
 
     return (
         <MainContainer>
-            <ConfirmModal
-                show={confirm.show}
-                title="Delete List"
-                content={<>Are you sure to delete <span className="font-bold text-red-500">{confirm.name}</span>?</>}
-                onOk={() => {
-                    deleteList(confirm.name)
-                    setConfirm(prev => { return { ...prev, show: false } })
-                }}
-                onHide={() => { setConfirm(prev => { return { ...prev, show: false } }) }}
-            />
-
-            <ListsModal
-                name={showdata.name}
-                show={showdata.show}
-                isNew={showdata.new}
-                onHide={(save) => {
-                    if (save) {
-                        mutate();
-                        mutateAllLists();
-                    }
-                    setShowdata(prev => { return { ...prev, show: false } })
-                }}
-                // Pass delete callback to Modal
-                onDelete={(name) => setConfirm({ show: true, name: name })}
-            />
-
-            {/* --- 1. Page Header: Global Status Bar --- */}
-            <div className="flex flex-wrap justify-between items-end mb-6 gap-4">
-                <div>
-                    <h4 className="font-bold mb-1">List Management</h4>
-                    <div className="text-gray-500 dark:text-gray-400 flex items-center text-xs">
-                        <History className="mr-2 opacity-75" />
-                        <span>Last Synced: <span className="font-medium text-foreground">{lastRefreshTime}</span></span>
-                    </div>
-                </div>
-
-                <Button
-                    disabled={refresh}
-                    onClick={() => {
-                        setRefresh(true)
-                        FetchProtobuf(lists.method.refresh, create(EmptySchema))
-                            .then(async ({ error }) => {
-                                if (error === undefined) {
-                                    ctx.Info("refresh successful")
-                                    mutate()
-                                    mutateAllLists()
-                                } else {
-                                    ctx.Error(error.msg)
-                                    console.error(error.code, error.msg)
-                                }
-                                setRefresh(false)
-                            })
-                    }}
-                >
-                    {refresh ? <Spinner size="sm" /> : <RefreshCw className="mr-2" size={16} />}
-                    <span>Sync All Resources</span>
-                </Button>
-            </div>
-
-            <div className="flex flex-col gap-6">
-                {/* --- 2. Configuration Card --- */}
-                <Card>
-                    <CardHeader>
-                        <IconBox icon={SlidersHorizontal} color="#a855f7" title="Global Settings" description="Auto-fetch Interval & GeoIP" />
-                    </CardHeader>
-
-                    <CardBody>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {/* Auto-fetch Interval */}
-                            <div>
-                                <SettingRangeVertical
-                                    label="Auto-fetch Interval"
-                                    value={Number(data.refreshConfig?.refreshInterval) / 60}
-                                    min={0}
-                                    max={24 * 30}
-                                    step={1}
-                                    unit="Hours"
-                                    onChange={(v) => update(prev => ({
-                                        ...prev,
-                                        refreshConfig: updateIfPresent(prev.refreshConfig, (c) => create(refresh_configSchema, { ...c, refreshInterval: BigInt(v * 60) }))
-                                    }), false)}
-                                />
-                            </div>
-
-                            {/* GeoIP URL */}
-                            <div className="lg:border-l lg:pl-6 border-[var(--card-inner-border)]">
-                                <SettingInputVertical
-                                    label="Maxmind GeoIP Database URL"
-                                    placeholder="e.g. https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb"
-                                    value={data.maxminddbGeoip?.downloadUrl}
-                                    onChange={(v) => {
-                                        update(prev => ({
-                                            ...prev,
-                                            maxminddbGeoip: updateIfPresent(prev.maxminddbGeoip, (c) => create(maxminddb_geoipSchema, { ...c, downloadUrl: v }))
-                                        }), false)
-                                    }}
-                                />
-                                {data.maxminddbGeoip?.error && (
-                                    <div className="mt-2 p-2 bg-red-500/10 text-red-500 rounded text-xs">
-                                        <TriangleAlert className="mr-2" size={14} />{data.maxminddbGeoip.error}
-                                    </div>
-                                )}
+            <ListConfigCard />
+            <CardRowList
+                layout="list"
+                paginated
+                pageSize={PAGE_SIZE}
+                currentPage={data.page.page || page}
+                totalItems={data.page.total}
+                onPageChange={setPage}
+                items={data.items}
+                getKey={(v) => v.name}
+                renderListItem={(item) => (
+                    <div className="flex w-full items-center justify-between gap-3">
+                        <div className="flex min-w-0 flex-1 items-start gap-3">
+                            <FileText className="mt-1 shrink-0 text-ui-muted" size={20} />
+                            <div className="min-w-0 flex-1">
+                                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                                    <span className="truncate text-base font-bold text-ui-heading">{item.name}</span>
+                                    <Badge variant="secondary" className="shrink-0">{item.type || "-"}</Badge>
+                                    {item.errorCount > 0 && <Badge variant="danger" className="shrink-0">{item.errorCount} errors</Badge>}
+                                </div>
+                                <div className="mt-2 flex min-w-0 flex-wrap gap-x-4 gap-y-1 text-sm text-ui-muted">
+                                    <span className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
+                                        <span className="text-ui-muted/80">Source</span>
+                                        <span className="font-semibold text-ui-fg">{item.source || "-"}</span>
+                                    </span>
+                                    <span className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
+                                        <span className="text-ui-muted/80">Entries</span>
+                                        <span className="font-semibold text-ui-fg">{item.itemCount}</span>
+                                    </span>
+                                    <span className="inline-flex min-w-0 flex-1 basis-[260px] items-center gap-1">
+                                        <span className="shrink-0 text-ui-muted/80">Preview</span>
+                                        <span className="min-w-0 truncate font-mono font-semibold text-ui-fg">{item.preview || "-"}</span>
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </CardBody>
-
-                    <CardFooter className="flex justify-end">
-                        <Button disabled={saving} onClick={handleSaveSettings}>
-                            {saving ? <Spinner size="sm" /> : <><Save className="mr-2" size={16} />Save Configuration</>}
-                        </Button>
-                    </CardFooter>
-                </Card>
-
-                <CardRowList
-                    layout="list"
-                    paginated
-                    pageSize={PAGE_SIZE}
-                    currentPage={data.page?.page || page}
-                    totalItems={totalLists}
-                    onPageChange={setPage}
-                    items={listItems}
-                    getKey={(item) => item.name}
-                    renderListItem={(item) => <ListItemRow item={item} />}
-                    onClickItem={(item) => setShowdata({ show: true, name: item.name, new: false })}
-                    onAddNew={handleCreate}
-                    adding={saving}
-                    header={
-                        <IconBox icon={ListChecks} color="#3b82f6" title="Defined Lists" description={`${totalLists} Lists Available`} />
-                    }
-                />
-            </div>
+                        <ChevronRight className="shrink-0 text-ui-muted/55" size={20} />
+                    </div>
+                )}
+                onClickItem={(item) => setEditing(item.name)}
+                header={
+                    <div className="flex w-full items-center justify-between gap-3">
+                        <IconBox icon={List} color="#2563eb" title="Defined Lists" description={`${data.page.total} lists available`} />
+                        <div className="flex shrink-0 items-center gap-2">
+                            <FilterSearch onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
+                            <Button size="sm" onClick={refresh} disabled={isRefreshing}>
+                                {isRefreshing ? <Spinner size="sm" className="mr-2" /> : <RefreshCw size={16} className="mr-2" />}
+                                Sync All Resources
+                            </Button>
+                            <Button size="sm" onClick={() => { setCreatingName(""); setCreating(true); }}><Plus size={16} className="mr-1" /> Add</Button>
+                        </div>
+                    </div>
+                }
+            />
+            <ListEditorModal name={editing} onSaved={saved} onClose={() => setEditing(null)} />
+            <CreateListModal open={creating} initialName={creatingName} onSaved={saved} onClose={() => setCreating(false)} />
         </MainContainer>
-    )
+    );
 }
 
-const ListsModal: FC<{ name: string, show: boolean, isNew?: boolean, onHide: (save?: boolean) => void, onDelete?: (name: string) => void }> =
-    ({ name, show, isNew, onHide, onDelete }) => {
-        const ctx = useContext(GlobalToastContext);
-        const [loadding, setLoadding] = useState(false);
+function ListConfigCard() {
+    const ctx = useContext(GlobalToastContext);
+    const [saving, setSaving] = useState(false);
+    const { data, error, isLoading, mutate } = useSWR("/api/v2/route/lists/config", getRouteListConfig, { revalidateOnFocus: false });
 
-        const { data, error, isLoading, isValidating, mutate } = useSWR(name === "" ? undefined : ProtoPath(lists.method.get),
-            ProtoESFetcher(
-                lists.method.get,
-                create(StringValueSchema, { value: name }),
-                isNew ? create(listSchema, {
-                    name: name, listType: list_list_type_enum.host, list: { case: "local", value: create(list_localSchema, { lists: [] }) }
-                }) : undefined
-            ),
-            { shouldRetryOnError: false, keepPreviousData: false, revalidateOnFocus: false })
+    const patch = (patchValue: Partial<NonNullable<typeof data>>) => {
+        mutate(prev => prev ? { ...prev, ...patchValue } : prev, { revalidate: false });
+    };
 
-        useEffect(() => { mutate(); }, [name, isNew, mutate])
+    const save = () => {
+        if (!data) return;
+        setSaving(true);
+        saveRouteListConfig(data)
+            .then((next) => {
+                ctx.Info("list config saved");
+                mutate(next, { revalidate: false });
+            })
+            .catch((err) => ctx.Error(err.msg ?? String(err)))
+            .finally(() => setSaving(false));
+    };
 
-        const handleSave = () => {
-            setLoadding(true)
-            FetchProtobuf(lists.method.save, data)
-                .then(async ({ error }) => {
-                    if (error === undefined) {
-                        ctx.Info("save successful")
-                        onHide(true)
-                    } else {
-                        ctx.Error(error.msg)
-                        console.error(error.code, error.msg)
-                    }
-                    mutate();
-                    setLoadding(false)
-                })
-        }
+    const lastSync = data?.lastRefreshTime && data.lastRefreshTime !== "0"
+        ? new Date(Number(data.lastRefreshTime) * 1000).toLocaleString()
+        : "Never";
 
-        return (
-            <Modal open={show} onOpenChange={(open) => !open && onHide()}>
-                <ModalContent style={{ maxWidth: '800px' }}>
-                    <ModalHeader closeButton>
-                        <ModalTitle>{name}</ModalTitle>
-                    </ModalHeader>
-                    <ModalBody>
-                        {error ?
-                            <Error statusCode={error.code} title={error.msg} /> :
-                            isValidating || isLoading || !data ? <Loading /> :
-                                <Single value={data} onChange={(e) => { mutate(e, false) }} />
-                        }
-                    </ModalBody>
-                    <ModalFooter className="flex justify-between">
-                        <div>
-                            {!isNew && name !== "bootstrap" && onDelete && (
-                                <Button
-                                    variant="outline-danger"
-                                    onClick={() => { onHide(false); onDelete(name); }}
-                                >
-                                    <Trash className="mr-2" size={16} />Delete List
-                                </Button>
-                            )}
-                        </div>
+    return (
+        <Card className="mb-4">
+            <CardHeader>
+                <IconBox icon={Clock} color="#10b981" title="List Synchronization" description={`Last Synced: ${lastSync}`} />
+                {isLoading && <Spinner size="sm" />}
+            </CardHeader>
+            <CardBody>
+                {error ? (
+                    <Loading code={error.code}>{error.msg}</Loading>
+                ) : data ? (
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <SettingRangeVertical
+                            label="Auto-fetch Interval"
+                            value={Math.floor(Number(data.refreshInterval || "0") / 60)}
+                            min={0}
+                            max={24 * 30}
+                            step={1}
+                            unit="Hours"
+                            onChange={(refreshInterval) => patch({ refreshInterval: String(refreshInterval * 60) })}
+                        />
+                        <SettingInputVertical
+                            label="Maxmind GeoIP Database URL"
+                            value={data.maxMindDbGeoIp.downloadUrl}
+                            onChange={(downloadUrl) => patch({ maxMindDbGeoIp: { ...data.maxMindDbGeoIp, downloadUrl } })}
+                        />
+                        {(data.error || data.maxMindDbGeoIp.error) && (
+                            <div className="md:col-span-2 rounded-ui-lg border border-ui-danger/40 bg-ui-danger/10 p-3 text-sm text-ui-danger">
+                                {data.error || data.maxMindDbGeoIp.error}
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <Loading />
+                )}
+            </CardBody>
+            <CardFooter className="flex justify-end">
+                <Button disabled={saving || !data} onClick={save}>
+                    {saving ? <Spinner size="sm" className="mr-2" /> : <Save size={16} className="mr-2" />}
+                    Save Configuration
+                </Button>
+            </CardFooter>
+        </Card>
+    );
+}
 
-                        <div className="flex gap-2">
-                            <Button onClick={() => onHide()}>Cancel</Button>
-                            <Button
-                                disabled={loadding}
-                                onClick={handleSave}
-                            >
-                                {loadding ? <Spinner size="sm" /> : <><Check className="mr-2" size={16} />Save</>}
+function ListEditorModal({ name, onSaved, onClose }: { name: string | null; onSaved: () => void; onClose: () => void }) {
+    const ctx = useContext(GlobalToastContext);
+    const [draft, setDraft] = useState<RouteListDetail>(createDefaultRouteList());
+    const { data, error, isLoading } = useSWR(name ? ["/api/v2/route/lists/detail", name] : null, () => getRouteList(name!), { revalidateOnFocus: false });
+
+    useEffect(() => {
+        if (data) setDraft(normalizeRouteList(data));
+    }, [data]);
+
+    const save = () => {
+        if (!name) return;
+        saveRouteList(name, draft)
+            .then(() => {
+                ctx.Info("list saved");
+                onSaved();
+            })
+            .catch((err) => ctx.Error(err.msg ?? String(err)));
+    };
+
+    const remove = () => {
+        if (!name || name === "bootstrap") return;
+        deleteRouteList(name)
+            .then(() => {
+                ctx.Info("list deleted");
+                onSaved();
+            })
+            .catch((err) => ctx.Error(err.msg ?? String(err)));
+    };
+
+    return (
+        <Modal open={!!name} onOpenChange={(open) => !open && onClose()}>
+            <ModalContent style={{ "--bs-modal-width": "760px" } as CSSProperties}>
+                <ModalHeader closeButton><ModalTitle>{name}</ModalTitle></ModalHeader>
+                <ModalBody>
+                    {error && <Loading code={error.code}>{error.msg}</Loading>}
+                    {isLoading && <Loading />}
+                    {!isLoading && !error && <RouteListForm value={draft} onChange={setDraft} lockName />}
+                </ModalBody>
+                <ModalFooter className="flex justify-between">
+                    <div>
+                        {name !== "bootstrap" && (
+                            <Button variant="outline-danger" onClick={remove}>
+                                <Trash className="mr-2" size={16} />Delete List
                             </Button>
-                        </div>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
-        )
-    }
+                        )}
+                    </div>
+                    <div className="flex gap-2">
+                        <Button onClick={onClose}>Cancel</Button>
+                        <Button onClick={save}><Check className="mr-2" size={16} />Save</Button>
+                    </div>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
+}
 
-const Single: FC<{ value: list, onChange: (x: list) => void }> = ({ value, onChange }) => {
+function CreateListModal({ open, initialName, onSaved, onClose }: { open: boolean; initialName?: string; onSaved: () => void; onClose: () => void }) {
+    const ctx = useContext(GlobalToastContext);
+    const [draft, setDraft] = useState<RouteListDetail>(createDefaultRouteList());
 
-    const isRemote = value.list.case === "remote";
+    useEffect(() => {
+        if (open) {
+            setDraft(createDefaultRouteList(initialName ?? ""));
+        }
+    }, [open, initialName]);
 
-    const handleModeChange = (remote: boolean) => {
-        if (remote === isRemote) return;
-        const currentData = value.list.case === "remote" ? value.list.value.urls : value?.list?.value?.lists ?? [];
+    const save = () => {
+        createRouteList(draft)
+            .then(() => {
+                ctx.Info("list created");
+                onSaved();
+            })
+            .catch((err) => ctx.Error(err.msg ?? String(err)));
+    };
 
-        onChange({
-            ...value,
-            list: remote ?
-                { case: "remote", value: create(list_remoteSchema, { urls: currentData }) } :
-                { case: "local", value: create(list_localSchema, { lists: currentData }) }
+    return (
+        <Modal open={open} onOpenChange={(next) => !next && onClose()}>
+            <ModalContent style={{ "--bs-modal-width": "760px" } as CSSProperties}>
+                <ModalHeader closeButton><ModalTitle>New Route List</ModalTitle></ModalHeader>
+                <ModalBody>
+                    <RouteListForm value={draft} onChange={setDraft} />
+                </ModalBody>
+                <ModalFooter>
+                    <Button onClick={onClose}>Cancel</Button>
+                    <Button onClick={save} disabled={!draft.name.trim()}><Check className="mr-2" size={16} />Save</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
+}
+
+function RouteListForm({ value, onChange, lockName }: { value: RouteListDetail; onChange: (value: RouteListDetail) => void; lockName?: boolean }) {
+    const sourceType = value.source.type || "local";
+    const patch = (patchValue: Partial<RouteListDetail>) => onChange(normalizeRouteList({ ...value, ...patchValue }));
+    const updateSourceType = (type: string) => {
+        const currentLines = sourceType === "remote" ? value.source.remote?.urls ?? [] : value.source.local?.lists ?? [];
+        patch({ source: type === "remote" ? { type, remote: { urls: currentLines } } : { type, local: { lists: currentLines } } });
+    };
+    const lines = sourceType === "remote" ? value.source.remote?.urls ?? [] : value.source.local?.lists ?? [];
+    const updateLines = (values: string[]) => {
+        patch({
+            source: sourceType === "remote"
+                ? { type: sourceType, remote: { urls: values } }
+                : { type: sourceType, local: { lists: values } },
         });
     };
 
     return (
         <div className="flex flex-col gap-6">
-            {/* 1. Top Settings Area */}
             <SettingsBox>
                 <div className="grid grid-cols-1 gap-6">
-                    {/* Content Type */}
-                    <div>
-                        <SettingTypeSelect
-                            label='Content Type'
-                            type={list_list_type_enumSchema}
-                            value={value.listType}
-                            onChange={(v) => onChange({ ...value, listType: v })}
-                        />
-                    </div>
-
-                    {/* Source Mode */}
+                    <SettingInputVertical label="Name" value={value.name} onChange={(name) => patch({ name })} disabled={lockName} />
+                    <SettingSelectVertical label="Content Type" value={value.type} values={routeListTypes} onChange={(type) => patch({ type })} />
                     <div>
                         <SettingLabel className="mb-2">Source Mode</SettingLabel>
                         <ToggleGroup
                             type="single"
-                            value={isRemote ? "remote" : "local"}
-                            onValueChange={(v) => v && handleModeChange(v === "remote")}
+                            value={sourceType}
+                            onValueChange={(type) => type && updateSourceType(type)}
                             className="w-full flex-nowrap"
                         >
-                            <ToggleItem value="local" className="flex-grow whitespace-nowrap">
-                                <Network className="mr-2" />Local
+                            <ToggleItem value={sourceTypes[0]} className="flex-grow whitespace-nowrap">
+                                <Network className="mr-2" size={16} />Local
                             </ToggleItem>
-                            <ToggleItem value="remote" className="flex-grow whitespace-nowrap">
-                                <CloudDownload className="mr-2" />Remote
+                            <ToggleItem value={sourceTypes[1]} className="flex-grow whitespace-nowrap">
+                                <CloudDownload className="mr-2" size={16} />Remote
                             </ToggleItem>
                         </ToggleGroup>
                     </div>
                 </div>
             </SettingsBox>
 
-            {/* 2. List Editor Area */}
             <div className="flex flex-col gap-4">
-                <div className="flex justify-between items-end px-1">
+                <div className="flex flex-wrap items-end justify-between gap-3 px-1">
                     <div>
-                        <h6 className="font-bold mb-1">
-                            {isRemote ? "Remote Resource URLs" : "Local Rules"}
-                        </h6>
-                        <small className="text-gray-500 dark:text-gray-400 opacity-75">
-                            {isRemote
-                                ? "Files will be downloaded and updated automatically."
-                                : "Define rules manually (Domain, IP CIDR, etc)."}
+                        <h6 className="mb-1 font-bold">{sourceType === "remote" ? "Remote Resource URLs" : "Local Rules"}</h6>
+                        <small className="text-gray-500 dark:text-gray-400">
+                            {sourceType === "remote" ? "Files will be downloaded and updated automatically." : "Define rules manually for this list."}
                         </small>
                     </div>
-                    <Badge variant="secondary" pill>
-                        {(value.list.case === "remote" ? value.list.value.urls : value?.list?.value?.lists ?? []).length} Entries
-                    </Badge>
+                    <Badge variant="secondary" pill>{lines.length} Entries</Badge>
                 </div>
 
-                <div className="bg-secondary/10 p-4 rounded-md border border-gray-500/10">
+                <div className="rounded-ui-lg border border-ui-border bg-ui-surface-muted p-4">
                     <InputList
-                        title={isRemote ? "URL" : "Rule"}
-                        dump
-                        data={value.list.case === "remote" ? value.list.value.urls : value?.list?.value?.lists ?? []}
-                        onChange={(x) => {
-                            onChange({
-                                ...value,
-                                list: isRemote ?
-                                    { case: "remote", value: create(list_remoteSchema, { urls: x }) } :
-                                    { case: "local", value: create(list_localSchema, { lists: x }) }
-                            })
-                        }}
+                        title={sourceType === "remote" ? "URL" : "Rule"}
+                        data={lines}
+                        onChange={updateLines}
+                        textarea
+                        placeholder={sourceType === "remote" ? "https://example.com/list.txt" : "Add list entry"}
                     />
                 </div>
             </div>
 
-            {/* 3. Error Messages Area */}
-            {value.errorMsgs && value.errorMsgs.length > 0 && (
-                <div className="mt-2">
-                    <SettingLabel className="text-red-500 mb-2">Error Messages</SettingLabel>
-                    <div className="p-4 bg-red-500/10 text-red-500 rounded-md text-xs font-mono">
-                        {value.errorMsgs.map((msg, i) => <div key={i} className="mb-1">• {msg}</div>)}
+            {(value.errorMsgs?.length ?? 0) > 0 && (
+                <div className="rounded-ui-lg border border-ui-danger/40 bg-ui-danger/10 p-4 text-sm text-ui-danger">
+                    <div className="mb-2 flex items-center gap-2 font-bold">
+                        <TriangleAlert size={16} />Error Messages
                     </div>
+                    <pre className="whitespace-pre-wrap text-left font-mono text-xs">{value.errorMsgs?.join("\n")}</pre>
                 </div>
             )}
         </div>
     );
 }
+
+export default Lists;

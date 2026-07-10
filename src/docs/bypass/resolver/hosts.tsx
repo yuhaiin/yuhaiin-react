@@ -1,14 +1,15 @@
+import { getResolverHosts, saveResolverHosts } from '@/api/resolvers';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardFooter, CardHeader, IconBox } from '@/component/v2/card';
 import { Input } from '@/component/v2/input';
 import { InputGroup, InputGroupText } from '@/component/v2/inputgroup';
 import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
+import { normalizeHosts, ResolverHosts } from '@/contract/resolver';
 import { Plus, RotateCw, Save, Signpost, Trash } from 'lucide-react';
 import { FC, useContext, useState } from "react";
-import { FetchProtobuf, useProtoSWR } from "../../../common/proto";
+import useSWR from "swr";
 import Loading from "../../../component/v2/loading";
-import { resolver } from "../../pbes/api/config_pb";
 
 export const Hosts: FC = () => {
     const ctx = useContext(GlobalToastContext);
@@ -16,7 +17,7 @@ export const Hosts: FC = () => {
     const [saving, setSaving] = useState(false);
     const [isDirty, setDirty] = useState(false);
 
-    const { data, error, isLoading, mutate } = useProtoSWR(resolver.method.hosts, {
+    const { data, error, isLoading, mutate } = useSWR("/api/v2/resolver/hosts", getResolverHosts, {
         onSuccess: () => setDirty(false)
     })
 
@@ -25,21 +26,17 @@ export const Hosts: FC = () => {
 
     const handleSave = () => {
         setSaving(true)
-        FetchProtobuf(resolver.method.save_hosts, data)
-            .then(async ({ error }) => {
-                if (error === undefined) {
-                    ctx.Info("save hosts successful")
-                } else {
-                    ctx.Error(error.msg)
-                    console.error(error.code, error.msg)
-                }
+        saveResolverHosts(data)
+            .then(() => {
+                ctx.Info("save hosts successful")
                 mutate()
-                setSaving(false)
             })
+            .catch((error) => ctx.Error(error.msg ?? String(error)))
+            .finally(() => setSaving(false))
     }
 
-    const handleMutate = (mutator: (prev: typeof data) => typeof data) => {
-        mutate(mutator, false);
+    const handleMutate = (mutator: (prev: ResolverHosts) => ResolverHosts) => {
+        mutate(prev => mutator(normalizeHosts(prev)), false);
         setDirty(true);
     }
 

@@ -361,14 +361,17 @@ export function CardRowList<T>({
 
     return (
         <Card density={density} className={layout === "list" ? "shadow-none" : undefined}>
-            {header && <CardHeader>{header}</CardHeader>}
+            {(header || (onAddNew && layout === "list")) && (
+                <CardHeader className={layout === "list" && onAddNew ? "flex-wrap gap-3" : undefined}>
+                    {header && <div className="min-w-0 flex-1">{header}</div>}
+                    {onAddNew && layout === "list" && (
+                        <div className="w-full max-w-[320px] shrink-0">
+                            {renderAddNew(true)}
+                        </div>
+                    )}
+                </CardHeader>
+            )}
             <CardBody density={density} className={layout === "list" ? "px-4 py-4" : undefined}>
-                {onAddNew && layout === "list" && (
-                    <div className="mb-3">
-                        {renderAddNew(true)}
-                    </div>
-                )}
-
                 <div className={clsx(
                     layout === "list"
                         ? "flex flex-col gap-1.5"

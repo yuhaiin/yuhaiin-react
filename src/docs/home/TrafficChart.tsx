@@ -12,7 +12,7 @@ import {
 } from 'chart.js';
 import { FC } from 'react';
 import { Line } from 'react-chartjs-2';
-import { formatBytes } from '../connections/components';
+import { formatBytes } from './format';
 
 function niceMax(value: number) {
     if (value <= 0) return 1;
