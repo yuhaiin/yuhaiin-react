@@ -239,7 +239,7 @@ const NodeModalComponent: FC<NodeModalProps> = ({
         <>
             {manualCopyModal}
             <Modal open={show} onOpenChange={(open) => !open && onHide()}>
-                <ModalContent className="!max-w-[1000px] md:min-w-[620px] min-w-[90vw]">
+                <ModalContent className="!w-[calc(100vw-2rem)] md:!w-[calc(100vw-4rem)] !max-w-[1280px]">
                 <ModalHeader closeButton className="border-b-0 pb-0">
                     <ModalTitle className="font-bold">{title}</ModalTitle>
                 </ModalHeader>

@@ -5,8 +5,7 @@ import { createNode, deleteNode, latencyNode, listNodes, useNode as selectNode, 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, MainContainer } from "@/component/v2/card";
-import { DataList, DataListItem } from "@/component/v2/datalist";
+import { Card, CardBody, CardHeader, MainContainer } from "@/component/v2/card";
 import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
 import { Textarea } from "@/component/v2/input";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
@@ -111,10 +110,35 @@ function isIPLatency(value: NodeIPLatency | NodeSTUNLatency): value is NodeIPLat
     return "ipv4" in value || "ipv6" in value;
 }
 
-function latencyVariant(value: NodeLatencyValue | undefined): "secondary" | "success" | "danger" {
+function latencyMilliseconds(value: NodeLatencyValue | undefined): number | undefined {
+    if (typeof value !== "string") return undefined;
+    const match = /^\s*(\d+(?:\.\d+)?)\s*ms\s*$/i.exec(value);
+    return match ? Number(match[1]) : undefined;
+}
+
+function latencyVariant(value: NodeLatencyValue | undefined): "secondary" | "success" | "warning" | "danger" {
     if (!value) return "secondary";
-    if (typeof value === "string" && value.toLowerCase().includes("error")) return "danger";
-    return "success";
+    if (typeof value === "string") {
+        if (value.trim().toLowerCase() === "n/a") return "secondary";
+        if (value.toLowerCase().includes("error")) return "danger";
+    }
+    const milliseconds = latencyMilliseconds(value);
+    if (milliseconds === undefined) return "success";
+    if (milliseconds < 200) return "success";
+    if (milliseconds <= 1000) return "warning";
+    return "danger";
+}
+
+function latencyTextClass(value: NodeLatencyValue | undefined): string {
+    if (!value || typeof value !== "string" || value.trim().toLowerCase() === "n/a") return "text-ui-muted";
+    if (value.toLowerCase().includes("error")) return "text-ui-danger";
+    if (latencyMilliseconds(value) === undefined) return "text-ui-fg";
+    return {
+        success: "text-ui-success",
+        warning: "text-ui-warning",
+        danger: "text-ui-danger",
+        secondary: "text-ui-muted",
+    }[latencyVariant(value)];
 }
 
 function latencyResultValue(result: NodeLatencyResponse): NodeLatencyValue {
@@ -127,15 +151,22 @@ function latencyResultValue(result: NodeLatencyResponse): NodeLatencyValue {
 
 const LatencyInfo: FC<{
     label: string;
-    value: string;
+    value: NodeLatencyValue | undefined;
     loading?: boolean;
 }> = ({ label, value, loading }) => (
-    <div className="rounded-ui-lg border border-ui-border bg-ui-surface px-3 py-2">
-        <div className="mb-1 text-[0.68rem] font-bold uppercase tracking-[0.04em] text-ui-muted">{label}</div>
-        <div className="flex min-h-6 items-center text-sm font-semibold text-ui-fg">
-            {loading ? <Spinner size="sm" /> : <span className="break-all">{value || "N/A"}</span>}
+    <div className="rounded-ui-sm bg-ui-surface px-3 py-2.5">
+        <div className="mb-1 text-xs font-medium text-ui-muted/70">{label}</div>
+        <div className="flex min-h-5 items-center text-sm font-medium">
+            {loading ? <Spinner size="sm" /> : <span className={`break-all ${latencyTextClass(value)}`}>{latencyText(value)}</span>}
         </div>
     </div>
+);
+
+const NodeLatencyBadge: FC<{ type: typeof collapsedLatencyTypes[number]; value: NodeLatencyValue | undefined }> = ({ type, value }) => (
+    <Badge variant={latencyVariant(value)} className="gap-1 px-2 py-1 font-medium">
+        <span className="text-[0.68rem] opacity-70">{type.toUpperCase()}</span>
+        <span className="font-mono">{latencyText(value)}</span>
+    </Badge>
 );
 
 const NodeItem: FC<{
@@ -147,49 +178,52 @@ const NodeItem: FC<{
     busy?: Partial<Record<NodeLatencyType, boolean>>;
 }> = ({ item, onUse, onLatency, onEdit, latency, busy }) => (
     <AccordionItem value={item.id}>
-        <AccordionTrigger>
-            <div className="grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(220px,0.38fr)_minmax(0,1fr)_auto] md:items-center">
+        <AccordionTrigger className="p-3.5 hover:!bg-ui-surface-muted data-[state=open]:bg-ui-surface-muted data-[state=open]:text-sidebar-color">
+            <div className="grid min-w-0 flex-1 gap-x-5 gap-y-3 lg:grid-cols-[minmax(240px,0.8fr)_minmax(220px,1fr)_auto] lg:items-center">
                 <div className="flex min-w-0 items-center">
-                    <div className="mr-4 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600/10 text-blue-600">
-                        <Network size={20} />
+                    <div className="mr-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-ui-sm bg-ui-primary-soft text-ui-primary">
+                        <Network size={18} />
                     </div>
                     <div className="flex min-w-0 flex-col">
-                        <span className="truncate font-medium">{item.name || item.id}</span>
-                        <span className="truncate font-mono text-xs text-ui-muted">{item.id}</span>
+                        <span className="truncate font-medium text-ui-heading">{item.name || item.id}</span>
+                        <span className="flex min-w-0 items-center gap-2 text-xs text-ui-muted/70">
+                            <span className="truncate font-mono">{item.id}</span>
+                            <span className="shrink-0">{item.origin}</span>
+                        </span>
                     </div>
                 </div>
-                <div className="grid min-w-0 gap-2 text-xs text-ui-muted sm:grid-cols-2">
-                    <div className="min-w-0">
-                        <span className="mr-1 text-ui-muted/70">Origin</span>
-                        <span className="font-medium text-ui-fg">{item.origin}</span>
-                    </div>
-                    <div className="flex min-w-0 items-baseline gap-1">
-                        <span className="shrink-0 text-ui-muted/70">Chain</span>
-                        <span className="min-w-0 break-all font-mono font-medium text-ui-fg">{chainLabel(item)}</span>
-                    </div>
+                <div className="flex min-w-0 items-center gap-2 text-sm">
+                    <span className="shrink-0 text-xs text-ui-muted/70">Chain</span>
+                    <span className="truncate font-mono text-ui-fg" title={chainLabel(item)}>{chainLabel(item)}</span>
                 </div>
-                <div className="flex shrink-0 items-center justify-end gap-2">
+                <div className="flex shrink-0 items-center gap-1.5 lg:justify-end">
                     {collapsedLatencyTypes.map(type => (
-                        <Badge key={type} variant={latencyVariant(latency?.[type])} className="font-mono">
-                            {type.toUpperCase()} {latencyText(latency?.[type])}
-                        </Badge>
+                        <NodeLatencyBadge key={type} type={type} value={latency?.[type]} />
                     ))}
                 </div>
             </div>
         </AccordionTrigger>
         <AccordionContent>
-            <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
-                <DataList>
-                    <DataListItem label="Group" value={item.group || "-"} />
-                    <DataListItem label="Origin" value={item.origin} />
-                    <DataListItem label="Chain" value={chainLabel(item)} />
-                    <DataListItem label="Enabled" value={item.enabled ? "true" : "false"} />
-                </DataList>
-                <div className="rounded-ui-lg border border-ui-border bg-ui-surface-muted p-3">
-                    <div className="mb-3 text-sm font-semibold text-ui-muted">Latency Metrics</div>
+            <div className="grid gap-5 lg:grid-cols-[minmax(220px,0.65fr)_minmax(0,1.35fr)]">
+                <div className="grid content-start grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                    <div>
+                        <div className="text-xs text-ui-muted/70">Group</div>
+                        <div className="mt-1 truncate font-medium text-ui-fg">{item.group || "-"}</div>
+                    </div>
+                    <div>
+                        <div className="text-xs text-ui-muted/70">Status</div>
+                        <div className="mt-1 font-medium text-ui-fg">{item.enabled ? "Enabled" : "Disabled"}</div>
+                    </div>
+                    <div className="col-span-2 min-w-0">
+                        <div className="text-xs text-ui-muted/70">Node ID</div>
+                        <div className="mt-1 truncate font-mono text-xs text-ui-fg" title={item.id}>{item.id}</div>
+                    </div>
+                </div>
+                <div className="border-t border-ui-border pt-4 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
+                    <div className="mb-3 text-sm font-medium text-ui-fg">Test results</div>
                     <div className="grid grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-2">
-                        <LatencyInfo label="TCP Latency" value={latencyText(latency?.tcp)} loading={busy?.tcp} />
-                        <LatencyInfo label="UDP Latency" value={latencyText(latency?.udp)} loading={busy?.udp} />
+                        <LatencyInfo label="TCP Latency" value={latency?.tcp} loading={busy?.tcp} />
+                        <LatencyInfo label="UDP Latency" value={latency?.udp} loading={busy?.udp} />
                         {(latency?.ip || busy?.ip) && (
                             <>
                                 <LatencyInfo label="IPv4" value={latencyDetail(latency?.ip, "ipv4")} loading={busy?.ip} />
@@ -208,7 +242,7 @@ const NodeItem: FC<{
                         )}
                     </div>
                 </div>
-                <div className="flex flex-wrap justify-end gap-2 border-t border-ui-border pt-3 lg:col-span-2">
+                <div className="flex flex-wrap justify-end gap-2 border-t border-ui-border pt-4 lg:col-span-2">
                     <Dropdown>
                         <DropdownTrigger asChild>
                             <Button size="sm" variant="outline-secondary">
@@ -474,11 +508,17 @@ export default function Group() {
                 </Card>
             ) : (
                 <Card className="mb-4">
-                    <CardBody>
+                    <CardHeader className="px-4 py-3">
+                        <div className="min-w-0">
+                            <div className="truncate font-medium text-ui-heading">{selectedGroup}</div>
+                            <div className="mt-0.5 text-xs text-ui-muted">{groupItems.length} {groupItems.length === 1 ? "node" : "nodes"}</div>
+                        </div>
+                    </CardHeader>
+                    <CardBody className="p-0" density="compact">
                         {groupItems.length === 0 ? (
-                            <div className="rounded-ui-lg border border-dashed border-ui-border p-6 text-center text-ui-muted">No nodes in this group.</div>
+                            <div className="m-4 rounded-ui-lg border border-dashed border-ui-border p-6 text-center text-ui-muted">No nodes in this group.</div>
                         ) : (
-                            <Accordion type="multiple" className="mb-0 shadow-none">
+                            <Accordion type="single" collapsible className="mb-0 rounded-none shadow-none transition-none hover:translate-y-0 hover:border-transparent hover:shadow-none">
                                 {groupItems.map(item => (
                                     <NodeItem
                                         key={item.id}

@@ -9,6 +9,17 @@ export type TotalFlow = {
   counters?: Record<string, Counter>;
 };
 
+export type TrafficPoint = {
+  start: string;
+  download: string;
+  upload: string;
+};
+
+export type TrafficSeries = {
+  interval: "hour" | "day" | "month";
+  items: TrafficPoint[];
+};
+
 export type Connection = {
   id: string;
   addr: string;
