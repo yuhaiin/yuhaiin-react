@@ -18,5 +18,9 @@ export interface UpdateCheck {
 
 export interface UpdateStatus {
   running: boolean;
+  stage: string;
+  progress: number;
+  bytesDownloaded: number;
+  totalBytes: number;
   error: string;
 }

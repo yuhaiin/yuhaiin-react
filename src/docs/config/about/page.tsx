@@ -1,12 +1,12 @@
 "use client"
 
-import { applyUpdate, checkUpdate } from "@/api/update";
+import { applyUpdate, checkUpdate, getUpdateStatus } from "@/api/update";
 import { getInfo } from "@/api/settings";
 import { Card, CardBody, CardFooter, CardHeader, IconBadge, IconBox, IconBoxRounded, ListItem, MainContainer, SettingLabel } from '@/component/v2/card';
 import { Button } from "@/component/v2/button";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import { GlobalToastContext } from "@/component/v2/toast";
-import type { UpdateChannel, UpdateCheck } from "@/contract/update";
+import type { UpdateChannel, UpdateCheck, UpdateStatus } from "@/contract/update";
 import { BadgeCheck, Calendar, Check, Code, Cpu, Download, ExternalLink, GitBranch, GitFork, Info, Laptop, Layers, LayoutGrid, RefreshCw, Rocket, Terminal } from 'lucide-react';
 import React, { FC, useContext, useEffect, useState } from "react";
 import useSWR from "swr";
@@ -18,6 +18,21 @@ const updateChannels: Array<{ value: UpdateChannel; label: string }> = [
     { value: "beta", label: "Beta" },
     { value: "main", label: "Main" },
 ];
+
+function updateStageLabel(stage: string): string {
+    switch (stage) {
+        case "preparing": return "Preparing update...";
+        case "downloading": return "Downloading update...";
+        case "verifying": return "Verifying downloaded file...";
+        case "installing": return "Installing update...";
+        default: return "Updating...";
+    }
+}
+
+function formatBytes(value: number): string {
+    if (value < 1024 * 1024) return `${Math.max(1, Math.round(value / 1024))} KB`;
+    return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 function updateErrorMessage(error: unknown): string {
     if (error instanceof globalThis.Error) return error.message;
@@ -82,8 +97,32 @@ export default function About() {
         return saved === "stable" || saved === "beta" || saved === "main" ? saved : "stable";
     });
     const [update, setUpdate] = useState<UpdateCheck>();
+    const [updateStatus, setUpdateStatus] = useState<UpdateStatus>();
     const [checkingUpdate, setCheckingUpdate] = useState(false);
     const [applyingUpdate, setApplyingUpdate] = useState(false);
+
+    useEffect(() => {
+        let active = true;
+        let timer: ReturnType<typeof setTimeout> | undefined;
+
+        const poll = async () => {
+            try {
+                const status = await getUpdateStatus();
+                if (!active) return;
+                setUpdateStatus(status);
+                if (status.running) timer = setTimeout(() => void poll(), 1000);
+            } catch {
+                // The service can briefly be unavailable while it restarts.
+                if (active) timer = setTimeout(() => void poll(), 2000);
+            }
+        };
+
+        void poll();
+        return () => {
+            active = false;
+            if (timer) clearTimeout(timer);
+        };
+    }, []);
 
     useEffect(() => {
         window.localStorage.setItem(updateChannelKey, channel);
@@ -101,10 +140,11 @@ export default function About() {
     };
 
     const handleApplyUpdate = async () => {
-        if (!update?.updateAvailable || !update.targetTag) return;
+        if (!update?.updateAvailable || !update.targetTag || updateStatus?.running) return;
         setApplyingUpdate(true);
         try {
             await applyUpdate(channel, update.targetTag);
+            setUpdateStatus({ running: true, stage: "preparing", progress: 0, bytesDownloaded: 0, totalBytes: 0, error: "" });
             ctx.Info("Update started. The service will restart shortly.");
         } catch (err) {
             ctx.Error(`Update failed: ${updateErrorMessage(err)}`);
@@ -192,17 +232,40 @@ export default function About() {
                         </div>
 
                         <div className="flex flex-wrap items-center gap-3">
-                            <Button variant="default" onClick={handleCheckUpdate} disabled={checkingUpdate || applyingUpdate}>
+                            <Button variant="default" onClick={handleCheckUpdate} disabled={checkingUpdate || applyingUpdate || updateStatus?.running}>
                                 <RefreshCw className={checkingUpdate ? "mr-2 animate-spin" : "mr-2"} size={16} />
                                 Check for Updates
                             </Button>
                             {update?.updateAvailable && (
-                                <Button variant="default" onClick={handleApplyUpdate} disabled={applyingUpdate || !update.supported}>
+                                <Button variant="default" onClick={handleApplyUpdate} disabled={applyingUpdate || updateStatus?.running || !update.supported}>
                                     <Download className="mr-2" size={16} />
-                                    {applyingUpdate ? "Updating..." : `Update to ${update.targetVersion}`}
+                                    {applyingUpdate || updateStatus?.running ? "Updating..." : `Update to ${update.targetVersion}`}
                                 </Button>
                             )}
                         </div>
+
+                        {updateStatus?.running && (
+                            <div className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
+                                <div className="flex items-center justify-between gap-3 font-semibold text-ui-heading">
+                                    <span>{updateStageLabel(updateStatus.stage)}</span>
+                                    <span>{updateStatus.progress > 0 ? `${updateStatus.progress}%` : "..."}</span>
+                                </div>
+                                <div className="mt-3 h-2 overflow-hidden rounded-full bg-ui-border" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={updateStatus.progress}>
+                                    <div className="h-full rounded-full bg-ui-primary transition-[width] duration-300" style={{ width: `${Math.max(2, updateStatus.progress)}%` }} />
+                                </div>
+                                {updateStatus.totalBytes > 0 && (
+                                    <div className="mt-2 text-xs text-ui-muted">
+                                        {formatBytes(updateStatus.bytesDownloaded)} / {formatBytes(updateStatus.totalBytes)}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {!updateStatus?.running && updateStatus?.error && (
+                            <div className="rounded-ui-md border border-ui-danger/40 bg-ui-danger-soft p-4 text-sm text-ui-danger">
+                                Update failed: {updateStatus.error}
+                            </div>
+                        )}
 
                         {update && (
                             <div className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
