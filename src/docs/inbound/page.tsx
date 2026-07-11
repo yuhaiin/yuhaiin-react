@@ -81,6 +81,10 @@ function transportLabel(value: Inbound): string {
     return value.transports.map((transport) => transport.type).join(" / ");
 }
 
+function newInboundID(): string {
+    return globalThis.crypto?.randomUUID?.() ?? `inbound-${Date.now()}`;
+}
+
 const InboundEditor: FC<{
     inbound: Inbound;
     onChange: (value: Inbound) => void;
@@ -952,9 +956,14 @@ export default function InboudComponent() {
                 getKey={(item) => item.id}
                 renderListItem={(item) => <InboundItem item={item} />}
                 onClickItem={(item) => setShowdata({ show: true, id: item.id, new: false })}
-                onAddNew={handleCreate}
-                adding={false}
-                header={<IconBox icon={DoorOpen} color="#0d6efd" title="Entry Points" description={`${data.page.total} inbounds`} />}
+                header={
+                    <div className="flex w-full items-center justify-between gap-3">
+                        <IconBox icon={DoorOpen} color="#0d6efd" title="Entry Points" description={`${data.page.total} inbounds`} />
+                        <Button size="sm" onClick={() => handleCreate(newInboundID())}>
+                            <Plus className="mr-1" size={16} /> Add
+                        </Button>
+                    </div>
+                }
             />
         </MainContainer>
     );

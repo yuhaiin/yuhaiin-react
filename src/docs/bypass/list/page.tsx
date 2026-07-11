@@ -85,29 +85,29 @@ function Lists() {
                 items={data.items}
                 getKey={(v) => v.name}
                 renderListItem={(item) => (
-                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex min-w-0 flex-1 items-start gap-3">
-                            <FileText className="mt-1 shrink-0 text-ui-muted" size={20} />
-                            <div className="min-w-0 flex-1">
-                                <div className="flex min-w-0 flex-wrap items-center gap-2">
-                                    <span className="truncate text-base font-bold text-ui-heading">{item.name}</span>
-                                    <Badge variant="secondary" className="shrink-0">{item.type || "-"}</Badge>
-                                    {item.errorCount > 0 && <Badge variant="danger" className="shrink-0">{item.errorCount} errors</Badge>}
-                                </div>
-                                <div className="mt-2 flex min-w-0 flex-wrap gap-x-4 gap-y-1 text-sm text-ui-muted">
-                                    <span className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
-                                        <span className="text-ui-muted/80">Source</span>
-                                        <span className="font-semibold text-ui-fg">{item.source || "-"}</span>
-                                    </span>
-                                    <span className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
-                                        <span className="text-ui-muted/80">Entries</span>
-                                        <span className="font-semibold text-ui-fg">{item.itemCount}</span>
-                                    </span>
-                                    <span className="inline-flex min-w-0 flex-1 basis-[260px] items-center gap-1">
-                                        <span className="shrink-0 text-ui-muted/80">Preview</span>
-                                        <span className="min-w-0 truncate font-mono font-semibold text-ui-fg">{item.preview || "-"}</span>
-                                    </span>
-                                </div>
+                    <div className="grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ui-md bg-ui-primary-soft text-ui-primary">
+                            <FileText size={19} />
+                        </div>
+                        <div className="min-w-0">
+                            <div className="flex min-w-0 flex-wrap items-center gap-2">
+                                <span className="truncate font-semibold text-ui-heading">{item.name}</span>
+                                <Badge variant="secondary" className="shrink-0">{item.type || "-"}</Badge>
+                                {item.errorCount > 0 && <Badge variant="danger" className="shrink-0">{item.errorCount} errors</Badge>}
+                            </div>
+                            <div className="mt-2 grid min-w-0 gap-2 text-xs text-ui-muted sm:grid-cols-[auto_auto_minmax(0,1fr)]">
+                                <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-ui-sm bg-ui-surface-muted px-2 py-1">
+                                    <span>Source</span>
+                                    <span className="font-medium text-ui-fg">{item.source || "-"}</span>
+                                </span>
+                                <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-ui-sm bg-ui-surface-muted px-2 py-1">
+                                    <span>Entries</span>
+                                    <span className="font-medium text-ui-fg">{item.itemCount}</span>
+                                </span>
+                                <span className="flex min-w-0 items-center gap-1.5 rounded-ui-sm bg-ui-surface-muted px-2 py-1">
+                                    <span className="shrink-0">Preview</span>
+                                    <span className="min-w-0 truncate font-mono text-ui-fg">{item.preview || "-"}</span>
+                                </span>
                             </div>
                         </div>
                         <ChevronRight className="shrink-0 text-ui-muted/55" size={20} />

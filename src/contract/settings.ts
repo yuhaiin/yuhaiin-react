@@ -2,6 +2,7 @@ export type Settings = {
   ipv6: boolean;
   useDefaultInterface: boolean;
   netInterface: string;
+	pprof: boolean;
   systemProxy: {
     http: boolean;
     socks5: boolean;
@@ -42,6 +43,7 @@ export function createDefaultSettings(value?: Partial<Settings>): Settings {
     ipv6: value?.ipv6 ?? false,
     useDefaultInterface: value?.useDefaultInterface ?? true,
     netInterface: value?.netInterface ?? "",
+	pprof: value?.pprof ?? true,
     systemProxy: {
       http: value?.systemProxy?.http ?? false,
       socks5: value?.systemProxy?.socks5 ?? false,

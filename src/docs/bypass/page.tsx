@@ -17,7 +17,7 @@ import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { RouteRule, RuleExpr, RuleItem } from "@/contract/route";
 import { createDefaultRule, normalizeRule } from "@/contract/route";
-import { ArrowDown, ArrowUp, ArrowUpDown, Plus, Power, Route, Save, ShieldCheck, Trash, X } from "lucide-react";
+import { ArrowUpDown, Plus, Power, Route, Save, ShieldCheck, Trash, X } from "lucide-react";
 import type { CSSProperties } from "react";
 import { useContext, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
@@ -106,28 +106,6 @@ function BypassComponent() {
             .catch((err) => ctx.Error(err.msg ?? String(err)));
     };
 
-    const moveRule = (item: RuleItem, direction: -1 | 1) => {
-        const items = allRules?.items ?? data?.items ?? [];
-        const index = items.findIndex(current => current.name === item.name && current.index === item.index);
-        const target = items[index + direction];
-        if (index < 0 || !target) {
-            ctx.Error("No adjacent rule");
-            return;
-        }
-        changeRulePriority(
-            { name: item.name, index: item.index },
-            { name: target.name, index: target.index },
-            "exchange",
-        )
-            .then(() => {
-                ctx.Info("rule priority changed");
-                mutate();
-                mutateAllRules();
-                void mutateActivation();
-            })
-            .catch((err) => ctx.Error(err.msg ?? String(err)));
-    };
-
     const saved = () => {
         mutate();
         mutateAllRules();
@@ -148,21 +126,19 @@ function BypassComponent() {
                 items={data.items}
                 getKey={(v) => `${v.name}-${v.index}`}
                 renderListItem={(item) => (
-                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex min-w-0 flex-1 items-start gap-3">
-                            <Badge variant="secondary" className="mt-0.5 shrink-0">#{item.index}</Badge>
-                            <Route className="mt-0.5 shrink-0 text-ui-muted" size={22} />
+                            <Badge variant="secondary" className="mt-1 shrink-0">#{item.index}</Badge>
+                            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-ui-md bg-ui-primary-soft text-ui-primary">
+                                <Route size={18} />
+                            </div>
                             <div className="min-w-0">
                                 <div className="flex min-w-0 flex-wrap items-center gap-2">
-                                    <span className="truncate text-lg font-bold text-ui-heading">{item.name}</span>
+                                    <span className="truncate font-semibold text-ui-heading">{item.name}</span>
                                     <Badge variant="info">{item.mode}</Badge>
+                                    {item.disabled && <Badge variant="secondary">disabled</Badge>}
                                 </div>
-                                {item.disabled && <Badge variant="secondary">disabled</Badge>}
-                                <div className="mt-2 flex min-w-0 flex-wrap gap-x-4 gap-y-1 text-sm text-ui-muted">
-                                    <span className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
-                                        <span>Mode</span>
-                                        <span className="font-semibold text-ui-fg">{item.mode || "-"}</span>
-                                    </span>
+                                <div className="mt-1.5 flex min-w-0 flex-wrap gap-x-3 gap-y-1 text-xs text-ui-muted">
                                     <span className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
                                         <span>Rules</span>
                                         <span className="font-semibold text-ui-fg">{item.ruleCount}</span>
@@ -178,36 +154,24 @@ function BypassComponent() {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex w-full shrink-0 flex-wrap justify-end gap-2 sm:w-auto sm:flex-nowrap">
+                        <div className="flex shrink-0 items-center gap-1.5 self-end sm:self-auto">
                             <Button
-                                size="sm"
+                                size="icon"
                                 variant="outline-secondary"
-                                onClick={(e) => { e.stopPropagation(); moveRule(item, -1); }}
-                                aria-label="Move rule up"
-                            >
-                                <ArrowUp size={16} />
-                            </Button>
-                            <Button
-                                size="sm"
-                                variant="outline-secondary"
-                                onClick={(e) => { e.stopPropagation(); moveRule(item, 1); }}
-                                aria-label="Move rule down"
-                            >
-                                <ArrowDown size={16} />
-                            </Button>
-                            <Button
-                                size="sm"
-                                variant="outline-secondary"
+                                className="h-9 w-9"
                                 onClick={(e) => { e.stopPropagation(); setPriorityItem(item); }}
                                 aria-label="Change priority"
+                                title="Change priority"
                             >
                                 <ArrowUpDown size={16} />
                             </Button>
                             <Button
-                                size="sm"
+                                size="icon"
                                 variant={item.disabled ? "outline-primary" : "outline-secondary"}
+                                className="h-9 w-9"
                                 onClick={(e) => { e.stopPropagation(); toggleDisabled(item); }}
                                 aria-label={item.disabled ? "Enable rule" : "Disable rule"}
+                                title={item.disabled ? "Enable rule" : "Disable rule"}
                             >
                                 <Power size={16} />
                             </Button>

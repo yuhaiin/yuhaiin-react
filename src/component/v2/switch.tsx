@@ -32,7 +32,7 @@ const SwitchComponent: React.FC<SwitchProps> = ({ checked, onCheckedChange, labe
       )}
       <SwitchPrimitive.Root
         className={clsx(
-          "w-[42px] h-[25px] bg-[var(--bs-secondary-bg,#e9ecef)] rounded-full relative shadow-[inset_0_0.125rem_0.25rem_rgba(0,0,0,0.075)] flex items-center p-[2px] border border-[var(--bs-border-color)] cursor-pointer transition-colors duration-150 ease-in-out",
+          "w-[42px] h-[25px] shrink-0 bg-[var(--bs-secondary-bg,#e9ecef)] rounded-full relative shadow-[inset_0_0.125rem_0.25rem_rgba(0,0,0,0.075)] flex items-center p-[2px] border border-[var(--bs-border-color)] cursor-pointer transition-colors duration-150 ease-in-out",
           "data-[state=checked]:bg-[var(--bs-primary,#0d6efd)] data-[state=checked]:justify-end",
           "disabled:opacity-50 disabled:cursor-not-allowed",
           "focus-visible:outline-none focus-visible:shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)]"
@@ -77,7 +77,7 @@ export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ lab
       </div>
       <SwitchPrimitive.Root
         className={clsx(
-          "w-[42px] h-[25px] bg-[var(--bs-secondary-bg,#e9ecef)] rounded-full relative shadow-[inset_0_0.125rem_0.25rem_rgba(0,0,0,0.075)] flex items-center p-[2px] border border-[var(--bs-border-color)] cursor-pointer transition-colors duration-150 ease-in-out",
+          "w-[42px] h-[25px] shrink-0 bg-[var(--bs-secondary-bg,#e9ecef)] rounded-full relative shadow-[inset_0_0.125rem_0.25rem_rgba(0,0,0,0.075)] flex items-center p-[2px] border border-[var(--bs-border-color)] cursor-pointer transition-colors duration-150 ease-in-out",
           "data-[state=checked]:bg-[var(--bs-primary,#0d6efd)] data-[state=checked]:justify-end",
           "disabled:opacity-50 disabled:cursor-not-allowed",
           "focus-visible:outline-none focus-visible:shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)]"
@@ -117,7 +117,7 @@ const Switch = ({ className, label, id, ...props }: React.ComponentProps<typeof 
       <SwitchPrimitive.Root
         id={switchId}
         className={clsx(
-          "w-[42px] h-[25px] bg-[var(--bs-secondary-bg,#e9ecef)] rounded-full relative shadow-[inset_0_0.125rem_0.25rem_rgba(0,0,0,0.075)] flex items-center p-[2px] border border-[var(--bs-border-color)] cursor-pointer transition-colors duration-150 ease-in-out",
+          "w-[42px] h-[25px] shrink-0 bg-[var(--bs-secondary-bg,#e9ecef)] rounded-full relative shadow-[inset_0_0.125rem_0.25rem_rgba(0,0,0,0.075)] flex items-center p-[2px] border border-[var(--bs-border-color)] cursor-pointer transition-colors duration-150 ease-in-out",
           "data-[state=checked]:bg-[var(--bs-primary,#0d6efd)] data-[state=checked]:justify-end",
           "disabled:opacity-50 disabled:cursor-not-allowed",
           "focus-visible:outline-none focus-visible:shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)]"

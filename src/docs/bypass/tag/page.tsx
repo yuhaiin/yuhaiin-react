@@ -38,7 +38,8 @@ const TagModal: FC<{
     item?: TagItem;
     onHide: () => void;
     onSaved: () => void;
-}> = ({ show, item, onHide, onSaved }) => {
+    onDeleted: () => void;
+}> = ({ show, item, onHide, onSaved, onDeleted }) => {
     const ctx = useContext(GlobalToastContext);
     const [draft, setDraft] = useState<TagDraft>(emptyDraft);
     const [group, setGroup] = useState("");
@@ -100,6 +101,19 @@ const TagModal: FC<{
             .finally(() => setSaving(false));
     };
 
+    const remove = () => {
+        if (!item) return;
+        setSaving(true);
+        deleteTag(item.name)
+            .then(() => {
+                ctx.Info("tag deleted");
+                onDeleted();
+                onHide();
+            })
+            .catch((err) => ctx.Error(err.msg ?? String(err)))
+            .finally(() => setSaving(false));
+    };
+
     return (
         <Modal open={show} onOpenChange={(open) => !open && onHide()}>
             <ModalContent style={{ "--bs-modal-width": "640px" } as CSSProperties}>
@@ -112,11 +126,11 @@ const TagModal: FC<{
                             <div className="grid gap-6">
                                 <div>
                                     <SettingLabel className="mb-2">Tag Type</SettingLabel>
-                                    <ToggleGroup type="single" value={draft.type} onValueChange={(type) => type && setDraft(prev => ({ ...prev, type, hash: type === prev.type ? prev.hash : "" }))}>
-                                        <ToggleItem value="node" className="min-w-[96px]">
+                                    <ToggleGroup className="flex w-full" type="single" value={draft.type} onValueChange={(type) => type && setDraft(prev => ({ ...prev, type, hash: type === prev.type ? prev.hash : "" }))}>
+                                        <ToggleItem value="node" className="h-14 flex-1 text-base">
                                             <Network size={18} className="mr-2" />Node
                                         </ToggleItem>
-                                        <ToggleItem value="mirror" className="min-w-[108px]">
+                                        <ToggleItem value="mirror" className="h-14 flex-1 text-base">
                                             <Copy size={18} className="mr-2" />Mirror
                                         </ToggleItem>
                                     </ToggleGroup>
@@ -167,12 +181,17 @@ const TagModal: FC<{
                         </SettingsBox>
                     </div>
                 </ModalBody>
-                <ModalFooter className="border-0">
-                    <Button onClick={onHide}>Cancel</Button>
-                    <Button onClick={save} disabled={saving || !draft.tag || !draft.hash}>
-                        {saving ? <Spinner size="sm" className="mr-2" /> : <Check size={16} className="mr-2" />}
-                        Save
-                    </Button>
+                <ModalFooter className="flex justify-between border-0">
+                    <div>
+                        {item && <Button variant="outline-danger" onClick={remove} disabled={saving}><Trash size={16} className="mr-1" />Delete</Button>}
+                    </div>
+                    <div className="flex gap-2">
+                        <Button onClick={onHide}>Cancel</Button>
+                        <Button onClick={save} disabled={saving || !draft.tag || !draft.hash}>
+                            {saving ? <Spinner size="sm" className="mr-2" /> : <Check size={16} className="mr-2" />}
+                            Save
+                        </Button>
+                    </div>
                 </ModalFooter>
             </ModalContent>
         </Modal>
@@ -180,7 +199,6 @@ const TagModal: FC<{
 };
 
 function Tags() {
-    const ctx = useContext(GlobalToastContext);
     const [page, setPage] = useState(1);
     const [query, setQuery] = useState("");
     const [editing, setEditing] = useState<TagItem | undefined>();
@@ -192,24 +210,15 @@ function Tags() {
         { revalidateOnFocus: false },
     );
 
-    const remove = (item: TagItem) => {
-        deleteTag(item.name)
-            .then(() => {
-                ctx.Info("tag deleted");
-                mutate();
-            })
-            .catch((err) => ctx.Error(err.msg ?? String(err)));
-    };
-
     if (error) return <Loading code={error.code}>{error.msg}</Loading>
     if (isLoading || !data) return <Loading />
 
     return (
         <MainContainer>
             <NodeModal show={nodeModal.show} id={nodeModal.id} readOnly onHide={() => setNodeModal({ show: false })} />
-            <TagModal show={adding || editing !== undefined} item={editing} onHide={() => { setAdding(false); setEditing(undefined); }} onSaved={mutate} />
+            <TagModal show={adding || editing !== undefined} item={editing} onHide={() => { setAdding(false); setEditing(undefined); }} onSaved={mutate} onDeleted={mutate} />
             <CardRowList
-                layout="list"
+                layout="grid"
                 paginated
                 pageSize={PAGE_SIZE}
                 currentPage={data.page.page || page}
@@ -219,20 +228,30 @@ function Tags() {
                 getKey={(v) => v.name}
                 onClickItem={(item) => setEditing(item)}
                 renderListItem={(item) => (
-                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1.5">
-                            <div className="flex min-w-0 items-center gap-2">
-                                <span className="font-bold truncate">{item.name}</span>
-                                <Badge variant="info" className="shrink-0">{item.type}</Badge>
+                    <div className="grid w-full min-w-0 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(140px,0.75fr)] sm:items-center">
+                        <div className="flex min-w-0 items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ui-md bg-violet-500/10 text-violet-500">
+                                <TagsIcon size={19} />
                             </div>
-                            {item.hash.length === 0 ? (
-                                <span className="text-sm text-ui-muted">-</span>
-                            ) : item.hash.map(hash => item.type === "node" ? (
-                                <span key={hash} className="min-w-0">
+                            <div className="min-w-0">
+                                <div className="truncate font-semibold text-ui-heading">{item.name}</div>
+                                <Badge variant="info" className="mt-1 inline-flex items-center gap-1">
+                                    {item.type === "node" ? <Network size={13} /> : <Copy size={13} />}
+                                    {item.type}
+                                </Badge>
+                            </div>
+                        </div>
+                        <div className="min-w-0 border-t border-ui-border/70 pt-3 sm:border-t-0 sm:border-l sm:pl-4 sm:pt-0">
+                            <div className="mb-1.5 text-xs font-medium text-ui-muted">Target</div>
+                            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                                {item.hash.length === 0 ? (
+                                    <span className="text-xs text-ui-muted">No target</span>
+                                ) : item.hash.map(hash => item.type === "node" ? (
                                     <Button
+                                        key={hash}
                                         size="xs"
                                         variant="outline-secondary"
-                                        className="max-w-[220px] font-mono"
+                                        className="max-w-full font-mono"
                                         onClick={(event) => {
                                             event.stopPropagation();
                                             setNodeModal({ show: true, id: hash });
@@ -240,14 +259,11 @@ function Tags() {
                                     >
                                         <span className="truncate">{hash}</span>
                                     </Button>
-                                </span>
-                            ) : (
-                                <span key={hash} className="max-w-[220px] truncate rounded-full border border-ui-border bg-ui-surface-muted px-2.5 py-1 text-sm font-mono text-ui-muted">{hash}</span>
-                            ))}
+                                ) : (
+                                    <span key={hash} className="max-w-full truncate rounded-ui-sm border border-ui-border bg-ui-surface-muted px-2 py-0.5 font-mono text-xs text-ui-muted">{hash}</span>
+                                ))}
+                            </div>
                         </div>
-                        <Button className="self-end sm:self-auto" size="sm" variant="outline-danger" onClick={(e) => { e.stopPropagation(); remove(item); }}>
-                            <Trash size={16} />
-                        </Button>
                     </div>
                 )}
                 header={

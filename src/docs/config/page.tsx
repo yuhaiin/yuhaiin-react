@@ -2,7 +2,7 @@
 
 import { saveSettings, loadSettings } from "@/api/settings";
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardFooter, CardHeader, IconBox, MainContainer, SettingLabel } from "@/component/v2/card";
+import { Card, CardBody, CardHeader, IconBox, MainContainer, SettingLabel } from "@/component/v2/card";
 import { SettingInputVertical, SettingRangeVertical, SwitchCard } from "@/component/v2/forms";
 import Loading, { Error } from "@/component/v2/loading";
 import { Spinner } from "@/component/v2/spinner";
@@ -11,6 +11,7 @@ import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import type { Settings } from "@/contract/settings";
 import { Cpu, Globe, NotebookText, Save } from "lucide-react";
 import { useContext, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import useSWR from "swr";
 import { useInterfaces } from "../../common/interfaces";
 
@@ -69,6 +70,12 @@ function ConfigComponent() {
                             description="Automatically detect exit"
                             checked={setting.useDefaultInterface}
                             onCheckedChange={() => update(prev => ({ ...prev, useDefaultInterface: !prev.useDefaultInterface }))}
+                        />
+                        <SwitchCard
+                            label="Enable Pprof"
+                            description="Allow runtime profiling; disabling stops profilers and releases unused memory"
+                            checked={setting.pprof}
+                            onCheckedChange={() => update(prev => ({ ...prev, pprof: !prev.pprof }))}
                         />
 
                         {!setting.useDefaultInterface && (
@@ -181,12 +188,24 @@ function ConfigComponent() {
                         />
                     </div>
                 </CardBody>
-                <CardFooter className="flex justify-end">
-                    <Button disabled={saving} onClick={handleSave}>
-                        {saving ? <Spinner size="sm" /> : <><Save className="mr-2" size={16} />Apply Advanced Changes</>}
-                    </Button>
-                </CardFooter>
             </Card>
+
+            {createPortal(
+                <div className="fixed bottom-10 right-10 z-[100] sm:bottom-12 sm:right-12">
+                    <Button
+                        variant="primary"
+                        size="icon"
+                        className="h-12 w-12 rounded-full shadow-xl"
+                        disabled={saving}
+                        onClick={handleSave}
+                        aria-label="Save all settings"
+                        title="Save all settings"
+                    >
+                        {saving ? <Spinner size="sm" /> : <Save size={20} />}
+                    </Button>
+                </div>,
+                document.body,
+            )}
         </MainContainer>
     );
 }
