@@ -122,7 +122,7 @@ export default function About() {
             active = false;
             if (timer) clearTimeout(timer);
         };
-    }, []);
+    }, [updateStatus?.running]);
 
     useEffect(() => {
         window.localStorage.setItem(updateChannelKey, channel);
