@@ -60,7 +60,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
             disabled={disabled}
         >
             <SelectPrimitive.Trigger className={clsx(
-                "flex items-center justify-between rounded-ui-md px-3 text-sm leading-none h-field gap-[5px] bg-ui-bg text-ui-fg border border-ui-border w-full cursor-pointer",
+                "flex min-w-0 items-center justify-between overflow-hidden rounded-ui-md px-3 text-sm leading-none h-field gap-[5px] bg-ui-bg text-ui-fg border border-ui-border w-full cursor-pointer",
                 ui.interactive,
                 ui.focusRing,
                 "hover:bg-ui-surface-muted hover:border-ui-border data-[state=open]:border-ui-primary",
@@ -69,7 +69,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
                 triggerClassName,
                 disabled && "opacity-60 pointer-events-none"
             )} aria-label={placeholder}>
-                <SelectPrimitive.Value placeholder={placeholder} />
+                <SelectPrimitive.Value className="min-w-0 flex-1 truncate text-left" placeholder={placeholder} />
                 <SelectPrimitive.Icon>
                     <ChevronDown className="opacity-50 shrink-0" size={16} />
                 </SelectPrimitive.Icon>
@@ -98,7 +98,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
                                 const itemValue = item.value === "" ? "___EMPTY___" : item.value;
                                 return (
                                     <SelectPrimitive.Item key={`${itemValue}-${index}`} value={itemValue} className={clsx(
-                                        "text-sm leading-none text-ui-fg rounded-ui-md flex items-center h-field-sm pl-[25px] pr-[35px] relative select-none cursor-pointer",
+                                        "text-sm leading-none text-ui-fg rounded-ui-md flex items-center h-field-sm pl-[25px] pr-3 relative select-none cursor-pointer",
                                         "data-[highlighted]:bg-ui-hover data-[highlighted]:text-ui-heading",
                                         ui.interactive
                                     )}>

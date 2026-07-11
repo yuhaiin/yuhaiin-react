@@ -23,7 +23,7 @@ const TrafficStats = ({ item }: { item: TelemetryGroup["items"][number] }) => {
     const failures = numberValue(item.failures);
 
     return (
-        <div className="flex shrink-0 items-center gap-2 whitespace-nowrap text-xs tabular-nums text-ui-muted">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 text-xs tabular-nums text-ui-muted sm:shrink-0 sm:justify-end">
             <span>↓ {formatBytes(numberValue(item.download), 1, " ")}</span>
             <span>↑ {formatBytes(numberValue(item.upload), 1, " ")}</span>
             {failures > 0 && <Badge variant="danger" pill className="px-1.5 py-1 font-medium">{failures} failed</Badge>}
@@ -39,7 +39,7 @@ const DimensionPanel = ({ group }: { group: TelemetryGroup }) => (
         ) : (
             <div className="border-t border-ui-border/70 divide-y divide-ui-border/70">
                 {group.items.map(item => (
-                    <div key={item.value} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-2.5">
+                    <div key={item.value} className="grid min-w-0 grid-cols-1 items-center gap-2 px-4 py-2.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-3">
                         <div className="min-w-0 truncate text-sm font-medium text-ui-heading" title={item.value}>{item.value}</div>
                         <TrafficStats item={item} />
                     </div>
@@ -57,7 +57,7 @@ const ProtocolSummary = ({ group }: { group: TelemetryGroup }) => (
         ) : (
             <div className="grid border-t border-ui-border/70 sm:grid-cols-2">
                 {group.items.map((item, index) => (
-                    <div key={item.value} className={`flex items-center justify-between gap-4 px-4 py-3 ${index < group.items.length - 1 ? "sm:border-r sm:border-ui-border/70" : ""}`}>
+                    <div key={item.value} className={`flex min-w-0 flex-col items-start gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 ${index < group.items.length - 1 ? "sm:border-r sm:border-ui-border/70" : ""}`}>
                         <span className="text-sm font-medium text-ui-heading">{item.value.toUpperCase()}</span>
                         <TrafficStats item={item} />
                     </div>

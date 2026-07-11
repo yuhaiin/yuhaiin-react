@@ -68,6 +68,18 @@ export function normalizeRouteListActivationStatus(value: Partial<RouteListActiv
   return { hostIndexRefreshAt: value?.hostIndexRefreshAt ?? 0 };
 }
 
+export type RouteActivationStatus = {
+  hostIndexRefreshAt: number;
+  ruleApplyAt: number;
+};
+
+export function normalizeRouteActivationStatus(value: Partial<RouteActivationStatus> | undefined): RouteActivationStatus {
+  return {
+    hostIndexRefreshAt: value?.hostIndexRefreshAt ?? 0,
+    ruleApplyAt: value?.ruleApplyAt ?? 0,
+  };
+}
+
 export type ListItem = {
   name: string;
   type: string;

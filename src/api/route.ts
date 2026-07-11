@@ -1,6 +1,6 @@
 import { requestJSON } from "@/api/client";
-import type { BlockHistoryList, RouteConfig, RouteList, RouteListActivationStatus, RouteListConfig, RouteListDetail, RouteRule, RuleList, RuleTestResponse, TagList } from "@/contract/route";
-import { normalizeListItem, normalizeRouteConfig, normalizeRouteList, normalizeRouteListActivationStatus, normalizeRouteListConfig, normalizeRule, normalizeRuleItem, normalizeTagItem } from "@/contract/route";
+import type { BlockHistoryList, RouteActivationStatus, RouteConfig, RouteList, RouteListActivationStatus, RouteListConfig, RouteListDetail, RouteRule, RuleList, RuleTestResponse, TagList } from "@/contract/route";
+import { normalizeListItem, normalizeRouteActivationStatus, normalizeRouteConfig, normalizeRouteList, normalizeRouteListActivationStatus, normalizeRouteListConfig, normalizeRule, normalizeRuleItem, normalizeTagItem } from "@/contract/route";
 
 export async function listRouteLists(params?: { page?: number; pageSize?: number; query?: string }): Promise<RouteList> {
   const data = await requestJSON<RouteList>("GET", "/api/v2/route/lists", undefined, {
@@ -25,6 +25,14 @@ export async function refreshRouteLists(): Promise<void> {
 
 export async function getRouteListActivationStatus(): Promise<RouteListActivationStatus> {
   return normalizeRouteListActivationStatus(await requestJSON<RouteListActivationStatus>("GET", "/api/v2/route/lists/activation"));
+}
+
+export async function getRouteActivationStatus(): Promise<RouteActivationStatus> {
+  return normalizeRouteActivationStatus(await requestJSON<RouteActivationStatus>("GET", "/api/v2/route/activation"));
+}
+
+export async function applyRouteChanges(): Promise<void> {
+  await requestJSON<void>("POST", "/api/v2/route/apply");
 }
 
 export async function createRouteList(list: RouteListDetail): Promise<RouteListDetail> {

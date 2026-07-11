@@ -2,16 +2,16 @@
 
 import { listInbounds } from "@/api/inbounds";
 import { listResolvers } from "@/api/resolvers";
-import { changeRulePriority, createRule, deleteRule, getRouteConfig, getRule, listRouteLists, listRules, saveRouteConfig, saveRule } from "@/api/route";
+import { changeRulePriority, createRule, deleteRule, getRouteActivationStatus, getRouteConfig, getRule, listRouteLists, listRules, saveRouteConfig, saveRule } from "@/api/route";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardFooter, CardHeader, CardList, FilterSearch, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
 import { DropdownSelect, SettingInputVertical, SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
 import { Input } from "@/component/v2/input";
-import { InputGroup } from "@/component/v2/inputgroup";
 import Loading from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Pagination } from "@/component/v2/pagination";
+import { RouteActivationProgress } from "@/component/v2/route-activation-progress";
 import { Select } from "@/component/v2/select";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
@@ -55,6 +55,14 @@ function BypassComponent() {
     const [editing, setEditing] = useState<RuleItem | null>(null);
     const [priorityItem, setPriorityItem] = useState<RuleItem | null>(null);
     const [creating, setCreating] = useState(false);
+    const { data: activation, mutate: mutateActivation } = useSWR(
+        "/api/v2/route/activation",
+        getRouteActivationStatus,
+        {
+            revalidateOnFocus: false,
+            refreshInterval: (status) => Math.max(status?.hostIndexRefreshAt ?? 0, status?.ruleApplyAt ?? 0) > Date.now() ? 1000 : 0,
+        },
+    );
     const { data, error, isLoading, isValidating, mutate } = useSWR(
         ["/api/v2/route/rules", page, query],
         () => listRules({ page, pageSize: PAGE_SIZE, query }),
@@ -93,6 +101,7 @@ function BypassComponent() {
             .then(() => {
                 ctx.Info(item.disabled ? "rule enabled" : "rule disabled");
                 mutate();
+                void mutateActivation();
             })
             .catch((err) => ctx.Error(err.msg ?? String(err)));
     };
@@ -114,6 +123,7 @@ function BypassComponent() {
                 ctx.Info("rule priority changed");
                 mutate();
                 mutateAllRules();
+                void mutateActivation();
             })
             .catch((err) => ctx.Error(err.msg ?? String(err)));
     };
@@ -121,6 +131,7 @@ function BypassComponent() {
     const saved = () => {
         mutate();
         mutateAllRules();
+        void mutateActivation();
         setEditing(null);
         setPriorityItem(null);
         setCreating(false);
@@ -132,6 +143,7 @@ function BypassComponent() {
     return (
         <MainContainer>
             <RouteConfigCard resolvers={editorOptions.resolvers} />
+            <RouteActivationProgress status={activation} onApplied={mutateActivation} />
             <CardList
                 items={data.items}
                 getKey={(v) => `${v.name}-${v.index}`}
@@ -570,8 +582,7 @@ function RuleExprListEditor({ value, options, onChange }: { value: RuleExpr[]; o
     const updateGroups = (next: RuleExpr[][]) => onChange(next.map(groupToExpr));
 
     return (
-        <div className="flex flex-col gap-2">
-            <RulesSeparator />
+        <div className="flex min-w-0 flex-col gap-2">
             {safeGroups.map((group, index) => (
                 <div key={index}>
                     {index > 0 && <OrSeparator />}
@@ -590,8 +601,8 @@ function RuleExprListEditor({ value, options, onChange }: { value: RuleExpr[]; o
                     />
                 </div>
             ))}
-            <div className="mt-2">
-                <Button className="px-3" onClick={() => updateGroups([...safeGroups, [createExpr("host")]])}>
+            <div className="mt-2 flex justify-center sm:justify-start">
+                <Button className="w-full px-3 sm:w-auto" onClick={() => updateGroups([...safeGroups, [createExpr("host")]])}>
                     <Plus size={16} className="mr-1" />Or
                 </Button>
             </div>
@@ -603,14 +614,6 @@ const OrSeparator = () => (
     <div className="my-4 flex items-center">
         <hr className="flex-grow opacity-25" />
         <span className="mx-4 text-xs font-bold uppercase tracking-[1px] text-gray-500 dark:text-gray-400">Or</span>
-        <hr className="flex-grow opacity-25" />
-    </div>
-);
-
-const RulesSeparator = () => (
-    <div className="my-4 flex items-center">
-        <hr className="flex-grow opacity-25" />
-        <span className="mx-4 text-xs font-bold uppercase tracking-[1px] text-gray-500 dark:text-gray-400">Rules</span>
         <hr className="flex-grow opacity-25" />
     </div>
 );
@@ -629,9 +632,10 @@ function RuleExprGroupEditor({
     const leaves = value.length > 0 ? value : [createExpr("host")];
 
     return (
-        <div className="rounded-md border border-gray-500/10 bg-secondary/10 p-4">
+        <div className="min-w-0">
             {leaves.map((item, index) => (
                 <div key={index}>
+                    {index > 0 && <AndConnector />}
                     <RuleExprLeafEditor
                         value={item}
                         options={options}
@@ -645,17 +649,22 @@ function RuleExprGroupEditor({
                             else onChange(leaves.filter((_, current) => current !== index));
                         }}
                     />
-                    {index < leaves.length - 1 && (
-                        <div className="mb-4 ml-4 text-xs font-bold uppercase text-blue-500">And</div>
-                    )}
                 </div>
             ))}
-            <Button size="sm" className="px-3" onClick={() => onChange([...leaves, createExpr("host")])}>
+            <Button size="sm" className="mt-3 w-full border-dashed px-3 sm:w-auto" variant="outline-secondary" onClick={() => onChange([...leaves, createExpr("host")])}>
                 <Plus size={16} className="mr-1" />And
             </Button>
         </div>
     );
 }
+
+const AndConnector = () => (
+    <div className="my-2 flex items-center gap-3 px-3" aria-label="And">
+        <div className="h-px flex-1 bg-ui-border" />
+        <span className="text-[11px] font-bold uppercase tracking-wider text-ui-primary">And</span>
+        <div className="h-px flex-1 bg-ui-border" />
+    </div>
+);
 
 function RuleExprLeafEditor({
     value,
@@ -672,29 +681,31 @@ function RuleExprLeafEditor({
     const updateType = (type: string) => onChange(createExpr(type));
 
     return (
-        <InputGroup className="mb-4">
-            <div className="flex-[0_0_130px]">
-                <Select
-                    value={expr.type}
-                    onValueChange={updateType}
-                    items={includeCurrent(leafRuleExprTypes, expr.type).map(type => ({ value: type, label: formatRuleExprType(type) }))}
-                    triggerClassName="focus:relative focus:z-10 hover:relative hover:z-10"
-                    groupPosition="first"
-                />
-            </div>
-            <RuleExprLeafFields value={expr} options={options} onChange={onChange} />
-            <div className="flex-[0_0_42px]">
+        <div className="min-w-0 rounded-ui-lg border border-ui-border bg-ui-surface p-3 shadow-inner-subtle sm:p-4">
+            <div className="flex min-w-0 items-end gap-2">
+                <div className="min-w-0 flex-1">
+                    <SettingLabel className="mb-2 block text-xs">Condition type</SettingLabel>
+                    <Select
+                        value={expr.type}
+                        onValueChange={updateType}
+                        items={includeCurrent(leafRuleExprTypes, expr.type).map(type => ({ value: type, label: formatRuleExprType(type) }))}
+                    />
+                </div>
                 <Button
                     size="icon"
                     variant="outline-danger"
                     onClick={onRemove}
                     aria-label="Remove rule"
-                    className="h-full w-full !rounded-l-none focus:relative focus:z-10 hover:relative hover:z-10"
+                    className="shrink-0"
                 >
                     <X size={16} />
                 </Button>
             </div>
-        </InputGroup>
+            <div className="mt-3 min-w-0">
+                <SettingLabel className="mb-2 block text-xs">Condition value</SettingLabel>
+                <RuleExprLeafFields value={expr} options={options} onChange={onChange} />
+            </div>
+        </div>
     );
 }
 
@@ -721,82 +732,70 @@ function RuleExprLeafFields({ value, options, onChange }: { value: RuleExpr; opt
     switch (value.type) {
         case "host":
             return (
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                     <Select
                         value={value.host?.list ?? ""}
                         onValueChange={(list) => onChange({ ...value, host: { list } })}
                         items={listSelectItems(options.lists, value.host?.list ?? "")}
                         placeholder="List"
-                        triggerClassName="focus:relative focus:z-10 hover:relative hover:z-10"
-                        groupPosition="middle"
                     />
                 </div>
             );
         case "process":
             return (
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                     <Select
                         value={value.process?.list ?? ""}
                         onValueChange={(list) => onChange({ ...value, process: { list } })}
                         items={listSelectItems(options.lists, value.process?.list ?? "")}
                         placeholder="List"
-                        triggerClassName="focus:relative focus:z-10 hover:relative hover:z-10"
-                        groupPosition="middle"
                     />
                 </div>
             );
         case "inbound": {
             const selectedInbounds = value.inbound?.names ?? (value.inbound?.name ? [value.inbound.name] : []);
             return (
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                     <DropdownSelect
                         values={selectedInbounds}
                         items={includeSelected(options.inbounds, selectedInbounds)}
                         onUpdate={(names) => onChange({ ...value, inbound: { names } })}
-                        triggerClassName="focus:relative focus:z-10 hover:relative hover:z-10"
-                        groupPosition="middle"
                     />
                 </div>
             );
         }
         case "network":
             return (
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                     <Select
                         value={value.network?.network ?? "tcp"}
                         onValueChange={(network) => onChange({ ...value, network: { network } })}
                         items={["tcp", "udp", "tcp_udp"].map(network => ({ value: network, label: network }))}
-                        triggerClassName="focus:relative focus:z-10 hover:relative hover:z-10"
-                        groupPosition="middle"
                     />
                 </div>
             );
         case "port":
             return (
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                     <Input
                         value={value.port?.ports ?? ""}
                         onChange={(event) => onChange({ ...value, port: { ports: event.target.value } })}
                         placeholder="80,443,1000-2000"
-                        className="focus:relative focus:z-10 hover:relative hover:z-10"
-                        groupPosition="middle"
                     />
                 </div>
             );
         case "geoip":
             return (
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                     <Input
                         value={value.geoip?.countries ?? ""}
                         onChange={(event) => onChange({ ...value, geoip: { countries: event.target.value } })}
                         placeholder="CN,JP,US"
-                        className="focus:relative focus:z-10 hover:relative hover:z-10"
-                        groupPosition="middle"
                     />
                 </div>
             );
         default:
-            return <div className="flex-1 px-3 text-sm text-ui-muted">Unsupported rule expression.</div>;
+            return <div className="min-w-0 flex-1 px-3 text-sm text-ui-muted">Unsupported rule expression.</div>;
     }
 }
 

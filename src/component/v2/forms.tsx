@@ -65,7 +65,7 @@ export const SettingInputVertical: FC<SettingInputVerticalProps> = React.memo(({
     const id = useId(); // Auto-generate unique ID
 
     return (
-        <div className={clsx("flex flex-col mb-4 relative", className)}>
+        <div className={clsx("relative mb-4 flex min-w-0 max-w-full flex-col", className)}>
             {/* 1. Associate Label and Input */}
             <SettingLabel htmlFor={id} className="mb-2 block">
                 {label}

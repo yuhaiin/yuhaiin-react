@@ -450,6 +450,16 @@ const ja: PhraseMap = {
     'Publish Config': '公開設定',
     'Create': '作成',
     'Apply': '適用',
+    'Condition type': '条件タイプ',
+    'Condition value': '条件値',
+    'And': 'かつ',
+    'Or': 'または',
+    'Apply now': '今すぐ適用',
+    'Applying list index': 'リストインデックスを適用中',
+    'Applying route rules': 'ルートルールを適用中',
+    'Applying list index and route rules': 'リストインデックスとルートルールを適用中',
+    'New connections use the changes after activation completes.': '適用完了後、新しい接続に変更が反映されます。',
+    'route changes applied': 'ルート変更を適用しました',
     'Failure Details': '失敗の詳細',
     'Session Detail': 'セッション詳細',
     'Connection Details': '接続の詳細',
@@ -947,6 +957,16 @@ const ko: PhraseMap = {
     'Publish Config': '게시 설정',
     'Create': '생성',
     'Apply': '적용',
+    'Condition type': '조건 유형',
+    'Condition value': '조건 값',
+    'And': '그리고',
+    'Or': '또는',
+    'Apply now': '지금 적용',
+    'Applying list index': '목록 인덱스 적용 중',
+    'Applying route rules': '라우팅 규칙 적용 중',
+    'Applying list index and route rules': '목록 인덱스와 라우팅 규칙 적용 중',
+    'New connections use the changes after activation completes.': '적용이 완료되면 새 연결에 변경 사항이 반영됩니다.',
+    'route changes applied': '라우팅 변경 사항이 적용되었습니다',
     'Failure Details': '실패 세부 정보',
     'Session Detail': '세션 세부 정보',
     'Connection Details': '연결 세부 정보',
@@ -1066,6 +1086,13 @@ export function translateInterpolatedText(text: string, language: SupportedLangu
         return language === 'ja'
             ? `${hours[1]} 時間`
             : `${hours[1]} 시간`;
+    }
+
+    const secondsRemaining = text.match(/^(\d+)s remaining$/);
+    if (secondsRemaining) {
+        return language === 'ja'
+            ? `残り ${secondsRemaining[1]} 秒`
+            : `${secondsRemaining[1]}초 남음`;
     }
 
     const entries = text.match(/^(\d+)\s+Entries$/);

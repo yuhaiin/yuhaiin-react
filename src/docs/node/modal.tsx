@@ -369,7 +369,7 @@ const NodeProtocolChain: FC<{
                 {normalizedChain.map((protocol, index) => (
                     <AccordionItem value={`item-${index}`} key={`${index}-${protocol.type}`}>
                         <AccordionTrigger>
-                            <div className="flex min-w-0 items-center gap-2">
+                            <div className="flex min-w-0 flex-1 items-center gap-2">
                                 <Badge variant="primary" pill className="px-2 text-[0.7rem]">
                                     {index + 1}
                                 </Badge>
@@ -671,9 +671,21 @@ function protocolForm(protocol: NodeProtocol, onChange: (value: NodeProtocol) =>
     }
 }
 
-const StringField: FC<{ label: string; value: unknown; disabled?: boolean; onChange: (value: string) => void }> = ({ label, value, disabled, onChange }) => (
-    <SettingInputVertical label={label} value={stringValue(value)} onChange={onChange} disabled={disabled} />
-);
+const StringField: FC<{ label: string; value: unknown; disabled?: boolean; onChange: (value: string) => void }> = ({ label, value, disabled, onChange }) => {
+    const text = stringValue(value);
+    if (!disabled) {
+        return <SettingInputVertical label={label} value={text} onChange={onChange} />;
+    }
+
+    return (
+        <div className="relative mb-4 min-w-0 max-w-full">
+            <SettingLabel className="mb-2 block">{label}</SettingLabel>
+            <div className="min-h-field min-w-0 max-w-full whitespace-pre-wrap break-all rounded-ui-md border border-ui-border bg-ui-surface-muted px-3.5 py-2 text-[0.9375rem] leading-normal text-ui-muted shadow-inner-subtle">
+                {text || "-"}
+            </div>
+        </div>
+    );
+};
 
 const NumberField: FC<{ label: string; value: unknown; disabled?: boolean; onChange: (value: number) => void }> = ({ label, value, disabled, onChange }) => (
     <SettingInputVertical label={label} type="number" value={String(numberValue(value))} onChange={(next) => onChange(numberValue(next))} disabled={disabled} />
@@ -730,7 +742,7 @@ const AddressList: FC<{
                 {items.map((item, index) => (
                     <AccordionItem value={`${title}-${index}`} key={index}>
                         <AccordionTrigger>
-                            <span className="truncate">{label(index)}</span>
+                            <span className="min-w-0 flex-1 whitespace-normal break-all text-left leading-snug sm:truncate sm:whitespace-nowrap">{label(index)}</span>
                         </AccordionTrigger>
                         <AccordionContent>
                             <div className="p-1">

@@ -24,25 +24,25 @@ function formatProtocolLabel(value?: string) {
 
 const ListItem: FC<{ data: AllHistory }> = React.memo(({ data }) => {
     return (
-        <>
-            <div className="flex items-center grow overflow-hidden gap-4 w-full md:w-auto">
+        <div className="flex min-w-0 w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 w-full items-center gap-3 sm:w-auto sm:flex-1">
                 <div className="flex items-center justify-center bg-blue-500/10 text-blue-500 rounded-full shrink-0" style={{ width: "42px", height: "42px" }}>
                     {data.connection.network.connType.startsWith("udp") ? <Radio className="text-xl" /> : <ArrowLeftRight className="text-xl" />}
                 </div>
-                <div className="flex flex-col overflow-hidden" style={{ minWidth: 0 }}>
-                    <span className="font-bold truncate text-base">{data.connection.addr}</span>
-                    <small className="text-gray-500 dark:text-gray-400 font-mono opacity-75">
+                <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+                    <span className="truncate text-base font-bold" title={data.connection.addr}>{data.connection.addr || "-"}</span>
+                    <small className="truncate font-mono text-sm text-gray-500 opacity-75 dark:text-gray-400">
                         ID: #{data.connection.id} • {formatProtocolLabel(data.connection.network.connType)}
                     </small>
                 </div>
             </div>
-            <div className="flex flex-wrap gap-2 items-center shrink-0 md:ml-0">
+            <div className="flex min-w-0 flex-wrap items-center gap-2 pl-[54px] sm:shrink-0 sm:pl-0">
                 <IconBadge icon={ShieldCheck} text={formatProtocolLabel(data.connection.mode)} color="info" />
                 <IconBadge icon={RefreshCw} text={data.count} color="success" />
                 <IconBadge icon={Clock} text={new Date(data.time).toLocaleTimeString()} color="secondary" />
                 <div className="text-gray-500 dark:text-gray-400 opacity-25 ml-2 hidden md:block"><ChevronRight /></div>
             </div>
-        </>
+        </div>
     );
 });
 

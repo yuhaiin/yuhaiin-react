@@ -4,6 +4,7 @@ import { clsx } from "clsx";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "./button";
+import { Select } from "./select";
 
 export interface PaginationProps {
     currentPage: number;
@@ -54,49 +55,91 @@ export function Pagination({
     if (totalPages <= 1) return <Button variant="outline-secondary" size="icon" className={`${pageClass} ${activePageClass}`}>1</Button>;
 
     return (
-        <div className={clsx("flex items-center gap-0.5", className)}>
-            <Button
-                onClick={() => onPageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                aria-label={t('pagination.previous')}
-                size="icon"
-                variant="outline-secondary"
-                className={controlClass}
-            >
-                <ChevronLeft size={16} />
-            </Button>
-
-            <div className="flex items-center gap-0.5">
-                {pages.map((item, idx) =>
-                    item === 'ellipsis' ? (
-                        <div key={'e' + idx} className="flex h-8 w-6 items-center justify-center text-ui-muted">
-                            <MoreHorizontal size={15} />
-                        </div>
-                    ) : (
-                        <Button
-                            key={item}
-                            onClick={() => onPageChange(item)}
-                            size="icon"
-                            variant="outline-secondary"
-                            className={`${pageClass} ${item === currentPage ? activePageClass : ""}`}
-                            aria-current={item === currentPage ? "page" : undefined}
-                        >
-                            {item}
-                        </Button>
-                    )
-                )}
+        <div className={clsx("min-w-0 max-w-full", className)}>
+            <div className="flex items-center gap-2 sm:hidden">
+                <Button
+                    onClick={() => onPageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    aria-label={t('pagination.previous')}
+                    size="icon"
+                    variant="outline-secondary"
+                    className={controlClass}
+                >
+                    <ChevronLeft size={16} />
+                </Button>
+                <div className="flex h-8 min-w-[112px] items-center rounded-ui-md border border-ui-primary/30 bg-ui-primary-soft pr-3 text-sm font-semibold tabular-nums text-ui-primary">
+                    <div className="min-w-0 flex-1">
+                        <Select
+                            value={String(currentPage)}
+                            onValueChange={(value) => onPageChange(Number(value))}
+                            items={Array.from({ length: totalPages }, (_, index) => {
+                                const page = index + 1;
+                                return { value: String(page), label: String(page) };
+                            })}
+                            size="sm"
+                            triggerClassName="!border-0 !bg-transparent !font-semibold !tabular-nums !text-ui-primary !shadow-none"
+                            contentClassName="min-w-[72px]"
+                            viewportClassName="max-h-[min(50vh,320px)]"
+                        />
+                    </div>
+                    <span className="shrink-0 whitespace-nowrap text-ui-muted">/ {totalPages}</span>
+                </div>
+                <Button
+                    onClick={() => onPageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    aria-label={t('pagination.next')}
+                    size="icon"
+                    variant="outline-secondary"
+                    className={controlClass}
+                >
+                    <ChevronRight size={16} />
+                </Button>
             </div>
 
-            <Button
-                onClick={() => onPageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                aria-label={t('pagination.next')}
-                size="icon"
-                variant="outline-secondary"
-                className={controlClass}
-            >
-                <ChevronRight size={16} />
-            </Button>
+            <div className="hidden items-center gap-0.5 sm:flex">
+                <Button
+                    onClick={() => onPageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    aria-label={t('pagination.previous')}
+                    size="icon"
+                    variant="outline-secondary"
+                    className={controlClass}
+                >
+                    <ChevronLeft size={16} />
+                </Button>
+
+                <div className="flex items-center gap-0.5">
+                    {pages.map((item, idx) =>
+                        item === 'ellipsis' ? (
+                            <div key={'e' + idx} className="flex h-8 w-6 items-center justify-center text-ui-muted">
+                                <MoreHorizontal size={15} />
+                            </div>
+                        ) : (
+                            <Button
+                                key={item}
+                                onClick={() => onPageChange(item)}
+                                size="icon"
+                                variant="outline-secondary"
+                                className={`${pageClass} ${item === currentPage ? activePageClass : ""}`}
+                                aria-current={item === currentPage ? "page" : undefined}
+                            >
+                                {item}
+                            </Button>
+                        )
+                    )}
+                </div>
+
+                <Button
+                    onClick={() => onPageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    aria-label={t('pagination.next')}
+                    size="icon"
+                    variant="outline-secondary"
+                    className={controlClass}
+                >
+                    <ChevronRight size={16} />
+                </Button>
+            </div>
         </div>
     );
 }
