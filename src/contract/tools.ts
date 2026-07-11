@@ -1,24 +1,7 @@
-export type InterfaceInfo = {
-  name: string;
-  addresses: string[];
-};
+import type { Go } from "@/api/generated-contracts";
 
-export type Interfaces = {
-  interfaces: InterfaceInfo[];
-};
-
-export type License = {
-  name: string;
-  url: string;
-  license: string;
-  licenseUrl: string;
-};
-
-export type Licenses = {
-  yuhaiin: License[];
-  android: License[];
-};
-
-export type LogBatch = {
-  log: string[];
-};
+export type InterfaceInfo = Go.tools.Interface;
+export type Interfaces = Go.tools.Interfaces;
+export type License = Go.tools.License;
+export type Licenses = Go.tools.Licenses;
+export type LogBatch = Go.tools.LogBatch;

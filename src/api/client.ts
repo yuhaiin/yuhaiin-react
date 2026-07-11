@@ -1,4 +1,5 @@
 import { AuthTokenKey, getApiUrl } from "@/common/apiurl";
+import { resolveRPCRoute, rpcPath } from "@/api/generated";
 
 export type APIError = {
     code: number;
@@ -13,23 +14,13 @@ function authHeaders(): HeadersInit {
 
 type QueryValue = string | number | boolean | null | undefined;
 
-function toSearchParams(query?: URLSearchParams | Record<string, QueryValue>): URLSearchParams | undefined {
-    if (query === undefined || query instanceof URLSearchParams) return query;
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(query)) {
-        if (value === undefined || value === null || value === "") continue;
-        params.set(key, String(value));
-    }
-    return params;
-}
-
-function apiURL(path: string, query?: URLSearchParams | Record<string, QueryValue>): URL {
+function apiURL(path: string): URL {
     const apiUrl = getApiUrl();
     const base = apiUrl !== "" ? apiUrl : window.location.toString();
     const url = new URL(base);
     url.hash = "";
     url.pathname = path;
-    url.search = toSearchParams(query)?.toString() ?? "";
+	url.search = "";
     return url;
 }
 
@@ -61,15 +52,20 @@ function errorMessage(raw: unknown, fallback: string): string {
 }
 
 export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, body?: unknown, query?: URLSearchParams | Record<string, QueryValue>): Promise<T> {
-    const response = await fetch(apiURL(path, query), {
-        method,
-        headers: {
-            ...authHeaders(),
-            Accept: "application/json",
-            ...(body === undefined ? {} : { "Content-Type": "application/json" }),
-        },
-        body: body === undefined ? undefined : JSON.stringify(body),
-    });
+	const route = resolveRPCRoute(method, path);
+	const response = await fetch(apiURL(rpcPath(route.operation)), {
+		method: "POST",
+		headers: {
+			...authHeaders(),
+			Accept: "application/json",
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			...toRequestFields(query),
+			...route.params,
+			...toRequestFields(body),
+		}),
+	});
 
     const raw = await decodeBody(response);
     if (!response.ok) {
@@ -81,4 +77,11 @@ export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", 
         } satisfies APIError;
     }
     return raw as T;
+}
+
+function toRequestFields(value: unknown): Record<string, unknown> {
+	if (value === undefined || value === null) return {};
+	if (value instanceof URLSearchParams) return Object.fromEntries(value.entries());
+	if (typeof value === "object" && !Array.isArray(value)) return value as Record<string, unknown>;
+	throw new TypeError("JSON API requests must use an object body");
 }

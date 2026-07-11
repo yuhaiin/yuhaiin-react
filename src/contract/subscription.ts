@@ -1,27 +1,10 @@
 import type { Node } from "@/contract/node";
+import type { Go } from "@/api/generated-contracts";
 
-export type Link = {
-  name: string;
-  url: string;
-  type: string;
-};
-
-export type LinkList = {
-  items: Link[];
-};
-
-export type Publish = {
-  name: string;
-  points: string[];
-  path: string;
-  password: string;
-  address: string;
-  insecure: boolean;
-};
-
-export type PublishList = {
-  items: Publish[];
-};
+export type Link = Go.subscription.Link;
+export type LinkList = Go.subscription.LinkList;
+export type Publish = Go.subscription.Publish;
+export type PublishList = Go.subscription.PublishList;
 
 export type ResolvePublishResponse = {
   points: Node[];

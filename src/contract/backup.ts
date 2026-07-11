@@ -1,30 +1,7 @@
-export type BackupOption = {
-  instanceName: string;
-  s3: {
-    enabled: boolean;
-    accessKey: string;
-    secretKey: string;
-    bucket: string;
-    region: string;
-    endpointUrl: string;
-    usePathStyle: boolean;
-    storageClass: string;
-  };
-  interval: number;
-  lastBackupHash: string;
-};
+import type { Go } from "@/api/generated-contracts";
 
-export type RestoreOption = {
-  all: boolean;
-  rules: boolean;
-  lists: boolean;
-  nodes: boolean;
-  tags: boolean;
-  dns: boolean;
-  inbounds: boolean;
-  subscribes: boolean;
-  source: "unknown" | "s3" | string;
-};
+export type BackupOption = Go.backup.Option;
+export type RestoreOption = Go.backup.RestoreOption;
 
 export function normalizeBackupOption(value: Partial<BackupOption>): BackupOption {
   return {

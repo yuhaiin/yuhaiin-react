@@ -1,42 +1,7 @@
-export type Settings = {
-  ipv6: boolean;
-  useDefaultInterface: boolean;
-  netInterface: string;
-	pprof: boolean;
-  systemProxy: {
-    http: boolean;
-    socks5: boolean;
-  };
-  logcat: {
-    level: "verbose" | "debug" | "info" | "warning" | "error" | "fatal" | string;
-    save: boolean;
-    ignoreTimeoutError: boolean;
-    ignoreDnsError: boolean;
-  };
-  advanced: {
-    udpBufferSize: number;
-    relayBufferSize: number;
-    udpRingbufferSize: number;
-    happyEyeballsSemaphore: number;
-  };
-  backup: {
-    instanceName: string;
-    interval: number;
-    lastBackupHash: string;
-  };
-};
+import type { Go } from "@/api/generated-contracts";
 
-export type Info = {
-  version: string;
-  commit: string;
-  buildTime: string;
-  goVersion: string;
-  arch: string;
-  platform: string;
-  os: string;
-  compiler: string;
-  build: string[];
-};
+export type Settings = Go.settings.Settings;
+export type Info = Go.settings.Info;
 
 export function createDefaultSettings(value?: Partial<Settings>): Settings {
   return {

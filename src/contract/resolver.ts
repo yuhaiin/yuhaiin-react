@@ -1,13 +1,8 @@
 export type ResolverType = "udp" | "tcp" | "doh" | "dot" | "doq" | "doh3" | "system";
 
-export type Resolver = {
-  id: string;
-  type: ResolverType;
-  host: string;
-  subnet?: string;
-  tlsServerName?: string;
-  system?: boolean;
-};
+import type { Go } from "@/api/generated-contracts";
+
+export type Resolver = Omit<Go.resolver.Resolver, "type"> & { type: ResolverType };
 
 export type ResolverList = {
   items: Resolver[];
@@ -18,21 +13,9 @@ export type ResolverList = {
   };
 };
 
-export type ResolverHosts = {
-  hosts: Record<string, string>;
-};
-
-export type FakeDNS = {
-  enabled: boolean;
-  ipv4Range: string;
-  ipv6Range: string;
-  whitelist: string[];
-  skipCheckList: string[];
-};
-
-export type ResolverServer = {
-  server: string;
-};
+export type ResolverHosts = Go.resolver.Hosts;
+export type FakeDNS = Go.resolver.FakeDNS;
+export type ResolverServer = Go.resolver.Server;
 
 export function createDefaultResolver(id: string): Resolver {
   return {
