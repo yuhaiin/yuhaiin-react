@@ -1,3 +1,4 @@
+import type { Go } from "@/api/generated-contracts";
 import { Inbound, InboundConfig, InboundList, normalizeInbound, normalizeInboundConfig } from "@/contract/inbound";
 import { requestJSON } from "./client";
 
@@ -7,42 +8,48 @@ export type InboundQuery = {
     query?: string;
 };
 
-function listQuery(query?: InboundQuery): URLSearchParams {
-    const params = new URLSearchParams();
-    if (query?.page) params.set("page", String(query.page));
-    if (query?.pageSize) params.set("page_size", String(query.pageSize));
-    if (query?.query) params.set("query", query.query);
-    return params;
+function listQuery(query?: InboundQuery): Record<string, number | string | undefined> {
+    return {
+        page: query?.page,
+        page_size: query?.pageSize,
+        query: query?.query,
+    };
 }
 
-export function listInbounds(query?: InboundQuery): Promise<InboundList> {
-    return requestJSON<InboundList>("GET", "/api/v2/inbounds", undefined, listQuery(query)).then(data => ({
-        items: (data.items ?? []).map(item => normalizeInbound(item)),
+export async function listInbounds(query?: InboundQuery): Promise<InboundList> {
+    const data = await requestJSON<{ items: Go.inbound.Inbound[]; page: InboundList["page"]; }>("GET", "/api/v2/inbounds", undefined, listQuery(query));
+    return ({
+        items: (data.items ?? []).map(item => normalizeInbound(item as unknown as Partial<Inbound>)),
         page: data.page ?? { page: query?.page ?? 1, pageSize: query?.pageSize ?? 0, total: 0 },
-    }));
+    });
 }
 
-export function getInbound(id: string): Promise<Inbound> {
-    return requestJSON<Inbound>("GET", `/api/v2/inbounds/${encodeURIComponent(id)}`).then(normalizeInbound);
+export async function getInbound(id: string): Promise<Inbound> {
+    const value = await requestJSON<Go.inbound.Inbound>("GET", `/api/v2/inbounds/${encodeURIComponent(id)}`);
+    return normalizeInbound(value as unknown as Inbound);
 }
 
-export function createInbound(inbound: Inbound): Promise<Inbound> {
-    return requestJSON<Inbound>("POST", "/api/v2/inbounds", normalizeInbound(inbound)).then(normalizeInbound);
+export async function createInbound(inbound: Inbound): Promise<Inbound> {
+    const value_1 = await requestJSON<Go.inbound.Inbound>("POST", "/api/v2/inbounds", normalizeInbound(inbound));
+    return normalizeInbound(value_1 as unknown as Inbound);
 }
 
-export function saveInbound(inbound: Inbound): Promise<Inbound> {
+export async function saveInbound(inbound: Inbound): Promise<Inbound> {
     const normalized = normalizeInbound(inbound);
-    return requestJSON<Inbound>("PUT", `/api/v2/inbounds/${encodeURIComponent(normalized.id)}`, normalized).then(normalizeInbound);
+    const value_1 = await requestJSON<Go.inbound.Inbound>("PUT", `/api/v2/inbounds/${encodeURIComponent(normalized.id)}`, normalized);
+    return normalizeInbound(value_1 as unknown as Inbound);
 }
 
 export function deleteInbound(id: string): Promise<void> {
     return requestJSON<void>("DELETE", `/api/v2/inbounds/${encodeURIComponent(id)}`);
 }
 
-export function getInboundConfig(): Promise<InboundConfig> {
-    return requestJSON<InboundConfig>("GET", "/api/v2/inbounds/config").then(normalizeInboundConfig);
+export async function getInboundConfig(): Promise<InboundConfig> {
+    const value = await requestJSON<InboundConfig>("GET", "/api/v2/inbounds/config");
+    return normalizeInboundConfig(value);
 }
 
-export function saveInboundConfig(config: InboundConfig): Promise<InboundConfig> {
-    return requestJSON<InboundConfig>("PUT", "/api/v2/inbounds/config", normalizeInboundConfig(config)).then(normalizeInboundConfig);
+export async function saveInboundConfig(config: InboundConfig): Promise<InboundConfig> {
+    const value = await requestJSON<InboundConfig>("PUT", "/api/v2/inbounds/config", normalizeInboundConfig(config));
+    return normalizeInboundConfig(value);
 }

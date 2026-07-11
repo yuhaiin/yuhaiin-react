@@ -1,126 +1,27 @@
+import type { Go } from "@/api/generated-contracts";
+
 export type UDPMode = "enabled" | "disabled" | "tcp_only" | "udp_only";
-
-export type EmptyNetwork = {
-    type: "empty";
-    empty: Record<string, never>;
+type NetworkVariant<T extends Go.inbound.Network["type"]> = Extract<Go.inbound.Network, { type: T }>;
+export type EmptyNetwork = NetworkVariant<"empty">;
+export type TCPUDPNetwork = Omit<NetworkVariant<"tcp_udp">, "tcp_udp"> & {
+    tcp_udp: Omit<Go.inbound.TCPUDPNetwork, "udp"> & { udp: UDPMode };
 };
-
-export type TCPUDPNetwork = {
-    type: "tcp_udp";
-    tcp_udp: {
-        host: string;
-        udp: UDPMode;
-    };
-};
-
-export type QUICNetwork = {
-    type: "quic";
-    quic: {
-        host: string;
-        tls?: ServerTLSConfig;
-    };
-};
-
+export type QUICNetwork = NetworkVariant<"quic">;
 export type InboundNetwork = EmptyNetwork | TCPUDPNetwork | QUICNetwork;
-
-export type InboundProtocol =
-    | { type: "http"; http: { username: string; password: string } }
-    | { type: "socks5"; socks5: { username: string; password: string; udp: boolean } }
-    | { type: "yuubinsya"; yuubinsya: { password: string; udpCoalesce: boolean } }
-    | { type: "mixed"; mixed: { username: string; password: string } }
-    | { type: "socks4a"; socks4a: { username: string } }
-    | { type: "tproxy"; tproxy: { host: string; dnsHijacking: boolean; forceFakeIp: boolean } }
-    | { type: "redir"; redir: { host: string } }
-    | { type: "tun"; tun: TunProtocol }
-    | { type: "reverse_http"; reverse_http: { url: string; tls?: ClientTLSConfig } }
-    | { type: "reverse_tcp"; reverse_tcp: { target: string } }
-    | { type: "none"; none: Record<string, never> };
-
-export type TunProtocol = {
-    name: string;
-    mtu: number;
-    forceFakeIp: boolean;
-    skipMulticast: boolean;
-    driver: string;
-    portal: string;
-    portalV6: string;
-    routes: string[];
-    excludes: string[];
-    postUp: string[];
-    postDown: string[];
-};
-
-export type InboundTransport =
-    | { type: "normal"; normal: Record<string, never> }
-    | { type: "tls"; tls: { tls?: ServerTLSConfig } }
-    | { type: "mux"; mux: Record<string, never> }
-    | { type: "http2"; http2: Record<string, never> }
-    | { type: "websocket"; websocket: Record<string, never> }
-    | { type: "reality"; reality: RealityTransport }
-    | { type: "tls_auto"; tls_auto: TLSAutoTransport }
-    | { type: "http_mock"; http_mock: { dataBase64: string } }
-    | { type: "aead"; aead: { password: string; cryptoMethod: string } }
-    | { type: "proxy"; proxy: Record<string, never> };
-
-export type RealityTransport = {
-    shortIds: string[];
-    serverNames: string[];
-    dest: string;
-    privateKey: string;
-    publicKey: string;
-    mldsa65Seed: string;
-    debug: boolean;
-};
-
-export type TLSAutoTransport = {
-    serverNames: string[];
-    nextProtos: string[];
-    caCertBase64: string;
-    caKeyBase64: string;
-    ech?: {
-        enabled: boolean;
-        configBase64: string;
-        privateKeyBase64: string;
-        outerSni: string;
-    };
-};
-
-export type ClientTLSConfig = {
-    enabled: boolean;
-    serverNames: string[];
-    caCertsBase64: string[];
-    insecureSkipVerify: boolean;
-    nextProtos: string[];
-    echConfigBase64: string;
-};
-
-export type ServerTLSConfig = {
-    certificates: Certificate[];
-    nextProtos: string[];
-    serverNameCertificate?: Record<string, Certificate>;
-};
-
-export type Certificate = {
-    certBase64: string;
-    keyBase64: string;
-    certFile: string;
-    keyFile: string;
-};
-
-export type Inbound = {
-    id: string;
-    name: string;
-    enabled: boolean;
+export type InboundProtocol = Go.inbound.Protocol;
+export type TunProtocol = Go.inbound.TunProtocol;
+export type InboundTransport = Go.inbound.Transport;
+export type RealityTransport = Go.inbound.RealityTransport;
+export type TLSAutoTransport = Go.inbound.TLSAutoTransport;
+export type ClientTLSConfig = Go.inbound.ClientTLSConfig;
+export type Certificate = Go.inbound.Certificate;
+export type ServerTLSConfig = Go.inbound.ServerTLSConfig;
+export type Inbound = Omit<Go.inbound.Inbound, "network" | "transports" | "protocol"> & {
     network: InboundNetwork;
     transports: InboundTransport[];
     protocol: InboundProtocol;
 };
-
-export type Page = {
-    page: number;
-    pageSize: number;
-    total: number;
-};
+export type Page = Go.route.Page;
 
 export type InboundList = {
     items: Inbound[];

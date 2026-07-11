@@ -51,7 +51,7 @@ function errorMessage(raw: unknown, fallback: string): string {
     return fallback;
 }
 
-export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, body?: unknown, query?: URLSearchParams | Record<string, QueryValue>): Promise<T> {
+export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, body?: unknown, query?: Record<string, QueryValue>): Promise<T> {
 	const route = resolveRPCRoute(method, path);
 	const response = await fetch(apiURL(rpcPath(route.operation)), {
 		method: "POST",
@@ -81,7 +81,6 @@ export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", 
 
 function toRequestFields(value: unknown): Record<string, unknown> {
 	if (value === undefined || value === null) return {};
-	if (value instanceof URLSearchParams) return Object.fromEntries(value.entries());
 	if (typeof value === "object" && !Array.isArray(value)) return value as Record<string, unknown>;
 	throw new TypeError("JSON API requests must use an object body");
 }

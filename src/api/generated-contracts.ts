@@ -148,13 +148,10 @@ export namespace Go {
       transports: Transport[];
       protocol: Protocol;
     }
-    export interface Network {
-      type: string;
-      empty?: EmptyNetwork;
-      tcp_udp?: TCPUDPNetwork;
-      quic?: QUICNetwork;
-    }
-    export type NetworkVariant = unknown;
+    export type Network =
+      | { type: "empty"; empty: EmptyNetwork }
+      | { type: "tcp_udp"; tcp_udp: TCPUDPNetwork }
+      | { type: "quic"; quic: QUICNetwork };
     export interface EmptyNetwork {
     }
     export interface TCPUDPNetwork {
@@ -165,21 +162,18 @@ export namespace Go {
       host: string;
       tls?: ServerTLSConfig;
     }
-    export interface Protocol {
-      type: string;
-      http?: HTTPProtocol;
-      socks5?: Socks5Protocol;
-      yuubinsya?: YuubinsyaProtocol;
-      mixed?: MixedProtocol;
-      socks4a?: Socks4AProtocol;
-      tproxy?: TProxyProtocol;
-      redir?: RedirProtocol;
-      tun?: TunProtocol;
-      reverse_http?: ReverseHTTPProtocol;
-      reverse_tcp?: ReverseTCPProtocol;
-      none?: NoneProtocol;
-    }
-    export type ProtocolVariant = unknown;
+    export type Protocol =
+      | { type: "http"; http: HTTPProtocol }
+      | { type: "socks5"; socks5: Socks5Protocol }
+      | { type: "yuubinsya"; yuubinsya: YuubinsyaProtocol }
+      | { type: "mixed"; mixed: MixedProtocol }
+      | { type: "socks4a"; socks4a: Socks4AProtocol }
+      | { type: "tproxy"; tproxy: TProxyProtocol }
+      | { type: "redir"; redir: RedirProtocol }
+      | { type: "tun"; tun: TunProtocol }
+      | { type: "reverse_http"; reverse_http: ReverseHTTPProtocol }
+      | { type: "reverse_tcp"; reverse_tcp: ReverseTCPProtocol }
+      | { type: "none"; none: NoneProtocol };
     export interface HTTPProtocol {
       username: string;
       password: string;
@@ -230,20 +224,17 @@ export namespace Go {
     }
     export interface NoneProtocol {
     }
-    export interface Transport {
-      type: string;
-      normal?: NormalTransport;
-      tls?: TLSTransport;
-      mux?: MuxTransport;
-      http2?: HTTP2Transport;
-      websocket?: WebSocketTransport;
-      reality?: RealityTransport;
-      tls_auto?: TLSAutoTransport;
-      http_mock?: HTTPMockTransport;
-      aead?: AEADTransport;
-      proxy?: ProxyTransport;
-    }
-    export type TransportVariant = unknown;
+    export type Transport =
+      | { type: "normal"; normal: NormalTransport }
+      | { type: "tls"; tls: TLSTransport }
+      | { type: "mux"; mux: MuxTransport }
+      | { type: "http2"; http2: HTTP2Transport }
+      | { type: "websocket"; websocket: WebSocketTransport }
+      | { type: "reality"; reality: RealityTransport }
+      | { type: "tls_auto"; tls_auto: TLSAutoTransport }
+      | { type: "http_mock"; http_mock: HTTPMockTransport }
+      | { type: "aead"; aead: AEADTransport }
+      | { type: "proxy"; proxy: ProxyTransport };
     export interface NormalTransport {
     }
     export interface TLSTransport {
@@ -267,18 +258,18 @@ export namespace Go {
     export interface TLSAutoTransport {
       serverNames: string[];
       nextProtos: string[];
-      caCertBase64: number[];
-      caKeyBase64: number[];
+      caCertBase64: string;
+      caKeyBase64: string;
       ech?: ECHConfig;
     }
     export interface ECHConfig {
       enabled: boolean;
-      configBase64: number[];
-      privateKeyBase64: number[];
+      configBase64: string;
+      privateKeyBase64: string;
       outerSni: string;
     }
     export interface HTTPMockTransport {
-      dataBase64: number[];
+      dataBase64: string;
     }
     export interface AEADTransport {
       password: string;
@@ -289,10 +280,10 @@ export namespace Go {
     export interface ClientTLSConfig {
       enabled: boolean;
       serverNames: string[];
-      caCertsBase64: number[][];
+      caCertsBase64: string[];
       insecureSkipVerify: boolean;
       nextProtos: string[];
-      echConfigBase64: number[];
+      echConfigBase64: string;
     }
     export interface ServerTLSConfig {
       certificates: Certificate[];
@@ -300,8 +291,8 @@ export namespace Go {
       serverNameCertificate: Record<string, Certificate>;
     }
     export interface Certificate {
-      certBase64: number[];
-      keyBase64: number[];
+      certBase64: string;
+      keyBase64: string;
       certFile: string;
       keyFile: string;
     }
@@ -348,43 +339,41 @@ export namespace Go {
       mapping?: string;
       filtering?: string;
     }
-    export interface Protocol {
-      type: string;
-      shadowsocks?: Shadowsocks;
-      shadowsocksr?: Shadowsocksr;
-      vmess?: Vmess;
-      websocket?: Websocket;
-      quic?: Quic;
-      obfs_http?: ObfsHTTP;
-      trojan?: Trojan;
-      simple?: Fixed;
-      none?: None;
-      socks5?: Socks5;
-      http?: HTTP;
-      direct?: Direct;
-      reject?: Reject;
-      yuubinsya?: Yuubinsya;
-      http2?: Concurrency;
-      reality?: Reality;
-      tls?: TLS;
-      wireguard?: Wireguard;
-      mux?: Concurrency;
-      drop?: Drop;
-      vless?: Vless;
-      bootstrap_dns_warp?: BootstrapDNSWarp;
-      tailscale?: Tailscale;
-      set?: Set;
-      tls_termination?: TLSTermination;
-      http_termination?: HTTPTermination;
-      http_mock?: HTTPMock;
-      aead?: AEAD;
-      fixed?: Fixed;
-      network_split?: NetworkSplit;
-      cloudflare_warp_masque?: CloudflareWarpMasque;
-      proxy?: Proxy;
-      fixedv2?: FixedV2;
-      point_as_endpoint?: PointAsEndpoint;
-    }
+    export type Protocol =
+      | { type: "shadowsocks"; shadowsocks: Shadowsocks }
+      | { type: "shadowsocksr"; shadowsocksr: Shadowsocksr }
+      | { type: "vmess"; vmess: Vmess }
+      | { type: "websocket"; websocket: Websocket }
+      | { type: "quic"; quic: Quic }
+      | { type: "obfs_http"; obfs_http: ObfsHTTP }
+      | { type: "trojan"; trojan: Trojan }
+      | { type: "simple"; simple: Fixed }
+      | { type: "none"; none: None }
+      | { type: "socks5"; socks5: Socks5 }
+      | { type: "http"; http: HTTP }
+      | { type: "direct"; direct: Direct }
+      | { type: "reject"; reject: Reject }
+      | { type: "yuubinsya"; yuubinsya: Yuubinsya }
+      | { type: "http2"; http2: Concurrency }
+      | { type: "reality"; reality: Reality }
+      | { type: "tls"; tls: TLS }
+      | { type: "wireguard"; wireguard: Wireguard }
+      | { type: "mux"; mux: Concurrency }
+      | { type: "drop"; drop: Drop }
+      | { type: "vless"; vless: Vless }
+      | { type: "bootstrap_dns_warp"; bootstrap_dns_warp: BootstrapDNSWarp }
+      | { type: "tailscale"; tailscale: Tailscale }
+      | { type: "set"; set: Set }
+      | { type: "tls_termination"; tls_termination: TLSTermination }
+      | { type: "http_termination"; http_termination: HTTPTermination }
+      | { type: "http_mock"; http_mock: HTTPMock }
+      | { type: "aead"; aead: AEAD }
+      | { type: "fixed"; fixed: Fixed }
+      | { type: "network_split"; network_split: NetworkSplit }
+      | { type: "cloudflare_warp_masque"; cloudflare_warp_masque: CloudflareWarpMasque }
+      | { type: "proxy"; proxy: Proxy }
+      | { type: "fixedv2"; fixedv2: FixedV2 }
+      | { type: "point_as_endpoint"; point_as_endpoint: PointAsEndpoint };
     export interface None {
     }
     export interface Reject {
@@ -479,10 +468,10 @@ export namespace Go {
     export interface TLS {
       enable: boolean;
       servernames?: string[];
-      ca_cert?: number[][];
+      ca_cert?: string[];
       insecure_skip_verify?: boolean;
       next_protos?: string[];
-      ech_config?: number[];
+      ech_config?: string;
     }
     export interface ServerTLS {
       certificates?: Certificate[];
@@ -490,8 +479,8 @@ export namespace Go {
       serverNameCertificate?: Record<string, Certificate>;
     }
     export interface Certificate {
-      cert?: number[];
-      key?: number[];
+      cert?: string;
+      key?: string;
       cert_file_path?: string;
       key_file_path?: string;
     }
@@ -503,7 +492,7 @@ export namespace Go {
       endpoint?: string[];
       peers?: WireguardPeer[];
       mtu?: number;
-      reserved?: number[];
+      reserved?: string;
     }
     export interface WireguardPeer {
       publicKey: string;
@@ -533,7 +522,7 @@ export namespace Go {
       value: string;
     }
     export interface HTTPMock {
-      data?: number[];
+      data?: string;
     }
     export interface AEAD {
       password: string;
@@ -556,8 +545,6 @@ export namespace Go {
     export type Simple = Fixed;
     export type HTTP2 = Concurrency;
     export type Mux = Concurrency;
-    export type ProtocolVariant = unknown;
-    export type ProtocolPayload = unknown;
   }
   export namespace resolver {
     export interface Resolver {
@@ -628,18 +615,16 @@ export namespace Go {
       rules?: RuleExpr[];
       disabled?: boolean;
     }
-    export interface RuleExpr {
-      type: string;
-      all?: RuleExpr[];
-      any?: RuleExpr[];
-      not?: RuleExpr;
-      host?: ListRef;
-      process?: ListRef;
-      inbound?: SourceRef;
-      network?: NetworkExpr;
-      port?: PortExpr;
-      geoip?: GeoIPExpr;
-    }
+    export type RuleExpr =
+      | { type: "all"; all: RuleExpr[] }
+      | { type: "any"; any: RuleExpr[] }
+      | { type: "not"; not: RuleExpr }
+      | { type: "host"; host: ListRef }
+      | { type: "process"; process: ListRef }
+      | { type: "inbound"; inbound: SourceRef }
+      | { type: "network"; network: NetworkExpr }
+      | { type: "port"; port: PortExpr }
+      | { type: "geoip"; geoip: GeoIPExpr };
     export interface ListRef {
       list: string;
     }
@@ -674,11 +659,9 @@ export namespace Go {
       source: ListSource;
       errorMsgs?: string[];
     }
-    export interface ListSource {
-      type: string;
-      local?: LocalSource;
-      remote?: RemoteSource;
-    }
+    export type ListSource =
+      | { type: "local"; local: LocalSource }
+      | { type: "remote"; remote: RemoteSource };
     export interface LocalSource {
       lists?: string[];
     }

@@ -355,7 +355,7 @@ function defaultClientTLS(): ClientTLSConfig {
 }
 
 function defaultServerTLS(): ServerTLSConfig {
-    return { certificates: [], nextProtos: [] };
+    return { certificates: [], nextProtos: [], serverNameCertificate: {} };
 }
 
 const CertificateEditor: FC<{

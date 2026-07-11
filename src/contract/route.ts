@@ -1,77 +1,19 @@
-export type Page = {
-  page: number;
-  pageSize: number;
-  total: number;
-};
+import type { Go } from "@/api/generated-contracts";
 
-export type RuleItem = {
-  name: string;
-  disabled: boolean;
-  index: number;
-  mode: string;
-  tag: string;
-  resolver: string;
-  ruleCount: number;
-};
-
-export type RouteRule = {
-  name: string;
-  mode: string;
-  tag?: string;
-  resolveStrategy?: string;
-  udpProxyFqdnStrategy?: string;
-  resolver?: string;
-  rules?: RuleExpr[];
-  disabled?: boolean;
-};
-
-export type RuleExpr = {
-  type: string;
-  all?: RuleExpr[];
-  any?: RuleExpr[];
-  not?: RuleExpr;
-  host?: { list: string };
-  process?: { list: string };
-  inbound?: { name?: string; names?: string[] };
-  network?: { network: string };
-  port?: { ports: string };
-  geoip?: { countries: string };
-};
-
-export type RuleList = {
-  items: RuleItem[];
-  page: Page;
-};
-
-export type RouteConfig = {
-  directResolver: string;
-  proxyResolver: string;
-  resolveLocally: boolean;
-  udpProxyFqdnStrategy: string;
-};
-
-export type RouteListConfig = {
-  refreshInterval: string;
-  lastRefreshTime: string;
-  error: string;
-  maxMindDbGeoIp: {
-    downloadUrl: string;
-    error: string;
-  };
-};
-
-export type RouteListActivationStatus = {
-  hostIndexRefreshAt: number;
-};
+export type Page = Go.route.Page;
+export type RuleItem = Go.route.RuleItem;
+export type RuleExpr = Go.route.RuleExpr;
+export type RouteRule = Go.route.RouteRule;
+export type RuleList = Go.route.RuleList;
+export type RouteConfig = Go.route.Config;
+export type RouteListConfig = Go.route.ListConfig;
+export type RouteListActivationStatus = Go.route.ListActivationStatus;
 
 export function normalizeRouteListActivationStatus(value: Partial<RouteListActivationStatus> | undefined): RouteListActivationStatus {
   return { hostIndexRefreshAt: value?.hostIndexRefreshAt ?? 0 };
 }
 
-export type RouteActivationStatus = {
-  hostIndexRefreshAt: number;
-  ruleApplyAt: number;
-};
+export type RouteActivationStatus = Go.route.ActivationStatus;
 
 export function normalizeRouteActivationStatus(value: Partial<RouteActivationStatus> | undefined): RouteActivationStatus {
   return {
@@ -80,69 +22,19 @@ export function normalizeRouteActivationStatus(value: Partial<RouteActivationSta
   };
 }
 
-export type ListItem = {
-  name: string;
-  type: string;
-  source: string;
-  itemCount: number;
-  errorCount: number;
-  preview: string;
-};
-
-export type RouteListDetail = {
-  name: string;
-  type: string;
-  source: ListSource;
-  errorMsgs?: string[];
-};
-
+export type ListItem = Go.route.ListItem;
 export type ListSource = {
   type: string;
-  local?: { lists?: string[] };
-  remote?: { urls?: string[] };
+  local?: Go.route.LocalSource;
+  remote?: Go.route.RemoteSource;
 };
-
-export type RouteList = {
-  items: ListItem[];
-  page: Page;
-};
-
-export type TagItem = {
-  name: string;
-  type: string;
-  hash: string[];
-};
-
-export type TagList = {
-  items: TagItem[];
-  page: Page;
-};
-
-export type RuleTestResponse = {
-  mode: string;
-  tag: string;
-  resolver: string;
-  afterAddr: string;
-  lists: string[];
-  ips: string[];
-  matchResult: {
-    ruleName: string;
-    history: { listName: string; matched: boolean }[];
-  }[];
-};
-
-export type BlockHistory = {
-  protocol: string;
-  host: string;
-  time: string;
-  process: string;
-  blockCount: string;
-};
-
-export type BlockHistoryList = {
-  items: BlockHistory[];
-  dumpProcessEnabled: boolean;
-};
+export type RouteListDetail = Omit<Go.route.RouteListDetail, "source"> & { source: ListSource };
+export type RouteList = Go.route.RouteList;
+export type TagItem = Go.route.TagItem;
+export type TagList = Go.route.TagList;
+export type RuleTestResponse = Go.route.RuleTestResponse;
+export type BlockHistory = Go.route.BlockHistory;
+export type BlockHistoryList = Go.route.BlockHistoryList;
 
 export function createDefaultRule(name = ""): RouteRule {
   return {

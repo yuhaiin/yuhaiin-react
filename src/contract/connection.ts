@@ -1,116 +1,24 @@
-export type Counter = {
-  download: string;
-  upload: string;
-};
+import type { Go } from "@/api/generated-contracts";
 
-export type TotalFlow = {
-  download: string;
-  upload: string;
-  counters?: Record<string, Counter>;
-};
-
-export type TrafficPoint = {
-  start: string;
-  download: string;
-  upload: string;
-};
-
-export type TrafficSeries = {
+export type Counter = Go.connection.Counter;
+export type TotalFlow = Go.connection.TotalFlow;
+export type TrafficPoint = Go.connection.TrafficPoint;
+export type TrafficSeries = Omit<Go.connection.TrafficSeries, "interval"> & {
   interval: "hour" | "day" | "month";
-  items: TrafficPoint[];
 };
-
-export type TelemetryItem = {
-  value: string;
-  download: string;
-  upload: string;
-  failures: string;
-};
-
-export type TelemetryGroup = {
+export type TelemetryItem = Go.connection.TelemetryItem;
+export type TelemetryGroup = Omit<Go.connection.TelemetryGroup, "dimension"> & {
   dimension: "protocol" | "inbound" | "source" | "addr" | "outbound" | "process" | "rule" | "tag" | "destination";
-  items: TelemetryItem[];
 };
-
-export type TelemetrySummary = {
-  groups: TelemetryGroup[];
-};
-
-export type Connection = {
-  id: string;
-  addr: string;
-  network: {
-    connType: string;
-    underlyingType: string;
-  };
-  source: string;
-  inbound: string;
-  inboundName: string;
-  interface: string;
-  outbound: string;
-  localAddr: string;
-  destination: string;
-  fakeIp: string;
-  hosts: string;
-  domain: string;
-  ip: string;
-  tag: string;
-  nodeId: string;
-  nodeName: string;
-  protocol: string;
-  process: string;
-  pid: string;
-  uid: string;
-  tlsServerName: string;
-  httpHost: string;
-  component: string;
-  udpMigrateId: string;
-  mode: string;
-  resolver: string;
-  geo: string;
-  outboundGeo: string;
-  lists?: string[];
-  matchHistory?: MatchHistoryEntry[];
-};
-
-export type MatchHistoryEntry = {
-  ruleName: string;
-  history: MatchResult[];
-};
-
-export type MatchResult = {
-  listName: string;
-  matched: boolean;
-};
-
-export type Connections = {
-  connections: Connection[];
-};
-
-export type FailedHistory = {
-  protocol: string;
-  host: string;
-  error: string;
-  process: string;
-  time: string;
-  failedCount: string;
-};
-
-export type FailedHistoryList = {
-  items: FailedHistory[];
-  dumpProcessEnabled: boolean;
-};
-
-export type AllHistory = {
-  connection: Connection;
-  count: string;
-  time: string;
-};
-
-export type AllHistoryList = {
-  items: AllHistory[];
-  dumpProcessEnabled: boolean;
-};
+export type TelemetrySummary = Omit<Go.connection.TelemetrySummary, "groups"> & { groups: TelemetryGroup[] };
+export type Connection = Go.connection.Connection;
+export type MatchHistoryEntry = Go.connection.MatchHistoryEntry;
+export type MatchResult = Go.connection.MatchResult;
+export type Connections = Go.connection.Connections;
+export type FailedHistory = Go.connection.FailedHistory;
+export type FailedHistoryList = Go.connection.FailedHistoryList;
+export type AllHistory = Go.connection.AllHistory;
+export type AllHistoryList = Go.connection.AllHistoryList;
 
 export function normalizeConnection(value: Partial<Connection> | undefined): Connection {
   return {

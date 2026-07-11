@@ -1,229 +1,40 @@
+import type { Go } from "@/api/generated-contracts";
+
 export type NodeOrigin = "reserve" | "remote" | "manual";
-
-export type NodeProtocolType =
-  | "shadowsocks"
-  | "shadowsocksr"
-  | "vmess"
-  | "websocket"
-  | "quic"
-  | "obfs_http"
-  | "trojan"
-  | "simple"
-  | "none"
-  | "socks5"
-  | "http"
-  | "direct"
-  | "reject"
-  | "yuubinsya"
-  | "http2"
-  | "reality"
-  | "tls"
-  | "wireguard"
-  | "mux"
-  | "drop"
-  | "vless"
-  | "bootstrap_dns_warp"
-  | "tailscale"
-  | "set"
-  | "tls_termination"
-  | "http_termination"
-  | "http_mock"
-  | "aead"
-  | "fixed"
-  | "network_split"
-  | "cloudflare_warp_masque"
-  | "proxy"
-  | "fixedv2"
-  | "point_as_endpoint";
-
+export type NodeProtocolType = Go.node.Protocol["type"];
 export type EmptyNodeProtocolConfig = { readonly __emptyProtocolConfig?: never };
-
-export type ShadowsocksConfig = {
-  method?: string;
-  password?: string;
-};
-
-export type ShadowsocksrConfig = {
-  server?: string;
-  port?: string;
-  method?: string;
-  password?: string;
-  obfs?: string;
-  obfsparam?: string;
-  protocol?: string;
-  protoparam?: string;
-};
-
-export type VmessConfig = {
-  id?: string;
-  aid?: string;
-  security?: string;
-};
-
-export type VlessConfig = {
-  uuid?: string;
-};
-
-export type WebsocketConfig = {
-  host?: string;
-  path?: string;
-};
-
-export type QuicConfig = {
-  host?: string;
-  tls?: TLSConfig;
-};
-
-export type ObfsHTTPConfig = {
-  host?: string;
-  port?: string;
-};
-
-export type TrojanConfig = {
-  password?: string;
-  peer?: string;
-};
-
-export type FixedAddressConfig = {
-  host?: string;
-  port?: number;
-  network_interface?: string;
-};
-
-export type FixedConfig = {
-  host?: string;
-  port?: number;
-  alternate_host?: FixedAddressConfig[];
-  network_interface?: string;
-};
-
-export type FixedV2Config = {
-  addresses?: FixedAddressConfig[];
-  udp_happy_eyeballs?: boolean;
-};
-
-export type Socks5Config = {
-  user?: string;
-  password?: string;
-  hostname?: string;
-  override_port?: number;
-};
-
-export type HTTPConfig = {
-  user?: string;
-  password?: string;
-};
-
-export type YuubinsyaConfig = {
-  password?: string;
-  udp_over_stream?: boolean;
-  udp_coalesce?: boolean;
-};
-
-export type ConcurrencyConfig = {
-  concurrency?: number;
-};
-
-export type RealityConfig = {
-  server_name?: string;
-  public_key?: string;
-  mldsa65_verify?: string;
-  short_id?: string;
-  debug?: boolean;
-};
-
-export type TLSConfig = {
-  enable?: boolean;
-  servernames?: string[];
-  ca_cert?: string[];
-  insecure_skip_verify?: boolean;
-  next_protos?: string[];
-  ech_config?: string;
-};
-
-export type CertificateConfig = {
-  cert?: string;
-  key?: string;
-  cert_file_path?: string;
-  key_file_path?: string;
-};
-
-export type ServerTLSConfig = {
-  certificates?: CertificateConfig[];
-  next_protos?: string[];
-  serverNameCertificate?: { [serverName: string]: CertificateConfig };
-};
-
-export type TLSTerminationConfig = {
-  tls?: ServerTLSConfig;
-};
-
-export type WireguardPeerConfig = {
-  publicKey?: string;
-  preSharedKey?: string;
-  endpoint?: string;
-  keepAlive?: number;
-  allowedIps?: string[];
-};
-
-export type WireguardConfig = {
-  secretKey?: string;
-  endpoint?: string[];
-  peers?: WireguardPeerConfig[];
-  mtu?: number;
-  reserved?: string;
-};
-
-export type TailscaleConfig = {
-  auth_key?: string;
-  hostname?: string;
-  control_url?: string;
-  debug?: boolean;
-};
-
-export type SetConfig = {
-  nodes?: string[];
-  strategy?: string;
-};
-
-export type HTTPHeaderConfig = {
-  key?: string;
-  value?: string;
-};
-
-export type HTTPHeadersConfig = {
-  headers?: HTTPHeaderConfig[];
-};
-
-export type HTTPTerminationConfig = {
-  headers?: { [path: string]: HTTPHeadersConfig };
-};
-
-export type HTTPMockConfig = {
-  data?: string;
-};
-
-export type AEADConfig = {
-  password?: string;
-  crypto_method?: string;
-};
-
-export type NetworkSplitConfig = {
-  tcp?: NodeProtocol;
-  udp?: NodeProtocol;
-};
-
-export type CloudflareWarpMasqueConfig = {
-  private_key?: string;
-  endpoint?: string[];
-  endpoint_public_key?: string;
-  local_addresses?: string[];
-  mtu?: number;
-};
-
-export type PointAsEndpointConfig = {
-  hash?: string;
-};
+export type ShadowsocksConfig = Partial<Go.node.Shadowsocks>;
+export type ShadowsocksrConfig = Partial<Go.node.Shadowsocksr>;
+export type VmessConfig = Partial<Go.node.Vmess>;
+export type VlessConfig = Partial<Go.node.Vless>;
+export type WebsocketConfig = Partial<Go.node.Websocket>;
+export type QuicConfig = Omit<Partial<Go.node.Quic>, "tls"> & { tls?: TLSConfig };
+export type ObfsHTTPConfig = Partial<Go.node.ObfsHTTP>;
+export type TrojanConfig = Partial<Go.node.Trojan>;
+export type FixedAddressConfig = Partial<Go.node.FixedAddress>;
+export type FixedConfig = Omit<Partial<Go.node.Fixed>, "alternate_host"> & { alternate_host?: FixedAddressConfig[] };
+export type FixedV2Config = Omit<Partial<Go.node.FixedV2>, "addresses"> & { addresses?: FixedAddressConfig[] };
+export type Socks5Config = Partial<Go.node.Socks5>;
+export type HTTPConfig = Partial<Go.node.HTTP>;
+export type YuubinsyaConfig = Partial<Go.node.Yuubinsya>;
+export type ConcurrencyConfig = Partial<Go.node.Concurrency>;
+export type RealityConfig = Partial<Go.node.Reality>;
+export type TLSConfig = Partial<Go.node.TLS>;
+export type CertificateConfig = Partial<Go.node.Certificate>;
+export type ServerTLSConfig = Partial<Go.node.ServerTLS>;
+export type TLSTerminationConfig = { tls?: ServerTLSConfig };
+export type WireguardPeerConfig = Partial<Go.node.WireguardPeer>;
+export type WireguardConfig = Omit<Partial<Go.node.Wireguard>, "peers"> & { peers?: WireguardPeerConfig[] };
+export type TailscaleConfig = Partial<Go.node.Tailscale>;
+export type SetConfig = Partial<Go.node.Set>;
+export type HTTPHeaderConfig = Partial<Go.node.HTTPHeader>;
+export type HTTPHeadersConfig = Partial<Go.node.HTTPHeaders>;
+export type HTTPTerminationConfig = Omit<Partial<Go.node.HTTPTermination>, "headers"> & { headers?: Record<string, HTTPHeadersConfig> };
+export type HTTPMockConfig = Partial<Go.node.HTTPMock>;
+export type AEADConfig = Partial<Go.node.AEAD>;
+export type NetworkSplitConfig = { tcp?: NodeProtocol; udp?: NodeProtocol };
+export type CloudflareWarpMasqueConfig = Omit<Partial<Go.node.CloudflareWarpMasque>, "endpoint"> & { endpoint?: string[] };
+export type PointAsEndpointConfig = Partial<Go.node.PointAsEndpoint>;
 
 export type NodeProtocolConfigByType = {
   shadowsocks: ShadowsocksConfig;
@@ -268,51 +79,14 @@ export type NodeProtocol<T extends NodeProtocolType = NodeProtocolType> = {
   [K in T]: { type: K } & { [P in K]: NodeProtocolConfigByType[P] }
 }[T];
 
-export type Node = {
-  id: string;
-  name: string;
-  group: string;
+export type Node = Omit<Go.node.Node, "origin" | "chain"> & {
   origin: NodeOrigin;
-  enabled: boolean;
   chain: NodeProtocol[];
 };
-
-export type NodeList = {
-  items: Node[];
-  page: {
-    page: number;
-    pageSize: number;
-    total: number;
-  };
-};
-
-export type NodeLatencyResponse = {
-  ok: boolean;
-  latencyMs?: number;
-  ip?: {
-    ipv4?: string;
-    ipv6?: string;
-  };
-  stun?: {
-    xorMappedAddress?: string;
-    mappedAddress?: string;
-    otherAddress?: string;
-    responseOriginAddress?: string;
-    software?: string;
-    mapping?: string;
-    filtering?: string;
-  };
-  error?: string;
-};
-
-export type NodeLatencyRequest = {
+export type NodeList = { items: Node[]; page: Go.route.Page };
+export type NodeLatencyResponse = Go.node.LatencyResponse;
+export type NodeLatencyRequest = Partial<Omit<Go.node.LatencyRequest, "type">> & {
   type: "tcp" | "udp" | "doq" | "ip" | "stun" | "stun_tcp";
-  url?: string;
-  userAgent?: string;
-  host?: string;
-  targetDomain?: string;
-  ipv6?: boolean;
-  tcp?: boolean;
 };
 
 export function createDefaultProtocol<T extends NodeProtocolType = "direct">(type?: T): NodeProtocol<T> {
