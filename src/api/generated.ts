@@ -80,12 +80,18 @@ export type RPCOperation =
   | "tools.licenses"
   | "tools.logs"
   | "tools.logs.v2"
+  | "update.apply"
+  | "update.check"
+  | "update.status"
 ;
 
 type LegacyRoute = { method: string; pattern: string; operation: RPCOperation };
 
 const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/info", operation: "info" },
+  { method: "POST", pattern: "/api/v2/update/check", operation: "update.check" },
+  { method: "POST", pattern: "/api/v2/update/apply", operation: "update.apply" },
+  { method: "GET", pattern: "/api/v2/update/status", operation: "update.status" },
   { method: "GET", pattern: "/api/v2/settings", operation: "settings.get" },
   { method: "PUT", pattern: "/api/v2/settings", operation: "settings.put" },
   { method: "GET", pattern: "/api/v2/backup/config", operation: "backup.config.get" },

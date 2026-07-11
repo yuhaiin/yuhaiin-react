@@ -1,11 +1,36 @@
 "use client"
 
+import { applyUpdate, checkUpdate } from "@/api/update";
 import { getInfo } from "@/api/settings";
 import { Card, CardBody, CardFooter, CardHeader, IconBadge, IconBox, IconBoxRounded, ListItem, MainContainer, SettingLabel } from '@/component/v2/card';
-import { BadgeCheck, Calendar, Code, Cpu, ExternalLink, GitBranch, GitFork, Info, Laptop, Layers, LayoutGrid, Terminal } from 'lucide-react';
-import React, { FC } from "react";
+import { Button } from "@/component/v2/button";
+import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
+import { GlobalToastContext } from "@/component/v2/toast";
+import type { UpdateChannel, UpdateCheck } from "@/contract/update";
+import { BadgeCheck, Calendar, Check, Code, Cpu, Download, ExternalLink, GitBranch, GitFork, Info, Laptop, Layers, LayoutGrid, RefreshCw, Rocket, Terminal } from 'lucide-react';
+import React, { FC, useContext, useEffect, useState } from "react";
 import useSWR from "swr";
 import Loading, { Error } from "../../../component/v2/loading";
+
+const updateChannelKey = "yuhaiin_update_channel";
+const updateChannels: Array<{ value: UpdateChannel; label: string }> = [
+    { value: "stable", label: "Stable" },
+    { value: "beta", label: "Beta" },
+    { value: "main", label: "Main" },
+];
+
+function updateErrorMessage(error: unknown): string {
+    if (error instanceof globalThis.Error) return error.message;
+    if (error && typeof error === "object") {
+        const value = error as { msg?: unknown; raw?: unknown };
+        if (typeof value.msg === "string") return value.msg;
+        if (value.raw && typeof value.raw === "object" && "error" in value.raw) {
+            const message = (value.raw as { error?: { message?: unknown } }).error?.message;
+            if (typeof message === "string") return message;
+        }
+    }
+    return String(error);
+}
 
 const InfoRow: FC<{
     label: string;
@@ -49,7 +74,44 @@ const InfoRow: FC<{
 );
 
 export default function About() {
+    const ctx = useContext(GlobalToastContext);
     const { data: info, isLoading, isValidating, error } = useSWR("/api/v2/info", getInfo);
+    const [channel, setChannel] = useState<UpdateChannel>(() => {
+        if (typeof window === "undefined") return "stable";
+        const saved = window.localStorage.getItem(updateChannelKey);
+        return saved === "stable" || saved === "beta" || saved === "main" ? saved : "stable";
+    });
+    const [update, setUpdate] = useState<UpdateCheck>();
+    const [checkingUpdate, setCheckingUpdate] = useState(false);
+    const [applyingUpdate, setApplyingUpdate] = useState(false);
+
+    useEffect(() => {
+        window.localStorage.setItem(updateChannelKey, channel);
+    }, [channel]);
+
+    const handleCheckUpdate = async () => {
+        setCheckingUpdate(true);
+        try {
+            setUpdate(await checkUpdate(channel));
+        } catch (err) {
+            ctx.Error(`Check update failed: ${updateErrorMessage(err)}`);
+        } finally {
+            setCheckingUpdate(false);
+        }
+    };
+
+    const handleApplyUpdate = async () => {
+        if (!update?.updateAvailable || !update.targetTag) return;
+        setApplyingUpdate(true);
+        try {
+            await applyUpdate(channel, update.targetTag);
+            ctx.Info("Update started. The service will restart shortly.");
+        } catch (err) {
+            ctx.Error(`Update failed: ${updateErrorMessage(err)}`);
+        } finally {
+            setApplyingUpdate(false);
+        }
+    };
 
     if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
     if (isLoading || isValidating || !info) return <Loading />
@@ -104,6 +166,66 @@ export default function About() {
                         </div>
                     </CardFooter>
                 )}
+            </Card>
+
+            <Card>
+                <CardHeader className="py-3">
+                    <IconBox icon={Rocket} color="#10b981" title="Software Update" description="Check GitHub Releases for a newer desktop build" />
+                </CardHeader>
+                <CardBody>
+                    <div className="space-y-4">
+                        <div>
+                            <SettingLabel>Update Channel</SettingLabel>
+                            <ToggleGroup
+                                type="single"
+                                value={channel}
+                                onValueChange={(value) => value && setChannel(value as UpdateChannel)}
+                                className="w-full"
+                                noSlide
+                            >
+                                {updateChannels.map((item) => (
+                                    <ToggleItem key={item.value} value={item.value} className="flex-grow py-1 h-10">
+                                        {item.label}
+                                    </ToggleItem>
+                                ))}
+                            </ToggleGroup>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3">
+                            <Button variant="outline-primary" onClick={handleCheckUpdate} disabled={checkingUpdate || applyingUpdate}>
+                                <RefreshCw className={checkingUpdate ? "mr-2 animate-spin" : "mr-2"} size={16} />
+                                Check for Updates
+                            </Button>
+                            {update?.updateAvailable && (
+                                <Button variant="primary" onClick={handleApplyUpdate} disabled={applyingUpdate || !update.supported}>
+                                    <Download className="mr-2" size={16} />
+                                    {applyingUpdate ? "Updating..." : `Update to ${update.targetVersion}`}
+                                </Button>
+                            )}
+                        </div>
+
+                        {update && (
+                            <div className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
+                                {update.updateAvailable ? (
+                                    <>
+                                        <div className="flex items-center gap-2 font-semibold text-ui-heading">
+                                            <Check size={16} className="text-ui-success" />
+                                            {update.targetVersion} is available
+                                        </div>
+                                        <div className="mt-2 space-y-1 text-ui-muted">
+                                            <div>Current version: <span className="font-mono">{update.currentVersion || "Unknown"}</span></div>
+                                            <div>Asset: <span className="font-mono">{update.assetName}</span></div>
+                                            {update.publishedAt && <div>Published: {new Date(update.publishedAt).toLocaleString()}</div>}
+                                        </div>
+                                        {update.releaseNotes && <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap text-xs text-ui-muted">{update.releaseNotes}</pre>}
+                                    </>
+                                ) : (
+                                    <div className="text-ui-muted">{update.reason || "You are using the latest available version."}</div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </CardBody>
             </Card>
 
             <div className="text-center mt-4 opacity-50 pb-12">
