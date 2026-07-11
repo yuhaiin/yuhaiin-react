@@ -117,8 +117,8 @@ export default function About() {
     if (isLoading || isValidating || !info) return <Loading />
 
     return (
-        <MainContainer>
-            <Card >
+        <MainContainer className="flex flex-col">
+            <Card className="order-2">
                 <CardHeader className="py-3">
                     <IconBox icon={Info} color="#6366f1" title='System Information' description='Software version and build environment' />
                 </CardHeader>
@@ -168,7 +168,7 @@ export default function About() {
                 )}
             </Card>
 
-            <Card>
+            <Card className="order-1">
                 <CardHeader className="py-3">
                     <IconBox icon={Rocket} color="#10b981" title="Software Update" description="Check GitHub Releases for a newer desktop build" />
                 </CardHeader>
@@ -192,12 +192,12 @@ export default function About() {
                         </div>
 
                         <div className="flex flex-wrap items-center gap-3">
-                            <Button variant="outline-primary" onClick={handleCheckUpdate} disabled={checkingUpdate || applyingUpdate}>
+                            <Button variant="default" onClick={handleCheckUpdate} disabled={checkingUpdate || applyingUpdate}>
                                 <RefreshCw className={checkingUpdate ? "mr-2 animate-spin" : "mr-2"} size={16} />
                                 Check for Updates
                             </Button>
                             {update?.updateAvailable && (
-                                <Button variant="primary" onClick={handleApplyUpdate} disabled={applyingUpdate || !update.supported}>
+                                <Button variant="default" onClick={handleApplyUpdate} disabled={applyingUpdate || !update.supported}>
                                     <Download className="mr-2" size={16} />
                                     {applyingUpdate ? "Updating..." : `Update to ${update.targetVersion}`}
                                 </Button>
@@ -228,7 +228,7 @@ export default function About() {
                 </CardBody>
             </Card>
 
-            <div className="text-center mt-4 opacity-50 pb-12">
+            <div className="order-3 text-center mt-4 opacity-50 pb-12">
                 <small className="text-gray-500 dark:text-gray-400">
                     &copy; {new Date().getFullYear()} yuhaiin project. Distributed under MIT License.
                 </small>

@@ -248,7 +248,8 @@ html[data-bs-theme="dark"] {
     --color-list-row-border-hover: var(--list-item-border-hover);
     --color-border: #343a44;
     --color-hover: #22262d;
-    --color-primary: #9bc2e6;
+    /* Keep filled buttons dark enough for white text in dark mode. */
+    --color-primary: #2563eb;
     --color-primary-soft: rgba(116, 161, 202, 0.14);
     --color-danger: #ef9aa2;
     --color-danger-soft: rgba(239, 154, 162, 0.12);
