@@ -155,7 +155,7 @@ function Connections() {
             </div>
 
             {sorted.length === 0 ? (
-                <div className="p-6 mb-8 text-center text-gray-500 rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg">
+                <div className="p-6 mb-8 text-center text-ui-muted rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg">
                     No active connections.
                 </div>
             ) : sorted.length > 120 ? (
@@ -248,10 +248,10 @@ function ConnectionRow({ conn, counter, onSelect }: { conn: Connection; counter?
 function FlowBadge({ download, upload }: { download: string; upload: string }) {
     return (
         <div className="flex gap-2">
-            <span className="rounded-full flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-500 dark:bg-[#2b2b40] dark:text-[#a6a6c0]">
+            <span className="rounded-full flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium bg-ui-chip text-ui-chip-fg">
                 <ArrowDown size={12} className="mr-1" />{download}
             </span>
-            <span className="rounded-full flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-500 dark:bg-[#2b2b40] dark:text-[#a6a6c0]">
+            <span className="rounded-full flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium bg-ui-chip text-ui-chip-fg">
                 <ArrowUp size={12} className="mr-1" />{upload}
             </span>
         </div>

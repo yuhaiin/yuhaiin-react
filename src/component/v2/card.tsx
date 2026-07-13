@@ -1,13 +1,13 @@
 'use client';
 
 import { clsx } from "clsx";
-import { AnimatePresence, motion } from 'motion/react';
 import { History, Plus, Search, TriangleAlert } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import React, { FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from "./badge";
 import { Pagination } from './pagination';
-import { ui } from "./styles";
+import { iconToneStyles, ui, type IconTone } from "./styles";
 
 type Density = "compact" | "normal";
 
@@ -48,7 +48,7 @@ export const CardBody: FC<{ children: React.ReactNode, className?: string, style
 );
 
 export const CardTitle: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
-    <div className={clsx("flex items-center mb-3 text-[1.1rem] font-semibold text-ui-heading", className)} style={style}>
+    <div className={clsx("flex items-center mb-3", ui.pageTitle, className)} style={style}>
         {children}
     </div>
 );
@@ -432,7 +432,7 @@ export const IconBadge: FC<{ icon: React.ElementType, text: string | number, col
 );
 
 export const MainContainer: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
-    <div className={className} style={style}>
+    <div className={clsx("min-w-0 w-full", className)} style={style}>
         {children}
     </div>
 );
@@ -443,9 +443,28 @@ export const SettingsBox: FC<{ children: React.ReactNode }> = ({ children }) => 
     </div>
 );
 
+function resolveIconToneStyle(options: {
+    tone?: IconTone;
+    color?: string;
+    borderColor?: string;
+    background?: string;
+}) {
+    const tone = options.tone ?? (options.color ? undefined : "primary");
+    const toneStyle = tone ? iconToneStyles[tone] : undefined;
+    const color = options.color ?? toneStyle?.color ?? "var(--color-primary)";
+    const borderColor = options.borderColor
+        ?? toneStyle?.border
+        ?? (options.color ? `${options.color}33` : iconToneStyles.primary.border);
+    const background = options.background
+        ?? toneStyle?.background
+        ?? (options.color ? `${options.color}1A` : iconToneStyles.primary.background);
+    return { color, borderColor, background };
+}
+
 export const IconBox: FC<{
     icon: React.ElementType,
-    color: string,
+    color?: string,
+    tone?: IconTone,
     borderColor?: string,
     background?: string,
     className?: string,
@@ -453,38 +472,45 @@ export const IconBox: FC<{
     title?: string,
     description?: string,
     style?: React.CSSProperties
-}> = ({ icon: Icon, color, borderColor, background, className, textClassName, style, title, description }) => (
-    <div className="flex items-center min-w-0">
-        <div
-            className={clsx("flex shrink-0 items-center justify-center w-icon-lg h-icon-lg mr-5 text-xl rounded-ui-lg border", className)}
-            style={{ color: color, borderColor: borderColor || `${color}33`, background: background || `${color}1A`, ...style }}
-        >
-            <Icon />
-        </div>
-        {title &&
-            <div className={clsx("overflow-hidden", textClassName)} title={`${title}${description ? ` - ${description}` : ''}`}>
-                <h5 className="mb-0 font-bold truncate text-ui-heading">{title}</h5>
-                <small className="block text-ui-muted truncate">{description}</small>
+}> = ({ icon: Icon, color, tone, borderColor, background, className, textClassName, style, title, description }) => {
+    const resolved = resolveIconToneStyle({ tone, color, borderColor, background });
+    return (
+        <div className="flex items-center min-w-0">
+            <div
+                className={clsx("flex shrink-0 items-center justify-center w-icon-lg h-icon-lg mr-5 text-xl rounded-ui-lg border", className)}
+                style={{ color: resolved.color, borderColor: resolved.borderColor, background: resolved.background, ...style }}
+            >
+                <Icon />
             </div>
-        }
-    </div>
-);
+            {title &&
+                <div className={clsx("overflow-hidden", textClassName)} title={`${title}${description ? ` - ${description}` : ''}`}>
+                    <h5 className="mb-0 font-bold truncate text-ui-heading">{title}</h5>
+                    <small className="block text-ui-muted truncate">{description}</small>
+                </div>
+            }
+        </div>
+    );
+};
 
 export const IconBoxRounded: FC<{
     icon: React.ElementType,
-    color: string,
+    color?: string,
+    tone?: IconTone,
     borderColor?: string,
     background?: string,
     className?: string,
     style?: React.CSSProperties
-}> = ({ icon: Icon, color, borderColor, background, className, style }) => (
-    <div
-        className={clsx("flex shrink-0 items-center justify-center w-icon-lg h-icon-lg rounded-full border", className)}
-        style={{ color: color, borderColor: borderColor || `${color}33`, background: background || `${color}1A`, ...style }}
-    >
-        <Icon />
-    </div>
-);
+}> = ({ icon: Icon, color, tone, borderColor, background, className, style }) => {
+    const resolved = resolveIconToneStyle({ tone, color, borderColor, background });
+    return (
+        <div
+            className={clsx("flex shrink-0 items-center justify-center w-icon-lg h-icon-lg rounded-full border", className)}
+            style={{ color: resolved.color, borderColor: resolved.borderColor, background: resolved.background, ...style }}
+        >
+            <Icon />
+        </div>
+    );
+};
 
 export const FilterSearch: FC<{
     onEnter: (str: string) => void,

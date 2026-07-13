@@ -1,5 +1,5 @@
-import { formatBytes } from "./format";
 import { createPortal } from "react-dom";
+import { formatBytes } from "./format";
 
 interface TooltipProps {
     label?: string;
@@ -28,7 +28,7 @@ export const Tooltip: React.FC<TooltipProps> = ({ label, upload, download, left,
                 <span className="font-medium">{formatBytes(upload ?? 0, 2, ' ') + '/S'}</span>
             </div>
             <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                <div className="w-2 h-2 bg-ui-primary rounded-full" />
                 <span className="text-slate-300">Download:</span>
                 <span className="font-medium">{formatBytes(download ?? 0, 2, ' ') + '/S'}</span>
             </div>

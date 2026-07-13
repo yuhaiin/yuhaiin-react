@@ -362,7 +362,7 @@ const NodeProtocolChain: FC<{
         <div className="mb-3">
             <div className="mb-2 flex items-center justify-between px-1">
                 <h6 className="mb-0 font-bold opacity-75">Protocol Chain</h6>
-                <small className="text-gray-500 dark:text-gray-400">{normalizedChain.length} steps</small>
+                <small className="text-ui-muted">{normalizedChain.length} steps</small>
             </div>
 
             <Accordion type="multiple" defaultValue={normalizedChain.length > 0 ? ["item-0"] : []} className="mb-3">
@@ -405,7 +405,7 @@ const NodeProtocolChain: FC<{
             </Accordion>
 
             {editable && (
-                <div className="flex flex-wrap items-end gap-3 rounded-ui-lg bg-gray-100 p-3 dark:bg-[#2b2b40] sm:flex-nowrap">
+                <div className="flex flex-wrap items-end gap-3 rounded-ui-lg bg-ui-surface-muted p-3 sm:flex-nowrap">
                     <div className="w-full flex-1">
                         <label className="mb-2 block text-sm font-bold opacity-75">New Protocol Step</label>
                         <Select
@@ -735,7 +735,7 @@ const AddressList: FC<{
         <div>
             <div className="mb-2 flex items-center justify-between px-1">
                 <h6 className="mb-0 font-bold opacity-75">{title}</h6>
-                <small className="text-gray-500 dark:text-gray-400">{items.length} entries</small>
+                <small className="text-ui-muted">{items.length} entries</small>
             </div>
 
             <Accordion type="multiple" defaultValue={items.length > 0 ? [`${title}-0`] : []} className="mb-3">
@@ -873,7 +873,7 @@ const WireguardForm: FC<{
             <div>
                 <div className="mb-2 flex items-center justify-between px-1">
                     <h6 className="mb-0 font-bold opacity-75">Peers</h6>
-                    <small className="text-gray-500 dark:text-gray-400">{peers.length} peers</small>
+                    <small className="text-ui-muted">{peers.length} peers</small>
                 </div>
 
                 <Accordion type="multiple" defaultValue={peers.length > 0 ? ["peer-0"] : []} className="mb-3">
@@ -981,7 +981,7 @@ const ServerTLSForm: FC<{
             <div>
                 <div className="mb-2 flex items-center justify-between px-1">
                     <h6 className="mb-0 font-bold opacity-75">Certificates</h6>
-                    <small className="text-gray-500 dark:text-gray-400">{certificates.length} entries</small>
+                    <small className="text-ui-muted">{certificates.length} entries</small>
                 </div>
                 <Accordion type="multiple" defaultValue={certificates.length > 0 ? ["cert-0"] : []} className="mb-3">
                     {certificates.map((cert, index) => (
@@ -1018,7 +1018,7 @@ const ServerTLSForm: FC<{
             <div>
                 <div className="mb-2 flex items-center justify-between px-1">
                     <h6 className="mb-0 font-bold opacity-75">SNI Certificates</h6>
-                    <small className="text-gray-500 dark:text-gray-400">{Object.keys(sni).length} entries</small>
+                    <small className="text-ui-muted">{Object.keys(sni).length} entries</small>
                 </div>
                 <Accordion type="multiple" className="mb-3">
                     {Object.entries(sni).map(([serverName, cert]) => (
@@ -1052,7 +1052,7 @@ const ServerTLSForm: FC<{
                     ))}
                 </Accordion>
                 {editable && (
-                    <div className="flex flex-wrap items-end gap-3 rounded-ui-lg bg-gray-100 p-3 dark:bg-[#2b2b40] sm:flex-nowrap">
+                    <div className="flex flex-wrap items-end gap-3 rounded-ui-lg bg-ui-surface-muted p-3 sm:flex-nowrap">
                         <div className="w-full flex-1">
                             <SettingInputVertical label="New SNI Hostname" value={newSNI} onChange={setNewSNI} />
                         </div>
@@ -1090,7 +1090,7 @@ const HTTPTerminationForm: FC<{
         <div>
             <div className="mb-2 flex items-center justify-between px-1">
                 <h6 className="mb-0 font-bold opacity-75">HTTP Headers</h6>
-                <small className="text-gray-500 dark:text-gray-400">{Object.keys(headers).length} paths</small>
+                <small className="text-ui-muted">{Object.keys(headers).length} paths</small>
             </div>
             <Accordion type="multiple" className="mb-3">
                 {Object.entries(headers).map(([path, value]) => {
@@ -1135,7 +1135,7 @@ const HTTPTerminationForm: FC<{
                 })}
             </Accordion>
             {editable && (
-                <div className="flex flex-wrap items-end gap-3 rounded-ui-lg bg-gray-100 p-3 dark:bg-[#2b2b40] sm:flex-nowrap">
+                <div className="flex flex-wrap items-end gap-3 rounded-ui-lg bg-ui-surface-muted p-3 sm:flex-nowrap">
                     <div className="w-full flex-1">
                         <SettingInputVertical label="New Path" value={newPath} onChange={setNewPath} />
                     </div>

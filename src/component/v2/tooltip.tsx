@@ -29,7 +29,7 @@ export const Tooltip: FC<{ children: ReactNode, content: ReactNode }> = ({ child
                             animate={{ opacity: 1, scale: 1, y: "-100%", x: "-50%" }}
                             exit={{ opacity: 0, scale: 0.2, y: "-100%", x: "-50%" }}
                             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                            className="fixed p-[6px_10px] text-xs leading-normal text-white bg-black/85 rounded whitespace-normal text-center shadow-[0_2px_10px_rgba(0,0,0,0.2)] z-[9999] max-w-[200px] pointer-events-none origin-[center_bottom]"
+                            className="fixed p-[6px_10px] text-xs leading-normal text-ui-bg bg-ui-heading rounded-ui-sm whitespace-normal text-center shadow-ui-elevated z-[9999] max-w-[200px] pointer-events-none origin-[center_bottom]"
                             style={{
                                 left: coords.left,
                                 top: coords.top,
@@ -38,7 +38,7 @@ export const Tooltip: FC<{ children: ReactNode, content: ReactNode }> = ({ child
                         >
                             {content}
                             {/* Arrow */}
-                            <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 border-t-[4px] border-x-[4px] border-b-0 border-solid border-[rgba(0,0,0,0.85)_transparent_transparent_transparent]" />
+                            <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 border-t-[4px] border-x-[4px] border-b-0 border-solid border-ui-heading border-x-transparent border-b-transparent" />
                         </motion.div>
                     )}
                 </AnimatePresence>,

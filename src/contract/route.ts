@@ -103,15 +103,20 @@ export function normalizeRouteList(value: Partial<RouteListDetail>): RouteListDe
   };
 }
 
+function toUint(value: unknown, fallback = 0): number {
+  const n = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(n) && n >= 0 ? Math.trunc(n) : fallback;
+}
+
 export function normalizeRuleItem(value: Partial<RuleItem> | undefined): RuleItem {
   return {
     name: value?.name ?? "",
     disabled: value?.disabled ?? false,
-    index: value?.index ?? 0,
+    index: toUint(value?.index),
     mode: value?.mode ?? "",
     tag: value?.tag ?? "",
     resolver: value?.resolver ?? "",
-    ruleCount: value?.ruleCount ?? 0,
+    ruleCount: toUint(value?.ruleCount),
   };
 }
 

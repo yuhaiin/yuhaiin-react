@@ -328,7 +328,7 @@ export default function LogComponent() {
                     <div className="flex justify-between items-center w-full gap-3">
                         <IconBox
                             icon={Terminal}
-                            color="#f59e0b"
+                            tone="warning"
                             title="Live Logcat"
                             description="Real-time system events"
                             className="!mr-3 !h-10 !w-10 !rounded-[10px]"
@@ -354,7 +354,7 @@ export default function LogComponent() {
                         </div>
                     )}
                 </CardHeader>
-                <CardBody className="!p-0 bg-gray-100 dark:bg-[#18181b] flex-1 min-h-0 overflow-hidden rounded-b-[inherit]">
+                <CardBody className="!p-0 bg-ui-surface-muted flex-1 min-h-0 overflow-hidden rounded-b-[inherit]">
                     <div className="h-full min-h-0 w-full rounded-[inherit] font-mono">
                         <VList
                             ref={logListRef}

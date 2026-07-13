@@ -149,12 +149,22 @@ export function useFlow(options?: UseFlowOptions) {
     };
 }
 
-const MetricCard: FC<MetricProps> = ({ label, value, error }) => (
+const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral" }> = ({ label, value, error, accent = "neutral" }) => (
     <div
-        className="grow basis-[calc(25%-1.25rem)] min-w-[200px] relative p-4 bg-[var(--metric-bg)] border border-[var(--metric-border)] rounded-2xl flex flex-col justify-center transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] hover:-translate-y-[5px] hover:border-[rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]"
+        className={clsx(
+            "relative flex min-h-[92px] flex-col justify-center overflow-hidden rounded-ui-xl border bg-[var(--metric-bg)] p-4 shadow-ui-card transition-colors",
+            "border-[var(--metric-border)] hover:border-ui-primary/25",
+            accent === "download" && "before:absolute before:inset-y-3 before:left-0 before:w-0.5 before:rounded-full before:bg-sky-500",
+            accent === "upload" && "before:absolute before:inset-y-3 before:left-0 before:w-0.5 before:rounded-full before:bg-emerald-500",
+        )}
     >
-        <div className="text-xs uppercase tracking-wider text-[var(--metric-label,#64748b)] mb-1 font-semibold">{label}</div>
-        <div className={`text-[1.35rem] font-bold font-mono text-[var(--metric-value,#0f172a)] animate-dataUpdate ${error ? "text-red-500" : ""}`}>
+        <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--metric-label,#64748b)]">
+            {label}
+        </div>
+        <div className={clsx(
+            "animate-dataUpdate truncate font-mono text-[1.35rem] font-bold leading-tight text-[var(--metric-value,#0f172a)]",
+            error && "text-ui-danger"
+        )}>
             {error || value}
         </div>
     </div>
@@ -167,13 +177,22 @@ export const FlowCard: FC<{
 }> = ({ lastFlow, flow_error, extra_fields }) => {
     const { t } = useTranslation(["connections", "common"]);
     const loading = t("common:state.loading");
+    const hasExtra = Boolean(extra_fields?.length);
 
     return (
-        <div className="flex flex-wrap gap-3 w-full mb-3" style={{ viewTransitionName: "flow-card-root !important" }}>
-            <MetricCard label={t("totalDownload")} value={lastFlow ? lastFlow.DownloadTotalString() : loading} error={flow_error} />
-            <MetricCard label={t("downloadRate")} value={lastFlow ? lastFlow.DownloadString() : loading} error={flow_error} />
-            <MetricCard label={t("totalUpload")} value={lastFlow ? lastFlow.UploadTotalString() : loading} error={flow_error} />
-            <MetricCard label={t("uploadRate")} value={lastFlow ? lastFlow.UploadString() : loading} error={flow_error} />
+        <div
+            className={clsx(
+                "mb-3 grid w-full gap-3",
+                hasExtra
+                    ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
+                    : "grid-cols-1 sm:grid-cols-2 xl:grid-cols-4"
+            )}
+            style={{ viewTransitionName: "flow-card-root !important" }}
+        >
+            <MetricCard accent="download" label={t("totalDownload")} value={lastFlow ? lastFlow.DownloadTotalString() : loading} error={flow_error} />
+            <MetricCard accent="download" label={t("downloadRate")} value={lastFlow ? lastFlow.DownloadString() : loading} error={flow_error} />
+            <MetricCard accent="upload" label={t("totalUpload")} value={lastFlow ? lastFlow.UploadTotalString() : loading} error={flow_error} />
+            <MetricCard accent="upload" label={t("uploadRate")} value={lastFlow ? lastFlow.UploadString() : loading} error={flow_error} />
             {extra_fields?.map((field, index) => (
                 <MetricCard key={`extra-field-${index}`} label={field.label} value={field.value || loading} error={field.error} />
             ))}
@@ -316,7 +335,7 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[] }> = ({ value }) => {
                                             <span className={clsx("text-xs font-medium", item.matched ? "text-green-500" : "text-sidebar-color opacity-70")}>
                                                 {item.matched ? label("Hit") : label("Miss")}
                                             </span>
-                                            <div className={clsx("flex h-6 w-6 items-center justify-center rounded-full", item.matched ? "bg-green-500/10 text-green-500" : "bg-white/5 text-red-500")}>
+                                            <div className={clsx("flex h-6 w-6 items-center justify-center rounded-full", item.matched ? "bg-green-500/10 text-green-500" : "bg-white/5 text-ui-danger")}>
                                                 {item.matched ? <Check size={14} /> : <X size={14} />}
                                             </div>
                                         </div>

@@ -20,5 +20,13 @@
     "description": "ブラウザーに自動追従するか、固定言語を選択します",
     "preference": "言語設定"
   },
+  "theme": {
+    "title": "外観",
+    "description": "システムに合わせるか、固定の配色を選択します",
+    "preference": "テーマ設定",
+    "system": "システム",
+    "light": "ライト",
+    "dark": "ダーク"
+  },
   "localNotice": "これらの設定はブラウザーのローカルキャッシュに保存されます。"
 }

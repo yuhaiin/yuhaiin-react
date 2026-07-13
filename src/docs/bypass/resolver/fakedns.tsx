@@ -43,9 +43,9 @@ export const Fakedns: FC = () => {
     return (
         <Card className="h-full flex flex-col">
             <CardHeader className="flex justify-between items-center">
-                <IconBox icon={Wand2} color="#10b981" title='FakeDNS' description='Virtual IP Strategy' />
+                <IconBox icon={Wand2} tone="success" title='FakeDNS' description='Virtual IP Strategy' />
                 <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{data.enabled ? "ACTIVE" : "DISABLED"}</span>
+                    <span className="text-xs text-ui-muted font-medium">{data.enabled ? "ACTIVE" : "DISABLED"}</span>
                     <Switch
                         checked={data.enabled}
                         onCheckedChange={() => handleMutate(prev => ({ ...prev, enabled: !prev.enabled }))}

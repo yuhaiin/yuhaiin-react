@@ -16,7 +16,7 @@ const LicenseItem: FC<{ item: License, index: number }> = ({ item, index }) => {
             <ListItem className="cursor-default">
                 <div className="flex items-center flex-grow overflow-hidden gap-3">
                     {/* Index or Icon */}
-                    <div className="bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center flex-shrink-0 w-8 h-8 text-[0.85rem] font-bold">
+                    <div className="bg-ui-primary-soft text-ui-primary rounded-full flex items-center justify-center flex-shrink-0 w-8 h-8 text-[0.85rem] font-bold">
                         {index + 1}
                     </div>
 
@@ -31,12 +31,12 @@ const LicenseItem: FC<{ item: License, index: number }> = ({ item, index }) => {
 
                         <div className="flex flex-col gap-1">
                             <a href={item.url} target="_blank" rel="noreferrer"
-                                className="flex items-center text-gray-500 dark:text-gray-400 text-sm no-underline font-mono opacity-75 hover:opacity-100 min-w-0">
+                                className="flex items-center text-ui-muted text-sm no-underline font-mono opacity-75 hover:opacity-100 min-w-0">
                                 <Link className="mr-1 shrink-0" size={14} />
                                 <span className="truncate">{item.url}</span>
                             </a>
                             <a href={item.licenseUrl} target="_blank" rel="noreferrer"
-                                className="flex items-center text-gray-500 dark:text-gray-400 text-sm no-underline font-mono opacity-75 min-w-0">
+                                className="flex items-center text-ui-muted text-sm no-underline font-mono opacity-75 min-w-0">
                                 <ShieldCheck className="mr-1 shrink-0" size={14} />
                                 <span className="truncate">License Source</span>
                             </a>
@@ -74,7 +74,7 @@ export default function Licenses() {
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-3">
                         <IconBox
                             icon={FileText}
-                            color="#10b981"
+                            tone="success"
                             title={`Open Source Licenses (${currentList.length})`}
                             description="Third-party credits and legal info"
                         />
@@ -106,7 +106,7 @@ export default function Licenses() {
             </Card>
 
             <div className="text-center mt-1 opacity-50">
-                <small className="text-gray-500 dark:text-gray-400">
+                <small className="text-ui-muted">
                     <Heart className="text-red-500 mr-1 inline" fill="currentColor" />
                     Built with love and open-source software.
                 </small>

@@ -55,7 +55,7 @@ function ConfigComponent() {
         <MainContainer>
             <Card>
                 <CardHeader className="py-3">
-                    <IconBox icon={Globe} color="#3b82f6" title="General Settings" description="Network and system integration" />
+                    <IconBox icon={Globe} tone="primary" title="General Settings" description="Network and system integration" />
                 </CardHeader>
                 <CardBody>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -115,7 +115,7 @@ function ConfigComponent() {
 
             <Card>
                 <CardHeader className="py-3">
-                    <IconBox icon={NotebookText} color="#10b981" title="Logging (Logcat)" description="Debug and error reporting" />
+                    <IconBox icon={NotebookText} tone="success" title="Logging (Logcat)" description="Debug and error reporting" />
                 </CardHeader>
                 <CardBody>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -154,7 +154,7 @@ function ConfigComponent() {
 
             <Card>
                 <CardHeader className="py-3">
-                    <IconBox icon={Cpu} color="#f59e0b" title="Performance & Advanced" description="Buffer sizes and concurrency limits" />
+                    <IconBox icon={Cpu} tone="warning" title="Performance & Advanced" description="Buffer sizes and concurrency limits" />
                 </CardHeader>
                 <CardBody>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

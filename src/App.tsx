@@ -1,11 +1,12 @@
-import { Router, Switch, Route } from 'wouter';
-import { useHashLocation } from '@/hooks/useHashLocation';
-import { useSmartAnimation } from '@/hooks/useSmartAnimation';
-import { AnimatePresence, motion } from 'motion/react';
-import clsx from 'clsx';
-import { useEffect, useState } from 'react';
+import { ThemeProvider, useTheme } from '@/common/ThemeProvider';
 import { GlobalToastProvider } from '@/component/v2/toast';
 import NavBarContainer from '@/docs/nav/NavBarContainer';
+import { useHashLocation } from '@/hooks/useHashLocation';
+import { useSmartAnimation } from '@/hooks/useSmartAnimation';
+import clsx from 'clsx';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect } from 'react';
+import { Route, Router, Switch } from 'wouter';
 import { appRoutes } from './routes';
 
 interface AndroidInterface {
@@ -37,29 +38,11 @@ const variants = {
 
 function AppContent() {
     const { direction, location } = useSmartAnimation();
-    const [colorScheme, setColorScheme] = useState<'light' | 'dark' | undefined>(undefined);
+    const { ready } = useTheme();
 
     useEffect(() => {
         window.Android?.setRefreshEnabled?.(!location.includes('/docs/config/log'))
     }, [location])
-
-    useEffect(() => {
-        if (!window.matchMedia) {
-            setColorScheme('light')
-            return
-        }
-        const mq = window.matchMedia('(prefers-color-scheme: dark)')
-        setColorScheme(mq.matches ? 'dark' : 'light')
-        const listener = (evt: MediaQueryListEvent) => setColorScheme(evt.matches ? 'dark' : 'light');
-        mq.addEventListener('change', listener);
-        return () => mq.removeEventListener('change', listener);
-    }, [])
-
-    useEffect(() => {
-        if (colorScheme) {
-            document.documentElement.setAttribute('data-bs-theme', colorScheme)
-        }
-    }, [colorScheme])
 
     const isLogin = location === '/login';
     const content = (
@@ -88,7 +71,7 @@ function AppContent() {
                     )}
                     transition={{ duration: 0.5, ease: "easeInOut" }}
                 >
-                    <Router hook={() => [location, () => {}] as const}>
+                    <Router hook={() => [location, () => { }] as const}>
                         <Switch>
                             {appRoutes.map(({ path, component }) => (
                                 <Route key={path} path={path} component={component} />
@@ -102,7 +85,7 @@ function AppContent() {
 
     return (
         <GlobalToastProvider>
-            {colorScheme && (
+            {ready && (
                 isLogin ? content : <NavBarContainer>{content}</NavBarContainer>
             )}
         </GlobalToastProvider>
@@ -111,8 +94,10 @@ function AppContent() {
 
 export default function App() {
     return (
-        <Router hook={useHashLocation}>
-            <AppContent />
-        </Router>
+        <ThemeProvider>
+            <Router hook={useHashLocation}>
+                <AppContent />
+            </Router>
+        </ThemeProvider>
     );
 }

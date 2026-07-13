@@ -34,7 +34,7 @@ const ResolverItem: FC<{ item: Resolver }> = ({ item }) => {
         <>
             <div className="grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(190px,0.34fr)_minmax(0,1fr)] md:items-center">
                 <div className="flex min-w-0 items-center">
-                    <Network className="mr-4 shrink-0 text-gray-500 dark:text-gray-400" size={20} />
+                    <Network className="mr-4 shrink-0 text-ui-muted" size={20} />
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <span className="truncate font-medium">{item.id}</span>
                         <Badge variant="info" className="shrink-0">{item.type}</Badge>
@@ -56,7 +56,7 @@ const ResolverItem: FC<{ item: Resolver }> = ({ item }) => {
                     </div>
                 </div>
             </div>
-            <ChevronRight className="ml-2 shrink-0 text-gray-500 opacity-25 dark:text-gray-400" size={16} />
+            <ChevronRight className="ml-2 shrink-0 text-ui-muted opacity-25" size={16} />
         </>
     )
 }
@@ -148,7 +148,7 @@ function ResolverList() {
             onClickItem={(item) => setShowdata({ show: true, id: item.id, new: false })}
             header={
                 <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <IconBox icon={Layers} color="#3b82f6" title='Resolvers' description='Upstream DNS Resolvers' />
+                    <IconBox icon={Layers} tone="primary" title='Resolvers' description='Upstream DNS Resolvers' />
                     <Button size="sm" onClick={handleCreate}><Plus size={16} className="mr-1" /> Add</Button>
                 </div>
             }

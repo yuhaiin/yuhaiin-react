@@ -90,7 +90,11 @@ export async function changeRulePriority(
   target: { name: string; index: number },
   operate: "exchange" | "insert_before" | "insert_after" = "exchange",
 ): Promise<void> {
-  await requestJSON<void>("POST", "/api/v2/route/rules/priority", { source, target, operate });
+  await requestJSON<void>("POST", "/api/v2/route/rules/priority", {
+    source: { name: source.name, index: Number(source.index) },
+    target: { name: target.name, index: Number(target.index) },
+    operate,
+  });
 }
 
 export async function testRule(host: string): Promise<RuleTestResponse> {

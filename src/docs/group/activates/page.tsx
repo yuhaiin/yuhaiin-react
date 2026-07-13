@@ -19,18 +19,18 @@ const ActiveNodeItem: FC<{ v: Node, onClose: () => void }> = ({ v, onClose }) =>
             <div className="flex items-center flex-grow overflow-hidden gap-3 w-full md:w-auto">
                 <IconBoxRounded
                     icon={Zap}
-                    color="#198754"
+                    tone="success"
                     className="flex-shrink-0"
                     style={{ width: "40px", height: "40px", marginRight: "0px", border: "none" }}
                 />
                 <div className="flex flex-col overflow-hidden min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                         <span className="font-bold truncate text-base">{v.name}</span>
-                        <Badge className="bg-opacity-10 text-blue-600 border border-blue-600 border-opacity-25 px-2 py-1" style={{ fontSize: "0.65rem" }}>
+                        <Badge className="bg-ui-primary-soft text-ui-primary border border-ui-primary/25 px-2 py-1" style={{ fontSize: "0.65rem" }}>
                             {v.group}
                         </Badge>
                     </div>
-                    <small className="text-gray-500 truncate font-mono opacity-75 text-sm">
+                    <small className="text-ui-muted truncate font-mono opacity-75 text-sm">
                         <Hash className="mr-1 inline" size={12} />{v.id}
                     </small>
                 </div>
@@ -88,7 +88,7 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
                 title={
                     <div className="py-2">
                         <p className="mb-1">Are you sure you want to <strong>terminate</strong> this active node connection?</p>
-                        <code className="text-sm text-gray-500 font-mono">{confirmData.id}</code>
+                        <code className="text-sm text-ui-muted font-mono">{confirmData.id}</code>
                     </div>
                 }
                 onHide={() => setConfirmData(prev => ({ ...prev, show: false }))}
@@ -101,7 +101,7 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
                 onClickItem={(v) => setNodeModal({ show: true, node: v })}
                 header={
                     <div className="flex items-center justify-between w-full">
-                        <IconBox icon={Activity} color="#198754" title="Active Nodes" description="Live outbound connection instances" />
+                        <IconBox icon={Activity} tone="success" title="Active Nodes" description="Live outbound connection instances" />
                         <Badge variant="success" className="bg-opacity-10 text-green-600 border border-green-600 border-opacity-25 px-3 py-2 rounded-full">
                             {sortedNodes.length} Running
                         </Badge>
@@ -111,7 +111,7 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
 
             {showFooter &&
                 <div className="text-center mt-4 opacity-50 pb-5">
-                    <small className="text-gray-500 text-sm flex items-center justify-center">
+                    <small className="text-ui-muted text-sm flex items-center justify-center">
                         <Info className="mr-1" size={16} />
                         Closing a node here will force a reconnection if the rule still requires it.
                     </small>

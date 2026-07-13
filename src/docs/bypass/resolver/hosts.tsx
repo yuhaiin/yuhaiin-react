@@ -43,7 +43,7 @@ export const Hosts: FC = () => {
     return (
         <Card className="h-full flex flex-col">
             <CardHeader>
-                <IconBox icon={Signpost} color="#3b82f6" title="Static Hosts" description="Local Domain Mappings" />
+                <IconBox icon={Signpost} tone="primary" title="Static Hosts" description="Local Domain Mappings" />
             </CardHeader>
             <CardBody className="flex-grow">
                 <div className="flex flex-col gap-4">
@@ -51,12 +51,12 @@ export const Hosts: FC = () => {
                         .sort(([a], [b]) => a.localeCompare(b))
                         .map(([k, v]) => (
                             <InputGroup key={"hosts" + k}>
-                                <InputGroupText className="font-mono text-xs px-2 flex-1 min-w-0 justify-start dark:bg-[#2b2b40] dark:text-[#a6a6c0] dark:border-gray-700">
+                                <InputGroupText className="font-mono text-xs px-2 flex-1 min-w-0 justify-start">
                                     <span className="truncate">{k}</span>
                                 </InputGroupText>
                                 <Input
                                     value={v}
-                                    className="font-mono text-blue-600 dark:text-blue-400 flex-[1.2] min-w-0"
+                                    className="font-mono text-ui-primary flex-[1.2] min-w-0"
                                     onChange={(e) => handleMutate(prev => ({
                                         ...prev,
                                         hosts: { ...prev.hosts, [k]: e.target.value }

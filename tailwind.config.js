@@ -78,13 +78,14 @@ module.exports = {
           'from': { height: 'var(--radix-collapsible-content-height)', opacity: '1' },
           'to': { height: '0', opacity: '0' },
         },
+        // Height-only: opacity during collapse composites as a bright flash on dark UI.
         'accordion-down': {
-          from: { height: '0', opacity: '0' },
-          to: { height: 'var(--radix-accordion-content-height)', opacity: '1' },
+          from: { height: '0' },
+          to: { height: 'var(--radix-accordion-content-height)' },
         },
         'accordion-up': {
-          from: { height: 'var(--radix-accordion-content-height)', opacity: '1' },
-          to: { height: '0', opacity: '0' },
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: '0' },
         },
         slideUpAndFade: {
           from: { opacity: '0', transform: 'translateY(4px) scale(0.98)' },
@@ -122,8 +123,8 @@ module.exports = {
       animation: {
         slideDown: 'slideDown 0.3s ease-out',
         slideUp: 'slideUp 0.3s ease-out',
-        'accordion-down': 'accordion-down 0.3s ease-out',
-        'accordion-up': 'accordion-up 0.3s ease-out',
+        'accordion-down': 'accordion-down 0.3s ease-out forwards',
+        'accordion-up': 'accordion-up 0.3s ease-out forwards',
         slideUpAndFade: 'slideUpAndFade 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
         slideDownAndFade: 'slideDownAndFade 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
         slideLeftAndFade: 'slideLeftAndFade 400ms cubic-bezier(0.16, 1, 0.3, 1)',

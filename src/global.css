@@ -25,7 +25,7 @@
     --bs-gray-700: #495057;
     --bs-gray-800: #343a40;
     --bs-gray-900: #212529;
-    --bs-primary: #0d6efd;
+    --bs-primary: #0284c7;
     --bs-secondary: #6c757d;
     --bs-success: #198754;
     --bs-info: #0dcaf0;
@@ -33,7 +33,7 @@
     --bs-danger: #dc3545;
     --bs-light: #f8f9fa;
     --bs-dark: #212529;
-    --bs-primary-rgb: 13, 110, 253;
+    --bs-primary-rgb: 2, 132, 199;
     --bs-secondary-rgb: 108, 117, 125;
     --bs-success-rgb: 25, 135, 84;
     --bs-info-rgb: 13, 202, 240;
@@ -89,11 +89,11 @@
     --bs-tertiary-bg: #f8f9fa;
     --bs-tertiary-bg-rgb: 248, 249, 250;
     --bs-heading-color: inherit;
-    --bs-link-color: #0d6efd;
-    --bs-link-color-rgb: 13, 110, 253;
+    --bs-link-color: #0284c7;
+    --bs-link-color-rgb: 2, 132, 199;
     --bs-link-decoration: underline;
-    --bs-link-hover-color: #0a58ca;
-    --bs-link-hover-color-rgb: 10, 88, 202;
+    --bs-link-hover-color: #0369a1;
+    --bs-link-hover-color-rgb: 3, 105, 161;
     --bs-code-color: #d63384;
     --bs-highlight-color: #212529;
     --bs-highlight-bg: #fff3cd;
@@ -155,7 +155,9 @@ html[data-bs-theme="dark"] {
     --bs-tertiary-color-rgb: 228, 231, 236;
     --bs-tertiary-bg: #202329;
     --bs-tertiary-bg-rgb: 32, 35, 41;
-    --bs-primary-text-emphasis: #9bc2e6;
+    --bs-primary: #0ea5e9;
+    --bs-primary-rgb: 14, 165, 233;
+    --bs-primary-text-emphasis: #7dd3fc;
     --bs-secondary-text-emphasis: #aab1bd;
     --bs-success-text-emphasis: #8fc7a8;
     --bs-info-text-emphasis: #8ecbd6;
@@ -163,7 +165,7 @@ html[data-bs-theme="dark"] {
     --bs-danger-text-emphasis: #ef9aa2;
     --bs-light-text-emphasis: #f5f7fa;
     --bs-dark-text-emphasis: #d7dce4;
-    --bs-primary-bg-subtle: rgba(116, 161, 202, 0.14);
+    --bs-primary-bg-subtle: rgba(14, 165, 233, 0.14);
     --bs-secondary-bg-subtle: #1d2026;
     --bs-success-bg-subtle: rgba(143, 199, 168, 0.12);
     --bs-info-bg-subtle: rgba(142, 203, 214, 0.12);
@@ -171,7 +173,7 @@ html[data-bs-theme="dark"] {
     --bs-danger-bg-subtle: rgba(239, 154, 162, 0.12);
     --bs-light-bg-subtle: #2b3038;
     --bs-dark-bg-subtle: #15171b;
-    --bs-primary-border-subtle: rgba(116, 161, 202, 0.36);
+    --bs-primary-border-subtle: rgba(14, 165, 233, 0.36);
     --bs-secondary-border-subtle: #3a404a;
     --bs-success-border-subtle: rgba(143, 199, 168, 0.32);
     --bs-info-border-subtle: rgba(142, 203, 214, 0.32);
@@ -180,10 +182,10 @@ html[data-bs-theme="dark"] {
     --bs-light-border-subtle: #424954;
     --bs-dark-border-subtle: #303640;
     --bs-heading-color: inherit;
-    --bs-link-color: #9bc2e6;
-    --bs-link-hover-color: #b4d2ef;
-    --bs-link-color-rgb: 155, 194, 230;
-    --bs-link-hover-color-rgb: 180, 210, 239;
+    --bs-link-color: #7dd3fc;
+    --bs-link-hover-color: #bae6fd;
+    --bs-link-color-rgb: 125, 211, 252;
+    --bs-link-hover-color-rgb: 186, 230, 253;
     --bs-code-color: #dda0bc;
     --bs-highlight-color: #e4e7ec;
     --bs-highlight-bg: rgba(229, 189, 117, 0.22);
@@ -206,8 +208,8 @@ html[data-bs-theme="dark"] {
 
     --sidebar-hover-bg: #22262d;
 
-    --sidebar-active-bg: rgba(116, 161, 202, 0.14);
-    --sidebar-active-color: #9bc2e6;
+    --sidebar-active-bg: rgba(14, 165, 233, 0.14);
+    --sidebar-active-color: #7dd3fc;
     --sidebar-active-glow: none;
 
     --sidebar-box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.72);
@@ -248,9 +250,9 @@ html[data-bs-theme="dark"] {
     --color-list-row-border-hover: var(--list-item-border-hover);
     --color-border: #343a44;
     --color-hover: #22262d;
-    /* Keep filled buttons dark enough for white text in dark mode. */
-    --color-primary: #2563eb;
-    --color-primary-soft: rgba(116, 161, 202, 0.14);
+    /* Sky family — same hue as light; filled buttons keep white-text contrast. */
+    --color-primary: #0ea5e9;
+    --color-primary-soft: rgba(14, 165, 233, 0.14);
     --color-danger: #ef9aa2;
     --color-danger-soft: rgba(239, 154, 162, 0.12);
     --color-success: #8fc7a8;
@@ -261,7 +263,9 @@ html[data-bs-theme="dark"] {
     --color-info-soft: rgba(142, 203, 214, 0.12);
     --color-chip: #262a31;
     --color-chip-fg: #aab1bd;
-    --color-focus: rgba(155, 194, 230, 0.28);
+    --color-focus: rgba(14, 165, 233, 0.32);
+    --color-violet: #a78bfa;
+    --color-violet-soft: rgba(167, 139, 250, 0.14);
     --shadow-card: 0 18px 40px -20px rgba(0, 0, 0, 0.72);
     --shadow-elevated: 0 20px 48px -24px rgba(0, 0, 0, 0.78);
     --shadow-focus: 0 0 0 3px var(--color-focus);
@@ -337,9 +341,22 @@ html[data-bs-theme="light"] {
     --color-chip: #f1f5f9;
     --color-chip-fg: #64748b;
     --color-focus: rgba(2, 132, 199, 0.25);
+    --color-violet: #7c3aed;
+    --color-violet-soft: rgba(124, 58, 237, 0.12);
     --shadow-card: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
-    --shadow-elevated: 0 0 30px rgba(99, 102, 241, 0.1);
+    --shadow-elevated: 0 20px 40px -12px rgba(2, 132, 199, 0.12);
     --shadow-focus: 0 0 0 3px var(--color-focus);
+
+    /* Keep Bootstrap primary in sync with ui primary (light). */
+    --bs-primary: #0284c7;
+    --bs-primary-rgb: 2, 132, 199;
+    --bs-link-color: #0284c7;
+    --bs-link-hover-color: #0369a1;
+    --bs-link-color-rgb: 2, 132, 199;
+    --bs-link-hover-color-rgb: 3, 105, 161;
+    --bs-primary-bg-subtle: #e0f2fe;
+    --bs-primary-border-subtle: #7dd3fc;
+    --bs-primary-text-emphasis: #0c4a6e;
 }
 
 /* 1. Basic Setup */
@@ -352,7 +369,12 @@ html[data-bs-theme="light"] {
         line-height: 1.5;
     }
 
-    h1, h2, h3, h4, h5, h6 {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
         margin-top: 0;
         margin-bottom: 0.5rem;
         font-weight: 500;
@@ -360,12 +382,29 @@ html[data-bs-theme="light"] {
         color: var(--bs-heading-color);
     }
 
-    h1 { font-size: 2.5rem; }
-    h2 { font-size: 2rem; }
-    h3 { font-size: 1.75rem; }
-    h4 { font-size: 1.5rem; }
-    h5 { font-size: 1.25rem; }
-    h6 { font-size: 1rem; }
+    h1 {
+        font-size: 2.5rem;
+    }
+
+    h2 {
+        font-size: 2rem;
+    }
+
+    h3 {
+        font-size: 1.75rem;
+    }
+
+    h4 {
+        font-size: 1.5rem;
+    }
+
+    h5 {
+        font-size: 1.25rem;
+    }
+
+    h6 {
+        font-size: 1rem;
+    }
 
     small {
         font-size: 0.875em;
@@ -381,7 +420,10 @@ html[data-bs-theme="light"] {
     }
 
     @media (prefers-reduced-motion: reduce) {
-        *, ::before, ::after {
+
+        *,
+        ::before,
+        ::after {
             animation-duration: 0.01ms !important;
             animation-iteration-count: 1 !important;
             scroll-behavior: auto !important;

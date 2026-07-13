@@ -39,7 +39,7 @@ export const Server: FC = () => {
     return (
         <Card className="flex flex-col">
             <CardHeader>
-                <IconBox icon={ServerIcon} color="#8b5cf6" title='DNS Server' description='Listen and Serve' />
+                <IconBox icon={ServerIcon} tone="violet" title='DNS Server' description='Listen and Serve' />
             </CardHeader>
             <CardBody className="p-6">
                 <SettingInputVertical

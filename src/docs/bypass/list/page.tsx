@@ -116,7 +116,7 @@ function Lists() {
                 onClickItem={(item) => setEditing(item.name)}
                 header={
                     <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <IconBox icon={List} color="#2563eb" title="Defined Lists" description={`${data.page.total} lists available`} />
+                        <IconBox icon={List} tone="primary" title="Defined Lists" description={`${data.page.total} lists available`} />
                         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
                             <FilterSearch className="min-w-0 flex-1 sm:w-[180px] sm:flex-none" onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
                             <Button size="sm" onClick={refresh} disabled={isRefreshing}>
@@ -162,7 +162,7 @@ function ListConfigCard() {
     return (
         <Card className="mb-4">
             <CardHeader>
-                <IconBox icon={Clock} color="#10b981" title="List Synchronization" description={`Last Synced: ${lastSync}`} />
+                <IconBox icon={Clock} tone="success" title="List Synchronization" description={`Last Synced: ${lastSync}`} />
                 {isLoading && <Spinner size="sm" />}
             </CardHeader>
             <CardBody>
@@ -340,7 +340,7 @@ function RouteListForm({ value, onChange, lockName }: { value: RouteListDetail; 
                 <div className="flex flex-wrap items-end justify-between gap-3 px-1">
                     <div>
                         <h6 className="mb-1 font-bold">{sourceType === "remote" ? "Remote Resource URLs" : "Local Rules"}</h6>
-                        <small className="text-gray-500 dark:text-gray-400">
+                        <small className="text-ui-muted">
                             {sourceType === "remote" ? "Files will be downloaded and updated automatically." : "Define rules manually for this list."}
                         </small>
                     </div>

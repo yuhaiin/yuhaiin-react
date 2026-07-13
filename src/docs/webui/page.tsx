@@ -1,11 +1,13 @@
 "use client"
 
+import { useTheme } from '@/common/ThemeProvider';
+import type { ThemePreference } from '@/common/theme';
 import { Card, CardBody, CardHeader, IconBox, MainContainer, SettingLabel } from '@/component/v2/card';
 import { SettingInputVertical, SwitchCard } from "@/component/v2/forms";
 import { Select } from '@/component/v2/select';
 import { useLanguage } from '@/i18n/LanguageProvider';
 import { languageOptions } from '@/i18n/languages';
-import { Gauge, Globe, Info, Languages, Link, MapPin, Network, Radio, Shield, Terminal } from 'lucide-react';
+import { Gauge, Globe, Info, Languages, Link, MapPin, Network, Palette, Radio, Shield, Terminal } from 'lucide-react';
 import React from "react";
 import { useTranslation } from 'react-i18next';
 import { useLocalStorage } from "usehooks-ts";
@@ -15,9 +17,9 @@ import {
     LatencyHTTPUrlDefault, LatencyHTTPUrlKey,
     LatencyIPUrlDefault, LatencyIPUrlKey,
     LatencyIPv6Default, LatencyIPv6Key,
-    normalizeLatencyDNSUrl,
     LatencyStunTCPUrlDefault, LatencyStunTCPUrlKey,
-    LatencyStunUrlDefault, LatencyStunUrlKey
+    LatencyStunUrlDefault, LatencyStunUrlKey,
+    normalizeLatencyDNSUrl
 } from "../../common/apiurl";
 
 // Internal helper for this page to add icons to inputs
@@ -29,8 +31,8 @@ const InputWithIcon: React.FC<{
     placeholder: string;
 }> = ({ icon: Icon, label, value, onChange, placeholder }) => (
     <div className="flex items-start gap-3 mb-4">
-        <div className="bg-gray-500/10 rounded-lg p-2 mt-4 hidden sm:block border border-gray-500/10">
-            <span className="text-gray-500 dark:text-gray-400 text-lg flex"><Icon /></span>
+        <div className="bg-ui-surface-muted rounded-ui-md p-2 mt-4 hidden sm:block border border-ui-border">
+            <span className="text-ui-muted text-lg flex"><Icon /></span>
         </div>
         <div className="flex-grow">
             <SettingInputVertical
@@ -46,6 +48,7 @@ const InputWithIcon: React.FC<{
 function Setting() {
     const { t } = useTranslation('webui');
     const { preference, setPreference } = useLanguage();
+    const { preference: themePreference, setPreference: setThemePreference } = useTheme();
     const [url, setUrl] = useLocalStorage(APIUrlKey, APIUrlDefault);
     const [latencyHTTP, setLatencyHTTP] = useLocalStorage(LatencyHTTPUrlKey, LatencyHTTPUrlDefault);
     const [latencyDNS, setLatencyDNS] = useLocalStorage(LatencyDNSUrlKey, LatencyDNSUrlDefault);
@@ -59,7 +62,7 @@ function Setting() {
             {/* 1. API Connection */}
             <Card>
                 <CardHeader className="py-3">
-                    <IconBox icon={Link} color="#6366f1" title={t('api.title')} description={t('api.description')} />
+                    <IconBox icon={Link} tone="violet" title={t('api.title')} description={t('api.description')} />
                 </CardHeader>
                 <CardBody className="pt-2">
                     <InputWithIcon
@@ -74,7 +77,7 @@ function Setting() {
 
             <Card>
                 <CardHeader className="py-3">
-                    <IconBox icon={Languages} color="#8b5cf6" title={t('language.title')} description={t('language.description')} />
+                    <IconBox icon={Languages} tone="violet" title={t('language.title')} description={t('language.description')} />
                 </CardHeader>
                 <CardBody className="pt-2">
                     <div className="flex flex-col mb-4">
@@ -91,10 +94,30 @@ function Setting() {
                 </CardBody>
             </Card>
 
+            <Card>
+                <CardHeader className="py-3">
+                    <IconBox icon={Palette} tone="primary" title={t('theme.title')} description={t('theme.description')} />
+                </CardHeader>
+                <CardBody className="pt-2">
+                    <div className="flex flex-col mb-4">
+                        <SettingLabel className="mb-2 block">{t('theme.preference')}</SettingLabel>
+                        <Select
+                            value={themePreference}
+                            onValueChange={(value) => setThemePreference(value as ThemePreference)}
+                            items={[
+                                { value: "system", label: t('theme.system') },
+                                { value: "light", label: t('theme.light') },
+                                { value: "dark", label: t('theme.dark') },
+                            ]}
+                        />
+                    </div>
+                </CardBody>
+            </Card>
+
             {/* 2. Latency Targets */}
             <Card >
                 <CardHeader className="py-3">
-                    <IconBox icon={Gauge} color="#10b981" title={t('latency.title')} description={t('latency.description')} />
+                    <IconBox icon={Gauge} tone="success" title={t('latency.title')} description={t('latency.description')} />
                 </CardHeader>
                 <CardBody>
                     {/* Toggle at the top */}
@@ -147,7 +170,7 @@ function Setting() {
             </Card>
 
             <div className="text-center mt-3 opacity-50 pb-20">
-                <small className="text-gray-500 dark:text-gray-400 flex items-center justify-center">
+                <small className="text-ui-muted flex items-center justify-center">
                     <Info className="mr-1" />
                     {t('localNotice')}
                 </small>

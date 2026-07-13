@@ -23,13 +23,13 @@ const LinkItem: FC<{ linkData: Link; isUpdating: boolean; onUpdate: () => void; 
     return (
         <div className="grid flex-1 gap-3 overflow-hidden sm:grid-cols-[1fr_auto] sm:items-center">
             <div className="flex items-center gap-3 min-w-0 overflow-hidden">
-                <IconBoxRounded icon={Rss} color="#0d6efd" style={{ width: 40, height: 40, flexShrink: 0 }} />
+                <IconBoxRounded icon={Rss} tone="primary" style={{ width: 40, height: 40, flexShrink: 0 }} />
                 <div className="min-w-0 overflow-hidden">
                     <div className="flex min-w-0 items-center gap-2">
                         <div className="font-bold truncate">{linkData.name}</div>
                         <Badge variant="secondary" pill className="uppercase">{linkData.type || "reserve"}</Badge>
                     </div>
-                    <small className="text-gray-500 truncate block">{linkData.url}</small>
+                    <small className="text-ui-muted truncate block">{linkData.url}</small>
                 </div>
             </div>
             <div className="flex gap-2 justify-end">
@@ -138,10 +138,10 @@ function Subscribe() {
                 header={
                     <>
                         <div className="flex items-center">
-                            <IconBox icon={CloudDownload} color="#0ea5e9" />
+                            <IconBox icon={CloudDownload} tone="primary" />
                             <div>
                                 <h5 className="mb-0 font-bold">Subscriptions</h5>
-                                <small className="text-gray-500">Manage remote configuration links</small>
+                                <small className="text-ui-muted">Manage remote configuration links</small>
                             </div>
                         </div>
                         <Button onClick={() => setShowAddModal(true)}><Plus className="me-1" size={16} /> Add</Button>

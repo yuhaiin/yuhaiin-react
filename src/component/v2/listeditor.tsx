@@ -153,9 +153,9 @@ export const InputBytesList: FC<{
 
             <div className="flex flex-col gap-3">
                 {items.map((v, i) => (
-                    <div key={i} className="relative p-3 rounded-lg bg-[var(--bs-secondary-bg)] group">
+                    <div key={i} className="relative p-3 rounded-ui-md bg-ui-surface-muted group">
                         <div className="flex items-center justify-between mb-2">
-                            <small className="font-bold text-[var(--bs-secondary-color)]">ENTRY #{i + 1}</small>
+                            <small className="font-bold text-ui-muted">ENTRY #{i + 1}</small>
                             {!disabled && (
                                 <Button variant="outline-danger" size="sm" onClick={() => remove(i)}>
                                     <Trash size={16} />
@@ -173,7 +173,7 @@ export const InputBytesList: FC<{
                     </div>
                 ))}
                 {items.length === 0 && (
-                    <div className="py-4 italic text-center border border-dashed rounded-lg opacity-50 text-[var(--bs-secondary-color)]">
+                    <div className="py-4 italic text-center border border-dashed rounded-ui-md opacity-50 text-ui-muted">
                         No {title} entries yet.
                     </div>
                 )}

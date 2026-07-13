@@ -40,7 +40,7 @@ const ListItem: FC<{ data: BlockHistory }> = React.memo(({ data }) => {
 
                 <div className="flex flex-col overflow-hidden" style={{ minWidth: 0 }}>
                     <span className="font-bold truncate text-base opacity-75">{data.host}</span>
-                    <small className="text-gray-500 dark:text-gray-400 truncate opacity-75 font-mono">
+                    <small className="text-ui-muted truncate opacity-75 font-mono">
                         {data.process || "System Filter"}
                     </small>
                 </div>
@@ -57,7 +57,7 @@ const ListItem: FC<{ data: BlockHistory }> = React.memo(({ data }) => {
                 <Badge variant="secondary" pill className="flex items-center gap-1">
                     <Clock size={12} /> {historyDate(data.time).toLocaleTimeString()}
                 </Badge>
-                <ChevronRight className="text-gray-500 dark:text-gray-400 opacity-25 ml-2 hidden md:block" size={16} />
+                <ChevronRight className="text-ui-muted opacity-25 ml-2 hidden md:block" size={16} />
             </div>
         </div>
     );
@@ -129,7 +129,7 @@ function BypassBlockHistory() {
             <div className="flex flex-wrap justify-between items-end mb-4 gap-3">
                 <div>
                     <h4 className="font-bold mb-1">Blocked Traffic</h4>
-                    <div className="text-gray-500 dark:text-gray-400 flex items-center text-sm">
+                    <div className="text-ui-muted flex items-center text-sm">
                         <ShieldOff className="mr-2 text-red-500 opacity-75" />
                         <span>Displaying {values.length} connections denied by rules</span>
                     </div>

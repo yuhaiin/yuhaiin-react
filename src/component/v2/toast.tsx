@@ -83,26 +83,26 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
                   }
                 }}
                 className={clsx(
-                  "bg-[rgba(var(--bs-body-bg-rgb,255,255,255),0.7)] backdrop-blur-[8px] rounded-[8px] border border-[var(--bs-border-color-translucent,rgba(0,0,0,0.1))] shadow-[0_0.5rem_1rem_rgba(0,0,0,0.1)] flex flex-col overflow-hidden",
-                  toast.type === 'info' && "border-l-4 border-l-[var(--bs-info)]",
-                  toast.type === 'error' && "border-l-4 border-l-[var(--bs-danger)]"
+                  "bg-ui-surface/80 backdrop-blur-[8px] rounded-ui-sm border border-ui-border shadow-ui-card flex flex-col overflow-hidden",
+                  toast.type === 'info' && "border-l-4 border-l-ui-info",
+                  toast.type === 'error' && "border-l-4 border-l-ui-danger"
                 )}
                 style={{ listStyle: 'none' }} // Ensure checking CSS doesn't fail
               >
-                <div className="flex justify-between items-center py-[0.5rem] px-[0.75rem] bg-[rgba(var(--bs-tertiary-bg-rgb,248,249,250),0.5)] border-b border-[var(--bs-border-color-translucent)]">
-                  <ToastPrimitive.Title className="text-[0.85rem] font-bold text-[var(--bs-body-color)] m-0">
+                <div className="flex justify-between items-center py-[0.5rem] px-[0.75rem] bg-ui-surface-muted/60 border-b border-ui-border">
+                  <ToastPrimitive.Title className="text-[0.85rem] font-bold text-ui-fg m-0">
                     {toast.type === 'error' ? t('toast.systemError') : t('toast.notification')}
                   </ToastPrimitive.Title>
 
-                  <div className="d-flex align-items-center gap-2">
-                    <small className="text-muted" style={{ fontSize: '0.75rem' }}>{t('toast.justNow')}</small>
-                    <ToastPrimitive.Close className="bg-transparent border-0 text-[var(--bs-secondary-color)] cursor-pointer opacity-50 transition-opacity duration-200 px-[4px] text-[1.2rem] leading-none hover:opacity-100" aria-label={t('action.close')}>
+                  <div className="flex items-center gap-2">
+                    <small className="text-ui-muted text-xs">{t('toast.justNow')}</small>
+                    <ToastPrimitive.Close className="bg-transparent border-0 text-ui-muted cursor-pointer opacity-50 transition-opacity duration-200 px-[4px] text-[1.2rem] leading-none hover:opacity-100" aria-label={t('action.close')}>
                       <span aria-hidden>×</span>
                     </ToastPrimitive.Close>
                   </div>
                 </div>
 
-                <ToastPrimitive.Description className="py-[0.75rem] px-[1rem] text-[var(--bs-body-color)] text-[0.9rem] leading-[1.4]">
+                <ToastPrimitive.Description className="py-[0.75rem] px-[1rem] text-ui-fg text-[0.9rem] leading-[1.4]">
                   {toast.text}
                 </ToastPrimitive.Description>
               </motion.li>

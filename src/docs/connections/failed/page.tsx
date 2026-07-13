@@ -30,7 +30,7 @@ const ListItem: FC<{ data: FailedHistoryItem }> = React.memo(({ data }) => {
                     </div>
                     <div className="flex flex-col overflow-hidden" style={{ minWidth: 0 }}>
                         <span className="font-bold truncate text-base text-red-500/75">{data.host}</span>
-                        <small className="text-gray-500 dark:text-gray-400 truncate opacity-75 font-mono">
+                        <small className="text-ui-muted truncate opacity-75 font-mono">
                             {data.error || "Unknown Error"}
                         </small>
                     </div>
@@ -39,7 +39,7 @@ const ListItem: FC<{ data: FailedHistoryItem }> = React.memo(({ data }) => {
                     <IconBadge icon={Network} text={formatProtocolLabel(data.protocol)} color="info" />
                     <IconBadge icon={OctagonAlert} text={`${data.failedCount} Fails`} color="warning" />
                     <IconBadge icon={Clock} text={new Date(data.time).toLocaleTimeString()} color="secondary" />
-                    <div className="text-gray-500 dark:text-gray-400 opacity-25 ml-2 hidden md:block"><ChevronRight /></div>
+                    <div className="text-ui-muted opacity-25 ml-2 hidden md:block"><ChevronRight /></div>
                 </div>
             </div>
         </>
@@ -95,7 +95,7 @@ function FailedHistory() {
             <div className="flex flex-wrap justify-between items-end mb-4 gap-3">
                 <div>
                     <h4 className="font-bold mb-1">Failed Connections</h4>
-                    <div className="text-gray-500 dark:text-gray-400 flex items-center text-sm">
+                    <div className="text-ui-muted flex items-center text-sm">
                         <Bug className="text-red-500 mr-2" />
                         <span>Tracking {values.length} rejected or timed-out requests</span>
                     </div>
