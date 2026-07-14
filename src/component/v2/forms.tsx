@@ -2,7 +2,6 @@
 
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import { clsx } from 'clsx';
-import { motion } from 'motion/react';
 import { CircleAlert, Eye, EyeOff } from 'lucide-react';
 import React, { FC, useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -161,18 +160,14 @@ export const SettingRangeVertical: FC<{
                 step={step}
             >
                 <SliderPrimitive.Track className="bg-ui-surface-muted relative grow rounded-full h-[3px]">
-                    <SliderPrimitive.Range className="absolute bg-ui-primary rounded-full h-full" asChild>
-                        <motion.span layout transition={{ type: "spring", stiffness: 400, damping: 30 }} />
-                    </SliderPrimitive.Range>
+                    <SliderPrimitive.Range className="absolute bg-ui-primary rounded-full h-full transition-[width] duration-150 ease-out" />
                 </SliderPrimitive.Track>
-                <SliderPrimitive.Thumb className={clsx("block w-[20px] h-[20px] bg-ui-bg shadow-ui-card rounded-full border border-ui-border hover:bg-ui-surface", ui.focusRing)} asChild>
-                    <motion.span
-                        layout
-                        whileHover={{ scale: 1.2 }}
-                        whileTap={{ scale: 0.9 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                    />
-                </SliderPrimitive.Thumb>
+                <SliderPrimitive.Thumb
+                    className={clsx(
+                        "block h-[20px] w-[20px] rounded-full border border-ui-border bg-ui-bg shadow-ui-card transition-transform duration-150 ease-out hover:scale-110 hover:bg-ui-surface active:scale-95",
+                        ui.focusRing
+                    )}
+                />
             </SliderPrimitive.Root>
 
             <div className="flex justify-between text-ui-muted opacity-50 text-[0.7rem] font-semibold">

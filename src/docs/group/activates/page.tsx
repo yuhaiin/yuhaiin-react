@@ -54,7 +54,11 @@ const ActiveNodeItem: FC<{ v: Node, onClose: () => void }> = ({ v, onClose }) =>
 
 function Activates({ showFooter = true }: { showFooter?: boolean }) {
     const ctx = useContext(GlobalToastContext);
-    const { data, error, isLoading, mutate } = useSWR("/api/v2/nodes/active", activeNodes);
+    const { data, error, isLoading, mutate } = useSWR("/api/v2/nodes/active", activeNodes, {
+        revalidateOnFocus: false,
+        // Home embeds this list under live traffic work; refresh less aggressively there.
+        refreshInterval: showFooter ? 0 : 15000,
+    });
     const [confirmData, setConfirmData] = useState({ show: false, id: "" });
     const [nodeModal, setNodeModal] = useState<{ show: boolean; node?: Node }>({ show: false });
 
@@ -97,12 +101,13 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
 
             <CardList
                 items={sortedNodes}
+                animated={false}
                 renderListItem={(v) => <ActiveNodeItem v={v} onClose={() => setConfirmData({ show: true, id: v.id })} />}
                 onClickItem={(v) => setNodeModal({ show: true, node: v })}
                 header={
                     <div className="flex items-center justify-between w-full">
                         <IconBox icon={Activity} tone="success" title="Active Nodes" description="Live outbound connection instances" />
-                        <Badge variant="success" className="bg-opacity-10 text-green-600 border border-green-600 border-opacity-25 px-3 py-2 rounded-full">
+                        <Badge variant="success" className="bg-ui-success-soft text-ui-success border border-ui-success/25 px-3 py-2 rounded-full">
                             {sortedNodes.length} Running
                         </Badge>
                     </div>

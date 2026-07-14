@@ -30,11 +30,15 @@ import type { Node, NodeLatencyResponse } from "@/contract/node";
 import { normalizeNode } from "@/contract/node";
 import clsx from "clsx";
 import { Check, ChevronDown, Gauge, Layers, Network, Plus, Power, Search, Upload } from "lucide-react";
-import { FC, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { FC, memo, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import useSWR from "swr";
 import { useLocalStorage } from "usehooks-ts";
+import { VList } from "virtua";
 import Loading, { Error as ErrorDisplay } from "../../component/v2/loading";
 import { NodeModal } from "../node/modal";
+
+const LATENCY_STORAGE_LIMIT = 500;
+const GROUP_VIRTUALIZE_THRESHOLD = 60;
 
 function errorOf(error: unknown): APIError | undefined {
     if (!error) return undefined;
@@ -327,6 +331,23 @@ const GroupPicker: FC<{
     );
 };
 
+function pruneLatencyMap(
+    current: Record<string, NodeLatencyState>,
+    keepIds: Iterable<string>,
+    limit = LATENCY_STORAGE_LIMIT,
+): Record<string, NodeLatencyState> {
+    const keep = new Set(keepIds);
+    const next: Record<string, NodeLatencyState> = {};
+    for (const id of keep) {
+        if (current[id]) next[id] = current[id];
+    }
+    if (Object.keys(next).length <= limit) return next;
+
+    const entries = Object.entries(next);
+    entries.sort(([a], [b]) => a.localeCompare(b));
+    return Object.fromEntries(entries.slice(-limit));
+}
+
 const NodeItem: FC<{
     item: Node;
     onUse: () => void;
@@ -334,7 +355,7 @@ const NodeItem: FC<{
     onEdit: () => void;
     latency?: NodeLatencyState;
     busy?: Partial<Record<NodeLatencyType, boolean>>;
-}> = ({ item, onUse, onLatency, onEdit, latency, busy }) => {
+}> = memo(({ item, onUse, onLatency, onEdit, latency, busy }) => {
     const chain = chainLabel(item);
     const hasLatency = Boolean(busy?.tcp || busy?.udp || !isEmptyLatency(latency?.tcp) || !isEmptyLatency(latency?.udp));
     const hasIp = Boolean(busy?.ip || latency?.ip);
@@ -471,7 +492,7 @@ const NodeItem: FC<{
             </AccordionContent>
         </AccordionItem>
     );
-};
+});
 
 const NodeImportModal: FC<{
     show: boolean;
@@ -617,6 +638,14 @@ export default function Group() {
         if (!selectedGroup && groups.length > 0) setSelectedGroup(groups[0]);
     }, [groups, selectedGroup]);
 
+    useEffect(() => {
+        if (items.length === 0) return;
+        setLatency((prev) => {
+            const next = pruneLatencyMap(prev, items.map((item) => item.id));
+            return Object.keys(next).length === Object.keys(prev).length ? prev : next;
+        });
+    }, [items, setLatency]);
+
     if (apiError) return <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} />;
     if (isLoading || data === undefined) return <Loading />;
 
@@ -658,12 +687,18 @@ export default function Group() {
             ipv6: latencyIPv6,
         })
             .then((result) => {
-                setLatency((prev) => ({ ...prev, [id]: { ...prev[id], [type]: latencyResultValue(result) } }));
+                setLatency((prev) => pruneLatencyMap(
+                    { ...prev, [id]: { ...prev[id], [type]: latencyResultValue(result) } },
+                    items.map((item) => item.id),
+                ));
                 if (!result.ok) ctx.Error(result.error ?? "Latency failed");
             })
             .catch((err: unknown) => {
                 const apiErr = errorOf(err);
-                setLatency((prev) => ({ ...prev, [id]: { ...prev[id], [type]: "error" } }));
+                setLatency((prev) => pruneLatencyMap(
+                    { ...prev, [id]: { ...prev[id], [type]: "error" } },
+                    items.map((item) => item.id),
+                ));
                 ctx.Error(apiErr?.msg ?? "Latency failed");
             })
             .finally(() => setBusyLatency((prev) => ({ ...prev, [id]: { ...prev[id], [type]: false } })));
@@ -763,6 +798,31 @@ export default function Group() {
                                                 : "Add a node to this group to see it here."}
                                         </div>
                                     </div>
+                                ) : groupItems.length > GROUP_VIRTUALIZE_THRESHOLD ? (
+                                    <VList
+                                        data={groupItems}
+                                        itemSize={72}
+                                        bufferSize={720}
+                                        style={{ height: "min(72vh, 900px)", width: "100%" }}
+                                    >
+                                        {(item) => (
+                                            <Accordion
+                                                key={item.id}
+                                                type="single"
+                                                collapsible
+                                                className="!mb-0 !rounded-none !border-0 !shadow-none !transition-none hover:!translate-y-0 hover:!border-transparent hover:!shadow-none"
+                                            >
+                                                <NodeItem
+                                                    item={item}
+                                                    latency={latency[item.id]}
+                                                    busy={busyLatency[item.id]}
+                                                    onUse={() => handleUse(item.id)}
+                                                    onLatency={(type) => handleLatency(item.id, type)}
+                                                    onEdit={() => setShowdata({ show: true, id: item.id, new: false })}
+                                                />
+                                            </Accordion>
+                                        )}
+                                    </VList>
                                 ) : (
                                     <Accordion
                                         type="single"

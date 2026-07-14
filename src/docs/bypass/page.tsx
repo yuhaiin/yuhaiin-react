@@ -191,18 +191,19 @@ function BypassComponent() {
         () => listRules({ page, pageSize: PAGE_SIZE, query }),
         { revalidateOnFocus: false },
     );
+    const needEditorOptions = creating || editing !== null;
     const { data: allRules, mutate: mutateAllRules } = useSWR(
-        "/api/v2/route/rules/all",
+        priorityItem ? "/api/v2/route/rules/all" : null,
         () => listRules({ page: 1, pageSize: 10000 }),
         { revalidateOnFocus: false },
     );
     const { data: listsData } = useSWR(
-        "/api/v2/route/lists/options",
+        needEditorOptions ? "/api/v2/route/lists/options" : null,
         () => listRouteLists({ page: 1, pageSize: 10000 }),
         { revalidateOnFocus: false },
     );
     const { data: inboundsData } = useSWR(
-        "/api/v2/inbounds/options",
+        needEditorOptions ? "/api/v2/inbounds/options" : null,
         () => listInbounds({ page: 1, pageSize: 10000 }),
         { revalidateOnFocus: false },
     );

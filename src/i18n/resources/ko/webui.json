@@ -2,7 +2,16 @@
   "api": {
     "title": "API 연결",
     "description": "Web 컨트롤러 인터페이스",
-    "controllerHost": "컨트롤러 호스트"
+    "controllerHost": "컨트롤러 호스트",
+    "sameOrigin": "동일 출처",
+    "active": "사용 중",
+    "activeHint": "현재 연결됨",
+    "switchHint": "클릭하여 전환",
+    "saved": "개 저장됨",
+    "addHost": "호스트 추가",
+    "add": "추가",
+    "addHint": "여러 컨트롤러 주소를 저장하고 언제든지 전환할 수 있습니다.",
+    "remove": "호스트 삭제"
   },
   "latency": {
     "title": "지연 시간 대상",

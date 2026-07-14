@@ -4,14 +4,25 @@ import { APIError } from "@/api/client";
 import { createResolver, deleteResolver, getResolver, listResolvers, saveResolver } from "@/api/resolvers";
 import { Badge } from '@/component/v2/badge';
 import { Button } from '@/component/v2/button';
-import { CardRowList, IconBox, MainContainer, SettingsBox } from '@/component/v2/card';
+import { Card, CardBody, CardFooter, CardHeader, IconBox, MainContainer, SettingsBox } from '@/component/v2/card';
 import { ConfirmModal } from "@/component/v2/confirm";
 import { SettingInputVertical, SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
+import { Pagination } from "@/component/v2/pagination";
 import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { createDefaultResolver, normalizeResolver, Resolver, ResolverType } from "@/contract/resolver";
-import { Check, ChevronRight, Layers, Network, Plus, Trash } from 'lucide-react';
+import clsx from "clsx";
+import {
+    Check,
+    Globe2,
+    Layers,
+    Network,
+    Plus,
+    Shield,
+    Trash,
+} from 'lucide-react';
+import type { ElementType } from "react";
 import { FC, useContext, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import Loading, { Error as ErrorDisplay } from "../../../component/v2/loading";
@@ -19,7 +30,7 @@ import { Fakedns } from "./fakedns";
 import { Hosts } from "./hosts";
 import { Server } from "./server";
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 12;
 
 function errorOf(error: unknown): APIError | undefined {
     if (!error) return undefined;
@@ -29,37 +40,140 @@ function errorOf(error: unknown): APIError | undefined {
 
 const resolverTypes: ResolverType[] = ["udp", "tcp", "doh", "dot", "doq", "doh3", "system"];
 
-const ResolverItem: FC<{ item: Resolver }> = ({ item }) => {
+type BadgeVariant = "primary" | "secondary" | "success" | "danger" | "warning" | "info" | "muted";
+
+function resolverTypeVisual(type?: string): {
+    icon: ElementType;
+    tone: string;
+    soft: string;
+    badge: BadgeVariant;
+} {
+    switch ((type || "").toLowerCase()) {
+        case "doh":
+        case "doh3":
+            return {
+                icon: Globe2,
+                tone: "text-ui-info",
+                soft: "bg-ui-info-soft border-ui-info/15",
+                badge: "info",
+            };
+        case "dot":
+        case "doq":
+            return {
+                icon: Shield,
+                tone: "text-ui-success",
+                soft: "bg-ui-success-soft border-ui-success/15",
+                badge: "success",
+            };
+        case "tcp":
+            return {
+                icon: Network,
+                tone: "text-ui-warning",
+                soft: "bg-ui-warning-soft border-ui-warning/15",
+                badge: "warning",
+            };
+        case "udp":
+            return {
+                icon: Network,
+                tone: "text-ui-primary",
+                soft: "bg-ui-primary-soft border-ui-primary/15",
+                badge: "primary",
+            };
+        case "system":
+            return {
+                icon: Layers,
+                tone: "text-[var(--color-violet)]",
+                soft: "bg-[var(--color-violet-soft)] border-[color-mix(in_srgb,var(--color-violet)_18%,transparent)]",
+                badge: "secondary",
+            };
+        default:
+            return {
+                icon: Network,
+                tone: "text-ui-muted",
+                soft: "bg-ui-surface-muted border-ui-border",
+                badge: "muted",
+            };
+    }
+}
+
+function displayHost(item: Resolver) {
+    const host = (item.host || "").trim();
+    if (host) return host;
+    if (item.type === "system" || item.system) return "system default";
+    return "Not configured";
+}
+
+const ResolverTile: FC<{ item: Resolver; onClick: () => void }> = ({ item, onClick }) => {
+    const visual = resolverTypeVisual(item.type);
+    const Icon = visual.icon;
+    const host = displayHost(item);
+    const subnet = item.subnet?.trim();
+    const tls = item.tlsServerName?.trim();
+
     return (
-        <>
-            <div className="grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(190px,0.34fr)_minmax(0,1fr)] md:items-center">
-                <div className="flex min-w-0 items-center">
-                    <Network className="mr-4 shrink-0 text-ui-muted" size={20} />
-                    <div className="flex min-w-0 flex-wrap items-center gap-2">
-                        <span className="truncate font-medium">{item.id}</span>
-                        <Badge variant="info" className="shrink-0">{item.type}</Badge>
-                        {item.system && <Badge variant="primary" className="shrink-0">System</Badge>}
+        <button
+            type="button"
+            onClick={onClick}
+            className={clsx(
+                "group flex h-full min-h-[132px] w-full flex-col rounded-ui-lg border border-ui-border bg-ui-surface p-4 text-left",
+                "shadow-sm transition-[border-color,box-shadow,transform,background-color] duration-150",
+                "hover:-translate-y-0.5 hover:border-ui-primary/35 hover:bg-ui-surface-muted/40 hover:shadow-md",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-primary/35"
+            )}
+        >
+            <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                    <div className={clsx(
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-lg border",
+                        visual.soft,
+                        visual.tone
+                    )}>
+                        <Icon size={18} strokeWidth={1.9} />
                     </div>
-                </div>
-                <div className="grid min-w-0 gap-2 text-xs text-ui-muted sm:grid-cols-3">
                     <div className="min-w-0">
-                        <span className="mr-1 text-ui-muted/70">Host</span>
-                        <span className="truncate font-mono font-medium text-ui-fg">{item.host || "-"}</span>
-                    </div>
-                    <div className="min-w-0">
-                        <span className="mr-1 text-ui-muted/70">Subnet</span>
-                        <span className="truncate font-mono font-medium text-ui-fg">{item.subnet || "-"}</span>
-                    </div>
-                    <div className="min-w-0">
-                        <span className="mr-1 text-ui-muted/70">TLS</span>
-                        <span className="truncate font-mono font-medium text-ui-fg">{item.tlsServerName || "-"}</span>
+                        <div className="truncate text-[0.95rem] font-semibold text-ui-heading" title={item.id}>
+                            {item.id}
+                        </div>
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                            <Badge variant={visual.badge} pill className="px-2 py-0.5 text-[0.65rem] uppercase tracking-wide">
+                                {item.type}
+                            </Badge>
+                            {item.system && (
+                                <Badge variant="primary" pill className="px-2 py-0.5 text-[0.65rem]">
+                                    System
+                                </Badge>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
-            <ChevronRight className="ml-2 shrink-0 text-ui-muted opacity-25" size={16} />
-        </>
-    )
-}
+
+            <div className="mt-4 min-w-0 flex-1">
+                <div className="text-[11px] font-medium uppercase tracking-wide text-ui-muted/80">Endpoint</div>
+                <div className="mt-1 break-all font-mono text-[12.5px] font-medium leading-relaxed text-ui-fg" title={host}>
+                    {host}
+                </div>
+            </div>
+
+            {(subnet || tls) && (
+                <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 border-t border-ui-border/70 pt-3 text-[11px] text-ui-muted">
+                    {subnet && (
+                        <span className="min-w-0">
+                            <span className="opacity-70">Subnet</span>{" "}
+                            <span className="font-mono font-medium text-ui-fg">{subnet}</span>
+                        </span>
+                    )}
+                    {tls && (
+                        <span className="min-w-0">
+                            <span className="opacity-70">TLS</span>{" "}
+                            <span className="font-mono font-medium text-ui-fg">{tls}</span>
+                        </span>
+                    )}
+                </div>
+            )}
+        </button>
+    );
+};
 
 export default function ResolverComponent() {
     return (
@@ -135,24 +249,43 @@ function ResolverList() {
             onDelete={(id) => setConfirmDelete({ show: true, id })}
         />
 
-        <CardRowList
-            layout="list"
-            paginated
-            pageSize={PAGE_SIZE}
-            currentPage={data.page.page || page}
-            totalItems={data.page.total}
-            onPageChange={setPage}
-            items={items}
-            getKey={(item) => item.id}
-            renderListItem={(item) => <ResolverItem item={item} />}
-            onClickItem={(item) => setShowdata({ show: true, id: item.id, new: false })}
-            header={
+        <Card density="compact" className="overflow-hidden">
+            <CardHeader>
                 <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <IconBox icon={Layers} tone="primary" title='Resolvers' description='Upstream DNS Resolvers' />
-                    <Button size="sm" onClick={handleCreate}><Plus size={16} className="mr-1" /> Add</Button>
+                    <IconBox icon={Layers} tone="primary" title="Resolvers" description="Upstream DNS Resolvers" />
+                    <Button size="sm" onClick={handleCreate}>
+                        <Plus size={16} className="mr-1" /> Add
+                    </Button>
                 </div>
-            }
-        />
+            </CardHeader>
+            <CardBody density="compact">
+                {items.length === 0 ? (
+                    <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center text-sm text-ui-muted">
+                        No resolvers yet. Add an upstream DNS endpoint to get started.
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                        {items.map((item) => (
+                            <ResolverTile
+                                key={item.id}
+                                item={item}
+                                onClick={() => setShowdata({ show: true, id: item.id, new: false })}
+                            />
+                        ))}
+                    </div>
+                )}
+            </CardBody>
+            {data.page.total > PAGE_SIZE && (
+                <CardFooter compact className="flex justify-center">
+                    <Pagination
+                        currentPage={data.page.page || page}
+                        totalItems={data.page.total}
+                        pageSize={data.page.pageSize || PAGE_SIZE}
+                        onPageChange={setPage}
+                    />
+                </CardFooter>
+            )}
+        </Card>
     </>
 }
 

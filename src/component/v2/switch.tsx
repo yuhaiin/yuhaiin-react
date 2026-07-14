@@ -2,7 +2,6 @@
 
 import * as SwitchPrimitive from '@radix-ui/react-switch';
 import { clsx } from 'clsx';
-import { motion, Transition } from 'motion/react';
 import * as React from 'react';
 import { ui } from './styles';
 
@@ -13,12 +12,6 @@ interface SwitchProps {
   description?: string;
   disabled?: boolean;
 }
-
-const transition: Transition = {
-  type: "spring",
-  stiffness: 700,
-  damping: 30
-};
 
 const switchTrackClass = clsx(ui.switchTrack, ui.focusRing);
 
@@ -39,13 +32,7 @@ const SwitchComponent: React.FC<SwitchProps> = ({ checked, onCheckedChange, labe
         onCheckedChange={onCheckedChange}
         disabled={disabled}
       >
-        <SwitchPrimitive.Thumb asChild>
-          <motion.span
-            className="block w-[21px] h-[21px] bg-white rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.1)] will-change-[transform]"
-            layout
-            transition={transition}
-          />
-        </SwitchPrimitive.Thumb>
+        <SwitchPrimitive.Thumb className={ui.switchThumb} />
       </SwitchPrimitive.Root>
     </div>
   );
@@ -79,13 +66,7 @@ export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ lab
         onCheckedChange={onCheckedChange}
         disabled={disabled}
       >
-        <SwitchPrimitive.Thumb asChild>
-          <motion.span
-            className="block w-[21px] h-[21px] bg-white rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.1)] will-change-[transform]"
-            layout
-            transition={transition}
-          />
-        </SwitchPrimitive.Thumb>
+        <SwitchPrimitive.Thumb className={ui.switchThumb} />
       </SwitchPrimitive.Root>
     </div>
   );
@@ -107,13 +88,7 @@ const Switch = ({ className, label, id, ...props }: React.ComponentProps<typeof 
         className={switchTrackClass}
         {...switchProps}
       >
-        <SwitchPrimitive.Thumb asChild>
-          <motion.span
-            className="block w-[21px] h-[21px] bg-white rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.1)] will-change-[transform]"
-            layout
-            transition={transition}
-          />
-        </SwitchPrimitive.Thumb>
+        <SwitchPrimitive.Thumb className={ui.switchThumb} />
       </SwitchPrimitive.Root>
 
       {label && (

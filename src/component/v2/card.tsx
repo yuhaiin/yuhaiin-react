@@ -29,7 +29,7 @@ export const Card: FC<{
             !noMargin && (density === "compact" ? "mb-4" : "mb-8"),
             className
         )}
-        style={{ viewTransitionName: "config-card-root", ...style }}
+        style={style}
     >
         {children}
     </div>
@@ -322,16 +322,17 @@ export function CardRowList<T>({
     const renderRowItem = (value: T, localIndex: number) => {
         const index = getItemIndex ? getItemIndex(value, localIndex) : start + localIndex;
         const key = getKey ? getKey(value) : index;
+        const isLast = localIndex === visibleItems.length - 1;
         const item = (
-            <div className="flex">
+            <div className={clsx("flex", layout === "list" && !isLast && "border-b border-ui-border/70")}>
                 <ListItem
                     density={density}
                     className={clsx(
-                        "w-full",
+                        "group w-full",
                         layout === "list" && [
-                            "min-h-[56px] rounded-ui-md bg-transparent px-3.5 py-2",
-                            "border-ui-border/60 shadow-none hover:bg-ui-surface-muted hover:border-ui-primary/25",
-                            "hover:translate-x-0.5 transition-[background-color,border-color,transform] duration-150"
+                            "min-h-[64px] rounded-none border-0 bg-transparent px-3.5 py-3 shadow-none",
+                            "hover:bg-ui-surface-muted/70 hover:translate-x-0",
+                            "transition-colors duration-150"
                         ]
                     )}
                     onClick={() => onClickItem?.(value, index)}
@@ -360,7 +361,7 @@ export function CardRowList<T>({
     };
 
     return (
-        <Card density={density} className={layout === "list" ? "shadow-none" : undefined}>
+        <Card density={density} className={layout === "list" ? "overflow-hidden shadow-ui-card" : undefined}>
             {(header || (onAddNew && layout === "list")) && (
                 <CardHeader className={layout === "list" && onAddNew ? "flex-wrap gap-3" : undefined}>
                     {header && <div className="min-w-0 flex-1">{header}</div>}
@@ -371,10 +372,10 @@ export function CardRowList<T>({
                     )}
                 </CardHeader>
             )}
-            <CardBody density={density} className={layout === "list" ? "px-4 py-4" : undefined}>
+            <CardBody density={density} className={layout === "list" ? "!p-0" : undefined}>
                 <div className={clsx(
                     layout === "list"
-                        ? "flex flex-col gap-1.5"
+                        ? "flex flex-col"
                         : "grid grid-cols-[repeat(auto-fill,minmax(min(300px,100%),1fr))] gap-4"
                 )}>
                     {shouldAnimate ? (

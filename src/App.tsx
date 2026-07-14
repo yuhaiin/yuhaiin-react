@@ -1,4 +1,4 @@
-import { ThemeProvider, useTheme } from '@/common/ThemeProvider';
+import { ThemeProvider } from '@/common/ThemeProvider';
 import { GlobalToastProvider } from '@/component/v2/toast';
 import NavBarContainer from '@/docs/nav/NavBarContainer';
 import { useHashLocation } from '@/hooks/useHashLocation';
@@ -38,7 +38,6 @@ const variants = {
 
 function AppContent() {
     const { direction, location } = useSmartAnimation();
-    const { ready } = useTheme();
 
     useEffect(() => {
         window.Android?.setRefreshEnabled?.(!location.includes('/docs/config/log'))
@@ -48,7 +47,6 @@ function AppContent() {
     const content = (
         <div className={clsx(
             'relative w-auto min-h-screen h-screen overflow-hidden box-border',
-            'transition-[margin-left,max-width,padding] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]',
             !isLogin && 'pt-[80px] px-[20px] pb-[20px]',
             !isLogin && 'lg:pt-[20px] lg:pl-[292px] lg:pr-[20px] lg:pb-[20px]',
             !isLogin && 'lg:h-screen',
@@ -85,9 +83,7 @@ function AppContent() {
 
     return (
         <GlobalToastProvider>
-            {ready && (
-                isLogin ? content : <NavBarContainer>{content}</NavBarContainer>
-            )}
+            {isLogin ? content : <NavBarContainer>{content}</NavBarContainer>}
         </GlobalToastProvider>
     )
 }

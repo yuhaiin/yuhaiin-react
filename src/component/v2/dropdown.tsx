@@ -18,12 +18,11 @@ const DropdownContent = ({ className, sideOffset = 4, children, ...props }: Reac
             {...props}
         >
             <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: -2 }}
+                initial={{ opacity: 0, scale: 0.96, y: -4 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
+                transition={{ duration: 0.14, ease: "easeOut" }}
                 className={clsx(
                     "bg-ui-surface border border-ui-border shadow-ui-elevated rounded-ui-xl min-w-[12rem] py-1.5 flex flex-col z-[2000] w-[var(--radix-dropdown-menu-trigger-width)] max-w-[var(--radix-dropdown-menu-trigger-width)] will-change-[transform,opacity]",
-                    "data-[side=bottom]:animate-slideUpAndFade data-[side=top]:animate-slideDownAndFade data-[state=closed]:animate-fadeOut",
                     className
                 )}
             >

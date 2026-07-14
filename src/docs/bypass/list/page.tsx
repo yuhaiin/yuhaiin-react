@@ -3,25 +3,194 @@
 import { createRouteList, deleteRouteList, getRouteActivationStatus, getRouteList, getRouteListConfig, listRouteLists, refreshRouteLists, saveRouteList, saveRouteListConfig } from "@/api/route";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardFooter, CardHeader, CardRowList, FilterSearch, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
+import { Card, CardBody, CardFooter, CardHeader, FilterSearch, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
 import { SettingInputVertical, SettingRangeVertical, SettingSelectVertical } from "@/component/v2/forms";
 import { InputList } from "@/component/v2/listeditor";
 import Loading from "@/component/v2/loading";
-import { RouteActivationProgress } from "@/component/v2/route-activation-progress";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
+import { Pagination } from "@/component/v2/pagination";
+import { RouteActivationProgress } from "@/component/v2/route-activation-progress";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
-import type { RouteListDetail } from "@/contract/route";
+import type { ListItem, RouteListDetail } from "@/contract/route";
 import { createDefaultRouteList, normalizeRouteList } from "@/contract/route";
-import { Check, ChevronRight, Clock, CloudDownload, FileText, List, Network, Plus, RefreshCw, Save, Trash, TriangleAlert } from "lucide-react";
-import type { CSSProperties } from "react";
+import clsx from "clsx";
+import {
+    Check,
+    Clock,
+    Cloud,
+    CloudDownload,
+    FileText,
+    Globe2,
+    HardDrive,
+    Hash,
+    List,
+    Network,
+    Plus,
+    RefreshCw,
+    Regex,
+    Save,
+    TextCursorInput,
+    Trash,
+    TriangleAlert,
+    Type,
+} from "lucide-react";
+import type { CSSProperties, ElementType, FC } from "react";
 import { useContext, useEffect, useState } from "react";
 import useSWR from "swr";
 
 const routeListTypes = ["host", "process", "cidr", "domain", "regexp", "keyword", "suffix"];
 const sourceTypes = ["local", "remote"];
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 12;
+
+type BadgeVariant = "primary" | "secondary" | "success" | "danger" | "warning" | "info" | "muted";
+
+function shortPreview(value?: string) {
+    const preview = (value || "").trim();
+    if (!preview) return "Empty list";
+    try {
+        if (/^https?:\/\//i.test(preview)) {
+            const url = new URL(preview);
+            const leaf = url.pathname.split("/").filter(Boolean).pop();
+            return leaf || url.host;
+        }
+    } catch {
+        // keep original preview
+    }
+    return preview;
+}
+
+function listTypeVisual(type?: string): {
+    icon: ElementType;
+    tone: string;
+    soft: string;
+    badge: BadgeVariant;
+} {
+    switch ((type || "").toLowerCase()) {
+        case "host":
+        case "domain":
+            return {
+                icon: Globe2,
+                tone: "text-ui-primary",
+                soft: "bg-ui-primary-soft border-ui-primary/15",
+                badge: "primary",
+            };
+        case "suffix":
+            return {
+                icon: Type,
+                tone: "text-ui-info",
+                soft: "bg-ui-info-soft border-ui-info/15",
+                badge: "info",
+            };
+        case "keyword":
+            return {
+                icon: Hash,
+                tone: "text-[var(--color-violet)]",
+                soft: "bg-[var(--color-violet-soft)] border-[color-mix(in_srgb,var(--color-violet)_18%,transparent)]",
+                badge: "secondary",
+            };
+        case "regexp":
+            return {
+                icon: Regex,
+                tone: "text-ui-danger",
+                soft: "bg-ui-danger-soft border-ui-danger/15",
+                badge: "danger",
+            };
+        case "cidr":
+            return {
+                icon: Network,
+                tone: "text-ui-success",
+                soft: "bg-ui-success-soft border-ui-success/15",
+                badge: "success",
+            };
+        case "process":
+            return {
+                icon: TextCursorInput,
+                tone: "text-ui-warning",
+                soft: "bg-ui-warning-soft border-ui-warning/15",
+                badge: "warning",
+            };
+        default:
+            return {
+                icon: FileText,
+                tone: "text-ui-muted",
+                soft: "bg-ui-surface-muted border-ui-border",
+                badge: "muted",
+            };
+    }
+}
+
+const DefinedListTile: FC<{ item: ListItem; onClick: () => void }> = ({ item, onClick }) => {
+    const visual = listTypeVisual(item.type);
+    const Icon = visual.icon;
+    const hasError = item.errorCount > 0;
+    const source = (item.source || "local").toLowerCase();
+    const remote = source === "remote";
+    const preview = shortPreview(item.preview);
+
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className={clsx(
+                "group flex h-full min-h-[140px] w-full flex-col rounded-ui-lg border bg-ui-surface p-4 text-left",
+                "shadow-sm transition-[border-color,box-shadow,transform,background-color] duration-150",
+                "hover:-translate-y-0.5 hover:border-ui-primary/35 hover:bg-ui-surface-muted/40 hover:shadow-md",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-primary/35",
+                hasError ? "border-ui-danger/30" : "border-ui-border"
+            )}
+        >
+            <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                    <div className={clsx(
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-lg border",
+                        hasError ? "border-ui-danger/20 bg-ui-danger-soft text-ui-danger" : clsx(visual.soft, visual.tone)
+                    )}>
+                        {hasError ? <TriangleAlert size={18} strokeWidth={1.9} /> : <Icon size={18} strokeWidth={1.9} />}
+                    </div>
+                    <div className="min-w-0">
+                        <div className="truncate text-[0.95rem] font-semibold text-ui-heading" title={item.name}>
+                            {item.name}
+                        </div>
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                            <Badge variant={hasError ? "danger" : visual.badge} pill className="px-2 py-0.5 text-[0.65rem] uppercase tracking-wide">
+                                {item.type || "list"}
+                            </Badge>
+                            <Badge variant={remote ? "info" : "muted"} pill className="px-2 py-0.5 text-[0.65rem]">
+                                {remote ? "Remote" : "Local"}
+                            </Badge>
+                            {hasError && (
+                                <Badge variant="danger" pill className="px-2 py-0.5 text-[0.65rem]">
+                                    {item.errorCount} error{item.errorCount === 1 ? "" : "s"}
+                                </Badge>
+                            )}
+                        </div>
+                    </div>
+                </div>
+                <div className="shrink-0 rounded-full border border-ui-border/70 bg-ui-surface-muted/70 px-2 py-1 text-[11px] font-semibold tabular-nums text-ui-muted">
+                    {item.itemCount}
+                </div>
+            </div>
+
+            <div className="mt-4 min-w-0 flex-1">
+                <div className="text-[11px] font-medium uppercase tracking-wide text-ui-muted/80">Preview</div>
+                <div className="mt-1 break-all font-mono text-[12.5px] font-medium leading-relaxed text-ui-fg" title={item.preview || undefined}>
+                    {preview}
+                </div>
+            </div>
+
+            <div className="mt-3 flex items-center gap-1.5 border-t border-ui-border/70 pt-3 text-[11px] text-ui-muted">
+                {remote ? <Cloud size={13} className="shrink-0 opacity-70" /> : <HardDrive size={13} className="shrink-0 opacity-70" />}
+                <span className="truncate">
+                    {remote ? "Fetched remotely" : "Defined locally"}
+                    <span className="mx-1.5 opacity-40">·</span>
+                    {item.itemCount} {item.itemCount === 1 ? "entry" : "entries"}
+                </span>
+            </div>
+        </button>
+    );
+};
 
 function Lists() {
     const ctx = useContext(GlobalToastContext);
@@ -42,7 +211,7 @@ function Lists() {
     const { data, error, isLoading, mutate } = useSWR(
         ["/api/v2/route/lists", page, query],
         () => listRouteLists({ page, pageSize: PAGE_SIZE, query }),
-        { revalidateOnFocus: false },
+        { revalidateOnFocus: false, keepPreviousData: true },
     );
 
     const refresh = async () => {
@@ -75,59 +244,58 @@ function Lists() {
         <MainContainer>
             <ListConfigCard />
             <RouteActivationProgress status={activation} onApplied={mutateActivation} />
-            <CardRowList
-                layout="list"
-                paginated
-                pageSize={PAGE_SIZE}
-                currentPage={data.page.page || page}
-                totalItems={data.page.total}
-                onPageChange={setPage}
-                items={data.items}
-                getKey={(v) => v.name}
-                renderListItem={(item) => (
-                    <div className="grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ui-md bg-ui-primary-soft text-ui-primary">
-                            <FileText size={19} />
-                        </div>
-                        <div className="min-w-0">
-                            <div className="flex min-w-0 flex-wrap items-center gap-2">
-                                <span className="truncate font-semibold text-ui-heading">{item.name}</span>
-                                <Badge variant="secondary" className="shrink-0">{item.type || "-"}</Badge>
-                                {item.errorCount > 0 && <Badge variant="danger" className="shrink-0">{item.errorCount} errors</Badge>}
-                            </div>
-                            <div className="mt-2 grid min-w-0 gap-2 text-xs text-ui-muted sm:grid-cols-[auto_auto_minmax(0,1fr)]">
-                                <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-ui-sm bg-ui-surface-muted px-2 py-1">
-                                    <span>Source</span>
-                                    <span className="font-medium text-ui-fg">{item.source || "-"}</span>
-                                </span>
-                                <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-ui-sm bg-ui-surface-muted px-2 py-1">
-                                    <span>Entries</span>
-                                    <span className="font-medium text-ui-fg">{item.itemCount}</span>
-                                </span>
-                                <span className="flex min-w-0 items-center gap-1.5 rounded-ui-sm bg-ui-surface-muted px-2 py-1">
-                                    <span className="shrink-0">Preview</span>
-                                    <span className="min-w-0 truncate font-mono text-ui-fg">{item.preview || "-"}</span>
-                                </span>
-                            </div>
-                        </div>
-                        <ChevronRight className="shrink-0 text-ui-muted/55" size={20} />
-                    </div>
-                )}
-                onClickItem={(item) => setEditing(item.name)}
-                header={
+            <Card density="compact" className="overflow-hidden">
+                <CardHeader>
                     <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <IconBox icon={List} tone="primary" title="Defined Lists" description={`${data.page.total} lists available`} />
+                        <IconBox
+                            icon={List}
+                            tone="primary"
+                            title="Defined Lists"
+                            description="Match sources for route rules"
+                        />
                         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
-                            <FilterSearch className="min-w-0 flex-1 sm:w-[180px] sm:flex-none" onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
-                            <Button size="sm" onClick={refresh} disabled={isRefreshing}>
+                            <FilterSearch className="min-w-0 flex-1 sm:w-[200px] sm:flex-none" onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
+                            <Button size="sm" variant="outline-secondary" onClick={refresh} disabled={isRefreshing}>
                                 {isRefreshing ? <Spinner size="sm" className="mr-2" /> : <RefreshCw size={16} className="mr-2" />}
-                                Sync All Resources
+                                Sync
                             </Button>
-                            <Button size="sm" onClick={() => { setCreatingName(""); setCreating(true); }}><Plus size={16} className="mr-1" /> Add</Button>
+                            <Button size="sm" onClick={() => { setCreatingName(""); setCreating(true); }}>
+                                <Plus size={16} className="mr-1" /> Add
+                            </Button>
                         </div>
                     </div>
-                }
-            />
+                </CardHeader>
+                <CardBody density="compact">
+                    {data.items.length === 0 ? (
+                        <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center text-sm text-ui-muted">
+                            No lists yet. Create a local list or sync remote sources.
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                            {data.items.map((item) => (
+                                <DefinedListTile
+                                    key={item.name}
+                                    item={item}
+                                    onClick={() => setEditing(item.name)}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </CardBody>
+                {data.page.total > PAGE_SIZE && (
+                    <CardFooter compact className="flex items-center justify-between gap-3">
+                        <div className="text-xs font-medium text-ui-muted">
+                            {data.page.total} items · page {data.page.page || page}/{Math.max(1, Math.ceil(data.page.total / (data.page.pageSize || PAGE_SIZE)))}
+                        </div>
+                        <Pagination
+                            currentPage={data.page.page || page}
+                            totalItems={data.page.total}
+                            pageSize={data.page.pageSize || PAGE_SIZE}
+                            onPageChange={setPage}
+                        />
+                    </CardFooter>
+                )}
+            </Card>
             <ListEditorModal name={editing} onSaved={saved} onClose={() => setEditing(null)} />
             <CreateListModal open={creating} initialName={creatingName} onSaved={saved} onClose={() => setCreating(false)} />
         </MainContainer>

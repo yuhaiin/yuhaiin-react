@@ -20,20 +20,24 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
+function getInitialPreference(): ThemePreference {
+    return readThemePreference();
+}
+
+function getInitialResolved(preference: ThemePreference): ResolvedTheme {
+    return resolveTheme(preference, getSystemTheme());
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [preference, setPreferenceState] = useState<ThemePreference>("system");
-    const [resolved, setResolved] = useState<ResolvedTheme | undefined>(undefined);
+    const [preference, setPreferenceState] = useState<ThemePreference>(getInitialPreference);
+    const [resolved, setResolved] = useState<ResolvedTheme>(() => getInitialResolved(getInitialPreference()));
 
     useEffect(() => {
-        const initialPreference = readThemePreference();
-        const initialResolved = resolveTheme(initialPreference, getSystemTheme());
-        setPreferenceState(initialPreference);
-        setResolved(initialResolved);
-        applyTheme(initialResolved);
-    }, []);
+        applyTheme(resolved);
+    }, [resolved]);
 
     useEffect(() => {
-        if (!resolved || preference !== "system" || !window.matchMedia) return;
+        if (preference !== "system" || !window.matchMedia) return;
         const mq = window.matchMedia("(prefers-color-scheme: dark)");
         const listener = (evt: MediaQueryListEvent) => {
             const next = evt.matches ? "dark" : "light";
@@ -42,7 +46,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         };
         mq.addEventListener("change", listener);
         return () => mq.removeEventListener("change", listener);
-    }, [preference, resolved]);
+    }, [preference]);
 
     const setPreference = useCallback((next: ThemePreference) => {
         writeThemePreference(next);
@@ -54,9 +58,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const value = useMemo<ThemeContextValue>(() => ({
         preference,
-        resolved: resolved ?? "light",
+        resolved,
         setPreference,
-        ready: resolved !== undefined,
+        ready: true,
     }), [preference, resolved, setPreference]);
 
     return (

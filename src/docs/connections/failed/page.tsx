@@ -127,6 +127,7 @@ function FailedHistory() {
 
             <CardList
                 items={paginatedItems}
+                animated={false}
                 getKey={(v) => `${v.host}-${v.time}`}
                 onClickItem={(item) => setInfo({ show: true, data: item })}
                 renderListItem={(item) => <ListItem data={item} />}

@@ -97,6 +97,30 @@ function createFlow(raw: TotalFlow, prev?: Flow) {
     return new Flow(download, downloadRate, upload, uploadRate, raw.counters ?? {});
 }
 
+function countersUnchanged(a?: Record<string, Counter>, b?: Record<string, Counter>) {
+    if (a === b) return true;
+    if (!a || !b) return false;
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
+    if (aKeys.length !== bKeys.length) return false;
+    for (const key of aKeys) {
+        const prev = a[key];
+        const next = b[key];
+        if (!next) return false;
+        if (numberValue(prev?.download) !== numberValue(next.download)) return false;
+        if (numberValue(prev?.upload) !== numberValue(next.upload)) return false;
+    }
+    return true;
+}
+
+function flowUnchanged(prev: Flow | undefined, next: Flow) {
+    if (!prev) return false;
+    if (prev.download !== next.download || prev.upload !== next.upload) return false;
+    if (Math.abs(prev.downloadRate - next.downloadRate) > 0.5) return false;
+    if (Math.abs(prev.uploadRate - next.uploadRate) > 0.5) return false;
+    return countersUnchanged(prev.counters, next.counters);
+}
+
 export function useFlow(options?: UseFlowOptions) {
     const enabled = options?.enabled ?? true;
     const refreshInterval = options?.refreshInterval ?? 2000;
@@ -114,17 +138,41 @@ export function useFlow(options?: UseFlowOptions) {
 
         let stopped = false;
         let timer: ReturnType<typeof window.setTimeout> | undefined;
+        let visible = typeof document === "undefined" || document.visibilityState !== "hidden";
+
+        const clearTimer = () => {
+            if (timer !== undefined) {
+                window.clearTimeout(timer);
+                timer = undefined;
+            }
+        };
+
+        const schedule = () => {
+            clearTimer();
+            if (stopped || !visible) return;
+            timer = window.setTimeout(() => {
+                void poll();
+            }, refreshInterval);
+        };
 
         const poll = async () => {
-            setState(prev => ({ ...prev, isLoading: !prev.data, isValidating: true }));
+            if (stopped || !visible) return;
+            const firstLoad = !lastFlowRef.current;
+            if (firstLoad) {
+                setState(prev => ({ ...prev, isLoading: true, isValidating: true }));
+            }
             try {
                 const raw = await getTotalFlow();
-                if (stopped) return;
+                if (stopped || !visible) return;
                 const flow = createFlow(raw, lastFlowRef.current);
-                lastFlowRef.current = flow;
-                setState({ data: flow, isLoading: false, isValidating: false });
+                if (flowUnchanged(lastFlowRef.current, flow)) {
+                    lastFlowRef.current = flow;
+                } else {
+                    lastFlowRef.current = flow;
+                    setState({ data: flow, isLoading: false, isValidating: false, error: undefined });
+                }
             } catch (error) {
-                if (stopped) return;
+                if (stopped || !visible) return;
                 setState(prev => ({
                     ...prev,
                     error: errorText(error) ?? "failed to fetch flow",
@@ -132,14 +180,26 @@ export function useFlow(options?: UseFlowOptions) {
                     isValidating: false,
                 }));
             }
-            timer = window.setTimeout(poll, refreshInterval);
+            schedule();
         };
 
+        const onVisibility = () => {
+            visible = document.visibilityState !== "hidden";
+            if (visible) {
+                void poll();
+                return;
+            }
+            clearTimer();
+            setState(prev => ({ ...prev, isValidating: false }));
+        };
+
+        document.addEventListener("visibilitychange", onVisibility);
         void poll();
 
         return () => {
             stopped = true;
-            if (timer) window.clearTimeout(timer);
+            clearTimer();
+            document.removeEventListener("visibilitychange", onVisibility);
         };
     }, [enabled, refreshInterval]);
 
@@ -149,26 +209,41 @@ export function useFlow(options?: UseFlowOptions) {
     };
 }
 
-const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral" }> = ({ label, value, error, accent = "neutral" }) => (
-    <div
-        className={clsx(
-            "relative flex min-h-[92px] flex-col justify-center overflow-hidden rounded-ui-xl border bg-[var(--metric-bg)] p-4 shadow-ui-card transition-colors",
-            "border-[var(--metric-border)] hover:border-ui-primary/25",
-            accent === "download" && "before:absolute before:inset-y-3 before:left-0 before:w-0.5 before:rounded-full before:bg-sky-500",
-            accent === "upload" && "before:absolute before:inset-y-3 before:left-0 before:w-0.5 before:rounded-full before:bg-emerald-500",
-        )}
-    >
-        <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--metric-label,#64748b)]">
-            {label}
+const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral" }> = ({ label, value, error, accent = "neutral" }) => {
+    const display = error || value;
+    const prevRef = useRef(display);
+    const [pulse, setPulse] = useState(false);
+
+    useEffect(() => {
+        if (prevRef.current === display) return;
+        prevRef.current = display;
+        setPulse(true);
+        const timer = window.setTimeout(() => setPulse(false), 280);
+        return () => window.clearTimeout(timer);
+    }, [display]);
+
+    return (
+        <div
+            className={clsx(
+                "relative flex min-h-[92px] flex-col justify-center overflow-hidden rounded-ui-xl border bg-[var(--metric-bg)] p-4 shadow-ui-card transition-colors",
+                "border-[var(--metric-border)] hover:border-ui-primary/25",
+                accent === "download" && "before:absolute before:inset-y-3 before:left-0 before:w-0.5 before:rounded-full before:bg-ui-info",
+                accent === "upload" && "before:absolute before:inset-y-3 before:left-0 before:w-0.5 before:rounded-full before:bg-ui-success",
+            )}
+        >
+            <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--metric-label,#64748b)]">
+                {label}
+            </div>
+            <div className={clsx(
+                "truncate font-mono text-[1.35rem] font-bold leading-tight text-[var(--metric-value,#0f172a)]",
+                pulse && "animate-dataUpdate",
+                error && "text-ui-danger"
+            )}>
+                {display}
+            </div>
         </div>
-        <div className={clsx(
-            "animate-dataUpdate truncate font-mono text-[1.35rem] font-bold leading-tight text-[var(--metric-value,#0f172a)]",
-            error && "text-ui-danger"
-        )}>
-            {error || value}
-        </div>
-    </div>
-);
+    );
+};
 
 export const FlowCard: FC<{
     lastFlow?: Flow;
@@ -187,7 +262,6 @@ export const FlowCard: FC<{
                     ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
                     : "grid-cols-1 sm:grid-cols-2 xl:grid-cols-4"
             )}
-            style={{ viewTransitionName: "flow-card-root !important" }}
         >
             <MetricCard accent="download" label={t("totalDownload")} value={lastFlow ? lastFlow.DownloadTotalString() : loading} error={flow_error} />
             <MetricCard accent="download" label={t("downloadRate")} value={lastFlow ? lastFlow.DownloadString() : loading} error={flow_error} />
@@ -332,10 +406,10 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[] }> = ({ value }) => {
                                     <div key={`${item.listName}-${itemIndex}`} className="flex items-center justify-between gap-3">
                                         <span className="notranslate break-all text-sm text-sidebar-color">{item.listName || "-"}</span>
                                         <div className="flex shrink-0 items-center gap-2">
-                                            <span className={clsx("text-xs font-medium", item.matched ? "text-green-500" : "text-sidebar-color opacity-70")}>
+                                            <span className={clsx("text-xs font-medium", item.matched ? "text-ui-success" : "text-sidebar-color opacity-70")}>
                                                 {item.matched ? label("Hit") : label("Miss")}
                                             </span>
-                                            <div className={clsx("flex h-6 w-6 items-center justify-center rounded-full", item.matched ? "bg-green-500/10 text-green-500" : "bg-white/5 text-ui-danger")}>
+                                            <div className={clsx("flex h-6 w-6 items-center justify-center rounded-full", item.matched ? "bg-ui-success-soft text-ui-success" : "bg-ui-surface-muted text-ui-danger")}>
                                                 {item.matched ? <Check size={14} /> : <X size={14} />}
                                             </div>
                                         </div>

@@ -59,5 +59,6 @@ export const ui = {
     pageDescription: "mt-0.5 text-xs text-ui-muted",
     softPanel: "rounded-ui-lg bg-ui-surface-muted border border-ui-border",
     chip: "rounded-full px-2.5 py-0.5 text-xs font-medium bg-ui-chip text-ui-chip-fg",
-    switchTrack: "w-[42px] h-[25px] shrink-0 bg-ui-surface-muted rounded-full relative shadow-inner-subtle flex items-center p-[2px] border border-ui-border cursor-pointer transition-colors duration-150 ease-in-out data-[state=checked]:bg-ui-primary data-[state=checked]:justify-end disabled:opacity-50 disabled:cursor-not-allowed",
+    switchTrack: "w-[42px] h-[25px] shrink-0 bg-ui-surface-muted rounded-full relative shadow-inner-subtle flex items-center p-[2px] border border-ui-border cursor-pointer transition-colors duration-150 ease-in-out data-[state=checked]:bg-ui-primary disabled:opacity-50 disabled:cursor-not-allowed",
+    switchThumb: "block h-[21px] w-[21px] translate-x-0 rounded-full bg-white shadow-[0_1px_2px_rgba(0,0,0,0.1)] transition-transform duration-200 ease-out will-change-transform data-[state=checked]:translate-x-[17px]",
 };

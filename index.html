@@ -9,6 +9,17 @@
   <!-- <meta name="theme-color" content="#000000" /> -->
   <meta name="description" content="yuhaiin" />
   <link rel="apple-touch-icon" href="/docs/logov2192.png" />
+  <script>
+    (function () {
+      try {
+        var pref = localStorage.getItem('yuhaiin.theme');
+        var theme = (pref === 'light' || pref === 'dark')
+          ? pref
+          : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-bs-theme', theme);
+      } catch (e) {}
+    })();
+  </script>
 </head>
 
 <body>

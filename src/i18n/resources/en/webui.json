@@ -2,7 +2,16 @@
   "api": {
     "title": "API Connection",
     "description": "Web-controller interface",
-    "controllerHost": "Controller Host"
+    "controllerHost": "Controller Hosts",
+    "sameOrigin": "Same origin",
+    "active": "Active",
+    "activeHint": "Currently connected",
+    "switchHint": "Click to switch",
+    "saved": "saved",
+    "addHost": "Add host",
+    "add": "Add",
+    "addHint": "Save multiple controller addresses and switch between them anytime.",
+    "remove": "Remove host"
   },
   "latency": {
     "title": "Latency Targets",

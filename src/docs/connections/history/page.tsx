@@ -14,8 +14,8 @@ import { ArrowDownWideNarrow, ArrowLeftRight, ChevronRight, Clock, Info, Radio, 
 import React, { FC, useMemo, useState } from "react"
 import useSWR from "swr"
 import Loading from "../../../component/v2/loading"
-import { ConnectionInfo } from "../components"
 import { NodeModal } from "../../node/modal"
+import { ConnectionInfo } from "../components"
 
 function formatProtocolLabel(value?: string) {
     if (!value) return "Unknown";
@@ -162,6 +162,7 @@ function History() {
 
             <CardList
                 items={paginatedItems}
+                animated={false}
                 getKey={(v) => `${v.connection.id}-${v.time}`}
                 onClickItem={(v) => setModalData({ show: true, data: v })}
                 renderListItem={(v) => <ListItem data={v} />}

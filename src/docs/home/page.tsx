@@ -80,6 +80,7 @@ function HomePage() {
     const [nodeModal, setNodeModal] = useState<{ show: boolean; node?: Node }>({ show: false });
     const { data: now, error: nowError } = useSWR("/api/v2/nodes/selected", selectedNodes, {
         refreshInterval: 5000,
+        revalidateOnFocus: false,
     });
     const [traffic, setTraffic] = useState<{ labels: string[], upload: number[], download: number[], rawMax: number }>
         ({ labels: [], upload: [], download: [], rawMax: 0 });
@@ -131,7 +132,7 @@ function HomePage() {
             />
 
             <div className="mb-3 shrink-0">
-                <FlowContainer onFlow={appendTraffic} />
+                <FlowContainer onFlow={isLiveTraffic ? appendTraffic : undefined} />
             </div>
 
             <div className="mb-4 grid shrink-0 gap-3 sm:grid-cols-2">
@@ -192,11 +193,11 @@ function HomePage() {
                             </div>
                             <div className="flex items-center justify-end gap-3 text-[11px] text-ui-muted">
                                 <span className="inline-flex items-center gap-1.5">
-                                    <ArrowDownToLine size={12} className="text-sky-500" />
+                                    <ArrowDownToLine size={12} className="text-ui-info" />
                                     Download
                                 </span>
                                 <span className="inline-flex items-center gap-1.5">
-                                    <ArrowUpFromLine size={12} className="text-emerald-500" />
+                                    <ArrowUpFromLine size={12} className="text-ui-success" />
                                     Upload
                                 </span>
                             </div>
