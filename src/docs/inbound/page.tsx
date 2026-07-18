@@ -95,7 +95,7 @@ const InboundEditor: FC<{
                 label="Enabled"
                 checked={inbound.enabled}
                 onCheckedChange={(enabled) => onChange(normalizeInbound({ ...inbound, enabled }))}
-                className="p-4 rounded-lg bg-gray-100 dark:bg-[#2b2b40]"
+                className="p-4 rounded-lg bg-ui-surface-muted"
             />
             <SettingInputVertical
                 label="Name"
@@ -734,7 +734,7 @@ const InboundModal: FC<{
             <ModalContent className="max-w-[900px]">
                 <ModalHeader closeButton className="border-b-0 pb-0">
                     <ModalTitle className="flex min-w-0 items-center gap-3 font-bold">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600/10 text-blue-600">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600/10 text-ui-primary">
                             <DoorOpen size={18} />
                         </span>
                         <span className="min-w-0 truncate">{title}</span>
@@ -783,7 +783,7 @@ const InboundItem: FC<{ item: Inbound }> = ({ item }) => {
         <>
             <div className="grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(180px,0.38fr)_minmax(0,1fr)] md:items-center">
                 <div className="flex min-w-0 items-center">
-                    <div className="mr-4 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600/10 text-blue-600">
+                    <div className="mr-4 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600/10 text-ui-primary">
                         <LogIn size={20} />
                     </div>
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -812,7 +812,7 @@ const InboundItem: FC<{ item: Inbound }> = ({ item }) => {
                     </div>
                 </div>
             </div>
-            <ChevronRight className="text-gray-500 opacity-25" size={16} />
+            <ChevronRight className="text-ui-muted opacity-25" size={16} />
         </>
     );
 };
@@ -854,7 +854,7 @@ const InboundConfigCard: FC = () => {
     return (
         <Card className="mb-4">
             <CardHeader>
-                <IconBox icon={Settings} color="#0d6efd" title="Inbound Configuration" description="DNS interception and traffic inspection" />
+                <IconBox icon={Settings} tone="primary" title="Inbound Configuration" description="DNS interception and traffic inspection" />
                 <Button disabled={saving || isLoading || Boolean(apiError)} onClick={handleSave}>
                     {saving ? <Spinner size="sm" /> : <><Save className="mr-1" size={16} /> Apply Settings</>}
                 </Button>
@@ -958,7 +958,7 @@ export default function InboudComponent() {
                 onClickItem={(item) => setShowdata({ show: true, id: item.id, new: false })}
                 header={
                     <div className="flex w-full items-center justify-between gap-3">
-                        <IconBox icon={DoorOpen} color="#0d6efd" title="Entry Points" description={`${data.page.total} inbounds`} />
+                        <IconBox icon={DoorOpen} tone="primary" title="Entry Points" description={`${data.page.total} inbounds`} />
                         <Button size="sm" onClick={() => handleCreate(newInboundID())}>
                             <Plus className="mr-1" size={16} /> Add
                         </Button>

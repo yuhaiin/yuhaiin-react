@@ -17,6 +17,7 @@ import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { RouteRule, RuleExpr, RuleItem } from "@/contract/route";
 import { createDefaultRule, normalizeRule } from "@/contract/route";
+import clsx from "clsx";
 import { ArrowUpDown, Plus, Power, Route, Save, ShieldCheck, Trash, X } from "lucide-react";
 import type { CSSProperties } from "react";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -28,6 +29,128 @@ const udpProxyStrategies = ["udp_proxy_fqdn_strategy_default", "udp_proxy_fqdn_s
 const leafRuleExprTypes = ["host", "process", "inbound", "network", "port", "geoip"];
 type PriorityOperate = "exchange" | "insert_before" | "insert_after";
 const PAGE_SIZE = 8;
+
+type BadgeVariant = "primary" | "secondary" | "success" | "danger" | "warning" | "info" | "muted";
+
+function modeBadgeVariant(mode: string): BadgeVariant {
+    switch (mode.toLowerCase()) {
+        case "proxy":
+            return "primary";
+        case "direct":
+            return "success";
+        case "block":
+            return "danger";
+        case "bypass":
+            return "warning";
+        default:
+            return "muted";
+    }
+}
+
+function modeIconTone(mode: string): "primary" | "success" | "danger" | "warning" | "violet" {
+    switch (mode.toLowerCase()) {
+        case "proxy":
+            return "primary";
+        case "direct":
+            return "success";
+        case "block":
+            return "danger";
+        case "bypass":
+            return "warning";
+        default:
+            return "violet";
+    }
+}
+
+const MetaChip = ({ label, value, mono = false }: { label: string; value: string | number; mono?: boolean }) => (
+    <span className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full border border-ui-border/70 bg-ui-surface-muted/70 px-2.5 py-1 text-[11px] text-ui-muted">
+        <span className="shrink-0 uppercase tracking-wide opacity-80">{label}</span>
+        <span className={clsx("min-w-0 truncate font-semibold text-ui-fg", mono && "font-mono")}>{value}</span>
+    </span>
+);
+
+const RuleListItem = ({
+    item,
+    onPriority,
+    onToggle,
+}: {
+    item: RuleItem;
+    onPriority: () => void;
+    onToggle: () => void;
+}) => (
+    <div className={clsx(
+        "grid w-full min-w-0 grid-cols-1 items-center gap-3 sm:grid-cols-[minmax(0,1fr)_auto]",
+        item.disabled && "opacity-60"
+    )}>
+        <div className="flex min-w-0 items-start gap-3">
+            <div className="flex shrink-0 flex-col items-center gap-1 pt-0.5">
+                <span className="font-mono text-[11px] font-semibold tabular-nums text-ui-muted">
+                    #{item.index}
+                </span>
+                <div className={clsx(
+                    "flex h-9 w-9 items-center justify-center rounded-ui-lg border",
+                    item.disabled
+                        ? "border-ui-border bg-ui-surface-muted text-ui-muted"
+                        : modeIconTone(item.mode) === "primary"
+                            ? "border-ui-primary/20 bg-ui-primary-soft text-ui-primary"
+                            : modeIconTone(item.mode) === "success"
+                                ? "border-ui-success/20 bg-ui-success-soft text-ui-success"
+                                : modeIconTone(item.mode) === "danger"
+                                    ? "border-ui-danger/20 bg-ui-danger-soft text-ui-danger"
+                                    : modeIconTone(item.mode) === "warning"
+                                        ? "border-ui-warning/20 bg-ui-warning-soft text-ui-warning"
+                                        : "border-ui-border bg-ui-surface-muted text-ui-muted"
+                )}>
+                    <Route size={17} />
+                </div>
+            </div>
+
+            <div className="min-w-0 flex-1">
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                    <span className="truncate text-[0.95rem] font-semibold text-ui-heading" title={item.name}>
+                        {item.name}
+                    </span>
+                    <Badge variant={modeBadgeVariant(item.mode)} pill className="px-2 py-0.5 text-[0.65rem] uppercase tracking-wide">
+                        {item.mode || "unknown"}
+                    </Badge>
+                    {item.disabled && (
+                        <Badge variant="secondary" pill className="px-2 py-0.5 text-[0.65rem]">
+                            Off
+                        </Badge>
+                    )}
+                </div>
+                <div className="mt-2 flex min-w-0 flex-wrap gap-1.5">
+                    <MetaChip label="Rules" value={item.ruleCount} />
+                    <MetaChip label="Tag" value={item.tag || "—"} />
+                    <MetaChip label="Resolver" value={item.resolver || "—"} mono />
+                </div>
+            </div>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1.5 self-end sm:self-auto">
+            <Button
+                size="icon"
+                variant="outline-secondary"
+                className="h-9 w-9"
+                onClick={(e) => { e.stopPropagation(); onPriority(); }}
+                aria-label="Change priority"
+                title="Change priority"
+            >
+                <ArrowUpDown size={16} />
+            </Button>
+            <Button
+                size="icon"
+                variant={item.disabled ? "outline-primary" : "outline-secondary"}
+                className="h-9 w-9"
+                onClick={(e) => { e.stopPropagation(); onToggle(); }}
+                aria-label={item.disabled ? "Enable rule" : "Disable rule"}
+                title={item.disabled ? "Enable rule" : "Disable rule"}
+            >
+                <Power size={16} />
+            </Button>
+        </div>
+    </div>
+);
 
 type RuleEditorOptions = {
     lists: string[];
@@ -68,18 +191,19 @@ function BypassComponent() {
         () => listRules({ page, pageSize: PAGE_SIZE, query }),
         { revalidateOnFocus: false },
     );
+    const needEditorOptions = creating || editing !== null;
     const { data: allRules, mutate: mutateAllRules } = useSWR(
-        "/api/v2/route/rules/all",
+        priorityItem ? "/api/v2/route/rules/all" : null,
         () => listRules({ page: 1, pageSize: 10000 }),
         { revalidateOnFocus: false },
     );
     const { data: listsData } = useSWR(
-        "/api/v2/route/lists/options",
+        needEditorOptions ? "/api/v2/route/lists/options" : null,
         () => listRouteLists({ page: 1, pageSize: 10000 }),
         { revalidateOnFocus: false },
     );
     const { data: inboundsData } = useSWR(
-        "/api/v2/inbounds/options",
+        needEditorOptions ? "/api/v2/inbounds/options" : null,
         () => listInbounds({ page: 1, pageSize: 10000 }),
         { revalidateOnFocus: false },
     );
@@ -123,68 +247,28 @@ function BypassComponent() {
             <RouteConfigCard resolvers={editorOptions.resolvers} />
             <RouteActivationProgress status={activation} onApplied={mutateActivation} />
             <CardList
+                density="compact"
                 items={data.items}
                 getKey={(v) => `${v.name}-${v.index}`}
                 renderListItem={(item) => (
-                    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex min-w-0 flex-1 items-start gap-3">
-                            <Badge variant="secondary" className="mt-1 shrink-0">#{item.index}</Badge>
-                            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-ui-md bg-ui-primary-soft text-ui-primary">
-                                <Route size={18} />
-                            </div>
-                            <div className="min-w-0">
-                                <div className="flex min-w-0 flex-wrap items-center gap-2">
-                                    <span className="truncate font-semibold text-ui-heading">{item.name}</span>
-                                    <Badge variant="info">{item.mode}</Badge>
-                                    {item.disabled && <Badge variant="secondary">disabled</Badge>}
-                                </div>
-                                <div className="mt-1.5 flex min-w-0 flex-wrap gap-x-3 gap-y-1 text-xs text-ui-muted">
-                                    <span className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
-                                        <span>Rules</span>
-                                        <span className="font-semibold text-ui-fg">{item.ruleCount}</span>
-                                    </span>
-                                    <span className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
-                                        <span>Tag</span>
-                                        <span className="font-semibold text-ui-fg">{item.tag || "-"}</span>
-                                    </span>
-                                    <span className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
-                                        <span>Resolver</span>
-                                        <span className="font-semibold text-ui-fg">{item.resolver || "-"}</span>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-1.5 self-end sm:self-auto">
-                            <Button
-                                size="icon"
-                                variant="outline-secondary"
-                                className="h-9 w-9"
-                                onClick={(e) => { e.stopPropagation(); setPriorityItem(item); }}
-                                aria-label="Change priority"
-                                title="Change priority"
-                            >
-                                <ArrowUpDown size={16} />
-                            </Button>
-                            <Button
-                                size="icon"
-                                variant={item.disabled ? "outline-primary" : "outline-secondary"}
-                                className="h-9 w-9"
-                                onClick={(e) => { e.stopPropagation(); toggleDisabled(item); }}
-                                aria-label={item.disabled ? "Enable rule" : "Disable rule"}
-                                title={item.disabled ? "Enable rule" : "Disable rule"}
-                            >
-                                <Power size={16} />
-                            </Button>
-                        </div>
-                    </div>
+                    <RuleListItem
+                        item={item}
+                        onPriority={() => setPriorityItem(item)}
+                        onToggle={() => toggleDisabled(item)}
+                    />
                 )}
                 onClickItem={(item) => setEditing(item)}
                 header={
                     <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <IconBox icon={Route} color="#3b82f6" title="Route Rules" description="Routing policy and matching order" />
+                        <IconBox
+                            icon={Route}
+                            tone="primary"
+                            title="Route Rules"
+                            description={`${data.page.total} rules · match from top to bottom`}
+                        />
                         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
                             {isValidating && <Spinner size="sm" />}
-                            <FilterSearch className="min-w-0 flex-1 sm:w-[180px] sm:flex-none" onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
+                            <FilterSearch className="min-w-0 flex-1 sm:w-[200px] sm:flex-none" onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
                             <Button size="sm" onClick={() => setCreating(true)}><Plus size={16} className="mr-1" /> Add</Button>
                         </div>
                     </div>
@@ -222,7 +306,7 @@ function RouteConfigCard({ resolvers }: { resolvers: string[] }) {
     return (
         <Card className="mb-4">
             <CardHeader>
-                <IconBox icon={ShieldCheck} color="#ec4899" title="Global Bypass Settings" description="DNS resolution and routing strategy" />
+                <IconBox icon={ShieldCheck} tone="danger" title="Global Bypass Settings" description="DNS resolution and routing strategy" />
             </CardHeader>
             <CardBody>
                 {error ? (
@@ -577,7 +661,7 @@ function RuleExprListEditor({ value, options, onChange }: { value: RuleExpr[]; o
 const OrSeparator = () => (
     <div className="my-4 flex items-center">
         <hr className="flex-grow opacity-25" />
-        <span className="mx-4 text-xs font-bold uppercase tracking-[1px] text-gray-500 dark:text-gray-400">Or</span>
+        <span className="mx-4 text-xs font-bold uppercase tracking-[1px] text-ui-muted">Or</span>
         <hr className="flex-grow opacity-25" />
     </div>
 );

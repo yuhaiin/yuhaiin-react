@@ -156,10 +156,10 @@ function Test() {
             {/* 1. Input Card */}
             <Card className="mb-4">
                 <CardHeader>
-                    <IconBox icon={Terminal} color="#f59e0b" title='Rule Testing' description='Simulate traffic to verify routing' />
+                    <IconBox icon={Terminal} tone="warning" title='Rule Testing' description='Simulate traffic to verify routing' />
                 </CardHeader>
                 <CardBody className="p-6">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-6 px-1">
+                    <p className="text-xs text-ui-muted mb-6 px-1">
                         Enter a domain or IP address below to see which rule and outbound node would be selected.
                     </p>
                     <div className="flex gap-2">
@@ -186,7 +186,7 @@ function Test() {
                 testing && (
                     <div className="text-center py-12">
                         <Spinner size="md" className="mb-3" />
-                        <div className="text-gray-500 dark:text-gray-400 text-xs font-medium">Analyzing routing table...</div>
+                        <div className="text-ui-muted text-xs font-medium">Analyzing routing table...</div>
                     </div>
                 )
             }
@@ -196,7 +196,7 @@ function Test() {
                 resp && !testing &&
                 <Card className="animate-dataUpdate">
                     <CardHeader>
-                        <IconBox icon={ClipboardList} color="#10b981" title='Analysis Result' description='Raw decision path metadata' />
+                        <IconBox icon={ClipboardList} tone="success" title='Analysis Result' description='Raw decision path metadata' />
 
                         <Button
                             size="sm"
@@ -214,7 +214,7 @@ function Test() {
             }
 
             <div className="flex justify-center mt-6 opacity-50 pb-12">
-                <small className="text-gray-500 dark:text-gray-400 italic flex items-center">
+                <small className="text-ui-muted italic flex items-center">
                     <Info className="mr-1" size={14} />
                     This tool tests the core logic using the current active configuration.
                 </small>

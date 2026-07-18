@@ -1,14 +1,13 @@
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { clsx } from 'clsx';
-import React from 'react';
 import { ChevronDown } from 'lucide-react';
+import React from 'react';
 
 const Accordion = React.forwardRef<React.ElementRef<typeof AccordionPrimitive.Root>, React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Root>>(({ className, ...props }, ref) => (
     <AccordionPrimitive.Root
         ref={ref}
         className={clsx(
-            "relative flex min-w-0 max-w-full flex-col w-full rounded-[20px] mb-8 transition-all duration-300 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)]",
-            "hover:-translate-y-[5px] hover:border-[rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]",
+            "relative flex min-w-0 max-w-full flex-col w-full rounded-ui-xl mb-8 border border-transparent shadow-ui-card",
             className
         )}
         {...props}
@@ -20,10 +19,10 @@ const AccordionItem = React.forwardRef<React.ElementRef<typeof AccordionPrimitiv
     <AccordionPrimitive.Item
         ref={ref}
         className={clsx(
-            "min-w-0 max-w-full border border-sidebar-border bg-[var(--bs-card-bg)] overflow-hidden -mt-px",
-            "first:mt-0 first:rounded-t-[20px] last:rounded-b-[20px]",
-            "focus-within:relative focus-within:z-10 focus-within:border-sidebar-active",
-            "hover:relative hover:z-10 hover:border-sidebar-active",
+            "min-w-0 max-w-full border border-ui-border bg-ui-surface overflow-hidden -mt-px",
+            "first:mt-0 first:rounded-t-ui-xl last:rounded-b-ui-xl",
+            "focus-within:relative focus-within:z-10 focus-within:border-ui-primary/40",
+            "hover:relative hover:z-10 hover:border-ui-primary/40",
             className
         )}
         {...props}
@@ -36,9 +35,9 @@ const AccordionTrigger = React.forwardRef<React.ElementRef<typeof AccordionPrimi
         <AccordionPrimitive.Trigger
             ref={ref}
             className={clsx(
-                "group flex min-w-0 flex-1 items-center justify-between p-4 text-base font-medium leading-none text-sidebar-color bg-transparent border-0 cursor-pointer transition-all duration-200 w-full text-left",
+                "group flex min-w-0 flex-1 items-center justify-between p-4 text-base font-medium leading-none text-sidebar-color bg-transparent border-0 border-b border-transparent cursor-pointer transition-colors duration-200 w-full text-left",
                 "hover:!bg-sidebar-hover hover:!text-sidebar-active",
-                "data-[state=open]:bg-sidebar-hover data-[state=open]:text-sidebar-active data-[state=open]:border-b data-[state=open]:border-sidebar-border",
+                "data-[state=open]:bg-sidebar-hover data-[state=open]:text-sidebar-active data-[state=open]:border-ui-border",
                 className
             )}
             {...props}
@@ -58,7 +57,8 @@ const AccordionContent = React.forwardRef<React.ElementRef<typeof AccordionPrimi
     <AccordionPrimitive.Content
         ref={ref}
         className={clsx(
-            "min-w-0 max-w-full overflow-hidden text-sidebar-color bg-[var(--bs-body-bg)] will-change-[height]",
+            // Match surface, not page bg — avoids a light band while height animates.
+            "min-w-0 max-w-full overflow-hidden text-ui-fg bg-ui-surface will-change-[height]",
             "data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up",
             className
         )}

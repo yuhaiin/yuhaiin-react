@@ -13,13 +13,15 @@ import type { Connection, Connections, Counter } from "@/contract/connection";
 import { normalizeConnection } from "@/contract/connection";
 import { ArrowDown, ArrowUp, Network, Power, ShieldCheck, Tag } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { VList } from "virtua";
+import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
-import { ConnectionInfo, FlowContainer, formatBytes, numberValue } from "../components";
+import { VList } from "virtua";
 import { NodeModal } from "../../node/modal";
+import { ConnectionInfo, FlowContainer, formatBytes, numberValue } from "../components";
 
 type SortBy = "id" | "name" | "download" | "upload";
+const VIRTUALIZE_THRESHOLD = 40;
+const ROW_HEIGHT = 52;
 
 function eventsURL() {
     const apiUrl = getApiUrl();
@@ -155,40 +157,48 @@ function Connections() {
             </div>
 
             {sorted.length === 0 ? (
-                <div className="p-6 mb-8 text-center text-gray-500 rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg">
+                <div className="p-6 mb-8 text-center text-ui-muted rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg">
                     No active connections.
                 </div>
-            ) : sorted.length > 120 ? (
+            ) : sorted.length > VIRTUALIZE_THRESHOLD ? (
                 <div className="mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl">
                     <VList
                         data={sorted}
-                        itemSize={82}
-                        bufferSize={820}
-                        style={{ height: "min(72vh, 900px)", width: "100%" }}
+                        itemSize={ROW_HEIGHT}
+                        bufferSize={ROW_HEIGHT * 10}
+                        style={{
+                            height: Math.min(
+                                sorted.length * ROW_HEIGHT,
+                                typeof window === "undefined" ? 720 : Math.min(window.innerHeight * 0.72, 900),
+                            ),
+                            width: "100%",
+                        }}
                     >
                         {(conn) => (
                             <ConnectionRow
                                 key={conn.id}
                                 conn={conn}
                                 counter={counters[conn.id]}
-                                onSelect={() => setSelected(conn)}
+                                onSelect={setSelected}
+                                animated={false}
                             />
                         )}
                     </VList>
                 </div>
             ) : (
-                <motion.div layout className="flex flex-col p-0 m-0 mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl">
+                <div className="flex flex-col p-0 m-0 mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl">
                     <AnimatePresence initial={false}>
                         {sorted.map(conn => (
                             <ConnectionRow
                                 key={conn.id}
                                 conn={conn}
                                 counter={counters[conn.id]}
-                                onSelect={() => setSelected(conn)}
+                                onSelect={setSelected}
+                                animated
                             />
                         ))}
                     </AnimatePresence>
-                </motion.div>
+                </div>
             )}
 
             <Modal open={selected !== undefined} onOpenChange={(open) => !open && setSelected(undefined)}>
@@ -218,44 +228,87 @@ function Connections() {
     );
 }
 
-function ConnectionRow({ conn, counter, onSelect }: { conn: Connection; counter?: Counter; onSelect: () => void }) {
+const ConnectionRow = memo(function ConnectionRow({
+    conn,
+    counter,
+    onSelect,
+    animated = true,
+}: {
+    conn: Connection;
+    counter?: Counter;
+    onSelect: (conn: Connection) => void;
+    animated?: boolean;
+}) {
+    const download = formatBytes(numberValue(counter?.download));
+    const upload = formatBytes(numberValue(counter?.upload));
+    // Keep everything in one dense row. Avoid 1fr/space-between — that creates a huge empty middle.
+    const className = "flex min-h-[52px] items-center gap-2.5 border-b border-sidebar-border px-3.5 py-2 transition-colors duration-150 cursor-pointer hover:bg-sidebar-hover last:border-b-0";
+    const handleClick = useCallback(() => onSelect(conn), [conn, onSelect]);
+
+    const body = (
+        <>
+            <code className="w-[3.25rem] shrink-0 font-mono text-[11px] tabular-nums text-sidebar-color/75">
+                {conn.id}
+            </code>
+
+            <span
+                className="min-w-0 max-w-[min(42vw,28rem)] shrink truncate text-[0.9rem] font-medium leading-5 text-ui-heading"
+                title={conn.addr}
+            >
+                {conn.addr}
+            </span>
+
+            <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-1.5">
+                <IconBadge icon={ShieldCheck} text={conn.mode || "unknown"} />
+                <IconBadge icon={Network} text={conn.network.connType || "unknown"} />
+                {conn.tag && <IconBadge icon={Tag} text={conn.tag} />}
+            </div>
+
+            <FlowBadge download={download} upload={upload} />
+        </>
+    );
+
+    if (!animated) {
+        return (
+            <div className={className} onClick={handleClick}>
+                {body}
+            </div>
+        );
+    }
+
     return (
         <motion.div
-            layout
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-            className="flex flex-col items-start md:flex-row md:justify-between px-4 py-3 border-b border-sidebar-border transition-[background,box-shadow,transform] duration-200 cursor-pointer hover:bg-sidebar-hover hover:shadow-ui-card hover:-translate-y-[1px] last:border-b-0"
-            onClick={onSelect}
+            transition={{ duration: 0.16, ease: "easeOut" }}
+            className={className}
+            onClick={handleClick}
         >
-            <div className="flex min-w-0 flex-col">
-                <code className="font-mono text-xs text-sidebar-color">{conn.id}</code>
-                <span className="font-medium text-md truncate">{conn.addr}</span>
-            </div>
-            <div className="flex flex-col items-start gap-2 md:items-end md:mt-0">
-                <FlowBadge download={formatBytes(numberValue(counter?.download))} upload={formatBytes(numberValue(counter?.upload))} />
-                <div className="flex gap-2 items-center flex-wrap text-xs md:mt-0">
-                    <IconBadge icon={ShieldCheck} text={conn.mode || "unknown"} />
-                    <IconBadge icon={Network} text={conn.network.connType || "unknown"} />
-                    {conn.tag && <IconBadge icon={Tag} text={conn.tag} />}
-                </div>
-            </div>
+            {body}
         </motion.div>
     );
-}
+}, (prev, next) => (
+    prev.conn === next.conn
+    && prev.animated === next.animated
+    && prev.onSelect === next.onSelect
+    && numberValue(prev.counter?.download) === numberValue(next.counter?.download)
+    && numberValue(prev.counter?.upload) === numberValue(next.counter?.upload)
+));
 
-function FlowBadge({ download, upload }: { download: string; upload: string }) {
+const FlowBadge = memo(function FlowBadge({ download, upload }: { download: string; upload: string }) {
     return (
-        <div className="flex gap-2">
-            <span className="rounded-full flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-500 dark:bg-[#2b2b40] dark:text-[#a6a6c0]">
-                <ArrowDown size={12} className="mr-1" />{download}
+        <div className="inline-flex shrink-0 items-center gap-2 text-[11px] font-semibold tabular-nums">
+            <span className="inline-flex items-center gap-0.5 text-ui-info">
+                <ArrowDown size={11} />
+                {download}
             </span>
-            <span className="rounded-full flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-500 dark:bg-[#2b2b40] dark:text-[#a6a6c0]">
-                <ArrowUp size={12} className="mr-1" />{upload}
+            <span className="inline-flex items-center gap-0.5 text-ui-success">
+                <ArrowUp size={11} />
+                {upload}
             </span>
         </div>
     );
-}
+});
 
 export default Connections;

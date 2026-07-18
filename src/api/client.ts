@@ -1,5 +1,5 @@
-import { AuthTokenKey, getApiUrl } from "@/common/apiurl";
 import { resolveRPCRoute, rpcPath } from "@/api/generated";
+import { AuthTokenKey, getApiUrl } from "@/common/apiurl";
 
 export type APIError = {
     code: number;
@@ -20,7 +20,7 @@ function apiURL(path: string): URL {
     const url = new URL(base);
     url.hash = "";
     url.pathname = path;
-	url.search = "";
+    url.search = "";
     return url;
 }
 
@@ -52,20 +52,20 @@ function errorMessage(raw: unknown, fallback: string): string {
 }
 
 export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, body?: unknown, query?: Record<string, QueryValue>): Promise<T> {
-	const route = resolveRPCRoute(method, path);
-	const response = await fetch(apiURL(rpcPath(route.operation)), {
-		method: "POST",
-		headers: {
-			...authHeaders(),
-			Accept: "application/json",
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({
-			...toRequestFields(query),
-			...route.params,
-			...toRequestFields(body),
-		}),
-	});
+    const route = resolveRPCRoute(method, path);
+    const response = await fetch(apiURL(rpcPath(route.operation)), {
+        method: "POST",
+        headers: {
+            ...authHeaders(),
+            Accept: "application/json",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            ...toRequestFields(query),
+            ...coercePathParams(route.params),
+            ...toRequestFields(body),
+        }),
+    });
 
     const raw = await decodeBody(response);
     if (!response.ok) {
@@ -79,8 +79,27 @@ export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", 
     return raw as T;
 }
 
+// Path params from resolveRPCRoute are always strings. Go expects some of them
+// (e.g. rule index) as numbers — send those as JSON numbers.
+const numericPathParams = new Set(["index"]);
+
+function coercePathParams(params: Record<string, string>): Record<string, string | number> {
+    const out: Record<string, string | number> = {};
+    for (const [key, value] of Object.entries(params)) {
+        if (numericPathParams.has(key) && /^-?\d+$/.test(value)) {
+            const n = Number(value);
+            if (Number.isSafeInteger(n)) {
+                out[key] = n;
+                continue;
+            }
+        }
+        out[key] = value;
+    }
+    return out;
+}
+
 function toRequestFields(value: unknown): Record<string, unknown> {
-	if (value === undefined || value === null) return {};
-	if (typeof value === "object" && !Array.isArray(value)) return value as Record<string, unknown>;
-	throw new TypeError("JSON API requests must use an object body");
+    if (value === undefined || value === null) return {};
+    if (typeof value === "object" && !Array.isArray(value)) return value as Record<string, unknown>;
+    throw new TypeError("JSON API requests must use an object body");
 }

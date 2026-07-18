@@ -1,13 +1,13 @@
 'use client';
 
 import { clsx } from "clsx";
-import { AnimatePresence, motion } from 'motion/react';
 import { History, Plus, Search, TriangleAlert } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import React, { FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from "./badge";
 import { Pagination } from './pagination';
-import { ui } from "./styles";
+import { iconToneStyles, ui, type IconTone } from "./styles";
 
 type Density = "compact" | "normal";
 
@@ -29,7 +29,7 @@ export const Card: FC<{
             !noMargin && (density === "compact" ? "mb-4" : "mb-8"),
             className
         )}
-        style={{ viewTransitionName: "config-card-root", ...style }}
+        style={style}
     >
         {children}
     </div>
@@ -48,7 +48,7 @@ export const CardBody: FC<{ children: React.ReactNode, className?: string, style
 );
 
 export const CardTitle: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
-    <div className={clsx("flex items-center mb-3 text-[1.1rem] font-semibold text-ui-heading", className)} style={style}>
+    <div className={clsx("flex items-center mb-3", ui.pageTitle, className)} style={style}>
         {children}
     </div>
 );
@@ -322,16 +322,17 @@ export function CardRowList<T>({
     const renderRowItem = (value: T, localIndex: number) => {
         const index = getItemIndex ? getItemIndex(value, localIndex) : start + localIndex;
         const key = getKey ? getKey(value) : index;
+        const isLast = localIndex === visibleItems.length - 1;
         const item = (
-            <div className="flex">
+            <div className={clsx("flex", layout === "list" && !isLast && "border-b border-ui-border/70")}>
                 <ListItem
                     density={density}
                     className={clsx(
-                        "w-full",
+                        "group w-full",
                         layout === "list" && [
-                            "min-h-[56px] rounded-ui-md bg-transparent px-3.5 py-2",
-                            "border-ui-border/60 shadow-none hover:bg-ui-surface-muted hover:border-ui-primary/25",
-                            "hover:translate-x-0.5 transition-[background-color,border-color,transform] duration-150"
+                            "min-h-[64px] rounded-none border-0 bg-transparent px-3.5 py-3 shadow-none",
+                            "hover:bg-ui-surface-muted/70 hover:translate-x-0",
+                            "transition-colors duration-150"
                         ]
                     )}
                     onClick={() => onClickItem?.(value, index)}
@@ -360,7 +361,7 @@ export function CardRowList<T>({
     };
 
     return (
-        <Card density={density} className={layout === "list" ? "shadow-none" : undefined}>
+        <Card density={density} className={layout === "list" ? "overflow-hidden shadow-ui-card" : undefined}>
             {(header || (onAddNew && layout === "list")) && (
                 <CardHeader className={layout === "list" && onAddNew ? "flex-wrap gap-3" : undefined}>
                     {header && <div className="min-w-0 flex-1">{header}</div>}
@@ -371,10 +372,10 @@ export function CardRowList<T>({
                     )}
                 </CardHeader>
             )}
-            <CardBody density={density} className={layout === "list" ? "px-4 py-4" : undefined}>
+            <CardBody density={density} className={layout === "list" ? "!p-0" : undefined}>
                 <div className={clsx(
                     layout === "list"
-                        ? "flex flex-col gap-1.5"
+                        ? "flex flex-col"
                         : "grid grid-cols-[repeat(auto-fill,minmax(min(300px,100%),1fr))] gap-4"
                 )}>
                     {shouldAnimate ? (
@@ -432,7 +433,7 @@ export const IconBadge: FC<{ icon: React.ElementType, text: string | number, col
 );
 
 export const MainContainer: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
-    <div className={className} style={style}>
+    <div className={clsx("min-w-0 w-full", className)} style={style}>
         {children}
     </div>
 );
@@ -443,9 +444,28 @@ export const SettingsBox: FC<{ children: React.ReactNode }> = ({ children }) => 
     </div>
 );
 
+function resolveIconToneStyle(options: {
+    tone?: IconTone;
+    color?: string;
+    borderColor?: string;
+    background?: string;
+}) {
+    const tone = options.tone ?? (options.color ? undefined : "primary");
+    const toneStyle = tone ? iconToneStyles[tone] : undefined;
+    const color = options.color ?? toneStyle?.color ?? "var(--color-primary)";
+    const borderColor = options.borderColor
+        ?? toneStyle?.border
+        ?? (options.color ? `${options.color}33` : iconToneStyles.primary.border);
+    const background = options.background
+        ?? toneStyle?.background
+        ?? (options.color ? `${options.color}1A` : iconToneStyles.primary.background);
+    return { color, borderColor, background };
+}
+
 export const IconBox: FC<{
     icon: React.ElementType,
-    color: string,
+    color?: string,
+    tone?: IconTone,
     borderColor?: string,
     background?: string,
     className?: string,
@@ -453,38 +473,45 @@ export const IconBox: FC<{
     title?: string,
     description?: string,
     style?: React.CSSProperties
-}> = ({ icon: Icon, color, borderColor, background, className, textClassName, style, title, description }) => (
-    <div className="flex items-center min-w-0">
-        <div
-            className={clsx("flex shrink-0 items-center justify-center w-icon-lg h-icon-lg mr-5 text-xl rounded-ui-lg border", className)}
-            style={{ color: color, borderColor: borderColor || `${color}33`, background: background || `${color}1A`, ...style }}
-        >
-            <Icon />
-        </div>
-        {title &&
-            <div className={clsx("overflow-hidden", textClassName)} title={`${title}${description ? ` - ${description}` : ''}`}>
-                <h5 className="mb-0 font-bold truncate text-ui-heading">{title}</h5>
-                <small className="block text-ui-muted truncate">{description}</small>
+}> = ({ icon: Icon, color, tone, borderColor, background, className, textClassName, style, title, description }) => {
+    const resolved = resolveIconToneStyle({ tone, color, borderColor, background });
+    return (
+        <div className="flex items-center min-w-0">
+            <div
+                className={clsx("flex shrink-0 items-center justify-center w-icon-lg h-icon-lg mr-5 text-xl rounded-ui-lg border", className)}
+                style={{ color: resolved.color, borderColor: resolved.borderColor, background: resolved.background, ...style }}
+            >
+                <Icon />
             </div>
-        }
-    </div>
-);
+            {title &&
+                <div className={clsx("overflow-hidden", textClassName)} title={`${title}${description ? ` - ${description}` : ''}`}>
+                    <h5 className="mb-0 font-bold truncate text-ui-heading">{title}</h5>
+                    <small className="block text-ui-muted truncate">{description}</small>
+                </div>
+            }
+        </div>
+    );
+};
 
 export const IconBoxRounded: FC<{
     icon: React.ElementType,
-    color: string,
+    color?: string,
+    tone?: IconTone,
     borderColor?: string,
     background?: string,
     className?: string,
     style?: React.CSSProperties
-}> = ({ icon: Icon, color, borderColor, background, className, style }) => (
-    <div
-        className={clsx("flex shrink-0 items-center justify-center w-icon-lg h-icon-lg rounded-full border", className)}
-        style={{ color: color, borderColor: borderColor || `${color}33`, background: background || `${color}1A`, ...style }}
-    >
-        <Icon />
-    </div>
-);
+}> = ({ icon: Icon, color, tone, borderColor, background, className, style }) => {
+    const resolved = resolveIconToneStyle({ tone, color, borderColor, background });
+    return (
+        <div
+            className={clsx("flex shrink-0 items-center justify-center w-icon-lg h-icon-lg rounded-full border", className)}
+            style={{ color: resolved.color, borderColor: resolved.borderColor, background: resolved.background, ...style }}
+        >
+            <Icon />
+        </div>
+    );
+};
 
 export const FilterSearch: FC<{
     onEnter: (str: string) => void,

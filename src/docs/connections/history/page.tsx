@@ -14,8 +14,8 @@ import { ArrowDownWideNarrow, ArrowLeftRight, ChevronRight, Clock, Info, Radio, 
 import React, { FC, useMemo, useState } from "react"
 import useSWR from "swr"
 import Loading from "../../../component/v2/loading"
-import { ConnectionInfo } from "../components"
 import { NodeModal } from "../../node/modal"
+import { ConnectionInfo } from "../components"
 
 function formatProtocolLabel(value?: string) {
     if (!value) return "Unknown";
@@ -26,12 +26,12 @@ const ListItem: FC<{ data: AllHistory }> = React.memo(({ data }) => {
     return (
         <div className="flex min-w-0 w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 w-full items-center gap-3 sm:w-auto sm:flex-1">
-                <div className="flex items-center justify-center bg-blue-500/10 text-blue-500 rounded-full shrink-0" style={{ width: "42px", height: "42px" }}>
+                <div className="flex items-center justify-center bg-ui-primary-soft text-ui-primary rounded-full shrink-0" style={{ width: "42px", height: "42px" }}>
                     {data.connection.network.connType.startsWith("udp") ? <Radio className="text-xl" /> : <ArrowLeftRight className="text-xl" />}
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
                     <span className="truncate text-base font-bold" title={data.connection.addr}>{data.connection.addr || "-"}</span>
-                    <small className="truncate font-mono text-sm text-gray-500 opacity-75 dark:text-gray-400">
+                    <small className="truncate font-mono text-sm text-ui-muted opacity-75">
                         ID: #{data.connection.id} • {formatProtocolLabel(data.connection.network.connType)}
                     </small>
                 </div>
@@ -40,7 +40,7 @@ const ListItem: FC<{ data: AllHistory }> = React.memo(({ data }) => {
                 <IconBadge icon={ShieldCheck} text={formatProtocolLabel(data.connection.mode)} color="info" />
                 <IconBadge icon={RefreshCw} text={data.count} color="success" />
                 <IconBadge icon={Clock} text={new Date(data.time).toLocaleTimeString()} color="secondary" />
-                <div className="text-gray-500 dark:text-gray-400 opacity-25 ml-2 hidden md:block"><ChevronRight /></div>
+                <div className="text-ui-muted opacity-25 ml-2 hidden md:block"><ChevronRight /></div>
             </div>
         </div>
     );
@@ -114,7 +114,7 @@ function History() {
             <div className="flex flex-wrap justify-between items-end mb-4 gap-3">
                 <div>
                     <h4 className="font-bold mb-1">Connection History</h4>
-                    <div className="text-gray-500 dark:text-gray-400 flex items-center text-sm">
+                    <div className="text-ui-muted flex items-center text-sm">
                         <Info className="mr-2" />
                         <span>Showing {values.length} historical records</span>
                     </div>
@@ -162,6 +162,7 @@ function History() {
 
             <CardList
                 items={paginatedItems}
+                animated={false}
                 getKey={(v) => `${v.connection.id}-${v.time}`}
                 onClickItem={(v) => setModalData({ show: true, data: v })}
                 renderListItem={(v) => <ListItem data={v} />}

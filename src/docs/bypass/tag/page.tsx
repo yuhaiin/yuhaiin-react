@@ -268,7 +268,7 @@ function Tags() {
                 )}
                 header={
                     <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <IconBox icon={TagsIcon} color="#8b5cf6" title="Tags Management" description={`${data.page.total} aliases and mirrors`} />
+                        <IconBox icon={TagsIcon} tone="violet" title="Tags Management" description={`${data.page.total} aliases and mirrors`} />
                         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
                             <FilterSearch className="min-w-0 flex-1 sm:w-[180px] sm:flex-none" onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
                             <Button size="sm" onClick={() => setAdding(true)}><Plus size={16} className="mr-1" /> Add</Button>

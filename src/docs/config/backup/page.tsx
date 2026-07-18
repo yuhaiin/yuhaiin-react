@@ -75,7 +75,7 @@ function BackupPage() {
 
             <Card>
                 <CardHeader className="py-3">
-                    <IconBox icon={ShieldCheck} color="#3b82f6" title="Backup Instance" description="Identification and timing" />
+                    <IconBox icon={ShieldCheck} tone="primary" title="Backup Instance" description="Identification and timing" />
                 </CardHeader>
                 <CardBody>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -94,7 +94,7 @@ function BackupPage() {
                         <div className="md:col-span-2">
                             <SettingLabel>Last Backup Hash</SettingLabel>
                             <ListItem className="cursor-default bg-black/10 dark:bg-white/10">
-                                <Hash className="mr-2 text-gray-500 dark:text-gray-400" size={16} />
+                                <Hash className="mr-2 text-ui-muted" size={16} />
                                 <span className="font-mono text-sm truncate opacity-75">
                                     {data.lastBackupHash || "No backup records found"}
                                 </span>
@@ -173,7 +173,7 @@ function BackupPage() {
             </Card>
 
             <div className="text-center mt-3 opacity-50 pb-20">
-                <small className="text-gray-500 dark:text-gray-400">
+                <small className="text-ui-muted">
                     <Info className="mr-1 inline" size={14} />
                     Backups include all lists, rules, and node configurations.
                 </small>

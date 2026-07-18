@@ -63,7 +63,7 @@ const contentVariants = {
     },
     exit: {
         opacity: 0,
-        scale: 0.2, // Shrink back
+        scale: 0.2,
         y: "-50%",
         x: "-50%",
         transition: { duration: 0.2 }
@@ -91,7 +91,7 @@ const ModalContent = ({ className, children, style, ...props }: React.ComponentP
                     <DialogPrimitive.Content asChild forceMount>
                         <motion.div
                             className={clsx(
-                                "fixed top-1/2 left-1/2 min-w-0 w-[90vw] max-w-[var(--bs-modal-width,500px)] max-h-[85vh] z-[1055] flex flex-col outline-none overflow-hidden bg-ui-surface text-ui-fg border border-ui-border rounded-ui-xl shadow-ui-elevated p-[5px] will-change-[transform,opacity]",
+                                "fixed top-1/2 left-1/2 min-w-0 w-[90vw] max-w-[500px] max-h-[85vh] z-[1055] flex flex-col outline-none overflow-hidden bg-ui-surface text-ui-fg border border-ui-border rounded-ui-xl shadow-ui-elevated p-[5px] will-change-[transform,opacity]",
                                 className
                             )}
                             variants={contentVariants}

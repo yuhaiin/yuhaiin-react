@@ -2,7 +2,16 @@
   "api": {
     "title": "API 接続",
     "description": "Web コントローラーインターフェイス",
-    "controllerHost": "コントローラーホスト"
+    "controllerHost": "コントローラーホスト",
+    "sameOrigin": "同一オリジン",
+    "active": "使用中",
+    "activeHint": "現在接続中",
+    "switchHint": "クリックして切り替え",
+    "saved": "件保存済み",
+    "addHost": "ホストを追加",
+    "add": "追加",
+    "addHint": "複数のコントローラーアドレスを保存し、いつでも切り替えられます。",
+    "remove": "ホストを削除"
   },
   "latency": {
     "title": "遅延測定ターゲット",
@@ -19,6 +28,14 @@
     "title": "言語",
     "description": "ブラウザーに自動追従するか、固定言語を選択します",
     "preference": "言語設定"
+  },
+  "theme": {
+    "title": "外観",
+    "description": "システムに合わせるか、固定の配色を選択します",
+    "preference": "テーマ設定",
+    "system": "システム",
+    "light": "ライト",
+    "dark": "ダーク"
   },
   "localNotice": "これらの設定はブラウザーのローカルキャッシュに保存されます。"
 }

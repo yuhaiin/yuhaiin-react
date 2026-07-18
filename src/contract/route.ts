@@ -73,6 +73,7 @@ export function normalizeRouteListConfig(value: Partial<RouteListConfig> | undef
     refreshInterval: value?.refreshInterval ?? "0",
     lastRefreshTime: value?.lastRefreshTime ?? "0",
     error: value?.error ?? "",
+    hostIndexDisk: value?.hostIndexDisk ?? false,
     maxMindDbGeoIp: {
       downloadUrl: value?.maxMindDbGeoIp?.downloadUrl ?? "",
       error: value?.maxMindDbGeoIp?.error ?? "",
@@ -103,15 +104,20 @@ export function normalizeRouteList(value: Partial<RouteListDetail>): RouteListDe
   };
 }
 
+function toUint(value: unknown, fallback = 0): number {
+  const n = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(n) && n >= 0 ? Math.trunc(n) : fallback;
+}
+
 export function normalizeRuleItem(value: Partial<RuleItem> | undefined): RuleItem {
   return {
     name: value?.name ?? "",
     disabled: value?.disabled ?? false,
-    index: value?.index ?? 0,
+    index: toUint(value?.index),
     mode: value?.mode ?? "",
     tag: value?.tag ?? "",
     resolver: value?.resolver ?? "",
-    ruleCount: value?.ruleCount ?? 0,
+    ruleCount: toUint(value?.ruleCount),
   };
 }
 

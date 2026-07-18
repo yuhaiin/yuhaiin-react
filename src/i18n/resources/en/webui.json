@@ -2,7 +2,16 @@
   "api": {
     "title": "API Connection",
     "description": "Web-controller interface",
-    "controllerHost": "Controller Host"
+    "controllerHost": "Controller Hosts",
+    "sameOrigin": "Same origin",
+    "active": "Active",
+    "activeHint": "Currently connected",
+    "switchHint": "Click to switch",
+    "saved": "saved",
+    "addHost": "Add host",
+    "add": "Add",
+    "addHint": "Save multiple controller addresses and switch between them anytime.",
+    "remove": "Remove host"
   },
   "latency": {
     "title": "Latency Targets",
@@ -19,6 +28,14 @@
     "title": "Language",
     "description": "Automatically follow the browser or choose a fixed language",
     "preference": "Language Preference"
+  },
+  "theme": {
+    "title": "Appearance",
+    "description": "Follow the system or choose a fixed color scheme",
+    "preference": "Theme Preference",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
   },
   "localNotice": "These settings are stored locally in your browser cache."
 }

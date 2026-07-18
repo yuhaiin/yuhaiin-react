@@ -61,17 +61,17 @@ const InfoRow: FC<{
                 <div className="flex items-center gap-3 overflow-hidden">
                     <IconBoxRounded
                         icon={icon || LayoutGrid}
-                        color="#3b82f6"
+                        tone="primary"
                         className="flex-shrink-0 w-8 h-8 text-[0.9rem] border-none"
                     />
-                    <span className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase opacity-75 min-w-[90px] text-[0.7rem] tracking-[0.5px]">
+                    <span className="text-ui-muted text-xs font-bold uppercase opacity-75 min-w-[90px] text-[0.7rem] tracking-[0.5px]">
                         {label}
                     </span>
                 </div>
 
                 <div className="text-right overflow-hidden">
                     {url ? (
-                        <a href={url} target="_blank" rel="noreferrer" className="no-underline font-mono text-blue-500 truncate block">
+                        <a href={url} target="_blank" rel="noreferrer" className="no-underline font-mono text-ui-primary truncate block">
                             {value} <ExternalLink className="ml-1" size={12} />
                         </a>
                     ) : isBadge ?
@@ -160,7 +160,7 @@ export default function About() {
         <MainContainer className="flex flex-col">
             <Card className="order-2">
                 <CardHeader className="py-3">
-                    <IconBox icon={Info} color="#6366f1" title='System Information' description='Software version and build environment' />
+                    <IconBox icon={Info} tone="violet" title='System Information' description='Software version and build environment' />
                 </CardHeader>
 
                 <CardBody>
@@ -196,7 +196,7 @@ export default function About() {
                 {/* Build Tags / Features Section */}
                 {info.build && info.build.length > 0 && (
                     <CardFooter className="p-4 bg-transparent border-t border-gray-500/10">
-                        <SettingLabel className={"mb-2 block text-gray-500 dark:text-gray-400"}>Build Parameters</SettingLabel>
+                        <SettingLabel className={"mb-2 block text-ui-muted"}>Build Parameters</SettingLabel>
                         <div className="flex flex-wrap gap-2">
                             {info.build.map((tag, idx) => (
                                 <div key={idx} className="px-2 py-1 rounded border font-mono text-sm break-all dark:border-gray-700">
@@ -210,7 +210,7 @@ export default function About() {
 
             <Card className="order-1">
                 <CardHeader className="py-3">
-                    <IconBox icon={Rocket} color="#10b981" title="Software Update" description="Check GitHub Releases for a newer desktop build" />
+                    <IconBox icon={Rocket} tone="success" title="Software Update" description="Check GitHub Releases for a newer desktop build" />
                 </CardHeader>
                 <CardBody>
                     <div className="space-y-4">
@@ -292,7 +292,7 @@ export default function About() {
             </Card>
 
             <div className="order-3 text-center mt-4 opacity-50 pb-12">
-                <small className="text-gray-500 dark:text-gray-400">
+                <small className="text-ui-muted">
                     &copy; {new Date().getFullYear()} yuhaiin project. Distributed under MIT License.
                 </small>
             </div>

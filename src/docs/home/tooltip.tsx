@@ -1,38 +1,60 @@
-import { formatBytes } from "./format";
+import { forwardRef, useImperativeHandle, useRef } from "react";
 import { createPortal } from "react-dom";
+import { formatBytes } from "./format";
 
-interface TooltipProps {
-    label?: string;
-    upload?: number;
-    download?: number;
-    left: number;
-    top: number;
-    visible: boolean;
-}
+export type ChartTooltipHandle = {
+    show: (payload: {
+        left: number;
+        top: number;
+        label: string;
+        upload: number;
+        download: number;
+    }) => void;
+    hide: () => void;
+};
 
-export const Tooltip: React.FC<TooltipProps> = ({ label, upload, download, left, top, visible }) => {
+export const Tooltip = forwardRef<ChartTooltipHandle>(function Tooltip(_, ref) {
+    const rootRef = useRef<HTMLDivElement>(null);
+    const labelRef = useRef<HTMLDivElement>(null);
+    const uploadRef = useRef<HTMLSpanElement>(null);
+    const downloadRef = useRef<HTMLSpanElement>(null);
+
+    useImperativeHandle(ref, () => ({
+        show({ left, top, label, upload, download }) {
+            const root = rootRef.current;
+            if (!root) return;
+            root.style.display = "block";
+            root.style.left = `${left}px`;
+            root.style.top = `${top}px`;
+            if (labelRef.current) labelRef.current.textContent = label;
+            if (uploadRef.current) uploadRef.current.textContent = `${formatBytes(upload, 2, " ")}/S`;
+            if (downloadRef.current) downloadRef.current.textContent = `${formatBytes(download, 2, " ")}/S`;
+        },
+        hide() {
+            if (rootRef.current) rootRef.current.style.display = "none";
+        },
+    }), []);
+
     if (typeof document === "undefined") return null;
 
     return createPortal(
         <div
-            className={`fixed pointer-events-none bg-black p-2 rounded text-white text-xs w-[176px] z-[2147483646] shadow-md ${visible ? 'block' : 'hidden'}`}
-            style={{
-                left,
-                top,
-            }}
+            ref={rootRef}
+            className="fixed pointer-events-none hidden rounded bg-ui-heading p-2 text-xs text-ui-bg shadow-md w-[176px] z-[2147483646]"
+            style={{ left: 0, top: 0 }}
         >
-            <div className="font-semibold mb-1 text-slate-100">{label}</div>
-            <div className="flex items-center gap-2 mb-0.5">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                <span className="text-slate-300">Upload:</span>
-                <span className="font-medium">{formatBytes(upload ?? 0, 2, ' ') + '/S'}</span>
+            <div ref={labelRef} className="mb-1 font-semibold text-ui-bg/95" />
+            <div className="mb-0.5 flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-ui-success" />
+                <span className="text-ui-bg/70">Upload:</span>
+                <span ref={uploadRef} className="font-medium" />
             </div>
             <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                <span className="text-slate-300">Download:</span>
-                <span className="font-medium">{formatBytes(download ?? 0, 2, ' ') + '/S'}</span>
+                <div className="h-2 w-2 rounded-full bg-ui-info" />
+                <span className="text-ui-bg/70">Download:</span>
+                <span ref={downloadRef} className="font-medium" />
             </div>
         </div>,
         document.body
     );
-};
+});

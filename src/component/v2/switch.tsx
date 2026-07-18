@@ -2,8 +2,8 @@
 
 import * as SwitchPrimitive from '@radix-ui/react-switch';
 import { clsx } from 'clsx';
-import { motion, Transition } from 'motion/react';
 import * as React from 'react';
+import { ui } from './styles';
 
 interface SwitchProps {
   checked: boolean;
@@ -13,41 +13,26 @@ interface SwitchProps {
   disabled?: boolean;
 }
 
-const transition: Transition = {
-  type: "spring",
-  stiffness: 700,
-  damping: 30
-};
+const switchTrackClass = clsx(ui.switchTrack, ui.focusRing);
 
 const SwitchComponent: React.FC<SwitchProps> = ({ checked, onCheckedChange, label, description, disabled }) => {
   const isChecked = Boolean(checked);
 
   return (
-    <div className={clsx("flex items-center justify-between", disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
+    <div className={clsx("flex items-center justify-between", disabled && "opacity-60 pointer-events-none")}>
       {label && (
         <div className="mr-4">
           <div className="font-medium leading-tight">{label}</div>
-          {description && <div className="text-gray-500 text-xs mt-0.5">{description}</div>}
+          {description && <div className="text-ui-muted text-xs mt-0.5">{description}</div>}
         </div>
       )}
       <SwitchPrimitive.Root
-        className={clsx(
-          "w-[42px] h-[25px] shrink-0 bg-[var(--bs-secondary-bg,#e9ecef)] rounded-full relative shadow-[inset_0_0.125rem_0.25rem_rgba(0,0,0,0.075)] flex items-center p-[2px] border border-[var(--bs-border-color)] cursor-pointer transition-colors duration-150 ease-in-out",
-          "data-[state=checked]:bg-[var(--bs-primary,#0d6efd)] data-[state=checked]:justify-end",
-          "disabled:opacity-50 disabled:cursor-not-allowed",
-          "focus-visible:outline-none focus-visible:shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)]"
-        )}
+        className={switchTrackClass}
         checked={isChecked}
         onCheckedChange={onCheckedChange}
         disabled={disabled}
       >
-        <SwitchPrimitive.Thumb asChild>
-          <motion.span
-            className="block w-[21px] h-[21px] bg-white rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.1)] will-change-[transform]"
-            layout
-            transition={transition}
-          />
-        </SwitchPrimitive.Thumb>
+        <SwitchPrimitive.Thumb className={ui.switchThumb} />
       </SwitchPrimitive.Root>
     </div>
   );
@@ -61,10 +46,10 @@ export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ lab
   return (
     <div
       className={clsx(
-        "flex items-center cursor-pointer px-3 py-3 rounded-[12px] bg-[var(--bs-tertiary-bg)] border border-sidebar-border transition-all duration-200 mb-2 hover:bg-sidebar-hover hover:border-sidebar-active hover:-translate-y-[2px]",
+        "flex items-center cursor-pointer px-3 py-3 rounded-ui-md bg-ui-surface-muted border border-ui-border transition-all duration-200 mb-2 hover:bg-ui-hover hover:border-ui-primary/40 hover:-translate-y-[2px]",
         "justify-between",
         className,
-        disabled && "opacity-60 pointer-events-none grayscale-[0.5]"
+        disabled && "opacity-60 pointer-events-none"
       )}
       onClick={() => !disabled && onCheckedChange(!isChecked)}
       role="button"
@@ -73,38 +58,22 @@ export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ lab
     >
       <div className="mr-4">
         <div className="font-medium leading-tight">{label}</div>
-        {description && <div className="text-gray-500 text-xs mt-0.5">{description}</div>}
+        {description && <div className="text-ui-muted text-xs mt-0.5">{description}</div>}
       </div>
       <SwitchPrimitive.Root
-        className={clsx(
-          "w-[42px] h-[25px] shrink-0 bg-[var(--bs-secondary-bg,#e9ecef)] rounded-full relative shadow-[inset_0_0.125rem_0.25rem_rgba(0,0,0,0.075)] flex items-center p-[2px] border border-[var(--bs-border-color)] cursor-pointer transition-colors duration-150 ease-in-out",
-          "data-[state=checked]:bg-[var(--bs-primary,#0d6efd)] data-[state=checked]:justify-end",
-          "disabled:opacity-50 disabled:cursor-not-allowed",
-          "focus-visible:outline-none focus-visible:shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)]"
-        )}
+        className={switchTrackClass}
         checked={isChecked}
         onCheckedChange={onCheckedChange}
         disabled={disabled}
       >
-        <SwitchPrimitive.Thumb asChild>
-          <motion.span
-            className="block w-[21px] h-[21px] bg-white rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.1)] will-change-[transform]"
-            layout
-            transition={transition}
-          />
-        </SwitchPrimitive.Thumb>
+        <SwitchPrimitive.Thumb className={ui.switchThumb} />
       </SwitchPrimitive.Root>
     </div>
   );
 };
 
 
-interface SwitchProps extends React.ComponentPropsWithoutRef<typeof SwitchPrimitive.Root> {
-  label?: string;
-}
-
 const Switch = ({ className, label, id, ...props }: React.ComponentProps<typeof SwitchPrimitive.Root> & { label?: string }) => {
-  // Generate a unique ID to associate the Label (if id is not passed from outside)
   const generatedId = React.useId();
   const switchId = id || generatedId;
   const switchProps = {
@@ -116,25 +85,14 @@ const Switch = ({ className, label, id, ...props }: React.ComponentProps<typeof 
     <div className={clsx("flex items-center gap-2 cursor-pointer", className)}>
       <SwitchPrimitive.Root
         id={switchId}
-        className={clsx(
-          "w-[42px] h-[25px] shrink-0 bg-[var(--bs-secondary-bg,#e9ecef)] rounded-full relative shadow-[inset_0_0.125rem_0.25rem_rgba(0,0,0,0.075)] flex items-center p-[2px] border border-[var(--bs-border-color)] cursor-pointer transition-colors duration-150 ease-in-out",
-          "data-[state=checked]:bg-[var(--bs-primary,#0d6efd)] data-[state=checked]:justify-end",
-          "disabled:opacity-50 disabled:cursor-not-allowed",
-          "focus-visible:outline-none focus-visible:shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)]"
-        )}
+        className={switchTrackClass}
         {...switchProps}
       >
-        <SwitchPrimitive.Thumb asChild>
-          <motion.span
-            className="block w-[21px] h-[21px] bg-white rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.1)] will-change-[transform]"
-            layout
-            transition={transition}
-          />
-        </SwitchPrimitive.Thumb>
+        <SwitchPrimitive.Thumb className={ui.switchThumb} />
       </SwitchPrimitive.Root>
 
       {label && (
-        <label className="text-base text-[var(--bs-body-color,#212529)] leading-[1.5] cursor-pointer select-none" htmlFor={switchId}>
+        <label className="text-base text-ui-fg leading-[1.5] cursor-pointer select-none" htmlFor={switchId}>
           {label}
         </label>
       )}

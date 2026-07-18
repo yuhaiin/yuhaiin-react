@@ -1,11 +1,26 @@
-import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 import { formatBytes } from './format';
-import { Tooltip } from './tooltip';
+import { Tooltip, type ChartTooltipHandle } from './tooltip';
 
 const BUFFER_GROWTH_SIZE = 1024;
+
+function chartPalette() {
+    const dark = typeof document !== 'undefined'
+        && document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    return {
+        uploadStroke: dark ? '#8fc7a8' : '#198754',
+        uploadFill: dark ? 'rgba(143, 199, 168, 0.12)' : 'rgba(25, 135, 84, 0.12)',
+        downloadStroke: dark ? '#7dd3fc' : '#0284c7',
+        downloadFill: dark ? 'rgba(125, 211, 252, 0.12)' : 'rgba(2, 132, 199, 0.12)',
+        axis: dark ? '#94a3b8' : '#64748b',
+        grid: dark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(15, 23, 42, 0.06)',
+        pointFill: dark ? '#1e293b' : '#ffffff',
+    };
+}
+
 const TOOLTIP_WIDTH = 176;
 const TOOLTIP_HEIGHT = 72;
 const TOOLTIP_GAP = 12;
@@ -160,14 +175,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<HTMLDivElement>(null);
     const uPlotInst = useRef<uPlot | null>(null);
-    const [tooltip, setTooltip] = useState({
-        visible: false,
-        left: 0,
-        top: 0,
-        label: '',
-        upload: 0,
-        download: 0,
-    });
+    const tooltipRef = useRef<ChartTooltipHandle | null>(null);
     const indices = useMemo(() => Array.from({ length: data.labels.length }, (_, i) => i), [data.labels.length]);
     const bufferStateRef = useRef<{
         bufSize: number;
@@ -215,6 +223,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
         if (width === 0) width = 600;
         if (height === 0) height = 300;
 
+        const palette = chartPalette();
         const opts: uPlot.Options = {
             width: width,
             height: height,
@@ -229,8 +238,8 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                 { value: (_, rawValue) => data.labels[rawValue] || "" },
                 {
                     label: t('upload'),
-                    stroke: "#10b981",
-                    fill: "rgba(16, 185, 129, 0.1)",
+                    stroke: palette.uploadStroke,
+                    fill: palette.uploadFill,
                     width: 2,
                     points: { show: false },
                     value: (_, rawValue) => formatBytes(rawValue ?? 0, 2, " ") + '/S',
@@ -238,8 +247,8 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                 },
                 {
                     label: t('download'),
-                    stroke: "#3b82f6",
-                    fill: "rgba(59, 130, 246, 0.1)",
+                    stroke: palette.downloadStroke,
+                    fill: palette.downloadFill,
                     width: 2,
                     points: { show: false },
                     value: (_, rawValue) => formatBytes(rawValue ?? 0, 2, " ") + '/S',
@@ -250,10 +259,10 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                 { show: false },
                 {
                     show: true,
-                    stroke: "#475569",
+                    stroke: palette.axis,
                     font: '10px sans-serif',
-                    grid: { show: true, stroke: "rgba(255, 255, 255, 0.05)", width: 1 },
-                    ticks: { show: true, stroke: "rgba(255, 255, 255, 0.05)" },
+                    grid: { show: true, stroke: palette.grid, width: 1 },
+                    ticks: { show: true, stroke: palette.grid },
                     values: (_, ticks) => ticks.map(v => formatBytes(Number(v), 0, " ") + '/S'),
                     size: 65,
                     gap: 0,
@@ -265,7 +274,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                 points: {
                     size: 9, width: 2,
                     stroke: (u, seriesIdx) => u.series[seriesIdx].stroke as string,
-                    fill: () => "#1e293b",
+                    fill: () => palette.pointFill,
                 }
             },
             scales: {
@@ -278,7 +287,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                         const { idx, left: cursorLeft = 0, top: cursorTop = 0 } = u.cursor;
 
                         if (idx == null) {
-                            setTooltip((t) => ({ ...t, visible: false }));
+                            tooltipRef.current?.hide();
                             return;
                         }
 
@@ -309,8 +318,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                         left = Math.min(Math.max(left, TOOLTIP_GAP), maxLeft);
                         top = Math.min(Math.max(top, TOOLTIP_GAP), maxTop);
 
-                        setTooltip({
-                            visible: true,
+                        tooltipRef.current?.show({
                             left,
                             top,
                             label,
@@ -377,7 +385,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                 ref={chartRef}
                 className="absolute top-0 left-0 w-full h-full overflow-hidden"
             />
-            <Tooltip {...tooltip} />
+            <Tooltip ref={tooltipRef} />
         </div>
     );
 };

@@ -90,16 +90,15 @@ const InputGroupText = React.forwardRef<
     // Logic for radius based on position:
     const radiusClass =
         groupPosition === 'first' ? '!rounded-r-none !border-r-0' :
-        groupPosition === 'last' ? '!rounded-l-none' :
-        groupPosition === 'middle' ? '!rounded-none !border-r-0' :
-        ''; // single -> keep default radius
+            groupPosition === 'last' ? '!rounded-l-none' :
+                groupPosition === 'middle' ? '!rounded-none !border-r-0' :
+                    ''; // single -> keep default radius
 
     return (
         <div
             ref={ref}
             className={clsx(
-                "flex items-center py-1.5 px-3 text-base font-normal leading-normal text-[#212529] text-center whitespace-nowrap bg-[#e9ecef] border border-[#dee2e6] rounded-[12px]",
-                "dark:bg-transparent dark:border-[var(--bs-border-color)] dark:text-[var(--bs-body-color)]",
+                "flex items-center py-1.5 px-3 text-base font-normal leading-normal text-ui-fg text-center whitespace-nowrap bg-ui-surface-muted border border-ui-border rounded-ui-md",
                 radiusClass,
                 className
             )}

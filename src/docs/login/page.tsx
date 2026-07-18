@@ -26,7 +26,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-[var(--bs-body-bg)] p-4">
+        <div className="flex items-center justify-center min-h-screen bg-ui-bg p-4">
             <Card className="w-full max-w-md !mb-0 shadow-xl">
                 <CardHeader>
                     <CardTitle className="text-xl">
@@ -37,9 +37,9 @@ export default function LoginPage() {
                 <form onSubmit={handleLogin}>
                     <CardBody className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('username')}</label>
+                            <label className="text-sm font-medium text-ui-muted">{t('username')}</label>
                             <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" size={18} />
                                 <Input
                                     className="pl-10"
                                     placeholder={t('usernamePlaceholder')}
@@ -50,9 +50,9 @@ export default function LoginPage() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('password')}</label>
+                            <label className="text-sm font-medium text-ui-muted">{t('password')}</label>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" size={18} />
                                 <Input
                                     type="password"
                                     className="pl-10"

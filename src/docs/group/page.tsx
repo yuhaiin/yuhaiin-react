@@ -2,17 +2,6 @@
 
 import { APIError } from "@/api/client";
 import { createNode, deleteNode, latencyNode, listNodes, useNode as selectNode, type NodeLatencyType } from "@/api/nodes";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
-import { Badge } from "@/component/v2/badge";
-import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardHeader, MainContainer } from "@/component/v2/card";
-import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
-import { Textarea } from "@/component/v2/input";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
-import { Spinner } from "@/component/v2/spinner";
-import { GlobalToastContext } from "@/component/v2/toast";
-import type { Node, NodeLatencyResponse } from "@/contract/node";
-import { normalizeNode } from "@/contract/node";
 import {
     LatencyDNSUrlDefault,
     LatencyDNSUrlKey,
@@ -22,18 +11,34 @@ import {
     LatencyIPUrlKey,
     LatencyIPv6Default,
     LatencyIPv6Key,
-    normalizeLatencyDNSUrl,
     LatencyStunTCPUrlDefault,
     LatencyStunTCPUrlKey,
     LatencyStunUrlDefault,
     LatencyStunUrlKey,
+    normalizeLatencyDNSUrl,
 } from "@/common/apiurl";
-import { Check, ChevronDown, Gauge, Network, Plus, Power, Upload } from "lucide-react";
-import { FC, useContext, useEffect, useMemo, useState } from "react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
+import { Badge } from "@/component/v2/badge";
+import { Button } from "@/component/v2/button";
+import { Card, CardBody, CardHeader, IconBox, MainContainer } from "@/component/v2/card";
+import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
+import { Input, Textarea } from "@/component/v2/input";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
+import { Spinner } from "@/component/v2/spinner";
+import { GlobalToastContext } from "@/component/v2/toast";
+import type { Node, NodeLatencyResponse } from "@/contract/node";
+import { normalizeNode } from "@/contract/node";
+import clsx from "clsx";
+import { Check, ChevronDown, Gauge, Layers, Network, Plus, Power, Search, Upload } from "lucide-react";
+import { FC, memo, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import useSWR from "swr";
 import { useLocalStorage } from "usehooks-ts";
+import { VList } from "virtua";
 import Loading, { Error as ErrorDisplay } from "../../component/v2/loading";
 import { NodeModal } from "../node/modal";
+
+const LATENCY_STORAGE_LIMIT = 500;
+const GROUP_VIRTUALIZE_THRESHOLD = 60;
 
 function errorOf(error: unknown): APIError | undefined {
     if (!error) return undefined;
@@ -149,25 +154,199 @@ function latencyResultValue(result: NodeLatencyResponse): NodeLatencyValue {
     return "ok";
 }
 
-const LatencyInfo: FC<{
-    label: string;
-    value: NodeLatencyValue | undefined;
-    loading?: boolean;
-}> = ({ label, value, loading }) => (
-    <div className="rounded-ui-sm bg-ui-surface px-3 py-2.5">
-        <div className="mb-1 text-xs font-medium text-ui-muted/70">{label}</div>
-        <div className="flex min-h-5 items-center text-sm font-medium">
-            {loading ? <Spinner size="sm" /> : <span className={`break-all ${latencyTextClass(value)}`}>{latencyText(value)}</span>}
+const NodeLatencyBadge: FC<{ type: typeof collapsedLatencyTypes[number]; value: NodeLatencyValue | undefined; loading?: boolean }> = ({ type, value, loading }) => {
+    if (!value && !loading) return null;
+    return (
+        <Badge variant={loading ? "secondary" : latencyVariant(value)} pill className="gap-1 px-2 py-0.5 font-medium">
+            <span className="text-[0.62rem] font-semibold uppercase tracking-wide opacity-70">{type}</span>
+            {loading ? <Spinner size="sm" /> : <span className="font-mono text-[0.72rem]">{latencyText(value)}</span>}
+        </Badge>
+    );
+};
+
+function isEmptyLatency(value: NodeLatencyValue | undefined): boolean {
+    if (value === undefined || value === null) return true;
+    if (typeof value === "string") {
+        const normalized = value.trim().toLowerCase();
+        return !normalized || normalized === "n/a" || normalized === "該当なし";
+    }
+    return false;
+}
+
+const ResultChip: FC<{ label: string; value: NodeLatencyValue | undefined; loading?: boolean }> = ({ label, value, loading }) => {
+    if (!loading && isEmptyLatency(value)) return null;
+    return (
+        <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-ui-border/80 bg-ui-bg px-3 py-1.5">
+            <span className="shrink-0 text-[11px] font-medium uppercase tracking-wide text-ui-muted">{label}</span>
+            {loading
+                ? <Spinner size="sm" />
+                : <span className={clsx("truncate text-sm font-semibold font-mono", latencyTextClass(value))}>{latencyText(value)}</span>}
         </div>
+    );
+};
+
+const ResultRow: FC<{ label: string; value: NodeLatencyValue | undefined; loading?: boolean }> = ({ label, value, loading }) => {
+    if (!loading && isEmptyLatency(value)) return null;
+    return (
+        <div className="flex min-w-0 items-start gap-3 rounded-ui-md border border-ui-border/70 bg-ui-bg/80 px-3 py-2">
+            <span className="mt-0.5 w-16 shrink-0 text-[11px] font-medium uppercase tracking-wide text-ui-muted">{label}</span>
+            {loading
+                ? <Spinner size="sm" className="mt-0.5" />
+                : (
+                    <span className={clsx("min-w-0 break-all text-sm font-medium font-mono leading-snug", latencyTextClass(value))}>
+                        {latencyText(value)}
+                    </span>
+                )}
+        </div>
+    );
+};
+
+const ResultGroup: FC<{ title: string; children: ReactNode }> = ({ title, children }) => (
+    <div className="min-w-0 space-y-2">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ui-muted">{title}</div>
+        <div className="space-y-2">{children}</div>
     </div>
 );
 
-const NodeLatencyBadge: FC<{ type: typeof collapsedLatencyTypes[number]; value: NodeLatencyValue | undefined }> = ({ type, value }) => (
-    <Badge variant={latencyVariant(value)} className="gap-1 px-2 py-1 font-medium">
-        <span className="text-[0.68rem] opacity-70">{type.toUpperCase()}</span>
-        <span className="font-mono">{latencyText(value)}</span>
-    </Badge>
-);
+const CHIP_GROUP_LIMIT = 6;
+
+const GroupPicker: FC<{
+    groups: string[];
+    counts: Map<string, number>;
+    value: string;
+    onChange: (group: string) => void;
+}> = ({ groups, counts, value, onChange }) => {
+    const [open, setOpen] = useState(false);
+    const [filter, setFilter] = useState("");
+
+    useEffect(() => {
+        if (!open) setFilter("");
+    }, [open]);
+
+    if (groups.length <= CHIP_GROUP_LIMIT) {
+        return (
+            <div className="flex min-w-0 flex-1 flex-wrap gap-2">
+                {groups.map((group) => {
+                    const active = group === value;
+                    const count = counts.get(group) ?? 0;
+                    return (
+                        <button
+                            key={group}
+                            type="button"
+                            onClick={() => onChange(group)}
+                            className={clsx(
+                                "inline-flex max-w-full items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
+                                active
+                                    ? "border-ui-primary bg-ui-primary-soft text-ui-primary shadow-inner-subtle"
+                                    : "border-ui-border bg-ui-surface text-ui-muted hover:border-ui-primary/30 hover:bg-ui-hover hover:text-ui-fg"
+                            )}
+                        >
+                            <span className="truncate">{group}</span>
+                            <span className={clsx(
+                                "rounded-full px-1.5 py-0.5 text-[11px] font-semibold",
+                                active ? "bg-ui-primary/15 text-ui-primary" : "bg-ui-chip text-ui-chip-fg"
+                            )}>
+                                {count}
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+        );
+    }
+
+    const filtered = filter.trim()
+        ? groups.filter((group) => group.toLowerCase().includes(filter.trim().toLowerCase()))
+        : groups;
+    const selectedCount = counts.get(value) ?? 0;
+
+    return (
+        <Dropdown open={open} onOpenChange={setOpen}>
+            <DropdownTrigger asChild>
+                <Button
+                    type="button"
+                    variant="outline-secondary"
+                    className="h-9 min-w-0 max-w-full justify-between gap-2 px-3 text-sm font-medium lg:min-w-[240px] lg:max-w-[360px]"
+                >
+                    <span className="flex min-w-0 items-center gap-2">
+                        <Layers size={15} className="shrink-0 opacity-70" />
+                        <span className="truncate">{value || "Select group"}</span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-1.5">
+                        {value && (
+                            <span className="rounded-full bg-ui-chip px-1.5 py-0.5 text-[11px] font-semibold text-ui-chip-fg">
+                                {selectedCount}
+                            </span>
+                        )}
+                        <ChevronDown size={14} className="opacity-60" />
+                    </span>
+                </Button>
+            </DropdownTrigger>
+            <DropdownContent
+                align="start"
+                className="min-w-[min(320px,calc(100vw-2rem))] w-[var(--radix-dropdown-menu-trigger-width)] max-w-[min(420px,calc(100vw-2rem))]"
+            >
+                <div
+                    className="sticky top-0 z-10 border-b border-ui-border bg-ui-surface px-2 pb-2 pt-1"
+                    onKeyDown={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
+                >
+                    <div className="relative">
+                        <Search size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ui-muted" />
+                        <Input
+                            value={filter}
+                            onChange={(e) => setFilter(e.target.value)}
+                            placeholder="Filter groups..."
+                            className="h-8 pl-8 text-sm"
+                            autoFocus
+                        />
+                    </div>
+                </div>
+                {filtered.length === 0 ? (
+                    <div className="px-3 py-4 text-center text-xs text-ui-muted">No matching groups</div>
+                ) : (
+                    filtered.map((group) => {
+                        const active = group === value;
+                        const count = counts.get(group) ?? 0;
+                        return (
+                            <DropdownItem
+                                key={group}
+                                className={clsx("gap-2", active && "bg-ui-primary-soft text-ui-primary")}
+                                onSelect={() => onChange(group)}
+                            >
+                                <span className="min-w-0 flex-1 truncate font-medium">{group}</span>
+                                <span className={clsx(
+                                    "rounded-full px-1.5 py-0.5 text-[11px] font-semibold",
+                                    active ? "bg-ui-primary/15 text-ui-primary" : "bg-ui-chip text-ui-chip-fg"
+                                )}>
+                                    {count}
+                                </span>
+                                {active && <Check size={14} className="shrink-0 text-ui-primary" />}
+                            </DropdownItem>
+                        );
+                    })
+                )}
+            </DropdownContent>
+        </Dropdown>
+    );
+};
+
+function pruneLatencyMap(
+    current: Record<string, NodeLatencyState>,
+    keepIds: Iterable<string>,
+    limit = LATENCY_STORAGE_LIMIT,
+): Record<string, NodeLatencyState> {
+    const keep = new Set(keepIds);
+    const next: Record<string, NodeLatencyState> = {};
+    for (const id of keep) {
+        if (current[id]) next[id] = current[id];
+    }
+    if (Object.keys(next).length <= limit) return next;
+
+    const entries = Object.entries(next);
+    entries.sort(([a], [b]) => a.localeCompare(b));
+    return Object.fromEntries(entries.slice(-limit));
+}
 
 const NodeItem: FC<{
     item: Node;
@@ -176,102 +355,144 @@ const NodeItem: FC<{
     onEdit: () => void;
     latency?: NodeLatencyState;
     busy?: Partial<Record<NodeLatencyType, boolean>>;
-}> = ({ item, onUse, onLatency, onEdit, latency, busy }) => (
-    <AccordionItem value={item.id}>
-        <AccordionTrigger className="p-3.5 hover:!bg-ui-surface-muted data-[state=open]:bg-ui-surface-muted data-[state=open]:text-sidebar-color">
-            <div className="grid min-w-0 flex-1 gap-x-5 gap-y-3 lg:grid-cols-[minmax(240px,0.8fr)_minmax(220px,1fr)_auto] lg:items-center">
-                <div className="flex min-w-0 items-center">
-                    <div className="mr-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-ui-sm bg-ui-primary-soft text-ui-primary">
-                        <Network size={18} />
+}> = memo(({ item, onUse, onLatency, onEdit, latency, busy }) => {
+    const chain = chainLabel(item);
+    const hasLatency = Boolean(busy?.tcp || busy?.udp || !isEmptyLatency(latency?.tcp) || !isEmptyLatency(latency?.udp));
+    const hasIp = Boolean(busy?.ip || latency?.ip);
+    const hasStun = Boolean(busy?.stun || busy?.stun_tcp || latency?.stun || latency?.stun_tcp);
+    const hasAnyResult = hasLatency || hasIp || hasStun;
+
+    return (
+        <AccordionItem
+            value={item.id}
+            className="!mt-0 !rounded-none !border-0 !border-b !border-ui-border/80 !bg-transparent last:!border-b-0 hover:!z-0 hover:!border-ui-border/80 focus-within:!z-0 focus-within:!border-ui-border/80"
+        >
+            <AccordionTrigger className="gap-3 px-4 py-3 text-ui-fg hover:!bg-ui-list-hover/80 hover:!text-ui-fg data-[state=open]:!bg-ui-surface-muted/40 data-[state=open]:!text-ui-fg data-[state=open]:!border-ui-border/50">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <span
+                        className={clsx(
+                            "mt-0.5 h-2 w-2 shrink-0 rounded-full",
+                            item.enabled ? "bg-ui-success shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-success)_18%,transparent)]" : "bg-ui-muted/50"
+                        )}
+                        title={item.enabled ? "Enabled" : "Disabled"}
+                    />
+
+                    <div className="min-w-0 flex-1">
+                        <div className="flex min-w-0 items-center gap-2">
+                            <span className="truncate text-[0.95rem] font-semibold text-ui-heading">
+                                {item.name || item.id}
+                            </span>
+                            {item.origin && (
+                                <span className="hidden shrink-0 text-[11px] text-ui-muted sm:inline">
+                                    · {item.origin}
+                                </span>
+                            )}
+                            {!item.enabled && (
+                                <Badge variant="secondary" pill className="shrink-0 px-1.5 py-0 text-[0.62rem]">
+                                    Off
+                                </Badge>
+                            )}
+                        </div>
+                        <div className="mt-0.5 truncate text-xs text-ui-muted">
+                            {chain || "No chain"}
+                        </div>
                     </div>
-                    <div className="flex min-w-0 flex-col">
-                        <span className="truncate font-medium text-ui-heading">{item.name || item.id}</span>
-                        <span className="flex min-w-0 items-center gap-2 text-xs text-ui-muted/70">
-                            <span className="truncate font-mono">{item.id}</span>
-                            <span className="shrink-0">{item.origin}</span>
+
+                    <div className="flex shrink-0 items-center gap-1.5">
+                        {collapsedLatencyTypes.map((type) => (
+                            <NodeLatencyBadge
+                                key={type}
+                                type={type}
+                                value={latency?.[type]}
+                                loading={busy?.[type]}
+                            />
+                        ))}
+                    </div>
+                </div>
+            </AccordionTrigger>
+
+            <AccordionContent className="!bg-ui-surface">
+                <div className="space-y-3.5 px-1 pb-1">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ui-muted">
+                        <span className="font-mono" title={item.id}>{item.id}</span>
+                        {item.group && (
+                            <span>
+                                <span className="text-ui-muted/70">group</span>{" "}
+                                <span className="text-ui-fg">{item.group}</span>
+                            </span>
+                        )}
+                        <span>
+                            <span className="text-ui-muted/70">status</span>{" "}
+                            <span className={item.enabled ? "text-ui-success" : "text-ui-muted"}>
+                                {item.enabled ? "enabled" : "disabled"}
+                            </span>
                         </span>
                     </div>
-                </div>
-                <div className="flex min-w-0 items-center gap-2 text-sm">
-                    <span className="shrink-0 text-xs text-ui-muted/70">Chain</span>
-                    <span className="truncate font-mono text-ui-fg" title={chainLabel(item)}>{chainLabel(item)}</span>
-                </div>
-                <div className="flex shrink-0 items-center gap-1.5 lg:justify-end">
-                    {collapsedLatencyTypes.map(type => (
-                        <NodeLatencyBadge key={type} type={type} value={latency?.[type]} />
-                    ))}
-                </div>
-            </div>
-        </AccordionTrigger>
-        <AccordionContent>
-            <div className="grid gap-5 lg:grid-cols-[minmax(220px,0.65fr)_minmax(0,1.35fr)]">
-                <div className="grid content-start grid-cols-2 gap-x-4 gap-y-3 text-sm">
-                    <div>
-                        <div className="text-xs text-ui-muted/70">Group</div>
-                        <div className="mt-1 truncate font-medium text-ui-fg">{item.group || "-"}</div>
+
+                    {hasAnyResult ? (
+                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                            {hasLatency && (
+                                <ResultGroup title="Latency">
+                                    <div className="flex flex-wrap gap-2">
+                                        <ResultChip label="TCP" value={latency?.tcp} loading={busy?.tcp} />
+                                        <ResultChip label="UDP" value={latency?.udp} loading={busy?.udp} />
+                                    </div>
+                                </ResultGroup>
+                            )}
+
+                            {hasIp && (
+                                <ResultGroup title="IP">
+                                    <ResultRow label="IPv4" value={latencyDetail(latency?.ip, "ipv4")} loading={busy?.ip} />
+                                    <ResultRow label="IPv6" value={latencyDetail(latency?.ip, "ipv6")} loading={busy?.ip} />
+                                </ResultGroup>
+                            )}
+
+                            {hasStun && (
+                                <ResultGroup title="STUN">
+                                    <div className="flex flex-wrap gap-2">
+                                        <ResultChip label="NAT" value={latencyDetail(latency?.stun, "mapping")} loading={busy?.stun} />
+                                        <ResultChip label="Filter" value={latencyDetail(latency?.stun, "filtering")} loading={busy?.stun} />
+                                    </div>
+                                    <ResultRow label="Mapped" value={latencyDetail(latency?.stun, "mappedAddress")} loading={busy?.stun} />
+                                    <ResultRow label="TCP" value={latencyDetail(latency?.stun_tcp, "mappedAddress")} loading={busy?.stun_tcp} />
+                                </ResultGroup>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="text-xs text-ui-muted">No test results yet.</div>
+                    )}
+
+                    <div className="flex flex-wrap items-center justify-end gap-2 border-t border-ui-border/70 pt-3">
+                        <Dropdown>
+                            <DropdownTrigger asChild>
+                                <Button size="sm" variant="outline-secondary" onClick={(e) => e.stopPropagation()}>
+                                    <Gauge size={15} className="mr-1.5" />
+                                    Test
+                                    <ChevronDown size={14} className="ml-1" />
+                                </Button>
+                            </DropdownTrigger>
+                            <DropdownContent align="end" className="min-w-[180px] max-w-[220px]">
+                                {latencyActions.map((action) => (
+                                    <DropdownItem key={action.type} disabled={busy?.[action.type]} onSelect={() => onLatency(action.type)}>
+                                        {busy?.[action.type] ? <Spinner size="sm" className="mr-2" /> : <Gauge size={16} className="mr-2" />}
+                                        {action.label}
+                                    </DropdownItem>
+                                ))}
+                            </DropdownContent>
+                        </Dropdown>
+                        <Button size="sm" variant="primary" onClick={(e) => { e.stopPropagation(); onUse(); }}>
+                            <Power size={15} className="mr-1.5" />
+                            Use
+                        </Button>
+                        <Button size="sm" variant="outline-secondary" onClick={(e) => { e.stopPropagation(); onEdit(); }}>
+                            Edit
+                        </Button>
                     </div>
-                    <div>
-                        <div className="text-xs text-ui-muted/70">Status</div>
-                        <div className="mt-1 font-medium text-ui-fg">{item.enabled ? "Enabled" : "Disabled"}</div>
-                    </div>
-                    <div className="col-span-2 min-w-0">
-                        <div className="text-xs text-ui-muted/70">Node ID</div>
-                        <div className="mt-1 truncate font-mono text-xs text-ui-fg" title={item.id}>{item.id}</div>
-                    </div>
                 </div>
-                <div className="border-t border-ui-border pt-4 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
-                    <div className="mb-3 text-sm font-medium text-ui-fg">Test results</div>
-                    <div className="grid grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-2">
-                        <LatencyInfo label="TCP Latency" value={latency?.tcp} loading={busy?.tcp} />
-                        <LatencyInfo label="UDP Latency" value={latency?.udp} loading={busy?.udp} />
-                        {(latency?.ip || busy?.ip) && (
-                            <>
-                                <LatencyInfo label="IPv4" value={latencyDetail(latency?.ip, "ipv4")} loading={busy?.ip} />
-                                <LatencyInfo label="IPv6" value={latencyDetail(latency?.ip, "ipv6")} loading={busy?.ip} />
-                            </>
-                        )}
-                        {(latency?.stun || busy?.stun) && (
-                            <>
-                                <LatencyInfo label="NAT Type" value={latencyDetail(latency?.stun, "mapping")} loading={busy?.stun} />
-                                <LatencyInfo label="Filtering" value={latencyDetail(latency?.stun, "filtering")} loading={busy?.stun} />
-                                <LatencyInfo label="Mapped Address" value={latencyDetail(latency?.stun, "mappedAddress")} loading={busy?.stun} />
-                            </>
-                        )}
-                        {(latency?.stun_tcp || busy?.stun_tcp) && (
-                            <LatencyInfo label="STUN TCP IP" value={latencyDetail(latency?.stun_tcp, "mappedAddress")} loading={busy?.stun_tcp} />
-                        )}
-                    </div>
-                </div>
-                <div className="flex flex-wrap justify-end gap-2 border-t border-ui-border pt-4 lg:col-span-2">
-                    <Dropdown>
-                        <DropdownTrigger asChild>
-                            <Button size="sm" variant="outline-secondary">
-                                <Gauge size={16} className="mr-2" />
-                                Test
-                                <ChevronDown size={14} className="ml-1" />
-                            </Button>
-                        </DropdownTrigger>
-                        <DropdownContent align="end" className="min-w-[180px] max-w-[220px]">
-                            {latencyActions.map(action => (
-                                <DropdownItem key={action.type} disabled={busy?.[action.type]} onSelect={() => onLatency(action.type)}>
-                                    {busy?.[action.type] ? <Spinner size="sm" className="mr-2" /> : <Gauge size={16} className="mr-2" />}
-                                    {action.label}
-                                </DropdownItem>
-                            ))}
-                        </DropdownContent>
-                    </Dropdown>
-                    <Button size="sm" variant="outline-primary" onClick={onUse}>
-                        <Power size={16} className="mr-2" />
-                        Use
-                    </Button>
-                    <Button size="sm" onClick={onEdit}>
-                        Edit
-                    </Button>
-                </div>
-            </div>
-        </AccordionContent>
-    </AccordionItem>
-);
+            </AccordionContent>
+        </AccordionItem>
+    );
+});
 
 const NodeImportModal: FC<{
     show: boolean;
@@ -361,6 +582,7 @@ export default function Group() {
     const [showdata, setShowdata] = useState({ show: false, id: "", new: false });
     const [importOpen, setImportOpen] = useState(false);
     const [selectedGroup, setSelectedGroup] = useState("");
+    const [query, setQuery] = useState("");
     const [latency, setLatency] = useLocalStorage<Record<string, NodeLatencyState>>("latency-v2-contract", {});
     const [busyLatency, setBusyLatency] = useState<Record<string, Partial<Record<NodeLatencyType, boolean>>>>({});
     const [latencyHTTP] = useLocalStorage(LatencyHTTPUrlKey, LatencyHTTPUrlDefault);
@@ -377,10 +599,30 @@ export default function Group() {
         const values = new Set(items.map(item => item.group || "manual"));
         return Array.from(values).sort((a, b) => a.localeCompare(b));
     }, [items]);
-    const groupItems = useMemo(
-        () => selectedGroup ? items.filter(item => (item.group || "manual") === selectedGroup) : [],
-        [items, selectedGroup],
-    );
+    const groupCounts = useMemo(() => {
+        const counts = new Map<string, number>();
+        for (const item of items) {
+            const group = item.group || "manual";
+            counts.set(group, (counts.get(group) ?? 0) + 1);
+        }
+        return counts;
+    }, [items]);
+    const groupItems = useMemo(() => {
+        if (!selectedGroup) return [];
+        const inGroup = items.filter(item => (item.group || "manual") === selectedGroup);
+        const q = query.trim().toLowerCase();
+        if (!q) return inGroup;
+        return inGroup.filter((item) => {
+            const haystack = [
+                item.name,
+                item.id,
+                item.origin,
+                chainLabel(item),
+                ...item.chain.map((step) => step.type),
+            ].join(" ").toLowerCase();
+            return haystack.includes(q);
+        });
+    }, [items, query, selectedGroup]);
     const modalGroups = useMemo(
         () => selectedGroup
             ? [selectedGroup, ...groups.filter(group => group !== selectedGroup)]
@@ -391,6 +633,18 @@ export default function Group() {
     useEffect(() => {
         if (selectedGroup && !groups.includes(selectedGroup)) setSelectedGroup("");
     }, [groups, selectedGroup]);
+
+    useEffect(() => {
+        if (!selectedGroup && groups.length > 0) setSelectedGroup(groups[0]);
+    }, [groups, selectedGroup]);
+
+    useEffect(() => {
+        if (items.length === 0) return;
+        setLatency((prev) => {
+            const next = pruneLatencyMap(prev, items.map((item) => item.id));
+            return Object.keys(next).length === Object.keys(prev).length ? prev : next;
+        });
+    }, [items, setLatency]);
 
     if (apiError) return <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} />;
     if (isLoading || data === undefined) return <Loading />;
@@ -433,12 +687,18 @@ export default function Group() {
             ipv6: latencyIPv6,
         })
             .then((result) => {
-                setLatency((prev) => ({ ...prev, [id]: { ...prev[id], [type]: latencyResultValue(result) } }));
+                setLatency((prev) => pruneLatencyMap(
+                    { ...prev, [id]: { ...prev[id], [type]: latencyResultValue(result) } },
+                    items.map((item) => item.id),
+                ));
                 if (!result.ok) ctx.Error(result.error ?? "Latency failed");
             })
             .catch((err: unknown) => {
                 const apiErr = errorOf(err);
-                setLatency((prev) => ({ ...prev, [id]: { ...prev[id], [type]: "error" } }));
+                setLatency((prev) => pruneLatencyMap(
+                    { ...prev, [id]: { ...prev[id], [type]: "error" } },
+                    items.map((item) => item.id),
+                ));
                 ctx.Error(apiErr?.msg ?? "Latency failed");
             })
             .finally(() => setBusyLatency((prev) => ({ ...prev, [id]: { ...prev[id], [type]: false } })));
@@ -468,73 +728,125 @@ export default function Group() {
                 }}
             />
 
-            <div className="mb-4 flex flex-wrap items-center justify-end gap-3">
-                <Dropdown>
-                    <DropdownTrigger asChild>
-                        <Button variant="outline-secondary" className="min-w-[128px] justify-between">
-                            {selectedGroup || "Group"}
-                            <ChevronDown size={16} className="ml-2" />
-                        </Button>
-                    </DropdownTrigger>
-                    <DropdownContent align="end" className="min-w-[180px] max-w-[260px]">
-                        {groups.length === 0 ? (
-                            <DropdownItem disabled>No groups</DropdownItem>
-                        ) : groups.map(group => {
-                            const count = items.filter(item => (item.group || "manual") === group).length;
-                            return (
-                                <DropdownItem key={group} onSelect={() => setSelectedGroup(group)} className="justify-between gap-3">
-                                    <span className="truncate">{group}</span>
-                                    <span className="text-xs text-ui-muted">{count}</span>
-                                </DropdownItem>
-                            );
-                        })}
-                    </DropdownContent>
-                </Dropdown>
-                <Button onClick={handleCreate}>
-                    <Plus className="mr-1" size={16} /> New
-                </Button>
-                <Button variant="outline-secondary" onClick={() => setImportOpen(true)}>
-                    <Upload className="mr-1" size={16} /> Import
-                </Button>
-            </div>
+            <Card className="mb-4 overflow-hidden">
+                <CardHeader className="gap-4 px-4 py-4">
+                    <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-3">
+                        <IconBox
+                            icon={Layers}
+                            tone="primary"
+                            title="Outbound"
+                            description={`${items.length} nodes across ${groups.length} ${groups.length === 1 ? "group" : "groups"}`}
+                        />
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Button onClick={handleCreate}>
+                                <Plus className="mr-1" size={16} /> New
+                            </Button>
+                            <Button variant="outline-secondary" onClick={() => setImportOpen(true)}>
+                                <Upload className="mr-1" size={16} /> Import
+                            </Button>
+                        </div>
+                    </div>
+                </CardHeader>
 
-            {!selectedGroup ? (
-                <Card className="mb-4">
-                    <CardBody>
-                        <div className="py-4 text-center font-semibold text-ui-muted">
-                            Please select a group to display nodes.
+                <CardBody className="space-y-4 pt-4" density="compact">
+                    {groups.length === 0 ? (
+                        <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center">
+                            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-ui-primary-soft text-ui-primary">
+                                <Network size={22} />
+                            </div>
+                            <div className="text-sm font-semibold text-ui-heading">No outbound groups yet</div>
+                            <div className="mt-1 text-xs text-ui-muted">Create a node or import JSON to get started.</div>
+                            <div className="mt-4 flex justify-center gap-2">
+                                <Button size="sm" onClick={handleCreate}>
+                                    <Plus size={14} className="mr-1" /> New node
+                                </Button>
+                                <Button size="sm" variant="outline-secondary" onClick={() => setImportOpen(true)}>
+                                    <Upload size={14} className="mr-1" /> Import
+                                </Button>
+                            </div>
                         </div>
-                    </CardBody>
-                </Card>
-            ) : (
-                <Card className="mb-4">
-                    <CardHeader className="px-4 py-3">
-                        <div className="min-w-0">
-                            <div className="truncate font-medium text-ui-heading">{selectedGroup}</div>
-                            <div className="mt-0.5 text-xs text-ui-muted">{groupItems.length} {groupItems.length === 1 ? "node" : "nodes"}</div>
-                        </div>
-                    </CardHeader>
-                    <CardBody className="p-0" density="compact">
-                        {groupItems.length === 0 ? (
-                            <div className="m-4 rounded-ui-lg border border-dashed border-ui-border p-6 text-center text-ui-muted">No nodes in this group.</div>
-                        ) : (
-                            <Accordion type="single" collapsible className="mb-0 rounded-none shadow-none transition-none hover:translate-y-0 hover:border-transparent hover:shadow-none">
-                                {groupItems.map(item => (
-                                    <NodeItem
-                                        key={item.id}
-                                        item={item}
-                                        latency={latency[item.id]}
-                                        busy={busyLatency[item.id]}
-                                        onUse={() => handleUse(item.id)}
-                                        onLatency={(type) => handleLatency(item.id, type)}
-                                        onEdit={() => setShowdata({ show: true, id: item.id, new: false })}
+                    ) : (
+                        <>
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <GroupPicker
+                                    groups={groups}
+                                    counts={groupCounts}
+                                    value={selectedGroup}
+                                    onChange={setSelectedGroup}
+                                />
+                                <div className="relative w-full shrink-0 sm:w-[240px] lg:w-[280px]">
+                                    <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" />
+                                    <Input
+                                        value={query}
+                                        onChange={(e) => setQuery(e.target.value)}
+                                        placeholder="Search nodes..."
+                                        className="h-9 pl-9 text-sm"
                                     />
-                                ))}
-                            </Accordion>
-                        )}
-                    </CardBody>
-                </Card>
-            )}
+                                </div>
+                            </div>
+
+                            <div className="overflow-hidden rounded-ui-xl border border-ui-border bg-ui-surface">
+                                {groupItems.length === 0 ? (
+                                    <div className="px-4 py-12 text-center">
+                                        <Search className="mx-auto mb-2 text-ui-muted" size={28} />
+                                        <div className="text-sm font-medium text-ui-heading">
+                                            {query.trim() ? "No matching nodes" : "No nodes in this group"}
+                                        </div>
+                                        <div className="mt-1 text-xs text-ui-muted">
+                                            {query.trim()
+                                                ? "Try another keyword, or clear the search."
+                                                : "Add a node to this group to see it here."}
+                                        </div>
+                                    </div>
+                                ) : groupItems.length > GROUP_VIRTUALIZE_THRESHOLD ? (
+                                    <VList
+                                        data={groupItems}
+                                        itemSize={72}
+                                        bufferSize={720}
+                                        style={{ height: "min(72vh, 900px)", width: "100%" }}
+                                    >
+                                        {(item) => (
+                                            <Accordion
+                                                key={item.id}
+                                                type="single"
+                                                collapsible
+                                                className="!mb-0 !rounded-none !border-0 !shadow-none !transition-none hover:!translate-y-0 hover:!border-transparent hover:!shadow-none"
+                                            >
+                                                <NodeItem
+                                                    item={item}
+                                                    latency={latency[item.id]}
+                                                    busy={busyLatency[item.id]}
+                                                    onUse={() => handleUse(item.id)}
+                                                    onLatency={(type) => handleLatency(item.id, type)}
+                                                    onEdit={() => setShowdata({ show: true, id: item.id, new: false })}
+                                                />
+                                            </Accordion>
+                                        )}
+                                    </VList>
+                                ) : (
+                                    <Accordion
+                                        type="single"
+                                        collapsible
+                                        className="!mb-0 !rounded-none !border-0 !shadow-none !transition-none hover:!translate-y-0 hover:!border-transparent hover:!shadow-none"
+                                    >
+                                        {groupItems.map((item) => (
+                                            <NodeItem
+                                                key={item.id}
+                                                item={item}
+                                                latency={latency[item.id]}
+                                                busy={busyLatency[item.id]}
+                                                onUse={() => handleUse(item.id)}
+                                                onLatency={(type) => handleLatency(item.id, type)}
+                                                onEdit={() => setShowdata({ show: true, id: item.id, new: false })}
+                                            />
+                                        ))}
+                                    </Accordion>
+                                )}
+                            </div>
+                        </>
+                    )}
+                </CardBody>
+            </Card>
         </MainContainer>
     );
 }

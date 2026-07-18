@@ -1,7 +1,7 @@
 
 import * as Popover from '@radix-ui/react-popover';
-import React, { FC, useEffect, useState } from 'react';
 import { clsx } from 'clsx';
+import React, { FC, useEffect, useState } from 'react';
 import { Input, InputProps } from './input';
 
 export interface ComboboxItem {
@@ -123,7 +123,7 @@ export const Combobox: FC<ComboboxProps> = ({
                 <Popover.Portal>
                     <Popover.Content
                         className={clsx(
-                            "w-[var(--radix-popover-trigger-width)] max-h-[50vh] bg-[var(--bs-body-bg)] rounded-[20px] border border-[var(--bs-border-color)] shadow-lg z-[2000] p-1 will-change-[transform,opacity]",
+                            "w-[var(--radix-popover-trigger-width)] max-h-[50vh] bg-ui-surface rounded-ui-xl border border-ui-border shadow-ui-elevated z-[2000] p-1 will-change-[transform,opacity]",
                             "data-[state=open]:data-[side=top]:animate-slideDownAndFade data-[state=open]:data-[side=right]:animate-slideLeftAndFade data-[state=open]:data-[side=bottom]:animate-slideUpAndFade data-[state=open]:data-[side=left]:animate-slideRightAndFade"
                         )}
 
@@ -134,16 +134,8 @@ export const Combobox: FC<ComboboxProps> = ({
                         sideOffset={5}
                         collisionPadding={10}
                     >
-                        <div style={{
-                            borderRadius: '20px',
-                            overflow: 'hidden',
-                        }}>
-                            <div style={{
-                                width: '100%',
-                                height: '100%',
-                                overflowY: 'auto',
-                                maxHeight: '49vh',
-                            }}>
+                        <div className="rounded-ui-xl overflow-hidden">
+                            <div className="w-full h-full overflow-y-auto max-h-[49vh]">
                                 {filteredOptions.map((opt, i) => (
                                     <div
                                         key={`${opt.value}-${i}`}
@@ -154,9 +146,9 @@ export const Combobox: FC<ComboboxProps> = ({
                                             }
                                         }}
                                         className={clsx(
-                                            "group p-2 px-3 cursor-pointer rounded-[20px] text-sm transition-colors duration-150 text-[var(--bs-body-color)]",
-                                            "hover:bg-[var(--bs-tertiary-bg)] hover:text-[var(--bs-body-color)]",
-                                            "data-[highlighted=true]:bg-[var(--bs-tertiary-bg)] data-[highlighted=true]:text-[var(--bs-body-color)]"
+                                            "group p-2 px-3 cursor-pointer rounded-ui-xl text-sm transition-colors duration-150 text-ui-fg",
+                                            "hover:bg-ui-hover hover:text-ui-fg",
+                                            "data-[highlighted=true]:bg-ui-hover data-[highlighted=true]:text-ui-fg"
                                         )}
                                         data-highlighted={i === highlightedIndex}
                                         onClick={() => {
@@ -170,7 +162,7 @@ export const Combobox: FC<ComboboxProps> = ({
                                     >
                                         <span className="font-medium block">{opt.label}</span>
                                         {opt.details && opt.details.length > 0 && (
-                                            <div className="pl-0 mt-[2px] font-mono text-[0.75em] text-[var(--bs-secondary-color)] whitespace-nowrap overflow-hidden text-ellipsis group-hover:text-[var(--bs-secondary-color)] group-data-[highlighted=true]:text-[var(--bs-secondary-color)]">
+                                            <div className="pl-0 mt-[2px] font-mono text-[0.75em] text-ui-muted whitespace-nowrap overflow-hidden text-ellipsis">
                                                 {opt.details.map((d, di) => (
                                                     <span key={di} className="inline-block mr-[6px] last:mr-0 after:content-[','] last:after:content-['']">{d}</span>
                                                 ))}
