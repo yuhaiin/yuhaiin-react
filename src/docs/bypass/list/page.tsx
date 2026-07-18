@@ -4,7 +4,7 @@ import { createRouteList, deleteRouteList, getRouteActivationStatus, getRouteLis
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardFooter, CardHeader, FilterSearch, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
-import { SettingInputVertical, SettingRangeVertical, SettingSelectVertical } from "@/component/v2/forms";
+import { SettingInputVertical, SettingRangeVertical, SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
 import { InputList } from "@/component/v2/listeditor";
 import Loading from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
@@ -351,6 +351,12 @@ function ListConfigCard() {
                             label="Maxmind GeoIP Database URL"
                             value={data.maxMindDbGeoIp.downloadUrl}
                             onChange={(downloadUrl) => patch({ maxMindDbGeoIp: { ...data.maxMindDbGeoIp, downloadUrl } })}
+                        />
+                        <SwitchCard
+                            label="Use Disk Host Index"
+                            description="Use the disk-backed host index to reduce memory usage."
+                            checked={data.hostIndexDisk}
+                            onCheckedChange={(hostIndexDisk) => patch({ hostIndexDisk })}
                         />
                         {(data.error || data.maxMindDbGeoIp.error) && (
                             <div className="md:col-span-2 rounded-ui-lg border border-ui-danger/40 bg-ui-danger/10 p-3 text-sm text-ui-danger">

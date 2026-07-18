@@ -73,6 +73,7 @@ export function normalizeRouteListConfig(value: Partial<RouteListConfig> | undef
     refreshInterval: value?.refreshInterval ?? "0",
     lastRefreshTime: value?.lastRefreshTime ?? "0",
     error: value?.error ?? "",
+    hostIndexDisk: value?.hostIndexDisk ?? false,
     maxMindDbGeoIp: {
       downloadUrl: value?.maxMindDbGeoIp?.downloadUrl ?? "",
       error: value?.maxMindDbGeoIp?.error ?? "",

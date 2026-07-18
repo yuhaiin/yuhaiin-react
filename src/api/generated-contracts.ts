@@ -580,6 +580,7 @@ export namespace Go {
       refreshInterval: string;
       lastRefreshTime: string;
       error: string;
+      hostIndexDisk: boolean;
       maxMindDbGeoIp: MaxMindDBGeoIP;
     }
     export interface ListActivationStatus {
