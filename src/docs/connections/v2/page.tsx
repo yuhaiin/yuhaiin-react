@@ -124,7 +124,7 @@ function Connections() {
     if (isLoading && !initial) return <Loading />
 
     return (
-        <MainContainer>
+        <MainContainer className="flex min-h-full min-w-0 flex-col">
             <NodeModal
                 show={nodeModal.show}
                 id={nodeModal.id}
@@ -157,22 +157,16 @@ function Connections() {
             </div>
 
             {sorted.length === 0 ? (
-                <div className="p-6 mb-8 text-center text-ui-muted rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg">
+                <div className="mb-0 flex min-h-0 flex-1 items-center justify-center rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg p-6 text-center text-ui-muted">
                     No active connections.
                 </div>
             ) : sorted.length > VIRTUALIZE_THRESHOLD ? (
-                <div className="mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl">
+                <div className="mb-0 min-h-0 flex-1 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl">
                     <VList
                         data={sorted}
                         itemSize={ROW_HEIGHT}
                         bufferSize={ROW_HEIGHT * 10}
-                        style={{
-                            height: Math.min(
-                                sorted.length * ROW_HEIGHT,
-                                typeof window === "undefined" ? 720 : Math.min(window.innerHeight * 0.72, 900),
-                            ),
-                            width: "100%",
-                        }}
+                        style={{ height: "100%", width: "100%" }}
                     >
                         {(conn) => (
                             <ConnectionRow
@@ -186,7 +180,7 @@ function Connections() {
                     </VList>
                 </div>
             ) : (
-                <div className="flex flex-col p-0 m-0 mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl">
+                <div className="mb-0 min-h-0 flex-1 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl">
                     <AnimatePresence initial={false}>
                         {sorted.map(conn => (
                             <ConnectionRow

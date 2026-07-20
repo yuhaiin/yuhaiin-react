@@ -323,7 +323,7 @@ export default function LogComponent() {
 
     return (
         <MainContainer className="h-full min-h-0 flex flex-col">
-            <Card className="flex-1 min-h-0 mb-0 flex flex-col overflow-hidden">
+            <Card className="flex-1 min-h-0 !mb-0 flex flex-col overflow-hidden">
                 <CardHeader className="px-2.5 py-2">
                     <div className="flex justify-between items-center w-full gap-3">
                         <IconBox
