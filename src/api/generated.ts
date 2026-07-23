@@ -83,6 +83,11 @@ export type RPCOperation =
   | "update.apply"
   | "update.check"
   | "update.status"
+  | "user.delete"
+  | "user.get"
+  | "user.put"
+  | "users.get"
+  | "users.post"
 ;
 
 type LegacyRoute = { method: string; pattern: string; operation: RPCOperation };
@@ -131,6 +136,11 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/inbounds/{id}", operation: "inbound.get" },
   { method: "PUT", pattern: "/api/v2/inbounds/{id}", operation: "inbound.put" },
   { method: "DELETE", pattern: "/api/v2/inbounds/{id}", operation: "inbound.delete" },
+  { method: "GET", pattern: "/api/v2/users", operation: "users.get" },
+  { method: "POST", pattern: "/api/v2/users", operation: "users.post" },
+  { method: "GET", pattern: "/api/v2/users/{id}", operation: "user.get" },
+  { method: "PUT", pattern: "/api/v2/users/{id}", operation: "user.put" },
+  { method: "DELETE", pattern: "/api/v2/users/{id}", operation: "user.delete" },
   { method: "GET", pattern: "/api/v2/nodes", operation: "nodes.get" },
   { method: "POST", pattern: "/api/v2/nodes", operation: "nodes.post" },
   { method: "GET", pattern: "/api/v2/nodes/selected", operation: "nodes.selected" },

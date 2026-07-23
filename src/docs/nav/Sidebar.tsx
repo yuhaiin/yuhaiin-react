@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowLeftRight, Download, ExternalLink, Filter, House, Settings } from 'lucide-react';
+import { ArrowLeftRight, Download, ExternalLink, Filter, House, Settings, Users } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
@@ -64,12 +64,20 @@ function Sidebar({ show, onHide }: SidebarProps) {
                     title={t('inbound')}
                     icon={<Download />}
                     activePath={pathname}
-                    matchPath="/docs/inbound/"
+                    matchPath="/docs/inbound"
                 >
-                    <SelectableLink path="/docs/inbound/" current={pathname} onSelect={handleNavLinkClick}>
+                    <SelectableLink path="/docs/inbound" current={pathname} onSelect={handleNavLinkClick}>
                         Config
                     </SelectableLink>
                 </SidebarGroup>
+
+                <SidebarItem
+                    onClick={() => handleNavLinkClick('/docs/users')}
+                    active={normalizePath(pathname) === '/docs/users'}
+                    icon={<Users />}
+                >
+                    Users
+                </SidebarItem>
 
                 <SidebarGroup
                     title={t('bypass')}
