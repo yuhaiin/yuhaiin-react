@@ -73,6 +73,7 @@ export type RPCOperation =
   | "settings.get"
   | "settings.put"
   | "subscriptions.delete"
+  | "subscriptions.delete_preview"
   | "subscriptions.get"
   | "subscriptions.put"
   | "subscriptions.update"
@@ -83,6 +84,11 @@ export type RPCOperation =
   | "update.apply"
   | "update.check"
   | "update.status"
+  | "user.delete"
+  | "user.get"
+  | "user.put"
+  | "users.get"
+  | "users.post"
 ;
 
 type LegacyRoute = { method: string; pattern: string; operation: RPCOperation };
@@ -119,6 +125,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/subscriptions", operation: "subscriptions.get" },
   { method: "PUT", pattern: "/api/v2/subscriptions", operation: "subscriptions.put" },
   { method: "DELETE", pattern: "/api/v2/subscriptions", operation: "subscriptions.delete" },
+  { method: "POST", pattern: "/api/v2/subscriptions/delete-preview", operation: "subscriptions.delete_preview" },
   { method: "POST", pattern: "/api/v2/subscriptions/update", operation: "subscriptions.update" },
   { method: "GET", pattern: "/api/v2/publishes", operation: "publishes" },
   { method: "PUT", pattern: "/api/v2/publishes/{name}", operation: "publish.put" },
@@ -131,6 +138,11 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/inbounds/{id}", operation: "inbound.get" },
   { method: "PUT", pattern: "/api/v2/inbounds/{id}", operation: "inbound.put" },
   { method: "DELETE", pattern: "/api/v2/inbounds/{id}", operation: "inbound.delete" },
+  { method: "GET", pattern: "/api/v2/users", operation: "users.get" },
+  { method: "POST", pattern: "/api/v2/users", operation: "users.post" },
+  { method: "GET", pattern: "/api/v2/users/{id}", operation: "user.get" },
+  { method: "PUT", pattern: "/api/v2/users/{id}", operation: "user.put" },
+  { method: "DELETE", pattern: "/api/v2/users/{id}", operation: "user.delete" },
   { method: "GET", pattern: "/api/v2/nodes", operation: "nodes.get" },
   { method: "POST", pattern: "/api/v2/nodes", operation: "nodes.post" },
   { method: "GET", pattern: "/api/v2/nodes/selected", operation: "nodes.selected" },

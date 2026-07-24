@@ -1,6 +1,7 @@
 "use client";
 
 import { createNode, getNode, saveNode } from "@/api/nodes";
+import { listUsers } from "@/api/users";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
@@ -13,11 +14,12 @@ import Loading, { Error as ErrorDisplay } from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
-import type { Node, NodeOrigin, NodeProtocol, NodeProtocolConfig, NodeProtocolType } from "@/contract/node";
+import type { Node, NodeProtocol, NodeProtocolConfig, NodeProtocolType } from "@/contract/node";
 import { createDefaultNode, createDefaultProtocol, normalizeNode, normalizeProtocol, patchProtocolConfig, protocolTypes } from "@/contract/node";
 import { ArrowDown, ArrowUp, Clipboard, ClipboardCheck, Plus, Trash } from "lucide-react";
 import React, { FC, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import useSWR from "swr";
 
 type NodeModalProps = {
     show: boolean;
@@ -99,10 +101,6 @@ function bytesToBase64(value: Uint8Array): string {
     let binary = "";
     value.forEach((byte) => { binary += String.fromCharCode(byte); });
     return btoa(binary);
-}
-
-function originValues(): NodeOrigin[] {
-    return ["reserve", "remote", "manual"];
 }
 
 const NodeModalComponent: FC<NodeModalProps> = ({
@@ -329,7 +327,6 @@ const NodeEditor: FC<{
                 <SettingInputVertical label="Name" value={value.name} onChange={(name) => onChange({ name })} disabled={!editable} />
                 <SettingSelectVertical label="Group" value={value.group} values={groups} onChange={(group) => onChange({ group })} disabled={!editable} />
                 <SettingInputVertical label="ID" value={value.id} onChange={(id) => onChange({ id })} disabled={!editable} />
-                <SettingSelectVertical label="Origin" value={value.origin} values={originValues()} onChange={(origin) => onChange({ origin: origin as NodeOrigin })} disabled={!editable} />
                 <div className="md:col-span-2">
                     <SwitchCard label="Enabled" checked={value.enabled} onCheckedChange={(enabled) => onChange({ enabled })} disabled={!editable} />
                 </div>
@@ -482,6 +479,19 @@ const ProtocolConfigEditor: FC<{
     );
 };
 
+const UserSelector: FC<{ value?: string; editable: boolean; onChange: (value: string) => void }> = ({ value, editable, onChange }) => {
+    const { data } = useSWR("/api/v2/users", () => listUsers(), { revalidateOnFocus: false });
+    const users = (data?.items ?? []).filter((user) => user.enabled && (user.usage === "outbound" || user.usage === "both"));
+    const items = [{ value: "", label: "No central user" }, ...users.map((user) => ({ value: user.id, label: user.name || user.id }))];
+    return (
+        <div>
+            <SettingLabel className="mb-2 block">Authentication User</SettingLabel>
+            <Select value={value ?? ""} onValueChange={onChange} items={items} disabled={!editable} placeholder="Select a managed user" />
+            <div className="mt-1 text-xs text-ui-muted">Credentials come from User Management.</div>
+        </div>
+    );
+};
+
 function protocolForm(protocol: NodeProtocol, onChange: (value: NodeProtocol) => void, editable: boolean): React.ReactNode {
     const patch = <T extends NodeProtocolType>(value: NodeProtocol<T>, patchValue: Partial<NodeProtocolConfig<T>>) => {
         onChange(patchProtocolConfig(value, patchValue) as unknown as NodeProtocol);
@@ -507,23 +517,19 @@ function protocolForm(protocol: NodeProtocol, onChange: (value: NodeProtocol) =>
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <StringField label="Hostname" value={protocol.socks5.hostname} disabled={!editable} onChange={(hostname) => patch(protocol, { hostname })} />
-                    <StringField label="User" value={protocol.socks5.user} disabled={!editable} onChange={(user) => patch(protocol, { user })} />
-                    <StringField label="Password" value={protocol.socks5.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />
+                    <UserSelector value={protocol.socks5.userId} editable={editable} onChange={(userId) => patch(protocol, { userId, user: "", password: "" })} />
                     <NumberField label="Override Port" value={protocol.socks5.override_port} disabled={!editable} onChange={(override_port) => patch(protocol, { override_port })} />
                 </div>
             );
         case "http":
             return (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <StringField label="User" value={protocol.http.user} disabled={!editable} onChange={(user) => patch(protocol, { user })} />
-                    <StringField label="Password" value={protocol.http.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />
-                </div>
+                <UserSelector value={protocol.http.userId} editable={editable} onChange={(userId) => patch(protocol, { userId, user: "", password: "" })} />
             );
         case "shadowsocks":
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <StringField label="Method" value={protocol.shadowsocks.method} disabled={!editable} onChange={(method) => patch(protocol, { method })} />
-                    <StringField label="Password" value={protocol.shadowsocks.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />
+                    <UserSelector value={protocol.shadowsocks.userId} editable={editable} onChange={(userId) => patch(protocol, { userId, password: "" })} />
                 </div>
             );
         case "shadowsocksr":
@@ -532,7 +538,7 @@ function protocolForm(protocol: NodeProtocol, onChange: (value: NodeProtocol) =>
                     <StringField label="Server" value={protocol.shadowsocksr.server} disabled={!editable} onChange={(server) => patch(protocol, { server })} />
                     <StringField label="Port" value={protocol.shadowsocksr.port} disabled={!editable} onChange={(port) => patch(protocol, { port })} />
                     <StringField label="Method" value={protocol.shadowsocksr.method} disabled={!editable} onChange={(method) => patch(protocol, { method })} />
-                    <StringField label="Password" value={protocol.shadowsocksr.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />
+                    <UserSelector value={protocol.shadowsocksr.userId} editable={editable} onChange={(userId) => patch(protocol, { userId, password: "" })} />
                     <StringField label="Obfs" value={protocol.shadowsocksr.obfs} disabled={!editable} onChange={(obfs) => patch(protocol, { obfs })} />
                     <StringField label="Obfs Param" value={protocol.shadowsocksr.obfsparam} disabled={!editable} onChange={(obfsparam) => patch(protocol, { obfsparam })} />
                     <StringField label="Protocol" value={protocol.shadowsocksr.protocol} disabled={!editable} onChange={(nextProtocol) => patch(protocol, { protocol: nextProtocol })} />
@@ -542,24 +548,24 @@ function protocolForm(protocol: NodeProtocol, onChange: (value: NodeProtocol) =>
         case "vmess":
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <StringField label="UUID" value={protocol.vmess.id} disabled={!editable} onChange={(id) => patch(protocol, { id })} />
+                    <UserSelector value={protocol.vmess.userId} editable={editable} onChange={(userId) => patch(protocol, { userId, id: "" })} />
                     <StringField label="Alter ID" value={protocol.vmess.aid} disabled={!editable} onChange={(aid) => patch(protocol, { aid })} />
                     <StringField label="Security" value={protocol.vmess.security} disabled={!editable} onChange={(security) => patch(protocol, { security })} />
                 </div>
             );
         case "vless":
-            return <StringField label="UUID" value={protocol.vless.uuid} disabled={!editable} onChange={(uuid) => patch(protocol, { uuid })} />;
+            return <UserSelector value={protocol.vless.userId} editable={editable} onChange={(userId) => patch(protocol, { userId, uuid: "" })} />;
         case "trojan":
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <StringField label="Password" value={protocol.trojan.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />
+                    <UserSelector value={protocol.trojan.userId} editable={editable} onChange={(userId) => patch(protocol, { userId, password: "" })} />
                     <StringField label="Peer" value={protocol.trojan.peer} disabled={!editable} onChange={(peer) => patch(protocol, { peer })} />
                 </div>
             );
         case "yuubinsya":
             return (
                 <div className="grid gap-4">
-                    <StringField label="Password" value={protocol.yuubinsya.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />
+                    <UserSelector value={protocol.yuubinsya.userId} editable={editable} onChange={(userId) => patch(protocol, { userId, password: "" })} />
                     <BoolField label="UDP Over Stream" value={protocol.yuubinsya.udp_over_stream} disabled={!editable} onChange={(udp_over_stream) => patch(protocol, { udp_over_stream })} />
                     <BoolField label="UDP Coalesce" value={protocol.yuubinsya.udp_coalesce} disabled={!editable} onChange={(udp_coalesce) => patch(protocol, { udp_coalesce })} />
                 </div>
@@ -614,7 +620,7 @@ function protocolForm(protocol: NodeProtocol, onChange: (value: NodeProtocol) =>
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <StringField label="Hostname" value={protocol.tailscale.hostname} disabled={!editable} onChange={(hostname) => patch(protocol, { hostname })} />
-                    <StringField label="Auth Key" value={protocol.tailscale.auth_key} disabled={!editable} onChange={(auth_key) => patch(protocol, { auth_key })} />
+                    <UserSelector value={protocol.tailscale.userId} editable={editable} onChange={(userId) => patch(protocol, { userId, auth_key: "" })} />
                     <StringField label="Control URL" value={protocol.tailscale.control_url} disabled={!editable} onChange={(control_url) => patch(protocol, { control_url })} />
                     <BoolField label="Debug" value={protocol.tailscale.debug} disabled={!editable} onChange={(debug) => patch(protocol, { debug })} />
                 </div>
@@ -631,7 +637,7 @@ function protocolForm(protocol: NodeProtocol, onChange: (value: NodeProtocol) =>
         case "aead":
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <StringField label="Password" value={protocol.aead.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />
+                    <UserSelector value={protocol.aead.userId} editable={editable} onChange={(userId) => patch(protocol, { userId, password: "" })} />
                     <StringField label="Crypto Method" value={protocol.aead.crypto_method} disabled={!editable} onChange={(crypto_method) => patch(protocol, { crypto_method })} />
                 </div>
             );

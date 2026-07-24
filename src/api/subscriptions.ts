@@ -1,5 +1,5 @@
 import { requestJSON } from "@/api/client";
-import type { Link, LinkList, Publish, PublishList, ResolvePublishResponse } from "@/contract/subscription";
+import type { DeleteImpact, Link, LinkList, Publish, PublishList, ResolvePublishResponse } from "@/contract/subscription";
 import { normalizeLink, normalizePublish } from "@/contract/subscription";
 
 export async function listSubscriptions(): Promise<LinkList> {
@@ -11,8 +11,12 @@ export async function saveSubscriptions(items: Link[]): Promise<void> {
   await requestJSON<void>("PUT", "/api/v2/subscriptions", { items: items.map(item => normalizeLink(item)) });
 }
 
-export async function deleteSubscriptions(names: string[]): Promise<void> {
-  await requestJSON<void>("DELETE", "/api/v2/subscriptions", { names });
+export async function previewDeleteSubscriptions(names: string[]): Promise<DeleteImpact> {
+  return requestJSON<DeleteImpact>("POST", "/api/v2/subscriptions/delete-preview", { names });
+}
+
+export async function deleteSubscriptions(names: string[], options: { deleteNodes?: boolean; deleteUsers?: boolean } = {}): Promise<void> {
+  await requestJSON<void>("DELETE", "/api/v2/subscriptions", { names, ...options });
 }
 
 export async function updateSubscriptions(names: string[]): Promise<void> {

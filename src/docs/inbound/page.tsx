@@ -243,41 +243,25 @@ const ProtocolConfigEditor: FC<{
 }> = ({ value, onChange }) => {
     switch (value.type) {
         case "http":
-            return (
-                <AuthFields
-                    username={value.http.username}
-                    password={value.http.password}
-                    onChange={(patch) => onChange({ ...value, http: { ...value.http, ...patch } })}
-                />
-            );
+            return <AuthManagedNotice />;
         case "mixed":
-            return (
-                <AuthFields
-                    username={value.mixed.username}
-                    password={value.mixed.password}
-                    onChange={(patch) => onChange({ ...value, mixed: { ...value.mixed, ...patch } })}
-                />
-            );
+            return <AuthManagedNotice />;
         case "socks5":
             return (
                 <div className="grid gap-4">
-                    <AuthFields
-                        username={value.socks5.username}
-                        password={value.socks5.password}
-                        onChange={(patch) => onChange({ ...value, socks5: { ...value.socks5, ...patch } })}
-                    />
+                    <AuthManagedNotice />
                     <SwitchCard label="UDP" checked={value.socks5.udp} onCheckedChange={(udp) => onChange({ ...value, socks5: { ...value.socks5, udp } })} />
                 </div>
             );
         case "yuubinsya":
             return (
                 <div className="grid gap-4">
-                    <SettingInputVertical label="Password" value={value.yuubinsya.password} onChange={(password) => onChange({ ...value, yuubinsya: { ...value.yuubinsya, password } })} />
+                    <AuthManagedNotice />
                     <SwitchCard label="UDP Coalesce" checked={value.yuubinsya.udpCoalesce} onCheckedChange={(udpCoalesce) => onChange({ ...value, yuubinsya: { ...value.yuubinsya, udpCoalesce } })} />
                 </div>
             );
         case "socks4a":
-            return <SettingInputVertical label="Username" value={value.socks4a.username} onChange={(username) => onChange({ ...value, socks4a: { ...value.socks4a, username } })} />;
+            return <AuthManagedNotice />;
         case "tproxy":
             return (
                 <div className="grid gap-4">
@@ -304,14 +288,9 @@ const ProtocolConfigEditor: FC<{
     }
 };
 
-const AuthFields: FC<{
-    username: string;
-    password: string;
-    onChange: (patch: { username?: string; password?: string }) => void;
-}> = ({ username, password, onChange }) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <SettingInputVertical label="Username" value={username} onChange={(next) => onChange({ username: next })} />
-        <SettingInputVertical label="Password" value={password} onChange={(next) => onChange({ password: next })} />
+const AuthManagedNotice: FC = () => (
+    <div className="rounded-ui-lg border border-dashed border-ui-border bg-ui-surface-muted p-4 text-sm text-ui-muted">
+        Authentication is managed centrally in User Management. This inbound automatically accepts enabled inbound users.
     </div>
 );
 
@@ -673,7 +652,7 @@ const TransportConfigEditor: FC<{
         case "aead":
             return (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <SettingInputVertical label="Password" value={value.aead.password} onChange={(password) => onChange({ ...value, aead: { ...value.aead, password } })} />
+                    <AuthManagedNotice />
                     <SettingInputVertical label="Crypto Method" value={value.aead.cryptoMethod} onChange={(cryptoMethod) => onChange({ ...value, aead: { ...value.aead, cryptoMethod } })} />
                 </div>
             );
