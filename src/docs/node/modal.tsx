@@ -14,7 +14,7 @@ import Loading, { Error as ErrorDisplay } from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
-import type { Node, NodeOrigin, NodeProtocol, NodeProtocolConfig, NodeProtocolType } from "@/contract/node";
+import type { Node, NodeProtocol, NodeProtocolConfig, NodeProtocolType } from "@/contract/node";
 import { createDefaultNode, createDefaultProtocol, normalizeNode, normalizeProtocol, patchProtocolConfig, protocolTypes } from "@/contract/node";
 import { ArrowDown, ArrowUp, Clipboard, ClipboardCheck, Plus, Trash } from "lucide-react";
 import React, { FC, useContext, useEffect, useMemo, useState } from "react";
@@ -101,10 +101,6 @@ function bytesToBase64(value: Uint8Array): string {
     let binary = "";
     value.forEach((byte) => { binary += String.fromCharCode(byte); });
     return btoa(binary);
-}
-
-function originValues(): NodeOrigin[] {
-    return ["reserve", "remote", "manual"];
 }
 
 const NodeModalComponent: FC<NodeModalProps> = ({
@@ -331,7 +327,6 @@ const NodeEditor: FC<{
                 <SettingInputVertical label="Name" value={value.name} onChange={(name) => onChange({ name })} disabled={!editable} />
                 <SettingSelectVertical label="Group" value={value.group} values={groups} onChange={(group) => onChange({ group })} disabled={!editable} />
                 <SettingInputVertical label="ID" value={value.id} onChange={(id) => onChange({ id })} disabled={!editable} />
-                <SettingSelectVertical label="Origin" value={value.origin} values={originValues()} onChange={(origin) => onChange({ origin: origin as NodeOrigin })} disabled={!editable} />
                 <div className="md:col-span-2">
                     <SwitchCard label="Enabled" checked={value.enabled} onCheckedChange={(enabled) => onChange({ enabled })} disabled={!editable} />
                 </div>

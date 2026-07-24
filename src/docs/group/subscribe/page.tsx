@@ -1,6 +1,6 @@
 "use client"
 
-import { deleteSubscriptions, listSubscriptions, saveSubscriptions, updateSubscriptions } from "@/api/subscriptions";
+import { deleteSubscriptions, listSubscriptions, previewDeleteSubscriptions, saveSubscriptions, updateSubscriptions } from "@/api/subscriptions";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { CardList, IconBox, IconBoxRounded, MainContainer, SettingsBox } from "@/component/v2/card";
@@ -81,7 +81,7 @@ function Subscribe() {
     const { data, error, isLoading, mutate } = useSWR("/api/v2/subscriptions", listSubscriptions);
     const [updating, setUpdating] = useState<Record<string, boolean>>({});
     const [showAddModal, setShowAddModal] = useState(false);
-    const [confirmDelete, setConfirmDelete] = useState<{ show: boolean, name: string }>({ show: false, name: "" });
+    const [confirmDelete, setConfirmDelete] = useState({ show: false, name: "", nodes: 0, users: 0, deleteNodes: false, deleteUsers: false, loading: false });
     const { copy, copied, manualCopyModal } = useClipboard({ usePromptAsFallback: true });
 
     useEffect(() => { if (copied) ctx.Info("Copied to clipboard") }, [copied, ctx]);
@@ -101,9 +101,19 @@ function Subscribe() {
     };
 
     const handleDelete = (name: string) => {
-        deleteSubscriptions([name])
+        deleteSubscriptions([name], { deleteNodes: confirmDelete.deleteNodes, deleteUsers: confirmDelete.deleteUsers })
             .then(() => mutate())
             .catch((err) => ctx.Error(`delete ${name} failed, ${err.code ?? 500}| ${err.msg ?? err}`));
+    };
+
+    const prepareDelete = (name: string) => {
+        setConfirmDelete({ show: true, name, nodes: 0, users: 0, deleteNodes: false, deleteUsers: false, loading: true });
+        previewDeleteSubscriptions([name])
+            .then((impact) => setConfirmDelete(prev => ({ ...prev, nodes: impact.nodes, users: impact.users, loading: false })))
+            .catch((err) => {
+                setConfirmDelete(prev => ({ ...prev, show: false, loading: false }));
+                ctx.Error(`inspect ${name} failed, ${err.code ?? 500}| ${err.msg ?? err}`);
+            });
     };
 
     const handleAdd = (item: Link) => {
@@ -118,9 +128,28 @@ function Subscribe() {
             <ConfirmModal
                 show={confirmDelete.show}
                 title="Delete Subscription"
-                content={<p>Are you sure you want to remove subscription <strong>{confirmDelete.name}</strong>?</p>}
-                onOk={() => { handleDelete(confirmDelete.name); setConfirmDelete({ show: false, name: "" }); }}
-                onHide={() => setConfirmDelete({ show: false, name: "" })}
+                content={
+                    confirmDelete.loading ? <div className="text-sm text-ui-muted">Checking linked nodes and users…</div> : (
+                        <div className="space-y-3 text-sm">
+                            <p>Remove subscription <strong>{confirmDelete.name}</strong>?</p>
+                            <label className="flex items-center gap-2">
+                                <input type="checkbox" checked={confirmDelete.deleteNodes} onChange={(e) => setConfirmDelete(prev => ({ ...prev, deleteNodes: e.target.checked }))} />
+                                <span>Delete linked nodes ({confirmDelete.nodes})</span>
+                            </label>
+                            <label className="flex items-center gap-2">
+                                <input type="checkbox" checked={confirmDelete.deleteUsers} onChange={(e) => setConfirmDelete(prev => ({ ...prev, deleteUsers: e.target.checked }))} />
+                                <span>Delete subscription-created users ({confirmDelete.users})</span>
+                            </label>
+                            <p className="text-xs text-ui-muted">Users still used by another node or subscription will be kept.</p>
+                        </div>
+                    )
+                }
+                onOk={() => {
+                    if (confirmDelete.loading) return;
+                    handleDelete(confirmDelete.name);
+                    setConfirmDelete(prev => ({ ...prev, show: false }));
+                }}
+                onHide={() => setConfirmDelete(prev => ({ ...prev, show: false }))}
             />
             <AddLinkModal show={showAddModal} onHide={() => setShowAddModal(false)} onSave={handleAdd} />
             <CardList
@@ -132,7 +161,7 @@ function Subscribe() {
                         linkData={value}
                         isUpdating={!!updating[value.name]}
                         onUpdate={() => handleUpdate(value.name)}
-                        onDelete={() => setConfirmDelete({ show: true, name: value.name })}
+                        onDelete={() => prepareDelete(value.name)}
                     />
                 )}
                 header={

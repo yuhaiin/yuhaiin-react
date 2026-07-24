@@ -60,9 +60,9 @@ export default function UsersPage() {
             usage: selected.usage,
             type: selected.credential.type,
             username: selected.credential.username ?? "",
-            password: "",
-            uuid: "",
-            token: "",
+            password: selected.credential.password ?? "",
+            uuid: selected.credential.uuid ?? "",
+            token: selected.credential.token ?? "",
         });
     }, [selected]);
 

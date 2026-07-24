@@ -790,6 +790,15 @@ export namespace Go {
     export interface LinkNames {
       names: string[];
     }
+    export interface DeleteLinksRequest {
+      names: string[];
+      deleteNodes: boolean;
+      deleteUsers: boolean;
+    }
+    export interface DeleteImpact {
+      nodes: number;
+      users: number;
+    }
     export interface Publish {
       name: string;
       points: string[];
@@ -913,6 +922,9 @@ export namespace Go {
     export interface CredentialView {
       type: CredentialType;
       username?: string;
+      password?: string;
+      uuid?: string;
+      token?: string;
       hasUsername?: boolean;
       hasSecret: boolean;
     }
