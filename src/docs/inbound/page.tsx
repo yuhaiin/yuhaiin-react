@@ -10,6 +10,8 @@ import { Select, SettingInputVertical, SettingSelectVertical, SwitchCard } from 
 import { Textarea } from "@/component/v2/input";
 import { InputBytesList, InputList } from "@/component/v2/listeditor";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
+import { PageHeader } from "@/component/v2/page-header";
+import { FlowRail, PageStatStrip } from "@/component/v2/page-patterns";
 import { Spinner } from "@/component/v2/spinner";
 import {
     createDefaultInbound,
@@ -29,7 +31,7 @@ import {
     ServerTLSConfig,
     TLSAutoTransport,
 } from "@/contract/inbound";
-import { ArrowDown, ArrowUp, Check, ChevronRight, DoorOpen, LogIn, Plus, Save, Settings, Trash } from "lucide-react";
+import { Activity, ArrowDown, ArrowRight, ArrowUp, Check, ChevronRight, DoorOpen, Gauge, LogIn, Plus, Save, Settings, ShieldCheck, Trash } from "lucide-react";
 import { FC, useContext, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import Loading, { Error as ErrorDisplay } from "../../component/v2/loading";
@@ -95,7 +97,7 @@ const InboundEditor: FC<{
                 label="Enabled"
                 checked={inbound.enabled}
                 onCheckedChange={(enabled) => onChange(normalizeInbound({ ...inbound, enabled }))}
-                className="p-4 rounded-lg bg-ui-surface-muted"
+                            className="rounded-ui-xl border border-ui-border bg-ui-surface-muted p-4"
             />
             <SettingInputVertical
                 label="Name"
@@ -135,12 +137,20 @@ const TypeUseRow: FC<{
     onUse: () => void;
     useLabel?: string;
 }> = ({ label, value, values, onValueChange, onUse, useLabel = "Use" }) => (
-    <div className="mb-4 flex items-center">
-        <SettingLabel className="mb-0 mr-4 whitespace-nowrap" style={{ minWidth: "auto" }}>{label}</SettingLabel>
-        <div className="mr-2 grow">
-            <Select value={value} onValueChange={onValueChange} items={values.map((item) => ({ value: item, label: item }))} />
+    <div className="mb-5 rounded-ui-lg border border-ui-border bg-ui-surface-muted p-4">
+        <div className="mb-3 flex items-start justify-between gap-3">
+            <div>
+                <div className="ui-section-label mb-1">Choose a foundation</div>
+                <SettingLabel className="mb-0 text-sm font-bold normal-case tracking-normal text-ui-heading">{label}</SettingLabel>
+            </div>
+            <span className="rounded-full bg-ui-primary-soft px-2.5 py-1 text-[11px] font-semibold text-ui-primary">Current: {value}</span>
         </div>
-        <Button onClick={onUse}>{useLabel}</Button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="min-w-0 flex-1">
+                <Select value={value} onValueChange={onValueChange} items={values.map((item) => ({ value: item, label: item }))} />
+            </div>
+            <Button className="shrink-0" onClick={onUse}>{useLabel}</Button>
+        </div>
     </div>
 );
 
@@ -662,10 +672,11 @@ const TransportConfigEditor: FC<{
 const InboundModal: FC<{
     show: boolean;
     id: string;
+    initial?: Inbound;
     onHide: (save?: boolean) => void;
     onDelete: () => void;
     isNew?: boolean;
-}> = ({ show, id, onHide, onDelete, isNew }) => {
+}> = ({ show, id, initial, onHide, onDelete, isNew }) => {
     const ctx = useContext(GlobalToastContext);
     const [saving, setSaving] = useState(false);
     const [draft, setDraft] = useState<Inbound>(() => createDefaultInbound(id));
@@ -679,8 +690,8 @@ const InboundModal: FC<{
 
     useEffect(() => {
         if (!show) return;
-        setDraft(createDefaultInbound(id));
-    }, [show, id, isNew]);
+        setDraft(initial ? normalizeInbound(initial) : createDefaultInbound(id));
+    }, [show, id, isNew, initial]);
 
     useEffect(() => {
         if (data) setDraft(normalizeInbound(data));
@@ -757,6 +768,78 @@ const InboundModal: FC<{
     );
 };
 
+type InboundPreset = {
+    key: string;
+    title: string;
+    description: string;
+    protocol: InboundProtocol["type"];
+    network: InboundNetwork["type"];
+    transport: InboundTransport["type"];
+};
+
+const inboundPresets: InboundPreset[] = [
+    {
+        key: "web",
+        title: "Web proxy",
+        description: "A simple HTTP and HTTPS entry point for browsers and apps.",
+        protocol: "mixed",
+        network: "tcp_udp",
+        transport: "normal",
+    },
+    {
+        key: "socks",
+        title: "SOCKS5 proxy",
+        description: "A flexible local proxy for apps that support SOCKS5.",
+        protocol: "socks5",
+        network: "tcp_udp",
+        transport: "normal",
+    },
+    {
+        key: "transparent",
+        title: "Transparent routing",
+        description: "Accept device traffic without configuring each app separately.",
+        protocol: "tproxy",
+        network: "empty",
+        transport: "normal",
+    },
+];
+
+const InboundStarterModal: FC<{
+    show: boolean;
+    onHide: () => void;
+    onChoose: (preset: InboundPreset) => void;
+}> = ({ show, onHide, onChoose }) => (
+    <Modal open={show} onOpenChange={(open) => !open && onHide()}>
+        <ModalContent className="max-w-[680px]">
+            <ModalHeader closeButton>
+                <div>
+                    <ModalTitle className="font-bold">Add an entry point</ModalTitle>
+                    <p className="mt-1 text-sm font-normal text-ui-muted">Start with a use case. You can fine-tune every option next.</p>
+                </div>
+            </ModalHeader>
+            <ModalBody>
+                <div className="grid gap-3 sm:grid-cols-3">
+                    {inboundPresets.map((preset) => (
+                        <button
+                            key={preset.key}
+                            type="button"
+                            className="group rounded-ui-xl border border-ui-border bg-ui-surface p-4 text-left transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-ui-primary/40 hover:shadow-ui-card"
+                            onClick={() => onChoose(preset)}
+                        >
+                            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-ui-lg bg-ui-primary-soft text-ui-primary">
+                                <DoorOpen size={19} />
+                            </div>
+                            <div className="font-semibold text-ui-heading">{preset.title}</div>
+                            <div className="mt-2 text-xs leading-relaxed text-ui-muted">{preset.description}</div>
+                            <div className="mt-4 text-xs font-semibold text-ui-primary opacity-0 transition-opacity group-hover:opacity-100">Choose this →</div>
+                        </button>
+                    ))}
+                </div>
+            </ModalBody>
+        </ModalContent>
+    </Modal>
+);
+
 const InboundItem: FC<{ item: Inbound }> = ({ item }) => {
     return (
         <>
@@ -772,22 +855,22 @@ const InboundItem: FC<{ item: Inbound }> = ({ item }) => {
                         </Badge>
                     </div>
                 </div>
-                <div className="grid min-w-0 gap-2 text-xs text-ui-muted sm:grid-cols-2 lg:grid-cols-4">
+                <div className="ui-inbound-meta-grid grid min-w-0 gap-2 text-xs text-ui-muted sm:grid-cols-2 lg:grid-cols-4">
                     <div className="min-w-0">
-                        <span className="mr-1 text-ui-muted/70">Protocol</span>
-                        <span className="font-medium text-ui-fg">{item.protocol.type}</span>
+                        <span className="ui-inbound-meta-label text-ui-muted/70">Protocol</span>
+                        <span className="ui-inbound-meta-value font-medium text-ui-fg">{item.protocol.type}</span>
                     </div>
                     <div className="min-w-0">
-                        <span className="mr-1 text-ui-muted/70">Network</span>
-                        <span className="font-medium text-ui-fg">{item.network.type}</span>
+                        <span className="ui-inbound-meta-label text-ui-muted/70">Network</span>
+                        <span className="ui-inbound-meta-value font-medium text-ui-fg">{item.network.type}</span>
                     </div>
                     <div className="min-w-0">
-                        <span className="mr-1 text-ui-muted/70">Listen</span>
-                        <span className="truncate font-mono font-medium text-ui-fg">{inboundListen(item) || "-"}</span>
+                        <span className="ui-inbound-meta-label text-ui-muted/70">Listen</span>
+                        <span className="ui-inbound-meta-value truncate font-mono font-medium text-ui-fg">{inboundListen(item) || "-"}</span>
                     </div>
                     <div className="min-w-0">
-                        <span className="mr-1 text-ui-muted/70">Transport</span>
-                        <span className="truncate font-mono font-medium text-ui-fg">{transportLabel(item) || "-"}</span>
+                        <span className="ui-inbound-meta-label text-ui-muted/70">Transport</span>
+                        <span className="ui-inbound-meta-value truncate font-mono font-medium text-ui-fg">{transportLabel(item) || "-"}</span>
                     </div>
                 </div>
             </div>
@@ -842,7 +925,7 @@ const InboundConfigCard: FC = () => {
                 {apiError ? (
                     <ErrorMsg msg={apiError.msg} code={String(apiError.code)} raw={errorRaw(apiError.raw)} />
                 ) : (
-                    <div className="grid gap-3 md:grid-cols-3">
+                    <div className="ui-inbound-config-grid grid gap-3">
                         <SwitchCard
                             label="DNS Hijack"
                             description="Intercept DNS requests from inbound traffic."
@@ -871,10 +954,38 @@ const InboundConfigCard: FC = () => {
     );
 };
 
+function InboundOverview({ items }: { items: Inbound[] }) {
+    const active = items.filter((item) => item.enabled).length;
+    const protocols = new Set(items.map((item) => item.protocol.type)).size;
+    const listeners = items.map((item) => inboundListen(item)).filter(Boolean).slice(0, 2).join(" · ") || "No listeners yet";
+
+    return (
+        <>
+            <PageStatStrip
+                stats={[
+                    { label: "Listening now", value: active, hint: `${items.length} configured entry points`, icon: Activity, tone: "success" },
+                    { label: "Protocol mix", value: protocols, hint: "protocol families", icon: Gauge, tone: "primary" },
+                    { label: "DNS protection", value: "Ready", hint: "hijack + sniffing", icon: ShieldCheck, tone: "violet" },
+                    { label: "Local addresses", value: listeners, hint: "first two listeners", icon: DoorOpen, tone: "warning" },
+                ]}
+            />
+            <FlowRail
+                steps={[
+                    { label: "Your devices", value: "Apps & devices", icon: Activity },
+                    { label: "Inbound layer", value: `${active} active entry points`, icon: DoorOpen },
+                    { label: "Protected path", value: "Ready to route", icon: ArrowRight },
+                ]}
+            />
+        </>
+    );
+}
+
 export default function InboudComponent() {
     const ctx = useContext(GlobalToastContext);
     const [page, setPage] = useState(1);
     const [showdata, setShowdata] = useState({ show: false, id: "", new: false });
+    const [starterOpen, setStarterOpen] = useState(false);
+    const [newInboundInitial, setNewInboundInitial] = useState<Inbound | undefined>();
     const { data, error, isLoading, mutate } = useSWR(
         `/api/v2/inbounds?page=${page}&pageSize=${PAGE_SIZE}`,
         () => listInbounds({ page, pageSize: PAGE_SIZE }),
@@ -901,49 +1012,80 @@ export default function InboudComponent() {
             });
     };
 
-    const handleCreate = (id: string) => {
-        if (items.some((item) => item.id === id)) {
-            ctx.Error(`Inbound ${id} already exists`);
-            return;
-        }
-        setShowdata({ show: true, id, new: true });
-    };
-
     return (
-        <MainContainer>
+        <MainContainer className="product-page page-skin-network page-skin-inbound">
+            <PageHeader
+                eyebrow="Build your network"
+                title="Inbound"
+                description="Choose how devices and apps enter your private network, then tune the route details when you need to."
+                icon={LogIn}
+                actions={<Button onClick={() => setStarterOpen(true)}><Plus className="mr-1" size={16} /> Add entry point</Button>}
+            />
+            <InboundOverview items={items} />
+            <InboundStarterModal
+                show={starterOpen}
+                onHide={() => setStarterOpen(false)}
+                onChoose={(preset) => {
+                    const id = newInboundID();
+                    setNewInboundInitial(normalizeInbound({
+                        ...createDefaultInbound(id),
+                        name: preset.title,
+                        enabled: true,
+                        network: createDefaultNetwork(preset.network),
+                        protocol: createDefaultProtocol(preset.protocol),
+                        transports: [createDefaultTransport(preset.transport)],
+                    }));
+                    setStarterOpen(false);
+                    setShowdata({ show: true, id, new: true });
+                }}
+            />
             <InboundModal
                 show={showdata.show}
                 id={showdata.id}
                 isNew={showdata.new}
+                initial={newInboundInitial}
                 onHide={(save) => {
                     if (save) void mutate();
                     setShowdata((prev) => ({ ...prev, show: false }));
+                    setNewInboundInitial(undefined);
                 }}
                 onDelete={deleteCurrentInbound}
             />
 
-            <InboundConfigCard />
+            <div className="ui-inbound-workspace">
+                <section className="ui-inbound-settings-column">
+                    <div className="ui-section-label mb-2">Traffic protection</div>
+                    <h2 className="ui-inbound-section-title">How traffic enters</h2>
+                    <p className="ui-inbound-section-description">Set the rules that apply before an entry point hands traffic to your network.</p>
+                    <InboundConfigCard />
+                </section>
 
-            <CardRowList
-                layout="list"
-                paginated
-                pageSize={PAGE_SIZE}
-                currentPage={data.page.page || page}
-                totalItems={data.page.total}
-                onPageChange={setPage}
-                items={items}
-                getKey={(item) => item.id}
-                renderListItem={(item) => <InboundItem item={item} />}
-                onClickItem={(item) => setShowdata({ show: true, id: item.id, new: false })}
-                header={
-                    <div className="flex w-full items-center justify-between gap-3">
-                        <IconBox icon={DoorOpen} tone="primary" title="Entry Points" description={`${data.page.total} inbounds`} />
-                        <Button size="sm" onClick={() => handleCreate(newInboundID())}>
-                            <Plus className="mr-1" size={16} /> Add
-                        </Button>
-                    </div>
-                }
-            />
+                <section className="ui-inbound-list-column">
+                    <div className="ui-section-label mb-2">Entry points</div>
+                    <h2 className="ui-inbound-section-title">Devices and apps</h2>
+                    <p className="ui-inbound-section-description">Open an entry point to edit its protocol, listener, and transport.</p>
+                    <CardRowList
+                        layout="list"
+                        paginated
+                        pageSize={PAGE_SIZE}
+                        currentPage={data.page.page || page}
+                        totalItems={data.page.total}
+                        onPageChange={setPage}
+                        items={items}
+                        getKey={(item) => item.id}
+                        renderListItem={(item) => <InboundItem item={item} />}
+                        onClickItem={(item) => setShowdata({ show: true, id: item.id, new: false })}
+                        header={
+                            <div className="flex w-full items-center justify-between gap-3">
+                                <IconBox icon={DoorOpen} tone="primary" title="Configured entry points" description={`${data.page.total} inbounds`} />
+                                <Button size="sm" onClick={() => setStarterOpen(true)}>
+                                    <Plus className="mr-1" size={16} /> Add
+                                </Button>
+                            </div>
+                        }
+                    />
+                </section>
+            </div>
         </MainContainer>
     );
 }

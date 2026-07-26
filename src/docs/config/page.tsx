@@ -5,13 +5,13 @@ import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardHeader, IconBox, MainContainer, SettingLabel } from "@/component/v2/card";
 import { SettingInputVertical, SettingRangeVertical, SwitchCard } from "@/component/v2/forms";
 import Loading, { Error } from "@/component/v2/loading";
-import { Spinner } from "@/component/v2/spinner";
+import { PageHeader } from "@/component/v2/page-header";
+import { PageStatStrip } from "@/component/v2/page-patterns";
 import { GlobalToastContext } from "@/component/v2/toast";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import type { Settings } from "@/contract/settings";
-import { Cpu, Globe, NotebookText, Save } from "lucide-react";
+import { Cpu, Gauge, Globe, NotebookText, Save, ShieldCheck } from "lucide-react";
 import { useContext, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
 import useSWR from "swr";
 import { useInterfaces } from "../../common/interfaces";
 
@@ -52,7 +52,26 @@ function ConfigComponent() {
     if (isLoading || setting === undefined) return <Loading />
 
     return (
-        <MainContainer>
+        <MainContainer className="product-page page-skin-workspace page-skin-settings">
+            <PageHeader
+                eyebrow="Workspace"
+                title="Settings"
+                description="Keep network behavior, logging, and performance preferences in one calm workspace."
+                icon={Globe}
+                actions={<Button onClick={handleSave} disabled={saving}><Save size={16} className="mr-1" /> Save changes</Button>}
+            />
+            <PageStatStrip
+                stats={[
+                    { label: "IPv6", value: setting.ipv6 ? "On" : "Off", hint: "network capability", icon: Globe, tone: "primary" },
+                    { label: "System proxy", value: systemProxy.length ? systemProxy.join(" + ") : "Off", hint: "desktop integration", icon: ShieldCheck, tone: "success" },
+                    { label: "Log level", value: setting.logcat.level, hint: setting.logcat.save ? "persistent" : "session only", icon: NotebookText, tone: "violet" },
+                    { label: "Advanced", value: setting.pprof ? "Profiling on" : "Balanced", hint: "runtime posture", icon: Gauge, tone: "warning" },
+                ]}
+                className="mb-5"
+            />
+            <div className="ui-settings-workspace ui-settings-workspace--single">
+                <div className="ui-settings-panels">
+            <section id="general">
             <Card>
                 <CardHeader className="py-3">
                     <IconBox icon={Globe} tone="primary" title="General Settings" description="Network and system integration" />
@@ -112,7 +131,9 @@ function ConfigComponent() {
                     </div>
                 </CardBody>
             </Card>
+            </section>
 
+            <section id="logging">
             <Card>
                 <CardHeader className="py-3">
                     <IconBox icon={NotebookText} tone="success" title="Logging (Logcat)" description="Debug and error reporting" />
@@ -151,7 +172,9 @@ function ConfigComponent() {
                     </div>
                 </CardBody>
             </Card>
+            </section>
 
+            <section id="performance">
             <Card>
                 <CardHeader className="py-3">
                     <IconBox icon={Cpu} tone="warning" title="Performance & Advanced" description="Buffer sizes and concurrency limits" />
@@ -189,23 +212,10 @@ function ConfigComponent() {
                     </div>
                 </CardBody>
             </Card>
+            </section>
+                </div>
+            </div>
 
-            {createPortal(
-                <div className="fixed bottom-10 right-10 z-[100] sm:bottom-12 sm:right-12">
-                    <Button
-                        variant="primary"
-                        size="icon"
-                        className="h-12 w-12 rounded-full shadow-xl"
-                        disabled={saving}
-                        onClick={handleSave}
-                        aria-label="Save all settings"
-                        title="Save all settings"
-                    >
-                        {saving ? <Spinner size="sm" /> : <Save size={20} />}
-                    </Button>
-                </div>,
-                document.body,
-            )}
         </MainContainer>
     );
 }

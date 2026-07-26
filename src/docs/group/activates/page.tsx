@@ -3,7 +3,7 @@
 import { activeNodes, closeNode } from "@/api/nodes";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
-import { CardList, IconBox, IconBoxRounded, MainContainer } from "@/component/v2/card";
+import { CardList, IconBoxRounded, MainContainer } from "@/component/v2/card";
 import { ConfirmModal } from "@/component/v2/confirm";
 import Loading, { Error } from "@/component/v2/loading";
 import { GlobalToastContext } from "@/component/v2/toast";
@@ -12,6 +12,9 @@ import { Activity, Hash, Info, Power, Zap } from "lucide-react";
 import { FC, useContext, useMemo, useState } from "react";
 import useSWR from "swr";
 import { NodeModal } from "../../node/modal";
+import { PageHeader } from "@/component/v2/page-header";
+import { PageStatStrip } from "@/component/v2/page-patterns";
+import { ResourceWorkspace } from "@/component/v2/resource-workspace";
 
 const ActiveNodeItem: FC<{ v: Node, onClose: () => void }> = ({ v, onClose }) => {
     return (
@@ -80,7 +83,7 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
     };
 
     return (
-        <MainContainer>
+        <MainContainer className="product-page page-skin-network page-skin-active">
             <NodeModal
                 show={nodeModal.show}
                 node={nodeModal.node}
@@ -99,20 +102,36 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
                 onOk={() => handleCloseNode(confirmData.id)}
             />
 
-            <CardList
-                items={sortedNodes}
-                animated={false}
-                renderListItem={(v) => <ActiveNodeItem v={v} onClose={() => setConfirmData({ show: true, id: v.id })} />}
-                onClickItem={(v) => setNodeModal({ show: true, node: v })}
-                header={
-                    <div className="flex items-center justify-between w-full">
-                        <IconBox icon={Activity} tone="success" title="Active Nodes" description="Live outbound connection instances" />
-                        <Badge variant="success" className="bg-ui-success-soft text-ui-success border border-ui-success/25 px-3 py-2 rounded-full">
-                            {sortedNodes.length} Running
-                        </Badge>
-                    </div>
-                }
+            <PageHeader
+                eyebrow="Outbound"
+                title="Active connections"
+                description="Inspect the outbound instances currently serving traffic and close one if needed."
+                icon={Activity}
+                actions={<Badge variant="success" className="bg-ui-success-soft text-ui-success border border-ui-success/25 px-3 py-2 rounded-full">{sortedNodes.length} Running</Badge>}
             />
+            <PageStatStrip
+                stats={[
+                    { label: "Running", value: sortedNodes.length, hint: "active outbound paths", icon: Activity, tone: "success" },
+                    { label: "Protocols", value: new Set(sortedNodes.map((node) => node.chain[0]?.type)).size, hint: "protocol families", icon: Zap, tone: "primary" },
+                    { label: "Closable", value: sortedNodes.length, hint: "sessions you can stop", icon: Power, tone: "violet" },
+                    { label: "Health", value: sortedNodes.length ? "Serving" : "Idle", hint: "current runtime state", icon: Activity, tone: "warning" },
+                ]}
+                className="mb-5"
+            />
+            <ResourceWorkspace
+                icon={Activity}
+                eyebrow="Runtime"
+                title="What is serving traffic"
+                description="This is the live outbound runtime, not the saved node list. Close an instance here when you need it to reconnect cleanly."
+                links={[{ label: "Saved nodes", href: "#/docs/group/" }, { label: "Live connections", href: "#/docs/connections/v2" }]}
+            >
+                <CardList
+                    items={sortedNodes}
+                    animated={false}
+                    renderListItem={(v) => <ActiveNodeItem v={v} onClose={() => setConfirmData({ show: true, id: v.id })} />}
+                    onClickItem={(v) => setNodeModal({ show: true, node: v })}
+                />
+            </ResourceWorkspace>
 
             {showFooter &&
                 <div className="text-center mt-4 opacity-50 pb-5">

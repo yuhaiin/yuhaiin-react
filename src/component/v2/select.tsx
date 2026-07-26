@@ -60,7 +60,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
             disabled={disabled}
         >
             <SelectPrimitive.Trigger className={clsx(
-                "flex min-w-0 items-center justify-between overflow-hidden rounded-ui-md px-3 text-sm leading-none h-field gap-[5px] bg-ui-bg text-ui-fg border border-ui-border w-full cursor-pointer",
+                "ui-select-trigger flex min-w-0 items-center justify-between overflow-hidden rounded-ui-md px-3 text-sm leading-none h-field gap-[5px] bg-ui-bg text-ui-fg border border-ui-border w-full cursor-pointer",
                 ui.interactive,
                 ui.focusRing,
                 "hover:bg-ui-surface-muted hover:border-ui-border data-[state=open]:border-ui-primary",
@@ -200,7 +200,7 @@ const DropdownSelectComponent: FC<{
             <DropdownTrigger asChild>
                 <div
                     className={clsx(
-                        "flex items-center justify-between rounded-ui-md px-3 text-sm leading-none h-field gap-[5px] bg-ui-bg text-ui-fg border border-ui-border w-full cursor-pointer",
+                        "ui-select-trigger flex items-center justify-between rounded-ui-md px-3 text-sm leading-none h-field gap-[5px] bg-ui-bg text-ui-fg border border-ui-border w-full cursor-pointer",
                         ui.interactive,
                         ui.focusRing,
                         "hover:bg-ui-surface-muted hover:border-ui-border data-[state=open]:border-ui-primary",

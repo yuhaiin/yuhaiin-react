@@ -4,6 +4,8 @@ import { applyUpdate, checkUpdate, getUpdateStatus } from "@/api/update";
 import { getInfo } from "@/api/settings";
 import { Card, CardBody, CardFooter, CardHeader, IconBadge, IconBox, IconBoxRounded, ListItem, MainContainer, SettingLabel } from '@/component/v2/card';
 import { Button } from "@/component/v2/button";
+import { PageHeader } from "@/component/v2/page-header";
+import { ResourceWorkspace } from "@/component/v2/resource-workspace";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { UpdateChannel, UpdateCheck, UpdateStatus } from "@/contract/update";
@@ -157,7 +159,15 @@ export default function About() {
     if (isLoading || isValidating || !info) return <Loading />
 
     return (
-        <MainContainer className="flex flex-col">
+        <MainContainer className="product-page page-skin-workspace page-skin-about flex flex-col">
+            <PageHeader eyebrow="Workspace" title="About yuhaiin" description="Version information, update channel, and the story behind this private network companion." icon={Info} />
+            <ResourceWorkspace
+                icon={Info}
+                eyebrow="Workspace"
+                title="Know what is running"
+                description="Version, build, and update controls live together so support details are easy to find when something changes."
+                links={[{ label: "Documents", href: "#/docs/config/documents" }, { label: "Licenses", href: "#/docs/config/licenses" }]}
+            >
             <Card className="order-2">
                 <CardHeader className="py-3">
                     <IconBox icon={Info} tone="violet" title='System Information' description='Software version and build environment' />
@@ -195,11 +205,11 @@ export default function About() {
 
                 {/* Build Tags / Features Section */}
                 {info.build && info.build.length > 0 && (
-                    <CardFooter className="p-4 bg-transparent border-t border-gray-500/10">
+                    <CardFooter className="p-4 bg-ui-surface-muted/45 border-t border-ui-border">
                         <SettingLabel className={"mb-2 block text-ui-muted"}>Build Parameters</SettingLabel>
                         <div className="flex flex-wrap gap-2">
                             {info.build.map((tag, idx) => (
-                                <div key={idx} className="px-2 py-1 rounded border font-mono text-sm break-all dark:border-gray-700">
+                                <div key={idx} className="px-2 py-1 rounded-ui-sm border border-ui-border bg-ui-surface-muted font-mono text-sm break-all">
                                     {tag}
                                 </div>
                             ))}
@@ -290,6 +300,8 @@ export default function About() {
                     </div>
                 </CardBody>
             </Card>
+
+            </ResourceWorkspace>
 
             <div className="order-3 text-center mt-4 opacity-50 pb-12">
                 <small className="text-ui-muted">

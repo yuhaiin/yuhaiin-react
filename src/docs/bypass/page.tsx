@@ -11,6 +11,8 @@ import { Input } from "@/component/v2/input";
 import Loading from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Pagination } from "@/component/v2/pagination";
+import { PageHeader } from "@/component/v2/page-header";
+import { PageStatStrip } from "@/component/v2/page-patterns";
 import { RouteActivationProgress } from "@/component/v2/route-activation-progress";
 import { Select } from "@/component/v2/select";
 import { Spinner } from "@/component/v2/spinner";
@@ -243,10 +245,44 @@ function BypassComponent() {
     if (isLoading || !data) return <Loading />
 
     return (
-        <MainContainer>
-            <RouteConfigCard resolvers={editorOptions.resolvers} />
-            <RouteActivationProgress status={activation} onApplied={mutateActivation} />
-            <CardList
+        <MainContainer className="product-page page-skin-rules page-skin-routing">
+            <PageHeader
+                eyebrow="Traffic decisions"
+                title="Routing rules"
+                description="Shape where traffic goes with readable rules, resolvers, and a clear top-to-bottom order."
+                icon={Route}
+                actions={<Button onClick={() => setCreating(true)}><Plus size={16} className="mr-1" /> Add rule</Button>}
+            />
+            <PageStatStrip
+                stats={[
+                    { label: "Rules", value: data.page.total, hint: "evaluated top to bottom", icon: Route, tone: "violet" },
+                    { label: "Enabled", value: data.items.filter((item) => !item.disabled).length, hint: "active decisions", icon: Power, tone: "success" },
+                    { label: "Proxy paths", value: data.items.filter((item) => item.mode === "proxy").length, hint: "forwarded traffic", icon: ShieldCheck, tone: "primary" },
+                    { label: "Direct / bypass", value: data.items.filter((item) => item.mode === "direct" || item.mode === "bypass").length, hint: "local exits", icon: ArrowUpDown, tone: "warning" },
+                ]}
+                className="mb-4"
+            />
+            <div className="ui-rules-workspace">
+                <section className="ui-rules-setup">
+                    <div className="ui-workspace-section-heading">
+                        <div>
+                            <div className="ui-section-label">Policy defaults</div>
+                            <h2>Before a rule matches</h2>
+                        </div>
+                        <span>Resolver choices used by the route engine</span>
+                    </div>
+                    <RouteConfigCard resolvers={editorOptions.resolvers} />
+                    <RouteActivationProgress status={activation} onApplied={mutateActivation} />
+                </section>
+                <section className="ui-rules-list-section">
+                    <div className="ui-workspace-section-heading">
+                        <div>
+                            <div className="ui-section-label">Decision order</div>
+                            <h2>Rules that match</h2>
+                        </div>
+                        <span>Read top to bottom</span>
+                    </div>
+                    <CardList
                 density="compact"
                 items={data.items}
                 getKey={(v) => `${v.name}-${v.index}`}
@@ -274,7 +310,9 @@ function BypassComponent() {
                     </div>
                 }
                 footer={<Pagination currentPage={data.page.page || page} totalItems={data.page.total} pageSize={data.page.pageSize || PAGE_SIZE} onPageChange={setPage} />}
-            />
+                    />
+                </section>
+            </div>
             <RuleEditorModal item={editing} options={editorOptions} onSaved={saved} onClose={() => setEditing(null)} />
             <PriorityModal item={priorityItem} items={allRules?.items ?? data.items} onSaved={saved} onClose={() => setPriorityItem(null)} />
             <CreateRuleModal open={creating} options={editorOptions} onSaved={saved} onClose={() => setCreating(false)} />

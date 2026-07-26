@@ -83,13 +83,13 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
                   }
                 }}
                 className={clsx(
-                  "bg-ui-surface/80 backdrop-blur-[8px] rounded-ui-sm border border-ui-border shadow-ui-card flex flex-col overflow-hidden",
+                  "ui-toast bg-ui-surface/80 backdrop-blur-[8px] rounded-ui-sm border border-ui-border shadow-ui-card flex flex-col overflow-hidden",
                   toast.type === 'info' && "border-l-4 border-l-ui-info",
                   toast.type === 'error' && "border-l-4 border-l-ui-danger"
                 )}
                 style={{ listStyle: 'none' }} // Ensure checking CSS doesn't fail
               >
-                <div className="flex justify-between items-center py-[0.5rem] px-[0.75rem] bg-ui-surface-muted/60 border-b border-ui-border">
+                <div className="ui-toast-header flex justify-between items-center py-[0.5rem] px-[0.75rem] bg-ui-surface-muted/60 border-b border-ui-border">
                   <ToastPrimitive.Title className="text-[0.85rem] font-bold text-ui-fg m-0">
                     {toast.type === 'error' ? t('toast.systemError') : t('toast.notification')}
                   </ToastPrimitive.Title>

@@ -1,8 +1,7 @@
 import { AuthTokenKey } from '@/common/apiurl';
 import { Button } from '@/component/v2/button';
-import { Card, CardBody, CardFooter, CardHeader, CardTitle } from '@/component/v2/card';
 import { Input } from '@/component/v2/input';
-import { Lock, LogIn, User } from 'lucide-react';
+import { Lock, Network, Sparkles, User } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -26,18 +25,30 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-ui-bg p-4">
-            <Card className="w-full max-w-md !mb-0 shadow-xl">
-                <CardHeader>
-                    <CardTitle className="text-xl">
-                        <LogIn className="mr-2" size={24} />
-                        {t('title')}
-                    </CardTitle>
-                </CardHeader>
+        <div className="login-shell">
+            <div className="login-orbit login-orbit-one" />
+            <div className="login-orbit login-orbit-two" />
+            <div className="login-layout">
+                <section className="login-intro">
+                    <div className="product-brand-mark login-brand-mark"><Sparkles size={22} /></div>
+                    <p className="login-eyebrow">Your private network</p>
+                    <h1>Everything connected,<br /><span>quietly in your control.</span></h1>
+                    <p className="login-description">A friendly control room for routes, nodes, and the traffic moving through your own network.</p>
+                    <div className="login-trust-row"><Network size={16} /> <span>Local-first · private by default</span></div>
+                </section>
+
+                <section className="login-card">
+                    <div className="login-card-heading">
+                        <div>
+                            <p className="ui-section-label mb-2">Welcome back</p>
+                            <h2>{t('title')}</h2>
+                        </div>
+                        <div className="login-card-icon"><Lock size={18} /></div>
+                    </div>
                 <form onSubmit={handleLogin}>
-                    <CardBody className="space-y-4">
+                    <div className="login-form-body">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-ui-muted">{t('username')}</label>
+                            <label className="ui-form-label">{t('username')}</label>
                             <div className="relative">
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" size={18} />
                                 <Input
@@ -50,7 +61,7 @@ export default function LoginPage() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-ui-muted">{t('password')}</label>
+                            <label className="ui-form-label">{t('password')}</label>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" size={18} />
                                 <Input
@@ -62,14 +73,16 @@ export default function LoginPage() {
                                 />
                             </div>
                         </div>
-                    </CardBody>
-                    <CardFooter className="flex justify-end pt-2">
-                        <Button type="submit" className="w-full !rounded-lg h-10">
+                    </div>
+                    <div className="login-form-footer">
+                        <Button type="submit" className="w-full h-11">
                             {t('signIn')}
                         </Button>
-                    </CardFooter>
+                        <p>Use the credentials configured on your yuhaiin controller.</p>
+                    </div>
                 </form>
-            </Card>
+                </section>
+            </div>
         </div>
     );
 }

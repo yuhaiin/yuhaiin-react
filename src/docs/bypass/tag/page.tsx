@@ -8,6 +8,9 @@ import { CardRowList, FilterSearch, IconBox, MainContainer, SettingLabel, Settin
 import { Input } from "@/component/v2/input";
 import Loading from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
+import { PageHeader } from "@/component/v2/page-header";
+import { PageStatStrip } from "@/component/v2/page-patterns";
+import { ResourceWorkspace } from "@/component/v2/resource-workspace";
 import { Select, type SelectItem } from "@/component/v2/select";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
@@ -214,9 +217,26 @@ function Tags() {
     if (isLoading || !data) return <Loading />
 
     return (
-        <MainContainer>
+        <MainContainer className="product-page page-skin-rules page-skin-tags">
+            <PageHeader eyebrow="Traffic decisions" title="Route tags" description="Keep reusable node and route groups easy to recognize across your rules." icon={TagsIcon} />
+            <PageStatStrip
+                stats={[
+                    { label: "Tags", value: data.page.total, hint: "reusable labels", icon: TagsIcon, tone: "violet" },
+                    { label: "Node tags", value: data.items.filter((item) => item.type === "node").length, hint: "point to outbounds", icon: Network, tone: "primary" },
+                    { label: "Route tags", value: data.items.filter((item) => item.type !== "node").length, hint: "match rule groups", icon: Copy, tone: "success" },
+                    { label: "Targets", value: data.items.reduce((total, item) => total + item.hash.length, 0), hint: "linked resources", icon: Network, tone: "warning" },
+                ]}
+                className="mb-5"
+            />
             <NodeModal show={nodeModal.show} id={nodeModal.id} readOnly onHide={() => setNodeModal({ show: false })} />
             <TagModal show={adding || editing !== undefined} item={editing} onHide={() => { setAdding(false); setEditing(undefined); }} onSaved={mutate} onDeleted={mutate} />
+            <ResourceWorkspace
+                icon={TagsIcon}
+                eyebrow="Rules library"
+                title="Name the paths you reuse"
+                description="Tags give nodes and route groups a stable name, so routing rules stay readable as the network grows."
+                links={[{ label: "Route lists", href: "#/docs/bypass/list" }, { label: "Routing", href: "#/docs/bypass" }]}
+            >
             <CardRowList
                 layout="grid"
                 paginated
@@ -276,6 +296,7 @@ function Tags() {
                     </div>
                 }
             />
+            </ResourceWorkspace>
         </MainContainer>
     );
 }

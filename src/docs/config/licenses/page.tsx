@@ -4,11 +4,14 @@ import { getLicenses } from "@/api/tools";
 import { Badge } from "@/component/v2/badge";
 import { Card, CardBody, CardHeader, IconBox, ListItem, MainContainer } from '@/component/v2/card';
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
+import { PageHeader } from "@/component/v2/page-header";
+import { ResourceWorkspace } from "@/component/v2/resource-workspace";
 import type { License } from "@/contract/tools";
 import { FileText, Heart, Link, ShieldCheck } from "lucide-react";
 import { FC, useState } from "react";
 import useSWR from "swr";
 import Loading, { Error } from "../../../component/v2/loading";
+import "./licenses.css";
 
 const LicenseItem: FC<{ item: License, index: number }> = ({ item, index }) => {
     return (
@@ -68,7 +71,15 @@ export default function Licenses() {
     const currentList = activeTab === "yuhaiin" ? data.yuhaiin : data.android;
 
     return (
-        <MainContainer className="h-full flex flex-col">
+        <MainContainer className="product-page page-skin-workspace page-skin-licenses h-full flex flex-col">
+            <PageHeader eyebrow="Workspace" title="Licenses" description="A transparent list of the open-source projects that make yuhaiin possible." icon={FileText} />
+            <ResourceWorkspace
+                icon={FileText}
+                eyebrow="Transparency"
+                title="Built in the open"
+                description="Every dependency is listed by platform so you can understand what ships inside the app."
+                links={[{ label: "About yuhaiin", href: "#/docs/config/about" }, { label: "Documents", href: "#/docs/config/documents" }]}
+            >
             <Card className="flex-1 mb-0 flex flex-col">
                 <CardHeader className="py-3">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-3">
@@ -80,12 +91,13 @@ export default function Licenses() {
                         />
 
                         {/* Top-mounted Tab Navigation styled as a modern toggle bar */}
-                        <div className="bg-transparent p-1 rounded-lg inline-flex min-w-[220px]">
+                        <div className="ui-license-tab-shell">
                             <ToggleGroup
                                 type="single"
                                 value={activeTab}
                                 onValueChange={(v) => v && setActiveTab(v)}
-                                className="w-full"
+                                className="ui-license-tabs w-full"
+                                noSlide
                             >
                                 <ToggleItem value="yuhaiin" className="flex-grow py-1 px-3 text-[0.85rem]">
                                     Core
@@ -104,6 +116,7 @@ export default function Licenses() {
                     </div>
                 </CardBody>
             </Card>
+            </ResourceWorkspace>
 
             <div className="text-center mt-1 opacity-50">
                 <small className="text-ui-muted">

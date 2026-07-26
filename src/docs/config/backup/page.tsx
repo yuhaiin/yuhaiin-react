@@ -4,6 +4,8 @@ import { getBackupConfig, restoreBackup, runBackup, saveBackupConfig } from "@/a
 import { Button } from "@/component/v2/button"
 import { Card, CardBody, CardFooter, CardHeader, IconBox, ListItem, MainContainer, SettingLabel } from "@/component/v2/card"
 import { ConfirmModal } from "@/component/v2/confirm"
+import { PageHeader } from "@/component/v2/page-header"
+import { ResourceWorkspace } from "@/component/v2/resource-workspace"
 import { SettingInputVertical, SettingPasswordVertical, SwitchCard } from "@/component/v2/forms"
 import Loading, { Error } from "@/component/v2/loading"
 import { Spinner } from "@/component/v2/spinner"
@@ -64,7 +66,8 @@ function BackupPage() {
     if (isLoading || !data) return <Loading />
 
     return (
-        <MainContainer>
+        <MainContainer className="product-page page-skin-workspace page-skin-backup">
+            <PageHeader eyebrow="Workspace" title="Backups" description="Protect your configuration and restore it safely when moving between devices." icon={CloudUpload} />
             <ConfirmModal
                 show={showConfirmModal}
                 title="Restore Backup"
@@ -73,6 +76,13 @@ function BackupPage() {
                 onHide={() => setShowConfirmModal(false)}
             />
 
+            <ResourceWorkspace
+                icon={CloudUpload}
+                eyebrow="Workspace"
+                title="Keep a recoverable copy"
+                description="Set the identity, schedule, and storage target for backups. Restore is separated below because it replaces current configuration."
+                links={[{ label: "Settings", href: "#/docs/config" }, { label: "Logs", href: "#/docs/config/log" }]}
+            >
             <Card>
                 <CardHeader className="py-3">
                     <IconBox icon={ShieldCheck} tone="primary" title="Backup Instance" description="Identification and timing" />
@@ -93,7 +103,7 @@ function BackupPage() {
                         />
                         <div className="md:col-span-2">
                             <SettingLabel>Last Backup Hash</SettingLabel>
-                            <ListItem className="cursor-default bg-black/10 dark:bg-white/10">
+                            <ListItem className="ui-backup-hash cursor-default">
                                 <Hash className="mr-2 text-ui-muted" size={16} />
                                 <span className="font-mono text-sm truncate opacity-75">
                                     {data.lastBackupHash || "No backup records found"}
@@ -171,6 +181,8 @@ function BackupPage() {
                     </div>
                 </CardFooter>
             </Card>
+
+            </ResourceWorkspace>
 
             <div className="text-center mt-3 opacity-50 pb-20">
                 <small className="text-ui-muted">

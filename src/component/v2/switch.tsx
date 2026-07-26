@@ -13,7 +13,7 @@ interface SwitchProps {
   disabled?: boolean;
 }
 
-const switchTrackClass = clsx(ui.switchTrack, ui.focusRing);
+const switchTrackClass = clsx("ui-switch", ui.switchTrack, ui.focusRing);
 
 const SwitchComponent: React.FC<SwitchProps> = ({ checked, onCheckedChange, label, description, disabled }) => {
   const isChecked = Boolean(checked);
@@ -46,7 +46,7 @@ export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ lab
   return (
     <div
       className={clsx(
-        "flex items-center cursor-pointer px-3 py-3 rounded-ui-md bg-ui-surface-muted border border-ui-border transition-all duration-200 mb-2 hover:bg-ui-hover hover:border-ui-primary/40 hover:-translate-y-[2px]",
+        "ui-switch-card flex items-center cursor-pointer px-3 py-3 rounded-ui-md bg-ui-surface-muted border border-ui-border transition-all duration-200 mb-2 hover:bg-ui-hover hover:border-ui-primary/40 hover:-translate-y-[2px]",
         "justify-between",
         className,
         disabled && "opacity-60 pointer-events-none"

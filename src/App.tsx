@@ -38,12 +38,13 @@ const variants = {
 
 function AppContent() {
     const { direction, location } = useSmartAnimation();
+    const routeLocation = location.split('?')[0] || '/';
 
     useEffect(() => {
         window.Android?.setRefreshEnabled?.(!location.includes('/docs/config/log'))
     }, [location])
 
-    const isLogin = location === '/login';
+    const isLogin = routeLocation === '/login';
     const content = (
         <div className={clsx(
             'relative w-auto min-h-screen h-screen overflow-hidden box-border',
@@ -61,12 +62,13 @@ function AppContent() {
                         'absolute inset-0 box-border h-full w-full',
                         'overflow-y-auto overflow-x-hidden',
                         'will-change-[transform,opacity]',
+                        'app-page',
                         !isLogin && 'pt-[80px] px-[20px] pb-[20px]',
-                        !isLogin && 'lg:pt-[20px] lg:pl-[292px]'
+                        !isLogin && 'lg:pt-[18px] lg:pl-[260px]'
                     )}
                     transition={{ duration: 0.5, ease: "easeInOut" }}
                 >
-                    <Router hook={() => [location, () => { }] as const}>
+                    <Router hook={() => [routeLocation, () => { }] as const}>
                         <Switch>
                             {appRoutes.map(({ path, component }) => (
                                 <Route key={path} path={path} component={component} />

@@ -14,7 +14,7 @@ const ToggleGroup = ({ className, children, value, noSlide, ...props }: React.Co
 
     return (
         <ToggleGroupPrimitive.Root
-            className={clsx("inline-flex bg-transparent rounded-full", className)}
+            className={clsx("ui-toggle-group inline-flex bg-transparent rounded-full", className)}
             value={value as any}
             {...props}
         >
@@ -44,7 +44,7 @@ const ToggleItem = ({ className, children, value, ...props }: React.ComponentPro
     return (
         <ToggleGroupPrimitive.Item
             className={clsx(
-                "bg-transparent text-sidebar-color border border-sidebar-border py-[6px] px-[12px] text-[0.875rem] font-medium cursor-pointer transition-all duration-200 flex items-center justify-center -mr-px whitespace-nowrap",
+                "ui-toggle-item bg-transparent text-sidebar-color border border-sidebar-border py-[6px] px-[12px] text-[0.875rem] font-medium cursor-pointer transition-all duration-200 flex items-center justify-center -mr-px whitespace-nowrap",
                 "first:rounded-l-ui-md last:rounded-r-ui-md last:mr-0",
                 "hover:!bg-sidebar-hover hover:z-10",
                 "data-[state=on]:bg-transparent data-[state=on]:text-sidebar-active data-[state=on]:border-sidebar-active data-[state=on]:z-20 data-[state=on]:shadow-none data-[state=on]:font-semibold",

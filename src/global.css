@@ -452,6 +452,158 @@ html[data-bs-theme="light"] {
     --scrollbar-thumb-active: rgba(255, 255, 255, 0.6);
 }
 
+/* -------------------------------------------------------------------------- */
+/* Friendly product surface                                                   */
+/* -------------------------------------------------------------------------- */
+
+:root,
+html[data-bs-theme="light"] {
+    --bs-body-color: #24324a;
+    --bs-body-color-rgb: 36, 50, 74;
+    --bs-body-bg: #f7f8fc;
+    --bs-body-bg-rgb: 247, 248, 252;
+    --bs-emphasis-color: #17233a;
+    --bs-emphasis-color-rgb: 23, 35, 58;
+    --bs-secondary-color: rgba(77, 91, 116, 0.8);
+    --bs-secondary-color-rgb: 77, 91, 116;
+    --bs-secondary-bg: #eef2f8;
+    --bs-tertiary-bg: #f3f6fb;
+    --bs-heading-color: #17233a;
+    --bs-link-color: #2f7de1;
+    --bs-link-hover-color: #1d62bf;
+    --bs-border-color: #e4e9f1;
+    --bs-border-color-translucent: rgba(78, 98, 130, 0.14);
+
+    --sidebar-bg: #fbfcff;
+    --sidebar-color: #70809a;
+    --sidebar-header-color: #17233a;
+    --sidebar-border-color: #e7ebf3;
+    --sidebar-hover-bg: #f0f5fc;
+    --sidebar-active-bg: #e8f2ff;
+    --sidebar-active-color: #2f7de1;
+    --sidebar-box-shadow: 14px 0 42px -36px rgba(40, 64, 105, 0.45);
+    --divider-color: #e7ebf3;
+
+    --card-inner-border: rgba(78, 98, 130, 0.08);
+    --card-footer-bg: #f8faff;
+    --list-item-bg: #fbfcff;
+    --list-item-hover: #f4f8fe;
+    --list-item-border-hover: #d7e6fb;
+    --new-item-dashed: #cbd7e8;
+    --new-item-focus: #eef5ff;
+    --input-text-color: #24324a;
+    --input-placeholder: #9aa8bb;
+    --modal-settings-bg: #f5f8fc;
+    --modal-settings-border: #e4eaf3;
+    --modal-error-bg: #fff1f2;
+    --modal-label-color: #70809a;
+
+    --color-bg: #f7f8fc;
+    --color-fg: #24324a;
+    --color-muted: #70809a;
+    --color-heading: #17233a;
+    --color-surface: #ffffff;
+    --color-surface-muted: #f4f7fb;
+    --color-list-row: #fbfcff;
+    --color-list-row-hover: #f4f8fe;
+    --color-list-row-border-hover: #d7e6fb;
+    --color-border: #e4e9f1;
+    --color-hover: #f0f5fc;
+    --color-primary: #2f7de1;
+    --color-primary-soft: #e8f2ff;
+    --color-danger: #df6674;
+    --color-danger-soft: #fff0f2;
+    --color-success: #2eb88f;
+    --color-success-soft: #e7f8f2;
+    --color-warning: #d89b38;
+    --color-warning-soft: #fff6e7;
+    --color-info: #38a9c2;
+    --color-info-soft: #e8f8fb;
+    --color-chip: #edf2f8;
+    --color-chip-fg: #64738b;
+    --color-focus: rgba(47, 125, 225, 0.22);
+    --color-violet: #766be7;
+    --color-violet-soft: #f0edff;
+    --shadow-card: 0 12px 28px -20px rgba(50, 73, 110, 0.32);
+    --shadow-elevated: 0 24px 52px -26px rgba(50, 73, 110, 0.3);
+    --shadow-focus: 0 0 0 3px var(--color-focus);
+    --shadow-inner-subtle: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+    --radius-ui-sm: 10px;
+    --radius-ui-md: 14px;
+    --radius-ui-lg: 18px;
+    --radius-ui-xl: 24px;
+    --height-field: 42px;
+    --height-field-sm: 36px;
+    --height-list-row: 76px;
+}
+
+html,
+body,
+#root {
+    min-height: 100%;
+    background: var(--color-bg);
+}
+
+/* Keep dark controls flat; the light-theme inset highlight otherwise leaks
+   through :root and creates a bright line along the top edge. */
+html[data-bs-theme="dark"] {
+    --shadow-inner-subtle: none;
+}
+
+/* Node search inherits the same calm field treatment as every other product
+   control; keep this hook only for the old selector's compatibility. */
+input.node-search-input {
+    box-shadow: none;
+}
+
+body {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: -0.006em;
+}
+
+button,
+input,
+textarea,
+select {
+    font-family: inherit;
+}
+
+.ui-page-heading {
+    color: var(--color-heading);
+    font-size: clamp(1.35rem, 1.8vw, 1.8rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.ui-page-description {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+}
+
+.ui-section-label {
+    color: var(--color-muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.ui-page-toolbar {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: space-between;
+    margin: 0 auto 1.25rem;
+    max-width: 1180px;
+}
+
+@media (max-width: 1023px) {
+    .ui-page-toolbar {
+        padding-top: 0.25rem;
+    }
+}
+
 /* Also support system preference if no specific theme attribute is set */
 @media (prefers-color-scheme: dark) {
     :root:not([data-bs-theme="light"]) {

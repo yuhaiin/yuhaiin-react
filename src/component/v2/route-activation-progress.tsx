@@ -47,7 +47,7 @@ export function RouteActivationProgress({ status, onApplied }: { status?: RouteA
     };
 
     return (
-        <Card className="mb-4 border-ui-primary/35 bg-ui-primary/5">
+        <Card className="ui-activation-card mb-4 border-ui-primary/35 bg-ui-primary/5">
             <CardBody>
                 <div className="mb-2 flex flex-wrap items-center justify-between gap-3 text-sm">
                     <div>

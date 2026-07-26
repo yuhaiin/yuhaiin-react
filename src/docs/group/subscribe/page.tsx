@@ -3,13 +3,16 @@
 import { deleteSubscriptions, listSubscriptions, previewDeleteSubscriptions, saveSubscriptions, updateSubscriptions } from "@/api/subscriptions";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
-import { CardList, IconBox, IconBoxRounded, MainContainer, SettingsBox } from "@/component/v2/card";
+import { CardList, IconBoxRounded, MainContainer, SettingsBox } from "@/component/v2/card";
 import { ConfirmModal } from "@/component/v2/confirm";
 import { SettingInputVertical } from "@/component/v2/forms";
 import { SettingSelectVertical } from "@/component/v2/select";
 import Loading, { Error } from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Spinner } from "@/component/v2/spinner";
+import { PageHeader } from "@/component/v2/page-header";
+import { PageStatStrip } from "@/component/v2/page-patterns";
+import { ResourceWorkspace } from "@/component/v2/resource-workspace";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { Link } from "@/contract/subscription";
 import { CloudDownload, Plus, RefreshCw, Rss, Trash } from "lucide-react";
@@ -123,7 +126,7 @@ function Subscribe() {
     };
 
     return (
-        <MainContainer>
+        <MainContainer className="product-page page-skin-network page-skin-subscriptions">
             {manualCopyModal}
             <ConfirmModal
                 show={confirmDelete.show}
@@ -152,31 +155,43 @@ function Subscribe() {
                 onHide={() => setConfirmDelete(prev => ({ ...prev, show: false }))}
             />
             <AddLinkModal show={showAddModal} onHide={() => setShowAddModal(false)} onSave={handleAdd} />
-            <CardList
-                items={[...data.items].sort((a, b) => a.name.localeCompare(b.name))}
-                onClickItem={(v) => copy(v.url)}
-                renderListItem={(value) => (
-                    <LinkItem
-                        key={value.name}
-                        linkData={value}
-                        isUpdating={!!updating[value.name]}
-                        onUpdate={() => handleUpdate(value.name)}
-                        onDelete={() => prepareDelete(value.name)}
-                    />
-                )}
-                header={
-                    <>
-                        <div className="flex items-center">
-                            <IconBox icon={CloudDownload} tone="primary" />
-                            <div>
-                                <h5 className="mb-0 font-bold">Subscriptions</h5>
-                                <small className="text-ui-muted">Manage remote configuration links</small>
-                            </div>
-                        </div>
-                        <Button onClick={() => setShowAddModal(true)}><Plus className="me-1" size={16} /> Add</Button>
-                    </>
-                }
+            <PageHeader
+                eyebrow="Outbound"
+                title="Subscriptions"
+                description="Keep remote node sources together and refresh them when you need new routes."
+                icon={CloudDownload}
+                actions={<Button onClick={() => setShowAddModal(true)}><Plus className="me-1" size={16} /> Add subscription</Button>}
             />
+            <PageStatStrip
+                stats={[
+                    { label: "Sources", value: data.items.length, hint: "remote node feeds", icon: CloudDownload, tone: "primary" },
+                    { label: "Refreshing", value: Object.keys(updating).length, hint: "active updates", icon: RefreshCw, tone: "success" },
+                    { label: "Node formats", value: new Set(data.items.map((item) => item.type)).size, hint: "parser types", icon: Rss, tone: "violet" },
+                    { label: "Delivery", value: "Automatic", hint: "refresh on demand", icon: CloudDownload, tone: "warning" },
+                ]}
+                className="mb-5"
+            />
+            <ResourceWorkspace
+                icon={CloudDownload}
+                eyebrow="Network sources"
+                title="Keep routes fresh"
+                description="Subscriptions are remote sources. Refresh one when you want new nodes, then manage the resulting nodes from Outbound."
+                links={[{ label: "Outbound nodes", href: "#/docs/group/" }, { label: "Publish configs", href: "#/docs/group/publish" }]}
+            >
+                <CardList
+                    items={[...data.items].sort((a, b) => a.name.localeCompare(b.name))}
+                    onClickItem={(v) => copy(v.url)}
+                    renderListItem={(value) => (
+                        <LinkItem
+                            key={value.name}
+                            linkData={value}
+                            isUpdating={!!updating[value.name]}
+                            onUpdate={() => handleUpdate(value.name)}
+                            onDelete={() => prepareDelete(value.name)}
+                        />
+                    )}
+                />
+            </ResourceWorkspace>
         </MainContainer>
     );
 }

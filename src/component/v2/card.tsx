@@ -23,7 +23,7 @@ export const Card: FC<{
 }> = ({ children, className, style, interactive = false, noMargin = false, density = "normal" }) => (
     <div
         className={clsx(
-            "flex flex-col relative overflow-hidden",
+            "ui-card flex flex-col relative overflow-hidden",
             ui.card,
             interactive && ui.cardInteractive,
             !noMargin && (density === "compact" ? "mb-4" : "mb-8"),
@@ -36,13 +36,13 @@ export const Card: FC<{
 );
 
 export const CardHeader: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
-    <div className={clsx("flex flex-wrap items-center justify-between gap-3 px-3 py-3 border-b border-ui-border", className)} style={style}>
+        <div className={clsx("ui-card-header flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-ui-border/80", className)} style={style}>
         {children}
     </div>
 );
 
 export const CardBody: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties, density?: Density }> = ({ children, className, style, density = "normal" }) => (
-    <div className={clsx("grow", density === "compact" ? "p-4" : "p-6", className)} style={style}>
+    <div className={clsx("ui-card-body grow", density === "compact" ? "p-5" : "p-6", className)} style={style}>
         {children}
     </div>
 );
@@ -63,7 +63,7 @@ export const CardFooter: FC<{
     <div
         className={clsx(
             compact ? "px-4 py-3" : "px-6 py-4",
-            "bg-transparent",
+            "ui-card-footer bg-transparent",
             bordered && "border-t border-ui-border",
             className
         )}
@@ -84,6 +84,7 @@ export const ListItem: FC<{
 }> = ({ children, className, style, onClick, selected = false, disabled = false, density = "normal" }) => (
     <div
         className={clsx(
+            "ui-list-row",
             ui.listRow,
             density === "compact" && "min-h-0 p-3",
             selected && "border-ui-primary bg-ui-primary-soft text-ui-primary",
@@ -433,13 +434,13 @@ export const IconBadge: FC<{ icon: React.ElementType, text: string | number, col
 );
 
 export const MainContainer: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
-    <div className={clsx("min-w-0 w-full", className)} style={style}>
+    <div className={clsx("ui-main-container min-w-0 w-full max-w-[1180px] mx-auto pb-8", className)} style={style}>
         {children}
     </div>
 );
 
 export const SettingsBox: FC<{ children: React.ReactNode }> = ({ children }) => (
-    <div className="p-6 bg-ui-surface-muted border border-ui-border rounded-ui-sm transition-colors duration-300">
+    <div className="ui-settings-box p-5 bg-ui-surface-muted border border-ui-border rounded-ui-lg transition-colors duration-300">
         {children}
     </div>
 );
@@ -476,15 +477,15 @@ export const IconBox: FC<{
 }> = ({ icon: Icon, color, tone, borderColor, background, className, textClassName, style, title, description }) => {
     const resolved = resolveIconToneStyle({ tone, color, borderColor, background });
     return (
-        <div className="flex items-center min-w-0">
+        <div className="ui-icon-box flex items-center min-w-0">
             <div
-                className={clsx("flex shrink-0 items-center justify-center w-icon-lg h-icon-lg mr-5 text-xl rounded-ui-lg border", className)}
+                className={clsx("ui-icon-box-mark flex shrink-0 items-center justify-center w-icon-lg h-icon-lg mr-5 text-xl rounded-ui-lg border", className)}
                 style={{ color: resolved.color, borderColor: resolved.borderColor, background: resolved.background, ...style }}
             >
                 <Icon />
             </div>
             {title &&
-                <div className={clsx("overflow-hidden", textClassName)} title={`${title}${description ? ` - ${description}` : ''}`}>
+                <div className={clsx("ui-icon-box-copy overflow-hidden", textClassName)} title={`${title}${description ? ` - ${description}` : ''}`}>
                     <h5 className="mb-0 font-bold truncate text-ui-heading">{title}</h5>
                     <small className="block text-ui-muted truncate">{description}</small>
                 </div>
@@ -523,7 +524,7 @@ export const FilterSearch: FC<{
     const { t } = useTranslation('common');
     const [filterInput, setFilterInput] = useState('');
     return (
-        <div className={clsx("relative", className)} style={style}>
+        <div className={clsx("ui-filter-search relative", className)} style={style}>
             <div
                 className={clsx("absolute top-1/2 -translate-y-1/2 text-ui-muted pointer-events-none", size === 'sm' ? "left-[0.8rem]" : "left-4")}
             >
@@ -535,7 +536,7 @@ export const FilterSearch: FC<{
                 placeholder={t('state.search')}
                 onKeyDown={(e) => e.key === 'Enter' && onEnter(filterInput.toLowerCase())}
                 className={clsx(
-                    "w-full bg-ui-surface-muted border border-ui-border rounded-full focus:bg-ui-bg focus:border-ui-primary focus:outline-none transition-colors",
+                    "ui-filter-input w-full bg-ui-surface-muted border border-ui-border rounded-full focus:bg-ui-bg focus:border-ui-primary focus:outline-none transition-colors",
                     size === 'sm' ? "h-8 pl-10 text-sm" : "h-10 pl-12",
                     inputClassName
                 )}
@@ -548,7 +549,7 @@ export const FilterSearch: FC<{
 
 export const ErrorMsg: FC<{ msg: string, code?: string, raw?: string }> = ({ msg, code, raw }) => {
     return (
-        <div className="p-4 rounded-ui-sm bg-ui-danger-soft text-ui-danger border border-ui-danger/30">
+        <div className="ui-error-box p-4 rounded-ui-sm bg-ui-danger-soft text-ui-danger border border-ui-danger/30">
             <h4 className="font-semibold text-lg mb-2">{code} - {msg}</h4>
             <pre className="mb-0 text-sm whitespace-pre-wrap">{raw}</pre>
         </div>

@@ -4,7 +4,7 @@ import { getTotalFlow } from "@/api/connections";
 import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datalist";
 import type { Connection, Counter, MatchHistoryEntry, TotalFlow } from "@/contract/connection";
 import { clsx } from "clsx";
-import { Check, X } from "lucide-react";
+import { Activity, ArrowDown, ArrowUp, Check, Radio, X } from "lucide-react";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -225,17 +225,14 @@ const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral" 
     return (
         <div
             className={clsx(
-                "relative flex min-h-[92px] flex-col justify-center overflow-hidden rounded-ui-xl border bg-[var(--metric-bg)] p-4 shadow-ui-card transition-colors",
-                "border-[var(--metric-border)] hover:border-ui-primary/25",
-                accent === "download" && "before:absolute before:inset-y-3 before:left-0 before:w-0.5 before:rounded-full before:bg-ui-info",
-                accent === "upload" && "before:absolute before:inset-y-3 before:left-0 before:w-0.5 before:rounded-full before:bg-ui-success",
+                "ui-live-flow-metric",
+                accent === "download" && "is-download",
+                accent === "upload" && "is-upload",
             )}
         >
-            <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--metric-label,#64748b)]">
-                {label}
-            </div>
+            <div className="ui-live-flow-metric-label"><span className="ui-live-flow-metric-dot" />{label}</div>
             <div className={clsx(
-                "truncate font-mono text-[1.35rem] font-bold leading-tight text-[var(--metric-value,#0f172a)]",
+                "ui-live-flow-metric-value",
                 pulse && "animate-dataUpdate",
                 error && "text-ui-danger"
             )}>
@@ -254,22 +251,38 @@ export const FlowCard: FC<{
     const loading = t("common:state.loading");
     const hasExtra = Boolean(extra_fields?.length);
 
+    const downloadRate = lastFlow ? lastFlow.DownloadString() : loading;
+    const uploadRate = lastFlow ? lastFlow.UploadString() : loading;
+
     return (
-        <div
-            className={clsx(
-                "mb-3 grid w-full gap-3",
-                hasExtra
-                    ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
-                    : "grid-cols-1 sm:grid-cols-2 xl:grid-cols-4"
-            )}
-        >
-            <MetricCard accent="download" label={t("totalDownload")} value={lastFlow ? lastFlow.DownloadTotalString() : loading} error={flow_error} />
-            <MetricCard accent="download" label={t("downloadRate")} value={lastFlow ? lastFlow.DownloadString() : loading} error={flow_error} />
-            <MetricCard accent="upload" label={t("totalUpload")} value={lastFlow ? lastFlow.UploadTotalString() : loading} error={flow_error} />
-            <MetricCard accent="upload" label={t("uploadRate")} value={lastFlow ? lastFlow.UploadString() : loading} error={flow_error} />
-            {extra_fields?.map((field, index) => (
-                <MetricCard key={`extra-field-${index}`} label={field.label} value={field.value || loading} error={field.error} />
-            ))}
+        <div className="ui-live-flow-panel mb-3">
+            <section className="ui-live-flow-now" aria-label="Live throughput">
+                <div className="ui-live-flow-heading">
+                    <div>
+                        <div className="ui-live-flow-eyebrow"><Activity size={14} /> Live throughput</div>
+                        <p>Current traffic across active connections</p>
+                    </div>
+                    <span className={clsx("ui-live-flow-status", flow_error && "is-warning")}><Radio size={12} /> {flow_error ? "Needs attention" : "Updating"}</span>
+                </div>
+                <div className="ui-live-flow-rates">
+                    <div className="ui-live-flow-rate is-download">
+                        <ArrowDown size={17} />
+                        <span><small>Download</small><strong className={flow_error ? "text-ui-danger" : undefined}>{flow_error || downloadRate}</strong></span>
+                    </div>
+                    <div className="ui-live-flow-rate is-upload">
+                        <ArrowUp size={17} />
+                        <span><small>Upload</small><strong className={flow_error ? "text-ui-danger" : undefined}>{flow_error || uploadRate}</strong></span>
+                    </div>
+                </div>
+                <div className="ui-live-flow-footnote"><span className="ui-live-flow-pulse" /> Updates every 2 seconds</div>
+            </section>
+            <div className="ui-live-flow-metrics">
+                <MetricCard accent="download" label={t("totalDownload")} value={lastFlow ? lastFlow.DownloadTotalString() : loading} error={flow_error} />
+                <MetricCard accent="upload" label={t("totalUpload")} value={lastFlow ? lastFlow.UploadTotalString() : loading} error={flow_error} />
+                {hasExtra && extra_fields?.map((field, index) => (
+                    <MetricCard key={`extra-field-${index}`} label={field.label} value={field.value || loading} error={field.error} />
+                ))}
+            </div>
         </div>
     );
 };
@@ -376,8 +389,8 @@ export const ConnectionInfo: FC<{
 };
 
 const ConnectionSection: FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-    <section className="rounded-ui-lg border border-sidebar-border bg-sidebar-bg/60">
-        <div className="border-b border-sidebar-border px-4 py-2 text-xs font-bold uppercase tracking-wider text-sidebar-header">
+    <section className="rounded-ui-lg border border-ui-border bg-ui-surface">
+        <div className="border-b border-ui-border px-4 py-2 text-xs font-bold uppercase tracking-wider text-ui-heading">
             {title}
         </div>
         <DataList className="px-4">{children}</DataList>
@@ -392,19 +405,19 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[] }> = ({ value }) => {
     return (
         <DataListCustomItem>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-                <div className="notranslate shrink-0 text-sm font-semibold capitalize text-sidebar-header sm:min-w-[120px]">
+                <div className="notranslate shrink-0 text-sm font-semibold capitalize text-ui-heading sm:min-w-[120px]">
                     {label("MatchHistory")}
                 </div>
                 <div className="flex w-full grow flex-col gap-3">
                     {value.map((entry, index) => (
-                        <div key={`${entry.ruleName}-${index}`} className="rounded-xl border border-sidebar-border bg-sidebar-hover p-3">
-                            <div className="mb-2 border-b border-sidebar-border pb-2 text-xs font-bold uppercase tracking-wider text-sidebar-header">
+                        <div key={`${entry.ruleName}-${index}`} className="rounded-xl border border-ui-border bg-ui-surface-muted p-3">
+                            <div className="mb-2 border-b border-ui-border pb-2 text-xs font-bold uppercase tracking-wider text-ui-heading">
                                 {entry.ruleName || label("Rule")}
                             </div>
                             <div className="flex flex-col gap-2">
                                 {(entry.history ?? []).map((item, itemIndex) => (
                                     <div key={`${item.listName}-${itemIndex}`} className="flex items-center justify-between gap-3">
-                                        <span className="notranslate break-all text-sm text-sidebar-color">{item.listName || "-"}</span>
+                                <span className="notranslate break-all text-sm text-ui-muted">{item.listName || "-"}</span>
                                         <div className="flex shrink-0 items-center gap-2">
                                             <span className={clsx("text-xs font-medium", item.matched ? "text-ui-success" : "text-sidebar-color opacity-70")}>
                                                 {item.matched ? label("Hit") : label("Miss")}

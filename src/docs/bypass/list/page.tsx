@@ -9,6 +9,9 @@ import { InputList } from "@/component/v2/listeditor";
 import Loading from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Pagination } from "@/component/v2/pagination";
+import { PageHeader } from "@/component/v2/page-header";
+import { PageStatStrip } from "@/component/v2/page-patterns";
+import { ResourceWorkspace } from "@/component/v2/resource-workspace";
 import { RouteActivationProgress } from "@/component/v2/route-activation-progress";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
@@ -43,6 +46,22 @@ import useSWR from "swr";
 const routeListTypes = ["host", "process", "cidr", "domain", "regexp", "keyword", "suffix"];
 const sourceTypes = ["local", "remote"];
 const PAGE_SIZE = 12;
+
+function intervalHours(value?: string) {
+    const raw = String(value ?? "0").trim().toLowerCase();
+    if (raw.endsWith("h")) return Number(raw.slice(0, -1)) || 0;
+    if (raw.endsWith("m")) return (Number(raw.slice(0, -1)) || 0) / 60;
+    const seconds = Number(raw);
+    return Number.isFinite(seconds) && seconds > 0 ? seconds / 3600 : 0;
+}
+
+function formatLastSync(value?: string) {
+    const raw = String(value ?? "0").trim();
+    const timestamp = Number(raw);
+    if (!timestamp) return "Never";
+    const date = new Date(timestamp > 1_000_000_000_000 ? timestamp : timestamp * 1000);
+    return Number.isNaN(date.getTime()) ? "Never" : date.toLocaleString();
+}
 
 type BadgeVariant = "primary" | "secondary" | "success" | "danger" | "warning" | "info" | "muted";
 
@@ -241,7 +260,24 @@ function Lists() {
     if (isLoading || !data) return <Loading />
 
     return (
-        <MainContainer>
+        <MainContainer className="product-page page-skin-rules page-skin-lists">
+            <PageHeader eyebrow="Traffic decisions" title="Route lists" description="Organize domains, processes, CIDRs, and remote sources used by your routing rules." icon={List} />
+            <PageStatStrip
+                stats={[
+                    { label: "Lists", value: data.page.total, hint: "available sources", icon: List, tone: "violet" },
+                    { label: "Remote", value: data.items.filter((item) => item.source === "remote").length, hint: "auto-fetched", icon: Cloud, tone: "primary" },
+                    { label: "Entries", value: data.items.reduce((total, item) => total + Number(item.itemCount || 0), 0).toLocaleString(), hint: "indexed rules", icon: Hash, tone: "success" },
+                    { label: "Issues", value: data.items.reduce((total, item) => total + Number(item.errorCount || 0), 0), hint: "needs attention", icon: TriangleAlert, tone: "warning" },
+                ]}
+                className="mb-5"
+            />
+            <ResourceWorkspace
+                icon={List}
+                eyebrow="Rules library"
+                title="Build reusable sources"
+                description="Lists are the building blocks behind routing decisions. Keep remote feeds, local entries, and activation state together here."
+                links={[{ label: "Routing", href: "#/docs/bypass" }, { label: "Tags", href: "#/docs/bypass/tag" }, { label: "Route test", href: "#/docs/bypass/test" }]}
+            >
             <ListConfigCard />
             <RouteActivationProgress status={activation} onApplied={mutateActivation} />
             <Card density="compact" className="overflow-hidden">
@@ -296,6 +332,7 @@ function Lists() {
                     </CardFooter>
                 )}
             </Card>
+            </ResourceWorkspace>
             <ListEditorModal name={editing} onSaved={saved} onClose={() => setEditing(null)} />
             <CreateListModal open={creating} initialName={creatingName} onSaved={saved} onClose={() => setCreating(false)} />
         </MainContainer>
@@ -323,9 +360,7 @@ function ListConfigCard() {
             .finally(() => setSaving(false));
     };
 
-    const lastSync = data?.lastRefreshTime && data.lastRefreshTime !== "0"
-        ? new Date(Number(data.lastRefreshTime) * 1000).toLocaleString()
-        : "Never";
+    const lastSync = formatLastSync(data?.lastRefreshTime);
 
     return (
         <Card className="mb-4">
@@ -340,7 +375,7 @@ function ListConfigCard() {
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <SettingRangeVertical
                             label="Auto-fetch Interval"
-                            value={Math.floor(Number(data.refreshInterval || "0") / 60)}
+                            value={Math.floor(intervalHours(data.refreshInterval))}
                             min={0}
                             max={24 * 30}
                             step={1}
@@ -491,19 +526,34 @@ function RouteListForm({ value, onChange, lockName }: { value: RouteListDetail; 
                 <div className="grid grid-cols-1 gap-6">
                     <SettingInputVertical label="Name" value={value.name} onChange={(name) => patch({ name })} disabled={lockName} />
                     <SettingSelectVertical label="Content Type" value={value.type} values={routeListTypes} onChange={(type) => patch({ type })} />
-                    <div>
-                        <SettingLabel className="mb-2">Source Mode</SettingLabel>
+                    <div className="ui-source-mode">
+                        <div className="flex items-baseline justify-between gap-3">
+                            <SettingLabel className="mb-0">Source Mode</SettingLabel>
+                            <small className="text-ui-muted">Choose how this list is maintained.</small>
+                        </div>
                         <ToggleGroup
                             type="single"
                             value={sourceType}
                             onValueChange={(type) => type && updateSourceType(type)}
-                            className="w-full flex-nowrap"
+                            className="ui-source-mode-group"
                         >
-                            <ToggleItem value={sourceTypes[0]} className="flex-grow whitespace-nowrap">
-                                <Network className="mr-2" size={16} />Local
+                            <ToggleItem value={sourceTypes[0]} className="ui-source-mode-option">
+                                <span className="ui-source-mode-option-inner">
+                                    <span className="ui-source-mode-icon"><Network size={17} /></span>
+                                    <span className="ui-source-mode-copy">
+                                        <span className="ui-source-mode-title">Local</span>
+                                        <span className="ui-source-mode-description">Managed in this list</span>
+                                    </span>
+                                </span>
                             </ToggleItem>
-                            <ToggleItem value={sourceTypes[1]} className="flex-grow whitespace-nowrap">
-                                <CloudDownload className="mr-2" size={16} />Remote
+                            <ToggleItem value={sourceTypes[1]} className="ui-source-mode-option">
+                                <span className="ui-source-mode-option-inner">
+                                    <span className="ui-source-mode-icon"><CloudDownload size={17} /></span>
+                                    <span className="ui-source-mode-copy">
+                                        <span className="ui-source-mode-title">Remote</span>
+                                        <span className="ui-source-mode-description">Fetched from URLs</span>
+                                    </span>
+                                </span>
                             </ToggleItem>
                         </ToggleGroup>
                     </div>

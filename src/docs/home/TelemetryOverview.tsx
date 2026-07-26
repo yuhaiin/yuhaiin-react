@@ -67,18 +67,62 @@ const ProtocolSummary = ({ group }: { group: TelemetryGroup }) => (
     </section>
 );
 
+const RankedPanel = ({ group, title }: { group: TelemetryGroup; title: string }) => {
+    const items = [...group.items]
+        .map(item => ({ ...item, total: numberValue(item.download) + numberValue(item.upload) }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 5);
+    const max = Math.max(1, ...items.map(item => item.total));
+
+    return (
+        <section className="friendly-ranking-panel">
+            <div className="friendly-ranking-heading">
+                <div>
+                    <h3>{title}</h3>
+                    <p>Sorted by downloaded + uploaded bytes</p>
+                </div>
+                <Badge variant="secondary" pill>Top {items.length}</Badge>
+            </div>
+            {items.length === 0 ? (
+                <div className="friendly-ranking-empty">No records in this range.</div>
+            ) : (
+                <div className="friendly-ranking-list">
+                    {items.map((item, index) => (
+                        <div className="friendly-ranking-row" key={item.value}>
+                            <span className="friendly-ranking-index">{index + 1}</span>
+                            <div className="friendly-ranking-copy">
+                                <div className="friendly-ranking-label" title={item.value}>{item.value || "Unknown address"}</div>
+                                <div className="friendly-ranking-track"><span style={{ width: `${Math.max(8, Math.round((item.total / max) * 100))}%` }} /></div>
+                            </div>
+                            <TrafficStats item={item} />
+                        </div>
+                    ))}
+                </div>
+            )}
+        </section>
+    );
+};
+
 const TelemetryOverview = ({ data, error }: { data?: TelemetrySummary; error?: string }) => {
     if (error) return <div className="py-6 text-sm text-ui-danger">{error}</div>;
     if (!data) return <div className="py-6 text-sm text-ui-muted">Loading traffic breakdown…</div>;
 
     const protocol = data.groups.find(group => group.dimension === "protocol");
-    const dimensions = data.groups.filter(group => group.dimension !== "protocol");
+    const address = data.groups.find(group => group.dimension === "addr");
+    const destination = data.groups.find(group => group.dimension === "destination");
+    const dimensions = data.groups.filter(group => group.dimension !== "protocol" && group.dimension !== "addr" && group.dimension !== "destination");
 
     return (
         <div className="space-y-3">
             {protocol && <ProtocolSummary group={protocol} />}
+            {(address || destination) && (
+                <div className="friendly-ranking-grid">
+                    {address && <RankedPanel group={address} title="Top addresses" />}
+                    {destination && <RankedPanel group={destination} title="Top destinations" />}
+                </div>
+            )}
             <div className="grid items-start gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {dimensions.map(group => <DimensionPanel key={group.dimension} group={group} />)}
+                {dimensions.filter(group => group !== address).map(group => <DimensionPanel key={group.dimension} group={group} />)}
             </div>
         </div>
     );

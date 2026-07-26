@@ -5,6 +5,8 @@ import { Badge } from '@/component/v2/badge';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader, IconBox, MainContainer, SettingsBox } from '@/component/v2/card';
 import { Input } from '@/component/v2/input';
+import { PageHeader } from '@/component/v2/page-header';
+import { ResourceWorkspace } from "@/component/v2/resource-workspace";
 import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import type { RuleTestResponse } from '@/contract/route';
@@ -150,9 +152,20 @@ function Test() {
     }, [value, ctx]);
 
     return (
-        <MainContainer>
+        <MainContainer className="product-page page-skin-rules page-skin-route-test">
+            <PageHeader eyebrow="Traffic decisions" title="Route test" description="Try a destination and inspect the exact rule, resolver, and outbound decision it produces." icon={Play} />
             {manualCopyModal}
 
+            <ResourceWorkspace
+                className="ui-diagnostic-workspace"
+                railClassName="ui-diagnostic-rail"
+                mainClassName="ui-diagnostic-main"
+                icon={Play}
+                eyebrow="Decision preview"
+                title="Ask before you route"
+                description="Run one destination through the current configuration and see the exact rule, resolver, and outbound decision."
+                links={[{ label: "Routing", href: "#/docs/bypass" }, { label: "Resolver", href: "#/docs/bypass/resolver" }]}
+            >
             {/* 1. Input Card */}
             <Card className="mb-4">
                 <CardHeader>
@@ -219,6 +232,7 @@ function Test() {
                     This tool tests the core logic using the current active configuration.
                 </small>
             </div>
+            </ResourceWorkspace>
         </MainContainer >
     );
 }

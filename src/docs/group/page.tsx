@@ -20,14 +20,16 @@ import {
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardHeader, IconBox, MainContainer } from "@/component/v2/card";
+import { Card, CardBody, MainContainer } from "@/component/v2/card";
 import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
 import { Input, Textarea } from "@/component/v2/input";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Spinner } from "@/component/v2/spinner";
+import { PageStatStrip } from "@/component/v2/page-patterns";
+import { PageHeader } from "@/component/v2/page-header";
 import { GlobalToastContext } from "@/component/v2/toast";
-import type { Node, NodeLatencyResponse } from "@/contract/node";
-import { normalizeNode } from "@/contract/node";
+import type { Node, NodeLatencyResponse, NodeProtocolType } from "@/contract/node";
+import { createDefaultNode, createDefaultProtocol, normalizeNode } from "@/contract/node";
 import clsx from "clsx";
 import { Check, ChevronDown, Gauge, Layers, Network, Plus, Power, Search, Upload } from "lucide-react";
 import { FC, memo, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
@@ -39,6 +41,20 @@ import { NodeModal } from "../node/modal";
 
 const LATENCY_STORAGE_LIMIT = 500;
 const GROUP_VIRTUALIZE_THRESHOLD = 60;
+
+type NodePreset = {
+    key: string;
+    title: string;
+    description: string;
+    type: NodeProtocolType;
+};
+
+const nodePresets: NodePreset[] = [
+    { key: "direct", title: "Direct connection", description: "Start with a local route. Great for testing the setup.", type: "direct" },
+    { key: "socks5", title: "SOCKS5 proxy", description: "Connect to a SOCKS5 server with a guided form.", type: "socks5" },
+    { key: "trojan", title: "Secure tunnel", description: "Set up a Trojan endpoint with TLS-friendly defaults.", type: "trojan" },
+    { key: "wireguard", title: "WireGuard", description: "Add a WireGuard peer and route selected traffic.", type: "wireguard" },
+];
 
 function errorOf(error: unknown): APIError | undefined {
     if (!error) return undefined;
@@ -266,7 +282,7 @@ const GroupPicker: FC<{
                 <Button
                     type="button"
                     variant="outline-secondary"
-                    className="h-9 min-w-0 max-w-full justify-between gap-2 px-3 text-sm font-medium lg:min-w-[240px] lg:max-w-[360px]"
+                    className="h-9 w-full min-w-0 max-w-full justify-between gap-2 px-3 text-sm font-medium"
                 >
                     <span className="flex min-w-0 items-center gap-2">
                         <Layers size={15} className="shrink-0 opacity-70" />
@@ -572,9 +588,49 @@ const NodeImportModal: FC<{
     );
 };
 
+const NodeStarterModal: FC<{
+    show: boolean;
+    onHide: () => void;
+    onChoose: (preset: NodePreset) => void;
+}> = ({ show, onHide, onChoose }) => (
+    <Modal open={show} onOpenChange={(open) => !open && onHide()}>
+        <ModalContent className="max-w-[760px]">
+            <ModalHeader closeButton>
+                <div>
+                    <ModalTitle className="font-bold">Add a connection</ModalTitle>
+                    <p className="mt-1 text-sm font-normal text-ui-muted">Pick the kind of server you want to connect to. You can complete the details next.</p>
+                </div>
+            </ModalHeader>
+            <ModalBody>
+                <div className="grid gap-3 sm:grid-cols-2">
+                    {nodePresets.map((preset) => (
+                        <button
+                            key={preset.key}
+                            type="button"
+                            className="group flex min-h-[120px] items-start gap-3 rounded-ui-xl border border-ui-border bg-ui-surface p-4 text-left transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-ui-primary/40 hover:shadow-ui-card"
+                            onClick={() => onChoose(preset)}
+                        >
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-lg bg-ui-primary-soft text-ui-primary">
+                                <Network size={19} />
+                            </div>
+                            <span className="min-w-0">
+                                <span className="block font-semibold text-ui-heading">{preset.title}</span>
+                                <span className="mt-1 block text-xs leading-relaxed text-ui-muted">{preset.description}</span>
+                                <span className="mt-3 block text-xs font-semibold text-ui-primary opacity-0 transition-opacity group-hover:opacity-100">Choose this →</span>
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            </ModalBody>
+        </ModalContent>
+    </Modal>
+);
+
 export default function Group() {
     const ctx = useContext(GlobalToastContext);
     const [showdata, setShowdata] = useState({ show: false, id: "", new: false });
+    const [starterOpen, setStarterOpen] = useState(false);
+    const [newNodeInitial, setNewNodeInitial] = useState<Node | undefined>();
     const [importOpen, setImportOpen] = useState(false);
     const [selectedGroup, setSelectedGroup] = useState("");
     const [query, setQuery] = useState("");
@@ -657,9 +713,7 @@ export default function Group() {
             });
     };
 
-    const handleCreate = () => {
-        setShowdata({ show: true, id: "", new: true });
-    };
+    const handleCreate = () => setStarterOpen(true);
 
     const handleUse = (id: string) => {
         selectNode(id)
@@ -699,16 +753,32 @@ export default function Group() {
     };
 
     return (
-        <MainContainer>
+        <MainContainer className="product-page page-skin-network page-skin-outbound">
+            <NodeStarterModal
+                show={starterOpen}
+                onHide={() => setStarterOpen(false)}
+                onChoose={(preset) => {
+                    const initial = normalizeNode({
+                        ...createDefaultNode(selectedGroup || "manual"),
+                        name: preset.title,
+                        chain: [createDefaultProtocol(preset.type)],
+                    });
+                    setNewNodeInitial(initial);
+                    setStarterOpen(false);
+                    setShowdata({ show: true, id: initial.id, new: true });
+                }}
+            />
             <NodeModal
                 show={showdata.show}
                 id={showdata.id}
                 isNew={showdata.new}
+                initial={newNodeInitial}
                 editable
                 groups={modalGroups}
                 onHide={(save) => {
                     if (save) void mutate();
                     setShowdata((prev) => ({ ...prev, show: false }));
+                    setNewNodeInitial(undefined);
                 }}
                 onDelete={deleteCurrentNode}
             />
@@ -722,27 +792,28 @@ export default function Group() {
                 }}
             />
 
-            <Card className="mb-4 overflow-hidden">
-                <CardHeader className="gap-4 px-4 py-4">
-                    <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-3">
-                        <IconBox
-                            icon={Layers}
-                            tone="primary"
-                            title="Outbound"
-                            description={`${items.length} nodes across ${groups.length} ${groups.length === 1 ? "group" : "groups"}`}
-                        />
-                        <div className="flex flex-wrap items-center gap-2">
-                            <Button onClick={handleCreate}>
-                                <Plus className="mr-1" size={16} /> New
-                            </Button>
-                            <Button variant="outline-secondary" onClick={() => setImportOpen(true)}>
-                                <Upload className="mr-1" size={16} /> Import
-                            </Button>
-                        </div>
-                    </div>
-                </CardHeader>
-
-                <CardBody className="space-y-4 pt-4" density="compact">
+            <PageHeader
+                eyebrow="Build your network"
+                title="Outbound"
+                description={`${items.length} nodes across ${groups.length} ${groups.length === 1 ? "group" : "groups"}. Choose a group, search its nodes, or start from a connection template.`}
+                icon={Network}
+                actions={<>
+                    <Button onClick={handleCreate}><Plus className="mr-1" size={16} /> New node</Button>
+                    <Button variant="outline-secondary" onClick={() => setImportOpen(true)}><Upload className="mr-1" size={16} /> Import</Button>
+                </>}
+                className="mb-4"
+            />
+            <PageStatStrip
+                stats={[
+                    { label: "Nodes", value: items.length, hint: "available connections", icon: Network, tone: "primary" },
+                    { label: "Groups", value: groups.length, hint: "organized routes", icon: Layers, tone: "violet" },
+                    { label: "Enabled", value: items.filter((item) => item.enabled).length, hint: "ready to use", icon: Power, tone: "success" },
+                    { label: "Selected group", value: selectedGroup || "All groups", hint: "current workspace", icon: Gauge, tone: "warning" },
+                ]}
+                className="mb-4"
+            />
+            <Card className="ui-network-workspace-card mb-4 overflow-hidden">
+                <CardBody className="!p-0" density="compact">
                     {groups.length === 0 ? (
                         <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center">
                             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-ui-primary-soft text-ui-primary">
@@ -760,26 +831,45 @@ export default function Group() {
                             </div>
                         </div>
                     ) : (
-                        <>
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="ui-network-workspace">
+                            <aside className="ui-network-rail">
+                                <div className="ui-section-label mb-2">Collections</div>
+                                <h2 className="ui-network-rail-title">Your groups</h2>
+                                <p className="ui-network-rail-description">Keep nodes together by purpose, region, or device.</p>
                                 <GroupPicker
                                     groups={groups}
                                     counts={groupCounts}
                                     value={selectedGroup}
                                     onChange={setSelectedGroup}
                                 />
-                                <div className="relative w-full shrink-0 sm:w-[240px] lg:w-[280px]">
-                                    <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" />
-                                    <Input
-                                        value={query}
-                                        onChange={(e) => setQuery(e.target.value)}
-                                        placeholder="Search nodes..."
-                                        className="h-9 pl-9 text-sm"
-                                    />
+                                <div className="ui-network-rail-note">
+                                    <span className="ui-network-rail-note-dot" />
+                                    <div>
+                                        <strong>{groupItems.length} visible nodes</strong>
+                                        <small>{selectedGroup || "All groups"} workspace</small>
+                                    </div>
                                 </div>
-                            </div>
+                            </aside>
 
-                            <div className="overflow-hidden rounded-ui-xl border border-ui-border bg-ui-surface">
+                            <section className="ui-network-list-pane">
+                                <div className="ui-network-list-header">
+                                    <div className="min-w-0">
+                                        <div className="ui-section-label mb-1">Outbound nodes</div>
+                                        <h2 className="ui-network-list-title">{selectedGroup || "All groups"}</h2>
+                                        <p className="ui-network-list-description">Choose a node to inspect health, latency, and route actions.</p>
+                                    </div>
+                                    <div className="ui-network-search relative shrink-0">
+                                        <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" />
+                                        <Input
+                                            value={query}
+                                            onChange={(e) => setQuery(e.target.value)}
+                                            placeholder="Search nodes..."
+                                            className="node-search-input h-9 pl-9 text-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="ui-network-node-list overflow-hidden rounded-ui-xl border border-ui-border bg-ui-surface">
                                 {groupItems.length === 0 ? (
                                     <div className="px-4 py-12 text-center">
                                         <Search className="mx-auto mb-2 text-ui-muted" size={28} />
@@ -835,8 +925,9 @@ export default function Group() {
                                         ))}
                                     </Accordion>
                                 )}
-                            </div>
-                        </>
+                                </div>
+                            </section>
+                        </div>
                     )}
                 </CardBody>
             </Card>

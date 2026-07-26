@@ -4,6 +4,8 @@ import { useTheme } from '@/common/ThemeProvider';
 import type { ThemePreference } from '@/common/theme';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader, IconBox, MainContainer, SettingLabel } from '@/component/v2/card';
+import { PageHeader } from '@/component/v2/page-header';
+import { ResourceWorkspace } from "@/component/v2/resource-workspace";
 import { SettingInputVertical, SwitchCard } from "@/component/v2/forms";
 import { Input } from '@/component/v2/input';
 import { Select } from '@/component/v2/select';
@@ -261,7 +263,15 @@ function Setting() {
     const [latencyStunTCPUrl, setLatencyStunTCPUrl] = useLocalStorage(LatencyStunTCPUrlKey, LatencyStunTCPUrlDefault);
 
     return (
-        <MainContainer>
+        <MainContainer className="product-page page-skin-workspace page-skin-webui">
+            <PageHeader eyebrow="Workspace" title="Web UI & API" description="Personalize the interface, language, API target, and diagnostic endpoints used by this client." icon={Palette} />
+            <ResourceWorkspace
+                icon={Palette}
+                eyebrow="Workspace"
+                title="Make the app yours"
+                description="Choose where the UI connects, how it looks, and which diagnostic endpoints it uses. These controls affect this client only."
+                links={[{ label: "General settings", href: "#/docs/config" }, { label: "Logs", href: "#/docs/config/log" }]}
+            >
             {/* 1. API Connection */}
             <ApiHostsCard />
 
@@ -365,6 +375,7 @@ function Setting() {
                     {t('localNotice')}
                 </small>
             </div>
+            </ResourceWorkspace>
         </MainContainer>
     );
 }

@@ -9,7 +9,9 @@ import { ConfirmModal } from "@/component/v2/confirm";
 import { SettingInputVertical, SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { Pagination } from "@/component/v2/pagination";
+import { PageHeader } from "@/component/v2/page-header";
 import { Spinner } from '@/component/v2/spinner';
+import { ResourceWorkspace } from "@/component/v2/resource-workspace";
 import { GlobalToastContext } from '@/component/v2/toast';
 import { createDefaultResolver, normalizeResolver, Resolver, ResolverType } from "@/contract/resolver";
 import clsx from "clsx";
@@ -177,7 +179,16 @@ const ResolverTile: FC<{ item: Resolver; onClick: () => void }> = ({ item, onCli
 
 export default function ResolverComponent() {
     return (
-        <MainContainer>
+        <MainContainer className="product-page page-skin-rules page-skin-resolver">
+            <PageHeader eyebrow="Traffic decisions" title="DNS resolvers" description="Choose how names are resolved before traffic enters a direct or proxy route." icon={Globe2} />
+            <ResourceWorkspace
+                className="ui-resource-workspace"
+                icon={Globe2}
+                eyebrow="Rules library"
+                title="Resolve names with intent"
+                description="Choose the resolver path before a request is routed. Hosts, fake DNS, and upstream servers each have their own job."
+                links={[{ label: "Routing", href: "#/docs/bypass" }, { label: "Route test", href: "#/docs/bypass/test" }]}
+            >
             <div className="flex flex-col gap-6">
                 <ResolverList />
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -193,6 +204,7 @@ export default function ResolverComponent() {
                     <Server />
                 </div>
             </div>
+            </ResourceWorkspace>
         </MainContainer>
     );
 }
