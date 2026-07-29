@@ -79,6 +79,7 @@ function Sidebar({ show, onHide }: SidebarProps) {
                 <SidebarSectionLabel>Traffic decisions</SidebarSectionLabel>
 
                 <SidebarGroup title="Routing & DNS" icon={<Route />} activePath={pathname} matchPaths={["/docs/bypass/"]}>
+                    <SelectableLink path="/docs/bypass/topology" current={pathname} onSelect={handleNavLinkClick}>Topology</SelectableLink>
                     <SelectableLink path="/docs/bypass/" current={pathname} onSelect={handleNavLinkClick}>Rules</SelectableLink>
                     <SelectableLink path="/docs/bypass/list" current={pathname} onSelect={handleNavLinkClick}>Lists</SelectableLink>
                     <SelectableLink path="/docs/bypass/tag" current={pathname} onSelect={handleNavLinkClick}>Tags</SelectableLink>

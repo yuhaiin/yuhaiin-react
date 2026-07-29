@@ -4,14 +4,14 @@ import { APIError } from "@/api/client";
 import { createResolver, deleteResolver, getResolver, listResolvers, saveResolver } from "@/api/resolvers";
 import { Badge } from '@/component/v2/badge';
 import { Button } from '@/component/v2/button';
-import { Card, CardBody, CardFooter, CardHeader, IconBox, MainContainer, SettingsBox } from '@/component/v2/card';
+import { IconBox, MainContainer, SettingsBox } from '@/component/v2/card';
 import { ConfirmModal } from "@/component/v2/confirm";
 import { SettingInputVertical, SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
-import { Pagination } from "@/component/v2/pagination";
 import { PageHeader } from "@/component/v2/page-header";
 import { Spinner } from '@/component/v2/spinner';
 import { ResourceWorkspace } from "@/component/v2/resource-workspace";
+import { ResourceList, ResourceRow } from "@/component/v2/resource-list";
 import { GlobalToastContext } from '@/component/v2/toast';
 import { createDefaultResolver, normalizeResolver, Resolver, ResolverType } from "@/contract/resolver";
 import clsx from "clsx";
@@ -105,76 +105,29 @@ function displayHost(item: Resolver) {
     return "Not configured";
 }
 
-const ResolverTile: FC<{ item: Resolver; onClick: () => void }> = ({ item, onClick }) => {
+const ResolverRow: FC<{ item: Resolver; onClick: () => void }> = ({ item, onClick }) => {
     const visual = resolverTypeVisual(item.type);
     const Icon = visual.icon;
     const host = displayHost(item);
     const subnet = item.subnet?.trim();
     const tls = item.tlsServerName?.trim();
 
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            className={clsx(
-                "group flex h-full min-h-[132px] w-full flex-col rounded-ui-lg border border-ui-border bg-ui-surface p-4 text-left",
-                "shadow-sm transition-[border-color,box-shadow,transform,background-color] duration-150",
-                "hover:-translate-y-0.5 hover:border-ui-primary/35 hover:bg-ui-surface-muted/40 hover:shadow-md",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-primary/35"
-            )}
-        >
-            <div className="flex items-start justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                    <div className={clsx(
-                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-lg border",
-                        visual.soft,
-                        visual.tone
-                    )}>
-                        <Icon size={18} strokeWidth={1.9} />
-                    </div>
-                    <div className="min-w-0">
-                        <div className="truncate text-[0.95rem] font-semibold text-ui-heading" title={item.id}>
-                            {item.id}
-                        </div>
-                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                            <Badge variant={visual.badge} pill className="px-2 py-0.5 text-[0.65rem] uppercase tracking-wide">
-                                {item.type}
-                            </Badge>
-                            {item.system && (
-                                <Badge variant="primary" pill className="px-2 py-0.5 text-[0.65rem]">
-                                    System
-                                </Badge>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="mt-4 min-w-0 flex-1">
-                <div className="text-[11px] font-medium uppercase tracking-wide text-ui-muted/80">Endpoint</div>
-                <div className="mt-1 break-all font-mono text-[12.5px] font-medium leading-relaxed text-ui-fg" title={host}>
-                    {host}
-                </div>
-            </div>
-
-            {(subnet || tls) && (
-                <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 border-t border-ui-border/70 pt-3 text-[11px] text-ui-muted">
-                    {subnet && (
-                        <span className="min-w-0">
-                            <span className="opacity-70">Subnet</span>{" "}
-                            <span className="font-mono font-medium text-ui-fg">{subnet}</span>
-                        </span>
-                    )}
-                    {tls && (
-                        <span className="min-w-0">
-                            <span className="opacity-70">TLS</span>{" "}
-                            <span className="font-mono font-medium text-ui-fg">{tls}</span>
-                        </span>
-                    )}
-                </div>
-            )}
-        </button>
-    );
+    return <ResourceRow
+        icon={Icon}
+        iconClassName={clsx(visual.soft, visual.tone)}
+        title={item.id}
+        subtitle="Upstream DNS resolver"
+        badges={<>
+            <Badge variant={visual.badge} pill className="px-2 py-0.5 text-[0.65rem] uppercase tracking-wide">{item.type}</Badge>
+            {item.system && <Badge variant="primary" pill className="px-2 py-0.5 text-[0.65rem]">System</Badge>}
+        </>}
+        facts={[
+            { label: "Endpoint", value: host, mono: true },
+            { label: "Subnet", value: subnet || "—", mono: true },
+            { label: "TLS", value: tls || "—", mono: true },
+        ]}
+        onClick={onClick}
+    />;
 };
 
 export default function ResolverComponent() {
@@ -261,43 +214,21 @@ function ResolverList() {
             onDelete={(id) => setConfirmDelete({ show: true, id })}
         />
 
-        <Card density="compact" className="overflow-hidden">
-            <CardHeader>
+        <ResourceList
+            header={
                 <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <IconBox icon={Layers} tone="primary" title="Resolvers" description="Upstream DNS Resolvers" />
                     <Button size="sm" onClick={handleCreate}>
                         <Plus size={16} className="mr-1" /> Add
                     </Button>
                 </div>
-            </CardHeader>
-            <CardBody density="compact">
-                {items.length === 0 ? (
-                    <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center text-sm text-ui-muted">
-                        No resolvers yet. Add an upstream DNS endpoint to get started.
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                        {items.map((item) => (
-                            <ResolverTile
-                                key={item.id}
-                                item={item}
-                                onClick={() => setShowdata({ show: true, id: item.id, new: false })}
-                            />
-                        ))}
-                    </div>
-                )}
-            </CardBody>
-            {data.page.total > PAGE_SIZE && (
-                <CardFooter compact className="flex justify-center">
-                    <Pagination
-                        currentPage={data.page.page || page}
-                        totalItems={data.page.total}
-                        pageSize={data.page.pageSize || PAGE_SIZE}
-                        onPageChange={setPage}
-                    />
-                </CardFooter>
-            )}
-        </Card>
+            }
+            items={items}
+            getKey={(item) => item.id}
+            renderItem={(item) => <ResolverRow item={item} onClick={() => setShowdata({ show: true, id: item.id, new: false })} />}
+            empty="No resolvers yet. Add an upstream DNS endpoint to get started."
+            pagination={{ currentPage: data.page.page || page, totalItems: data.page.total, pageSize: data.page.pageSize || PAGE_SIZE, onPageChange: setPage }}
+        />
     </>
 }
 

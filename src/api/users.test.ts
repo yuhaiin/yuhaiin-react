@@ -19,7 +19,7 @@ describe("user management API", () => {
     it("lists users through the generated RPC route and forwards query fields", async () => {
         server.use(http.post(`${apiOrigin}/api/v2/rpc/users.get`, async ({ request }) => {
             const body = await request.json() as Record<string, unknown>;
-            expect(body).toMatchObject({ page: 1, pageSize: 1000, query: "alice" });
+            expect(body).toMatchObject({ page: 1, page_size: 1000, query: "alice" });
             return HttpResponse.json({ items: [{ id: "u1", name: "Alice", enabled: true, origin: "manual", usage: "both", credential: { type: "basic", username: "alice", hasUsername: true, hasSecret: true } }], page: { page: 1, pageSize: 1000, total: 1 } });
         }));
 

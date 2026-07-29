@@ -28,32 +28,94 @@ import { Spinner } from "@/component/v2/spinner";
 import { PageStatStrip } from "@/component/v2/page-patterns";
 import { PageHeader } from "@/component/v2/page-header";
 import { GlobalToastContext } from "@/component/v2/toast";
-import type { Node, NodeLatencyResponse, NodeProtocolType } from "@/contract/node";
+import type { Node, NodeLatencyResponse, NodeProtocol } from "@/contract/node";
 import { createDefaultNode, createDefaultProtocol, normalizeNode } from "@/contract/node";
 import clsx from "clsx";
 import { Check, ChevronDown, Gauge, Layers, Network, Plus, Power, Search, Upload } from "lucide-react";
 import { FC, memo, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import useSWR from "swr";
 import { useLocalStorage } from "usehooks-ts";
-import { VList } from "virtua";
 import Loading, { Error as ErrorDisplay } from "../../component/v2/loading";
 import { NodeModal } from "../node/modal";
 
 const LATENCY_STORAGE_LIMIT = 500;
-const GROUP_VIRTUALIZE_THRESHOLD = 60;
-
 type NodePreset = {
     key: string;
     title: string;
     description: string;
-    type: NodeProtocolType;
+    createChain: () => NodeProtocol[];
 };
 
+function simpleExit(host: string, port: number): NodeProtocol<"simple"> {
+    const protocol = createDefaultProtocol("simple");
+    return { ...protocol, simple: { ...protocol.simple, host, port } };
+}
+
+function tlsLayer(serverName: string): NodeProtocol<"tls"> {
+    const protocol = createDefaultProtocol("tls");
+    return {
+        ...protocol,
+        tls: {
+            ...protocol.tls,
+            enable: true,
+            servernames: [serverName],
+        },
+    };
+}
+
+function socks5Layer(hostname: string): NodeProtocol<"socks5"> {
+    const protocol = createDefaultProtocol("socks5");
+    return { ...protocol, socks5: { ...protocol.socks5, hostname } };
+}
+
+function trojanLayer(peer: string): NodeProtocol<"trojan"> {
+    const protocol = createDefaultProtocol("trojan");
+    return { ...protocol, trojan: { ...protocol.trojan, peer } };
+}
+
+function wireguardLayer(): NodeProtocol<"wireguard"> {
+    const protocol = createDefaultProtocol("wireguard");
+    return {
+        ...protocol,
+        wireguard: {
+            ...protocol.wireguard,
+            // Same complete shape as pkg/net/proxy/wireguard/wireguard_test.go.
+            secretKey: "OD0YfReLPYBSL/vV+1JSBPpeBurGFLNA4wQCfD+yDFA=",
+            endpoint: ["10.0.0.2/32"],
+            peers: [{
+                publicKey: "2HWI3cW1HlAyQk1xiu+4QBL1KISMxSo4VQgCz+wCjmo=",
+                endpoint: "192.168.122.20:51820",
+                allowedIps: ["0.0.0.0/0", "::/0"],
+            }],
+        },
+    };
+}
+
 const nodePresets: NodePreset[] = [
-    { key: "direct", title: "Direct connection", description: "Start with a local route. Great for testing the setup.", type: "direct" },
-    { key: "socks5", title: "SOCKS5 proxy", description: "Connect to a SOCKS5 server with a guided form.", type: "socks5" },
-    { key: "trojan", title: "Secure tunnel", description: "Set up a Trojan endpoint with TLS-friendly defaults.", type: "trojan" },
-    { key: "wireguard", title: "WireGuard", description: "Add a WireGuard peer and route selected traffic.", type: "wireguard" },
+    {
+        key: "direct",
+        title: "Direct connection",
+        description: "Use the local network directly as the outbound path.",
+        createChain: () => [createDefaultProtocol("direct")],
+    },
+    {
+        key: "socks5",
+        title: "SOCKS5 proxy",
+        description: "Start with the example simple → SOCKS5 chain at 127.0.0.1:1080.",
+        createChain: () => [simpleExit("127.0.0.1", 1080), socks5Layer("127.0.0.1")],
+    },
+    {
+        key: "trojan",
+        title: "Secure tunnel",
+        description: "Start with a simple → TLS → Trojan chain and fill in the server details next.",
+        createChain: () => [simpleExit("example.com", 443), tlsLayer("example.com"), trojanLayer("example.com")],
+    },
+    {
+        key: "wireguard",
+        title: "WireGuard",
+        description: "Start with a complete WireGuard peer and full-tunnel routes from the repository example.",
+        createChain: () => [wireguardLayer()],
+    },
 ];
 
 function errorOf(error: unknown): APIError | undefined {
@@ -381,9 +443,9 @@ const NodeItem: FC<{
     return (
         <AccordionItem
             value={item.id}
-            className="!mt-0 !rounded-none !border-0 !border-b !border-ui-border/80 !bg-transparent last:!border-b-0 hover:!z-0 hover:!border-ui-border/80 focus-within:!z-0 focus-within:!border-ui-border/80"
+            className="node-list-item !mt-0 !rounded-none !border-0 !border-b !border-ui-border/80 !bg-transparent !overflow-visible last:!border-b-0 hover:!z-0 hover:!border-ui-border/80 focus-within:!z-0 focus-within:!border-ui-border/80 data-[state=open]:!relative data-[state=open]:!z-10"
         >
-            <AccordionTrigger className="gap-3 px-4 py-3 text-ui-fg hover:!bg-ui-list-hover/80 hover:!text-ui-fg data-[state=open]:!bg-ui-surface-muted/40 data-[state=open]:!text-ui-fg data-[state=open]:!border-ui-border/50">
+            <AccordionTrigger className="node-list-trigger !rounded-none gap-3 px-4 py-3 text-ui-fg hover:!bg-ui-list-hover/80 hover:!text-ui-fg data-[state=open]:!bg-ui-surface-muted/40 data-[state=open]:!text-ui-fg data-[state=open]:!border-ui-border/50">
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                     <span
                         className={clsx(
@@ -422,7 +484,7 @@ const NodeItem: FC<{
                 </div>
             </AccordionTrigger>
 
-            <AccordionContent className="!bg-ui-surface">
+        <AccordionContent className="node-list-content !bg-ui-surface">
                 <div className="space-y-3.5 px-1 pb-1">
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ui-muted">
                         <span className="font-mono" title={item.id}>{item.id}</span>
@@ -634,6 +696,7 @@ export default function Group() {
     const [importOpen, setImportOpen] = useState(false);
     const [selectedGroup, setSelectedGroup] = useState("");
     const [query, setQuery] = useState("");
+    const [openNodeId, setOpenNodeId] = useState("");
     const [latency, setLatency] = useLocalStorage<Record<string, NodeLatencyState>>("latency-v2-contract", {});
     const [busyLatency, setBusyLatency] = useState<Record<string, Partial<Record<NodeLatencyType, boolean>>>>({});
     const [latencyHTTP] = useLocalStorage(LatencyHTTPUrlKey, LatencyHTTPUrlDefault);
@@ -673,6 +736,7 @@ export default function Group() {
             return haystack.includes(q);
         });
     }, [items, query, selectedGroup]);
+    const expandedNodeId = groupItems.some((item) => item.id === openNodeId) ? openNodeId : "";
     const modalGroups = useMemo(
         () => selectedGroup
             ? [selectedGroup, ...groups.filter(group => group !== selectedGroup)]
@@ -752,6 +816,18 @@ export default function Group() {
             .finally(() => setBusyLatency((prev) => ({ ...prev, [id]: { ...prev[id], [type]: false } })));
     };
 
+    const renderNode = (item: Node) => (
+        <NodeItem
+            key={item.id}
+            item={item}
+            latency={latency[item.id]}
+            busy={busyLatency[item.id]}
+            onUse={() => handleUse(item.id)}
+            onLatency={(type) => handleLatency(item.id, type)}
+            onEdit={() => setShowdata({ show: true, id: item.id, new: false })}
+        />
+    );
+
     return (
         <MainContainer className="product-page page-skin-network page-skin-outbound">
             <NodeStarterModal
@@ -761,7 +837,7 @@ export default function Group() {
                     const initial = normalizeNode({
                         ...createDefaultNode(selectedGroup || "manual"),
                         name: preset.title,
-                        chain: [createDefaultProtocol(preset.type)],
+                        chain: preset.createChain(),
                     });
                     setNewNodeInitial(initial);
                     setStarterOpen(false);
@@ -869,7 +945,7 @@ export default function Group() {
                                     </div>
                                 </div>
 
-                                <div className="ui-network-node-list overflow-hidden rounded-ui-xl border border-ui-border bg-ui-surface">
+                                <div className="ui-network-node-list overflow-visible rounded-ui-xl border border-ui-border bg-ui-surface">
                                 {groupItems.length === 0 ? (
                                     <div className="px-4 py-12 text-center">
                                         <Search className="mx-auto mb-2 text-ui-muted" size={28} />
@@ -882,47 +958,15 @@ export default function Group() {
                                                 : "Add a node to this group to see it here."}
                                         </div>
                                     </div>
-                                ) : groupItems.length > GROUP_VIRTUALIZE_THRESHOLD ? (
-                                    <VList
-                                        data={groupItems}
-                                        bufferSize={720}
-                                        style={{ height: "min(72vh, 900px)", width: "100%" }}
-                                    >
-                                        {(item) => (
-                                            <Accordion
-                                                key={item.id}
-                                                type="single"
-                                                collapsible
-                                                className="!mb-0 !rounded-none !border-0 !shadow-none !transition-none hover:!translate-y-0 hover:!border-transparent hover:!shadow-none"
-                                            >
-                                                <NodeItem
-                                                    item={item}
-                                                    latency={latency[item.id]}
-                                                    busy={busyLatency[item.id]}
-                                                    onUse={() => handleUse(item.id)}
-                                                    onLatency={(type) => handleLatency(item.id, type)}
-                                                    onEdit={() => setShowdata({ show: true, id: item.id, new: false })}
-                                                />
-                                            </Accordion>
-                                        )}
-                                    </VList>
                                 ) : (
                                     <Accordion
                                         type="single"
                                         collapsible
+                                        value={expandedNodeId}
+                                        onValueChange={setOpenNodeId}
                                         className="!mb-0 !rounded-none !border-0 !shadow-none !transition-none hover:!translate-y-0 hover:!border-transparent hover:!shadow-none"
                                     >
-                                        {groupItems.map((item) => (
-                                            <NodeItem
-                                                key={item.id}
-                                                item={item}
-                                                latency={latency[item.id]}
-                                                busy={busyLatency[item.id]}
-                                                onUse={() => handleUse(item.id)}
-                                                onLatency={(type) => handleLatency(item.id, type)}
-                                                onEdit={() => setShowdata({ show: true, id: item.id, new: false })}
-                                            />
-                                        ))}
+                                        {groupItems.map(renderNode)}
                                     </Accordion>
                                 )}
                                 </div>

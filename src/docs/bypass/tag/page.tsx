@@ -4,13 +4,14 @@ import { listNodes } from "@/api/nodes";
 import { deleteTag, listTags, saveTag } from "@/api/route";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
-import { CardRowList, FilterSearch, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
+import { FilterSearch, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
 import { Input } from "@/component/v2/input";
 import Loading from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { PageHeader } from "@/component/v2/page-header";
 import { PageStatStrip } from "@/component/v2/page-patterns";
 import { ResourceWorkspace } from "@/component/v2/resource-workspace";
+import { ResourceList, ResourceRow } from "@/component/v2/resource-list";
 import { Select, type SelectItem } from "@/component/v2/select";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
@@ -237,54 +238,38 @@ function Tags() {
                 description="Tags give nodes and route groups a stable name, so routing rules stay readable as the network grows."
                 links={[{ label: "Route lists", href: "#/docs/bypass/list" }, { label: "Routing", href: "#/docs/bypass" }]}
             >
-            <CardRowList
-                layout="grid"
-                paginated
-                pageSize={PAGE_SIZE}
-                currentPage={data.page.page || page}
-                totalItems={data.page.total}
-                onPageChange={setPage}
+            <ResourceList
                 items={data.items}
                 getKey={(v) => v.name}
-                onClickItem={(item) => setEditing(item)}
-                renderListItem={(item) => (
-                    <div className="grid w-full min-w-0 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(140px,0.75fr)] sm:items-center">
-                        <div className="flex min-w-0 items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ui-md bg-violet-500/10 text-violet-500">
-                                <TagsIcon size={19} />
-                            </div>
-                            <div className="min-w-0">
-                                <div className="truncate font-semibold text-ui-heading">{item.name}</div>
-                                <Badge variant="info" className="mt-1 inline-flex items-center gap-1">
-                                    {item.type === "node" ? <Network size={13} /> : <Copy size={13} />}
-                                    {item.type}
-                                </Badge>
-                            </div>
-                        </div>
-                        <div className="min-w-0 border-t border-ui-border/70 pt-3 sm:border-t-0 sm:border-l sm:pl-4 sm:pt-0">
-                            <div className="mb-1.5 text-xs font-medium text-ui-muted">Target</div>
-                            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-                                {item.hash.length === 0 ? (
-                                    <span className="text-xs text-ui-muted">No target</span>
-                                ) : item.hash.map(hash => item.type === "node" ? (
+                renderItem={(item) => (
+                    <ResourceRow
+                        icon={item.type === "node" ? Network : Copy}
+                        iconClassName="border-ui-violet/20 bg-ui-violet-soft text-ui-violet"
+                        title={item.name}
+                        subtitle={item.type === "node" ? "Linked node" : "Mirrors another tag"}
+                        badges={<Badge variant="info" pill className="px-2 py-0.5 text-[0.65rem] uppercase tracking-wide">{item.type}</Badge>}
+                        facts={[
+                            { label: "Targets", value: item.hash.length || "—" },
+                            {
+                                label: "Primary target",
+                                value: item.hash[0] ? item.type === "node" ? (
                                     <Button
-                                        key={hash}
                                         size="xs"
                                         variant="outline-secondary"
                                         className="max-w-full font-mono"
                                         onClick={(event) => {
                                             event.stopPropagation();
-                                            setNodeModal({ show: true, id: hash });
+                                            setNodeModal({ show: true, id: item.hash[0] });
                                         }}
                                     >
-                                        <span className="truncate">{hash}</span>
+                                        <span className="truncate">{item.hash[0]}</span>
                                     </Button>
-                                ) : (
-                                    <span key={hash} className="max-w-full truncate rounded-ui-sm border border-ui-border bg-ui-surface-muted px-2 py-0.5 font-mono text-xs text-ui-muted">{hash}</span>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+                                ) : item.hash[0] : "No target",
+                                mono: true,
+                            },
+                        ]}
+                        onClick={() => setEditing(item)}
+                    />
                 )}
                 header={
                     <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -295,6 +280,7 @@ function Tags() {
                         </div>
                     </div>
                 }
+                pagination={{ currentPage: data.page.page || page, totalItems: data.page.total, pageSize: PAGE_SIZE, onPageChange: setPage }}
             />
             </ResourceWorkspace>
         </MainContainer>

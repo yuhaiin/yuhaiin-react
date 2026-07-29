@@ -8,10 +8,10 @@ import { SettingInputVertical, SettingRangeVertical, SettingSelectVertical, Swit
 import { InputList } from "@/component/v2/listeditor";
 import Loading from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
-import { Pagination } from "@/component/v2/pagination";
 import { PageHeader } from "@/component/v2/page-header";
 import { PageStatStrip } from "@/component/v2/page-patterns";
 import { ResourceWorkspace } from "@/component/v2/resource-workspace";
+import { ResourceList, ResourceRow } from "@/component/v2/resource-list";
 import { RouteActivationProgress } from "@/component/v2/route-activation-progress";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
@@ -26,7 +26,6 @@ import {
     CloudDownload,
     FileText,
     Globe2,
-    HardDrive,
     Hash,
     List,
     Network,
@@ -140,7 +139,7 @@ function listTypeVisual(type?: string): {
     }
 }
 
-const DefinedListTile: FC<{ item: ListItem; onClick: () => void }> = ({ item, onClick }) => {
+const DefinedListRow: FC<{ item: ListItem; onClick: () => void }> = ({ item, onClick }) => {
     const visual = listTypeVisual(item.type);
     const Icon = visual.icon;
     const hasError = item.errorCount > 0;
@@ -148,67 +147,23 @@ const DefinedListTile: FC<{ item: ListItem; onClick: () => void }> = ({ item, on
     const remote = source === "remote";
     const preview = shortPreview(item.preview);
 
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            className={clsx(
-                "group flex h-full min-h-[140px] w-full flex-col rounded-ui-lg border bg-ui-surface p-4 text-left",
-                "shadow-sm transition-[border-color,box-shadow,transform,background-color] duration-150",
-                "hover:-translate-y-0.5 hover:border-ui-primary/35 hover:bg-ui-surface-muted/40 hover:shadow-md",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-primary/35",
-                hasError ? "border-ui-danger/30" : "border-ui-border"
-            )}
-        >
-            <div className="flex items-start justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                    <div className={clsx(
-                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-lg border",
-                        hasError ? "border-ui-danger/20 bg-ui-danger-soft text-ui-danger" : clsx(visual.soft, visual.tone)
-                    )}>
-                        {hasError ? <TriangleAlert size={18} strokeWidth={1.9} /> : <Icon size={18} strokeWidth={1.9} />}
-                    </div>
-                    <div className="min-w-0">
-                        <div className="truncate text-[0.95rem] font-semibold text-ui-heading" title={item.name}>
-                            {item.name}
-                        </div>
-                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                            <Badge variant={hasError ? "danger" : visual.badge} pill className="px-2 py-0.5 text-[0.65rem] uppercase tracking-wide">
-                                {item.type || "list"}
-                            </Badge>
-                            <Badge variant={remote ? "info" : "muted"} pill className="px-2 py-0.5 text-[0.65rem]">
-                                {remote ? "Remote" : "Local"}
-                            </Badge>
-                            {hasError && (
-                                <Badge variant="danger" pill className="px-2 py-0.5 text-[0.65rem]">
-                                    {item.errorCount} error{item.errorCount === 1 ? "" : "s"}
-                                </Badge>
-                            )}
-                        </div>
-                    </div>
-                </div>
-                <div className="shrink-0 rounded-full border border-ui-border/70 bg-ui-surface-muted/70 px-2 py-1 text-[11px] font-semibold tabular-nums text-ui-muted">
-                    {item.itemCount}
-                </div>
-            </div>
-
-            <div className="mt-4 min-w-0 flex-1">
-                <div className="text-[11px] font-medium uppercase tracking-wide text-ui-muted/80">Preview</div>
-                <div className="mt-1 break-all font-mono text-[12.5px] font-medium leading-relaxed text-ui-fg" title={item.preview || undefined}>
-                    {preview}
-                </div>
-            </div>
-
-            <div className="mt-3 flex items-center gap-1.5 border-t border-ui-border/70 pt-3 text-[11px] text-ui-muted">
-                {remote ? <Cloud size={13} className="shrink-0 opacity-70" /> : <HardDrive size={13} className="shrink-0 opacity-70" />}
-                <span className="truncate">
-                    {remote ? "Fetched remotely" : "Defined locally"}
-                    <span className="mx-1.5 opacity-40">·</span>
-                    {item.itemCount} {item.itemCount === 1 ? "entry" : "entries"}
-                </span>
-            </div>
-        </button>
-    );
+    return <ResourceRow
+        icon={hasError ? TriangleAlert : Icon}
+        iconClassName={hasError ? "border-ui-danger/20 bg-ui-danger-soft text-ui-danger" : clsx(visual.soft, visual.tone)}
+        title={item.name}
+        subtitle={`${remote ? "Fetched remotely" : "Defined locally"} · ${item.itemCount} ${item.itemCount === 1 ? "entry" : "entries"}`}
+        badges={<>
+            <Badge variant={hasError ? "danger" : visual.badge} pill className="px-2 py-0.5 text-[0.65rem] uppercase tracking-wide">{item.type || "list"}</Badge>
+            <Badge variant={remote ? "info" : "muted"} pill className="px-2 py-0.5 text-[0.65rem]">{remote ? "Remote" : "Local"}</Badge>
+            {hasError && <Badge variant="danger" pill className="px-2 py-0.5 text-[0.65rem]">{`${item.errorCount} error${item.errorCount === 1 ? "" : "s"}`}</Badge>}
+        </>}
+        facts={[
+            { label: "Preview", value: preview, mono: true },
+            { label: "Entries", value: item.itemCount },
+            { label: "Errors", value: item.errorCount || "—" },
+        ]}
+        onClick={onClick}
+    />;
 };
 
 function Lists() {
@@ -280,8 +235,8 @@ function Lists() {
             >
             <ListConfigCard />
             <RouteActivationProgress status={activation} onApplied={mutateActivation} />
-            <Card density="compact" className="overflow-hidden">
-                <CardHeader>
+            <ResourceList
+                header={
                     <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <IconBox
                             icon={List}
@@ -300,38 +255,13 @@ function Lists() {
                             </Button>
                         </div>
                     </div>
-                </CardHeader>
-                <CardBody density="compact">
-                    {data.items.length === 0 ? (
-                        <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center text-sm text-ui-muted">
-                            No lists yet. Create a local list or sync remote sources.
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                            {data.items.map((item) => (
-                                <DefinedListTile
-                                    key={item.name}
-                                    item={item}
-                                    onClick={() => setEditing(item.name)}
-                                />
-                            ))}
-                        </div>
-                    )}
-                </CardBody>
-                {data.page.total > PAGE_SIZE && (
-                    <CardFooter compact className="flex items-center justify-between gap-3">
-                        <div className="text-xs font-medium text-ui-muted">
-                            {data.page.total} items · page {data.page.page || page}/{Math.max(1, Math.ceil(data.page.total / (data.page.pageSize || PAGE_SIZE)))}
-                        </div>
-                        <Pagination
-                            currentPage={data.page.page || page}
-                            totalItems={data.page.total}
-                            pageSize={data.page.pageSize || PAGE_SIZE}
-                            onPageChange={setPage}
-                        />
-                    </CardFooter>
-                )}
-            </Card>
+                }
+                items={data.items}
+                getKey={(item) => item.name}
+                renderItem={(item) => <DefinedListRow item={item} onClick={() => setEditing(item.name)} />}
+                empty="No lists yet. Create a local list or sync remote sources."
+                pagination={{ currentPage: data.page.page || page, totalItems: data.page.total, pageSize: data.page.pageSize || PAGE_SIZE, onPageChange: setPage }}
+            />
             </ResourceWorkspace>
             <ListEditorModal name={editing} onSaved={saved} onClose={() => setEditing(null)} />
             <CreateListModal open={creating} initialName={creatingName} onSaved={saved} onClose={() => setCreating(false)} />

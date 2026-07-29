@@ -3,6 +3,8 @@ import { http, HttpResponse } from "msw";
 const nodes = [
     { id: "jp-tokyo-01", name: "Tokyo Edge", group: "production", origin: "manual", enabled: true, chain: [{ type: "shadowsocks", shadowsocks: { address: "jp.example.net", port: 443, method: "2022-blake3-aes-128-gcm", password: "preview-password" } }] },
     { id: "us-west-02", name: "US West", group: "production", origin: "remote", enabled: true, chain: [{ type: "vmess", vmess: { address: "us.example.net", port: 443, uuid: "00000000-0000-0000-0000-000000000000", security: "auto" } }] },
+    { id: "sg-edge-03", name: "Singapore Edge", group: "production", origin: "remote", enabled: true, chain: [{ type: "trojan", trojan: { address: "sg.example.net", port: 443, password: "preview-password" } }] },
+    { id: "de-edge-04", name: "Frankfurt Edge", group: "backup", origin: "remote", enabled: true, chain: [{ type: "vless", vless: { address: "de.example.net", port: 443, uuid: "00000000-0000-0000-0000-000000000001" } }] },
     { id: "direct", name: "Direct", group: "system", origin: "manual", enabled: true, chain: [{ type: "direct", direct: { network_interface: "" } }] },
     { id: "block", name: "Block", group: "system", origin: "manual", enabled: true, chain: [{ type: "reject", reject: {} }] },
 ];
@@ -34,19 +36,43 @@ const resolvers = [
 ];
 
 const routeLists = [
-    { name: "private-domains", type: "domain", source: "local", itemCount: 248, errorCount: 0, preview: "internal.example.com" },
-    { name: "ads", type: "host", source: "remote", itemCount: 18420, errorCount: 0, preview: "https://lists.example.com/ads.txt" },
+    { name: "cn", type: "domain", source: "local", itemCount: 248, errorCount: 0, preview: "internal.example.com" },
+    { name: "streaming", type: "domain", source: "remote", itemCount: 18420, errorCount: 0, preview: "https://lists.example.com/streaming.txt" },
+    { name: "private-domains", type: "domain", source: "local", itemCount: 82, errorCount: 0, preview: "internal.example.com" },
+    { name: "cn-cidr", type: "cidr", source: "remote", itemCount: 1648, errorCount: 0, preview: "https://lists.example.com/cn.cidr" },
+    { name: "media-process", type: "process", source: "local", itemCount: 6, errorCount: 0, preview: "media-player" },
+    { name: "work-domains", type: "suffix", source: "local", itemCount: 34, errorCount: 0, preview: "corp.example.com" },
+    { name: "work-process", type: "process", source: "local", itemCount: 3, errorCount: 0, preview: "code" },
+    { name: "ads-and-trackers", type: "host", source: "remote", itemCount: 48392, errorCount: 2, preview: "https://lists.example.com/ads.txt" },
 ];
 
 const routeRules = [
-    { name: "Private traffic", index: 0, disabled: false, mode: "direct", tag: "", resolver: "system", ruleCount: 1 },
-    { name: "Tailscale private routes", index: 1, disabled: false, mode: "proxy", tag: "tailscale", resolver: "cloudflare", ruleCount: 2 },
+    { name: "Private traffic", index: 0, disabled: false, mode: "direct", tag: "direct", resolver: "system", ruleCount: 1 },
+    { name: "China domains", index: 1, disabled: false, mode: "direct", tag: "direct-cn", resolver: "system", ruleCount: 2 },
+    { name: "Streaming and media", index: 2, disabled: false, mode: "proxy", tag: "proxy", resolver: "cloudflare", ruleCount: 2 },
+    { name: "Work applications", index: 3, disabled: false, mode: "proxy", tag: "work-mirror", resolver: "system", ruleCount: 2 },
+    { name: "Ads and trackers", index: 4, disabled: false, mode: "block", tag: "block", resolver: "system", ruleCount: 1 },
+    { name: "Default", index: 5, disabled: false, mode: "direct", tag: "direct", resolver: "system", ruleCount: 0 },
 ];
 
 const routeTags = [
-    { name: "tailscale", type: "node", hash: ["jp-tokyo-01", "us-west-02"] },
-    { name: "to-us-west", type: "node", hash: ["us-west-02"] },
+    { name: "direct", type: "node", hash: ["direct"] },
+    { name: "direct-cn", type: "node", hash: ["direct"] },
+    { name: "proxy", type: "node", hash: ["jp-tokyo-01", "us-west-02", "sg-edge-03"] },
+    { name: "work-mirror", type: "mirror", hash: ["proxy-fast", "proxy-backup"] },
+    { name: "proxy-fast", type: "node", hash: ["jp-tokyo-01", "sg-edge-03"] },
+    { name: "proxy-backup", type: "node", hash: ["us-west-02", "de-edge-04"] },
+    { name: "block", type: "node", hash: ["block"] },
     { name: "work", type: "host", hash: ["d4e5f6"] },
+];
+
+const routeRuleDetails = [
+    { ...routeRules[0], rules: [{ type: "all", all: [{ type: "host", host: { list: "private-domains" } }] }] },
+    { ...routeRules[1], rules: [{ type: "any", any: [{ type: "host", host: { list: "cn" } }, { type: "host", host: { list: "cn-cidr" } }] }] },
+    { ...routeRules[2], rules: [{ type: "all", all: [{ type: "host", host: { list: "streaming" } }, { type: "process", process: { list: "media-process" } }] }] },
+    { ...routeRules[3], rules: [{ type: "all", all: [{ type: "any", any: [{ type: "host", host: { list: "work-domains" } }, { type: "process", process: { list: "work-process" } }] }] }] },
+    { ...routeRules[4], rules: [{ type: "all", all: [{ type: "host", host: { list: "ads-and-trackers" } }] }] },
+    { ...routeRules[5], rules: [{ type: "all", all: [{ type: "host", host: { list: "" } }] }] },
 ];
 
 let mockSettings = {
@@ -189,7 +215,7 @@ export const handlers = [
             case "subscriptions.delete_preview": result = { nodes: 2, users: 1 }; break;
             case "subscriptions.put": result = { items: subscriptions }; break;
             case "publish.put": result = body; break;
-            case "route.rule.get": result = { ...routeRules.find((item) => item.name === body.name && Number(item.index) === Number(body.index)) ?? routeRules[0], rules: [{ type: "all", all: [{ type: "host", host: { list: "" } }] }] }; break;
+            case "route.rule.get": result = routeRuleDetails.find((item) => item.name === body.name && Number(item.index) === Number(body.index)) ?? routeRuleDetails[0]; break;
             case "route.list.get": result = routeLists.find((item) => item.name === body.id) ?? routeLists[0]; break;
             case "route.tag.put": result = body; break;
             case "route.lists.post": {

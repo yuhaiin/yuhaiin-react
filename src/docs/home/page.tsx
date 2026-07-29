@@ -184,16 +184,10 @@ function HomePage() {
         <div className="friendly-home">
             <SetupDialog open={setupOpen} onOpenChange={setSetupOpen} />
 
-            <header className="friendly-page-header">
-                <div>
-                    <h1>Home</h1>
-                    <p>{isProtected ? "Your current inbound and outbound path are ready." : "Connect an inbound and outbound path to start routing traffic."}</p>
-                </div>
-                <div className="friendly-page-actions">
-                    <Button variant="primary" onClick={() => setSetupOpen(true)}><Plus size={16} className="mr-1" /> Add connection</Button>
-                    <button type="button" className="friendly-secondary-button" onClick={() => goTo("/docs/group/")}><Settings2 size={16} /> Manage network</button>
-                </div>
-            </header>
+            <div className="friendly-page-actions friendly-page-actions-compact">
+                <Button variant="primary" onClick={() => setSetupOpen(true)}><Plus size={16} className="mr-1" /> Add connection</Button>
+                <button type="button" className="friendly-secondary-button" onClick={() => goTo("/docs/group/")}><Settings2 size={16} /> Manage network</button>
+            </div>
 
             <section className="friendly-surface friendly-hero-status">
                 <div className="friendly-hero-header">
@@ -208,8 +202,15 @@ function HomePage() {
                 </div>
                 <div className="friendly-hero-traffic">
                     <div className="friendly-traffic-label"><span>Live traffic</span><small>Right now</small></div>
-                    <strong className="friendly-traffic-metric friendly-download"><ArrowDownToLine size={18} /> {flow.data ? formatBytes(download, 1, " ") : "—"}<small>/s</small></strong>
-                    <strong className="friendly-traffic-metric friendly-upload"><ArrowUpFromLine size={18} /> {flow.data ? formatBytes(upload, 1, " ") : "—"}<small>/s</small></strong>
+                    <div className="friendly-traffic-live-values">
+                        <strong className="friendly-traffic-metric friendly-download"><ArrowDownToLine size={18} /> {flow.data ? formatBytes(download, 1, " ") : "—"}<small>/s</small></strong>
+                        <strong className="friendly-traffic-metric friendly-upload"><ArrowUpFromLine size={18} /> {flow.data ? formatBytes(upload, 1, " ") : "—"}<small>/s</small></strong>
+                    </div>
+                    <div className="friendly-traffic-total-values" aria-label="Total traffic">
+                        <span className="friendly-traffic-total-label">Total traffic</span>
+                        <span className="friendly-total-download"><ArrowDownToLine size={15} /> {flow.data ? formatBytes(totalDownload) : "—"}</span>
+                        <span className="friendly-total-upload"><ArrowUpFromLine size={15} /> {flow.data ? formatBytes(totalUpload) : "—"}</span>
+                    </div>
                     <LiveMiniChart samples={liveSamples} />
                 </div>
             </section>
@@ -265,16 +266,16 @@ function HomePage() {
                 <TrafficLegend />
                 {isLiveTraffic ? (
                     liveChart.labels.length > 0
-                        ? <TrafficChartDynamic data={liveChart} minHeight={180} />
+                        ? <TrafficChartDynamic data={liveChart} minHeight={360} />
                         : <div className="friendly-chart-empty"><Activity size={18} /><span>{flow.error || "Waiting for live traffic samples…"}</span></div>
-                ) : <TrafficHistoryChartDynamic data={trafficHistory} error={trafficHistoryError?.message} minHeight={180} />}
+                ) : <TrafficHistoryChartDynamic data={trafficHistory} error={trafficHistoryError?.message} minHeight={360} />}
             </section>
 
             <section className="friendly-surface friendly-breakdown-section">
                 <div className="friendly-section-heading">
                     <div>
                         <div className="friendly-kicker"><BarChart3 size={14} /> Traffic breakdown</div>
-                        <p>Top destinations, addresses, and routes by transferred bytes · {telemetryRange.label}</p>
+                        <p>{`Top destinations, addresses, and routes by transferred bytes · ${telemetryRange.label}`}</p>
                     </div>
                     <span className="friendly-breakdown-hint">Sorted by controller totals</span>
                 </div>

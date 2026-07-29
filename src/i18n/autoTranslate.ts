@@ -609,6 +609,339 @@ const ja: PhraseMap = {
     'MatchHistory': 'マッチ履歴',
     'Hit': 'ヒット',
     'Miss': 'ミス',
+    'Live traffic': 'ライブトラフィック',
+    'Right now': '現在',
+    'Total traffic': '総トラフィック',
+    'Active': 'アクティブ',
+    'Not ready': '未準備',
+    'Live API data': 'ライブ API データ',
+    "You're protected": '保護されています',
+    'You’re protected': '保護されています',
+    'Network needs setup': 'ネットワークの設定が必要です',
+    'Connecting to controller': 'コントローラーに接続中',
+    'Your current path is available for traffic.': '現在のパスはトラフィックに利用できます。',
+    'Choose an inbound and outbound path to enable routing.': 'ルーティングを有効にするには、インバウンドとアウトバウンドのパスを選択してください。',
+    'Choose what you want to connect first.': 'まず接続する対象を選択してください。',
+    'Outbound connection': 'アウトバウンド接続',
+    'Entry point': 'エントリーポイント',
+    'The next screen starts with a friendly template, then keeps advanced settings in the background while you finish the basics.': '次の画面では使いやすいテンプレートから始め、基本設定を進める間は高度な設定を背後に置きます。',
+    'Start with a local route. Great for testing the setup.': 'ローカルルートから始めます。設定のテストに最適です。',
+    'Connect to a SOCKS5 server with a guided form.': 'ガイド付きフォームで SOCKS5 サーバーに接続します。',
+    'Set up a Trojan endpoint with TLS-friendly defaults.': 'TLS に適したデフォルト設定で Trojan エンドポイントを構成します。',
+    'Add a WireGuard peer and route selected traffic.': 'WireGuard ピアを追加し、選択したトラフィックをルーティングします。',
+    'Continue': '続ける',
+    'Choose a group': 'グループを選択',
+    'Use this template': 'このテンプレートを使用',
+    'Add connection': '接続を追加',
+    'Manage network': 'ネットワークを管理',
+    'Recent activity': '最近のアクティビティ',
+    'Your latest connections and events.': '最新の接続とイベントです。',
+    'All activity': 'すべてのアクティビティ',
+    'Active connection': 'アクティブな接続',
+    'Unknown destination': '不明な宛先',
+    'Direct': '直接',
+    'Live now': '現在稼働中',
+    'No active connections from the current controller.': '現在のコントローラーにアクティブな接続はありません。',
+    'Loading activity from the current controller…': '現在のコントローラーからアクティビティを読み込み中…',
+    'Uploaded': 'アップロード済み',
+    'Controller total': 'コントローラー合計',
+    'Downloaded': 'ダウンロード済み',
+    'View all activity': 'すべてのアクティビティを表示',
+    'Rolling samples from current traffic polling; choose 24h for stored history.': '現在のトラフィックポーリングのサンプルです。保存された履歴には 24 時間を選択してください。',
+    'Stored traffic history from the controller.': 'コントローラーに保存されたトラフィック履歴です。',
+    'Traffic breakdown': 'トラフィック内訳',
+    'Sorted by controller totals': 'コントローラー合計順',
+    'Waiting for live traffic samples…': 'ライブトラフィックのサンプルを待機中…',
+    'Reset': 'リセット',
+    'Add a connection': '接続を追加',
+    'Add an entry point': 'エントリーポイントを追加',
+    'Connect to a network': 'ネットワークに接続',
+    'Connect a device': 'デバイスを接続',
+    'Add an inbound entry point.': 'インバウンドのエントリーポイントを追加します。',
+    'Add an outbound node or service.': 'アウトバウンドノードまたはサービスを追加します。',
+    'Open full map': '全体マップを開く',
+    'Live topology': 'ライブトポロジー',
+    'drag to pan': 'ドラッグして移動',
+    'pinch to zoom': 'ピンチでズーム',
+    'Live network topology': 'ライブネットワークトポロジー',
+    'No active topology yet': 'アクティブなトポロジーはまだありません',
+    'When connections start, every application, inbound, route, and outbound will appear here.': '接続が始まると、すべてのアプリケーション、インバウンド、ルート、アウトバウンドがここに表示されます。',
+    'All paths are shown together; click a node to highlight its full path.': 'すべてのパスをまとめて表示しています。ノードをクリックすると完全なパスが強調表示されます。',
+    'Manage': '管理',
+    'Network topology': 'ネットワークトポロジー',
+    'Network flow': 'ネットワークフロー',
+    'Traffic range': 'トラフィック範囲',
+    'Loading traffic breakdown…': 'トラフィック内訳を読み込み中…',
+    'Loading traffic history…': 'トラフィック履歴を読み込み中…',
+    'No records in this range.': 'この範囲に記録はありません。',
+    'No traffic recorded in this range.': 'この範囲にトラフィックの記録はありません。',
+    'Sorted by downloaded + uploaded bytes': 'ダウンロードとアップロードのバイト数順',
+    'Top addresses': '上位アドレス',
+    'Top destinations': '上位の宛先',
+    'Download:': 'ダウンロード:',
+    'Upload:': 'アップロード:',
+    'Save changes': '変更を保存',
+    'Retry': '再試行',
+    'Update': '更新',
+    'Delete': '削除',
+    'Run': '実行',
+    'Copy': 'コピー',
+    'Filter': 'フィルター',
+    'Operation': '操作',
+    'Target': 'ターゲット',
+    'Value': '値',
+    'Name': '名前',
+    'Group': 'グループ',
+    'Credential': '認証情報',
+    'Usage': '用途',
+    'Token': 'トークン',
+    'User management is unavailable from this controller': 'このコントローラーではユーザー管理を利用できません',
+    'Create a user once, then choose whether that identity can be used by inbound, outbound, or both sides of the network.': 'ユーザーを一度作成し、その認証情報をインバウンド、アウトバウンド、またはネットワークの両方で使うか選択します。',
+    'Inbound authentication uses enabled users. Outbound protocols can reuse the same credentials.': 'インバウンド認証には有効なユーザーを使用します。アウトバウンドプロトコルでは同じ認証情報を再利用できます。',
+    'Enabled': '有効',
+    'Username (optional)': 'ユーザー名（任意）',
+    'Password (blank keeps current)': 'パスワード（空欄で現在の値を維持）',
+    'Authentication User': '認証ユーザー',
+    'Credentials come from User Management.': '認証情報はユーザー管理から取得されます。',
+    'Select a managed user': '管理対象ユーザーを選択',
+    'Settings': '設定',
+    'General Settings': '一般設定',
+    'Network and system integration': 'ネットワークとシステム連携',
+    'Enable IPv6': 'IPv6 を有効化',
+    'Default Interface': 'デフォルトインターフェイス',
+    'Automatically detect exit': '出口を自動検出',
+    'Enable Pprof': 'Pprof を有効化',
+    'HTTP Proxy': 'HTTP プロキシ',
+    'SOCKS5 Proxy': 'SOCKS5 プロキシ',
+    'Logging (Logcat)': 'ログ出力（Logcat）',
+    'Debug and error reporting': 'デバッグとエラー報告',
+    'Log Level': 'ログレベル',
+    'Persistent Logging': '永続ログ',
+    'Save logs to disk': 'ログをディスクに保存',
+    'Ignore Timeouts': 'タイムアウトを無視',
+    'Ignore DNS Errors': 'DNS エラーを無視',
+    'Performance & Advanced': 'パフォーマンスと詳細設定',
+    'Buffer sizes and concurrency limits': 'バッファサイズと同時実行数の制限',
+    'Diagnostics': '診断',
+    'Inspect the controller': 'コントローラーを検査',
+    'Profiles are loaded from the configured API target. Use them when diagnosing CPU, memory, or goroutine pressure.': 'プロファイルは設定された API ターゲットから読み込まれます。CPU、メモリ、または goroutine の負荷の診断に使用します。',
+    'Backups': 'バックアップ',
+    'Restore Backup': 'バックアップを復元',
+    'Keep a recoverable copy': '復元可能なコピーを保持',
+    'Protect your configuration and restore it safely when moving between devices.': '設定を保護し、デバイス間で移行するときに安全に復元します。',
+    'Backup Instance': 'バックアップインスタンス',
+    'Identification and timing': '識別情報と実行間隔',
+    'Backup Now': '今すぐバックアップ',
+    'Restore Now': '今すぐ復元',
+    'Software Update': 'ソフトウェア更新',
+    'Check for Updates': '更新を確認',
+    'Current version:': '現在のバージョン:',
+    'Checking linked nodes and users…': '関連するノードとユーザーを確認中…',
+    'Built in the open': 'オープンに構築',
+    'Understand the pieces': '構成要素を理解する',
+    'A transparent list of the open-source projects that make yuhaiin possible.': 'yuhaiin を支えるオープンソースプロジェクトの透明な一覧です。',
+    'License Source': 'ライセンスソース',
+    'Documents': 'ドキュメント',
+    'Browse the project documentation and learn how the network engine fits together.': 'プロジェクトのドキュメントを閲覧し、ネットワークエンジンの構成を学びます。',
+    'Home': 'ホーム',
+    'Topology': 'トポロジー',
+    'Tags': 'タグ',
+    'Logs': 'ログ',
+    'Application': 'アプリケーション',
+    'Route decision': 'ルート判定',
+    'Your device': 'あなたのデバイス',
+    'This computer': 'このコンピューター',
+    'Active application': 'アクティブなアプリケーション',
+    'Private traffic': 'プライベートトラフィック',
+    'Every live path is rendered in the topology. The map is a logical route view, not a packet-level trace.': 'すべてのライブパスをトポロジーに表示しています。このマップはパケット単位の追跡ではなく、論理的なルートビューです。',
+    'This map waits for live connections so it does not invent a route or outbound node.': 'このマップはライブ接続を待機し、存在しないルートやアウトバウンドノードを表示しません。',
+    'Drag the canvas to inspect the complete live topology. Outbound is resolved from each live connection.': 'キャンバスをドラッグして完全なライブトポロジーを確認できます。アウトバウンドは各ライブ接続から解決されます。',
+    'Top destinations, addresses, and routes by transferred bytes': '転送バイト数が多い宛先、アドレス、ルート',
+    'Live': 'ライブ',
+    'OUTBOUND NODE': 'アウトバウンドノード',
+    'application': 'アプリケーション',
+    'inbound': 'インバウンド',
+    'route/tag': 'ルート/タグ',
+    'outbound': 'アウトバウンド',
+    'Outbound node': 'アウトバウンドノード',
+    'Upstream DNS resolver': '上流 DNS リゾルバー',
+    'Endpoint': 'エンドポイント',
+    'Subnet': 'サブネット',
+    'IPv4 Range': 'IPv4 範囲',
+    'IPv6 Range': 'IPv6 範囲',
+    'TLS': 'TLS',
+    'system default': 'システムのデフォルト',
+    'Errors': 'エラー',
+    'MaxMind GeoIP database URL': 'MaxMind GeoIP データベース URL',
+    'Access model': 'アクセスモデル',
+    'System Tunnel': 'システムトンネル',
+    'Sources': 'ソース',
+    'remote node feeds': 'リモートノードフィード',
+    'Refreshing': '更新中',
+    'active updates': '有効な更新',
+    'Node formats': 'ノード形式',
+    'parser types': 'パーサー形式',
+    'Delivery': '配信',
+    'Automatic': '自動',
+    'refresh on demand': '手動更新',
+    'Published sets': '公開セット',
+    'shareable bundles': '共有可能なバンドル',
+    'Shared nodes': '共有ノード',
+    'selected endpoints': '選択済みエンドポイント',
+    'Addresses': 'アドレス',
+    'reachable shares': '到達可能な共有',
+    'Curated': '選択済み',
+    'you choose the nodes': 'ノードを選択',
+    'Running': '稼働中',
+    'active outbound paths': 'アクティブなアウトバウンドパス',
+    'Protocols': 'プロトコル',
+    'Closable': '終了可能',
+    'sessions you can stop': '停止可能なセッション',
+    'Health': '状態',
+    'Serving': '提供中',
+    'current runtime state': '現在のランタイム状態',
+    'Terminate': '終了',
+    'Closing a node here will force a reconnection if the rule still requires it.': 'ここでノードを終了すると、ルールが引き続き必要とする場合に再接続されます。',
+    'Add rule': 'ルールを追加',
+    'evaluated top to bottom': '上から順に評価',
+    'active decisions': '有効な判定',
+    'Proxy paths': 'プロキシパス',
+    'forwarded traffic': '転送トラフィック',
+    'Direct / bypass': '直接 / バイパス',
+    'local exits': 'ローカル出口',
+    'Enter a domain or IP address below to see which rule and outbound node would be selected.': 'ドメインまたは IP アドレスを入力すると、選択されるルールとアウトバウンドノードを確認できます。',
+    'This tool tests the core logic using the current active configuration.': 'このツールは現在有効な設定を使ってコアロジックをテストします。',
+    'DESIGN PREVIEW': 'デザインプレビュー',
+    'GITHUB': 'GitHub',
+    'Check GitHub Releases for a newer desktop build': '新しいデスクトップビルドは GitHub Releases で確認できます',
+    'UPDATE CHANNEL': '更新チャンネル',
+    'Stable': '安定版',
+    'Beta': 'ベータ版',
+    'Main': 'メイン',
+    'Mode': 'モード',
+    'Open Source Licenses': 'オープンソースライセンス',
+    'List reference': 'リスト参照',
+    'Unnamed rule': '名前のないルール',
+    'Rule result': 'ルール結果',
+    'Drop / reject traffic': 'トラフィックを破棄 / 拒否',
+    'Connect without a node': 'ノードを使わずに接続',
+    'Smart select best node': '最適なノードを自動選択',
+    'Open rule editor': 'ルールエディターを開く',
+    'No route rules yet': 'ルートルールはまだありません',
+    'Create a rule first, then this page will show its list dependencies and route result.': 'まずルールを作成すると、このページにリストの依存関係とルート結果が表示されます。',
+    'Open rules': 'ルールを開く',
+    'Loading rule references…': 'ルール参照を読み込み中…',
+    'Select a rule to inspect its complete match path.': 'ルールを選択して完全な照合パスを確認します。',
+    'TCP · UDP traffic': 'TCP · UDP トラフィック',
+    'Process and destination context': 'プロセスと宛先のコンテキスト',
+    'Application · Browser': 'アプリケーション · ブラウザー',
+    'Ref': '参照',
+    'Proxy': 'プロキシ',
+    'Direct exit': 'ダイレクト出口',
+    'Bypass': 'バイパス',
+    'Block': 'ブロック',
+    'Default route': 'デフォルトルート',
+    'No list reference · always / other conditions': 'リスト参照なし · 常時 / その他の条件',
+    'Targets': 'ターゲット',
+    'NODE': 'ノード',
+    'TARGETS': 'ターゲット数',
+    'PRIMARY TARGET': 'プライマリターゲット',
+    'MIRROR': 'ミラー',
+    'HOST': 'ホスト',
+    'ENDPOINT': 'エンドポイント',
+    'SUBNET': 'サブネット',
+    'ACTIVE': '有効',
+    'IPV4 RANGE': 'IPv4 範囲',
+    'IPV6 RANGE': 'IPv6 範囲',
+    'New node': '新しいノード',
+    'Nodes': 'ノード',
+    'Keep nodes together by purpose, region, or device.': '目的、地域、デバイスごとにノードを整理します。',
+    'backup workspace': 'バックアップワークスペース',
+    'Ready': '準備完了',
+    'No listen address': '待ち受けアドレスなし',
+    'People': 'ユーザー',
+    'managed identities': '管理対象 ID',
+    'Credential types': '認証情報の種類',
+    'visible on this page': 'このページに表示',
+    'Central': '一元管理',
+    'reused by protocols': 'プロトコルで再利用',
+    'Local user': 'ローカルユーザー',
+    'available sources': '利用可能なソース',
+    'auto-fetched': '自動取得',
+    'indexed rules': 'インデックス済みルール',
+    'Issues': '問題',
+    'needs attention': '要確認',
+    'Use Disk Host Index': 'ディスクホストインデックスを使用',
+    'Use the disk-backed host index to reduce memory usage.': 'ディスクベースのホストインデックスを使用してメモリ使用量を削減します。',
+    'Defined locally': 'ローカル定義',
+    'Fetched remotely': 'リモート取得',
+    'reusable labels': '再利用可能なラベル',
+    'point to outbounds': 'アウトバウンドを指すタグ',
+    'match rule groups': 'ルールグループに一致',
+    'linked resources': '関連リソース',
+    'Node tags': 'ノードタグ',
+    'Route tags': 'ルートタグ',
+    'Linked node': '関連ノード',
+    'Mirrors another tag': '別のタグをミラー',
+    'Routing': 'ルーティング',
+    'Service running': 'サービス稼働中',
+    'How to read': '読み方',
+    '1. Read rules from top to bottom.': '1. ルールを上から順に確認します。',
+    '2. The first matching rule wins.': '2. 最初に一致したルールが適用されます。',
+    'List condition': 'リスト条件',
+    'Route result': 'ルート結果',
+    'Click a rule to highlight its path.': 'ルールをクリックするとパスが強調表示されます。',
+    'Device / Application / Inbound': 'デバイス / アプリケーション / インバウンド',
+    'Rule evaluation': 'ルール評価',
+    'First matching rule wins': '最初に一致したルールを適用',
+    'Match sources': '照合ソース',
+    'Lists are condition inputs, not stages': 'リストは条件の入力であり、ステージではありません',
+    'Resolver / Exit': 'リゾルバー / 出口',
+    'All traffic enters the route engine': 'すべてのトラフィックがルートエンジンに入ります',
+    'Matches 1 list': '1 件のリストに一致',
+    'Matches 2 lists': '2 件のリストに一致',
+    'DIRECT EXIT': 'ダイレクト出口',
+    'PROXY': 'プロキシ',
+    'BLOCK': 'ブロック',
+    'Condition inputs · first match wins': '条件入力 · 最初の一致を適用',
+    'Direct exit': 'ダイレクト出口',
+    'The same source context continues through the remaining rules.': '残りのルールにも同じソースコンテキストが続きます。',
+    'Live throughput': 'ライブスループット',
+    'Current traffic across active connections': 'アクティブな接続の現在のトラフィック',
+    'Updating': '更新中',
+    'Updates every 2 seconds': '2 秒ごとに更新',
+    'Records': 'レコード',
+    'Matching history': '一致履歴',
+    'Networks': 'ネットワーク',
+    'Observed types': '観測された種類',
+    'Page size': 'ページサイズ',
+    'Rows per page': '1 ページの行数',
+    'Latest': '最新',
+    'Most recent record': '最新のレコード',
+    'On': 'オン',
+    'network capability': 'ネットワーク機能',
+    'System proxy': 'システムプロキシ',
+    'desktop integration': 'デスクトップ連携',
+    'persistent': '永続',
+    'Advanced': '詳細設定',
+    'Balanced': 'バランス',
+    'runtime posture': 'ランタイム状態',
+    'Log level': 'ログレベル',
+    'Slots': 'スロット',
+    'Sems': 'セマフォ',
+    'No backup records found': 'バックアップレコードが見つかりません',
+    'Backups include all lists, rules, and node configurations.': 'バックアップにはすべてのリスト、ルール、ノード設定が含まれます。',
+    'RECONNECTING': '再接続中',
+    'log stream disconnected. Retrying...': 'ログストリームが切断されました。再試行しています…',
+    'Waiting for the log stream': 'ログストリームを待機中',
+    'The controller will retry the live connection automatically.': 'コントローラーはライブ接続を自動的に再試行します。',
+    'log stream disconnected': 'ログストリームが切断されました',
+    'Retrying...': '再試行中…',
+    'LIVE': 'ライブ',
+    'No matching log events': '一致するログイベントはありません',
+    'Try a different search term.': '別の検索語を試してください。',
+    'No log events yet': 'ログイベントはまだありません',
+    'Controller events will appear here as they are emitted.': 'コントローラーイベントは発生するとここに表示されます。',
 };
 
 const ko: PhraseMap = {
@@ -619,6 +952,28 @@ const ko: PhraseMap = {
     'CONNECTIONS': '연결',
     'SETTING': '설정',
     'Outbound': '아웃바운드',
+    'Your private network': '나만의 네트워크',
+    'Preview data': '미리보기 데이터',
+    'Build your network': '네트워크 구축',
+    'Traffic decisions': '트래픽 결정',
+    'Workspace': '작업 공간',
+    'Quick references': '빠른 참조',
+    'Live connections': '실시간 연결',
+    'Activity history': '활동 기록',
+    'Failed connections': '실패한 연결',
+    'Subscriptions': '구독',
+    'Active connections': '활성 연결',
+    'Users': '사용자',
+    'Routing & DNS': '라우팅 및 DNS',
+    'DNS resolver': 'DNS 리졸버',
+    'Route test': '경로 테스트',
+    'Block history': '차단 기록',
+    'Settings & tools': '설정 및 도구',
+    'General settings': '일반 설정',
+    'Web UI & API': 'Web UI 및 API',
+    'About yuhaiin': 'yuhaiin 정보',
+    'Manage how traffic moves': '트래픽 흐름 관리',
+    'Keep private routes together': '비공개 경로 정리',
     'Subscribe': '구독',
     'Publish': '게시',
     'Activates': '활성화',
@@ -1121,6 +1476,339 @@ const ko: PhraseMap = {
     'MatchHistory': '매치 기록',
     'Hit': '적중',
     'Miss': '미스',
+    'Live traffic': '실시간 트래픽',
+    'Right now': '현재',
+    'Total traffic': '전체 트래픽',
+    'Active': '활성',
+    'Not ready': '준비되지 않음',
+    'Live API data': '실시간 API 데이터',
+    "You're protected": '보호되고 있습니다',
+    'You’re protected': '보호되고 있습니다',
+    'Network needs setup': '네트워크 설정이 필요합니다',
+    'Connecting to controller': '컨트롤러에 연결 중',
+    'Your current path is available for traffic.': '현재 경로를 트래픽에 사용할 수 있습니다.',
+    'Choose an inbound and outbound path to enable routing.': '라우팅을 활성화하려면 인바운드와 아웃바운드 경로를 선택하세요.',
+    'Choose what you want to connect first.': '먼저 연결할 대상을 선택하세요.',
+    'Outbound connection': '아웃바운드 연결',
+    'Entry point': '진입점',
+    'The next screen starts with a friendly template, then keeps advanced settings in the background while you finish the basics.': '다음 화면은 이해하기 쉬운 템플릿으로 시작하며, 기본 설정을 마치는 동안 고급 설정은 뒤에 둡니다.',
+    'Start with a local route. Great for testing the setup.': '로컬 경로로 시작합니다. 설정을 테스트하기에 좋습니다.',
+    'Connect to a SOCKS5 server with a guided form.': '안내된 양식으로 SOCKS5 서버에 연결합니다.',
+    'Set up a Trojan endpoint with TLS-friendly defaults.': 'TLS에 적합한 기본값으로 Trojan 엔드포인트를 설정합니다.',
+    'Add a WireGuard peer and route selected traffic.': 'WireGuard 피어를 추가하고 선택한 트래픽을 라우팅합니다.',
+    'Continue': '계속',
+    'Choose a group': '그룹 선택',
+    'Use this template': '이 템플릿 사용',
+    'Add connection': '연결 추가',
+    'Manage network': '네트워크 관리',
+    'Recent activity': '최근 활동',
+    'Your latest connections and events.': '최근 연결과 이벤트입니다.',
+    'All activity': '모든 활동',
+    'Active connection': '활성 연결',
+    'Unknown destination': '알 수 없는 대상',
+    'Direct': '직접',
+    'Live now': '현재 실행 중',
+    'No active connections from the current controller.': '현재 컨트롤러에 활성 연결이 없습니다.',
+    'Loading activity from the current controller…': '현재 컨트롤러에서 활동을 불러오는 중…',
+    'Uploaded': '업로드됨',
+    'Controller total': '컨트롤러 합계',
+    'Downloaded': '다운로드됨',
+    'View all activity': '모든 활동 보기',
+    'Rolling samples from current traffic polling; choose 24h for stored history.': '현재 트래픽 폴링의 실시간 샘플입니다. 저장된 기록은 24시간을 선택하세요.',
+    'Stored traffic history from the controller.': '컨트롤러에 저장된 트래픽 기록입니다.',
+    'Traffic breakdown': '트래픽 분석',
+    'Sorted by controller totals': '컨트롤러 합계순',
+    'Waiting for live traffic samples…': '실시간 트래픽 샘플을 기다리는 중…',
+    'Reset': '초기화',
+    'Add a connection': '연결 추가',
+    'Add an entry point': '진입점 추가',
+    'Connect to a network': '네트워크 연결',
+    'Connect a device': '기기 연결',
+    'Add an inbound entry point.': '인바운드 진입점을 추가합니다.',
+    'Add an outbound node or service.': '아웃바운드 노드 또는 서비스를 추가합니다.',
+    'Open full map': '전체 지도 열기',
+    'Live topology': '실시간 토폴로지',
+    'drag to pan': '드래그하여 이동',
+    'pinch to zoom': '핀치하여 확대/축소',
+    'Live network topology': '실시간 네트워크 토폴로지',
+    'No active topology yet': '아직 활성 토폴로지가 없습니다',
+    'When connections start, every application, inbound, route, and outbound will appear here.': '연결이 시작되면 모든 애플리케이션, 인바운드, 경로, 아웃바운드가 여기에 표시됩니다.',
+    'All paths are shown together; click a node to highlight its full path.': '모든 경로를 함께 표시합니다. 노드를 클릭하면 전체 경로가 강조됩니다.',
+    'Manage': '관리',
+    'Network topology': '네트워크 토폴로지',
+    'Network flow': '네트워크 흐름',
+    'Traffic range': '트래픽 범위',
+    'Loading traffic breakdown…': '트래픽 분석을 불러오는 중…',
+    'Loading traffic history…': '트래픽 기록을 불러오는 중…',
+    'No records in this range.': '이 범위에 기록이 없습니다.',
+    'No traffic recorded in this range.': '이 범위에 기록된 트래픽이 없습니다.',
+    'Sorted by downloaded + uploaded bytes': '다운로드 및 업로드 바이트순',
+    'Top addresses': '상위 주소',
+    'Top destinations': '상위 대상',
+    'Download:': '다운로드:',
+    'Upload:': '업로드:',
+    'Save changes': '변경 사항 저장',
+    'Retry': '다시 시도',
+    'Update': '업데이트',
+    'Delete': '삭제',
+    'Run': '실행',
+    'Copy': '복사',
+    'Filter': '필터',
+    'Operation': '작업',
+    'Target': '대상',
+    'Value': '값',
+    'Name': '이름',
+    'Group': '그룹',
+    'Credential': '자격 증명',
+    'Usage': '용도',
+    'Token': '토큰',
+    'User management is unavailable from this controller': '이 컨트롤러에서는 사용자 관리를 사용할 수 없습니다',
+    'Create a user once, then choose whether that identity can be used by inbound, outbound, or both sides of the network.': '사용자를 한 번 만든 다음 인바운드, 아웃바운드 또는 네트워크 양쪽에서 사용할지 선택합니다.',
+    'Inbound authentication uses enabled users. Outbound protocols can reuse the same credentials.': '인바운드 인증에는 활성화된 사용자를 사용합니다. 아웃바운드 프로토콜은 같은 자격 증명을 재사용할 수 있습니다.',
+    'Enabled': '활성화됨',
+    'Username (optional)': '사용자 이름(선택 사항)',
+    'Password (blank keeps current)': '비밀번호(비워 두면 현재 값 유지)',
+    'Authentication User': '인증 사용자',
+    'Credentials come from User Management.': '자격 증명은 사용자 관리에서 가져옵니다.',
+    'Select a managed user': '관리되는 사용자 선택',
+    'Settings': '설정',
+    'General Settings': '일반 설정',
+    'Network and system integration': '네트워크 및 시스템 통합',
+    'Enable IPv6': 'IPv6 활성화',
+    'Default Interface': '기본 인터페이스',
+    'Automatically detect exit': '출구 자동 감지',
+    'Enable Pprof': 'Pprof 활성화',
+    'HTTP Proxy': 'HTTP 프록시',
+    'SOCKS5 Proxy': 'SOCKS5 프록시',
+    'Logging (Logcat)': '로깅(Logcat)',
+    'Debug and error reporting': '디버그 및 오류 보고',
+    'Log Level': '로그 수준',
+    'Persistent Logging': '영구 로깅',
+    'Save logs to disk': '로그를 디스크에 저장',
+    'Ignore Timeouts': '시간 초과 무시',
+    'Ignore DNS Errors': 'DNS 오류 무시',
+    'Performance & Advanced': '성능 및 고급 설정',
+    'Buffer sizes and concurrency limits': '버퍼 크기 및 동시성 제한',
+    'Diagnostics': '진단',
+    'Inspect the controller': '컨트롤러 검사',
+    'Profiles are loaded from the configured API target. Use them when diagnosing CPU, memory, or goroutine pressure.': '프로필은 구성된 API 대상에서 불러옵니다. CPU, 메모리 또는 고루틴 부하를 진단할 때 사용하세요.',
+    'Backups': '백업',
+    'Restore Backup': '백업 복원',
+    'Keep a recoverable copy': '복구 가능한 사본 유지',
+    'Protect your configuration and restore it safely when moving between devices.': '구성을 보호하고 기기 간 이동 시 안전하게 복원합니다.',
+    'Backup Instance': '백업 인스턴스',
+    'Identification and timing': '식별 및 일정',
+    'Backup Now': '지금 백업',
+    'Restore Now': '지금 복원',
+    'Software Update': '소프트웨어 업데이트',
+    'Check for Updates': '업데이트 확인',
+    'Current version:': '현재 버전:',
+    'Checking linked nodes and users…': '연결된 노드와 사용자를 확인하는 중…',
+    'Built in the open': '공개적으로 구축',
+    'Understand the pieces': '구성 요소 이해',
+    'A transparent list of the open-source projects that make yuhaiin possible.': 'yuhaiin을 가능하게 하는 오픈 소스 프로젝트의 투명한 목록입니다.',
+    'License Source': '라이선스 소스',
+    'Documents': '문서',
+    'Browse the project documentation and learn how the network engine fits together.': '프로젝트 문서를 살펴보고 네트워크 엔진이 어떻게 구성되는지 알아보세요.',
+    'Home': '홈',
+    'Topology': '토폴로지',
+    'Tags': '태그',
+    'Logs': '로그',
+    'Application': '애플리케이션',
+    'Route decision': '경로 결정',
+    'Your device': '내 기기',
+    'This computer': '이 컴퓨터',
+    'Active application': '활성 애플리케이션',
+    'Private traffic': '비공개 트래픽',
+    'Every live path is rendered in the topology. The map is a logical route view, not a packet-level trace.': '모든 실시간 경로를 토폴로지에 표시합니다. 이 지도는 패킷 단위 추적이 아닌 논리적 경로 보기입니다.',
+    'This map waits for live connections so it does not invent a route or outbound node.': '이 지도는 실제 연결을 기다리며 존재하지 않는 경로나 아웃바운드 노드를 만들지 않습니다.',
+    'Drag the canvas to inspect the complete live topology. Outbound is resolved from each live connection.': '캔버스를 드래그하여 전체 실시간 토폴로지를 살펴보세요. 아웃바운드는 각 실시간 연결에서 확인됩니다.',
+    'Top destinations, addresses, and routes by transferred bytes': '전송 바이트 기준 상위 대상, 주소 및 경로',
+    'Live': '실시간',
+    'OUTBOUND NODE': '아웃바운드 노드',
+    'application': '애플리케이션',
+    'inbound': '인바운드',
+    'route/tag': '경로/태그',
+    'outbound': '아웃바운드',
+    'Outbound node': '아웃바운드 노드',
+    'Upstream DNS resolver': '상위 DNS 리졸버',
+    'Endpoint': '엔드포인트',
+    'Subnet': '서브넷',
+    'IPv4 Range': 'IPv4 범위',
+    'IPv6 Range': 'IPv6 범위',
+    'TLS': 'TLS',
+    'system default': '시스템 기본값',
+    'Errors': '오류',
+    'MaxMind GeoIP database URL': 'MaxMind GeoIP 데이터베이스 URL',
+    'Access model': '액세스 모델',
+    'System Tunnel': '시스템 터널',
+    'Sources': '소스',
+    'remote node feeds': '원격 노드 피드',
+    'Refreshing': '새로 고치는 중',
+    'active updates': '활성 업데이트',
+    'Node formats': '노드 형식',
+    'parser types': '파서 유형',
+    'Delivery': '전달',
+    'Automatic': '자동',
+    'refresh on demand': '필요할 때 새로 고침',
+    'Published sets': '게시 세트',
+    'shareable bundles': '공유 가능한 번들',
+    'Shared nodes': '공유 노드',
+    'selected endpoints': '선택한 엔드포인트',
+    'Addresses': '주소',
+    'reachable shares': '접근 가능한 공유',
+    'Curated': '선별됨',
+    'you choose the nodes': '노드를 직접 선택',
+    'Running': '실행 중',
+    'active outbound paths': '활성 아웃바운드 경로',
+    'Protocols': '프로토콜',
+    'Closable': '종료 가능',
+    'sessions you can stop': '중지할 수 있는 세션',
+    'Health': '상태',
+    'Serving': '서비스 중',
+    'current runtime state': '현재 런타임 상태',
+    'Terminate': '종료',
+    'Closing a node here will force a reconnection if the rule still requires it.': '여기서 노드를 종료하면 규칙에 계속 필요할 때 다시 연결됩니다.',
+    'Add rule': '규칙 추가',
+    'evaluated top to bottom': '위에서 아래로 평가',
+    'active decisions': '활성 결정',
+    'Proxy paths': '프록시 경로',
+    'forwarded traffic': '전달된 트래픽',
+    'Direct / bypass': '직접 / 우회',
+    'local exits': '로컬 출구',
+    'Enter a domain or IP address below to see which rule and outbound node would be selected.': '도메인 또는 IP 주소를 입력하면 선택될 규칙과 아웃바운드 노드를 확인할 수 있습니다.',
+    'This tool tests the core logic using the current active configuration.': '이 도구는 현재 활성 구성을 사용하여 핵심 로직을 테스트합니다.',
+    'DESIGN PREVIEW': '디자인 미리보기',
+    'GITHUB': 'GitHub',
+    'Check GitHub Releases for a newer desktop build': '새 데스크톱 빌드는 GitHub Releases에서 확인하세요',
+    'UPDATE CHANNEL': '업데이트 채널',
+    'Stable': '안정판',
+    'Beta': '베타',
+    'Main': '메인',
+    'Mode': '모드',
+    'Open Source Licenses': '오픈 소스 라이선스',
+    'List reference': '목록 참조',
+    'Unnamed rule': '이름 없는 규칙',
+    'Rule result': '규칙 결과',
+    'Drop / reject traffic': '트래픽 삭제 / 거부',
+    'Connect without a node': '노드 없이 연결',
+    'Smart select best node': '최적의 노드 자동 선택',
+    'Open rule editor': '규칙 편집기 열기',
+    'No route rules yet': '아직 라우팅 규칙이 없습니다',
+    'Create a rule first, then this page will show its list dependencies and route result.': '먼저 규칙을 만들면 이 페이지에 목록 의존성과 경로 결과가 표시됩니다.',
+    'Open rules': '규칙 열기',
+    'Loading rule references…': '규칙 참조를 불러오는 중…',
+    'Select a rule to inspect its complete match path.': '규칙을 선택하여 전체 일치 경로를 확인하세요.',
+    'TCP · UDP traffic': 'TCP · UDP 트래픽',
+    'Process and destination context': '프로세스 및 대상 컨텍스트',
+    'Application · Browser': '애플리케이션 · 브라우저',
+    'Ref': '참조',
+    'Proxy': '프록시',
+    'Direct exit': '직접 출구',
+    'Bypass': '우회',
+    'Block': '차단',
+    'Default route': '기본 경로',
+    'No list reference · always / other conditions': '목록 참조 없음 · 항상 / 기타 조건',
+    'Targets': '대상',
+    'NODE': '노드',
+    'TARGETS': '대상 수',
+    'PRIMARY TARGET': '기본 대상',
+    'MIRROR': '미러',
+    'HOST': '호스트',
+    'ENDPOINT': '엔드포인트',
+    'SUBNET': '서브넷',
+    'ACTIVE': '활성',
+    'IPV4 RANGE': 'IPv4 범위',
+    'IPV6 RANGE': 'IPv6 범위',
+    'New node': '새 노드',
+    'Nodes': '노드',
+    'Keep nodes together by purpose, region, or device.': '용도, 지역 또는 기기별로 노드를 정리합니다.',
+    'backup workspace': '백업 작업 공간',
+    'Ready': '준비됨',
+    'No listen address': '수신 주소 없음',
+    'People': '사용자',
+    'managed identities': '관리되는 ID',
+    'Credential types': '자격 증명 유형',
+    'visible on this page': '이 페이지에 표시됨',
+    'Central': '중앙 관리',
+    'reused by protocols': '프로토콜에서 재사용',
+    'Local user': '로컬 사용자',
+    'available sources': '사용 가능한 소스',
+    'auto-fetched': '자동 가져옴',
+    'indexed rules': '인덱싱된 규칙',
+    'Issues': '문제',
+    'needs attention': '확인 필요',
+    'Use Disk Host Index': '디스크 호스트 인덱스 사용',
+    'Use the disk-backed host index to reduce memory usage.': '디스크 기반 호스트 인덱스를 사용하여 메모리 사용량을 줄입니다.',
+    'Defined locally': '로컬 정의',
+    'Fetched remotely': '원격 가져옴',
+    'reusable labels': '재사용 가능한 레이블',
+    'point to outbounds': '아웃바운드를 가리킴',
+    'match rule groups': '규칙 그룹과 일치',
+    'linked resources': '연결된 리소스',
+    'Node tags': '노드 태그',
+    'Route tags': '경로 태그',
+    'Linked node': '연결된 노드',
+    'Mirrors another tag': '다른 태그 미러링',
+    'Routing': '라우팅',
+    'Service running': '서비스 실행 중',
+    'How to read': '읽는 방법',
+    '1. Read rules from top to bottom.': '1. 규칙을 위에서 아래로 읽습니다.',
+    '2. The first matching rule wins.': '2. 처음 일치하는 규칙이 적용됩니다.',
+    'List condition': '목록 조건',
+    'Route result': '경로 결과',
+    'Click a rule to highlight its path.': '규칙을 클릭하면 경로가 강조됩니다.',
+    'Device / Application / Inbound': '기기 / 애플리케이션 / 인바운드',
+    'Rule evaluation': '규칙 평가',
+    'First matching rule wins': '처음 일치하는 규칙 적용',
+    'Match sources': '일치 소스',
+    'Lists are condition inputs, not stages': '목록은 단계가 아닌 조건 입력입니다',
+    'Resolver / Exit': '리졸버 / 출구',
+    'All traffic enters the route engine': '모든 트래픽이 라우팅 엔진으로 들어갑니다',
+    'Matches 1 list': '목록 1개와 일치',
+    'Matches 2 lists': '목록 2개와 일치',
+    'DIRECT EXIT': '직접 출구',
+    'PROXY': '프록시',
+    'BLOCK': '차단',
+    'Condition inputs · first match wins': '조건 입력 · 첫 일치 적용',
+    'Direct exit': '직접 출구',
+    'The same source context continues through the remaining rules.': '나머지 규칙에도 같은 소스 컨텍스트가 이어집니다.',
+    'Live throughput': '실시간 처리량',
+    'Current traffic across active connections': '활성 연결의 현재 트래픽',
+    'Updating': '업데이트 중',
+    'Updates every 2 seconds': '2초마다 업데이트',
+    'Records': '레코드',
+    'Matching history': '일치 기록',
+    'Networks': '네트워크',
+    'Observed types': '관찰된 유형',
+    'Page size': '페이지 크기',
+    'Rows per page': '페이지당 행 수',
+    'Latest': '최신',
+    'Most recent record': '가장 최근 레코드',
+    'On': '켜짐',
+    'network capability': '네트워크 기능',
+    'System proxy': '시스템 프록시',
+    'desktop integration': '데스크톱 통합',
+    'persistent': '영구',
+    'Advanced': '고급',
+    'Balanced': '균형',
+    'runtime posture': '런타임 상태',
+    'Log level': '로그 수준',
+    'Slots': '슬롯',
+    'Sems': '세마포어',
+    'No backup records found': '백업 레코드를 찾을 수 없습니다',
+    'Backups include all lists, rules, and node configurations.': '백업에는 모든 목록, 규칙 및 노드 구성이 포함됩니다.',
+    'RECONNECTING': '재연결 중',
+    'log stream disconnected. Retrying...': '로그 스트림 연결이 끊겼습니다. 다시 시도하는 중…',
+    'Waiting for the log stream': '로그 스트림을 기다리는 중',
+    'The controller will retry the live connection automatically.': '컨트롤러가 실시간 연결을 자동으로 다시 시도합니다.',
+    'log stream disconnected': '로그 스트림 연결이 끊겼습니다',
+    'Retrying...': '다시 시도하는 중…',
+    'LIVE': '실시간',
+    'No matching log events': '일치하는 로그 이벤트가 없습니다',
+    'Try a different search term.': '다른 검색어를 시도하세요.',
+    'No log events yet': '아직 로그 이벤트가 없습니다',
+    'Controller events will appear here as they are emitted.': '컨트롤러 이벤트가 발생하면 여기에 표시됩니다.',
 };
 
 export function translatePhrase(text: string, language: SupportedLanguage): string | undefined {
@@ -1131,6 +1819,207 @@ export function translatePhrase(text: string, language: SupportedLanguage): stri
 
 export function translateInterpolatedText(text: string, language: SupportedLanguage): string | undefined {
     if (language === 'en') return undefined;
+
+    const topCount = text.match(/^Top (\d+)$/);
+    if (topCount) {
+        return language === 'ja'
+            ? `上位 ${topCount[1]}`
+            : `상위 ${topCount[1]}개`;
+    }
+
+    const itemCount = text.match(/^(\d+) items$/);
+    if (itemCount) {
+        return language === 'ja'
+            ? `${itemCount[1]} 件`
+            : `${itemCount[1]}개 항목`;
+    }
+
+    const sourceCount = text.match(/^(\d+) (available sources|auto-fetched|indexed rules|needs attention)$/);
+    if (sourceCount) {
+        const jaLabels: Record<string, string> = {
+            'available sources': '利用可能なソース',
+            'auto-fetched': '自動取得',
+            'indexed rules': 'インデックス済みルール',
+            'needs attention': '要確認',
+        };
+        const koLabels: Record<string, string> = {
+            'available sources': '사용 가능한 소스',
+            'auto-fetched': '자동 가져옴',
+            'indexed rules': '인덱싱된 규칙',
+            'needs attention': '확인 필요',
+        };
+        return language === 'ja'
+            ? `${sourceCount[1]} ${jaLabels[sourceCount[2]]}`
+            : `${sourceCount[1]}개 ${koLabels[sourceCount[2]]}`;
+    }
+
+    const runningCount = text.match(/^(\d+) Running$/);
+    if (runningCount) {
+        return language === 'ja'
+            ? `${runningCount[1]} 件稼働中`
+            : `${runningCount[1]}개 실행 중`;
+    }
+
+    const rulesCount = text.match(/^(\d+) rules · match from top to bottom$/);
+    if (rulesCount) {
+        return language === 'ja'
+            ? `${rulesCount[1]} 件のルール · 上から順に照合`
+            : `규칙 ${rulesCount[1]}개 · 위에서 아래로 일치`;
+    }
+
+    const priority = text.match(/^Priority #(\d+)$/);
+    if (priority) {
+        return language === 'ja'
+            ? `優先順位 #${priority[1]}`
+            : `우선순위 #${priority[1]}`;
+    }
+
+    const licenseCount = text.match(/^Open Source Licenses \((\d+)\)$/);
+    if (licenseCount) {
+        return language === 'ja'
+            ? `オープンソースライセンス (${licenseCount[1]})`
+            : `오픈 소스 라이선스 (${licenseCount[1]})`;
+    }
+
+    const tagSummary = text.match(/^(\d+) (reusable labels|point to outbounds|match rule groups|linked resources)$/);
+    if (tagSummary) {
+        const jaLabels: Record<string, string> = {
+            'reusable labels': '再利用可能なラベル',
+            'point to outbounds': 'アウトバウンドを指すタグ',
+            'match rule groups': 'ルールグループに一致',
+            'linked resources': '関連リソース',
+        };
+        const koLabels: Record<string, string> = {
+            'reusable labels': '재사용 가능한 레이블',
+            'point to outbounds': '아웃바운드를 가리킴',
+            'match rule groups': '규칙 그룹과 일치',
+            'linked resources': '연결된 리소스',
+        };
+        return language === 'ja'
+            ? `${tagSummary[1]} ${jaLabels[tagSummary[2]]}`
+            : `${tagSummary[1]}개 ${koLabels[tagSummary[2]]}`;
+    }
+
+    const entrySummary = text.match(/^(.+) · (\d+) entries$/);
+    if (entrySummary) {
+        const translatedSource = translatePhrase(entrySummary[1], language) ?? entrySummary[1];
+        return language === 'ja'
+            ? `${translatedSource} · ${entrySummary[2]} 件`
+            : `${translatedSource} · ${entrySummary[2]}개 항목`;
+    }
+
+    const topologyEntrySummary = text.match(/^(\d[\d,]*) entries · (.+)$/);
+    if (topologyEntrySummary) {
+        return language === 'ja'
+            ? `${topologyEntrySummary[1]} 件 · ${topologyEntrySummary[2]}`
+            : `${topologyEntrySummary[1]}개 항목 · ${topologyEntrySummary[2]}`;
+    }
+
+    const topologyLabel = text.match(/^(List|Lists|Tag|Node group) · (.+)$/);
+    if (topologyLabel) {
+        const jaLabels: Record<string, string> = { List: 'リスト', Lists: 'リスト', Tag: 'タグ', 'Node group': 'ノードグループ' };
+        const koLabels: Record<string, string> = { List: '목록', Lists: '목록', Tag: '태그', 'Node group': '노드 그룹' };
+        return language === 'ja'
+            ? `${jaLabels[topologyLabel[1]]} · ${topologyLabel[2]}`
+            : `${koLabels[topologyLabel[1]]} · ${topologyLabel[2]}`;
+    }
+
+    const referenceCount = text.match(/^(\d+) references$/);
+    if (referenceCount) {
+        return language === 'ja'
+            ? `${referenceCount[1]} 件の参照`
+            : `참조 ${referenceCount[1]}개`;
+    }
+
+    const laneLabel = text.match(/^(Inbound|Application) · (.+)$/);
+    if (laneLabel) {
+        return language === 'ja'
+            ? `${laneLabel[1] === 'Inbound' ? 'インバウンド' : 'アプリケーション'} · ${laneLabel[2]}`
+            : `${laneLabel[1] === 'Inbound' ? '인바운드' : '애플리케이션'} · ${laneLabel[2]}`;
+    }
+
+    const routeTarget = text.match(/^(node|mirror) route target$/);
+    if (routeTarget) {
+        return language === 'ja'
+            ? `${routeTarget[1] === 'node' ? 'ノード' : 'ミラー'}ルートターゲット`
+            : `${routeTarget[1] === 'node' ? '노드' : '미러'} 경로 대상`;
+    }
+
+    const systemRouteDescription = text.match(/^(.+) · system · (Connect without a node|Mirror tag · multiple exits|Drop \/ reject traffic)$/);
+    if (systemRouteDescription) {
+        const suffix = systemRouteDescription[2] === 'Connect without a node'
+            ? ['ノードを使わずに接続', '노드 없이 연결']
+            : systemRouteDescription[2] === 'Mirror tag · multiple exits'
+                ? ['ミラータグ · 複数の出口', '미러 태그 · 여러 출구']
+                : ['トラフィックを破棄 / 拒否', '트래픽 삭제 / 거부'];
+        return language === 'ja'
+            ? `${systemRouteDescription[1]} · system · ${suffix[0]}`
+            : `${systemRouteDescription[1]} · system · ${suffix[1]}`;
+    }
+
+    const errorCount = text.match(/^(\d+) errors$/);
+    if (errorCount) {
+        return language === 'ja'
+            ? `${errorCount[1]} 件のエラー`
+            : `오류 ${errorCount[1]}개`;
+    }
+
+    const matchLists = text.match(/^Matches (\d+) lists?$/);
+    if (matchLists) {
+        return language === 'ja'
+            ? `${matchLists[1]} 件のリストに一致`
+            : `목록 ${matchLists[1]}개와 일치`;
+    }
+
+    const activeSessions = text.match(/^(\d+) active sessions?$/);
+    if (activeSessions) {
+        return language === 'ja'
+            ? `${activeSessions[1]} 件のアクティブなセッション`
+            : `활성 세션 ${activeSessions[1]}개`;
+    }
+
+    const rulesSummary = text.match(/^Showing (\d+) of (\d+) rules(?: · Active: (.+))?$/);
+    if (rulesSummary) {
+        const active = rulesSummary[3] ? ` · ${language === 'ja' ? '有効' : '활성'}: ${rulesSummary[3]}` : '';
+        return language === 'ja'
+            ? `${rulesSummary[1]} / ${rulesSummary[2]} 件のルールを表示${active}`
+            : `규칙 ${rulesSummary[2]}개 중 ${rulesSummary[1]}개 표시${active}`;
+    }
+
+    const topologySummary = text.match(/^(\d+) live connections · (\d+) nodes · (\d+) links$/);
+    if (topologySummary) {
+        return language === 'ja'
+            ? `${topologySummary[1]} 件のライブ接続 · ${topologySummary[2]} ノード · ${topologySummary[3]} リンク`
+            : `실시간 연결 ${topologySummary[1]}개 · 노드 ${topologySummary[2]}개 · 링크 ${topologySummary[3]}개`;
+    }
+
+    const topologyLinks = text.match(/^(\d+) nodes across (\d+) links$/);
+    if (topologyLinks) {
+        return language === 'ja'
+            ? `${topologyLinks[1]} ノード、${topologyLinks[2]} リンク`
+            : `노드 ${topologyLinks[1]}개, 링크 ${topologyLinks[2]}개`;
+    }
+
+    const relatedLivePaths = text.match(/^(\d+) related live paths?$/);
+    if (relatedLivePaths) {
+        return language === 'ja'
+            ? `関連するライブパス ${relatedLivePaths[1]} 件`
+            : `관련 실시간 경로 ${relatedLivePaths[1]}개`;
+    }
+
+    const trafficBreakdown = text.match(/^Top destinations, addresses, and routes by transferred bytes · (.+)$/);
+    if (trafficBreakdown) {
+        return language === 'ja'
+            ? `転送バイト数が多い宛先、アドレス、ルート · ${trafficBreakdown[1]}`
+            : `전송 바이트 기준 상위 대상, 주소 및 경로 · ${trafficBreakdown[1]}`;
+    }
+
+    const failedCount = text.match(/^(\d+) failed$/);
+    if (failedCount) {
+        return language === 'ja'
+            ? `${failedCount[1]} 件失敗`
+            : `${failedCount[1]}개 실패`;
+    }
 
     const blocked = text.match(/^Displaying (\d+) connections denied by rules$/);
     if (blocked) {

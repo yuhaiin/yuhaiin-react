@@ -3,9 +3,19 @@ import { requestJSON } from "@/api/client";
 
 export type User = Go.user.UserView;
 export type UserWrite = Go.user.UserWrite;
+export type UserList = { items: User[]; page: Go.route.Page };
 
-export function listUsers(query?: string) {
-    return requestJSON<{ items: User[]; page: Go.route.Page }>("GET", "/api/v2/users", undefined, { page: 1, pageSize: 1000, query });
+export type UserListQuery = {
+    page?: number;
+    pageSize?: number;
+    query?: string;
+};
+
+export function listUsers(query?: string | UserListQuery): Promise<UserList> {
+    const params = typeof query === "string"
+        ? { page: 1, page_size: 1000, query }
+        : { page: query?.page, page_size: query?.pageSize, query: query?.query };
+    return requestJSON<UserList>("GET", "/api/v2/users", undefined, params);
 }
 
 export function createUser(value: UserWrite) {

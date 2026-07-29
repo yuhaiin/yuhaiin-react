@@ -3,6 +3,7 @@
 import { createUser, deleteUser, listUsers, updateUser, type User } from "@/api/users";
 import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardHeader, MainContainer, SettingLabel } from "@/component/v2/card";
+import { Pagination } from "@/component/v2/pagination";
 import { Select, SettingInputVertical, SettingPasswordVertical } from "@/component/v2/forms";
 import { SwitchCard } from "@/component/v2/switch";
 import { Input } from "@/component/v2/input";
@@ -14,6 +15,7 @@ import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 
 type Kind = "basic" | "uuid" | "token";
+const PAGE_SIZE = 20;
 
 const emptyDraft = () => ({
     name: "",
@@ -31,7 +33,8 @@ function label(user: User) {
 }
 
 export default function UsersPage() {
-    const { data, error, mutate } = useSWR("/api/v2/users", () => listUsers(), { revalidateOnFocus: false });
+    const [page, setPage] = useState(1);
+    const { data, error, mutate } = useSWR(`/api/v2/users?page=${page}&pageSize=${PAGE_SIZE}`, () => listUsers({ page, pageSize: PAGE_SIZE }), { revalidateOnFocus: false, keepPreviousData: true });
     const [selected, setSelected] = useState<User | undefined>();
     const [draft, setDraft] = useState(emptyDraft);
     const [saving, setSaving] = useState(false);
@@ -42,6 +45,11 @@ export default function UsersPage() {
         : error && typeof error === "object" && "msg" in error
             ? String((error as { msg?: unknown }).msg ?? "unknown error")
             : String(error ?? "unknown error");
+
+    useEffect(() => {
+        const totalPages = Math.max(1, Math.ceil((data?.page.total ?? 0) / PAGE_SIZE));
+        if (page > totalPages) setPage(totalPages);
+    }, [data?.page.total, page]);
 
     const credential = useMemo(() => {
         if (draft.type === "basic") {
@@ -117,9 +125,9 @@ export default function UsersPage() {
             />
             <PageStatStrip
                 stats={[
-                    { label: "People", value: users.length, hint: "managed identities", icon: UsersIcon, tone: "primary" },
-                    { label: "Enabled", value: users.filter((user) => user.enabled).length, hint: "available credentials", icon: ShieldCheck, tone: "success" },
-                    { label: "Credential types", value: new Set(users.map((user) => user.credential.type)).size, hint: "basic, token, or UUID", icon: KeyRound, tone: "violet" },
+                    { label: "People", value: data?.page.total ?? users.length, hint: "managed identities", icon: UsersIcon, tone: "primary" },
+                    { label: "Enabled", value: users.filter((user) => user.enabled).length, hint: "visible on this page", icon: ShieldCheck, tone: "success" },
+                    { label: "Credential types", value: new Set(users.map((user) => user.credential.type)).size, hint: "visible on this page", icon: KeyRound, tone: "violet" },
                     { label: "Access model", value: "Central", hint: "reused by protocols", icon: ShieldCheck, tone: "warning" },
                 ]}
                 className="mb-4"
@@ -146,7 +154,7 @@ export default function UsersPage() {
             >
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(260px,0.8fr)_minmax(360px,1.2fr)]">
                 <Card noMargin>
-                    <CardHeader><strong>Users</strong><span className="text-xs text-ui-muted">{users.length}</span></CardHeader>
+                    <CardHeader><strong>Users</strong><span className="text-xs text-ui-muted">{data?.page.total ?? users.length}</span></CardHeader>
                     <CardBody className="p-2">
                         {users.length === 0 ? <div className="p-6 text-center text-sm text-ui-muted">{error ? "No user data was returned." : "No users yet."}</div> : users.map((user) => (
                             <button key={user.id} className={`mb-1 flex w-full items-center justify-between rounded-ui-md px-3 py-3 text-left ${selected?.id === user.id ? "bg-ui-primary-soft text-ui-primary" : "hover:bg-ui-surface-muted"}`} onClick={() => setSelected(user)}>
@@ -155,6 +163,7 @@ export default function UsersPage() {
                             </button>
                         ))}
                     </CardBody>
+                    {(data?.page.total ?? 0) > PAGE_SIZE && <div className="flex justify-end border-t border-ui-border px-4 py-3"><Pagination currentPage={data?.page.page || page} totalItems={data.page.total} pageSize={PAGE_SIZE} onPageChange={setPage} /></div>}
                 </Card>
 
                 <Card noMargin>

@@ -5,7 +5,7 @@ import { APIError } from "@/api/client";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardHeader, CardRowList, ErrorMsg, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
+import { Card, CardBody, CardHeader, ErrorMsg, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
 import { Select, SettingInputVertical, SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
 import { Textarea } from "@/component/v2/input";
 import { InputBytesList, InputList } from "@/component/v2/listeditor";
@@ -13,6 +13,7 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 import { PageHeader } from "@/component/v2/page-header";
 import { FlowRail, PageStatStrip } from "@/component/v2/page-patterns";
 import { Spinner } from "@/component/v2/spinner";
+import { ResourceList, ResourceRow } from "@/component/v2/resource-list";
 import {
     createDefaultInbound,
     createDefaultNetwork,
@@ -31,7 +32,7 @@ import {
     ServerTLSConfig,
     TLSAutoTransport,
 } from "@/contract/inbound";
-import { Activity, ArrowDown, ArrowRight, ArrowUp, Check, ChevronRight, DoorOpen, Gauge, LogIn, Plus, Save, Settings, ShieldCheck, Trash } from "lucide-react";
+import { Activity, ArrowDown, ArrowRight, ArrowUp, Check, DoorOpen, Gauge, LogIn, Plus, Save, Settings, ShieldCheck, Trash } from "lucide-react";
 import { FC, useContext, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import Loading, { Error as ErrorDisplay } from "../../component/v2/loading";
@@ -840,43 +841,19 @@ const InboundStarterModal: FC<{
     </Modal>
 );
 
-const InboundItem: FC<{ item: Inbound }> = ({ item }) => {
-    return (
-        <>
-            <div className="grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(180px,0.38fr)_minmax(0,1fr)] md:items-center">
-                <div className="flex min-w-0 items-center">
-                    <div className="mr-4 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600/10 text-ui-primary">
-                        <LogIn size={20} />
-                    </div>
-                    <div className="flex min-w-0 flex-wrap items-center gap-2">
-                        <span className="truncate font-medium">{item.name || item.id}</span>
-                        <Badge variant={item.enabled ? "success" : "muted"} className="shrink-0">
-                            {item.enabled ? "Enabled" : "Disabled"}
-                        </Badge>
-                    </div>
-                </div>
-                <div className="ui-inbound-meta-grid grid min-w-0 gap-2 text-xs text-ui-muted sm:grid-cols-2 lg:grid-cols-4">
-                    <div className="min-w-0">
-                        <span className="ui-inbound-meta-label text-ui-muted/70">Protocol</span>
-                        <span className="ui-inbound-meta-value font-medium text-ui-fg">{item.protocol.type}</span>
-                    </div>
-                    <div className="min-w-0">
-                        <span className="ui-inbound-meta-label text-ui-muted/70">Network</span>
-                        <span className="ui-inbound-meta-value font-medium text-ui-fg">{item.network.type}</span>
-                    </div>
-                    <div className="min-w-0">
-                        <span className="ui-inbound-meta-label text-ui-muted/70">Listen</span>
-                        <span className="ui-inbound-meta-value truncate font-mono font-medium text-ui-fg">{inboundListen(item) || "-"}</span>
-                    </div>
-                    <div className="min-w-0">
-                        <span className="ui-inbound-meta-label text-ui-muted/70">Transport</span>
-                        <span className="ui-inbound-meta-value truncate font-mono font-medium text-ui-fg">{transportLabel(item) || "-"}</span>
-                    </div>
-                </div>
-            </div>
-            <ChevronRight className="text-ui-muted opacity-25" size={16} />
-        </>
-    );
+const InboundItem: FC<{ item: Inbound; onClick: () => void }> = ({ item, onClick }) => {
+    return <ResourceRow
+        icon={LogIn}
+        title={item.name || item.id}
+        subtitle={inboundListen(item) || "No listen address"}
+        badges={<Badge variant={item.enabled ? "success" : "muted"} pill className="px-2 py-0.5 text-[0.65rem]">{item.enabled ? "Enabled" : "Disabled"}</Badge>}
+        facts={[
+            { label: "Protocol", value: item.protocol.type },
+            { label: "Network", value: item.network.type },
+            { label: "Transport", value: transportLabel(item) || "—", mono: true },
+        ]}
+        onClick={onClick}
+    />;
 };
 
 const InboundConfigCard: FC = () => {
@@ -1064,17 +1041,10 @@ export default function InboudComponent() {
                     <div className="ui-section-label mb-2">Entry points</div>
                     <h2 className="ui-inbound-section-title">Devices and apps</h2>
                     <p className="ui-inbound-section-description">Open an entry point to edit its protocol, listener, and transport.</p>
-                    <CardRowList
-                        layout="list"
-                        paginated
-                        pageSize={PAGE_SIZE}
-                        currentPage={data.page.page || page}
-                        totalItems={data.page.total}
-                        onPageChange={setPage}
+                    <ResourceList
                         items={items}
                         getKey={(item) => item.id}
-                        renderListItem={(item) => <InboundItem item={item} />}
-                        onClickItem={(item) => setShowdata({ show: true, id: item.id, new: false })}
+                        renderItem={(item) => <InboundItem item={item} onClick={() => setShowdata({ show: true, id: item.id, new: false })} />}
                         header={
                             <div className="flex w-full items-center justify-between gap-3">
                                 <IconBox icon={DoorOpen} tone="primary" title="Configured entry points" description={`${data.page.total} inbounds`} />
@@ -1083,6 +1053,7 @@ export default function InboudComponent() {
                                 </Button>
                             </div>
                         }
+                        pagination={{ currentPage: data.page.page || page, totalItems: data.page.total, pageSize: PAGE_SIZE, onPageChange: setPage }}
                     />
                 </section>
             </div>

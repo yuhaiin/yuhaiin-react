@@ -150,7 +150,7 @@ function BypassBlockHistory() {
                     <h4 className="font-bold mb-1">Blocked Traffic</h4>
                     <div className="text-ui-muted flex items-center text-sm">
                         <ShieldOff className="mr-2 text-red-500 opacity-75" />
-                        <span>Displaying {values.length} connections denied by rules</span>
+                        <span>{`Displaying ${values.length} connections denied by rules`}</span>
                     </div>
                 </div>
 

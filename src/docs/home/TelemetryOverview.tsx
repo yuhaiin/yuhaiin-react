@@ -26,7 +26,7 @@ const TrafficStats = ({ item }: { item: TelemetryGroup["items"][number] }) => {
         <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 text-xs tabular-nums text-ui-muted sm:shrink-0 sm:justify-end">
             <span>↓ {formatBytes(numberValue(item.download), 1, " ")}</span>
             <span>↑ {formatBytes(numberValue(item.upload), 1, " ")}</span>
-            {failures > 0 && <Badge variant="danger" pill className="px-1.5 py-1 font-medium">{failures} failed</Badge>}
+            {failures > 0 && <Badge variant="danger" pill className="px-1.5 py-1 font-medium">{`${failures} failed`}</Badge>}
         </div>
     );
 };
@@ -81,7 +81,7 @@ const RankedPanel = ({ group, title }: { group: TelemetryGroup; title: string })
                     <h3>{title}</h3>
                     <p>Sorted by downloaded + uploaded bytes</p>
                 </div>
-                <Badge variant="secondary" pill>Top {items.length}</Badge>
+                <Badge variant="secondary" pill>{`Top ${items.length}`}</Badge>
             </div>
             {items.length === 0 ? (
                 <div className="friendly-ranking-empty">No records in this range.</div>
