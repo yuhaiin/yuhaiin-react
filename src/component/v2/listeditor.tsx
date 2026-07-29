@@ -42,7 +42,7 @@ export const InputList: FC<{
     }
 
     return (
-        <div className={className}>
+        <div className={`ui-input-list ${className ?? ""}`}>
             <label className="block mb-2 font-bold">{title}</label>
             {!disabled && (
                 <InputGroup className="mb-2">
@@ -72,18 +72,24 @@ export const InputList: FC<{
 
             <div className="flex flex-col gap-2">
                 {items.map((item, i) => (
-                    <InputGroup key={i}>
+                    disabled ? (
                         <Input
+                            key={i}
                             value={item}
-                            onChange={(e) => edit(i, e.target.value)}
-                            className="grow"
-                            disabled={disabled}
-                            style={{
-                                borderTopRightRadius: 0,
-                                borderBottomRightRadius: 0
-                            }}
+                            className="ui-input-list-item"
+                            disabled
                         />
-                        {!disabled && (
+                    ) : (
+                        <InputGroup key={i}>
+                            <Input
+                                value={item}
+                                onChange={(e) => edit(i, e.target.value)}
+                                className="grow"
+                                style={{
+                                    borderTopRightRadius: 0,
+                                    borderBottomRightRadius: 0
+                                }}
+                            />
                             <Button
                                 variant="outline-danger"
                                 onClick={() => remove(i)}
@@ -95,8 +101,8 @@ export const InputList: FC<{
                             >
                                 <Trash size={16} />
                             </Button>
-                        )}
-                    </InputGroup>
+                        </InputGroup>
+                    )
                 ))}
             </div>
         </div>

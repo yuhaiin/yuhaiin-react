@@ -8,6 +8,8 @@ import { DataList, DataListItem } from "@/component/v2/datalist";
 import { Dropdown, DropdownContent, DropdownTrigger } from "@/component/v2/dropdown";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Pagination } from "@/component/v2/pagination";
+import { PageHeader } from "@/component/v2/page-header";
+import { ResourceWorkspace } from "@/component/v2/resource-workspace";
 import { Spinner } from "@/component/v2/spinner";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import type { BlockHistory } from "@/contract/route";
@@ -122,16 +124,33 @@ function BypassBlockHistory() {
     const paginatedItems = values.slice((page - 1) * pageSize, page * pageSize);
 
     return (
-        <MainContainer>
+        <MainContainer className="product-page page-skin-rules page-skin-block-history">
+            <PageHeader
+                eyebrow="Traffic decisions"
+                title="Block history"
+                description={`Review ${values.length} destinations denied by your routing rules and inspect why they were blocked.`}
+                icon={ShieldOff}
+                actions={<Button size="sm" onClick={() => mutate()} disabled={isValidating}><RotateCw size={16} className="mr-1" /> Refresh</Button>}
+            />
             <InfoModal data={info.data} show={info.show} onClose={() => setInfo({ ...info, show: false })} />
 
+            <ResourceWorkspace
+                className="ui-traffic-workspace"
+                railClassName="ui-traffic-rail"
+                mainClassName="ui-traffic-main ui-traffic-table"
+                icon={ShieldOff}
+                eyebrow="Rules history"
+                title="See what was stopped"
+                description="Blocked requests remain available here with their host, process, timestamp, and the reason the rule denied them."
+                links={[{ label: "Routing", href: "#/docs/bypass" }, { label: "Failed connections", href: "#/docs/connections/failed" }]}
+            >
             {/* --- Action Bar --- */}
             <div className="flex flex-wrap justify-between items-end mb-4 gap-3">
                 <div>
                     <h4 className="font-bold mb-1">Blocked Traffic</h4>
                     <div className="text-ui-muted flex items-center text-sm">
                         <ShieldOff className="mr-2 text-red-500 opacity-75" />
-                        <span>Displaying {values.length} connections denied by rules</span>
+                        <span>{`Displaying ${values.length} connections denied by rules`}</span>
                     </div>
                 </div>
 
@@ -183,6 +202,7 @@ function BypassBlockHistory() {
                     onPageChange={setPage}
                 />}
             />
+            </ResourceWorkspace>
 
         </MainContainer>
     );

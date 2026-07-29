@@ -50,7 +50,7 @@ export const Hosts: FC = () => {
                     {Object.entries(data.hosts)
                         .sort(([a], [b]) => a.localeCompare(b))
                         .map(([k, v]) => (
-                            <InputGroup key={"hosts" + k}>
+                            <InputGroup key={"hosts" + k} className="resolver-host-input-group">
                                 <InputGroupText className="font-mono text-xs px-2 flex-1 min-w-0 justify-start">
                                     <span className="truncate">{k}</span>
                                 </InputGroupText>
@@ -76,7 +76,7 @@ export const Hosts: FC = () => {
                         ))}
 
                     <div className="pt-4 mt-2 border-t border-gray-500/10">
-                        <InputGroup>
+                        <InputGroup className="resolver-host-input-group">
                             <Input
                                 value={newHosts.key}
                                 onChange={(e) => setNewHosts({ ...newHosts, key: e.target.value })}

@@ -49,7 +49,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                     ui.fieldFocus,
                     ui.fieldReadonly,
                     ui.fieldDisabled,
-                    "placeholder:not-italic",
+                    "ui-input placeholder:not-italic",
                     {
                         "h-field-sm py-1 px-2.5 text-[0.8125rem]": size === "sm",
                     },
@@ -85,7 +85,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
                     ui.fieldFocus,
                     ui.fieldReadonly,
                     ui.fieldDisabled,
-                    "min-h-field h-auto py-2",
+                    "ui-input min-h-field h-auto py-2",
                     groupRadiusClass(groupPosition),
                     className
                 )}

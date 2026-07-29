@@ -7,10 +7,12 @@ import { DataListItem } from "@/component/v2/datalist"
 import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown"
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal"
 import { Pagination } from "@/component/v2/pagination"
-import { Spinner } from "@/component/v2/spinner"
+import { PageHeader } from "@/component/v2/page-header"
+import { PageStatStrip } from "@/component/v2/page-patterns"
+import { ResourceWorkspace } from "@/component/v2/resource-workspace"
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import type { AllHistory } from "@/contract/connection"
-import { ArrowDownWideNarrow, ArrowLeftRight, ChevronRight, Clock, Info, Radio, RefreshCw, RotateCw, ShieldCheck } from "lucide-react"
+import { Activity, ArrowDownWideNarrow, ArrowLeftRight, ChevronRight, Clock, Radio, RefreshCw, RotateCw, ShieldCheck } from "lucide-react"
 import React, { FC, useMemo, useState } from "react"
 import useSWR from "swr"
 import Loading from "../../../component/v2/loading"
@@ -83,9 +85,23 @@ function History() {
 
     const pageSize = 30;
     const paginatedItems = values.slice((page - 1) * pageSize, page * pageSize);
+    const latest = values[0]?.time ? new Date(values[0].time).toLocaleTimeString() : "—";
 
     return (
-        <MainContainer>
+        <MainContainer className="product-page page-skin-traffic page-skin-history">
+            <PageHeader
+                eyebrow="Traffic"
+                title="Activity history"
+                description={`Review ${values.length} stored connection records and open any session for its full route details.`}
+                icon={Clock}
+                actions={<Button size="sm" onClick={() => mutate()} disabled={isValidating}><RotateCw size={16} className="mr-1" /> Refresh</Button>}
+            />
+            <PageStatStrip stats={[
+                { label: "Records", value: values.length, hint: "Matching history", icon: Clock },
+                { label: "Networks", value: networkOptions.length, hint: "Observed types", icon: Activity, tone: "violet" },
+                { label: "Page size", value: pageSize, hint: "Rows per page", icon: ArrowDownWideNarrow, tone: "success" },
+                { label: "Latest", value: latest, hint: "Most recent record", icon: RefreshCw, tone: "warning" },
+            ]} />
             <NodeModal
                 show={nodeModal.show}
                 id={nodeModal.id}
@@ -111,14 +127,17 @@ function History() {
                 </ModalContent>
             </Modal>
 
-            <div className="flex flex-wrap justify-between items-end mb-4 gap-3">
-                <div>
-                    <h4 className="font-bold mb-1">Connection History</h4>
-                    <div className="text-ui-muted flex items-center text-sm">
-                        <Info className="mr-2" />
-                        <span>Showing {values.length} historical records</span>
-                    </div>
-                </div>
+            <ResourceWorkspace
+                className="ui-traffic-workspace"
+                railClassName="ui-traffic-rail"
+                mainClassName="ui-traffic-main ui-traffic-table"
+                icon={Clock}
+                eyebrow="Traffic archive"
+                title="Follow a session back"
+                description="Search stored sessions by destination, then open one to inspect its inbound, rule, resolver, and outbound path."
+                links={[{ label: "Live connections", href: "#/docs/connections/v2" }, { label: "Failed connections", href: "#/docs/connections/failed" }]}
+            >
+            <div className="ui-filter-toolbar mb-5 items-end">
                 <div className="flex flex-wrap gap-2 justify-end items-center">
                     <FilterSearch onEnter={setFilter} size="sm" />
                     <Dropdown>
@@ -136,9 +155,6 @@ function History() {
                             ))}
                         </DropdownContent>
                     </Dropdown>
-                    <Button size="sm" onClick={() => mutate()} disabled={isValidating}>
-                        {isValidating ? <Spinner size="sm" /> : <RotateCw size={16} />}
-                    </Button>
                     <Dropdown>
                         <DropdownTrigger asChild><Button size="sm"><ArrowDownWideNarrow className="mr-1" size={16} /></Button></DropdownTrigger>
                         <DropdownContent align="end" className="p-3" style={{ minWidth: "320px" }}>
@@ -168,6 +184,7 @@ function History() {
                 renderListItem={(v) => <ListItem data={v} />}
                 footer={<Pagination currentPage={page} totalItems={values.length} pageSize={pageSize} onPageChange={setPage} />}
             />
+            </ResourceWorkspace>
         </MainContainer>
     );
 }

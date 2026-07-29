@@ -64,7 +64,7 @@ export const SettingInputVertical: FC<SettingInputVerticalProps> = React.memo(({
     const id = useId(); // Auto-generate unique ID
 
     return (
-        <div className={clsx("relative mb-4 flex min-w-0 max-w-full flex-col", className)}>
+        <div className={clsx("ui-setting-field relative mb-4 flex min-w-0 max-w-full flex-col", className)}>
             {/* 1. Associate Label and Input */}
             <SettingLabel htmlFor={id} className="mb-2 block">
                 {label}
@@ -105,7 +105,7 @@ export const SettingPasswordVertical: FC<{
     const [show, setShow] = useState(false);
 
     return (
-        <div className={clsx("flex flex-col mb-4 relative", className)}>
+        <div className={clsx("ui-setting-field flex flex-col mb-4 relative", className)}>
             <SettingLabel className="mb-2 basis-auto mr-0 font-medium">{label}</SettingLabel>
             <div className="flex">
                 <Input
@@ -143,7 +143,7 @@ export const SettingRangeVertical: FC<{
 }> = React.memo(({ label, value, min, max, step, unit, onChange, className }) => {
     const { t } = useTranslation('common');
     return (
-        <div className={clsx("flex flex-col mb-4 relative", className)}>
+        <div className={clsx("ui-setting-field ui-setting-range flex flex-col mb-4 relative", className)}>
             <div className="flex justify-between items-center mb-1">
                 <SettingLabel className="mb-0 font-medium">{label}</SettingLabel>
                 <div className="text-ui-primary font-bold font-mono text-sm bg-ui-primary-soft px-2 py-1 rounded-ui-xs">

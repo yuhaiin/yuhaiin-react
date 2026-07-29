@@ -13,7 +13,9 @@ export function readThemePreference(): ThemePreference {
     } catch {
         // ignore storage errors
     }
-    return "system";
+    // Keep the product's consumer-facing baseline light and calm. Users can
+    // still opt into system or dark mode from Web UI settings.
+    return "light";
 }
 
 export function writeThemePreference(preference: ThemePreference) {

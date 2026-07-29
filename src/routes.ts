@@ -12,6 +12,7 @@ const GroupActivatesPage = dynamic(() => import('@/docs/group/activates/page'), 
 const InboundPage = dynamic(() => import('@/docs/inbound/page'), { loading });
 const UsersPage = dynamic(() => import('@/docs/users/page'), { loading });
 const BypassPage = dynamic(() => import('@/docs/bypass/page'), { loading });
+const BypassTopologyPage = dynamic(() => import('@/docs/bypass/topology/page'), { loading });
 const BypassListPage = dynamic(() => import('@/docs/bypass/list/page'), { loading });
 const BypassTagPage = dynamic(() => import('@/docs/bypass/tag/page'), { loading });
 const BypassResolverPage = dynamic(() => import('@/docs/bypass/resolver/page'), { loading });
@@ -39,6 +40,7 @@ export const appRoutes = [
     { path: "/docs/inbound", component: InboundPage },
     { path: "/docs/users", component: UsersPage },
     { path: "/docs/bypass", component: BypassPage },
+    { path: "/docs/bypass/topology", component: BypassTopologyPage },
     { path: "/docs/bypass/list", component: BypassListPage },
     { path: "/docs/bypass/tag", component: BypassTagPage },
     { path: "/docs/bypass/resolver", component: BypassResolverPage },

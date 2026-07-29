@@ -91,7 +91,7 @@ const ModalContent = ({ className, children, style, ...props }: React.ComponentP
                     <DialogPrimitive.Content asChild forceMount>
                         <motion.div
                             className={clsx(
-                                "fixed top-1/2 left-1/2 min-w-0 w-[90vw] max-w-[500px] max-h-[85vh] z-[1055] flex flex-col outline-none overflow-hidden bg-ui-surface text-ui-fg border border-ui-border rounded-ui-xl shadow-ui-elevated p-[5px] will-change-[transform,opacity]",
+                                "ui-modal fixed top-1/2 left-1/2 min-w-0 w-[90vw] max-w-[500px] max-h-[85vh] z-[1055] flex flex-col outline-none overflow-hidden bg-ui-surface text-ui-fg border border-ui-border rounded-ui-xl shadow-ui-elevated p-[5px] will-change-[transform,opacity]",
                                 className
                             )}
                             variants={contentVariants}
@@ -122,7 +122,7 @@ const ModalHeader = ({
     closeButton = false, // Hidden by default
     ...props
 }: ModalHeaderProps) => (
-    <div className={clsx("flex min-w-0 items-center justify-between p-4 border-b border-ui-border", className)} {...props}>
+    <div className={clsx("ui-modal-header flex min-w-0 items-center justify-between p-4 border-b border-ui-border", className)} {...props}>
         {children}
 
         {closeButton && (
@@ -137,7 +137,7 @@ const ModalHeader = ({
 // 3. Title (Must use DialogPrimitive.Title for accessibility)
 const ModalTitle = ({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) => (
     <DialogPrimitive.Title
-        className={clsx("m-0 min-w-0 truncate leading-normal text-[1.25rem] font-medium text-ui-heading", className)}
+        className={clsx("ui-modal-title m-0 min-w-0 truncate leading-normal text-[1.25rem] font-medium text-ui-heading", className)}
         {...props}
     />
 );
@@ -145,7 +145,7 @@ ModalTitle.displayName = "ModalTitle";
 
 // 4. Body
 const ModalBody = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-    <div className={clsx("relative min-w-0 flex-auto overflow-x-hidden overflow-y-auto p-4", className)} {...props} />
+    <div className={clsx("ui-modal-body relative min-w-0 flex-auto overflow-x-hidden overflow-y-auto p-4", className)} {...props} />
 );
 
 // 5. Footer
@@ -157,7 +157,7 @@ interface ModalFooterProps extends React.HTMLAttributes<HTMLDivElement> {
 const ModalFooter = ({ className, bordered = true, compact = false, ...props }: ModalFooterProps) => (
     <div
         className={clsx(
-            "flex flex-wrap items-center justify-end gap-2",
+            "ui-modal-footer flex flex-wrap items-center justify-end gap-2",
             compact ? "p-3" : "p-4",
             bordered && "border-t border-ui-border",
             className

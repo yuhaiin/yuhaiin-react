@@ -3,25 +3,29 @@
 import { closeConnections, getConnections } from "@/api/connections";
 import { AuthTokenKey, getApiUrl } from "@/common/apiurl";
 import { Button } from "@/component/v2/button";
-import { IconBadge, MainContainer } from "@/component/v2/card";
+import { MainContainer } from "@/component/v2/card";
 import Loading from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Spinner } from "@/component/v2/spinner";
+import { PageHeader } from "@/component/v2/page-header";
+import { PageStatStrip } from "@/component/v2/page-patterns";
 import { GlobalToastContext } from "@/component/v2/toast";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import type { Connection, Connections, Counter } from "@/contract/connection";
 import { normalizeConnection } from "@/contract/connection";
-import { ArrowDown, ArrowUp, Network, Power, ShieldCheck, Tag } from "lucide-react";
+import clsx from "clsx";
+import { Activity, ArrowDown, ArrowDownWideNarrow, ArrowRight, ArrowUp, ChevronRight, Network, Power, Radio, ShieldCheck, Tag } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { VList } from "virtua";
 import { NodeModal } from "../../node/modal";
 import { ConnectionInfo, FlowContainer, formatBytes, numberValue } from "../components";
+import "./live.css";
 
 type SortBy = "id" | "name" | "download" | "upload";
 const VIRTUALIZE_THRESHOLD = 40;
-const ROW_HEIGHT = 52;
+const ROW_HEIGHT = 84;
 
 function eventsURL() {
     const apiUrl = getApiUrl();
@@ -56,6 +60,11 @@ function Connections() {
     }, [initial]);
 
     useEffect(() => {
+        if (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("mock")) {
+            const timer = window.setInterval(() => { void mutate(); }, 3000);
+            return () => window.clearInterval(timer);
+        }
+
         let reconnectTimer: number | undefined;
         const source = new EventSource(eventsURL());
         source.onopen = () => setStreamError("");
@@ -124,7 +133,7 @@ function Connections() {
     if (isLoading && !initial) return <Loading />
 
     return (
-        <MainContainer className="flex min-h-full min-w-0 flex-col">
+        <MainContainer className="product-page page-skin-traffic page-skin-live flex min-h-full min-w-0 flex-col">
             <NodeModal
                 show={nodeModal.show}
                 id={nodeModal.id}
@@ -132,7 +141,32 @@ function Connections() {
                 onHide={() => setNodeModal({ show: false })}
             />
 
-            <FlowContainer onUpdate={setCounters} />
+            <PageHeader
+                eyebrow="Traffic"
+                title="Live connections"
+                description="Watch active traffic, inspect the route it took, or disconnect a session."
+                icon={Network}
+                actions={<Button onClick={() => { setStreamError(""); void mutate(); setStreamNonce((value) => value + 1); }} size="sm">Refresh</Button>}
+                className="mb-2"
+            />
+
+            <PageStatStrip className="ui-live-page-summary" stats={[
+                { label: "Active", value: sorted.length, hint: "Current sessions", icon: Activity, tone: "success" },
+                { label: "Live feed", value: streamError ? "Reconnecting" : "Connected", hint: "Event stream", icon: Radio, tone: streamError ? "warning" : "primary" },
+                { label: "Sort", value: sortBy, hint: `${sortOrder} order`, icon: ArrowDownWideNarrow, tone: "violet" },
+                { label: "Actions", value: "Inspect / close", hint: "Select any session", icon: ShieldCheck },
+            ]} />
+
+            <section className="ui-traffic-overview" aria-label="Traffic overview">
+                <div className="ui-workspace-section-heading">
+                    <div>
+                        <div className="ui-section-label">Traffic overview</div>
+                        <h2>Throughput now</h2>
+                    </div>
+                    <span>Live totals from the active controller</span>
+                </div>
+                <FlowContainer onUpdate={setCounters} />
+            </section>
 
             {streamError && (
                 <div className="mb-3 rounded-ui-lg border border-ui-warning/40 bg-ui-warning/10 px-4 py-3 text-sm text-ui-warning">
@@ -140,7 +174,13 @@ function Connections() {
                 </div>
             )}
 
-            <div className="flex justify-end mb-3">
+            <div className="ui-live-list-toolbar mb-3">
+                <div className="ui-live-list-count">
+                    <span className="ui-live-list-pulse" />
+                    <strong>{sorted.length}</strong>
+                    <span>active sessions</span>
+                    <small>{streamError ? "Reconnecting to live feed" : "Live feed"}</small>
+                </div>
                 <div className="flex items-center gap-3 flex-wrap">
                     <ToggleGroup className="flex-nowrap" type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")}>
                         <ToggleItem value="asc"><div className="flex items-center gap-1 whitespace-nowrap"><ArrowUp size={16} /> Asc</div></ToggleItem>
@@ -152,16 +192,15 @@ function Connections() {
                         <ToggleItem value="download">Download</ToggleItem>
                         <ToggleItem value="upload">Upload</ToggleItem>
                     </ToggleGroup>
-                    <Button onClick={() => { setStreamError(""); void mutate(); setStreamNonce((value) => value + 1); }} size="sm">Refresh</Button>
                 </div>
             </div>
 
             {sorted.length === 0 ? (
-                <div className="mb-0 flex min-h-0 flex-1 items-center justify-center rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg p-6 text-center text-ui-muted">
+                <div className="ui-live-empty mb-0 flex min-h-0 flex-1 items-center justify-center rounded-ui-xl border border-ui-border bg-ui-surface p-6 text-center text-ui-muted">
                     No active connections.
                 </div>
             ) : sorted.length > VIRTUALIZE_THRESHOLD ? (
-                <div className="mb-0 min-h-0 flex-1 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl">
+                <div className="ui-live-session-list ui-traffic-session-list mb-0 h-[min(62vh,680px)] min-h-[320px] flex-none overflow-hidden rounded-ui-xl border border-ui-border bg-ui-surface shadow-ui-card">
                     <VList
                         data={sorted}
                         itemSize={ROW_HEIGHT}
@@ -180,7 +219,7 @@ function Connections() {
                     </VList>
                 </div>
             ) : (
-                <div className="mb-0 min-h-0 flex-1 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl">
+                <div className="ui-live-session-list ui-traffic-session-list mb-0 h-[min(62vh,680px)] min-h-[320px] flex-none overflow-y-auto rounded-ui-xl border border-ui-border bg-ui-surface shadow-ui-card">
                     <AnimatePresence initial={false}>
                         {sorted.map(conn => (
                             <ConnectionRow
@@ -235,30 +274,32 @@ const ConnectionRow = memo(function ConnectionRow({
 }) {
     const download = formatBytes(numberValue(counter?.download));
     const upload = formatBytes(numberValue(counter?.upload));
-    // Keep everything in one dense row. Avoid 1fr/space-between — that creates a huge empty middle.
-    const className = "flex min-h-[52px] items-center gap-2.5 border-b border-sidebar-border px-3.5 py-2 transition-colors duration-150 cursor-pointer hover:bg-sidebar-hover last:border-b-0";
+    const className = "ui-live-connection-row border-b border-ui-border last:border-b-0";
     const handleClick = useCallback(() => onSelect(conn), [conn, onSelect]);
+    const mode = conn.mode || "unknown";
+    const outbound = conn.nodeName || conn.outbound || "Direct";
+    const inbound = conn.inboundName || conn.inbound || "Unknown inbound";
+    const process = conn.process || "Unknown process";
 
     const body = (
         <>
-            <code className="w-[3.25rem] shrink-0 font-mono text-[11px] tabular-nums text-sidebar-color/75">
-                {conn.id}
-            </code>
-
-            <span
-                className="min-w-0 max-w-[min(42vw,28rem)] shrink truncate text-[0.9rem] font-medium leading-5 text-ui-heading"
-                title={conn.addr}
-            >
-                {conn.addr}
-            </span>
-
-            <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-1.5">
-                <IconBadge icon={ShieldCheck} text={conn.mode || "unknown"} />
-                <IconBadge icon={Network} text={conn.network.connType || "unknown"} />
-                {conn.tag && <IconBadge icon={Tag} text={conn.tag} />}
+            <div className="ui-live-connection-id">
+                <span className="ui-live-connection-dot" />
+                <code>#{conn.id}</code>
             </div>
-
+            <div className="ui-live-connection-main">
+                <div className="ui-live-connection-title-line">
+                    <strong title={conn.addr}>{conn.addr || "Unknown destination"}</strong>
+                    <span className={clsx("ui-live-chip", mode === "direct" ? "is-direct" : "is-proxy")}><ShieldCheck size={12} /> {mode}</span>
+                    <span className="ui-live-chip"><Network size={12} /> {conn.network.connType || "unknown"}</span>
+                    {conn.tag && <span className="ui-live-chip is-tag"><Tag size={12} /> {conn.tag}</span>}
+                </div>
+                <div className="ui-live-connection-path" title={`${inbound} → ${outbound}`}>
+                    <span>{inbound}</span><ArrowRight size={13} /><span>{outbound}</span><i /> <span className="ui-live-connection-process">{process}</span>
+                </div>
+            </div>
             <FlowBadge download={download} upload={upload} />
+            <ChevronRight className="ui-live-connection-chevron" size={18} />
         </>
     );
 
@@ -292,12 +333,12 @@ const ConnectionRow = memo(function ConnectionRow({
 
 const FlowBadge = memo(function FlowBadge({ download, upload }: { download: string; upload: string }) {
     return (
-        <div className="inline-flex shrink-0 items-center gap-2 text-[11px] font-semibold tabular-nums">
-            <span className="inline-flex items-center gap-0.5 text-ui-info">
+        <div className="ui-live-connection-flow">
+            <span className="is-download">
                 <ArrowDown size={11} />
                 {download}
             </span>
-            <span className="inline-flex items-center gap-0.5 text-ui-success">
+            <span className="is-upload">
                 <ArrowUp size={11} />
                 {upload}
             </span>

@@ -8,14 +8,12 @@
         "@types/react": "^19.2.15",
         "@types/react-dom": "^19.2.3",
         "babel-plugin-react-compiler": "^1.0.0",
-        "chart.js": "^4.5.1",
         "clsx": "^2.1.1",
         "i18next": "^26.3.1",
         "lucide-react": "^1.17.0",
         "motion": "^12.40.0",
         "radix-ui": "^1.4.3",
         "react": "^19.2.4",
-        "react-chartjs-2": "^5.3.1",
         "react-i18next": "^17.0.8",
         "shlex": "^3.0.0",
         "swr": "^2.4.1",
@@ -39,21 +37,24 @@
         "@eslint/js": "^10.0.1",
         "@tailwindcss/vite": "^4.3.0",
         "@vitejs/plugin-react": "^6.0.2",
+        "agent-browser": "^0.33.1",
         "baseline-browser-mapping": "^2.10.32",
         "eslint": "^10.4.0",
         "eslint-plugin-react-hooks": "^7.1.1",
         "eslint-plugin-react-refresh": "^0.5.3",
         "globals": "^17.6.0",
-        "jsdom": "^29.1.1",
-        "msw": "^2.15.0",
-        "patch-package": "^8.0.1",
         "jsdom": "^27.0.0",
         "msw": "^2.15.0",
+        "patch-package": "^8.0.1",
         "rollup-plugin-visualizer": "^7.0.1",
-        "vitest": "^4.0.0",
         "tailwindcss": "^4.3.0",
         "typescript-eslint": "^8.61.1",
         "vite": "^8.0.14",
         "vitest": "^4.1.10"
+    },
+    "msw": {
+        "workerDirectory": [
+            "public"
+        ]
     }
 }

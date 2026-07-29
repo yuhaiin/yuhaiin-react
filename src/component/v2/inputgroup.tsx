@@ -59,7 +59,7 @@ const InputGroup = React.forwardRef<
         <div
             ref={ref}
             className={clsx(
-                "relative flex flex-wrap items-stretch w-full",
+                "ui-input-group relative flex flex-wrap items-stretch w-full",
                 "[&>input]:relative [&>input]:w-[1%] [&>input]:min-w-0",
                 "[&>textarea]:relative [&>textarea]:w-[1%] [&>textarea]:min-w-0",
                 "[&>div]:relative [&>div]:w-[1%] [&>div]:min-w-0",

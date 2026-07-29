@@ -7,10 +7,12 @@ import { DataList, DataListItem } from "@/component/v2/datalist"
 import { Dropdown, DropdownContent, DropdownTrigger } from "@/component/v2/dropdown"
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal"
 import { Pagination } from "@/component/v2/pagination"
-import { Spinner } from "@/component/v2/spinner"
+import { PageHeader } from "@/component/v2/page-header"
+import { PageStatStrip } from "@/component/v2/page-patterns"
+import { ResourceWorkspace } from "@/component/v2/resource-workspace"
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import type { FailedHistory as FailedHistoryItem } from "@/contract/connection"
-import { ArrowDownWideNarrow, Bug, ChevronRight, Clock, Network, OctagonAlert, RotateCw } from "lucide-react"
+import { ArrowDownWideNarrow, Bug, ChevronRight, Clock, Network, OctagonAlert, RotateCw, ShieldAlert } from "lucide-react"
 import React, { FC, useMemo, useState } from "react"
 import useSWR from "swr"
 import Loading from "../../../component/v2/loading"
@@ -68,9 +70,25 @@ function FailedHistory() {
 
     const pageSize = 30;
     const paginatedItems = values.slice((page - 1) * pageSize, page * pageSize);
+    const hosts = new Set(values.map(item => item.host).filter(Boolean)).size;
+    const protocols = new Set(values.map(item => item.protocol).filter(Boolean)).size;
+    const latest = values[0]?.time ? new Date(values[0].time).toLocaleTimeString() : "—";
 
     return (
-        <MainContainer>
+        <MainContainer className="product-page page-skin-traffic page-skin-failed">
+            <PageHeader
+                eyebrow="Traffic"
+                title="Failed connections"
+                description={`Keep an eye on ${values.length} rejected or timed-out requests and inspect the last error when something needs attention.`}
+                icon={Bug}
+                actions={<Button size="sm" onClick={() => mutate()} disabled={isValidating}><RotateCw size={16} className="mr-1" /> Refresh</Button>}
+            />
+            <PageStatStrip stats={[
+                { label: "Failures", value: values.length, hint: "Matching records", icon: Bug, tone: "warning" },
+                { label: "Hosts", value: hosts, hint: "Affected destinations", icon: Network, tone: "violet" },
+                { label: "Protocols", value: protocols, hint: "Observed types", icon: ShieldAlert },
+                { label: "Latest", value: latest, hint: "Most recent failure", icon: Clock, tone: "danger" },
+            ]} />
             <Modal open={info.show} onOpenChange={(open) => !open && setInfo({ ...info, show: false })}>
                 <ModalContent>
                     <ModalHeader closeButton><ModalTitle className="font-bold text-red-500">Failure Details</ModalTitle></ModalHeader>
@@ -92,18 +110,18 @@ function FailedHistory() {
                 </ModalContent>
             </Modal>
 
-            <div className="flex flex-wrap justify-between items-end mb-4 gap-3">
-                <div>
-                    <h4 className="font-bold mb-1">Failed Connections</h4>
-                    <div className="text-ui-muted flex items-center text-sm">
-                        <Bug className="text-red-500 mr-2" />
-                        <span>Tracking {values.length} rejected or timed-out requests</span>
-                    </div>
-                </div>
+            <ResourceWorkspace
+                className="ui-traffic-workspace"
+                railClassName="ui-traffic-rail"
+                mainClassName="ui-traffic-main ui-traffic-table"
+                icon={Bug}
+                eyebrow="Traffic recovery"
+                title="Understand rejected traffic"
+                description="Failures are grouped here so you can see the last error, affected host, and retry pressure without opening the live view."
+                links={[{ label: "Live connections", href: "#/docs/connections/v2" }, { label: "Activity history", href: "#/docs/connections/history" }]}
+            >
+            <div className="ui-filter-toolbar mb-5 items-end">
                 <div className="flex flex-wrap gap-2 justify-end items-center">
-                    <Button size="sm" onClick={() => mutate()} disabled={isValidating}>
-                        {isValidating ? <Spinner size="sm" /> : <RotateCw size={16} />}
-                    </Button>
                     <Dropdown>
                         <DropdownTrigger asChild><Button size="sm"><ArrowDownWideNarrow size={16} /></Button></DropdownTrigger>
                         <DropdownContent align="end" className="p-3" style={{ minWidth: "320px" }}>
@@ -133,6 +151,7 @@ function FailedHistory() {
                 renderListItem={(item) => <ListItem data={item} />}
                 footer={<Pagination currentPage={page} totalItems={values.length} pageSize={pageSize} onPageChange={setPage} />}
             />
+            </ResourceWorkspace>
         </MainContainer>
     );
 }

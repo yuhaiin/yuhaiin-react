@@ -1,0 +1,66 @@
+.ui-license-tab-shell {
+    display: inline-flex;
+    width: min(100%, 250px);
+    min-width: 220px;
+    padding: 3px;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-surface-muted);
+}
+
+.ui-license-tabs {
+    display: flex !important;
+    gap: 3px;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 9px !important;
+    background: transparent !important;
+}
+
+.ui-license-tabs .ui-toggle-item {
+    min-height: 36px;
+    gap: 7px;
+    border: 0 !important;
+    border-radius: 9px !important;
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    font-weight: 680;
+    transition: color 160ms ease, background 160ms ease;
+}
+
+.ui-license-tabs .ui-toggle-item:hover {
+    z-index: 1;
+    color: var(--color-heading);
+    background: color-mix(in srgb, var(--color-surface) 62%, transparent) !important;
+}
+
+.ui-license-tabs .ui-toggle-item[data-state="on"] {
+    color: var(--page-accent);
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.ui-license-tabs .ui-toggle-item[data-state="on"] > div {
+    border: 1px solid color-mix(in srgb, var(--page-accent) 18%, var(--color-border));
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--page-accent-soft) 68%, var(--color-surface)) !important;
+    box-shadow: none !important;
+}
+
+.ui-license-tabs .ui-toggle-item > span:last-child {
+    position: relative;
+    z-index: 2;
+    color: inherit;
+    font-size: 0.66rem;
+    font-weight: 700;
+    opacity: 0.72;
+}
+
+.ui-license-tabs .ui-toggle-item:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--page-accent) 55%, transparent);
+    outline-offset: 1px;
+}
+
+@media (max-width: 640px) {
+    .ui-license-tab-shell { width: 100%; min-width: 0; }
+}

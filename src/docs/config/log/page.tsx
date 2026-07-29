@@ -3,6 +3,8 @@
 import { AuthTokenKey, getApiUrl } from "@/common/apiurl"
 import { Badge } from "@/component/v2/badge"
 import { Button } from "@/component/v2/button"
+import { PageHeader } from "@/component/v2/page-header"
+import { ResourceWorkspace } from "@/component/v2/resource-workspace"
 import { Card, CardBody, CardHeader, FilterSearch, IconBox, MainContainer } from '@/component/v2/card'
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import type { LogBatch } from "@/contract/tools"
@@ -43,39 +45,39 @@ function logsURL() {
 
 const levelStyles: Record<LogLevel, { bar: string; badge: string; text: string }> = {
     ERROR: {
-        bar: "bg-red-500",
-        badge: "bg-red-500/10 text-red-700 ring-red-500/20 dark:text-red-300",
-        text: "text-red-700 dark:text-red-200",
+        bar: "bg-ui-danger",
+        badge: "bg-ui-danger-soft text-ui-danger ring-ui-danger/20",
+        text: "text-ui-danger",
     },
     FATAL: {
-        bar: "bg-rose-600",
-        badge: "bg-rose-500/10 text-rose-700 ring-rose-500/25 dark:text-rose-300",
-        text: "text-rose-700 dark:text-rose-200",
+        bar: "bg-ui-danger",
+        badge: "bg-ui-danger-soft text-ui-danger ring-ui-danger/25",
+        text: "text-ui-danger",
     },
     WARN: {
-        bar: "bg-amber-500",
-        badge: "bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-300",
-        text: "text-amber-700 dark:text-amber-200",
+        bar: "bg-ui-warning",
+        badge: "bg-ui-warning-soft text-ui-warning ring-ui-warning/20",
+        text: "text-ui-warning",
     },
     INFO: {
-        bar: "bg-sky-500",
-        badge: "bg-sky-500/10 text-sky-700 ring-sky-500/20 dark:text-sky-300",
-        text: "text-slate-800 dark:text-slate-100",
+        bar: "bg-ui-info",
+        badge: "bg-ui-info-soft text-ui-info ring-ui-info/20",
+        text: "text-ui-heading",
     },
     DEBUG: {
-        bar: "bg-emerald-500",
-        badge: "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-300",
-        text: "text-emerald-700 dark:text-emerald-200",
+        bar: "bg-ui-success",
+        badge: "bg-ui-success-soft text-ui-success ring-ui-success/20",
+        text: "text-ui-success",
     },
     TRACE: {
-        bar: "bg-violet-500",
-        badge: "bg-violet-500/10 text-violet-700 ring-violet-500/20 dark:text-violet-300",
-        text: "text-violet-700 dark:text-violet-200",
+        bar: "bg-ui-violet",
+        badge: "bg-ui-violet-soft text-ui-violet ring-ui-violet/20",
+        text: "text-ui-violet",
     },
     LOG: {
-        bar: "bg-slate-300 dark:bg-slate-600",
-        badge: "bg-slate-500/10 text-slate-600 ring-slate-500/15 dark:text-slate-300",
-        text: "text-slate-800 dark:text-slate-100",
+        bar: "bg-ui-muted",
+        badge: "bg-ui-surface-muted text-ui-muted ring-ui-border/60",
+        text: "text-ui-heading",
     },
 };
 
@@ -213,7 +215,7 @@ const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
 
     return (
         <div
-            className="group grid grid-cols-[3px_minmax(0,1fr)] border-b border-black/5 bg-white/55 hover:bg-white dark:border-white/5 dark:bg-white/[0.025] dark:hover:bg-white/[0.055]"
+            className="group grid grid-cols-[3px_minmax(0,1fr)] border-b border-ui-border/70 bg-ui-surface/55 hover:bg-ui-surface-muted"
             style={{ contain: "layout paint style" }}
         >
             <div className={clsx("opacity-75 transition-opacity group-hover:opacity-100", style.bar)} />
@@ -223,12 +225,12 @@ const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
                         {parsed.level}
                     </span>
                     {parsed.displayTime && (
-                        <span className="shrink-0 text-[11px] text-slate-500 dark:text-slate-400">
+                        <span className="shrink-0 text-[11px] text-ui-muted">
                             {parsed.displayTime}
                         </span>
                     )}
                     {parsed.source && (
-                        <span className="min-w-0 truncate text-[11px] text-slate-400 dark:text-slate-500">
+                        <span className="min-w-0 truncate text-[11px] text-ui-muted/80">
                             {parsed.source}
                         </span>
                     )}
@@ -237,7 +239,7 @@ const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
                     </span>
                 </div>
                 {parsed.details && (
-                    <div className="mt-1 whitespace-pre-wrap break-words pl-[60px] text-[11.5px] leading-5 text-slate-500 dark:text-slate-400">
+                    <div className="mt-1 whitespace-pre-wrap break-words pl-[60px] text-[11.5px] leading-5 text-ui-muted">
                         {parsed.details}
                     </div>
                 )}
@@ -322,7 +324,18 @@ export default function LogComponent() {
     }, [logBuffer])
 
     return (
-        <MainContainer className="h-full min-h-0 flex flex-col">
+        <MainContainer className="product-page page-skin-workspace page-skin-logs h-full min-h-0 flex flex-col">
+            <PageHeader eyebrow="Workspace" title="Logs" description="Follow controller events in a readable stream, with filtering for the details that matter." icon={Terminal} />
+            <ResourceWorkspace
+                className="ui-diagnostic-workspace flex-1 min-h-0"
+                railClassName="ui-diagnostic-rail"
+                mainClassName="ui-diagnostic-main min-h-0"
+                icon={Terminal}
+                eyebrow="Runtime"
+                title="Read the story of the app"
+                description="Live logs explain connection changes, rule decisions, and controller errors. Search first, then clear the stream when needed."
+                links={[{ label: "Diagnostics", href: "#/docs/config/pprof" }, { label: "Backups", href: "#/docs/config/backup" }]}
+            >
             <Card className="flex-1 min-h-0 !mb-0 flex flex-col overflow-hidden">
                 <CardHeader className="px-2.5 py-2">
                     <div className="flex justify-between items-center w-full gap-3">
@@ -331,7 +344,7 @@ export default function LogComponent() {
                             tone="warning"
                             title="Live Logcat"
                             description="Real-time system events"
-                            className="!mr-3 !h-10 !w-10 !rounded-[10px]"
+                            className="ui-log-icon !mr-3 !h-10 !w-10 !rounded-[14px]"
                         />
                         <div className="flex items-center gap-2 flex-grow justify-end">
                             <FilterSearch onEnter={setSearchTerm} className='flex-grow' />
@@ -355,23 +368,32 @@ export default function LogComponent() {
                     )}
                 </CardHeader>
                 <CardBody className="!p-0 bg-ui-surface-muted flex-1 min-h-0 overflow-hidden rounded-b-[inherit]">
-                    <div className="h-full min-h-0 w-full rounded-[inherit] font-mono">
-                        <VList
-                            ref={logListRef}
-                            data={visibleLog}
-                            itemSize={72}
-                            bufferSize={360}
-                            shift
-                            onScroll={(offset) => {
-                                followLatestRef.current = offset < 40;
-                            }}
-                            style={{ height: '100%', width: '100%', overflowAnchor: 'none' }}
-                        >
-                            {(entry) => <LogLine key={entry.id} entry={entry} />}
-                        </VList>
-                    </div>
+                    {visibleLog.length > 0 ? (
+                        <div className="h-full min-h-0 w-full rounded-[inherit] font-mono">
+                            <VList
+                                ref={logListRef}
+                                data={visibleLog}
+                                itemSize={72}
+                                bufferSize={360}
+                                shift
+                                onScroll={(offset) => {
+                                    followLatestRef.current = offset < 40;
+                                }}
+                                style={{ height: '100%', width: '100%', overflowAnchor: 'none' }}
+                            >
+                                {(entry) => <LogLine key={entry.id} entry={entry} />}
+                            </VList>
+                        </div>
+                    ) : (
+                        <div className="ui-log-empty-state">
+                            <Terminal size={22} />
+                            <strong>{searchTerm ? "No matching log events" : logError ? "Waiting for the log stream" : "No log events yet"}</strong>
+                            <span>{searchTerm ? "Try a different search term." : logError ? "The controller will retry the live connection automatically." : "Controller events will appear here as they are emitted."}</span>
+                        </div>
+                    )}
                 </CardBody>
             </Card>
+            </ResourceWorkspace>
         </MainContainer>
     );
 }

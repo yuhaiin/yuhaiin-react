@@ -38,7 +38,7 @@ const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
         const radiusClass = groupPosition ? radiusClasses[groupPosition] : '';
 
         const baseStyles = clsx(
-            "inline-flex items-center justify-center py-1.5 px-3 text-base leading-normal font-medium font-inherit appearance-none shadow-none cursor-pointer border rounded-ui-md relative no-underline select-none align-middle",
+            "ui-button inline-flex items-center justify-center min-h-[42px] py-2 px-4 text-[0.9rem] leading-normal font-semibold font-inherit appearance-none shadow-none cursor-pointer border rounded-ui-md relative no-underline select-none align-middle",
             ui.interactive,
             ui.focusRing,
             ui.disabled
@@ -85,7 +85,7 @@ const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
 
         const sizeStyles = {
             default: "",
-            sm: "h-field-sm px-3 text-sm rounded-ui-md",
+            sm: "h-field-sm min-h-0 px-3 text-sm rounded-ui-md",
             xs: "py-[0.15rem] px-1.5 text-xs rounded-ui-xs",
             icon: "p-1.5 inline-flex items-center justify-center leading-none flex-none w-auto [&>i]:text-[1rem] [&>i]:align-middle [&>svg]:text-[1rem] [&>svg]:align-middle"
         };

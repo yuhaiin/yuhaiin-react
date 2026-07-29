@@ -1,4 +1,7 @@
-export const APIUrlDefault = ""
+// The Vite development app is normally opened separately from the controller.
+// Keep production builds same-origin, while making the local dev target useful
+// without a hidden localStorage prerequisite.
+export const APIUrlDefault = import.meta.env.DEV ? "http://127.0.0.1:50051" : ""
 export const APIUrlKey = "api_url_v2"
 export const APIUrlListKey = "api_url_list_v2"
 export const AuthTokenKey = "auth_token"

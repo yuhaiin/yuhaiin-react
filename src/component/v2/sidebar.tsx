@@ -21,14 +21,14 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
             <motion.div
                 ref={ref}
                 className={clsx(
-                    "fixed z-[1050] top-sidebar-gap h-[calc(100vh-2*var(--sidebar-gap))] w-[260px] bg-sidebar-bg text-sidebar-color rounded-sidebar-radius border border-sidebar-border shadow-sidebar py-6 overflow-y-auto backdrop-filter-none [&::-webkit-scrollbar]:w-0",
+                    "product-sidebar fixed z-[1050] top-0 h-screen w-[240px] bg-sidebar-bg text-sidebar-color border-r border-sidebar-border shadow-none py-6 overflow-y-auto backdrop-filter-none [&::-webkit-scrollbar]:w-0",
                     // Mobile specific overrides
-                    "lg:w-[260px] w-[280px] max-w-[calc(100vw-32px)] lg:max-w-none lg:shadow-sidebar shadow-none lg:m-0",
-                    "left-[-300px] lg:left-sidebar-gap",
+                    "lg:w-[240px] w-[280px] max-w-[calc(100vw-32px)] lg:max-w-none lg:shadow-sidebar shadow-none lg:m-0",
+                    "left-[-300px] lg:left-0",
                     className
                 )}
                 initial={false} // Prevent initial animation on hydration if possible, or just default.
-                animate={show ? { x: 320 } : { x: 0 }}
+                animate={show ? { x: 300 } : { x: 0 }}
                 transition={{ type: "spring", stiffness: 400, damping: 40 }}
                 {...(props as any)}
             >
@@ -60,7 +60,7 @@ Sidebar.displayName = "Sidebar";
 /* -------------------------------------------------------------------------- */
 
 const SidebarNav = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
-    <nav className={clsx("flex flex-col px-4 gap-[6px]", className)} ref={ref} {...props} />
+    <nav className={clsx("product-sidebar-nav flex flex-col px-4 gap-[6px]", className)} ref={ref} {...props} />
 ));
 SidebarNav.displayName = "SidebarNav";
 
@@ -78,11 +78,12 @@ const SidebarItem = React.forwardRef<HTMLAnchorElement, SidebarItemProps>(({ cla
         <a
             ref={ref}
             className={clsx(
-                "flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-sidebar-color rounded-ui-md transition-all duration-200 border-none no-underline cursor-pointer bg-transparent outline-none focus:outline-none",
+                "product-sidebar-item flex items-center w-full px-[14px] py-[11px] text-[0.9rem] font-semibold text-sidebar-color rounded-ui-md transition-all duration-200 border-none no-underline cursor-pointer bg-transparent outline-none focus:outline-none",
                 "hover:bg-sidebar-hover hover:text-sidebar-active [&>svg]:hover:scale-[1.15] [&>svg]:hover:-rotate-[5deg]",
                 active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold shadow-sidebar-active",
                 className
             )}
+            data-active={active ? "true" : undefined}
             {...props}
         >
             {icon && (
@@ -130,10 +131,11 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
                 <button
                     type="button"
                     className={clsx(
-                        "group flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-sidebar-color rounded-ui-md transition-all duration-200 border-none cursor-pointer bg-transparent outline-none focus:outline-none",
+                        "product-sidebar-item group flex items-center w-full px-[14px] py-[11px] text-[0.9rem] font-semibold text-sidebar-color rounded-ui-md transition-all duration-200 border-none cursor-pointer bg-transparent outline-none focus:outline-none",
                         "hover:bg-sidebar-hover hover:text-sidebar-active [&>span>svg]:hover:scale-[1.15] [&>span>svg]:hover:-rotate-[5deg]",
                         active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold shadow-sidebar-active"
                     )}
+                    data-active={active ? "true" : undefined}
                 >
                     {icon && (
                         <span className="flex justify-center items-center text-[1.2rem] w-6 mr-[14px] transition-transform">
@@ -174,7 +176,7 @@ const SidebarSubLink = React.forwardRef<HTMLAnchorElement, SidebarSubLinkProps>(
         <a
             ref={ref}
             className={clsx(
-                "relative flex items-center w-full pl-[24px] pr-[12px] py-[8px] text-[0.85rem] text-sidebar-color opacity-80 transition-[color,background-color,opacity,padding] duration-200 no-underline cursor-pointer bg-transparent border-none rounded-[8px]",
+                "product-sidebar-subitem relative flex items-center w-full pl-[24px] pr-[12px] py-[8px] text-[0.85rem] text-sidebar-color opacity-80 transition-[color,background-color,opacity,padding] duration-200 no-underline cursor-pointer bg-transparent border-none rounded-[8px]",
                 "hover:opacity-100 hover:text-sidebar-active hover:bg-sidebar-hover hover:pl-[28px] hover:pr-[8px]",
                 // Active state
                 active && "!text-sidebar-active opacity-100 font-semibold hover:pl-[24px] hover:pr-[12px]",
@@ -182,6 +184,7 @@ const SidebarSubLink = React.forwardRef<HTMLAnchorElement, SidebarSubLinkProps>(
                 active && "before:content-[''] before:absolute before:left-[-4px] before:top-1/2 before:-translate-y-1/2 before:w-[7px] before:h-[7px] before:rounded-full before:bg-sidebar-bg before:border-2 before:border-sidebar-active before:shadow-sidebar-active before:z-10",
                 className
             )}
+            data-active={active ? "true" : undefined}
             {...props}
         >
             {children}

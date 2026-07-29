@@ -22,7 +22,7 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
 
             <Sidebar show={showSidebar} onHide={() => setShowSidebar(false)} />
 
-            <main className="min-h-screen lg:pt-0">
+            <main className="app-shell min-h-screen lg:pt-0">
                 {children}
             </main>
         </>

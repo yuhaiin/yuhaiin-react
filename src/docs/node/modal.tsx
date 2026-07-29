@@ -16,7 +16,7 @@ import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { Node, NodeProtocol, NodeProtocolConfig, NodeProtocolType } from "@/contract/node";
 import { createDefaultNode, createDefaultProtocol, normalizeNode, normalizeProtocol, patchProtocolConfig, protocolTypes } from "@/contract/node";
-import { ArrowDown, ArrowUp, Clipboard, ClipboardCheck, Plus, Trash } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronRight, Clipboard, ClipboardCheck, Plus, Trash } from "lucide-react";
 import React, { FC, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
@@ -26,6 +26,7 @@ type NodeModalProps = {
     id?: string;
     hash?: string;
     node?: Node;
+    initial?: Node;
     editable?: boolean;
     onHide: (saved?: boolean) => void;
     onSave?: () => void;
@@ -108,6 +109,7 @@ const NodeModalComponent: FC<NodeModalProps> = ({
     id,
     hash,
     node,
+    initial,
     editable = false,
     onHide,
     onSave,
@@ -143,7 +145,7 @@ const NodeModalComponent: FC<NodeModalProps> = ({
         }
 
         if (isNew) {
-            setDraft(createDefaultNode(defaultGroup));
+            setDraft(initial ? cloneNode(initial) : createDefaultNode(defaultGroup));
             setError(undefined);
             return;
         }
@@ -171,7 +173,7 @@ const NodeModalComponent: FC<NodeModalProps> = ({
         return () => {
             cancelled = true;
         };
-    }, [show, node, nodeId, isNew, defaultGroup]);
+    }, [show, node, initial, nodeId, isNew, defaultGroup]);
 
     const updateDraft = (patch: Partial<Node>) => {
         setDraft(prev => normalizeNode({ ...(prev ?? createDefaultNode()), ...patch }));
@@ -237,8 +239,8 @@ const NodeModalComponent: FC<NodeModalProps> = ({
         <>
             {manualCopyModal}
             <Modal open={show} onOpenChange={(open) => !open && onHide()}>
-                <ModalContent className="!w-[calc(100vw-2rem)] md:!w-[calc(100vw-4rem)] !max-w-[1280px]">
-                <ModalHeader closeButton className="border-b-0 pb-0">
+                <ModalContent className="ui-node-modal !w-[calc(100vw-2rem)] md:!w-[calc(100vw-4rem)] !max-w-[1280px]">
+                <ModalHeader closeButton className="ui-node-modal-header border-b-0 pb-0">
                     <ModalTitle className="font-bold">{title}</ModalTitle>
                 </ModalHeader>
 
@@ -321,9 +323,9 @@ const NodeEditor: FC<{
     onRemoveProtocol: (index: number) => void;
     onAddProtocol: (type: NodeProtocolType) => void;
 }> = ({ value, editable, groups, onChange, onProtocolChange, onMoveProtocol, onRemoveProtocol, onAddProtocol }) => (
-    <div className="p-1">
+    <div className="ui-node-editor p-1">
         {editable && (
-            <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div className="ui-node-identity-grid mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
                 <SettingInputVertical label="Name" value={value.name} onChange={(name) => onChange({ name })} disabled={!editable} />
                 <SettingSelectVertical label="Group" value={value.group} values={groups} onChange={(group) => onChange({ group })} disabled={!editable} />
                 <SettingInputVertical label="ID" value={value.id} onChange={(id) => onChange({ id })} disabled={!editable} />
@@ -357,9 +359,26 @@ const NodeProtocolChain: FC<{
 
     return (
         <div className="mb-3">
-            <div className="mb-2 flex items-center justify-between px-1">
-                <h6 className="mb-0 font-bold opacity-75">Protocol Chain</h6>
-                <small className="text-ui-muted">{normalizedChain.length} steps</small>
+            <div className="mb-3 flex items-end justify-between gap-3 px-1">
+                <div>
+                    <div className="ui-section-label mb-1">How this connection travels</div>
+                    <h6 className="mb-0 font-bold text-ui-heading">Protocol chain</h6>
+                </div>
+                <small className="text-ui-muted">{normalizedChain.length} {normalizedChain.length === 1 ? "step" : "steps"}</small>
+            </div>
+
+            <div className="ui-protocol-preview mb-4 overflow-x-auto rounded-ui-xl border border-ui-border bg-ui-surface-muted px-4 py-4">
+                <div className="flex min-w-max items-center gap-2">
+                    {normalizedChain.map((protocol, index) => (
+                        <React.Fragment key={`preview-${index}-${protocol.type}`}>
+                            <div className="ui-protocol-chip flex items-center gap-2 rounded-ui-lg border border-ui-primary/15 bg-ui-surface px-3 py-2 shadow-sm">
+                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-ui-primary-soft text-xs font-bold text-ui-primary">{index + 1}</span>
+                                <span className="text-sm font-semibold text-ui-heading">{protocol.type}</span>
+                            </div>
+                            {index < normalizedChain.length - 1 && <ChevronRight size={16} className="text-ui-muted" />}
+                        </React.Fragment>
+                    ))}
+                </div>
             </div>
 
             <Accordion type="multiple" defaultValue={normalizedChain.length > 0 ? ["item-0"] : []} className="mb-3">
@@ -402,7 +421,7 @@ const NodeProtocolChain: FC<{
             </Accordion>
 
             {editable && (
-                <div className="flex flex-wrap items-end gap-3 rounded-ui-lg bg-ui-surface-muted p-3 sm:flex-nowrap">
+                <div className="ui-inline-add flex flex-wrap items-end gap-3 rounded-ui-lg bg-ui-surface-muted p-3 sm:flex-nowrap">
                     <div className="w-full flex-1">
                         <label className="mb-2 block text-sm font-bold opacity-75">New Protocol Step</label>
                         <Select
@@ -686,7 +705,7 @@ const StringField: FC<{ label: string; value: unknown; disabled?: boolean; onCha
     return (
         <div className="relative mb-4 min-w-0 max-w-full">
             <SettingLabel className="mb-2 block">{label}</SettingLabel>
-            <div className="min-h-field min-w-0 max-w-full whitespace-pre-wrap break-all rounded-ui-md border border-ui-border bg-ui-surface-muted px-3.5 py-2 text-[0.9375rem] leading-normal text-ui-muted shadow-inner-subtle">
+            <div className="ui-readonly-value min-h-field min-w-0 max-w-full whitespace-pre-wrap break-all rounded-ui-md border border-ui-border bg-ui-surface-muted px-3.5 py-2 text-[0.9375rem] leading-normal text-ui-muted">
                 {text || "-"}
             </div>
         </div>

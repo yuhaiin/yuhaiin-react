@@ -5,19 +5,20 @@ import { listResolvers } from "@/api/resolvers";
 import { changeRulePriority, createRule, deleteRule, getRouteActivationStatus, getRouteConfig, getRule, listRouteLists, listRules, saveRouteConfig, saveRule } from "@/api/route";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardFooter, CardHeader, CardList, FilterSearch, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
+import { Card, CardBody, CardFooter, CardHeader, FilterSearch, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
 import { DropdownSelect, SettingInputVertical, SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
 import { Input } from "@/component/v2/input";
 import Loading from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
-import { Pagination } from "@/component/v2/pagination";
+import { PageHeader } from "@/component/v2/page-header";
+import { PageStatStrip } from "@/component/v2/page-patterns";
 import { RouteActivationProgress } from "@/component/v2/route-activation-progress";
+import { ResourceList, ResourceRow } from "@/component/v2/resource-list";
 import { Select } from "@/component/v2/select";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { RouteRule, RuleExpr, RuleItem } from "@/contract/route";
 import { createDefaultRule, normalizeRule } from "@/contract/route";
-import clsx from "clsx";
 import { ArrowUpDown, Plus, Power, Route, Save, ShieldCheck, Trash, X } from "lucide-react";
 import type { CSSProperties } from "react";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -47,87 +48,33 @@ function modeBadgeVariant(mode: string): BadgeVariant {
     }
 }
 
-function modeIconTone(mode: string): "primary" | "success" | "danger" | "warning" | "violet" {
-    switch (mode.toLowerCase()) {
-        case "proxy":
-            return "primary";
-        case "direct":
-            return "success";
-        case "block":
-            return "danger";
-        case "bypass":
-            return "warning";
-        default:
-            return "violet";
-    }
-}
-
-const MetaChip = ({ label, value, mono = false }: { label: string; value: string | number; mono?: boolean }) => (
-    <span className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full border border-ui-border/70 bg-ui-surface-muted/70 px-2.5 py-1 text-[11px] text-ui-muted">
-        <span className="shrink-0 uppercase tracking-wide opacity-80">{label}</span>
-        <span className={clsx("min-w-0 truncate font-semibold text-ui-fg", mono && "font-mono")}>{value}</span>
-    </span>
-);
-
 const RuleListItem = ({
     item,
+    onClick,
     onPriority,
     onToggle,
 }: {
     item: RuleItem;
+    onClick: () => void;
     onPriority: () => void;
     onToggle: () => void;
 }) => (
-    <div className={clsx(
-        "grid w-full min-w-0 grid-cols-1 items-center gap-3 sm:grid-cols-[minmax(0,1fr)_auto]",
-        item.disabled && "opacity-60"
-    )}>
-        <div className="flex min-w-0 items-start gap-3">
-            <div className="flex shrink-0 flex-col items-center gap-1 pt-0.5">
-                <span className="font-mono text-[11px] font-semibold tabular-nums text-ui-muted">
-                    #{item.index}
-                </span>
-                <div className={clsx(
-                    "flex h-9 w-9 items-center justify-center rounded-ui-lg border",
-                    item.disabled
-                        ? "border-ui-border bg-ui-surface-muted text-ui-muted"
-                        : modeIconTone(item.mode) === "primary"
-                            ? "border-ui-primary/20 bg-ui-primary-soft text-ui-primary"
-                            : modeIconTone(item.mode) === "success"
-                                ? "border-ui-success/20 bg-ui-success-soft text-ui-success"
-                                : modeIconTone(item.mode) === "danger"
-                                    ? "border-ui-danger/20 bg-ui-danger-soft text-ui-danger"
-                                    : modeIconTone(item.mode) === "warning"
-                                        ? "border-ui-warning/20 bg-ui-warning-soft text-ui-warning"
-                                        : "border-ui-border bg-ui-surface-muted text-ui-muted"
-                )}>
-                    <Route size={17} />
-                </div>
-            </div>
-
-            <div className="min-w-0 flex-1">
-                <div className="flex min-w-0 flex-wrap items-center gap-2">
-                    <span className="truncate text-[0.95rem] font-semibold text-ui-heading" title={item.name}>
-                        {item.name}
-                    </span>
-                    <Badge variant={modeBadgeVariant(item.mode)} pill className="px-2 py-0.5 text-[0.65rem] uppercase tracking-wide">
-                        {item.mode || "unknown"}
-                    </Badge>
-                    {item.disabled && (
-                        <Badge variant="secondary" pill className="px-2 py-0.5 text-[0.65rem]">
-                            Off
-                        </Badge>
-                    )}
-                </div>
-                <div className="mt-2 flex min-w-0 flex-wrap gap-1.5">
-                    <MetaChip label="Rules" value={item.ruleCount} />
-                    <MetaChip label="Tag" value={item.tag || "—"} />
-                    <MetaChip label="Resolver" value={item.resolver || "—"} mono />
-                </div>
-            </div>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-1.5 self-end sm:self-auto">
+    <ResourceRow
+        icon={Route}
+        title={item.name}
+        subtitle={`Priority #${item.index}`}
+        badges={<>
+            <Badge variant={modeBadgeVariant(item.mode)} pill className="px-2 py-0.5 text-[0.65rem] uppercase tracking-wide">
+                {item.mode || "unknown"}
+            </Badge>
+            {item.disabled && <Badge variant="secondary" pill className="px-2 py-0.5 text-[0.65rem]">Off</Badge>}
+        </>}
+        facts={[
+            { label: "Rules", value: item.ruleCount },
+            { label: "Tag", value: item.tag || "—" },
+            { label: "Resolver", value: item.resolver || "—", mono: true },
+        ]}
+        actions={<>
             <Button
                 size="icon"
                 variant="outline-secondary"
@@ -148,8 +95,10 @@ const RuleListItem = ({
             >
                 <Power size={16} />
             </Button>
-        </div>
-    </div>
+        </>}
+        onClick={onClick}
+        disabled={item.disabled}
+    />
 );
 
 type RuleEditorOptions = {
@@ -243,16 +192,50 @@ function BypassComponent() {
     if (isLoading || !data) return <Loading />
 
     return (
-        <MainContainer>
-            <RouteConfigCard resolvers={editorOptions.resolvers} />
-            <RouteActivationProgress status={activation} onApplied={mutateActivation} />
-            <CardList
-                density="compact"
+        <MainContainer className="product-page page-skin-rules page-skin-routing">
+            <PageHeader
+                eyebrow="Traffic decisions"
+                title="Routing rules"
+                description="Shape where traffic goes with readable rules, resolvers, and a clear top-to-bottom order."
+                icon={Route}
+                actions={<Button onClick={() => setCreating(true)}><Plus size={16} className="mr-1" /> Add rule</Button>}
+            />
+            <PageStatStrip
+                stats={[
+                    { label: "Rules", value: data.page.total, hint: "evaluated top to bottom", icon: Route, tone: "violet" },
+                    { label: "Enabled", value: data.items.filter((item) => !item.disabled).length, hint: "active decisions", icon: Power, tone: "success" },
+                    { label: "Proxy paths", value: data.items.filter((item) => item.mode === "proxy").length, hint: "forwarded traffic", icon: ShieldCheck, tone: "primary" },
+                    { label: "Direct / bypass", value: data.items.filter((item) => item.mode === "direct" || item.mode === "bypass").length, hint: "local exits", icon: ArrowUpDown, tone: "warning" },
+                ]}
+                className="mb-4"
+            />
+            <div className="ui-rules-workspace">
+                <section className="ui-rules-setup">
+                    <div className="ui-workspace-section-heading">
+                        <div>
+                            <div className="ui-section-label">Policy defaults</div>
+                            <h2>Before a rule matches</h2>
+                        </div>
+                        <span>Resolver choices used by the route engine</span>
+                    </div>
+                    <RouteConfigCard resolvers={editorOptions.resolvers} />
+                    <RouteActivationProgress status={activation} onApplied={mutateActivation} />
+                </section>
+                <section className="ui-rules-list-section">
+                    <div className="ui-workspace-section-heading">
+                        <div>
+                            <div className="ui-section-label">Decision order</div>
+                            <h2>Rules that match</h2>
+                        </div>
+                        <span>Read top to bottom</span>
+                    </div>
+                    <ResourceList
                 items={data.items}
                 getKey={(v) => `${v.name}-${v.index}`}
-                renderListItem={(item) => (
+                renderItem={(item) => (
                     <RuleListItem
                         item={item}
+                        onClick={() => setEditing(item)}
                         onPriority={() => setPriorityItem(item)}
                         onToggle={() => toggleDisabled(item)}
                     />
@@ -273,8 +256,10 @@ function BypassComponent() {
                         </div>
                     </div>
                 }
-                footer={<Pagination currentPage={data.page.page || page} totalItems={data.page.total} pageSize={data.page.pageSize || PAGE_SIZE} onPageChange={setPage} />}
-            />
+                pagination={{ currentPage: data.page.page || page, totalItems: data.page.total, pageSize: data.page.pageSize || PAGE_SIZE, onPageChange: setPage }}
+                    />
+                </section>
+            </div>
             <RuleEditorModal item={editing} options={editorOptions} onSaved={saved} onClose={() => setEditing(null)} />
             <PriorityModal item={priorityItem} items={allRules?.items ?? data.items} onSaved={saved} onClose={() => setPriorityItem(null)} />
             <CreateRuleModal open={creating} options={editorOptions} onSaved={saved} onClose={() => setCreating(false)} />
