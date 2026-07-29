@@ -165,7 +165,25 @@ export const handlers = [
                 };
                 break;
             }
-            case "connections.traffic": result = { interval: body.interval ?? "hour", items: ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00"].map((start, index) => ({ start: new Date(Date.now() - (5 - index) * 3600000).toISOString(), upload: String(120 + index * 40), download: String(820 + index * 190) })) }; break;
+            case "connections.traffic": {
+                const samples = [
+                    { upload: 120, download: 820 },
+                    { upload: 260, download: 1360 },
+                    { upload: 180, download: 1120 },
+                    { upload: 420, download: 1740 },
+                    { upload: 300, download: 1480 },
+                    { upload: 510, download: 2080 },
+                ];
+                result = {
+                    interval: body.interval ?? "hour",
+                    items: samples.map((sample, index) => ({
+                        start: new Date(Date.now() - (samples.length - 1 - index) * 3600000).toISOString(),
+                        upload: String(sample.upload),
+                        download: String(sample.download),
+                    })),
+                };
+                break;
+            }
             case "connections.telemetry": result = {
                 groups: [
                     { dimension: "destination", items: [

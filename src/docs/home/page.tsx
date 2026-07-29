@@ -265,10 +265,8 @@ function HomePage() {
                 </div>
                 <TrafficLegend />
                 {isLiveTraffic ? (
-                    liveChart.labels.length > 0
-                        ? <TrafficChartDynamic data={liveChart} minHeight={360} />
-                        : <div className="friendly-chart-empty"><Activity size={18} /><span>{flow.error || "Waiting for live traffic samples…"}</span></div>
-                ) : <TrafficHistoryChartDynamic data={trafficHistory} error={trafficHistoryError?.message} minHeight={360} />}
+                    <TrafficChartDynamic mode="live" data={liveChart} emptyMessage={flow.error || undefined} minHeight={360} />
+                ) : <TrafficChartDynamic mode="history" data={trafficHistory} error={trafficHistoryError?.message} minHeight={360} />}
             </section>
 
             <section className="friendly-surface friendly-breakdown-section">
@@ -287,7 +285,6 @@ function HomePage() {
     );
 }
 
-const TrafficHistoryChartDynamic = dynamic(() => import("./TrafficHistoryChart"), { ssr: false });
-const TrafficChartDynamic = dynamic(() => import("./TrafficChartv2"), { ssr: false });
+const TrafficChartDynamic = dynamic(() => import("./TrafficChart"), { ssr: false });
 
 export default HomePage;
