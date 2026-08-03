@@ -9,6 +9,7 @@ import {
     PointElement,
     Title,
     Tooltip,
+    TooltipItem,
 } from 'chart.js';
 import { FC } from 'react';
 import { Line } from 'react-chartjs-2';
@@ -39,8 +40,8 @@ export const options = {
         legend: { display: false },
         tooltip: {
             callbacks: {
-                label: function (context: any) {
-                    return `${context.dataset.label}: ${formatBytes(context.parsed.y, 2, " ") + '/S'}`;
+                label: function (context: TooltipItem<'line'>) {
+                    return `${context.dataset.label}: ${formatBytes(context.parsed.y ?? 0, 2, " ") + '/S'}`;
                 }
             }
         }
@@ -51,7 +52,7 @@ export const options = {
             max: 1024 * 1024, // 1 MB/s
             ticks: {
                 count: 5,
-                callback: (value: any) => { return formatBytes(Number(value), 2, " ") + '/S'; },
+                callback: (value: string | number) => { return formatBytes(Number(value), 2, " ") + '/S'; },
                 color: '#475569',
                 font: { size: 10 }
             },

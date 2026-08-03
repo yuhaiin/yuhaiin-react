@@ -206,7 +206,7 @@ export const SettingInputBytes: FC<{
         if (canonical !== text) {
             setText(canonical);
         }
-    }, [value]);
+    }, [text, value]);
 
     const handleChange = (newText: string) => {
         setText(newText);

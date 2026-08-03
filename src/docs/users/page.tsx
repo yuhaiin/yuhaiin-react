@@ -11,11 +11,20 @@ import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 
 type Kind = "basic" | "uuid" | "token";
+type Usage = "inbound" | "outbound" | "both";
+
+function normalizeUsage(value: string): Usage {
+    return value === "inbound" || value === "outbound" ? value : "both";
+}
+
+function normalizeKind(value: string): Kind {
+    return value === "uuid" || value === "token" ? value : "basic";
+}
 
 const emptyDraft = () => ({
     name: "",
     enabled: true,
-    usage: "both" as "inbound" | "outbound" | "both",
+    usage: "both" as Usage,
     type: "basic" as Kind,
     username: "",
     password: "",
@@ -57,8 +66,8 @@ export default function UsersPage() {
         setDraft({
             name: selected.name,
             enabled: selected.enabled,
-            usage: selected.usage,
-            type: selected.credential.type,
+            usage: normalizeUsage(selected.usage),
+            type: normalizeKind(selected.credential.type),
             username: selected.credential.username ?? "",
             password: selected.credential.password ?? "",
             uuid: selected.credential.uuid ?? "",

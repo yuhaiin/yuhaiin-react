@@ -1,5 +1,6 @@
 import dynamic from '@/component/AsyncComponent';
 import Loading from '@/component/v2/loading';
+import type { ComponentType } from 'react';
 
 const loading = Loading;
 
@@ -29,7 +30,7 @@ const ConfigDocumentsPage = dynamic(() => import('@/docs/config/documents/page')
 const ConfigLicensesPage = dynamic(() => import('@/docs/config/licenses/page'), { loading });
 const ConfigAboutPage = dynamic(() => import('@/docs/config/about/page'), { loading });
 
-export const appRoutes = [
+export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/login", component: LoginPage },
     { path: "/", component: HomePage },
     { path: "/docs/group", component: GroupPage },

@@ -66,7 +66,7 @@ function AppContent() {
                     )}
                     transition={{ duration: 0.5, ease: "easeInOut" }}
                 >
-                    <Router hook={() => [location, () => { }] as const}>
+                    <Router hook={() => [location, () => { }]}>
                         <Switch>
                             {appRoutes.map(({ path, component }) => (
                                 <Route key={path} path={path} component={component} />

@@ -15,7 +15,7 @@ const ToggleGroup = ({ className, children, value, noSlide, ...props }: React.Co
     return (
         <ToggleGroupPrimitive.Root
             className={clsx("inline-flex bg-transparent rounded-full", className)}
-            value={value as any}
+            value={value as never}
             {...props}
         >
             <ToggleGroupContext.Provider value={{ value, layoutId, noSlide }}>

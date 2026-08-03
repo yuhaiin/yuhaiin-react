@@ -25,7 +25,7 @@ const Modal: React.FC<React.ComponentProps<typeof DialogPrimitive.Root>> = ({ ch
         }
         // Reset or keep previous? Keeping previous is fine, but if we close and open elsewhere?
         // If open is false, we don't care.
-    }, [open]);
+    }, [getLastClick, open]);
 
     return (
         <DialogPrimitive.Root open={open} onOpenChange={onOpenChange} {...props}>
@@ -99,6 +99,9 @@ const ModalContent = ({ className, children, style, ...props }: React.ComponentP
                             animate="visible"
                             exit="exit"
                             style={{ transformOrigin, ...style }}
+                            // Oxlint cannot express the overlap between Radix
+                            // content props and Motion's props at this boundary.
+                            // oxlint-disable-next-line typescript/no-explicit-any
                             {...props as any} // Framer Motion types conflict with Radix? usually fine with asChild but here we wrap motion.div
                         >
                             {children}

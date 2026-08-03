@@ -433,7 +433,7 @@ const NamedCertificateEditor: FC<{
         <div className="grid gap-3">
             <div className="flex items-center justify-between gap-3">
                 <SettingLabel className="mb-0">Server Name Certificates</SettingLabel>
-                <Button size="sm" onClick={() => onChange({ ...(value ?? {}), "": defaultCertificate() })}><Plus size={16} className="mr-1" />Add</Button>
+                <Button size="sm" onClick={() => onChange({ ...value, "": defaultCertificate() })}><Plus size={16} className="mr-1" />Add</Button>
             </div>
             {entries.length === 0 ? (
                 <div className="rounded-ui-lg border border-dashed border-ui-border p-4 text-sm text-ui-muted">No server-name specific certificates.</div>

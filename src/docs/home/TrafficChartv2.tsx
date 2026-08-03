@@ -341,7 +341,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
             uPlotInst.current = null;
         };
         // The chart receives live data through the separate update effect below.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [makeSmoothPath, t]);
 
     useEffect(() => {

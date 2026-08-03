@@ -195,13 +195,13 @@ function SidebarGroup({ title, icon, activePath, matchPath, children }: {
         } else if (isActive) {
             setIsOpen(true);
         }
-    }, []);
+    }, [isActive]);
 
     useEffect(() => {
         if (isActive && !isOpen) {
             setIsOpen(true);
         }
-    }, [isActive]);
+    }, [isActive, isOpen]);
 
     // If not mounted yet (SSR), default to closed or open? 
     // To avoid hydration mismatch, better to wait for mount or use a hook.

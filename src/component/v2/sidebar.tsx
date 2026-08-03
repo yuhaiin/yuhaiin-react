@@ -30,6 +30,9 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
                 initial={false} // Prevent initial animation on hydration if possible, or just default.
                 animate={show ? { x: 320 } : { x: 0 }}
                 transition={{ type: "spring", stiffness: 400, damping: 40 }}
+                // Oxlint cannot express the overlap between native div props
+                // and Motion's event-handler props at this boundary.
+                // oxlint-disable-next-line typescript/no-explicit-any
                 {...(props as any)}
             >
                 {children}

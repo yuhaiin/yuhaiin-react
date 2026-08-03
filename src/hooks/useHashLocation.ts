@@ -9,7 +9,7 @@ const currentLocation = () => {
   return path;
 };
 
-export const useHashLocation = () => {
+export const useHashLocation = (): [string, (to: string) => void] => {
   const [loc, setLoc] = useState(currentLocation());
 
   useEffect(() => {
@@ -25,5 +25,5 @@ export const useHashLocation = () => {
     window.location.hash = to;
   }, []);
 
-  return [loc, navigate] as const;
+  return [loc, navigate];
 };

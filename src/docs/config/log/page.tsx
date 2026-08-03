@@ -145,7 +145,7 @@ class LogRingBuffer {
     private nextId = 0
 
     constructor(private capacity: number) {
-        this.entries = new Array(capacity)
+        this.entries = Array.from<LogEntry>({ length: capacity })
     }
 
     get size() {
@@ -183,7 +183,7 @@ class LogRingBuffer {
         if (this.capacity === capacity) return this.version
 
         const keep = Math.min(this.count, capacity)
-        const next = new Array<LogEntry>(capacity)
+        const next = Array.from<LogEntry>({ length: capacity })
         for (let i = 0; i < keep; i++) {
             const entry = this.get(i)
             if (entry) next[i] = entry
@@ -199,7 +199,7 @@ class LogRingBuffer {
 
     clear() {
         if (this.count === 0) return this.version
-        this.entries = new Array(this.capacity)
+        this.entries = Array.from<LogEntry>({ length: this.capacity })
         this.head = 0
         this.count = 0
         this.version++

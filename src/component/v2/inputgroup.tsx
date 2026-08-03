@@ -18,6 +18,8 @@ const InputGroup = React.forwardRef<
     // To do it automatically, we can map children.
 
     const count = React.Children.count(children);
+    // The group injects a prop into arbitrary child components.
+    // oxlint-disable-next-line typescript/no-explicit-any
     const cloneWithGroupPosition = (element: React.ReactElement<any>, position: GroupPosition) => {
         if (typeof element.type !== "string") {
             return React.cloneElement(element, { groupPosition: position });
@@ -34,6 +36,7 @@ const InputGroup = React.forwardRef<
         }
 
         return React.cloneElement(element, {
+            // oxlint-disable-next-line typescript/no-explicit-any
             children: React.cloneElement(onlyChild as React.ReactElement<any>, { groupPosition: position }),
         });
     };
@@ -50,6 +53,7 @@ const InputGroup = React.forwardRef<
             // So we clone and pass `groupPosition`.
             // Note: Custom components like FormSelect need to accept this prop. Native elements (div, button) won't care unless we wrap or use context.
             // But FormSelect/Input are the main concern.
+            // oxlint-disable-next-line typescript/no-explicit-any
             return cloneWithGroupPosition(child as React.ReactElement<any>, position);
         }
         return child;

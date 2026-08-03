@@ -717,7 +717,7 @@ const AddressList: FC<{
 
     const update = (index: number, patch: Partial<FixedAddress>) => {
         const next = [...items];
-        next[index] = { ...(next[index] ?? {}), ...patch };
+        next[index] = { ...next[index], ...patch };
         onChange(next);
     };
 
@@ -860,7 +860,7 @@ const WireguardForm: FC<{
 
     const updatePeer = (index: number, patch: Partial<NonNullable<NodeProtocolConfig<"wireguard">["peers"]>[number]>) => {
         const next = [...peers];
-        next[index] = { ...(next[index] ?? {}), ...patch };
+        next[index] = { ...next[index], ...patch };
         onChange({ peers: next });
     };
 
@@ -956,10 +956,12 @@ const NetworkSplitForm: FC<{
     </div>
 );
 
+type Certificate = NonNullable<NonNullable<NodeProtocolConfig<"tls_termination">["tls"]>["certificates"]>[number];
+
 const CertificateForm: FC<{
-    cert: NonNullable<NodeProtocolConfig<"tls_termination">["tls"]>["certificates"] extends Array<infer T> ? T : never;
+    cert: Certificate;
     editable: boolean;
-    onChange: (value: NonNullable<NodeProtocolConfig<"tls_termination">["tls"]>["certificates"] extends Array<infer T> ? T : never) => void;
+    onChange: (value: Certificate) => void;
 }> = ({ cert, editable, onChange }) => (
     <div className="grid gap-4">
         <SettingInputBytes label="Certificate (PEM)" value={base64ToBytes(cert.cert)} disabled={!editable} onChange={(value) => onChange({ ...cert, cert: bytesToBase64(value) })} />

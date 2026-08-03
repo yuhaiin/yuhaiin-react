@@ -21,12 +21,12 @@ const useInsertionEffect
  * - No dependency lists required
  * - Properties or state accessed within the callback will always be "current"
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 function useStableHandler<Args extends any[], Result>(
     callback: (...args: Args) => Result
 ): typeof callback {
     // Keep track of the latest callback:
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line typescript/no-explicit-any
     const latestRef = useRef<typeof callback>(shouldNotBeInvokedBeforeMount as any);
     useInsertionEffect(() => {
         latestRef.current = callback;

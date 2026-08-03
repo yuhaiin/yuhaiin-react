@@ -27,7 +27,7 @@ const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
             "exit" in props ||
             "layout" in props ||
             "transition" in props;
-        const Comp = asChild ? (hasMotionProps ? MotionSlot : Slot) : (hasMotionProps ? motion.button : "button");
+        const Comp = (asChild ? (hasMotionProps ? MotionSlot : Slot) : (hasMotionProps ? motion.button : "button")) as React.ElementType;
 
         const radiusClasses = {
             first: '!rounded-r-none !border-r-0',
@@ -90,10 +90,10 @@ const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
             icon: "p-1.5 inline-flex items-center justify-center leading-none flex-none w-auto [&>i]:text-[1rem] [&>i]:align-middle [&>svg]:text-[1rem] [&>svg]:align-middle"
         };
 
-        const motionProps = animated ? {
+        const motionProps: HTMLMotionProps<"button"> = animated ? {
             whileHover: { scale: 1.05, filter: "brightness(1.05)" },
             whileTap: { scale: 0.95 },
-            transition: { type: "spring", stiffness: 400, damping: 17 },
+            transition: { type: "spring" as const, stiffness: 400, damping: 17 },
         } : {};
 
         return (
