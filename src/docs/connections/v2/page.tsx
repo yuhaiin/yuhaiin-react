@@ -13,7 +13,7 @@ import type { Connection, Connections, Counter } from "@/contract/connection";
 import { normalizeConnection } from "@/contract/connection";
 import { ArrowDown, ArrowUp, Network, Power, ShieldCheck, Tag } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { VList } from "virtua";
 import { NodeModal } from "../../node/modal";
@@ -45,28 +45,39 @@ function Connections() {
     const [counters, setCounters] = useState<Record<string, Counter>>({});
     const [streamError, setStreamError] = useState("");
     const [streamNonce, setStreamNonce] = useState(0);
+    const hasStreamSnapshot = useRef(false);
 
-    const { data: initial, error, isLoading, mutate } = useSWR("/api/v2/connections", getConnections, {
+    const { data: initial, error, isLoading } = useSWR("/api/v2/connections", getConnections, {
         revalidateOnFocus: false,
     });
 
     useEffect(() => {
-        if (!initial) return;
+        // The HTTP response is only a fallback. Once the event stream has
+        // delivered its initial snapshot, a late/revalidated HTTP response
+        // may be stale and must not replace the live connection state.
+        if (!initial || hasStreamSnapshot.current) return;
         setConnections(Object.fromEntries(initial.connections.map(conn => [conn.id, conn])));
     }, [initial]);
 
     useEffect(() => {
+        // Every EventSource starts with a complete snapshot. Mark the first
+        // connections_added event as such so reconnects also remove stale
+        // entries that were closed while the stream was down.
+        hasStreamSnapshot.current = false;
         let reconnectTimer: number | undefined;
         const source = new EventSource(eventsURL());
         source.onopen = () => setStreamError("");
         const onAdded = (event: MessageEvent<string>) => {
             const payload = JSON.parse(event.data) as Connections;
+            const isSnapshot = !hasStreamSnapshot.current;
+            hasStreamSnapshot.current = true;
             setConnections(prev => {
-                const next = { ...prev };
-                for (const conn of payload.connections ?? []) {
+                const added = Object.fromEntries((payload.connections ?? []).map(conn => {
                     const normalized = normalizeConnection(conn);
-                    next[normalized.id] = normalized;
-                }
+                    return [normalized.id, normalized];
+                }));
+                if (isSnapshot) return added;
+                const next = { ...prev, ...added };
                 return next;
             });
         };
@@ -84,7 +95,6 @@ function Connections() {
             setStreamError("Connection event stream disconnected. Reconnecting...");
             source.close();
             reconnectTimer = window.setTimeout(() => {
-                void mutate();
                 setStreamNonce((value) => value + 1);
             }, 2000);
         };
@@ -92,7 +102,7 @@ function Connections() {
             source.close();
             if (reconnectTimer !== undefined) window.clearTimeout(reconnectTimer);
         };
-    }, [mutate, streamNonce]);
+    }, [streamNonce]);
 
     const sorted = useMemo(() => {
         const list = Object.values(connections);
@@ -152,7 +162,7 @@ function Connections() {
                         <ToggleItem value="download">Download</ToggleItem>
                         <ToggleItem value="upload">Upload</ToggleItem>
                     </ToggleGroup>
-                    <Button onClick={() => { setStreamError(""); void mutate(); setStreamNonce((value) => value + 1); }} size="sm">Refresh</Button>
+                    <Button onClick={() => { setStreamError(""); setStreamNonce((value) => value + 1); }} size="sm">Refresh</Button>
                 </div>
             </div>
 
