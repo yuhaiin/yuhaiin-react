@@ -234,12 +234,12 @@ const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
                             {parsed.source}
                         </span>
                     )}
-                    <span className={clsx("min-w-0 flex-1 whitespace-pre-wrap break-words", style.text)}>
+                    <span className={clsx("ui-log-line-message min-w-0 flex-1 whitespace-pre-wrap break-words", style.text)}>
                         {parsed.message}
                     </span>
                 </div>
                 {parsed.details && (
-                    <div className="mt-1 whitespace-pre-wrap break-words pl-[60px] text-[11.5px] leading-5 text-ui-muted">
+                    <div className="ui-log-line-details mt-1 whitespace-pre-wrap break-words pl-[60px] text-[11.5px] leading-5 text-ui-muted">
                         {parsed.details}
                     </div>
                 )}
@@ -338,7 +338,7 @@ export default function LogComponent() {
             >
             <Card className="flex-1 min-h-0 !mb-0 flex flex-col overflow-hidden">
                 <CardHeader className="px-2.5 py-2">
-                    <div className="flex justify-between items-center w-full gap-3">
+                    <div className="flex min-w-0 justify-between items-center w-full gap-3">
                         <IconBox
                             icon={Terminal}
                             tone="warning"
@@ -346,9 +346,9 @@ export default function LogComponent() {
                             description="Real-time system events"
                             className="ui-log-icon !mr-3 !h-10 !w-10 !rounded-[14px]"
                         />
-                        <div className="flex items-center gap-2 flex-grow justify-end">
-                            <FilterSearch onEnter={setSearchTerm} className='flex-grow' />
-                            <ToggleGroup className="flex-nowrap" type="single" value={String(retention)} onValueChange={(v) => v && changeRetention(v)}>
+                        <div className="ui-log-toolbar flex min-w-0 flex-wrap items-center gap-2 flex-grow justify-end">
+                            <FilterSearch onEnter={setSearchTerm} className='ui-log-search min-w-0 flex-grow' />
+                            <ToggleGroup className="ui-log-retention flex-nowrap shrink-0" type="single" value={String(retention)} onValueChange={(v) => v && changeRetention(v)}>
                                 {LOG_RETENTION_OPTIONS.map(value => (
                                     <ToggleItem key={value} value={String(value)}>{value}</ToggleItem>
                                 ))}
@@ -356,7 +356,7 @@ export default function LogComponent() {
                             <Button size="sm" variant="outline-secondary" onClick={clearLogs}>
                                 <Trash2 size={14} />
                             </Button>
-                            <Badge variant={logError ? "danger" : "warning"} pill className="text-[0.7rem] px-2 py-1">
+                            <Badge variant={logError ? "danger" : "warning"} pill className="shrink-0 text-[0.7rem] px-2 py-1">
                                 <Radio className="mr-1" size={12} />{logError ? "RECONNECTING" : "LIVE"}
                             </Badge>
                         </div>

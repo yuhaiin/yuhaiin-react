@@ -583,6 +583,26 @@ select:focus,
 .ui-log-empty-state strong { color: var(--color-heading); font-size: 0.85rem; }
 .ui-log-empty-state span { max-width: 360px; font-size: 0.74rem; line-height: 1.5; }
 
+@media (max-width: 640px) {
+    .ui-log-toolbar {
+        justify-content: flex-start;
+    }
+
+    .ui-log-search {
+        flex-basis: 100%;
+        width: 100%;
+    }
+
+    .ui-log-line-message {
+        flex-basis: 100%;
+        margin-top: 2px;
+    }
+
+    .ui-log-line-details {
+        padding-left: 0;
+    }
+}
+
 .ui-workspace-hint-bar {
     display: none;
 }
