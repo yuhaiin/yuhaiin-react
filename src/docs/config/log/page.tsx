@@ -232,12 +232,12 @@ const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
                             {parsed.source}
                         </span>
                     )}
-                    <span className={clsx("min-w-0 flex-1 whitespace-pre-wrap break-words", style.text)}>
+                    <span className={clsx("min-w-0 basis-full whitespace-pre-wrap break-words sm:basis-auto sm:flex-1", style.text)}>
                         {parsed.message}
                     </span>
                 </div>
                 {parsed.details && (
-                    <div className="mt-1 whitespace-pre-wrap break-words pl-[60px] text-[11.5px] leading-5 text-slate-500 dark:text-slate-400">
+                    <div className="mt-1 whitespace-pre-wrap break-words pl-0 text-[11.5px] leading-5 text-slate-500 dark:text-slate-400 sm:pl-[60px]">
                         {parsed.details}
                     </div>
                 )}
@@ -325,16 +325,16 @@ export default function LogComponent() {
         <MainContainer className="h-full min-h-0 flex flex-col">
             <Card className="flex-1 min-h-0 !mb-0 flex flex-col overflow-hidden">
                 <CardHeader className="px-2.5 py-2">
-                    <div className="flex justify-between items-center w-full gap-3">
+                    <div className="flex min-w-0 w-full flex-wrap items-center gap-2">
                         <IconBox
                             icon={Terminal}
                             tone="warning"
                             title="Live Logcat"
                             description="Real-time system events"
-                            className="!mr-3 !h-10 !w-10 !rounded-[10px]"
+                            className="!mr-2 !h-10 !w-10 !rounded-[10px]"
                         />
-                        <div className="flex items-center gap-2 flex-grow justify-end">
-                            <FilterSearch onEnter={setSearchTerm} className='flex-grow' />
+                        <FilterSearch onEnter={setSearchTerm} className="order-2 min-w-0 flex-1" />
+                        <div className="order-3 flex w-full min-w-0 items-center gap-2 sm:order-none sm:w-auto sm:flex-1 sm:justify-end">
                             <ToggleGroup className="flex-nowrap" type="single" value={String(retention)} onValueChange={(v) => v && changeRetention(v)}>
                                 {LOG_RETENTION_OPTIONS.map(value => (
                                     <ToggleItem key={value} value={String(value)}>{value}</ToggleItem>
@@ -343,7 +343,7 @@ export default function LogComponent() {
                             <Button size="sm" variant="outline-secondary" onClick={clearLogs}>
                                 <Trash2 size={14} />
                             </Button>
-                            <Badge variant={logError ? "danger" : "warning"} pill className="text-[0.7rem] px-2 py-1">
+                            <Badge variant={logError ? "danger" : "warning"} pill className="shrink-0 text-[0.7rem] px-2 py-1">
                                 <Radio className="mr-1" size={12} />{logError ? "RECONNECTING" : "LIVE"}
                             </Badge>
                         </div>
@@ -359,7 +359,6 @@ export default function LogComponent() {
                         <VList
                             ref={logListRef}
                             data={visibleLog}
-                            itemSize={72}
                             bufferSize={360}
                             shift
                             onScroll={(offset) => {

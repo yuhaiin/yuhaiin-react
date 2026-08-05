@@ -426,7 +426,7 @@ export function CardRowList<T>({
 // --- Other Styled Components ---
 
 export const IconBadge: FC<{ icon: React.ElementType, text: string | number, color?: "primary" | "secondary" | "success" | "danger" | "warning" | "info" }> = ({ icon: Icon, text, color = "primary" }) => (
-    <Badge variant={color} className="flex items-center gap-1 px-2 py-1 text-[0.7rem] uppercase whitespace-nowrap">
+    <Badge variant={color} className="flex shrink-0 items-center gap-1 px-2 py-1 text-[0.7rem] uppercase whitespace-nowrap">
         <Icon size={12} />
         <span>{text}</span>
     </Badge>

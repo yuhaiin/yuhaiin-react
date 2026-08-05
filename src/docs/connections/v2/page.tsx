@@ -22,6 +22,7 @@ import { ConnectionInfo, FlowContainer, formatBytes, numberValue } from "../comp
 type SortBy = "id" | "name" | "download" | "upload";
 const VIRTUALIZE_THRESHOLD = 40;
 const ROW_HEIGHT = 52;
+const MOBILE_ROW_HEIGHT = 80;
 
 function eventsURL() {
     const apiUrl = getApiUrl();
@@ -46,6 +47,16 @@ function Connections() {
     const [streamError, setStreamError] = useState("");
     const [streamNonce, setStreamNonce] = useState(0);
     const hasStreamSnapshot = useRef(false);
+    const [isMobile, setIsMobile] = useState(false);
+    const rowHeight = isMobile ? MOBILE_ROW_HEIGHT : ROW_HEIGHT;
+
+    useEffect(() => {
+        const media = window.matchMedia("(max-width: 639px)");
+        const update = () => setIsMobile(media.matches);
+        update();
+        media.addEventListener("change", update);
+        return () => media.removeEventListener("change", update);
+    }, []);
 
     const { data: initial, error, isLoading } = useSWR("/api/v2/connections", getConnections, {
         revalidateOnFocus: false,
@@ -150,19 +161,21 @@ function Connections() {
                 </div>
             )}
 
-            <div className="flex justify-end mb-3">
-                <div className="flex items-center gap-3 flex-wrap">
+            <div className="mb-3 flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+                <div className="flex items-center gap-2">
                     <ToggleGroup className="flex-nowrap" type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")}>
                         <ToggleItem value="asc"><div className="flex items-center gap-1 whitespace-nowrap"><ArrowUp size={16} /> Asc</div></ToggleItem>
                         <ToggleItem value="desc"><div className="flex items-center gap-1 whitespace-nowrap"><ArrowDown size={16} /> Desc</div></ToggleItem>
                     </ToggleGroup>
+                    <Button onClick={() => { setStreamError(""); setStreamNonce((value) => value + 1); }} size="sm">Refresh</Button>
+                </div>
+                <div className="min-w-0 max-w-full overflow-x-auto pb-1 sm:pb-0">
                     <ToggleGroup className="flex-nowrap" type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v as SortBy)}>
                         <ToggleItem value="id">Id</ToggleItem>
                         <ToggleItem value="name">Name</ToggleItem>
                         <ToggleItem value="download">Download</ToggleItem>
                         <ToggleItem value="upload">Upload</ToggleItem>
                     </ToggleGroup>
-                    <Button onClick={() => { setStreamError(""); setStreamNonce((value) => value + 1); }} size="sm">Refresh</Button>
                 </div>
             </div>
 
@@ -174,11 +187,11 @@ function Connections() {
                 <div className="mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl">
                     <VList
                         data={sorted}
-                        itemSize={ROW_HEIGHT}
+                        itemSize={rowHeight}
                         bufferSize={ROW_HEIGHT * 10}
                         style={{
                             height: Math.min(
-                                sorted.length * ROW_HEIGHT,
+                                sorted.length * rowHeight,
                                 typeof window === "undefined" ? 720 : Math.min(window.innerHeight * 0.72, 900),
                             ),
                             width: "100%",
@@ -252,23 +265,23 @@ const ConnectionRow = memo(function ConnectionRow({
     const download = formatBytes(numberValue(counter?.download));
     const upload = formatBytes(numberValue(counter?.upload));
     // Keep everything in one dense row. Avoid 1fr/space-between — that creates a huge empty middle.
-    const className = "flex min-h-[52px] items-center gap-2.5 border-b border-sidebar-border px-3.5 py-2 transition-colors duration-150 cursor-pointer hover:bg-sidebar-hover last:border-b-0";
+    const className = "flex min-h-[52px] items-center gap-2.5 border-b border-sidebar-border px-3.5 py-2 transition-colors duration-150 cursor-pointer hover:bg-sidebar-hover last:border-b-0 max-sm:grid max-sm:min-h-[80px] max-sm:grid-cols-[3.25rem_minmax(0,1fr)] max-sm:gap-x-2 max-sm:gap-y-1 max-sm:py-2.5 sm:flex-nowrap";
     const handleClick = useCallback(() => onSelect(conn), [conn, onSelect]);
 
     const body = (
         <>
-            <code className="w-[3.25rem] shrink-0 font-mono text-[11px] tabular-nums text-sidebar-color/75">
+            <code className="w-[3.25rem] shrink-0 font-mono text-[11px] tabular-nums text-sidebar-color/75 max-sm:col-start-1 max-sm:row-start-1">
                 {conn.id}
             </code>
 
             <span
-                className="min-w-0 max-w-[min(42vw,28rem)] shrink truncate text-[0.9rem] font-medium leading-5 text-ui-heading"
+                className="min-w-0 max-w-[min(42vw,28rem)] shrink truncate text-[0.9rem] font-medium leading-5 text-ui-heading max-sm:col-start-2 max-sm:row-start-1 max-sm:w-full max-sm:max-w-none"
                 title={conn.addr}
             >
                 {conn.addr}
             </span>
 
-            <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-1.5">
+            <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-1.5 max-sm:col-span-2 max-sm:row-start-2 max-sm:flex-nowrap max-sm:overflow-x-auto">
                 <IconBadge icon={ShieldCheck} text={conn.mode || "unknown"} />
                 <IconBadge icon={Network} text={conn.network.connType || "unknown"} />
                 {conn.tag && <IconBadge icon={Tag} text={conn.tag} />}
@@ -308,7 +321,7 @@ const ConnectionRow = memo(function ConnectionRow({
 
 const FlowBadge = memo(function FlowBadge({ download, upload }: { download: string; upload: string }) {
     return (
-        <div className="inline-flex shrink-0 items-center gap-2 text-[11px] font-semibold tabular-nums">
+        <div className="inline-flex shrink-0 items-center gap-2 text-[11px] font-semibold tabular-nums max-sm:col-span-2 max-sm:row-start-3 max-sm:justify-self-end">
             <span className="inline-flex items-center gap-0.5 text-ui-info">
                 <ArrowDown size={11} />
                 {download}
