@@ -320,8 +320,13 @@ const ResolverModal: FC<{
 
     const handleSave = () => {
         if (!resolver) return;
+        const nextID = (isNew ? resolver.id : id).trim();
+        if (!nextID) {
+            ctx.Error("Resolver ID cannot be empty");
+            return;
+        }
         setSaving(true);
-        const next = normalizeResolver({ ...resolver, id });
+        const next = normalizeResolver({ ...resolver, id: nextID });
         const request = isNew ? createResolver(next) : saveResolver(next);
         request
             .then((saved) => {
