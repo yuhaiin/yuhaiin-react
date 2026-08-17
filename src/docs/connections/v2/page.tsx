@@ -145,7 +145,7 @@ function Connections() {
     if (isLoading && !initial) return <Loading />
 
     return (
-        <MainContainer className="flex min-h-full min-w-0 flex-col">
+        <MainContainer>
             <NodeModal
                 show={nodeModal.show}
                 id={nodeModal.id}
@@ -180,7 +180,7 @@ function Connections() {
             </div>
 
             {sorted.length === 0 ? (
-                <div className="mb-8 rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg p-6 text-center text-ui-muted">
+                <div className="p-6 mb-8 text-center text-ui-muted rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg">
                     No active connections.
                 </div>
             ) : sorted.length > VIRTUALIZE_THRESHOLD ? (

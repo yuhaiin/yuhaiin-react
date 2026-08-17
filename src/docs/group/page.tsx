@@ -382,6 +382,11 @@ const NodeItem: FC<{
                             <span className="truncate text-[0.95rem] font-semibold text-ui-heading">
                                 {item.name || item.id}
                             </span>
+                            {item.origin && (
+                                <span className="hidden shrink-0 text-[11px] text-ui-muted sm:inline">
+                                    · {item.origin}
+                                </span>
+                            )}
                             {!item.enabled && (
                                 <Badge variant="secondary" pill className="shrink-0 px-1.5 py-0 text-[0.62rem]">
                                     Off
@@ -611,6 +616,7 @@ export default function Group() {
             const haystack = [
                 item.name,
                 item.id,
+                item.origin,
                 chainLabel(item),
                 ...item.chain.map((step) => step.type),
             ].join(" ").toLowerCase();
@@ -795,6 +801,7 @@ export default function Group() {
                                 ) : groupItems.length > GROUP_VIRTUALIZE_THRESHOLD ? (
                                     <VList
                                         data={groupItems}
+                                        itemSize={72}
                                         bufferSize={720}
                                         style={{ height: "min(72vh, 900px)", width: "100%" }}
                                     >

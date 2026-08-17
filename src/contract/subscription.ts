@@ -3,7 +3,6 @@ import type { Go } from "@/api/generated-contracts";
 
 export type Link = Go.subscription.Link;
 export type LinkList = Go.subscription.LinkList;
-export type DeleteImpact = Go.subscription.DeleteImpact;
 export type Publish = Go.subscription.Publish;
 export type PublishList = Go.subscription.PublishList;
 

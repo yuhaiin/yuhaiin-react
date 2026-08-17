@@ -389,14 +389,12 @@ export namespace Go {
     }
     export interface Shadowsocks {
       method: string;
-      userId?: string;
       password: string;
     }
     export interface Shadowsocksr {
       server: string;
       port: string;
       method: string;
-      userId?: string;
       password: string;
       obfs: string;
       obfsparam: string;
@@ -404,13 +402,11 @@ export namespace Go {
       protoparam: string;
     }
     export interface Vmess {
-      userId?: string;
       id: string;
       aid: string;
       security: string;
     }
     export interface Vless {
-      userId?: string;
       uuid: string;
     }
     export interface Websocket {
@@ -426,7 +422,6 @@ export namespace Go {
       port: string;
     }
     export interface Trojan {
-      userId?: string;
       password: string;
       peer: string;
     }
@@ -446,19 +441,16 @@ export namespace Go {
       network_interface?: string;
     }
     export interface Socks5 {
-      userId?: string;
       user: string;
       password: string;
       hostname: string;
       override_port?: number;
     }
     export interface HTTP {
-      userId?: string;
       user: string;
       password: string;
     }
     export interface Yuubinsya {
-      userId?: string;
       password: string;
       udp_over_stream?: boolean;
       udp_coalesce?: boolean;
@@ -510,7 +502,6 @@ export namespace Go {
       allowedIps?: string[];
     }
     export interface Tailscale {
-      userId?: string;
       auth_key: string;
       hostname: string;
       control_url: string;
@@ -534,7 +525,6 @@ export namespace Go {
       data?: string;
     }
     export interface AEAD {
-      userId?: string;
       password: string;
       crypto_method: string;
     }
@@ -790,15 +780,6 @@ export namespace Go {
     export interface LinkNames {
       names: string[];
     }
-    export interface DeleteLinksRequest {
-      names: string[];
-      deleteNodes: boolean;
-      deleteUsers: boolean;
-    }
-    export interface DeleteImpact {
-      nodes: number;
-      users: number;
-    }
     export interface Publish {
       name: string;
       points: string[];
@@ -839,94 +820,6 @@ export namespace Go {
     }
     export interface LogBatch {
       log: string[];
-    }
-  }
-  export namespace update {
-    export interface CheckResult {
-      supported: boolean;
-      channel: string;
-      currentVersion: string;
-      targetVersion: string;
-      targetTag: string;
-      prerelease: boolean;
-      releaseUrl: string;
-      releaseNotes: string;
-      publishedAt: string;
-      assetName: string;
-      assetSha256: string;
-      updateAvailable: boolean;
-      reason: string;
-    }
-    export interface CheckRequest {
-      channel: string;
-      includePrerelease: boolean;
-    }
-    export interface ApplyRequest {
-      channel: string;
-      targetTag: string;
-      includePrerelease: boolean;
-    }
-    export interface Status {
-      running: boolean;
-      stage: string;
-      progress: number;
-      bytesDownloaded: number;
-      totalBytes: number;
-      error: string;
-    }
-  }
-  export namespace user {
-    export type Usage = string;
-    export type CredentialType = string;
-    export type Origin = string;
-    export interface User {
-      id: string;
-      name: string;
-      enabled: boolean;
-      origin: Origin;
-      usage: Usage;
-      credential: Credential;
-    }
-    export type Credential =
-      | { type: "basic"; basic: BasicCredential }
-      | { type: "uuid"; uuid: UUIDCredential }
-      | { type: "token"; token: TokenCredential };
-    export interface BasicCredential {
-      username?: string;
-      password?: string;
-      allowAnyUsername?: boolean;
-      allowAnyPassword?: boolean;
-    }
-    export interface UUIDCredential {
-      uuid: string;
-    }
-    export interface TokenCredential {
-      token: string;
-    }
-    export interface UserWrite {
-      name: string;
-      enabled: boolean;
-      origin?: Origin;
-      usage: Usage;
-      credential: Credential;
-    }
-    export interface UserView {
-      id: string;
-      name: string;
-      enabled: boolean;
-      origin: Origin;
-      usage: Usage;
-      credential: CredentialView;
-      outboundReferences?: number;
-    }
-    export interface CredentialView {
-      type: CredentialType;
-      username?: string;
-      password?: string;
-      uuid?: string;
-      token?: string;
-      hasUsername?: boolean;
-      hasSecret: boolean;
     }
   }
 }
