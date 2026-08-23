@@ -11,6 +11,7 @@ export interface UpdateCheck {
   releaseNotes: string;
   publishedAt: string;
   assetName: string;
+  assetUrl: string;
   assetSha256: string;
   updateAvailable: boolean;
   reason: string;
