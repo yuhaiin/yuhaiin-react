@@ -20,6 +20,9 @@ export type RPCOperation =
   | "inbounds.config.put"
   | "inbounds.get"
   | "inbounds.post"
+  | "inbounds.status"
+  | "inbound.events"
+  | "inbound.retry"
   | "info"
   | "node.close"
   | "node.delete"
@@ -135,6 +138,9 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "PUT", pattern: "/api/v2/inbounds/config", operation: "inbounds.config.put" },
   { method: "GET", pattern: "/api/v2/inbounds", operation: "inbounds.get" },
   { method: "POST", pattern: "/api/v2/inbounds", operation: "inbounds.post" },
+  { method: "GET", pattern: "/api/v2/inbounds/status", operation: "inbounds.status" },
+  { method: "GET", pattern: "/api/v2/inbounds/{id}/events", operation: "inbound.events" },
+  { method: "POST", pattern: "/api/v2/inbounds/{id}/retry", operation: "inbound.retry" },
   { method: "GET", pattern: "/api/v2/inbounds/{id}", operation: "inbound.get" },
   { method: "PUT", pattern: "/api/v2/inbounds/{id}", operation: "inbound.put" },
   { method: "DELETE", pattern: "/api/v2/inbounds/{id}", operation: "inbound.delete" },

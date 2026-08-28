@@ -1,6 +1,20 @@
 "use client"
 
-import { createInbound, deleteInbound, getInbound, getInboundConfig, listInbounds, saveInbound, saveInboundConfig } from "@/api/inbounds";
+import {
+    createInbound,
+    deleteInbound,
+    getInbound,
+    getInboundConfig,
+    InboundRuntimeEvent,
+    InboundRuntimeState,
+    InboundRuntimeStatus,
+    listInboundEvents,
+    listInboundStatuses,
+    listInbounds,
+    retryInbound,
+    saveInbound,
+    saveInboundConfig,
+} from "@/api/inbounds";
 import { APIError } from "@/api/client";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
 import { Badge } from "@/component/v2/badge";
@@ -11,6 +25,7 @@ import { Textarea } from "@/component/v2/input";
 import { InputBytesList, InputList } from "@/component/v2/listeditor";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Spinner } from "@/component/v2/spinner";
+import { Switch } from "@/component/v2/switch";
 import {
     createDefaultInbound,
     createDefaultNetwork,
@@ -29,7 +44,7 @@ import {
     ServerTLSConfig,
     TLSAutoTransport,
 } from "@/contract/inbound";
-import { ArrowDown, ArrowUp, Check, ChevronRight, DoorOpen, LogIn, Plus, Save, Settings, Trash } from "lucide-react";
+import { Activity, ArrowDown, ArrowUp, Check, ChevronRight, CircleAlert, CircleCheck, DoorOpen, LogIn, Plus, RefreshCw, Save, Settings, Trash } from "lucide-react";
 import { FC, useContext, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import Loading, { Error as ErrorDisplay } from "../../component/v2/loading";
@@ -79,6 +94,55 @@ function bytesToBase64(value: Uint8Array): string {
 
 function transportLabel(value: Inbound): string {
     return value.transports.map((transport) => transport.type).join(" / ");
+}
+
+function runtimeLabel(state: InboundRuntimeState): string {
+    switch (state) {
+        case "disabled": return "Disabled";
+        case "starting": return "Starting";
+        case "running": return "Running";
+        case "degraded": return "Degraded";
+        case "failed": return "Failed";
+        case "stopping": return "Stopping";
+    }
+}
+
+function runtimeVariant(state: InboundRuntimeState): "success" | "danger" | "warning" | "info" | "muted" | "secondary" {
+    switch (state) {
+        case "running": return "success";
+        case "failed": return "danger";
+        case "degraded": return "warning";
+        case "starting": return "info";
+        case "stopping": return "secondary";
+        case "disabled": return "muted";
+    }
+}
+
+function formatBytes(value: string): string {
+    const bytes = Number(value);
+    if (!Number.isFinite(bytes) || bytes < 0) return "0 B";
+    if (bytes < 1024) return `${Math.round(bytes)} B`;
+    const units = ["KiB", "MiB", "GiB", "TiB"];
+    let amount = bytes;
+    let unit = "B";
+    for (const nextUnit of units) {
+        amount /= 1024;
+        unit = nextUnit;
+        if (amount < 1024 || nextUnit === units[units.length - 1]) break;
+    }
+    return `${amount.toFixed(amount >= 10 ? 0 : 1)} ${unit}`;
+}
+
+function eventLabel(event: InboundRuntimeEvent): string {
+    switch (event.type) {
+        case "ready": return "Listener ready";
+        case "fail": return "Listener failed";
+        case "retry": return "Manual retry";
+        case "start": return "Start requested";
+        case "stop": return "Stop requested";
+        case "reload": return "Configuration reloaded";
+        default: return event.type;
+    }
 }
 
 function newInboundID(): string {
@@ -659,13 +723,109 @@ const TransportConfigEditor: FC<{
     }
 };
 
+const InboundRuntimePanel: FC<{
+    status?: InboundRuntimeStatus;
+    events: InboundRuntimeEvent[];
+    eventsLoading: boolean;
+    onRetry?: () => void;
+    retrying?: boolean;
+}> = ({ status, events, eventsLoading, onRetry, retrying }) => {
+    if (!status) {
+        return (
+            <div className="rounded-ui-lg border border-ui-border bg-ui-surface-muted p-4 text-sm text-ui-muted">
+                Runtime status is not available yet.
+            </div>
+        );
+    }
+
+    const statistics = status.statistics;
+    const canRetry = status.status === "failed" || status.status === "degraded";
+
+    return (
+        <div className="mb-4 space-y-4 rounded-ui-lg border border-ui-border bg-ui-surface-muted p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                    <Activity size={17} className="text-ui-primary" />
+                    <span className="font-semibold">Runtime status</span>
+                    <Badge variant={runtimeVariant(status.status)}>{runtimeLabel(status.status)}</Badge>
+                </div>
+                {canRetry && onRetry && (
+                    <Button size="sm" variant="outline-primary" disabled={retrying} onClick={onRetry}>
+                        {retrying ? <Spinner size="sm" /> : <RefreshCw className="mr-1" size={15} />}
+                        Retry
+                    </Button>
+                )}
+            </div>
+
+            {status.lastError && (
+                <div className="flex items-start gap-2 rounded-ui-md border border-ui-danger/30 bg-ui-danger-soft p-3 text-sm text-ui-danger">
+                    <CircleAlert className="mt-0.5 shrink-0" size={16} />
+                    <span className="break-words">{status.lastError}</span>
+                </div>
+            )}
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div><div className="text-xs text-ui-muted">Active TCP</div><div className="font-semibold">{statistics.activeTcp}</div></div>
+                <div><div className="text-xs text-ui-muted">Active UDP</div><div className="font-semibold">{statistics.activeUdp}</div></div>
+                <div><div className="text-xs text-ui-muted">TCP flows</div><div className="font-semibold">{statistics.totalTcpFlows}</div></div>
+                <div><div className="text-xs text-ui-muted">UDP flows</div><div className="font-semibold">{statistics.totalUdpFlows}</div></div>
+            </div>
+            <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-ui-muted">
+                <span><ArrowUp className="mr-1 inline text-ui-primary" size={14} />{formatBytes(statistics.uploadBytes)} uploaded</span>
+                <span><ArrowDown className="mr-1 inline text-ui-primary" size={14} />{formatBytes(statistics.downloadBytes)} downloaded</span>
+            </div>
+
+            {status.listeners.length > 0 && (
+                <div>
+                    <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-ui-muted">Listeners</div>
+                    <div className="space-y-1 text-sm">
+                        {status.listeners.map((listener) => (
+                            <div className="flex flex-wrap items-center justify-between gap-2" key={`${listener.kind}-${listener.listen ?? ""}`}>
+                                <span className="font-medium">{listener.kind}{listener.listen ? ` · ${listener.listen}` : ""}</span>
+                                <Badge variant={runtimeVariant(listener.state)}>{runtimeLabel(listener.state)}</Badge>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            <div>
+                <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-ui-muted">
+                    <CircleCheck size={14} /> Recent events
+                </div>
+                {eventsLoading ? <div className="text-sm text-ui-muted">Loading events…</div> : events.length === 0 ? (
+                    <div className="text-sm text-ui-muted">No lifecycle events recorded.</div>
+                ) : (
+                    <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
+                        {events.map((event) => (
+                            <div className="rounded-ui-md border border-ui-border bg-ui-surface px-3 py-2 text-sm" key={event.id}>
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <span className="font-medium">{eventLabel(event)}</span>
+                                    <span className="text-xs text-ui-muted">{new Date(event.createdAt * 1000).toLocaleString()}</span>
+                                </div>
+                                <div className="mt-1 flex flex-wrap gap-2 text-xs text-ui-muted">
+                                    <Badge variant={runtimeVariant(event.state)}>{runtimeLabel(event.state)}</Badge>
+                                    {event.error && <span className="break-words text-ui-danger">{event.error}</span>}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
 const InboundModal: FC<{
     show: boolean;
     id: string;
     onHide: (save?: boolean) => void;
     onDelete: () => void;
     isNew?: boolean;
-}> = ({ show, id, onHide, onDelete, isNew }) => {
+    runtime?: InboundRuntimeStatus;
+    onRetry?: () => void;
+    retrying?: boolean;
+}> = ({ show, id, onHide, onDelete, isNew, runtime, onRetry, retrying }) => {
     const ctx = useContext(GlobalToastContext);
     const [saving, setSaving] = useState(false);
     const [draft, setDraft] = useState<Inbound>(() => createDefaultInbound(id));
@@ -675,6 +835,11 @@ const InboundModal: FC<{
         shouldFetch ? `/api/v2/inbounds/${id}` : null,
         () => getInbound(id),
         { shouldRetryOnError: false, keepPreviousData: false, revalidateOnFocus: false },
+    );
+    const { data: events = [], isLoading: eventsLoading } = useSWR(
+        shouldFetch ? `/api/v2/inbounds/${id}/events` : null,
+        () => listInboundEvents(id),
+        { refreshInterval: 3000, revalidateOnFocus: true, shouldRetryOnError: false },
     );
 
     useEffect(() => {
@@ -730,6 +895,15 @@ const InboundModal: FC<{
                         <Loading />
                     ) : (
                         <SettingsBox>
+                            {!isNew && (
+                                <InboundRuntimePanel
+                                    status={runtime}
+                                    events={events}
+                                    eventsLoading={eventsLoading}
+                                    onRetry={onRetry}
+                                    retrying={retrying}
+                                />
+                            )}
                             <InboundEditor inbound={inbound} onChange={(next) => {
                                 setDraft(next);
                                 if (!isNew) void mutate(next, false);
@@ -757,9 +931,15 @@ const InboundModal: FC<{
     );
 };
 
-const InboundItem: FC<{ item: Inbound }> = ({ item }) => {
+const InboundItem: FC<{
+    item: Inbound;
+    runtime?: InboundRuntimeStatus;
+    onToggle: (item: Inbound) => void;
+    toggling: boolean;
+}> = ({ item, runtime, onToggle, toggling }) => {
+    const status = runtime?.status ?? (item.enabled ? "starting" : "disabled");
     return (
-        <>
+        <div className="flex min-w-0 flex-1 items-center gap-3">
             <div className="grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(180px,0.38fr)_minmax(0,1fr)] md:items-center">
                 <div className="flex min-w-0 items-center">
                     <div className="mr-4 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600/10 text-ui-primary">
@@ -767,9 +947,8 @@ const InboundItem: FC<{ item: Inbound }> = ({ item }) => {
                     </div>
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <span className="truncate font-medium">{item.name || item.id}</span>
-                        <Badge variant={item.enabled ? "success" : "muted"} className="shrink-0">
-                            {item.enabled ? "Enabled" : "Disabled"}
-                        </Badge>
+                        <Badge variant={runtimeVariant(status)} className="shrink-0">{runtimeLabel(status)}</Badge>
+                        {item.enabled && runtime?.lastError && <CircleAlert className="text-ui-danger" size={15} />}
                     </div>
                 </div>
                 <div className="grid min-w-0 gap-2 text-xs text-ui-muted sm:grid-cols-2 lg:grid-cols-4">
@@ -789,10 +968,32 @@ const InboundItem: FC<{ item: Inbound }> = ({ item }) => {
                         <span className="mr-1 text-ui-muted/70">Transport</span>
                         <span className="truncate font-mono font-medium text-ui-fg">{transportLabel(item) || "-"}</span>
                     </div>
+                    {runtime && (
+                        <div className="min-w-0 sm:col-span-2 lg:col-span-4">
+                            <span className="mr-1 text-ui-muted/70">Traffic</span>
+                            <span className="font-medium text-ui-fg">
+                                TCP {runtime.statistics.activeTcp}/{runtime.statistics.totalTcpFlows}
+                                <span className="mx-1 text-ui-muted">·</span>
+                                UDP {runtime.statistics.activeUdp}/{runtime.statistics.totalUdpFlows}
+                                <span className="mx-1 text-ui-muted">·</span>
+                                ↑ {formatBytes(runtime.statistics.uploadBytes)} / ↓ {formatBytes(runtime.statistics.downloadBytes)}
+                            </span>
+                        </div>
+                    )}
                 </div>
             </div>
-            <ChevronRight className="text-ui-muted opacity-25" size={16} />
-        </>
+            <div onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}>
+                <div className="flex min-w-[92px] items-center justify-end gap-2 text-xs text-ui-muted">
+                    <span>{toggling ? "Applying…" : item.enabled ? "Enabled" : "Disabled"}</span>
+                    <Switch
+                        checked={item.enabled}
+                        onCheckedChange={() => onToggle(item)}
+                        disabled={toggling}
+                    />
+                </div>
+            </div>
+            <ChevronRight className="shrink-0 text-ui-muted opacity-25" size={16} />
+        </div>
     );
 };
 
@@ -880,9 +1081,17 @@ export default function InboudComponent() {
         () => listInbounds({ page, pageSize: PAGE_SIZE }),
         { keepPreviousData: true },
     );
+    const { data: runtimeStatuses = [], mutate: mutateStatuses } = useSWR(
+        "/api/v2/inbounds/status",
+        listInboundStatuses,
+        { refreshInterval: 3000, revalidateOnFocus: true },
+    );
+    const [togglingID, setTogglingID] = useState<string>();
+    const [retryingID, setRetryingID] = useState<string>();
 
     const apiError = errorOf(error);
     const items = useMemo(() => data?.items ?? [], [data?.items]);
+    const statusByID = useMemo(() => new Map(runtimeStatuses.map((status) => [status.id, status])), [runtimeStatuses]);
 
     if (apiError) return <ErrorDisplay statusCode={apiError.code} title={apiError.msg} />;
     if (isLoading || data === undefined) return <Loading />;
@@ -894,6 +1103,7 @@ export default function InboudComponent() {
                 ctx.Info("Removed successful");
                 setShowdata((prev) => ({ ...prev, show: false }));
                 void mutate();
+                void mutateStatuses();
             })
             .catch((err: unknown) => {
                 const apiErr = errorOf(err);
@@ -909,6 +1119,35 @@ export default function InboudComponent() {
         setShowdata({ show: true, id, new: true });
     };
 
+    const toggleInbound = (item: Inbound) => {
+        setTogglingID(item.id);
+        saveInbound(normalizeInbound({ ...item, enabled: !item.enabled }))
+            .then(async () => {
+                ctx.Info(item.enabled ? "Inbound stopping" : "Inbound starting");
+                await Promise.all([mutate(), mutateStatuses()]);
+            })
+            .catch((err: unknown) => {
+                const apiErr = errorOf(err);
+                ctx.Error(apiErr?.msg ?? "Update failed");
+            })
+            .finally(() => setTogglingID(undefined));
+    };
+
+    const retryCurrentInbound = () => {
+        const id = showdata.id;
+        setRetryingID(id);
+        retryInbound(id)
+            .then(async () => {
+                ctx.Info("Inbound retry requested");
+                await mutateStatuses();
+            })
+            .catch((err: unknown) => {
+                const apiErr = errorOf(err);
+                ctx.Error(apiErr?.msg ?? "Retry failed");
+            })
+            .finally(() => setRetryingID(undefined));
+    };
+
     return (
         <MainContainer>
             <InboundModal
@@ -916,10 +1155,16 @@ export default function InboudComponent() {
                 id={showdata.id}
                 isNew={showdata.new}
                 onHide={(save) => {
-                    if (save) void mutate();
+                    if (save) {
+                        void mutate();
+                        void mutateStatuses();
+                    }
                     setShowdata((prev) => ({ ...prev, show: false }));
                 }}
                 onDelete={deleteCurrentInbound}
+                runtime={statusByID.get(showdata.id)}
+                onRetry={retryCurrentInbound}
+                retrying={retryingID === showdata.id}
             />
 
             <InboundConfigCard />
@@ -933,7 +1178,14 @@ export default function InboudComponent() {
                 onPageChange={setPage}
                 items={items}
                 getKey={(item) => item.id}
-                renderListItem={(item) => <InboundItem item={item} />}
+                renderListItem={(item) => (
+                    <InboundItem
+                        item={item}
+                        runtime={statusByID.get(item.id)}
+                        onToggle={toggleInbound}
+                        toggling={togglingID === item.id}
+                    />
+                )}
                 onClickItem={(item) => setShowdata({ show: true, id: item.id, new: false })}
                 header={
                     <div className="flex w-full items-center justify-between gap-3">
