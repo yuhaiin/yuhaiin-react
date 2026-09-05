@@ -23,7 +23,7 @@
         "typescript": "^7.0.2",
         "uplot": "^1.6.32",
         "usehooks-ts": "^3.1.1",
-        "virtua": "^0.50.0",
+        "virtua": "^0.51.0",
         "wouter": "^3.10.0"
     },
     "scripts": {
