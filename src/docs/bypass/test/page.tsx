@@ -64,20 +64,20 @@ function ResultView({ value }: { value: RuleTestResponse }) {
     return (
         <div className="grid gap-4">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-ui-lg border border-ui-border bg-ui-list px-4 py-3">
-                    <div className="mb-1 text-xs font-bold uppercase tracking-[0.5px] text-ui-muted">Mode</div>
+                <div className="rounded-ui-lg border border-ui-border bg-ui-surface px-4 py-3">
+                    <div className="mb-1 text-xs font-medium text-ui-muted">Mode</div>
                     <Badge variant="info" className="text-sm">{displayValue(value.mode)}</Badge>
                 </div>
-                <div className="rounded-ui-lg border border-ui-border bg-ui-list px-4 py-3">
-                    <div className="mb-1 text-xs font-bold uppercase tracking-[0.5px] text-ui-muted">Tag</div>
+                <div className="rounded-ui-lg border border-ui-border bg-ui-surface px-4 py-3">
+                    <div className="mb-1 text-xs font-medium text-ui-muted">Tag</div>
                     <div className="truncate font-semibold text-ui-heading">{displayValue(value.tag)}</div>
                 </div>
-                <div className="rounded-ui-lg border border-ui-border bg-ui-list px-4 py-3">
-                    <div className="mb-1 text-xs font-bold uppercase tracking-[0.5px] text-ui-muted">Resolver</div>
+                <div className="rounded-ui-lg border border-ui-border bg-ui-surface px-4 py-3">
+                    <div className="mb-1 text-xs font-medium text-ui-muted">Resolver</div>
                     <div className="truncate font-semibold text-ui-heading">{displayValue(value.resolver)}</div>
                 </div>
-                <div className="rounded-ui-lg border border-ui-border bg-ui-list px-4 py-3">
-                    <div className="mb-1 text-xs font-bold uppercase tracking-[0.5px] text-ui-muted">After Address</div>
+                <div className="rounded-ui-lg border border-ui-border bg-ui-surface px-4 py-3">
+                    <div className="mb-1 text-xs font-medium text-ui-muted">After Address</div>
                     <div className="truncate font-mono font-semibold text-ui-heading">{displayValue(value.afterAddr)}</div>
                 </div>
             </div>

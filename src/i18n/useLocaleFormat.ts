@@ -5,14 +5,20 @@ export function useLocaleFormat() {
     const { i18n } = useTranslation();
     const locale = i18n.language || 'en';
 
-    return useMemo(() => ({
-        dateTime: (date: Date) => new Intl.DateTimeFormat(locale, {
+    return useMemo(() => {
+        const dateTimeFormat = new Intl.DateTimeFormat(locale, {
             dateStyle: 'medium',
             timeStyle: 'medium',
-        }).format(date),
-        time: (date: Date) => new Intl.DateTimeFormat(locale, {
+        });
+        const timeFormat = new Intl.DateTimeFormat(locale, {
             timeStyle: 'medium',
-        }).format(date),
-        number: (value: number) => new Intl.NumberFormat(locale).format(value),
-    }), [locale]);
+        });
+        const numberFormat = new Intl.NumberFormat(locale);
+
+        return {
+            dateTime: (date: Date) => dateTimeFormat.format(date),
+            time: (date: Date) => timeFormat.format(date),
+            number: (value: number) => numberFormat.format(value),
+        };
+    }, [locale]);
 }

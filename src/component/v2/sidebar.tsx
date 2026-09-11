@@ -21,7 +21,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
             <motion.div
                 ref={ref}
                 className={clsx(
-                    "fixed z-[1050] top-sidebar-gap h-[calc(100vh-2*var(--sidebar-gap))] w-[260px] bg-sidebar-bg text-sidebar-color rounded-sidebar-radius border border-sidebar-border shadow-sidebar py-6 overflow-y-auto backdrop-filter-none [&::-webkit-scrollbar]:w-0",
+                    "fixed z-[1050] top-sidebar-gap h-[calc(100vh-2*var(--sidebar-gap))] w-[260px] bg-sidebar-bg text-sidebar-color rounded-sidebar-radius border border-sidebar-border shadow-sidebar py-5 overflow-y-auto backdrop-filter-none [&::-webkit-scrollbar]:w-0",
                     // Mobile specific overrides
                     "lg:w-[260px] w-[280px] max-w-[calc(100vw-32px)] lg:max-w-none lg:shadow-sidebar shadow-none lg:m-0",
                     "left-[-300px] lg:left-sidebar-gap",
@@ -63,7 +63,7 @@ Sidebar.displayName = "Sidebar";
 /* -------------------------------------------------------------------------- */
 
 const SidebarNav = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
-    <nav className={clsx("flex flex-col px-4 gap-[6px]", className)} ref={ref} {...props} />
+    <nav className={clsx("flex flex-col px-3.5 gap-1", className)} ref={ref} {...props} />
 ));
 SidebarNav.displayName = "SidebarNav";
 
@@ -81,9 +81,9 @@ const SidebarItem = React.forwardRef<HTMLAnchorElement, SidebarItemProps>(({ cla
         <a
             ref={ref}
             className={clsx(
-                "flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-sidebar-color rounded-ui-md transition-all duration-200 border-none no-underline cursor-pointer bg-transparent outline-none focus:outline-none",
-                "hover:bg-sidebar-hover hover:text-sidebar-active [&>svg]:hover:scale-[1.15] [&>svg]:hover:-rotate-[5deg]",
-                active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold shadow-sidebar-active",
+                "flex items-center w-full px-3.5 py-2.5 text-sm font-medium text-sidebar-color rounded-ui-md transition-colors duration-150 border-none no-underline cursor-pointer bg-transparent outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar-bg",
+                "hover:bg-sidebar-hover hover:text-sidebar-active",
+                active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold",
                 className
             )}
             {...props}
@@ -133,9 +133,9 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
                 <button
                     type="button"
                     className={clsx(
-                        "group flex items-center w-full px-[18px] py-[12px] text-[0.95rem] font-medium text-sidebar-color rounded-ui-md transition-all duration-200 border-none cursor-pointer bg-transparent outline-none focus:outline-none",
-                        "hover:bg-sidebar-hover hover:text-sidebar-active [&>span>svg]:hover:scale-[1.15] [&>span>svg]:hover:-rotate-[5deg]",
-                        active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold shadow-sidebar-active"
+                        "group flex items-center w-full px-3.5 py-2.5 text-sm font-medium text-sidebar-color rounded-ui-md transition-colors duration-150 border-none cursor-pointer bg-transparent outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar-bg",
+                        "hover:bg-sidebar-hover hover:text-sidebar-active",
+                        active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold"
                     )}
                 >
                     {icon && (
@@ -155,7 +155,7 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
             </CollapsiblePrimitive.Trigger>
 
             <CollapsiblePrimitive.Content className="overflow-hidden data-[state=open]:animate-slideDown data-[state=closed]:animate-slideUp">
-                <div className="relative ml-[28px] py-[6px] border-l border-sidebar-border">
+                <div className="relative ml-6 py-1 border-l border-sidebar-border">
                     {children}
                 </div>
             </CollapsiblePrimitive.Content>
@@ -177,12 +177,12 @@ const SidebarSubLink = React.forwardRef<HTMLAnchorElement, SidebarSubLinkProps>(
         <a
             ref={ref}
             className={clsx(
-                "relative flex items-center w-full pl-[24px] pr-[12px] py-[8px] text-[0.85rem] text-sidebar-color opacity-80 transition-[color,background-color,opacity,padding] duration-200 no-underline cursor-pointer bg-transparent border-none rounded-[8px]",
-                "hover:opacity-100 hover:text-sidebar-active hover:bg-sidebar-hover hover:pl-[28px] hover:pr-[8px]",
+                "relative flex items-center w-full pl-5 pr-3 py-2 text-[0.8125rem] text-sidebar-color opacity-80 transition-[color,background-color,opacity] duration-150 no-underline cursor-pointer bg-transparent border-none rounded-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar-bg",
+                "hover:opacity-100 hover:text-sidebar-active hover:bg-sidebar-hover",
                 // Active state
-                active && "!text-sidebar-active opacity-100 font-semibold hover:pl-[24px] hover:pr-[12px]",
+                active && "!text-sidebar-active opacity-100 font-semibold",
                 // Dot indicator
-                active && "before:content-[''] before:absolute before:left-[-4px] before:top-1/2 before:-translate-y-1/2 before:w-[7px] before:h-[7px] before:rounded-full before:bg-sidebar-bg before:border-2 before:border-sidebar-active before:shadow-sidebar-active before:z-10",
+                active && "before:content-[''] before:absolute before:left-[-3px] before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-4 before:rounded-full before:bg-sidebar-active before:z-10",
                 className
             )}
             {...props}
@@ -198,7 +198,7 @@ SidebarSubLink.displayName = "SidebarSubLink";
 /* -------------------------------------------------------------------------- */
 
 const SidebarDivider = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-    <div className={clsx("border-t border-divider my-2 w-full", className)} {...props} />
+    <div className={clsx("border-t border-divider my-1.5 w-full", className)} {...props} />
 );
 
 export {

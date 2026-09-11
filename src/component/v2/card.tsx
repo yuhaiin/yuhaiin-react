@@ -26,7 +26,7 @@ export const Card: FC<{
             "flex flex-col relative overflow-hidden",
             ui.card,
             interactive && ui.cardInteractive,
-            !noMargin && (density === "compact" ? "mb-4" : "mb-8"),
+            !noMargin && (density === "compact" ? "mb-3" : "mb-6"),
             className
         )}
         style={style}
@@ -36,13 +36,13 @@ export const Card: FC<{
 );
 
 export const CardHeader: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
-    <div className={clsx("flex flex-wrap items-center justify-between gap-3 px-3 py-3 border-b border-ui-border", className)} style={style}>
+    <div className={clsx("flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-ui-border", className)} style={style}>
         {children}
     </div>
 );
 
 export const CardBody: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties, density?: Density }> = ({ children, className, style, density = "normal" }) => (
-    <div className={clsx("grow", density === "compact" ? "p-4" : "p-6", className)} style={style}>
+    <div className={clsx("grow", density === "compact" ? "p-4" : "p-5", className)} style={style}>
         {children}
     </div>
 );
@@ -142,10 +142,10 @@ export function CardList<T>({
             <motion.div
                 key={key}
                 layout
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 10, transition: { duration: 0.15 } }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, transition: { duration: 0.12 } }}
+                transition={{ duration: 0.15 }}
             >
                 {item}
             </motion.div>
@@ -209,7 +209,7 @@ export const ErrorBox: FC<{ msgs: string[] }> = ({ msgs }) => {
 
     if (msgs.length === 0) return null;
     return (
-        <div className="flex items-start gap-3 p-4 rounded-ui-sm bg-ui-danger-soft border-0 text-ui-danger">
+        <div className="flex items-start gap-3 p-4 rounded-ui-sm bg-ui-danger-soft border border-ui-danger/25 text-ui-danger">
             <TriangleAlert className="mt-1" size={20} />
             <div className="grow">
                 <h6 className="font-bold mb-2">{t('state.configurationError', { defaultValue: 'Configuration Error' })}</h6>
@@ -350,10 +350,10 @@ export function CardRowList<T>({
             <motion.div
                 key={key}
                 layout
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8, transition: { duration: 0.15 } }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, transition: { duration: 0.12 } }}
+                transition={{ duration: 0.15 }}
             >
                 {item}
             </motion.div>
@@ -484,9 +484,9 @@ export const IconBox: FC<{
                 <Icon />
             </div>
             {title &&
-                <div className={clsx("overflow-hidden", textClassName)} title={`${title}${description ? ` - ${description}` : ''}`}>
+                <div className={clsx("min-w-0", textClassName)} title={`${title}${description ? ` - ${description}` : ''}`}>
                     <h5 className="mb-0 font-bold truncate text-ui-heading">{title}</h5>
-                    <small className="block text-ui-muted truncate">{description}</small>
+                    <small className="block text-ui-muted leading-snug sm:truncate">{description}</small>
                 </div>
             }
         </div>
@@ -535,7 +535,7 @@ export const FilterSearch: FC<{
                 placeholder={t('state.search')}
                 onKeyDown={(e) => e.key === 'Enter' && onEnter(filterInput.toLowerCase())}
                 className={clsx(
-                    "w-full bg-ui-surface-muted border border-ui-border rounded-full focus:bg-ui-bg focus:border-ui-primary focus:outline-none transition-colors",
+                    "w-full bg-ui-surface-muted border border-ui-border rounded-ui-md focus:bg-ui-bg focus:border-ui-primary focus:outline-none transition-colors",
                     size === 'sm' ? "h-8 pl-10 text-sm" : "h-10 pl-12",
                     inputClassName
                 )}

@@ -235,7 +235,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                 7  // left
             ],
             series: [
-                { value: (_, rawValue) => data.labels[rawValue] || "" },
+                { value: (_, rawValue) => latestLabelsRef.current[rawValue] || "" },
                 {
                     label: t('upload'),
                     stroke: palette.uploadStroke,

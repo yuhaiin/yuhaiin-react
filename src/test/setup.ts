@@ -1,5 +1,7 @@
 const values = new Map<string, string>();
 
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
 const storage: Storage = {
     get length() { return values.size; },
     clear() { values.clear(); },

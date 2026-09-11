@@ -195,7 +195,7 @@ function ConfigComponent() {
                     <Button
                         variant="primary"
                         size="icon"
-                        className="h-12 w-12 rounded-full shadow-xl"
+                        className="h-12 w-12 rounded-full shadow-ui-elevated"
                         disabled={saving}
                         onClick={handleSave}
                         aria-label="Save all settings"

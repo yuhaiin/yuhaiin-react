@@ -2,7 +2,7 @@
 
 import { getAllHistory } from "@/api/connections"
 import { Button } from "@/component/v2/button"
-import { CardList, FilterSearch, IconBadge, MainContainer, SettingLabel } from "@/component/v2/card"
+import { CardList, FilterSearch, MainContainer, SettingLabel } from "@/component/v2/card"
 import { DataListItem } from "@/component/v2/datalist"
 import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown"
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal"
@@ -15,7 +15,7 @@ import React, { FC, useMemo, useState } from "react"
 import useSWR from "swr"
 import Loading from "../../../component/v2/loading"
 import { NodeModal } from "../../node/modal"
-import { ConnectionInfo } from "../components"
+import { ConnectionBadge, ConnectionInfo } from "../components"
 
 function formatProtocolLabel(value?: string) {
     if (!value) return "Unknown";
@@ -26,21 +26,21 @@ const ListItem: FC<{ data: AllHistory }> = React.memo(({ data }) => {
     return (
         <div className="flex min-w-0 w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 w-full items-center gap-3 sm:w-auto sm:flex-1">
-                <div className="flex items-center justify-center bg-ui-primary-soft text-ui-primary rounded-full shrink-0" style={{ width: "42px", height: "42px" }}>
-                    {data.connection.network.connType.startsWith("udp") ? <Radio className="text-xl" /> : <ArrowLeftRight className="text-xl" />}
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ui-md border border-ui-primary/20 bg-ui-primary-soft text-ui-primary">
+                    {data.connection.network.connType.startsWith("udp") ? <Radio size={17} /> : <ArrowLeftRight size={17} />}
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
                     <span className="truncate text-base font-bold" title={data.connection.addr}>{data.connection.addr || "-"}</span>
-                    <small className="truncate font-mono text-sm text-ui-muted opacity-75">
+                    <small className="truncate font-mono text-xs text-ui-muted">
                         ID: #{data.connection.id} • {formatProtocolLabel(data.connection.network.connType)}
                     </small>
                 </div>
             </div>
             <div className="flex min-w-0 flex-wrap items-center gap-2 pl-[54px] sm:shrink-0 sm:pl-0">
-                <IconBadge icon={ShieldCheck} text={formatProtocolLabel(data.connection.mode)} color="info" />
-                <IconBadge icon={RefreshCw} text={data.count} color="success" />
-                <IconBadge icon={Clock} text={new Date(data.time).toLocaleTimeString()} color="secondary" />
-                <div className="text-ui-muted opacity-25 ml-2 hidden md:block"><ChevronRight /></div>
+                <ConnectionBadge icon={ShieldCheck} text={formatProtocolLabel(data.connection.mode)} />
+                <ConnectionBadge icon={RefreshCw} text={`${data.count} events`} tone="success" />
+                <ConnectionBadge icon={Clock} text={new Date(data.time).toLocaleTimeString()} tone="neutral" />
+                <ChevronRight size={17} className="ml-1 hidden text-ui-muted/50 md:block" />
             </div>
         </div>
     );
@@ -58,7 +58,7 @@ function History() {
 
     const values = useMemo(() => {
         const items = data?.items ?? [];
-        return items
+        return [...items]
             .filter(v => {
                 if (networkFilter !== "all" && v.connection.network.connType !== networkFilter) return false;
                 if (!filter) return true;
@@ -85,7 +85,7 @@ function History() {
     const paginatedItems = values.slice((page - 1) * pageSize, page * pageSize);
 
     return (
-        <MainContainer>
+        <MainContainer className="flex min-h-full min-w-0 flex-col">
             <NodeModal
                 show={nodeModal.show}
                 id={nodeModal.id}
@@ -111,15 +111,15 @@ function History() {
                 </ModalContent>
             </Modal>
 
-            <div className="flex flex-wrap justify-between items-end mb-4 gap-3">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
-                    <h4 className="font-bold mb-1">Connection History</h4>
-                    <div className="text-ui-muted flex items-center text-sm">
-                        <Info className="mr-2" />
+                    <h1 className="mt-1 text-xl font-semibold leading-tight text-ui-heading sm:text-2xl">Connection history</h1>
+                    <div className="mt-1 flex items-center text-xs text-ui-muted">
+                        <Info className="mr-1.5" size={14} />
                         <span>Showing {values.length} historical records</span>
                     </div>
                 </div>
-                <div className="flex flex-wrap gap-2 justify-end items-center">
+                <div className="flex flex-wrap items-center justify-end gap-2 rounded-ui-lg border border-ui-border bg-ui-surface-muted/50 px-2 py-2">
                     <FilterSearch onEnter={setFilter} size="sm" />
                     <Dropdown>
                         <DropdownTrigger asChild>

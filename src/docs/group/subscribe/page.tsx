@@ -97,7 +97,12 @@ function Subscribe() {
                 void mutate();
             })
             .catch((err) => ctx.Error(`Update failed ${err.code ?? 500}| ${err.msg ?? err}`))
-            .finally(() => setUpdating(prev => ({ ...prev, [name]: false })));
+            .finally(() => setUpdating(prev => {
+                if (!(name in prev)) return prev;
+                const next = { ...prev };
+                delete next[name];
+                return next;
+            }));
     };
 
     const handleDelete = (name: string) => {

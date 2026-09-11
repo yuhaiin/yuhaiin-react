@@ -135,7 +135,7 @@ const ResolverTile: FC<{ item: Resolver; onClick: () => void }> = ({ item, onCli
                             {item.id}
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                            <Badge variant={visual.badge} pill className="px-2 py-0.5 text-[0.65rem] uppercase tracking-wide">
+                            <Badge variant={visual.badge} pill className="px-2 py-0.5 text-[0.65rem] font-medium">
                                 {item.type}
                             </Badge>
                             {item.system && (
@@ -149,7 +149,7 @@ const ResolverTile: FC<{ item: Resolver; onClick: () => void }> = ({ item, onCli
             </div>
 
             <div className="mt-4 min-w-0 flex-1">
-                <div className="text-[11px] font-medium uppercase tracking-wide text-ui-muted/80">Endpoint</div>
+                <div className="text-xs font-medium text-ui-muted">Endpoint</div>
                 <div className="mt-1 break-all font-mono text-[12.5px] font-medium leading-relaxed text-ui-fg" title={host}>
                     {host}
                 </div>

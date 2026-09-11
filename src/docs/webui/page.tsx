@@ -132,7 +132,7 @@ function ApiHostsCard() {
                         type="button"
                         onClick={() => void selectHost("")}
                         className={clsx(
-                            "flex w-full items-center gap-3 rounded-ui-lg border px-3 py-3 text-left transition-colors",
+                            "flex w-full items-center gap-3 rounded-ui-lg border px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus",
                             active === ""
                                 ? "border-ui-primary/40 bg-ui-primary-soft/50"
                                 : "border-ui-border bg-ui-surface hover:border-ui-primary/25 hover:bg-ui-surface-muted/50"
@@ -177,7 +177,7 @@ function ApiHostsCard() {
                                 <button
                                     type="button"
                                     onClick={() => void selectHost(host)}
-                                    className="flex min-w-0 flex-1 items-center gap-3 rounded-ui-md px-1 py-1 text-left"
+                                    className="flex min-w-0 flex-1 items-center gap-3 rounded-ui-md px-1 py-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus"
                                 >
                                     <div className={clsx(
                                         "flex h-9 w-9 shrink-0 items-center justify-center rounded-ui-md border",

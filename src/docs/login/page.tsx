@@ -27,7 +27,7 @@ export default function LoginPage() {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-ui-bg p-4">
-            <Card className="w-full max-w-md !mb-0 shadow-xl">
+            <Card className="w-full max-w-md !mb-0 shadow-ui-card">
                 <CardHeader>
                     <CardTitle className="text-xl">
                         <LogIn className="mr-2" size={24} />
@@ -64,7 +64,7 @@ export default function LoginPage() {
                         </div>
                     </CardBody>
                     <CardFooter className="flex justify-end pt-2">
-                        <Button type="submit" className="w-full !rounded-lg h-10">
+                        <Button type="submit" className="h-field w-full">
                             {t('signIn')}
                         </Button>
                     </CardFooter>

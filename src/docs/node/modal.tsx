@@ -9,6 +9,7 @@ import { SettingLabel } from "@/component/v2/card";
 import { useClipboard } from "@/component/v2/clipboard";
 import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
 import { Select, SettingInputBytes, SettingInputVertical, SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
+import { Textarea } from "@/component/v2/input";
 import { InputBytesList, InputList } from "@/component/v2/listeditor";
 import Loading, { Error as ErrorDisplay } from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
@@ -616,6 +617,8 @@ function protocolForm(protocol: NodeProtocol, onChange: (value: NodeProtocol) =>
             return <TLSConfigForm config={protocol.tls} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "wireguard":
             return <WireguardForm config={protocol.wireguard} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
+        case "openvpn":
+            return <OpenvpnForm config={protocol.openvpn} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "tailscale":
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -699,6 +702,25 @@ const NumberField: FC<{ label: string; value: unknown; disabled?: boolean; onCha
 
 const BoolField: FC<{ label: string; value: unknown; disabled?: boolean; onChange: (value: boolean) => void }> = ({ label, value, disabled, onChange }) => (
     <SwitchCard label={label} checked={boolValue(value)} onCheckedChange={onChange} disabled={disabled} />
+);
+
+const TextareaField: FC<{
+    label: string;
+    value: unknown;
+    disabled?: boolean;
+    placeholder?: string;
+    onChange: (value: string) => void;
+}> = ({ label, value, disabled, placeholder, onChange }) => (
+    <div className="relative mb-4 min-w-0 max-w-full">
+        <SettingLabel className="mb-2 block">{label}</SettingLabel>
+        <Textarea
+            className="min-h-[280px] font-mono text-sm"
+            value={stringValue(value)}
+            disabled={disabled}
+            placeholder={placeholder}
+            onChange={(event) => onChange(event.target.value)}
+        />
+    </div>
 );
 
 type FixedAddress = {
@@ -920,6 +942,35 @@ const WireguardForm: FC<{
         </div>
     );
 };
+
+const OpenvpnForm: FC<{
+    config: NodeProtocolConfig<"openvpn">;
+    editable: boolean;
+    onChange: (value: Partial<NodeProtocolConfig<"openvpn">>) => void;
+}> = ({ config, editable, onChange }) => (
+    <div className="grid gap-4">
+        <TextareaField
+            label="OpenVPN Profile (.ovpn)"
+            value={config.profile}
+            disabled={!editable}
+            placeholder={"client\ndev tun\nproto udp\nremote vpn.example.com 1194\n..."}
+            onChange={(profile) => onChange({ profile })}
+        />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <StringField label="Username" value={config.username} disabled={!editable} onChange={(username) => onChange({ username })} />
+            <SettingInputVertical
+                label="Password"
+                type="password"
+                value={stringValue(config.password)}
+                disabled={!editable}
+                onChange={(password) => onChange({ password })}
+            />
+        </div>
+        <div className="text-xs text-ui-muted">
+            The profile is passed directly to OpenVPN Core. Certificate-based/autologin profiles do not require username or password. UDP transport profiles are currently supported.
+        </div>
+    </div>
+);
 
 const NestedProtocolEditor: FC<{
     label: string;

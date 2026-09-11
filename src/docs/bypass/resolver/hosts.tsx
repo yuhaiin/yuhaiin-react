@@ -75,7 +75,7 @@ export const Hosts: FC = () => {
                             </InputGroup>
                         ))}
 
-                    <div className="pt-4 mt-2 border-t border-gray-500/10">
+                    <div className="mt-2 border-t border-ui-border/70 pt-4">
                         <InputGroup>
                             <Input
                                 value={newHosts.key}

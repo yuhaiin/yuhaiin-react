@@ -154,7 +154,7 @@ const DefinedListTile: FC<{ item: ListItem; onClick: () => void }> = ({ item, on
                             {item.name}
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                            <Badge variant={hasError ? "danger" : visual.badge} pill className="px-2 py-0.5 text-[0.65rem] uppercase tracking-wide">
+                            <Badge variant={hasError ? "danger" : visual.badge} pill className="px-2 py-0.5 text-[0.65rem] font-medium">
                                 {item.type || "list"}
                             </Badge>
                             <Badge variant={remote ? "info" : "muted"} pill className="px-2 py-0.5 text-[0.65rem]">
@@ -174,7 +174,7 @@ const DefinedListTile: FC<{ item: ListItem; onClick: () => void }> = ({ item, on
             </div>
 
             <div className="mt-4 min-w-0 flex-1">
-                <div className="text-[11px] font-medium uppercase tracking-wide text-ui-muted/80">Preview</div>
+                <div className="text-xs font-medium text-ui-muted">Preview</div>
                 <div className="mt-1 break-all font-mono text-[12.5px] font-medium leading-relaxed text-ui-fg" title={item.preview || undefined}>
                     {preview}
                 </div>
@@ -323,9 +323,15 @@ function ListConfigCard() {
             .finally(() => setSaving(false));
     };
 
-    const lastSync = data?.lastRefreshTime && data.lastRefreshTime !== "0"
-        ? new Date(Number(data.lastRefreshTime) * 1000).toLocaleString()
+    const refreshTimestamp = Number(data?.lastRefreshTime);
+    const refreshDate = Number.isFinite(refreshTimestamp) && refreshTimestamp > 0
+        ? new Date(refreshTimestamp * 1000)
+        : undefined;
+    const lastSync = refreshDate && !Number.isNaN(refreshDate.getTime())
+        ? refreshDate.toLocaleString()
         : "Never";
+    const refreshMinutes = Number(data?.refreshInterval ?? 0) / 60;
+    const refreshHours = Number.isFinite(refreshMinutes) ? Math.max(0, Math.floor(refreshMinutes)) : 0;
 
     return (
         <Card className="mb-4">
@@ -340,7 +346,7 @@ function ListConfigCard() {
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <SettingRangeVertical
                             label="Auto-fetch Interval"
-                            value={Math.floor(Number(data.refreshInterval || "0") / 60)}
+                            value={refreshHours}
                             min={0}
                             max={24 * 30}
                             step={1}

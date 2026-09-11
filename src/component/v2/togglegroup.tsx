@@ -14,7 +14,7 @@ const ToggleGroup = ({ className, children, value, noSlide, ...props }: React.Co
 
     return (
         <ToggleGroupPrimitive.Root
-            className={clsx("inline-flex bg-transparent rounded-full", className)}
+            className={clsx("inline-flex bg-transparent rounded-ui-md", className)}
             value={value as never}
             {...props}
         >
@@ -44,10 +44,10 @@ const ToggleItem = ({ className, children, value, ...props }: React.ComponentPro
     return (
         <ToggleGroupPrimitive.Item
             className={clsx(
-                "bg-transparent text-sidebar-color border border-sidebar-border py-[6px] px-[12px] text-[0.875rem] font-medium cursor-pointer transition-all duration-200 flex items-center justify-center -mr-px whitespace-nowrap",
+                "bg-transparent text-sidebar-color border border-sidebar-border py-2 px-3 text-sm font-medium cursor-pointer transition-colors duration-150 flex items-center justify-center -mr-px whitespace-nowrap",
                 "first:rounded-l-ui-md last:rounded-r-ui-md last:mr-0",
-                "hover:!bg-sidebar-hover hover:z-10",
-                "data-[state=on]:bg-transparent data-[state=on]:text-sidebar-active data-[state=on]:border-sidebar-active data-[state=on]:z-20 data-[state=on]:shadow-none data-[state=on]:font-semibold",
+                "hover:!bg-sidebar-hover",
+                "data-[state=on]:bg-transparent data-[state=on]:text-sidebar-active data-[state=on]:border-sidebar-active data-[state=on]:font-semibold",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:z-30",
                 className
             )}
@@ -64,12 +64,12 @@ const ToggleItem = ({ className, children, value, ...props }: React.ComponentPro
                         backgroundColor: 'var(--sidebar-active-bg)', // Use CSS var or fallback
                         borderRadius: 'inherit',
                         zIndex: -1,
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                        boxShadow: 'none'
                     }}
                     initial={context.noSlide ? { opacity: 0, scale: 0.95 } : undefined}
                     animate={context.noSlide ? { opacity: 1, scale: 1 } : undefined}
                     exit={context.noSlide ? { opacity: 0, scale: 0.95 } : undefined}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    transition={{ duration: 0.12, ease: "easeOut" }}
                 />
             )}
             <span style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

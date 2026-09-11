@@ -6,5 +6,9 @@
   "general": {
     "title": "一般設定",
     "description": "ネットワークとシステム連携"
+  },
+  "log": {
+    "empty": "ログエントリを待機中…",
+    "noSearchResults": "検索に一致するログエントリはありません。"
   }
 }

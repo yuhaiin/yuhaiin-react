@@ -82,6 +82,7 @@ export function useClipboard({
     const [fallbackValue, setFallbackValue] = useState("");
     const fallbackTextareaRef = useRef<HTMLTextAreaElement | null>(null);
     const copyTimeoutRef = useRef<number | null>(null);
+    const mountedRef = useRef(false);
 
     const stablizedOnCopyError = useStableHandler<[e: Error], void>(onCopyError ?? (() => undefined));
 
@@ -90,7 +91,10 @@ export function useClipboard({
             clearTimeout(copyTimeoutRef.current);
         }
         if (isCopied) {
-            copyTimeoutRef.current = window.setTimeout(() => setCopied(false), timeout);
+            copyTimeoutRef.current = window.setTimeout(() => {
+                copyTimeoutRef.current = null;
+                setCopied(false);
+            }, timeout);
         }
         setCopied(isCopied);
     }, [timeout]);
@@ -161,15 +165,28 @@ export function useClipboard({
         };
     }, [fallbackValue, resizeFallbackTextarea, selectFallbackText]);
 
+    useEffect(() => {
+        mountedRef.current = true;
+        return () => {
+            mountedRef.current = false;
+            if (copyTimeoutRef.current) {
+                window.clearTimeout(copyTimeoutRef.current);
+                copyTimeoutRef.current = null;
+            }
+        };
+    }, []);
+
     const copy = useCallback(async (valueToCopy: string) => {
         try {
             if ('clipboard' in navigator) {
                 await navigator.clipboard.writeText(valueToCopy);
+                if (!mountedRef.current) return;
                 handleCopyResult(true);
             } else {
                 throw new UseClipboardError('[foxact/use-clipboard] navigator.clipboard is not supported');
             }
         } catch (e) {
+            if (!mountedRef.current) return;
             if (usePromptAsFallback) {
                 setError(e as Error);
                 setFallbackValue(valueToCopy);
@@ -184,7 +201,8 @@ export function useClipboard({
         setError(null);
         setFallbackValue("");
         if (copyTimeoutRef.current) {
-            clearTimeout(copyTimeoutRef.current);
+            window.clearTimeout(copyTimeoutRef.current);
+            copyTimeoutRef.current = null;
         }
     }, []);
 

@@ -64,7 +64,7 @@ function modeIconTone(mode: string): "primary" | "success" | "danger" | "warning
 
 const MetaChip = ({ label, value, mono = false }: { label: string; value: string | number; mono?: boolean }) => (
     <span className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full border border-ui-border/70 bg-ui-surface-muted/70 px-2.5 py-1 text-[11px] text-ui-muted">
-        <span className="shrink-0 uppercase tracking-wide opacity-80">{label}</span>
+        <span className="shrink-0 font-medium opacity-80">{label}</span>
         <span className={clsx("min-w-0 truncate font-semibold text-ui-fg", mono && "font-mono")}>{value}</span>
     </span>
 );
@@ -110,7 +110,7 @@ const RuleListItem = ({
                     <span className="truncate text-[0.95rem] font-semibold text-ui-heading" title={item.name}>
                         {item.name}
                     </span>
-                    <Badge variant={modeBadgeVariant(item.mode)} pill className="px-2 py-0.5 text-[0.65rem] uppercase tracking-wide">
+                    <Badge variant={modeBadgeVariant(item.mode)} pill className="px-2 py-0.5 text-[0.65rem] font-medium">
                         {item.mode || "unknown"}
                     </Badge>
                     {item.disabled && (
