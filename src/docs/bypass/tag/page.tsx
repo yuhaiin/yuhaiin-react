@@ -218,7 +218,7 @@ function Tags() {
             <NodeModal show={nodeModal.show} id={nodeModal.id} readOnly onHide={() => setNodeModal({ show: false })} />
             <TagModal show={adding || editing !== undefined} item={editing} onHide={() => { setAdding(false); setEditing(undefined); }} onSaved={mutate} onDeleted={mutate} />
             <CardRowList
-                layout="grid"
+                layout="list"
                 paginated
                 pageSize={PAGE_SIZE}
                 currentPage={data.page.page || page}
@@ -228,21 +228,21 @@ function Tags() {
                 getKey={(v) => v.name}
                 onClickItem={(item) => setEditing(item)}
                 renderListItem={(item) => (
-                    <div className="grid w-full min-w-0 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(140px,0.75fr)] sm:items-center">
+                    <div className="grid w-full min-w-0 gap-3 sm:grid-cols-[minmax(0,1.1fr)_minmax(180px,0.9fr)] sm:items-center">
                         <div className="flex min-w-0 items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ui-md bg-violet-500/10 text-violet-500">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ui-md border border-[color-mix(in_srgb,var(--color-violet)_18%,transparent)] bg-[var(--color-violet-soft)] text-[var(--color-violet)]">
                                 <TagsIcon size={19} />
                             </div>
                             <div className="min-w-0">
                                 <div className="truncate font-semibold text-ui-heading">{item.name}</div>
-                                <Badge variant="info" className="mt-1 inline-flex items-center gap-1">
+                                <Badge variant="info" pill className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 text-[0.65rem]">
                                     {item.type === "node" ? <Network size={13} /> : <Copy size={13} />}
                                     {item.type}
                                 </Badge>
                             </div>
                         </div>
-                        <div className="min-w-0 border-t border-ui-border/70 pt-3 sm:border-t-0 sm:border-l sm:pl-4 sm:pt-0">
-                            <div className="mb-1.5 text-xs font-medium text-ui-muted">Target</div>
+                        <div className="min-w-0 border-t border-ui-border/70 pt-2.5 sm:border-t-0 sm:border-l sm:py-0 sm:pl-5">
+                            <div className="mb-1 text-[11px] font-medium text-ui-muted">Target</div>
                             <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                                 {item.hash.length === 0 ? (
                                     <span className="text-xs text-ui-muted">No target</span>

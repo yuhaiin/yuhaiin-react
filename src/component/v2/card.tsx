@@ -80,12 +80,13 @@ export const ListItem: FC<{
     onClick?: () => void,
     selected?: boolean,
     disabled?: boolean,
-    density?: Density
-}> = ({ children, className, style, onClick, selected = false, disabled = false, density = "normal" }) => (
+    density?: Density,
+    flat?: boolean
+}> = ({ children, className, style, onClick, selected = false, disabled = false, density = "normal", flat = false }) => (
     <div
         className={clsx(
-            ui.listRow,
-            density === "compact" && "min-h-0 p-3",
+            flat ? "flex items-center cursor-pointer transition-colors duration-150" : ui.listRow,
+            !flat && density === "compact" && "min-h-0 p-3",
             selected && "border-ui-primary bg-ui-primary-soft text-ui-primary",
             disabled ? "cursor-not-allowed opacity-60" : onClick && "cursor-pointer",
             className
@@ -327,6 +328,7 @@ export function CardRowList<T>({
             <div className={clsx("flex", layout === "list" && !isLast && "border-b border-ui-border/70")}>
                 <ListItem
                     density={density}
+                    flat={layout === "list"}
                     className={clsx(
                         "group w-full",
                         layout === "list" && [

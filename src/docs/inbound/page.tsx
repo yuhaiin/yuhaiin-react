@@ -939,51 +939,58 @@ const InboundItem: FC<{
 }> = ({ item, runtime, onToggle, toggling }) => {
     const status = runtime?.status ?? (item.enabled ? "starting" : "disabled");
     return (
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-            <div className="grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(180px,0.38fr)_minmax(0,1fr)] md:items-center">
-                <div className="flex min-w-0 items-center">
-                    <div className="mr-4 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600/10 text-ui-primary">
-                        <LogIn size={20} />
-                    </div>
-                    <div className="flex min-w-0 flex-wrap items-center gap-2">
-                        <span className="truncate font-medium">{item.name || item.id}</span>
-                        <Badge variant={runtimeVariant(status)} className="shrink-0">{runtimeLabel(status)}</Badge>
-                        {item.enabled && runtime?.lastError && <CircleAlert className="text-ui-danger" size={15} />}
-                    </div>
+        <div className="-mx-3.5 -my-3 flex min-w-0 flex-1 flex-col gap-3 bg-ui-surface px-3.5 py-3 sm:gap-3 md:grid md:grid-cols-[minmax(165px,0.8fr)_minmax(220px,1.25fr)_minmax(145px,0.85fr)_auto] md:items-center md:gap-x-4 md:gap-y-2">
+            <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600/10 text-ui-primary">
+                    <LogIn size={18} />
                 </div>
-                <div className="grid min-w-0 gap-2 text-xs text-ui-muted sm:grid-cols-2 lg:grid-cols-4">
-                    <div className="min-w-0">
-                        <span className="mr-1 text-ui-muted/70">Protocol</span>
-                        <span className="font-medium text-ui-fg">{item.protocol.type}</span>
-                    </div>
-                    <div className="min-w-0">
-                        <span className="mr-1 text-ui-muted/70">Network</span>
-                        <span className="font-medium text-ui-fg">{item.network.type}</span>
-                    </div>
-                    <div className="min-w-0">
-                        <span className="mr-1 text-ui-muted/70">Listen</span>
-                        <span className="truncate font-mono font-medium text-ui-fg">{inboundListen(item) || "-"}</span>
-                    </div>
-                    <div className="min-w-0">
-                        <span className="mr-1 text-ui-muted/70">Transport</span>
-                        <span className="truncate font-mono font-medium text-ui-fg">{transportLabel(item) || "-"}</span>
-                    </div>
-                    {runtime && (
-                        <div className="min-w-0 sm:col-span-2 lg:col-span-4">
-                            <span className="mr-1 text-ui-muted/70">Traffic</span>
-                            <span className="font-medium text-ui-fg">
-                                TCP {runtime.statistics.activeTcp}/{runtime.statistics.totalTcpFlows}
-                                <span className="mx-1 text-ui-muted">·</span>
-                                UDP {runtime.statistics.activeUdp}/{runtime.statistics.totalUdpFlows}
-                                <span className="mx-1 text-ui-muted">·</span>
-                                ↑ {formatBytes(runtime.statistics.uploadBytes)} / ↓ {formatBytes(runtime.statistics.downloadBytes)}
-                            </span>
-                        </div>
-                    )}
+                <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                    <span className="truncate font-semibold text-ui-heading">{item.name || item.id}</span>
+                    <Badge variant={runtimeVariant(status)} className="shrink-0">{runtimeLabel(status)}</Badge>
+                    {item.enabled && runtime?.lastError && <CircleAlert className="shrink-0 text-ui-danger" size={15} />}
                 </div>
             </div>
-            <div onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}>
-                <div className="flex min-w-[92px] items-center justify-end gap-2 text-xs text-ui-muted">
+
+            <div className="grid min-w-0 grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-ui-muted">
+                <div className="min-w-0">
+                    <span className="block text-[11px] text-ui-muted/70">Protocol</span>
+                    <span className="block truncate font-medium text-ui-fg">{item.protocol.type}</span>
+                </div>
+                <div className="min-w-0">
+                    <span className="block text-[11px] text-ui-muted/70">Network</span>
+                    <span className="block truncate font-medium text-ui-fg">{item.network.type}</span>
+                </div>
+                <div className="min-w-0">
+                    <span className="block text-[11px] text-ui-muted/70">Listen</span>
+                    <span className="block truncate font-mono font-medium text-ui-fg">{inboundListen(item) || "-"}</span>
+                </div>
+                <div className="min-w-0">
+                    <span className="block text-[11px] text-ui-muted/70">Transport</span>
+                    <span className="block truncate font-mono font-medium text-ui-fg">{transportLabel(item) || "-"}</span>
+                </div>
+            </div>
+
+            {runtime ? (
+                <div className="min-w-0 text-xs text-ui-muted md:justify-self-start">
+                    <div className="mb-1 text-ui-muted/70">Traffic</div>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-medium text-ui-fg">
+                        <span className="whitespace-nowrap">TCP {runtime.statistics.activeTcp}/{runtime.statistics.totalTcpFlows}</span>
+                        <span className="text-ui-muted" aria-hidden="true">·</span>
+                        <span className="whitespace-nowrap">UDP {runtime.statistics.activeUdp}/{runtime.statistics.totalUdpFlows}</span>
+                        <span className="text-ui-muted" aria-hidden="true">·</span>
+                        <span className="whitespace-nowrap">↑ {formatBytes(runtime.statistics.uploadBytes)} / ↓ {formatBytes(runtime.statistics.downloadBytes)}</span>
+                    </div>
+                </div>
+            ) : <div className="hidden md:block" />}
+
+            <div
+                className="flex min-w-0 items-center justify-between gap-3 border-t border-ui-border/70 pt-2 text-xs text-ui-muted sm:justify-end md:border-0 md:pt-0"
+            >
+                <div
+                    className="flex min-w-0 items-center gap-3"
+                    onClick={(event) => event.stopPropagation()}
+                    onKeyDown={(event) => event.stopPropagation()}
+                >
                     <span>{toggling ? "Applying…" : item.enabled ? "Enabled" : "Disabled"}</span>
                     <Switch
                         checked={item.enabled}
@@ -991,8 +998,8 @@ const InboundItem: FC<{
                         disabled={toggling}
                     />
                 </div>
+                <ChevronRight className="shrink-0 text-ui-muted opacity-35" size={16} />
             </div>
-            <ChevronRight className="shrink-0 text-ui-muted opacity-25" size={16} />
         </div>
     );
 };

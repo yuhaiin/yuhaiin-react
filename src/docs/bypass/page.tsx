@@ -5,7 +5,7 @@ import { listResolvers } from "@/api/resolvers";
 import { changeRulePriority, createRule, deleteRule, getRouteActivationStatus, getRouteConfig, getRule, listRouteLists, listRules, saveRouteConfig, saveRule } from "@/api/route";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardFooter, CardHeader, CardList, FilterSearch, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
+import { Card, CardBody, CardFooter, CardHeader, CardRowList, FilterSearch, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
 import { DropdownSelect, SettingInputVertical, SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
 import { Input } from "@/component/v2/input";
 import Loading from "@/component/v2/loading";
@@ -246,8 +246,9 @@ function BypassComponent() {
         <MainContainer>
             <RouteConfigCard resolvers={editorOptions.resolvers} />
             <RouteActivationProgress status={activation} onApplied={mutateActivation} />
-            <CardList
+            <CardRowList
                 density="compact"
+                layout="list"
                 items={data.items}
                 getKey={(v) => `${v.name}-${v.index}`}
                 renderListItem={(item) => (

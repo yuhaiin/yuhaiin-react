@@ -3,7 +3,7 @@
 import { listNodes } from "@/api/nodes";
 import { deletePublish, listPublishes, savePublish } from "@/api/subscriptions";
 import { Button } from "@/component/v2/button";
-import { CardList, IconBox, MainContainer, SettingsBox } from "@/component/v2/card";
+import { CardRowList, IconBox, MainContainer, SettingsBox } from "@/component/v2/card";
 import { ConfirmModal } from "@/component/v2/confirm";
 import { Dropdown, DropdownCheckboxItem, DropdownContent, DropdownLabel, DropdownTrigger } from "@/component/v2/dropdown";
 import { SettingInputVertical } from "@/component/v2/forms";
@@ -181,33 +181,32 @@ function PublishPage() {
                 mutatePub={mutate}
                 onHide={() => setEditing(prev => ({ ...prev, show: false }))}
             />
-            <CardList
+            <CardRowList
+                layout="list"
                 items={[...data.items].sort((a, b) => a.name.localeCompare(b.name))}
+                getKey={(pub) => pub.name}
                 onClickItem={(pub) => setEditing({ show: true, isEdit: true, value: pub })}
                 renderListItem={(pub) => (
-                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex min-w-0 flex-col overflow-hidden">
-                            <span className="font-bold">{pub.name}</span>
-                            <small className="text-ui-muted truncate">{pub.address}/{pub.path} • {pub.points.length} nodes</small>
+                    <div className="grid w-full min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                        <div className="min-w-0">
+                            <div className="break-words font-semibold text-ui-heading sm:truncate">{pub.name}</div>
+                            <div className="mt-1 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-ui-muted">
+                                <span className="break-all sm:truncate" title={`${pub.address}/${pub.path}`}>{pub.address}/{pub.path}</span>
+                                <span className="shrink-0">• {pub.points.length} nodes</span>
+                            </div>
                         </div>
-                        <Button className="self-end sm:self-auto" variant="outline-danger" size="sm" onClick={(e) => { e.stopPropagation(); setConfirmDelete({ show: true, name: pub.name }); }}>
+                        <Button className="self-end justify-self-end" variant="outline-danger" size="sm" title="Delete publish config" aria-label={`Delete ${pub.name}`} onClick={(e) => { e.stopPropagation(); setConfirmDelete({ show: true, name: pub.name }); }}>
                             <Trash size={16} />
                         </Button>
                     </div>
                 )}
                 header={
-                    <>
-                        <div className="flex items-center">
-                            <IconBox icon={Share2} tone="violet" />
-                            <div>
-                                <h5 className="mb-0 font-bold">Publish</h5>
-                                <small className="text-ui-muted">Share selected nodes as publish configs</small>
-                            </div>
-                        </div>
-                        <Button onClick={() => setEditing({ show: true, isEdit: false, value: defaultPublish() })}>
+                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <IconBox icon={Share2} tone="violet" title="Publish" description="Share selected nodes as publish configs" />
+                        <Button size="sm" className="shrink-0 self-start sm:self-auto" onClick={() => setEditing({ show: true, isEdit: false, value: defaultPublish() })}>
                             <Plus className="mr-1" size={16} /> Add
                         </Button>
-                    </>
+                    </div>
                 }
             />
         </MainContainer>
