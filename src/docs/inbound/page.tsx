@@ -44,7 +44,7 @@ import {
     ServerTLSConfig,
     TLSAutoTransport,
 } from "@/contract/inbound";
-import { Activity, ArrowDown, ArrowUp, Check, ChevronRight, CircleAlert, CircleCheck, DoorOpen, LogIn, Plus, RefreshCw, Save, Settings, Trash } from "lucide-react";
+import { Activity, ArrowDown, ArrowUp, Check, CircleAlert, CircleCheck, DoorOpen, Plus, RefreshCw, Save, Settings, Trash } from "lucide-react";
 import { FC, useContext, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import Loading, { Error as ErrorDisplay } from "../../component/v2/loading";
@@ -95,6 +95,8 @@ function bytesToBase64(value: Uint8Array): string {
 function transportLabel(value: Inbound): string {
     return value.transports.map((transport) => transport.type).join(" / ");
 }
+
+const inboundTableGrid = "lg:grid lg:grid-cols-[minmax(145px,1.25fr)_minmax(96px,.75fr)_minmax(150px,1.3fr)_minmax(130px,1fr)_56px] lg:gap-x-4 xl:grid-cols-[minmax(145px,1.25fr)_minmax(96px,.75fr)_minmax(150px,1.3fr)_minmax(130px,1fr)_minmax(0,1.2fr)_56px]";
 
 function runtimeLabel(state: InboundRuntimeState): string {
     switch (state) {
@@ -935,70 +937,76 @@ const InboundItem: FC<{
     item: Inbound;
     runtime?: InboundRuntimeStatus;
     onToggle: (item: Inbound) => void;
+    onOpen: () => void;
     toggling: boolean;
-}> = ({ item, runtime, onToggle, toggling }) => {
+}> = ({ item, runtime, onToggle, onOpen, toggling }) => {
     const status = runtime?.status ?? (item.enabled ? "starting" : "disabled");
+    const name = item.name || item.id;
+    const listen = inboundListen(item) || "-";
+    const transport = transportLabel(item) || "-";
     return (
-        <div className="-mx-3.5 -my-3 flex min-w-0 flex-1 flex-col gap-3 bg-ui-surface px-3.5 py-3 sm:gap-3 md:grid md:grid-cols-[minmax(165px,0.8fr)_minmax(220px,1.25fr)_minmax(145px,0.85fr)_auto] md:items-center md:gap-x-4 md:gap-y-2">
-            <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600/10 text-ui-primary">
-                    <LogIn size={18} />
-                </div>
-                <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                    <span className="truncate font-semibold text-ui-heading">{item.name || item.id}</span>
-                    <Badge variant={runtimeVariant(status)} className="shrink-0">{runtimeLabel(status)}</Badge>
-                    {item.enabled && runtime?.lastError && <CircleAlert className="shrink-0 text-ui-danger" size={15} />}
-                </div>
-            </div>
+        <div className={`-mx-3.5 -my-3 flex min-w-0 flex-1 items-center gap-3 bg-ui-surface px-3.5 py-2.5 ${inboundTableGrid}`}>
+            <div className="flex min-w-0 flex-1 items-center lg:contents">
+                <button
+                    type="button"
+                    className="flex min-w-0 flex-1 flex-col items-start text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus lg:block"
+                    aria-label={`Edit ${name}`}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onOpen();
+                    }}
+                >
+                    <span className="flex min-w-0 max-w-full items-center gap-2">
+                        <span className="truncate font-semibold text-ui-heading" title={name}>{name}</span>
+                        <Badge variant={runtimeVariant(status)} title={runtime?.lastError ?? undefined} className="shrink-0 lg:hidden">
+                            {runtimeLabel(status)}
+                        </Badge>
+                    </span>
+                    <span className="mt-0.5 flex min-w-0 max-w-full items-center text-xs text-ui-muted lg:hidden">
+                        <span className="min-w-0 flex-1 break-all font-mono" title={listen}>{listen}</span>
+                        <span className="mx-1 shrink-0" aria-hidden="true">·</span>
+                        <span className="shrink-0 whitespace-nowrap" title={item.protocol.type}>{item.protocol.type}</span>
+                    </span>
+                </button>
 
-            <div className="grid min-w-0 grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-ui-muted">
-                <div className="min-w-0">
-                    <span className="block text-[11px] text-ui-muted/70">Protocol</span>
-                    <span className="block truncate font-medium text-ui-fg">{item.protocol.type}</span>
+                <div className="hidden min-w-0 lg:block">
+                    <Badge variant={runtimeVariant(status)} title={runtime?.lastError ?? undefined}>
+                        {runtimeLabel(status)}
+                    </Badge>
                 </div>
-                <div className="min-w-0">
-                    <span className="block text-[11px] text-ui-muted/70">Network</span>
-                    <span className="block truncate font-medium text-ui-fg">{item.network.type}</span>
-                </div>
-                <div className="min-w-0">
-                    <span className="block text-[11px] text-ui-muted/70">Listen</span>
-                    <span className="block truncate font-mono font-medium text-ui-fg">{inboundListen(item) || "-"}</span>
-                </div>
-                <div className="min-w-0">
-                    <span className="block text-[11px] text-ui-muted/70">Transport</span>
-                    <span className="block truncate font-mono font-medium text-ui-fg">{transportLabel(item) || "-"}</span>
-                </div>
-            </div>
 
-            {runtime ? (
-                <div className="min-w-0 text-xs text-ui-muted md:justify-self-start">
-                    <div className="mb-1 text-ui-muted/70">Traffic</div>
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-medium text-ui-fg">
-                        <span className="whitespace-nowrap">TCP {runtime.statistics.activeTcp}/{runtime.statistics.totalTcpFlows}</span>
-                        <span className="text-ui-muted" aria-hidden="true">·</span>
-                        <span className="whitespace-nowrap">UDP {runtime.statistics.activeUdp}/{runtime.statistics.totalUdpFlows}</span>
-                        <span className="text-ui-muted" aria-hidden="true">·</span>
-                        <span className="whitespace-nowrap">↑ {formatBytes(runtime.statistics.uploadBytes)} / ↓ {formatBytes(runtime.statistics.downloadBytes)}</span>
+                <div className="hidden min-w-0 lg:block">
+                    <div className="truncate font-mono text-sm font-medium text-ui-fg">{listen}</div>
+                    <div className="truncate text-[11px] text-ui-muted">{item.network.type} · {transport}</div>
+                </div>
+
+                <div className="hidden min-w-0 lg:block">
+                    <div className="truncate text-sm font-medium text-ui-fg">{item.protocol.type}</div>
+                </div>
+
+                {runtime ? (
+                    <div className="hidden min-w-0 text-xs text-ui-muted xl:block">
+                        <div className="truncate font-medium text-ui-fg">
+                            TCP {runtime.statistics.activeTcp} · UDP {runtime.statistics.activeUdp}
+                        </div>
+                        <div className="truncate text-[11px]">↑ {formatBytes(runtime.statistics.uploadBytes)} / ↓ {formatBytes(runtime.statistics.downloadBytes)}</div>
                     </div>
-                </div>
-            ) : <div className="hidden md:block" />}
+                ) : (
+                    <div className="hidden text-sm text-ui-muted xl:block">—</div>
+                )}
+            </div>
 
             <div
-                className="flex min-w-0 items-center justify-between gap-3 border-t border-ui-border/70 pt-2 text-xs text-ui-muted sm:justify-end md:border-0 md:pt-0"
+                className="flex shrink-0 items-center lg:justify-self-end"
+                onClick={(event) => event.stopPropagation()}
+                onKeyDown={(event) => event.stopPropagation()}
             >
-                <div
-                    className="flex min-w-0 items-center gap-3"
-                    onClick={(event) => event.stopPropagation()}
-                    onKeyDown={(event) => event.stopPropagation()}
-                >
-                    <span>{toggling ? "Applying…" : item.enabled ? "Enabled" : "Disabled"}</span>
-                    <Switch
-                        checked={item.enabled}
-                        onCheckedChange={() => onToggle(item)}
-                        disabled={toggling}
-                    />
-                </div>
-                <ChevronRight className="shrink-0 text-ui-muted opacity-35" size={16} />
+                <Switch
+                    checked={item.enabled}
+                    onCheckedChange={() => onToggle(item)}
+                    disabled={toggling}
+                    aria-label={`${item.enabled ? "Disable" : "Enable"} ${name}`}
+                />
             </div>
         </div>
     );
@@ -1190,16 +1198,29 @@ export default function InboudComponent() {
                         item={item}
                         runtime={statusByID.get(item.id)}
                         onToggle={toggleInbound}
+                        onOpen={() => setShowdata({ show: true, id: item.id, new: false })}
                         toggling={togglingID === item.id}
                     />
                 )}
                 onClickItem={(item) => setShowdata({ show: true, id: item.id, new: false })}
                 header={
-                    <div className="flex w-full items-center justify-between gap-3">
-                        <IconBox icon={DoorOpen} tone="primary" title="Entry Points" description={`${data.page.total} inbounds`} />
-                        <Button size="sm" onClick={() => handleCreate(newInboundID())}>
-                            <Plus className="mr-1" size={16} /> Add
-                        </Button>
+                    <div className="flex w-full flex-col gap-3">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="min-w-0">
+                                <IconBox icon={DoorOpen} tone="primary" title="Entry Points" description={`${data.page.total} inbounds`} />
+                            </div>
+                            <Button className="shrink-0 self-start whitespace-nowrap sm:self-auto" size="sm" onClick={() => handleCreate(newInboundID())}>
+                                <Plus className="mr-1" size={16} /> Add
+                            </Button>
+                        </div>
+                        <div className={`hidden min-w-0 ${inboundTableGrid} lg:-mx-5 lg:px-[18px] lg:text-[11px] lg:font-semibold lg:uppercase lg:tracking-wide lg:text-ui-muted`}>
+                            <span>Name</span>
+                            <span>Status</span>
+                            <span>Listen address</span>
+                            <span>Protocol</span>
+                            <span className="hidden xl:block">Traffic</span>
+                            <span className="text-right">Enabled</span>
+                        </div>
                     </div>
                 }
             />
