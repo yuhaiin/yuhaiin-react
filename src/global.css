@@ -123,18 +123,18 @@
     --sidebar-gap: 16px;
 
     /* Rounded corners for card-like appearance */
-    --sidebar-radius: 24px;
+    --sidebar-radius: 18px;
 
-    --sidebar-transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    --sidebar-transition: all 0.18s ease-out;
 
-    --radius-ui-xs: 6px;
-    --radius-ui-sm: 8px;
-    --radius-ui-md: 12px;
-    --radius-ui-lg: 16px;
-    --radius-ui-xl: 20px;
+    --radius-ui-xs: 5px;
+    --radius-ui-sm: 7px;
+    --radius-ui-md: 10px;
+    --radius-ui-lg: 12px;
+    --radius-ui-xl: 16px;
     --height-field: 38px;
     --height-field-sm: 32px;
-    --height-list-row: 72px;
+    --height-list-row: 64px;
     --size-icon-lg: 42px;
     --shadow-inner-subtle: inset 0 0.5px 0 rgba(0, 0, 0, 0.05);
 }
@@ -212,7 +212,7 @@ html[data-bs-theme="dark"] {
     --sidebar-active-color: #7dd3fc;
     --sidebar-active-glow: none;
 
-    --sidebar-box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.72);
+    --sidebar-box-shadow: 0 10px 28px -20px rgba(0, 0, 0, 0.72), 0 1px 2px rgba(0, 0, 0, 0.35);
     --divider-color: #343a44;
 
     /* --- Default (Dark Mode) --- */
@@ -266,8 +266,8 @@ html[data-bs-theme="dark"] {
     --color-focus: rgba(14, 165, 233, 0.32);
     --color-violet: #a78bfa;
     --color-violet-soft: rgba(167, 139, 250, 0.14);
-    --shadow-card: 0 18px 40px -20px rgba(0, 0, 0, 0.72);
-    --shadow-elevated: 0 20px 48px -24px rgba(0, 0, 0, 0.78);
+    --shadow-card: 0 8px 22px -18px rgba(0, 0, 0, 0.72), 0 1px 2px rgba(0, 0, 0, 0.36);
+    --shadow-elevated: 0 14px 30px -20px rgba(0, 0, 0, 0.78), 0 2px 4px rgba(0, 0, 0, 0.28);
     --shadow-focus: 0 0 0 3px var(--color-focus);
 }
 
@@ -290,7 +290,7 @@ html[data-bs-theme="light"] {
     --sidebar-active-glow: none;
     /* Clean look for light mode */
 
-    --sidebar-box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+    --sidebar-box-shadow: 0 10px 24px -18px rgba(15, 23, 42, 0.22), 0 1px 2px rgba(15, 23, 42, 0.08);
     --divider-color: #e2e8f0;
 
 
@@ -343,8 +343,8 @@ html[data-bs-theme="light"] {
     --color-focus: rgba(2, 132, 199, 0.25);
     --color-violet: #7c3aed;
     --color-violet-soft: rgba(124, 58, 237, 0.12);
-    --shadow-card: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
-    --shadow-elevated: 0 20px 40px -12px rgba(2, 132, 199, 0.12);
+    --shadow-card: 0 8px 22px -18px rgba(15, 23, 42, 0.24), 0 1px 2px rgba(15, 23, 42, 0.08);
+    --shadow-elevated: 0 14px 30px -20px rgba(15, 23, 42, 0.26), 0 2px 4px rgba(15, 23, 42, 0.08);
     --shadow-focus: 0 0 0 3px var(--color-focus);
 
     /* Keep Bootstrap primary in sync with ui primary (light). */
@@ -366,7 +366,17 @@ html[data-bs-theme="light"] {
         width: 100%;
         background-color: var(--bs-body-bg);
         color: var(--bs-body-color);
+        font-family: var(--bs-body-font-family);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
         line-height: 1.5;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+        font: inherit;
     }
 
     h1,

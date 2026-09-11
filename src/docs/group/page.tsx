@@ -30,7 +30,7 @@ import type { Node, NodeLatencyResponse } from "@/contract/node";
 import { normalizeNode } from "@/contract/node";
 import clsx from "clsx";
 import { Check, ChevronDown, Gauge, Layers, Network, Plus, Power, Search, Upload } from "lucide-react";
-import { FC, memo, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { FC, memo, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import useSWR from "swr";
 import { useLocalStorage } from "usehooks-ts";
 import { VList } from "virtua";
@@ -331,7 +331,7 @@ const GroupPicker: FC<{
     );
 };
 
-function pruneLatencyMap(
+export function pruneLatencyMap(
     current: Record<string, NodeLatencyState>,
     keepIds: Iterable<string>,
     limit = LATENCY_STORAGE_LIMIT,
@@ -341,11 +341,45 @@ function pruneLatencyMap(
     for (const id of keep) {
         if (current[id]) next[id] = current[id];
     }
-    if (Object.keys(next).length <= limit) return next;
+    if (Object.keys(next).length <= limit) {
+        const currentIds = Object.keys(current);
+        if (currentIds.length === Object.keys(next).length && currentIds.every((id) => next[id] === current[id])) {
+            return current;
+        }
+        return next;
+    }
 
     const entries = Object.entries(next);
     entries.sort(([a], [b]) => a.localeCompare(b));
     return Object.fromEntries(entries.slice(-limit));
+}
+
+export function clearBusyLatency(
+    current: Record<string, Partial<Record<NodeLatencyType, boolean>>>,
+    id: string,
+    type: NodeLatencyType,
+): Record<string, Partial<Record<NodeLatencyType, boolean>>> {
+    const node = current[id];
+    if (!node || !(type in node)) return current;
+
+    const nextNode = { ...node };
+    delete nextNode[type];
+    const next = { ...current };
+    if (Object.keys(nextNode).length === 0) delete next[id];
+    else next[id] = nextNode;
+    return next;
+}
+
+export function pruneBusyLatency(
+    current: Record<string, Partial<Record<NodeLatencyType, boolean>>>,
+    keepIds: Iterable<string>,
+): Record<string, Partial<Record<NodeLatencyType, boolean>>> {
+    const keep = new Set(keepIds);
+    const entries = Object.entries(current).filter(([id]) => keep.has(id));
+    if (entries.length === Object.keys(current).length) {
+        return current;
+    }
+    return Object.fromEntries(entries);
 }
 
 const NodeItem: FC<{
@@ -595,6 +629,8 @@ export default function Group() {
 
     const apiError = errorOf(error);
     const items = useMemo(() => data?.items ?? [], [data?.items]);
+    const nodeIds = useMemo(() => items.map((item) => item.id), [items]);
+    const nodeIdsRef = useRef<string[]>([]);
     const groups = useMemo(() => {
         const values = new Set(items.map(item => item.group || "manual"));
         return Array.from(values).sort((a, b) => a.localeCompare(b));
@@ -639,12 +675,11 @@ export default function Group() {
     }, [groups, selectedGroup]);
 
     useEffect(() => {
-        if (items.length === 0) return;
-        setLatency((prev) => {
-            const next = pruneLatencyMap(prev, items.map((item) => item.id));
-            return Object.keys(next).length === Object.keys(prev).length ? prev : next;
-        });
-    }, [items, setLatency]);
+        nodeIdsRef.current = data === undefined ? [] : nodeIds;
+        if (data === undefined) return;
+        setLatency((prev) => pruneLatencyMap(prev, nodeIds));
+        setBusyLatency((prev) => pruneBusyLatency(prev, nodeIds));
+    }, [data, nodeIds, setLatency]);
 
     if (apiError) return <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} />;
     if (isLoading || data === undefined) return <Loading />;
@@ -689,7 +724,7 @@ export default function Group() {
             .then((result) => {
                 setLatency((prev) => pruneLatencyMap(
                     { ...prev, [id]: { ...prev[id], [type]: latencyResultValue(result) } },
-                    items.map((item) => item.id),
+                    nodeIdsRef.current,
                 ));
                 if (!result.ok) ctx.Error(result.error ?? "Latency failed");
             })
@@ -697,11 +732,11 @@ export default function Group() {
                 const apiErr = errorOf(err);
                 setLatency((prev) => pruneLatencyMap(
                     { ...prev, [id]: { ...prev[id], [type]: "error" } },
-                    items.map((item) => item.id),
+                    nodeIdsRef.current,
                 ));
                 ctx.Error(apiErr?.msg ?? "Latency failed");
             })
-            .finally(() => setBusyLatency((prev) => ({ ...prev, [id]: { ...prev[id], [type]: false } })));
+            .finally(() => setBusyLatency((prev) => clearBusyLatency(prev, id, type)));
     };
 
     return (

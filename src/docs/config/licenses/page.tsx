@@ -69,7 +69,7 @@ export default function Licenses() {
 
     return (
         <MainContainer className="h-full flex flex-col">
-            <Card className="flex-1 mb-0 flex flex-col">
+            <Card className="mb-0 flex flex-col">
                 <CardHeader className="py-3">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-3">
                         <IconBox
@@ -98,7 +98,7 @@ export default function Licenses() {
                     </div>
                 </CardHeader>
 
-                <CardBody className="p-4 flex-1 overflow-auto rounded-b-[inherit]">
+                <CardBody className="p-4 rounded-b-[inherit]">
                     <div>
                         <LicensesList value={currentList} />
                     </div>

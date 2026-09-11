@@ -2,7 +2,7 @@
 
 import { getFailedHistory } from "@/api/connections"
 import { Button } from "@/component/v2/button"
-import { CardList, IconBadge, MainContainer, SettingLabel } from "@/component/v2/card"
+import { CardList, MainContainer, SettingLabel } from "@/component/v2/card"
 import { DataList, DataListItem } from "@/component/v2/datalist"
 import { Dropdown, DropdownContent, DropdownTrigger } from "@/component/v2/dropdown"
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal"
@@ -14,10 +14,24 @@ import { ArrowDownWideNarrow, Bug, ChevronRight, Clock, Network, OctagonAlert, R
 import React, { FC, useMemo, useState } from "react"
 import useSWR from "swr"
 import Loading from "../../../component/v2/loading"
+import { ConnectionBadge } from "../components"
 
 function formatProtocolLabel(value?: string) {
     if (!value) return "Unknown";
     return value.split("_").join("/").toUpperCase();
+}
+
+export function sortFailedHistory(
+    items: FailedHistoryItem[],
+    sortBy: string,
+    sortOrder: "asc" | "desc",
+) {
+    const dir = sortOrder === "asc" ? 1 : -1;
+    return [...items].sort((a, b) => {
+        if (sortBy === "Host") return a.host.localeCompare(b.host) * dir;
+        if (sortBy === "Count") return (Number(a.failedCount) - Number(b.failedCount)) * dir;
+        return (new Date(a.time).getTime() - new Date(b.time).getTime()) * dir;
+    });
 }
 
 const ListItem: FC<{ data: FailedHistoryItem }> = React.memo(({ data }) => {
@@ -25,21 +39,21 @@ const ListItem: FC<{ data: FailedHistoryItem }> = React.memo(({ data }) => {
         <>
             <div className="flex w-full flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div className="flex items-center grow overflow-hidden gap-4 w-full md:w-auto">
-                    <div className="flex items-center justify-center bg-red-500/10 text-red-500 rounded-full shrink-0" style={{ width: "42px", height: "42px" }}>
-                        <Bug className="text-xl" />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ui-md border border-ui-danger/20 bg-ui-danger-soft text-ui-danger">
+                        <Bug size={17} />
                     </div>
                     <div className="flex flex-col overflow-hidden" style={{ minWidth: 0 }}>
-                        <span className="font-bold truncate text-base text-red-500/75">{data.host}</span>
-                        <small className="text-ui-muted truncate opacity-75 font-mono">
+                        <span className="truncate text-base font-semibold text-ui-danger">{data.host}</span>
+                        <small className="truncate font-mono text-xs text-ui-muted">
                             {data.error || "Unknown Error"}
                         </small>
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-2 items-center shrink-0">
-                    <IconBadge icon={Network} text={formatProtocolLabel(data.protocol)} color="info" />
-                    <IconBadge icon={OctagonAlert} text={`${data.failedCount} Fails`} color="warning" />
-                    <IconBadge icon={Clock} text={new Date(data.time).toLocaleTimeString()} color="secondary" />
-                    <div className="text-ui-muted opacity-25 ml-2 hidden md:block"><ChevronRight /></div>
+                    <ConnectionBadge icon={Network} text={formatProtocolLabel(data.protocol)} />
+                    <ConnectionBadge icon={OctagonAlert} text={`${data.failedCount} failures`} tone="warning" />
+                    <ConnectionBadge icon={Clock} text={new Date(data.time).toLocaleTimeString()} tone="neutral" />
+                    <ChevronRight size={17} className="ml-1 hidden text-ui-muted/50 md:block" />
                 </div>
             </div>
         </>
@@ -54,13 +68,7 @@ function FailedHistory() {
     const { data, error, isLoading, isValidating, mutate } = useSWR("/api/v2/connections/failed-history", getFailedHistory);
 
     const values = useMemo(() => {
-        const items = data?.items ?? [];
-        return items.sort((a, b) => {
-            const dir = sortOrder === "asc" ? 1 : -1;
-            if (sortBy === "Host") return a.host.localeCompare(b.host) * dir;
-            if (sortBy === "Count") return (Number(a.failedCount) - Number(b.failedCount)) * dir;
-            return (new Date(a.time).getTime() - new Date(b.time).getTime()) * dir;
-        });
+        return sortFailedHistory(data?.items ?? [], sortBy, sortOrder);
     }, [data, sortBy, sortOrder]);
 
     if (error) return <Loading code={error.code}>{error.msg}</Loading>
@@ -70,7 +78,7 @@ function FailedHistory() {
     const paginatedItems = values.slice((page - 1) * pageSize, page * pageSize);
 
     return (
-        <MainContainer>
+        <MainContainer className="flex min-h-full min-w-0 flex-col">
             <Modal open={info.show} onOpenChange={(open) => !open && setInfo({ ...info, show: false })}>
                 <ModalContent>
                     <ModalHeader closeButton><ModalTitle className="font-bold text-red-500">Failure Details</ModalTitle></ModalHeader>
@@ -92,15 +100,15 @@ function FailedHistory() {
                 </ModalContent>
             </Modal>
 
-            <div className="flex flex-wrap justify-between items-end mb-4 gap-3">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
-                    <h4 className="font-bold mb-1">Failed Connections</h4>
-                    <div className="text-ui-muted flex items-center text-sm">
-                        <Bug className="text-red-500 mr-2" />
+                    <h1 className="mt-1 text-xl font-semibold leading-tight text-ui-heading sm:text-2xl">Failed connections</h1>
+                    <div className="mt-1 flex items-center text-xs text-ui-muted">
+                        <Bug className="mr-1.5 text-ui-danger" size={14} />
                         <span>Tracking {values.length} rejected or timed-out requests</span>
                     </div>
                 </div>
-                <div className="flex flex-wrap gap-2 justify-end items-center">
+                <div className="flex flex-wrap items-center justify-end gap-2 rounded-ui-lg border border-ui-border bg-ui-surface-muted/50 px-2 py-2">
                     <Button size="sm" onClick={() => mutate()} disabled={isValidating}>
                         {isValidating ? <Spinner size="sm" /> : <RotateCw size={16} />}
                     </Button>
@@ -110,8 +118,8 @@ function FailedHistory() {
                             <div className="mb-3">
                                 <SettingLabel>Order</SettingLabel>
                                 <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-full">
-                                    <ToggleItem value="asc" className="grow">ASC</ToggleItem>
-                                    <ToggleItem value="desc" className="grow">DESC</ToggleItem>
+                                <ToggleItem value="asc" className="grow">Asc</ToggleItem>
+                                <ToggleItem value="desc" className="grow">Desc</ToggleItem>
                                 </ToggleGroup>
                             </div>
                             <SettingLabel>By</SettingLabel>

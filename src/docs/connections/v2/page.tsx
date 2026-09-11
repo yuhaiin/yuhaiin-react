@@ -3,7 +3,7 @@
 import { closeConnections, getConnections } from "@/api/connections";
 import { AuthTokenKey, getApiUrl } from "@/common/apiurl";
 import { Button } from "@/component/v2/button";
-import { IconBadge, MainContainer } from "@/component/v2/card";
+import { MainContainer } from "@/component/v2/card";
 import Loading from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Spinner } from "@/component/v2/spinner";
@@ -11,13 +11,13 @@ import { GlobalToastContext } from "@/component/v2/toast";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import type { Connection, Connections, Counter } from "@/contract/connection";
 import { normalizeConnection } from "@/contract/connection";
-import { ArrowDown, ArrowUp, Network, Power, ShieldCheck, Tag } from "lucide-react";
+import { ArrowDown, ArrowUp, Network, Power, RefreshCw, ShieldCheck, Tag } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { VList } from "virtua";
 import { NodeModal } from "../../node/modal";
-import { ConnectionInfo, FlowContainer, formatBytes, numberValue } from "../components";
+import { ConnectionBadge, ConnectionInfo, FlowContainer, formatBytes, numberValue } from "../components";
 
 type SortBy = "id" | "name" | "download" | "upload";
 const VIRTUALIZE_THRESHOLD = 40;
@@ -75,10 +75,14 @@ function Connections() {
         // connections_added event as such so reconnects also remove stale
         // entries that were closed while the stream was down.
         hasStreamSnapshot.current = false;
+        let stopped = false;
         let reconnectTimer: number | undefined;
         const source = new EventSource(eventsURL());
-        source.onopen = () => setStreamError("");
+        source.onopen = () => {
+            if (!stopped) setStreamError("");
+        };
         const onAdded = (event: MessageEvent<string>) => {
+            if (stopped) return;
             const payload = JSON.parse(event.data) as Connections;
             const isSnapshot = !hasStreamSnapshot.current;
             hasStreamSnapshot.current = true;
@@ -93,6 +97,7 @@ function Connections() {
             });
         };
         const onRemoved = (event: MessageEvent<string>) => {
+            if (stopped) return;
             const payload = JSON.parse(event.data) as { ids?: string[] };
             setConnections(prev => {
                 const next = { ...prev };
@@ -103,13 +108,16 @@ function Connections() {
         source.addEventListener("connections_added", onAdded);
         source.addEventListener("connections_removed", onRemoved);
         source.onerror = () => {
+            if (stopped) return;
             setStreamError("Connection event stream disconnected. Reconnecting...");
             source.close();
             reconnectTimer = window.setTimeout(() => {
+                if (stopped) return;
                 setStreamNonce((value) => value + 1);
             }, 2000);
         };
         return () => {
+            stopped = true;
             source.close();
             if (reconnectTimer !== undefined) window.clearTimeout(reconnectTimer);
         };
@@ -145,7 +153,7 @@ function Connections() {
     if (isLoading && !initial) return <Loading />
 
     return (
-        <MainContainer>
+        <MainContainer className="flex h-full min-h-0 min-w-0 flex-col">
             <NodeModal
                 show={nodeModal.show}
                 id={nodeModal.id}
@@ -153,7 +161,17 @@ function Connections() {
                 onHide={() => setNodeModal({ show: false })}
             />
 
-            <FlowContainer onUpdate={setCounters} />
+            <div className="mb-3 flex items-end justify-between gap-3">
+                <div className="min-w-0">
+                    <h1 className="mt-1 truncate text-xl font-semibold leading-tight text-ui-heading sm:text-2xl">Active connections</h1>
+                </div>
+                <div className="flex shrink-0 items-baseline gap-2 rounded-full border border-ui-border bg-ui-surface-muted px-3 py-1.5">
+                    <span className="font-mono text-base font-semibold tabular-nums text-ui-heading">{sorted.length}</span>
+                    <span className="text-xs text-ui-muted">active</span>
+                </div>
+            </div>
+
+            <FlowContainer onUpdate={setCounters} variant="summary" />
 
             {streamError && (
                 <div className="mb-3 rounded-ui-lg border border-ui-warning/40 bg-ui-warning/10 px-4 py-3 text-sm text-ui-warning">
@@ -161,39 +179,46 @@ function Connections() {
                 </div>
             )}
 
-            <div className="mb-3 flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-                <div className="flex items-center gap-2">
-                    <ToggleGroup className="flex-nowrap" type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")}>
-                        <ToggleItem value="asc"><div className="flex items-center gap-1 whitespace-nowrap"><ArrowUp size={16} /> Asc</div></ToggleItem>
-                        <ToggleItem value="desc"><div className="flex items-center gap-1 whitespace-nowrap"><ArrowDown size={16} /> Desc</div></ToggleItem>
-                    </ToggleGroup>
-                    <Button onClick={() => { setStreamError(""); setStreamNonce((value) => value + 1); }} size="sm">Refresh</Button>
+            <div className="mb-3 flex w-full flex-wrap items-center gap-2 rounded-ui-lg border border-ui-border bg-ui-surface-muted/50 px-2 py-2">
+                <div className="flex min-w-0 basis-full items-center gap-2 sm:basis-auto">
+                    <span className="hidden px-1 text-xs font-medium text-ui-muted sm:inline">Sort</span>
+                    <div className="min-w-0 max-w-full overflow-x-auto pb-1 sm:pb-0">
+                        <ToggleGroup noSlide className="flex-nowrap" type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v as SortBy)}>
+                            <ToggleItem value="id">ID</ToggleItem>
+                            <ToggleItem value="name">Name</ToggleItem>
+                            <ToggleItem value="download">Download</ToggleItem>
+                            <ToggleItem value="upload">Upload</ToggleItem>
+                        </ToggleGroup>
+                    </div>
                 </div>
-                <div className="min-w-0 max-w-full overflow-x-auto pb-1 sm:pb-0">
-                    <ToggleGroup className="flex-nowrap" type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v as SortBy)}>
-                        <ToggleItem value="id">Id</ToggleItem>
-                        <ToggleItem value="name">Name</ToggleItem>
-                        <ToggleItem value="download">Download</ToggleItem>
-                        <ToggleItem value="upload">Upload</ToggleItem>
-                    </ToggleGroup>
-                </div>
+                <ToggleGroup noSlide className="shrink-0 flex-nowrap" type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")}>
+                    <ToggleItem value="asc"><span className="flex items-center gap-1 whitespace-nowrap"><ArrowUp size={14} /> Asc</span></ToggleItem>
+                    <ToggleItem value="desc"><span className="flex items-center gap-1 whitespace-nowrap"><ArrowDown size={14} /> Desc</span></ToggleItem>
+                </ToggleGroup>
+                <Button
+                    onClick={() => { setStreamError(""); setStreamNonce((value) => value + 1); }}
+                    size="sm"
+                    variant="outline-secondary"
+                    className="ml-auto shrink-0"
+                    aria-label="Refresh connections"
+                >
+                    <RefreshCw size={14} className="mr-1.5" />
+                    Refresh
+                </Button>
             </div>
 
             {sorted.length === 0 ? (
-                <div className="p-6 mb-8 text-center text-ui-muted rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg">
+                <div className="min-h-[220px] flex-1 rounded-ui-lg border border-ui-border bg-ui-surface p-6 text-center text-ui-muted shadow-ui-card">
                     No active connections.
                 </div>
             ) : sorted.length > VIRTUALIZE_THRESHOLD ? (
-                <div className="mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl">
+                <div className="min-h-0 flex-1 overflow-hidden rounded-ui-lg border border-ui-border bg-ui-surface shadow-ui-card">
                     <VList
                         data={sorted}
                         itemSize={rowHeight}
                         bufferSize={ROW_HEIGHT * 10}
                         style={{
-                            height: Math.min(
-                                sorted.length * rowHeight,
-                                typeof window === "undefined" ? 720 : Math.min(window.innerHeight * 0.72, 900),
-                            ),
+                            height: "100%",
                             width: "100%",
                         }}
                     >
@@ -209,7 +234,7 @@ function Connections() {
                     </VList>
                 </div>
             ) : (
-                <div className="flex flex-col p-0 m-0 mb-8 overflow-hidden rounded-sidebar-radius border border-sidebar-border bg-sidebar-bg shadow-xl">
+                <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto rounded-ui-lg border border-ui-border bg-ui-surface shadow-ui-card">
                     <AnimatePresence initial={false}>
                         {sorted.map(conn => (
                             <ConnectionRow
@@ -265,12 +290,12 @@ const ConnectionRow = memo(function ConnectionRow({
     const download = formatBytes(numberValue(counter?.download));
     const upload = formatBytes(numberValue(counter?.upload));
     // Keep everything in one dense row. Avoid 1fr/space-between — that creates a huge empty middle.
-    const className = "flex min-h-[52px] items-center gap-2.5 border-b border-sidebar-border px-3.5 py-2 transition-colors duration-150 cursor-pointer hover:bg-sidebar-hover last:border-b-0 max-sm:grid max-sm:min-h-[80px] max-sm:grid-cols-[3.25rem_minmax(0,1fr)] max-sm:gap-x-2 max-sm:gap-y-1 max-sm:py-2.5 sm:flex-nowrap";
+    const className = "flex min-h-[52px] items-center gap-2.5 border-b border-ui-border/70 px-3.5 py-2 transition-colors duration-150 cursor-pointer hover:bg-ui-surface-muted last:border-b-0 max-sm:grid max-sm:min-h-[80px] max-sm:grid-cols-[3.25rem_minmax(0,1fr)] max-sm:gap-x-2 max-sm:gap-y-1 max-sm:py-2.5 sm:flex-nowrap";
     const handleClick = useCallback(() => onSelect(conn), [conn, onSelect]);
 
     const body = (
         <>
-            <code className="w-[3.25rem] shrink-0 font-mono text-[11px] tabular-nums text-sidebar-color/75 max-sm:col-start-1 max-sm:row-start-1">
+            <code className="w-[3.25rem] shrink-0 font-mono text-[11px] tabular-nums text-ui-muted max-sm:col-start-1 max-sm:row-start-1">
                 {conn.id}
             </code>
 
@@ -282,9 +307,9 @@ const ConnectionRow = memo(function ConnectionRow({
             </span>
 
             <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-1.5 max-sm:col-span-2 max-sm:row-start-2 max-sm:flex-nowrap max-sm:overflow-x-auto">
-                <IconBadge icon={ShieldCheck} text={conn.mode || "unknown"} />
-                <IconBadge icon={Network} text={conn.network.connType || "unknown"} />
-                {conn.tag && <IconBadge icon={Tag} text={conn.tag} />}
+                <ConnectionBadge icon={ShieldCheck} text={conn.mode || "unknown"} />
+                <ConnectionBadge icon={Network} text={conn.network.connType || "unknown"} />
+                {conn.tag && <ConnectionBadge icon={Tag} text={conn.tag} tone="neutral" />}
             </div>
 
             <FlowBadge download={download} upload={upload} />
@@ -321,7 +346,7 @@ const ConnectionRow = memo(function ConnectionRow({
 
 const FlowBadge = memo(function FlowBadge({ download, upload }: { download: string; upload: string }) {
     return (
-        <div className="inline-flex shrink-0 items-center gap-2 text-[11px] font-semibold tabular-nums max-sm:col-span-2 max-sm:row-start-3 max-sm:justify-self-end">
+        <div className="inline-flex shrink-0 items-center gap-2 font-mono text-[11px] font-medium tabular-nums max-sm:col-span-2 max-sm:row-start-3 max-sm:justify-self-end">
             <span className="inline-flex items-center gap-0.5 text-ui-info">
                 <ArrowDown size={11} />
                 {download}

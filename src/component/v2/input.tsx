@@ -51,7 +51,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                     ui.fieldDisabled,
                     "placeholder:not-italic",
                     {
-                        "h-field-sm py-1 px-2.5 text-[0.8125rem]": size === "sm",
+                        "min-h-field": size === "default",
+                        "h-field-sm min-h-field-sm py-1 px-2.5 text-[0.8125rem]": size === "sm",
                     },
                     groupRadiusClass(groupPosition),
                     className

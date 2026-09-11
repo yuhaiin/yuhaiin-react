@@ -17,12 +17,13 @@ export function RouteActivationProgress({ status, onApplied }: { status?: RouteA
     const rulePending = (status?.ruleApplyAt ?? 0) > now;
     const target = Math.max(status?.hostIndexRefreshAt ?? 0, status?.ruleApplyAt ?? 0);
     const remaining = Math.max(0, target - now);
+    const isPending = remaining > 0;
 
     useEffect(() => {
-        if (remaining <= 0) return;
+        if (!isPending) return;
         const timer = window.setInterval(() => setNow(Date.now()), 250);
         return () => window.clearInterval(timer);
-    }, [remaining]);
+    }, [isPending]);
 
     if (!listPending && !rulePending) return null;
 

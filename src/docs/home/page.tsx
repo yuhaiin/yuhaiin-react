@@ -132,7 +132,7 @@ function HomePage() {
             />
 
             <div className="mb-3 shrink-0">
-                <FlowContainer onFlow={isLiveTraffic ? appendTraffic : undefined} />
+                <FlowContainer onFlow={isLiveTraffic ? appendTraffic : undefined} variant="summary" />
             </div>
 
             <div className="mb-4 grid shrink-0 gap-3 sm:grid-cols-2">
@@ -152,8 +152,8 @@ function HomePage() {
 
             <MainContainer>
                 <Card className="min-h-[400px]" density="compact">
-                    <CardHeader className="gap-3 px-4 py-3.5">
-                        <div className="flex min-w-0 flex-1 items-start gap-3">
+                    <CardHeader className="flex-col items-stretch gap-3 px-4 py-3.5 sm:flex-row sm:items-center">
+                        <div className="flex w-full min-w-0 items-start gap-3 sm:flex-1">
                             <IconBox
                                 icon={Activity}
                                 tone="primary"
@@ -162,7 +162,7 @@ function HomePage() {
                             />
                         </div>
 
-                        <div className="flex flex-col items-stretch gap-2 sm:items-end">
+                        <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-end">
                             <div
                                 className="inline-flex flex-wrap items-center rounded-full border border-ui-border bg-ui-surface-muted/50 p-1"
                                 aria-label="Traffic range"

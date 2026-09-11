@@ -358,6 +358,7 @@ export namespace Go {
       | { type: "reality"; reality: Reality }
       | { type: "tls"; tls: TLS }
       | { type: "wireguard"; wireguard: Wireguard }
+      | { type: "openvpn"; openvpn: Openvpn }
       | { type: "mux"; mux: Concurrency }
       | { type: "drop"; drop: Drop }
       | { type: "vless"; vless: Vless }
@@ -500,6 +501,11 @@ export namespace Go {
       endpoint: string;
       keepAlive?: number;
       allowedIps?: string[];
+    }
+    export interface Openvpn {
+      profile: string;
+      username?: string;
+      password?: string;
     }
     export interface Tailscale {
       auth_key: string;

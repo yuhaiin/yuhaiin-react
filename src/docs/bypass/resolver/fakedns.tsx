@@ -71,7 +71,7 @@ export const Fakedns: FC = () => {
                         </div>
                     </div>
 
-                    <hr className="my-0 border-gray-500/10 opacity-10" />
+                    <hr className="my-0 border-ui-border/70" />
 
                     <InputList
                         title="Domain Whitelist"
@@ -79,7 +79,7 @@ export const Fakedns: FC = () => {
                         onChange={(v) => handleMutate(prev => ({ ...prev, whitelist: v }))}
                     />
 
-                    <hr className="my-0 border-gray-500/10 opacity-10" />
+                    <hr className="my-0 border-ui-border/70" />
 
                     <InputList
                         title="Skip Check List"

@@ -4,7 +4,7 @@ import { getTotalFlow } from "@/api/connections";
 import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datalist";
 import type { Connection, Counter, MatchHistoryEntry, TotalFlow } from "@/contract/connection";
 import { clsx } from "clsx";
-import { Check, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, X } from "lucide-react";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -30,6 +30,23 @@ export function numberValue(value?: string | number): number {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : 0;
 }
+
+export const ConnectionBadge: FC<{
+    icon: React.ElementType;
+    text: React.ReactNode;
+    tone?: "info" | "success" | "warning" | "neutral";
+}> = ({ icon: Icon, text, tone = "info" }) => (
+    <span className={clsx(
+        "inline-flex shrink-0 items-center gap-1 rounded-ui-xs border px-2 py-1 text-[11px] font-medium leading-none whitespace-nowrap",
+        tone === "info" && "border-ui-info/20 bg-ui-info-soft text-ui-info",
+        tone === "success" && "border-ui-success/20 bg-ui-success-soft text-ui-success",
+        tone === "warning" && "border-ui-warning/20 bg-ui-warning-soft text-ui-warning",
+        tone === "neutral" && "border-ui-border bg-ui-surface-muted text-ui-muted",
+    )}>
+        <Icon size={12} aria-hidden="true" />
+        <span>{text}</span>
+    </span>
+);
 
 function errorText(error: unknown): string | undefined {
     if (!error) return undefined;
@@ -58,11 +75,11 @@ export class Flow {
     }
 
     DownloadString() {
-        return `${formatBytes(this.downloadRate, 2, " ")}/S`;
+        return `${formatBytes(this.downloadRate, 2, " ")}/s`;
     }
 
     UploadString() {
-        return `${formatBytes(this.uploadRate, 2, " ")}/S`;
+        return `${formatBytes(this.uploadRate, 2, " ")}/s`;
     }
 
     DownloadTotalString() {
@@ -209,33 +226,45 @@ export function useFlow(options?: UseFlowOptions) {
     };
 }
 
-const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral" }> = ({ label, value, error, accent = "neutral" }) => {
+const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral"; summary?: boolean }> = ({ label, value, error, accent = "neutral", summary = false }) => {
     const display = error || value;
     const prevRef = useRef(display);
     const [pulse, setPulse] = useState(false);
 
     useEffect(() => {
+        if (summary) return;
         if (prevRef.current === display) return;
         prevRef.current = display;
         setPulse(true);
         const timer = window.setTimeout(() => setPulse(false), 280);
         return () => window.clearTimeout(timer);
-    }, [display]);
+    }, [display, summary]);
 
     return (
         <div
             className={clsx(
-                "relative flex min-h-[92px] flex-col justify-center overflow-hidden rounded-ui-xl border bg-[var(--metric-bg)] p-4 shadow-ui-card transition-colors",
-                "border-[var(--metric-border)] hover:border-ui-primary/25",
-                accent === "download" && "before:absolute before:inset-y-3 before:left-0 before:w-0.5 before:rounded-full before:bg-ui-info",
-                accent === "upload" && "before:absolute before:inset-y-3 before:left-0 before:w-0.5 before:rounded-full before:bg-ui-success",
+                "relative flex min-h-[76px] flex-col justify-center overflow-hidden transition-colors",
+                summary
+                    ? "border-ui-border/80 bg-transparent px-4 py-3 first:border-l-0 sm:border-l sm:first:border-l-0"
+                    : "rounded-ui-xl border bg-[var(--metric-bg)] p-4 shadow-ui-card border-[var(--metric-border)] hover:border-ui-primary/25",
             )}
         >
-            <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--metric-label,#64748b)]">
-                {label}
+            <div className={clsx(
+                "mb-1.5 flex items-center gap-1.5 text-[11px] font-medium leading-none text-[var(--metric-label,#64748b)]",
+                !summary && "uppercase tracking-[0.08em]",
+            )}>
+                {summary && (
+                    <span className={clsx(
+                        "inline-flex h-5 w-5 items-center justify-center rounded-ui-xs",
+                        accent === "upload" ? "bg-ui-success-soft text-ui-success" : "bg-ui-info-soft text-ui-info",
+                    )}>
+                        {accent === "upload" ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
+                    </span>
+                )}
+                <span>{label}</span>
             </div>
             <div className={clsx(
-                "truncate font-mono text-[1.35rem] font-bold leading-tight text-[var(--metric-value,#0f172a)]",
+                "truncate font-mono text-[1.25rem] font-semibold leading-tight tabular-nums text-[var(--metric-value,#0f172a)]",
                 pulse && "animate-dataUpdate",
                 error && "text-ui-danger"
             )}>
@@ -249,26 +278,29 @@ export const FlowCard: FC<{
     lastFlow?: Flow;
     flow_error?: string;
     extra_fields?: MetricProps[];
-}> = ({ lastFlow, flow_error, extra_fields }) => {
+    variant?: "default" | "summary";
+}> = ({ lastFlow, flow_error, extra_fields, variant = "default" }) => {
     const { t } = useTranslation(["connections", "common"]);
     const loading = t("common:state.loading");
     const hasExtra = Boolean(extra_fields?.length);
+    const summary = variant === "summary";
 
     return (
         <div
             className={clsx(
-                "mb-3 grid w-full gap-3",
-                hasExtra
-                    ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
-                    : "grid-cols-1 sm:grid-cols-2 xl:grid-cols-4"
+                "mb-3 w-full",
+                summary && "grid overflow-hidden rounded-ui-lg border border-ui-border bg-ui-surface shadow-ui-card",
+                summary
+                    ? hasExtra ? "grid-cols-2 sm:grid-cols-2 xl:grid-cols-3" : "grid-cols-2 sm:grid-cols-2 xl:grid-cols-4"
+                    : clsx("grid gap-3", hasExtra ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" : "grid-cols-1 sm:grid-cols-2 xl:grid-cols-4"),
             )}
         >
-            <MetricCard accent="download" label={t("totalDownload")} value={lastFlow ? lastFlow.DownloadTotalString() : loading} error={flow_error} />
-            <MetricCard accent="download" label={t("downloadRate")} value={lastFlow ? lastFlow.DownloadString() : loading} error={flow_error} />
-            <MetricCard accent="upload" label={t("totalUpload")} value={lastFlow ? lastFlow.UploadTotalString() : loading} error={flow_error} />
-            <MetricCard accent="upload" label={t("uploadRate")} value={lastFlow ? lastFlow.UploadString() : loading} error={flow_error} />
+            <MetricCard summary={summary} accent="download" label={t("totalDownload")} value={lastFlow ? lastFlow.DownloadTotalString() : loading} error={flow_error} />
+            <MetricCard summary={summary} accent="download" label={t("downloadRate")} value={lastFlow ? lastFlow.DownloadString() : loading} error={flow_error} />
+            <MetricCard summary={summary} accent="upload" label={t("totalUpload")} value={lastFlow ? lastFlow.UploadTotalString() : loading} error={flow_error} />
+            <MetricCard summary={summary} accent="upload" label={t("uploadRate")} value={lastFlow ? lastFlow.UploadString() : loading} error={flow_error} />
             {extra_fields?.map((field, index) => (
-                <MetricCard key={`extra-field-${index}`} label={field.label} value={field.value || loading} error={field.error} />
+                <MetricCard key={`extra-field-${index}`} summary={summary} label={field.label} value={field.value || loading} error={field.error} />
             ))}
         </div>
     );
@@ -280,7 +312,8 @@ export const FlowContainer: FC<{
     extra_fields?: MetricProps[];
     enabled?: boolean;
     refreshInterval?: number;
-}> = React.memo(({ onUpdate, onFlow, extra_fields, enabled, refreshInterval }) => {
+    variant?: "default" | "summary";
+}> = React.memo(({ onUpdate, onFlow, extra_fields, enabled, refreshInterval, variant }) => {
     const { data: lastFlow, error: flow_error } = useFlow({ enabled, refreshInterval });
 
     useEffect(() => {
@@ -288,7 +321,7 @@ export const FlowContainer: FC<{
         if (onFlow && lastFlow) onFlow(lastFlow);
     }, [onUpdate, onFlow, lastFlow]);
 
-    return <FlowCard lastFlow={lastFlow} flow_error={lastFlow ? undefined : flow_error} extra_fields={extra_fields} />;
+    return <FlowCard lastFlow={lastFlow} flow_error={lastFlow ? undefined : flow_error} extra_fields={extra_fields} variant={variant} />;
 });
 
 export const ConnectionInfo: FC<{

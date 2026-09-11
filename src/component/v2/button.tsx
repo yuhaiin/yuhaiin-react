@@ -38,7 +38,7 @@ const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
         const radiusClass = groupPosition ? radiusClasses[groupPosition] : '';
 
         const baseStyles = clsx(
-            "inline-flex items-center justify-center py-1.5 px-3 text-base leading-normal font-medium font-inherit appearance-none shadow-none cursor-pointer border rounded-ui-md relative no-underline select-none align-middle",
+            "inline-flex items-center justify-center py-2 px-3.5 text-sm leading-normal font-medium font-inherit appearance-none shadow-none cursor-pointer border rounded-ui-md relative no-underline select-none align-middle",
             ui.interactive,
             ui.focusRing,
             ui.disabled
@@ -47,34 +47,34 @@ const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
         const variantStyles = {
             default: clsx(
                 "bg-ui-surface-muted border-ui-border text-ui-fg",
-                "hover:bg-ui-hover hover:border-ui-primary hover:text-ui-primary hover:z-20",
-                "active:bg-ui-hover active:border-ui-primary active:text-ui-primary active:shadow-none active:z-30",
-                "data-[state=open]:bg-ui-hover data-[state=open]:border-ui-primary data-[state=open]:text-ui-primary data-[state=open]:shadow-none data-[state=open]:z-30"
+                "hover:bg-ui-hover hover:border-ui-primary hover:text-ui-primary",
+                "active:bg-ui-hover active:border-ui-primary active:text-ui-primary active:shadow-none",
+                "data-[state=open]:bg-ui-hover data-[state=open]:border-ui-primary data-[state=open]:text-ui-primary data-[state=open]:shadow-none"
             ),
             danger: clsx(
                 "bg-ui-danger border-ui-danger text-white",
-                "hover:border-ui-danger hover:text-white hover:shadow-ui-focus",
-                "active:border-ui-danger active:text-white active:shadow-ui-focus",
-                "data-[state=open]:border-ui-danger data-[state=open]:text-white data-[state=open]:shadow-ui-focus"
+                "hover:border-ui-danger hover:text-white",
+                "active:border-ui-danger active:text-white",
+                "data-[state=open]:border-ui-danger data-[state=open]:text-white"
             ),
             "outline-danger": clsx(
                 "bg-transparent border-ui-danger text-ui-danger",
                 "hover:bg-ui-danger hover:text-white",
-                "active:bg-ui-danger active:border-ui-danger active:text-white active:shadow-ui-focus",
-                "data-[state=open]:bg-ui-danger data-[state=open]:border-ui-danger data-[state=open]:text-white data-[state=open]:shadow-ui-focus",
+                "active:bg-ui-danger active:border-ui-danger active:text-white",
+                "data-[state=open]:bg-ui-danger data-[state=open]:border-ui-danger data-[state=open]:text-white",
                 "disabled:bg-transparent disabled:text-ui-danger disabled:opacity-50"
             ),
             primary: clsx(
                 "bg-ui-primary border-ui-primary text-white",
-                "hover:bg-ui-primary hover:border-ui-primary hover:text-white hover:shadow-ui-focus hover:opacity-90",
-                "active:bg-ui-primary active:border-ui-primary active:text-white active:shadow-ui-focus active:opacity-90",
-                "data-[state=open]:bg-ui-primary data-[state=open]:border-ui-primary data-[state=open]:text-white data-[state=open]:shadow-ui-focus data-[state=open]:opacity-90"
+                "hover:bg-ui-primary hover:border-ui-primary hover:text-white hover:opacity-90",
+                "active:bg-ui-primary active:border-ui-primary active:text-white active:opacity-90",
+                "data-[state=open]:bg-ui-primary data-[state=open]:border-ui-primary data-[state=open]:text-white data-[state=open]:opacity-90"
             ),
             "outline-primary": clsx(
                 "bg-transparent border-ui-primary text-ui-primary",
                 "hover:bg-ui-primary hover:text-white",
-                "active:bg-transparent active:border-ui-primary active:text-ui-primary active:shadow-ui-focus",
-                "data-[state=open]:bg-transparent data-[state=open]:border-ui-primary data-[state=open]:text-ui-primary data-[state=open]:shadow-ui-focus",
+                "active:bg-transparent active:border-ui-primary active:text-ui-primary",
+                "data-[state=open]:bg-transparent data-[state=open]:border-ui-primary data-[state=open]:text-ui-primary",
                 "disabled:bg-transparent disabled:text-ui-primary disabled:opacity-50"
             ),
             "outline-secondary": clsx(

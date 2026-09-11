@@ -3,7 +3,7 @@
 import { activeNodes, closeNode } from "@/api/nodes";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
-import { CardList, IconBox, IconBoxRounded, MainContainer } from "@/component/v2/card";
+import { CardRowList, IconBox, IconBoxRounded, MainContainer } from "@/component/v2/card";
 import { ConfirmModal } from "@/component/v2/confirm";
 import Loading, { Error } from "@/component/v2/loading";
 import { GlobalToastContext } from "@/component/v2/toast";
@@ -15,33 +15,33 @@ import { NodeModal } from "../../node/modal";
 
 const ActiveNodeItem: FC<{ v: Node, onClose: () => void }> = ({ v, onClose }) => {
     return (
-        <div className="flex w-full flex-col md:flex-row items-start md:items-center justify-between gap-3">
-            <div className="flex items-center flex-grow overflow-hidden gap-3 w-full md:w-auto">
+        <div className="grid w-full min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+            <div className="flex min-w-0 items-center gap-3">
                 <IconBoxRounded
                     icon={Zap}
                     tone="success"
                     className="flex-shrink-0"
                     style={{ width: "40px", height: "40px", marginRight: "0px", border: "none" }}
                 />
-                <div className="flex flex-col overflow-hidden min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="font-bold truncate text-base">{v.name}</span>
-                        <Badge className="bg-ui-primary-soft text-ui-primary border border-ui-primary/25 px-2 py-1" style={{ fontSize: "0.65rem" }}>
+                <div className="min-w-0">
+                    <div className="mb-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="break-words font-semibold text-ui-heading sm:truncate">{v.name}</span>
+                        <Badge className="border border-ui-primary/25 bg-ui-primary-soft px-2 py-1 text-ui-primary" style={{ fontSize: "0.65rem" }}>
                             {v.group}
                         </Badge>
                     </div>
-                    <small className="text-ui-muted truncate font-mono opacity-75 text-sm">
+                    <div className="break-all text-sm font-mono text-ui-muted opacity-75 sm:truncate">
                         <Hash className="mr-1 inline" size={12} />{v.id}
-                    </small>
+                    </div>
                 </div>
             </div>
-            <div className="flex gap-2 items-center flex-shrink-0 ml-auto md:ml-0">
+            <div className="flex items-center justify-end gap-2 sm:justify-self-end">
                 <Button
                     variant="outline-danger"
                     size="sm"
                     onClick={(e) => { e.stopPropagation(); onClose(); }}
                     title="Close this node connection"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 justify-self-end"
                     style={{ minWidth: "38px" }}
                 >
                     <Power size={16} />
@@ -99,15 +99,17 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
                 onOk={() => handleCloseNode(confirmData.id)}
             />
 
-            <CardList
+            <CardRowList
+                layout="list"
                 items={sortedNodes}
                 animated={false}
+                getKey={(v) => v.id}
                 renderListItem={(v) => <ActiveNodeItem v={v} onClose={() => setConfirmData({ show: true, id: v.id })} />}
                 onClickItem={(v) => setNodeModal({ show: true, node: v })}
                 header={
-                    <div className="flex items-center justify-between w-full">
+                    <div className="flex w-full items-center justify-between gap-3">
                         <IconBox icon={Activity} tone="success" title="Active Nodes" description="Live outbound connection instances" />
-                        <Badge variant="success" className="bg-ui-success-soft text-ui-success border border-ui-success/25 px-3 py-2 rounded-full">
+                        <Badge variant="success" className="shrink-0 rounded-full border border-ui-success/25 bg-ui-success-soft px-3 py-2 text-ui-success">
                             {sortedNodes.length} Running
                         </Badge>
                     </div>

@@ -19,7 +19,9 @@ import Loading from "../../../component/v2/loading";
 const ZeroDate = new Date(0);
 
 function historyDate(value?: string): Date {
-    return value ? new Date(value) : ZeroDate;
+    if (!value) return ZeroDate;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? ZeroDate : date;
 }
 
 function formatProtocolLabel(value?: string) {
@@ -34,13 +36,13 @@ const ListItem: FC<{ data: BlockHistory }> = React.memo(({ data }) => {
 
             {/* Left Side: Icon + Host & Process */}
             <div className="flex items-center grow overflow-hidden gap-4 w-full md:w-auto">
-                <div className="flex items-center justify-center bg-red-500/10 text-red-500 rounded-full shrink-0" style={{ width: '42px', height: '42px' }}>
-                    <ShieldOff className="text-xl" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ui-md border border-ui-danger/20 bg-ui-danger-soft text-ui-danger">
+                    <ShieldOff size={17} />
                 </div>
 
                 <div className="flex flex-col overflow-hidden" style={{ minWidth: 0 }}>
-                    <span className="font-bold truncate text-base opacity-75">{data.host}</span>
-                    <small className="text-ui-muted truncate opacity-75 font-mono">
+                    <span className="truncate text-base font-semibold text-ui-heading">{data.host}</span>
+                    <small className="truncate font-mono text-xs text-ui-muted">
                         {data.process || "System Filter"}
                     </small>
                 </div>
@@ -52,12 +54,12 @@ const ListItem: FC<{ data: BlockHistory }> = React.memo(({ data }) => {
                     <Network size={12} /> {formatProtocolLabel(data.protocol)}
                 </Badge>
                 <Badge variant="danger" pill className="flex items-center gap-1">
-                    <Ban size={12} /> {data.blockCount} Blocks
+                    <Ban size={12} /> {data.blockCount} blocks
                 </Badge>
                 <Badge variant="secondary" pill className="flex items-center gap-1">
                     <Clock size={12} /> {historyDate(data.time).toLocaleTimeString()}
                 </Badge>
-                <ChevronRight className="text-ui-muted opacity-25 ml-2 hidden md:block" size={16} />
+                <ChevronRight className="ml-1 hidden text-ui-muted/50 md:block" size={17} />
             </div>
         </div>
     );
@@ -122,20 +124,20 @@ function BypassBlockHistory() {
     const paginatedItems = values.slice((page - 1) * pageSize, page * pageSize);
 
     return (
-        <MainContainer>
+        <MainContainer className="flex min-h-full min-w-0 flex-col">
             <InfoModal data={info.data} show={info.show} onClose={() => setInfo({ ...info, show: false })} />
 
             {/* --- Action Bar --- */}
-            <div className="flex flex-wrap justify-between items-end mb-4 gap-3">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
-                    <h4 className="font-bold mb-1">Blocked Traffic</h4>
-                    <div className="text-ui-muted flex items-center text-sm">
-                        <ShieldOff className="mr-2 text-red-500 opacity-75" />
+                    <h1 className="text-xl font-semibold leading-tight text-ui-heading sm:text-2xl">Blocked Traffic</h1>
+                    <div className="mt-1 flex items-center text-xs text-ui-muted">
+                        <ShieldOff className="mr-1.5 text-ui-danger" size={14} />
                         <span>Displaying {values.length} connections denied by rules</span>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 justify-end items-center">
+                <div className="flex flex-wrap items-center justify-end gap-2 rounded-ui-lg border border-ui-border bg-ui-surface-muted/50 px-2 py-2">
                     <Button size="sm" onClick={() => mutate()} disabled={isValidating}>
                         {isValidating ? <Spinner size="sm" /> : <RotateCw size={16} />}
                     </Button>
@@ -149,14 +151,14 @@ function BypassBlockHistory() {
                         <DropdownContent style={{ minWidth: '320px' }} className="p-3">
                             <div className="mb-3">
                                 <SettingLabel className="mb-2">Order</SettingLabel>
-                                <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-full">
-                                    <ToggleItem value="asc" className="grow">ASC</ToggleItem>
-                                    <ToggleItem value="desc" className="grow">DESC</ToggleItem>
+                                <ToggleGroup noSlide type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-full">
+                                    <ToggleItem value="asc" className="grow">Asc</ToggleItem>
+                                    <ToggleItem value="desc" className="grow">Desc</ToggleItem>
                                 </ToggleGroup>
                             </div>
                             <div>
                                 <SettingLabel className="mb-2">By</SettingLabel>
-                                <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="flex flex-wrap w-full">
+                                <ToggleGroup noSlide type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="flex w-full flex-wrap">
                                     <ToggleItem value="Time" className="grow">Time</ToggleItem>
                                     <ToggleItem value="Host" className="grow">Host</ToggleItem>
                                     <ToggleItem value="Count" className="grow">Count</ToggleItem>

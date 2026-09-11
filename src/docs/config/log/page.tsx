@@ -9,6 +9,7 @@ import type { LogBatch } from "@/contract/tools"
 import { clsx } from "clsx"
 import { Radio, Terminal, Trash2 } from 'lucide-react'
 import { FC, memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { VList, type VListHandle } from "virtua"
 
 const LOG_RETENTION_OPTIONS = [500, 2000, 10000] as const
@@ -247,6 +248,7 @@ const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
 });
 
 export default function LogComponent() {
+    const { t } = useTranslation("config");
     const [searchTerm, setSearchTerm] = useState('');
     const deferredSearchTerm = useDeferredValue(searchTerm)
     const [retention, setRetention] = useState<LogRetention>(2000)
@@ -355,20 +357,26 @@ export default function LogComponent() {
                     )}
                 </CardHeader>
                 <CardBody className="!p-0 bg-ui-surface-muted flex-1 min-h-0 overflow-hidden rounded-b-[inherit]">
-                    <div className="h-full min-h-0 w-full rounded-[inherit] font-mono">
-                        <VList
-                            ref={logListRef}
-                            data={visibleLog}
-                            bufferSize={360}
-                            shift
-                            onScroll={(offset) => {
-                                followLatestRef.current = offset < 40;
-                            }}
-                            style={{ height: '100%', width: '100%', overflowAnchor: 'none' }}
-                        >
-                            {(entry) => <LogLine key={entry.id} entry={entry} />}
-                        </VList>
-                    </div>
+                    {visibleLog.length === 0 ? (
+                        <div className="flex h-full min-h-40 items-center justify-center px-6 text-center text-sm text-ui-muted">
+                            {searchTerm ? t("log.noSearchResults") : t("log.empty")}
+                        </div>
+                    ) : (
+                        <div className="h-full min-h-0 w-full rounded-[inherit] font-mono">
+                            <VList
+                                ref={logListRef}
+                                data={visibleLog}
+                                bufferSize={360}
+                                shift
+                                onScroll={(offset) => {
+                                    followLatestRef.current = offset < 40;
+                                }}
+                                style={{ height: '100%', width: '100%', overflowAnchor: 'none' }}
+                            >
+                                {(entry) => <LogLine key={entry.id} entry={entry} />}
+                            </VList>
+                        </div>
+                    )}
                 </CardBody>
             </Card>
         </MainContainer>

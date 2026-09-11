@@ -13,7 +13,7 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
     return (
         <>
             <Button
-                className="lg:!hidden !fixed top-[15px] left-[15px] z-[1030] w-[44px] h-[44px] shadow-[0_4px_15px_rgba(0,0,0,0.1)]"
+                className="lg:!hidden !fixed top-[15px] left-[15px] z-[1030] h-11 w-11 shadow-ui-card"
                 onClick={() => setShowSidebar(!showSidebar)}
                 aria-label={t('toggle')}
             >

@@ -8,6 +8,46 @@ export type InboundQuery = {
     query?: string;
 };
 
+export type InboundRuntimeState = "disabled" | "starting" | "running" | "degraded" | "failed" | "stopping";
+
+export type InboundRuntimeListener = {
+    kind: string;
+    state: InboundRuntimeState;
+    listen?: string | null;
+    lastError?: string | null;
+    changedAt: number;
+};
+
+export type InboundStatistics = {
+    activeTcp: number;
+    activeUdp: number;
+    totalTcpFlows: number;
+    totalUdpFlows: number;
+    uploadBytes: string;
+    downloadBytes: string;
+};
+
+export type InboundRuntimeStatus = {
+    id: string;
+    name: string;
+    enabled: boolean;
+    status: InboundRuntimeState;
+    lastError?: string | null;
+    changedAt: number;
+    listeners: InboundRuntimeListener[];
+    statistics: InboundStatistics;
+};
+
+export type InboundRuntimeEvent = {
+    id: number;
+    inboundId: string;
+    type: string;
+    state: InboundRuntimeState;
+    error?: string | null;
+    detail: Record<string, unknown>;
+    createdAt: number;
+};
+
 function listQuery(query?: InboundQuery): Record<string, number | string | undefined> {
     return {
         page: query?.page,
@@ -22,6 +62,20 @@ export async function listInbounds(query?: InboundQuery): Promise<InboundList> {
         items: (data.items ?? []).map(item => normalizeInbound(item as unknown as Partial<Inbound>)),
         page: data.page ?? { page: query?.page ?? 1, pageSize: query?.pageSize ?? 0, total: 0 },
     });
+}
+
+export async function listInboundStatuses(): Promise<InboundRuntimeStatus[]> {
+    const data = await requestJSON<{ items?: InboundRuntimeStatus[] }>("GET", "/api/v2/inbounds/status");
+    return data.items ?? [];
+}
+
+export async function listInboundEvents(id: string): Promise<InboundRuntimeEvent[]> {
+    const data = await requestJSON<{ items?: InboundRuntimeEvent[] }>("GET", `/api/v2/inbounds/${encodeURIComponent(id)}/events`);
+    return data.items ?? [];
+}
+
+export function retryInbound(id: string): Promise<void> {
+    return requestJSON<void>("POST", `/api/v2/inbounds/${encodeURIComponent(id)}/retry`);
 }
 
 export async function getInbound(id: string): Promise<Inbound> {

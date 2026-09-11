@@ -51,27 +51,32 @@ export function useElementSize<T extends HTMLElement = HTMLDivElement>(): [
     height: 0,
   })
 
-  // Prevent too many rendering using useCallback
   const handleSize = useCallback(() => {
-    setSize({
+    const nextSize = {
       width: ref?.offsetWidth || 0,
       height: ref?.offsetHeight || 0,
-    })
+    }
 
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [ref?.offsetHeight, ref?.offsetWidth])
+    setSize((previousSize) => (
+      previousSize.width === nextSize.width && previousSize.height === nextSize.height
+        ? previousSize
+        : nextSize
+    ))
+  }, [ref])
 
   useEffect(() => {
+    if (!ref) return
+
     window.addEventListener('resize', handleSize)
+    handleSize()
     return () => {
       window.removeEventListener('resize', handleSize)
     }
-  }, [handleSize])
+  }, [ref, handleSize])
 
   useEffect(() => {
     handleSize()
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [ref?.offsetHeight, ref?.offsetWidth])
+  }, [handleSize, ref?.offsetHeight, ref?.offsetWidth])
 
   return [setRef, size]
 }

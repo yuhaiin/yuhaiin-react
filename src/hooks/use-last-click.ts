@@ -1,9 +1,9 @@
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 // Singleton to hold the last click position
 let lastClickPosition = { x: 0, y: 0 };
-let isListening = false;
+let listenerCount = 0;
 
 const updatePosition = (e: MouseEvent) => {
     lastClickPosition = { x: e.clientX, y: e.clientY };
@@ -11,13 +11,18 @@ const updatePosition = (e: MouseEvent) => {
 
 export const useLastClickPosition = () => {
     useEffect(() => {
-        if (!isListening) {
+        if (listenerCount === 0) {
             window.addEventListener("click", updatePosition, true); // Capture phase to get it before modals
-            isListening = true;
         }
-        // We don't remove listener because we want a singleton listener for the app life
-        // Or we could ref count. For simplicity, one listener is fine.
+        listenerCount += 1;
+
+        return () => {
+            listenerCount -= 1;
+            if (listenerCount === 0) {
+                window.removeEventListener("click", updatePosition, true);
+            }
+        };
     }, []);
 
-    return () => lastClickPosition;
+    return useCallback(() => lastClickPosition, []);
 };

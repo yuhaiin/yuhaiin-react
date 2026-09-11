@@ -22,6 +22,13 @@ const ja: PhraseMap = {
     'Test Route': 'ルートテスト',
     'Block History': 'ブロック履歴',
     'Connections': '接続',
+    'Active connections': 'アクティブな接続',
+    'active': 'アクティブ',
+    'Sort': '並び替え',
+    'Refresh': '更新',
+    'No active connections.': 'アクティブな接続はありません。',
+    'Connection history': '接続履歴',
+    'Failed connections': '失敗した接続',
     'History': '履歴',
     'Failed History': '失敗履歴',
     'Backup': 'バックアップ',
@@ -534,6 +541,13 @@ const ko: PhraseMap = {
     'Test Route': '라우트 테스트',
     'Block History': '차단 기록',
     'Connections': '연결',
+    'Active connections': '활성 연결',
+    'active': '활성',
+    'Sort': '정렬',
+    'Refresh': '새로고침',
+    'No active connections.': '활성 연결이 없습니다.',
+    'Connection history': '연결 기록',
+    'Failed connections': '실패한 연결',
     'History': '기록',
     'Failed History': '실패 기록',
     'Backup': '백업',
@@ -1040,6 +1054,20 @@ export function translateInterpolatedText(text: string, language: SupportedLangu
         return language === 'ja'
             ? `ルールにより拒否された接続を ${blocked[1]} 件表示中`
             : `규칙에 의해 거부된 연결 ${blocked[1]}개 표시 중`;
+    }
+
+    const historicalRecords = text.match(/^Showing (\d+) historical records$/);
+    if (historicalRecords) {
+        return language === 'ja'
+            ? `${historicalRecords[1]} 件の接続履歴を表示中`
+            : `연결 기록 ${historicalRecords[1]}개 표시 중`;
+    }
+
+    const trackedFailures = text.match(/^Tracking (\d+) rejected or timed-out requests$/);
+    if (trackedFailures) {
+        return language === 'ja'
+            ? `${trackedFailures[1]} 件の拒否またはタイムアウトしたリクエストを追跡中`
+            : `거부되었거나 시간 초과된 요청 ${trackedFailures[1]}개 추적 중`;
     }
 
     const blocks = text.match(/^(\d+) Blocks$/);

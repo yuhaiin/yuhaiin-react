@@ -3,7 +3,7 @@
 import { deleteSubscriptions, listSubscriptions, saveSubscriptions, updateSubscriptions } from "@/api/subscriptions";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
-import { CardList, IconBox, IconBoxRounded, MainContainer, SettingsBox } from "@/component/v2/card";
+import { CardRowList, IconBox, IconBoxRounded, MainContainer, SettingsBox } from "@/component/v2/card";
 import { ConfirmModal } from "@/component/v2/confirm";
 import { SettingInputVertical } from "@/component/v2/forms";
 import { SettingSelectVertical } from "@/component/v2/select";
@@ -21,18 +21,18 @@ const subscriptionTypes = ["reserve", "trojan", "vmess", "shadowsocks", "shadows
 
 const LinkItem: FC<{ linkData: Link; isUpdating: boolean; onUpdate: () => void; onDelete: () => void }> = ({ linkData, isUpdating, onUpdate, onDelete }) => {
     return (
-        <div className="grid flex-1 gap-3 overflow-hidden sm:grid-cols-[1fr_auto] sm:items-center">
-            <div className="flex items-center gap-3 min-w-0 overflow-hidden">
+        <div className="grid w-full min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+            <div className="flex min-w-0 items-center gap-3">
                 <IconBoxRounded icon={Rss} tone="primary" style={{ width: 40, height: 40, flexShrink: 0 }} />
-                <div className="min-w-0 overflow-hidden">
-                    <div className="flex min-w-0 items-center gap-2">
-                        <div className="font-bold truncate">{linkData.name}</div>
-                        <Badge variant="secondary" pill className="uppercase">{linkData.type || "reserve"}</Badge>
+                <div className="min-w-0">
+                    <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                        <div className="break-words font-semibold text-ui-heading sm:truncate">{linkData.name}</div>
+                        <Badge variant="secondary" pill className="uppercase tracking-wide">{linkData.type || "reserve"}</Badge>
                     </div>
-                    <small className="text-ui-muted truncate block">{linkData.url}</small>
+                    <div className="break-all text-sm text-ui-muted sm:truncate" title={linkData.url}>{linkData.url}</div>
                 </div>
             </div>
-            <div className="flex gap-2 justify-end">
+            <div className="flex items-center justify-end gap-2 sm:justify-self-end">
                 <Button size="sm" onClick={(e) => { e.stopPropagation(); onUpdate() }} disabled={isUpdating}>
                     {isUpdating ? <Spinner size="sm" /> : <RefreshCw size={16} />}
                     <span className="hidden sm:inline ml-2">Update</span>
@@ -97,7 +97,12 @@ function Subscribe() {
                 void mutate();
             })
             .catch((err) => ctx.Error(`Update failed ${err.code ?? 500}| ${err.msg ?? err}`))
-            .finally(() => setUpdating(prev => ({ ...prev, [name]: false })));
+            .finally(() => setUpdating(prev => {
+                if (!(name in prev)) return prev;
+                const next = { ...prev };
+                delete next[name];
+                return next;
+            }));
     };
 
     const handleDelete = (name: string) => {
@@ -123,8 +128,10 @@ function Subscribe() {
                 onHide={() => setConfirmDelete({ show: false, name: "" })}
             />
             <AddLinkModal show={showAddModal} onHide={() => setShowAddModal(false)} onSave={handleAdd} />
-            <CardList
+            <CardRowList
+                layout="list"
                 items={[...data.items].sort((a, b) => a.name.localeCompare(b.name))}
+                getKey={(value) => value.name}
                 onClickItem={(v) => copy(v.url)}
                 renderListItem={(value) => (
                     <LinkItem
@@ -136,16 +143,10 @@ function Subscribe() {
                     />
                 )}
                 header={
-                    <>
-                        <div className="flex items-center">
-                            <IconBox icon={CloudDownload} tone="primary" />
-                            <div>
-                                <h5 className="mb-0 font-bold">Subscriptions</h5>
-                                <small className="text-ui-muted">Manage remote configuration links</small>
-                            </div>
-                        </div>
-                        <Button onClick={() => setShowAddModal(true)}><Plus className="me-1" size={16} /> Add</Button>
-                    </>
+                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <IconBox icon={CloudDownload} tone="primary" title="Subscriptions" description="Manage remote configuration links" />
+                        <Button size="sm" className="shrink-0 self-start sm:self-auto" onClick={() => setShowAddModal(true)}><Plus className="me-1" size={16} /> Add</Button>
+                    </div>
                 }
             />
         </MainContainer>
