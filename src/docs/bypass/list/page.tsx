@@ -416,7 +416,7 @@ function ListEditorModal({ name, onSaved, onClose }: { name: string | null; onSa
                     {isLoading && <Loading />}
                     {!isLoading && !error && <RouteListForm value={draft} onChange={setDraft} lockName />}
                 </ModalBody>
-                <ModalFooter className="flex justify-between">
+                <ModalFooter className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         {name !== "bootstrap" && (
                             <Button variant="outline-danger" onClick={remove}>
@@ -424,7 +424,7 @@ function ListEditorModal({ name, onSaved, onClose }: { name: string | null; onSa
                             </Button>
                         )}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap justify-end gap-2">
                         <Button onClick={onClose}>Cancel</Button>
                         <Button onClick={save}><Check className="mr-2" size={16} />Save</Button>
                     </div>

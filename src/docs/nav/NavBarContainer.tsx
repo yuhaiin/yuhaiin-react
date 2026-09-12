@@ -13,14 +13,17 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
     return (
         <>
             <Button
-                className="lg:!hidden !fixed top-[15px] left-[15px] z-[1030] h-11 w-11 shadow-ui-card"
+                type="button"
+                className="lg:!hidden !fixed top-sidebar-gap left-sidebar-gap z-[1030] h-11 w-11 shadow-ui-card"
                 onClick={() => setShowSidebar(!showSidebar)}
+                aria-expanded={showSidebar}
+                aria-controls="app-sidebar"
                 aria-label={t('toggle')}
             >
                 <Menu />
             </Button>
 
-            <Sidebar show={showSidebar} onHide={() => setShowSidebar(false)} />
+            <Sidebar id="app-sidebar" show={showSidebar} onHide={() => setShowSidebar(false)} />
 
             <main className="min-h-screen lg:pt-0">
                 {children}

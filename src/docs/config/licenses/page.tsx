@@ -14,7 +14,7 @@ const LicenseItem: FC<{ item: License, index: number }> = ({ item, index }) => {
     return (
         <div className="col-span-1">
             <ListItem className="cursor-default">
-                <div className="flex items-center flex-grow overflow-hidden gap-3">
+                <div className="flex min-w-0 flex-grow items-center gap-3 overflow-hidden">
                     {/* Index or Icon */}
                     <div className="bg-ui-primary-soft text-ui-primary rounded-full flex items-center justify-center flex-shrink-0 w-8 h-8 text-[0.85rem] font-bold">
                         {index + 1}
@@ -22,9 +22,9 @@ const LicenseItem: FC<{ item: License, index: number }> = ({ item, index }) => {
 
                     {/* Content */}
                     <div className="flex flex-col overflow-hidden min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold truncate">{item.name}</span>
-                            <Badge variant="secondary" className="text-[0.65rem] px-2 py-1">
+                        <div className="mb-1 flex min-w-0 items-center gap-2">
+                            <span className="min-w-0 truncate font-bold">{item.name}</span>
+                            <Badge variant="secondary" className="shrink-0 px-2 py-1 text-[0.65rem]">
                                 {item.license}
                             </Badge>
                         </div>
@@ -68,8 +68,8 @@ export default function Licenses() {
     const currentList = activeTab === "yuhaiin" ? data.yuhaiin : data.android;
 
     return (
-        <MainContainer className="h-full flex flex-col">
-            <Card className="mb-0 flex flex-col">
+        <MainContainer className="flex h-full min-h-0 flex-col">
+            <Card noMargin className="flex min-h-0 flex-1 flex-col">
                 <CardHeader className="py-3">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-3">
                         <IconBox
@@ -80,7 +80,7 @@ export default function Licenses() {
                         />
 
                         {/* Top-mounted Tab Navigation styled as a modern toggle bar */}
-                        <div className="bg-transparent p-1 rounded-lg inline-flex min-w-[220px]">
+                        <div className="inline-flex w-full min-w-0 rounded-lg bg-transparent p-1 sm:w-auto sm:min-w-[220px]">
                             <ToggleGroup
                                 type="single"
                                 value={activeTab}
@@ -98,7 +98,7 @@ export default function Licenses() {
                     </div>
                 </CardHeader>
 
-                <CardBody className="p-4 rounded-b-[inherit]">
+                <CardBody className="min-h-0 overflow-y-auto rounded-b-[inherit] p-4">
                     <div>
                         <LicensesList value={currentList} />
                     </div>

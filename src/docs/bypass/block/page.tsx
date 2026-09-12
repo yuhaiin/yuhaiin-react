@@ -49,7 +49,7 @@ const ListItem: FC<{ data: BlockHistory }> = React.memo(({ data }) => {
             </div>
 
             {/* Right Side: Metadata Badges */}
-            <div className="flex flex-wrap gap-2 items-center shrink-0">
+            <div className="flex shrink-0 flex-wrap items-center gap-2 pl-[52px] md:pl-0">
                 <Badge variant="info" pill className="flex items-center gap-1">
                     <Network size={12} /> {formatProtocolLabel(data.protocol)}
                 </Badge>
@@ -148,7 +148,7 @@ function BypassBlockHistory() {
                                 <ArrowDownWideNarrow size={16} />
                             </Button>
                         </DropdownTrigger>
-                        <DropdownContent style={{ minWidth: '320px' }} className="p-3">
+                        <DropdownContent className="w-[min(320px,calc(100vw-2rem))] min-w-0 max-w-[calc(100vw-2rem)] p-3">
                             <div className="mb-3">
                                 <SettingLabel className="mb-2">Order</SettingLabel>
                                 <ToggleGroup noSlide type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-full">

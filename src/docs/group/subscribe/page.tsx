@@ -33,11 +33,11 @@ const LinkItem: FC<{ linkData: Link; isUpdating: boolean; onUpdate: () => void; 
                 </div>
             </div>
             <div className="flex items-center justify-end gap-2 sm:justify-self-end">
-                <Button size="sm" onClick={(e) => { e.stopPropagation(); onUpdate() }} disabled={isUpdating}>
+                <Button size="sm" title={`Update ${linkData.name}`} aria-label={`Update ${linkData.name}`} onClick={(e) => { e.stopPropagation(); onUpdate() }} disabled={isUpdating}>
                     {isUpdating ? <Spinner size="sm" /> : <RefreshCw size={16} />}
                     <span className="hidden sm:inline ml-2">Update</span>
                 </Button>
-                <Button variant="outline-danger" size="sm" onClick={(e) => { e.stopPropagation(); onDelete() }}>
+                <Button variant="outline-danger" size="sm" title={`Delete ${linkData.name}`} aria-label={`Delete ${linkData.name}`} onClick={(e) => { e.stopPropagation(); onDelete() }}>
                     <Trash size={16} />
                     <span className="hidden sm:inline ml-2">Delete</span>
                 </Button>
@@ -68,7 +68,7 @@ const AddLinkModal: FC<{ show: boolean; onHide: () => void; onSave: (link: Link)
                     </SettingsBox>
                 </ModalBody>
                 <ModalFooter>
-                    <Button onClick={onHide}>Cancel</Button>
+                    <Button variant="outline-secondary" onClick={onHide}>Cancel</Button>
                     <Button onClick={handleSave} disabled={!newItem.name || !newItem.url}><Plus className="me-1" size={16} /> Add</Button>
                 </ModalFooter>
             </ModalContent>

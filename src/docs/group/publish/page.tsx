@@ -66,7 +66,7 @@ const EditModal: FC<{
 
     return (
         <Modal open={show} onOpenChange={(o) => { if (!o) onHide() }}>
-            <ModalContent style={{ maxWidth: "600px" }}>
+            <ModalContent className="max-w-[600px]">
                 <ModalHeader closeButton className="border-b pb-3">
                     <ModalTitle className="font-bold text-xl">{isEdit ? "Edit" : "Add"} Publish Config</ModalTitle>
                 </ModalHeader>
@@ -100,7 +100,10 @@ const EditModal: FC<{
                                             {newItem.points.length} selected
                                         </Button>
                                     </DropdownTrigger>
-                                    <DropdownContent align="start" className="min-w-[320px] max-w-[520px]">
+                                    <DropdownContent
+                                        align="start"
+                                        className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[min(320px,calc(100vw-2rem))] max-w-[min(520px,calc(100vw-2rem))]"
+                                    >
                                         {groupedNodes.map(([group, groupNodes]) => (
                                             <div key={group}>
                                                 <DropdownLabel>{group}</DropdownLabel>
@@ -110,7 +113,7 @@ const EditModal: FC<{
                                                         checked={selected.has(node.id)}
                                                         onCheckedChange={() => toggleNode(node.id)}
                                                     >
-                                                        <span className="truncate">{node.name || node.id}</span>
+                                                        <span className="min-w-0 truncate">{node.name || node.id}</span>
                                                     </DropdownCheckboxItem>
                                                 ))}
                                             </div>
@@ -120,7 +123,7 @@ const EditModal: FC<{
                                                 <DropdownLabel>Unknown</DropdownLabel>
                                                 {newItem.points.filter(id => !knownNodeIds.has(id)).map(id => (
                                                     <DropdownCheckboxItem key={id} checked onCheckedChange={() => toggleNode(id)}>
-                                                        <span className="truncate font-mono">{id}</span>
+                                                        <span className="min-w-0 truncate font-mono">{id}</span>
                                                     </DropdownCheckboxItem>
                                                 ))}
                                             </div>
@@ -132,7 +135,7 @@ const EditModal: FC<{
                                         <span className="text-sm text-ui-muted">No nodes selected.</span>
                                     ) : newItem.points.map(id => {
                                         const node = (nodes?.items ?? []).find(item => item.id === id);
-                                        return <span key={id} className="rounded-full border border-ui-border bg-ui-surface-muted px-3 py-1 text-sm">{node ? `${node.group || "manual"}/${node.name || node.id}` : id}</span>;
+                                        return <span key={id} className="max-w-full break-all rounded-full border border-ui-border bg-ui-surface-muted px-3 py-1 text-sm">{node ? `${node.group || "manual"}/${node.name || node.id}` : id}</span>;
                                     })}
                                 </div>
                             </div>

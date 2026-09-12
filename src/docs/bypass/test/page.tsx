@@ -162,7 +162,7 @@ function Test() {
                     <p className="text-xs text-ui-muted mb-6 px-1">
                         Enter a domain or IP address below to see which rule and outbound node would be selected.
                     </p>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col gap-2 sm:flex-row">
                         <Input
                             placeholder="e.g. www.google.com or 8.8.8.8"
                             value={value}
@@ -173,7 +173,7 @@ function Test() {
                         <Button
                             onClick={handleTest}
                             disabled={testing || !value.trim()}
-                            className="min-w-[100px]"
+                            className="w-full shrink-0 sm:w-auto sm:min-w-[100px]"
                         >
                             {testing ? <Spinner size="sm" /> : <><Play className="mr-1" size={16} /> Run</>}
                         </Button>

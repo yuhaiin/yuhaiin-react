@@ -181,11 +181,11 @@ const TagModal: FC<{
                         </SettingsBox>
                     </div>
                 </ModalBody>
-                <ModalFooter className="flex justify-between border-0">
+                <ModalFooter className="flex flex-wrap items-center justify-between gap-3 border-0">
                     <div>
                         {item && <Button variant="outline-danger" onClick={remove} disabled={saving}><Trash size={16} className="mr-1" />Delete</Button>}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap justify-end gap-2">
                         <Button onClick={onHide}>Cancel</Button>
                         <Button onClick={save} disabled={saving || !draft.tag || !draft.hash}>
                             {saving ? <Spinner size="sm" className="mr-2" /> : <Check size={16} className="mr-2" />}

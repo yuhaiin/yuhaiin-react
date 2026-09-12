@@ -934,7 +934,7 @@ const InboundModal: FC<{
                         </SettingsBox>
                     )}
                 </ModalBody>
-                <ModalFooter className="flex justify-between">
+                <ModalFooter className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         {!isNew && (
                             <Button variant="outline-danger" onClick={onDelete}>
@@ -942,7 +942,7 @@ const InboundModal: FC<{
                             </Button>
                         )}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap justify-end gap-2">
                         <Button onClick={() => onHide()}>Cancel</Button>
                         <Button disabled={saving || !inbound} onClick={handleSave}>
                             {saving ? <Spinner size="sm" /> : <><Check className="mr-1" size={16} /> Save</>}

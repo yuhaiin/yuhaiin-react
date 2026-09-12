@@ -117,9 +117,9 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
             />
 
             {showFooter &&
-                <div className="text-center mt-4 opacity-50 pb-5">
-                    <small className="text-ui-muted text-sm flex items-center justify-center">
-                        <Info className="mr-1" size={16} />
+                <div className="mt-4 px-3 pb-5 text-center text-xs text-ui-muted">
+                    <small className="flex items-center justify-center leading-relaxed">
+                        <Info className="mr-1 shrink-0" size={16} />
                         Closing a node here will force a reconnection if the rule still requires it.
                     </small>
                 </div>

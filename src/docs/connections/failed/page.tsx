@@ -49,7 +49,7 @@ const ListItem: FC<{ data: FailedHistoryItem }> = React.memo(({ data }) => {
                         </small>
                     </div>
                 </div>
-                <div className="flex flex-wrap gap-2 items-center shrink-0">
+                <div className="flex shrink-0 flex-wrap items-center gap-2 pl-[52px] md:pl-0">
                     <ConnectionBadge icon={Network} text={formatProtocolLabel(data.protocol)} />
                     <ConnectionBadge icon={OctagonAlert} text={`${data.failedCount} failures`} tone="warning" />
                     <ConnectionBadge icon={Clock} text={new Date(data.time).toLocaleTimeString()} tone="neutral" />
@@ -114,7 +114,7 @@ function FailedHistory() {
                     </Button>
                     <Dropdown>
                         <DropdownTrigger asChild><Button size="sm"><ArrowDownWideNarrow size={16} /></Button></DropdownTrigger>
-                        <DropdownContent align="end" className="p-3" style={{ minWidth: "320px" }}>
+                        <DropdownContent align="end" className="w-[min(320px,calc(100vw-2rem))] min-w-0 max-w-[calc(100vw-2rem)] p-3">
                             <div className="mb-3">
                                 <SettingLabel>Order</SettingLabel>
                                 <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-full">

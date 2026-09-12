@@ -26,7 +26,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-ui-bg p-4">
+        <div className="flex min-h-[100dvh] items-center justify-center bg-ui-bg p-4">
             <Card className="w-full max-w-md !mb-0 shadow-ui-card">
                 <CardHeader>
                     <CardTitle className="text-xl">
@@ -37,10 +37,11 @@ export default function LoginPage() {
                 <form onSubmit={handleLogin}>
                     <CardBody className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-ui-muted">{t('username')}</label>
+                            <label htmlFor="login-username" className="text-sm font-medium text-ui-muted">{t('username')}</label>
                             <div className="relative">
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" size={18} />
                                 <Input
+                                    id="login-username"
                                     className="pl-10"
                                     placeholder={t('usernamePlaceholder')}
                                     value={username}
@@ -50,10 +51,11 @@ export default function LoginPage() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-ui-muted">{t('password')}</label>
+                            <label htmlFor="login-password" className="text-sm font-medium text-ui-muted">{t('password')}</label>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" size={18} />
                                 <Input
+                                    id="login-password"
                                     type="password"
                                     className="pl-10"
                                     placeholder={t('passwordPlaceholder')}

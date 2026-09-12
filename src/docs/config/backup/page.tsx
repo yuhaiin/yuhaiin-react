@@ -93,7 +93,7 @@ function BackupPage() {
                         />
                         <div className="md:col-span-2">
                             <SettingLabel>Last Backup Hash</SettingLabel>
-                            <ListItem className="cursor-default bg-black/10 dark:bg-white/10">
+                            <ListItem className="cursor-default bg-ui-surface-muted">
                                 <Hash className="mr-2 text-ui-muted" size={16} />
                                 <span className="font-mono text-sm truncate opacity-75">
                                     {data.lastBackupHash || "No backup records found"}
@@ -155,7 +155,7 @@ function BackupPage() {
                 </CardBody>
 
                 <CardFooter>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                         <Button onClick={handleBackupNow} disabled={saving} title="Trigger immediate backup">
                             {saving ? <Spinner size="sm" /> : <CloudUpload size={16} />}
                             <span className="ml-2 hidden sm:inline">Backup Now</span>

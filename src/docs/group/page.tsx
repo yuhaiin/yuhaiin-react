@@ -241,7 +241,7 @@ const GroupPicker: FC<{
                                     : "border-ui-border bg-ui-surface text-ui-muted hover:border-ui-primary/30 hover:bg-ui-hover hover:text-ui-fg"
                             )}
                         >
-                            <span className="truncate">{group}</span>
+                            <span className="min-w-0 truncate">{group}</span>
                             <span className={clsx(
                                 "rounded-full px-1.5 py-0.5 text-[11px] font-semibold",
                                 active ? "bg-ui-primary/15 text-ui-primary" : "bg-ui-chip text-ui-chip-fg"
@@ -600,7 +600,7 @@ const NodeImportModal: FC<{
                     {error && <div className="mt-3 rounded-ui-lg border border-ui-danger/40 bg-ui-danger/10 p-3 text-sm text-ui-danger">{error}</div>}
                 </ModalBody>
                 <ModalFooter>
-                    <Button onClick={onHide}>Close</Button>
+                    <Button variant="outline-secondary" onClick={onHide}>Close</Button>
                     <Button onClick={save} disabled={saving || !text.trim()}>
                         {saving ? <Spinner size="sm" className="mr-2" /> : <Check size={16} className="mr-2" />}
                         Save

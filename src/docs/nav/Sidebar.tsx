@@ -7,11 +7,12 @@ import { useLocation } from 'wouter';
 import { SidebarCollapsible, SidebarDivider, SidebarItem, SidebarNav, Sidebar as SidebarRoot, SidebarSubLink } from '../../component/v2/sidebar';
 
 interface SidebarProps {
+    id?: string;
     show: boolean;
     onHide: () => void;
 }
 
-function Sidebar({ show, onHide }: SidebarProps) {
+function Sidebar({ id, show, onHide }: SidebarProps) {
     const { t } = useTranslation('nav');
     const [pathname, navigate] = useLocation();
 
@@ -30,7 +31,7 @@ function Sidebar({ show, onHide }: SidebarProps) {
     };
 
     return (
-        <SidebarRoot show={show} onHide={onHide}>
+        <SidebarRoot id={id} show={show} onHide={onHide}>
             <SidebarNav>
                 <SidebarItem
                     onClick={() => handleNavLinkClick('/')}

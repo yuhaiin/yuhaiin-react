@@ -11,6 +11,8 @@ import { FC, useContext, useState } from "react";
 import useSWR from "swr";
 import Loading from "../../../component/v2/loading";
 
+const hostsInputGroupClass = "max-[639px]:flex-col max-[639px]:gap-2 max-[639px]:[&>input]:!w-full max-[639px]:[&>div]:!w-full max-[639px]:[&>button]:!w-full max-[639px]:[&>*]:!rounded-ui-md";
+
 export const Hosts: FC = () => {
     const ctx = useContext(GlobalToastContext);
     const [newHosts, setNewHosts] = useState({ key: "", value: "" })
@@ -50,7 +52,7 @@ export const Hosts: FC = () => {
                     {Object.entries(data.hosts)
                         .sort(([a], [b]) => a.localeCompare(b))
                         .map(([k, v]) => (
-                            <InputGroup key={"hosts" + k}>
+                            <InputGroup key={"hosts" + k} className={hostsInputGroupClass}>
                                 <InputGroupText className="font-mono text-xs px-2 flex-1 min-w-0 justify-start">
                                     <span className="truncate">{k}</span>
                                 </InputGroupText>
@@ -76,7 +78,7 @@ export const Hosts: FC = () => {
                         ))}
 
                     <div className="mt-2 border-t border-ui-border/70 pt-4">
-                        <InputGroup>
+                        <InputGroup className={hostsInputGroupClass}>
                             <Input
                                 value={newHosts.key}
                                 onChange={(e) => setNewHosts({ ...newHosts, key: e.target.value })}

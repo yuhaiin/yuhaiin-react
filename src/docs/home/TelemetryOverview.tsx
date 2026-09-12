@@ -68,8 +68,12 @@ const ProtocolSummary = ({ group }: { group: TelemetryGroup }) => (
 );
 
 const TelemetryOverview = ({ data, error }: { data?: TelemetrySummary; error?: string }) => {
-    if (error) return <div className="py-6 text-sm text-ui-danger">{error}</div>;
-    if (!data) return <div className="py-6 text-sm text-ui-muted">Loading traffic breakdown…</div>;
+    if (error) return <div className="flex min-h-32 items-center justify-center px-4 py-6 text-center text-sm text-ui-danger">{error}</div>;
+    if (!data) return <div className="flex min-h-32 items-center justify-center px-4 py-6 text-center text-sm text-ui-muted">Loading traffic breakdown…</div>;
+
+    if (data.groups.length === 0) {
+        return <div className="flex min-h-32 items-center justify-center px-4 py-6 text-center text-sm text-ui-muted">No traffic recorded in this range.</div>;
+    }
 
     const protocol = data.groups.find(group => group.dimension === "protocol");
     const dimensions = data.groups.filter(group => group.dimension !== "protocol");

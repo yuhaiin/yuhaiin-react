@@ -58,7 +58,7 @@ const InfoRow: FC<{
     <div className="col-span-1">
         <ListItem className={url ? 'cursor-pointer' : 'cursor-default'}>
             <div className="flex w-full items-center justify-between gap-3">
-                <div className="flex items-center gap-3 overflow-hidden">
+                <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
                     <IconBoxRounded
                         icon={icon || LayoutGrid}
                         tone="primary"
@@ -69,7 +69,7 @@ const InfoRow: FC<{
                     </span>
                 </div>
 
-                <div className="text-right overflow-hidden">
+                <div className="min-w-0 flex-1 overflow-hidden text-right">
                     {url ? (
                         <a href={url} target="_blank" rel="noreferrer" className="no-underline font-mono text-ui-primary truncate block">
                             {value} <ExternalLink className="ml-1" size={12} />
@@ -195,11 +195,11 @@ export default function About() {
 
                 {/* Build Tags / Features Section */}
                 {info.build && info.build.length > 0 && (
-                    <CardFooter className="p-4 bg-transparent border-t border-gray-500/10">
+                    <CardFooter className="border-ui-border bg-transparent p-4">
                         <SettingLabel className={"mb-2 block text-ui-muted"}>Build Parameters</SettingLabel>
                         <div className="flex flex-wrap gap-2">
                             {info.build.map((tag, idx) => (
-                                <div key={idx} className="px-2 py-1 rounded border font-mono text-sm break-all dark:border-gray-700">
+                                <div key={idx} className="rounded-ui-sm border border-ui-border bg-ui-surface-muted px-2 py-1 font-mono text-sm break-all">
                                     {tag}
                                 </div>
                             ))}

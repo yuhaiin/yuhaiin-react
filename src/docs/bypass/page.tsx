@@ -426,11 +426,11 @@ function RuleEditorModal({ item, options, onSaved, onClose }: { item: RuleItem |
                     {isLoading && <Loading />}
                     {!isLoading && !error && <RouteRuleForm value={draft} onChange={setDraft} options={options} lockName />}
                 </ModalBody>
-                <ModalFooter className="flex justify-between">
+                <ModalFooter className="flex flex-wrap items-center justify-between gap-3">
                     <Button variant="outline-danger" onClick={remove}>
                         <Trash size={16} /> Delete Rule
                     </Button>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap justify-end gap-2">
                         <Button onClick={onClose}>Cancel</Button>
                         <Button onClick={save}><Save size={16} /> Save</Button>
                     </div>

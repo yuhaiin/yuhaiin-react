@@ -51,9 +51,9 @@ const TrafficHistoryChart: FC<{ data?: TrafficSeries; error?: string; minHeight:
         };
     }, [data]);
 
-    if (error) return <div className="flex min-h-[400px] items-center justify-center p-6 text-sm text-ui-danger">{error}</div>;
-    if (!data) return <div className="flex min-h-[400px] items-center justify-center p-6 text-sm text-ui-muted">Loading traffic history…</div>;
-    if (data.items.length === 0) return <div className="flex min-h-[400px] items-center justify-center p-6 text-sm text-ui-muted">No traffic recorded in this range.</div>;
+    if (error) return <div className="flex items-center justify-center p-6 text-center text-sm text-ui-danger" style={{ minHeight }}>{error}</div>;
+    if (!data) return <div className="flex items-center justify-center p-6 text-center text-sm text-ui-muted" style={{ minHeight }}>Loading traffic history…</div>;
+    if (data.items.length === 0) return <div className="flex items-center justify-center p-6 text-center text-sm text-ui-muted" style={{ minHeight }}>No traffic recorded in this range.</div>;
 
     return (
         <div className="p-4" style={{ minHeight }}>

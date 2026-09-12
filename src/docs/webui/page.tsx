@@ -155,7 +155,7 @@ function ApiHostsCard() {
                             </div>
                         </div>
                         {active === "" && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-ui-primary-soft px-2 py-0.5 text-[11px] font-semibold text-ui-primary">
+                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-ui-primary-soft px-2 py-0.5 text-[11px] font-semibold text-ui-primary">
                                 <Check size={12} />
                                 {t('api.active')}
                             </span>
@@ -196,7 +196,7 @@ function ApiHostsCard() {
                                         </div>
                                     </div>
                                     {isActive && (
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-ui-primary-soft px-2 py-0.5 text-[11px] font-semibold text-ui-primary">
+                                        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-ui-primary-soft px-2 py-0.5 text-[11px] font-semibold text-ui-primary">
                                             <Check size={12} />
                                             {t('api.active')}
                                         </span>

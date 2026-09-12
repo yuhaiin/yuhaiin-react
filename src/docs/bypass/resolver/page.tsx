@@ -359,7 +359,7 @@ const ResolverModal: FC<{
                             </SettingsBox>
                     }
                 </ModalBody>
-                <ModalFooter className="flex justify-between">
+                <ModalFooter className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         {id !== 'bootstrap' && !isNew &&
                             <Button variant="outline-danger" onClick={() => { onHide(false); onDelete(id); }}>
@@ -367,7 +367,7 @@ const ResolverModal: FC<{
                             </Button>
                         }
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap justify-end gap-2">
                         <Button onClick={() => onHide()}>Cancel</Button>
                         <Button disabled={saving || !resolver} onClick={handleSave}>
                             {saving ? <Spinner size="sm" /> : <><Check className="mr-2" size={16} />{isNew ? "Create" : "Save"}</>}

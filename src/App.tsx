@@ -47,9 +47,6 @@ function AppContent() {
     const content = (
         <div className={clsx(
             'relative w-auto min-h-screen h-screen overflow-hidden box-border',
-            !isLogin && 'pt-[80px] px-[20px] pb-[20px]',
-            !isLogin && 'lg:pt-[20px] lg:pl-[292px] lg:pr-[20px] lg:pb-[20px]',
-            !isLogin && 'lg:h-screen',
             'h-[100dvh] min-h-[100dvh]'
         )}>
             <AnimatePresence mode="popLayout" initial={false} custom={direction}>

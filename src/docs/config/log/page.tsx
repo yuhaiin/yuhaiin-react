@@ -214,7 +214,7 @@ const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
 
     return (
         <div
-            className="group grid grid-cols-[3px_minmax(0,1fr)] border-b border-black/5 bg-white/55 hover:bg-white dark:border-white/5 dark:bg-white/[0.025] dark:hover:bg-white/[0.055]"
+            className="group grid grid-cols-[3px_minmax(0,1fr)] border-b border-ui-border/70 bg-ui-surface/80 hover:bg-ui-surface-muted/70"
             style={{ contain: "layout paint style" }}
         >
             <div className={clsx("opacity-75 transition-opacity group-hover:opacity-100", style.bar)} />
@@ -325,7 +325,7 @@ export default function LogComponent() {
 
     return (
         <MainContainer className="h-full min-h-0 flex flex-col">
-            <Card className="flex-1 min-h-0 mb-0 flex flex-col overflow-hidden">
+            <Card noMargin className="flex-1 min-h-0 flex flex-col overflow-hidden">
                 <CardHeader className="px-2.5 py-2">
                     <div className="flex min-w-0 w-full flex-wrap items-center gap-2">
                         <IconBox
@@ -336,8 +336,8 @@ export default function LogComponent() {
                             className="!mr-2 !h-10 !w-10 !rounded-[10px]"
                         />
                         <FilterSearch onEnter={setSearchTerm} className="order-2 min-w-0 flex-1" />
-                        <div className="order-3 flex w-full min-w-0 items-center gap-2 sm:order-none sm:w-auto sm:flex-1 sm:justify-end">
-                            <ToggleGroup className="flex-nowrap" type="single" value={String(retention)} onValueChange={(v) => v && changeRetention(v)}>
+                        <div className="order-3 flex w-full min-w-0 flex-wrap items-center gap-2 sm:order-none sm:w-auto sm:flex-1 sm:justify-end">
+                            <ToggleGroup className="min-w-0 max-w-full flex-nowrap overflow-x-auto" type="single" value={String(retention)} onValueChange={(v) => v && changeRetention(v)}>
                                 {LOG_RETENTION_OPTIONS.map(value => (
                                     <ToggleItem key={value} value={String(value)}>{value}</ToggleItem>
                                 ))}
