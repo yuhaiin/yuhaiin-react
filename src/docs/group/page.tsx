@@ -413,7 +413,10 @@ const NodeItem: FC<{
 
                     <div className="min-w-0 flex-1">
                         <div className="flex min-w-0 items-center gap-2">
-                            <span className="truncate text-[0.95rem] font-semibold text-ui-heading">
+                            <span
+                                className="min-w-0 flex-1 text-[0.95rem] font-semibold leading-snug text-ui-heading max-sm:break-words sm:truncate"
+                                title={item.name || item.id}
+                            >
                                 {item.name || item.id}
                             </span>
                             {item.origin && (
@@ -427,12 +430,24 @@ const NodeItem: FC<{
                                 </Badge>
                             )}
                         </div>
-                        <div className="mt-0.5 truncate text-xs text-ui-muted">
-                            {chain || "No chain"}
+                        <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
+                            <div className="min-w-0 flex-1 truncate text-xs text-ui-muted">
+                                {chain || "No chain"}
+                            </div>
+                            <div className="flex shrink-0 items-center gap-1.5 sm:hidden">
+                                {collapsedLatencyTypes.map((type) => (
+                                    <NodeLatencyBadge
+                                        key={type}
+                                        type={type}
+                                        value={latency?.[type]}
+                                        loading={busy?.[type]}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex shrink-0 items-center gap-1.5">
+                    <div className="hidden shrink-0 items-center gap-1.5 sm:flex">
                         {collapsedLatencyTypes.map((type) => (
                             <NodeLatencyBadge
                                 key={type}
