@@ -20,9 +20,6 @@ export type RPCOperation =
   | "inbounds.config.put"
   | "inbounds.get"
   | "inbounds.post"
-  | "inbounds.status"
-  | "inbound.events"
-  | "inbound.retry"
   | "info"
   | "node.close"
   | "node.delete"
@@ -38,6 +35,8 @@ export type RPCOperation =
   | "publish.put"
   | "publish.resolve"
   | "publishes"
+  | "resolver.cache.delete"
+  | "resolver.cache.get"
   | "resolver.delete"
   | "resolver.fakedns.get"
   | "resolver.fakedns.put"
@@ -119,6 +118,8 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "PUT", pattern: "/api/v2/resolver/fakedns", operation: "resolver.fakedns.put" },
   { method: "GET", pattern: "/api/v2/resolver/server", operation: "resolver.server.get" },
   { method: "PUT", pattern: "/api/v2/resolver/server", operation: "resolver.server.put" },
+  { method: "GET", pattern: "/api/v2/resolver/cache", operation: "resolver.cache.get" },
+  { method: "DELETE", pattern: "/api/v2/resolver/cache/{resolver}/{domain}", operation: "resolver.cache.delete" },
   { method: "GET", pattern: "/api/v2/subscriptions", operation: "subscriptions.get" },
   { method: "PUT", pattern: "/api/v2/subscriptions", operation: "subscriptions.put" },
   { method: "DELETE", pattern: "/api/v2/subscriptions", operation: "subscriptions.delete" },
@@ -131,9 +132,6 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "PUT", pattern: "/api/v2/inbounds/config", operation: "inbounds.config.put" },
   { method: "GET", pattern: "/api/v2/inbounds", operation: "inbounds.get" },
   { method: "POST", pattern: "/api/v2/inbounds", operation: "inbounds.post" },
-  { method: "GET", pattern: "/api/v2/inbounds/status", operation: "inbounds.status" },
-  { method: "GET", pattern: "/api/v2/inbounds/{id}/events", operation: "inbound.events" },
-  { method: "POST", pattern: "/api/v2/inbounds/{id}/retry", operation: "inbound.retry" },
   { method: "GET", pattern: "/api/v2/inbounds/{id}", operation: "inbound.get" },
   { method: "PUT", pattern: "/api/v2/inbounds/{id}", operation: "inbound.put" },
   { method: "DELETE", pattern: "/api/v2/inbounds/{id}", operation: "inbound.delete" },

@@ -1,5 +1,5 @@
 import { requestJSON } from "@/api/client";
-import type { FakeDNS, Resolver, ResolverHosts, ResolverList, ResolverServer } from "@/contract/resolver";
+import type { DNSCacheClearResponse, DNSCacheList, FakeDNS, Resolver, ResolverHosts, ResolverList, ResolverServer } from "@/contract/resolver";
 import { normalizeFakeDNS, normalizeHosts, normalizeResolver } from "@/contract/resolver";
 
 export async function listResolvers(params?: { page?: number; pageSize?: number; query?: string }): Promise<ResolverList> {
@@ -55,4 +55,15 @@ export async function getResolverServer(): Promise<ResolverServer> {
 export async function saveResolverServer(server: ResolverServer): Promise<ResolverServer> {
   const data = await requestJSON<ResolverServer>("PUT", "/api/v2/resolver/server", { server: server.server ?? "" });
   return { server: data.server ?? "" };
+}
+
+export async function getResolverCache(): Promise<DNSCacheList> {
+  return requestJSON<DNSCacheList>("GET", "/api/v2/resolver/cache");
+}
+
+export async function clearResolverCache(resolver: string, domain: string): Promise<DNSCacheClearResponse> {
+  return requestJSON<DNSCacheClearResponse>(
+    "DELETE",
+    `/api/v2/resolver/cache/${encodeURIComponent(resolver)}/${encodeURIComponent(domain)}`,
+  );
 }

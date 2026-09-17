@@ -358,7 +358,6 @@ export namespace Go {
       | { type: "reality"; reality: Reality }
       | { type: "tls"; tls: TLS }
       | { type: "wireguard"; wireguard: Wireguard }
-      | { type: "openvpn"; openvpn: Openvpn }
       | { type: "mux"; mux: Concurrency }
       | { type: "drop"; drop: Drop }
       | { type: "vless"; vless: Vless }
@@ -502,11 +501,6 @@ export namespace Go {
       keepAlive?: number;
       allowedIps?: string[];
     }
-    export interface Openvpn {
-      profile: string;
-      username?: string;
-      password?: string;
-    }
     export interface Tailscale {
       auth_key: string;
       hostname: string;
@@ -573,6 +567,25 @@ export namespace Go {
     }
     export interface Server {
       server: string;
+    }
+    export interface DNSCacheRecord {
+      section: string;
+      type: string;
+      value: string;
+    }
+    export interface DNSCacheEntry {
+      resolver: string;
+      domain: string;
+      queryType: string;
+      rcode: string;
+      records: DNSCacheRecord[];
+      expiresIn: number;
+    }
+    export interface DNSCacheList {
+      items: DNSCacheEntry[];
+    }
+    export interface DNSCacheClearResponse {
+      removed: number;
     }
   }
   export namespace route {
@@ -826,6 +839,40 @@ export namespace Go {
     }
     export interface LogBatch {
       log: string[];
+    }
+  }
+  export namespace update {
+    export interface CheckResult {
+      supported: boolean;
+      channel: string;
+      currentVersion: string;
+      targetVersion: string;
+      targetTag: string;
+      prerelease: boolean;
+      releaseUrl: string;
+      releaseNotes: string;
+      publishedAt: string;
+      assetName: string;
+      assetSha256: string;
+      updateAvailable: boolean;
+      reason: string;
+    }
+    export interface CheckRequest {
+      channel: string;
+      includePrerelease: boolean;
+    }
+    export interface ApplyRequest {
+      channel: string;
+      targetTag: string;
+      includePrerelease: boolean;
+    }
+    export interface Status {
+      running: boolean;
+      stage: string;
+      progress: number;
+      bytesDownloaded: number;
+      totalBytes: number;
+      error: string;
     }
   }
 }

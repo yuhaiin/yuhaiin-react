@@ -29,6 +29,7 @@ import Loading, { Error as ErrorDisplay } from "../../../component/v2/loading";
 import { Fakedns } from "./fakedns";
 import { Hosts } from "./hosts";
 import { Server } from "./server";
+import { DNSCache } from "./cache";
 
 const PAGE_SIZE = 12;
 
@@ -180,6 +181,7 @@ export default function ResolverComponent() {
         <MainContainer>
             <div className="flex flex-col gap-6">
                 <ResolverList />
+                <DNSCache />
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <div>
                         <Hosts />

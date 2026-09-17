@@ -16,6 +16,10 @@ export type ResolverList = {
 export type ResolverHosts = Go.resolver.Hosts;
 export type FakeDNS = Go.resolver.FakeDNS;
 export type ResolverServer = Go.resolver.Server;
+export type DNSCacheRecord = Go.resolver.DNSCacheRecord;
+export type DNSCacheEntry = Go.resolver.DNSCacheEntry;
+export type DNSCacheList = Go.resolver.DNSCacheList;
+export type DNSCacheClearResponse = Go.resolver.DNSCacheClearResponse;
 
 export function createDefaultResolver(id: string): Resolver {
   return {
