@@ -298,7 +298,6 @@ const GroupPicker: FC<{
                             onChange={(e) => setFilter(e.target.value)}
                             placeholder="Filter groups..."
                             className="h-8 pl-8 text-sm"
-                            autoFocus
                         />
                     </div>
                 </div>

@@ -22,11 +22,11 @@ const DropdownContent = ({ className, sideOffset = 4, children, ...props }: Reac
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.14, ease: "easeOut" }}
                 className={clsx(
-                    "bg-ui-surface border border-ui-border shadow-ui-elevated rounded-ui-xl min-w-[12rem] py-1.5 flex flex-col z-[2000] w-[var(--radix-dropdown-menu-trigger-width)] max-w-[var(--radix-dropdown-menu-trigger-width)] will-change-[transform,opacity]",
+                    "bg-ui-surface border border-ui-border shadow-ui-elevated rounded-ui-xl min-w-[12rem] py-1.5 flex flex-col z-[2000] w-[var(--radix-dropdown-menu-trigger-width)] max-w-[var(--radix-dropdown-menu-trigger-width)] max-h-[var(--radix-dropdown-menu-content-available-height)] overflow-hidden will-change-[transform,opacity]",
                     className
                 )}
             >
-                <div className="max-h-[300px] overflow-y-auto w-full">
+                <div className="max-h-[min(300px,calc(var(--radix-dropdown-menu-content-available-height)-1rem))] overflow-y-auto overscroll-contain w-full">
                     {children}
                 </div>
             </motion.div>
