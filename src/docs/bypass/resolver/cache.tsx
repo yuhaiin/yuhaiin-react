@@ -7,6 +7,7 @@ import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardHeader, IconBox } from "@/component/v2/card";
 import { ConfirmModal } from "@/component/v2/confirm";
 import { Input } from "@/component/v2/input";
+import { Select } from "@/component/v2/select";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { DNSCacheEntry, DNSCacheRecord } from "@/contract/resolver";
 import { Database, RefreshCw, Search, Trash2 } from "lucide-react";
@@ -54,6 +55,7 @@ const EMPTY_CACHE_ENTRIES: DNSCacheEntry[] = [];
 export function DNSCache() {
     const ctx = useContext(GlobalToastContext);
     const [query, setQuery] = useState("");
+    const [selectedResolver, setSelectedResolver] = useState("");
     const [confirm, setConfirm] = useState<{ resolver: string; domain: string } | null>(null);
     const [clearing, setClearing] = useState<string | null>(null);
     const { data, error, isLoading, isValidating, mutate } = useSWR("/api/v2/resolver/cache", getResolverCache, {
@@ -95,6 +97,11 @@ export function DNSCache() {
         return [...grouped.entries()];
     }, [groups]);
 
+    const selectedResolverGroup = resolverGroups.find(([resolver]) => resolver === selectedResolver) ?? resolverGroups[0];
+    const activeResolver = selectedResolverGroup?.[0] ?? "";
+    const activeDomains = selectedResolverGroup?.[1] ?? [];
+    const activeEntryCount = activeDomains.reduce((count, domain) => count + domain.entries.length, 0);
+
     const handleClear = (resolver: string, domain: string) => {
         const key = cacheKey(resolver, domain);
         setClearing(key);
@@ -126,8 +133,8 @@ export function DNSCache() {
                 onHide={() => setConfirm(null)}
             />
 
-            <Card density="compact" className="w-full overflow-hidden">
-                <CardHeader>
+            <Card density="compact" className="w-full max-h-[min(75dvh,56rem)] overflow-hidden">
+                <CardHeader className="shrink-0">
                     <div className="flex w-full flex-col items-stretch gap-3 xl:flex-row xl:items-center xl:justify-between">
                         <IconBox icon={Database} tone="info" title="DNS Cache" description="Runtime Resolver Cache" />
                         <div className="flex w-full flex-col gap-2 sm:flex-row xl:w-auto">
@@ -148,10 +155,15 @@ export function DNSCache() {
                         </div>
                     </div>
                 </CardHeader>
-                <CardBody density="compact">
-                    <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-xs text-ui-muted">
+                <CardBody density="compact" className="flex min-h-0 flex-col overflow-hidden">
+                    <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-2 text-xs text-ui-muted">
                         <span>{allEntries.length} active cache entr{allEntries.length === 1 ? "y" : "ies"}</span>
-                        {query.trim() && <span>Showing {filteredEntries.length} matching entr{filteredEntries.length === 1 ? "y" : "ies"}</span>}
+                        {query.trim() && (
+                            <span>
+                                {filteredEntries.length} matching entr{filteredEntries.length === 1 ? "y" : "ies"}
+                                {resolverGroups.length > 1 && <> across {resolverGroups.length} resolvers</>}
+                            </span>
+                        )}
                     </div>
 
                     {allEntries.length === 0 ? (
@@ -163,22 +175,40 @@ export function DNSCache() {
                             No DNS cache entries match your search.
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-5">
-                            {resolverGroups.map(([resolver, domains]) => (
-                                <section key={resolver} className="rounded-ui-lg border border-ui-border bg-ui-surface-muted/30">
-                                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ui-border px-4 py-3">
-                                        <div className="flex min-w-0 items-center gap-2">
-                                            <span className="text-sm font-semibold text-ui-heading">{resolver}</span>
-                                            <Badge variant="secondary" pill>{domains.length} domain{domains.length === 1 ? "" : "s"}</Badge>
-                                        </div>
-                                        <span className="text-xs text-ui-muted">{domains.reduce((count, domain) => count + domain.entries.length, 0)} QTYPE entries</span>
-                                    </div>
-                                    <div className="flex flex-col gap-3 p-3">
-                                        {domains.map((domain) => <DNSCacheDomain key={cacheKey(domain.resolver, domain.domain)} group={domain} clearing={clearing === cacheKey(domain.resolver, domain.domain)} onClear={() => setConfirm({ resolver: domain.resolver, domain: domain.domain })} />)}
-                                    </div>
-                                </section>
-                            ))}
-                        </div>
+                        <section className="flex min-h-0 flex-1 flex-col rounded-ui-lg border border-ui-border bg-ui-surface-muted/30">
+                            <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-ui-border px-4 py-3">
+                                <div className="flex min-w-0 flex-1 items-center gap-2">
+                                    {resolverGroups.length > 1 ? (
+                                        <Select
+                                            value={activeResolver}
+                                            onValueChange={setSelectedResolver}
+                                            items={resolverGroups.map(([resolver, domains]) => ({
+                                                value: resolver,
+                                                label: `${resolver} · ${domains.length} domain${domains.length === 1 ? "" : "s"}`,
+                                            }))}
+                                            placeholder="Select resolver"
+                                            triggerClassName="w-full max-w-[22rem]"
+                                        />
+                                    ) : (
+                                        <>
+                                            <span className="min-w-0 truncate text-sm font-semibold text-ui-heading">{activeResolver}</span>
+                                            <Badge variant="secondary" pill>{activeDomains.length} domain{activeDomains.length === 1 ? "" : "s"}</Badge>
+                                        </>
+                                    )}
+                                </div>
+                                <span className="text-xs text-ui-muted">{activeEntryCount} QTYPE entries</span>
+                            </div>
+                            <div
+                                className="min-h-0 flex-1 overflow-y-auto overscroll-contain focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus"
+                                role="region"
+                                aria-label={`DNS cache domains for ${activeResolver}`}
+                                tabIndex={0}
+                            >
+                                <div className="flex flex-col gap-3 p-3">
+                                    {activeDomains.map((domain) => <DNSCacheDomain key={cacheKey(domain.resolver, domain.domain)} group={domain} clearing={clearing === cacheKey(domain.resolver, domain.domain)} onClear={() => setConfirm({ resolver: domain.resolver, domain: domain.domain })} />)}
+                                </div>
+                            </div>
+                        </section>
                     )}
                 </CardBody>
             </Card>
