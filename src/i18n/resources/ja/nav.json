@@ -5,5 +5,6 @@
   "bypass": "バイパス",
   "connections": "接続",
   "setting": "設定",
-  "toggle": "ナビゲーションを切り替え"
+  "toggle": "ナビゲーションを切り替え",
+  "close": "ナビゲーションを閉じる"
 }

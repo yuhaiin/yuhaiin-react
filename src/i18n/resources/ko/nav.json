@@ -5,5 +5,6 @@
   "bypass": "우회",
   "connections": "연결",
   "setting": "설정",
-  "toggle": "내비게이션 전환"
+  "toggle": "내비게이션 전환",
+  "close": "내비게이션 닫기"
 }

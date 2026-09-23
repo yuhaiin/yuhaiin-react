@@ -1,9 +1,10 @@
 "use client"
 
-import { ArrowLeftRight, Download, ExternalLink, Filter, House, Settings } from 'lucide-react';
+import { ArrowLeftRight, Download, ExternalLink, Filter, House, Settings, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
+import { Button } from '@/component/v2/button';
 import { SidebarCollapsible, SidebarDivider, SidebarItem, SidebarNav, Sidebar as SidebarRoot, SidebarSubLink } from '../../component/v2/sidebar';
 
 interface SidebarProps {
@@ -33,13 +34,27 @@ function Sidebar({ id, show, onHide }: SidebarProps) {
     return (
         <SidebarRoot id={id} show={show} onHide={onHide}>
             <SidebarNav>
-                <SidebarItem
-                    onClick={() => handleNavLinkClick('/')}
-                    active={pathname === '/'}
-                    icon={<House />}
-                >
-                    {t('home')}
-                </SidebarItem>
+                <div className="flex items-center gap-1">
+                    <SidebarItem
+                        className="!w-auto min-w-0 flex-1"
+                        onClick={() => handleNavLinkClick('/')}
+                        active={pathname === '/'}
+                        icon={<House />}
+                    >
+                        {t('home')}
+                    </SidebarItem>
+                    <Button
+                        type="button"
+                        variant="outline-secondary"
+                        size="icon"
+                        className="h-11 w-11 shrink-0 lg:hidden"
+                        onClick={onHide}
+                        aria-label={t('close')}
+                        title={t('close')}
+                    >
+                        <X size={18} />
+                    </Button>
+                </div>
 
                 <SidebarGroup
                     title={t('outbound')}
