@@ -123,8 +123,8 @@ module.exports = {
       animation: {
         slideDown: 'slideDown 0.3s ease-out',
         slideUp: 'slideUp 0.3s ease-out',
-        'accordion-down': 'accordion-down 0.3s ease-out forwards',
-        'accordion-up': 'accordion-up 0.3s ease-out forwards',
+        'accordion-down': 'accordion-down 0.3s ease-out',
+        'accordion-up': 'accordion-up 0.3s ease-out',
         slideUpAndFade: 'slideUpAndFade 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
         slideDownAndFade: 'slideDownAndFade 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
         slideLeftAndFade: 'slideLeftAndFade 400ms cubic-bezier(0.16, 1, 0.3, 1)',
