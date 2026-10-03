@@ -5,7 +5,9 @@
     "ok": "OK",
     "save": "Save",
     "remove": "Remove",
-    "confirmDelete": "Confirm Delete"
+    "confirmDelete": "Confirm Delete",
+    "retry": "Retry",
+    "copy": "Copy"
   },
   "state": {
     "loading": "Loading...",
@@ -31,7 +33,8 @@
     "showPassword": "Show password",
     "base64Warning": "Input must be a valid Base64 string to be saved.",
     "min": "MIN",
-    "max": "MAX"
+    "max": "MAX",
+    "discardChanges": "Discard unsaved changes?"
   },
   "language": {
     "title": "Language",

@@ -1,9 +1,9 @@
-'use client';
+import { bytesToBase64 } from "@/common/base64";
 
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import { clsx } from 'clsx';
 import { CircleAlert, Eye, EyeOff } from 'lucide-react';
-import React, { FC, useEffect, useId, useState } from 'react';
+import React, { FC, useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from './button';
 import { SettingLabel } from './card';
@@ -103,12 +103,14 @@ export const SettingPasswordVertical: FC<{
 }> = React.memo(({ label, value, onChange, placeholder, className }) => {
     const { t } = useTranslation('common');
     const [show, setShow] = useState(false);
+    const id = useId();
 
     return (
         <div className={clsx("flex flex-col mb-4 relative", className)}>
-            <SettingLabel className="mb-2 basis-auto mr-0 font-medium">{label}</SettingLabel>
+            <SettingLabel htmlFor={id} className="mb-2 basis-auto mr-0 font-medium">{label}</SettingLabel>
             <div className="flex">
                 <Input
+                    id={id}
                     type={show ? "text" : "password"}
                     groupPosition="first"
                     value={value}
@@ -152,7 +154,7 @@ export const SettingRangeVertical: FC<{
             </div>
 
             <SliderPrimitive.Root
-                className="relative flex items-center select-none touch-none w-full h-[20px]"
+                className="relative flex items-center select-none touch-none w-full h-11"
                 value={[value]}
                 onValueChange={(newValue) => onChange(newValue[0])}
                 min={min}
@@ -163,6 +165,7 @@ export const SettingRangeVertical: FC<{
                     <SliderPrimitive.Range className="absolute bg-ui-primary rounded-full h-full transition-[width] duration-150 ease-out" />
                 </SliderPrimitive.Track>
                 <SliderPrimitive.Thumb
+                    aria-label={label}
                     className={clsx(
                         "block h-[20px] w-[20px] rounded-full border border-ui-border bg-ui-bg shadow-ui-card transition-transform duration-150 ease-out hover:scale-110 hover:bg-ui-surface active:scale-95",
                         ui.focusRing
@@ -190,32 +193,29 @@ export const SettingInputBytes: FC<{
     disabled?: boolean;
 }> = React.memo(({ label, value, onChange, placeholder, className, disabled }) => {
     const { t } = useTranslation('common');
-    const toBase64 = (bytes: Uint8Array | undefined) => {
-        if (!bytes || bytes.length === 0) return "";
-        try {
-            return btoa(String.fromCharCode(...bytes));
-        } catch {
-            return "";
-        }
-    };
-
-    const [text, setText] = useState(toBase64(value));
+    const canonical = bytesToBase64(value);
+    const lastCanonical = useRef(canonical);
+    const [text, setText] = useState(canonical);
+    const [invalid, setInvalid] = useState(false);
 
     useEffect(() => {
-        const canonical = toBase64(value);
-        if (canonical !== text) {
+        if (canonical !== lastCanonical.current) {
+            lastCanonical.current = canonical;
             setText(canonical);
+            setInvalid(false);
         }
-    }, [text, value]);
+    }, [canonical]);
 
     const handleChange = (newText: string) => {
         setText(newText);
         try {
             const binary = atob(newText);
             const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+            lastCanonical.current = bytesToBase64(bytes);
+            setInvalid(false);
             onChange(bytes);
         } catch {
-            // Keep local text active even if invalid base64
+            setInvalid(true);
         }
     };
 
@@ -234,6 +234,7 @@ export const SettingInputBytes: FC<{
         <SettingInputVertical
             label={labelWithWarning}
             value={text}
+            aria-invalid={invalid}
             onChange={handleChange}
             placeholder={placeholder}
             className={className}

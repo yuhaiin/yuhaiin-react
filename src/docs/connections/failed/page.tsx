@@ -1,4 +1,5 @@
-"use client"
+import { useTranslation } from 'react-i18next';
+import { usePagination } from "@/hooks/use-pagination";
 
 import { getFailedHistory } from "@/api/connections"
 import { Button } from "@/component/v2/button"
@@ -35,6 +36,7 @@ export function sortFailedHistory(
 }
 
 const ListItem: FC<{ data: FailedHistoryItem }> = React.memo(({ data }) => {
+    const { t: uiT } = useTranslation("ui");
     return (
         <>
             <div className="flex w-full flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -51,7 +53,7 @@ const ListItem: FC<{ data: FailedHistoryItem }> = React.memo(({ data }) => {
                 </div>
                 <div className="flex shrink-0 flex-wrap items-center gap-2 pl-[52px] md:pl-0">
                     <ConnectionBadge icon={Network} text={formatProtocolLabel(data.protocol)} />
-                    <ConnectionBadge icon={OctagonAlert} text={`${data.failedCount} failures`} tone="warning" />
+                    <ConnectionBadge icon={OctagonAlert} text={uiT("failedBadge", { count: Number(data.failedCount) })} tone="warning" />
                     <ConnectionBadge icon={Clock} text={new Date(data.time).toLocaleTimeString()} tone="neutral" />
                     <ChevronRight size={17} className="ml-1 hidden text-ui-muted/50 md:block" />
                 </div>
@@ -61,9 +63,10 @@ const ListItem: FC<{ data: FailedHistoryItem }> = React.memo(({ data }) => {
 });
 
 function FailedHistory() {
+    const { t: uiT } = useTranslation('ui');
+
     const [sortBy, setSortBy] = useState("Time");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-    const [page, setPage] = useState(1);
     const [info, setInfo] = useState<{ data?: FailedHistoryItem, show: boolean }>({ show: false });
     const { data, error, isLoading, isValidating, mutate } = useSWR("/api/v2/connections/failed-history", getFailedHistory);
 
@@ -71,41 +74,43 @@ function FailedHistory() {
         return sortFailedHistory(data?.items ?? [], sortBy, sortOrder);
     }, [data, sortBy, sortOrder]);
 
-    if (error) return <Loading code={error.code}>{error.msg}</Loading>
+    const pageSize = 30;
+    const { page, setPage } = usePagination(values.length, pageSize, JSON.stringify([sortBy, sortOrder]));
+
+    if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />
 
-    const pageSize = 30;
     const paginatedItems = values.slice((page - 1) * pageSize, page * pageSize);
 
     return (
         <MainContainer className="flex min-h-full min-w-0 flex-col">
             <Modal open={info.show} onOpenChange={(open) => !open && setInfo({ ...info, show: false })}>
                 <ModalContent>
-                    <ModalHeader closeButton><ModalTitle className="font-bold text-red-500">Failure Details</ModalTitle></ModalHeader>
+                    <ModalHeader closeButton><ModalTitle className="font-bold text-red-500">{uiT("failureDetails")}</ModalTitle></ModalHeader>
                     <ModalBody>
                         <DataList>
                             {info.data && (
                                 <>
-                                    <DataListItem label="Host" value={info.data.host} />
-                                    <DataListItem label="Network" value={formatProtocolLabel(info.data.protocol)} />
-                                    <DataListItem label="Failures" value={info.data.failedCount} />
-                                    <DataListItem label="Last Error" value={info.data.error} />
-                                    <DataListItem label="Process" value={info.data.process || "System"} />
-                                    <DataListItem label="Timestamp" value={new Date(info.data.time).toLocaleString()} />
+                                    <DataListItem label={uiT("host")} value={info.data.host} />
+                                    <DataListItem label={uiT("network")} value={formatProtocolLabel(info.data.protocol)} />
+                                    <DataListItem label={uiT("failures")} value={info.data.failedCount} />
+                                    <DataListItem label={uiT("lastError")} value={info.data.error} />
+                                    <DataListItem label={uiT("process")} value={info.data.process || "System"} />
+                                    <DataListItem label={uiT("timestamp")} value={new Date(info.data.time).toLocaleString()} />
                                 </>
                             )}
                         </DataList>
                     </ModalBody>
-                    <ModalFooter className="border-0"><Button className="w-full" onClick={() => setInfo({ ...info, show: false })}>Close</Button></ModalFooter>
+                    <ModalFooter className="border-0"><Button className="w-full" onClick={() => setInfo({ ...info, show: false })}>{uiT("close")}</Button></ModalFooter>
                 </ModalContent>
             </Modal>
 
             <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
-                    <h1 className="mt-1 text-xl font-semibold leading-tight text-ui-heading sm:text-2xl">Failed connections</h1>
+                    <h1 className="mt-1 text-xl font-semibold leading-tight text-ui-heading sm:text-2xl">{uiT("failedConnections")}</h1>
                     <div className="mt-1 flex items-center text-xs text-ui-muted">
                         <Bug className="mr-1.5 text-ui-danger" size={14} />
-                        <span>Tracking {values.length} rejected or timed-out requests</span>
+                        <span>{uiT("failureCount", { count: values.length })}</span>
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center justify-end gap-2 rounded-ui-lg border border-ui-border bg-ui-surface-muted/50 px-2 py-2">
@@ -116,17 +121,17 @@ function FailedHistory() {
                         <DropdownTrigger asChild><Button size="sm"><ArrowDownWideNarrow size={16} /></Button></DropdownTrigger>
                         <DropdownContent align="end" className="w-[min(320px,calc(100vw-2rem))] min-w-0 max-w-[calc(100vw-2rem)] p-3">
                             <div className="mb-3">
-                                <SettingLabel>Order</SettingLabel>
+                                <SettingLabel>{uiT("order")}</SettingLabel>
                                 <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-full">
-                                <ToggleItem value="asc" className="grow">Asc</ToggleItem>
-                                <ToggleItem value="desc" className="grow">Desc</ToggleItem>
+                                <ToggleItem value="asc" className="grow">{uiT("ascLabel")}</ToggleItem>
+                                <ToggleItem value="desc" className="grow">{uiT("descLabel")}</ToggleItem>
                                 </ToggleGroup>
                             </div>
-                            <SettingLabel>By</SettingLabel>
+                            <SettingLabel>{uiT("by")}</SettingLabel>
                             <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="w-full whitespace-nowrap">
-                                <ToggleItem value="Time" className="grow px-3">Time</ToggleItem>
-                                <ToggleItem value="Host" className="grow px-3">Host</ToggleItem>
-                                <ToggleItem value="Count" className="grow px-3">Count</ToggleItem>
+                                <ToggleItem value="Time" className="grow px-3">{uiT("time")}</ToggleItem>
+                                <ToggleItem value="Host" className="grow px-3">{uiT("host")}</ToggleItem>
+                                <ToggleItem value="Count" className="grow px-3">{uiT("count")}</ToggleItem>
                             </ToggleGroup>
                         </DropdownContent>
                     </Dropdown>

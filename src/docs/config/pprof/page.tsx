@@ -1,4 +1,3 @@
-"use client";
 
 import { useLocalStorage } from "usehooks-ts";
 import { APIUrlDefault, APIUrlKey } from "../../../common/apiurl";

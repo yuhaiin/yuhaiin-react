@@ -1,4 +1,6 @@
-"use client"
+import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
+import { collectPages } from "@/api/paging";
+import { useTranslation } from 'react-i18next';
 
 import { listNodes } from "@/api/nodes";
 import { deletePublish, listPublishes, savePublish } from "@/api/subscriptions";
@@ -7,16 +9,15 @@ import { CardRowList, IconBox, MainContainer, SettingsBox } from "@/component/v2
 import { ConfirmModal } from "@/component/v2/confirm";
 import { Dropdown, DropdownCheckboxItem, DropdownContent, DropdownLabel, DropdownTrigger } from "@/component/v2/dropdown";
 import { SettingInputVertical } from "@/component/v2/forms";
-import { Modal, ModalBody, ModalClose, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Spinner } from "@/component/v2/spinner";
 import { SwitchCard } from "@/component/v2/switch";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { Publish } from "@/contract/subscription";
 import { defaultPublish } from "@/contract/subscription";
 import { Check, Plus, Share2, Trash } from "lucide-react";
-import { FC, useContext, useEffect, useMemo, useState } from "react";
+import { FC, useContext, useMemo, useState } from "react";
 import useSWR from "swr";
-import Error from "../../../component/Error";
 import Loading from "../../../component/v2/loading";
 
 const EditModal: FC<{
@@ -26,19 +27,22 @@ const EditModal: FC<{
     item: Publish;
     mutatePub: () => void;
 }> = ({ show, isEdit, onHide, item, mutatePub }) => {
-    const ctx = useContext(GlobalToastContext);
-    const { data: nodes } = useSWR("/api/v2/nodes/publish-options", () => listNodes({ page: 1, pageSize: 10000 }));
-    const [newItem, setNewItem] = useState(() => ({ ...defaultPublish(item.name), ...item }));
-    const [saving, setSaving] = useState(false);
+    const { t: uiT } = useTranslation('ui');
 
-    useEffect(() => setNewItem({ ...defaultPublish(item.name), ...item }), [item]);
+    const ctx = useContext(GlobalToastContext);
+    const { data: nodes } = useSWR(show ? "/api/v2/nodes/all" : null, () => collectPages(listNodes));
+    const { value: newItem, setValue: setNewItem, dirty, commit } = useEditorDraft(show ? item.name || "new" : null, item, defaultPublish);
+    const { pending: saving, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
+    const close = useCloseGuard(dirty, saving, onHide);
 
     const knownNodeIds = useMemo(() => new Set((nodes?.items ?? []).map(node => node.id)), [nodes]);
     const groupedNodes = useMemo(() => {
         const groups = new Map<string, NonNullable<typeof nodes>["items"]>();
         for (const node of nodes?.items ?? []) {
             const group = node.group || "manual";
-            groups.set(group, [...(groups.get(group) ?? []), node]);
+            const items = groups.get(group);
+            if (items) items.push(node);
+            else groups.set(group, [node]);
         }
         return Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b));
     }, [nodes]);
@@ -52,53 +56,44 @@ const EditModal: FC<{
     };
 
     const handleSave = () => {
-        if (!newItem.name) return;
-        setSaving(true);
-        savePublish(newItem)
-            .then(() => {
-                ctx.Info("Saved successfully.");
-                mutatePub();
-                onHide();
-            })
-            .catch((err) => ctx.Error(`Failed to save: ${err.msg ?? err}`))
-            .finally(() => setSaving(false));
+        if (!newItem.name || saving) return;
+        void run(async () => { await savePublish(newItem); commit(newItem); mutatePub(); onHide(); });
     };
 
     return (
-        <Modal open={show} onOpenChange={(o) => { if (!o) onHide() }}>
-            <ModalContent className="max-w-[600px]">
+        <Modal open={show} onOpenChange={(o) => { if (!o) close() }}>
+            <ModalContent width={600}>
                 <ModalHeader closeButton className="border-b pb-3">
-                    <ModalTitle className="font-bold text-xl">{isEdit ? "Edit" : "Add"} Publish Config</ModalTitle>
+                    <ModalTitle className="font-bold text-xl">{isEdit ? "Edit" : "Add"} {uiT("publishConfig")}</ModalTitle>
                 </ModalHeader>
                 <ModalBody className="py-4">
-                    <div className="flex flex-col gap-4">
+                    <fieldset disabled={saving} className="flex flex-col gap-4">
                         <SettingsBox>
-                            <div className="mb-3 font-bold">Identity</div>
+                            <div className="mb-3 font-bold">{uiT("identity")}</div>
                             <div className="flex flex-col gap-3">
-                                <SettingInputVertical label="Config Identifier" value={newItem.name} onChange={(name) => setNewItem(prev => ({ ...prev, name }))} placeholder="internal-sub" />
+                                <SettingInputVertical label={uiT("configIdentifier")} value={newItem.name} onChange={(name) => setNewItem(prev => ({ ...prev, name }))} placeholder="internal-sub" />
                             </div>
                         </SettingsBox>
                         <SettingsBox>
-                            <div className="mb-3 font-bold">Connection</div>
+                            <div className="mb-3 font-bold">{uiT("connection")}</div>
                             <div className="flex flex-col gap-3">
-                                <SettingInputVertical label="Display Address" value={newItem.address} onChange={(address) => setNewItem(prev => ({ ...prev, address }))} placeholder="example.com:443" />
-                                <SettingInputVertical label="Path" value={newItem.path} onChange={(path) => setNewItem(prev => ({ ...prev, path }))} placeholder="custom/path" />
-                                <SettingInputVertical label="Password" value={newItem.password} onChange={(password) => setNewItem(prev => ({ ...prev, password }))} placeholder="Optional password" />
+                                <SettingInputVertical label={uiT("displayAddress")} value={newItem.address} onChange={(address) => setNewItem(prev => ({ ...prev, address }))} placeholder="example.com:443" />
+                                <SettingInputVertical label={uiT("path")} value={newItem.path} onChange={(path) => setNewItem(prev => ({ ...prev, path }))} placeholder="custom/path" />
+                                <SettingInputVertical label={uiT("password")} value={newItem.password} onChange={(password) => setNewItem(prev => ({ ...prev, password }))} placeholder={uiT("optionalPassword")} />
                                 <SwitchCard
-                                    label="Allow Insecure (HTTP)"
+                                    label={uiT("allowInsecureHttp")}
                                     checked={newItem.insecure}
                                     onCheckedChange={(insecure) => setNewItem(prev => ({ ...prev, insecure }))}
                                 />
                             </div>
                         </SettingsBox>
                         <SettingsBox>
-                            <div className="mb-3 font-bold">Nodes</div>
+                            <div className="mb-3 font-bold">{uiT("nodes")}</div>
                             <div className="flex flex-col gap-3">
                                 <Dropdown>
                                     <DropdownTrigger asChild>
                                         <Button variant="outline-secondary" className="w-full justify-between">
-                                            {newItem.points.length} selected
-                                        </Button>
+                                            {newItem.points.length} {uiT("selected")}</Button>
                                     </DropdownTrigger>
                                     <DropdownContent
                                         align="start"
@@ -120,7 +115,7 @@ const EditModal: FC<{
                                         ))}
                                         {newItem.points.filter(id => !knownNodeIds.has(id)).length > 0 && (
                                             <div>
-                                                <DropdownLabel>Unknown</DropdownLabel>
+                                                <DropdownLabel>{uiT("unknown")}</DropdownLabel>
                                                 {newItem.points.filter(id => !knownNodeIds.has(id)).map(id => (
                                                     <DropdownCheckboxItem key={id} checked onCheckedChange={() => toggleNode(id)}>
                                                         <span className="min-w-0 truncate font-mono">{id}</span>
@@ -132,7 +127,7 @@ const EditModal: FC<{
                                 </Dropdown>
                                 <div className="flex flex-wrap gap-2">
                                     {newItem.points.length === 0 ? (
-                                        <span className="text-sm text-ui-muted">No nodes selected.</span>
+                                        <span className="text-sm text-ui-muted">{uiT("noNodesSelected")}</span>
                                     ) : newItem.points.map(id => {
                                         const node = (nodes?.items ?? []).find(item => item.id === id);
                                         return <span key={id} className="max-w-full break-all rounded-full border border-ui-border bg-ui-surface-muted px-3 py-1 text-sm">{node ? `${node.group || "manual"}/${node.name || node.id}` : id}</span>;
@@ -140,12 +135,12 @@ const EditModal: FC<{
                                 </div>
                             </div>
                         </SettingsBox>
-                    </div>
+                    </fieldset>
                 </ModalBody>
                 <ModalFooter className="border-t pt-3">
-                    <ModalClose asChild><Button variant="outline-secondary">Cancel</Button></ModalClose>
+                    <Button variant="outline-secondary" onClick={close} disabled={saving}>{uiT("cancel")}</Button>
                     <Button onClick={handleSave} disabled={saving || !newItem.name}>
-                        {saving ? <Spinner size="sm" /> : <><Check className="mr-1" size={16} /> Save Config</>}
+                        {saving ? <Spinner size="sm" /> : <><Check className="mr-1" size={16} /> {uiT("saveConfig")}</>}
                     </Button>
                 </ModalFooter>
             </ModalContent>
@@ -154,12 +149,14 @@ const EditModal: FC<{
 };
 
 function PublishPage() {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
     const { data, error, isLoading, mutate } = useSWR("/api/v2/publishes", listPublishes);
     const [editing, setEditing] = useState<{ show: boolean; value: Publish; isEdit: boolean }>({ show: false, value: defaultPublish(), isEdit: false });
     const [confirmDelete, setConfirmDelete] = useState<{ show: boolean; name: string }>({ show: false, name: "" });
 
-    if (error) return <Error statusCode={error.code} title={error.msg} />
+    if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
     if (isLoading || !data) return <Loading />
 
     const remove = (name: string) => {
@@ -172,8 +169,8 @@ function PublishPage() {
         <MainContainer>
             <ConfirmModal
                 show={confirmDelete.show}
-                title="Delete Publish"
-                content={<p>Remove publish config <strong>{confirmDelete.name}</strong>?</p>}
+                title={uiT("deletePublish")}
+                content={<p>{uiT("removePublishConfig")}<strong>{confirmDelete.name}</strong>?</p>}
                 onOk={() => { remove(confirmDelete.name); setConfirmDelete({ show: false, name: "" }); }}
                 onHide={() => setConfirmDelete({ show: false, name: "" })}
             />
@@ -195,20 +192,19 @@ function PublishPage() {
                             <div className="break-words font-semibold text-ui-heading sm:truncate">{pub.name}</div>
                             <div className="mt-1 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-ui-muted">
                                 <span className="break-all sm:truncate" title={`${pub.address}/${pub.path}`}>{pub.address}/{pub.path}</span>
-                                <span className="shrink-0">• {pub.points.length} nodes</span>
+                                <span className="shrink-0">• {pub.points.length} {uiT("nodesLabel")}</span>
                             </div>
                         </div>
-                        <Button className="self-end justify-self-end" variant="outline-danger" size="sm" title="Delete publish config" aria-label={`Delete ${pub.name}`} onClick={(e) => { e.stopPropagation(); setConfirmDelete({ show: true, name: pub.name }); }}>
+                        <Button className="self-end justify-self-end" variant="outline-danger" size="sm" title={uiT("deletePublishConfig")} aria-label={`Delete ${pub.name}`} onClick={(e) => { e.stopPropagation(); setConfirmDelete({ show: true, name: pub.name }); }}>
                             <Trash size={16} />
                         </Button>
                     </div>
                 )}
                 header={
                     <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <IconBox icon={Share2} tone="violet" title="Publish" description="Share selected nodes as publish configs" />
+                        <IconBox icon={Share2} tone="violet" title={uiT("publish")} description={uiT("shareSelectedNodesAsPublishConfigs")} />
                         <Button size="sm" className="shrink-0 self-start sm:self-auto" onClick={() => setEditing({ show: true, isEdit: false, value: defaultPublish() })}>
-                            <Plus className="mr-1" size={16} /> Add
-                        </Button>
+                            <Plus className="mr-1" size={16} /> {uiT("add")}</Button>
                     </div>
                 }
             />

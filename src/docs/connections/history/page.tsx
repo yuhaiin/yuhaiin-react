@@ -1,4 +1,5 @@
-"use client"
+import { useTranslation } from 'react-i18next';
+import { usePagination } from "@/hooks/use-pagination";
 
 import { getAllHistory } from "@/api/connections"
 import { Button } from "@/component/v2/button"
@@ -23,6 +24,8 @@ function formatProtocolLabel(value?: string) {
 }
 
 const ListItem: FC<{ data: AllHistory }> = React.memo(({ data }) => {
+    const { t: uiT } = useTranslation('ui');
+
     return (
         <div className="flex min-w-0 w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 w-full items-center gap-3 sm:w-auto sm:flex-1">
@@ -32,13 +35,13 @@ const ListItem: FC<{ data: AllHistory }> = React.memo(({ data }) => {
                 <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
                     <span className="truncate text-base font-bold" title={data.connection.addr}>{data.connection.addr || "-"}</span>
                     <small className="truncate font-mono text-xs text-ui-muted">
-                        ID: #{data.connection.id} • {formatProtocolLabel(data.connection.network.connType)}
+                        {uiT("idLabel")} {data.connection.id} • {formatProtocolLabel(data.connection.network.connType)}
                     </small>
                 </div>
             </div>
             <div className="flex min-w-0 flex-wrap items-center gap-2 pl-[54px] sm:shrink-0 sm:pl-0">
                 <ConnectionBadge icon={ShieldCheck} text={formatProtocolLabel(data.connection.mode)} />
-                <ConnectionBadge icon={RefreshCw} text={`${data.count} events`} tone="success" />
+                <ConnectionBadge icon={RefreshCw} text={uiT("eventCount", { count: Number(data.count) })} tone="success" />
                 <ConnectionBadge icon={Clock} text={new Date(data.time).toLocaleTimeString()} tone="neutral" />
                 <ChevronRight size={17} className="ml-1 hidden text-ui-muted/50 md:block" />
             </div>
@@ -47,11 +50,12 @@ const ListItem: FC<{ data: AllHistory }> = React.memo(({ data }) => {
 });
 
 function History() {
+    const { t: uiT } = useTranslation('ui');
+
     const [sortBy, setSortBy] = useState("Time");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [filter, setFilter] = useState("");
     const [networkFilter, setNetworkFilter] = useState("all");
-    const [page, setPage] = useState(1);
     const [modalData, setModalData] = useState<{ show: boolean, data?: AllHistory }>({ show: false });
     const [nodeModal, setNodeModal] = useState<{ show: boolean; id?: string }>({ show: false });
     const { data, error, isLoading, isValidating, mutate } = useSWR("/api/v2/connections/history", getAllHistory);
@@ -78,10 +82,12 @@ function History() {
         return Array.from(values).sort((a, b) => a.localeCompare(b));
     }, [data]);
 
-    if (error) return <Loading code={error.code}>{error.msg}</Loading>
+    const pageSize = 30;
+    const { page, setPage } = usePagination(values.length, pageSize, JSON.stringify([filter, networkFilter, sortBy, sortOrder]));
+
+    if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />
 
-    const pageSize = 30;
     const paginatedItems = values.slice((page - 1) * pageSize, page * pageSize);
 
     return (
@@ -94,29 +100,29 @@ function History() {
             />
             <Modal open={modalData.show} onOpenChange={(open) => !open && setModalData(prev => ({ ...prev, show: false }))}>
                 <ModalContent>
-                    <ModalHeader closeButton><ModalTitle className="font-bold">Session Detail</ModalTitle></ModalHeader>
+                    <ModalHeader closeButton><ModalTitle className="font-bold">{uiT("sessionDetail")}</ModalTitle></ModalHeader>
                     <ModalBody>
                         {modalData.data && (
                             <ConnectionInfo
                                 value={modalData.data.connection}
                                 showNodeModal={(id) => setNodeModal({ show: true, id })}
                                 startContent={<>
-                                    <DataListItem label="Total Count" value={modalData.data.count} />
-                                    <DataListItem label="Last Activity" value={new Date(modalData.data.time).toLocaleString()} />
+                                    <DataListItem label={uiT("totalCount")} value={modalData.data.count} />
+                                    <DataListItem label={uiT("lastActivity")} value={new Date(modalData.data.time).toLocaleString()} />
                                 </>}
                             />
                         )}
                     </ModalBody>
-                    <ModalFooter className="border-0"><Button className="w-full" onClick={() => setModalData(prev => ({ ...prev, show: false }))}>Close</Button></ModalFooter>
+                    <ModalFooter className="border-0"><Button className="w-full" onClick={() => setModalData(prev => ({ ...prev, show: false }))}>{uiT("close")}</Button></ModalFooter>
                 </ModalContent>
             </Modal>
 
             <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
-                    <h1 className="mt-1 text-xl font-semibold leading-tight text-ui-heading sm:text-2xl">Connection history</h1>
+                    <h1 className="mt-1 text-xl font-semibold leading-tight text-ui-heading sm:text-2xl">{uiT("connectionHistory")}</h1>
                     <div className="mt-1 flex items-center text-xs text-ui-muted">
                         <Info className="mr-1.5" size={14} />
-                        <span>Showing {values.length} historical records</span>
+                        <span>{uiT("historyCount", { count: values.length })}</span>
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center justify-end gap-2 rounded-ui-lg border border-ui-border bg-ui-surface-muted/50 px-2 py-2">
@@ -128,7 +134,7 @@ function History() {
                             </Button>
                         </DropdownTrigger>
                         <DropdownContent align="end" className="min-w-[160px] max-w-[220px]">
-                            <DropdownItem onSelect={() => setNetworkFilter("all")}>All Networks</DropdownItem>
+                            <DropdownItem onSelect={() => setNetworkFilter("all")}>{uiT("allNetworks")}</DropdownItem>
                             {networkOptions.map(option => (
                                 <DropdownItem key={option} onSelect={() => setNetworkFilter(option)}>
                                     {formatProtocolLabel(option)}
@@ -136,24 +142,24 @@ function History() {
                             ))}
                         </DropdownContent>
                     </Dropdown>
-                    <Button size="sm" onClick={() => mutate()} disabled={isValidating}>
+                    <Button size="sm" aria-label={uiT("refresh")} onClick={() => mutate()} disabled={isValidating}>
                         {isValidating ? <Spinner size="sm" /> : <RotateCw size={16} />}
                     </Button>
                     <Dropdown>
-                        <DropdownTrigger asChild><Button size="sm"><ArrowDownWideNarrow className="mr-1" size={16} /></Button></DropdownTrigger>
+                        <DropdownTrigger asChild><Button size="sm" aria-label={uiT("sortOrder")}><ArrowDownWideNarrow className="mr-1" size={16} /></Button></DropdownTrigger>
                         <DropdownContent align="end" className="w-[min(320px,calc(100vw-2rem))] min-w-0 max-w-[calc(100vw-2rem)] p-3">
                             <div className="mb-3">
-                                <SettingLabel>Sort Order</SettingLabel>
+                                <SettingLabel>{uiT("sortOrder")}</SettingLabel>
                                 <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-full">
-                                    <ToggleItem value="asc" className="grow">Asc</ToggleItem>
-                                    <ToggleItem value="desc" className="grow">Desc</ToggleItem>
+                                    <ToggleItem value="asc" className="grow">{uiT("ascLabel")}</ToggleItem>
+                                    <ToggleItem value="desc" className="grow">{uiT("descLabel")}</ToggleItem>
                                 </ToggleGroup>
                             </div>
-                            <SettingLabel>Sort By</SettingLabel>
+                            <SettingLabel>{uiT("sortBy")}</SettingLabel>
                             <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="w-full whitespace-nowrap">
-                                <ToggleItem value="Time" className="grow px-3">Time</ToggleItem>
-                                <ToggleItem value="Host" className="grow px-3">Host</ToggleItem>
-                                <ToggleItem value="Count" className="grow px-3">Count</ToggleItem>
+                                <ToggleItem value="Time" className="grow px-3">{uiT("time")}</ToggleItem>
+                                <ToggleItem value="Host" className="grow px-3">{uiT("host")}</ToggleItem>
+                                <ToggleItem value="Count" className="grow px-3">{uiT("count")}</ToggleItem>
                             </ToggleGroup>
                         </DropdownContent>
                     </Dropdown>

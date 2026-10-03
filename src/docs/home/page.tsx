@@ -1,4 +1,4 @@
-"use client";
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { getTelemetry, getTraffic } from "@/api/connections";
 import { selectedNodes } from "@/api/nodes";
@@ -17,6 +17,7 @@ import { Flow, FlowContainer } from "../connections/components";
 import Activates from "../group/activates/page";
 import { NodeModal } from "../node/modal";
 import TelemetryOverview from "./TelemetryOverview";
+import { appendTrafficSample } from "./traffic";
 
 const trafficRanges: Array<{ key: string; label: string; interval?: TrafficSeries["interval"]; durationMs?: number }> = [
     { key: "live", label: "Live" },
@@ -25,7 +26,7 @@ const trafficRanges: Array<{ key: string; label: string; interval?: TrafficSerie
     { key: "30d", label: "30D", interval: "day", durationMs: 30 * 24 * 60 * 60 * 1000 },
     { key: "12m", label: "12M", interval: "month", durationMs: 365 * 24 * 60 * 60 * 1000 },
 ];
-const MAX_POINTS = 120;
+
 
 const EndpointCard: FC<{
     label: string;
@@ -42,7 +43,7 @@ const EndpointCard: FC<{
             disabled={!node || Boolean(error)}
             onClick={() => node && onOpen(node)}
             className={clsx(
-                "group flex min-h-[92px] w-full min-w-0 flex-col justify-center rounded-ui-xl border border-ui-border bg-ui-surface p-4 text-left shadow-ui-card transition-colors",
+                "group flex min-h-[76px] sm:min-h-[92px] w-full min-w-0 flex-col justify-center rounded-ui-xl border border-ui-border bg-ui-surface p-3 sm:p-4 text-left shadow-ui-card transition-colors",
                 node && !error
                     ? "cursor-pointer hover:border-ui-primary/35 hover:bg-ui-surface-muted/40"
                     : "cursor-default opacity-90"
@@ -76,6 +77,10 @@ const EndpointCard: FC<{
 };
 
 function HomePage() {
+    const mobile = useMediaQuery('(max-width: 639px)');
+    const chartHeight = mobile ? 240 : 400;
+    const { t: uiT } = useTranslation('ui');
+
     const { t } = useTranslation(["home", "common"]);
     const [nodeModal, setNodeModal] = useState<{ show: boolean; node?: Node }>({ show: false });
     const { data: now, error: nowError } = useSWR("/api/v2/nodes/selected", selectedNodes, {
@@ -104,22 +109,7 @@ function HomePage() {
     });
 
     const appendTraffic = useCallback((nextFlow: Flow) => {
-        const time = nextFlow.time.toLocaleTimeString();
-        const pointMax = Math.max(nextFlow.uploadRate, nextFlow.downloadRate);
-
-        setTraffic(prevState => {
-            const labels = [...prevState.labels, time];
-            const upload = [...prevState.upload, nextFlow.uploadRate];
-            const download = [...prevState.download, nextFlow.downloadRate];
-            let rawMax = Math.max(prevState.rawMax, pointMax);
-
-            if (labels.length > MAX_POINTS) {
-                labels.shift();
-                if (upload.shift() === rawMax || download.shift() === rawMax) rawMax = Math.max(...upload, ...download, 0);
-            }
-
-            return { labels, upload, download, rawMax };
-        });
+        setTraffic(previous => appendTrafficSample(previous, nextFlow));
     }, []);
 
     return (
@@ -135,7 +125,7 @@ function HomePage() {
                 <FlowContainer onFlow={isLiveTraffic ? appendTraffic : undefined} variant="summary" />
             </div>
 
-            <div className="mb-4 grid shrink-0 gap-3 sm:grid-cols-2">
+            <div className="mb-4 grid grid-cols-2 shrink-0 gap-2 sm:gap-3">
                 <EndpointCard
                     label={t("tcpEndpoint")}
                     node={now?.tcp}
@@ -151,7 +141,7 @@ function HomePage() {
             </div>
 
             <MainContainer>
-                <Card className="min-h-[400px]" density="compact">
+                <Card className="min-h-[260px] sm:min-h-[400px]" density="compact">
                     <CardHeader className="flex-col items-stretch gap-3 px-4 py-3.5 sm:flex-row sm:items-center">
                         <div className="flex w-full min-w-0 items-start gap-3 sm:flex-1">
                             <IconBox
@@ -165,7 +155,7 @@ function HomePage() {
                         <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-end">
                             <div
                                 className="inline-flex flex-wrap items-center rounded-full border border-ui-border bg-ui-surface-muted/50 p-1"
-                                aria-label="Traffic range"
+                                aria-label={uiT("trafficRange")}
                             >
                                 {trafficRanges.map(item => {
                                     const active = item.key === range.key;
@@ -194,19 +184,17 @@ function HomePage() {
                             <div className="flex items-center justify-end gap-3 text-[11px] text-ui-muted">
                                 <span className="inline-flex items-center gap-1.5">
                                     <ArrowDownToLine size={12} className="text-ui-info" />
-                                    Download
-                                </span>
+                                    {uiT("download")}</span>
                                 <span className="inline-flex items-center gap-1.5">
                                     <ArrowUpFromLine size={12} className="text-ui-success" />
-                                    Upload
-                                </span>
+                                    {uiT("upload")}</span>
                             </div>
                         </div>
                     </CardHeader>
                     <CardBody className="!p-0">
                         {isLiveTraffic
-                            ? <TrafficChartDynamic data={traffic} minHeight={400} />
-                            : <TrafficHistoryChartDynamic data={trafficHistory} error={trafficHistoryError?.msg} minHeight={400} />}
+                            ? <TrafficChartDynamic data={traffic} minHeight={chartHeight} />
+                            : <TrafficHistoryChartDynamic data={trafficHistory} error={trafficHistoryError?.msg} minHeight={chartHeight} />}
                     </CardBody>
                 </Card>
 
@@ -215,7 +203,7 @@ function HomePage() {
                         <IconBox
                             icon={Activity}
                             tone="violet"
-                            title="Traffic breakdown"
+                            title={uiT("trafficBreakdown")}
                             description={`Top traffic and failures · ${isLiveTraffic ? "24H" : range.label}`}
                         />
                     </CardHeader>
@@ -230,7 +218,7 @@ function HomePage() {
     );
 }
 
-const TrafficHistoryChartDynamic = dynamic(() => import("./TrafficHistoryChart"), { ssr: false, loading: <Loading /> });
-const TrafficChartDynamic = dynamic(() => import("./TrafficChartv2"), { ssr: false, loading: <Loading /> });
+const TrafficHistoryChartDynamic = dynamic(() => import("./TrafficHistoryChart"), { loading: <Loading /> });
+const TrafficChartDynamic = dynamic(() => import("./TrafficChartv2"), { loading: <Loading /> });
 
 export default HomePage;

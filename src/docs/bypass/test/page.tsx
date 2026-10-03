@@ -1,4 +1,4 @@
-"use client"
+import { useTranslation } from 'react-i18next';
 
 import { testRule } from '@/api/route';
 import { Badge } from '@/component/v2/badge';
@@ -59,42 +59,44 @@ function ChipList({ items, empty }: { items: string[]; empty: string }) {
 }
 
 function ResultView({ value }: { value: RuleTestResponse }) {
+    const { t: uiT } = useTranslation('ui');
+
     const hasHistory = value.matchResult.length > 0;
 
     return (
         <div className="grid gap-4">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-ui-lg border border-ui-border bg-ui-surface px-4 py-3">
-                    <div className="mb-1 text-xs font-medium text-ui-muted">Mode</div>
+                    <div className="mb-1 text-xs font-medium text-ui-muted">{uiT("mode")}</div>
                     <Badge variant="info" className="text-sm">{displayValue(value.mode)}</Badge>
                 </div>
                 <div className="rounded-ui-lg border border-ui-border bg-ui-surface px-4 py-3">
-                    <div className="mb-1 text-xs font-medium text-ui-muted">Tag</div>
+                    <div className="mb-1 text-xs font-medium text-ui-muted">{uiT("tag")}</div>
                     <div className="truncate font-semibold text-ui-heading">{displayValue(value.tag)}</div>
                 </div>
                 <div className="rounded-ui-lg border border-ui-border bg-ui-surface px-4 py-3">
-                    <div className="mb-1 text-xs font-medium text-ui-muted">Resolver</div>
+                    <div className="mb-1 text-xs font-medium text-ui-muted">{uiT("resolver")}</div>
                     <div className="truncate font-semibold text-ui-heading">{displayValue(value.resolver)}</div>
                 </div>
                 <div className="rounded-ui-lg border border-ui-border bg-ui-surface px-4 py-3">
-                    <div className="mb-1 text-xs font-medium text-ui-muted">After Address</div>
+                    <div className="mb-1 text-xs font-medium text-ui-muted">{uiT("afterAddress")}</div>
                     <div className="truncate font-mono font-semibold text-ui-heading">{displayValue(value.afterAddr)}</div>
                 </div>
             </div>
 
             <div className="grid gap-4 lg:grid-cols-2">
-                <ResultSection title="Matched Lists" icon={ListChecks}>
+                <ResultSection title={uiT("matchedLists")} icon={ListChecks}>
                     <ChipList items={value.lists ?? []} empty="No matched lists." />
                 </ResultSection>
 
-                <ResultSection title="Resolved IPs" icon={Tags}>
+                <ResultSection title={uiT("resolvedIps")} icon={Tags}>
                     <ChipList items={value.ips ?? []} empty="No resolved IPs." />
                 </ResultSection>
             </div>
 
-            <ResultSection title="Match History" icon={GitBranch}>
+            <ResultSection title={uiT("matchHistory")} icon={GitBranch}>
                 {!hasHistory ? (
-                    <EmptyResult>No match history.</EmptyResult>
+                    <EmptyResult>{uiT("noMatchHistory")}</EmptyResult>
                 ) : (
                     <div className="grid gap-3">
                         {value.matchResult.map((result, index) => (
@@ -104,7 +106,7 @@ function ResultView({ value }: { value: RuleTestResponse }) {
                                     <span className="truncate font-bold text-ui-heading">{displayValue(result.ruleName)}</span>
                                 </div>
                                 {result.history.length === 0 ? (
-                                    <div className="text-sm font-medium text-ui-muted">No list checks.</div>
+                                    <div className="text-sm font-medium text-ui-muted">{uiT("noListChecks")}</div>
                                 ) : (
                                     <div className="flex flex-wrap gap-2">
                                         {result.history.map((history) => (
@@ -125,6 +127,8 @@ function ResultView({ value }: { value: RuleTestResponse }) {
 }
 
 function Test() {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
     const [value, setValue] = useState("");
     const [resp, setResp] = useState<RuleTestResponse | undefined>(undefined);
@@ -156,15 +160,14 @@ function Test() {
             {/* 1. Input Card */}
             <Card className="mb-4">
                 <CardHeader>
-                    <IconBox icon={Terminal} tone="warning" title='Rule Testing' description='Simulate traffic to verify routing' />
+                    <IconBox icon={Terminal} tone="warning" title={uiT("ruleTesting")} description={uiT("simulateTrafficToVerifyRouting")} />
                 </CardHeader>
                 <CardBody className="p-6">
                     <p className="text-xs text-ui-muted mb-6 px-1">
-                        Enter a domain or IP address below to see which rule and outbound node would be selected.
-                    </p>
+                        {uiT("enterADomainOrIpAddressBelowToSeeWhichRuleAndOutboundNodeWouldBeSelected")}</p>
                     <div className="flex flex-col gap-2 sm:flex-row">
                         <Input
-                            placeholder="e.g. www.google.com or 8.8.8.8"
+                            placeholder={uiT("eGWwwGoogleComOr")}
                             value={value}
                             className="flex-grow"
                             onChange={(e) => setValue(e.target.value)}
@@ -175,7 +178,7 @@ function Test() {
                             disabled={testing || !value.trim()}
                             className="w-full shrink-0 sm:w-auto sm:min-w-[100px]"
                         >
-                            {testing ? <Spinner size="sm" /> : <><Play className="mr-1" size={16} /> Run</>}
+                            {testing ? <Spinner size="sm" /> : <><Play className="mr-1" size={16} /> {uiT("run")}</>}
                         </Button>
                     </div>
                 </CardBody>
@@ -186,7 +189,7 @@ function Test() {
                 testing && (
                     <div className="text-center py-12">
                         <Spinner size="md" className="mb-3" />
-                        <div className="text-ui-muted text-xs font-medium">Analyzing routing table...</div>
+                        <div className="text-ui-muted text-xs font-medium">{uiT("analyzingRoutingTable")}</div>
                     </div>
                 )
             }
@@ -196,7 +199,7 @@ function Test() {
                 resp && !testing &&
                 <Card className="animate-dataUpdate">
                     <CardHeader>
-                        <IconBox icon={ClipboardList} tone="success" title='Analysis Result' description='Raw decision path metadata' />
+                        <IconBox icon={ClipboardList} tone="success" title={uiT("analysisResult")} description={uiT("rawDecisionPathMetadata")} />
 
                         <Button
                             size="sm"
@@ -216,8 +219,7 @@ function Test() {
             <div className="flex justify-center mt-6 opacity-50 pb-12">
                 <small className="text-ui-muted italic flex items-center">
                     <Info className="mr-1" size={14} />
-                    This tool tests the core logic using the current active configuration.
-                </small>
+                    {uiT("thisToolTestsTheCoreLogicUsingTheCurrentActiveConfiguration")}</small>
             </div>
         </MainContainer >
     );

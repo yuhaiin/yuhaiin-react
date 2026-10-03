@@ -32,27 +32,13 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks(id) {
-                    if (id.includes('node_modules')) {
-                        const rules: Array<{ match: string | string[]; chunk: string }> = [
-                            { match: 'radix', chunk: 'radix-ui' },
-                            { match: 'uplot', chunk: 'uplot' },
-                            { match: 'bootstrap', chunk: 'bootstrap' },
-                            { match: 'lucide', chunk: 'lucide' },
-                            { match: 'tanstack', chunk: 'tanstack' },
-                            { match: 'motion', chunk: 'motion' },
-                            { match: ['react', 'react-dom', 'scheduler'], chunk: 'react' },
-                        ];
+                    const packageName = id.replaceAll('\\', '/').split('/node_modules/').at(-1);
+                    if (!packageName || packageName === id) return;
+                    const name = packageName.startsWith('@') ? packageName.split('/').slice(0, 2).join('/') : packageName.split('/')[0];
+                    if (['react', 'react-dom', 'scheduler'].includes(name)) return 'react';
+                    if (name === 'uplot') return 'uplot';
+                    if (['chart.js', '@kurkle/color'].includes(name)) return 'chartjs';
 
-                        for (const { match, chunk } of rules) {
-                            if (Array.isArray(match)) {
-                                if (match.some(k => id.includes(k))) return chunk;
-                            } else {
-                                if (id.includes(match)) return chunk;
-                            }
-                        }
-
-                        return 'vendor';
-                    }
                 }
             }
         }

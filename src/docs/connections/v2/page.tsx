@@ -1,4 +1,4 @@
-"use client"
+import { useTranslation } from 'react-i18next';
 
 import { closeConnections, getConnections } from "@/api/connections";
 import { AuthTokenKey, getApiUrl } from "@/common/apiurl";
@@ -10,7 +10,8 @@ import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import type { Connection, Connections, Counter } from "@/contract/connection";
-import { normalizeConnection } from "@/contract/connection";
+import { applyConnectionEvents, type ConnectionEvent } from "./connection-events";
+import { usePageVisible } from "@/common/hooks";
 import { ArrowDown, ArrowUp, Network, Power, RefreshCw, ShieldCheck, Tag } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -36,6 +37,9 @@ function eventsURL() {
 }
 
 function Connections() {
+    const { t: uiT } = useTranslation('ui');
+
+    const visible = usePageVisible();
     const ctx = useContext(GlobalToastContext);
     const [connections, setConnections] = useState<Record<string, Connection>>({});
     const [selected, setSelected] = useState<Connection | undefined>();
@@ -58,7 +62,7 @@ function Connections() {
         return () => media.removeEventListener("change", update);
     }, []);
 
-    const { data: initial, error, isLoading } = useSWR("/api/v2/connections", getConnections, {
+    const { data: initial, error, isLoading, mutate } = useSWR("/api/v2/connections", getConnections, {
         revalidateOnFocus: false,
     });
 
@@ -71,39 +75,44 @@ function Connections() {
     }, [initial]);
 
     useEffect(() => {
-        // Every EventSource starts with a complete snapshot. Mark the first
-        // connections_added event as such so reconnects also remove stale
-        // entries that were closed while the stream was down.
+        if (!visible) return;
         hasStreamSnapshot.current = false;
         let stopped = false;
         let reconnectTimer: number | undefined;
-        const source = new EventSource(eventsURL());
-        source.onopen = () => {
-            if (!stopped) setStreamError("");
+        let flushTimer: number | undefined;
+        let pending: ConnectionEvent[] = [];
+        const flush = () => {
+            if (flushTimer !== undefined) window.clearTimeout(flushTimer);
+            flushTimer = undefined;
+            if (stopped || !pending.length) return;
+            const events = pending;
+            pending = [];
+            setConnections(previous => applyConnectionEvents(previous, events));
         };
+        const queue = (event: ConnectionEvent) => {
+            pending.push(event);
+            if (pending.length >= 1000) flush();
+            else if (flushTimer === undefined) flushTimer = window.setTimeout(flush, 100);
+        };
+        const source = new EventSource(eventsURL());
+        source.onopen = () => { if (!stopped) setStreamError(""); };
         const onAdded = (event: MessageEvent<string>) => {
             if (stopped) return;
-            const payload = JSON.parse(event.data) as Connections;
-            const isSnapshot = !hasStreamSnapshot.current;
-            hasStreamSnapshot.current = true;
-            setConnections(prev => {
-                const added = Object.fromEntries((payload.connections ?? []).map(conn => {
-                    const normalized = normalizeConnection(conn);
-                    return [normalized.id, normalized];
-                }));
-                if (isSnapshot) return added;
-                const next = { ...prev, ...added };
-                return next;
-            });
+            try {
+                const payload = JSON.parse(event.data) as Connections;
+                if (!Array.isArray(payload.connections)) throw new Error("Invalid connection event");
+                const snapshot = !hasStreamSnapshot.current;
+                hasStreamSnapshot.current = true;
+                queue({ type: snapshot ? 'snapshot' : 'added', connections: payload.connections });
+            } catch { setStreamError("Invalid connection event. Refresh to reconnect."); }
         };
         const onRemoved = (event: MessageEvent<string>) => {
             if (stopped) return;
-            const payload = JSON.parse(event.data) as { ids?: string[] };
-            setConnections(prev => {
-                const next = { ...prev };
-                for (const id of payload.ids ?? []) delete next[id];
-                return next;
-            });
+            try {
+                const payload = JSON.parse(event.data) as { ids?: string[] };
+                if (!Array.isArray(payload.ids)) throw new Error("Invalid removal event");
+                queue({ type: 'removed', ids: payload.ids });
+            } catch { setStreamError("Invalid connection event. Refresh to reconnect."); }
         };
         source.addEventListener("connections_added", onAdded);
         source.addEventListener("connections_removed", onRemoved);
@@ -119,20 +128,22 @@ function Connections() {
         return () => {
             stopped = true;
             source.close();
+            if (flushTimer !== undefined) window.clearTimeout(flushTimer);
             if (reconnectTimer !== undefined) window.clearTimeout(reconnectTimer);
         };
-    }, [streamNonce]);
+    }, [streamNonce, visible]);
 
+    const sortCounters = sortBy === "upload" || sortBy === "download" ? counters : undefined;
     const sorted = useMemo(() => {
         const list = Object.values(connections);
         const dir = sortOrder === "asc" ? 1 : -1;
         return list.sort((a, b) => {
             if (sortBy === "name") return a.addr.localeCompare(b.addr) * dir;
-            if (sortBy === "download") return (numberValue(counters[a.id]?.download) - numberValue(counters[b.id]?.download)) * dir;
-            if (sortBy === "upload") return (numberValue(counters[a.id]?.upload) - numberValue(counters[b.id]?.upload)) * dir;
+            if (sortBy === "download") return (numberValue(sortCounters?.[a.id]?.download) - numberValue(sortCounters?.[b.id]?.download)) * dir;
+            if (sortBy === "upload") return (numberValue(sortCounters?.[a.id]?.upload) - numberValue(sortCounters?.[b.id]?.upload)) * dir;
             return (numberValue(a.id) - numberValue(b.id)) * dir;
         });
-    }, [connections, counters, sortBy, sortOrder]);
+    }, [connections, sortCounters, sortBy, sortOrder]);
 
     const handleClose = useCallback((id: string) => {
         setClosing(true);
@@ -149,7 +160,7 @@ function Connections() {
             .finally(() => setClosing(false));
     }, [ctx]);
 
-    if (error) return <Loading code={error.code}>{error.msg}</Loading>
+    if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
     if (isLoading && !initial) return <Loading />
 
     return (
@@ -163,11 +174,11 @@ function Connections() {
 
             <div className="mb-3 flex items-end justify-between gap-3">
                 <div className="min-w-0">
-                    <h1 className="mt-1 truncate text-xl font-semibold leading-tight text-ui-heading sm:text-2xl">Active connections</h1>
+                    <h1 className="mt-1 truncate text-xl font-semibold leading-tight text-ui-heading sm:text-2xl">{uiT("activeConnections")}</h1>
                 </div>
                 <div className="flex shrink-0 items-baseline gap-2 rounded-full border border-ui-border bg-ui-surface-muted px-3 py-1.5">
                     <span className="font-mono text-base font-semibold tabular-nums text-ui-heading">{sorted.length}</span>
-                    <span className="text-xs text-ui-muted">active</span>
+                    <span className="text-xs text-ui-muted">{uiT("active")}</span>
                 </div>
             </div>
 
@@ -181,36 +192,34 @@ function Connections() {
 
             <div className="mb-3 flex w-full flex-wrap items-center gap-2 rounded-ui-lg border border-ui-border bg-ui-surface-muted/50 px-2 py-2">
                 <div className="flex min-w-0 basis-full items-center gap-2 sm:basis-auto">
-                    <span className="hidden px-1 text-xs font-medium text-ui-muted sm:inline">Sort</span>
+                    <span className="hidden px-1 text-xs font-medium text-ui-muted sm:inline">{uiT("sort")}</span>
                     <div className="min-w-0 max-w-full overflow-x-auto pb-1 sm:pb-0">
                         <ToggleGroup noSlide className="flex-nowrap" type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v as SortBy)}>
-                            <ToggleItem value="id">ID</ToggleItem>
-                            <ToggleItem value="name">Name</ToggleItem>
-                            <ToggleItem value="download">Download</ToggleItem>
-                            <ToggleItem value="upload">Upload</ToggleItem>
+                            <ToggleItem value="id">{uiT("idLabel")}</ToggleItem>
+                            <ToggleItem value="name">{uiT("name")}</ToggleItem>
+                            <ToggleItem value="download">{uiT("download")}</ToggleItem>
+                            <ToggleItem value="upload">{uiT("upload")}</ToggleItem>
                         </ToggleGroup>
                     </div>
                 </div>
                 <ToggleGroup noSlide className="shrink-0 flex-nowrap" type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")}>
-                    <ToggleItem value="asc"><span className="flex items-center gap-1 whitespace-nowrap"><ArrowUp size={14} /> Asc</span></ToggleItem>
-                    <ToggleItem value="desc"><span className="flex items-center gap-1 whitespace-nowrap"><ArrowDown size={14} /> Desc</span></ToggleItem>
+                    <ToggleItem value="asc"><span className="flex items-center gap-1 whitespace-nowrap"><ArrowUp size={14} /> {uiT("ascLabel")}</span></ToggleItem>
+                    <ToggleItem value="desc"><span className="flex items-center gap-1 whitespace-nowrap"><ArrowDown size={14} /> {uiT("descLabel")}</span></ToggleItem>
                 </ToggleGroup>
                 <Button
                     onClick={() => { setStreamError(""); setStreamNonce((value) => value + 1); }}
                     size="sm"
                     variant="outline-secondary"
                     className="ml-auto shrink-0"
-                    aria-label="Refresh connections"
+                    aria-label={uiT("refreshConnections")}
                 >
                     <RefreshCw size={14} className="mr-1.5" />
-                    Refresh
-                </Button>
+                    {uiT("refresh")}</Button>
             </div>
 
             {sorted.length === 0 ? (
                 <div className="min-h-[220px] flex-1 rounded-ui-lg border border-ui-border bg-ui-surface p-6 text-center text-ui-muted shadow-ui-card">
-                    No active connections.
-                </div>
+                    {uiT("noActiveConnections")}</div>
             ) : sorted.length > VIRTUALIZE_THRESHOLD ? (
                 <div className="min-h-0 flex-1 overflow-hidden rounded-ui-lg border border-ui-border bg-ui-surface shadow-ui-card">
                     <VList
@@ -252,7 +261,7 @@ function Connections() {
             <Modal open={selected !== undefined} onOpenChange={(open) => !open && setSelected(undefined)}>
                 <ModalContent>
                     <ModalHeader closeButton>
-                        <ModalTitle className="text-lg font-bold">Connection Details</ModalTitle>
+                        <ModalTitle className="text-lg font-bold">{uiT("connectionDetails")}</ModalTitle>
                     </ModalHeader>
                     <ModalBody className="pt-2">
                         {selected && <ConnectionInfo value={selected} showNodeModal={(id) => setNodeModal({ show: true, id })} />}
@@ -266,7 +275,7 @@ function Connections() {
                                 onClick={() => handleClose(selected.id)}
                             >
                                 {closing ? <Spinner size="sm" className="mr-2" /> : <Power className="text-xl mr-2" />}
-                                <span className="font-bold">Disconnect</span>
+                                <span className="font-bold">{uiT("disconnect")}</span>
                             </Button>
                         )}
                     </ModalFooter>
@@ -318,23 +327,24 @@ const ConnectionRow = memo(function ConnectionRow({
 
     if (!animated) {
         return (
-            <div className={className} onClick={handleClick}>
+            <button type="button" className={className + " w-full text-left"} onClick={handleClick}>
                 {body}
-            </div>
+            </button>
         );
     }
 
     return (
-        <motion.div
+        <motion.button
+            type="button"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.16, ease: "easeOut" }}
-            className={className}
+            className={className + " w-full text-left"}
             onClick={handleClick}
         >
             {body}
-        </motion.div>
+        </motion.button>
     );
 }, (prev, next) => (
     prev.conn === next.conn

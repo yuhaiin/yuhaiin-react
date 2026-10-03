@@ -1,3 +1,4 @@
+import { bytesToBase64 } from "@/common/base64";
 import { AuthTokenKey } from '@/common/apiurl';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardFooter, CardHeader, CardTitle } from '@/component/v2/card';
@@ -16,8 +17,9 @@ export default function LoginPage() {
         if (!username || !password) return;
 
         // Basic Auth Encoding
-        const token = btoa(`${username}:${password}`);
+        const token = bytesToBase64(new TextEncoder().encode(`${username}:${password}`));
         localStorage.setItem(AuthTokenKey, token);
+        window.dispatchEvent(new Event("local-storage"));
 
         // Redirect to home
         // We use window.location.hash directly because wouter's setLocation hook

@@ -1,4 +1,6 @@
-"use client"
+import { useServerPageClamp } from "@/hooks/use-pagination";
+import { useTranslation } from 'react-i18next';
+import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
 
 import { createRouteList, deleteRouteList, getRouteActivationStatus, getRouteList, getRouteListConfig, listRouteLists, refreshRouteLists, saveRouteList, saveRouteListConfig } from "@/api/route";
 import { Badge } from "@/component/v2/badge";
@@ -36,7 +38,7 @@ import {
     TriangleAlert,
     Type,
 } from "lucide-react";
-import type { CSSProperties, ElementType, FC } from "react";
+import type { ElementType, FC } from "react";
 import { useContext, useEffect, useState } from "react";
 import useSWR from "swr";
 
@@ -122,6 +124,8 @@ function listTypeVisual(type?: string): {
 }
 
 const DefinedListTile: FC<{ item: ListItem; onClick: () => void }> = ({ item, onClick }) => {
+    const { t: uiT } = useTranslation('ui');
+
     const visual = listTypeVisual(item.type);
     const Icon = visual.icon;
     const hasError = item.errorCount > 0;
@@ -159,7 +163,7 @@ const DefinedListTile: FC<{ item: ListItem; onClick: () => void }> = ({ item, on
                         </Badge>
                         {hasError && (
                             <Badge variant="danger" pill className="px-2 py-0.5 text-[0.65rem]">
-                                {item.errorCount} error{item.errorCount === 1 ? "" : "s"}
+                                {item.errorCount} {uiT("error")} {item.errorCount === 1 ? "" : "s"}
                             </Badge>
                         )}
                     </div>
@@ -167,7 +171,7 @@ const DefinedListTile: FC<{ item: ListItem; onClick: () => void }> = ({ item, on
             </div>
 
             <div className="min-w-0 border-t border-ui-border/70 pt-2.5 sm:border-l sm:border-t-0 sm:py-0 sm:pl-5">
-                <div className="text-[11px] font-medium text-ui-muted">Preview</div>
+                <div className="text-[11px] font-medium text-ui-muted">{uiT("preview")}</div>
                 <div className="mt-0.5 truncate font-mono text-[12.5px] font-medium text-ui-fg" title={item.preview || undefined}>
                     {preview}
                 </div>
@@ -187,6 +191,8 @@ const DefinedListTile: FC<{ item: ListItem; onClick: () => void }> = ({ item, on
 };
 
 function Lists() {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
     const [page, setPage] = useState(1);
     const [query, setQuery] = useState("");
@@ -207,6 +213,7 @@ function Lists() {
         () => listRouteLists({ page, pageSize: PAGE_SIZE, query }),
         { revalidateOnFocus: false, keepPreviousData: true },
     );
+    useServerPageClamp(data?.page, page, setPage);
 
     const refresh = async () => {
         if (isRefreshing) return;
@@ -231,7 +238,7 @@ function Lists() {
         setCreatingName("");
     };
 
-    if (error) return <Loading code={error.code}>{error.msg}</Loading>
+    if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
     if (isLoading || !data) return <Loading />
 
     return (
@@ -244,26 +251,23 @@ function Lists() {
                         <IconBox
                             icon={List}
                             tone="primary"
-                            title="Defined Lists"
-                            description="Match sources for route rules"
+                            title={uiT("definedLists")}
+                            description={uiT("matchSourcesForRouteRules")}
                         />
                         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
                             <FilterSearch className="min-w-0 flex-1 sm:w-[200px] sm:flex-none" onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
                             <Button size="sm" variant="outline-secondary" onClick={refresh} disabled={isRefreshing}>
                                 {isRefreshing ? <Spinner size="sm" className="mr-2" /> : <RefreshCw size={16} className="mr-2" />}
-                                Sync
-                            </Button>
+                                {uiT("sync")}</Button>
                             <Button size="sm" onClick={() => { setCreatingName(""); setCreating(true); }}>
-                                <Plus size={16} className="mr-1" /> Add
-                            </Button>
+                                <Plus size={16} className="mr-1" /> {uiT("add")}</Button>
                         </div>
                     </div>
                 </CardHeader>
                 <CardBody density="compact" className="!p-0">
                     {data.items.length === 0 ? (
                         <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center text-sm text-ui-muted">
-                            No lists yet. Create a local list or sync remote sources.
-                        </div>
+                            {uiT("noListsYetCreateALocalListOrSyncRemoteSources")}</div>
                     ) : (
                         <div className="divide-y divide-ui-border/70 overflow-hidden rounded-ui-md border border-ui-border/70">
                             {data.items.map((item) => (
@@ -279,7 +283,7 @@ function Lists() {
                 {data.page.total > PAGE_SIZE && (
                     <CardFooter compact className="flex items-center justify-between gap-3">
                         <div className="text-xs font-medium text-ui-muted">
-                            {data.page.total} items · page {data.page.page || page}/{Math.max(1, Math.ceil(data.page.total / (data.page.pageSize || PAGE_SIZE)))}
+                            {data.page.total} {uiT("itemsPage")} {data.page.page || page}/{Math.max(1, Math.ceil(data.page.total / (data.page.pageSize || PAGE_SIZE)))}
                         </div>
                         <Pagination
                             currentPage={data.page.page || page}
@@ -297,24 +301,23 @@ function Lists() {
 }
 
 function ListConfigCard() {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
-    const [saving, setSaving] = useState(false);
-    const { data, error, isLoading, mutate } = useSWR("/api/v2/route/lists/config", getRouteListConfig, { revalidateOnFocus: false });
+    const { data: server, error, isLoading, mutate } = useSWR("/api/v2/route/lists/config", getRouteListConfig, { revalidateOnFocus: false });
 
-    const patch = (patchValue: Partial<NonNullable<typeof data>>) => {
-        mutate(prev => prev ? { ...prev, ...patchValue } : prev, { revalidate: false });
-    };
-
+    const { value: data, setValue: setDraft, commit, dirty } = useEditorDraft("getRouteListConfig", server, () => undefined);
+    const { pending: saving, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
+    useCloseGuard(dirty, saving, () => undefined);
+    const patch = (patchValue: Partial<NonNullable<typeof data>>) => setDraft(prev => prev ? { ...prev, ...patchValue } : prev);
     const save = () => {
-        if (!data) return;
-        setSaving(true);
-        saveRouteListConfig(data)
-            .then((next) => {
-                ctx.Info("list config saved");
-                mutate(next, { revalidate: false });
-            })
-            .catch((err) => ctx.Error(err.msg ?? String(err)))
-            .finally(() => setSaving(false));
+        if (!data || saving || error || isLoading) return;
+        void run(async () => {
+            const next = await saveRouteListConfig(data);
+            commit(next);
+            await mutate(next, { revalidate: false });
+            ctx.Info("list config saved");
+        });
     };
 
     const refreshTimestamp = Number(data?.lastRefreshTime);
@@ -329,17 +332,18 @@ function ListConfigCard() {
 
     return (
         <Card className="mb-4">
+            <fieldset disabled={saving} className="contents">
             <CardHeader>
-                <IconBox icon={Clock} tone="success" title="List Synchronization" description={`Last Synced: ${lastSync}`} />
+                <IconBox icon={Clock} tone="success" title={uiT("listSynchronization")} description={uiT("lastSynced", { time: lastSync })} />
                 {isLoading && <Spinner size="sm" />}
             </CardHeader>
             <CardBody>
                 {error ? (
-                    <Loading code={error.code}>{error.msg}</Loading>
+                    <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
                 ) : data ? (
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <SettingRangeVertical
-                            label="Auto-fetch Interval"
+                            label={uiT("autoFetchInterval")}
                             value={refreshHours}
                             min={0}
                             max={24 * 30}
@@ -348,13 +352,13 @@ function ListConfigCard() {
                             onChange={(refreshInterval) => patch({ refreshInterval: String(refreshInterval * 60) })}
                         />
                         <SettingInputVertical
-                            label="Maxmind GeoIP Database URL"
+                            label={uiT("maxmindGeoipDatabaseUrl")}
                             value={data.maxMindDbGeoIp.downloadUrl}
                             onChange={(downloadUrl) => patch({ maxMindDbGeoIp: { ...data.maxMindDbGeoIp, downloadUrl } })}
                         />
                         <SwitchCard
-                            label="Use Disk Host Index"
-                            description="Use the disk-backed host index to reduce memory usage."
+                            label={uiT("useDiskHostIndex")}
+                            description={uiT("useTheDiskBackedHostIndexToReduceMemoryUsage")}
                             checked={data.hostIndexDisk}
                             onCheckedChange={(hostIndexDisk) => patch({ hostIndexDisk })}
                         />
@@ -369,64 +373,62 @@ function ListConfigCard() {
                 )}
             </CardBody>
             <CardFooter className="flex justify-end">
-                <Button disabled={saving || !data} onClick={save}>
+                <Button disabled={saving || !data || Boolean(error)} onClick={save}>
                     {saving ? <Spinner size="sm" className="mr-2" /> : <Save size={16} className="mr-2" />}
-                    Save Configuration
-                </Button>
+                    {uiT("saveConfiguration")}</Button>
             </CardFooter>
+            </fieldset>
         </Card>
     );
 }
 
 function ListEditorModal({ name, onSaved, onClose }: { name: string | null; onSaved: () => void; onClose: () => void }) {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
-    const [draft, setDraft] = useState<RouteListDetail>(createDefaultRouteList());
-    const { data, error, isLoading } = useSWR(name ? ["/api/v2/route/lists/detail", name] : null, () => getRouteList(name!), { revalidateOnFocus: false });
+    const { data, error, isLoading, mutate } = useSWR(name ? ["/api/v2/route/lists/detail", name] : null, () => getRouteList(name!), { revalidateOnFocus: false });
 
-    useEffect(() => {
-        if (data) setDraft(normalizeRouteList(data));
-    }, [data]);
-
+    const { value: draft, setValue: setDraft, dirty } = useEditorDraft(name, data, createDefaultRouteList);
+    const { pending, run } = useAsyncAction(error => ctx.Error(error instanceof Error ? error.message : String((error as { msg?: string })?.msg ?? error)));
+    const close = useCloseGuard(dirty, pending, onClose);
     const save = () => {
-        if (!name) return;
-        saveRouteList(name, draft)
-            .then(() => {
-                ctx.Info("list saved");
-                onSaved();
-            })
-            .catch((err) => ctx.Error(err.msg ?? String(err)));
+        if (!name || !data || error || isLoading || pending) return;
+        void run(async () => {
+            await saveRouteList(name, draft);
+            ctx.Info("list saved");
+            onSaved();
+        });
     };
-
     const remove = () => {
-        if (!name || name === "bootstrap") return;
-        deleteRouteList(name)
-            .then(() => {
-                ctx.Info("list deleted");
-                onSaved();
-            })
-            .catch((err) => ctx.Error(err.msg ?? String(err)));
+        if (!name || name === "bootstrap" || pending || !data || error || isLoading || !window.confirm("Delete this list?")) return;
+        void run(async () => {
+            await deleteRouteList(name);
+            ctx.Info("list deleted");
+            onSaved();
+        });
     };
 
     return (
-        <Modal open={!!name} onOpenChange={(open) => !open && onClose()}>
-            <ModalContent style={{ "--bs-modal-width": "760px" } as CSSProperties}>
+        <Modal open={!!name} onOpenChange={(open) => !open && close()}>
+            <ModalContent width={760}>
                 <ModalHeader closeButton><ModalTitle>{name}</ModalTitle></ModalHeader>
                 <ModalBody>
-                    {error && <Loading code={error.code}>{error.msg}</Loading>}
+                    <fieldset disabled={pending} className="contents">
+                    {error && <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>}
                     {isLoading && <Loading />}
-                    {!isLoading && !error && <RouteListForm value={draft} onChange={setDraft} lockName />}
+                    {!isLoading && !error && data && <RouteListForm value={draft} onChange={setDraft} lockName />}
+                </fieldset>
                 </ModalBody>
                 <ModalFooter className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         {name !== "bootstrap" && (
-                            <Button variant="outline-danger" onClick={remove}>
-                                <Trash className="mr-2" size={16} />Delete List
-                            </Button>
+                            <Button variant="outline-danger" disabled={pending || isLoading || Boolean(error) || !data} onClick={remove}>
+                                <Trash className="mr-2" size={16} />{uiT("deleteList")}</Button>
                         )}
                     </div>
                     <div className="flex flex-wrap justify-end gap-2">
-                        <Button onClick={onClose}>Cancel</Button>
-                        <Button onClick={save}><Check className="mr-2" size={16} />Save</Button>
+                        <Button onClick={close} disabled={pending}>{uiT("cancel")}</Button>
+                        <Button disabled={pending || isLoading || Boolean(error) || !data} onClick={save}><Check className="mr-2" size={16} />{uiT("save")}</Button>
                     </div>
                 </ModalFooter>
             </ModalContent>
@@ -435,6 +437,8 @@ function ListEditorModal({ name, onSaved, onClose }: { name: string | null; onSa
 }
 
 function CreateListModal({ open, initialName, onSaved, onClose }: { open: boolean; initialName?: string; onSaved: () => void; onClose: () => void }) {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
     const [draft, setDraft] = useState<RouteListDetail>(createDefaultRouteList());
 
@@ -444,25 +448,30 @@ function CreateListModal({ open, initialName, onSaved, onClose }: { open: boolea
         }
     }, [open, initialName]);
 
+    const { pending, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
+    const close = useCloseGuard(JSON.stringify(draft) !== JSON.stringify(createDefaultRouteList(initialName ?? "")), pending, onClose);
+
     const save = () => {
-        createRouteList(draft)
-            .then(() => {
-                ctx.Info("list created");
-                onSaved();
-            })
-            .catch((err) => ctx.Error(err.msg ?? String(err)));
+        if (pending || !draft.name.trim()) return;
+        void run(async () => {
+        await createRouteList(draft);
+        ctx.Info("list created");
+        onSaved();
+        });
     };
 
     return (
-        <Modal open={open} onOpenChange={(next) => !next && onClose()}>
-            <ModalContent style={{ "--bs-modal-width": "760px" } as CSSProperties}>
-                <ModalHeader closeButton><ModalTitle>New Route List</ModalTitle></ModalHeader>
+        <Modal open={open} onOpenChange={(next) => !next && close()}>
+            <ModalContent width={760}>
+                <ModalHeader closeButton><ModalTitle>{uiT("newRouteList")}</ModalTitle></ModalHeader>
                 <ModalBody>
+                    <fieldset disabled={pending} className="contents">
                     <RouteListForm value={draft} onChange={setDraft} />
+                </fieldset>
                 </ModalBody>
                 <ModalFooter>
-                    <Button onClick={onClose}>Cancel</Button>
-                    <Button onClick={save} disabled={!draft.name.trim()}><Check className="mr-2" size={16} />Save</Button>
+                    <Button onClick={close} disabled={pending}>{uiT("cancel")}</Button>
+                    <Button onClick={save} disabled={pending || !draft.name.trim()}><Check className="mr-2" size={16} />{uiT("save")}</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
@@ -470,6 +479,8 @@ function CreateListModal({ open, initialName, onSaved, onClose }: { open: boolea
 }
 
 function RouteListForm({ value, onChange, lockName }: { value: RouteListDetail; onChange: (value: RouteListDetail) => void; lockName?: boolean }) {
+    const { t: uiT } = useTranslation('ui');
+
     const sourceType = value.source.type || "local";
     const patch = (patchValue: Partial<RouteListDetail>) => onChange(normalizeRouteList({ ...value, ...patchValue }));
     const updateSourceType = (type: string) => {
@@ -489,10 +500,10 @@ function RouteListForm({ value, onChange, lockName }: { value: RouteListDetail; 
         <div className="flex flex-col gap-6">
             <SettingsBox>
                 <div className="grid grid-cols-1 gap-6">
-                    <SettingInputVertical label="Name" value={value.name} onChange={(name) => patch({ name })} disabled={lockName} />
-                    <SettingSelectVertical label="Content Type" value={value.type} values={routeListTypes} onChange={(type) => patch({ type })} />
+                    <SettingInputVertical label={uiT("name")} value={value.name} onChange={(name) => patch({ name })} disabled={lockName} />
+                    <SettingSelectVertical label={uiT("contentType")} value={value.type} values={routeListTypes} onChange={(type) => patch({ type })} />
                     <div>
-                        <SettingLabel className="mb-2">Source Mode</SettingLabel>
+                        <SettingLabel className="mb-2">{uiT("sourceMode")}</SettingLabel>
                         <ToggleGroup
                             type="single"
                             value={sourceType}
@@ -500,11 +511,9 @@ function RouteListForm({ value, onChange, lockName }: { value: RouteListDetail; 
                             className="w-full flex-nowrap"
                         >
                             <ToggleItem value={sourceTypes[0]} className="flex-grow whitespace-nowrap">
-                                <Network className="mr-2" size={16} />Local
-                            </ToggleItem>
+                                <Network className="mr-2" size={16} />{uiT("local")}</ToggleItem>
                             <ToggleItem value={sourceTypes[1]} className="flex-grow whitespace-nowrap">
-                                <CloudDownload className="mr-2" size={16} />Remote
-                            </ToggleItem>
+                                <CloudDownload className="mr-2" size={16} />{uiT("remote")}</ToggleItem>
                         </ToggleGroup>
                     </div>
                 </div>
@@ -518,7 +527,7 @@ function RouteListForm({ value, onChange, lockName }: { value: RouteListDetail; 
                             {sourceType === "remote" ? "Files will be downloaded and updated automatically." : "Define rules manually for this list."}
                         </small>
                     </div>
-                    <Badge variant="secondary" pill>{lines.length} Entries</Badge>
+                    <Badge variant="secondary" pill>{lines.length} {uiT("entries")}</Badge>
                 </div>
 
                 <div className="rounded-ui-lg border border-ui-border bg-ui-surface-muted p-4">
@@ -535,8 +544,7 @@ function RouteListForm({ value, onChange, lockName }: { value: RouteListDetail; 
             {(value.errorMsgs?.length ?? 0) > 0 && (
                 <div className="rounded-ui-lg border border-ui-danger/40 bg-ui-danger/10 p-4 text-sm text-ui-danger">
                     <div className="mb-2 flex items-center gap-2 font-bold">
-                        <TriangleAlert size={16} />Error Messages
-                    </div>
+                        <TriangleAlert size={16} />{uiT("errorMessages")}</div>
                     <pre className="whitespace-pre-wrap text-left font-mono text-xs">{value.errorMsgs?.join("\n")}</pre>
                 </div>
             )}

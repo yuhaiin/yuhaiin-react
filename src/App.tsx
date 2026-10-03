@@ -1,12 +1,12 @@
+import { useSmartAnimation } from "@/hooks/useSmartAnimation";
 import { ThemeProvider } from '@/common/ThemeProvider';
 import { GlobalToastProvider } from '@/component/v2/toast';
 import NavBarContainer from '@/docs/nav/NavBarContainer';
 import { useHashLocation } from '@/hooks/useHashLocation';
-import { useSmartAnimation } from '@/hooks/useSmartAnimation';
 import clsx from 'clsx';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'motion/react';
 import { useEffect } from 'react';
-import { Route, Router, Switch } from 'wouter';
+import { Route, Router, Switch, useLocation } from 'wouter';
 import { appRoutes } from './routes';
 
 interface AndroidInterface {
@@ -19,40 +19,38 @@ declare global {
     }
 }
 
+const routeOrder = appRoutes.map(route => route.path);
+type AnimationContext = { direction: number; reducedMotion: boolean | null };
 const variants = {
-    enter: (direction: number) => ({
-        y: direction > 0 ? '100%' : '-100%',
-        opacity: 0,
+    enter: ({ direction, reducedMotion }: AnimationContext) => ({
+        y: reducedMotion ? 0 : direction > 0 ? '100%' : '-100%', opacity: 0,
     }),
-    center: {
-        zIndex: 1,
-        y: 0,
-        opacity: 1,
-    },
-    exit: (direction: number) => ({
-        zIndex: 0,
-        y: direction < 0 ? '100%' : '-100%',
-        opacity: 0,
+    center: { y: 0, opacity: 1 },
+    exit: ({ direction, reducedMotion }: AnimationContext) => ({
+        y: reducedMotion ? 0 : direction > 0 ? '-100%' : '100%', opacity: 0,
     }),
 };
 
 function AppContent() {
-    const { direction, location } = useSmartAnimation();
+    const [location] = useLocation();
 
     useEffect(() => {
         window.Android?.setRefreshEnabled?.(!location.includes('/docs/config/log'))
     }, [location])
 
+    const reducedMotion = useReducedMotion();
+    const direction = useSmartAnimation(location, routeOrder);
+    const animationContext = { direction, reducedMotion };
     const isLogin = location === '/login';
     const content = (
         <div className={clsx(
             'relative w-auto min-h-screen h-screen overflow-hidden box-border',
             'h-[100dvh] min-h-[100dvh]'
         )}>
-            <AnimatePresence mode="popLayout" initial={false} custom={direction}>
+            <AnimatePresence mode="wait" initial={false} custom={animationContext}>
                 <motion.div
                     key={location}
-                    custom={direction}
+                    custom={animationContext}
                     variants={variants}
                     initial="enter"
                     animate="center"
@@ -60,11 +58,10 @@ function AppContent() {
                     className={clsx(
                         'absolute inset-0 box-border h-full w-full',
                         'overflow-y-auto overflow-x-hidden',
-                        'will-change-[transform,opacity]',
-                        !isLogin && 'pt-[80px] px-[20px] pb-[20px]',
+                        !isLogin && 'pt-[calc(80px+env(safe-area-inset-top))] px-3 sm:px-5 pb-[calc(20px+env(safe-area-inset-bottom))]',
                         !isLogin && 'lg:pt-[20px] lg:pl-[292px]'
                     )}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    transition={{ duration: reducedMotion ? 0 : 0.2, ease: "easeOut" }}
                 >
                     <Router hook={() => [location, () => { }]}>
                         <Switch>
@@ -87,10 +84,12 @@ function AppContent() {
 
 export default function App() {
     return (
+        <MotionConfig reducedMotion="user">
         <ThemeProvider>
             <Router hook={useHashLocation}>
                 <AppContent />
             </Router>
         </ThemeProvider>
+        </MotionConfig>
     );
 }

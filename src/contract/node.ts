@@ -25,7 +25,6 @@ export type ServerTLSConfig = Partial<Go.node.ServerTLS>;
 export type TLSTerminationConfig = { tls?: ServerTLSConfig };
 export type WireguardPeerConfig = Partial<Go.node.WireguardPeer>;
 export type WireguardConfig = Omit<Partial<Go.node.Wireguard>, "peers"> & { peers?: WireguardPeerConfig[] };
-export type OpenvpnConfig = Partial<Go.node.Openvpn>;
 export type TailscaleConfig = Partial<Go.node.Tailscale>;
 export type SetConfig = Partial<Go.node.Set>;
 export type HTTPHeaderConfig = Partial<Go.node.HTTPHeader>;
@@ -56,7 +55,6 @@ export type NodeProtocolConfigByType = {
   reality: RealityConfig;
   tls: TLSConfig;
   wireguard: WireguardConfig;
-  openvpn: OpenvpnConfig;
   mux: ConcurrencyConfig;
   drop: EmptyNodeProtocolConfig;
   vless: VlessConfig;
@@ -176,8 +174,6 @@ function defaultProtocolConfig<T extends NodeProtocolType>(type: T): NodeProtoco
       return { addresses: [] } as NodeProtocolConfig<T>;
     case "wireguard":
       return { endpoint: [], peers: [] } as NodeProtocolConfig<T>;
-    case "openvpn":
-      return { profile: "" } as NodeProtocolConfig<T>;
     case "set":
       return { nodes: [] } as NodeProtocolConfig<T>;
     case "none":
@@ -265,7 +261,6 @@ export const protocolTypes: NodeProtocolType[] = [
   "reality",
   "tls",
   "wireguard",
-  "openvpn",
   "mux",
   "drop",
   "vless",

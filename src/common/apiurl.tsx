@@ -21,6 +21,7 @@ export function getApiUrl() {
 
 export function setApiUrl(url: string) {
     localStorage.setItem(APIUrlKey, JSON.stringify(normalizeApiUrl(url)))
+    window.dispatchEvent(new Event("local-storage"))
 }
 
 function readStoredApiUrlList(): string[] {

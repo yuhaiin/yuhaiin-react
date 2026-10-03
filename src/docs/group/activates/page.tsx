@@ -1,4 +1,4 @@
-"use client"
+import { useTranslation } from 'react-i18next';
 
 import { activeNodes, closeNode } from "@/api/nodes";
 import { Badge } from "@/component/v2/badge";
@@ -14,6 +14,8 @@ import useSWR from "swr";
 import { NodeModal } from "../../node/modal";
 
 const ActiveNodeItem: FC<{ v: Node, onClose: () => void }> = ({ v, onClose }) => {
+    const { t: uiT } = useTranslation('ui');
+
     return (
         <div className="grid w-full min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
             <div className="flex min-w-0 items-center gap-3">
@@ -40,12 +42,12 @@ const ActiveNodeItem: FC<{ v: Node, onClose: () => void }> = ({ v, onClose }) =>
                     variant="outline-danger"
                     size="sm"
                     onClick={(e) => { e.stopPropagation(); onClose(); }}
-                    title="Close this node connection"
+                    title={uiT("closeThisNodeConnection")}
                     className="flex items-center gap-2 justify-self-end"
                     style={{ minWidth: "38px" }}
                 >
                     <Power size={16} />
-                    <span className="hidden sm:inline ml-1">Terminate</span>
+                    <span className="hidden sm:inline ml-1">{uiT("terminateLabel")}</span>
                 </Button>
             </div>
         </div>
@@ -53,6 +55,8 @@ const ActiveNodeItem: FC<{ v: Node, onClose: () => void }> = ({ v, onClose }) =>
 };
 
 function Activates({ showFooter = true }: { showFooter?: boolean }) {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
     const { data, error, isLoading, mutate } = useSWR("/api/v2/nodes/active", activeNodes, {
         revalidateOnFocus: false,
@@ -91,7 +95,7 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
                 show={confirmData.show}
                 title={
                     <div className="py-2">
-                        <p className="mb-1">Are you sure you want to <strong>terminate</strong> this active node connection?</p>
+                        <p className="mb-1">{uiT("areYouSureYouWantTo")}<strong>{uiT("terminate")}</strong> {uiT("thisActiveNodeConnection")}</p>
                         <code className="text-sm text-ui-muted font-mono">{confirmData.id}</code>
                     </div>
                 }
@@ -108,10 +112,9 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
                 onClickItem={(v) => setNodeModal({ show: true, node: v })}
                 header={
                     <div className="flex w-full items-center justify-between gap-3">
-                        <IconBox icon={Activity} tone="success" title="Active Nodes" description="Live outbound connection instances" />
+                        <IconBox icon={Activity} tone="success" title={uiT("activeNodes")} description={uiT("liveOutboundConnectionInstances")} />
                         <Badge variant="success" className="shrink-0 rounded-full border border-ui-success/25 bg-ui-success-soft px-3 py-2 text-ui-success">
-                            {sortedNodes.length} Running
-                        </Badge>
+                            {sortedNodes.length} {uiT("running")}</Badge>
                     </div>
                 }
             />
@@ -120,8 +123,7 @@ function Activates({ showFooter = true }: { showFooter?: boolean }) {
                 <div className="mt-4 px-3 pb-5 text-center text-xs text-ui-muted">
                     <small className="flex items-center justify-center leading-relaxed">
                         <Info className="mr-1 shrink-0" size={16} />
-                        Closing a node here will force a reconnection if the rule still requires it.
-                    </small>
+                        {uiT("closingANodeHereWillForceAReconnectionIfTheRuleStillRequiresIt")}</small>
                 </div>
             }
         </MainContainer>

@@ -1,22 +1,29 @@
+import { useTranslation } from 'react-i18next';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { clsx } from "clsx";
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import * as React from "react";
 import { useLastClickPosition } from "../../hooks/use-last-click";
-import { ui } from "./styles";
+import { cn, ui } from "./styles";
 
 // --- Context ---
 const ModalContext = React.createContext<{ open: boolean, transformOrigin: string }>({ open: false, transformOrigin: 'center center' });
 
 // --- Wrapper ---
 // We wrap DialogPrimitive.Root to capture the open state and pass it down
-const Modal: React.FC<React.ComponentProps<typeof DialogPrimitive.Root>> = ({ children, open, onOpenChange, ...props }) => {
+const Modal: React.FC<React.ComponentProps<typeof DialogPrimitive.Root>> = ({ children, open, defaultOpen = false, onOpenChange, ...props }) => {
+    const [internalOpen, setInternalOpen] = React.useState(defaultOpen);
+    const isOpen = open ?? internalOpen;
+    const changeOpen = (next: boolean) => {
+        if (open === undefined) setInternalOpen(next);
+        onOpenChange?.(next);
+    };
     const getLastClick = useLastClickPosition();
     const [origin, setOrigin] = React.useState("center center");
 
     // Capture origin only when opening
     React.useEffect(() => {
-        if (open) {
+        if (isOpen) {
             const pos = getLastClick();
             if (pos.x !== 0 || pos.y !== 0) {
                 setOrigin(`${pos.x}px ${pos.y}px`);
@@ -25,11 +32,11 @@ const Modal: React.FC<React.ComponentProps<typeof DialogPrimitive.Root>> = ({ ch
         }
         // Reset or keep previous? Keeping previous is fine, but if we close and open elsewhere?
         // If open is false, we don't care.
-    }, [getLastClick, open]);
+    }, [getLastClick, isOpen]);
 
     return (
-        <DialogPrimitive.Root open={open} onOpenChange={onOpenChange} {...props}>
-            <ModalContext.Provider value={{ open: !!open, transformOrigin: origin }}>
+        <DialogPrimitive.Root open={isOpen} onOpenChange={changeOpen} {...props}>
+            <ModalContext.Provider value={{ open: isOpen, transformOrigin: origin }}>
                 {children}
             </ModalContext.Provider>
         </DialogPrimitive.Root>
@@ -72,8 +79,9 @@ const contentVariants = {
 
 
 // 1. Content Container
-const ModalContent = ({ className, children, style, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>) => {
+const ModalContent = ({ className, children, style, width = 500, ...props }: React.ComponentProps<typeof DialogPrimitive.Content> & { width?: number }) => {
     const { open, transformOrigin } = React.useContext(ModalContext);
+    const reducedMotion = useReducedMotion();
 
     return (
         <AnimatePresence>
@@ -88,17 +96,21 @@ const ModalContent = ({ className, children, style, ...props }: React.ComponentP
                             exit="exit"
                         />
                     </DialogPrimitive.Overlay>
-                    <DialogPrimitive.Content asChild forceMount>
+                    <DialogPrimitive.Content asChild forceMount aria-describedby={undefined}>
                         <motion.div
-                            className={clsx(
-                                "fixed top-1/2 left-1/2 min-w-0 w-[90vw] max-w-[500px] max-h-[85vh] z-[1055] flex flex-col outline-none overflow-hidden bg-ui-surface text-ui-fg border border-ui-border rounded-ui-xl shadow-ui-elevated p-[5px] will-change-[transform,opacity]",
+                            className={cn(
+                                "fixed top-1/2 left-1/2 min-w-0 w-[calc(100vw-24px)] max-h-[calc(100dvh-32px)] z-[1055] flex flex-col outline-none overflow-hidden bg-ui-surface text-ui-fg border border-ui-border rounded-ui-xl shadow-ui-elevated p-[5px]",
                                 className
                             )}
-                            variants={contentVariants}
+                            variants={reducedMotion ? {
+                                hidden: { opacity: 0, x: '-50%', y: '-50%' },
+                                visible: { opacity: 1, x: '-50%', y: '-50%' },
+                                exit: { opacity: 0, x: '-50%', y: '-50%' },
+                            } : contentVariants}
                             initial="hidden"
                             animate="visible"
                             exit="exit"
-                            style={{ transformOrigin, ...style }}
+                            style={{ maxWidth: width, transformOrigin, ...style }}
                             // Oxlint cannot express the overlap between Radix
                             // content props and Motion's props at this boundary.
                             // oxlint-disable-next-line typescript/no-explicit-any
@@ -124,18 +136,21 @@ const ModalHeader = ({
     children,
     closeButton = false, // Hidden by default
     ...props
-}: ModalHeaderProps) => (
+}: ModalHeaderProps) => {
+    const { t: uiT } = useTranslation('ui');
+    return (
     <div className={clsx("flex min-w-0 items-center justify-between p-4 border-b border-ui-border", className)} {...props}>
         {children}
 
         {closeButton && (
-            <DialogPrimitive.Close className={clsx("flex items-center justify-center p-2 -m-2 ml-auto text-2xl leading-none text-ui-muted opacity-60 transition-opacity duration-200 bg-transparent border-0 cursor-pointer hover:opacity-100 hover:text-ui-fg hover:no-underline", ui.focusRing)} aria-label="Close">
+            <DialogPrimitive.Close className={clsx("flex items-center justify-center p-2 -m-2 ml-auto text-2xl leading-none text-ui-muted opacity-60 transition-opacity duration-200 bg-transparent border-0 cursor-pointer hover:opacity-100 hover:text-ui-fg hover:no-underline", ui.focusRing)} aria-label={uiT("close")}>
                 {/* Use a standard multiplication sign, or replace with Cross2Icon from @radix-ui/react-icons */}
                 <span aria-hidden="true">×</span>
             </DialogPrimitive.Close>
         )}
     </div>
 );
+};
 
 // 3. Title (Must use DialogPrimitive.Title for accessibility)
 const ModalTitle = ({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) => (

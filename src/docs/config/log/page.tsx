@@ -1,4 +1,5 @@
-"use client"
+import { usePageVisible } from "@/common/hooks";
+import { LogRingBuffer, levelStyles, type LogEntry } from "./log-buffer";
 
 import { AuthTokenKey, getApiUrl } from "@/common/apiurl"
 import { Badge } from "@/component/v2/badge"
@@ -7,30 +8,13 @@ import { Card, CardBody, CardHeader, FilterSearch, IconBox, MainContainer } from
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import type { LogBatch } from "@/contract/tools"
 import { clsx } from "clsx"
-import { Radio, Terminal, Trash2 } from 'lucide-react'
+import { Pause, Play, Radio, Terminal, Trash2 } from 'lucide-react'
 import { FC, memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { VList, type VListHandle } from "virtua"
 
 const LOG_RETENTION_OPTIONS = [500, 2000, 10000] as const
 type LogRetention = typeof LOG_RETENTION_OPTIONS[number]
-type LogLevel = "ERROR" | "WARN" | "INFO" | "DEBUG" | "FATAL" | "TRACE" | "LOG";
-
-type ParsedLogLine = {
-    time?: string;
-    displayTime?: string;
-    level: LogLevel;
-    message: string;
-    source?: string;
-    details?: string;
-}
-
-type LogEntry = {
-    id: number;
-    line: string;
-    parsed: ParsedLogLine;
-}
-
 function logsURL() {
     const apiUrl = getApiUrl();
     const base = apiUrl !== "" ? apiUrl : window.location.toString();
@@ -42,171 +26,6 @@ function logsURL() {
     return url.toString();
 }
 
-const levelStyles: Record<LogLevel, { bar: string; badge: string; text: string }> = {
-    ERROR: {
-        bar: "bg-red-500",
-        badge: "bg-red-500/10 text-red-700 ring-red-500/20 dark:text-red-300",
-        text: "text-red-700 dark:text-red-200",
-    },
-    FATAL: {
-        bar: "bg-rose-600",
-        badge: "bg-rose-500/10 text-rose-700 ring-rose-500/25 dark:text-rose-300",
-        text: "text-rose-700 dark:text-rose-200",
-    },
-    WARN: {
-        bar: "bg-amber-500",
-        badge: "bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-300",
-        text: "text-amber-700 dark:text-amber-200",
-    },
-    INFO: {
-        bar: "bg-sky-500",
-        badge: "bg-sky-500/10 text-sky-700 ring-sky-500/20 dark:text-sky-300",
-        text: "text-slate-800 dark:text-slate-100",
-    },
-    DEBUG: {
-        bar: "bg-emerald-500",
-        badge: "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-300",
-        text: "text-emerald-700 dark:text-emerald-200",
-    },
-    TRACE: {
-        bar: "bg-violet-500",
-        badge: "bg-violet-500/10 text-violet-700 ring-violet-500/20 dark:text-violet-300",
-        text: "text-violet-700 dark:text-violet-200",
-    },
-    LOG: {
-        bar: "bg-slate-300 dark:bg-slate-600",
-        badge: "bg-slate-500/10 text-slate-600 ring-slate-500/15 dark:text-slate-300",
-        text: "text-slate-800 dark:text-slate-100",
-    },
-};
-
-const readSlogValue = (line: string, key: string): string | undefined => {
-    const start = line.indexOf(`${key}=`);
-    if (start < 0) return undefined;
-
-    let i = start + key.length + 1;
-    if (line[i] !== '"') {
-        const end = line.indexOf(" ", i);
-        return line.slice(i, end < 0 ? undefined : end);
-    }
-
-    i += 1;
-    let value = "";
-    for (; i < line.length; i++) {
-        const char = line[i];
-        if (char === "\\" && i + 1 < line.length) {
-            value += line[i + 1];
-            i += 1;
-            continue;
-        }
-        if (char === '"') break;
-        value += char;
-    }
-    return value;
-}
-
-const trimSlogFields = (line: string) => {
-    return line
-        .replace(/\btime=(?:"(?:\\.|[^"])*"|\S+)\s*/g, "")
-        .replace(/\blevel=(?:"(?:\\.|[^"])*"|\S+)\s*/g, "")
-        .replace(/\bsource=(?:"(?:\\.|[^"])*"|\S+)\s*/g, "")
-        .replace(/\bmsg=(?:"(?:\\.|[^"])*"|\S+)\s*/g, "")
-        .trim();
-}
-
-const formatLogTime = (value?: string) => {
-    if (!value) return undefined;
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-    const time = date.toLocaleTimeString(undefined, {
-        hour12: false,
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-    });
-    return `${time}.${String(date.getMilliseconds()).padStart(3, "0")}`;
-}
-
-const parseLogLine = (line: string): ParsedLogLine => {
-    const rawLevel = readSlogValue(line, "level")?.toUpperCase();
-    const level = rawLevel && rawLevel in levelStyles ? rawLevel as LogLevel : "LOG";
-    const message = readSlogValue(line, "msg") ?? line;
-    const source = readSlogValue(line, "source");
-    const time = readSlogValue(line, "time");
-    const details = message === line ? undefined : trimSlogFields(line);
-
-    return { time, displayTime: formatLogTime(time), level, message, source, details };
-}
-
-class LogRingBuffer {
-    private entries: LogEntry[]
-    private head = 0
-    private count = 0
-    private version = 0
-    private nextId = 0
-
-    constructor(private capacity: number) {
-        this.entries = Array.from<LogEntry>({ length: capacity })
-    }
-
-    get size() {
-        return this.count
-    }
-
-    get currentVersion() {
-        return this.version
-    }
-
-    get(index: number) {
-        if (index < 0 || index >= this.count) return undefined
-        return this.entries[(this.head + index) % this.capacity]
-    }
-
-    append(values: string[]) {
-        if (values.length === 0 || this.capacity <= 0) return this.version
-
-        for (let i = values.length - 1; i >= 0; i--) {
-            const line = values[i]
-            this.head = (this.head - 1 + this.capacity) % this.capacity
-            this.entries[this.head] = {
-                id: ++this.nextId,
-                line,
-                parsed: parseLogLine(line),
-            }
-            if (this.count < this.capacity) this.count++
-        }
-
-        this.version++
-        return this.version
-    }
-
-    setCapacity(capacity: number) {
-        if (this.capacity === capacity) return this.version
-
-        const keep = Math.min(this.count, capacity)
-        const next = Array.from<LogEntry>({ length: capacity })
-        for (let i = 0; i < keep; i++) {
-            const entry = this.get(i)
-            if (entry) next[i] = entry
-        }
-
-        this.capacity = capacity
-        this.entries = next
-        this.head = 0
-        this.count = keep
-        this.version++
-        return this.version
-    }
-
-    clear() {
-        if (this.count === 0) return this.version
-        this.entries = Array.from<LogEntry>({ length: this.capacity })
-        this.head = 0
-        this.count = 0
-        this.version++
-        return this.version
-    }
-}
 
 const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
     const { parsed } = entry;
@@ -248,6 +67,8 @@ const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
 });
 
 export default function LogComponent() {
+    const { t: uiT } = useTranslation('ui');
+
     const { t } = useTranslation("config");
     const [searchTerm, setSearchTerm] = useState('');
     const deferredSearchTerm = useDeferredValue(searchTerm)
@@ -255,17 +76,30 @@ export default function LogComponent() {
     const [localVersion, setLocalVersion] = useState(0)
     const [logBuffer] = useState(() => new LogRingBuffer(retention))
     const [logError, setLogError] = useState<{ code: number, msg: string } | undefined>()
+    const visible = usePageVisible();
+    const [paused, setPaused] = useState(false);
+    const [collectionGap, setCollectionGap] = useState(false);
     const [streamNonce, setStreamNonce] = useState(0)
     const logListRef = useRef<VListHandle>(null);
     const followLatestRef = useRef(true);
 
     useEffect(() => {
+        if (paused || !visible) { setCollectionGap(true); return; }
         let reconnectTimer: number | undefined;
+        let flushTimer: number | undefined;
+        let stopped = false;
         const source = new EventSource(logsURL());
         const onLog = (event: MessageEvent<string>) => {
+            if (stopped) return;
             try {
+                if (event.data.length > 2 * 1024 * 1024) throw new Error("Log batch exceeds 2 MB limit");
                 const batch = JSON.parse(event.data) as LogBatch;
-                setLocalVersion(logBuffer.append([...(batch.log ?? [])].reverse()));
+                if (!Array.isArray(batch.log) || batch.log.some(line => typeof line !== 'string')) throw new Error("Invalid log batch");
+                logBuffer.append(batch.log.slice(-retention).reverse());
+                if (flushTimer === undefined) flushTimer = window.setTimeout(() => {
+                    flushTimer = undefined;
+                    if (!stopped) setLocalVersion(logBuffer.currentVersion);
+                }, 100);
                 setLogError(undefined);
             } catch (error) {
                 setLogError({ code: 500, msg: error instanceof globalThis.Error ? error.message : "decode log failed" });
@@ -273,15 +107,19 @@ export default function LogComponent() {
         };
         source.addEventListener("log", onLog);
         source.onerror = () => {
+            if (stopped) return;
             setLogError({ code: 500, msg: "log stream disconnected" });
             source.close();
             reconnectTimer = window.setTimeout(() => setStreamNonce((value) => value + 1), 2000);
         };
         return () => {
+            stopped = true;
             source.close();
+            if (flushTimer !== undefined) window.clearTimeout(flushTimer);
+            setLocalVersion(logBuffer.currentVersion);
             if (reconnectTimer !== undefined) window.clearTimeout(reconnectTimer);
         };
-    }, [logBuffer, streamNonce])
+    }, [logBuffer, streamNonce, paused, visible, retention])
 
     const version = Math.max(localVersion, logBuffer.currentVersion)
 
@@ -326,34 +164,39 @@ export default function LogComponent() {
     return (
         <MainContainer className="h-full min-h-0 flex flex-col">
             <Card noMargin className="flex-1 min-h-0 flex flex-col overflow-hidden">
-                <CardHeader className="px-2.5 py-2">
-                    <div className="flex min-w-0 w-full flex-wrap items-center gap-2">
+                <CardHeader className="shrink-0 !px-3 py-3 sm:!px-4">
+                    <div className="flex w-full min-w-0 items-center justify-between gap-3">
                         <IconBox
                             icon={Terminal}
                             tone="warning"
-                            title="Live Logcat"
-                            description="Real-time system events"
-                            className="!mr-2 !h-10 !w-10 !rounded-[10px]"
+                            title={uiT("liveLogcat")}
+                            description={uiT("realTimeSystemEvents")}
+                            className="!mr-3 !h-10 !w-10 !rounded-[10px]"
                         />
-                        <FilterSearch onEnter={setSearchTerm} className="order-2 min-w-0 flex-1" />
-                        <div className="order-3 flex w-full min-w-0 flex-wrap items-center gap-2 sm:order-none sm:w-auto sm:flex-1 sm:justify-end">
-                            <ToggleGroup className="min-w-0 max-w-full flex-nowrap overflow-x-auto" type="single" value={String(retention)} onValueChange={(v) => v && changeRetention(v)}>
+                        <Badge variant={logError ? "danger" : "warning"} pill className="shrink-0 text-[0.7rem] px-2 py-1">
+                            <Radio className="mr-1" size={12} />{uiT(paused || !visible ? "paused" : logError ? "reconnecting" : "live")}
+                        </Badge>
+                    </div>
+                    <div className="grid w-full min-w-0 grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-3">
+                        <FilterSearch onEnter={setSearchTerm} className="w-full min-w-0" />
+                        <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-end">
+                            <ToggleGroup className="shrink-0 flex-nowrap" type="single" value={String(retention)} onValueChange={(v) => v && changeRetention(v)}>
                                 {LOG_RETENTION_OPTIONS.map(value => (
-                                    <ToggleItem key={value} value={String(value)}>{value}</ToggleItem>
+                                    <ToggleItem className="h-11 min-w-11 !px-1.5 sm:!px-2.5" key={value} value={String(value)}>{value}</ToggleItem>
                                 ))}
                             </ToggleGroup>
-                            <Button size="sm" variant="outline-secondary" onClick={clearLogs}>
-                                <Trash2 size={14} />
-                            </Button>
-                            <Badge variant={logError ? "danger" : "warning"} pill className="shrink-0 text-[0.7rem] px-2 py-1">
-                                <Radio className="mr-1" size={12} />{logError ? "RECONNECTING" : "LIVE"}
-                            </Badge>
+                            <div className="flex shrink-0 items-center gap-2">
+                                <Button className="!h-11 !w-11" size="icon" variant="outline-secondary" aria-label={uiT("clearLogs")} title={uiT("clearLogs")} onClick={clearLogs}>
+                                    <Trash2 size={16} />
+                                </Button>
+                                <Button className="!h-11 !w-11" size="icon" variant="outline-secondary" aria-label={uiT(paused ? "resumeCollection" : "pauseCollection")} title={uiT(paused ? "resumeCollection" : "pauseCollection")} aria-pressed={paused} onClick={() => setPaused(value => !value)}>{paused ? <Play size={16} /> : <Pause size={16} />}</Button>
+                            </div>
                         </div>
                     </div>
+                    {collectionGap && <p role="status" className="mt-2 text-xs text-ui-muted">{uiT("collectionPausesInTheBackgroundOrWhenPausedEventsDuringThatTimeAreNotCollectedRetainedLogsStayAvailable")}</p>}
                     {logError && (
                         <div className="mt-2 rounded-ui-lg border border-ui-danger/30 bg-ui-danger/10 px-3 py-2 text-xs text-ui-danger">
-                            {logError.msg}. Retrying...
-                        </div>
+                            {logError.msg}{uiT("retrying")}</div>
                     )}
                 </CardHeader>
                 <CardBody className="!p-0 bg-ui-surface-muted flex-1 min-h-0 overflow-hidden rounded-b-[inherit]">

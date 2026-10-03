@@ -1,7 +1,9 @@
-"use client";
+import { collectPages } from "@/api/paging";
+import { useTranslation } from 'react-i18next';
+import NodeImportModal from "./NodeImportModal";
 
 import { APIError } from "@/api/client";
-import { createNode, deleteNode, latencyNode, listNodes, useNode as selectNode, type NodeLatencyType } from "@/api/nodes";
+import { deleteNode, latencyNode, listNodes, useNode as selectNode, type NodeLatencyType } from "@/api/nodes";
 import {
     LatencyDNSUrlDefault,
     LatencyDNSUrlKey,
@@ -22,12 +24,10 @@ import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardHeader, IconBox, MainContainer } from "@/component/v2/card";
 import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
-import { Input, Textarea } from "@/component/v2/input";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
+import { Input } from "@/component/v2/input";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { Node, NodeLatencyResponse } from "@/contract/node";
-import { normalizeNode } from "@/contract/node";
 import clsx from "clsx";
 import { Check, ChevronDown, Gauge, Layers, Network, Plus, Power, Search, Upload } from "lucide-react";
 import { FC, memo, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -216,6 +216,8 @@ const GroupPicker: FC<{
     value: string;
     onChange: (group: string) => void;
 }> = ({ groups, counts, value, onChange }) => {
+    const { t: uiT } = useTranslation('ui');
+
     const [open, setOpen] = useState(false);
     const [filter, setFilter] = useState("");
 
@@ -296,13 +298,13 @@ const GroupPicker: FC<{
                         <Input
                             value={filter}
                             onChange={(e) => setFilter(e.target.value)}
-                            placeholder="Filter groups..."
+                            placeholder={uiT("filterGroups")}
                             className="h-8 pl-8 text-sm"
                         />
                     </div>
                 </div>
                 {filtered.length === 0 ? (
-                    <div className="px-3 py-4 text-center text-xs text-ui-muted">No matching groups</div>
+                    <div className="px-3 py-4 text-center text-xs text-ui-muted">{uiT("noMatchingGroups")}</div>
                 ) : (
                     filtered.map((group) => {
                         const active = group === value;
@@ -389,6 +391,8 @@ const NodeItem: FC<{
     latency?: NodeLatencyState;
     busy?: Partial<Record<NodeLatencyType, boolean>>;
 }> = memo(({ item, onUse, onLatency, onEdit, latency, busy }) => {
+    const { t: uiT } = useTranslation('ui');
+
     const chain = chainLabel(item);
     const hasLatency = Boolean(busy?.tcp || busy?.udp || !isEmptyLatency(latency?.tcp) || !isEmptyLatency(latency?.udp));
     const hasIp = Boolean(busy?.ip || latency?.ip);
@@ -425,8 +429,7 @@ const NodeItem: FC<{
                             )}
                             {!item.enabled && (
                                 <Badge variant="secondary" pill className="shrink-0 px-1.5 py-0 text-[0.62rem]">
-                                    Off
-                                </Badge>
+                                    {uiT("off")}</Badge>
                             )}
                         </div>
                         <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
@@ -465,12 +468,12 @@ const NodeItem: FC<{
                         <span className="font-mono" title={item.id}>{item.id}</span>
                         {item.group && (
                             <span>
-                                <span className="text-ui-muted/70">group</span>{" "}
+                                <span className="text-ui-muted/70">{uiT("groupLabel")}</span>{" "}
                                 <span className="text-ui-fg">{item.group}</span>
                             </span>
                         )}
                         <span>
-                            <span className="text-ui-muted/70">status</span>{" "}
+                            <span className="text-ui-muted/70">{uiT("status")}</span>{" "}
                             <span className={item.enabled ? "text-ui-success" : "text-ui-muted"}>
                                 {item.enabled ? "enabled" : "disabled"}
                             </span>
@@ -489,7 +492,7 @@ const NodeItem: FC<{
                             )}
 
                             {hasIp && (
-                                <ResultGroup title="IP">
+                                <ResultGroup title={uiT("ip")}>
                                     <ResultRow label="IPv4" value={latencyDetail(latency?.ip, "ipv4")} loading={busy?.ip} />
                                     <ResultRow label="IPv6" value={latencyDetail(latency?.ip, "ipv6")} loading={busy?.ip} />
                                 </ResultGroup>
@@ -507,7 +510,7 @@ const NodeItem: FC<{
                             )}
                         </div>
                     ) : (
-                        <div className="text-xs text-ui-muted">No test results yet.</div>
+                        <div className="text-xs text-ui-muted">{uiT("noTestResultsYet")}</div>
                     )}
 
                     <div className="flex flex-wrap items-center justify-end gap-2 border-t border-ui-border/70 pt-3">
@@ -515,8 +518,7 @@ const NodeItem: FC<{
                             <DropdownTrigger asChild>
                                 <Button size="sm" variant="outline-secondary" onClick={(e) => e.stopPropagation()}>
                                     <Gauge size={15} className="mr-1.5" />
-                                    Test
-                                    <ChevronDown size={14} className="ml-1" />
+                                    {uiT("test")}<ChevronDown size={14} className="ml-1" />
                                 </Button>
                             </DropdownTrigger>
                             <DropdownContent align="end" className="min-w-[180px] max-w-[220px]">
@@ -530,11 +532,9 @@ const NodeItem: FC<{
                         </Dropdown>
                         <Button size="sm" variant="primary" onClick={(e) => { e.stopPropagation(); onUse(); }}>
                             <Power size={15} className="mr-1.5" />
-                            Use
-                        </Button>
+                            {uiT("use")}</Button>
                         <Button size="sm" variant="outline-secondary" onClick={(e) => { e.stopPropagation(); onEdit(); }}>
-                            Edit
-                        </Button>
+                            {uiT("edit")}</Button>
                     </div>
                 </div>
             </AccordionContent>
@@ -542,90 +542,9 @@ const NodeItem: FC<{
     );
 });
 
-const NodeImportModal: FC<{
-    show: boolean;
-    group: string;
-    onHide: () => void;
-    onSaved: () => void;
-}> = ({ show, group, onHide, onSaved }) => {
-    const ctx = useContext(GlobalToastContext);
-    const [text, setText] = useState("");
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState("");
-
-    useEffect(() => {
-        if (!show) return;
-        setText("");
-        setError("");
-    }, [show]);
-
-    const parse = (): Node[] => {
-        const parsed = JSON.parse(text) as unknown;
-        const rawItems = Array.isArray(parsed)
-            ? parsed
-            : parsed && typeof parsed === "object" && "items" in parsed && Array.isArray((parsed as { items?: unknown }).items)
-                ? (parsed as { items: unknown[] }).items
-                : [parsed];
-        return rawItems.map((item) => {
-            const node = item && typeof item === "object" ? item as Partial<Node> : {};
-            return normalizeNode({ ...node, group: node.group || group });
-        });
-    };
-
-    const save = () => {
-        let nodes: Node[];
-        try {
-            nodes = parse();
-            if (nodes.length === 0) throw new Error("No nodes found");
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Invalid JSON");
-            return;
-        }
-
-        setSaving(true);
-        Promise.all(nodes.map((node) => createNode(node)))
-            .then(() => {
-                ctx.Info(`Imported ${nodes.length} node${nodes.length > 1 ? "s" : ""}`);
-                onSaved();
-            })
-            .catch((err: unknown) => {
-                const apiErr = errorOf(err);
-                setError(apiErr?.msg ?? (err instanceof Error ? err.message : String(err)));
-            })
-            .finally(() => setSaving(false));
-    };
-
-    return (
-        <Modal open={show} onOpenChange={(open) => !open && onHide()}>
-            <ModalContent className="max-w-[800px]">
-                <ModalHeader closeButton>
-                    <ModalTitle>Import JSON</ModalTitle>
-                </ModalHeader>
-                <ModalBody>
-                    <Textarea
-                        className="min-h-[55vh] font-mono text-sm"
-                        value={text}
-                        onChange={(event) => {
-                            setText(event.target.value);
-                            setError("");
-                        }}
-                        placeholder='{"id":"node-id","name":"node-name","group":"manual","origin":"manual","enabled":true,"chain":[{"type":"direct","direct":{}}]}'
-                    />
-                    {error && <div className="mt-3 rounded-ui-lg border border-ui-danger/40 bg-ui-danger/10 p-3 text-sm text-ui-danger">{error}</div>}
-                </ModalBody>
-                <ModalFooter>
-                    <Button variant="outline-secondary" onClick={onHide}>Close</Button>
-                    <Button onClick={save} disabled={saving || !text.trim()}>
-                        {saving ? <Spinner size="sm" className="mr-2" /> : <Check size={16} className="mr-2" />}
-                        Save
-                    </Button>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
-    );
-};
-
 export default function Group() {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
     const [showdata, setShowdata] = useState({ show: false, id: "", new: false });
     const [importOpen, setImportOpen] = useState(false);
@@ -639,7 +558,7 @@ export default function Group() {
     const [latencyIPUrl] = useLocalStorage(LatencyIPUrlKey, LatencyIPUrlDefault);
     const [latencyStunUrl] = useLocalStorage(LatencyStunUrlKey, LatencyStunUrlDefault);
     const [latencyStunTCPUrl] = useLocalStorage(LatencyStunTCPUrlKey, LatencyStunTCPUrlDefault);
-    const { data, error, isLoading, mutate } = useSWR("/api/v2/nodes/all", () => listNodes({ page: 1, pageSize: 10000 }), { revalidateOnFocus: false });
+    const { data, error, isLoading, mutate } = useSWR("/api/v2/nodes/all", () => collectPages(listNodes), { revalidateOnFocus: false });
 
     const apiError = errorOf(error);
     const items = useMemo(() => data?.items ?? [], [data?.items]);
@@ -771,10 +690,8 @@ export default function Group() {
                 show={importOpen}
                 group={selectedGroup || "manual"}
                 onHide={() => setImportOpen(false)}
-                onSaved={() => {
-                    setImportOpen(false);
-                    void mutate();
-                }}
+                onChanged={() => { void mutate(); }}
+                onSaved={() => setImportOpen(false)}
             />
 
             <Card className="mb-4 overflow-hidden">
@@ -783,16 +700,14 @@ export default function Group() {
                         <IconBox
                             icon={Layers}
                             tone="primary"
-                            title="Outbound"
+                            title={uiT("outbound6")}
                             description={`${items.length} nodes across ${groups.length} ${groups.length === 1 ? "group" : "groups"}`}
                         />
                         <div className="flex flex-wrap items-center gap-2">
                             <Button onClick={handleCreate}>
-                                <Plus className="mr-1" size={16} /> New
-                            </Button>
+                                <Plus className="mr-1" size={16} /> {uiT("new")}</Button>
                             <Button variant="outline-secondary" onClick={() => setImportOpen(true)}>
-                                <Upload className="mr-1" size={16} /> Import
-                            </Button>
+                                <Upload className="mr-1" size={16} /> {uiT("import")}</Button>
                         </div>
                     </div>
                 </CardHeader>
@@ -803,15 +718,13 @@ export default function Group() {
                             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-ui-primary-soft text-ui-primary">
                                 <Network size={22} />
                             </div>
-                            <div className="text-sm font-semibold text-ui-heading">No outbound groups yet</div>
-                            <div className="mt-1 text-xs text-ui-muted">Create a node or import JSON to get started.</div>
+                            <div className="text-sm font-semibold text-ui-heading">{uiT("noOutboundGroupsYet")}</div>
+                            <div className="mt-1 text-xs text-ui-muted">{uiT("createANodeOrImportJsonToGetStarted")}</div>
                             <div className="mt-4 flex justify-center gap-2">
                                 <Button size="sm" onClick={handleCreate}>
-                                    <Plus size={14} className="mr-1" /> New node
-                                </Button>
+                                    <Plus size={14} className="mr-1" /> {uiT("newNode")}</Button>
                                 <Button size="sm" variant="outline-secondary" onClick={() => setImportOpen(true)}>
-                                    <Upload size={14} className="mr-1" /> Import
-                                </Button>
+                                    <Upload size={14} className="mr-1" /> {uiT("import")}</Button>
                             </div>
                         </div>
                     ) : (
@@ -828,7 +741,7 @@ export default function Group() {
                                     <Input
                                         value={query}
                                         onChange={(e) => setQuery(e.target.value)}
-                                        placeholder="Search nodes..."
+                                        placeholder={uiT("searchNodes")}
                                         className="h-9 pl-9 text-sm"
                                     />
                                 </div>

@@ -1,19 +1,20 @@
-"use client"
 
-import { ArrowLeftRight, Download, ExternalLink, Filter, House, Settings, X } from 'lucide-react';
+import { ArrowLeftRight, Download, ExternalLink, Filter, House, Settings } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
-import { Button } from '@/component/v2/button';
 import { SidebarCollapsible, SidebarDivider, SidebarItem, SidebarNav, Sidebar as SidebarRoot, SidebarSubLink } from '../../component/v2/sidebar';
 
 interface SidebarProps {
     id?: string;
     show: boolean;
     onHide: () => void;
+    triggerRef?: React.RefObject<HTMLButtonElement | null>;
 }
 
-function Sidebar({ id, show, onHide }: SidebarProps) {
+function Sidebar({ id, show, onHide, triggerRef }: SidebarProps) {
+    const { t: uiT } = useTranslation('ui');
+
     const { t } = useTranslation('nav');
     const [pathname, navigate] = useLocation();
 
@@ -32,29 +33,16 @@ function Sidebar({ id, show, onHide }: SidebarProps) {
     };
 
     return (
-        <SidebarRoot id={id} show={show} onHide={onHide}>
+        <SidebarRoot id={id} show={show} onHide={onHide} triggerRef={triggerRef}>
             <SidebarNav>
-                <div className="flex items-center gap-1">
-                    <SidebarItem
-                        className="!w-auto min-w-0 flex-1"
-                        onClick={() => handleNavLinkClick('/')}
-                        active={pathname === '/'}
-                        icon={<House />}
-                    >
-                        {t('home')}
-                    </SidebarItem>
-                    <Button
-                        type="button"
-                        variant="outline-secondary"
-                        size="icon"
-                        className="h-11 w-11 shrink-0 lg:hidden"
-                        onClick={onHide}
-                        aria-label={t('close')}
-                        title={t('close')}
-                    >
-                        <X size={18} />
-                    </Button>
-                </div>
+                <SidebarItem
+                    href="#/"
+                    onClick={e => { if (isPrimaryClick(e)) { e.preventDefault(); handleNavLinkClick('/'); } }}
+                    active={pathname === '/'}
+                    icon={<House />}
+                >
+                    {t('home')}
+                </SidebarItem>
 
                 <SidebarGroup
                     title={t('outbound')}
@@ -63,28 +51,23 @@ function Sidebar({ id, show, onHide }: SidebarProps) {
                     matchPath="/docs/group/"
                 >
                     <SelectableLink path="/docs/group/" current={pathname} onSelect={handleNavLinkClick}>
-                        Outbound
-                    </SelectableLink>
+                        {uiT("outbound6")}</SelectableLink>
                     <SelectableLink path="/docs/group/subscribe" current={pathname} onSelect={handleNavLinkClick}>
-                        Subscribe
-                    </SelectableLink>
+                        {uiT("subscribe")}</SelectableLink>
                     <SelectableLink path="/docs/group/publish" current={pathname} onSelect={handleNavLinkClick}>
-                        Publish
-                    </SelectableLink>
+                        {uiT("publish")}</SelectableLink>
                     <SelectableLink path="/docs/group/activates" current={pathname} onSelect={handleNavLinkClick}>
-                        Activates
-                    </SelectableLink>
+                        {uiT("activates")}</SelectableLink>
                 </SidebarGroup>
 
                 <SidebarGroup
                     title={t('inbound')}
                     icon={<Download />}
                     activePath={pathname}
-                    matchPath="/docs/inbound/"
+                    matchPath="/docs/inbound"
                 >
-                    <SelectableLink path="/docs/inbound/" current={pathname} onSelect={handleNavLinkClick}>
-                        Config
-                    </SelectableLink>
+                    <SelectableLink path="/docs/inbound" current={pathname} onSelect={handleNavLinkClick}>
+                        {uiT("config")}</SelectableLink>
                 </SidebarGroup>
 
                 <SidebarGroup
@@ -94,25 +77,19 @@ function Sidebar({ id, show, onHide }: SidebarProps) {
                     matchPath="/docs/bypass/"
                 >
                     <SelectableLink path="/docs/bypass/" current={pathname} onSelect={handleNavLinkClick}>
-                        Rule
-                    </SelectableLink>
+                        {uiT("rule")}</SelectableLink>
                     <SelectableLink path="/docs/bypass/list" current={pathname} onSelect={handleNavLinkClick}>
-                        List
-                    </SelectableLink>
+                        {uiT("list")}</SelectableLink>
                     <SelectableLink path="/docs/bypass/tag" current={pathname} onSelect={handleNavLinkClick}>
-                        Tag
-                    </SelectableLink>
+                        {uiT("tag")}</SelectableLink>
                     <SidebarDivider />
                     <SelectableLink path="/docs/bypass/resolver/" current={pathname} onSelect={handleNavLinkClick}>
-                        Resolver
-                    </SelectableLink>
+                        {uiT("resolver")}</SelectableLink>
                     <SidebarDivider />
                     <SelectableLink path="/docs/bypass/test" current={pathname} onSelect={handleNavLinkClick}>
-                        Test Route
-                    </SelectableLink>
+                        {uiT("testRoute")}</SelectableLink>
                     <SelectableLink path="/docs/bypass/block" current={pathname} onSelect={handleNavLinkClick}>
-                        Block History
-                    </SelectableLink>
+                        {uiT("blockHistory")}</SelectableLink>
                 </SidebarGroup>
 
                 <SidebarGroup
@@ -122,14 +99,11 @@ function Sidebar({ id, show, onHide }: SidebarProps) {
                     matchPath="/docs/connections/"
                 >
                     <SelectableLink path="/docs/connections/v2" current={pathname} onSelect={handleNavLinkClick}>
-                        Connections
-                    </SelectableLink>
+                        {uiT("connections18")}</SelectableLink>
                     <SelectableLink path="/docs/connections/history" current={pathname} onSelect={handleNavLinkClick}>
-                        History
-                    </SelectableLink>
+                        {uiT("history")}</SelectableLink>
                     <SelectableLink path="/docs/connections/failed" current={pathname} onSelect={handleNavLinkClick}>
-                        Failed History
-                    </SelectableLink>
+                        {uiT("failedHistory")}</SelectableLink>
                 </SidebarGroup>
 
                 <SidebarGroup
@@ -139,33 +113,25 @@ function Sidebar({ id, show, onHide }: SidebarProps) {
                     matchPath="/docs/config/"
                 >
                     <SelectableLink path="/docs/config/" current={pathname} onSelect={handleNavLinkClick}>
-                        Config
-                    </SelectableLink>
+                        {uiT("config")}</SelectableLink>
                     <SelectableLink path="/docs/webui/" current={pathname} onSelect={handleNavLinkClick}>
-                        WebUI
-                    </SelectableLink>
+                        {uiT("webui")}</SelectableLink>
                     <SidebarDivider />
                     <SelectableLink path="/docs/config/backup/" current={pathname} onSelect={handleNavLinkClick}>
-                        Backup
-                    </SelectableLink>
+                        {uiT("backup")}</SelectableLink>
                     <SidebarDivider />
                     <SelectableLink path="/docs/config/log/" current={pathname} onSelect={handleNavLinkClick}>
-                        Log
-                    </SelectableLink>
+                        {uiT("log")}</SelectableLink>
                     <SidebarDivider />
                     <SelectableLink path="/docs/config/pprof/" current={pathname} onSelect={handleNavLinkClick}>
-                        Pprof
-                    </SelectableLink>
+                        {uiT("pprof")}</SelectableLink>
                     <SelectableLink path="/docs/config/documents/" current={pathname} onSelect={handleNavLinkClick}>
-                        Documents
-                    </SelectableLink>
+                        {uiT("documents")}</SelectableLink>
                     <SidebarDivider />
                     <SelectableLink path="/docs/config/licenses" current={pathname} onSelect={handleNavLinkClick}>
-                        Licenses
-                    </SelectableLink>
+                        {uiT("licenses")}</SelectableLink>
                     <SelectableLink path="/docs/config/about" current={pathname} onSelect={handleNavLinkClick}>
-                        About
-                    </SelectableLink>
+                        {uiT("about")}</SelectableLink>
                 </SidebarGroup>
             </SidebarNav>
         </SidebarRoot>
@@ -184,45 +150,16 @@ function SidebarGroup({ title, icon, activePath, matchPath, children }: {
     matchPath: string;
     children: React.ReactNode;
 }) {
-    // Determine initially open state based on path
-    const isActive = normalizePath(activePath).startsWith(normalizePath(matchPath));
-    // On desktop we might want it always open, but the new design usually implies collapsible
-    // The original code had `alwaysOpen={window.innerWidth >= 992}`.
-    // Here we can use a state that defaults to true if desktop, but since this is SSR friendly Next.js, 
-    // `window` is not available initially. We'll rely on defaultOpen or controlled state.
-    // For simplicity and robustness, we'll let it be controlled by user interaction + initial state.
-    // We can use `useEffect` to set open if active.
-
-    const [isOpen, setIsOpen] = useState(false);
-    const [isMounted, setIsMounted] = useState(false);
-
-    useEffect(() => {
-        setIsMounted(true);
-        if (window.innerWidth >= 1024) {
-            setIsOpen(true);
-        } else if (isActive) {
-            setIsOpen(true);
-        }
-    }, [isActive]);
-
-    useEffect(() => {
-        if (isActive && !isOpen) {
-            setIsOpen(true);
-        }
-    }, [isActive, isOpen]);
-
-    // If not mounted yet (SSR), default to closed or open? 
-    // To avoid hydration mismatch, better to wait for mount or use a hook.
-    // But Collapsible `open` prop is controlled.
-
-    // Simplification: Just use `isActive` to force open? No, user should be able to toggle.
-    // So we use standard state.
+    const isActive = normalizePath(activePath).startsWith(normalizePath(matchPath))
+        || (matchPath === '/docs/config/' && activePath.startsWith('/docs/webui'));
+    const [isOpen, setIsOpen] = useState(() => window.innerWidth >= 1024 || isActive);
+    useEffect(() => { if (isActive) setIsOpen(true); }, [activePath, isActive]);
 
     return (
         <SidebarCollapsible
             title={title}
             icon={icon}
-            open={isMounted ? isOpen : false}
+            open={isOpen}
             onOpenChange={setIsOpen}
             active={isActive}
         >
@@ -238,27 +175,21 @@ function SelectableLink({ path, current, onSelect, children }: {
     onSelect: (key: string) => void;
     children: React.ReactNode;
 }) {
-    // const isActive = current === path; // Exact match for some?
-    // Original logic:
-    // /docs/group/ -> active === '/docs/group/'
-    // /docs/group/subscribe -> active startsWith
-    // We should probably replicate that "startsWith" logic for sub items mostly, or strict for index.
-
     const active = normalizePath(current) === normalizePath(path);
-
-    // Special case for root? No, these are sublinks.
-    // Original: active={pathname === '/docs/group/'} for 'Outbound'
-    // but active={pathname.startsWith...} for others.
 
     return (
         <SidebarSubLink
-            onClick={(e) => { e.preventDefault(); onSelect(path); }}
+            onClick={(e) => { if (isPrimaryClick(e)) { e.preventDefault(); onSelect(path); } }}
             active={active}
-            href={path}
+            href={`#${path}`}
         >
             {children}
         </SidebarSubLink>
     );
+}
+
+function isPrimaryClick(event: React.MouseEvent) {
+    return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 }
 
 export default Sidebar;

@@ -27,3 +27,5 @@ out
 /protoc.zip
 dist
 *.log
+.codebase-index
+.playwright-cli

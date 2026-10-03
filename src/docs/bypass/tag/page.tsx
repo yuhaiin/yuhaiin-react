@@ -1,4 +1,7 @@
-"use client"
+import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
+import { useServerPageClamp } from "@/hooks/use-pagination";
+import { collectPages } from "@/api/paging";
+import { useTranslation } from 'react-i18next';
 
 import { listNodes } from "@/api/nodes";
 import { deleteTag, listTags, saveTag } from "@/api/route";
@@ -14,7 +17,7 @@ import { GlobalToastContext } from "@/component/v2/toast";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import type { TagItem } from "@/contract/route";
 import { Check, Copy, Network, Plus, Tags as TagsIcon, Trash } from "lucide-react";
-import type { CSSProperties, FC } from "react";
+import type { FC } from "react";
 import { useContext, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { NodeModal } from "../../node/modal";
@@ -40,12 +43,16 @@ const TagModal: FC<{
     onSaved: () => void;
     onDeleted: () => void;
 }> = ({ show, item, onHide, onSaved, onDeleted }) => {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
-    const [draft, setDraft] = useState<TagDraft>(emptyDraft);
+    const source = useMemo(() => item ? { tag: item.name, type: item.type || "node", hash: item.hash[0] ?? "" } : undefined, [item]);
+    const { value: draft, setValue: setDraft, dirty, commit } = useEditorDraft(show ? item?.name ?? "new" : null, source, () => emptyDraft);
     const [group, setGroup] = useState("");
-    const [saving, setSaving] = useState(false);
-    const { data: nodes } = useSWR(show ? "/api/v2/nodes/tag-options" : null, () => listNodes({ page: 1, pageSize: 10000 }), { revalidateOnFocus: false });
-    const { data: tags } = useSWR(show ? "/api/v2/route/tags/options" : null, () => listTags({ page: 1, pageSize: 10000 }), { revalidateOnFocus: false });
+    const { pending: saving, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
+    const close = useCloseGuard(dirty, saving, onHide);
+    const { data: nodes } = useSWR(show ? "/api/v2/nodes/all" : null, () => collectPages(listNodes), { revalidateOnFocus: false });
+    const { data: tags } = useSWR(show ? "/api/v2/route/tags/options" : null, () => collectPages(listTags), { revalidateOnFocus: false });
 
     const nodeGroups = useMemo(
         () => Array.from(new Set((nodes?.items ?? []).map(node => node.group || "manual"))).sort((a, b) => a.localeCompare(b)),
@@ -73,10 +80,8 @@ const TagModal: FC<{
 
     useEffect(() => {
         if (!show) return;
-        const next = item ? { tag: item.name, type: item.type || "node", hash: item.hash[0] ?? "" } : emptyDraft;
-        setDraft(next);
         setGroup("");
-    }, [show, item]);
+    }, [show, item?.name]);
 
     useEffect(() => {
         if (!show || draft.type !== "node") return;
@@ -89,72 +94,58 @@ const TagModal: FC<{
     }, [draft.hash, draft.type, group, nodeGroups, nodes?.items, show]);
 
     const save = () => {
-        if (!draft.tag || !draft.hash) return;
-        setSaving(true);
-        saveTag(draft.tag, draft.type, draft.hash)
-            .then(() => {
-                ctx.Info("tag saved");
-                onSaved();
-                onHide();
-            })
-            .catch((err) => ctx.Error(err.msg ?? String(err)))
-            .finally(() => setSaving(false));
+        if (!draft.tag || !draft.hash || saving) return;
+        void run(async () => {
+            await saveTag(draft.tag, draft.type, draft.hash);
+            commit(draft);
+            onSaved();
+            onHide();
+        });
     };
-
     const remove = () => {
-        if (!item) return;
-        setSaving(true);
-        deleteTag(item.name)
-            .then(() => {
-                ctx.Info("tag deleted");
-                onDeleted();
-                onHide();
-            })
-            .catch((err) => ctx.Error(err.msg ?? String(err)))
-            .finally(() => setSaving(false));
+        if (!item || saving || !window.confirm(uiT("delete") + " " + item.name + "?")) return;
+        void run(async () => { await deleteTag(item.name); onDeleted(); onHide(); });
     };
 
     return (
-        <Modal open={show} onOpenChange={(open) => !open && onHide()}>
-            <ModalContent style={{ "--bs-modal-width": "640px" } as CSSProperties}>
+        <Modal open={show} onOpenChange={(open) => !open && close()}>
+            <ModalContent width={640}>
                 <ModalHeader closeButton>
                     <ModalTitle>{item ? "Edit Tag" : "Add Tag"}</ModalTitle>
                 </ModalHeader>
                 <ModalBody>
-                    <div className="grid gap-6">
+                    <fieldset disabled={saving} className="grid gap-6">
                         <SettingsBox>
                             <div className="grid gap-6">
                                 <div>
-                                    <SettingLabel className="mb-2">Tag Type</SettingLabel>
+                                    <SettingLabel className="mb-2">{uiT("tagType")}</SettingLabel>
                                     <ToggleGroup className="flex w-full" type="single" value={draft.type} onValueChange={(type) => type && setDraft(prev => ({ ...prev, type, hash: type === prev.type ? prev.hash : "" }))}>
                                         <ToggleItem value="node" className="h-14 flex-1 text-base">
-                                            <Network size={18} className="mr-2" />Node
-                                        </ToggleItem>
+                                            <Network size={18} className="mr-2" />{uiT("node")}</ToggleItem>
                                         <ToggleItem value="mirror" className="h-14 flex-1 text-base">
-                                            <Copy size={18} className="mr-2" />Mirror
-                                        </ToggleItem>
+                                            <Copy size={18} className="mr-2" />{uiT("mirror")}</ToggleItem>
                                     </ToggleGroup>
                                 </div>
                                 <div>
-                                    <SettingLabel className="mb-2">Tag Name</SettingLabel>
-                                    <Input value={draft.tag} onChange={(e) => setDraft(prev => ({ ...prev, tag: e.target.value }))} placeholder="e.g., fast-proxy" disabled={!!item} />
+                                    <SettingLabel className="mb-2">{uiT("tagName")}</SettingLabel>
+                                    <Input value={draft.tag} onChange={(e) => setDraft(prev => ({ ...prev, tag: e.target.value }))} placeholder={uiT("eGFastProxy")} disabled={!!item} />
                                 </div>
                             </div>
                         </SettingsBox>
                         <SettingsBox>
                             <div className="grid gap-4">
-                                <SettingLabel>Target Node</SettingLabel>
+                                <SettingLabel>{uiT("targetNode")}</SettingLabel>
                                 {draft.type === "mirror" ? (
                                     <Select
                                         value={draft.hash}
                                         onValueChange={(hash) => setDraft(prev => ({ ...prev, hash }))}
                                         items={mirrorItems}
-                                        placeholder="Choose tag"
+                                        placeholder={uiT("chooseTag")}
                                     />
                                 ) : (
                                     <>
                                         <div>
-                                            <div className="mb-2 text-sm font-semibold text-ui-muted">Group</div>
+                                            <div className="mb-2 text-sm font-semibold text-ui-muted">{uiT("groupLabel")}</div>
                                             <Select
                                                 value={selectedGroup}
                                                 onValueChange={(nextGroup) => {
@@ -163,34 +154,33 @@ const TagModal: FC<{
                                                     setDraft(prev => ({ ...prev, hash: nextNode?.id ?? "" }));
                                                 }}
                                                 items={groupItems}
-                                                placeholder="Choose group"
+                                                placeholder={uiT("chooseGroup")}
                                             />
                                         </div>
                                         <div>
-                                            <div className="mb-2 text-sm font-semibold text-ui-muted">Node</div>
+                                            <div className="mb-2 text-sm font-semibold text-ui-muted">{uiT("node")}</div>
                                             <Select
                                                 value={draft.hash}
                                                 onValueChange={(hash) => setDraft(prev => ({ ...prev, hash }))}
                                                 items={nodeItems}
-                                                placeholder="Choose node"
+                                                placeholder={uiT("chooseNode")}
                                             />
                                         </div>
                                     </>
                                 )}
                             </div>
                         </SettingsBox>
-                    </div>
+                    </fieldset>
                 </ModalBody>
                 <ModalFooter className="flex flex-wrap items-center justify-between gap-3 border-0">
                     <div>
-                        {item && <Button variant="outline-danger" onClick={remove} disabled={saving}><Trash size={16} className="mr-1" />Delete</Button>}
+                        {item && <Button variant="outline-danger" onClick={remove} disabled={saving}><Trash size={16} className="mr-1" />{uiT("delete")}</Button>}
                     </div>
                     <div className="flex flex-wrap justify-end gap-2">
-                        <Button onClick={onHide}>Cancel</Button>
+                        <Button onClick={close} disabled={saving}>{uiT("cancel")}</Button>
                         <Button onClick={save} disabled={saving || !draft.tag || !draft.hash}>
                             {saving ? <Spinner size="sm" className="mr-2" /> : <Check size={16} className="mr-2" />}
-                            Save
-                        </Button>
+                            {uiT("save")}</Button>
                     </div>
                 </ModalFooter>
             </ModalContent>
@@ -199,6 +189,8 @@ const TagModal: FC<{
 };
 
 function Tags() {
+    const { t: uiT } = useTranslation('ui');
+
     const [page, setPage] = useState(1);
     const [query, setQuery] = useState("");
     const [editing, setEditing] = useState<TagItem | undefined>();
@@ -209,8 +201,9 @@ function Tags() {
         () => listTags({ page, pageSize: PAGE_SIZE, query }),
         { revalidateOnFocus: false },
     );
+    useServerPageClamp(data?.page, page, setPage);
 
-    if (error) return <Loading code={error.code}>{error.msg}</Loading>
+    if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
     if (isLoading || !data) return <Loading />
 
     return (
@@ -242,10 +235,10 @@ function Tags() {
                             </div>
                         </div>
                         <div className="min-w-0 border-t border-ui-border/70 pt-2.5 sm:border-t-0 sm:border-l sm:py-0 sm:pl-5">
-                            <div className="mb-1 text-[11px] font-medium text-ui-muted">Target</div>
+                            <div className="mb-1 text-[11px] font-medium text-ui-muted">{uiT("target")}</div>
                             <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                                 {item.hash.length === 0 ? (
-                                    <span className="text-xs text-ui-muted">No target</span>
+                                    <span className="text-xs text-ui-muted">{uiT("noTarget")}</span>
                                 ) : item.hash.map(hash => item.type === "node" ? (
                                     <Button
                                         key={hash}
@@ -268,10 +261,10 @@ function Tags() {
                 )}
                 header={
                     <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <IconBox icon={TagsIcon} tone="violet" title="Tags Management" description={`${data.page.total} aliases and mirrors`} />
+                        <IconBox icon={TagsIcon} tone="violet" title={uiT("tagsManagement")} description={uiT("aliasesMirrorsCount", { count: data.page.total })} />
                         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
                             <FilterSearch className="min-w-0 flex-1 sm:w-[180px] sm:flex-none" onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
-                            <Button size="sm" onClick={() => setAdding(true)}><Plus size={16} className="mr-1" /> Add</Button>
+                            <Button size="sm" onClick={() => setAdding(true)}><Plus size={16} className="mr-1" /> {uiT("add")}</Button>
                         </div>
                     </div>
                 }

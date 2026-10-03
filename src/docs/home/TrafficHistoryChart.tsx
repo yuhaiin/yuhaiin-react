@@ -1,3 +1,5 @@
+import { useTheme } from "@/common/ThemeProvider";
+import { useTranslation } from 'react-i18next';
 import type { TrafficSeries } from "@/contract/connection";
 import { Chart as ChartJS, CategoryScale, Filler, Legend, LinearScale, LineElement, PointElement, Tooltip, type TooltipItem } from "chart.js";
 import { FC, useMemo } from "react";
@@ -20,13 +22,17 @@ function bucketSeconds(start: string, interval: TrafficSeries["interval"]): numb
 }
 
 const TrafficHistoryChart: FC<{ data?: TrafficSeries; error?: string; minHeight: number }> = ({ data, error, minHeight }) => {
+    const { t: uiT, i18n } = useTranslation('ui');
+    const { resolved } = useTheme();
+    const textColor = resolved === 'dark' ? '#94a3b8' : '#64748b';
+
     const chartData = useMemo(() => {
-        const formatter = new Intl.DateTimeFormat(undefined, dateFormat[data?.interval ?? "hour"]);
+        const formatter = new Intl.DateTimeFormat(i18n.language, dateFormat[data?.interval ?? "hour"]);
         return {
             labels: (data?.items ?? []).map(item => formatter.format(new Date(item.start))),
             datasets: [
                 {
-                    label: "Download",
+                    label: uiT("download"),
                     data: (data?.items ?? []).map(item => Number(item.download)),
                     borderColor: "#3b82f6",
                     backgroundColor: "rgba(59, 130, 246, 0.12)",
@@ -37,7 +43,7 @@ const TrafficHistoryChart: FC<{ data?: TrafficSeries; error?: string; minHeight:
                     tension: 0.28,
                 },
                 {
-                    label: "Upload",
+                    label: uiT("upload"),
                     data: (data?.items ?? []).map(item => Number(item.upload)),
                     borderColor: "#10b981",
                     backgroundColor: "rgba(16, 185, 129, 0.08)",
@@ -49,11 +55,11 @@ const TrafficHistoryChart: FC<{ data?: TrafficSeries; error?: string; minHeight:
                 },
             ],
         };
-    }, [data]);
+    }, [data, uiT, i18n.language]);
 
     if (error) return <div className="flex items-center justify-center p-6 text-center text-sm text-ui-danger" style={{ minHeight }}>{error}</div>;
-    if (!data) return <div className="flex items-center justify-center p-6 text-center text-sm text-ui-muted" style={{ minHeight }}>Loading traffic history…</div>;
-    if (data.items.length === 0) return <div className="flex items-center justify-center p-6 text-center text-sm text-ui-muted" style={{ minHeight }}>No traffic recorded in this range.</div>;
+    if (!data) return <div className="flex items-center justify-center p-6 text-center text-sm text-ui-muted" style={{ minHeight }}>{uiT("loadingTrafficHistory")}</div>;
+    if (data.items.length === 0) return <div className="flex items-center justify-center p-6 text-center text-sm text-ui-muted" style={{ minHeight }}>{uiT("noTrafficRecordedInThisRange")}</div>;
 
     return (
         <div className="p-4" style={{ minHeight }}>
@@ -64,7 +70,7 @@ const TrafficHistoryChart: FC<{ data?: TrafficSeries; error?: string; minHeight:
                     maintainAspectRatio: false,
                     interaction: { mode: "index", intersect: false },
                     plugins: {
-                        legend: { position: "top", align: "end", labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true } },
+                        legend: { position: "top", align: "end", labels: { color: textColor, boxWidth: 10, boxHeight: 10, usePointStyle: true } },
                         tooltip: {
                             displayColors: false,
                             backgroundColor: "rgba(10, 14, 21, 0.94)",
@@ -83,14 +89,14 @@ const TrafficHistoryChart: FC<{ data?: TrafficSeries; error?: string; minHeight:
                                 footer: (contexts: TooltipItem<"line">[]) => {
                                     const item = data.items[contexts[0]?.dataIndex ?? 0];
                                     const rates = contexts.map(context => `${context.dataset.label} ${formatBytes(Number(context.parsed.y) / bucketSeconds(item.start, data.interval), 2, " ")}/s`);
-                                    return `Average: ${rates.join(" · ")}`;
+                                    return `${uiT("average")}: ${rates.join(" · ")}`;
                                 },
                             },
                         },
                     },
                     scales: {
-                        y: { beginAtZero: true, ticks: { callback: value => formatBytes(Number(value), 1, " ") }, grid: { color: "rgba(148, 163, 184, 0.14)" } },
-                        x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkipPadding: 18 } },
+                        y: { beginAtZero: true, ticks: { color: textColor, callback: value => formatBytes(Number(value), 1, " ") }, grid: { color: "rgba(148, 163, 184, 0.14)" } },
+                        x: { grid: { display: false }, ticks: { color: textColor, maxRotation: 0, autoSkipPadding: 18 } },
                     },
                 }}
             />

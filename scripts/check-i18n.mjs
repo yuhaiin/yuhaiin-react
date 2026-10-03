@@ -62,6 +62,22 @@ const namespaces = fs.readdirSync(path.join(resourceRoot, baseLanguage))
 
 const errors = namespaces.flatMap(compareNamespace);
 
+// Catch misspelled component UI keys during the DOM-translation migration.
+const uiKeys = new Set(flatten(readJson(path.join(resourceRoot, baseLanguage, 'ui.json'))).map(entry => entry.key));
+function checkComponentKeys(directory) {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const file = path.join(directory, entry.name);
+    if (entry.isDirectory()) checkComponentKeys(file);
+    else if (/\.tsx?$/.test(entry.name)) {
+      const source = fs.readFileSync(file, 'utf8');
+      for (const match of source.matchAll(/\buiT\(\s*['"]([^'"]+)['"]/g)) {
+        if (!uiKeys.has(match[1])) errors.push(`${path.relative(root, file)}: unknown UI key ${match[1]}`);
+      }
+    }
+  }
+}
+checkComponentKeys(path.join(root, 'src'));
+
 if (errors.length > 0) {
   console.error(errors.join('\n'));
   process.exit(1);

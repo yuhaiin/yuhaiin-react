@@ -2,7 +2,6 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import i18n from './index';
 import { readLanguagePreference, resolveLanguage, writeLanguagePreference } from './detect';
 import { LanguagePreference, SupportedLanguage } from './languages';
-import { TranslatedDocument } from './TranslatedDocument';
 
 type LanguageContextType = {
     preference: LanguagePreference;
@@ -51,7 +50,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     return (
         <LanguageContext.Provider value={value}>
             {children}
-            <TranslatedDocument language={language} />
         </LanguageContext.Provider>
     );
 }

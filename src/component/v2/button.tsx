@@ -2,7 +2,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { clsx } from "clsx";
 import { HTMLMotionProps, motion } from 'motion/react';
 import * as React from "react";
-import { ui } from "./styles";
+import { cn, ui } from "./styles";
 
 const MotionSlot = motion.create(Slot);
 
@@ -98,10 +98,12 @@ const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
 
         return (
             <Comp
-                className={clsx(
+                className={cn(
                     baseStyles,
                     variantStyles[variant],
                     sizeStyles[size],
+                    "max-sm:min-h-11",
+                    size === "icon" && "max-sm:min-w-11",
                     radiusClass,
                     className
                 )}

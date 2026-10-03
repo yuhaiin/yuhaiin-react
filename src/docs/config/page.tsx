@@ -1,16 +1,17 @@
-"use client"
+import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
+import { useTranslation } from 'react-i18next';
 
 import { saveSettings, loadSettings } from "@/api/settings";
 import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardHeader, IconBox, MainContainer, SettingLabel } from "@/component/v2/card";
 import { SettingInputVertical, SettingRangeVertical, SwitchCard } from "@/component/v2/forms";
-import Loading, { Error } from "@/component/v2/loading";
+import Loading from "@/component/v2/loading";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import type { Settings } from "@/contract/settings";
 import { Cpu, Globe, NotebookText, Save } from "lucide-react";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useMemo } from "react";
 import { createPortal } from "react-dom";
 import useSWR from "swr";
 import { useInterfaces } from "../../common/interfaces";
@@ -18,12 +19,16 @@ import { useInterfaces } from "../../common/interfaces";
 const logLevels = ["debug", "info", "warning", "error"] as const;
 
 function ConfigComponent() {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
-    const { data: setting, error, isLoading, mutate } = useSWR("/api/v2/settings", loadSettings, {
+    const { data: server, error, isLoading, mutate } = useSWR("/api/v2/settings", loadSettings, {
         revalidateOnFocus: false,
     });
     const interfaces = useInterfaces();
-    const [saving, setSaving] = useState(false);
+    const { value: setting, setValue: setSetting, commit, dirty } = useEditorDraft("settings", server, () => undefined);
+    const { pending: saving, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
+    useCloseGuard(dirty, saving, () => undefined);
 
     const systemProxy = useMemo(() => {
         const value: string[] = [];
@@ -33,65 +38,64 @@ function ConfigComponent() {
     }, [setting]);
 
     const update = (fn: (prev: Settings) => Settings) => {
-        mutate(prev => prev ? fn(prev) : prev, { revalidate: false });
+        setSetting(prev => prev ? fn(prev) : prev);
     };
 
     const handleSave = () => {
-        if (!setting) return;
-        setSaving(true);
-        saveSettings(setting)
-            .then(next => {
-                ctx.Info("save successful");
-                mutate(next, { revalidate: false });
-            })
-            .catch((err) => ctx.Error(`save failed: ${err.msg ?? err}`))
-            .finally(() => setSaving(false));
+        if (!setting || saving || error || isLoading) return;
+        void run(async () => {
+            const next = await saveSettings(setting);
+            commit(next);
+            await mutate(next, { revalidate: false });
+            ctx.Info("Save successful");
+        });
     };
 
-    if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
+    if (error !== undefined) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
     if (isLoading || setting === undefined) return <Loading />
 
     return (
         <MainContainer>
+            <fieldset disabled={saving} className="contents">
             <Card>
                 <CardHeader className="py-3">
-                    <IconBox icon={Globe} tone="primary" title="General Settings" description="Network and system integration" />
+                    <IconBox icon={Globe} tone="primary" title={uiT("generalSettings")} description={uiT("networkAndSystemIntegration")} />
                 </CardHeader>
                 <CardBody>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <SwitchCard
-                            label="Enable IPv6"
-                            description="Global IPv6 traffic support"
+                            label={uiT("enableIpv6")}
+                            description={uiT("globalIpv6TrafficSupport")}
                             checked={setting.ipv6}
-                            onCheckedChange={() => update(prev => ({ ...prev, ipv6: !prev.ipv6 }))}
+                            onCheckedChange={(checked) => update(prev => ({ ...prev, ipv6: checked }))}
                         />
                         <SwitchCard
-                            label="Default Interface"
-                            description="Automatically detect exit"
+                            label={uiT("defaultInterface")}
+                            description={uiT("automaticallyDetectExit")}
                             checked={setting.useDefaultInterface}
-                            onCheckedChange={() => update(prev => ({ ...prev, useDefaultInterface: !prev.useDefaultInterface }))}
+                            onCheckedChange={(checked) => update(prev => ({ ...prev, useDefaultInterface: checked }))}
                         />
                         <SwitchCard
-                            label="Enable Pprof"
-                            description="Allow runtime profiling; disabling stops profilers and releases unused memory"
+                            label={uiT("enablePprof")}
+                            description={uiT("allowRuntimeProfilingDisablingStopsProfilersAndReleasesUnusedMemory")}
                             checked={setting.pprof}
-                            onCheckedChange={() => update(prev => ({ ...prev, pprof: !prev.pprof }))}
+                            onCheckedChange={(checked) => update(prev => ({ ...prev, pprof: checked }))}
                         />
 
                         {!setting.useDefaultInterface && (
                             <div className="md:col-span-2">
                                 <SettingInputVertical
-                                    label="Manual Network Interface"
+                                    label={uiT("manualNetworkInterface")}
                                     reminds={interfaces.map(x => ({ value: x.name, label: x.name, label_children: x.addresses }))}
                                     value={setting.netInterface}
                                     onChange={(v) => update(prev => ({ ...prev, netInterface: v }))}
-                                    placeholder="e.g. eth0, wlan0"
+                                    placeholder={uiT("eGEth0Wlan0")}
                                 />
                             </div>
                         )}
 
                         <div className="md:col-span-2">
-                            <SettingLabel>System Proxy Integration</SettingLabel>
+                            <SettingLabel>{uiT("systemProxyIntegration")}</SettingLabel>
                             <ToggleGroup
                                 type="multiple"
                                 className="w-full"
@@ -105,8 +109,8 @@ function ConfigComponent() {
                                 }))}
                                 noSlide
                             >
-                                <ToggleItem value="http" className="flex-grow py-1 h-10">HTTP Proxy</ToggleItem>
-                                <ToggleItem value="socks5" className="flex-grow py-1 h-10">SOCKS5 Proxy</ToggleItem>
+                                <ToggleItem value="http" className="flex-grow py-1 h-10">{uiT("httpProxy")}</ToggleItem>
+                                <ToggleItem value="socks5" className="flex-grow py-1 h-10">{uiT("socks5Proxy")}</ToggleItem>
                             </ToggleGroup>
                         </div>
                     </div>
@@ -115,12 +119,12 @@ function ConfigComponent() {
 
             <Card>
                 <CardHeader className="py-3">
-                    <IconBox icon={NotebookText} tone="success" title="Logging (Logcat)" description="Debug and error reporting" />
+                    <IconBox icon={NotebookText} tone="success" title={uiT("loggingLogcat")} description={uiT("debugAndErrorReporting")} />
                 </CardHeader>
                 <CardBody>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <SettingLabel>Log Level</SettingLabel>
+                            <SettingLabel>{uiT("logLevel")}</SettingLabel>
                             <ToggleGroup
                                 type="single"
                                 value={setting.logcat.level}
@@ -131,22 +135,22 @@ function ConfigComponent() {
                             </ToggleGroup>
                         </div>
                         <SwitchCard
-                            label="Persistent Logging"
-                            description="Save logs to disk"
+                            label={uiT("persistentLogging")}
+                            description={uiT("saveLogsToDisk")}
                             checked={setting.logcat.save}
-                            onCheckedChange={() => update(prev => ({ ...prev, logcat: { ...prev.logcat, save: !prev.logcat.save } }))}
+                            onCheckedChange={(checked) => update(prev => ({ ...prev, logcat: { ...prev.logcat, save: checked } }))}
                         />
                         <SwitchCard
-                            label="Ignore Timeouts"
-                            description="Hide timeout errors in logs"
+                            label={uiT("ignoreTimeouts")}
+                            description={uiT("hideTimeoutErrorsInLogs")}
                             checked={setting.logcat.ignoreTimeoutError}
-                            onCheckedChange={() => update(prev => ({ ...prev, logcat: { ...prev.logcat, ignoreTimeoutError: !prev.logcat.ignoreTimeoutError } }))}
+                            onCheckedChange={(checked) => update(prev => ({ ...prev, logcat: { ...prev.logcat, ignoreTimeoutError: checked } }))}
                         />
                         <SwitchCard
-                            label="Ignore DNS Errors"
-                            description="Hide resolution failures"
+                            label={uiT("ignoreDnsErrors")}
+                            description={uiT("hideResolutionFailures")}
                             checked={setting.logcat.ignoreDnsError}
-                            onCheckedChange={() => update(prev => ({ ...prev, logcat: { ...prev.logcat, ignoreDnsError: !prev.logcat.ignoreDnsError } }))}
+                            onCheckedChange={(checked) => update(prev => ({ ...prev, logcat: { ...prev.logcat, ignoreDnsError: checked } }))}
                         />
                     </div>
                 </CardBody>
@@ -154,33 +158,33 @@ function ConfigComponent() {
 
             <Card>
                 <CardHeader className="py-3">
-                    <IconBox icon={Cpu} tone="warning" title="Performance & Advanced" description="Buffer sizes and concurrency limits" />
+                    <IconBox icon={Cpu} tone="warning" title={uiT("performanceAdvanced")} description={uiT("bufferSizesAndConcurrencyLimits")} />
                 </CardHeader>
                 <CardBody>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <SettingRangeVertical
-                            label="UDP Buffer Size"
+                            label={uiT("udpBufferSize")}
                             unit="B"
                             value={setting.advanced.udpBufferSize}
                             min={2048} max={65536} step={1024}
                             onChange={(udpBufferSize: number) => update(prev => ({ ...prev, advanced: { ...prev.advanced, udpBufferSize } }))}
                         />
                         <SettingRangeVertical
-                            label="Relay Buffer Size"
+                            label={uiT("relayBufferSize")}
                             unit="B"
                             value={setting.advanced.relayBufferSize}
                             min={2048} max={65536} step={1024}
                             onChange={(relayBufferSize: number) => update(prev => ({ ...prev, advanced: { ...prev.advanced, relayBufferSize } }))}
                         />
                         <SettingRangeVertical
-                            label="UDP Ring Buffer"
+                            label={uiT("udpRingBuffer")}
                             unit="Slots"
                             value={setting.advanced.udpRingbufferSize}
                             min={100} max={2000} step={10}
                             onChange={(udpRingbufferSize: number) => update(prev => ({ ...prev, advanced: { ...prev.advanced, udpRingbufferSize } }))}
                         />
                         <SettingRangeVertical
-                            label="Happy Eyeballs Concurrency"
+                            label={uiT("happyEyeballsConcurrency")}
                             unit="Sems"
                             value={setting.advanced.happyEyeballsSemaphore}
                             min={0} max={10000} step={10}
@@ -198,14 +202,15 @@ function ConfigComponent() {
                         className="h-12 w-12 rounded-full shadow-ui-elevated"
                         disabled={saving}
                         onClick={handleSave}
-                        aria-label="Save all settings"
-                        title="Save all settings"
+                        aria-label={uiT("saveAllSettings")}
+                        title={uiT("saveAllSettings")}
                     >
                         {saving ? <Spinner size="sm" /> : <Save size={20} />}
                     </Button>
                 </div>,
                 document.body,
             )}
+            </fieldset>
         </MainContainer>
     );
 }

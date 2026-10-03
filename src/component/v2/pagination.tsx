@@ -1,5 +1,5 @@
-'use client';
 
+import { clampPage } from "@/hooks/use-pagination";
 import { clsx } from "clsx";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -15,14 +15,15 @@ export interface PaginationProps {
 }
 
 export function Pagination({
-    currentPage,
+    currentPage: requestedPage,
     totalItems,
     pageSize,
     onPageChange,
     className
 }: PaginationProps) {
     const { t } = useTranslation('common');
-    const totalPages = Math.ceil(totalItems / pageSize);
+    const totalPages = Math.max(1, Math.ceil(totalItems / Math.max(1, pageSize)));
+    const currentPage = clampPage(requestedPage, totalItems, pageSize);
     const pages: (number | 'ellipsis')[] = [];
 
     const maxVisible = 5;
@@ -48,11 +49,11 @@ export function Pagination({
         }
     }
 
-    const controlClass = "h-8 min-w-8 rounded-ui-md border-ui-border bg-transparent text-ui-muted hover:bg-ui-surface-muted hover:text-ui-fg";
-    const pageClass = "h-8 min-w-8 rounded-ui-md border-transparent bg-transparent text-ui-muted hover:border-ui-border hover:bg-ui-surface-muted hover:text-ui-fg";
+    const controlClass = "h-11 min-w-11 sm:h-8 sm:min-w-8 rounded-ui-md border-ui-border bg-transparent text-ui-muted hover:bg-ui-surface-muted hover:text-ui-fg";
+    const pageClass = "h-11 min-w-11 sm:h-8 sm:min-w-8 rounded-ui-md border-transparent bg-transparent text-ui-muted hover:border-ui-border hover:bg-ui-surface-muted hover:text-ui-fg";
     const activePageClass = "!border-ui-primary/50 !bg-ui-primary-soft !text-ui-primary font-semibold shadow-none";
 
-    if (totalPages <= 1) return <Button variant="outline-secondary" size="icon" className={`${pageClass} ${activePageClass}`}>1</Button>;
+    if (totalPages <= 1) return <Button variant="outline-secondary" size="icon" className={`${pageClass} ${activePageClass}`} aria-current="page" disabled>1</Button>;
 
     return (
         <div className={clsx("min-w-0 max-w-full", className)}>

@@ -3,8 +3,8 @@ import type { AllHistoryList, Connections, FailedHistoryList, TelemetrySummary, 
 import { normalizeAllHistory, normalizeConnection, normalizeFailedHistory } from "@/contract/connection";
 import type { Go } from "@/api/generated-contracts";
 
-export async function getTotalFlow(): Promise<TotalFlow> {
-  return requestJSON<Go.connection.TotalFlow>("GET", "/api/v2/connections/total") as Promise<TotalFlow>;
+export async function getTotalFlow(signal?: AbortSignal): Promise<TotalFlow> {
+  return requestJSON<Go.connection.TotalFlow>("GET", "/api/v2/connections/total", undefined, undefined, signal) as Promise<TotalFlow>;
 }
 
 export async function getTraffic(interval: TrafficSeries["interval"], from: Date, to: Date): Promise<TrafficSeries> {

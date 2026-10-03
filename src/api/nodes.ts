@@ -19,8 +19,8 @@ export async function listNodes(query?: string | { page?: number; pageSize?: num
   };
 }
 
-export async function getNode(id: string): Promise<Node> {
-  return normalizeNode(await requestJSON<Go.node.Node>("GET", `/api/v2/nodes/${encodeURIComponent(id)}`) as unknown as Node);
+export async function getNode(id: string, signal?: AbortSignal): Promise<Node> {
+  return normalizeNode(await requestJSON<Go.node.Node>("GET", `/api/v2/nodes/${encodeURIComponent(id)}`, undefined, undefined, signal) as unknown as Node);
 }
 
 export async function createNode(node: Node): Promise<Node> {
