@@ -1,20 +1,14 @@
-import { clsx } from "clsx";
 import * as React from "react";
-import { ui } from "./styles";
+import { cn, ui } from "./styles";
 
-// 1. Get all property types for native Input
 type NativeInputProps = React.InputHTMLAttributes<HTMLInputElement>;
 
-// 2. Crucial step: use Omit to exclude the native 'size' property
-// Tell TS: "I want all properties except size"
 type InputPropsWithoutSize = Omit<NativeInputProps, "size">;
 
-// 3. Define the new interface for the component
 export interface InputProps extends InputPropsWithoutSize {
-    // Redefine size as our desired string type
     size?: "default" | "sm";
 
-    // (Optional) If you really need the native numeric 'size' that controls width, expose it with another name
+    /** Native input width in characters. */
     htmlSize?: number;
 
     groupPosition?: 'first' | 'middle' | 'last' | 'single';
@@ -35,24 +29,19 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ...("value" in props ? { value: props.value ?? "" } : {}),
         };
 
-        // 4. Important: destructure size.
-        // Since HTML tags don't accept size="sm", we shouldn't pass it to <input>
-        // ...props now contains native properties like onClick, onChange, value, etc., excluding size
-
         return (
             <input
                 ref={ref}
-                // Pass to the native size attribute if width control is needed
                 size={htmlSize}
-                className={clsx(
+                className={cn(
                     ui.field,
                     ui.fieldFocus,
                     ui.fieldReadonly,
                     ui.fieldDisabled,
-                    "placeholder:not-italic",
+                    "placeholder:not-italic max-sm:min-h-11",
                     {
                         "min-h-field": size === "default",
-                        "h-field-sm min-h-field-sm py-1 px-2.5 text-[0.8125rem]": size === "sm",
+                        "h-field-sm min-h-field-sm py-1 px-2.5 sm:text-[0.8125rem]": size === "sm",
                     },
                     groupRadiusClass(groupPosition),
                     className
@@ -81,7 +70,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         return (
             <textarea
                 ref={ref}
-                className={clsx(
+                className={cn(
                     ui.field,
                     ui.fieldFocus,
                     ui.fieldReadonly,

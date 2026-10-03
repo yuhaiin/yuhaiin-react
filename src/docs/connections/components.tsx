@@ -1,4 +1,3 @@
-"use client";
 
 import { getTotalFlow } from "@/api/connections";
 import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datalist";
@@ -106,12 +105,18 @@ type FlowPollingState = {
 function createFlow(raw: TotalFlow, prev?: Flow) {
     const download = numberValue(raw.download);
     const upload = numberValue(raw.upload);
-    if (!prev) return new Flow(download, 0, upload, 0, raw.counters ?? {});
+    const incoming = raw.counters ?? {};
+    const counters = Object.fromEntries(Object.entries(incoming).map(([key, counter]) => {
+        const previous = prev?.counters[key];
+        return [key, previous && numberValue(previous.download) === numberValue(counter.download)
+            && numberValue(previous.upload) === numberValue(counter.upload) ? previous : counter];
+    }));
+    if (!prev) return new Flow(download, 0, upload, 0, counters);
 
     const duration = Math.max((Date.now() - prev.time.getTime()) / 1000, 1);
     const downloadRate = Math.max(0, (download - prev.download) / duration);
     const uploadRate = Math.max(0, (upload - prev.upload) / duration);
-    return new Flow(download, downloadRate, upload, uploadRate, raw.counters ?? {});
+    return new Flow(download, downloadRate, upload, uploadRate, counters);
 }
 
 function countersUnchanged(a?: Record<string, Counter>, b?: Record<string, Counter>) {
@@ -154,6 +159,7 @@ export function useFlow(options?: UseFlowOptions) {
         }
 
         let stopped = false;
+        let inFlight: AbortController | undefined;
         let timer: ReturnType<typeof window.setTimeout> | undefined;
         let visible = typeof document === "undefined" || document.visibilityState !== "hidden";
 
@@ -173,31 +179,38 @@ export function useFlow(options?: UseFlowOptions) {
         };
 
         const poll = async () => {
-            if (stopped || !visible) return;
+            if (stopped || !visible || inFlight) return;
+            const controller = new AbortController();
+            inFlight = controller;
             const firstLoad = !lastFlowRef.current;
             if (firstLoad) {
                 setState(prev => ({ ...prev, isLoading: true, isValidating: true }));
             }
             try {
-                const raw = await getTotalFlow();
-                if (stopped || !visible) return;
+                const raw = await getTotalFlow(controller.signal);
+                if (stopped || !visible || controller.signal.aborted) return;
                 const flow = createFlow(raw, lastFlowRef.current);
                 if (flowUnchanged(lastFlowRef.current, flow)) {
                     lastFlowRef.current = flow;
+                    setState(prev => prev.error || prev.isLoading || prev.isValidating
+                        ? { ...prev, error: undefined, isLoading: false, isValidating: false }
+                        : prev);
                 } else {
                     lastFlowRef.current = flow;
                     setState({ data: flow, isLoading: false, isValidating: false, error: undefined });
                 }
             } catch (error) {
-                if (stopped || !visible) return;
+                if (stopped || !visible || controller.signal.aborted) return;
                 setState(prev => ({
                     ...prev,
                     error: errorText(error) ?? "failed to fetch flow",
                     isLoading: false,
                     isValidating: false,
                 }));
+            } finally {
+                if (inFlight === controller) inFlight = undefined;
+                schedule();
             }
-            schedule();
         };
 
         const onVisibility = () => {
@@ -207,6 +220,8 @@ export function useFlow(options?: UseFlowOptions) {
                 return;
             }
             clearTimer();
+            inFlight?.abort();
+            inFlight = undefined;
             setState(prev => ({ ...prev, isValidating: false }));
         };
 
@@ -215,6 +230,7 @@ export function useFlow(options?: UseFlowOptions) {
 
         return () => {
             stopped = true;
+            inFlight?.abort();
             clearTimer();
             document.removeEventListener("visibilitychange", onVisibility);
         };

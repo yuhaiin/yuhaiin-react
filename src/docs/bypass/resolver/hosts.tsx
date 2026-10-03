@@ -1,3 +1,5 @@
+import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
+import { useTranslation } from 'react-i18next';
 import { getResolverHosts, saveResolverHosts } from '@/api/resolvers';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardFooter, CardHeader, IconBox } from '@/component/v2/card';
@@ -14,38 +16,37 @@ import Loading from "../../../component/v2/loading";
 const hostsInputGroupClass = "max-[639px]:flex-col max-[639px]:gap-2 max-[639px]:[&>input]:!w-full max-[639px]:[&>div]:!w-full max-[639px]:[&>button]:!w-full max-[639px]:[&>*]:!rounded-ui-md";
 
 export const Hosts: FC = () => {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
     const [newHosts, setNewHosts] = useState({ key: "", value: "" })
-    const [saving, setSaving] = useState(false);
-    const [isDirty, setDirty] = useState(false);
 
-    const { data, error, isLoading, mutate } = useSWR("/api/v2/resolver/hosts", getResolverHosts, {
-        onSuccess: () => setDirty(false)
-    })
+    const { data: server, error, isLoading, mutate } = useSWR("/api/v2/resolver/hosts", getResolverHosts, { revalidateOnFocus: false });
+    const { value: data, setValue, dirty: isDirty, commit } = useEditorDraft("hosts", server, () => undefined);
+    const { pending: saving, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
+    useCloseGuard(isDirty, saving, () => undefined);
 
-    if (error !== undefined) return <Loading code={error.code}>{error.msg}</Loading>
+    if (error !== undefined) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />
 
     const handleSave = () => {
-        setSaving(true)
-        saveResolverHosts(data)
-            .then(() => {
-                ctx.Info("save hosts successful")
-                mutate()
-            })
-            .catch((error) => ctx.Error(error.msg ?? String(error)))
-            .finally(() => setSaving(false))
-    }
-
+        if (!data || saving) return;
+        void run(async () => {
+            const next = await saveResolverHosts(data);
+            commit(next);
+            await mutate(next, { revalidate: false });
+            ctx.Info(uiT("save"));
+        });
+    };
     const handleMutate = (mutator: (prev: ResolverHosts) => ResolverHosts) => {
-        mutate(prev => mutator(normalizeHosts(prev)), false);
-        setDirty(true);
-    }
+        setValue(prev => prev ? mutator(normalizeHosts(prev)) : prev);
+    };
 
     return (
         <Card className="h-full flex flex-col">
+            <fieldset disabled={saving} className="contents">
             <CardHeader>
-                <IconBox icon={Signpost} tone="primary" title="Static Hosts" description="Local Domain Mappings" />
+                <IconBox icon={Signpost} tone="primary" title={uiT("staticHosts")} description={uiT("localDomainMappings")} />
             </CardHeader>
             <CardBody className="flex-grow">
                 <div className="flex flex-col gap-4">
@@ -82,13 +83,13 @@ export const Hosts: FC = () => {
                             <Input
                                 value={newHosts.key}
                                 onChange={(e) => setNewHosts({ ...newHosts, key: e.target.value })}
-                                placeholder="Domain..."
+                                placeholder={uiT("domain")}
                                 className="flex-grow"
                             />
                             <Input
                                 value={newHosts.value}
                                 onChange={(e) => setNewHosts({ ...newHosts, value: e.target.value })}
-                                placeholder="IP Address..."
+                                placeholder={uiT("ipAddress")}
                                 className="flex-grow"
                             />
                             <Button
@@ -108,19 +109,19 @@ export const Hosts: FC = () => {
             <CardFooter className="flex justify-end gap-2">
                 <Button
                     size="sm"
-                    disabled={!isDirty}
-                    onClick={() => mutate()}
+                    disabled={saving || !isDirty}
+                    onClick={() => server && commit(server)}
                 >
-                    <RotateCw className="mr-2" size={16} />Reset
-                </Button>
+                    <RotateCw className="mr-2" size={16} />{uiT("reset")}</Button>
                 <Button
                     size="sm"
                     disabled={saving || !isDirty}
                     onClick={handleSave}
                 >
-                    {saving ? <Spinner size="sm" /> : <><Save className="mr-2" size={16} />Save</>}
+                    {saving ? <Spinner size="sm" /> : <><Save className="mr-2" size={16} />{uiT("save")}</>}
                 </Button>
             </CardFooter>
+            </fieldset>
         </Card>
     );
 }

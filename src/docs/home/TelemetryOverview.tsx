@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { TelemetryGroup, TelemetrySummary } from "@/contract/connection";
 import { Badge } from "@/component/v2/badge";
 import { formatBytes } from "./format";
@@ -20,22 +21,26 @@ function numberValue(value: string): number {
 }
 
 const TrafficStats = ({ item }: { item: TelemetryGroup["items"][number] }) => {
+    const { t: uiT } = useTranslation('ui');
+
     const failures = numberValue(item.failures);
 
     return (
         <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 text-xs tabular-nums text-ui-muted sm:shrink-0 sm:justify-end">
             <span>↓ {formatBytes(numberValue(item.download), 1, " ")}</span>
             <span>↑ {formatBytes(numberValue(item.upload), 1, " ")}</span>
-            {failures > 0 && <Badge variant="danger" pill className="px-1.5 py-1 font-medium">{failures} failed</Badge>}
+            {failures > 0 && <Badge variant="danger" pill className="px-1.5 py-1 font-medium">{failures} {uiT("failedLabel")}</Badge>}
         </div>
     );
 };
 
-const DimensionPanel = ({ group }: { group: TelemetryGroup }) => (
+const DimensionPanel = ({ group }: { group: TelemetryGroup }) => {
+    const { t: uiT } = useTranslation('ui');
+    return (
     <section className="overflow-hidden rounded-ui-lg border border-ui-border/80 bg-ui-surface/20">
         <h3 className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ui-muted">{titles[group.dimension]}</h3>
         {group.items.length === 0 ? (
-            <div className="border-t border-ui-border/70 px-4 py-4 text-sm text-ui-muted">No records in this range.</div>
+            <div className="border-t border-ui-border/70 px-4 py-4 text-sm text-ui-muted">{uiT("noRecordsInThisRange")}</div>
         ) : (
             <div className="border-t border-ui-border/70 divide-y divide-ui-border/70">
                 {group.items.map(item => (
@@ -48,12 +53,15 @@ const DimensionPanel = ({ group }: { group: TelemetryGroup }) => (
         )}
     </section>
 );
+};
 
-const ProtocolSummary = ({ group }: { group: TelemetryGroup }) => (
+const ProtocolSummary = ({ group }: { group: TelemetryGroup }) => {
+    const { t: uiT } = useTranslation('ui');
+    return (
     <section className="overflow-hidden rounded-ui-lg border border-ui-border/80 bg-ui-surface/20">
         <h3 className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ui-muted">{titles.protocol}</h3>
         {group.items.length === 0 ? (
-            <div className="border-t border-ui-border/70 px-4 py-4 text-sm text-ui-muted">No records in this range.</div>
+            <div className="border-t border-ui-border/70 px-4 py-4 text-sm text-ui-muted">{uiT("noRecordsInThisRange")}</div>
         ) : (
             <div className="grid border-t border-ui-border/70 sm:grid-cols-2">
                 {group.items.map((item, index) => (
@@ -66,14 +74,15 @@ const ProtocolSummary = ({ group }: { group: TelemetryGroup }) => (
         )}
     </section>
 );
+};
 
 const TelemetryOverview = ({ data, error }: { data?: TelemetrySummary; error?: string }) => {
-    if (error) return <div className="flex min-h-32 items-center justify-center px-4 py-6 text-center text-sm text-ui-danger">{error}</div>;
-    if (!data) return <div className="flex min-h-32 items-center justify-center px-4 py-6 text-center text-sm text-ui-muted">Loading traffic breakdown…</div>;
+    const { t: uiT } = useTranslation('ui');
 
-    if (data.groups.length === 0) {
-        return <div className="flex min-h-32 items-center justify-center px-4 py-6 text-center text-sm text-ui-muted">No traffic recorded in this range.</div>;
-    }
+    if (error) return <div className="flex min-h-32 items-center justify-center px-4 py-6 text-center text-sm text-ui-danger">{error}</div>;
+    if (!data) return <div className="flex min-h-32 items-center justify-center px-4 py-6 text-center text-sm text-ui-muted">{uiT("loadingTrafficBreakdown")}</div>;
+
+    if (data.groups.length === 0) return <div className="flex min-h-32 items-center justify-center px-4 py-6 text-center text-sm text-ui-muted">{uiT("noTrafficRecordedInThisRange")}</div>;
 
     const protocol = data.groups.find(group => group.dimension === "protocol");
     const dimensions = data.groups.filter(group => group.dimension !== "protocol");

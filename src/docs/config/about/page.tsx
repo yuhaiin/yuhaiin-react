@@ -1,4 +1,4 @@
-"use client"
+import { useTranslation } from 'react-i18next';
 
 import { applyUpdate, checkUpdate, getUpdateStatus } from "@/api/update";
 import { getInfo } from "@/api/settings";
@@ -89,6 +89,8 @@ const InfoRow: FC<{
 );
 
 export default function About() {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
     const { data: info, isLoading, isValidating, error } = useSWR("/api/v2/info", getInfo);
     const [channel, setChannel] = useState<UpdateChannel>(() => {
@@ -160,43 +162,43 @@ export default function About() {
         <MainContainer className="flex flex-col">
             <Card className="order-2">
                 <CardHeader className="py-3">
-                    <IconBox icon={Info} tone="violet" title='System Information' description='Software version and build environment' />
+                    <IconBox icon={Info} tone="violet" title={uiT("systemInformation")} description={uiT("softwareVersionAndBuildEnvironment")} />
                 </CardHeader>
 
                 <CardBody>
                     <div className="grid grid-cols-1 gap-4">
                         {/* Primary Build Info */}
-                        <InfoRow label="Version" value={info.version || "Unknown"} icon={BadgeCheck} isBadge />
+                        <InfoRow label={uiT("version")} value={info.version || "Unknown"} icon={BadgeCheck} isBadge />
                         <InfoRow
-                            label="Commit"
+                            label={uiT("commit")}
                             value={info.commit?.substring(0, 7) || "N/A"}
                             icon={GitBranch}
                             url={`https://github.com/yuhaiin/yuhaiin/commit/${info.commit}`}
                             isMonospace
                         />
-                        <InfoRow label="Build Time" value={info.buildTime || "N/A"} icon={Calendar} />
+                        <InfoRow label={uiT("buildTime")} value={info.buildTime || "N/A"} icon={Calendar} />
 
                         {/* Environment Info */}
-                        <InfoRow label="Go Version" value={info.goVersion || "N/A"} icon={Code} isMonospace />
+                        <InfoRow label={uiT("goVersion")} value={info.goVersion || "N/A"} icon={Code} isMonospace />
                         <InfoRow
-                            label="GitHub"
+                            label={uiT("github")}
                             value="yuhaiin/yuhaiin"
                             icon={GitFork}
                             url="https://github.com/yuhaiin/yuhaiin"
                         />
 
                         {/* Hardware Info */}
-                        <InfoRow label="OS" value={info.os || "N/A"} icon={Cpu} />
-                        <InfoRow label="Arch" value={info.arch || "N/A"} icon={Layers} isMonospace />
-                        <InfoRow label="Compiler" value={info.compiler || "N/A"} icon={Terminal} />
-                        <InfoRow label="Platform" value={info.platform || "N/A"} icon={Laptop} />
+                        <InfoRow label={uiT("os")} value={info.os || "N/A"} icon={Cpu} />
+                        <InfoRow label={uiT("arch")} value={info.arch || "N/A"} icon={Layers} isMonospace />
+                        <InfoRow label={uiT("compiler")} value={info.compiler || "N/A"} icon={Terminal} />
+                        <InfoRow label={uiT("platform")} value={info.platform || "N/A"} icon={Laptop} />
                     </div>
                 </CardBody>
 
                 {/* Build Tags / Features Section */}
                 {info.build && info.build.length > 0 && (
                     <CardFooter className="border-ui-border bg-transparent p-4">
-                        <SettingLabel className={"mb-2 block text-ui-muted"}>Build Parameters</SettingLabel>
+                        <SettingLabel className={"mb-2 block text-ui-muted"}>{uiT("buildParameters")}</SettingLabel>
                         <div className="flex flex-wrap gap-2">
                             {info.build.map((tag, idx) => (
                                 <div key={idx} className="rounded-ui-sm border border-ui-border bg-ui-surface-muted px-2 py-1 font-mono text-sm break-all">
@@ -210,12 +212,12 @@ export default function About() {
 
             <Card className="order-1">
                 <CardHeader className="py-3">
-                    <IconBox icon={Rocket} tone="success" title="Software Update" description="Check GitHub Releases for a newer desktop build" />
+                    <IconBox icon={Rocket} tone="success" title={uiT("softwareUpdate")} description={uiT("checkGithubReleasesForANewerDesktopBuild")} />
                 </CardHeader>
                 <CardBody>
                     <div className="space-y-4">
                         <div>
-                            <SettingLabel>Update Channel</SettingLabel>
+                            <SettingLabel>{uiT("updateChannel")}</SettingLabel>
                             <ToggleGroup
                                 type="single"
                                 value={channel}
@@ -234,8 +236,7 @@ export default function About() {
                         <div className="flex flex-wrap items-center gap-3">
                             <Button variant="default" onClick={handleCheckUpdate} disabled={checkingUpdate || applyingUpdate || updateStatus?.running}>
                                 <RefreshCw className={checkingUpdate ? "mr-2 animate-spin" : "mr-2"} size={16} />
-                                Check for Updates
-                            </Button>
+                                {uiT("checkForUpdates")}</Button>
                             {update?.updateAvailable && (
                                 <Button variant="default" onClick={handleApplyUpdate} disabled={applyingUpdate || updateStatus?.running || !update.supported}>
                                     <Download className="mr-2" size={16} />
@@ -263,7 +264,7 @@ export default function About() {
 
                         {!updateStatus?.running && updateStatus?.error && (
                             <div className="rounded-ui-md border border-ui-danger/40 bg-ui-danger-soft p-4 text-sm text-ui-danger">
-                                Update failed: {updateStatus.error}
+                                {uiT("updateFailed")} {updateStatus.error}
                             </div>
                         )}
 
@@ -273,12 +274,11 @@ export default function About() {
                                     <>
                                         <div className="flex items-center gap-2 font-semibold text-ui-heading">
                                             <Check size={16} className="text-ui-success" />
-                                            {update.targetVersion} is available
-                                        </div>
+                                            {update.targetVersion} {uiT("isAvailable")}</div>
                                         <div className="mt-2 space-y-1 text-ui-muted">
-                                            <div>Current version: <span className="font-mono">{update.currentVersion || "Unknown"}</span></div>
-                                            <div>Asset: <span className="font-mono">{update.assetName}</span></div>
-                                            {update.publishedAt && <div>Published: {new Date(update.publishedAt).toLocaleString()}</div>}
+                                            <div>{uiT("currentVersion")}<span className="font-mono">{update.currentVersion || "Unknown"}</span></div>
+                                            <div>{uiT("asset")}<span className="font-mono">{update.assetName}</span></div>
+                                            {update.publishedAt && <div>{uiT("published")} {new Date(update.publishedAt).toLocaleString()}</div>}
                                         </div>
                                         {update.releaseNotes && <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap text-xs text-ui-muted">{update.releaseNotes}</pre>}
                                     </>
@@ -293,8 +293,7 @@ export default function About() {
 
             <div className="order-3 text-center mt-4 opacity-50 pb-12">
                 <small className="text-ui-muted">
-                    &copy; {new Date().getFullYear()} yuhaiin project. Distributed under MIT License.
-                </small>
+                    {uiT("copy")} {new Date().getFullYear()} {uiT("yuhaiinProjectDistributedUnderMitLicense")}</small>
             </div>
         </MainContainer>
     );

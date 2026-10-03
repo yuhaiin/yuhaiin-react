@@ -470,3 +470,18 @@ html[data-bs-theme="light"] {
         --scrollbar-thumb-active: rgba(255, 255, 255, 0.6);
     }
 }
+
+/* Radix Presence keeps closing panels mounted until these animations finish. */
+.sidebar-drawer[data-state="open"] { animation: sidebar-enter 200ms ease-out; }
+.sidebar-drawer[data-state="closed"] { animation: sidebar-exit 180ms ease-in; }
+.sidebar-backdrop[data-state="open"] { animation: sidebar-fade-in 200ms ease-out; }
+.sidebar-backdrop[data-state="closed"] { animation: sidebar-fade-out 180ms ease-in; }
+.sidebar-section[data-state="open"] { animation: sidebar-expand 200ms ease-out; }
+.sidebar-section[data-state="closed"] { animation: sidebar-collapse 180ms ease-in; }
+
+@keyframes sidebar-enter { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+@keyframes sidebar-exit { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+@keyframes sidebar-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sidebar-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes sidebar-expand { from { height: 0; } to { height: var(--radix-collapsible-content-height); } }
+@keyframes sidebar-collapse { from { height: var(--radix-collapsible-content-height); } to { height: 0; } }

@@ -1,4 +1,3 @@
-'use client';
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -8,12 +7,13 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } 
 interface ConfirmModalProps {
   content?: React.ReactNode;
   show: boolean;
+  disabled?: boolean;
   onOk: () => void;
   onHide: () => void;
   title: React.ReactNode;
 }
 
-export const ConfirmModal: React.FC<ConfirmModalProps> = ({ content, show, onOk, onHide, title }) => {
+export const ConfirmModal: React.FC<ConfirmModalProps> = ({ content, show, onOk, onHide, title, disabled }) => {
   const { t } = useTranslation('common');
 
   return (
@@ -33,6 +33,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({ content, show, onOk,
           </Button>
           <Button
             variant='outline-danger'
+            disabled={disabled}
             onClick={() => {
               onOk();
               onHide();

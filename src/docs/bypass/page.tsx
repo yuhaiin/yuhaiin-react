@@ -1,13 +1,17 @@
-"use client"
+import { RouteRuleForm, includeCurrent, type RuleEditorOptions } from "./rule-form";
+import { useServerPageClamp } from "@/hooks/use-pagination";
+import { collectPages } from "@/api/paging";
+import { useTranslation } from 'react-i18next';
+import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
 
 import { listInbounds } from "@/api/inbounds";
 import { listResolvers } from "@/api/resolvers";
 import { changeRulePriority, createRule, deleteRule, getRouteActivationStatus, getRouteConfig, getRule, listRouteLists, listRules, saveRouteConfig, saveRule } from "@/api/route";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardFooter, CardHeader, FilterSearch, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
-import { DropdownSelect, SettingInputVertical, SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
-import { Input } from "@/component/v2/input";
+import { Card, CardBody, CardFooter, CardHeader, FilterSearch, IconBox, MainContainer } from "@/component/v2/card";
+import { SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
+
 import Loading from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Pagination } from "@/component/v2/pagination";
@@ -16,18 +20,12 @@ import { Select } from "@/component/v2/select";
 import { Spinner } from "@/component/v2/spinner";
 import { Switch } from "@/component/v2/switch";
 import { GlobalToastContext } from "@/component/v2/toast";
-import type { RouteRule, RuleExpr, RuleItem } from "@/contract/route";
-import { createDefaultRule, normalizeRule } from "@/contract/route";
+import type { RouteRule, RuleItem } from "@/contract/route";
+import { createDefaultRule } from "@/contract/route";
 import clsx from "clsx";
-import { ArrowUpDown, Plus, Route, Save, ShieldCheck, Trash, X } from "lucide-react";
-import type { CSSProperties } from "react";
+import { ArrowUpDown, Plus, Route, Save, ShieldCheck, Trash } from "lucide-react";
 import { useContext, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
-
-const routeModes = ["bypass", "proxy", "block", "direct"];
-const resolveStrategies = ["default", "prefer_ipv4", "prefer_ipv6", "ipv4_only", "ipv6_only"];
-const udpProxyStrategies = ["udp_proxy_fqdn_strategy_default", "udp_proxy_fqdn_strategy_disabled", "udp_proxy_fqdn_strategy_resolve"];
-const leafRuleExprTypes = ["host", "process", "inbound", "network", "port", "geoip"];
 type PriorityOperate = "exchange" | "insert_before" | "insert_after";
 const PAGE_SIZE = 8;
 
@@ -56,7 +54,9 @@ const RuleTableRow = ({
     onOpen: () => void;
     onPriority: () => void;
     onToggle: () => void;
-}) => (
+}) => {
+    const { t: uiT } = useTranslation('ui');
+    return (
     <div
         role="row"
         className={clsx(
@@ -87,9 +87,9 @@ const RuleTableRow = ({
                 </button>
                 <div className="mt-1 flex min-w-0 items-center gap-2 text-xs md:hidden">
                     <span className={clsx("font-semibold", modeTextTone(item.mode))}>{item.mode || "Unknown"}</span>
-                    <span className="text-ui-muted">{item.ruleCount} Rules</span>
-                    {item.tag && <span className="min-w-0 truncate text-ui-muted"><span className="font-medium">Tag</span>: {item.tag}</span>}
-                    {item.resolver && <span className="min-w-0 truncate font-mono text-ui-muted"><span className="font-sans font-medium">Resolver</span>: {item.resolver}</span>}
+                    <span className="text-ui-muted">{item.ruleCount} {uiT("rules")}</span>
+                    {item.tag && <span className="min-w-0 truncate text-ui-muted"><span className="font-medium">{uiT("tag")}</span>: {item.tag}</span>}
+                    {item.resolver && <span className="min-w-0 truncate font-mono text-ui-muted"><span className="font-sans font-medium">{uiT("resolver")}</span>: {item.resolver}</span>}
                 </div>
             </div>
             <div
@@ -103,12 +103,12 @@ const RuleTableRow = ({
                     variant="outline-secondary"
                     className="h-7 w-7"
                     onClick={onPriority}
-                    aria-label="Change Priority"
-                    title="Change Priority"
+                    aria-label={uiT("changePriority")}
+                    title={uiT("changePriority")}
                 >
                     <ArrowUpDown size={14} />
                 </Button>
-                <span id={`route-rule-enabled-mobile-${item.index}`} className="sr-only">Enabled {item.name}</span>
+                <span id={`route-rule-enabled-mobile-${item.index}`} className="sr-only">{uiT("enabled")} {item.name}</span>
                 <Switch
                     checked={!item.disabled}
                     onCheckedChange={onToggle}
@@ -140,12 +140,12 @@ const RuleTableRow = ({
                 variant="outline-secondary"
                 className="h-7 w-7"
                 onClick={onPriority}
-                aria-label="Change Priority"
-                title="Change Priority"
+                aria-label={uiT("changePriority")}
+                title={uiT("changePriority")}
             >
                 <ArrowUpDown size={14} />
             </Button>
-            <span id={`route-rule-enabled-${item.index}`} className="sr-only">Enabled {item.name}</span>
+            <span id={`route-rule-enabled-${item.index}`} className="sr-only">{uiT("enabled")} {item.name}</span>
             <Switch
                 checked={!item.disabled}
                 onCheckedChange={onToggle}
@@ -154,6 +154,7 @@ const RuleTableRow = ({
         </div>
     </div>
 );
+};
 
 const RuleTable = ({
     items,
@@ -165,16 +166,18 @@ const RuleTable = ({
     onOpen: (item: RuleItem) => void;
     onPriority: (item: RuleItem) => void;
     onToggle: (item: RuleItem) => void;
-}) => (
+}) => {
+    const { t: uiT } = useTranslation('ui');
+    return (
     <div role="table" className="min-w-0">
         <div role="row" className="hidden border-b border-ui-border bg-ui-surface-muted/50 px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-wide text-ui-muted md:grid md:grid-cols-[2.5rem_minmax(0,2fr)_4rem_3rem_minmax(0,1fr)_minmax(0,1fr)_5rem] md:items-center md:gap-3">
-            <span role="columnheader">Order</span>
-            <span role="columnheader">Name</span>
-            <span role="columnheader">Mode</span>
-            <span role="columnheader">Rules</span>
-            <span role="columnheader">Tag</span>
-            <span role="columnheader">Resolver</span>
-            <span role="columnheader" className="sr-only">Control</span>
+            <span role="columnheader">{uiT("order")}</span>
+            <span role="columnheader">{uiT("name")}</span>
+            <span role="columnheader">{uiT("mode")}</span>
+            <span role="columnheader">{uiT("rules")}</span>
+            <span role="columnheader">{uiT("tag")}</span>
+            <span role="columnheader">{uiT("resolver")}</span>
+            <span role="columnheader" className="sr-only">{uiT("control")}</span>
         </div>
         {items.length > 0 ? items.map((item) => (
             <RuleTableRow
@@ -185,31 +188,15 @@ const RuleTable = ({
                 onToggle={() => onToggle(item)}
             />
         )) : (
-            <div className="px-4 py-8 text-center text-sm text-ui-muted">No records found.</div>
+            <div className="px-4 py-8 text-center text-sm text-ui-muted">{uiT("noRecordsFound")}</div>
         )}
     </div>
 );
-
-type RuleEditorOptions = {
-    lists: string[];
-    inbounds: string[];
-    resolvers: string[];
 };
 
-function includeCurrent(values: string[], current: string): string[] {
-    if (!current || values.includes(current)) return values;
-    return [current, ...values];
-}
-
-function includeSelected(values: string[], selected: string[]): string[] {
-    const out = [...values];
-    for (const value of selected) {
-        if (value && !out.includes(value)) out.unshift(value);
-    }
-    return out;
-}
-
 function BypassComponent() {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
     const [page, setPage] = useState(1);
     const [query, setQuery] = useState("");
@@ -229,25 +216,26 @@ function BypassComponent() {
         () => listRules({ page, pageSize: PAGE_SIZE, query }),
         { revalidateOnFocus: false },
     );
+    useServerPageClamp(data?.page, page, setPage);
     const needEditorOptions = creating || editing !== null;
     const { data: allRules, mutate: mutateAllRules } = useSWR(
         priorityItem ? "/api/v2/route/rules/all" : null,
-        () => listRules({ page: 1, pageSize: 10000 }),
+        () => collectPages(listRules),
         { revalidateOnFocus: false },
     );
     const { data: listsData } = useSWR(
         needEditorOptions ? "/api/v2/route/lists/options" : null,
-        () => listRouteLists({ page: 1, pageSize: 10000 }),
+        () => collectPages(listRouteLists),
         { revalidateOnFocus: false },
     );
     const { data: inboundsData } = useSWR(
         needEditorOptions ? "/api/v2/inbounds/options" : null,
-        () => listInbounds({ page: 1, pageSize: 10000 }),
+        () => collectPages(listInbounds),
         { revalidateOnFocus: false },
     );
     const { data: resolversData } = useSWR(
         "/api/v2/resolvers/options",
-        () => listResolvers({ page: 1, pageSize: 10000 }),
+        () => collectPages(listResolvers),
         { revalidateOnFocus: false },
     );
 
@@ -277,7 +265,7 @@ function BypassComponent() {
         setCreating(false);
     };
 
-    if (error) return <Loading code={error.code}>{error.msg}</Loading>
+    if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
     if (isLoading || !data) return <Loading />
 
     return (
@@ -290,13 +278,13 @@ function BypassComponent() {
                         <IconBox
                             icon={Route}
                             tone="primary"
-                            title="Route Rules"
+                            title={uiT("routeRules")}
                             description={`${data.page.total} rules · match from top to bottom`}
                         />
                         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
                             {isValidating && <Spinner size="sm" />}
                             <FilterSearch className="min-w-0 flex-1 sm:w-[200px] sm:flex-none" onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
-                            <Button size="sm" onClick={() => setCreating(true)}><Plus size={16} className="mr-1" /> Add</Button>
+                            <Button size="sm" onClick={() => setCreating(true)}><Plus size={16} className="mr-1" /> {uiT("add")}</Button>
                         </div>
                     </div>
                 </CardHeader>
@@ -322,56 +310,56 @@ function BypassComponent() {
 }
 
 function RouteConfigCard({ resolvers }: { resolvers: string[] }) {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
-    const [saving, setSaving] = useState(false);
-    const { data, error, isLoading, mutate } = useSWR("/api/v2/route/config", getRouteConfig, { revalidateOnFocus: false });
+    const { data: server, error, isLoading, mutate } = useSWR("/api/v2/route/config", getRouteConfig, { revalidateOnFocus: false });
 
-    const patch = (patchValue: Partial<NonNullable<typeof data>>) => {
-        mutate(prev => prev ? { ...prev, ...patchValue } : prev, { revalidate: false });
-    };
-
+    const { value: data, setValue: setDraft, commit, dirty } = useEditorDraft("getRouteConfig", server, () => undefined);
+    const { pending: saving, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
+    useCloseGuard(dirty, saving, () => undefined);
+    const patch = (patchValue: Partial<NonNullable<typeof data>>) => setDraft(prev => prev ? { ...prev, ...patchValue } : prev);
     const save = () => {
-        if (!data) return;
-        setSaving(true);
-        saveRouteConfig(data)
-            .then((next) => {
-                ctx.Info("route config saved");
-                mutate(next, { revalidate: false });
-            })
-            .catch((err) => ctx.Error(err.msg ?? String(err)))
-            .finally(() => setSaving(false));
+        if (!data || saving || error || isLoading) return;
+        void run(async () => {
+            const next = await saveRouteConfig(data);
+            commit(next);
+            await mutate(next, { revalidate: false });
+            ctx.Info("route config saved");
+        });
     };
 
     return (
         <Card className="mb-4">
+            <fieldset disabled={saving} className="contents">
             <CardHeader>
-                <IconBox icon={ShieldCheck} tone="danger" title="Global Bypass Settings" description="DNS resolution and routing strategy" />
+                <IconBox icon={ShieldCheck} tone="danger" title={uiT("globalBypassSettings")} description={uiT("dnsResolutionAndRoutingStrategy")} />
             </CardHeader>
             <CardBody>
                 {error ? (
-                    <Loading code={error.code}>{error.msg}</Loading>
+                    <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
                 ) : data ? (
                     <div className="grid gap-8">
                         {isLoading && <Spinner size="sm" />}
                         <section className="grid gap-4">
-                            <div className="text-sm font-bold text-ui-muted">Resolve Strategy</div>
+                            <div className="text-sm font-bold text-ui-muted">{uiT("resolveStrategy")}</div>
                             <SwitchCard
-                                label="Resolve Locally"
-                                description="Resolve DNS on the local device"
+                                label={uiT("resolveLocally")}
+                                description={uiT("resolveDnsOnTheLocalDevice")}
                                 checked={data.resolveLocally}
                                 onCheckedChange={(resolveLocally) => patch({ resolveLocally })}
                             />
                             <SwitchCard
-                                label="UDP Proxy FQDN"
-                                description="Skip local DNS resolution for UDP proxy traffic"
+                                label={uiT("udpProxyFqdn")}
+                                description={uiT("skipLocalDnsResolutionForUdpProxyTraffic")}
                                 checked={data.udpProxyFqdnStrategy === "skip_resolve"}
                                 onCheckedChange={(checked) => patch({ udpProxyFqdnStrategy: checked ? "skip_resolve" : "default" })}
                             />
                         </section>
                         <section className="grid gap-4">
-                            <div className="text-sm font-bold text-ui-muted">Default Resolver</div>
-                            <SettingSelectVertical label="Direct Resolver" value={data.directResolver} values={includeCurrent(resolvers, data.directResolver)} onChange={(directResolver) => patch({ directResolver })} emptyChoose emptyChooseName="Global Default" />
-                            <SettingSelectVertical label="Proxy Resolver" value={data.proxyResolver} values={includeCurrent(resolvers, data.proxyResolver)} onChange={(proxyResolver) => patch({ proxyResolver })} emptyChoose emptyChooseName="Global Default" />
+                            <div className="text-sm font-bold text-ui-muted">{uiT("defaultResolver")}</div>
+                            <SettingSelectVertical label={uiT("directResolver")} value={data.directResolver} values={includeCurrent(resolvers, data.directResolver)} onChange={(directResolver) => patch({ directResolver })} emptyChoose emptyChooseName={uiT("globalDefault")} />
+                            <SettingSelectVertical label={uiT("proxyResolver")} value={data.proxyResolver} values={includeCurrent(resolvers, data.proxyResolver)} onChange={(proxyResolver) => patch({ proxyResolver })} emptyChoose emptyChooseName={uiT("globalDefault")} />
                         </section>
                     </div>
                 ) : (
@@ -379,60 +367,58 @@ function RouteConfigCard({ resolvers }: { resolvers: string[] }) {
                 )}
             </CardBody>
             <CardFooter className="flex justify-end">
-                <Button disabled={saving || !data} onClick={save}>
+                <Button disabled={saving || !data || Boolean(error)} onClick={save}>
                     {saving ? <Spinner size="sm" className="mr-2" /> : <Save size={16} className="mr-2" />}
-                    Save Configuration
-                </Button>
+                    {uiT("saveConfiguration")}</Button>
             </CardFooter>
+            </fieldset>
         </Card>
     );
 }
 
 function RuleEditorModal({ item, options, onSaved, onClose }: { item: RuleItem | null; options: RuleEditorOptions; onSaved: () => void; onClose: () => void }) {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
-    const [draft, setDraft] = useState<RouteRule>(createDefaultRule());
-    const { data, error, isLoading } = useSWR(item ? ["/api/v2/route/rules/detail", item.name, item.index] : null, () => getRule(item!.name, item!.index), { revalidateOnFocus: false });
+    const { data, error, isLoading, mutate } = useSWR(item ? ["/api/v2/route/rules/detail", item.name, item.index] : null, () => getRule(item!.name, item!.index), { revalidateOnFocus: false });
 
-    useEffect(() => {
-        if (data) setDraft(normalizeRule(data));
-    }, [data]);
-
+    const { value: draft, setValue: setDraft, dirty } = useEditorDraft(item ? JSON.stringify([item.name, item.index]) : null, data, createDefaultRule);
+    const { pending, run } = useAsyncAction(error => ctx.Error(error instanceof Error ? error.message : String((error as { msg?: string })?.msg ?? error)));
+    const close = useCloseGuard(dirty, pending, onClose);
     const save = () => {
-        if (!item) return;
-        saveRule(item.name, item.index, draft)
-            .then(() => {
-                ctx.Info("rule saved");
-                onSaved();
-            })
-            .catch((err) => ctx.Error(err.msg ?? String(err)));
+        if (!item || !data || error || isLoading || pending) return;
+        void run(async () => {
+            await saveRule(item.name, item.index, draft);
+            ctx.Info("rule saved");
+            onSaved();
+        });
     };
-
     const remove = () => {
-        if (!item) return;
-        deleteRule(item.name, item.index)
-            .then(() => {
-                ctx.Info("rule deleted");
-                onSaved();
-            })
-            .catch((err) => ctx.Error(err.msg ?? String(err)));
+        if (!item || pending || !data || error || isLoading || !window.confirm("Delete this rule?")) return;
+        void run(async () => {
+            await deleteRule(item.name, item.index);
+            ctx.Info("rule deleted");
+            onSaved();
+        });
     };
 
     return (
-        <Modal open={!!item} onOpenChange={(open) => !open && onClose()}>
-            <ModalContent style={{ "--bs-modal-width": "820px" } as CSSProperties}>
+        <Modal open={!!item} onOpenChange={(open) => !open && close()}>
+            <ModalContent width={820}>
                 <ModalHeader closeButton><ModalTitle>{item?.name}</ModalTitle></ModalHeader>
                 <ModalBody>
-                    {error && <Loading code={error.code}>{error.msg}</Loading>}
+                    <fieldset disabled={pending} className="contents">
+                    {error && <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>}
                     {isLoading && <Loading />}
-                    {!isLoading && !error && <RouteRuleForm value={draft} onChange={setDraft} options={options} lockName />}
+                    {!isLoading && !error && data && <RouteRuleForm value={draft} onChange={setDraft} options={options} lockName />}
+                </fieldset>
                 </ModalBody>
                 <ModalFooter className="flex flex-wrap items-center justify-between gap-3">
-                    <Button variant="outline-danger" onClick={remove}>
-                        <Trash size={16} /> Delete Rule
-                    </Button>
+                    <Button variant="outline-danger" disabled={pending || isLoading || Boolean(error) || !data} onClick={remove}>
+                        <Trash size={16} /> {uiT("deleteRule")}</Button>
                     <div className="flex flex-wrap justify-end gap-2">
-                        <Button onClick={onClose}>Cancel</Button>
-                        <Button onClick={save}><Save size={16} /> Save</Button>
+                        <Button onClick={close} disabled={pending}>{uiT("cancel")}</Button>
+                        <Button disabled={pending || isLoading || Boolean(error) || !data} onClick={save}><Save size={16} /> {uiT("save")}</Button>
                     </div>
                 </ModalFooter>
             </ModalContent>
@@ -441,6 +427,8 @@ function RuleEditorModal({ item, options, onSaved, onClose }: { item: RuleItem |
 }
 
 function CreateRuleModal({ open, options, onSaved, onClose }: { open: boolean; options: RuleEditorOptions; onSaved: () => void; onClose: () => void }) {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
     const [draft, setDraft] = useState<RouteRule>(createDefaultRule());
 
@@ -450,24 +438,29 @@ function CreateRuleModal({ open, options, onSaved, onClose }: { open: boolean; o
         }
     }, [open]);
 
+    const { pending, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
+    const close = useCloseGuard(JSON.stringify(draft) !== JSON.stringify(createDefaultRule()), pending, onClose);
+
     const save = () => {
-        createRule(draft)
-            .then(() => {
-                ctx.Info("rule created");
-                onSaved();
-            })
-            .catch((err) => ctx.Error(err.msg ?? String(err)));
+        if (pending || !draft.name.trim()) return;
+        void run(async () => {
+        await createRule(draft);
+        ctx.Info("rule created");
+        onSaved();
+        });
     };
 
     return (
-        <Modal open={open} onOpenChange={(next) => !next && onClose()}>
-            <ModalContent style={{ "--bs-modal-width": "820px" } as CSSProperties}>
-                <ModalHeader closeButton><ModalTitle>New Route Rule</ModalTitle></ModalHeader>
+        <Modal open={open} onOpenChange={(next) => !next && close()}>
+            <ModalContent width={820}>
+                <ModalHeader closeButton><ModalTitle>{uiT("newRouteRule")}</ModalTitle></ModalHeader>
                 <ModalBody>
+                    <fieldset disabled={pending} className="contents">
                     <RouteRuleForm value={draft} onChange={setDraft} options={options} />
+                </fieldset>
                 </ModalBody>
                 <ModalFooter>
-                    <Button onClick={save} disabled={!draft.name.trim()}><Save size={16} /> Save</Button>
+                    <Button onClick={save} disabled={pending || !draft.name.trim()}><Save size={16} /> {uiT("save")}</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
@@ -475,6 +468,8 @@ function CreateRuleModal({ open, options, onSaved, onClose }: { open: boolean; o
 }
 
 function PriorityModal({ item, items, onSaved, onClose }: { item: RuleItem | null; items: RuleItem[]; onSaved: () => void; onClose: () => void }) {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
     const [target, setTarget] = useState("");
     const [operate, setOperate] = useState<PriorityOperate>("exchange");
@@ -509,9 +504,9 @@ function PriorityModal({ item, items, onSaved, onClose }: { item: RuleItem | nul
 
     return (
         <Modal open={!!item} onOpenChange={(open) => !open && onClose()}>
-            <ModalContent style={{ "--bs-modal-width": "520px" } as CSSProperties}>
+            <ModalContent width={520}>
                 <ModalHeader closeButton>
-                    <ModalTitle>Change Priority</ModalTitle>
+                    <ModalTitle>{uiT("changePriority")}</ModalTitle>
                 </ModalHeader>
                 <ModalBody>
                     {item && (
@@ -521,7 +516,7 @@ function PriorityModal({ item, items, onSaved, onClose }: { item: RuleItem | nul
                                 <span className="min-w-0 truncate font-bold">{item.name}</span>
                             </div>
                             <div>
-                                <div className="mb-2 text-sm font-semibold text-ui-muted">Target Rule</div>
+                                <div className="mb-2 text-sm font-semibold text-ui-muted">{uiT("targetRule")}</div>
                                 <Select
                                     value={target}
                                     onValueChange={setTarget}
@@ -533,7 +528,7 @@ function PriorityModal({ item, items, onSaved, onClose }: { item: RuleItem | nul
                                 />
                             </div>
                             <div>
-                                <div className="mb-2 text-sm font-semibold text-ui-muted">Operation</div>
+                                <div className="mb-2 text-sm font-semibold text-ui-muted">{uiT("operation")}</div>
                                 <Select
                                     value={operate}
                                     onValueChange={(value) => setOperate(value as PriorityOperate)}
@@ -551,8 +546,7 @@ function PriorityModal({ item, items, onSaved, onClose }: { item: RuleItem | nul
                 <ModalFooter>
                     <Button onClick={apply} disabled={saving || !item}>
                         {saving ? <Spinner size="sm" className="mr-2" /> : <Save size={16} className="mr-2" />}
-                        Apply
-                    </Button>
+                        {uiT("apply")}</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
@@ -561,336 +555,6 @@ function PriorityModal({ item, items, onSaved, onClose }: { item: RuleItem | nul
 
 function ruleKey(item: Pick<RuleItem, "name" | "index">): string {
     return `${item.name}::${item.index}`;
-}
-
-function RouteRuleForm({ value, onChange, options, lockName }: { value: RouteRule; onChange: (value: RouteRule) => void; options: RuleEditorOptions; lockName?: boolean }) {
-    const patch = (patchValue: Partial<RouteRule>) => onChange(normalizeRule({ ...value, ...patchValue }));
-
-    return (
-        <div className="space-y-6">
-            <SettingsBox>
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    {!lockName && (
-                        <div className="md:col-span-2">
-                            <SettingInputVertical label="Name" value={value.name} onChange={(name) => patch({ name })} />
-                        </div>
-                    )}
-                    <div className="md:col-span-2">
-                        <SwitchCard
-                            label="Disabled"
-                            description="Ignore this rule during routing"
-                            checked={Boolean(value.disabled)}
-                            onCheckedChange={(disabled) => patch({ disabled })}
-                        />
-                    </div>
-                    <SettingSelectVertical label="Mode" value={value.mode} values={routeModes} onChange={(mode) => patch({ mode })} />
-                    <SettingInputVertical label="Tag" value={value.tag ?? ""} onChange={(tag) => patch({ tag })} placeholder="Optional tag" />
-                    <SettingSelectVertical label="Resolve Strategy" value={value.resolveStrategy ?? "default"} values={resolveStrategies} onChange={(resolveStrategy) => patch({ resolveStrategy })} />
-                    <SettingSelectVertical
-                        label="UDP FQDN Strategy"
-                        value={value.udpProxyFqdnStrategy ?? "udp_proxy_fqdn_strategy_default"}
-                        values={udpProxyStrategies}
-                        format={formatUdpProxyStrategy}
-                        onChange={(udpProxyFqdnStrategy) => patch({ udpProxyFqdnStrategy })}
-                    />
-                    <div className="md:col-span-2">
-                        <SettingSelectVertical
-                            label="Resolver"
-                            value={value.resolver ?? ""}
-                            values={includeCurrent(options.resolvers, value.resolver ?? "")}
-                            onChange={(resolver) => patch({ resolver })}
-                            emptyChoose
-                            emptyChooseName="Global Default"
-                        />
-                    </div>
-                </div>
-            </SettingsBox>
-            <SettingsBox>
-                <SettingLabel className="mb-0">Rule Entries</SettingLabel>
-                <RuleExprListEditor value={value.rules ?? []} options={options} onChange={(rules) => patch({ rules })} />
-            </SettingsBox>
-        </div>
-    );
-}
-
-function formatUdpProxyStrategy(value: string): string {
-    switch (value) {
-        case "udp_proxy_fqdn_strategy_default":
-            return "global";
-        case "udp_proxy_fqdn_strategy_disabled":
-            return "disabled";
-        case "udp_proxy_fqdn_strategy_resolve":
-            return "resolve";
-        default:
-            return value;
-    }
-}
-
-function createExpr(type: string): RuleExpr {
-    switch (type) {
-        case "all":
-            return { type, all: [] };
-        case "any":
-            return { type, any: [] };
-        case "not":
-            return { type, not: createExpr("host") };
-        case "process":
-            return { type, process: { list: "" } };
-        case "inbound":
-            return { type, inbound: { names: [] } };
-        case "network":
-            return { type, network: { network: "tcp" } };
-        case "port":
-            return { type, port: { ports: "" } };
-        case "geoip":
-            return { type, geoip: { countries: "" } };
-        case "host":
-        default:
-            return { type: "host", host: { list: "" } };
-    }
-}
-
-function normalizeExpr(value: RuleExpr): RuleExpr {
-    return createExpr(value.type) && value;
-}
-
-function exprGroupLeaves(expr: RuleExpr): RuleExpr[] {
-    if (expr.type === "all") return expr.all ?? [];
-    return [expr];
-}
-
-function groupToExpr(leaves: RuleExpr[]): RuleExpr {
-    return { type: "all", all: leaves.length > 0 ? leaves : [createExpr("host")] };
-}
-
-function RuleExprListEditor({ value, options, onChange }: { value: RuleExpr[]; options: RuleEditorOptions; onChange: (value: RuleExpr[]) => void }) {
-    const groups = (Array.isArray(value) ? value : []).map(exprGroupLeaves);
-    const safeGroups = groups.length > 0 ? groups : [[createExpr("host")]];
-    const updateGroups = (next: RuleExpr[][]) => onChange(next.map(groupToExpr));
-
-    return (
-        <div className="flex min-w-0 flex-col gap-2">
-            {safeGroups.map((group, index) => (
-                <div key={index}>
-                    {index > 0 && <OrSeparator />}
-                    <RuleExprGroupEditor
-                        value={group}
-                        options={options}
-                        onChange={(next) => {
-                            const nextGroups = [...safeGroups];
-                            nextGroups[index] = next;
-                            updateGroups(nextGroups);
-                        }}
-                        onRemove={() => {
-                            const nextGroups = safeGroups.filter((_, current) => current !== index);
-                            updateGroups(nextGroups.length > 0 ? nextGroups : [[createExpr("host")]]);
-                        }}
-                    />
-                </div>
-            ))}
-            <div className="mt-2 flex justify-center sm:justify-start">
-                <Button className="w-full px-3 sm:w-auto" onClick={() => updateGroups([...safeGroups, [createExpr("host")]])}>
-                    <Plus size={16} className="mr-1" />Or
-                </Button>
-            </div>
-        </div>
-    );
-}
-
-const OrSeparator = () => (
-    <div className="my-4 flex items-center">
-        <hr className="flex-grow opacity-25" />
-        <span className="mx-4 text-xs font-bold uppercase tracking-[1px] text-ui-muted">Or</span>
-        <hr className="flex-grow opacity-25" />
-    </div>
-);
-
-function RuleExprGroupEditor({
-    value,
-    options,
-    onChange,
-    onRemove,
-}: {
-    value: RuleExpr[];
-    options: RuleEditorOptions;
-    onChange: (value: RuleExpr[]) => void;
-    onRemove: () => void;
-}) {
-    const leaves = value.length > 0 ? value : [createExpr("host")];
-
-    return (
-        <div className="min-w-0">
-            {leaves.map((item, index) => (
-                <div key={index}>
-                    {index > 0 && <AndConnector />}
-                    <RuleExprLeafEditor
-                        value={item}
-                        options={options}
-                        onChange={(next) => {
-                            const nextLeaves = [...leaves];
-                            nextLeaves[index] = next;
-                            onChange(nextLeaves);
-                        }}
-                        onRemove={() => {
-                            if (leaves.length === 1) onRemove();
-                            else onChange(leaves.filter((_, current) => current !== index));
-                        }}
-                    />
-                </div>
-            ))}
-            <Button size="sm" className="mt-3 w-full border-dashed px-3 sm:w-auto" variant="outline-secondary" onClick={() => onChange([...leaves, createExpr("host")])}>
-                <Plus size={16} className="mr-1" />And
-            </Button>
-        </div>
-    );
-}
-
-const AndConnector = () => (
-    <div className="my-2 flex items-center gap-3 px-3" aria-label="And">
-        <div className="h-px flex-1 bg-ui-border" />
-        <span className="text-[11px] font-bold uppercase tracking-wider text-ui-primary">And</span>
-        <div className="h-px flex-1 bg-ui-border" />
-    </div>
-);
-
-function RuleExprLeafEditor({
-    value,
-    options,
-    onChange,
-    onRemove,
-}: {
-    value: RuleExpr;
-    options: RuleEditorOptions;
-    onChange: (value: RuleExpr) => void;
-    onRemove: () => void;
-}) {
-    const expr = leafRuleExprTypes.includes(value.type) ? normalizeExpr(value) : createExpr("host");
-    const updateType = (type: string) => onChange(createExpr(type));
-
-    return (
-        <div className="min-w-0 rounded-ui-lg border border-ui-border bg-ui-surface p-3 shadow-inner-subtle sm:p-4">
-            <div className="flex min-w-0 items-end gap-2">
-                <div className="min-w-0 flex-1">
-                    <SettingLabel className="mb-2 block text-xs">Condition type</SettingLabel>
-                    <Select
-                        value={expr.type}
-                        onValueChange={updateType}
-                        items={includeCurrent(leafRuleExprTypes, expr.type).map(type => ({ value: type, label: formatRuleExprType(type) }))}
-                    />
-                </div>
-                <Button
-                    size="icon"
-                    variant="outline-danger"
-                    onClick={onRemove}
-                    aria-label="Remove rule"
-                    className="shrink-0"
-                >
-                    <X size={16} />
-                </Button>
-            </div>
-            <div className="mt-3 min-w-0">
-                <SettingLabel className="mb-2 block text-xs">Condition value</SettingLabel>
-                <RuleExprLeafFields value={expr} options={options} onChange={onChange} />
-            </div>
-        </div>
-    );
-}
-
-function formatRuleExprType(type: string): string {
-    switch (type) {
-        case "host":
-            return "Host";
-        case "process":
-            return "Process";
-        case "inbound":
-            return "Inbound";
-        case "network":
-            return "Network";
-        case "port":
-            return "Port";
-        case "geoip":
-            return "Geoip";
-        default:
-            return type;
-    }
-}
-
-function RuleExprLeafFields({ value, options, onChange }: { value: RuleExpr; options: RuleEditorOptions; onChange: (value: RuleExpr) => void }) {
-    switch (value.type) {
-        case "host":
-            return (
-                <div className="min-w-0 flex-1">
-                    <Select
-                        value={value.host?.list ?? ""}
-                        onValueChange={(list) => onChange({ ...value, host: { list } })}
-                        items={listSelectItems(options.lists, value.host?.list ?? "")}
-                        placeholder="List"
-                    />
-                </div>
-            );
-        case "process":
-            return (
-                <div className="min-w-0 flex-1">
-                    <Select
-                        value={value.process?.list ?? ""}
-                        onValueChange={(list) => onChange({ ...value, process: { list } })}
-                        items={listSelectItems(options.lists, value.process?.list ?? "")}
-                        placeholder="List"
-                    />
-                </div>
-            );
-        case "inbound": {
-            const selectedInbounds = value.inbound?.names ?? (value.inbound?.name ? [value.inbound.name] : []);
-            return (
-                <div className="min-w-0 flex-1">
-                    <DropdownSelect
-                        values={selectedInbounds}
-                        items={includeSelected(options.inbounds, selectedInbounds)}
-                        onUpdate={(names) => onChange({ ...value, inbound: { names } })}
-                    />
-                </div>
-            );
-        }
-        case "network":
-            return (
-                <div className="min-w-0 flex-1">
-                    <Select
-                        value={value.network?.network ?? "tcp"}
-                        onValueChange={(network) => onChange({ ...value, network: { network } })}
-                        items={["tcp", "udp", "tcp_udp"].map(network => ({ value: network, label: network }))}
-                    />
-                </div>
-            );
-        case "port":
-            return (
-                <div className="min-w-0 flex-1">
-                    <Input
-                        value={value.port?.ports ?? ""}
-                        onChange={(event) => onChange({ ...value, port: { ports: event.target.value } })}
-                        placeholder="80,443,1000-2000"
-                    />
-                </div>
-            );
-        case "geoip":
-            return (
-                <div className="min-w-0 flex-1">
-                    <Input
-                        value={value.geoip?.countries ?? ""}
-                        onChange={(event) => onChange({ ...value, geoip: { countries: event.target.value } })}
-                        placeholder="CN,JP,US"
-                    />
-                </div>
-            );
-        default:
-            return <div className="min-w-0 flex-1 px-3 text-sm text-ui-muted">Unsupported rule expression.</div>;
-    }
-}
-
-function listSelectItems(values: string[], current: string): { value: string; label: string }[] {
-    return [
-        { value: "", label: "Choose list" },
-        ...includeCurrent(values, current).filter(Boolean).map(list => ({ value: list, label: list })),
-    ];
 }
 
 export default BypassComponent;

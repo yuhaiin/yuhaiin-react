@@ -1,3 +1,4 @@
+import { useTheme } from '@/common/ThemeProvider';
 import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import uPlot from 'uplot';
@@ -7,9 +8,8 @@ import { Tooltip, type ChartTooltipHandle } from './tooltip';
 
 const BUFFER_GROWTH_SIZE = 1024;
 
-function chartPalette() {
-    const dark = typeof document !== 'undefined'
-        && document.documentElement.getAttribute('data-bs-theme') === 'dark';
+function chartPalette(theme: string) {
+    const dark = theme === "dark";
     return {
         uploadStroke: dark ? '#8fc7a8' : '#198754',
         uploadFill: dark ? 'rgba(143, 199, 168, 0.12)' : 'rgba(25, 135, 84, 0.12)',
@@ -172,6 +172,7 @@ function makeSmoothPathCore(
 
 const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
     const { t } = useTranslation('home');
+    const { resolved } = useTheme();
     const wrapperRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<HTMLDivElement>(null);
     const uPlotInst = useRef<uPlot | null>(null);
@@ -223,7 +224,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
         if (width === 0) width = 600;
         if (height === 0) height = 300;
 
-        const palette = chartPalette();
+        const palette = chartPalette(resolved);
         const opts: uPlot.Options = {
             width: width,
             height: height,
@@ -342,7 +343,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
         };
         // The chart receives live data through the separate update effect below.
         // oxlint-disable-next-line react-hooks/exhaustive-deps
-    }, [makeSmoothPath, t]);
+    }, [makeSmoothPath, t, resolved]);
 
     useEffect(() => {
         if (!uPlotInst.current) return;

@@ -38,10 +38,14 @@ import koBypass from './resources/ko/bypass.json';
 import koConnections from './resources/ko/connections.json';
 import koNode from './resources/ko/node.json';
 
+import enUi from './resources/en/ui.json';
+import jaUi from './resources/ja/ui.json';
+import koUi from './resources/ko/ui.json';
+
 const resources = {
-    en: { common: enCommon, nav: enNav, login: enLogin, home: enHome, webui: enWebui, config: enConfig, group: enGroup, inbound: enInbound, bypass: enBypass, connections: enConnections, node: enNode },
-    ja: { common: jaCommon, nav: jaNav, login: jaLogin, home: jaHome, webui: jaWebui, config: jaConfig, group: jaGroup, inbound: jaInbound, bypass: jaBypass, connections: jaConnections, node: jaNode },
-    ko: { common: koCommon, nav: koNav, login: koLogin, home: koHome, webui: koWebui, config: koConfig, group: koGroup, inbound: koInbound, bypass: koBypass, connections: koConnections, node: koNode },
+    en: { ui: enUi, common: enCommon, nav: enNav, login: enLogin, home: enHome, webui: enWebui, config: enConfig, group: enGroup, inbound: enInbound, bypass: enBypass, connections: enConnections, node: enNode },
+    ja: { ui: jaUi, common: jaCommon, nav: jaNav, login: jaLogin, home: jaHome, webui: jaWebui, config: jaConfig, group: jaGroup, inbound: jaInbound, bypass: jaBypass, connections: jaConnections, node: jaNode },
+    ko: { ui: koUi, common: koCommon, nav: koNav, login: koLogin, home: koHome, webui: koWebui, config: koConfig, group: koGroup, inbound: koInbound, bypass: koBypass, connections: koConnections, node: koNode },
 };
 
 i18n.use(initReactI18next).init({
@@ -49,7 +53,7 @@ i18n.use(initReactI18next).init({
     lng: fallbackLanguage,
     fallbackLng: fallbackLanguage,
     supportedLngs: [...supportedLanguages],
-    ns: ['common', 'nav', 'login', 'home', 'webui', 'config', 'group', 'inbound', 'bypass', 'connections', 'node'],
+    ns: ['ui', 'common', 'nav', 'login', 'home', 'webui', 'config', 'group', 'inbound', 'bypass', 'connections', 'node'],
     defaultNS: 'common',
     interpolation: {
         escapeValue: false,

@@ -1,4 +1,4 @@
-"use client"
+import { useTranslation } from 'react-i18next';
 
 import { Plus, Trash } from 'lucide-react';
 import { FC, useState } from 'react';
@@ -15,6 +15,7 @@ export const InputList: FC<{
     placeholder?: string;
     disabled?: boolean;
 }> = ({ title, data, onChange, className, textarea, placeholder, disabled }) => {
+    const { t: uiT } = useTranslation('ui');
     const items = Array.isArray(data) ? data : [];
     const [newItem, setNewItem] = useState("");
 
@@ -47,6 +48,7 @@ export const InputList: FC<{
             {!disabled && (
                 <InputGroup className="mb-2">
                     <Textarea
+                        aria-label={title}
                         value={newItem}
                         onChange={(e) => setNewItem(e.target.value)}
                         placeholder={placeholder || `Add new ${title}${textarea ? " (one per line)" : ""}`}
@@ -58,6 +60,7 @@ export const InputList: FC<{
                         }}
                     />
                     <Button
+                        aria-label={uiT("add") + " " + title}
                         onClick={add}
                         style={{
                             borderTopLeftRadius: 0,
@@ -74,6 +77,7 @@ export const InputList: FC<{
                 {items.map((item, i) => (
                     <InputGroup key={i}>
                         <Input
+                            aria-label={`${title} ${i + 1}`}
                             value={item}
                             onChange={(e) => edit(i, e.target.value)}
                             className="grow"
@@ -86,6 +90,7 @@ export const InputList: FC<{
                         {!disabled && (
                             <Button
                                 variant="outline-danger"
+                                aria-label={uiT("delete") + " " + `${title} ${i + 1}`}
                                 onClick={() => remove(i)}
                                 style={{
                                     borderTopLeftRadius: 0,
@@ -110,6 +115,8 @@ export const InputBytesList: FC<{
     className?: string;
     disabled?: boolean;
 }> = ({ title, data = [], onChange, className, disabled }) => {
+    const { t: uiT } = useTranslation('ui');
+
     const items = Array.isArray(data) ? data : [];
     const [newItem, setNewItem] = useState("");
 
@@ -139,13 +146,14 @@ export const InputBytesList: FC<{
             {!disabled && (
                 <div className="flex gap-2 mb-3">
                     <Textarea
+                        aria-label={title}
                         placeholder={`Paste or type ${title} bytes here...`}
                         value={newItem}
                         onChange={(e) => setNewItem(e.target.value)}
                         rows={3}
-                        className="font-mono shadow-none text-[0.85rem]"
+                        className="font-mono shadow-none sm:text-[0.85rem]"
                     />
-                    <Button onClick={add} style={{ alignSelf: 'flex-start' }}>
+                    <Button onClick={add} aria-label={uiT("add") + " " + title} style={{ alignSelf: 'flex-start' }}>
                         <Plus size={18} />
                     </Button>
                 </div>
@@ -155,27 +163,27 @@ export const InputBytesList: FC<{
                 {items.map((v, i) => (
                     <div key={i} className="relative p-3 rounded-ui-md bg-ui-surface-muted group">
                         <div className="flex items-center justify-between mb-2">
-                            <small className="font-bold text-ui-muted">ENTRY #{i + 1}</small>
+                            <small className="font-bold text-ui-muted">{uiT("entry")} {i + 1}</small>
                             {!disabled && (
-                                <Button variant="outline-danger" size="sm" onClick={() => remove(i)}>
+                                <Button variant="outline-danger" size="sm" aria-label={uiT("delete") + " " + `${title} ${i + 1}`} onClick={() => remove(i)}>
                                     <Trash size={16} />
                                 </Button>
                             )}
                         </div>
                         <Textarea
+                            aria-label={`${title} ${i + 1}`}
                             value={new TextDecoder().decode(v)}
                             onChange={(e) => edit(i, e.target.value)}
                             readOnly={disabled}
                             rows={3}
                             className="p-0 text-sm font-mono bg-transparent border-0 shadow-none"
-                            style={{ fontSize: '0.8rem', lineHeight: '1.4' }}
+                            style={{ lineHeight: '1.4' }}
                         />
                     </div>
                 ))}
                 {items.length === 0 && (
                     <div className="py-4 italic text-center border border-dashed rounded-ui-md opacity-50 text-ui-muted">
-                        No {title} entries yet.
-                    </div>
+                        {uiT("emptyEntries", { title })}</div>
                 )}
             </div>
         </div>

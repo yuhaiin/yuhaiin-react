@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { SWRConfig } from 'swr';
+import { ApiCacheBoundary } from './common/ApiCacheBoundary';
 import App from './App';
 import './global.css';
 import './i18n';
@@ -12,15 +12,11 @@ if (!rootElement.innerHTML) {
     const root = createRoot(rootElement)
     root.render(
         <StrictMode>
-            <SWRConfig value={{
-                revalidateOnFocus: false,
-                dedupingInterval: 2000,
-                shouldRetryOnError: false,
-            }}>
+            <ApiCacheBoundary>
                 <LanguageProvider>
                     <App />
                 </LanguageProvider>
-            </SWRConfig>
+            </ApiCacheBoundary>
         </StrictMode>,
     )
 }

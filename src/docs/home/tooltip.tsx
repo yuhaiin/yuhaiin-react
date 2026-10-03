@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { createPortal } from "react-dom";
 import { formatBytes } from "./format";
@@ -14,6 +15,8 @@ export type ChartTooltipHandle = {
 };
 
 export const Tooltip = forwardRef<ChartTooltipHandle>(function Tooltip(_, ref) {
+    const { t: uiT } = useTranslation('ui');
+
     const rootRef = useRef<HTMLDivElement>(null);
     const labelRef = useRef<HTMLDivElement>(null);
     const uploadRef = useRef<HTMLSpanElement>(null);
@@ -46,12 +49,12 @@ export const Tooltip = forwardRef<ChartTooltipHandle>(function Tooltip(_, ref) {
             <div ref={labelRef} className="mb-1 font-semibold text-ui-bg/95" />
             <div className="mb-0.5 flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-ui-success" />
-                <span className="text-ui-bg/70">Upload:</span>
+                <span className="text-ui-bg/70">{uiT("uploadLabel")}</span>
                 <span ref={uploadRef} className="font-medium" />
             </div>
             <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-ui-info" />
-                <span className="text-ui-bg/70">Download:</span>
+                <span className="text-ui-bg/70">{uiT("downloadLabel")}</span>
                 <span ref={downloadRef} className="font-medium" />
             </div>
         </div>,

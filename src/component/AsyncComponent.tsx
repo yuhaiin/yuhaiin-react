@@ -5,16 +5,14 @@ import React, { Suspense } from 'react';
 export default function dynamic<T extends React.ComponentType<any>>(
     importFunc: () => Promise<{ default: T }>,
     options?: {
-        suspense?: boolean;
         fallback?: React.ReactNode;
-        ssr?: boolean;
         // oxlint-disable-next-line typescript/no-explicit-any
         loading?: React.ComponentType<any> | React.ReactNode
     }
 ) {
     const LazyComponent = React.lazy(importFunc);
 
-    let fallback = options?.fallback || null;
+    let fallback = options?.fallback ?? null;
     if (!fallback && options?.loading) {
         if (React.isValidElement(options.loading)) {
             fallback = options.loading;

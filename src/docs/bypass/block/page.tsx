@@ -1,4 +1,5 @@
-"use client"
+import { useTranslation } from 'react-i18next';
+import { usePagination } from "@/hooks/use-pagination";
 
 import { blockHistory } from "@/api/route";
 import { Badge } from "@/component/v2/badge";
@@ -31,6 +32,8 @@ function formatProtocolLabel(value?: string) {
 
 // --- Component: Individual Blocked History Row ---
 const ListItem: FC<{ data: BlockHistory }> = React.memo(({ data }) => {
+    const { t: uiT } = useTranslation('ui');
+
     return (
         <div className="flex w-full flex-col md:flex-row items-start md:items-center justify-between gap-4">
 
@@ -54,8 +57,7 @@ const ListItem: FC<{ data: BlockHistory }> = React.memo(({ data }) => {
                     <Network size={12} /> {formatProtocolLabel(data.protocol)}
                 </Badge>
                 <Badge variant="danger" pill className="flex items-center gap-1">
-                    <Ban size={12} /> {data.blockCount} blocks
-                </Badge>
+                    <Ban size={12} /> {data.blockCount} {uiT("blocksLabel")}</Badge>
                 <Badge variant="secondary" pill className="flex items-center gap-1">
                     <Clock size={12} /> {historyDate(data.time).toLocaleTimeString()}
                 </Badge>
@@ -67,24 +69,26 @@ const ListItem: FC<{ data: BlockHistory }> = React.memo(({ data }) => {
 
 // --- Component: Details Modal ---
 const InfoModal: FC<{ data?: BlockHistory, show: boolean, onClose: () => void }> = React.memo(({ data, show, onClose }) => {
+    const { t: uiT } = useTranslation('ui');
+
     if (!data) return null;
     return (
         <Modal open={show} onOpenChange={(open) => !open && onClose()}>
             <ModalContent>
                 <ModalHeader closeButton>
-                    <ModalTitle>Blocked Session Details</ModalTitle>
+                    <ModalTitle>{uiT("blockedSessionDetails")}</ModalTitle>
                 </ModalHeader>
                 <ModalBody>
                     <DataList>
-                        <DataListItem label="Time" value={historyDate(data.time).toLocaleString()} />
-                        <DataListItem label="Network" value={formatProtocolLabel(data.protocol)} />
-                        <DataListItem label="Host" value={data.host} />
-                        <DataListItem label="Total Blocks" value={String(data.blockCount)} />
-                        <DataListItem label="Process" value={data.process || "Unknown"} />
+                        <DataListItem label={uiT("time")} value={historyDate(data.time).toLocaleString()} />
+                        <DataListItem label={uiT("network")} value={formatProtocolLabel(data.protocol)} />
+                        <DataListItem label={uiT("host")} value={data.host} />
+                        <DataListItem label={uiT("totalBlocks")} value={String(data.blockCount)} />
+                        <DataListItem label={uiT("process")} value={data.process || "Unknown"} />
                     </DataList>
                 </ModalBody>
                 <ModalFooter className="border-0">
-                    <Button className="w-full" onClick={onClose}>Close</Button>
+                    <Button className="w-full" onClick={onClose}>{uiT("close")}</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
@@ -92,9 +96,10 @@ const InfoModal: FC<{ data?: BlockHistory, show: boolean, onClose: () => void }>
 });
 
 function BypassBlockHistory() {
+    const { t: uiT } = useTranslation('ui');
+
     const [sortBy, setSortBy] = useState("Time");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-    const [page, setPage] = useState(1);
     const [info, setInfo] = useState<{ data?: BlockHistory, show: boolean }>({ show: false });
 
     const { data, error, isLoading, isValidating, mutate } = useSWR("/api/v2/route/rules/block-history", blockHistory);
@@ -117,10 +122,12 @@ function BypassBlockHistory() {
         })
     }, [data, sortBy, sortOrder]);
 
-    if (error) return <Loading code={error.code}>{error.msg}</Loading>
+    const pageSize = 30;
+    const { page, setPage } = usePagination(values.length, pageSize, JSON.stringify([sortBy, sortOrder]));
+
+    if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />
 
-    const pageSize = 30;
     const paginatedItems = values.slice((page - 1) * pageSize, page * pageSize);
 
     return (
@@ -130,10 +137,10 @@ function BypassBlockHistory() {
             {/* --- Action Bar --- */}
             <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
-                    <h1 className="text-xl font-semibold leading-tight text-ui-heading sm:text-2xl">Blocked Traffic</h1>
+                    <h1 className="text-xl font-semibold leading-tight text-ui-heading sm:text-2xl">{uiT("blockedTraffic")}</h1>
                     <div className="mt-1 flex items-center text-xs text-ui-muted">
                         <ShieldOff className="mr-1.5 text-ui-danger" size={14} />
-                        <span>Displaying {values.length} connections denied by rules</span>
+                        <span>{uiT("blockedCount", { count: values.length })}</span>
                     </div>
                 </div>
 
@@ -150,20 +157,20 @@ function BypassBlockHistory() {
                         </DropdownTrigger>
                         <DropdownContent className="w-[min(320px,calc(100vw-2rem))] min-w-0 max-w-[calc(100vw-2rem)] p-3">
                             <div className="mb-3">
-                                <SettingLabel className="mb-2">Order</SettingLabel>
+                                <SettingLabel className="mb-2">{uiT("order")}</SettingLabel>
                                 <ToggleGroup noSlide type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-full">
-                                    <ToggleItem value="asc" className="grow">Asc</ToggleItem>
-                                    <ToggleItem value="desc" className="grow">Desc</ToggleItem>
+                                    <ToggleItem value="asc" className="grow">{uiT("ascLabel")}</ToggleItem>
+                                    <ToggleItem value="desc" className="grow">{uiT("descLabel")}</ToggleItem>
                                 </ToggleGroup>
                             </div>
                             <div>
-                                <SettingLabel className="mb-2">By</SettingLabel>
+                                <SettingLabel className="mb-2">{uiT("by")}</SettingLabel>
                                 <ToggleGroup noSlide type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="flex w-full flex-wrap">
-                                    <ToggleItem value="Time" className="grow">Time</ToggleItem>
-                                    <ToggleItem value="Host" className="grow">Host</ToggleItem>
-                                    <ToggleItem value="Count" className="grow">Count</ToggleItem>
+                                    <ToggleItem value="Time" className="grow">{uiT("time")}</ToggleItem>
+                                    <ToggleItem value="Host" className="grow">{uiT("host")}</ToggleItem>
+                                    <ToggleItem value="Count" className="grow">{uiT("count")}</ToggleItem>
                                     {data.dumpProcessEnabled && (
-                                        <ToggleItem value="Proc" className="grow">Proc</ToggleItem>
+                                        <ToggleItem value="Proc" className="grow">{uiT("proc")}</ToggleItem>
                                     )}
                                 </ToggleGroup>
                             </div>

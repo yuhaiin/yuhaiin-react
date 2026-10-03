@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { clsx } from "clsx";
 import * as React from "react";
 
@@ -6,6 +7,8 @@ export interface SpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const Spinner = ({ className, size = "md", ...props }: SpinnerProps) => {
+    const { t: uiT } = useTranslation('ui');
+
     // Tailwind size classes
     const sizeClass = size === "sm" ? "w-4 h-4 border-2" : "w-6 h-6 border-4";
 
@@ -19,7 +22,7 @@ const Spinner = ({ className, size = "md", ...props }: SpinnerProps) => {
             role="status"
             {...props}
         >
-            <span className="sr-only">Loading...</span>
+            <span className="sr-only">{uiT("loading")}</span>
         </div>
     );
 };

@@ -1,4 +1,3 @@
-"use client"
 
 import { useTheme } from '@/common/ThemeProvider';
 import type { ThemePreference } from '@/common/theme';
@@ -13,7 +12,6 @@ import clsx from 'clsx';
 import { Check, Gauge, Globe, Info, Languages, Link, MapPin, Network, Palette, Plus, Radio, Shield, Terminal, Trash } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from 'react-i18next';
-import { mutate } from 'swr';
 import { useLocalStorage } from "usehooks-ts";
 import {
     APIUrlDefault,
@@ -77,16 +75,11 @@ function ApiHostsCard() {
         if (!same) setHosts(next);
     }, [active, hosts, setHosts]);
 
-    const refreshClients = async () => {
-        await mutate(() => true, undefined, { revalidate: true });
-    };
-
     const selectHost = async (next: string) => {
         const normalized = normalizeApiUrl(next);
         if (normalized === active) return;
         setUrl(normalized);
         setHosts(uniqueApiUrls([normalized, ...savedHosts]));
-        await refreshClients();
     };
 
     const addHost = async () => {
@@ -97,8 +90,7 @@ function ApiHostsCard() {
         setDraft("");
         if (normalized !== active) {
             setUrl(normalized);
-            await refreshClients();
-        }
+            }
     };
 
     const removeHost = async (target: string) => {
@@ -109,8 +101,7 @@ function ApiHostsCard() {
         if (normalized === active) {
             const fallback = nextHosts[0] ?? "";
             setUrl(fallback);
-            await refreshClients();
-        }
+            }
     };
 
     return (

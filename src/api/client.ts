@@ -51,9 +51,11 @@ function errorMessage(raw: unknown, fallback: string): string {
     return fallback;
 }
 
-export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, body?: unknown, query?: Record<string, QueryValue>): Promise<T> {
+export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, body?: unknown, query?: Record<string, QueryValue>, signal?: AbortSignal): Promise<T> {
+    const requestScope = JSON.stringify([getApiUrl(), localStorage.getItem(AuthTokenKey)]);
     const route = resolveRPCRoute(method, path);
     const response = await fetch(apiURL(rpcPath(route.operation)), {
+        signal,
         method: "POST",
         headers: {
             ...authHeaders(),
@@ -69,7 +71,9 @@ export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", 
 
     const raw = await decodeBody(response);
     if (!response.ok) {
-        redirectUnauthorized(response.status);
+        if (requestScope === JSON.stringify([getApiUrl(), localStorage.getItem(AuthTokenKey)])) {
+            redirectUnauthorized(response.status);
+        }
         throw {
             code: response.status,
             msg: errorMessage(raw, response.statusText),

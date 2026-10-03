@@ -1,4 +1,6 @@
-"use client"
+import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
+import { useServerPageClamp } from "@/hooks/use-pagination";
+import { useTranslation } from 'react-i18next';
 
 import { APIError } from "@/api/client";
 import { createResolver, deleteResolver, getResolver, listResolvers, saveResolver } from "@/api/resolvers";
@@ -23,9 +25,9 @@ import {
     Trash,
 } from 'lucide-react';
 import type { ElementType } from "react";
-import { FC, useContext, useEffect, useMemo, useState } from "react";
+import { FC, useContext, useMemo, useState } from "react";
 import useSWR from "swr";
-import Loading, { Error as ErrorDisplay } from "../../../component/v2/loading";
+import Loading from "../../../component/v2/loading";
 import { Fakedns } from "./fakedns";
 import { Hosts } from "./hosts";
 import { Server } from "./server";
@@ -105,6 +107,8 @@ function displayHost(item: Resolver) {
 }
 
 const ResolverTile: FC<{ item: Resolver; onClick: () => void }> = ({ item, onClick }) => {
+    const { t: uiT } = useTranslation('ui');
+
     const visual = resolverTypeVisual(item.type);
     const Icon = visual.icon;
     const host = displayHost(item);
@@ -141,8 +145,7 @@ const ResolverTile: FC<{ item: Resolver; onClick: () => void }> = ({ item, onCli
                             </Badge>
                             {item.system && (
                                 <Badge variant="primary" pill className="px-2 py-0.5 text-[0.65rem]">
-                                    System
-                                </Badge>
+                                    {uiT("system")}</Badge>
                             )}
                         </div>
                     </div>
@@ -150,7 +153,7 @@ const ResolverTile: FC<{ item: Resolver; onClick: () => void }> = ({ item, onCli
             </div>
 
             <div className="mt-4 min-w-0 flex-1">
-                <div className="text-xs font-medium text-ui-muted">Endpoint</div>
+                <div className="text-xs font-medium text-ui-muted">{uiT("endpoint")}</div>
                 <div className="mt-1 break-all font-mono text-[12.5px] font-medium leading-relaxed text-ui-fg" title={host}>
                     {host}
                 </div>
@@ -160,13 +163,13 @@ const ResolverTile: FC<{ item: Resolver; onClick: () => void }> = ({ item, onCli
                 <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 border-t border-ui-border/70 pt-3 text-[11px] text-ui-muted">
                     {subnet && (
                         <span className="min-w-0">
-                            <span className="opacity-70">Subnet</span>{" "}
+                            <span className="opacity-70">{uiT("subnet")}</span>{" "}
                             <span className="font-mono font-medium text-ui-fg">{subnet}</span>
                         </span>
                     )}
                     {tls && (
                         <span className="min-w-0">
-                            <span className="opacity-70">TLS</span>{" "}
+                            <span className="opacity-70">{uiT("tls")}</span>{" "}
                             <span className="font-mono font-medium text-ui-fg">{tls}</span>
                         </span>
                     )}
@@ -200,6 +203,8 @@ export default function ResolverComponent() {
 }
 
 function ResolverList() {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
     const [page, setPage] = useState(1);
     const [showdata, setShowdata] = useState({ show: false, id: "", new: false });
@@ -209,11 +214,12 @@ function ResolverList() {
         () => listResolvers({ page, pageSize: PAGE_SIZE }),
         { keepPreviousData: true },
     );
+    useServerPageClamp(data?.page, page, setPage);
 
     const apiError = errorOf(error);
     const items = useMemo(() => data?.items ?? [], [data?.items]);
 
-    if (apiError) return <Loading code={apiError.code}>{apiError.msg}</Loading>
+    if (apiError) return <Loading code={apiError.code} onRetry={() => void mutate()}>{apiError.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />
 
     const handleCreate = () => setShowdata({ show: true, id: "", new: true });
@@ -234,8 +240,8 @@ function ResolverList() {
     return <>
         <ConfirmModal
             show={confirmDelete.show}
-            title="Delete Resolver"
-            content={<>Are you sure to delete <span className="font-bold text-red-500">{confirmDelete.id}</span>?</>}
+            title={uiT("deleteResolver")}
+            content={<>{uiT("areYouSureToDelete")}<span className="font-bold text-red-500">{confirmDelete.id}</span>?</>}
             onOk={() => handleDelete(confirmDelete.id)}
             onHide={() => setConfirmDelete({ show: false, id: "" })}
         />
@@ -254,17 +260,15 @@ function ResolverList() {
         <Card density="compact" className="overflow-hidden">
             <CardHeader>
                 <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <IconBox icon={Layers} tone="primary" title="Resolvers" description="Upstream DNS Resolvers" />
+                    <IconBox icon={Layers} tone="primary" title={uiT("resolvers")} description={uiT("upstreamDnsResolvers")} />
                     <Button size="sm" onClick={handleCreate}>
-                        <Plus size={16} className="mr-1" /> Add
-                    </Button>
+                        <Plus size={16} className="mr-1" /> {uiT("add")}</Button>
                 </div>
             </CardHeader>
             <CardBody density="compact">
                 {items.length === 0 ? (
                     <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center text-sm text-ui-muted">
-                        No resolvers yet. Add an upstream DNS endpoint to get started.
-                    </div>
+                        {uiT("noResolversYetAddAnUpstreamDnsEndpointToGetStarted")}</div>
                 ) : (
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                         {items.map((item) => (
@@ -298,9 +302,9 @@ const ResolverModal: FC<{
     onHide: (save?: boolean) => void,
     onDelete: (id: string) => void
 }> = ({ id, show, isNew, onHide, onDelete }) => {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
-    const [saving, setSaving] = useState(false);
-    const [draft, setDraft] = useState<Resolver>(() => createDefaultResolver(id));
     const shouldFetch = show && id !== "" && !isNew;
     const { data, error, isLoading, mutate } = useSWR(
         shouldFetch ? `/api/v2/resolvers/${id}` : null,
@@ -308,44 +312,29 @@ const ResolverModal: FC<{
         { shouldRetryOnError: false, keepPreviousData: false, revalidateOnFocus: false },
     );
 
-    useEffect(() => {
-        if (!show) return;
-        setDraft(createDefaultResolver(id));
-    }, [show, id]);
-
-    useEffect(() => {
-        if (data) setDraft(normalizeResolver(data));
-    }, [data]);
+    const { value: draft, setValue: setDraft, dirty } = useEditorDraft(show ? id : null, shouldFetch ? data : undefined, () => createDefaultResolver(id));
+    const { pending: saving, run } = useAsyncAction(error => ctx.Error(errorOf(error)?.msg ?? "Save failed"));
+    const close = useCloseGuard(show && dirty, saving, () => onHide());
 
     const apiError = errorOf(error);
     const resolver = isNew ? draft : data ? draft : undefined;
 
     const handleSave = () => {
-        if (!resolver) return;
+        if (!resolver || saving || error || isLoading) return;
         const nextID = (isNew ? resolver.id : id).trim();
-        if (!nextID) {
-            ctx.Error("Resolver ID cannot be empty");
-            return;
-        }
-        setSaving(true);
+        if (!nextID) { ctx.Error("Resolver ID cannot be empty"); return; }
         const next = normalizeResolver({ ...resolver, id: nextID });
-        const request = isNew ? createResolver(next) : saveResolver(next);
-        request
-            .then((saved) => {
-                ctx.Info("save successful");
-                void mutate(saved, false);
-                onHide(true);
-            })
-            .catch((err: unknown) => {
-                const apiErr = errorOf(err);
-                ctx.Error(apiErr?.msg ?? "Save failed");
-            })
-            .finally(() => setSaving(false));
-    }
+        void run(async () => {
+            const saved = isNew ? await createResolver(next) : await saveResolver(next);
+            ctx.Info("Save successful");
+            await mutate(saved, { revalidate: false });
+            onHide(true);
+        });
+    };
 
     return (
-        <Modal open={show} onOpenChange={(open) => !open && onHide()}>
-            <ModalContent className="max-w-[760px]">
+        <Modal open={show} onOpenChange={(open) => !open && close()}>
+            <ModalContent width={760}>
                 <ModalHeader closeButton>
                     <ModalTitle className="flex items-center gap-2">
                         <Network size={18} />
@@ -353,25 +342,26 @@ const ResolverModal: FC<{
                     </ModalTitle>
                 </ModalHeader>
                 <ModalBody>
+                    <fieldset disabled={saving} className="contents">
                     {apiError ?
-                        <ErrorDisplay statusCode={apiError.code} title={apiError.msg} /> :
+                        <Loading code={apiError.code} onRetry={() => void mutate()}>{apiError.msg}</Loading> :
                         isLoading || !resolver ? <Loading /> :
                             <SettingsBox>
                                 <ResolverEditor value={resolver} onChange={setDraft} />
                             </SettingsBox>
                     }
+                </fieldset>
                 </ModalBody>
                 <ModalFooter className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         {id !== 'bootstrap' && !isNew &&
                             <Button variant="outline-danger" onClick={() => { onHide(false); onDelete(id); }}>
-                                <Trash className="mr-2" size={16} />Delete
-                            </Button>
+                                <Trash className="mr-2" size={16} />{uiT("delete")}</Button>
                         }
                     </div>
                     <div className="flex flex-wrap justify-end gap-2">
-                        <Button onClick={() => onHide()}>Cancel</Button>
-                        <Button disabled={saving || !resolver} onClick={handleSave}>
+                        <Button onClick={close} disabled={saving}>{uiT("cancel")}</Button>
+                        <Button disabled={saving || !resolver || isLoading || Boolean(error)} onClick={handleSave}>
                             {saving ? <Spinner size="sm" /> : <><Check className="mr-2" size={16} />{isNew ? "Create" : "Save"}</>}
                         </Button>
                     </div>
@@ -382,6 +372,8 @@ const ResolverModal: FC<{
 }
 
 const ResolverEditor: FC<{ value: Resolver, onChange: (x: Resolver) => void }> = ({ value, onChange }) => {
+    const { t: uiT } = useTranslation('ui');
+
     const patch = (patchValue: Partial<Resolver>) => onChange(normalizeResolver({ ...value, ...patchValue }));
     const endpoint = resolverEndpointMeta(value.type);
     const hasTLSName = ["tcp", "doh", "dot", "doq", "doh3"].includes(value.type);
@@ -389,11 +381,11 @@ const ResolverEditor: FC<{ value: Resolver, onChange: (x: Resolver) => void }> =
     return (
         <div className="grid gap-4">
             <div className="rounded-ui-lg border border-ui-border bg-ui-surface-muted p-4">
-                <div className="mb-3 font-bold">Identity</div>
+                <div className="mb-3 font-bold">{uiT("identity")}</div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <SettingInputVertical label="ID" value={value.id} onChange={(id) => patch({ id })} />
+                    <SettingInputVertical label={uiT("idLabel")} value={value.id} onChange={(id) => patch({ id })} />
                     <SettingSelectVertical
-                        label="Type"
+                        label={uiT("type")}
                         value={value.type}
                         values={resolverTypes}
                         onChange={(type) => patch({ type: type as ResolverType, system: type === "system", host: type === "system" ? "system default" : value.host })}
@@ -402,19 +394,19 @@ const ResolverEditor: FC<{ value: Resolver, onChange: (x: Resolver) => void }> =
             </div>
 
             <div className="rounded-ui-lg border border-ui-border bg-ui-surface-muted p-4">
-                <div className="mb-3 font-bold">Endpoint</div>
+                <div className="mb-3 font-bold">{uiT("endpoint")}</div>
                 {value.type === "system" ? (
-                    <div className="rounded-ui-lg border border-dashed border-ui-border p-4 text-sm text-ui-muted">Uses the operating system resolver.</div>
+                    <div className="rounded-ui-lg border border-dashed border-ui-border p-4 text-sm text-ui-muted">{uiT("usesTheOperatingSystemResolver")}</div>
                 ) : (
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <SettingInputVertical label={endpoint.label} value={value.host} onChange={(host) => patch({ host })} placeholder={endpoint.placeholder} />
-                        <SettingInputVertical label="Subnet" value={value.subnet ?? ""} onChange={(subnet) => patch({ subnet })} placeholder="Optional ECS subnet" />
-                        {hasTLSName && <SettingInputVertical label="TLS Server Name" value={value.tlsServerName ?? ""} onChange={(tlsServerName) => patch({ tlsServerName })} placeholder="dns.example" />}
+                        <SettingInputVertical label={uiT("subnet")} value={value.subnet ?? ""} onChange={(subnet) => patch({ subnet })} placeholder={uiT("optionalEcsSubnet")} />
+                        {hasTLSName && <SettingInputVertical label={uiT("tlsServerName")} value={value.tlsServerName ?? ""} onChange={(tlsServerName) => patch({ tlsServerName })} placeholder="dns.example" />}
                     </div>
                 )}
             </div>
 
-            <SwitchCard label="System Resolver" checked={Boolean(value.system)} onCheckedChange={(system) => patch({ system, type: system ? "system" : "udp", host: system ? "system default" : value.host })} />
+            <SwitchCard label={uiT("systemResolver")} checked={Boolean(value.system)} onCheckedChange={(system) => patch({ system, type: system ? "system" : "udp", host: system ? "system default" : value.host })} />
         </div>
     )
 }

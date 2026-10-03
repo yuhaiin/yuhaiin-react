@@ -1,4 +1,5 @@
-"use client"
+import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
+import { useTranslation } from 'react-i18next';
 
 import { deleteSubscriptions, listSubscriptions, saveSubscriptions, updateSubscriptions } from "@/api/subscriptions";
 import { Badge } from "@/component/v2/badge";
@@ -7,7 +8,7 @@ import { CardRowList, IconBox, IconBoxRounded, MainContainer, SettingsBox } from
 import { ConfirmModal } from "@/component/v2/confirm";
 import { SettingInputVertical } from "@/component/v2/forms";
 import { SettingSelectVertical } from "@/component/v2/select";
-import Loading, { Error } from "@/component/v2/loading";
+import Loading from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
@@ -20,6 +21,8 @@ import { useClipboard } from "../../../component/v2/clipboard";
 const subscriptionTypes = ["reserve", "trojan", "vmess", "shadowsocks", "shadowsocksr"];
 
 const LinkItem: FC<{ linkData: Link; isUpdating: boolean; onUpdate: () => void; onDelete: () => void }> = ({ linkData, isUpdating, onUpdate, onDelete }) => {
+    const { t: uiT } = useTranslation('ui');
+
     return (
         <div className="grid w-full min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
             <div className="flex min-w-0 items-center gap-3">
@@ -33,43 +36,46 @@ const LinkItem: FC<{ linkData: Link; isUpdating: boolean; onUpdate: () => void; 
                 </div>
             </div>
             <div className="flex items-center justify-end gap-2 sm:justify-self-end">
-                <Button size="sm" title={`Update ${linkData.name}`} aria-label={`Update ${linkData.name}`} onClick={(e) => { e.stopPropagation(); onUpdate() }} disabled={isUpdating}>
+                <Button size="sm" title={uiT("update") + " " + linkData.name} aria-label={uiT("update") + " " + linkData.name} onClick={(e) => { e.stopPropagation(); onUpdate() }} disabled={isUpdating}>
                     {isUpdating ? <Spinner size="sm" /> : <RefreshCw size={16} />}
-                    <span className="hidden sm:inline ml-2">Update</span>
+                    <span className="hidden sm:inline ml-2">{uiT("update")}</span>
                 </Button>
-                <Button variant="outline-danger" size="sm" title={`Delete ${linkData.name}`} aria-label={`Delete ${linkData.name}`} onClick={(e) => { e.stopPropagation(); onDelete() }}>
+                <Button variant="outline-danger" size="sm" title={uiT("delete") + " " + linkData.name} aria-label={uiT("delete") + " " + linkData.name} onClick={(e) => { e.stopPropagation(); onDelete() }}>
                     <Trash size={16} />
-                    <span className="hidden sm:inline ml-2">Delete</span>
+                    <span className="hidden sm:inline ml-2">{uiT("delete")}</span>
                 </Button>
             </div>
         </div>
     );
 };
 
-const AddLinkModal: FC<{ show: boolean; onHide: () => void; onSave: (link: Link) => void }> = ({ show, onHide, onSave }) => {
-    const [newItem, setNewItem] = useState<Link>({ name: "", url: "", type: "reserve" });
+const AddLinkModal: FC<{ show: boolean; onHide: () => void; onSave: (link: Link) => Promise<void> }> = ({ show, onHide, onSave }) => {
+    const { t: uiT } = useTranslation('ui');
+
+    const ctx = useContext(GlobalToastContext);
+    const { value: newItem, setValue: setNewItem, dirty } = useEditorDraft<Link>(show ? "new" : null, undefined, () => ({ name: "", url: "", type: "reserve" }));
+    const { pending: saving, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
+    const close = useCloseGuard(dirty, saving, onHide);
     const handleSave = () => {
-        if (!newItem.name || !newItem.url) return;
-        onSave(newItem);
-        setNewItem({ name: "", url: "", type: "reserve" });
-        onHide();
+        if (!newItem.name || !newItem.url || saving) return;
+        void run(async () => { await onSave(newItem); onHide(); });
     };
     return (
-        <Modal open={show} onOpenChange={(open) => !open && onHide()}>
+        <Modal open={show} onOpenChange={(open) => !open && close()}>
             <ModalContent>
-                <ModalHeader closeButton className="border-b-0 pb-0"><ModalTitle className="font-bold">Add Subscription</ModalTitle></ModalHeader>
+                <ModalHeader closeButton className="border-b-0 pb-0"><ModalTitle className="font-bold">{uiT("addSubscription")}</ModalTitle></ModalHeader>
                 <ModalBody className="pt-2">
                     <SettingsBox>
-                        <div className="flex flex-col gap-3">
-                            <SettingInputVertical label="Name" value={newItem.name} placeholder="e.g., My Server" onChange={(name) => setNewItem(prev => ({ ...prev, name }))} />
-                            <SettingSelectVertical label="Type" value={newItem.type || "reserve"} values={subscriptionTypes} onChange={(type) => setNewItem(prev => ({ ...prev, type }))} />
-                            <SettingInputVertical label="Subscription URL" value={newItem.url} placeholder="https://example.com/sub/..." onChange={(url) => setNewItem(prev => ({ ...prev, url }))} />
-                        </div>
+                        <fieldset disabled={saving} className="flex flex-col gap-3">
+                            <SettingInputVertical label={uiT("name")} value={newItem.name} placeholder={uiT("eGMyServer")} onChange={(name) => setNewItem(prev => ({ ...prev, name }))} />
+                            <SettingSelectVertical label={uiT("type")} value={newItem.type || "reserve"} values={subscriptionTypes} onChange={(type) => setNewItem(prev => ({ ...prev, type }))} />
+                            <SettingInputVertical label={uiT("subscriptionUrl")} value={newItem.url} placeholder="https://example.com/sub/..." onChange={(url) => setNewItem(prev => ({ ...prev, url }))} />
+                        </fieldset>
                     </SettingsBox>
                 </ModalBody>
                 <ModalFooter>
-                    <Button variant="outline-secondary" onClick={onHide}>Cancel</Button>
-                    <Button onClick={handleSave} disabled={!newItem.name || !newItem.url}><Plus className="me-1" size={16} /> Add</Button>
+                    <Button variant="outline-secondary" onClick={close} disabled={saving}>{uiT("cancel")}</Button>
+                    <Button onClick={handleSave} disabled={saving || !newItem.name || !newItem.url}><Plus className="me-1" size={16} /> {uiT("add")}</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
@@ -77,6 +83,8 @@ const AddLinkModal: FC<{ show: boolean; onHide: () => void; onSave: (link: Link)
 };
 
 function Subscribe() {
+    const { t: uiT } = useTranslation('ui');
+
     const ctx = useContext(GlobalToastContext);
     const { data, error, isLoading, mutate } = useSWR("/api/v2/subscriptions", listSubscriptions);
     const [updating, setUpdating] = useState<Record<string, boolean>>({});
@@ -86,7 +94,7 @@ function Subscribe() {
 
     useEffect(() => { if (copied) ctx.Info("Copied to clipboard") }, [copied, ctx]);
 
-    if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
+    if (error !== undefined) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
     if (isLoading || data === undefined) return <Loading />
 
     const handleUpdate = (name: string) => {
@@ -111,10 +119,9 @@ function Subscribe() {
             .catch((err) => ctx.Error(`delete ${name} failed, ${err.code ?? 500}| ${err.msg ?? err}`));
     };
 
-    const handleAdd = (item: Link) => {
-        saveSubscriptions([item])
-            .then(() => mutate())
-            .catch((err) => ctx.Error(`save link ${item.url} failed, ${err.code ?? 500}| ${err.msg ?? err}`));
+    const handleAdd = async (item: Link) => {
+        await saveSubscriptions([item]);
+        await mutate();
     };
 
     return (
@@ -122,8 +129,8 @@ function Subscribe() {
             {manualCopyModal}
             <ConfirmModal
                 show={confirmDelete.show}
-                title="Delete Subscription"
-                content={<p>Are you sure you want to remove subscription <strong>{confirmDelete.name}</strong>?</p>}
+                title={uiT("deleteSubscription")}
+                content={<p>{uiT("removeSubscription")} <strong>{confirmDelete.name}</strong>?</p>}
                 onOk={() => { handleDelete(confirmDelete.name); setConfirmDelete({ show: false, name: "" }); }}
                 onHide={() => setConfirmDelete({ show: false, name: "" })}
             />
@@ -144,8 +151,8 @@ function Subscribe() {
                 )}
                 header={
                     <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <IconBox icon={CloudDownload} tone="primary" title="Subscriptions" description="Manage remote configuration links" />
-                        <Button size="sm" className="shrink-0 self-start sm:self-auto" onClick={() => setShowAddModal(true)}><Plus className="me-1" size={16} /> Add</Button>
+                        <IconBox icon={CloudDownload} tone="primary" title="Subscriptions" description={uiT("manageRemoteConfigurationLinks")} />
+                        <Button size="sm" className="shrink-0 self-start sm:self-auto" onClick={() => setShowAddModal(true)}><Plus className="me-1" size={16} /> {uiT("add")}</Button>
                     </div>
                 }
             />

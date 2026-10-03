@@ -1,4 +1,3 @@
-'use client';
 
 import * as SwitchPrimitive from '@radix-ui/react-switch';
 import { clsx } from 'clsx';
@@ -17,16 +16,18 @@ const switchTrackClass = clsx(ui.switchTrack, ui.focusRing);
 
 const SwitchComponent: React.FC<SwitchProps> = ({ checked, onCheckedChange, label, description, disabled }) => {
   const isChecked = Boolean(checked);
+  const id = React.useId();
 
   return (
     <div className={clsx("flex items-center justify-between", disabled && "opacity-60 pointer-events-none")}>
       {label && (
         <div className="mr-4">
-          <div className="font-medium leading-tight">{label}</div>
+          <label htmlFor={id} className="font-medium leading-tight cursor-pointer">{label}</label>
           {description && <div className="text-ui-muted text-xs mt-0.5">{description}</div>}
         </div>
       )}
       <SwitchPrimitive.Root
+        id={id}
         className={switchTrackClass}
         checked={isChecked}
         onCheckedChange={onCheckedChange}
@@ -43,32 +44,28 @@ export default SwitchComponent;
 export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ label, description, checked, onCheckedChange, className, disabled }) => {
   const isChecked = Boolean(checked);
 
+  const labelId = React.useId();
+  const descriptionId = React.useId();
   return (
-    <div
+    <SwitchPrimitive.Root
+      checked={isChecked}
+      onCheckedChange={onCheckedChange}
+      disabled={disabled}
+      aria-labelledby={label ? labelId : undefined}
+      aria-describedby={description ? descriptionId : undefined}
       className={clsx(
-        "flex items-center cursor-pointer px-3 py-3 rounded-ui-md bg-ui-surface-muted border border-ui-border transition-colors duration-150 mb-2 hover:bg-ui-hover hover:border-ui-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus",
-        "justify-between",
-        className,
-        disabled && "opacity-60 pointer-events-none"
+        "flex w-full items-center justify-between cursor-pointer px-3 py-3 rounded-ui-md bg-ui-surface-muted border border-ui-border transition-colors duration-150 mb-2 text-left hover:bg-ui-hover hover:border-ui-primary/40",
+        ui.focusRing, className, disabled && "opacity-60 cursor-not-allowed"
       )}
-      onClick={() => !disabled && onCheckedChange(!isChecked)}
-      role="button"
-      tabIndex={disabled ? -1 : 0}
-      onKeyDown={(e) => { if (!disabled && (e.key === 'Enter' || e.key === ' ')) onCheckedChange(!isChecked); }}
     >
-      <div className="mr-4">
-        <div className="font-medium leading-tight">{label}</div>
-        {description && <div className="text-ui-muted text-xs mt-0.5">{description}</div>}
-      </div>
-      <SwitchPrimitive.Root
-        className={switchTrackClass}
-        checked={isChecked}
-        onCheckedChange={onCheckedChange}
-        disabled={disabled}
-      >
+      <span className="mr-4">
+        <span id={labelId} className="block font-medium leading-tight">{label}</span>
+        {description && <span id={descriptionId} className="block text-ui-muted text-xs mt-0.5">{description}</span>}
+      </span>
+      <span aria-hidden="true" className={clsx(ui.switchTrack, isChecked && "!bg-ui-primary")}>
         <SwitchPrimitive.Thumb className={ui.switchThumb} />
-      </SwitchPrimitive.Root>
-    </div>
+      </span>
+    </SwitchPrimitive.Root>
   );
 };
 

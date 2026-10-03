@@ -1,4 +1,3 @@
-'use client';
 
 import { clsx } from "clsx";
 import { History, Plus, Search, TriangleAlert } from 'lucide-react';
@@ -93,6 +92,14 @@ export const ListItem: FC<{
         )}
         style={style}
         onClick={disabled ? undefined : onClick}
+        role={onClick ? "button" : undefined}
+        tabIndex={onClick && !disabled ? 0 : undefined}
+        onKeyDown={event => {
+            if (!disabled && onClick && event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+                event.preventDefault();
+                onClick();
+            }
+        }}
         aria-disabled={disabled || undefined}
     >
         {children}
@@ -337,7 +344,7 @@ export function CardRowList<T>({
                             "transition-colors duration-150"
                         ]
                     )}
-                    onClick={() => onClickItem?.(value, index)}
+                    onClick={onClickItem ? () => onClickItem(value, index) : undefined}
                 >
                     {body(value, index)}
                 </ListItem>

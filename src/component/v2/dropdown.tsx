@@ -21,8 +21,9 @@ const DropdownContent = ({ className, sideOffset = 4, children, ...props }: Reac
                 initial={{ opacity: 0, scale: 0.96, y: -4 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.14, ease: "easeOut" }}
+                style={{ minWidth: "min(12rem, calc(100vw - 24px))", maxWidth: "min(520px, var(--radix-dropdown-menu-content-available-width), calc(100vw - 24px))" }}
                 className={clsx(
-                    "bg-ui-surface border border-ui-border shadow-ui-elevated rounded-ui-xl min-w-[12rem] py-1.5 flex flex-col z-[2000] w-[var(--radix-dropdown-menu-trigger-width)] max-w-[var(--radix-dropdown-menu-trigger-width)] max-h-[var(--radix-dropdown-menu-content-available-height)] overflow-hidden will-change-[transform,opacity]",
+                    "bg-ui-surface border border-ui-border shadow-ui-elevated rounded-ui-xl min-w-[12rem] py-1.5 flex flex-col z-[2000] w-[var(--radix-dropdown-menu-trigger-width)] max-w-[var(--radix-dropdown-menu-trigger-width)] max-h-[var(--radix-dropdown-menu-content-available-height)] overflow-hidden",
                     className
                 )}
             >
