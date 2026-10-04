@@ -17,6 +17,7 @@ import { GlobalToastContext } from "@/component/v2/toast";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import type { ListItem, RouteListDetail } from "@/contract/route";
 import { createDefaultRouteList, normalizeRouteList } from "@/contract/route";
+import { RegistryCatalogModal } from "./registry-catalog";
 import clsx from "clsx";
 import {
     Check,
@@ -199,6 +200,8 @@ function Lists() {
     const [editing, setEditing] = useState<string | null>(null);
     const [creating, setCreating] = useState(false);
     const [creatingName, setCreatingName] = useState("");
+    const [creatingDraft, setCreatingDraft] = useState<RouteListDetail | undefined>();
+    const [registryOpen, setRegistryOpen] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const { data: activation, mutate: mutateActivation } = useSWR(
         "/api/v2/route/activation",
@@ -236,6 +239,7 @@ function Lists() {
         setEditing(null);
         setCreating(false);
         setCreatingName("");
+        setCreatingDraft(undefined);
     };
 
     if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
@@ -259,7 +263,9 @@ function Lists() {
                             <Button size="sm" variant="outline-secondary" onClick={refresh} disabled={isRefreshing}>
                                 {isRefreshing ? <Spinner size="sm" className="mr-2" /> : <RefreshCw size={16} className="mr-2" />}
                                 {uiT("sync")}</Button>
-                            <Button size="sm" onClick={() => { setCreatingName(""); setCreating(true); }}>
+                            <Button size="sm" variant="outline-secondary" onClick={() => setRegistryOpen(true)}>
+                                <CloudDownload size={16} className="mr-1" /> Registry</Button>
+                            <Button size="sm" onClick={() => { setCreatingName(""); setCreatingDraft(undefined); setCreating(true); }}>
                                 <Plus size={16} className="mr-1" /> {uiT("add")}</Button>
                         </div>
                     </div>
@@ -295,7 +301,22 @@ function Lists() {
                 )}
             </Card>
             <ListEditorModal name={editing} onSaved={saved} onClose={() => setEditing(null)} />
-            <CreateListModal open={creating} initialName={creatingName} onSaved={saved} onClose={() => setCreating(false)} />
+            <RegistryCatalogModal
+                open={registryOpen}
+                onClose={() => setRegistryOpen(false)}
+                onSelectList={(value) => {
+                    setCreatingName(value.name);
+                    setCreatingDraft(value);
+                    setCreating(true);
+                }}
+            />
+            <CreateListModal
+                open={creating}
+                initialName={creatingName}
+                initialValue={creatingDraft}
+                onSaved={saved}
+                onClose={() => { setCreating(false); setCreatingDraft(undefined); }}
+            />
         </MainContainer>
     );
 }
@@ -436,7 +457,7 @@ function ListEditorModal({ name, onSaved, onClose }: { name: string | null; onSa
     );
 }
 
-function CreateListModal({ open, initialName, onSaved, onClose }: { open: boolean; initialName?: string; onSaved: () => void; onClose: () => void }) {
+function CreateListModal({ open, initialName, initialValue, onSaved, onClose }: { open: boolean; initialName?: string; initialValue?: RouteListDetail; onSaved: () => void; onClose: () => void }) {
     const { t: uiT } = useTranslation('ui');
 
     const ctx = useContext(GlobalToastContext);
@@ -444,12 +465,13 @@ function CreateListModal({ open, initialName, onSaved, onClose }: { open: boolea
 
     useEffect(() => {
         if (open) {
-            setDraft(createDefaultRouteList(initialName ?? ""));
+            setDraft(initialValue ? normalizeRouteList(initialValue) : createDefaultRouteList(initialName ?? ""));
         }
-    }, [open, initialName]);
+    }, [open, initialName, initialValue]);
 
     const { pending, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
-    const close = useCloseGuard(JSON.stringify(draft) !== JSON.stringify(createDefaultRouteList(initialName ?? "")), pending, onClose);
+    const baseline = initialValue ? normalizeRouteList(initialValue) : createDefaultRouteList(initialName ?? "");
+    const close = useCloseGuard(JSON.stringify(draft) !== JSON.stringify(baseline), pending, onClose);
 
     const save = () => {
         if (pending || !draft.name.trim()) return;
