@@ -9,7 +9,7 @@ import { Spinner } from "@/component/v2/spinner";
 import { Switch } from "@/component/v2/switch";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { Registry } from "@/contract/route";
-import { Plus, Settings2, Trash2 } from "lucide-react";
+import { Pencil, Plus, Settings2, Trash2, X } from "lucide-react";
 import { useContext, useState } from "react";
 import useSWR from "swr";
 
@@ -29,6 +29,7 @@ export function RegistryManagerModal({
     const [url, setURL] = useState("");
     const [saving, setSaving] = useState(false);
     const [busyID, setBusyID] = useState("");
+    const [editingID, setEditingID] = useState("");
 
     const { data, error, isLoading, mutate } = useSWR(
         open ? REGISTRY_LIST_KEY : null,
@@ -50,23 +51,33 @@ export function RegistryManagerModal({
         }
     };
 
-    const add = async () => {
+    const clearEditor = () => {
+        setEditingID("");
+        setName("");
+        setURL("");
+    };
+
+    const saveEditor = async () => {
         if (!url.trim() || saving) return;
         setSaving(true);
         try {
-            await createRouteRegistry({
-                id: "",
-                name: name.trim(),
-                url: url.trim(),
-                enabled: true,
-                builtin: false,
-                updatedAt: "0",
-            });
-            setName("");
-            setURL("");
+            const existing = data?.items.find(item => item.id === editingID);
+            if (existing) {
+                await saveRouteRegistry(existing.id, { ...existing, name: name.trim(), url: url.trim() });
+            } else {
+                await createRouteRegistry({
+                    id: "",
+                    name: name.trim(),
+                    url: url.trim(),
+                    enabled: true,
+                    builtin: false,
+                    updatedAt: "0",
+                });
+            }
+            clearEditor();
             await mutate();
             onChanged();
-            toast.Info("registry added");
+            toast.Info(existing ? "registry updated" : "registry added");
         } catch (err) {
             toast.Error(String((err as { msg?: string })?.msg ?? err));
         } finally {
@@ -103,9 +114,14 @@ export function RegistryManagerModal({
                             />
                         </div>
                         <div className="flex justify-end">
-                            <Button size="sm" disabled={saving || !url.trim()} onClick={add}>
-                                {saving ? <Spinner size="sm" className="mr-1.5" /> : <Plus size={15} className="mr-1.5" />}
-                                Add registry
+                            {editingID && (
+                                <Button size="sm" variant="outline-secondary" disabled={saving} onClick={clearEditor}>
+                                    <X size={15} className="mr-1.5" /> Cancel edit
+                                </Button>
+                            )}
+                            <Button size="sm" disabled={saving || !url.trim()} onClick={saveEditor}>
+                                {saving ? <Spinner size="sm" className="mr-1.5" /> : editingID ? <Pencil size={15} className="mr-1.5" /> : <Plus size={15} className="mr-1.5" />}
+                                {editingID ? "Save registry" : "Add registry"}
                             </Button>
                         </div>
                     </div>
@@ -136,6 +152,21 @@ export function RegistryManagerModal({
                                                 disabled={Boolean(busyID)}
                                                 aria-label={`Enable ${registry.name}`}
                                             />
+                                            {!registry.builtin && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline-secondary"
+                                                    disabled={Boolean(busyID)}
+                                                    onClick={() => {
+                                                        setEditingID(registry.id);
+                                                        setName(registry.name);
+                                                        setURL(registry.url);
+                                                    }}
+                                                    title="Edit registry"
+                                                >
+                                                    <Pencil size={15} />
+                                                </Button>
+                                            )}
                                             <Button
                                                 size="sm"
                                                 variant="outline-danger"
