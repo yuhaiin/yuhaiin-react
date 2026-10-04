@@ -693,6 +693,51 @@ export namespace Go {
       items: ListItem[];
       page: Page;
     }
+    export interface Registry {
+      id: string;
+      name: string;
+      url: string;
+      enabled: boolean;
+      builtin: boolean;
+      updatedAt: string;
+    }
+    export interface RegistryList {
+      items: Registry[];
+    }
+    export interface RegistryFile {
+      id: string;
+      name: string;
+      category: string;
+      kind: string;
+      usage: string;
+      listType?: string;
+      format: string;
+      path: string;
+      url: string;
+      sourceUrl?: string;
+      size: number;
+      sha256: string;
+      selectable: boolean;
+    }
+    export interface RegistryManifest {
+      schemaVersion: number;
+      repository: string;
+      branch: string;
+      baseUrl: string;
+      files: RegistryFile[];
+    }
+    export interface RegistryCatalog {
+      registry: Registry;
+      schemaVersion: number;
+      repository: string;
+      branch: string;
+      baseUrl: string;
+      files: RegistryFile[];
+      error?: string;
+    }
+    export interface RegistryCatalogList {
+      items: RegistryCatalog[];
+    }
     export interface TagItem {
       name: string;
       type: string;

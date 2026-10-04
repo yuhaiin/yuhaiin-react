@@ -30,6 +30,11 @@ export type ListSource = {
 };
 export type RouteListDetail = Omit<Go.route.RouteListDetail, "source"> & { source: ListSource };
 export type RouteList = Go.route.RouteList;
+export type Registry = Go.route.Registry;
+export type RegistryList = Go.route.RegistryList;
+export type RegistryFile = Go.route.RegistryFile;
+export type RegistryCatalog = Go.route.RegistryCatalog;
+export type RegistryCatalogList = Go.route.RegistryCatalogList;
 export type TagItem = Go.route.TagItem;
 export type TagList = Go.route.TagList;
 export type RuleTestResponse = Go.route.RuleTestResponse;
@@ -137,5 +142,47 @@ export function normalizeTagItem(value: Partial<TagItem> | undefined): TagItem {
     name: value?.name ?? "",
     type: value?.type ?? "",
     hash: Array.isArray(value?.hash) ? value.hash : [],
+  };
+}
+
+
+export function normalizeRegistry(value: Partial<Registry> | undefined): Registry {
+  return {
+    id: value?.id ?? "",
+    name: value?.name ?? "",
+    url: value?.url ?? "",
+    enabled: value?.enabled ?? true,
+    builtin: value?.builtin ?? false,
+    updatedAt: value?.updatedAt ?? "0",
+  };
+}
+
+export function normalizeRegistryFile(value: Partial<RegistryFile> | undefined): RegistryFile {
+  return {
+    id: value?.id ?? "",
+    name: value?.name ?? "",
+    category: value?.category ?? "",
+    kind: value?.kind ?? "",
+    usage: value?.usage ?? "",
+    listType: value?.listType ?? "",
+    format: value?.format ?? "",
+    path: value?.path ?? "",
+    url: value?.url ?? "",
+    sourceUrl: value?.sourceUrl ?? "",
+    size: Number.isFinite(value?.size) ? Number(value?.size) : 0,
+    sha256: value?.sha256 ?? "",
+    selectable: value?.selectable ?? false,
+  };
+}
+
+export function normalizeRegistryCatalog(value: Partial<RegistryCatalog> | undefined): RegistryCatalog {
+  return {
+    registry: normalizeRegistry(value?.registry),
+    schemaVersion: value?.schemaVersion ?? 0,
+    repository: value?.repository ?? "",
+    branch: value?.branch ?? "",
+    baseUrl: value?.baseUrl ?? "",
+    files: Array.isArray(value?.files) ? value.files.map(normalizeRegistryFile) : [],
+    error: value?.error ?? "",
   };
 }
