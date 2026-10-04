@@ -127,6 +127,8 @@ export function RegistryCatalogModal({
         );
     }, [data, query]);
 
+    const visibleRows = rows.slice(0, 200);
+
     const refresh = async () => {
         if (refreshing) return;
         setRefreshing(true);
@@ -197,8 +199,14 @@ export function RegistryCatalogModal({
                                         No selectable registry files match this search.
                                     </div>
                                 ) : (
-                                    <div className="divide-y divide-ui-border/70 overflow-hidden rounded-ui-lg border border-ui-border/70">
-                                        {rows.map(({ catalog, file }) => (
+                                    <>
+                                        {rows.length > visibleRows.length && (
+                                            <div className="mb-2 text-xs text-ui-muted">
+                                                Showing {visibleRows.length} of {rows.length} files. Refine the search to narrow the catalog.
+                                            </div>
+                                        )}
+                                        <div className="divide-y divide-ui-border/70 overflow-hidden rounded-ui-lg border border-ui-border/70">
+                                        {visibleRows.map(({ catalog, file }) => (
                                             <CatalogRow
                                                 key={`${catalog.registry.id}:${file.id}`}
                                                 catalog={catalog}
@@ -208,7 +216,8 @@ export function RegistryCatalogModal({
                                                 onSelect={(value) => { onSelectList(value); onClose(); }}
                                             />
                                         ))}
-                                    </div>
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         )}
