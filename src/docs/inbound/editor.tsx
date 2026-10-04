@@ -271,6 +271,7 @@ const TunEditor: FC<{
             </div>
             <SwitchCard label={uiT("forceFakeip")} checked={value.forceFakeIp} onCheckedChange={(forceFakeIp) => patch({ forceFakeIp })} />
             <SwitchCard label={uiT("skipMulticast")} checked={value.skipMulticast} onCheckedChange={(skipMulticast) => patch({ skipMulticast })} />
+            <SwitchCard label={uiT("autoFakeIpRoute")} description={uiT("autoFakeIpRouteDescription")} checked={value.autoFakeIpRoute ?? false} onCheckedChange={(autoFakeIpRoute) => patch({ autoFakeIpRoute })} />
             <InputList title={uiT("routes")} data={value.routes} onChange={(routes) => patch({ routes })} textarea />
             <InputList title="Excludes" data={value.excludes} onChange={(excludes) => patch({ excludes })} textarea />
             <InputList title={uiT("postUp")} data={value.postUp} onChange={(postUp) => patch({ postUp })} textarea />

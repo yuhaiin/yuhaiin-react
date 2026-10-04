@@ -53,20 +53,55 @@ const AccordionTrigger = React.forwardRef<React.ElementRef<typeof AccordionPrimi
 ));
 AccordionTrigger.displayName = "AccordionTrigger";
 
-const AccordionContent = React.forwardRef<React.ElementRef<typeof AccordionPrimitive.Content>, React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content>>(({ className, children, ...props }, ref) => (
-    <AccordionPrimitive.Content
-        ref={ref}
-        className={clsx(
-            // Match surface, not page bg — avoids a light band while height animates.
-            "min-w-0 max-w-full overflow-hidden text-ui-fg bg-ui-surface will-change-[height]",
-            "data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up",
-            className
-        )}
-        {...props}
-    >
-        <div className="min-w-0 w-full p-4">{children}</div>
-    </AccordionPrimitive.Content>
-));
+const AccordionContent = React.forwardRef<React.ElementRef<typeof AccordionPrimitive.Content>, React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content>>(({ className, children, style, ...props }, ref) => {
+    const [contentHeight, setContentHeight] = React.useState<number>();
+    const resizeObserverRef = React.useRef<ResizeObserver | null>(null);
+
+    const setContentRef = React.useCallback((node: HTMLDivElement | null) => {
+        resizeObserverRef.current?.disconnect();
+        resizeObserverRef.current = null;
+
+        if (!node) return;
+
+        const updateHeight = () => {
+            const nextHeight = node.scrollHeight;
+            setContentHeight((currentHeight) => currentHeight === nextHeight ? currentHeight : nextHeight);
+        };
+
+        updateHeight();
+        if (typeof ResizeObserver === "undefined") return;
+
+        const observer = new ResizeObserver(updateHeight);
+        observer.observe(node);
+        resizeObserverRef.current = observer;
+    }, []);
+
+    React.useEffect(() => () => resizeObserverRef.current?.disconnect(), []);
+
+    const measuredStyle = contentHeight === undefined
+        ? style
+        : {
+            ...style,
+            "--radix-accordion-content-height": `${contentHeight}px`,
+            "--radix-collapsible-content-height": `${contentHeight}px`,
+        } as React.CSSProperties;
+
+    return (
+        <AccordionPrimitive.Content
+            ref={ref}
+            className={clsx(
+                // Match surface, not page bg — avoids a light band while height animates.
+                "min-w-0 max-w-full overflow-hidden text-ui-fg bg-ui-surface will-change-[height]",
+                "data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up",
+                className
+            )}
+            style={measuredStyle}
+            {...props}
+        >
+            <div ref={setContentRef} className="min-w-0 w-full p-4">{children}</div>
+        </AccordionPrimitive.Content>
+    );
+});
 AccordionContent.displayName = "AccordionContent";
 
 export { Accordion, AccordionContent, AccordionItem, AccordionTrigger };

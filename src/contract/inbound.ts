@@ -68,6 +68,7 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
                     name: "",
                     mtu: 0,
                     forceFakeIp: false,
+                    autoFakeIpRoute: true,
                     skipMulticast: false,
                     driver: "fdbased",
                     portal: "",
@@ -141,7 +142,9 @@ export function normalizeInbound(value: Partial<Inbound> & { id?: string }): Inb
         enabled: value.enabled ?? false,
         network: value.network ?? createDefaultNetwork(),
         transports: Array.isArray(value.transports) ? value.transports : [],
-        protocol: value.protocol ?? createDefaultProtocol(),
+        protocol: value.protocol?.type === "tun"
+            ? { ...value.protocol, tun: { ...value.protocol.tun, autoFakeIpRoute: value.protocol.tun.autoFakeIpRoute ?? false } }
+            : value.protocol ?? createDefaultProtocol(),
     };
 }
 

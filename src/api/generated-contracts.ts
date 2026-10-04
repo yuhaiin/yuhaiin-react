@@ -203,6 +203,7 @@ export namespace Go {
       host: string;
     }
     export interface TunProtocol {
+      autoFakeIpRoute: boolean;
       name: string;
       mtu: number;
       forceFakeIp: boolean;
