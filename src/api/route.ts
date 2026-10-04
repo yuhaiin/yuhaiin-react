@@ -1,7 +1,7 @@
 import { requestJSON } from "@/api/client";
 import type { Go } from "@/api/generated-contracts";
-import type { BlockHistoryList, RouteActivationStatus, RouteConfig, RouteList, RouteListActivationStatus, RouteListConfig, RouteListDetail, RouteRule, RuleList, RuleTestResponse, TagList } from "@/contract/route";
-import { normalizeListItem, normalizeRouteActivationStatus, normalizeRouteConfig, normalizeRouteList, normalizeRouteListActivationStatus, normalizeRouteListConfig, normalizeRule, normalizeRuleItem, normalizeTagItem } from "@/contract/route";
+import type { BlockHistoryList, Registry, RegistryCatalogList, RegistryList, RouteActivationStatus, RouteConfig, RouteList, RouteListActivationStatus, RouteListConfig, RouteListDetail, RouteRule, RuleList, RuleTestResponse, TagList } from "@/contract/route";
+import { normalizeListItem, normalizeRegistry, normalizeRegistryCatalog, normalizeRouteActivationStatus, normalizeRouteConfig, normalizeRouteList, normalizeRouteListActivationStatus, normalizeRouteListConfig, normalizeRule, normalizeRuleItem, normalizeTagItem } from "@/contract/route";
 
 export async function listRouteLists(params?: { page?: number; pageSize?: number; query?: string }): Promise<RouteList> {
   const data = await requestJSON<Go.route.RouteList>("GET", "/api/v2/route/lists", undefined, {
@@ -50,6 +50,28 @@ export async function saveRouteList(id: string, list: RouteListDetail): Promise<
 
 export async function deleteRouteList(id: string): Promise<void> {
   await requestJSON<void>("DELETE", `/api/v2/route/lists/${encodeURIComponent(id)}`);
+}
+
+export async function listRouteRegistries(): Promise<RegistryList> {
+  const data = await requestJSON<Go.route.RegistryList>("GET", "/api/v2/route/registries");
+  return { items: (data.items ?? []).map(item => normalizeRegistry(item)) };
+}
+
+export async function createRouteRegistry(registry: Registry): Promise<Registry> {
+  return normalizeRegistry(await requestJSON<Go.route.Registry>("POST", "/api/v2/route/registries", registry));
+}
+
+export async function saveRouteRegistry(id: string, registry: Registry): Promise<Registry> {
+  return normalizeRegistry(await requestJSON<Go.route.Registry>("PUT", `/api/v2/route/registries/${encodeURIComponent(id)}`, { ...registry, id }));
+}
+
+export async function deleteRouteRegistry(id: string): Promise<void> {
+  await requestJSON<void>("DELETE", `/api/v2/route/registries/${encodeURIComponent(id)}`);
+}
+
+export async function listRouteRegistryCatalogs(refresh = false): Promise<RegistryCatalogList> {
+  const data = await requestJSON<Go.route.RegistryCatalogList>("GET", "/api/v2/route/registries/catalogs", undefined, { refresh });
+  return { items: (data.items ?? []).map(item => normalizeRegistryCatalog(item)) };
 }
 
 export async function listRules(params?: { page?: number; pageSize?: number; query?: string }): Promise<RuleList> {
