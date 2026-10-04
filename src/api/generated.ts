@@ -55,6 +55,11 @@ export type RPCOperation =
   | "route.list.delete"
   | "route.list.get"
   | "route.list.put"
+  | "route.registries.get"
+  | "route.registries.post"
+  | "route.registry.put"
+  | "route.registry.delete"
+  | "route.registries.catalogs"
   | "route.lists.activation"
   | "route.lists.config.get"
   | "route.lists.config.put"
@@ -163,6 +168,11 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/route/lists/{id}", operation: "route.list.get" },
   { method: "PUT", pattern: "/api/v2/route/lists/{id}", operation: "route.list.put" },
   { method: "DELETE", pattern: "/api/v2/route/lists/{id}", operation: "route.list.delete" },
+  { method: "GET", pattern: "/api/v2/route/registries", operation: "route.registries.get" },
+  { method: "POST", pattern: "/api/v2/route/registries", operation: "route.registries.post" },
+  { method: "GET", pattern: "/api/v2/route/registries/catalogs", operation: "route.registries.catalogs" },
+  { method: "PUT", pattern: "/api/v2/route/registries/{id}", operation: "route.registry.put" },
+  { method: "DELETE", pattern: "/api/v2/route/registries/{id}", operation: "route.registry.delete" },
   { method: "GET", pattern: "/api/v2/route/rules", operation: "route.rules.get" },
   { method: "POST", pattern: "/api/v2/route/rules", operation: "route.rules.post" },
   { method: "POST", pattern: "/api/v2/route/rules/priority", operation: "route.rules.priority" },
