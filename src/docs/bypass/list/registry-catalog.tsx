@@ -4,6 +4,8 @@ import { Button } from "@/component/v2/button";
 import { Input } from "@/component/v2/input";
 import Loading from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
+import { Pagination } from "@/component/v2/pagination";
+import { Select } from "@/component/v2/select";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { RegistryCatalog, RegistryFile, RouteListDetail } from "@/contract/route";
@@ -15,6 +17,7 @@ import { RegistryManagerModal } from "./registry-manager";
 
 const CATALOG_KEY = "/api/v2/route/registries/catalogs";
 const LIST_CONFIG_KEY = "/api/v2/route/lists/config";
+const PAGE_SIZE = 50;
 
 function formatBytes(value: number) {
     if (!Number.isFinite(value) || value <= 0) return "0 B";
@@ -100,6 +103,9 @@ export function RegistryCatalogModal({
     const toast = useContext(GlobalToastContext);
     const { mutate: mutateGlobal } = useSWRConfig();
     const [query, setQuery] = useState("");
+    const [page, setPage] = useState(1);
+    const [registryID, setRegistryID] = useState("all");
+    const [category, setCategory] = useState("all");
     const [managerOpen, setManagerOpen] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [pendingGeoIP, setPendingGeoIP] = useState(false);
@@ -109,25 +115,68 @@ export function RegistryCatalogModal({
         { revalidateOnFocus: false },
     );
 
-    const rows = useMemo(() => {
-        const q = query.trim().toLowerCase();
-        return (data?.items ?? []).flatMap(catalog =>
+    const allRows = useMemo(() =>
+        (data?.items ?? []).flatMap(catalog =>
             (catalog.files ?? [])
                 .filter(file => file.selectable && (file.usage === "route-list" || file.usage === "maxminddb"))
-                .filter(file => !q || [
-                    catalog.registry.name,
-                    file.id,
-                    file.name,
-                    file.category,
-                    file.kind,
-                    file.listType,
-                    file.path,
-                ].some(value => (value || "").toLowerCase().includes(q)))
                 .map(file => ({ catalog, file })),
-        );
-    }, [data, query]);
+        ), [data]);
 
-    const visibleRows = rows.slice(0, 200);
+    const registryOptions = useMemo(() => {
+        const counts = new Map<string, { name: string; count: number }>();
+        for (const row of allRows) {
+            const id = row.catalog.registry.id;
+            const current = counts.get(id);
+            counts.set(id, {
+                name: row.catalog.registry.name || id,
+                count: (current?.count ?? 0) + 1,
+            });
+        }
+        return [
+            { value: "all", label: `All registries (${allRows.length})` },
+            ...Array.from(counts.entries())
+                .sort((a, b) => a[1].name.localeCompare(b[1].name))
+                .map(([value, item]) => ({ value, label: `${item.name} (${item.count})` })),
+        ];
+    }, [allRows]);
+
+    const registryRows = useMemo(
+        () => registryID === "all" ? allRows : allRows.filter(row => row.catalog.registry.id === registryID),
+        [allRows, registryID],
+    );
+
+    const categoryOptions = useMemo(() => {
+        const counts = new Map<string, number>();
+        for (const row of registryRows) {
+            const value = row.file.category || row.file.kind || "other";
+            counts.set(value, (counts.get(value) ?? 0) + 1);
+        }
+        return [
+            { value: "all", label: `All categories (${registryRows.length})` },
+            ...Array.from(counts.entries())
+                .sort((a, b) => a[0].localeCompare(b[0]))
+                .map(([value, count]) => ({ value, label: `${value} (${count})` })),
+        ];
+    }, [registryRows]);
+
+    const rows = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        return registryRows
+            .filter(row => category === "all" || (row.file.category || row.file.kind || "other") === category)
+            .filter(row => !q || [
+                row.catalog.registry.name,
+                row.file.id,
+                row.file.name,
+                row.file.category,
+                row.file.kind,
+                row.file.listType,
+                row.file.path,
+            ].some(value => (value || "").toLowerCase().includes(q)));
+    }, [registryRows, category, query]);
+
+    const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+    const currentPage = Math.min(page, totalPages);
+    const pageRows = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
     const refresh = async () => {
         if (refreshing) return;
@@ -171,7 +220,35 @@ export function RegistryCatalogModal({
                         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
                             <div className="relative min-w-0 flex-1">
                                 <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" />
-                                <Input size="sm" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search registry files..." className="pl-9" />
+                                <Input
+                                    size="sm"
+                                    value={query}
+                                    onChange={e => { setQuery(e.target.value); setPage(1); }}
+                                    placeholder="Search registry files..."
+                                    className="pl-9"
+                                />
+                            </div>
+                            <div className="grid min-w-0 grid-cols-2 gap-2 sm:flex sm:shrink-0">
+                                <Select
+                                    value={registryID}
+                                    onValueChange={(value) => {
+                                        setRegistryID(value);
+                                        setCategory("all");
+                                        setPage(1);
+                                    }}
+                                    items={registryOptions}
+                                    size="sm"
+                                    triggerClassName="min-w-0 sm:w-[170px]"
+                                    viewportClassName="max-h-[320px]"
+                                />
+                                <Select
+                                    value={category}
+                                    onValueChange={(value) => { setCategory(value); setPage(1); }}
+                                    items={categoryOptions}
+                                    size="sm"
+                                    triggerClassName="min-w-0 sm:w-[160px]"
+                                    viewportClassName="max-h-[320px]"
+                                />
                             </div>
                             <div className="flex shrink-0 gap-2">
                                 <Button size="sm" variant="outline-secondary" onClick={() => setManagerOpen(true)}>
@@ -196,26 +273,37 @@ export function RegistryCatalogModal({
                                 ))}
                                 {rows.length === 0 ? (
                                     <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center text-sm text-ui-muted">
-                                        No selectable registry files match this search.
+                                        No selectable registry files match the current filters.
                                     </div>
                                 ) : (
                                     <>
-                                        {rows.length > visibleRows.length && (
-                                            <div className="mb-2 text-xs text-ui-muted">
-                                                Showing {visibleRows.length} of {rows.length} files. Refine the search to narrow the catalog.
-                                            </div>
-                                        )}
+                                        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ui-muted">
+                                            <span>
+                                                {rows.length} files · page {currentPage}/{totalPages}
+                                            </span>
+                                            <span>
+                                                Showing {(currentPage - 1) * PAGE_SIZE + 1}-{Math.min(currentPage * PAGE_SIZE, rows.length)}
+                                            </span>
+                                        </div>
                                         <div className="divide-y divide-ui-border/70 overflow-hidden rounded-ui-lg border border-ui-border/70">
-                                        {visibleRows.map(({ catalog, file }) => (
-                                            <CatalogRow
-                                                key={`${catalog.registry.id}:${file.id}`}
-                                                catalog={catalog}
-                                                file={file}
-                                                pending={pendingGeoIP}
-                                                onUseMaxMind={useMaxMind}
-                                                onSelect={(value) => { onSelectList(value); onClose(); }}
+                                            {pageRows.map(({ catalog, file }) => (
+                                                <CatalogRow
+                                                    key={`${catalog.registry.id}:${file.id}`}
+                                                    catalog={catalog}
+                                                    file={file}
+                                                    pending={pendingGeoIP}
+                                                    onUseMaxMind={useMaxMind}
+                                                    onSelect={(value) => { onSelectList(value); onClose(); }}
+                                                />
+                                            ))}
+                                        </div>
+                                        <div className="flex justify-center pt-1">
+                                            <Pagination
+                                                currentPage={currentPage}
+                                                totalItems={rows.length}
+                                                pageSize={PAGE_SIZE}
+                                                onPageChange={setPage}
                                             />
-                                        ))}
                                         </div>
                                     </>
                                 )}
