@@ -63,7 +63,7 @@ function CatalogRow({
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <span className="truncate font-semibold text-ui-heading">{file.name || file.id}</span>
                         <Badge variant="secondary" pill>{file.category || file.kind || "rules"}</Badge>
-                        <Badge variant={maxMind ? "info" : "muted"} pill>{maxMind ? "GeoIP DB" : file.listType || "host"}</Badge>
+                        <Badge variant={maxMind ? "info" : "muted"} pill>{maxMind ? "GeoIP DB" : file.kind || file.listType || "host"}</Badge>
                     </div>
                     <div className="mt-1 truncate text-xs text-ui-muted" title={file.path}>
                         {catalog.registry.name} · {file.path || file.id} · {formatBytes(file.size)}
@@ -106,6 +106,7 @@ export function RegistryCatalogModal({
     const [page, setPage] = useState(1);
     const [registryID, setRegistryID] = useState("all");
     const [category, setCategory] = useState("all");
+    const [kind, setKind] = useState("all");
     const [managerOpen, setManagerOpen] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [pendingGeoIP, setPendingGeoIP] = useState(false);
@@ -159,10 +160,31 @@ export function RegistryCatalogModal({
         ];
     }, [registryRows]);
 
+    const categoryRows = useMemo(
+        () => category === "all"
+            ? registryRows
+            : registryRows.filter(row => (row.file.category || row.file.kind || "other") === category),
+        [registryRows, category],
+    );
+
+    const kindOptions = useMemo(() => {
+        const counts = new Map<string, number>();
+        for (const row of categoryRows) {
+            const value = row.file.kind || row.file.listType || "other";
+            counts.set(value, (counts.get(value) ?? 0) + 1);
+        }
+        return [
+            { value: "all", label: `All types (${categoryRows.length})` },
+            ...Array.from(counts.entries())
+                .sort((a, b) => a[0].localeCompare(b[0]))
+                .map(([value, count]) => ({ value, label: `${value} (${count})` })),
+        ];
+    }, [categoryRows]);
+
     const rows = useMemo(() => {
         const q = query.trim().toLowerCase();
-        return registryRows
-            .filter(row => category === "all" || (row.file.category || row.file.kind || "other") === category)
+        return categoryRows
+            .filter(row => kind === "all" || (row.file.kind || row.file.listType || "other") === kind)
             .filter(row => !q || [
                 row.catalog.registry.name,
                 row.file.id,
@@ -172,7 +194,7 @@ export function RegistryCatalogModal({
                 row.file.listType,
                 row.file.path,
             ].some(value => (value || "").toLowerCase().includes(q)));
-    }, [registryRows, category, query]);
+    }, [categoryRows, kind, query]);
 
     const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
     const currentPage = Math.min(page, totalPages);
@@ -228,12 +250,13 @@ export function RegistryCatalogModal({
                                     className="pl-9"
                                 />
                             </div>
-                            <div className="grid min-w-0 grid-cols-2 gap-2 sm:flex sm:shrink-0">
+                            <div className="grid min-w-0 grid-cols-1 gap-2 sm:flex sm:shrink-0">
                                 <Select
                                     value={registryID}
                                     onValueChange={(value) => {
                                         setRegistryID(value);
                                         setCategory("all");
+                                        setKind("all");
                                         setPage(1);
                                     }}
                                     items={registryOptions}
@@ -243,10 +266,22 @@ export function RegistryCatalogModal({
                                 />
                                 <Select
                                     value={category}
-                                    onValueChange={(value) => { setCategory(value); setPage(1); }}
+                                    onValueChange={(value) => {
+                                        setCategory(value);
+                                        setKind("all");
+                                        setPage(1);
+                                    }}
                                     items={categoryOptions}
                                     size="sm"
                                     triggerClassName="min-w-0 sm:w-[160px]"
+                                    viewportClassName="max-h-[320px]"
+                                />
+                                <Select
+                                    value={kind}
+                                    onValueChange={(value) => { setKind(value); setPage(1); }}
+                                    items={kindOptions}
+                                    size="sm"
+                                    triggerClassName="min-w-0 sm:w-[150px]"
                                     viewportClassName="max-h-[320px]"
                                 />
                             </div>
