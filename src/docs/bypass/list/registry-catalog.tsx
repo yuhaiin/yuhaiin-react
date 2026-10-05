@@ -63,7 +63,7 @@ function CatalogRow({
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <span className="truncate font-semibold text-ui-heading">{file.name || file.id}</span>
                         <Badge variant="secondary" pill>{file.category || file.kind || "rules"}</Badge>
-                        <Badge variant={maxMind ? "info" : "muted"} pill>{maxMind ? "GeoIP DB" : file.listType || "host"}</Badge>
+                        <Badge variant={maxMind ? "info" : "muted"} pill>{maxMind ? "GeoIP DB" : file.kind || file.listType || "host"}</Badge>
                     </div>
                     <div className="mt-1 truncate text-xs text-ui-muted" title={file.path}>
                         {catalog.registry.name} · {file.path || file.id} · {formatBytes(file.size)}
@@ -250,7 +250,7 @@ export function RegistryCatalogModal({
                                     className="pl-9"
                                 />
                             </div>
-                            <div className="grid min-w-0 grid-cols-1 gap-2 xs:grid-cols-3 sm:flex sm:shrink-0">
+                            <div className="grid min-w-0 grid-cols-1 gap-2 sm:flex sm:shrink-0">
                                 <Select
                                     value={registryID}
                                     onValueChange={(value) => {
