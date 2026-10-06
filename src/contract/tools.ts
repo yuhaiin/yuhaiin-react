@@ -5,3 +5,6 @@ export type Interfaces = Go.tools.Interfaces;
 export type License = Go.tools.License;
 export type Licenses = Go.tools.Licenses;
 export type LogBatch = Go.tools.LogBatch;
+
+export type DiagnosticCheck = Go.tools.DiagnosticCheck;
+export type DiagnosticReport = Go.tools.DiagnosticReport;

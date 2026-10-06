@@ -693,51 +693,6 @@ export namespace Go {
       items: ListItem[];
       page: Page;
     }
-    export interface Registry {
-      id: string;
-      name: string;
-      url: string;
-      enabled: boolean;
-      builtin: boolean;
-      updatedAt: string;
-    }
-    export interface RegistryList {
-      items: Registry[];
-    }
-    export interface RegistryFile {
-      id: string;
-      name: string;
-      category: string;
-      kind: string;
-      usage: string;
-      listType?: string;
-      format: string;
-      path: string;
-      url: string;
-      sourceUrl?: string;
-      size: number;
-      sha256: string;
-      selectable: boolean;
-    }
-    export interface RegistryManifest {
-      schemaVersion: number;
-      repository: string;
-      branch: string;
-      baseUrl: string;
-      files: RegistryFile[];
-    }
-    export interface RegistryCatalog {
-      registry: Registry;
-      schemaVersion: number;
-      repository: string;
-      branch: string;
-      baseUrl: string;
-      files: RegistryFile[];
-      error?: string;
-    }
-    export interface RegistryCatalogList {
-      items: RegistryCatalog[];
-    }
     export interface TagItem {
       name: string;
       type: string;
@@ -787,6 +742,51 @@ export namespace Go {
     export interface BlockHistoryList {
       items: BlockHistory[];
       dumpProcessEnabled: boolean;
+    }
+    export interface Registry {
+      id: string;
+      name: string;
+      url: string;
+      enabled: boolean;
+      builtin: boolean;
+      updatedAt: string;
+    }
+    export interface RegistryList {
+      items: Registry[];
+    }
+    export interface RegistryFile {
+      id: string;
+      name: string;
+      category: string;
+      kind: string;
+      usage: string;
+      listType?: string;
+      format: string;
+      path: string;
+      url: string;
+      sourceUrl?: string;
+      size: number;
+      sha256: string;
+      selectable: boolean;
+    }
+    export interface RegistryManifest {
+      schemaVersion: number;
+      repository: string;
+      branch: string;
+      baseUrl: string;
+      files: RegistryFile[];
+    }
+    export interface RegistryCatalog {
+      registry: Registry;
+      schemaVersion: number;
+      repository: string;
+      branch: string;
+      baseUrl: string;
+      files: RegistryFile[];
+      error?: string;
+    }
+    export interface RegistryCatalogList {
+      items: RegistryCatalog[];
     }
   }
   export namespace settings {
@@ -866,6 +866,28 @@ export namespace Go {
     }
   }
   export namespace tools {
+    export interface DiagnosticRequest {
+      host: string;
+    }
+    export interface DiagnosticCheck {
+      id: string;
+      status: string;
+      message: string;
+      durationMs: number;
+      evidence: string[];
+    }
+    export interface DiagnosticReport {
+      schemaVersion: number;
+      startedAt: string;
+      durationMs: number;
+      host: string;
+      platform: string;
+      version: string;
+      ipv6Enabled: boolean;
+      checks: DiagnosticCheck[];
+      findings: string[];
+      report: string;
+    }
     export interface Interfaces {
       interfaces: Interface[];
     }

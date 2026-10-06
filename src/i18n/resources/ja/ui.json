@@ -502,5 +502,6 @@
   "uuid": "UUID",
   "authKey": "認証キー",
   "autoFakeIpRoute": "FakeIP ルートを自動追加",
-  "autoFakeIpRouteDescription": "使用中の FakeIP IPv4・IPv6 範囲を手動ルートと統合し、範囲の変更時に更新します。TUN で使用できるアドレスファミリーのみ追加します。"
+  "autoFakeIpRouteDescription": "使用中の FakeIP IPv4・IPv6 範囲を手動ルートと統合し、範囲の変更時に更新します。TUN で使用できるアドレスファミリーのみ追加します。",
+  "networkDiagnostics": "ネットワーク診断"
 }

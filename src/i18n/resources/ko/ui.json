@@ -502,5 +502,6 @@
   "uuid": "UUID",
   "authKey": "인증 키",
   "autoFakeIpRoute": "FakeIP 경로 자동 추가",
-  "autoFakeIpRouteDescription": "사용 중인 FakeIP IPv4 및 IPv6 범위를 수동 경로와 병합하고 범위가 변경되면 갱신합니다. TUN에서 사용 가능한 주소 계열만 추가합니다."
+  "autoFakeIpRouteDescription": "사용 중인 FakeIP IPv4 및 IPv6 범위를 수동 경로와 병합하고 범위가 변경되면 갱신합니다. TUN에서 사용 가능한 주소 계열만 추가합니다.",
+  "networkDiagnostics": "네트워크 진단"
 }

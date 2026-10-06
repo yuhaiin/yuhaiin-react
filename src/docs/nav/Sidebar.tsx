@@ -1,5 +1,5 @@
 
-import { ArrowLeftRight, Download, ExternalLink, Filter, House, Settings } from 'lucide-react';
+import { Activity, ArrowLeftRight, Download, ExternalLink, Filter, House, Settings } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
@@ -42,6 +42,15 @@ function Sidebar({ id, show, onHide, triggerRef }: SidebarProps) {
                     icon={<House />}
                 >
                     {t('home')}
+                </SidebarItem>
+
+                <SidebarItem
+                    href="#/docs/diagnostics"
+                    onClick={e => { if (isPrimaryClick(e)) { e.preventDefault(); handleNavLinkClick('/docs/diagnostics'); } }}
+                    active={pathname === '/docs/diagnostics'}
+                    icon={<Activity />}
+                >
+                    {uiT('networkDiagnostics')}
                 </SidebarItem>
 
                 <SidebarGroup

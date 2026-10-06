@@ -5,7 +5,7 @@ import { getTotalFlow } from './connections';
 import { setApiUrl } from '@/common/apiurl';
 
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => { server.resetHandlers(); localStorage.clear(); window.location.hash = '/'; });
 afterAll(() => server.close());
 
