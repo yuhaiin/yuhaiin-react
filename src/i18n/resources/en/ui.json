@@ -502,5 +502,6 @@
   "uuid": "UUID",
   "authKey": "Auth Key",
   "autoFakeIpRoute": "Automatically add FakeIP routes",
-  "autoFakeIpRouteDescription": "Merge the active FakeIP IPv4 and IPv6 ranges with your routes and update them when the ranges change. Only available address families are added."
+  "autoFakeIpRouteDescription": "Merge the active FakeIP IPv4 and IPv6 ranges with your routes and update them when the ranges change. Only available address families are added.",
+  "networkDiagnostics": "Network diagnostics"
 }

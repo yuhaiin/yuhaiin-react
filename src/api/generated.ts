@@ -55,17 +55,17 @@ export type RPCOperation =
   | "route.list.delete"
   | "route.list.get"
   | "route.list.put"
-  | "route.registries.get"
-  | "route.registries.post"
-  | "route.registry.put"
-  | "route.registry.delete"
-  | "route.registries.catalogs"
   | "route.lists.activation"
   | "route.lists.config.get"
   | "route.lists.config.put"
   | "route.lists.get"
   | "route.lists.post"
   | "route.lists.refresh"
+  | "route.registries.catalogs"
+  | "route.registries.get"
+  | "route.registries.post"
+  | "route.registry.delete"
+  | "route.registry.put"
   | "route.rule.delete"
   | "route.rule.get"
   | "route.rule.put"
@@ -83,6 +83,7 @@ export type RPCOperation =
   | "subscriptions.get"
   | "subscriptions.put"
   | "subscriptions.update"
+  | "tools.diagnostics"
   | "tools.interfaces"
   | "tools.licenses"
   | "tools.logs"
@@ -105,6 +106,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "PUT", pattern: "/api/v2/backup/config", operation: "backup.config.put" },
   { method: "POST", pattern: "/api/v2/backup/run", operation: "backup.run" },
   { method: "POST", pattern: "/api/v2/backup/restore", operation: "backup.restore" },
+  { method: "POST", pattern: "/api/v2/tools/diagnostics", operation: "tools.diagnostics" },
   { method: "GET", pattern: "/api/v2/tools/interfaces", operation: "tools.interfaces" },
   { method: "GET", pattern: "/api/v2/tools/licenses", operation: "tools.licenses" },
   { method: "GET", pattern: "/api/v2/tools/logs", operation: "tools.logs" },

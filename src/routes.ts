@@ -10,6 +10,7 @@ const GroupPage = dynamic(() => import('@/docs/group/page'), { loading });
 const GroupSubscribePage = dynamic(() => import('@/docs/group/subscribe/page'), { loading });
 const GroupPublishPage = dynamic(() => import('@/docs/group/publish/page'), { loading });
 const GroupActivatesPage = dynamic(() => import('@/docs/group/activates/page'), { loading });
+const DiagnosticsPage = dynamic(() => import('@/docs/diagnostics/page'), { loading });
 const InboundPage = dynamic(() => import('@/docs/inbound/page'), { loading });
 const BypassPage = dynamic(() => import('@/docs/bypass/page'), { loading });
 const BypassListPage = dynamic(() => import('@/docs/bypass/list/page'), { loading });
@@ -37,6 +38,7 @@ export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/group/publish", component: GroupPublishPage },
     { path: "/docs/group/activates", component: GroupActivatesPage },
     { path: "/docs/inbound", component: InboundPage },
+    { path: "/docs/diagnostics", component: DiagnosticsPage },
     { path: "/docs/bypass", component: BypassPage },
     { path: "/docs/bypass/list", component: BypassListPage },
     { path: "/docs/bypass/tag", component: BypassTagPage },
