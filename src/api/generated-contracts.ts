@@ -138,6 +138,15 @@ export namespace Go {
       type: string;
       payload?: unknown;
     }
+    export interface SessionSummary {
+      download: string;
+      upload: string;
+      totalDownload: string;
+      totalUpload: string;
+      active: number;
+      opened: string;
+      failed: string;
+    }
   }
   export namespace inbound {
     export interface Inbound {
@@ -163,6 +172,7 @@ export namespace Go {
       tls?: ServerTLSConfig;
     }
     export type Protocol =
+      | { type: "hysteria2"; hysteria2: Hysteria2Protocol }
       | { type: "http"; http: HTTPProtocol }
       | { type: "socks5"; socks5: Socks5Protocol }
       | { type: "yuubinsya"; yuubinsya: YuubinsyaProtocol }
@@ -174,6 +184,14 @@ export namespace Go {
       | { type: "reverse_http"; reverse_http: ReverseHTTPProtocol }
       | { type: "reverse_tcp"; reverse_tcp: ReverseTCPProtocol }
       | { type: "none"; none: NoneProtocol };
+    export interface Hysteria2Protocol {
+      auth: string;
+      uploadBps?: number;
+      downloadBps?: number;
+      ignoreClientBandwidth?: boolean;
+      disableUdp?: boolean;
+      salamanderPassword?: string;
+    }
     export interface HTTPProtocol {
       username: string;
       password: string;
@@ -345,6 +363,7 @@ export namespace Go {
       | { type: "shadowsocksr"; shadowsocksr: Shadowsocksr }
       | { type: "vmess"; vmess: Vmess }
       | { type: "websocket"; websocket: Websocket }
+      | { type: "hysteria2"; hysteria2: Hysteria2 }
       | { type: "quic"; quic: Quic }
       | { type: "obfs_http"; obfs_http: ObfsHTTP }
       | { type: "trojan"; trojan: Trojan }
@@ -417,6 +436,14 @@ export namespace Go {
     export interface Quic {
       host: string;
       tls?: TLS;
+    }
+    export interface Hysteria2 {
+      host: string;
+      auth: string;
+      tls?: TLS;
+      upload_bps?: number;
+      download_bps?: number;
+      salamander_password?: string;
     }
     export interface ObfsHTTP {
       host: string;

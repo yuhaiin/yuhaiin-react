@@ -503,5 +503,12 @@
   "authKey": "Auth Key",
   "autoFakeIpRoute": "Automatically add FakeIP routes",
   "autoFakeIpRouteDescription": "Merge the active FakeIP IPv4 and IPv6 ranges with your routes and update them when the ranges change. Only available address families are added.",
-  "networkDiagnostics": "Network diagnostics"
+  "networkDiagnostics": "Network diagnostics",
+  "uploadBandwidthBytes": "Upload bandwidth (bytes/s)",
+  "downloadBandwidthBytes": "Download bandwidth (bytes/s)",
+  "salamanderPassword": "Salamander password (optional)",
+  "hysteria2BandwidthHelp": "0 uses automatic congestion control (BBR). Nonzero values must be at least 65536 bytes/s. Upload/download are from this endpoint’s perspective.",
+  "ignoreClientBandwidth": "Ignore client bandwidth (use automatic congestion control)",
+  "disableUdp": "Disable UDP proxying",
+  "hysteria2ServerHelp": "Hysteria 2 uses UDP-only and one TLS certificate configuration. For TLS-auto, set Server Names to the SNI clients will use. The CA is generated on save; copy its public certificate to the client’s CA Certificate field."
 }

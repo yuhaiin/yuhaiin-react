@@ -503,5 +503,12 @@
   "authKey": "認証キー",
   "autoFakeIpRoute": "FakeIP ルートを自動追加",
   "autoFakeIpRouteDescription": "使用中の FakeIP IPv4・IPv6 範囲を手動ルートと統合し、範囲の変更時に更新します。TUN で使用できるアドレスファミリーのみ追加します。",
-  "networkDiagnostics": "ネットワーク診断"
+  "networkDiagnostics": "ネットワーク診断",
+  "uploadBandwidthBytes": "送信帯域幅 (bytes/s)",
+  "downloadBandwidthBytes": "受信帯域幅 (bytes/s)",
+  "salamanderPassword": "Salamander パスワード (任意)",
+  "hysteria2BandwidthHelp": "0 は自動輻輳制御 (BBR) を使用します。0 以外は 65536 bytes/s 以上が必要です。送信・受信はこのエンドポイントから見た方向です。",
+  "ignoreClientBandwidth": "クライアントの帯域指定を無視 (自動輻輳制御)",
+  "disableUdp": "UDP プロキシを無効化",
+  "hysteria2ServerHelp": "Hysteria 2 は UDP-only と 1 つの TLS 証明書設定を使用します。TLS-auto では Server Names にクライアントの SNI を指定してください。保存時に CA が生成されます。公開証明書をクライアントの CA Certificate 欄にコピーしてください。"
 }

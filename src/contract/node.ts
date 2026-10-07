@@ -8,6 +8,7 @@ export type ShadowsocksrConfig = Partial<Go.node.Shadowsocksr>;
 export type VmessConfig = Partial<Go.node.Vmess>;
 export type VlessConfig = Partial<Go.node.Vless>;
 export type WebsocketConfig = Partial<Go.node.Websocket>;
+export type Hysteria2Config = Omit<Partial<Go.node.Hysteria2>, "tls"> & { tls?: TLSConfig };
 export type QuicConfig = Omit<Partial<Go.node.Quic>, "tls"> & { tls?: TLSConfig };
 export type ObfsHTTPConfig = Partial<Go.node.ObfsHTTP>;
 export type TrojanConfig = Partial<Go.node.Trojan>;
@@ -41,6 +42,7 @@ export type NodeProtocolConfigByType = {
   shadowsocksr: ShadowsocksrConfig;
   vmess: VmessConfig;
   websocket: WebsocketConfig;
+  hysteria2: Hysteria2Config;
   quic: QuicConfig;
   obfs_http: ObfsHTTPConfig;
   trojan: TrojanConfig;
@@ -164,6 +166,8 @@ function defaultProtocolConfig<T extends NodeProtocolType>(type: T): NodeProtoco
       return { tcp: createDefaultProtocol("direct"), udp: createDefaultProtocol("direct") } as NodeProtocolConfig<T>;
     case "tls":
       return { enable: true } as NodeProtocolConfig<T>;
+    case "hysteria2":
+      return { host: "", auth: "", tls: { enable: true }, upload_bps: 0, download_bps: 0 } as NodeProtocolConfig<T>;
     case "quic":
       return { tls: { enable: true } } as NodeProtocolConfig<T>;
     case "tls_termination":
@@ -247,6 +251,7 @@ export const protocolTypes: NodeProtocolType[] = [
   "shadowsocksr",
   "vmess",
   "websocket",
+  "hysteria2",
   "quic",
   "obfs_http",
   "trojan",

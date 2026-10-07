@@ -10,13 +10,13 @@ import { Select, SettingInputVertical, SettingSelectVertical, SwitchCard } from 
 import { Textarea } from "@/component/v2/input";
 import { InputBytesList, InputList } from "@/component/v2/listeditor";
 
-import { createDefaultNetwork, createDefaultProtocol, createDefaultTransport, Certificate, ClientTLSConfig, Inbound, InboundNetwork, InboundProtocol, InboundTransport, normalizeInbound, ServerTLSConfig, TLSAutoTransport } from "@/contract/inbound";
+import { createDefaultNetwork, createDefaultTransport, selectInboundProtocol, Certificate, ClientTLSConfig, Inbound, InboundNetwork, InboundProtocol, InboundTransport, normalizeInbound, ServerTLSConfig, TLSAutoTransport } from "@/contract/inbound";
 import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react";
 import { FC, useState } from "react";
 
 const networkTypes: InboundNetwork["type"][] = ["empty", "tcp_udp", "quic"];
 
-const protocolTypes: InboundProtocol["type"][] = ["http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "reverse_http", "reverse_tcp", "none"];
+const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "reverse_http", "reverse_tcp", "none"];
 
 const transportTypes: InboundTransport["type"][] = ["normal", "tls", "mux", "http2", "websocket", "reality", "tls_auto", "http_mock", "aead", "proxy"];
 
@@ -96,6 +96,10 @@ const NetworkSection: FC<{
     const [choice, setChoice] = useState<InboundNetwork["type"] | undefined>();
     const selected = choice ?? inbound.network.type;
 
+    if (inbound.protocol.type === "hysteria2") {
+        return <NetworkEditor value={inbound.network} udpOnly onChange={(network) => onChange(normalizeInbound({ ...inbound, network }))} />;
+    }
+
     return (
         <>
             <TypeUseRow
@@ -133,7 +137,7 @@ const ProtocolSection: FC<{
                 values={protocolTypes}
                 onValueChange={(value) => setChoice(value as InboundProtocol["type"])}
                 onUse={() => {
-                    onChange(normalizeInbound({ ...inbound, protocol: createDefaultProtocol(selected) }));
+                    onChange(selectInboundProtocol(inbound, selected));
                     setChoice(undefined);
                 }}
             />
@@ -147,8 +151,9 @@ const ProtocolSection: FC<{
 
 const NetworkEditor: FC<{
     value: InboundNetwork;
+    udpOnly?: boolean;
     onChange: (value: InboundNetwork) => void;
-}> = ({ value, onChange }) => {
+}> = ({ value, udpOnly = false, onChange }) => {
     const { t: uiT } = useTranslation('ui');
 
     switch (value.type) {
@@ -166,7 +171,8 @@ const NetworkEditor: FC<{
                     <SettingSelectVertical
                         label="UDP"
                         value={value.tcp_udp.udp}
-                        values={["enabled", "disabled", "tcp_only", "udp_only"]}
+                        values={udpOnly ? ["udp_only"] : ["enabled", "disabled", "tcp_only", "udp_only"]}
+                        disabled={udpOnly}
                         onChange={(udp) => onChange({ ...value, tcp_udp: { ...value.tcp_udp, udp: udp as typeof value.tcp_udp.udp } })}
                     />
                 </div>
@@ -193,6 +199,20 @@ const ProtocolConfigEditor: FC<{
     const { t: uiT } = useTranslation('ui');
 
     switch (value.type) {
+        case "hysteria2":
+            return (
+                <div className="grid gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <SettingInputVertical label={uiT("password")} value={value.hysteria2.auth} onChange={(auth) => onChange({ ...value, hysteria2: { ...value.hysteria2, auth } })} />
+                        <SettingInputVertical label={uiT("salamanderPassword")} value={value.hysteria2.salamanderPassword ?? ""} onChange={(salamanderPassword) => onChange({ ...value, hysteria2: { ...value.hysteria2, salamanderPassword } })} />
+                        <SettingInputVertical label={uiT("uploadBandwidthBytes")} type="number" min={0} step={1} value={String(value.hysteria2.uploadBps ?? 0)} onChange={(uploadBps) => onChange({ ...value, hysteria2: { ...value.hysteria2, uploadBps: numberValue(uploadBps) } })} />
+                        <SettingInputVertical label={uiT("downloadBandwidthBytes")} type="number" min={0} step={1} value={String(value.hysteria2.downloadBps ?? 0)} onChange={(downloadBps) => onChange({ ...value, hysteria2: { ...value.hysteria2, downloadBps: numberValue(downloadBps) } })} />
+                    </div>
+                    <p className="text-sm text-ui-muted">{uiT("hysteria2BandwidthHelp")}</p>
+                    <SwitchCard label={uiT("ignoreClientBandwidth")} checked={value.hysteria2.ignoreClientBandwidth ?? false} onCheckedChange={(ignoreClientBandwidth) => onChange({ ...value, hysteria2: { ...value.hysteria2, ignoreClientBandwidth } })} />
+                    <SwitchCard label={uiT("disableUdp")} checked={value.hysteria2.disableUdp ?? false} onCheckedChange={(disableUdp) => onChange({ ...value, hysteria2: { ...value.hysteria2, disableUdp } })} />
+                </div>
+            );
         case "http":
             return <AuthFields username={value.http.username} password={value.http.password} onChange={(patch) => onChange({ ...value, http: { ...value.http, ...patch } })} />;
         case "mixed":
@@ -425,15 +445,16 @@ const NamedCertificateEditor: FC<{
 
 const ServerTLSConfigEditor: FC<{
     value?: ServerTLSConfig;
+    showNextProtos?: boolean;
     onChange: (value: ServerTLSConfig) => void;
-}> = ({ value, onChange }) => {
+}> = ({ value, showNextProtos = true, onChange }) => {
     const { t: uiT } = useTranslation('ui');
 
     const current = value ?? defaultServerTLS();
     const patch = (patchValue: Partial<ServerTLSConfig>) => onChange({ ...current, ...patchValue });
     return (
         <div className="grid gap-4">
-            <InputList title={uiT("nextProtos")} data={current.nextProtos ?? []} onChange={(nextProtos) => patch({ nextProtos })} />
+            {showNextProtos && <InputList title={uiT("nextProtos")} data={current.nextProtos ?? []} onChange={(nextProtos) => patch({ nextProtos })} />}
             <CertificateListEditor value={current.certificates ?? []} onChange={(certificates) => patch({ certificates })} />
             <NamedCertificateEditor value={current.serverNameCertificate} onChange={(serverNameCertificate) => patch({ serverNameCertificate })} />
         </div>
@@ -524,6 +545,8 @@ const TransportSection: FC<{
         onChange(normalizeInbound({ ...inbound, transports: transports.filter((_, current) => current !== index) }));
     };
 
+    if (inbound.protocol.type === "hysteria2") return <HysteriaTLSSection inbound={inbound} onChange={onChange} />;
+
     return (
         <>
             {transports.length === 0 ? (
@@ -573,10 +596,31 @@ const TransportSection: FC<{
     );
 };
 
+const HysteriaTLSSection: FC<{
+    inbound: Inbound;
+    onChange: (value: Inbound) => void;
+}> = ({ inbound, onChange }) => {
+    const { t: uiT } = useTranslation('ui');
+    const certificate = inbound.transports.find(item => item.type === "tls" || item.type === "tls_auto");
+    const [choice, setChoice] = useState<"tls" | "tls_auto">();
+    const selected = choice ?? certificate?.type ?? "tls_auto";
+    return (
+        <div className="grid gap-4">
+            <p className="text-sm text-ui-muted">{uiT("hysteria2ServerHelp")}</p>
+            <TypeUseRow label={uiT("type")} value={selected} values={["tls_auto", "tls"]}
+                onValueChange={(value) => setChoice(value as "tls" | "tls_auto")}
+                onUse={() => onChange(normalizeInbound({ ...inbound, transports: [certificate?.type === selected ? certificate : createDefaultTransport(selected)] }))} />
+            {certificate && <TransportConfigEditor value={certificate} showNextProtos={false}
+                onChange={(value) => onChange(normalizeInbound({ ...inbound, transports: [value] }))} />}
+        </div>
+    );
+};
+
 const TransportConfigEditor: FC<{
     value: InboundTransport;
+    showNextProtos?: boolean;
     onChange: (value: InboundTransport) => void;
-}> = ({ value, onChange }) => {
+}> = ({ value, showNextProtos = true, onChange }) => {
     const { t: uiT } = useTranslation('ui');
 
     switch (value.type) {
@@ -588,7 +632,7 @@ const TransportConfigEditor: FC<{
             return <div className="rounded-ui-lg border border-dashed border-ui-border p-4 text-sm text-ui-muted">{uiT("noExtraTransportConfiguration")}</div>;
         case "tls":
             return (
-                <ServerTLSConfigEditor value={value.tls.tls} onChange={(tls) => onChange({ ...value, tls: { tls } })} />
+                <ServerTLSConfigEditor value={value.tls.tls} showNextProtos={showNextProtos} onChange={(tls) => onChange({ ...value, tls: { tls } })} />
             );
         case "reality":
             return (
@@ -607,7 +651,7 @@ const TransportConfigEditor: FC<{
         case "tls_auto":
             return (
                 <div className="grid gap-4">
-                    <InputList title={uiT("nextProtos")} data={value.tls_auto.nextProtos} onChange={(nextProtos) => onChange({ ...value, tls_auto: { ...value.tls_auto, nextProtos } })} />
+                    {showNextProtos && <InputList title={uiT("nextProtos")} data={value.tls_auto.nextProtos} onChange={(nextProtos) => onChange({ ...value, tls_auto: { ...value.tls_auto, nextProtos } })} />}
                     <InputList title={uiT("serverNames")} data={value.tls_auto.serverNames} onChange={(serverNames) => onChange({ ...value, tls_auto: { ...value.tls_auto, serverNames } })} />
                     <ECHConfigEditor value={value.tls_auto.ech} onChange={(ech) => onChange({ ...value, tls_auto: { ...value.tls_auto, ech } })} />
                     <BytesTextarea
