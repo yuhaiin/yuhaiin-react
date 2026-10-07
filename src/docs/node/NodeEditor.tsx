@@ -283,6 +283,20 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                     <StringField label={uiT("path")} value={protocol.websocket.path} disabled={!editable} onChange={(path) => patch(protocol, { path })} />
                 </div>
             );
+        case "hysteria2":
+            return (
+                <div className="grid gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <StringField label={uiT("host")} value={protocol.hysteria2.host} disabled={!editable} onChange={(host) => patch(protocol, { host })} />
+                        <StringField label={uiT("password")} value={protocol.hysteria2.auth} disabled={!editable} onChange={(auth) => patch(protocol, { auth })} />
+                        <NumberField label={uiT("uploadBandwidthBytes")} value={protocol.hysteria2.upload_bps} disabled={!editable} onChange={(upload_bps) => patch(protocol, { upload_bps })} />
+                        <NumberField label={uiT("downloadBandwidthBytes")} value={protocol.hysteria2.download_bps} disabled={!editable} onChange={(download_bps) => patch(protocol, { download_bps })} />
+                        <StringField label={uiT("salamanderPassword")} value={protocol.hysteria2.salamander_password} disabled={!editable} onChange={(salamander_password) => patch(protocol, { salamander_password })} />
+                    </div>
+                    <p className="text-sm text-ui-muted">{uiT("hysteria2BandwidthHelp")}</p>
+                    <TLSConfigForm config={protocol.hysteria2.tls ?? {}} editable={editable} showEnabled={false} showNextProtos={false} onChange={(tls) => patch(protocol, { tls })} />
+                </div>
+            );
         case "quic":
             return (
                 <div className="grid gap-4">

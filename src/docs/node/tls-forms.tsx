@@ -19,8 +19,9 @@ const TLSConfigForm: FC<{
     config: Partial<NodeProtocolConfig<"tls">>;
     editable: boolean;
     showEnabled?: boolean;
+    showNextProtos?: boolean;
     onChange: (value: Partial<NodeProtocolConfig<"tls">>) => void;
-}> = ({ config, editable, showEnabled = true, onChange }) => {
+}> = ({ config, editable, showEnabled = true, showNextProtos = true, onChange }) => {
     const { t: uiT } = useTranslation('ui');
     return (
     <div className="grid gap-4">
@@ -29,7 +30,7 @@ const TLSConfigForm: FC<{
         )}
         <BoolField label={uiT("insecureSkipVerify")} value={config.insecure_skip_verify} disabled={!editable} onChange={(insecure_skip_verify) => onChange({ ...config, insecure_skip_verify })} />
         <InputList title={uiT("serverNames")} data={config.servernames ?? []} disabled={!editable} onChange={(servernames) => onChange({ ...config, servernames })} />
-        <InputList title={uiT("nextProtos")} data={config.next_protos ?? []} disabled={!editable} onChange={(next_protos) => onChange({ ...config, next_protos })} />
+        {showNextProtos && <InputList title={uiT("nextProtos")} data={config.next_protos ?? []} disabled={!editable} onChange={(next_protos) => onChange({ ...config, next_protos })} />}
         <InputBytesList
             title={uiT("caCertificate")}
             data={(config.ca_cert ?? []).map(base64ToBytes)}

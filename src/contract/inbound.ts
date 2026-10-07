@@ -47,6 +47,8 @@ export function createDefaultNetwork(type: InboundNetwork["type"] = "tcp_udp"): 
 
 export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): InboundProtocol {
     switch (type) {
+        case "hysteria2":
+            return { type, hysteria2: { auth: "", uploadBps: 0, downloadBps: 0 } };
         case "http":
             return { type, http: { username: "", password: "" } };
         case "socks5":
@@ -133,6 +135,22 @@ export function createDefaultInbound(id: string): Inbound {
         transports: [createDefaultTransport()],
         protocol: createDefaultProtocol(),
     };
+}
+
+// Select a protocol with its required listener and certificate setup, keeping a
+// usable existing certificate (and its persisted CA) rather than regenerating it.
+export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["type"]): Inbound {
+    const protocol = type === "hysteria2" && inbound.protocol.type === type
+        ? inbound.protocol : createDefaultProtocol(type);
+    if (type !== "hysteria2") return normalizeInbound({ ...inbound, protocol });
+    const host = inboundListen(inbound) || ":9002";
+    const certificate = inbound.transports.find(item => item.type === "tls" || item.type === "tls_auto");
+    return normalizeInbound({
+        ...inbound,
+        protocol,
+        network: { type: "tcp_udp", tcp_udp: { host, udp: "udp_only" } },
+        transports: [certificate ?? createDefaultTransport("tls_auto")],
+    });
 }
 
 export function normalizeInbound(value: Partial<Inbound> & { id?: string }): Inbound {
