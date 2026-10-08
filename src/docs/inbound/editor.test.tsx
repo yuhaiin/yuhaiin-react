@@ -45,7 +45,13 @@ it('edits hopping ports and explains why automatic server hopping needs root', (
     const render = () => root.render(<InboundEditor inbound={saved} onChange={(value) => { saved = value; }} />);
     try {
         act(render);
-        expect(host.textContent).toContain('hysteria2HopServerHelp');
+        expect(document.querySelector('[role="tooltip"]')).toBeNull();
+        expect(host.textContent).not.toContain('hysteria2HopServerHelp');
+        const help = host.querySelector<HTMLButtonElement>('[aria-label="hopPortsHelp"]')!;
+        act(() => help.click());
+        const tooltip = document.querySelector('[role="tooltip"]')!;
+        expect(tooltip.textContent).toContain('hysteria2HopServerHelp');
+        expect(tooltip.id).toBe(help.getAttribute('aria-describedby'));
         expect(ui.hysteria2HopServerHelp).toContain('root or CAP_NET_ADMIN');
         expect(ui.hysteria2HopServerHelp).toContain('modifies kernel nftables rules');
         const label = [...host.querySelectorAll('label')].find(element => element.textContent === 'hopPorts')!;

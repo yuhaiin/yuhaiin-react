@@ -8,11 +8,12 @@ import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardHeader, SettingLabel } from "@/component/v2/card";
 import { Select, SettingInputVertical, SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
 import { Textarea } from "@/component/v2/input";
+import { Tooltip } from "@/component/v2/tooltip";
 import { InputBytesList, InputList } from "@/component/v2/listeditor";
 
 import { createDefaultNetwork, createDefaultTransport, selectInboundProtocol, Certificate, ClientTLSConfig, Inbound, InboundNetwork, InboundProtocol, InboundTransport, normalizeInbound, ServerTLSConfig, TLSAutoTransport } from "@/contract/inbound";
 import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react";
-import { FC, useState } from "react";
+import { FC, useId, useState } from "react";
 
 const networkTypes: InboundNetwork["type"][] = ["empty", "tcp_udp", "quic"];
 
@@ -197,6 +198,7 @@ const ProtocolConfigEditor: FC<{
     onChange: (value: InboundProtocol) => void;
 }> = ({ value, onChange }) => {
     const { t: uiT } = useTranslation('ui');
+    const hoppingHelpID = useId();
 
     switch (value.type) {
         case "hysteria2":
@@ -209,8 +211,16 @@ const ProtocolConfigEditor: FC<{
                         <SettingInputVertical label={uiT("downloadBandwidthBytes")} type="number" min={0} step={1} value={String(value.hysteria2.downloadBps ?? 0)} onChange={(downloadBps) => onChange({ ...value, hysteria2: { ...value.hysteria2, downloadBps: numberValue(downloadBps) } })} />
                     </div>
                     <p className="text-sm text-ui-muted">{uiT("hysteria2BandwidthHelp")}</p>
-                    <SettingInputVertical label={uiT("hopPorts")} placeholder="20000-50000" value={value.hysteria2.hopPorts ?? ""} onChange={(hopPorts) => onChange({ ...value, hysteria2: { ...value.hysteria2, hopPorts } })} />
-                    <p className="text-sm text-ui-muted">{uiT("hysteria2HopServerHelp")}</p>
+                    <SettingInputVertical label={<span className="inline-flex items-center gap-1">
+                        {uiT("hopPorts")}
+                        <Tooltip id={hoppingHelpID} openOnClick content={uiT("hysteria2HopServerHelp")}>
+                            <button type="button" aria-label={uiT("hopPortsHelp")} aria-describedby={hoppingHelpID}
+                                className="inline-flex h-6 w-6 items-center justify-center rounded-full cursor-help focus-visible:outline-2 focus-visible:outline-ui-focus"
+                                onClick={(e) => { e.preventDefault(); e.currentTarget.focus(); }}>
+                                <span aria-hidden="true" className="h-2 w-2 rounded-full bg-ui-danger" />
+                            </button>
+                        </Tooltip>
+                    </span>} placeholder="20000-50000" value={value.hysteria2.hopPorts ?? ""} onChange={(hopPorts) => onChange({ ...value, hysteria2: { ...value.hysteria2, hopPorts } })} />
                     <SwitchCard label={uiT("ignoreClientBandwidth")} checked={value.hysteria2.ignoreClientBandwidth ?? false} onCheckedChange={(ignoreClientBandwidth) => onChange({ ...value, hysteria2: { ...value.hysteria2, ignoreClientBandwidth } })} />
                     <SwitchCard label={uiT("disableUdp")} checked={value.hysteria2.disableUdp ?? false} onCheckedChange={(disableUdp) => onChange({ ...value, hysteria2: { ...value.hysteria2, disableUdp } })} />
                 </div>
