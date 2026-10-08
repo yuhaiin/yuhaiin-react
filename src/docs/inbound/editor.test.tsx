@@ -2,7 +2,8 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
 import { InboundEditor } from './editor';
-import { createDefaultInbound, createDefaultProtocol, type Inbound } from '@/contract/inbound';
+import { createDefaultInbound, createDefaultProtocol, selectInboundProtocol, type Inbound } from '@/contract/inbound';
+import ui from '@/i18n/resources/en/ui.json';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
@@ -30,6 +31,40 @@ it('toggles automatic FakeIP routes and displays the saved value without editing
         if (saved.protocol.type !== 'tun') throw new Error('unexpected protocol');
         expect(saved.protocol.tun.autoFakeIpRoute).toBe(true);
         expect(saved.protocol.tun.routes).toEqual(['192.0.2.0/24']);
+    } finally {
+        act(() => root.unmount());
+        host.remove();
+    }
+});
+
+it('edits hopping ports and explains why automatic server hopping needs root', () => {
+    let saved = selectInboundProtocol(createDefaultInbound('hopping'), 'hysteria2');
+    const host = document.createElement('div');
+    document.body.append(host);
+    const root = createRoot(host);
+    const render = () => root.render(<InboundEditor inbound={saved} onChange={(value) => { saved = value; }} />);
+    try {
+        act(render);
+        expect(document.querySelector('[role="tooltip"]')).toBeNull();
+        expect(host.textContent).not.toContain('hysteria2HopServerHelp');
+        const help = host.querySelector<HTMLButtonElement>('[aria-label="hopPortsHelp"]')!;
+        act(() => help.click());
+        const tooltip = document.querySelector('[role="tooltip"]')!;
+        expect(tooltip.textContent).toContain('hysteria2HopServerHelp');
+        expect(tooltip.id).toBe(help.getAttribute('aria-describedby'));
+        expect(ui.hysteria2HopServerHelp).toContain('root or CAP_NET_ADMIN');
+        expect(ui.hysteria2HopServerHelp).toContain('modifies kernel nftables rules');
+        const label = [...host.querySelectorAll('label')].find(element => element.textContent === 'hopPorts')!;
+        const input = host.querySelector<HTMLInputElement>(`[id="${label.htmlFor}"]`)!;
+        act(() => {
+            Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, '443,20000-20020');
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        if (saved.protocol.type !== 'hysteria2') throw new Error('unexpected protocol');
+        expect(saved.protocol.hysteria2.hopPorts).toBe('443,20000-20020');
+        expect(saved.network).toMatchObject({ type: 'tcp_udp', tcp_udp: { udp: 'udp_only' } });
+        act(render);
+        expect(input.value).toBe('443,20000-20020');
     } finally {
         act(() => root.unmount());
         host.remove();

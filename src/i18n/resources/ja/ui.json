@@ -510,5 +510,12 @@
   "hysteria2BandwidthHelp": "0 は自動輻輳制御 (BBR) を使用します。0 以外は 65536 bytes/s 以上が必要です。送信・受信はこのエンドポイントから見た方向です。",
   "ignoreClientBandwidth": "クライアントの帯域指定を無視 (自動輻輳制御)",
   "disableUdp": "UDP プロキシを無効化",
-  "hysteria2ServerHelp": "Hysteria 2 は UDP-only と 1 つの TLS 証明書設定を使用します。TLS-auto では Server Names にクライアントの SNI を指定してください。保存時に CA が生成されます。公開証明書をクライアントの CA Certificate 欄にコピーしてください。"
+  "hysteria2ServerHelp": "Hysteria 2 は UDP-only と 1 つの TLS 証明書設定を使用します。TLS-auto では Server Names にクライアントの SNI を指定してください。保存時に CA が生成されます。公開証明書をクライアントの CA Certificate 欄にコピーしてください。",
+  "hopIntervalSeconds": "固定ホッピング間隔 (秒)",
+  "minHopIntervalSeconds": "最小ホッピング間隔 (秒)",
+  "maxHopIntervalSeconds": "最大ホッピング間隔 (秒)",
+  "hopPortsHelp": "ポートホッピングの要件",
+  "hopPorts": "ホッピングポート (任意)",
+  "hysteria2HopClientHelp": "Host に server.example:443,20000-50000 のようなポート一覧・範囲を指定すると有効になります。間隔がすべて 0 なら 30 秒です。固定間隔、または最小・最大の両方を指定してください。最小は 5 秒です。サーバーの転送設定とファイアウォールで全ポートを許可する必要があります。",
+  "hysteria2HopServerHelp": "複数の UDP ポートを同じリスナーへ転送する nftables ルールを変更するため、Linux と root 権限または CAP_NET_ADMIN が必要です。ファイアウォールで範囲を許可してください。空欄なら外部で転送を設定できます。"
 }

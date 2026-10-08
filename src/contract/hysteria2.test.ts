@@ -5,8 +5,9 @@ import { createDefaultProtocol, normalizeNode } from './node';
 describe('Hysteria 2 contracts', () => {
     it('keeps Hysteria 2 client configuration through normalization and JSON reload', () => {
         const config = {
-            host: 'server.example:443', auth: 'secret', upload_bps: 25000000,
+            host: 'server.example:443,20000-20020', auth: 'secret', upload_bps: 25000000,
             download_bps: 12500000, salamander_password: 'separate-secret',
+            hop_interval_seconds: 0, min_hop_interval_seconds: 15, max_hop_interval_seconds: 45,
             tls: { servernames: ['sni.example'], ca_cert: ['Y2E='], insecure_skip_verify: false },
         };
         const saved = normalizeNode({ chain: [{ type: 'hysteria2', hysteria2: config }] });
@@ -36,6 +37,8 @@ describe('Hysteria 2 contracts', () => {
         expect(normalizeInbound(JSON.parse(JSON.stringify(selected)))).toEqual(selected);
         if (selected.protocol.type !== 'hysteria2') throw new Error('unexpected protocol');
         selected.protocol.hysteria2.auth = 'keep-secret';
+        selected.protocol.hysteria2.hopPorts = '443,20000-50000';
+        expect(normalizeInbound(JSON.parse(JSON.stringify(selected)))).toEqual(selected);
         expect(selectInboundProtocol(selected, 'hysteria2')).toEqual(selected);
         expect(inbound.network.type).toBe('quic');
     });

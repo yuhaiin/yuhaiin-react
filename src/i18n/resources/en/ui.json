@@ -510,5 +510,12 @@
   "hysteria2BandwidthHelp": "0 uses automatic congestion control (BBR). Nonzero values must be at least 65536 bytes/s. Upload/download are from this endpoint’s perspective.",
   "ignoreClientBandwidth": "Ignore client bandwidth (use automatic congestion control)",
   "disableUdp": "Disable UDP proxying",
-  "hysteria2ServerHelp": "Hysteria 2 uses UDP-only and one TLS certificate configuration. For TLS-auto, set Server Names to the SNI clients will use. The CA is generated on save; copy its public certificate to the client’s CA Certificate field."
+  "hysteria2ServerHelp": "Hysteria 2 uses UDP-only and one TLS certificate configuration. For TLS-auto, set Server Names to the SNI clients will use. The CA is generated on save; copy its public certificate to the client’s CA Certificate field.",
+  "hopIntervalSeconds": "Fixed hopping interval (seconds)",
+  "minHopIntervalSeconds": "Minimum hopping interval (seconds)",
+  "maxHopIntervalSeconds": "Maximum hopping interval (seconds)",
+  "hopPortsHelp": "Port hopping requirements",
+  "hopPorts": "Hopping ports (optional)",
+  "hysteria2HopClientHelp": "To enable hopping, use a port list or range in Host, e.g. server.example:443,20000-50000. All intervals at 0 use 30 seconds. Set either a fixed interval or both minimum/maximum intervals; the minimum is 5 seconds. Server forwarding and firewall access must cover every listed port.",
+  "hysteria2HopServerHelp": "Requires Linux and root or CAP_NET_ADMIN because it modifies kernel nftables rules to forward multiple UDP ports to one listener. Allow the range in your firewall; leave empty for external forwarding."
 }

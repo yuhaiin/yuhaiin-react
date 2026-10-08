@@ -294,6 +294,12 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                         <StringField label={uiT("salamanderPassword")} value={protocol.hysteria2.salamander_password} disabled={!editable} onChange={(salamander_password) => patch(protocol, { salamander_password })} />
                     </div>
                     <p className="text-sm text-ui-muted">{uiT("hysteria2BandwidthHelp")}</p>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                        <SettingInputVertical label={uiT("hopIntervalSeconds")} type="number" min={0} step={1} value={String(protocol.hysteria2.hop_interval_seconds ?? 0)} disabled={!editable} onChange={(value) => patch(protocol, { hop_interval_seconds: Number(value) })} />
+                        <SettingInputVertical label={uiT("minHopIntervalSeconds")} type="number" min={0} step={1} value={String(protocol.hysteria2.min_hop_interval_seconds ?? 0)} disabled={!editable} onChange={(value) => patch(protocol, { min_hop_interval_seconds: Number(value) })} />
+                        <SettingInputVertical label={uiT("maxHopIntervalSeconds")} type="number" min={0} step={1} value={String(protocol.hysteria2.max_hop_interval_seconds ?? 0)} disabled={!editable} onChange={(value) => patch(protocol, { max_hop_interval_seconds: Number(value) })} />
+                    </div>
+                    <p className="text-sm text-ui-muted">{uiT("hysteria2HopClientHelp")}</p>
                     <TLSConfigForm config={protocol.hysteria2.tls ?? {}} editable={editable} showEnabled={false} showNextProtos={false} onChange={(tls) => patch(protocol, { tls })} />
                 </div>
             );

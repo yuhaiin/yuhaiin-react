@@ -2,8 +2,9 @@ import { AnimatePresence, motion } from 'motion/react';
 import { FC, ReactNode, useState } from "react";
 import { createPortal } from "react-dom";
 
-export const Tooltip: FC<{ children: ReactNode, content: ReactNode }> = ({ children, content }) => {
+export const Tooltip: FC<{ children: ReactNode, content: ReactNode, id?: string, openOnClick?: boolean }> = ({ children, content, id, openOnClick = false }) => {
     const [visible, setVisible] = useState(false);
+    const [pinned, setPinned] = useState(false);
     const [coords, setCoords] = useState({ left: 0, top: 0 });
 
     const show = (e: React.MouseEvent | React.FocusEvent) => {
@@ -16,15 +17,30 @@ export const Tooltip: FC<{ children: ReactNode, content: ReactNode }> = ({ child
         setVisible(true);
     };
 
-    const hide = () => setVisible(false);
+    const hide = () => {
+        setVisible(false);
+        setPinned(false);
+    };
+
+    const click = (e: React.MouseEvent) => {
+        if (pinned) {
+            hide();
+        } else {
+            show(e);
+            setPinned(true);
+        }
+    };
 
     return (
-        <div onMouseEnter={show} onMouseLeave={hide} onFocus={show} onBlur={hide} className="inline-flex">
+        <div onMouseEnter={show} onMouseLeave={() => { if (!pinned) hide(); }} onFocus={show} onBlur={hide} onClick={openOnClick ? click : undefined}
+            onKeyDown={(e) => { if (visible && e.key === 'Escape') { e.stopPropagation(); hide(); } }} className="inline-flex">
             {children}
             {createPortal(
                 <AnimatePresence>
                     {visible && (
                         <motion.div
+                            id={id}
+                            role="tooltip"
                             initial={{ opacity: 0, scale: 0.2, y: "-100%", x: "-50%" }}
                             animate={{ opacity: 1, scale: 1, y: "-100%", x: "-50%" }}
                             exit={{ opacity: 0, scale: 0.2, y: "-100%", x: "-50%" }}
