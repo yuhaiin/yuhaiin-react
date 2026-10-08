@@ -209,6 +209,8 @@ const ProtocolConfigEditor: FC<{
                         <SettingInputVertical label={uiT("downloadBandwidthBytes")} type="number" min={0} step={1} value={String(value.hysteria2.downloadBps ?? 0)} onChange={(downloadBps) => onChange({ ...value, hysteria2: { ...value.hysteria2, downloadBps: numberValue(downloadBps) } })} />
                     </div>
                     <p className="text-sm text-ui-muted">{uiT("hysteria2BandwidthHelp")}</p>
+                    <SettingInputVertical label={uiT("hopPorts")} placeholder="20000-50000" value={value.hysteria2.hopPorts ?? ""} onChange={(hopPorts) => onChange({ ...value, hysteria2: { ...value.hysteria2, hopPorts } })} />
+                    <p className="text-sm text-ui-muted">{uiT("hysteria2HopServerHelp")}</p>
                     <SwitchCard label={uiT("ignoreClientBandwidth")} checked={value.hysteria2.ignoreClientBandwidth ?? false} onCheckedChange={(ignoreClientBandwidth) => onChange({ ...value, hysteria2: { ...value.hysteria2, ignoreClientBandwidth } })} />
                     <SwitchCard label={uiT("disableUdp")} checked={value.hysteria2.disableUdp ?? false} onCheckedChange={(disableUdp) => onChange({ ...value, hysteria2: { ...value.hysteria2, disableUdp } })} />
                 </div>
