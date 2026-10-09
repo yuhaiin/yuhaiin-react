@@ -6,7 +6,7 @@ import { NodeEditor } from './NodeEditor';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
-it('edits hopping intervals while preserving authentication, host and TLS settings', () => {
+it('edits relay addresses and hopping intervals while preserving authentication, host and TLS settings', () => {
     const config = { host: 'server.example:443,20000-20020', auth: 'secret', upload_bps: 0, download_bps: 0, tls: { servernames: ['sni.example'] } };
     let saved = normalizeNode({ chain: [{ type: 'hysteria2', hysteria2: config }] });
     const host = document.createElement('div');
@@ -19,6 +19,23 @@ it('edits hopping intervals while preserving authentication, host and TLS settin
     try {
         act(render);
         expect(host.textContent).toContain('hysteria2HopClientHelp');
+        expect(host.textContent).toContain('hysteria2AddressHopHelp');
+        const newAddresses = host.querySelector<HTMLTextAreaElement>('textarea[aria-label="hysteria2HopAddresses"]')!;
+        act(() => {
+            Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(newAddresses, 'relay-b.example:30000-30020\n[2001:db8::1]:443');
+            newAddresses.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        act(() => host.querySelector<HTMLButtonElement>('button[aria-label="add hysteria2HopAddresses"]')!.click());
+        act(render);
+        expect(host.querySelector<HTMLInputElement>('input[aria-label="hysteria2HopAddresses 1"]')!.value).toBe('relay-b.example:30000-30020');
+        const relay = host.querySelector<HTMLInputElement>('input[aria-label="hysteria2HopAddresses 2"]')!;
+        act(() => {
+            Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(relay, '[2001:db8::2]:443,8443');
+            relay.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        act(render);
+        act(() => host.querySelector<HTMLButtonElement>('button[aria-label="delete hysteria2HopAddresses 1"]')!.click());
+        act(render);
         for (const [key, value] of [['minHopIntervalSeconds', '15'], ['maxHopIntervalSeconds', '45']]) {
             const label = [...host.querySelectorAll('label')].find(element => element.textContent === key)!;
             const input = host.querySelector<HTMLInputElement>(`[id="${label.htmlFor}"]`)!;
@@ -32,6 +49,7 @@ it('edits hopping intervals while preserving authentication, host and TLS settin
         }
         expect(saved.chain).toEqual([{ type: 'hysteria2', hysteria2: {
             ...config, min_hop_interval_seconds: 15, max_hop_interval_seconds: 45,
+            hop_addresses: ['[2001:db8::2]:443,8443'],
         } }]);
     } finally {
         act(() => root.unmount());
