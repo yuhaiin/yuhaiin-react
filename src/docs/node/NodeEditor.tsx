@@ -294,6 +294,8 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                         <StringField label={uiT("salamanderPassword")} value={protocol.hysteria2.salamander_password} disabled={!editable} onChange={(salamander_password) => patch(protocol, { salamander_password })} />
                     </div>
                     <p className="text-sm text-ui-muted">{uiT("hysteria2BandwidthHelp")}</p>
+                    <InputList title={uiT("hysteria2HopAddresses")} data={protocol.hysteria2.hop_addresses ?? []} textarea placeholder="relay-b.example:443,20000-20020" disabled={!editable} onChange={(hop_addresses) => patch(protocol, { hop_addresses })} />
+                    <p className="text-sm text-ui-muted">{uiT("hysteria2AddressHopHelp")}</p>
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <SettingInputVertical label={uiT("hopIntervalSeconds")} type="number" min={0} step={1} value={String(protocol.hysteria2.hop_interval_seconds ?? 0)} disabled={!editable} onChange={(value) => patch(protocol, { hop_interval_seconds: Number(value) })} />
                         <SettingInputVertical label={uiT("minHopIntervalSeconds")} type="number" min={0} step={1} value={String(protocol.hysteria2.min_hop_interval_seconds ?? 0)} disabled={!editable} onChange={(value) => patch(protocol, { min_hop_interval_seconds: Number(value) })} />

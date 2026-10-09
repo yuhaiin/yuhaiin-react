@@ -445,6 +445,7 @@ export namespace Go {
       upload_bps?: number;
       download_bps?: number;
       salamander_password?: string;
+      hop_addresses?: string[];
       hop_interval_seconds?: number;
       min_hop_interval_seconds?: number;
       max_hop_interval_seconds?: number;
