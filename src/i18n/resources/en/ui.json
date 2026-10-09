@@ -517,7 +517,7 @@
   "hopPortsHelp": "Port hopping requirements",
   "hopPorts": "Hopping ports (optional)",
   "hysteria2HopAddresses": "Additional relay addresses",
-  "hysteria2AddressHopHelp": "Host is included in the hopping pool. Add other UDP relay addresses here; each accepts a port list or range. Every relay must forward to the same Hysteria 2 server and UDP listener, with a working return path. Set Server Names to the final server’s certificate name. Uses the hopping intervals below; unreachable relays are not automatically detected.",
+  "hysteria2AddressHopHelp": "Add UDP relay addresses; Host is also included. With this list set, domains contribute all returned A/AAAA IPs to the hopping pool. Each entry accepts a port list or range. All IPs must forward to the same Hysteria 2 server and UDP listener. Set Server Names to the final server’s certificate name. DNS refreshes on reconnection; unreachable relays are not automatically detected.",
   "hysteria2HopClientHelp": "To enable hopping, use a port list or range in Host, e.g. server.example:443,20000-50000. All intervals at 0 use 30 seconds. Set either a fixed interval or both minimum/maximum intervals; the minimum is 5 seconds. Server forwarding and firewall access must cover every listed port.",
   "hysteria2HopServerHelp": "Requires Linux and root or CAP_NET_ADMIN because it modifies kernel nftables rules to forward multiple UDP ports to one listener. Allow the range in your firewall; leave empty for external forwarding."
 }
