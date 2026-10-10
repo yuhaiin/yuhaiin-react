@@ -1,6 +1,7 @@
 import { base64ToBytes, bytesToBase64 } from "@/common/base64";
 import { WireguardForm, FixedForm, FixedV2Form } from "./tunnel-forms";
 import { GlobalProtectForm, GlobalProtectRuntimeInfo } from "./globalprotect-forms";
+import { SoftEtherForm } from "./softether-forms";
 import { TLSConfigForm, TLSTerminationForm, HTTPTerminationForm } from "./tls-forms";
 import { StringField, NumberField, BoolField } from "./fields";
 
@@ -373,6 +374,8 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             return <WireguardForm config={protocol.wireguard} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "globalprotect":
             return <GlobalProtectForm config={protocol.globalprotect} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
+        case "softether":
+            return <SoftEtherForm config={protocol.softether} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "tailscale":
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

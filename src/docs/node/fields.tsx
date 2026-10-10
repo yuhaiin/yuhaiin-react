@@ -44,8 +44,8 @@ const NumberField: FC<{ label: string; value: unknown; disabled?: boolean; onCha
     <SettingInputVertical label={label} type="number" value={String(numberValue(value))} onChange={(next) => onChange(numberValue(next))} disabled={disabled} />
 );
 
-const BoolField: FC<{ label: string; value: unknown; disabled?: boolean; onChange: (value: boolean) => void }> = ({ label, value, disabled, onChange }) => (
-    <SwitchCard label={label} checked={boolValue(value)} onCheckedChange={onChange} disabled={disabled} />
+const BoolField: FC<{ label: string; value: unknown; description?: string; disabled?: boolean; onChange: (value: boolean) => void }> = ({ label, value, description, disabled, onChange }) => (
+    <SwitchCard label={label} description={description} checked={boolValue(value)} onCheckedChange={onChange} disabled={disabled} />
 );
 
 export { StringField, NumberField, BoolField };
