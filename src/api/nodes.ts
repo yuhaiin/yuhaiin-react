@@ -57,6 +57,10 @@ export async function closeNode(id: string): Promise<void> {
   await requestJSON<void>("POST", `/api/v2/nodes/${encodeURIComponent(id)}/close`);
 }
 
+export async function getNodeExtraInfo(id: string, signal?: AbortSignal): Promise<Go.node.NodeExtraInfo> {
+  return requestJSON<Go.node.NodeExtraInfo>("GET", `/api/v2/nodes/${encodeURIComponent(id)}/extra`, undefined, undefined, signal);
+}
+
 export type NodeLatencyType = "tcp" | "udp" | "ip" | "stun" | "stun_tcp";
 
 export type NodeLatencyOptions = {

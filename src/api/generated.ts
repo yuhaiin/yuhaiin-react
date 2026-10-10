@@ -23,6 +23,7 @@ export type RPCOperation =
   | "info"
   | "node.close"
   | "node.delete"
+  | "node.extra"
   | "node.get"
   | "node.latency"
   | "node.put"
@@ -152,6 +153,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "POST", pattern: "/api/v2/nodes/{id}/use", operation: "node.use" },
   { method: "POST", pattern: "/api/v2/nodes/{id}/latency", operation: "node.latency" },
   { method: "POST", pattern: "/api/v2/nodes/{id}/close", operation: "node.close" },
+  { method: "GET", pattern: "/api/v2/nodes/{id}/extra", operation: "node.extra" },
   { method: "GET", pattern: "/api/v2/resolvers", operation: "resolvers.get" },
   { method: "POST", pattern: "/api/v2/resolvers", operation: "resolvers.post" },
   { method: "GET", pattern: "/api/v2/resolvers/{id}", operation: "resolver.get" },
