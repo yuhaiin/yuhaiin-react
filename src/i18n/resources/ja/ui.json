@@ -543,5 +543,21 @@
   "hysteria2HopAddresses": "追加の中継アドレス",
   "hysteria2AddressHopHelp": "UDP 中継アドレスを追加してください。Host も対象に含まれます。この一覧を設定すると、ドメインが返す全 A/AAAA アドレスがホッピング対象になります。各項目にポート一覧・範囲を指定できます。全 IP を同じ Hysteria 2 サーバーの同じ UDP リスナーへ転送してください。Server Names には最終サーバーの証明書名を指定します。DNS は再接続時に更新され、到達不能な中継先の自動検出は行いません。",
   "hysteria2HopClientHelp": "Host に server.example:443,20000-50000 のようなポート一覧・範囲を指定すると有効になります。間隔がすべて 0 なら 30 秒です。固定間隔、または最小・最大の両方を指定してください。最小は 5 秒です。サーバーの転送設定とファイアウォールで全ポートを許可する必要があります。",
-  "hysteria2HopServerHelp": "複数の UDP ポートを同じリスナーへ転送する nftables ルールを変更するため、Linux と root 権限または CAP_NET_ADMIN が必要です。ファイアウォールで範囲を許可してください。空欄なら外部で転送を設定できます。"
+  "hysteria2HopServerHelp": "複数の UDP ポートを同じリスナーへ転送する nftables ルールを変更するため、Linux と root 権限または CAP_NET_ADMIN が必要です。ファイアウォールで範囲を許可してください。空欄なら外部で転送を設定できます。",
+  "softEtherGateway": "SoftEther サーバー (ホスト:ポート)",
+  "softEtherHub": "仮想 HUB",
+  "softEtherAuthType": "認証方式",
+  "softEtherPasswordAuth": "パスワード",
+  "softEtherCertificateAuth": "クライアント証明書",
+  "softEtherClientCert": "クライアント証明書 PEM",
+  "softEtherClientKey": "クライアント秘密鍵 PEM",
+  "softEtherSecretHelp": "秘密鍵はノード設定に保存されます。バックアップを安全に管理してください。",
+  "softEtherStaticIPv4": "固定 IPv4 プレフィックス (任意)",
+  "softEtherIPv4Router": "IPv4 ゲートウェイ (任意)",
+  "softEtherStaticIPv6": "固定 IPv6 プレフィックス (任意)",
+  "softEtherIPv6Router": "IPv6 ルーター (任意)",
+  "softEtherAddressHelp": "IPv4 の空欄は DHCP を使用します。固定 IPv4 / IPv6 ではアドレスとルーターの両方が必要です。",
+  "softEtherUDPAcceleration": "UDP アクセラレーション",
+  "softEtherAutoReconnect": "自動再接続",
+  "softEtherSecurityHelp": "サーバー証明書を検証してください。検証を無効にすると認証情報が危険にさらされます。"
 }
