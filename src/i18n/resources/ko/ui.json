@@ -558,6 +558,7 @@
   "softEtherIPv6Router": "IPv6 라우터 (선택)",
   "softEtherAddressHelp": "IPv4 항목을 비우면 DHCP를 사용합니다. 고정 IPv4/IPv6는 주소와 라우터가 모두 필요합니다.",
   "softEtherUDPAcceleration": "UDP 가속",
+  "softEtherUDPAccelerationHelp": "직접 UDP 연결이 필요하며 프록시 체인을 통한 연결에서는 사용할 수 없습니다.",
   "softEtherAutoReconnect": "자동 재연결",
   "softEtherSecurityHelp": "서버 인증서를 검증하세요. 검증을 끄면 VPN 자격 증명이 노출될 수 있습니다."
 }

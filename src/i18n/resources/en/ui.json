@@ -558,6 +558,7 @@
   "softEtherIPv6Router": "IPv6 router (optional)",
   "softEtherAddressHelp": "Leave IPv4 empty for DHCP. For static IPv4 or IPv6 provide both address and router.",
   "softEtherUDPAcceleration": "UDP Acceleration",
+  "softEtherUDPAccelerationHelp": "Requires direct UDP connectivity; unavailable through a chained proxy.",
   "softEtherAutoReconnect": "Reconnect automatically",
   "softEtherSecurityHelp": "Verify the server certificate whenever possible. Disabling verification exposes VPN credentials."
 }

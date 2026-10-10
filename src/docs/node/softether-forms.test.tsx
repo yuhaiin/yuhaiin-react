@@ -54,6 +54,10 @@ it("edits native SSL VPN node fields and retains cert, UDP and IPv6 options", ()
         const controls = [...host.querySelectorAll<HTMLButtonElement>('[role="switch"]')];
         const accel = controls.find(e => document.getElementById(e.getAttribute("aria-labelledby") || "")?.textContent === "softEtherUDPAcceleration")!;
         expect(accel).toBeTruthy();
+        expect(document.getElementById(accel.getAttribute("aria-describedby") || "")?.textContent)
+            .toBe("softEtherUDPAccelerationHelp");
+        const authLabel = [...host.querySelectorAll("label")].find(e => e.textContent === "softEtherAuthType");
+        expect(authLabel?.control).toBe(host.querySelector("select"));
         act(() => accel.click());
         act(render);
         expect(saved.chain[0]).toMatchObject({ type:"softether", softether: {

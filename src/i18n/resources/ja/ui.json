@@ -558,6 +558,7 @@
   "softEtherIPv6Router": "IPv6 ルーター (任意)",
   "softEtherAddressHelp": "IPv4 の空欄は DHCP を使用します。固定 IPv4 / IPv6 ではアドレスとルーターの両方が必要です。",
   "softEtherUDPAcceleration": "UDP アクセラレーション",
+  "softEtherUDPAccelerationHelp": "UDP への直接接続が必要です。プロキシチェーン経由では使用できません。",
   "softEtherAutoReconnect": "自動再接続",
   "softEtherSecurityHelp": "サーバー証明書を検証してください。検証を無効にすると認証情報が危険にさらされます。"
 }

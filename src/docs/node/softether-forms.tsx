@@ -2,7 +2,7 @@ import { SettingLabel } from "@/component/v2/card";
 import { SettingInputVertical } from "@/component/v2/forms";
 import { Textarea } from "@/component/v2/input";
 import type { NodeProtocolConfig } from "@/contract/node";
-import { FC } from "react";
+import { FC, useId } from "react";
 import { useTranslation } from "react-i18next";
 import { BoolField, NumberField } from "./fields";
 
@@ -14,6 +14,7 @@ export const SoftEtherForm: FC<{
 }> = ({ config, editable, onChange }) => {
     const { t } = useTranslation("ui");
     const certificateAuth = config.auth_type === "certificate";
+    const authTypeId = useId();
 
     return (
         <div className="grid gap-3">
@@ -27,9 +28,9 @@ export const SoftEtherForm: FC<{
                 <SettingInputVertical label={t("username")} value={config.username ?? ""}
                     disabled={!editable} onChange={(username) => onChange({ username })} />
                 <div>
-                    <SettingLabel className="mb-2 block">{t("softEtherAuthType")}</SettingLabel>
+                    <SettingLabel htmlFor={authTypeId} className="mb-2 block">{t("softEtherAuthType")}</SettingLabel>
                     <select className="w-full rounded-ui-md border border-ui-border bg-ui-surface px-3 py-2"
-                        disabled={!editable} value={config.auth_type ?? "password"}
+                        id={authTypeId} disabled={!editable} value={config.auth_type ?? "password"}
                         onChange={(e) => onChange({ auth_type: e.target.value as "password" | "certificate" })}>
                         <option value="password">{t("softEtherPasswordAuth")}</option>
                         <option value="certificate">{t("softEtherCertificateAuth")}</option>
@@ -74,7 +75,8 @@ export const SoftEtherForm: FC<{
             </div>
             <p className="text-sm text-ui-muted">{t("softEtherAddressHelp")}</p>
             <BoolField label={t("softEtherUDPAcceleration")} value={config.udp_acceleration}
-                disabled={!editable} onChange={(udp_acceleration) => onChange({ udp_acceleration })} />
+                description={t("softEtherUDPAccelerationHelp")} disabled={!editable}
+                onChange={(udp_acceleration) => onChange({ udp_acceleration })} />
             <BoolField label={t("softEtherAutoReconnect")} value={config.auto_reconnect}
                 disabled={!editable} onChange={(auto_reconnect) => onChange({ auto_reconnect })} />
             <div>
