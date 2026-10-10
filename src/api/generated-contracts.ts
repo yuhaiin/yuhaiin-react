@@ -325,6 +325,11 @@ export namespace Go {
       origin: string;
       enabled: boolean;
       chain: Protocol[];
+      latency?: LatencyConfig;
+    }
+    export interface LatencyConfig {
+      url?: string;
+      insecure_skip_verify?: boolean;
     }
     export interface Selection {
       tcp?: Node;

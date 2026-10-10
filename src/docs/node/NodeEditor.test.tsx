@@ -56,3 +56,39 @@ it('edits relay addresses and hopping intervals while preserving authentication,
         host.remove();
     }
 });
+
+it('edits a per-node latency URL and its HTTPS verification option', () => {
+    let saved = normalizeNode({ chain: [{ type: 'direct', direct: {} }] });
+    const host = document.createElement('div');
+    document.body.append(host);
+    const root = createRoot(host);
+    const noop = () => {};
+    const render = () => root.render(<NodeEditor value={saved} editable groups={[]}
+        onChange={(patch) => { saved = normalizeNode({ ...saved, ...patch }); }}
+        onProtocolChange={noop} onMoveProtocol={noop} onRemoveProtocol={noop} onAddProtocol={noop} />);
+
+    try {
+        act(render);
+        expect(host.textContent).toContain('nodeLatencyURLHelp');
+
+        const urlLabel = [...host.querySelectorAll('label')].find((label) => label.textContent === 'nodeLatencyURL')!;
+        const urlInput = urlLabel.control as HTMLInputElement;
+        act(() => {
+            Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(urlInput, 'https://intranet.example.test/health');
+            urlInput.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        act(render);
+        expect(saved.latency?.url).toBe('https://intranet.example.test/health');
+
+        const insecureSwitch = [...host.querySelectorAll<HTMLButtonElement>('[role="switch"]')].find((button) => {
+            const labelId = button.getAttribute('aria-labelledby');
+            return labelId !== null && document.getElementById(labelId)?.textContent === 'nodeLatencyInsecureSkipVerify';
+        })!;
+        act(() => insecureSwitch.click());
+        act(render);
+        expect(saved.latency?.insecure_skip_verify).toBe(true);
+    } finally {
+        act(() => root.unmount());
+        host.remove();
+    }
+});

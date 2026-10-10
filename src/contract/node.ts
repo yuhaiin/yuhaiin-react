@@ -128,6 +128,7 @@ export function normalizeNode(value: Partial<Node> | undefined): Node {
     chain: Array.isArray(node.chain) && node.chain.length > 0
       ? node.chain.map((item) => normalizeProtocol(item))
       : [createDefaultProtocol("direct")],
+    ...(node.latency ? { latency: { ...node.latency } } : {}),
   };
 }
 
