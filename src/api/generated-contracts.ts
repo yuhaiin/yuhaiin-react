@@ -379,6 +379,7 @@ export namespace Go {
       | { type: "reality"; reality: Reality }
       | { type: "tls"; tls: TLS }
       | { type: "wireguard"; wireguard: Wireguard }
+      | { type: "globalprotect"; globalprotect: GlobalProtect }
       | { type: "mux"; mux: Concurrency }
       | { type: "drop"; drop: Drop }
       | { type: "vless"; vless: Vless }
@@ -395,6 +396,29 @@ export namespace Go {
       | { type: "proxy"; proxy: Proxy }
       | { type: "fixedv2"; fixedv2: FixedV2 }
       | { type: "point_as_endpoint"; point_as_endpoint: PointAsEndpoint };
+    export interface GlobalProtect {
+      gateway: string;
+      username: string;
+      password: string;
+      computer?: string;
+      ca_cert_pem?: string;
+      insecure_skip_verify?: boolean;
+      mtu?: number;
+    }
+    export interface NodeExtraInfo {
+      globalprotect?: GlobalProtectInfo;
+    }
+    export interface GlobalProtectInfo {
+      tunnel_prefix?: string;
+      access_routes_ipv4?: string[];
+      exclude_routes_ipv4?: string[];
+      access_routes_ipv6?: string[];
+      exclude_routes_ipv6?: string[];
+      dns?: string[];
+      dns_v6?: string[];
+      dns_suffix?: string[];
+      no_direct_access_to_local_network?: string;
+    }
     export interface None {
     }
     export interface Reject {

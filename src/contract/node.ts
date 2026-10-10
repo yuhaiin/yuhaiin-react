@@ -26,6 +26,9 @@ export type ServerTLSConfig = Partial<Go.node.ServerTLS>;
 export type TLSTerminationConfig = { tls?: ServerTLSConfig };
 export type WireguardPeerConfig = Partial<Go.node.WireguardPeer>;
 export type WireguardConfig = Omit<Partial<Go.node.Wireguard>, "peers"> & { peers?: WireguardPeerConfig[] };
+export type GlobalProtectConfig = Partial<Go.node.GlobalProtect>;
+export type NodeExtraInfo = Go.node.NodeExtraInfo;
+export type GlobalProtectInfo = Go.node.GlobalProtectInfo;
 export type TailscaleConfig = Partial<Go.node.Tailscale>;
 export type SetConfig = Partial<Go.node.Set>;
 export type HTTPHeaderConfig = Partial<Go.node.HTTPHeader>;
@@ -57,6 +60,7 @@ export type NodeProtocolConfigByType = {
   reality: RealityConfig;
   tls: TLSConfig;
   wireguard: WireguardConfig;
+  globalprotect: GlobalProtectConfig;
   mux: ConcurrencyConfig;
   drop: EmptyNodeProtocolConfig;
   vless: VlessConfig;
@@ -178,6 +182,8 @@ function defaultProtocolConfig<T extends NodeProtocolType>(type: T): NodeProtoco
       return { addresses: [] } as NodeProtocolConfig<T>;
     case "wireguard":
       return { endpoint: [], peers: [] } as NodeProtocolConfig<T>;
+    case "globalprotect":
+      return { gateway: "", username: "", password: "", insecure_skip_verify: false, mtu: 0 } as NodeProtocolConfig<T>;
     case "set":
       return { nodes: [] } as NodeProtocolConfig<T>;
     case "none":
@@ -266,6 +272,7 @@ export const protocolTypes: NodeProtocolType[] = [
   "reality",
   "tls",
   "wireguard",
+  "globalprotect",
   "mux",
   "drop",
   "vless",

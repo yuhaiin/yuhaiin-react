@@ -1,5 +1,6 @@
 import { base64ToBytes, bytesToBase64 } from "@/common/base64";
 import { WireguardForm, FixedForm, FixedV2Form } from "./tunnel-forms";
+import { GlobalProtectForm, GlobalProtectRuntimeInfo } from "./globalprotect-forms";
 import { TLSConfigForm, TLSTerminationForm, HTTPTerminationForm } from "./tls-forms";
 import { StringField, NumberField, BoolField } from "./fields";
 
@@ -51,9 +52,16 @@ const NodeEditor: FC<{
             onRemoveProtocol={onRemoveProtocol}
             onAddProtocol={onAddProtocol}
         />
+        {value.chain.some(containsGlobalProtect) && <GlobalProtectRuntimeInfo key={value.id} nodeId={value.id} />}
     </div>
 );
 };
+
+function containsGlobalProtect(protocol: NodeProtocol): boolean {
+    if (protocol.type === "globalprotect") return true;
+    if (protocol.type !== "network_split") return false;
+    return [protocol.network_split.tcp, protocol.network_split.udp].some((child) => child ? containsGlobalProtect(child) : false);
+}
 
 const NodeProtocolChain: FC<{
     chain: NodeProtocol[];
@@ -344,6 +352,8 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             return <TLSConfigForm config={protocol.tls} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "wireguard":
             return <WireguardForm config={protocol.wireguard} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
+        case "globalprotect":
+            return <GlobalProtectForm config={protocol.globalprotect} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "tailscale":
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
