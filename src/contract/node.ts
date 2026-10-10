@@ -1,7 +1,7 @@
 import type { Go } from "@/api/generated-contracts";
 
 export type NodeOrigin = "reserve" | "remote" | "manual";
-export type NodeProtocolType = Go.node.Protocol["type"];
+export type NodeProtocolType = Go.node.Protocol["type"] | "softether";
 export type EmptyNodeProtocolConfig = { readonly __emptyProtocolConfig?: never };
 export type ShadowsocksConfig = Partial<Go.node.Shadowsocks>;
 export type ShadowsocksrConfig = Partial<Go.node.Shadowsocksr>;
@@ -27,6 +27,7 @@ export type TLSTerminationConfig = { tls?: ServerTLSConfig };
 export type WireguardPeerConfig = Partial<Go.node.WireguardPeer>;
 export type WireguardConfig = Omit<Partial<Go.node.Wireguard>, "peers"> & { peers?: WireguardPeerConfig[] };
 export type GlobalProtectConfig = Partial<Go.node.GlobalProtect>;
+export type SoftEtherConfig = { gateway?: string; username?: string; password?: string; hub?: string; auth_type?: "password" | "certificate"; client_cert_pem?: string; client_key_pem?: string; ca_cert_pem?: string; insecure_skip_verify?: boolean; address?: string; router?: string; ipv6_address?: string; ipv6_router?: string; mtu?: number; udp_acceleration?: boolean; auto_reconnect?: boolean; };
 export type NodeExtraInfo = Go.node.NodeExtraInfo;
 export type GlobalProtectInfo = Go.node.GlobalProtectInfo;
 export type TailscaleConfig = Partial<Go.node.Tailscale>;
@@ -61,6 +62,7 @@ export type NodeProtocolConfigByType = {
   tls: TLSConfig;
   wireguard: WireguardConfig;
   globalprotect: GlobalProtectConfig;
+  softether: SoftEtherConfig;
   mux: ConcurrencyConfig;
   drop: EmptyNodeProtocolConfig;
   vless: VlessConfig;
@@ -185,6 +187,8 @@ function defaultProtocolConfig<T extends NodeProtocolType>(type: T): NodeProtoco
       return { endpoint: [], peers: [] } as NodeProtocolConfig<T>;
     case "globalprotect":
       return { gateway: "", username: "", password: "", insecure_skip_verify: false, mtu: 0 } as NodeProtocolConfig<T>;
+    case "softether":
+      return { gateway: "", username: "", hub: "DEFAULT", auth_type: "password", password: "", insecure_skip_verify: false, auto_reconnect: true, udp_acceleration: false, mtu: 1400 } as NodeProtocolConfig<T>;
     case "set":
       return { nodes: [] } as NodeProtocolConfig<T>;
     case "none":
@@ -274,6 +278,7 @@ export const protocolTypes: NodeProtocolType[] = [
   "tls",
   "wireguard",
   "globalprotect",
+  "softether",
   "mux",
   "drop",
   "vless",
