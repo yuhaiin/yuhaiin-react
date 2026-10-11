@@ -38,7 +38,7 @@ const NodeEditor: FC<{
         {editable && (
             <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
                 <SettingInputVertical label={uiT("name")} value={value.name} onChange={(name) => onChange({ name })} disabled={!editable} />
-                <SettingSelectVertical label={uiT("groupLabel")} value={value.group} values={groups} onChange={(group) => onChange({ group })} disabled={!editable} />
+                <SettingInputVertical label={uiT("groupLabel")} value={value.group} reminds={groups.map(group => ({ label: group, value: group }))} showAllOnFocus onChange={(group) => onChange({ group })} disabled={!editable} />
                 <SettingInputVertical label={uiT("idLabel")} value={value.id} onChange={(id) => onChange({ id })} disabled={!editable} />
                 <SettingSelectVertical label={uiT("origin")} value={value.origin} values={["reserve", "remote", "manual"]} onChange={(origin) => onChange({ origin: origin as NodeOrigin })} disabled={!editable} />
                 <div className="md:col-span-2">
