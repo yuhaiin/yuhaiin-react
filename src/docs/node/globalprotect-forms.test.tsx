@@ -14,6 +14,7 @@ it("edits a GlobalProtect outbound and loads cached gateway routes on demand", a
     vi.mocked(getNodeExtraInfo).mockResolvedValue({
         globalprotect: {
             tunnel_prefix: "192.0.2.8/32",
+            data_transport: "esp",
             access_routes_ipv4: ["198.51.100.0/24", "203.0.113.5/32"],
             exclude_routes_ipv4: [],
             access_routes_ipv6: [],
@@ -59,6 +60,12 @@ it("edits a GlobalProtect outbound and loads cached gateway routes on demand", a
         act(render);
         expect(saved.chain[0]).toMatchObject({ type: "globalprotect", globalprotect: { gateway: "pa.example.com" } });
 
+        const esp = [...host.querySelectorAll<HTMLButtonElement>('[role="switch"]')]
+            .find((item) => document.getElementById(item.getAttribute("aria-labelledby") || "")?.textContent === "globalProtectESP")!;
+        act(() => esp.click());
+        act(render);
+        expect(saved.chain[0]).toMatchObject({ globalprotect: { use_esp: true } });
+
         const loadButton = host.querySelector<HTMLButtonElement>('button[aria-label="globalProtectFetchGatewayInfo"]')!;
         await act(async () => {
             loadButton.click();
@@ -69,6 +76,8 @@ it("edits a GlobalProtect outbound and loads cached gateway routes on demand", a
         expect(host.textContent).toContain("198.51.100.0/24");
         expect(host.textContent).toContain("203.0.113.5/32");
         expect(host.textContent).toContain("globalProtectAccessRoutesIPv4");
+        expect(host.textContent).toContain("vpnDataTransport");
+        expect(host.textContent).toContain("esp");
     } finally {
         act(() => root.unmount());
         host.remove();

@@ -2,6 +2,7 @@ import { base64ToBytes, bytesToBase64 } from "@/common/base64";
 import { WireguardForm, FixedForm, FixedV2Form } from "./tunnel-forms";
 import { GlobalProtectForm, GlobalProtectRuntimeInfo } from "./globalprotect-forms";
 import { SoftEtherForm } from "./softether-forms";
+import { OpenVPNForm, OpenVPNRuntimeInfo } from "./openvpn-forms";
 import { TLSConfigForm, TLSTerminationForm, HTTPTerminationForm } from "./tls-forms";
 import { StringField, NumberField, BoolField } from "./fields";
 
@@ -72,15 +73,16 @@ const NodeEditor: FC<{
             onRemoveProtocol={onRemoveProtocol}
             onAddProtocol={onAddProtocol}
         />
-        {value.chain.some(containsGlobalProtect) && <GlobalProtectRuntimeInfo key={value.id} nodeId={value.id} />}
+        {value.chain.some((protocol) => containsProtocol(protocol, "globalprotect")) && <GlobalProtectRuntimeInfo key={`gp-${value.id}`} nodeId={value.id} />}
+        {value.chain.some((protocol) => containsProtocol(protocol, "openvpn")) && <OpenVPNRuntimeInfo key={`ovpn-${value.id}`} nodeId={value.id} />}
     </div>
 );
 };
 
-function containsGlobalProtect(protocol: NodeProtocol): boolean {
-    if (protocol.type === "globalprotect") return true;
+function containsProtocol(protocol: NodeProtocol, type: "globalprotect" | "openvpn"): boolean {
+    if (protocol.type === type) return true;
     if (protocol.type !== "network_split") return false;
-    return [protocol.network_split.tcp, protocol.network_split.udp].some((child) => child ? containsGlobalProtect(child) : false);
+    return [protocol.network_split.tcp, protocol.network_split.udp].some((child) => child ? containsProtocol(child, type) : false);
 }
 
 const NodeProtocolChain: FC<{
@@ -374,6 +376,8 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             return <WireguardForm config={protocol.wireguard} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "globalprotect":
             return <GlobalProtectForm config={protocol.globalprotect} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
+        case "openvpn":
+            return <OpenVPNForm config={protocol.openvpn} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "softether":
             return <SoftEtherForm config={protocol.softether} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "tailscale":
