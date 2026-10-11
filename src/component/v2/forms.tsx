@@ -48,6 +48,7 @@ interface SettingInputVerticalProps extends Omit<InputProps, 'onChange'> {
     // Redefine onChange to match business needs (pass string directly)
     onChange: (val: string) => void;
     reminds?: Remind[];
+    showAllOnFocus?: boolean;
 }
 
 export const SettingInputVertical: FC<SettingInputVerticalProps> = React.memo(({
@@ -57,6 +58,7 @@ export const SettingInputVertical: FC<SettingInputVerticalProps> = React.memo(({
     placeholder,
     className,
     reminds,
+    showAllOnFocus,
     size,      // Receive the previously defined size
     ...rest    // Receive other native properties like disabled, readOnly, type, etc.
 }) => {
@@ -78,6 +80,7 @@ export const SettingInputVertical: FC<SettingInputVerticalProps> = React.memo(({
                     onChange={onChange}
                     placeholder={placeholder}
                     options={reminds.map(r => ({ label: r.label, value: r.value, details: r.label_children }))}
+                    showAllOnFocus={showAllOnFocus}
                     {...rest}
                 />
             ) : (
