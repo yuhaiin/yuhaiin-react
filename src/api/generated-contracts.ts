@@ -385,6 +385,7 @@ export namespace Go {
       | { type: "http2"; http2: Concurrency }
       | { type: "reality"; reality: Reality }
       | { type: "tls"; tls: TLS }
+      | { type: "amneziawg"; amneziawg: AmneziaWG }
       | { type: "wireguard"; wireguard: Wireguard }
       | { type: "openvpn"; openvpn: OpenVPN }
       | { type: "l2tp"; l2tp: L2TP }
@@ -653,6 +654,32 @@ export namespace Go {
       peers?: WireguardPeer[];
       mtu?: number;
       reserved?: string;
+    }
+    export interface AmneziaWG {
+      secretKey: string;
+      endpoint?: string[];
+      peers?: WireguardPeer[];
+      mtu?: number;
+      jc?: number;
+      jmin?: number;
+      jmax?: number;
+      s1?: number;
+      s2?: number;
+      s3?: number;
+      s4?: number;
+      h1?: string;
+      h2?: string;
+      h3?: string;
+      h4?: string;
+      i1?: string;
+      i2?: string;
+      i3?: string;
+      i4?: string;
+      i5?: string;
+      header_protection_key?: string;
+      content_padding_addition?: string;
+      random_trailers?: boolean;
+      disable_cookies?: boolean;
     }
     export interface WireguardPeer {
       publicKey: string;
