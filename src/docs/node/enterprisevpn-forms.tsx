@@ -1,6 +1,8 @@
 import type { NodeProtocolConfig } from "@/contract/node";
 import { FC } from "react";
+import { SettingLabel } from "@/component/v2/card";
 import { SettingInputVertical } from "@/component/v2/forms";
+import { Textarea } from "@/component/v2/input";
 import { BoolField, StringField, NumberField } from "./fields";
 
 type Props<T extends "ikev2" | "anyconnect" | "sstp" | "fortinet"> = {
@@ -51,7 +53,10 @@ export const FortinetForm: FC<Props<"fortinet">> = ({ config, editable, onChange
     <SettingInputVertical label="One-time token" type="password" value={config.token ?? ""} disabled={!editable} onChange={(token) => onChange({ token })} />
     <SettingInputVertical label="TOTP secret" type="password" value={config.totp_secret ?? ""} disabled={!editable} onChange={(totp_secret) => onChange({ totp_secret })} />
     <div className="md:col-span-2">
-      <SettingInputVertical label="Trusted CA certificate (PEM)" value={config.ca_cert_pem ?? ""} disabled={!editable} onChange={(ca_cert_pem) => onChange({ ca_cert_pem })} />
+      <SettingLabel className="mb-2 block">Trusted CA certificate (PEM)</SettingLabel>
+      <Textarea aria-label="Trusted CA certificate (PEM)" rows={5} spellCheck={false}
+        disabled={!editable} placeholder="-----BEGIN CERTIFICATE-----"
+        value={config.ca_cert_pem ?? ""} onChange={(event) => onChange({ ca_cert_pem: event.target.value })} />
     </div>
     <NumberField label="MTU" value={config.mtu} disabled={!editable} onChange={(mtu) => onChange({ mtu })} />
     <BoolField label="Skip TLS certificate verification" value={config.insecure_skip_verify} disabled={!editable} onChange={(insecure_skip_verify) => onChange({ insecure_skip_verify })} />
