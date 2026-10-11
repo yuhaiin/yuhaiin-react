@@ -42,6 +42,7 @@ export type HTTPHeadersConfig = Partial<Go.node.HTTPHeaders>;
 export type HTTPTerminationConfig = Omit<Partial<Go.node.HTTPTermination>, "headers"> & { headers?: Record<string, HTTPHeadersConfig> };
 export type HTTPMockConfig = Partial<Go.node.HTTPMock>;
 export type AEADConfig = Partial<Go.node.AEAD>;
+export type NodeIPVersion = "auto" | "ipv4" | "ipv6";
 export type NetworkSplitConfig = { tcp?: NodeProtocol; udp?: NodeProtocol };
 export type CloudflareWarpMasqueConfig = Omit<Partial<Go.node.CloudflareWarpMasque>, "endpoint"> & { endpoint?: string[] };
 export type PointAsEndpointConfig = Partial<Go.node.PointAsEndpoint>;
@@ -129,6 +130,9 @@ export function normalizeProtocol(value: unknown): NodeProtocol {
 
 export function normalizeNode(value: Partial<Node> | undefined): Node {
   const node = value ?? {};
+  const ipVersion: NodeIPVersion = node.ip_version === "ipv4" || node.ip_version === "ipv6"
+    ? node.ip_version
+    : "auto";
   return {
     id: node.id ?? createID(),
     name: node.name ?? "new-node",
@@ -138,7 +142,7 @@ export function normalizeNode(value: Partial<Node> | undefined): Node {
     chain: Array.isArray(node.chain) && node.chain.length > 0
       ? node.chain.map((item) => normalizeProtocol(item))
       : [createDefaultProtocol("direct")],
-    ...(node.disable_ipv6 ? { disable_ipv6: true } : {}),
+    ...(ipVersion === "auto" ? {} : { ip_version: ipVersion }),
     ...(node.latency ? { latency: { ...node.latency } } : {}),
   };
 }

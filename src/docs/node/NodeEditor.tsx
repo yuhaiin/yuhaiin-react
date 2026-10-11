@@ -16,7 +16,7 @@ import { Select, SettingInputBytes, SettingInputVertical, SettingSelectVertical,
 
 import { InputList } from "@/component/v2/listeditor";
 
-import type { Node, NodeOrigin, NodeProtocol, NodeProtocolConfig, NodeProtocolType } from "@/contract/node";
+import type { Node, NodeIPVersion, NodeOrigin, NodeProtocol, NodeProtocolConfig, NodeProtocolType } from "@/contract/node";
 import { createDefaultProtocol, normalizeProtocol, patchProtocolConfig, protocolTypes } from "@/contract/node";
 import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react";
 import React, { FC, useState } from "react";
@@ -45,13 +45,18 @@ const NodeEditor: FC<{
                     <SwitchCard label={uiT("enabled")} checked={value.enabled} onCheckedChange={(enabled) => onChange({ enabled })} disabled={!editable} />
                 </div>
                 <div className="md:col-span-2">
-                    <SwitchCard
-                        label={uiT("nodeDisableIPv6")}
-                        description={uiT("nodeDisableIPv6Help")}
-                        checked={value.disable_ipv6 ?? false}
-                        onCheckedChange={(disable_ipv6) => onChange({ disable_ipv6 })}
+                    <SettingSelectVertical
+                        label={uiT("nodeIPVersion")}
+                        value={value.ip_version ?? "auto"}
+                        values={[
+                            [uiT("nodeIPVersionAuto"), "auto"],
+                            [uiT("nodeIPVersionIPv4"), "ipv4"],
+                            [uiT("nodeIPVersionIPv6"), "ipv6"],
+                        ]}
+                        onChange={(ip_version) => onChange({ ip_version: ip_version as NodeIPVersion })}
                         disabled={!editable}
                     />
+                    <p className="-mt-3 mb-2 text-sm text-ui-muted">{uiT("nodeIPVersionHelp")}</p>
                 </div>
                 <div className="grid gap-3 rounded-ui-lg border border-ui-border bg-ui-surface-muted p-3 md:col-span-2">
                     <div>
