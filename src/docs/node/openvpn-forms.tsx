@@ -6,24 +6,10 @@ import { Textarea } from "@/component/v2/input";
 import type { NodeProtocolConfig, OpenVPNInfo } from "@/contract/node";
 import { FC, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BoolField } from "./fields";
+import { BoolField, VPNSelect } from "./fields";
 import { RuntimeInfoList } from "./globalprotect-forms";
 
 const defaultCiphers = ["AES-256-GCM", "AES-128-GCM", "CHACHA20-POLY1305"];
-
-const VPNSelect: FC<{
-    label: string; value: string; options: [string, string][];
-    disabled: boolean; onChange: (value: string) => void;
-}> = ({ label, value, options, disabled, onChange }) => {
-    const id = useId();
-    return <div className="min-w-0">
-        <SettingLabel htmlFor={id} className="mb-2 block">{label}</SettingLabel>
-        <select id={id} className="min-h-field w-full rounded-ui-md border border-ui-border bg-ui-surface px-3 py-2"
-            value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)}>
-            {options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-        </select>
-    </div>;
-};
 
 const PEMField: FC<{
     label: string; value?: string; placeholder: string;

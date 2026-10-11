@@ -385,6 +385,8 @@ export namespace Go {
       | { type: "tls"; tls: TLS }
       | { type: "wireguard"; wireguard: Wireguard }
       | { type: "openvpn"; openvpn: OpenVPN }
+      | { type: "l2tp"; l2tp: L2TP }
+      | { type: "l2tpv3"; l2tpv3: L2TPv3 }
       | { type: "globalprotect"; globalprotect: GlobalProtect }
       | { type: "softether"; softether: SoftEther }
       | { type: "mux"; mux: Concurrency }
@@ -403,6 +405,48 @@ export namespace Go {
       | { type: "proxy"; proxy: Proxy }
       | { type: "fixedv2"; fixedv2: FixedV2 }
       | { type: "point_as_endpoint"; point_as_endpoint: PointAsEndpoint };
+    export interface L2TP {
+      auth_type?: string;
+      gateway: string;
+      username?: string;
+      password?: string;
+      shared_secret?: string;
+      hostname?: string;
+      ipv6?: boolean;
+      ipv6_address?: string;
+      mtu?: number;
+      auto_reconnect?: boolean;
+    }
+    export interface L2TPv3 {
+      local_address?: string;
+      gateway: string;
+      hostname?: string;
+      shared_secret?: string;
+      static?: boolean;
+      local_session_id?: number;
+      peer_session_id?: number;
+      local_cookie?: string;
+      peer_cookie?: string;
+      sublayer?: boolean;
+      remote_end_id?: string;
+      address?: string;
+      router?: string;
+      ipv6_address?: string;
+      ipv6_router?: string;
+      mtu?: number;
+      auto_reconnect?: boolean;
+    }
+    export interface L2TPInfo {
+      tunnel_prefixes?: string[];
+      dns?: string[];
+      auth?: string;
+      peer_address?: string;
+      mtu?: number;
+      local_tunnel_id?: number;
+      peer_tunnel_id?: number;
+      local_session_id?: number;
+      peer_session_id?: number;
+    }
     export interface OpenVPN {
       gateway: string;
       network?: string;
@@ -459,6 +503,8 @@ export namespace Go {
       mtu?: number;
     }
     export interface NodeExtraInfo {
+      l2tp?: L2TPInfo;
+      l2tpv3?: L2TPInfo;
       openvpn?: OpenVPNInfo;
       globalprotect?: GlobalProtectInfo;
     }

@@ -3,7 +3,7 @@
 import { SettingLabel } from "@/component/v2/card";
 import { SettingInputVertical, SwitchCard } from "@/component/v2/forms";
 
-import { FC } from "react";
+import { FC, useId } from "react";
 
 function stringValue(value: unknown): string {
     if (typeof value === "string") return value;
@@ -51,3 +51,17 @@ const BoolField: FC<{ label: string; value: unknown; description?: string; disab
 export { StringField, NumberField, BoolField };
 
 export { stringValue, numberValue };
+
+export const VPNSelect: FC<{
+    label: string; value: string; options: [string, string][];
+    disabled: boolean; onChange: (value: string) => void;
+}> = ({ label, value, options, disabled, onChange }) => {
+    const id = useId();
+    return <div className="min-w-0">
+        <SettingLabel htmlFor={id} className="mb-2 block">{label}</SettingLabel>
+        <select id={id} className="min-h-field w-full rounded-ui-md border border-ui-border bg-ui-surface px-3 py-2"
+            value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)}>
+            {options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </select>
+    </div>;
+};

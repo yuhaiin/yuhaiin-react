@@ -2,6 +2,7 @@ import { base64ToBytes, bytesToBase64 } from "@/common/base64";
 import { WireguardForm, FixedForm, FixedV2Form } from "./tunnel-forms";
 import { GlobalProtectForm, GlobalProtectRuntimeInfo } from "./globalprotect-forms";
 import { SoftEtherForm } from "./softether-forms";
+import { L2TPForm, L2TPv3Form, L2TPRuntimeInfo } from "./l2tp-forms";
 import { OpenVPNForm, OpenVPNRuntimeInfo } from "./openvpn-forms";
 import { TLSConfigForm, TLSTerminationForm, HTTPTerminationForm } from "./tls-forms";
 import { StringField, NumberField, BoolField } from "./fields";
@@ -75,11 +76,12 @@ const NodeEditor: FC<{
         />
         {value.chain.some((protocol) => containsProtocol(protocol, "globalprotect")) && <GlobalProtectRuntimeInfo key={`gp-${value.id}`} nodeId={value.id} />}
         {value.chain.some((protocol) => containsProtocol(protocol, "openvpn")) && <OpenVPNRuntimeInfo key={`ovpn-${value.id}`} nodeId={value.id} />}
+        {(["l2tp", "l2tpv3"] as const).map((type) => value.chain.some((protocol) => containsProtocol(protocol, type)) && <L2TPRuntimeInfo key={`${type}-${value.id}`} nodeId={value.id} type={type} />)}
     </div>
 );
 };
 
-function containsProtocol(protocol: NodeProtocol, type: "globalprotect" | "openvpn"): boolean {
+function containsProtocol(protocol: NodeProtocol, type: "globalprotect" | "openvpn" | "l2tp" | "l2tpv3"): boolean {
     if (protocol.type === type) return true;
     if (protocol.type !== "network_split") return false;
     return [protocol.network_split.tcp, protocol.network_split.udp].some((child) => child ? containsProtocol(child, type) : false);
@@ -378,6 +380,10 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             return <GlobalProtectForm config={protocol.globalprotect} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "openvpn":
             return <OpenVPNForm config={protocol.openvpn} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
+        case "l2tp":
+            return <L2TPForm config={protocol.l2tp} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
+        case "l2tpv3":
+            return <L2TPv3Form config={protocol.l2tpv3} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "softether":
             return <SoftEtherForm config={protocol.softether} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "tailscale":

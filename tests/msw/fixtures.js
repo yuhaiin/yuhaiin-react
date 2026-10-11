@@ -12,6 +12,10 @@ if (scenario === 'vpn') {
   nodes[0] = { ...nodes[0], name:'OpenVPN test node', chain:[{type:'openvpn',openvpn:{gateway:'vpn.example.invalid:1194',network:'udp',username:'alice',tls_crypt_key:'synthetic-static-key',auto_reconnect:true,mtu:1400}}] };
   nodes[1] = { ...nodes[1], name:'GlobalProtect ESP test node', chain:[{type:'globalprotect',globalprotect:{gateway:'gp.example.invalid',username:'alice',use_esp:true}}] };
 }
+if (scenario === 'l2tp') {
+  nodes[0] = { ...nodes[0], name:'L2TP test node', chain:[{type:'l2tp',l2tp:{gateway:'vpn.example.invalid:1701',username:'alice',auth_type:'mschap-v2',ipv6:true,ipv6_address:'fd88::2/64',mtu:1400}}] };
+  nodes[1] = { ...nodes[1], name:'L2TPv3 test node', chain:[{type:'l2tpv3',l2tpv3:{gateway:'vpn.example.invalid:1701',static:true,local_session_id:4294967295,peer_session_id:200,local_cookie:'1122334455667788',peer_cookie:'aabbccdd',sublayer:true,address:'10.89.0.2/24',router:'10.89.0.1',ipv6_address:'fd89::2/64',ipv6_router:'fd89::1',mtu:1400}}] };
+}
 const connections = Array.from({length:size},(_,i)=>({id:String(i+1),addr:i===0?'very-long-host-name-for-mobile-layout-testing.example.invalid:443':`host-${i}.example.invalid:443`,network:{connType:i===0?'udp':'tcp',underlyingType:'tcp'},mode:'proxy',tag:'mobile-regression-test-tag-with-long-name',process:'audit-process',nodeId:'node-0',nodeName:'Mobile test node',lists:[],matchHistory:[]}));
 const history = connections.map((connection,i)=>({connection,time:new Date(1790992800000-i*1000).toISOString(),count:String(i+1)}));
 let settings=createDefaultSettings(); let total=0;
@@ -34,6 +38,7 @@ const worker=setupWorker(
     if(op==='nodes.get') result=page(nodes,p);
     else if(op==='node.get') result=nodes.find(n=>n.id===p.id)||nodes[0];
     else if(op==='node.put'){ const index=nodes.findIndex(n=>n.id===p.id); if(index>=0) nodes[index]=p; result=p; }
+    else if(op==='node.extra' && scenario==='l2tp') result={ [p.id==='node-1'?'l2tpv3':'l2tp']: {tunnel_prefixes:['10.89.0.2/24','fd89::2/64'],dns:['10.89.0.1'],auth:p.id==='node-1'?'':'mschap-v2',mtu:1400,local_session_id:4294967295,peer_session_id:200} };
     else if(op==='node.extra') result=p.id==='node-1'
       ? {globalprotect:{tunnel_prefix:'192.0.2.8/32',data_transport:'esp',dns:['192.0.2.1']}}
       : {openvpn:{tunnel_prefixes:['10.88.0.2/24','fd88::2/64'],dns:['10.88.0.1'],routes:['route 10.99.0.0 255.255.0.0'],cipher:'AES-256-GCM',gateway:'10.88.0.1',mtu:1400}};
