@@ -384,7 +384,9 @@ export namespace Go {
       | { type: "reality"; reality: Reality }
       | { type: "tls"; tls: TLS }
       | { type: "wireguard"; wireguard: Wireguard }
+      | { type: "openvpn"; openvpn: OpenVPN }
       | { type: "globalprotect"; globalprotect: GlobalProtect }
+      | { type: "softether"; softether: SoftEther }
       | { type: "mux"; mux: Concurrency }
       | { type: "drop"; drop: Drop }
       | { type: "vless"; vless: Vless }
@@ -401,6 +403,33 @@ export namespace Go {
       | { type: "proxy"; proxy: Proxy }
       | { type: "fixedv2"; fixedv2: FixedV2 }
       | { type: "point_as_endpoint"; point_as_endpoint: PointAsEndpoint };
+    export interface OpenVPN {
+      gateway: string;
+      network?: string;
+      ca_cert_pem?: string;
+      client_cert_pem?: string;
+      client_key_pem?: string;
+      server_name?: string;
+      username?: string;
+      password?: string;
+      tls_auth_key?: string;
+      tls_crypt_key?: string;
+      key_direction?: number;
+      auth?: string;
+      data_ciphers?: string[];
+      insecure_skip_verify?: boolean;
+      auto_reconnect?: boolean;
+      mtu?: number;
+      renegotiate_seconds?: number;
+    }
+    export interface OpenVPNInfo {
+      tunnel_prefixes?: string[];
+      dns?: string[];
+      routes?: string[];
+      gateway?: string;
+      cipher?: string;
+      mtu?: number;
+    }
     export interface GlobalProtect {
       gateway: string;
       username: string;
@@ -409,8 +438,28 @@ export namespace Go {
       ca_cert_pem?: string;
       insecure_skip_verify?: boolean;
       mtu?: number;
+      use_esp?: boolean;
+    }
+    export interface SoftEther {
+      gateway: string;
+      username: string;
+      password: string;
+      hub?: string;
+      auth_type?: string;
+      client_cert_pem?: string;
+      client_key_pem?: string;
+      ca_cert_pem?: string;
+      insecure_skip_verify?: boolean;
+      address?: string;
+      router?: string;
+      ipv6_address?: string;
+      ipv6_router?: string;
+      udp_acceleration?: boolean;
+      auto_reconnect?: boolean;
+      mtu?: number;
     }
     export interface NodeExtraInfo {
+      openvpn?: OpenVPNInfo;
       globalprotect?: GlobalProtectInfo;
     }
     export interface GlobalProtectInfo {
@@ -423,6 +472,7 @@ export namespace Go {
       dns_v6?: string[];
       dns_suffix?: string[];
       no_direct_access_to_local_network?: string;
+      data_transport?: string;
     }
     export interface None {
     }

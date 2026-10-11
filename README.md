@@ -16,3 +16,23 @@ npm run dev
 ```bash
 npm run build
 ```
+
+## VPN nodes
+
+The node editor supports native OpenVPN outbounds over UDP or TCP, with inline
+CA/client certificates, password authentication, tls-auth/tls-crypt, AEAD cipher
+selection, rekey and reconnect settings. Connection information is loaded on
+demand from an already active tunnel; pushed DNS and routes require separate
+yuhaiin configuration. GlobalProtect also exposes the optional ESP/UDP switch
+and the active SSL/ESP transport.
+
+These additions require [the companion backend PR](https://github.com/yuhaiin/yuhaiin/pull/508).
+The editor does not import `.ovpn` files. Use the server's profile to fill in the
+fields, and protect exports/backups containing VPN credentials.
+
+To preview the forms with synthetic API data:
+
+```bash
+npm run dev:msw
+# Open http://127.0.0.1:5175/?scenario=vpn and choose Outbound.
+```

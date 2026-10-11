@@ -49,6 +49,13 @@ const GlobalProtectForm: FC<{
                     onChange={(mtu) => onChange({ mtu })}
                 />
             </div>
+            <BoolField
+                label={uiT("globalProtectESP")}
+                description={uiT("globalProtectESPHelp")}
+                value={config.use_esp}
+                disabled={!editable}
+                onChange={(use_esp) => onChange({ use_esp })}
+            />
             <div>
                 <SettingLabel className="mb-2 block">{uiT("caCert")}</SettingLabel>
                 <Textarea
@@ -135,6 +142,7 @@ const GlobalProtectRuntimeInfo: FC<{ nodeId: string }> = ({ nodeId }) => {
             {info && (
                 <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
                     <RuntimeInfoList label={uiT("globalProtectTunnelPrefix")} value={info.tunnel_prefix} />
+                    <RuntimeInfoList label={uiT("vpnDataTransport")} value={info.data_transport} />
                     <RuntimeInfoList label={uiT("globalProtectAccessRoutesIPv4")} values={info.access_routes_ipv4} />
                     <RuntimeInfoList label={uiT("globalProtectExcludeRoutesIPv4")} values={info.exclude_routes_ipv4} />
                     <RuntimeInfoList label={uiT("globalProtectAccessRoutesIPv6")} values={info.access_routes_ipv6} />
@@ -149,4 +157,4 @@ const GlobalProtectRuntimeInfo: FC<{ nodeId: string }> = ({ nodeId }) => {
     );
 };
 
-export { GlobalProtectForm, GlobalProtectRuntimeInfo };
+export { GlobalProtectForm, GlobalProtectRuntimeInfo, RuntimeInfoList };

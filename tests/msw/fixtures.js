@@ -8,6 +8,10 @@ localStorage.setItem('auth_token', 'synthetic-msw-token');
 localStorage.setItem('yuhaiin.webui.language','en');
 const size = scenario === 'large' ? 2000 : scenario === 'empty' ? 0 : 95;
 const nodes = Array.from({length:size},(_,i)=>({id:`node-${i}`,name:i===0?'Mobile test node with a very long name for narrow screens':`Node ${i}`,group:'manual',origin:'manual',enabled:true,chain:[{type:'http_mock',http_mock:{data:'YQ=='}}]}));
+if (scenario === 'vpn') {
+  nodes[0] = { ...nodes[0], name:'OpenVPN test node', chain:[{type:'openvpn',openvpn:{gateway:'vpn.example.invalid:1194',network:'udp',username:'alice',tls_crypt_key:'synthetic-static-key',auto_reconnect:true,mtu:1400}}] };
+  nodes[1] = { ...nodes[1], name:'GlobalProtect ESP test node', chain:[{type:'globalprotect',globalprotect:{gateway:'gp.example.invalid',username:'alice',use_esp:true}}] };
+}
 const connections = Array.from({length:size},(_,i)=>({id:String(i+1),addr:i===0?'very-long-host-name-for-mobile-layout-testing.example.invalid:443':`host-${i}.example.invalid:443`,network:{connType:i===0?'udp':'tcp',underlyingType:'tcp'},mode:'proxy',tag:'mobile-regression-test-tag-with-long-name',process:'audit-process',nodeId:'node-0',nodeName:'Mobile test node',lists:[],matchHistory:[]}));
 const history = connections.map((connection,i)=>({connection,time:new Date(1790992800000-i*1000).toISOString(),count:String(i+1)}));
 let settings=createDefaultSettings(); let total=0;
@@ -29,6 +33,10 @@ const worker=setupWorker(
     let result={};
     if(op==='nodes.get') result=page(nodes,p);
     else if(op==='node.get') result=nodes.find(n=>n.id===p.id)||nodes[0];
+    else if(op==='node.put'){ const index=nodes.findIndex(n=>n.id===p.id); if(index>=0) nodes[index]=p; result=p; }
+    else if(op==='node.extra') result=p.id==='node-1'
+      ? {globalprotect:{tunnel_prefix:'192.0.2.8/32',data_transport:'esp',dns:['192.0.2.1']}}
+      : {openvpn:{tunnel_prefixes:['10.88.0.2/24','fd88::2/64'],dns:['10.88.0.1'],routes:['route 10.99.0.0 255.255.0.0'],cipher:'AES-256-GCM',gateway:'10.88.0.1',mtu:1400}};
     else if(op==='nodes.selected') result={tcp:nodes[0],udp:nodes[1]};
     else if(op==='nodes.active') result={items:nodes.slice(0,3)};
     else if(op==='nodes.post'){ if(p.name==='fail') return HttpResponse.json({error:{message:'Synthetic create failure'}},{status:500}); nodes.push(p); result=p; }
