@@ -583,7 +583,7 @@
   "openVPNMTUHelp": "MTU 0 uses the negotiated value; overrides must be 576–1500 (at least 1280 for IPv6). Rekey interval 0 uses 3600 seconds. Successful rekeys preserve existing connections.",
   "openVPNAutoReconnect": "Automatically reconnect",
   "openVPNReconnectHelp": "Recreate the tunnel after a failure. Existing application connections must reconnect after the full session is recreated.",
-  "openVPNTLSHelp": "Certificate-chain and server-auth verification is enabled by default. Server name optionally adds hostname verification. Disable verification only when required for a trusted server.",
+  "openVPNTLSHelp": "Certificate-chain and server-auth verification is enabled by default. System trust also verifies the gateway hostname. With a custom CA, server name optionally adds hostname verification; with system trust, it overrides the gateway name. Disable verification only when required for a trusted server.",
   "openVPNConnectionInfo": "OpenVPN connection information",
   "openVPNFetchInfo": "Load connection information",
   "openVPNInfoHelp": "Read the active cached tunnel without starting a connection. Pushed DNS and routes are informational; configure yuhaiin DNS and routing separately.",
