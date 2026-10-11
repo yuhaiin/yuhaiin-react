@@ -385,6 +385,10 @@ export namespace Go {
       | { type: "http2"; http2: Concurrency }
       | { type: "reality"; reality: Reality }
       | { type: "tls"; tls: TLS }
+      | { type: "ikev2"; ikev2: IKEv2 }
+      | { type: "anyconnect"; anyconnect: AnyConnect }
+      | { type: "sstp"; sstp: SSTP }
+      | { type: "fortinet"; fortinet: Fortinet }
       | { type: "amneziawg"; amneziawg: AmneziaWG }
       | { type: "wireguard"; wireguard: Wireguard }
       | { type: "openvpn"; openvpn: OpenVPN }
@@ -654,6 +658,43 @@ export namespace Go {
       peers?: WireguardPeer[];
       mtu?: number;
       reserved?: string;
+    }
+    export interface IKEv2 {
+      gateway: string;
+      psk?: string;
+      local_id: string;
+      server_id?: string;
+      username?: string;
+      password?: string;
+      tcp?: boolean;
+      mtu?: number;
+    }
+    export interface AnyConnect {
+      gateway: string;
+      username: string;
+      password: string;
+      insecure_skip_verify?: boolean;
+      disable_dtls?: boolean;
+      mtu?: number;
+    }
+    export interface SSTP {
+      gateway: string;
+      username: string;
+      password: string;
+      insecure_skip_verify?: boolean;
+      mtu?: number;
+    }
+    export interface Fortinet {
+      gateway: string;
+      username: string;
+      password: string;
+      realm?: string;
+      token?: string;
+      totp_secret?: string;
+      ca_cert_pem?: string;
+      insecure_skip_verify?: boolean;
+      disable_dtls?: boolean;
+      mtu?: number;
     }
     export interface AmneziaWG {
       secretKey: string;

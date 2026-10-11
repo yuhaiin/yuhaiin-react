@@ -1,6 +1,7 @@
 import { base64ToBytes, bytesToBase64 } from "@/common/base64";
 import { WireguardForm, FixedForm, FixedV2Form } from "./tunnel-forms";
 import { AmneziaWGForm } from "./amneziawg-forms";
+import { IKEv2Form, AnyConnectForm, SSTPForm, FortinetForm } from "./enterprisevpn-forms";
 import { GlobalProtectForm, GlobalProtectRuntimeInfo } from "./globalprotect-forms";
 import { SoftEtherForm } from "./softether-forms";
 import { L2TPForm, L2TPv3Form, L2TPRuntimeInfo } from "./l2tp-forms";
@@ -389,6 +390,14 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             return <FixedForm config={protocol.fixed} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "tls":
             return <TLSConfigForm config={protocol.tls} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
+        case "ikev2":
+            return <IKEv2Form config={protocol.ikev2} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
+        case "anyconnect":
+            return <AnyConnectForm config={protocol.anyconnect} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
+        case "sstp":
+            return <SSTPForm config={protocol.sstp} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
+        case "fortinet":
+            return <FortinetForm config={protocol.fortinet} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "amneziawg":
             return <AmneziaWGForm config={protocol.amneziawg} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "wireguard":
