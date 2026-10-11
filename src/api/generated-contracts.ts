@@ -324,6 +324,7 @@ export namespace Go {
       group: string;
       origin: string;
       enabled: boolean;
+      disable_ipv6?: boolean;
       chain: Protocol[];
       latency?: LatencyConfig;
     }

@@ -157,6 +157,8 @@
   "disabled": "無効",
   "type": "タイプ",
   "name": "名前",
+  "nodeDisableIPv6": "このノードは IPv6 に対応していない",
+  "nodeDisableIPv6Help": "有効にすると、このノード経由の宛先ホスト名は IPv4 のみに解決され、IPv6 宛ての接続は拒否されます。",
   "nodeLatencyURL": "ノードごとのレイテンシ URL",
   "nodeLatencyURLHelp": "このノードの TCP Ping に使う HTTP URL を上書きします。空欄の場合は全体設定を使います。このノード経由で到達できる URL を指定してください。",
   "nodeLatencyInsecureSkipVerify": "HTTPS 証明書の検証をスキップ",

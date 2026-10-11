@@ -133,6 +133,7 @@ export function normalizeNode(value: Partial<Node> | undefined): Node {
     chain: Array.isArray(node.chain) && node.chain.length > 0
       ? node.chain.map((item) => normalizeProtocol(item))
       : [createDefaultProtocol("direct")],
+    ...(node.disable_ipv6 ? { disable_ipv6: true } : {}),
     ...(node.latency ? { latency: { ...node.latency } } : {}),
   };
 }

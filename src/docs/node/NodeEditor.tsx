@@ -43,6 +43,15 @@ const NodeEditor: FC<{
                 <div className="md:col-span-2">
                     <SwitchCard label={uiT("enabled")} checked={value.enabled} onCheckedChange={(enabled) => onChange({ enabled })} disabled={!editable} />
                 </div>
+                <div className="md:col-span-2">
+                    <SwitchCard
+                        label={uiT("nodeDisableIPv6")}
+                        description={uiT("nodeDisableIPv6Help")}
+                        checked={value.disable_ipv6 ?? false}
+                        onCheckedChange={(disable_ipv6) => onChange({ disable_ipv6 })}
+                        disabled={!editable}
+                    />
+                </div>
                 <div className="grid gap-3 rounded-ui-lg border border-ui-border bg-ui-surface-muted p-3 md:col-span-2">
                     <div>
                         <SettingInputVertical

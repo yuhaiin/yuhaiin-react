@@ -157,6 +157,8 @@
   "disabled": "비활성화",
   "type": "유형",
   "name": "이름",
+  "nodeDisableIPv6": "이 노드는 IPv6를 지원하지 않음",
+  "nodeDisableIPv6Help": "활성화하면 이 노드를 통한 대상 호스트 이름은 IPv4로만 해석되고 IPv6 대상 연결은 거부됩니다.",
   "nodeLatencyURL": "노드별 지연 시간 URL",
   "nodeLatencyURLHelp": "이 노드의 TCP Ping HTTP 대상을 재정의합니다. 비워 두면 전역 대상을 사용합니다. 이 노드를 통해 접근할 수 있는 URL을 지정하세요.",
   "nodeLatencyInsecureSkipVerify": "HTTPS 인증서 검증 건너뛰기",

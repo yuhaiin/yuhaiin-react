@@ -157,6 +157,8 @@
   "disabled": "Disabled",
   "type": "Type",
   "name": "Name",
+  "nodeDisableIPv6": "This node does not support IPv6",
+  "nodeDisableIPv6Help": "When enabled, destination hostnames are resolved to IPv4 only and IPv6 destinations are rejected.",
   "nodeLatencyURL": "Node-specific latency URL",
   "nodeLatencyURLHelp": "Overrides this node's HTTP target for TCP Ping. Leave blank to use the global target. The URL must be reachable through this node.",
   "nodeLatencyInsecureSkipVerify": "Skip HTTPS certificate verification",
