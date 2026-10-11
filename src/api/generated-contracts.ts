@@ -318,13 +318,14 @@ export namespace Go {
     }
   }
   export namespace node {
+    export type IPVersion = string;
     export interface Node {
       id: string;
       name: string;
       group: string;
       origin: string;
       enabled: boolean;
-      disable_ipv6?: boolean;
+      ip_version?: IPVersion;
       chain: Protocol[];
       latency?: LatencyConfig;
     }
