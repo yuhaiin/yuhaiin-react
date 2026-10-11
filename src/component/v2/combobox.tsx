@@ -13,12 +13,15 @@ export interface ComboboxItem {
 export interface ComboboxProps extends Omit<InputProps, 'onChange'> {
     options: ComboboxItem[];
     onChange: (value: string) => void;
+    /** Show every suggestion when the field is focused, before the user starts typing. */
+    showAllOnFocus?: boolean;
 }
 
 export const Combobox: FC<ComboboxProps> = ({
     value = "",
     onChange,
     options,
+    showAllOnFocus = false,
     className,
     placeholder,
     onFocus,
@@ -27,20 +30,21 @@ export const Combobox: FC<ComboboxProps> = ({
     ...rest
 }) => {
     const [open, setOpen] = useState(false);
+    const [showAllOptions, setShowAllOptions] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(0);
 
     const isKeyboardNav = React.useRef(false);
 
     // Filter options based on value
     const filteredOptions = React.useMemo(() => {
-        if (!value) return options;
+        if (!value || (showAllOnFocus && showAllOptions)) return options;
         const lower = String(value).toLowerCase();
         return options.filter(opt =>
             opt.label.toLowerCase().includes(lower) ||
             opt.value.toLowerCase().includes(lower) ||
             opt.details?.some(d => d.toLowerCase().includes(lower))
         );
-    }, [options, value]);
+    }, [options, value, showAllOnFocus, showAllOptions]);
 
     // Reset highlighted index when options change
     useEffect(() => {
@@ -51,6 +55,7 @@ export const Combobox: FC<ComboboxProps> = ({
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (!open) {
             if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                if (showAllOnFocus) setShowAllOptions(true);
                 setOpen(true);
                 e.preventDefault();
             }
@@ -101,14 +106,19 @@ export const Combobox: FC<ComboboxProps> = ({
                     <Input
                         value={String(value)}
                         onChange={(e) => {
+                            setShowAllOptions(false);
                             onChange(e.target.value);
                             setOpen(true);
                         }}
                         onFocus={(e) => {
+                            if (showAllOnFocus) setShowAllOptions(true);
                             setOpen(true);
                             onFocus?.(e);
                         }}
-                        onClick={() => setOpen(true)}
+                        onClick={() => {
+                            if (showAllOnFocus) setShowAllOptions(true);
+                            setOpen(true);
+                        }}
                         onBlur={onBlur}
                         onKeyDown={handleKeyDown}
                         placeholder={placeholder}
