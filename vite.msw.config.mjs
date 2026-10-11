@@ -1,4 +1,4 @@
-import base from './vite.config.ts';
+import base from './vite.config.mts';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
