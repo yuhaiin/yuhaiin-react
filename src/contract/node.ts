@@ -27,6 +27,9 @@ export type TLSTerminationConfig = { tls?: ServerTLSConfig };
 export type WireguardPeerConfig = Partial<Go.node.WireguardPeer>;
 export type WireguardConfig = Omit<Partial<Go.node.Wireguard>, "peers"> & { peers?: WireguardPeerConfig[] };
 export type GlobalProtectConfig = Partial<Go.node.GlobalProtect>;
+export type L2TPConfig = Partial<Go.node.L2TP>;
+export type L2TPv3Config = Partial<Go.node.L2TPv3>;
+export type L2TPInfo = Go.node.L2TPInfo;
 export type OpenVPNConfig = Partial<Go.node.OpenVPN>;
 export type SoftEtherConfig = Omit<Partial<Go.node.SoftEther>, "auth_type"> & { auth_type?: "password" | "certificate" };
 export type NodeExtraInfo = Go.node.NodeExtraInfo;
@@ -64,6 +67,8 @@ export type NodeProtocolConfigByType = {
   tls: TLSConfig;
   wireguard: WireguardConfig;
   openvpn: OpenVPNConfig;
+  l2tp: L2TPConfig;
+  l2tpv3: L2TPv3Config;
   globalprotect: GlobalProtectConfig;
   softether: SoftEtherConfig;
   mux: ConcurrencyConfig;
@@ -191,6 +196,10 @@ function defaultProtocolConfig<T extends NodeProtocolType>(type: T): NodeProtoco
       return { endpoint: [], peers: [] } as NodeProtocolConfig<T>;
     case "globalprotect":
       return { gateway: "", username: "", password: "", insecure_skip_verify: false, use_esp: false, mtu: 0 } as NodeProtocolConfig<T>;
+    case "l2tp":
+      return { gateway: "", username: "", password: "", auth_type: "auto", ipv6: false, auto_reconnect: false, mtu: 1400 } as NodeProtocolConfig<T>;
+    case "l2tpv3":
+      return { gateway: "", static: false, sublayer: true, auto_reconnect: false, mtu: 1400 } as NodeProtocolConfig<T>;
     case "openvpn":
       return { gateway: "", network: "udp", username: "", password: "", insecure_skip_verify: false, auto_reconnect: false, mtu: 0, renegotiate_seconds: 3600 } as NodeProtocolConfig<T>;
     case "softether":
@@ -284,6 +293,8 @@ export const protocolTypes: NodeProtocolType[] = [
   "tls",
   "wireguard",
   "openvpn",
+  "l2tp",
+  "l2tpv3",
   "globalprotect",
   "softether",
   "mux",
