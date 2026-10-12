@@ -25,6 +25,11 @@ export type CertificateConfig = Partial<Go.node.Certificate>;
 export type ServerTLSConfig = Partial<Go.node.ServerTLS>;
 export type TLSTerminationConfig = { tls?: ServerTLSConfig };
 export type WireguardPeerConfig = Partial<Go.node.WireguardPeer>;
+export type IKEv2Config = Partial<Go.node.IKEv2>;
+export type AnyConnectConfig = Partial<Go.node.AnyConnect>;
+export type SSTPConfig = Partial<Go.node.SSTP>;
+export type FortinetConfig = Partial<Go.node.Fortinet>;
+export type AmneziaWGConfig = Omit<Partial<Go.node.AmneziaWG>, "peers"> & { peers?: WireguardPeerConfig[] };
 export type WireguardConfig = Omit<Partial<Go.node.Wireguard>, "peers"> & { peers?: WireguardPeerConfig[] };
 export type GlobalProtectConfig = Partial<Go.node.GlobalProtect>;
 export type L2TPConfig = Partial<Go.node.L2TP>;
@@ -66,6 +71,11 @@ export type NodeProtocolConfigByType = {
   http2: ConcurrencyConfig;
   reality: RealityConfig;
   tls: TLSConfig;
+  ikev2: IKEv2Config;
+  anyconnect: AnyConnectConfig;
+  sstp: SSTPConfig;
+  fortinet: FortinetConfig;
+  amneziawg: AmneziaWGConfig;
   wireguard: WireguardConfig;
   openvpn: OpenVPNConfig;
   l2tp: L2TPConfig;
@@ -196,6 +206,16 @@ function defaultProtocolConfig<T extends NodeProtocolType>(type: T): NodeProtoco
       return { headers: {} } as NodeProtocolConfig<T>;
     case "fixedv2":
       return { addresses: [] } as NodeProtocolConfig<T>;
+    case "ikev2":
+      return { gateway: "", local_id: "", psk: "", tcp: false } as NodeProtocolConfig<T>;
+    case "anyconnect":
+      return { gateway: "", username: "", password: "", disable_dtls: false, insecure_skip_verify: false } as NodeProtocolConfig<T>;
+    case "sstp":
+      return { gateway: "", username: "", password: "", insecure_skip_verify: false } as NodeProtocolConfig<T>;
+    case "fortinet":
+      return { gateway: "", username: "", password: "", realm: "", disable_dtls: false, insecure_skip_verify: false } as NodeProtocolConfig<T>;
+    case "amneziawg":
+      return { endpoint: [], peers: [], mtu: 1400 } as NodeProtocolConfig<T>;
     case "wireguard":
       return { endpoint: [], peers: [] } as NodeProtocolConfig<T>;
     case "globalprotect":
@@ -295,6 +315,11 @@ export const protocolTypes: NodeProtocolType[] = [
   "http2",
   "reality",
   "tls",
+  "ikev2",
+  "anyconnect",
+  "sstp",
+  "fortinet",
+  "amneziawg",
   "wireguard",
   "openvpn",
   "l2tp",

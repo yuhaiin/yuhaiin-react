@@ -143,9 +143,10 @@ const FixedV2Form: FC<{
 
 const WireguardForm: FC<{
     config: NodeProtocolConfig<"wireguard">;
+    hideReserved?: boolean;
     editable: boolean;
     onChange: (value: Partial<NodeProtocolConfig<"wireguard">>) => void;
-}> = ({ config, editable, onChange }) => {
+}> = ({ config, editable, onChange, hideReserved }) => {
     const { t: uiT } = useTranslation('ui');
 
     const peers = Array.isArray(config.peers) ? config.peers : [];
@@ -160,12 +161,12 @@ const WireguardForm: FC<{
         <div className="grid gap-4">
             <StringField label={uiT("secretKey")} value={config.secretKey} disabled={!editable} onChange={(secretKey) => onChange({ secretKey })} />
             <NumberField label="MTU" value={config.mtu} disabled={!editable} onChange={(mtu) => onChange({ mtu })} />
-            <SettingInputBytes
+            {!hideReserved && <SettingInputBytes
                 label={uiT("reserved")}
                 value={base64ToBytes(config.reserved)}
                 disabled={!editable}
                 onChange={(reserved) => onChange({ reserved: bytesToBase64(reserved) })}
-            />
+            />}
             <InputList title={uiT("localAddress")} data={config.endpoint ?? []} disabled={!editable} onChange={(endpoint) => onChange({ endpoint })} />
 
             <div>

@@ -385,6 +385,11 @@ export namespace Go {
       | { type: "http2"; http2: Concurrency }
       | { type: "reality"; reality: Reality }
       | { type: "tls"; tls: TLS }
+      | { type: "ikev2"; ikev2: IKEv2 }
+      | { type: "anyconnect"; anyconnect: AnyConnect }
+      | { type: "sstp"; sstp: SSTP }
+      | { type: "fortinet"; fortinet: Fortinet }
+      | { type: "amneziawg"; amneziawg: AmneziaWG }
       | { type: "wireguard"; wireguard: Wireguard }
       | { type: "openvpn"; openvpn: OpenVPN }
       | { type: "l2tp"; l2tp: L2TP }
@@ -653,6 +658,69 @@ export namespace Go {
       peers?: WireguardPeer[];
       mtu?: number;
       reserved?: string;
+    }
+    export interface IKEv2 {
+      gateway: string;
+      psk?: string;
+      local_id: string;
+      server_id?: string;
+      username?: string;
+      password?: string;
+      tcp?: boolean;
+      mtu?: number;
+    }
+    export interface AnyConnect {
+      gateway: string;
+      username: string;
+      password: string;
+      insecure_skip_verify?: boolean;
+      disable_dtls?: boolean;
+      mtu?: number;
+    }
+    export interface SSTP {
+      gateway: string;
+      username: string;
+      password: string;
+      insecure_skip_verify?: boolean;
+      mtu?: number;
+    }
+    export interface Fortinet {
+      gateway: string;
+      username: string;
+      password: string;
+      realm?: string;
+      token?: string;
+      totp_secret?: string;
+      ca_cert_pem?: string;
+      insecure_skip_verify?: boolean;
+      disable_dtls?: boolean;
+      mtu?: number;
+    }
+    export interface AmneziaWG {
+      secretKey: string;
+      endpoint?: string[];
+      peers?: WireguardPeer[];
+      mtu?: number;
+      jc?: number;
+      jmin?: number;
+      jmax?: number;
+      s1?: number;
+      s2?: number;
+      s3?: number;
+      s4?: number;
+      h1?: string;
+      h2?: string;
+      h3?: string;
+      h4?: string;
+      i1?: string;
+      i2?: string;
+      i3?: string;
+      i4?: string;
+      i5?: string;
+      header_protection_key?: string;
+      content_padding_addition?: string;
+      random_trailers?: boolean;
+      disable_cookies?: boolean;
     }
     export interface WireguardPeer {
       publicKey: string;
