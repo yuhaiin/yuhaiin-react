@@ -36,6 +36,7 @@ const selectors=scenario==='empty'?[]:[
   {id:'selector-travel',name:'Travel destination',nodeId:nodes[2]?.id||'',revision:1},
   {id:'selector-local',name:'Local network',nodeId:nodes[3]?.id||'',revision:1},
 ];
+const publishes=scenario==='empty'?[]:[{name:'Work devices',address:'example.invalid:443',path:'work',password:'',insecure:false,points:['node-0','node-1']},{name:'Travel devices',address:'example.invalid:443',path:'travel',password:'',insecure:false,points:['node-2']}];
 const resolvers=[{id:'bootstrap',name:'Server address lookup',type:'system',host:'system default',system:true},{id:'dns-local',name:'Local network DNS',type:'system',host:'system default',system:true},{id:'dns-proxy',name:'Encrypted DNS',type:'doh',host:'https://dns.example.invalid/dns-query',system:false}];
 const inbounds=scenario==='empty'?[]:[{id:'inbound-local',name:'Local proxy',enabled:true,network:{type:'tcp_udp',tcp_udp:{host:'127.0.0.1:9002',udp:'enabled'}},transports:[],protocol:{type:'mixed',mixed:{username:'',password:''}}}];
 const lists=[{id:'shared-websites',name:'Work websites',revision:1,type:'host',source:{type:'local',local:{lists:['example.invalid','*.work.example']}}}];
@@ -153,7 +154,10 @@ const worker=setupWorker(
     else if(op==='inbound.retry'){}
     else if(op==='inbounds.config.get')result=inboundConfig;
     else if(op==='inbounds.config.put')result=inboundConfig=p;
-    else if(op==='subscriptions.get'||op==='publishes')result={items:[]};
+    else if(op==='subscriptions.get')result={items:[]};
+    else if(op==='publishes')result={items:publishes};
+    else if(op==='publish.put'){const index=publishes.findIndex(item=>item.name===p.name);if(index<0)publishes.push(p);else publishes[index]=p;}
+    else if(op==='publish.delete'){const index=publishes.findIndex(item=>item.name===p.name);if(index>=0)publishes.splice(index,1);}
     else if(op==='subscriptions.put'||op==='subscriptions.delete'||op==='subscriptions.update'){}
     else if(op==='tools.diagnostics')result={schemaVersion:1,host:p.host,platform:'linux',version:'preview',startedAt:new Date().toISOString(),durationMs:12,ipv6Enabled:true,checks:[],findings:[],report:`Synthetic diagnostics for ${p.host}`};
     else if(op==='info')result={version:'UX preview',platform:'linux',goVersion:'go1.27',arch:'amd64'};

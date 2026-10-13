@@ -23,6 +23,14 @@ const cases = [
   { name: 'node-details-mobile', path: '/docs/group?node=node-0', width: 390, height: 844, match: 'section[aria-label="Connection settings"] input' },
   { name: 'selectors-mobile', path: '/docs/group/selectors', width: 390, height: 844, match: 'aside[aria-label="Shared destinations"]' },
   { name: 'selector-details-mobile', path: '/docs/group/selectors?selector=selector-work', width: 390, height: 844, match: 'section[aria-label="Shared destination settings"] input' },
+  { name: 'inbounds-desktop', path: '/docs/inbound', width: 1440, height: 1100, match: 'section[aria-label="Entry Points"] input' },
+  { name: 'inbounds-mobile', path: '/docs/inbound', width: 390, height: 844, match: 'aside[aria-label="Entry Points"]' },
+  { name: 'lists-desktop', path: '/docs/bypass/list', width: 1440, height: 1100, match: 'section[aria-label="Defined Lists"] input' },
+  { name: 'lists-mobile', path: '/docs/bypass/list', width: 390, height: 844, match: 'aside[aria-label="Defined Lists"]' },
+  { name: 'publishes-desktop', path: '/docs/group/publish', width: 1440, height: 1100, match: 'section[aria-label="Publish Config"] input' },
+  { name: 'publishes-mobile', path: '/docs/group/publish', width: 390, height: 844, match: 'aside[aria-label="Publish"]' },
+  { name: 'resolvers-desktop', path: '/docs/bypass/resolver', width: 1440, height: 1100, match: 'section[aria-label="Resolvers"] input' },
+  { name: 'resolvers-mobile', path: '/docs/bypass/resolver', width: 390, height: 844, match: 'aside[aria-label="Resolvers"]' },
 ];
 
 async function readyWebSocket() {

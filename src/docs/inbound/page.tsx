@@ -1,119 +1,23 @@
-import { clearHashSearch, useHashSearch } from '@/hooks/useHashLocation';
-import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
-import { runtimeVariant, runtimeLabel } from "./runtime";
-import { InboundModal, errorOf } from "./modal";
-
-import { useServerPageClamp } from "@/hooks/use-pagination";
+import { ResourceWorkspace, useResourceSelection } from '@/component/resource-workspace';
+import { useHashSearch } from '@/hooks/useHashLocation';
+import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
+import { useServerPageClamp } from '@/hooks/use-pagination';
+import { deleteInbound, getInboundConfig, listInboundStatuses, listInbounds, retryInbound, saveInboundConfig } from '@/api/inbounds';
+import { Button } from '@/component/v2/button';
+import { Card, CardBody, CardHeader, IconBox, MainContainer } from '@/component/v2/card';
+import { SwitchCard } from '@/component/v2/forms';
+import { Spinner } from '@/component/v2/spinner';
+import { GlobalToastContext } from '@/component/v2/toast';
+import Loading from '@/component/v2/loading';
+import { type InboundConfig, inboundListen, normalizeInboundConfig } from '@/contract/inbound';
+import { DoorOpen, Save, Settings } from 'lucide-react';
+import { type FC, useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import useSWR from 'swr';
+import { InboundModal, errorOf } from './modal';
+import { runtimeLabel } from './runtime';
 
-import { deleteInbound, getInboundConfig, InboundRuntimeStatus, listInboundStatuses, listInbounds, retryInbound, saveInbound, saveInboundConfig } from "@/api/inbounds";
-
-import { Badge } from "@/component/v2/badge";
-import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardHeader, CardRowList, IconBox, MainContainer } from "@/component/v2/card";
-import { SwitchCard } from "@/component/v2/forms";
-
-import { Spinner } from "@/component/v2/spinner";
-import { Switch } from "@/component/v2/switch";
-import { InboundConfig, inboundListen, Inbound, normalizeInbound, normalizeInboundConfig } from "@/contract/inbound";
-import { DoorOpen, Plus, Save, Settings } from "lucide-react";
-import { FC, useContext, useMemo, useState } from "react";
-import useSWR from "swr";
-import Loading from "../../component/v2/loading";
-import { GlobalToastContext } from "../../component/v2/toast";
-
-const PAGE_SIZE = 8;
-
-function transportLabel(value: Inbound): string {
-    return value.transports.map((transport) => transport.type).join(" / ");
-}
-
-const inboundTableGrid = "lg:grid lg:grid-cols-[minmax(145px,1.25fr)_minmax(96px,.75fr)_minmax(150px,1.3fr)_minmax(130px,1fr)_56px] lg:gap-x-4 xl:grid-cols-[minmax(145px,1.25fr)_minmax(96px,.75fr)_minmax(150px,1.3fr)_minmax(130px,1fr)_minmax(0,1.2fr)_56px]";
-
-function newInboundID(): string {
-    return globalThis.crypto?.randomUUID?.() ?? `inbound-${Date.now()}`;
-}
-
-const InboundItem: FC<{
-    item: Inbound;
-    runtime?: InboundRuntimeStatus;
-    onToggle: (item: Inbound) => void;
-    onOpen: () => void;
-    toggling: boolean;
-}> = ({ item, runtime, onToggle, onOpen, toggling }) => {
-    const { t } = useTranslation('routing');
-
-    const status = runtime?.status ?? "unknown";
-    const name = item.name || item.id;
-    const listen = inboundListen(item) || "-";
-    const transport = transportLabel(item) || "-";
-    return (
-        <div className={`-mx-3.5 -my-3 flex min-w-0 flex-1 items-center gap-3 bg-ui-surface px-3.5 py-2.5 ${inboundTableGrid}`}>
-            <div className="flex min-w-0 flex-1 items-center lg:contents">
-                <button
-                    type="button"
-                    className="flex min-w-0 flex-1 flex-col items-start text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus lg:block"
-                    aria-label={`Edit ${name}`}
-                    onClick={(event) => {
-                        event.stopPropagation();
-                        onOpen();
-                    }}
-                >
-                    <span className="flex min-w-0 max-w-full items-center gap-2">
-                        <span className="truncate font-semibold text-ui-heading" title={name}>{name}</span>
-                        <Badge variant={runtimeVariant(status)} title={runtime?.lastError ?? undefined} className="shrink-0 lg:hidden">
-                            {runtimeLabel(status)}
-                        </Badge>
-                    </span>
-                    <span className="mt-0.5 flex min-w-0 max-w-full items-center text-xs text-ui-muted lg:hidden">
-                        <span className="min-w-0 flex-1 break-all font-mono" title={listen}>{listen}</span>
-                        <span className="mx-1 shrink-0" aria-hidden="true">·</span>
-                        <span className="shrink-0 whitespace-nowrap" title={item.protocol.type}>{item.protocol.type}</span>
-                    </span>
-                </button>
-
-                <div className="hidden min-w-0 lg:block">
-                    <Badge variant={runtimeVariant(status)} title={runtime?.lastError ?? undefined}>
-                        {runtimeLabel(status)}
-                    </Badge>
-                </div>
-
-                <div className="hidden min-w-0 lg:block">
-                    <div className="truncate font-mono text-sm font-medium text-ui-fg">{listen}</div>
-                    <div className="truncate text-[11px] text-ui-muted">{item.network.type} · {transport}</div>
-                </div>
-
-                <div className="hidden min-w-0 lg:block">
-                    <div className="truncate text-sm font-medium text-ui-fg">{item.protocol.type}</div>
-                </div>
-
-                {runtime ? (
-                    <div className="hidden min-w-0 text-xs text-ui-muted xl:block">
-                        <div className="truncate font-medium text-ui-fg">
-                            {runtime.statistics.acceptedStreams} {t("acceptedStreams")} · {runtime.statistics.receivedPackets} {t("receivedPackets")}
-                        </div>
-
-                    </div>
-                ) : (
-                    <div className="hidden text-sm text-ui-muted xl:block">—</div>
-                )}
-            </div>
-
-            <div
-                className="flex shrink-0 items-center lg:justify-self-end"
-                onClick={(event) => event.stopPropagation()}
-                onKeyDown={(event) => event.stopPropagation()}
-            >
-                <Switch
-                    checked={item.enabled}
-                    onCheckedChange={() => onToggle(item)}
-                    disabled={toggling}
-                    aria-label={`${item.enabled ? "Disable" : "Enable"} ${name}`}
-                />
-            </div>
-        </div>
-    );
-};
+const PAGE_SIZE = 12;
 
 const InboundConfigCard: FC = () => {
     const { t: uiT } = useTranslation('ui');
@@ -187,150 +91,42 @@ const InboundConfigCard: FC = () => {
     );
 };
 
-export default function InboudComponent() {
+export default function InboundComponent() {
     const { t: uiT } = useTranslation('ui');
-
+    const { t } = useTranslation('routing');
     const ctx = useContext(GlobalToastContext);
     const [page, setPage] = useState(1);
-    const [localShowdata, setShowdata] = useState({ show: false, id: "", new: false });
+    const [query, setQuery] = useState('');
+    const [newId, setNewId] = useState('');
     const search = useHashSearch();
-    const linkedId = new URLSearchParams(search).get('inbound');
-    const showdata = linkedId ? { show: true, id: linkedId, new: false } : localShowdata;
-    const closeLink = () => { if (linkedId) clearHashSearch(); };
-    const { data, error, isLoading, mutate } = useSWR(
-        `/api/v2/inbounds?page=${page}&pageSize=${PAGE_SIZE}`,
-        () => listInbounds({ page, pageSize: PAGE_SIZE }),
-        { keepPreviousData: true },
-    );
+    const { data, error, isLoading, mutate } = useSWR(['/api/v2/inbounds', page, query], () => listInbounds({ page, pageSize: PAGE_SIZE, query }), { keepPreviousData: true });
     useServerPageClamp(data?.page, page, setPage);
-    const { data: runtimeStatuses = [], error: statusError, mutate: mutateStatuses } = useSWR(
-        "/api/v2/inbounds/status",
-        listInboundStatuses,
-        { refreshInterval: 3000, revalidateOnFocus: true },
-    );
-    const [togglingID, setTogglingID] = useState<string>();
-    const [retryingID, setRetryingID] = useState<string>();
-
-    const apiError = errorOf(error);
-    const items = useMemo(() => data?.items ?? [], [data?.items]);
-    const statusByID = useMemo(() => new Map(runtimeStatuses.map((status) => [status.id, status])), [runtimeStatuses]);
-
-    if (apiError) return <Loading code={apiError.code} onRetry={() => void mutate()}>{apiError.msg}</Loading>;
-    if (isLoading || data === undefined) return <Loading />;
-
-    const deleteCurrentInbound = () => {
-        const id = showdata.id;
-        deleteInbound(id)
-            .then(() => {
-                ctx.Info("Removed successful");
-                setShowdata((prev) => ({ ...prev, show: false }));
-                closeLink();
-                void mutate();
-                void mutateStatuses();
-            })
-            .catch((err: unknown) => {
-                const apiErr = errorOf(err);
-                ctx.Error(apiErr?.msg ?? "Remove failed");
-            });
+    const items = data?.items ?? [];
+    const selection = useResourceSelection(items.map(item => item.id), new URLSearchParams(search).get('inbound'));
+    const { data: statuses = [], error: statusError, mutate: refreshStatuses } = useSWR('/api/v2/inbounds/status', listInboundStatuses, { refreshInterval: 3000 });
+    const statusById = useMemo(() => new Map(statuses.map(item => [item.id, item])), [statuses]);
+    const { pending, run } = useAsyncAction(error => ctx.Error(errorOf(error)?.msg ?? 'Operation failed'));
+    useCloseGuard(false, pending, () => undefined);
+    const id = selection.creating ? newId : selection.id;
+    const create = () => selection.create(() => setNewId(crypto.randomUUID()));
+    const remove = () => {
+        if (!window.confirm(uiT('areYouSureToDelete'))) return;
+        void run(async () => { await deleteInbound(id); selection.close(); await Promise.all([mutate(), refreshStatuses()]); });
     };
-
-    const handleCreate = (id: string) => {
-        if (items.some((item) => item.id === id)) {
-            ctx.Error(`Inbound ${id} already exists`);
-            return;
-        }
-        setShowdata({ show: true, id, new: true });
-    };
-
-    const toggleInbound = (item: Inbound) => {
-        setTogglingID(item.id);
-        saveInbound(normalizeInbound({ ...item, enabled: !item.enabled }))
-            .then(async () => {
-                ctx.Info(item.enabled ? "Inbound stopping" : "Inbound starting");
-                await Promise.all([mutate(), mutateStatuses()]);
-            })
-            .catch((err: unknown) => {
-                const apiErr = errorOf(err);
-                ctx.Error(apiErr?.msg ?? "Update failed");
-            })
-            .finally(() => setTogglingID(undefined));
-    };
-
-    const retryCurrentInbound = () => {
-        const id = showdata.id;
-        setRetryingID(id);
-        retryInbound(id)
-            .then(async () => {
-                ctx.Info("Inbound retry requested");
-                await mutateStatuses();
-            })
-            .catch((err: unknown) => {
-                const apiErr = errorOf(err);
-                ctx.Error(apiErr?.msg ?? "Retry failed");
-            })
-            .finally(() => setRetryingID(undefined));
-    };
-
-    return (
-        <MainContainer>
-            <InboundModal
-                show={showdata.show}
-                id={showdata.id}
-                isNew={showdata.new}
-                onHide={() => {
-                    void mutate();
-                    void mutateStatuses();
-                    setShowdata((prev) => ({ ...prev, show: false }));
-                closeLink();
-                }}
-                onDelete={deleteCurrentInbound}
-                runtime={statusByID.get(showdata.id)}
-                onRetry={retryCurrentInbound}
-                retrying={retryingID === showdata.id}
-            />
-
-            <InboundConfigCard />
-            {statusError && <p role="alert" className="mb-4 text-sm text-ui-danger">{uiT('runtimeStatusIsNotAvailableYet')} <Button size="sm" onClick={() => void mutateStatuses()}>{uiT('retry')}</Button></p>}
-
-            <CardRowList
-                layout="list"
-                paginated
-                pageSize={PAGE_SIZE}
-                currentPage={data.page.page || page}
-                totalItems={data.page.total}
-                onPageChange={setPage}
-                items={items}
-                getKey={(item) => item.id}
-                renderListItem={(item) => (
-                    <InboundItem
-                        item={item}
-                        runtime={statusByID.get(item.id)}
-                        onToggle={toggleInbound}
-                        onOpen={() => setShowdata({ show: true, id: item.id, new: false })}
-                        toggling={togglingID === item.id}
-                    />
-                )}
-                onClickItem={(item) => setShowdata({ show: true, id: item.id, new: false })}
-                header={
-                    <div className="flex w-full flex-col gap-3">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <div className="min-w-0">
-                                <IconBox icon={DoorOpen} tone="primary" title={uiT("entryPoints")} description={`${data.page.total} inbounds`} />
-                            </div>
-                            <Button className="shrink-0 self-start whitespace-nowrap sm:self-auto" size="sm" onClick={() => handleCreate(newInboundID())}>
-                                <Plus className="mr-1" size={16} /> {uiT("add")}</Button>
-                        </div>
-                        <div className={`hidden min-w-0 ${inboundTableGrid} lg:-mx-5 lg:px-[18px] lg:text-[11px] lg:font-semibold lg:uppercase lg:tracking-wide lg:text-ui-muted`}>
-                            <span>{uiT("name")}</span>
-                            <span>{uiT("statusLabel")}</span>
-                            <span>{uiT("listenAddressLabel")}</span>
-                            <span>{uiT("protocol")}</span>
-                            <span className="hidden xl:block">{uiT("traffic")}</span>
-                            <span className="text-right">{uiT("enabled")}</span>
-                        </div>
-                    </div>
-                }
-            />
-        </MainContainer>
-    );
+    if (error && !data) return <Loading onRetry={() => void mutate()}>{errorOf(error)?.msg}</Loading>;
+    if (isLoading && !data) return <Loading />;
+    return <MainContainer className="max-w-[1440px]">
+        {statusError && <p role="alert" className="mb-4 text-sm text-ui-danger">{uiT('runtimeStatusIsNotAvailableYet')} <Button size="sm" onClick={() => void refreshStatuses()}>{uiT('retry')}</Button></p>}
+        <ResourceWorkspace createDisabled={selection.creating} title={uiT('entryPoints')} description={t('entryTaskHelp')} selectedId={selection.id} editing={selection.creating || Boolean(selection.id)}
+            onSelect={selection.select} onCreate={create} search={{ value: query, onChange: value => { setQuery(value); setPage(1); } }}
+            pagination={{ page: data?.page.page || page, pageSize: PAGE_SIZE, total: data?.page.total ?? 0, onChange: setPage }}
+            items={items.map(item => ({ id: item.id, name: item.name || item.id, icon: <DoorOpen />, description: `${item.protocol.type} · ${inboundListen(item) || '—'}`, status: <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${item.enabled ? 'bg-ui-success' : 'bg-ui-muted'}`} title={runtimeLabel(statusById.get(item.id)?.status ?? 'unknown')} /> }))}>
+            <fieldset disabled={pending} className="min-w-0" aria-busy={pending}>
+                <InboundModal presentation="inline" show={Boolean(id)} id={id} isNew={selection.creating} onHide={selection.close} onDelete={remove}
+                    onSaved={value => { selection.saved(value.id); void mutate(); void refreshStatuses(); }} runtime={statusById.get(id)}
+                    onRetry={() => void run(async () => { await retryInbound(id); await refreshStatuses(); })} retrying={pending} />
+            </fieldset>
+        </ResourceWorkspace>
+        <details className="mt-8"><summary className="cursor-pointer text-sm font-semibold text-ui-heading">{uiT('inboundConfiguration')}</summary><div className="mt-4"><InboundConfigCard /></div></details>
+    </MainContainer>;
 }

@@ -6,5 +6,11 @@
   "connections": "연결",
   "setting": "설정",
   "toggle": "내비게이션 전환",
-  "close": "내비게이션 닫기"
+  "close": "내비게이션 닫기",
+  "monitoring": "개요 및 모니터링",
+  "trafficConfiguration": "트래픽 설정",
+  "system": "시스템",
+  "diagnostics": "진단",
+  "help": "도움말 및 정보",
+  "routeRules": "라우팅 규칙"
 }

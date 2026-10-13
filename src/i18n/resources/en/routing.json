@@ -262,5 +262,8 @@
   "backToSelectors": "Back to shared destinations",
   "selectSelector": "Select a shared destination",
   "selectSelectorHelp": "Choose a destination to update its node for every rule that uses it.",
-  "searchDestinations": "Search destinations…"
+  "searchDestinations": "Search destinations…",
+  "selectResource": "Select an item",
+  "selectResourceHelp": "Choose an item from the directory to view its settings, or add a new one.",
+  "backToDirectory": "Back to list"
 }

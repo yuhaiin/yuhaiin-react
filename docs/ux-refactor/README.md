@@ -8,7 +8,7 @@ the DOM. Screenshots do not constitute connectivity or accessibility certificati
 
 ## Editing flows
 
-- Routing, Nodes and Shared destinations use the same 280–300 px directory/detail workspace shell.
+- Routing, Nodes, Shared destinations, Traffic entry, Shared matching data, Node publishing and DNS resolvers use the same 280–300 px directory/detail workspace shell.
   Desktop opens an item inline; mobile navigates from directory to editor.
 - The simple route editor can represent flat AND/OR combinations of host,
   process, inbound, network, port and GeoIP conditions, plus explicit
@@ -45,6 +45,36 @@ the DOM. Screenshots do not constitute connectivity or accessibility certificati
 - Generated route resolution prefers literal paths over placeholders. This fixes
   block history being sent to `route.rule.get` with ID `block-history`.
 
+## Navigation and shared editors
+
+The sidebar groups Overview/Connections, traffic configuration, and system
+management in that order. Connection records include blocked traffic; publishing
+and active nodes belong to Destinations; logs and performance analysis belong to
+Diagnostics. Settings and Help have separate groups. Navigation expands the active
+group and collapses other groups; manual expansion remains possible until the next
+navigation. All 24 existing routes remain available.
+
+`ResourceWorkspace` owns directory rows, search, paging, empty selection, and mobile
+visibility. `useResourceSelection` keeps selection independent of the current page
+or filter and uses the existing draft/pending guards before switching. The shared
+`ResourceEditorFrame` presents the existing forms inline or in quick-create dialogs;
+forms continue to own their validation, save/delete APIs, and route activation.
+Traffic entry, Shared matching data, Node publishing, DNS resolvers and Shared
+destinations use this directory controller. Inbound runtime status and traffic
+statistics are shown beside the entry's configuration.
+
+Detail switches use a local animation context, a 180 ms fade with a 4 px movement,
+and a shared selection marker. This context prevents the outer page animation's
+initial setting from suppressing item transitions. Reduced-motion preferences
+are observed live. Selecting a loaded node supplies its contract directly to the
+editor, eliminating the redundant detail request and intermediate spinner.
+
+Browser checks exercised editing, draft protection, save retention, creation,
+deletion, mobile return, the publish node picker's 40-item page, and five consecutive
+node switches with no detail RPCs. Normal-motion sampling progressed from opacity
+0.68 to 0.89 to 1; reduced-motion sampling remained at opacity 1 with no transform.
+CI captures 18 desktop/mobile states and checks page and form-control bounds.
+
 ## Validation
 
 Pull-request CI now runs TypeScript checks, Vitest, localization completeness,
@@ -52,7 +82,7 @@ the style audit, lint, and the production build. It also captures browser
 screenshots from the MSW preview and fails when the expected UI does not
 appear, if the page overflows horizontally, or if form controls are clipped.
 
-The follow-up passed 123 tests in 50 files, TypeScript, localization checks,
+The follow-up passed 126 tests in 51 files, TypeScript, localization checks,
 strict lint with no warnings, the style audit and the production build. Isolated
 Chrome interaction checks covered mouse insertion, native touch scrolling,
 long-press touch insertion, edge scrolling and cancellation without a save.
@@ -110,3 +140,14 @@ the screenshots committed under `docs/ux-refactor/` so the summary stays current
 **Japanese mobile node browser**
 
 ![Lazy node browser](node-picker-ja-mobile.png)
+
+**Shared configuration workspaces**
+
+| Page | Desktop | Mobile directory |
+| --- | --- | --- |
+| Traffic entry | ![Entry workspace](inbounds-desktop.png) | ![Entry directory](inbounds-mobile.png) |
+| Matching data | ![List workspace](lists-desktop.png) | ![List directory](lists-mobile.png) |
+| Publishing | ![Publish workspace](publishes-desktop.png) | ![Publish directory](publishes-mobile.png) |
+| DNS resolvers | ![Resolver workspace](resolvers-desktop.png) | ![Resolver directory](resolvers-mobile.png) |
+
+![Japanese dark publishing workspace](publishes-ja-dark.png)

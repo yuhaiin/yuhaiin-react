@@ -1,14 +1,14 @@
+import { ResourceEditorFrame } from '@/component/resource-workspace';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
 import { createResolver, getResolver, saveResolver } from '@/api/resolvers';
 import { Button } from '@/component/v2/button';
 import { SettingsBox } from '@/component/v2/card';
 import { SettingInputVertical, SettingSelectVertical } from '@/component/v2/forms';
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import Loading from '@/component/v2/loading';
 import { createDefaultResolver, normalizeResolver, type Resolver, type ResolverType } from '@/contract/resolver';
-import { Check, Network, Trash } from 'lucide-react';
+import { Check, Trash } from 'lucide-react';
 import { useContext, useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR, { useSWRConfig } from 'swr';
@@ -25,8 +25,9 @@ export const ResolverModal: FC<{
     isNew?: boolean,
     onHide: (save?: boolean) => void,
     onDelete?: (id: string) => void,
+    presentation?: "modal" | "inline",
     onSaved?: (resolver: Resolver) => void
-}> = ({ id, show, isNew, onHide, onDelete, onSaved }) => {
+}> = ({ id, show, isNew, onHide, onDelete, onSaved, presentation = "modal" }) => {
     const { t: uiT } = useTranslation('ui');
     const { t } = useTranslation('routing');
     const [actionError, setActionError] = useState('');
@@ -46,7 +47,7 @@ export const ResolverModal: FC<{
         { shouldRetryOnError: false, keepPreviousData: false, revalidateOnFocus: false },
     );
 
-    const { value: draft, setValue: setDraft, dirty } = useEditorDraft(show ? id : null, shouldFetch ? data : undefined, () => createDefaultResolver(id));
+    const { value: draft, setValue: setDraft, dirty, commit } = useEditorDraft(show ? id : null, shouldFetch ? data : undefined, () => createDefaultResolver(id));
     const { pending: saving, run } = useAsyncAction(error => { const message = errorOf(error)?.msg ?? "Save failed"; setActionError(message); ctx.Error(message); });
     const close = useCloseGuard(show && dirty, saving, () => onHide());
 
@@ -62,22 +63,28 @@ export const ResolverModal: FC<{
             const saved = isNew ? await createResolver(next) : await saveResolver(next);
             ctx.Info("Save successful");
             await mutate(saved, { revalidate: false });
+            commit(saved);
             onSaved?.(saved);
             await refreshCaches(key => typeof key === "string" && key.startsWith("/api/v2/resolvers"));
-            onHide(true);
+            if (presentation === "modal") onHide(true);
         });
     };
 
-    return (
-        <Modal open={show} onOpenChange={(open) => !open && close()}>
-            <ModalContent width={760}>
-                <ModalHeader closeButton>
-                    <ModalTitle className="flex items-center gap-2">
-                        <Network size={18} />
-                        {resolver?.name || t("addResolver")}
-                    </ModalTitle>
-                </ModalHeader>
-                <ModalBody>
+    return <ResourceEditorFrame title={resolver?.name || t("addResolver")} label={uiT("resolvers")} presentation={presentation} open={show} onClose={close}
+        footer={<>
+                    <div>
+                        {onDelete && id !== 'bootstrap' && !isNew &&
+                            <Button variant="outline-danger" disabled={saving || isLoading || Boolean(error)} onClick={() => onDelete?.(id)}>
+                                <Trash className="mr-2" size={16} />{uiT("delete")}</Button>
+                        }
+                    </div>
+                    <div className="flex flex-wrap justify-end gap-2">
+                        <Button onClick={close} disabled={saving}>{uiT("cancel")}</Button>
+                        <Button variant="primary" disabled={saving || !resolver || isLoading || Boolean(error)} onClick={handleSave}>
+                            {saving ? <Spinner size="sm" /> : <><Check className="mr-2" size={16} />{isNew ? uiT("add") : uiT("save")}</>}
+                        </Button>
+                    </div>
+                </>}>
                     <fieldset disabled={saving} className="contents">
                     {apiError ?
                         <Loading code={apiError.code} onRetry={() => void mutate()}>{apiError.msg}</Loading> :
@@ -88,24 +95,7 @@ export const ResolverModal: FC<{
                             </SettingsBox>
                     }
                 </fieldset>
-                </ModalBody>
-                <ModalFooter className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        {onDelete && id !== 'bootstrap' && !isNew &&
-                            <Button variant="outline-danger" onClick={() => { onHide(false); onDelete?.(id); }}>
-                                <Trash className="mr-2" size={16} />{uiT("delete")}</Button>
-                        }
-                    </div>
-                    <div className="flex flex-wrap justify-end gap-2">
-                        <Button onClick={close} disabled={saving}>{uiT("cancel")}</Button>
-                        <Button disabled={saving || !resolver || isLoading || Boolean(error)} onClick={handleSave}>
-                            {saving ? <Spinner size="sm" /> : <><Check className="mr-2" size={16} />{isNew ? "Create" : "Save"}</>}
-                        </Button>
-                    </div>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
-    )
+                </ResourceEditorFrame>
 }
 
 export const ResolverEditor: FC<{ value: Resolver, onChange: (x: Resolver) => void }> = ({ value, onChange }) => {

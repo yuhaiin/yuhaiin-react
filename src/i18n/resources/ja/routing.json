@@ -262,5 +262,8 @@
   "backToSelectors": "共有出口に戻る",
   "selectSelector": "共有出口を選択",
   "selectSelectorHelp": "共有出口を選択すると、それを使用するすべてのルールのノードを変更できます。",
-  "searchDestinations": "共有出口を検索…"
+  "searchDestinations": "共有出口を検索…",
+  "selectResource": "項目を選択",
+  "selectResourceHelp": "一覧から項目を選んで設定を表示するか、新しい項目を追加してください。",
+  "backToDirectory": "一覧に戻る"
 }

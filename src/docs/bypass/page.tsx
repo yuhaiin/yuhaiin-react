@@ -204,7 +204,7 @@ function BypassComponent() {
                         <Pagination currentPage={data.page.page || page} totalItems={data.page.total} pageSize={data.page.pageSize || PAGE_SIZE} onPageChange={setPage} />
                     </div>}
                 </WorkspaceDirectory>
-                <WorkspaceDetail hiddenOnMobile={!showEditor}>
+                <WorkspaceDetail hiddenOnMobile={!showEditor} transitionKey={creating ? 'new-rule' : editing?.id}>
                     {showEditor ? <RuleEditor key={creating ? 'new-rule' : editing?.id} item={editing} creating={creating} initial={linkedDraft}
                         options={editorOptions} blocked={reordering} onSaved={saved} onBack={backToRules} onStateChange={setEditorState} />
                         : <div className="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-ui-muted">
