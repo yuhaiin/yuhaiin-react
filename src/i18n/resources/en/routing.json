@@ -243,5 +243,11 @@
   "nodeDirectoryCount_other": "{{nodes}} nodes · {{groups}} groups",
   "defaultNode": "Default destination",
   "noProtocol": "No connection steps",
-  "ruleReordered": "Rule priority updated and applied."
+  "ruleReordered": "Rule priority updated and applied.",
+  "matchScope": "Matching scope",
+  "matchSelectedTraffic": "Match selected traffic",
+  "combineConditions": "Combine conditions",
+  "matchEveryCondition": "Match all (AND)",
+  "matchAnyCondition": "Match any (OR)",
+  "selectMatchingData": "Choose matching data before saving."
 }
