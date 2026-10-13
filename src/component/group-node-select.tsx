@@ -51,7 +51,7 @@ export function GroupNodeSelect({ label, value, selected, groups, onChange, disa
     return <div className="min-w-0 space-y-3">
         <div className="text-sm font-medium text-ui-heading">{label}</div>
         <SettingSelectVertical className="mb-0" label={t('nodeGroup')} value={group}
-            values={groups.map(item => [`${item.name} (${item.enabled}/${item.count})`, item.name])}
+            values={groups.map(item => [`${item.name} (${item.enabled}/${item.count})`, item.name] as [string, string])}
             disabled={disabled || !groups.length} onChange={changeGroup} />
         <div className="flex min-w-0 gap-2">
             <Input type="search" aria-label={t('nodeSearch')} placeholder={t('nodeSearch')}
