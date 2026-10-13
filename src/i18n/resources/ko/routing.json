@@ -212,5 +212,13 @@
   "defaultAction": "동작",
   "ruleActions": "{{name}} 작업",
   "fallbackTitle": "기본 경로",
-  "unsavedChanges": "저장 안 됨"
+  "unsavedChanges": "저장 안 됨",
+  "ruleDirectory": "규칙 목록",
+  "ruleEditor": "규칙 편집",
+  "backToRules": "규칙 목록으로 돌아가기",
+  "selectRule": "규칙 선택",
+  "selectRuleHelp": "규칙을 선택하여 일치 조건과 대상을 편집하거나 새 규칙을 만드세요.",
+  "deleteRuleConfirm": "이 규칙을 삭제하시겠습니까?",
+  "discardRuleChanges": "이 규칙의 저장하지 않은 변경 사항을 버리시겠습니까?",
+  "discardChanges": "변경 사항 버리기"
 }

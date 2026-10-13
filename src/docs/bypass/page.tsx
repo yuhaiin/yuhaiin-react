@@ -2,8 +2,9 @@ import { clearHashSearch, useHashSearch } from "@/hooks/useHashLocation";
 import { connectionRuleDraft } from "@/docs/connections/actions";
 import { listNodes } from "@/api/nodes";
 import { listSelectors } from "@/api/selectors";
-import { RuleDraftForm } from "./draft-form";
-import { draftForSave } from "./draft";
+import { RuleEditor } from "./rule-editor";
+import { allowNavigation } from "@/hooks/navigation-guard";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { ResolverPicker } from "@/component/resolver-picker";
 import { RouteTargetPicker } from "@/component/route-target-picker";
 import { type RuleEditorOptions } from "./rule-form";
@@ -14,7 +15,7 @@ import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-edito
 
 import { listInbounds } from "@/api/inbounds";
 import { listResolvers } from "@/api/resolvers";
-import { applyRouteChanges, changeRulePriority, createRule, deleteRule, getRouteActivationStatus, getRouteConfig, getRule, listRouteLists, listRules, saveRouteConfig, saveRule } from "@/api/route";
+import { applyRouteChanges, changeRulePriority, getRouteActivationStatus, getRouteConfig, getRule, listRouteLists, listRules, saveRouteConfig, saveRule } from "@/api/route";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { FilterSearch, MainContainer, SettingLabel } from "@/component/v2/card";
@@ -28,10 +29,9 @@ import { Select } from "@/component/v2/select";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { RuleDraft, RuleItem } from "@/contract/route";
-import { createDefaultRuleDraft } from "@/contract/route";
 import { RuleList } from "./rule-list";
-import { ArrowRight, ChevronDown, Plus, Save, Trash } from "lucide-react";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { ArrowRight, ChevronDown, Plus, Save, ListFilter } from "lucide-react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 type PriorityOperate = "exchange" | "insert_before" | "insert_after";
 const PAGE_SIZE = 8;
@@ -41,13 +41,17 @@ function BypassComponent() {
     const { t } = useTranslation('routing');
 
     const ctx = useContext(GlobalToastContext);
+    const { mutate: refreshCache } = useSWRConfig();
     const [page, setPage] = useState(1);
     const [query, setQuery] = useState("");
-    const [localEditing, setEditing] = useState<RuleItem | null>(null);
+    const [localEditing, setEditing] = useState<Pick<RuleItem, "id" | "name"> | null>(null);
+    const desktop = useMediaQuery("(min-width: 768px)");
+    const initialized = useRef(false);
+    const [editorState, setEditorState] = useState({ dirty: false, pending: false });
     const search = useHashSearch();
     const linkedId = new URLSearchParams(search).get('rule');
     const linkedDraft = useMemo(() => connectionRuleDraft(search), [search]);
-    const editing = localEditing ?? (linkedId ? { id: linkedId, name: '' } : null);
+    const editing = useMemo(() => localEditing ?? (linkedId ? { id: linkedId, name: '' } : null), [localEditing, linkedId]);
     const closeLink = () => { if (search) clearHashSearch(); };
     const [priorityItem, setPriorityItem] = useState<RuleItem | null>(null);
     const [localCreating, setCreating] = useState(false);
@@ -60,12 +64,40 @@ function BypassComponent() {
             refreshInterval: (status) => Math.max(status?.hostIndexRefreshAt ?? 0, status?.ruleApplyAt ?? 0) > 0 || (status?.savedRevision ?? 0) > (status?.appliedRevision ?? 0) ? 1000 : 0,
         },
     );
-    const { data, error, isLoading, isValidating, mutate } = useSWR(
+    const { data, error, isValidating, mutate } = useSWR(
         ["/api/v2/route/rules", page, query],
         () => listRules({ page, pageSize: PAGE_SIZE, query }),
-        { revalidateOnFocus: false },
+        { revalidateOnFocus: false, keepPreviousData: true },
     );
     useServerPageClamp(data?.page, page, setPage);
+    useEffect(() => {
+        if (!initialized.current && desktop && data?.items.length && !creating && !editing) {
+            initialized.current = true;
+            setEditing(data.items[0]);
+        }
+    }, [desktop, data?.items, creating, editing]);
+    const selectRule = (item: RuleItem) => {
+        if (toggling || !creating && editing?.id === item.id) return;
+        if (!allowNavigation()) return;
+        initialized.current = true;
+        closeLink();
+        setCreating(false);
+        setEditing(item);
+    };
+    const newRule = () => {
+        if (!allowNavigation()) return;
+        initialized.current = true;
+        closeLink();
+        setEditing(null);
+        setCreating(true);
+    };
+    const backToRules = () => {
+        initialized.current = true;
+        closeLink();
+        setEditing(null);
+        setCreating(false);
+        setEditorState({ dirty: false, pending: false });
+    };
     const needEditorOptions = creating || editing !== null;
     const { data: allRules, mutate: mutateAllRules } = useSWR(
         priorityItem ? "/api/v2/route/rules/all" : null,
@@ -108,7 +140,8 @@ function BypassComponent() {
     const toggleDisabled = (item: RuleItem) => {
         void runToggle(async () => {
             const draft = await getRule(item.id);
-            await saveRule(item.id, { ...draft, rule: { ...draft.rule, disabled: !item.disabled } });
+            const saved = await saveRule(item.id, { ...draft, rule: { ...draft.rule, disabled: !item.disabled } });
+            await refreshCache(["/api/v2/route/rules/detail", item.id], saved, { revalidate: false });
             await mutate();
             await mutateActivation();
             try {
@@ -120,57 +153,59 @@ function BypassComponent() {
         });
     };
 
-    const saved = () => {
-        mutate();
-        mutateAllRules();
+    const refresh = () => {
+        void mutate();
+        void mutateAllRules();
         void mutateActivation();
-        setEditing(null);
-        setPriorityItem(null);
-        setCreating(false);
+    };
+    const saved = (draft: RuleDraft | null) => {
+        initialized.current = true;
+        refresh();
         closeLink();
+        setCreating(false);
+        setEditing(draft ? { id: draft.rule.id, name: draft.rule.name } : null);
+        setEditorState({ dirty: false, pending: false });
     };
 
-    if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
-    if (isLoading || !data) return <Loading />
+    if (error && !data) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
+    if (!data) return <Loading />
 
+    const showEditor = creating || editing !== null;
     return (
-        <MainContainer className="max-w-4xl">
-            <header className="mb-7 flex flex-wrap items-center justify-between gap-4">
+        <MainContainer className="max-w-[1440px]">
+            <header className={`mb-6 flex-wrap items-center justify-between gap-4 ${showEditor ? 'hidden md:flex' : 'flex'}`}>
                 <div><h1 className="text-3xl font-semibold tracking-tight text-ui-heading">{t('routingTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('routingOverviewHelp')}</p></div>
-                <Button variant="primary" onClick={() => setCreating(true)}><Plus size={16} className="mr-1.5" />{uiT('add')}</Button>
+                <Button variant="primary" onClick={newRule} disabled={toggling || editorState.pending || creating}><Plus size={16} className="mr-1.5" />{uiT('add')}</Button>
             </header>
-            <RouteConfigCard destinations={destinations} onSaved={() => { void mutateActivation(); }} />
+            <div className={showEditor ? 'hidden md:block' : undefined}>
+                <RouteConfigCard destinations={destinations} onSaved={() => { void mutateActivation(); }} />
+            </div>
             <RouteActivationProgress status={activation} onApplied={mutateActivation} />
-            <section className="mt-7">
-                <div className="mb-3 px-2">
-                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div><h2 className="text-lg font-semibold text-ui-heading">{uiT('routeRules')}</h2><p className="mt-1 text-xs text-ui-muted">{t('ruleOrderHelp', { count: data.page.total })}</p></div>
-                        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
-                            {isValidating && <Spinner size="sm" />}
-                            <FilterSearch className="min-w-0 flex-1 sm:w-[200px] sm:flex-none" onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
-                        </div>
+            <div className={`grid min-w-0 items-start md:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)] ${showEditor ? 'md:mt-6' : 'mt-6'}`}>
+                <aside aria-label={t('ruleDirectory')} className={`min-w-0 md:pr-5 ${showEditor ? 'hidden md:block' : ''}`}>
+                    <div className="mb-4">
+                        <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-semibold text-ui-heading">{uiT('routeRules')}</h2>{isValidating && <Spinner size="sm" />}</div>
+                        <p className="mt-1 text-xs text-ui-muted">{t('ruleOrderHelp', { count: data.page.total })}</p>
+                        <FilterSearch className="mt-3 w-full" onEnter={v => { setPage(1); setQuery(v); }} size="sm" />
                     </div>
-                </div>
-                <div className="border-t border-ui-border/60">
-                    <RuleList
-                        items={data.items}
-                        destinations={destinations}
+                    {error ? <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading> : <RuleList items={data.items} selectedId={creating ? undefined : editing?.id} destinations={destinations}
                         resolverNames={Object.fromEntries((resolversData?.items ?? []).map(item => [item.id, item.name]))}
-                        busy={toggling}
-                        onOpen={setEditing}
-                        onPriority={setPriorityItem}
-                        onToggle={toggleDisabled}
-                    />
-                </div>
-                {Math.ceil(data.page.total / (data.page.pageSize || PAGE_SIZE)) > 1 && (
-                    <div className="flex justify-end border-t border-ui-border/60 py-4">
+                        busy={toggling || editorState.pending || editorState.dirty}
+                        onOpen={selectRule} onPriority={setPriorityItem} onToggle={toggleDisabled} />}
+                    {Math.ceil(data.page.total / (data.page.pageSize || PAGE_SIZE)) > 1 && <div className="flex justify-center border-t border-ui-border/60 py-4">
                         <Pagination currentPage={data.page.page || page} totalItems={data.page.total} pageSize={data.page.pageSize || PAGE_SIZE} onPageChange={setPage} />
-                    </div>
-                )}
-            </section>
-            <RuleEditorModal item={editing} options={editorOptions} onSaved={saved} onClose={() => { setEditing(null); closeLink(); }} />
-            <PriorityModal item={priorityItem} items={allRules?.items ?? data.items} onSaved={saved} onClose={() => setPriorityItem(null)} />
-            <CreateRuleModal open={creating} initial={linkedDraft} options={editorOptions} onSaved={saved} onClose={() => { setCreating(false); closeLink(); }} />
+                    </div>}
+                </aside>
+                <div className={`min-w-0 md:border-l md:border-ui-border/60 md:pl-6 xl:pl-8 ${showEditor ? '' : 'hidden md:block'}`}>
+                    {showEditor ? <RuleEditor key={creating ? 'new-rule' : editing?.id} item={editing} creating={creating} initial={linkedDraft}
+                        options={editorOptions} blocked={toggling} onSaved={saved} onBack={backToRules} onStateChange={setEditorState} />
+                        : <div className="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-ui-muted">
+                            <ListFilter size={28} aria-hidden="true" /><h2 className="text-lg font-medium text-ui-heading">{t('selectRule')}</h2>
+                            <p className="max-w-sm text-sm">{t('selectRuleHelp')}</p><Button variant="outline-primary" className="gap-2" onClick={newRule}><Plus size={16} />{uiT('newRouteRule')}</Button>
+                        </div>}
+                </div>
+            </div>
+            <PriorityModal item={priorityItem} items={allRules?.items ?? data.items} onSaved={() => { refresh(); if (editing) void refreshCache(["/api/v2/route/rules/detail", editing.id]); setPriorityItem(null); }} onClose={() => setPriorityItem(null)} />
         </MainContainer>
     );
 }
@@ -256,122 +291,6 @@ function RouteConfigCard({ onSaved, destinations }: { onSaved: () => void; desti
             </div>
         </fieldset>
     </details>;
-}
-
-function RuleEditorModal({ item, options, onSaved, onClose }: { item: Pick<RuleItem, "id" | "name"> | null; options: RuleEditorOptions; onSaved: () => void; onClose: () => void }) {
-    const { t: uiT } = useTranslation('ui');
-    const { t } = useTranslation('routing');
-    const { mutate: refreshCache } = useSWRConfig();
-    const [actionError, setActionError] = useState('');
-    const [deleted, setDeleted] = useState(false);
-    useEffect(() => { setActionError(''); setDeleted(false); }, [item?.id]);
-
-    const ctx = useContext(GlobalToastContext);
-    const { data, error, isLoading, mutate } = useSWR(item ? ["/api/v2/route/rules/detail", item.id] : null, () => getRule(item!.id), { revalidateOnFocus: false });
-
-    const { value: draft, setValue: setDraft, dirty, commit } = useEditorDraft(item ? item.id : null, data, createDefaultRuleDraft);
-    const { pending, run } = useAsyncAction(error => { const message = error instanceof Error ? error.message : String((error as { msg?: string })?.msg ?? error); setActionError(message); ctx.Error(message); void refreshCache("/api/v2/route/activation"); });
-    const close = useCloseGuard(dirty, pending, onClose);
-    const save = () => {
-        if (!item || !data || error || isLoading || pending) return;
-        void run(async () => {
-            setActionError('');
-            if (dirty && !deleted) {
-                const saved = await saveRule(item.id, draftForSave(draft));
-                commit(saved);
-                await mutate(saved, { revalidate: false });
-                void refreshCache("/api/v2/route/lists/options");
-            }
-            void refreshCache("/api/v2/route/activation");
-            await applyRouteChanges();
-            ctx.Info("rule applied");
-            onSaved();
-        });
-    };
-    const remove = () => {
-        if (!item || pending || !data || error || isLoading || !window.confirm("Delete this rule?")) return;
-        void run(async () => {
-            await deleteRule(item.id);
-            setDeleted(true);
-            commit(draft);
-            void refreshCache("/api/v2/route/activation");
-            await applyRouteChanges();
-            ctx.Info("rule deleted");
-            onSaved();
-        });
-    };
-
-    return (
-        <Modal open={!!item} onOpenChange={(open) => !open && close()}>
-            <ModalContent width={760} className="p-0">
-                <ModalHeader closeButton className="px-6 py-5"><ModalTitle className="font-semibold">{draft.rule.name || item?.name}</ModalTitle></ModalHeader>
-                <ModalBody className="p-5 sm:p-6">
-                    <fieldset disabled={pending} className="contents">
-                    {error && <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>}
-                    {isLoading && <Loading />}
-                    {actionError && <p role="alert" className="mb-3 text-sm text-ui-danger">{actionError}</p>}
-                    {!isLoading && !error && data && !deleted && <RuleDraftForm value={draft} onChange={setDraft} options={options} />}
-                </fieldset>
-                </ModalBody>
-                <ModalFooter className="flex flex-wrap items-center justify-between gap-3 bg-ui-surface-muted/50 px-5 sm:px-6">
-                    <Button variant="outline-danger" className="border-transparent" aria-label={uiT("deleteRule")} title={uiT("deleteRule")} disabled={pending || deleted || isLoading || Boolean(error) || !data} onClick={remove}>
-                        <Trash size={16} /><span className="hidden sm:inline">{uiT("deleteRule")}</span></Button>
-                    <div className="flex flex-wrap justify-end gap-2">
-                        <Button onClick={close} disabled={pending}>{uiT("cancel")}</Button>
-                        <Button variant="primary" disabled={pending || isLoading || Boolean(error) || !data} onClick={save}><Save size={16} /> {t(actionError && !dirty ? "retryApply" : "saveAndApply")}</Button>
-                    </div>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
-    );
-}
-
-function CreateRuleModal({ open, initial, options, onSaved, onClose }: { open: boolean; initial?: RuleDraft; options: RuleEditorOptions; onSaved: () => void; onClose: () => void }) {
-    const { t: uiT } = useTranslation('ui');
-    const { t } = useTranslation('routing');
-    const { mutate: refreshCache } = useSWRConfig();
-    const [actionError, setActionError] = useState('');
-    useEffect(() => { setActionError(''); }, [open]);
-
-    const ctx = useContext(GlobalToastContext);
-    const createDraft = useCallback(() => initial ?? createDefaultRuleDraft(), [initial]);
-    const { value: draft, setValue: setDraft, dirty, commit } = useEditorDraft<RuleDraft>(open ? initial?.rule.id ?? "new-rule" : null, undefined, createDraft);
-
-    const { pending, run } = useAsyncAction(error => { const message = String((error as { msg?: string })?.msg ?? error); setActionError(message); ctx.Error(message); void refreshCache("/api/v2/route/activation"); });
-    const close = useCloseGuard(dirty, pending, onClose);
-
-    const save = () => {
-        if (pending || !draft.rule.name.trim()) return;
-        void run(async () => {
-        setActionError('');
-        if (dirty || draft.rule.revision === 0) {
-            const saved = draft.rule.revision > 0 ? await saveRule(draft.rule.id, draftForSave(draft)) : await createRule(draftForSave(draft));
-            commit(saved);
-            void refreshCache("/api/v2/route/lists/options");
-        }
-        void refreshCache("/api/v2/route/activation");
-        await applyRouteChanges();
-        ctx.Info("rule applied");
-        onSaved();
-        });
-    };
-
-    return (
-        <Modal open={open} onOpenChange={(next) => !next && close()}>
-            <ModalContent width={760} className="p-0">
-                <ModalHeader closeButton className="px-6 py-5"><ModalTitle className="font-semibold">{uiT("newRouteRule")}</ModalTitle></ModalHeader>
-                <ModalBody className="p-5 sm:p-6">
-                    <fieldset disabled={pending} className="contents">
-                    {actionError && <p role="alert" className="mb-3 text-sm text-ui-danger">{actionError}</p>}
-                    <RuleDraftForm value={draft} onChange={setDraft} options={options} />
-                </fieldset>
-                </ModalBody>
-                <ModalFooter className="bg-ui-surface-muted/50 px-5 sm:px-6">
-                    <Button variant="primary" onClick={save} disabled={pending || !draft.rule.name.trim()}><Save size={16} /> {t(actionError && !dirty && draft.rule.revision > 0 ? "retryApply" : "saveAndApply")}</Button>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
-    );
 }
 
 function PriorityModal({ item, items, onSaved, onClose }: { item: RuleItem | null; items: RuleItem[]; onSaved: () => void; onClose: () => void }) {

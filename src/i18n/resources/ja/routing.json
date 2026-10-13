@@ -212,5 +212,13 @@
   "defaultAction": "処理",
   "ruleActions": "{{name}} の操作",
   "fallbackTitle": "既定の経路",
-  "unsavedChanges": "未保存"
+  "unsavedChanges": "未保存",
+  "ruleDirectory": "ルール一覧",
+  "ruleEditor": "ルール編集",
+  "backToRules": "ルール一覧へ戻る",
+  "selectRule": "ルールを選択",
+  "selectRuleHelp": "ルールを選択して条件と接続先を編集するか、新しいルールを作成してください。",
+  "deleteRuleConfirm": "このルールを削除しますか？",
+  "discardRuleChanges": "このルールの未保存の変更を破棄しますか？",
+  "discardChanges": "変更を破棄"
 }

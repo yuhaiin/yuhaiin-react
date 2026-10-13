@@ -212,5 +212,13 @@
   "defaultAction": "Action",
   "ruleActions": "Actions for {{name}}",
   "fallbackTitle": "Fallback route",
-  "unsavedChanges": "Unsaved"
+  "unsavedChanges": "Unsaved",
+  "ruleDirectory": "Rule directory",
+  "ruleEditor": "Rule editor",
+  "backToRules": "Back to rules",
+  "selectRule": "Select a rule",
+  "selectRuleHelp": "Choose a rule to edit its matching conditions and destination, or create a new rule.",
+  "deleteRuleConfirm": "Delete this rule?",
+  "discardRuleChanges": "Discard unsaved changes to this rule?",
+  "discardChanges": "Discard changes"
 }
