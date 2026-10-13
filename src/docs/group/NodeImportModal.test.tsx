@@ -42,3 +42,26 @@ it('previews before creating, retains input and retries only failed nodes', asyn
         expect(saved).toHaveBeenCalledOnce();
     } finally { act(() => root.unmount()); host.remove(); }
 });
+
+it('starts a fresh import when the dialog reopens after being closed', async () => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const root = createRoot(host);
+    const view = (show: boolean) => <NodeImportModal show={show} group="manual" onHide={vi.fn()} onSaved={vi.fn()} onChanged={vi.fn()} />;
+    try {
+        await act(async () => root.render(view(true)));
+        const input = document.querySelector<HTMLTextAreaElement>('textarea[aria-label="nodeLinksOrJSON"]')!;
+        await act(async () => {
+            Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(input, 'old node links');
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        expect(input.value).toBe('old node links');
+        await act(async () => root.render(view(false)));
+        await act(async () => root.render(view(true)));
+        const reopened = [...document.querySelectorAll<HTMLTextAreaElement>('textarea[aria-label="nodeLinksOrJSON"]')].at(-1)!;
+        expect(reopened.value).toBe('');
+    } finally {
+        act(() => root.unmount());
+        host.remove();
+    }
+});
