@@ -249,5 +249,10 @@
   "combineConditions": "Combine conditions",
   "matchEveryCondition": "Match all (AND)",
   "matchAnyCondition": "Match any (OR)",
-  "selectMatchingData": "Choose matching data before saving."
+  "selectMatchingData": "Choose matching data before saving.",
+  "nodeGroup": "Node group",
+  "loading": "Loading…",
+  "searchNodes": "Search",
+  "previousPage": "Previous",
+  "nextPage": "Next"
 }
