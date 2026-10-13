@@ -41,7 +41,7 @@ import {
     Type,
 } from "lucide-react";
 import type { ElementType, FC } from "react";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
 const routeListTypes = ["host", "process", "cidr", "domain", "regexp", "keyword", "suffix"];
