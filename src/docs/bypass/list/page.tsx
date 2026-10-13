@@ -425,7 +425,12 @@ function ListEditorModal({ name, onSaved, onClose }: { name: string | null; onSa
     const { mutate: refreshCache } = useSWRConfig();
     const [actionError, setActionError] = useState('');
     const [deleted, setDeleted] = useState(false);
-    useEffect(() => { setActionError(''); setDeleted(false); }, [name]);
+    const [previousName, setPreviousName] = useState(name);
+    if (previousName !== name) {
+        setPreviousName(name);
+        setActionError('');
+        setDeleted(false);
+    }
 
     const ctx = useContext(GlobalToastContext);
     const { data, error, isLoading, mutate } = useSWR(name ? ["/api/v2/route/lists/detail", name] : null, () => getRouteList(name!), { revalidateOnFocus: false });
@@ -491,7 +496,11 @@ function CreateListModal({ open, initialName, initialValue, onSaved, onClose }: 
     const { t } = useTranslation('routing');
     const { mutate: refreshCache } = useSWRConfig();
     const [actionError, setActionError] = useState('');
-    useEffect(() => { setActionError(''); }, [open]);
+    const [previousOpen, setPreviousOpen] = useState(open);
+    if (previousOpen !== open) {
+        setPreviousOpen(open);
+        setActionError('');
+    }
 
     const ctx = useContext(GlobalToastContext);
     const createDraft = useCallback(() => initialValue ? normalizeRouteList(initialValue) : createDefaultRouteList(initialName ?? ''), [initialName, initialValue]);
