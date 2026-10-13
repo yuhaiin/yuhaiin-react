@@ -71,7 +71,7 @@ jobs:
             test -s "docs/ux-refactor/${name}.png"
           done
 
-          images="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/docs/ux-refactor"
+          images="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${{ github.event.pull_request.head.sha || github.sha }}/docs/ux-refactor"
           {
             echo '## Routing and Nodes UX previews'
             echo
