@@ -12,6 +12,7 @@ export function RuleList({ items, selectedId, onOpen, onPriority, onToggle, onMo
     resolverNames: Record<string, string>;
     busy: boolean;
     page: number;
+    pageSize: number;
     total: number;
     filtered: boolean;
     onOpen: (item: RuleItem) => void;
