@@ -88,7 +88,7 @@ const NodeEditor: FC<{
             </div>
         )}
 
-        {editable && <div className="mb-3 flex items-center justify-between gap-3"><p className="text-sm text-ui-muted">{t("nodeChainHelp")}</p><Button size="sm" variant="outline-secondary" onClick={() => setAdvanced(previous => !previous)}>{t(advanced ? "simpleEditor" : "advancedEditor")}</Button></div>}
+        {editable && <div className="mb-3 flex min-w-0 flex-wrap items-center justify-between gap-3"><p className="min-w-0 flex-1 text-sm text-ui-muted">{t("nodeChainHelp")}</p><Button size="sm" variant="outline-secondary" className="shrink-0 whitespace-nowrap" onClick={() => setAdvanced(previous => !previous)}>{t(advanced ? "simpleEditor" : "advancedEditor")}</Button></div>}
         <NodeProtocolChain
             chain={value.chain}
             editable={editable}
