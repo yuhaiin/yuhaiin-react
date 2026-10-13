@@ -431,7 +431,7 @@ export default function Group() {
     const showdata = linkedId ? { show: true, id: linkedId, new: false } : localShowdata;
     const closeLink = () => { if (linkedId) clearHashSearch(); };
     const [importOpen, setImportOpen] = useState(false);
-    const [selectedGroup, setSelectedGroup] = useState("");
+    const [preferredGroup, setSelectedGroup] = useState("");
     const [query, setQuery] = useState("");
     const [latency, setLatency] = useLocalStorage<Record<string, NodeLatencyState>>("latency-v2-contract", {});
     const [busyLatency, setBusyLatency] = useState<Record<string, Partial<Record<NodeLatencyType, boolean>>>>({});
@@ -453,6 +453,9 @@ export default function Group() {
         const values = new Set(items.map(item => item.group || "manual"));
         return Array.from(values).sort((a, b) => a.localeCompare(b));
     }, [items]);
+    // Select the first available group without a post-render state update.
+    // If a group disappears after refreshing, fall back to the first available.
+    const selectedGroup = groups.includes(preferredGroup) ? preferredGroup : groups[0] ?? "";
     const groupCounts = useMemo(() => {
         const counts = new Map<string, number>();
         for (const item of items) {
@@ -484,20 +487,11 @@ export default function Group() {
         [groups, selectedGroup],
     );
 
-    useEffect(() => {
-        if (selectedGroup && !groups.includes(selectedGroup)) setSelectedGroup("");
-    }, [groups, selectedGroup]);
-
-    useEffect(() => {
-        if (!selectedGroup && groups.length > 0) setSelectedGroup(groups[0]);
-    }, [groups, selectedGroup]);
-
-    useEffect(() => {
-        nodeIdsRef.current = data === undefined ? [] : nodeIds;
-        if (data === undefined) return;
-        setLatency((prev) => pruneLatencyMap(prev, nodeIds));
-        setBusyLatency((prev) => pruneBusyLatency(prev, nodeIds));
-    }, [data, nodeIds, setLatency]);
+    // Derive visible results from the current node set. Do not trigger another
+    // synchronous render when SWR updates its data or removes a node.
+    const visibleLatency = useMemo(() => data ? pruneLatencyMap(latency, nodeIds) : latency, [data, latency, nodeIds]);
+    const visibleBusyLatency = useMemo(() => data ? pruneBusyLatency(busyLatency, nodeIds) : busyLatency, [data, busyLatency, nodeIds]);
+    useEffect(() => { nodeIdsRef.current = data ? nodeIds : []; }, [data, nodeIds]);
 
     const selectedItem = items.find(item => item.id === showdata.id);
     useEffect(() => {
@@ -598,12 +592,12 @@ export default function Group() {
                 </div>
                 {apiError ? <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} /> : groupItems.length === 0 ? <p className="px-3 py-8 text-center text-sm text-ui-muted">{t(query.trim() ? 'noMatchingNodes' : 'noGroupNodes')}</p> :
                     groupItems.length > GROUP_VIRTUALIZE_THRESHOLD ? <VList data={groupItems} itemSize={57} bufferSize={456} style={{ height: 'min(72vh, 900px)', width: '100%' }}>
-                        {item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={latency[item.id]} busy={busyLatency[item.id]} defaults={defaults} />}
-                    </VList> : <div>{groupItems.map(item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={latency[item.id]} busy={busyLatency[item.id]} defaults={defaults} />)}</div>}
+                        {item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} />}
+                    </VList> : <div>{groupItems.map(item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} />)}</div>}
             </WorkspaceDirectory>
             <WorkspaceDetail hiddenOnMobile={!showdata.show}>
                 {showdata.show ? <>
-                    {selectedItem && !showdata.new ? <NodeOverview item={selectedItem} latency={latency[selectedItem.id]} busy={busyLatency[selectedItem.id]} defaults={defaults} using={using} locked={editorState.dirty || editorState.pending}
+                    {selectedItem && !showdata.new ? <NodeOverview item={selectedItem} latency={visibleLatency[selectedItem.id]} busy={visibleBusyLatency[selectedItem.id]} defaults={defaults} using={using} locked={editorState.dirty || editorState.pending}
                         onLatency={type => handleLatency(selectedItem.id, type)} onUse={() => handleUse(selectedItem.id)} onBack={backToNodes} /> : <header className="mb-5 border-b border-ui-border/60 pb-5"><Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent md:hidden" onClick={backToNodes}><ArrowLeft size={16} />{t('backToNodes')}</Button><h2 className="break-words text-xl font-semibold text-ui-heading">{showdata.new ? uiT('newNode') : t('nodeDetails')}</h2></header>}
                     {defaultsError && <div role="alert" className="mb-4 text-sm text-ui-danger">{t('defaultNodeStateFailed')} <Button size="sm" onClick={() => void mutateDefaults()}>{t('retry')}</Button></div>}
                     <NodeModal key={showdata.new ? 'new-node' : showdata.id} show id={showdata.id} isNew={showdata.new} editable presentation="inline" groups={modalGroups} onStateChange={setEditorState}
