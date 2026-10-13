@@ -213,9 +213,10 @@ const GroupPicker: FC<{
     const [open, setOpen] = useState(false);
     const [filter, setFilter] = useState("");
 
-    useEffect(() => {
-        if (!open) setFilter("");
-    }, [open]);
+    const changeOpen = (next: boolean) => {
+        setOpen(next);
+        if (!next) setFilter("");
+    };
 
     const filtered = filter.trim()
         ? groups.filter((group) => group.toLowerCase().includes(filter.trim().toLowerCase()))
@@ -223,7 +224,7 @@ const GroupPicker: FC<{
     const selectedCount = counts.get(value) ?? 0;
 
     return (
-        <Dropdown open={open} onOpenChange={setOpen}>
+        <Dropdown open={open} onOpenChange={changeOpen}>
             <DropdownTrigger asChild>
                 <Button
                     type="button"
@@ -266,7 +267,7 @@ const GroupPicker: FC<{
                                     const choice = event.key === 'ArrowDown' ? choices?.[0] : choices?.[choices.length - 1];
                                     choice?.focus();
                                 } else if (event.key === 'Escape') {
-                                    event.preventDefault(); setOpen(false);
+                                    event.preventDefault(); changeOpen(false);
                                 }
                             }}
                             className="h-8 pl-8 text-sm"
