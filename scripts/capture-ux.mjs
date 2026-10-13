@@ -75,10 +75,18 @@ async function main() {
     let loaded = false;
     let detail = '';
     for (let attempt = 0; attempt < 120; attempt++) {
-      const result = await send('Runtime.evaluate', {
-        expression: '({ready: document.readyState, found: Boolean(document.querySelector(' + JSON.stringify(shot.match) + ')), text: document.body?.innerText?.slice(0,200) || ""})',
-        returnByValue: true,
-      });
+      let result;
+      try {
+        result = await send('Runtime.evaluate', {
+          expression: '({ready: document.readyState, found: Boolean(document.querySelector(' + JSON.stringify(shot.match) + ')), text: document.body?.innerText?.slice(0,200) || ""})',
+          returnByValue: true,
+        });
+      } catch (error) {
+        // The JavaScript execution context can disappear while the page is
+        // navigating. Retry until the new document is ready.
+        if (/navigat|context|target/i.test(String(error))) { await sleep(250); continue; }
+        throw error;
+      }
       const state = result.result?.value ?? {};
       detail = JSON.stringify(state);
       if (state.found) { loaded = true; break; }
