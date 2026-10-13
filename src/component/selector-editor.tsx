@@ -9,7 +9,7 @@ import { GlobalToastContext } from '@/component/v2/toast';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
 import type { Selector } from '@/contract/node';
 import { Plus, Trash } from 'lucide-react';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 
@@ -26,7 +26,13 @@ export function SelectorEditor({ item, onClose, onSaved }: { item: Selector | nu
     const { data: nodes, error: nodeError, mutate: refreshNodes } = useSWR(open ? '/api/v2/nodes/all' : null, () => collectPages(listNodes));
     const { data: refs, error: refsError } = useSWR(item?.id ? ['/api/v2/outbound/selector/references', item.id] : null, () => selectorReferences(item!.id));
     const [actionError, setActionError] = useState('');
-    useEffect(() => { setActionError(''); setCreatingNode(false); }, [open, item?.id]);
+    // A different selector (or opening session) starts with clean local UI state.
+    const [session, setSession] = useState({ open, id: item?.id });
+    if (session.open !== open || session.id !== item?.id) {
+        setSession({ open, id: item?.id });
+        setActionError('');
+        setCreatingNode(false);
+    }
     const { pending, run } = useAsyncAction(error => {
         const message = error instanceof Error ? error.message : String((error as { msg?: string }).msg ?? error);
         setActionError(message);
