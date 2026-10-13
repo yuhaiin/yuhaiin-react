@@ -29,6 +29,8 @@ function renderDraft(initial: RuleDraft) {
         return <>
             <RuleDraftForm value={draft} onChange={setDraft} options={{ lists: [], inbounds: [], resolvers: [] }} />
             <output data-testid="saved-target">{JSON.stringify(draft.rule.target)}</output>
+            <output data-testid="rule-expressions">{JSON.stringify(draft.rule.rules)}</output>
+            <output data-testid="owned-lists">{JSON.stringify(draft.lists.map(list => list.id))}</output>
         </>;
     }
     act(() => root?.render(<Editor />));
@@ -60,4 +62,42 @@ it('makes settings omitted from the simple task editor discoverable', () => {
     expect(advanced).toBeTruthy();
     act(() => (advanced as HTMLButtonElement).click());
     expect(host.querySelector('[role="status"]')).toBeNull();
+});
+
+function clickButton(host: HTMLElement, text: string) {
+    const button = [...host.querySelectorAll('button')].find(item => item.textContent?.trim() === text);
+    if (!button) throw Error(`Missing button: ${text}`);
+    act(() => button.click());
+}
+
+it('adds independent private match conditions and combines them with AND', () => {
+    const host = renderDraft(createDefaultRuleDraft());
+    clickButton(host, 'addCondition');
+    const listIds = JSON.parse(host.querySelector('[data-testid="owned-lists"]')?.textContent ?? '[]') as string[];
+    expect(listIds).toHaveLength(2);
+    expect(new Set(listIds).size).toBe(2);
+    clickButton(host, 'matchEveryCondition');
+    expect(JSON.parse(host.querySelector('[data-testid="rule-expressions"]')?.textContent ?? '[]')).toMatchObject([
+        { type: 'all', all: [{ type: 'host' }, { type: 'host' }] },
+    ]);
+});
+
+it('only matches all traffic after the explicit all-traffic action', () => {
+    const host = renderDraft(createDefaultRuleDraft());
+    clickButton(host, 'condition.always');
+    expect(JSON.parse(host.querySelector('[data-testid="rule-expressions"]')?.textContent ?? '[]')).toEqual([{ type: 'always', always: {} }]);
+    clickButton(host, 'matchSelectedTraffic');
+    const conditions = JSON.parse(host.querySelector('[data-testid="rule-expressions"]')?.textContent ?? '[]') as Array<{ type: string }>;
+    expect(conditions).toHaveLength(1);
+    expect(conditions[0].type).toBe('host');
+});
+
+it('does not simplify nested or negated rules', () => {
+    const draft = createDefaultRuleDraft();
+    draft.rule.rules = [{ type: 'not', not: draft.rule.rules![0] }];
+    const host = renderDraft(draft);
+    const simple = [...host.querySelectorAll('button')].find(item => item.textContent === 'simpleEditor');
+    expect(simple?.disabled).toBe(true);
+    expect(host.textContent).toContain('complexRule');
+    expect(JSON.parse(host.querySelector('[data-testid="rule-expressions"]')?.textContent ?? '[]')).toEqual(draft.rule.rules);
 });
