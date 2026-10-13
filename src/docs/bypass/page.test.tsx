@@ -134,6 +134,23 @@ it('moves neighboring rules without opening a priority dialog', async () => {
     expect(host.querySelector('[role="dialog"]')).toBeNull();
 });
 
+it('moves the last visible rule across a page boundary', async () => {
+    api.listRules.mockImplementation(async ({ page }: { page: number }) => {
+        if (page === 2) return {
+            items: [{ ...drafts[1].rule, id: 'third', name: 'Third', index: 9, disabled: false, ruleCount: 1 }],
+            page: { page: 2, pageSize: 8, total: 9 },
+        };
+        return {
+            items: drafts.map((draft, index) => ({ ...draft.rule, index: index + 1, disabled: false, resolver: '', ruleCount: 1 })),
+            page: { page: 1, pageSize: 8, total: 9 },
+        };
+    });
+    await render();
+    await click('moveLater: Second');
+    expect(api.listRules).toHaveBeenCalledWith({ page: 2, pageSize: 25, query: '' });
+    expect(api.changeRulePriority).toHaveBeenCalledWith({ id: '1' }, { id: 'third' }, 'exchange');
+});
+
 it('preserves the open draft while another directory page is loading', async () => {
     let resolvePage: (value: unknown) => void;
     const nextPage = new Promise(resolve => { resolvePage = resolve; });
