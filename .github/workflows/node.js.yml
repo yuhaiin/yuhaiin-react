@@ -29,6 +29,21 @@ jobs:
 
       - run: npm install --force
 
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Unit and component tests
+        run: npm run test
+
+      - name: Translations
+        run: npm run i18n:check
+
+      - name: Style audit
+        run: npm run style:audit
+
+      - name: Lint
+        run: npm run lint
+
       - run: npm run build
         env:
           CI: false
