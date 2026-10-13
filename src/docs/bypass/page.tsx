@@ -25,6 +25,7 @@ import Loading from "@/component/v2/loading";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Pagination } from "@/component/v2/pagination";
 import { RouteActivationProgress } from "@/component/v2/route-activation-progress";
+import { WorkspaceDetail, WorkspaceDirectory, WorkspaceLayout } from "@/component/workspace-layout";
 import { Select } from "@/component/v2/select";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
@@ -208,8 +209,8 @@ function BypassComponent() {
                 <RouteConfigCard destinations={destinations} onSaved={() => { void mutateActivation(); }} />
             </div>
             <RouteActivationProgress status={activation} onApplied={mutateActivation} />
-            <div className={`grid min-w-0 items-start md:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)] ${showEditor ? 'md:mt-6' : 'mt-6'}`}>
-                <aside aria-label={t('ruleDirectory')} className={`min-w-0 rounded-ui-xl border border-ui-border/60 bg-ui-surface-muted/30 p-2.5 md:mr-5 ${showEditor ? 'hidden md:block' : ''}`}>
+            <WorkspaceLayout className={showEditor ? 'md:mt-6' : 'mt-6'}>
+                <WorkspaceDirectory label={t('ruleDirectory')} hiddenOnMobile={showEditor}>
                     <div className="mb-2 space-y-2 border-b border-ui-border/50 px-1 pb-3">
                         <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-semibold text-ui-heading">{uiT('routeRules')}</h2>{isValidating && <Spinner size="sm" />}</div>
                         <p className="text-xs text-ui-muted">{t('ruleOrderHelp', { count: data.page.total })}</p>
@@ -225,16 +226,16 @@ function BypassComponent() {
                     {Math.ceil(data.page.total / (data.page.pageSize || PAGE_SIZE)) > 1 && <div className="flex justify-center border-t border-ui-border/60 pt-3">
                         <Pagination currentPage={data.page.page || page} totalItems={data.page.total} pageSize={data.page.pageSize || PAGE_SIZE} onPageChange={setPage} />
                     </div>}
-                </aside>
-                <div className={`min-w-0 md:pl-3 xl:pl-5 ${showEditor ? '' : 'hidden md:block'}`}>
+                </WorkspaceDirectory>
+                <WorkspaceDetail hiddenOnMobile={!showEditor}>
                     {showEditor ? <RuleEditor key={creating ? 'new-rule' : editing?.id} item={editing} creating={creating} initial={linkedDraft}
                         options={editorOptions} blocked={toggling || reordering} onSaved={saved} onBack={backToRules} onStateChange={setEditorState} />
                         : <div className="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-ui-muted">
                             <ListFilter size={28} aria-hidden="true" /><h2 className="text-lg font-medium text-ui-heading">{t('selectRule')}</h2>
                             <p className="max-w-sm text-sm">{t('selectRuleHelp')}</p><Button variant="outline-primary" className="gap-2" onClick={newRule}><Plus size={16} />{uiT('newRouteRule')}</Button>
                         </div>}
-                </div>
-            </div>
+                </WorkspaceDetail>
+            </WorkspaceLayout>
             <PriorityModal item={priorityItem} items={allRules?.items ?? data.items} onSaved={() => { refresh(); if (editing) void refreshCache(["/api/v2/route/rules/detail", editing.id]); setPriorityItem(null); }} onClose={() => setPriorityItem(null)} />
         </MainContainer>
     );
