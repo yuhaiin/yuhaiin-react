@@ -139,11 +139,12 @@ function BypassComponent() {
     const { pending: toggling, run: runToggle } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
     const { pending: reordering, run: runReorder } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
     const moveRule = (item: RuleItem, direction: -1 | 1) => {
-        if (query.trim() || toggling || reordering || editorState.dirty || editorState.pending || isValidating || data?.page.page !== page) return;
+        const currentPage = data;
+        if (!currentPage || query.trim() || toggling || reordering || editorState.dirty || editorState.pending || isValidating || currentPage.page.page !== page) return;
         void runReorder(async () => {
-            const index = data.items.findIndex(rule => rule.id === item.id);
+            const index = currentPage.items.findIndex(rule => rule.id === item.id);
             if (index < 0) return;
-            let adjacent = data.items[index + direction];
+            let adjacent = currentPage.items[index + direction];
             if (!adjacent) {
                 const neighboringPage = page + direction;
                 if (neighboringPage < 1) return;
