@@ -54,7 +54,12 @@ const worker=setupWorker(
     const p=await request.json(); const op=params.operation;
     if(scenario==='error' && ['connections.history','node.get','route.rule.get'].includes(op)) return HttpResponse.json({error:{message:'Synthetic upstream unavailable'}},{status:503});
     let result={};
-    if(op==='nodes.get') result=page(nodes.filter(n=>!p.query||`${n.name} ${n.group}`.toLowerCase().includes(p.query.toLowerCase())),p);
+    if(op==='nodes.groups') {
+      const byGroup=new Map();
+      for(const node of nodes){const name=node.group||'manual';const entry=byGroup.get(name)||{name,count:0,enabled:0};entry.count++;if(node.enabled)entry.enabled++;byGroup.set(name,entry);}
+      result={items:[...byGroup.values()].sort((a,b)=>a.name.localeCompare(b.name))};
+    }
+    else if(op==='nodes.get') result=page(nodes.filter(n=>(!p.group||(n.group||'manual')===p.group)&&(!p.enabled_only||n.enabled)&&(!p.query||`${n.name} ${n.group}`.toLowerCase().includes(p.query.toLowerCase()))),p);
     else if(op==='node.get'){result=nodes.find(n=>n.id===p.id);if(!result)return errorResponse('Node no longer exists',404);}
     else if(op==='node.put'){ const index=nodes.findIndex(n=>n.id===p.id); if(index>=0) nodes[index]=p; result=p; }
     else if(op==='node.extra' && scenario==='l2tp') result={ [p.id==='node-1'?'l2tpv3':'l2tp']: {tunnel_prefixes:['10.89.0.2/24','fd89::2/64'],dns:['10.89.0.1'],auth:p.id==='node-1'?'':'mschap-v2',mtu:1400,local_session_id:4294967295,peer_session_id:200} };
