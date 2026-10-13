@@ -30,3 +30,15 @@ export function simpleList(draft: RuleDraft): RouteListDetail | undefined {
     const condition = simpleCondition(draft);
     return draft.lists.find(list => list.id === condition?.list && list.source.type === 'local');
 }
+
+/** Values that the task editor does not expose must remain visible to the user. */
+export function hasAdvancedRuleOptions(rule: RuleDraft['rule']): boolean {
+    return Boolean(
+        rule.disabled ||
+        rule.resolver ||
+        rule.resolveStrategy && rule.resolveStrategy !== 'default' ||
+        rule.udpProxyFqdnStrategy &&
+            rule.udpProxyFqdnStrategy !== 'default' &&
+            rule.udpProxyFqdnStrategy !== 'udp_proxy_fqdn_strategy_default'
+    );
+}
