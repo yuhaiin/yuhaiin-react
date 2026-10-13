@@ -48,6 +48,41 @@ jobs:
         env:
           CI: false
 
+      - name: Capture updated desktop and mobile UX snapshots
+        run: |
+          set -euo pipefail
+          command -v google-chrome
+          npm run dev:msw > /tmp/msw-preview.log 2>&1 &
+          server=$!
+          trap 'kill "$server" || true' EXIT
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:5175/ > /dev/null; then break; fi
+            sleep 1
+          done
+          mkdir -p /tmp/ux-shots
+          capture() {
+            name="$1"
+            width="$2"
+            height="$3"
+            route="$4"
+            google-chrome --headless --no-sandbox --disable-gpu --disable-dev-shm-usage \
+              --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=11000 \
+              --window-size="$width,$height" \
+              --screenshot="/tmp/ux-shots/$name.png" \
+              "http://127.0.0.1:5175/?scenario=normal#$route"
+            test -s "/tmp/ux-shots/$name.png"
+            echo "UX_SCREENSHOT_BEGIN:$name"
+            base64 -w 8192 "/tmp/ux-shots/$name.png"
+            echo "UX_SCREENSHOT_END:$name"
+          }
+          capture routing-desktop 1440 1100 /docs/bypass
+          capture rule-editor 1440 1100 /docs/bypass?rule=rule-0
+          capture nodes-desktop 1440 1100 /docs/group
+          capture routing-mobile 390 844 /docs/bypass
+          capture rule-editor-mobile 390 844 /docs/bypass?rule=rule-0
+          capture nodes-mobile 390 844 /docs/group
+          capture node-details-mobile 390 844 /docs/group?node=node-0
+
       - run: |
           cat <<EOF > dist/go.mod
           module github.com/yuhaiin/yuhaiin.github.io
