@@ -1,4 +1,5 @@
 import type { Go } from "@/api/generated-contracts";
+import { createID } from "@/common/id";
 
 export type Page = Go.route.Page;
 export type RuleItem = Go.route.RuleItem;
@@ -48,7 +49,7 @@ export type BlockHistoryList = Go.route.BlockHistoryList;
 
 export function createDefaultRule(name = ""): RouteRule {
   return {
-    id: crypto.randomUUID(),
+    id: createID(),
     revision: 0,
     name,
     mode: "proxy",
@@ -206,7 +207,7 @@ export function normalizeRuleDraft(value: Partial<RuleDraft>): RuleDraft {
 
 export function createDefaultRuleDraft(): RuleDraft {
   const rule = createDefaultRule();
-  const list = { ...createDefaultRouteList("Websites"), id: crypto.randomUUID(), ownerRuleId: rule.id };
+  const list = { ...createDefaultRouteList("Websites"), id: createID(), ownerRuleId: rule.id };
   rule.rules = [{ type: "host", host: { list: list.id } }];
   return { rule, lists: [list] };
 }
