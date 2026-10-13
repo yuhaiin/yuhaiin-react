@@ -58,7 +58,8 @@ it('starts a fresh import when the dialog reopens after being closed', async () 
         expect(input.value).toBe('old node links');
         await act(async () => root.render(view(false)));
         await act(async () => root.render(view(true)));
-        const reopened = [...document.querySelectorAll<HTMLTextAreaElement>('textarea[aria-label="nodeLinksOrJSON"]')].at(-1)!;
+        const textareas = [...document.querySelectorAll<HTMLTextAreaElement>('textarea[aria-label="nodeLinksOrJSON"]')];
+        const reopened = textareas[textareas.length - 1]!;
         expect(reopened.value).toBe('');
     } finally {
         act(() => root.unmount());
