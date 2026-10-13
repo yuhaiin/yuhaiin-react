@@ -19,6 +19,8 @@ const updateChannels: Array<{ value: UpdateChannel; label: string }> = [
     { value: "main", label: "Main" },
 ];
 
+const COPYRIGHT_YEAR = new Date().getFullYear();
+
 function updateStageLabel(stage: string): string {
     switch (stage) {
         case "preparing": return "Preparing update...";
@@ -293,7 +295,7 @@ export default function About() {
 
             <div className="order-3 text-center mt-4 opacity-50 pb-12">
                 <small className="text-ui-muted">
-                    {uiT("copy")} {new Date().getFullYear()} {uiT("yuhaiinProjectDistributedUnderMitLicense")}</small>
+                    {uiT("copy")} {COPYRIGHT_YEAR} {uiT("yuhaiinProjectDistributedUnderMitLicense")}</small>
             </div>
         </MainContainer>
     );
