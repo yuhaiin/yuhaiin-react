@@ -91,21 +91,46 @@ const NodeModalComponent: FC<NodeModalProps> = ({
     const ctx = useContext(GlobalToastContext);
     const nodeId = id ?? hash ?? node?.id ?? "";
     const canEdit = editable && !readOnly;
-    const [draft, setDraft] = useState<Node | undefined>();
     const [retryNonce, setRetryNonce] = useState(0);
-    const [loading, setLoading] = useState(false);
-    const baseline = useRef('');
-    const loadedIdentity = useRef('');
-    const draftRef = useRef(draft);
-    draftRef.current = draft;
     const nodeSource = node ? JSON.stringify(node) : '';
+    const initialNode = () => node ? cloneNode(node) : isNew ? createDefaultNode(groups?.[0] ?? 'manual') : undefined;
+    // The draft and its baseline are one atomic state. Ref values must not be
+    // used while rendering because React may retry or discard a render.
+    const [editor, setEditor] = useState(() => {
+        const draft = initialNode();
+        return { draft, baseline: draft ? JSON.stringify(draft) : '' };
+    });
+    const draft = editor.draft;
+    const baseline = editor.baseline;
+    const setDraft = (next: React.SetStateAction<Node | undefined>) => setEditor(previous => ({
+        ...previous,
+        draft: typeof next === 'function' ? (next as (value: Node | undefined) => Node | undefined)(previous.draft) : next,
+    }));
+    const [loading, setLoading] = useState(() => show && !node && !isNew && Boolean(nodeId));
+    const sessionKey = show ? `${nodeId}:${Boolean(isNew)}:${nodeSource}:${retryNonce}` : 'closed';
+    const [previousSession, setPreviousSession] = useState(sessionKey);
     const [actionError, setActionError] = useState('');
+    const [error, setError] = useState<APIError | undefined>();
+    const dirty = show && canEdit && Boolean(draft) && (JSON.stringify(draft) !== baseline || makeDefault);
+
+    // A new editor session is reconciled before committing a stale draft.
+    // Local edits win over a background update to the supplied node.
+    if (previousSession !== sessionKey) {
+        setPreviousSession(sessionKey);
+        const changedNodeSource = Boolean(nodeSource) && previousSession.startsWith(`${nodeId}:${Boolean(isNew)}:`);
+        if (!changedNodeSource || !dirty) {
+            const initial = show ? initialNode() : undefined;
+            setEditor({ draft: initial, baseline: initial ? JSON.stringify(initial) : '' });
+            setLoading(show && !node && !isNew && Boolean(nodeId));
+            setError(show && !node && !isNew && !nodeId ? { code: 400, msg: 'node id is empty' } : undefined);
+            setMakeDefault(false);
+            setActionError('');
+        }
+    }
     const { pending: saving, run } = useAsyncAction(error => { const message = errorMessage(error); setActionError(message); ctx.Error(message); });
-    const dirty = show && canEdit && Boolean(draft) && (JSON.stringify(draft) !== baseline.current || makeDefault);
     const close = useCloseGuard(dirty, saving, () => onHide());
     const created = useRef(false);
     useEffect(() => { onStateChange?.({ dirty, pending: saving }); }, [dirty, saving, onStateChange]);
-    const [error, setError] = useState<APIError | undefined>();
     const { copy, copied, manualCopyModal } = useClipboard({ usePromptAsFallback: true });
 
     const title = draft?.name || node?.name || nodeId || "Node";
@@ -116,59 +141,29 @@ const NodeModalComponent: FC<NodeModalProps> = ({
     }, [groups, draft?.group]);
 
     useEffect(() => {
-        if (!show) { loadedIdentity.current = ''; created.current = false; return; }
-        const identity = `${nodeId}:${Boolean(isNew)}`;
-        if (loadedIdentity.current === identity && canEdit && draftRef.current && (created.current || JSON.stringify(draftRef.current) !== baseline.current)) return;
-        loadedIdentity.current = identity;
-        setActionError('');
-
-        const providedNode = nodeSource ? JSON.parse(nodeSource) as Node : undefined;
-        if (providedNode) {
-            baseline.current = JSON.stringify(cloneNode(providedNode));
-            setDraft(cloneNode(providedNode));
-            setLoading(false);
-            setError(undefined);
-            return;
-        }
-
-        if (isNew) {
-            setMakeDefault(false);
-            created.current = false;
-            const initial = createDefaultNode(defaultGroup);
-            baseline.current = JSON.stringify(initial);
-            setDraft(initial);
-            setLoading(false);
-            setError(undefined);
-            return;
-        }
-
-        if (!nodeId) {
-            setDraft(undefined);
-            setError({ code: 400, msg: "node id is empty" });
-            return;
-        }
+        if (!show) { created.current = false; return; }
+        if (node || isNew || !nodeId) return;
 
         let cancelled = false;
         const controller = new AbortController();
-        setDraft(undefined);
-        setLoading(true);
-        setError(undefined);
         getNode(nodeId, controller.signal)
-            .then((value) => {
-                if (!cancelled) { baseline.current = JSON.stringify(cloneNode(value)); setDraft(cloneNode(value)); }
+            .then(value => {
+                if (!cancelled) {
+                    const normalized = cloneNode(value);
+                    setEditor({ draft: normalized, baseline: JSON.stringify(normalized) });
+                }
             })
-            .catch((err) => {
+            .catch(err => {
                 if (!cancelled) setError({ code: err.code, msg: errorMessage(err), raw: err.raw });
             })
             .finally(() => {
                 if (!cancelled) setLoading(false);
             });
-
         return () => {
             cancelled = true;
             controller.abort();
         };
-    }, [show, nodeSource, nodeId, isNew, defaultGroup, canEdit, retryNonce]);
+    }, [show, nodeId, isNew, nodeSource, retryNonce]);
 
     const updateDraft = (patch: Partial<Node>) => {
         setDraft(prev => normalizeNode({ ...(prev ?? createDefaultNode()), ...patch }));
@@ -209,8 +204,8 @@ const NodeModalComponent: FC<NodeModalProps> = ({
             const normalized = normalizeNode(draft);
             const saved = isNew && !created.current ? await createNode(normalized) : await saveNode(normalized);
             if (isNew) created.current = true;
-            baseline.current = JSON.stringify(saved);
-            setDraft(cloneNode(saved));
+            const fresh = cloneNode(saved);
+            setEditor({ draft: fresh, baseline: JSON.stringify(fresh) });
             onChanged?.(saved);
             if (makeDefault) await useNode(saved.id);
             setMakeDefault(false);
@@ -222,7 +217,7 @@ const NodeModalComponent: FC<NodeModalProps> = ({
 
     const discard = () => {
         if (saving || !dirty || !window.confirm(t('common:form.discardChanges'))) return;
-        setDraft(cloneNode(JSON.parse(baseline.current) as Node));
+        setDraft(cloneNode(JSON.parse(baseline) as Node));
         setMakeDefault(false);
     };
 
