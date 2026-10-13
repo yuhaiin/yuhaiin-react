@@ -141,7 +141,7 @@ const NodeModalComponent: FC<NodeModalProps> = ({
 
     useEffect(() => {
         if (!show) { created.current = false; return; }
-        if (node || isNew || !nodeId) return;
+        if (nodeSource || isNew || !nodeId) return;
 
         let cancelled = false;
         const controller = new AbortController();
