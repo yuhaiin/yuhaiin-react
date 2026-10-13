@@ -209,5 +209,8 @@
   "ruleOrderHelp": "{{count}} rules · evaluated from top to bottom",
   "matchingConditions": "Matching conditions: {{count}}",
   "automaticResolver": "Automatic",
-  "defaultAction": "Action"
+  "defaultAction": "Action",
+  "ruleActions": "Actions for {{name}}",
+  "fallbackTitle": "Fallback route",
+  "unsavedChanges": "Unsaved"
 }

@@ -5,5 +5,7 @@ mobile viewports. These images document the rendered layout; they do not prove
 network connectivity or accessibility compliance.
 
 ![Routing overview](routing-desktop.png)
+![Mobile routing](routing-mobile.png)
+![Nodes](nodes-desktop.png)
 ![Rule editor](rule-editor.png)
 ![Mobile rule editor](rule-editor-mobile.png)

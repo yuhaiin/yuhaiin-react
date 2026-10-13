@@ -17,7 +17,7 @@ import { listResolvers } from "@/api/resolvers";
 import { applyRouteChanges, changeRulePriority, createRule, deleteRule, getRouteActivationStatus, getRouteConfig, getRule, listRouteLists, listRules, saveRouteConfig, saveRule } from "@/api/route";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardFooter, CardHeader, FilterSearch, MainContainer, SettingLabel } from "@/component/v2/card";
+import { FilterSearch, MainContainer, SettingLabel } from "@/component/v2/card";
 import { SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
 
 import Loading from "@/component/v2/loading";
@@ -29,8 +29,8 @@ import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { RuleDraft, RuleItem } from "@/contract/route";
 import { createDefaultRuleDraft } from "@/contract/route";
-import { RuleTable } from "./rule-table";
-import { ArrowRight, Plus, Route, Save, ShieldCheck, Trash } from "lucide-react";
+import { RuleList } from "./rule-list";
+import { ArrowRight, ChevronDown, Plus, Save, Trash } from "lucide-react";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 type PriorityOperate = "exchange" | "insert_before" | "insert_after";
@@ -134,26 +134,25 @@ function BypassComponent() {
     if (isLoading || !data) return <Loading />
 
     return (
-        <MainContainer>
-            <header className="mb-6 flex items-start gap-3">
-                <span className="mt-1 rounded-ui-lg bg-ui-primary-soft p-2.5 text-ui-primary"><Route size={22} aria-hidden="true" /></span>
-                <div><h1 className="text-2xl font-semibold tracking-tight text-ui-heading">{t('routingTask')}</h1><p className="mt-1 text-sm text-ui-muted">{t('routingOverviewHelp')}</p></div>
+        <MainContainer className="max-w-4xl">
+            <header className="mb-7 flex flex-wrap items-center justify-between gap-4">
+                <div><h1 className="text-3xl font-semibold tracking-tight text-ui-heading">{t('routingTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('routingOverviewHelp')}</p></div>
+                <Button variant="primary" onClick={() => setCreating(true)}><Plus size={16} className="mr-1.5" />{uiT('add')}</Button>
             </header>
-            <RouteConfigCard onSaved={() => { void mutateActivation(); }} />
+            <RouteConfigCard destinations={destinations} onSaved={() => { void mutateActivation(); }} />
             <RouteActivationProgress status={activation} onApplied={mutateActivation} />
-            <Card density="compact" className="overflow-hidden shadow-none">
-                <CardHeader>
+            <section className="mt-7">
+                <div className="mb-3 px-2">
                     <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div><h2 className="text-lg font-semibold text-ui-heading">{uiT('routeRules')}</h2><p className="mt-1 text-xs text-ui-muted">{t('ruleOrderHelp', { count: data.page.total })}</p></div>
                         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
                             {isValidating && <Spinner size="sm" />}
                             <FilterSearch className="min-w-0 flex-1 sm:w-[200px] sm:flex-none" onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
-                            <Button size="sm" variant="primary" onClick={() => setCreating(true)}><Plus size={16} className="mr-1" /> {uiT("add")}</Button>
                         </div>
                     </div>
-                </CardHeader>
-                <CardBody density="compact" className="!p-0">
-                    <RuleTable
+                </div>
+                <div className="border-t border-ui-border/60">
+                    <RuleList
                         items={data.items}
                         destinations={destinations}
                         resolverNames={Object.fromEntries((resolversData?.items ?? []).map(item => [item.id, item.name]))}
@@ -162,13 +161,13 @@ function BypassComponent() {
                         onPriority={setPriorityItem}
                         onToggle={toggleDisabled}
                     />
-                </CardBody>
+                </div>
                 {Math.ceil(data.page.total / (data.page.pageSize || PAGE_SIZE)) > 1 && (
-                    <CardFooter compact className="flex justify-center">
+                    <div className="flex justify-end border-t border-ui-border/60 py-4">
                         <Pagination currentPage={data.page.page || page} totalItems={data.page.total} pageSize={data.page.pageSize || PAGE_SIZE} onPageChange={setPage} />
-                    </CardFooter>
+                    </div>
                 )}
-            </Card>
+            </section>
             <RuleEditorModal item={editing} options={editorOptions} onSaved={saved} onClose={() => { setEditing(null); closeLink(); }} />
             <PriorityModal item={priorityItem} items={allRules?.items ?? data.items} onSaved={saved} onClose={() => setPriorityItem(null)} />
             <CreateRuleModal open={creating} initial={linkedDraft} options={editorOptions} onSaved={saved} onClose={() => { setCreating(false); closeLink(); }} />
@@ -176,7 +175,7 @@ function BypassComponent() {
     );
 }
 
-function RouteConfigCard({ onSaved }: { onSaved: () => void }) {
+function RouteConfigCard({ onSaved, destinations }: { onSaved: () => void; destinations: Record<string, string> }) {
     const { t: uiT } = useTranslation('ui');
     const { t } = useTranslation('routing');
 
@@ -202,16 +201,21 @@ function RouteConfigCard({ onSaved }: { onSaved: () => void }) {
         });
     };
 
-    return (
-        <Card className="mb-6 border-ui-border/70 bg-ui-surface-muted/40 shadow-none">
-            <fieldset disabled={saving} className="contents">
-            <CardBody className="p-5">
-                <div className="grid gap-5 lg:grid-cols-[15rem_minmax(0,1fr)]">
-                    <div><h2 className="flex items-center gap-2 text-sm font-semibold text-ui-heading"><ShieldCheck size={17} className="shrink-0 text-ui-muted" aria-hidden="true" />{t('unmatchedTraffic')}</h2><p className="mt-2 text-xs leading-relaxed text-ui-muted">{t('defaultRoutingHelp')}</p></div>
+    const target = data?.defaultTarget;
+    const destination = !target?.type || target.type === 'default' ? t('defaultProxy') : destinations[`${target.type}:${target.id}`] ?? t('unavailableDestination');
+    return <details className="group/fallback rounded-ui-lg bg-ui-surface-muted/50">
+        <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 [&::-webkit-details-marker]:hidden">
+            <span className="text-sm font-medium text-ui-heading">{t('fallbackTitle')}</span>
+            {data && <span className="min-w-0 truncate text-sm text-ui-muted">{data.defaultMode === 'proxy' ? destination : t(data.defaultMode)}</span>}
+            {dirty && <span className="shrink-0 text-xs text-ui-warning">{t('unsavedChanges')}</span>}
+            <ChevronDown size={15} aria-hidden="true" className="shrink-0 text-ui-muted transition-transform group-open/fallback:rotate-180" />
+        </summary>
+        <fieldset disabled={saving} className="min-w-0 border-t border-ui-border/60 p-4 sm:p-5">
                 {error ? (
                     <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
                 ) : data ? (
                     <div className="min-w-0 space-y-4">
+                        <p className="text-sm text-ui-muted">{t('defaultRoutingHelp')}</p>
                         {isLoading && <Spinner size="sm" />}
                         <section className="grid grid-cols-2 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1.25fr)]">
                             <SettingSelectVertical className="mb-0" label={t('defaultAction')} value={data.defaultMode}
@@ -244,16 +248,14 @@ function RouteConfigCard({ onSaved }: { onSaved: () => void }) {
                 ) : (
                     <Loading />
                 )}
-                </div>
-            </CardBody>
-            <CardFooter compact className="flex justify-end border-ui-border/70 bg-transparent">
+
+            <div className="mt-4 flex justify-end">
                 <Button size="sm" variant="outline-primary" disabled={saving || !data || Boolean(error)} onClick={save}>
                     {saving ? <Spinner size="sm" className="mr-2" /> : <Save size={16} className="mr-2" />}
                     {t("saveAndApply")}</Button>
-            </CardFooter>
-            </fieldset>
-        </Card>
-    );
+            </div>
+        </fieldset>
+    </details>;
 }
 
 function RuleEditorModal({ item, options, onSaved, onClose }: { item: Pick<RuleItem, "id" | "name"> | null; options: RuleEditorOptions; onSaved: () => void; onClose: () => void }) {

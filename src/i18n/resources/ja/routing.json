@@ -209,5 +209,8 @@
   "ruleOrderHelp": "{{count}} 件のルール · 上から順に評価",
   "matchingConditions": "{{count}} 件の条件",
   "automaticResolver": "自動",
-  "defaultAction": "処理"
+  "defaultAction": "処理",
+  "ruleActions": "{{name}} の操作",
+  "fallbackTitle": "既定の経路",
+  "unsavedChanges": "未保存"
 }

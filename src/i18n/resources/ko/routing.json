@@ -209,5 +209,8 @@
   "ruleOrderHelp": "규칙 {{count}}개 · 위에서 아래로 평가",
   "matchingConditions": "조건 {{count}}개",
   "automaticResolver": "자동",
-  "defaultAction": "동작"
+  "defaultAction": "동작",
+  "ruleActions": "{{name}} 작업",
+  "fallbackTitle": "기본 경로",
+  "unsavedChanges": "저장 안 됨"
 }

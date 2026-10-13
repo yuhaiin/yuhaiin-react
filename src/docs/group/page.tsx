@@ -23,7 +23,7 @@ import {
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardHeader, IconBox, MainContainer } from "@/component/v2/card";
+import { MainContainer } from "@/component/v2/card";
 import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
 import { Input } from "@/component/v2/input";
 import { Spinner } from "@/component/v2/spinner";
@@ -238,10 +238,10 @@ const GroupPicker: FC<{
                             type="button"
                             onClick={() => onChange(group)}
                             className={clsx(
-                                "inline-flex max-w-full items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
+                                "inline-flex max-w-full items-center gap-2 border-b-2 px-2.5 py-2 text-sm font-medium transition-colors",
                                 active
-                                    ? "border-ui-primary bg-ui-primary-soft text-ui-primary shadow-inner-subtle"
-                                    : "border-ui-border bg-ui-surface text-ui-muted hover:border-ui-primary/30 hover:bg-ui-hover hover:text-ui-fg"
+                                    ? "border-ui-primary text-ui-heading"
+                                    : "border-transparent text-ui-muted hover:border-ui-border hover:text-ui-heading"
                             )}
                         >
                             <span className="min-w-0 truncate">{group}</span>
@@ -403,31 +403,22 @@ const NodeItem: FC<{
     return (
         <AccordionItem
             value={item.id}
-            className="!mt-0 !rounded-none !border-0 !border-b !border-ui-border/80 !bg-transparent last:!border-b-0 hover:!z-0 hover:!border-ui-border/80 focus-within:!z-0 focus-within:!border-ui-border/80"
         >
-            <AccordionTrigger className="gap-3 px-4 py-3 text-ui-fg hover:!bg-ui-list-hover/80 hover:!text-ui-fg data-[state=open]:!bg-ui-surface-muted/40 data-[state=open]:!text-ui-fg data-[state=open]:!border-ui-border/50">
-                <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <span
-                        className={clsx(
-                            "mt-0.5 h-2 w-2 shrink-0 rounded-full",
-                            item.enabled ? "bg-ui-success shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-success)_18%,transparent)]" : "bg-ui-muted/50"
-                        )}
-                        title={item.enabled ? "Enabled" : "Disabled"}
-                    />
+            <AccordionTrigger>
+                <div className="flex min-w-0 items-center gap-3">
+                    <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-ui-md bg-ui-surface-muted text-ui-muted">
+                        <Network size={17} aria-hidden="true" />
+                        <span className={clsx('absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-ui-surface', item.enabled ? 'bg-ui-success' : 'bg-ui-muted/50')} role="img" aria-label={item.enabled ? uiT('enabled') : uiT('off')} title={item.enabled ? uiT('enabled') : uiT('off')} />
+                    </span>
 
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 sm:max-w-[28rem]">
                         <div className="flex min-w-0 items-center gap-2">
                             <span
-                                className="min-w-0 flex-1 text-[0.95rem] font-semibold leading-snug text-ui-heading max-sm:break-words sm:truncate"
+                                className="min-w-0 flex-1 text-[15px] font-medium leading-snug text-ui-heading max-sm:break-words sm:truncate"
                                 title={item.name || item.id}
                             >
                                 {item.name || item.id}
                             </span>
-                            {item.origin && (
-                                <span className="hidden shrink-0 text-[11px] text-ui-muted sm:inline">
-                                    · {item.origin}
-                                </span>
-                            )}
                             {!item.enabled && (
                                 <Badge variant="secondary" pill className="shrink-0 px-1.5 py-0 text-[0.62rem]">
                                     {uiT("off")}</Badge>
@@ -463,10 +454,10 @@ const NodeItem: FC<{
                 </div>
             </AccordionTrigger>
 
-            <AccordionContent className="!bg-ui-surface">
+            <AccordionContent>
                 <div className="space-y-3.5 px-1 pb-1">
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ui-muted">
-                        <span className="font-mono" title={item.id}>{item.id}</span>
+                        <details className="min-w-0"><summary className="cursor-pointer">{uiT('idLabel')}</summary><code className="mt-1 block break-all">{item.id}</code></details>
                         {item.group && (
                             <span>
                                 <span className="text-ui-muted/70">{uiT("groupLabel")}</span>{" "}
@@ -679,7 +670,7 @@ export default function Group() {
     };
 
     return (
-        <MainContainer>
+        <MainContainer className="max-w-4xl">
             <NodeModal
                 show={showdata.show}
                 id={showdata.id}
@@ -701,25 +692,13 @@ export default function Group() {
                 onSaved={() => setImportOpen(false)}
             />
 
-            <Card className="mb-4 overflow-hidden">
-                <CardHeader className="gap-4 px-4 py-4">
-                    <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-3">
-                        <IconBox
-                            icon={Layers}
-                            tone="primary"
-                            title={uiT("outbound6")}
-                            description={`${items.length} nodes across ${groups.length} ${groups.length === 1 ? "group" : "groups"}`}
-                        />
-                        <div className="flex flex-wrap items-center gap-2">
-                            <Button onClick={handleCreate}>
-                                <Plus className="mr-1" size={16} /> {uiT("new")}</Button>
-                            <Button variant="outline-secondary" onClick={() => setImportOpen(true)}>
-                                <Upload className="mr-1" size={16} /> {uiT("import")}</Button>
-                        </div>
-                    </div>
-                </CardHeader>
+            <section>
+                <header className="mb-7 flex flex-wrap items-center justify-between gap-4">
+                    <div><h1 className="text-3xl font-semibold tracking-tight text-ui-heading">{uiT('outbound6')}</h1><p className="mt-2 text-sm text-ui-muted">{items.length} nodes · {groups.length} {groups.length === 1 ? 'group' : 'groups'}</p></div>
+                    <div className="flex items-center gap-2"><Button variant="outline-secondary" onClick={() => setImportOpen(true)}><Upload className="mr-1.5" size={16} />{uiT('import')}</Button><Button variant="primary" onClick={handleCreate}><Plus className="mr-1.5" size={16} />{uiT('new')}</Button></div>
+                </header>
 
-                <CardBody className="space-y-4 pt-4" density="compact">
+                <div className="space-y-4">
                     {groups.length === 0 ? (
                         <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center">
                             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-ui-primary-soft text-ui-primary">
@@ -754,7 +733,7 @@ export default function Group() {
                                 </div>
                             </div>
 
-                            <div className="overflow-hidden rounded-ui-xl border border-ui-border bg-ui-surface">
+                            <div className="overflow-hidden border-t border-ui-border/60">
                                 {groupItems.length === 0 ? (
                                     <div className="px-4 py-12 text-center">
                                         <Search className="mx-auto mb-2 text-ui-muted" size={28} />
@@ -770,8 +749,8 @@ export default function Group() {
                                 ) : groupItems.length > GROUP_VIRTUALIZE_THRESHOLD ? (
                                     <VList
                                         data={groupItems}
-                                        itemSize={72}
-                                        bufferSize={720}
+                                        itemSize={64}
+                                        bufferSize={640}
                                         style={{ height: "min(72vh, 900px)", width: "100%" }}
                                     >
                                         {(item) => (
@@ -779,7 +758,7 @@ export default function Group() {
                                                 key={item.id}
                                                 type="single"
                                                 collapsible
-                                                className="!mb-0 !rounded-none !border-0 !shadow-none !transition-none hover:!translate-y-0 hover:!border-transparent hover:!shadow-none"
+                                                appearance="list"
                                             >
                                                 <NodeItem
                                                     item={item}
@@ -796,7 +775,7 @@ export default function Group() {
                                     <Accordion
                                         type="single"
                                         collapsible
-                                        className="!mb-0 !rounded-none !border-0 !shadow-none !transition-none hover:!translate-y-0 hover:!border-transparent hover:!shadow-none"
+                                        appearance="list"
                                     >
                                         {groupItems.map((item) => (
                                             <NodeItem
@@ -814,8 +793,8 @@ export default function Group() {
                             </div>
                         </>
                     )}
-                </CardBody>
-            </Card>
+                </div>
+            </section>
         </MainContainer>
     );
 }
