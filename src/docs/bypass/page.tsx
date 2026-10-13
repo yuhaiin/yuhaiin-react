@@ -34,7 +34,7 @@ import { ArrowRight, ChevronDown, Plus, Save, ListFilter } from "lucide-react";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 type PriorityOperate = "exchange" | "insert_before" | "insert_after";
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 25;
 
 function BypassComponent() {
     const { t: uiT } = useTranslation('ui');
@@ -137,6 +137,32 @@ function BypassComponent() {
     }), [inboundsData?.items, listsData?.items, resolversData?.items]);
 
     const { pending: toggling, run: runToggle } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
+    const { pending: reordering, run: runReorder } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
+    const moveRule = (item: RuleItem, direction: -1 | 1) => {
+        if (query.trim() || toggling || reordering || editorState.dirty || editorState.pending || isValidating || data?.page.page !== page) return;
+        void runReorder(async () => {
+            const index = data.items.findIndex(rule => rule.id === item.id);
+            if (index < 0) return;
+            let adjacent = data.items[index + direction];
+            if (!adjacent) {
+                const neighboringPage = page + direction;
+                if (neighboringPage < 1) return;
+                const result = await listRules({ page: neighboringPage, pageSize: PAGE_SIZE, query: '' });
+                adjacent = direction < 0 ? result.items.at(-1) : result.items[0];
+            }
+            if (!adjacent) return;
+            await changeRulePriority({ id: item.id }, { id: adjacent.id }, 'exchange');
+            await mutate();
+            void mutateAllRules();
+            void mutateActivation();
+            try {
+                await applyRouteChanges();
+                ctx.Info(t('ruleReordered'));
+            } finally {
+                await mutateActivation();
+            }
+        });
+    };
     const toggleDisabled = (item: RuleItem) => {
         void runToggle(async () => {
             const draft = await getRule(item.id);
@@ -175,30 +201,33 @@ function BypassComponent() {
         <MainContainer className="max-w-[1440px]">
             <header className={`mb-6 flex-wrap items-center justify-between gap-4 ${showEditor ? 'hidden md:flex' : 'flex'}`}>
                 <div><h1 className="text-3xl font-semibold tracking-tight text-ui-heading">{t('routingTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('routingOverviewHelp')}</p></div>
-                <Button variant="primary" onClick={newRule} disabled={toggling || editorState.pending || creating}><Plus size={16} className="mr-1.5" />{uiT('add')}</Button>
+                <Button variant="primary" onClick={newRule} disabled={toggling || reordering || editorState.pending || creating}><Plus size={16} className="mr-1.5" />{uiT('add')}</Button>
             </header>
             <div className={showEditor ? 'hidden md:block' : undefined}>
                 <RouteConfigCard destinations={destinations} onSaved={() => { void mutateActivation(); }} />
             </div>
             <RouteActivationProgress status={activation} onApplied={mutateActivation} />
             <div className={`grid min-w-0 items-start md:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)] ${showEditor ? 'md:mt-6' : 'mt-6'}`}>
-                <aside aria-label={t('ruleDirectory')} className={`min-w-0 md:pr-5 ${showEditor ? 'hidden md:block' : ''}`}>
-                    <div className="mb-4">
+                <aside aria-label={t('ruleDirectory')} className={`min-w-0 rounded-ui-xl border border-ui-border/60 bg-ui-surface-muted/30 p-2.5 md:mr-5 ${showEditor ? 'hidden md:block' : ''}`}>
+                    <div className="mb-2 space-y-2 border-b border-ui-border/50 px-1 pb-3">
                         <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-semibold text-ui-heading">{uiT('routeRules')}</h2>{isValidating && <Spinner size="sm" />}</div>
-                        <p className="mt-1 text-xs text-ui-muted">{t('ruleOrderHelp', { count: data.page.total })}</p>
-                        <FilterSearch className="mt-3 w-full" onEnter={v => { setPage(1); setQuery(v); }} size="sm" />
+                        <p className="text-xs text-ui-muted">{t('ruleOrderHelp', { count: data.page.total })}</p>
+                        <FilterSearch className="w-full" onEnter={v => { setPage(1); setQuery(v); }} size="sm" />
                     </div>
-                    {error ? <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading> : <RuleList items={data.items} selectedId={creating ? undefined : editing?.id} destinations={destinations}
-                        resolverNames={Object.fromEntries((resolversData?.items ?? []).map(item => [item.id, item.name]))}
-                        busy={toggling || editorState.pending || editorState.dirty}
-                        onOpen={selectRule} onPriority={setPriorityItem} onToggle={toggleDisabled} />}
-                    {Math.ceil(data.page.total / (data.page.pageSize || PAGE_SIZE)) > 1 && <div className="flex justify-center border-t border-ui-border/60 py-4">
+                    <div className="max-h-[min(72vh,900px)] overflow-y-auto overscroll-contain">
+                        {error ? <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading> : <RuleList items={data.items} selectedId={creating ? undefined : editing?.id} destinations={destinations}
+                            resolverNames={Object.fromEntries((resolversData?.items ?? []).map(item => [item.id, item.name]))}
+                            page={data.page.page || page} pageSize={data.page.pageSize || PAGE_SIZE} total={data.page.total} filtered={Boolean(query.trim())}
+                            busy={toggling || reordering || isValidating || editorState.pending || editorState.dirty}
+                            onOpen={selectRule} onPriority={setPriorityItem} onToggle={toggleDisabled} onMove={moveRule} />}
+                    </div>
+                    {Math.ceil(data.page.total / (data.page.pageSize || PAGE_SIZE)) > 1 && <div className="flex justify-center border-t border-ui-border/60 pt-3">
                         <Pagination currentPage={data.page.page || page} totalItems={data.page.total} pageSize={data.page.pageSize || PAGE_SIZE} onPageChange={setPage} />
                     </div>}
                 </aside>
-                <div className={`min-w-0 md:border-l md:border-ui-border/60 md:pl-6 xl:pl-8 ${showEditor ? '' : 'hidden md:block'}`}>
+                <div className={`min-w-0 md:pl-3 xl:pl-5 ${showEditor ? '' : 'hidden md:block'}`}>
                     {showEditor ? <RuleEditor key={creating ? 'new-rule' : editing?.id} item={editing} creating={creating} initial={linkedDraft}
-                        options={editorOptions} blocked={toggling} onSaved={saved} onBack={backToRules} onStateChange={setEditorState} />
+                        options={editorOptions} blocked={toggling || reordering} onSaved={saved} onBack={backToRules} onStateChange={setEditorState} />
                         : <div className="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-ui-muted">
                             <ListFilter size={28} aria-hidden="true" /><h2 className="text-lg font-medium text-ui-heading">{t('selectRule')}</h2>
                             <p className="max-w-sm text-sm">{t('selectRuleHelp')}</p><Button variant="outline-primary" className="gap-2" onClick={newRule}><Plus size={16} />{uiT('newRouteRule')}</Button>
