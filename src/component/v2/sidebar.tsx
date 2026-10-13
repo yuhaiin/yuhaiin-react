@@ -78,7 +78,7 @@ const SidebarItem = React.forwardRef<HTMLAnchorElement, SidebarItemProps>(({ cla
             ref={ref}
             aria-current={active ? "page" : undefined}
             className={clsx(
-                "flex items-center w-full px-3.5 py-2.5 text-sm font-medium text-sidebar-color rounded-ui-md transition-colors duration-150 border-none no-underline cursor-pointer bg-transparent outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar-bg",
+                "flex min-h-11 items-center w-full px-3.5 py-2.5 text-sm font-medium text-sidebar-color rounded-ui-md transition-colors duration-150 border-none no-underline cursor-pointer bg-transparent outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar-bg",
                 "hover:bg-sidebar-hover hover:text-sidebar-active",
                 active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold",
                 className
@@ -86,11 +86,11 @@ const SidebarItem = React.forwardRef<HTMLAnchorElement, SidebarItemProps>(({ cla
             {...props}
         >
             {icon && (
-                <span className="flex justify-center items-center text-[1.2rem] w-6 mr-[14px] transition-transform">
+                <span className="flex justify-center items-center text-[1.2rem] w-6 shrink-0 mr-2.5 transition-transform">
                     {icon}
                 </span>
             )}
-            {children}
+            <span className="min-w-0 flex-1 text-left">{children}</span>
         </a>
     );
 });
@@ -130,20 +130,20 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
                 <button
                     type="button"
                     className={clsx(
-                        "group flex items-center w-full px-3.5 py-2.5 text-sm font-medium text-sidebar-color rounded-ui-md transition-colors duration-150 border-none cursor-pointer bg-transparent outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar-bg",
+                        "group flex min-h-11 items-center w-full px-3.5 py-2.5 text-sm font-medium text-sidebar-color rounded-ui-md transition-colors duration-150 border-none cursor-pointer bg-transparent outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar-bg",
                         "hover:bg-sidebar-hover hover:text-sidebar-active",
                         active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold"
                     )}
                 >
                     {icon && (
-                        <span className="flex justify-center items-center text-[1.2rem] w-6 mr-[14px] transition-transform">
+                        <span className="flex justify-center items-center text-[1.2rem] w-6 shrink-0 mr-2.5 transition-transform">
                             {icon}
                         </span>
                     )}
-                    {title}
+                    <span className="min-w-0 flex-1 text-left">{title}</span>
                     <ChevronRight
                         className={clsx(
-                            "ml-auto text-xs opacity-60 transition-transform w-auto",
+                            "ml-auto shrink-0 text-xs opacity-60 transition-transform w-auto",
                             "group-data-[state=open]:rotate-90 group-data-[state=open]:text-sidebar-active group-data-[state=open]:opacity-100"
                         )}
                         size={16}

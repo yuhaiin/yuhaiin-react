@@ -1,3 +1,4 @@
+import { ResourceEditorFrame } from '@/component/resource-workspace';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
 import { InboundRuntimePanel } from "./runtime";
 import { InboundTaskEditor } from "./task-editor";
@@ -7,15 +8,13 @@ import { SettingSelectVertical } from "@/component/v2/forms";
 import { useTranslation } from 'react-i18next';
 import { createInbound, getInbound, getInboundCapabilities, InboundRuntimeStatus, listInboundEvents, saveInbound } from "@/api/inbounds";
 import { APIError } from "@/api/client";
-import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { SettingsBox } from "@/component/v2/card";
 
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Spinner } from "@/component/v2/spinner";
 
 import { normalizeInbound } from "@/contract/inbound";
-import { Check, DoorOpen, Trash } from "lucide-react";
+import { Check, Trash } from "lucide-react";
 import { FC, useContext, useState } from "react";
 import useSWR from "swr";
 import Loading from "../../component/v2/loading";
@@ -46,7 +45,9 @@ const InboundModal: FC<{
     runtime?: InboundRuntimeStatus;
     onRetry?: () => void;
     retrying?: boolean;
-}> = ({ show, id, onHide, onDelete, isNew, runtime, onRetry, retrying }) => {
+    presentation?: "modal" | "inline";
+    onSaved?: (value: import("@/contract/inbound").Inbound) => void;
+}> = ({ show, id, onHide, onDelete, isNew, runtime, onRetry, retrying, presentation = "modal", onSaved }) => {
     const { t: uiT } = useTranslation('ui');
     const { t } = useTranslation('routing');
     const [preset, setPreset] = useState('local');
@@ -73,7 +74,7 @@ const InboundModal: FC<{
         { refreshInterval: 3000, revalidateOnFocus: true, shouldRetryOnError: false },
     );
 
-    const { value: draft, setValue: setDraft, dirty } = useEditorDraft(show ? id : null, shouldFetch ? data : undefined, () => initialInbound(id));
+    const { value: draft, setValue: setDraft, dirty, commit } = useEditorDraft(show ? id : null, shouldFetch ? data : undefined, () => initialInbound(id));
     const { pending: saving, run } = useAsyncAction(error => { const message = errorOf(error)?.msg ?? "Save failed"; setSaveError(message); ctx.Error(message); });
     const close = useCloseGuard(dirty && show, saving, () => onHide());
 
@@ -90,28 +91,27 @@ const InboundModal: FC<{
             const saved = isNew ? await createInbound(next) : await saveInbound(next);
             ctx.Info("Save successful");
             await mutate(saved, { revalidate: false });
-            onHide(true);
+            commit(saved);
+            onSaved?.(saved);
+            if (presentation === "modal") onHide(true);
         });
     };
 
-    return (
-        <Modal open={show} onOpenChange={(open) => !open && close()}>
-            <ModalContent width={900}>
-                <ModalHeader closeButton className="border-b-0 pb-0">
-                    <ModalTitle className="flex min-w-0 items-center gap-3 font-bold">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600/10 text-ui-primary">
-                            <DoorOpen size={18} />
-                        </span>
-                        <span className="min-w-0 truncate">{title}</span>
-
-                        {inbound && (
-                            <Badge variant={inbound.enabled ? "success" : "muted"} className="shrink-0">
-                                {inbound.enabled ? "Enabled" : "Disabled"}
-                            </Badge>
+    return <ResourceEditorFrame title={title} label={uiT("entryPoints")} presentation={presentation} open={show} onClose={close}
+        footer={<>
+                    <div>
+                        {!isNew && (
+                            <Button variant="outline-danger" disabled={saving || isLoading || Boolean(error)} onClick={onDelete}>
+                                <Trash className="mr-2" size={16} />{uiT("delete")}</Button>
                         )}
-                    </ModalTitle>
-                </ModalHeader>
-                <ModalBody className="pt-2">
+                    </div>
+                    <div className="flex flex-wrap justify-end gap-2">
+                        <Button onClick={close} disabled={saving}>{uiT("cancel")}</Button>
+                        <Button variant="primary" disabled={saving || !inbound || isLoading || Boolean(error) || inbound.enabled && !supportedProtocols.includes(inbound.protocol.type)} onClick={handleSave}>
+                            {saving ? <Spinner size="sm" /> : <><Check className="mr-1" size={16} /> {uiT("save")}</>}
+                        </Button>
+                    </div>
+                </>}>
                     <fieldset disabled={saving} className="contents">
                     {apiError ? <Loading code={apiError.code} onRetry={() => void mutate()}>{apiError.msg}</Loading> : isLoading || !inbound ? (
                         <Loading />
@@ -140,24 +140,7 @@ const InboundModal: FC<{
                         </SettingsBox>
                     )}
                 </fieldset>
-                </ModalBody>
-                <ModalFooter className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        {!isNew && (
-                            <Button variant="outline-danger" onClick={onDelete}>
-                                <Trash className="mr-2" size={16} />{uiT("delete")}</Button>
-                        )}
-                    </div>
-                    <div className="flex flex-wrap justify-end gap-2">
-                        <Button onClick={close} disabled={saving}>{uiT("cancel")}</Button>
-                        <Button disabled={saving || !inbound || isLoading || Boolean(error) || inbound.enabled && !supportedProtocols.includes(inbound.protocol.type)} onClick={handleSave}>
-                            {saving ? <Spinner size="sm" /> : <><Check className="mr-1" size={16} /> {uiT("save")}</>}
-                        </Button>
-                    </div>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
-    );
+                </ResourceEditorFrame>;
 };
 
 export { InboundModal };

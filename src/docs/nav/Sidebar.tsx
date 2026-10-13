@@ -1,5 +1,5 @@
 
-import { ArrowLeftRight, Download, ExternalLink, Filter, House, Network, Settings, Wrench } from 'lucide-react';
+import { Activity, ArrowLeftRight, BookOpen, CircleHelp, Download, ExternalLink, FileClock, FileText, Filter, Gauge, History, House, Layers, ListFilter, Network, Radio, ScrollText, Settings, Share2, ShieldBan, SlidersHorizontal, Upload, Waypoints, Wrench } from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
@@ -35,44 +35,61 @@ function Sidebar({ id, show, onHide, triggerRef }: SidebarProps) {
 
     const taskLink = (path: string, title: string, icon: React.ReactNode) => <SidebarItem key={path}
         href={`#${path}`} onClick={event => { if (isPrimaryClick(event)) { event.preventDefault(); handleNavLinkClick(path); } }}
-        active={pathname === path} icon={icon}>{title}</SidebarItem>;
-    const toolPaths = ['/docs/bypass/list', '/docs/bypass/test', '/docs/bypass/block', '/docs/diagnostics', '/docs/config/log', '/docs/config/pprof', '/docs/config/documents', '/docs/group/publish', '/docs/group/activates'];
+        active={normalizePath(pathname) === path} icon={icon}>{title}</SidebarItem>;
+    const link = (path: string, title: string, icon: React.ReactNode) => <SelectableLink key={path}
+        path={path} current={pathname} onSelect={handleNavLinkClick} icon={icon}>{title}</SelectableLink>;
+
     return <SidebarRoot id={id} show={show} onHide={onHide} triggerRef={triggerRef}>
-        <SidebarNav>
-            {taskLink('/', t('home'), <House />)}
-            {taskLink('/docs/bypass', routeT('routingTask'), <Filter />)}
-            <SidebarGroup title={routeT('destinationsTask')} icon={<ExternalLink />} activePath={pathname} matchPath="/docs/group/">
-                <SelectableLink path="/docs/group" current={pathname} onSelect={handleNavLinkClick}>{routeT('nodesTask')}</SelectableLink>
-                <SelectableLink path="/docs/group/selectors" current={pathname} onSelect={handleNavLinkClick}>{routeT('selectorsTitle')}</SelectableLink>
-                <SelectableLink path="/docs/group/subscribe" current={pathname} onSelect={handleNavLinkClick}>{uiT('subscribe')}</SelectableLink>
-            </SidebarGroup>
-            {taskLink('/docs/inbound', routeT('trafficEntryTask'), <Download />)}
-            {taskLink('/docs/bypass/resolver', routeT('dnsTask'), <Network />)}
-            <SidebarGroup title={t('connections')} icon={<ArrowLeftRight />} activePath={pathname} matchPath="/docs/connections/">
-                <SelectableLink path="/docs/connections/v2" current={pathname} onSelect={handleNavLinkClick}>{uiT('connections18')}</SelectableLink>
-                <SelectableLink path="/docs/connections/history" current={pathname} onSelect={handleNavLinkClick}>{uiT('history')}</SelectableLink>
-                <SelectableLink path="/docs/connections/failed" current={pathname} onSelect={handleNavLinkClick}>{uiT('failedHistory')}</SelectableLink>
-            </SidebarGroup>
-            <SidebarDivider />
-            <SidebarGroup title={t('setting')} icon={<Settings />} activePath={pathname} matchPath="/docs/settings" matchPaths={['/docs/config', '/docs/webui', '/docs/config/backup', '/docs/config/licenses', '/docs/config/about']}>
-                <SelectableLink path="/docs/config" current={pathname} onSelect={handleNavLinkClick}>{uiT('config')}</SelectableLink>
-                <SelectableLink path="/docs/webui" current={pathname} onSelect={handleNavLinkClick}>{uiT('webui')}</SelectableLink>
-                <SelectableLink path="/docs/config/backup" current={pathname} onSelect={handleNavLinkClick}>{uiT('backup')}</SelectableLink>
-                <SelectableLink path="/docs/config/licenses" current={pathname} onSelect={handleNavLinkClick}>{uiT('licenses')}</SelectableLink>
-                <SelectableLink path="/docs/config/about" current={pathname} onSelect={handleNavLinkClick}>{uiT('about')}</SelectableLink>
-            </SidebarGroup>
-            <SidebarGroup title={routeT('advancedTools')} icon={<Wrench />} activePath={pathname} matchPath="/docs/advanced" matchPaths={toolPaths} initiallyOpen={false}>
-                <SelectableLink path="/docs/bypass/list" current={pathname} onSelect={handleNavLinkClick}>{routeT('sharedMatchingData')}</SelectableLink>
-                <SelectableLink path="/docs/bypass/test" current={pathname} onSelect={handleNavLinkClick}>{uiT('testRoute')}</SelectableLink>
-                <SelectableLink path="/docs/bypass/block" current={pathname} onSelect={handleNavLinkClick}>{uiT('blockHistory')}</SelectableLink>
-                <SelectableLink path="/docs/diagnostics" current={pathname} onSelect={handleNavLinkClick}>{uiT('networkDiagnostics')}</SelectableLink>
-                <SidebarDivider />
-                <SelectableLink path="/docs/config/log" current={pathname} onSelect={handleNavLinkClick}>{uiT('log')}</SelectableLink>
-                <SelectableLink path="/docs/config/pprof" current={pathname} onSelect={handleNavLinkClick}>{uiT('pprof')}</SelectableLink>
-                <SelectableLink path="/docs/group/publish" current={pathname} onSelect={handleNavLinkClick}>{uiT('publish')}</SelectableLink>
-                <SelectableLink path="/docs/group/activates" current={pathname} onSelect={handleNavLinkClick}>{uiT('activates')}</SelectableLink>
-                <SelectableLink path="/docs/config/documents" current={pathname} onSelect={handleNavLinkClick}>{uiT('documents')}</SelectableLink>
-            </SidebarGroup>
+        <SidebarNav aria-label={t('toggle')}>
+            <SidebarSection title={t('monitoring')}>
+                {taskLink('/', t('home'), <House size={20} />)}
+                <SidebarGroup title={t('connections')} icon={<Activity size={20} />} activePath={pathname}
+                    paths={['/docs/connections/v2', '/docs/connections/history', '/docs/connections/failed', '/docs/bypass/block']}>
+                    {link('/docs/connections/v2', uiT('connections18'), <ArrowLeftRight />)}
+                    {link('/docs/connections/history', uiT('history'), <History />)}
+                    {link('/docs/connections/failed', uiT('failedHistory'), <FileClock />)}
+                    {link('/docs/bypass/block', uiT('blockHistory'), <ShieldBan />)}
+                </SidebarGroup>
+            </SidebarSection>
+            <SidebarSection title={t('trafficConfiguration')}>
+                <SidebarGroup title={routeT('destinationsTask')} icon={<ExternalLink size={20} />} activePath={pathname}
+                    paths={['/docs/group', '/docs/group/selectors', '/docs/group/subscribe', '/docs/group/publish', '/docs/group/activates']}>
+                    {link('/docs/group', routeT('nodesTask'), <Network />)}
+                    {link('/docs/group/selectors', routeT('selectorsTitle'), <Waypoints />)}
+                    {link('/docs/group/subscribe', uiT('subscribe'), <Download />)}
+                    <SidebarDivider className="mx-4 w-auto" />
+                    {link('/docs/group/publish', uiT('publish'), <Share2 />)}
+                    {link('/docs/group/activates', uiT('activeNodes'), <Radio />)}
+                </SidebarGroup>
+                <SidebarGroup title={routeT('routingTask')} icon={<Filter size={20} />} activePath={pathname}
+                    paths={['/docs/bypass', '/docs/bypass/list', '/docs/bypass/test']}>
+                    {link('/docs/bypass', t('routeRules'), <ListFilter />)}
+                    {link('/docs/bypass/list', routeT('sharedMatchingData'), <Layers />)}
+                    {link('/docs/bypass/test', uiT('testRoute'), <Waypoints />)}
+                </SidebarGroup>
+                {taskLink('/docs/inbound', routeT('trafficEntryTask'), <Download size={20} />)}
+                {taskLink('/docs/bypass/resolver', routeT('dnsTask'), <Network size={20} />)}
+            </SidebarSection>
+            <SidebarSection title={t('system')}>
+                <SidebarGroup title={t('diagnostics')} icon={<Wrench size={20} />} activePath={pathname}
+                    paths={['/docs/diagnostics', '/docs/config/log', '/docs/config/pprof']}>
+                    {link('/docs/diagnostics', uiT('networkDiagnostics'), <Activity />)}
+                    {link('/docs/config/log', uiT('log'), <ScrollText />)}
+                    {link('/docs/config/pprof', uiT('pprof'), <Gauge />)}
+                </SidebarGroup>
+                <SidebarGroup title={t('setting')} icon={<Settings size={20} />} activePath={pathname}
+                    paths={['/docs/config', '/docs/webui', '/docs/config/backup']}>
+                    {link('/docs/config', uiT('config'), <SlidersHorizontal />)}
+                    {link('/docs/webui', uiT('webui'), <Settings />)}
+                    {link('/docs/config/backup', uiT('backup'), <Upload />)}
+                </SidebarGroup>
+                <SidebarGroup title={t('help')} icon={<CircleHelp size={20} />} activePath={pathname}
+                    paths={['/docs/config/documents', '/docs/config/about', '/docs/config/licenses']}>
+                    {link('/docs/config/documents', uiT('documents'), <BookOpen />)}
+                    {link('/docs/config/about', uiT('about'), <CircleHelp />)}
+                    {link('/docs/config/licenses', uiT('licenses'), <FileText />)}
+                </SidebarGroup>
+            </SidebarSection>
         </SidebarNav>
     </SidebarRoot>;
 }
@@ -82,23 +99,28 @@ const normalizePath = (path: string) => {
     return path.replace(/\/+$/, '');
 };
 
-function SidebarGroup({ title, icon, activePath, matchPath, matchPaths, initiallyOpen, children }: {
+function SidebarSection({ title, children }: { title: string; children: React.ReactNode }) {
+    return <section aria-label={title} className="flex flex-col gap-1 [&+section]:mt-4">
+        <h2 className="px-3.5 pb-1 text-[0.6875rem] font-medium tracking-wide text-sidebar-color">{title}</h2>
+        {children}
+    </section>;
+}
+
+function SidebarGroup({ title, icon, activePath, paths, children }: {
     title: React.ReactNode;
     icon: React.ReactNode;
     activePath: string;
-    matchPath: string;
-    matchPaths?: string[];
-    initiallyOpen?: boolean;
+    paths: string[];
     children: React.ReactNode;
 }) {
-    const isActive = matchPaths ? matchPaths.includes(normalizePath(activePath)) : normalizePath(activePath).startsWith(normalizePath(matchPath));
-    const [isOpen, setIsOpen] = useState(() => (initiallyOpen ?? window.innerWidth >= 1024) || isActive);
+    const isActive = paths.includes(normalizePath(activePath));
+    const [isOpen, setIsOpen] = useState(isActive);
     const [previousPath, setPreviousPath] = useState(activePath);
     // Reopen the active section as navigation changes, without an effect.
     // Manual collapse stays possible while the location is unchanged.
     if (previousPath !== activePath) {
         setPreviousPath(activePath);
-        if (isActive) setIsOpen(true);
+        setIsOpen(isActive);
     }
 
     return (
@@ -115,10 +137,11 @@ function SidebarGroup({ title, icon, activePath, matchPath, matchPaths, initiall
 }
 
 
-function SelectableLink({ path, current, onSelect, children }: {
+function SelectableLink({ path, current, onSelect, icon, children }: {
     path: string;
     current: string;
     onSelect: (key: string) => void;
+    icon: React.ReactNode;
     children: React.ReactNode;
 }) {
     const active = normalizePath(current) === normalizePath(path);
@@ -129,7 +152,8 @@ function SelectableLink({ path, current, onSelect, children }: {
             active={active}
             href={`#${path}`}
         >
-            {children}
+            <span aria-hidden="true" className="mr-2.5 flex shrink-0 [&>svg]:size-4">{icon}</span>
+            <span className="min-w-0">{children}</span>
         </SidebarSubLink>
     );
 }

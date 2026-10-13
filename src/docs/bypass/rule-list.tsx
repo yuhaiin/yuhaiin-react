@@ -1,3 +1,4 @@
+import { WorkspaceSelectionMarker } from '@/component/workspace-layout';
 import type { RuleItem } from '@/contract/route';
 import clsx from 'clsx';
 import { GripVertical } from 'lucide-react';
@@ -41,7 +42,7 @@ export function RuleList({ items, selectedId, onOpen, onMove, onDrop, destinatio
                 'group relative flex min-w-0 items-center rounded-ui-md transition-colors',
                 selected ? 'bg-ui-primary-soft/70' : 'hover:bg-ui-surface-muted/75', drag?.source.id === item.id && 'opacity-35'
             )}>
-                {selected && <span aria-hidden="true" className="absolute inset-y-3 left-0 w-0.5 rounded-full bg-ui-primary" />}
+                {selected && <WorkspaceSelectionMarker />}
                 {drag?.target?.target.id === item.id && <span aria-hidden="true" className={clsx('pointer-events-none absolute inset-x-0 z-10 h-0.5 rounded-full bg-ui-primary', drag.target.placement === 'insert_before' ? 'top-0' : 'bottom-0')} />}
                 <button type="button" disabled={busy || filtered || total < 2} aria-label={t('dragRule', { name: item.name })} aria-describedby={helpId}
                     title={t('dragRuleHelp')} onPointerDown={event => start(event, item)} onContextMenu={event => event.preventDefault()}

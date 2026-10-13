@@ -262,5 +262,8 @@
   "backToSelectors": "공유 목적지로 돌아가기",
   "selectSelector": "공유 목적지 선택",
   "selectSelectorHelp": "목적지를 선택하여 이를 사용하는 모든 규칙의 노드를 변경하세요.",
-  "searchDestinations": "목적지 검색…"
+  "searchDestinations": "목적지 검색…",
+  "selectResource": "항목 선택",
+  "selectResourceHelp": "목록에서 항목을 선택하여 설정을 보거나 새 항목을 추가하세요.",
+  "backToDirectory": "목록으로 돌아가기"
 }

@@ -26,7 +26,7 @@ import { useAsyncAction } from "@/hooks/use-editor-draft";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { MainContainer } from "@/component/v2/card";
-import { WorkspaceDetail, WorkspaceDirectory, WorkspaceLayout } from "@/component/workspace-layout";
+import { WorkspaceDetail, WorkspaceDirectory, WorkspaceLayout, WorkspaceSelectionMarker } from "@/component/workspace-layout";
 import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
 import { Input } from "@/component/v2/input";
 import { Spinner } from "@/component/v2/spinner";
@@ -363,7 +363,7 @@ const NodeDirectoryItem = memo(function NodeDirectoryItem({ item, selected, onOp
     const { t } = useTranslation('routing');
     return <button type="button" aria-label={item.name || item.id} aria-current={selected ? 'true' : undefined} title={item.name || item.id} onClick={onOpen}
         className={clsx('relative flex w-full min-w-0 items-center gap-2.5 rounded-ui-md px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus', selected ? 'bg-ui-primary-soft/55' : 'hover:bg-ui-surface-muted/75')}>
-        {selected && <span aria-hidden="true" className="absolute inset-y-3 left-0 w-0.5 rounded-full bg-ui-primary" />}
+        {selected && <WorkspaceSelectionMarker />}
         <div className="min-w-0 flex-1">
             <div className="flex min-w-0 items-center gap-2"><span className="min-w-0 flex-1 truncate text-sm font-medium leading-5 text-ui-heading">{item.name || item.id}</span>
                 <span className={clsx('h-1.5 w-1.5 shrink-0 rounded-full', item.enabled ? 'bg-ui-success' : 'bg-ui-muted/50')} role="img" aria-label={item.enabled ? uiT('enabled') : uiT('off')} />
@@ -593,12 +593,12 @@ export default function Group() {
                     <Button type="button" size="icon" variant="outline-secondary" className="h-8 w-8" aria-label={commonT('pagination.next')} disabled={page >= Math.ceil(data.page.total / (data.page.pageSize || NODE_PAGE_SIZE))} onClick={() => setPage(page + 1)}><ChevronRight size={16} aria-hidden="true" /></Button>
                 </div>}
             </WorkspaceDirectory>
-            <WorkspaceDetail hiddenOnMobile={!showdata.show}>
+            <WorkspaceDetail hiddenOnMobile={!showdata.show} transitionKey={showdata.new ? 'new-node' : showdata.id}>
                 {showdata.show ? <>
                     {selectedItem && !showdata.new ? <NodeOverview item={selectedItem} latency={visibleLatency[selectedItem.id]} busy={visibleBusyLatency[selectedItem.id]} defaults={defaults} using={using} locked={editorState.dirty || editorState.pending}
                         onLatency={type => handleLatency(selectedItem.id, type)} onUse={() => handleUse(selectedItem.id)} onBack={backToNodes} /> : <header className="mb-5 border-b border-ui-border/60 pb-5"><Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent md:hidden" onClick={backToNodes}><ArrowLeft size={16} />{t('backToNodes')}</Button><h2 className="break-words text-xl font-semibold text-ui-heading">{showdata.new ? uiT('newNode') : t('nodeDetails')}</h2></header>}
                     {defaultsError && <div role="alert" className="mb-4 text-sm text-ui-danger">{t('defaultNodeStateFailed')} <Button size="sm" onClick={() => void mutateDefaults()}>{t('retry')}</Button></div>}
-                    <NodeModal key={showdata.new ? 'new-node' : showdata.id} show id={showdata.id} isNew={showdata.new} editable presentation="inline" groups={modalGroups} onStateChange={setEditorState}
+                    <NodeModal node={selectedItem} key={showdata.new ? 'new-node' : showdata.id} show id={showdata.id} isNew={showdata.new} editable presentation="inline" groups={modalGroups} onStateChange={setEditorState}
                         onChanged={node => { setSelectedPreview(node); void mutate(); }}
                         onSave={node => { setSelectedPreview(node); setSelectedGroup(node.group || 'manual'); initialized.current = true; closeLink(); setShowdata({ show: true, id: node.id, new: false }); void mutateDefaults(); }}
                         onHide={saved => { if (!saved) closeDetails(); }} onDelete={showdata.new ? undefined : deleteCurrentNode} />

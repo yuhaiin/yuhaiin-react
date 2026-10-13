@@ -1,19 +1,18 @@
+import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection } from '@/component/resource-workspace';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
 import { useTranslation } from 'react-i18next';
 
 import NodePicker from "@/component/node-picker";
 import { deletePublish, listPublishes, savePublish } from "@/api/subscriptions";
 import { Button } from "@/component/v2/button";
-import { CardRowList, IconBox, MainContainer, SettingsBox } from "@/component/v2/card";
-import { ConfirmModal } from "@/component/v2/confirm";
+import { MainContainer, SettingsBox } from "@/component/v2/card";
 import { SettingInputVertical } from "@/component/v2/forms";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Spinner } from "@/component/v2/spinner";
 import { SwitchCard } from "@/component/v2/switch";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { Publish } from "@/contract/subscription";
 import { defaultPublish } from "@/contract/subscription";
-import { Check, Plus, Share2, Trash } from "lucide-react";
+import { Check, Share2, Trash } from "lucide-react";
 import { FC, useContext, useState } from "react";
 import useSWR from "swr";
 import Loading from "../../../component/v2/loading";
@@ -24,7 +23,10 @@ const EditModal: FC<{
     onHide: () => void;
     item: Publish;
     mutatePub: () => void;
-}> = ({ show, isEdit, onHide, item, mutatePub }) => {
+    presentation?: "modal" | "inline";
+    onSaved?: (item: Publish) => void;
+    onDelete?: () => void;
+}> = ({ show, isEdit, onHide, item, mutatePub, presentation = "modal", onSaved, onDelete }) => {
     const { t: uiT } = useTranslation('ui');
 
     const ctx = useContext(GlobalToastContext);
@@ -34,21 +36,24 @@ const EditModal: FC<{
 
     const handleSave = () => {
         if (!newItem.name || saving) return;
-        void run(async () => { await savePublish(newItem); commit(newItem); mutatePub(); onHide(); });
+        void run(async () => { await savePublish(newItem); commit(newItem); mutatePub(); onSaved?.(newItem); if (presentation === "modal") onHide(); });
     };
 
-    return (
-        <Modal open={show} onOpenChange={(o) => { if (!o) close() }}>
-            <ModalContent width={600}>
-                <ModalHeader closeButton className="border-b pb-3">
-                    <ModalTitle className="font-bold text-xl">{isEdit ? "Edit" : "Add"} {uiT("publishConfig")}</ModalTitle>
-                </ModalHeader>
-                <ModalBody className="py-4">
-                    <fieldset disabled={saving} className="flex flex-col gap-4">
+    return <ResourceEditorFrame title={isEdit ? item.name : uiT("publishConfig")} label={uiT("publishConfig")} presentation={presentation} open={show} onClose={close}
+        footer={<>
+            <div>{isEdit && onDelete && <Button variant="outline-danger" onClick={onDelete} disabled={saving}><Trash size={16} className="mr-2" />{uiT("delete")}</Button>}</div>
+            <div className="flex flex-wrap justify-end gap-2">
+                <Button variant="outline-secondary" onClick={close} disabled={saving}>{uiT("cancel")}</Button>
+                <Button variant="primary" onClick={handleSave} disabled={saving || !newItem.name}>
+                    {saving ? <Spinner size="sm" /> : <><Check className="mr-1" size={16} />{uiT("saveConfig")}</>}
+                </Button>
+            </div>
+        </>}>
+                    <fieldset disabled={saving} className="min-w-0 flex flex-col gap-4">
                         <SettingsBox>
                             <div className="mb-3 font-bold">{uiT("identity")}</div>
                             <div className="flex flex-col gap-3">
-                                <SettingInputVertical label={uiT("configIdentifier")} value={newItem.name} onChange={(name) => setNewItem(prev => ({ ...prev, name }))} placeholder="internal-sub" />
+                                <SettingInputVertical label={uiT("configIdentifier")} value={newItem.name} disabled={isEdit} onChange={(name) => setNewItem(prev => ({ ...prev, name }))} placeholder="internal-sub" />
                             </div>
                         </SettingsBox>
                         <SettingsBox>
@@ -69,80 +74,35 @@ const EditModal: FC<{
                             {show && <NodePicker value={newItem.points} disabled={saving} enabledOnly={false} onChange={points => setNewItem(prev => ({ ...prev, points }))} />}
                         </SettingsBox>
                     </fieldset>
-                </ModalBody>
-                <ModalFooter className="border-t pt-3">
-                    <Button variant="outline-secondary" onClick={close} disabled={saving}>{uiT("cancel")}</Button>
-                    <Button onClick={handleSave} disabled={saving || !newItem.name}>
-                        {saving ? <Spinner size="sm" /> : <><Check className="mr-1" size={16} /> {uiT("saveConfig")}</>}
-                    </Button>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
-    );
+                </ResourceEditorFrame>;
 };
 
 function PublishPage() {
     const { t: uiT } = useTranslation('ui');
-
     const ctx = useContext(GlobalToastContext);
-    const { data, error, isLoading, mutate } = useSWR("/api/v2/publishes", listPublishes);
-    const [editing, setEditing] = useState<{ show: boolean; value: Publish; isEdit: boolean }>({ show: false, value: defaultPublish(), isEdit: false });
-    const [confirmDelete, setConfirmDelete] = useState<{ show: boolean; name: string }>({ show: false, name: "" });
-
-    if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
-    if (isLoading || !data) return <Loading />
-
-    const remove = (name: string) => {
-        deletePublish(name)
-            .then(() => mutate())
-            .catch((err) => ctx.Error(`delete ${name} failed: ${err.msg ?? err}`));
+    const { data, error, isLoading, mutate } = useSWR('/api/v2/publishes', listPublishes);
+    const [query, setQuery] = useState('');
+    const items = data?.items ?? [];
+    const selection = useResourceSelection(items.map(item => item.name));
+    const editing = items.find(item => item.name === selection.id);
+    const { pending, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
+    useCloseGuard(false, pending, () => undefined);
+    if (error && !data) return <Loading onRetry={() => void mutate()}>{error.msg}</Loading>;
+    if (isLoading && !data) return <Loading />;
+    const remove = () => {
+        if (!editing || !window.confirm(uiT('deletePublishConfig'))) return;
+        void run(async () => { await deletePublish(editing.name); selection.close(); await mutate(); });
     };
-
-    return (
-        <MainContainer>
-            <ConfirmModal
-                show={confirmDelete.show}
-                title={uiT("deletePublish")}
-                content={<p>{uiT("removePublishConfig")}<strong>{confirmDelete.name}</strong>?</p>}
-                onOk={() => { remove(confirmDelete.name); setConfirmDelete({ show: false, name: "" }); }}
-                onHide={() => setConfirmDelete({ show: false, name: "" })}
-            />
-            <EditModal
-                show={editing.show}
-                isEdit={editing.isEdit}
-                item={editing.value}
-                mutatePub={mutate}
-                onHide={() => setEditing(prev => ({ ...prev, show: false }))}
-            />
-            <CardRowList
-                layout="list"
-                items={[...data.items].sort((a, b) => a.name.localeCompare(b.name))}
-                getKey={(pub) => pub.name}
-                onClickItem={(pub) => setEditing({ show: true, isEdit: true, value: pub })}
-                renderListItem={(pub) => (
-                    <div className="grid w-full min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-                        <div className="min-w-0">
-                            <div className="break-words font-semibold text-ui-heading sm:truncate">{pub.name}</div>
-                            <div className="mt-1 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-ui-muted">
-                                <span className="break-all sm:truncate" title={`${pub.address}/${pub.path}`}>{pub.address}/{pub.path}</span>
-                                <span className="shrink-0">• {pub.points.length} {uiT("nodesLabel")}</span>
-                            </div>
-                        </div>
-                        <Button className="self-end justify-self-end" variant="outline-danger" size="sm" title={uiT("deletePublishConfig")} aria-label={`Delete ${pub.name}`} onClick={(e) => { e.stopPropagation(); setConfirmDelete({ show: true, name: pub.name }); }}>
-                            <Trash size={16} />
-                        </Button>
-                    </div>
-                )}
-                header={
-                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <IconBox icon={Share2} tone="violet" title={uiT("publish")} description={uiT("shareSelectedNodesAsPublishConfigs")} />
-                        <Button size="sm" className="shrink-0 self-start sm:self-auto" onClick={() => setEditing({ show: true, isEdit: false, value: defaultPublish() })}>
-                            <Plus className="mr-1" size={16} /> {uiT("add")}</Button>
-                    </div>
-                }
-            />
-        </MainContainer>
-    );
+    return <MainContainer className="max-w-[1440px]">
+        <ResourceWorkspace createDisabled={selection.creating} title={uiT('publish')} description={uiT('shareSelectedNodesAsPublishConfigs')} selectedId={selection.id} editing={selection.creating || Boolean(editing)}
+            onSelect={selection.select} onCreate={() => selection.create()} search={{ value: query, onChange: setQuery }}
+            items={items.filter(item => item.name.toLowerCase().includes(query.trim().toLowerCase())).map(item => ({ id: item.name, name: item.name, icon: <Share2 />, description: `${item.points.length} ${uiT('nodesLabel')} · ${item.address}/${item.path}` }))}>
+            <fieldset disabled={pending} className="min-w-0" aria-busy={pending}>
+                <EditModal presentation="inline" show isEdit={!selection.creating} item={editing ?? defaultPublish()} onHide={selection.close} onDelete={remove}
+                    mutatePub={() => void mutate()} onSaved={item => { void mutate(previous => ({ items: [...(previous?.items ?? []).filter(value => value.name !== item.name), item] }), { revalidate: true }); selection.saved(item.name); }} />
+            </fieldset>
+        </ResourceWorkspace>
+    </MainContainer>;
 }
 
 export default PublishPage;
