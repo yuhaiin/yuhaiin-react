@@ -1,13 +1,11 @@
-import { Button } from '@/component/v2/button';
-import { Dropdown, DropdownCheckboxItem, DropdownContent, DropdownItem, DropdownTrigger } from '@/component/v2/dropdown';
 import type { RuleItem } from '@/contract/route';
 import clsx from 'clsx';
-import { ArrowUpDown, GripVertical, MoreHorizontal } from 'lucide-react';
+import { GripVertical } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useId } from 'react';
 import { useRuleDrag, type RuleDrop } from './rule-drag';
 
-export function RuleList({ items, selectedId, onOpen, onPriority, onToggle, onMove, onDrop, destinations, resolverNames, busy, page, pageSize, total, filtered }: {
+export function RuleList({ items, selectedId, onOpen, onMove, onDrop, destinations, resolverNames, busy, page, pageSize, total, filtered }: {
     items: RuleItem[];
     selectedId?: string;
     destinations: Record<string, string>;
@@ -18,8 +16,6 @@ export function RuleList({ items, selectedId, onOpen, onPriority, onToggle, onMo
     total: number;
     filtered: boolean;
     onOpen: (item: RuleItem) => void;
-    onPriority: (item: RuleItem) => void;
-    onToggle: (item: RuleItem) => void;
     onMove: (item: RuleItem, direction: -1 | 1) => void;
     onDrop: (item: RuleItem, drop: RuleDrop) => void;
 }) {
@@ -56,7 +52,7 @@ export function RuleList({ items, selectedId, onOpen, onPriority, onToggle, onMo
                     <GripVertical size={16} aria-hidden="true" />
                 </button>
                 <button type="button" aria-current={selected ? 'true' : undefined} aria-label={item.name} title={item.name} onClick={() => onOpen(item)}
-                    className="min-w-0 flex-1 rounded-ui-md py-2.5 pl-0 pr-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus">
+                    className="min-w-0 flex-1 rounded-ui-md py-2.5 pl-0 pr-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus">
                     <div className={clsx('min-w-0', item.disabled && 'opacity-60')}>
                         <div className="flex min-w-0 items-center gap-2">
                             <span className="w-6 shrink-0 font-mono text-xs tabular-nums text-ui-muted">#{item.index}</span>
@@ -75,14 +71,6 @@ export function RuleList({ items, selectedId, onOpen, onPriority, onToggle, onMo
                         </div>
                     </div>
                 </button>
-                <div className="flex shrink-0 items-center gap-0.5 pr-1">
-                    <Dropdown><DropdownTrigger asChild>
-                        <Button type="button" size="icon" variant="outline-secondary" className="h-8 w-8 border-transparent bg-transparent text-ui-muted/80" aria-label={t('ruleActions', { name: item.name })}><MoreHorizontal size={16} /></Button>
-                    </DropdownTrigger><DropdownContent align="end">
-                        <DropdownItem disabled={busy} onSelect={() => onPriority(item)}><ArrowUpDown size={15} className="mr-2" />{uiT('changePriority')}</DropdownItem>
-                        <DropdownCheckboxItem checked={!item.disabled} disabled={busy} onCheckedChange={() => onToggle(item)}>{uiT('enabled')}</DropdownCheckboxItem>
-                    </DropdownContent></Dropdown>
-                </div>
             </li>;
         })}
         {!items.length && <li className="py-12 text-center text-sm text-ui-muted">{uiT('noRecordsFound')}</li>}

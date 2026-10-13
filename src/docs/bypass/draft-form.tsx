@@ -2,6 +2,7 @@ import { Button } from '@/component/v2/button';
 import { SettingLabel, SettingsBox } from '@/component/v2/card';
 import { SettingInputVertical, SettingSelectVertical } from '@/component/v2/forms';
 import { Textarea } from '@/component/v2/input';
+import SwitchComponent from '@/component/v2/switch';
 import { RouteTargetPicker } from '@/component/route-target-picker';
 import { createDefaultRouteList, type RuleDraft } from '@/contract/route';
 import { useState } from 'react';
@@ -14,6 +15,7 @@ import { SimpleConditions, type PrivateChoiceHistory } from './simple-conditions
 
 export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; onChange: (value: RuleDraft) => void; options: RuleEditorOptions }) {
     const { t } = useTranslation('routing');
+    const { t: uiT } = useTranslation('ui');
     const matcher = parseSimpleMatcher(value.rule.rules);
     const used = referencedLists(value.rule.rules ?? []);
     const needsAdvanced = !matcher || value.lists.some(list => used.has(list.id) && list.source.type !== 'local');
@@ -59,8 +61,12 @@ export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; 
             <Button size="sm" onClick={addList}>{t('addMatchingData')}</Button>
 
         </> : matcher && <>
-            <SettingInputVertical className="mb-0" label={t('name')} value={value.rule.name}
-                onChange={name => patchRule({ name })} />
+            <div className="flex min-w-0 items-end gap-4">
+                <SettingInputVertical className="mb-0 min-w-0 flex-1" label={t('name')} value={value.rule.name}
+                    onChange={name => patchRule({ name })} />
+                <div className="shrink-0 pb-2 text-sm"><SwitchComponent label={uiT('enabled')} checked={!value.rule.disabled}
+                    onCheckedChange={enabled => patchRule({ disabled: !enabled })} /></div>
+            </div>
             {hiddenSettings && <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-ui-md border border-ui-border bg-ui-surface-muted/50 px-3 py-2.5">
                 <p className="text-sm text-ui-muted">{t('customOptions')}</p>
                 <Button type="button" size="sm" variant="outline-secondary" onClick={() => setAdvanced(true)}>{t('advancedEditor')}</Button>

@@ -23,7 +23,7 @@
   "destination": "Destination",
   "domainHelp": "Enter domain patterns or IP/CIDR ranges. This data belongs to this rule.",
   "processHelp": "Enter application process paths. Process detection must be available on the managed device.",
-  "customOptions": "Advanced settings are active (for example DNS options or disabled status). They are preserved while editing this rule.",
+  "customOptions": "Advanced DNS settings are active. They are preserved while editing this rule.",
   "topLevelAny": "The rule matches when any of these conditions matches.",
   "addCondition": "Add condition",
   "removeCondition": "Remove condition",

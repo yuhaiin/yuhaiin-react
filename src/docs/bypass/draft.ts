@@ -34,7 +34,6 @@ export function simpleList(draft: RuleDraft): RouteListDetail | undefined {
 /** Values that the task editor does not expose must remain visible to the user. */
 export function hasAdvancedRuleOptions(rule: RuleDraft['rule']): boolean {
     return Boolean(
-        rule.disabled ||
         rule.resolver ||
         rule.resolveStrategy && rule.resolveStrategy !== 'default' ||
         rule.udpProxyFqdnStrategy &&

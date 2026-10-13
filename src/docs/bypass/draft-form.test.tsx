@@ -31,6 +31,7 @@ function renderDraft(initial: RuleDraft) {
             <output data-testid="saved-target">{JSON.stringify(draft.rule.target)}</output>
             <output data-testid="rule-expressions">{JSON.stringify(draft.rule.rules)}</output>
             <output data-testid="owned-lists">{JSON.stringify(draft.lists.map(list => list.id))}</output>
+            <output data-testid="disabled">{String(draft.rule.disabled)}</output>
         </>;
     }
     act(() => root?.render(<Editor />));
@@ -69,6 +70,22 @@ function clickButton(host: HTMLElement, text: string) {
     if (!button) throw Error(`Missing button: ${text}`);
     act(() => button.click());
 }
+
+it('edits enabled state in the simple view and retains it across editor changes', () => {
+    const draft = createDefaultRuleDraft();
+    draft.rule.disabled = true;
+    const host = renderDraft(draft);
+    const enabled = () => host.querySelector<HTMLButtonElement>('[role="switch"]')!;
+    expect(enabled().getAttribute('aria-checked')).toBe('false');
+    act(() => enabled().click());
+    expect(host.querySelector('[data-testid="disabled"]')?.textContent).toBe('false');
+    clickButton(host, 'advancedEditor');
+    expect(enabled().getAttribute('aria-checked')).toBe('true');
+    act(() => enabled().click());
+    clickButton(host, 'simpleEditor');
+    expect(enabled().getAttribute('aria-checked')).toBe('false');
+    expect(JSON.parse(host.querySelector('[data-testid="rule-expressions"]')!.textContent!)).toEqual(draft.rule.rules);
+});
 
 it('adds independent private match conditions and combines them with AND', () => {
     const host = renderDraft(createDefaultRuleDraft());

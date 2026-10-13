@@ -25,8 +25,9 @@ the DOM. Screenshots do not constitute connectivity or accessibility certificati
   hold the handle for 400 ms before dragging; ordinary swipes still scroll.
   Dragging near the directory edges scrolls it, and Escape cancels the drag.
   Arrow keys on a focused handle move to adjacent positions, including across
-  page boundaries. The priority dialog remains available for larger changes;
-  direct moves are disabled while searching or holding an unsaved draft.
+  page boundaries. Direct moves are disabled while searching or holding an
+  unsaved draft. Enabling or disabling a rule is edited with its other settings
+  in the simple or advanced editor; the directory only displays its status.
 - Node lists keep virtualization and remember drafts while the directory
   filters or switches groups. The node editor uses the same form behavior in
   the modal and inline shells without duplicating the default-destination control.
@@ -38,7 +39,7 @@ the style audit, lint, and the production build. It also captures browser
 screenshots from the MSW preview and fails when the expected UI does not
 appear or if the page overflows horizontally.
 
-The follow-up passed 115 tests in 48 files, TypeScript, localization checks,
+The follow-up passed 116 tests in 48 files, TypeScript, localization checks,
 strict lint with no warnings, the style audit and the production build. Isolated
 Chrome interaction checks covered mouse insertion, native touch scrolling,
 long-press touch insertion, edge scrolling and cancellation without a save.

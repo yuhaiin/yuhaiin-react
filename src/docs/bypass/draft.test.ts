@@ -20,7 +20,7 @@ describe('rule editing views', () => {
         const draft = createDefaultRuleDraft();
         expect(hasAdvancedRuleOptions(draft.rule)).toBe(false);
         draft.rule.disabled = true;
-        expect(hasAdvancedRuleOptions(draft.rule)).toBe(true);
+        expect(hasAdvancedRuleOptions(draft.rule)).toBe(false);
         draft.rule.disabled = false;
         draft.rule.resolveStrategy = 'only_ipv6';
         expect(hasAdvancedRuleOptions(draft.rule)).toBe(true);

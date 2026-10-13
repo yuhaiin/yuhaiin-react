@@ -61,10 +61,9 @@ function RouteRuleForm({ value, onChange, options, lockName }: { value: RouteRul
                     )}
                     <div className="md:col-span-2">
                         <SwitchCard
-                            label={uiT("disabled")}
-                            description={uiT("ignoreThisRuleDuringRouting")}
-                            checked={Boolean(value.disabled)}
-                            onCheckedChange={(disabled) => patch({ disabled })}
+                            label={uiT("enabled")}
+                            checked={!value.disabled}
+                            onCheckedChange={(enabled) => patch({ disabled: !enabled })}
                         />
                     </div>
                     <SettingSelectVertical label={uiT("mode")} value={value.mode} values={routeModes} onChange={(mode) => patch({ mode })} />

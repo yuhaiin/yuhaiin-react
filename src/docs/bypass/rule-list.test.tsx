@@ -24,7 +24,7 @@ beforeEach(() => {
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.restoreAllMocks(); vi.useRealTimers(); });
 function render(busy = false, filtered = false) {
     act(() => root.render(<RuleList items={items} destinations={{}} resolverNames={{}} page={1} pageSize={3} total={3} busy={busy} filtered={filtered}
-        onOpen={onOpen} onMove={onMove} onDrop={onDrop} onPriority={vi.fn()} onToggle={vi.fn()} />));
+        onOpen={onOpen} onMove={onMove} onDrop={onDrop} />));
 }
 function handle(index = 0) { return host.querySelectorAll<HTMLButtonElement>('button[aria-describedby]')[index]; }
 function pointer(target: EventTarget, type: string, y: number, pointerType = 'mouse') {

@@ -15,18 +15,15 @@ import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-edito
 
 import { listInbounds } from "@/api/inbounds";
 import { listResolvers } from "@/api/resolvers";
-import { applyRouteChanges, changeRulePriority, getRouteActivationStatus, getRouteConfig, getRule, listRouteLists, listRules, saveRouteConfig, saveRule } from "@/api/route";
-import { Badge } from "@/component/v2/badge";
+import { applyRouteChanges, changeRulePriority, getRouteActivationStatus, getRouteConfig, listRouteLists, listRules, saveRouteConfig } from "@/api/route";
 import { Button } from "@/component/v2/button";
 import { FilterSearch, MainContainer, SettingLabel } from "@/component/v2/card";
 import { SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
 
 import Loading from "@/component/v2/loading";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Pagination } from "@/component/v2/pagination";
 import { RouteActivationProgress } from "@/component/v2/route-activation-progress";
 import { WorkspaceDetail, WorkspaceDirectory, WorkspaceLayout } from "@/component/workspace-layout";
-import { Select } from "@/component/v2/select";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { RuleDraft, RuleItem } from "@/contract/route";
@@ -34,8 +31,7 @@ import { RuleList } from "./rule-list";
 import type { RuleDrop } from "./rule-drag";
 import { ArrowRight, ChevronDown, Plus, Save, ListFilter } from "lucide-react";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import useSWR, { useSWRConfig } from "swr";
-type PriorityOperate = "exchange" | "insert_before" | "insert_after";
+import useSWR from "swr";
 const PAGE_SIZE = 25;
 
 function BypassComponent() {
@@ -43,7 +39,6 @@ function BypassComponent() {
     const { t } = useTranslation('routing');
 
     const ctx = useContext(GlobalToastContext);
-    const { mutate: refreshCache } = useSWRConfig();
     const [page, setPage] = useState(1);
     const [query, setQuery] = useState("");
     const [localEditing, setEditing] = useState<Pick<RuleItem, "id" | "name"> | null>(null);
@@ -55,7 +50,6 @@ function BypassComponent() {
     const linkedDraft = useMemo(() => connectionRuleDraft(search), [search]);
     const editing = useMemo(() => localEditing ?? (linkedId ? { id: linkedId, name: '' } : null), [localEditing, linkedId]);
     const closeLink = () => { if (search) clearHashSearch(); };
-    const [priorityItem, setPriorityItem] = useState<RuleItem | null>(null);
     const [localCreating, setCreating] = useState(false);
     const creating = localCreating || Boolean(linkedDraft);
     const { data: activation, mutate: mutateActivation } = useSWR(
@@ -79,7 +73,7 @@ function BypassComponent() {
         }
     }, [desktop, data?.items, creating, editing]);
     const selectRule = (item: RuleItem) => {
-        if (toggling || !creating && editing?.id === item.id) return;
+        if (reordering || !creating && editing?.id === item.id) return;
         if (!allowNavigation()) return;
         initialized.current = true;
         closeLink();
@@ -101,11 +95,6 @@ function BypassComponent() {
         setEditorState({ dirty: false, pending: false });
     };
     const needEditorOptions = creating || editing !== null;
-    const { data: allRules, mutate: mutateAllRules } = useSWR(
-        priorityItem ? "/api/v2/route/rules/all" : null,
-        () => collectPages(listRules),
-        { revalidateOnFocus: false },
-    );
     const { data: listsData } = useSWR(
         needEditorOptions ? "/api/v2/route/lists/options" : null,
         () => collectPages(listRouteLists),
@@ -138,11 +127,10 @@ function BypassComponent() {
         resolvers: (resolversData?.items ?? []).map(item => item.id).sort((a, b) => a.localeCompare(b)),
     }), [inboundsData?.items, listsData?.items, resolversData?.items]);
 
-    const { pending: toggling, run: runToggle } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
     const { pending: reordering, run: runReorder } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
     const moveRule = (item: RuleItem, direction: -1 | 1) => {
         const currentPage = data;
-        if (!currentPage || query.trim() || toggling || reordering || editorState.dirty || editorState.pending || isValidating || currentPage.page.page !== page) return;
+        if (!currentPage || query.trim() || reordering || editorState.dirty || editorState.pending || isValidating || currentPage.page.page !== page) return;
         void runReorder(async () => {
             const index = currentPage.items.findIndex(rule => rule.id === item.id);
             if (index < 0) return;
@@ -156,7 +144,6 @@ function BypassComponent() {
             if (!adjacent) return;
             await changeRulePriority({ id: item.id }, { id: adjacent.id }, 'exchange');
             await mutate();
-            void mutateAllRules();
             void mutateActivation();
             try {
                 await applyRouteChanges();
@@ -167,35 +154,17 @@ function BypassComponent() {
         });
     };
     const dropRule = (item: RuleItem, drop: RuleDrop) => {
-        if (!data || query.trim() || toggling || reordering || editorState.dirty || editorState.pending || isValidating || data.page.page !== page) return;
+        if (!data || query.trim() || reordering || editorState.dirty || editorState.pending || isValidating || data.page.page !== page) return;
         void runReorder(async () => {
             await changeRulePriority({ id: item.id }, { id: drop.target.id }, drop.placement);
             await mutate();
-            void mutateAllRules();
             void mutateActivation();
             try { await applyRouteChanges(); ctx.Info(t('ruleReordered')); }
             finally { await mutateActivation(); }
         });
     };
-    const toggleDisabled = (item: RuleItem) => {
-        void runToggle(async () => {
-            const draft = await getRule(item.id);
-            const saved = await saveRule(item.id, { ...draft, rule: { ...draft.rule, disabled: !item.disabled } });
-            await refreshCache(["/api/v2/route/rules/detail", item.id], saved, { revalidate: false });
-            await mutate();
-            await mutateActivation();
-            try {
-                await applyRouteChanges();
-                ctx.Info(item.disabled ? "rule enabled and applied" : "rule disabled and applied");
-            } finally {
-                await mutateActivation();
-            }
-        });
-    };
-
     const refresh = () => {
         void mutate();
-        void mutateAllRules();
         void mutateActivation();
     };
     const saved = (draft: RuleDraft | null) => {
@@ -215,7 +184,7 @@ function BypassComponent() {
         <MainContainer className="max-w-[1440px]">
             <header className={`mb-6 flex-wrap items-center justify-between gap-4 ${showEditor ? 'hidden md:flex' : 'flex'}`}>
                 <div><h1 className="text-3xl font-semibold tracking-tight text-ui-heading">{t('routingTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('routingOverviewHelp')}</p></div>
-                <Button variant="primary" onClick={newRule} disabled={toggling || reordering || editorState.pending || creating}><Plus size={16} className="mr-1.5" />{uiT('add')}</Button>
+                <Button variant="primary" onClick={newRule} disabled={reordering || editorState.pending || creating}><Plus size={16} className="mr-1.5" />{uiT('add')}</Button>
             </header>
             <div className={showEditor ? 'hidden md:block' : undefined}>
                 <RouteConfigCard destinations={destinations} onSaved={() => { void mutateActivation(); }} />
@@ -232,8 +201,8 @@ function BypassComponent() {
                         {error ? <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading> : <RuleList items={data.items} selectedId={creating ? undefined : editing?.id} destinations={destinations}
                             resolverNames={Object.fromEntries((resolversData?.items ?? []).map(item => [item.id, item.name]))}
                             page={data.page.page || page} pageSize={data.page.pageSize || PAGE_SIZE} total={data.page.total} filtered={Boolean(query.trim())}
-                            busy={toggling || reordering || isValidating || editorState.pending || editorState.dirty}
-                            onOpen={selectRule} onPriority={setPriorityItem} onToggle={toggleDisabled} onMove={moveRule} onDrop={dropRule} />}
+                            busy={reordering || isValidating || editorState.pending || editorState.dirty}
+                            onOpen={selectRule} onMove={moveRule} onDrop={dropRule} />}
                     </div>
                     {Math.ceil(data.page.total / (data.page.pageSize || PAGE_SIZE)) > 1 && <div className="flex justify-center border-t border-ui-border/60 pt-3">
                         <Pagination currentPage={data.page.page || page} totalItems={data.page.total} pageSize={data.page.pageSize || PAGE_SIZE} onPageChange={setPage} />
@@ -241,14 +210,13 @@ function BypassComponent() {
                 </WorkspaceDirectory>
                 <WorkspaceDetail hiddenOnMobile={!showEditor}>
                     {showEditor ? <RuleEditor key={creating ? 'new-rule' : editing?.id} item={editing} creating={creating} initial={linkedDraft}
-                        options={editorOptions} blocked={toggling || reordering} onSaved={saved} onBack={backToRules} onStateChange={setEditorState} />
+                        options={editorOptions} blocked={reordering} onSaved={saved} onBack={backToRules} onStateChange={setEditorState} />
                         : <div className="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-ui-muted">
                             <ListFilter size={28} aria-hidden="true" /><h2 className="text-lg font-medium text-ui-heading">{t('selectRule')}</h2>
                             <p className="max-w-sm text-sm">{t('selectRuleHelp')}</p><Button variant="outline-primary" className="gap-2" onClick={newRule}><Plus size={16} />{uiT('newRouteRule')}</Button>
                         </div>}
                 </WorkspaceDetail>
             </WorkspaceLayout>
-            <PriorityModal item={priorityItem} items={allRules?.items ?? data.items} onSaved={() => { refresh(); if (editing) void refreshCache(["/api/v2/route/rules/detail", editing.id]); setPriorityItem(null); }} onClose={() => setPriorityItem(null)} />
         </MainContainer>
     );
 }
@@ -334,96 +302,6 @@ function RouteConfigCard({ onSaved, destinations }: { onSaved: () => void; desti
             </div>
         </fieldset>
     </details>;
-}
-
-function PriorityModal({ item, items, onSaved, onClose }: { item: RuleItem | null; items: RuleItem[]; onSaved: () => void; onClose: () => void }) {
-    const { t: uiT } = useTranslation('ui');
-    const { t } = useTranslation('routing');
-    const { mutate: refreshCache } = useSWRConfig();
-
-    const ctx = useContext(GlobalToastContext);
-    const [target, setTarget] = useState("");
-    const [operate, setOperate] = useState<PriorityOperate>("exchange");
-    const [committed, setCommitted] = useState(false);
-    const [actionError, setActionError] = useState('');
-    const { pending: saving, run } = useAsyncAction(error => { const message = String((error as { msg?: string })?.msg ?? error); setActionError(message); ctx.Error(message); void refreshCache('/api/v2/route/activation'); });
-    const close = useCloseGuard(false, saving, onClose);
-
-    const [previousId, setPreviousId] = useState(item?.id);
-    if (previousId !== item?.id) {
-        setPreviousId(item?.id);
-        setTarget(item?.id ?? '');
-        setCommitted(false);
-        setActionError('');
-        setOperate('exchange');
-    }
-
-    const apply = () => {
-        if (!item || saving) return;
-        if (!committed && !items.some(value => value.id === target)) { setActionError(t('resourceUnavailable')); return; }
-        void run(async () => {
-            setActionError('');
-            if (!committed) {
-                await changeRulePriority({ id:item.id }, { id:target }, operate);
-                setCommitted(true);
-                void refreshCache(key => key === '/api/v2/route/rules/all' || Array.isArray(key) && key[0] === '/api/v2/route/rules');
-            }
-            void refreshCache('/api/v2/route/activation');
-            await applyRouteChanges();
-            onSaved();
-        });
-    };
-
-    return (
-        <Modal open={!!item} onOpenChange={(open) => !open && close()}>
-            <ModalContent width={520}>
-                <ModalHeader closeButton>
-                    <ModalTitle>{uiT("changePriority")}</ModalTitle>
-                </ModalHeader>
-                <ModalBody className="p-5 sm:p-6">
-                    {actionError && <p role="alert" className="mb-3 text-sm text-ui-danger">{actionError}</p>}
-                    {item && (
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3 rounded-ui-lg border border-ui-border bg-ui-surface-muted p-3">
-                                <Badge variant="primary">#{item.index}</Badge>
-                                <span className="min-w-0 truncate font-bold">{item.name}</span>
-                            </div>
-                            <div>
-                                <div className="mb-2 text-sm font-semibold text-ui-muted">{uiT("targetRule")}</div>
-                                <Select
-                                    ariaLabel={uiT("targetRule")} disabled={saving || committed} value={target}
-                                    onValueChange={setTarget}
-                                    items={items.map((rule) => ({
-                                        value: rule.id,
-                                        label: `#${rule.index} - ${rule.name}`,
-                                    }))}
-                                    triggerClassName="w-full"
-                                />
-                            </div>
-                            <div>
-                                <div className="mb-2 text-sm font-semibold text-ui-muted">{uiT("operation")}</div>
-                                <Select
-                                    ariaLabel={uiT("operation")} disabled={saving || committed} value={operate}
-                                    onValueChange={(value) => setOperate(value as PriorityOperate)}
-                                    items={[
-                                        { value: "exchange", label: "Exchange" },
-                                        { value: "insert_before", label: "Insert Before" },
-                                        { value: "insert_after", label: "Insert After" },
-                                    ]}
-                                    triggerClassName="w-full"
-                                />
-                            </div>
-                        </div>
-                    )}
-                </ModalBody>
-                <ModalFooter>
-                    <Button onClick={apply} disabled={saving || !item}>
-                        {saving ? <Spinner size="sm" className="mr-2" /> : <Save size={16} className="mr-2" />}
-                        {t(committed ? "retryApply" : "saveAndApply")}</Button>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
-    );
 }
 
 export default BypassComponent;
