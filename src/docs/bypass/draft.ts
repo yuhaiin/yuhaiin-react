@@ -62,7 +62,7 @@ export function parseSimpleMatcher(rules: RuleExpr[] | undefined): SimpleMatcher
     let items = rules;
     if (rules.length === 1 && (rules[0].type === 'all' || rules[0].type === 'any')) {
         join = rules[0].type;
-        items = join === 'all' ? rules[0].all : rules[0].any;
+        items = rules[0].type === 'all' ? rules[0].all : rules[0].any;
     }
     if (!items.length || !items.every(item => simpleLeafTypes.has(item.type))) return undefined;
     return { join, items };
