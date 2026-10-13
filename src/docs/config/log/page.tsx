@@ -84,7 +84,15 @@ export default function LogComponent() {
     const followLatestRef = useRef(true);
 
     useEffect(() => {
-        if (paused || !visible) { setCollectionGap(true); return; }
+        const recordGap = () => {
+            if (document.visibilityState === 'hidden') setCollectionGap(true);
+        };
+        document.addEventListener('visibilitychange', recordGap);
+        return () => document.removeEventListener('visibilitychange', recordGap);
+    }, []);
+
+    useEffect(() => {
+        if (paused || !visible) return;
         let reconnectTimer: number | undefined;
         let flushTimer: number | undefined;
         let stopped = false;
@@ -189,7 +197,7 @@ export default function LogComponent() {
                                 <Button className="!h-11 !w-11" size="icon" variant="outline-secondary" aria-label={uiT("clearLogs")} title={uiT("clearLogs")} onClick={clearLogs}>
                                     <Trash2 size={16} />
                                 </Button>
-                                <Button className="!h-11 !w-11" size="icon" variant="outline-secondary" aria-label={uiT(paused ? "resumeCollection" : "pauseCollection")} title={uiT(paused ? "resumeCollection" : "pauseCollection")} aria-pressed={paused} onClick={() => setPaused(value => !value)}>{paused ? <Play size={16} /> : <Pause size={16} />}</Button>
+                                <Button className="!h-11 !w-11" size="icon" variant="outline-secondary" aria-label={uiT(paused ? "resumeCollection" : "pauseCollection")} title={uiT(paused ? "resumeCollection" : "pauseCollection")} aria-pressed={paused} onClick={() => { if (!paused) setCollectionGap(true); setPaused(!paused); }}>{paused ? <Play size={16} /> : <Pause size={16} />}</Button>
                             </div>
                         </div>
                     </div>
