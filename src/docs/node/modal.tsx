@@ -11,7 +11,7 @@ import { useClipboard } from "@/component/v2/clipboard";
 import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
 
 import Loading, { Error as ErrorDisplay } from "@/component/v2/loading";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
+import { NodeEditorSurface } from "./editor-surface";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { Node, NodeProtocol } from "@/contract/node";
@@ -274,7 +274,7 @@ const NodeModalComponent: FC<NodeModalProps> = ({
                     onRemoveProtocol={removeProtocol}
                     onAddProtocol={(type) => updateDraft({ chain: [...draft.chain, createDefaultProtocol(type)] })}
                 />
-                {canEdit && <SwitchCard className="mt-3" label={routingT("useAsDefault")} checked={makeDefault} onCheckedChange={setMakeDefault} />}
+                {canEdit && (presentation !== 'inline' || isNew) && <SwitchCard className="mt-3" label={routingT("useAsDefault")} checked={makeDefault} onCheckedChange={setMakeDefault} />}
                 </>
             )}
         </fieldset>
@@ -319,17 +319,9 @@ const NodeModalComponent: FC<NodeModalProps> = ({
     </>;
     return <>
         {manualCopyModal}
-        {presentation === "inline" ? <section aria-label={routingT('nodeSettings')} className="min-w-0">
-            <header className="mb-4 flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-ui-heading">{routingT('nodeSettings')}</h3>{dirty && <span role="status" className="text-xs text-ui-warning">{routingT('unsavedChanges')}</span>}</header>
-            <div className="min-w-0">{body}</div>
-            <footer className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-ui-border/60 pt-4">{footer}</footer>
-        </section> : <Modal open={show} onOpenChange={open => !open && close()}>
-            <ModalContent width={960}>
-                <ModalHeader closeButton className="border-b-0 pb-0"><ModalTitle className="font-bold">{title}</ModalTitle></ModalHeader>
-                <ModalBody className="pt-2">{body}</ModalBody>
-                <ModalFooter className="flex justify-between">{footer}</ModalFooter>
-            </ModalContent>
-        </Modal>}
+        <NodeEditorSurface presentation={presentation} show={show} title={title} dirty={dirty} onClose={close} footer={footer}>
+            {body}
+        </NodeEditorSurface>
     </>;
 };
 
