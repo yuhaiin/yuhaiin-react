@@ -5,10 +5,10 @@ import { Textarea } from '@/component/v2/input';
 import { RouteTargetPicker } from '@/component/route-target-picker';
 import { createDefaultRouteList, type RuleDraft } from '@/contract/route';
 import { useState } from 'react';
-import { ArrowRight, ListFilter } from 'lucide-react';
+import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import { RouteRuleForm, type RuleEditorOptions } from './rule-form';
-import { simpleCondition, simpleList } from './draft';
+import { hasAdvancedRuleOptions, simpleCondition, simpleList } from './draft';
 
 export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; onChange: (value: RuleDraft) => void; options: RuleEditorOptions }) {
     const { t } = useTranslation('routing');
@@ -16,6 +16,7 @@ export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; 
     const condition = simpleCondition(value);
     const needsAdvanced = !condition || value.lists.some(list => list.id === condition.list && list.source.type !== 'local');
     const [advanced, setAdvanced] = useState(needsAdvanced);
+    const hiddenSettings = hasAdvancedRuleOptions(value.rule);
     const setCondition = (type: 'host' | 'process', list: string) => onChange({
         ...value, rule: { ...value.rule, rules: [type === 'host' ? { type, host: { list } } : { type, process: { list } }] },
     });
@@ -41,12 +42,17 @@ export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; 
             onChange={event => onChange({ ...value, shareLists: event.target.checked ? [...(value.shareLists ?? []), id] : value.shareLists?.filter(item => item !== id) })} />{t('shareMatchingData')}</label>
         {value.shareLists?.includes(id) && <p className="text-xs text-ui-muted">{t('shareMatchingHelp')}</p>}
     </div>;
-    return <div className="space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-ui-muted">{t('ruleTask')}</p>
-            <Button size="sm" variant="outline-secondary" className="shrink-0" disabled={needsAdvanced} onClick={() => setAdvanced(!advanced)}>
-                {advanced ? t('simpleEditor') : t('advancedEditor')}
-            </Button>
+    return <div className="space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ui-border/60 pb-4">
+            <p className="max-w-lg text-sm text-ui-muted">{t('ruleTask')}</p>
+            <div role="group" aria-label={t('ruleEditor')} className="inline-flex shrink-0 gap-1 rounded-ui-md bg-ui-surface-muted p-1">
+                <Button type="button" size="sm" variant="outline-secondary" disabled={needsAdvanced} aria-pressed={!advanced && !needsAdvanced}
+                    className={clsx('h-8 border-transparent shadow-none', !advanced && !needsAdvanced ? 'bg-ui-surface text-ui-heading' : 'bg-transparent text-ui-muted')}
+                    onClick={() => setAdvanced(false)}>{t('simpleEditor')}</Button>
+                <Button type="button" size="sm" variant="outline-secondary" aria-pressed={advanced || needsAdvanced}
+                    className={clsx('h-8 border-transparent shadow-none', advanced || needsAdvanced ? 'bg-ui-surface text-ui-heading' : 'bg-transparent text-ui-muted')}
+                    onClick={() => setAdvanced(true)}>{t('advancedEditor')}</Button>
+            </div>
         </div>
         {advanced || needsAdvanced ? <>
             {needsAdvanced && <p className="text-sm text-ui-muted">{t('complexRule')}</p>}
@@ -62,8 +68,12 @@ export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; 
             <Button size="sm" onClick={addList}>{t('addMatchingData')}</Button>
         </> : condition && <>
             <SettingInputVertical className="mb-0" label={t('name')} value={value.rule.name} onChange={name => patchRule({ name })} />
-            <section className="border-t border-ui-border/70 pt-5">
-                <h3 className="mb-4 flex items-center gap-2.5 text-sm font-semibold text-ui-heading"><span className="rounded-ui-sm bg-ui-surface-muted p-1.5 text-ui-muted"><ListFilter size={16} aria-hidden="true" /></span>{t('matchTraffic')}</h3>
+            {hiddenSettings && <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-ui-md border border-ui-border bg-ui-surface-muted/50 px-3 py-2.5">
+                <p className="text-sm text-ui-muted">{t('customOptions')}</p>
+                <Button type="button" size="sm" variant="outline-secondary" onClick={() => setAdvanced(true)}>{t('advancedEditor')}</Button>
+            </div>}
+            <section className="border-t border-ui-border/60 pt-5">
+                <h3 className="mb-4 text-sm font-semibold text-ui-heading">{t('matchTraffic')}</h3>
                 <div className="grid gap-x-4 sm:grid-cols-2">
             <SettingSelectVertical label={t('traffic')} value={condition.type} values={[[t('websites'), 'host'], [t('applications'), 'process']]}
                 onChange={type => local ? usePrivate(type as 'host' | 'process') : setCondition(type as 'host' | 'process', '')} />
@@ -87,12 +97,17 @@ export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; 
                 <p className="mb-4 text-sm text-ui-muted">{t('sharedListHelp')}</p>
             </>}
             </section>
-            <section className="rounded-ui-lg border border-ui-primary/15 bg-ui-primary-soft/30 p-4 sm:p-5">
-                <h3 className="mb-4 flex items-center gap-2.5 text-sm font-semibold text-ui-heading"><span className="rounded-ui-sm bg-ui-primary-soft p-1.5 text-ui-primary"><ArrowRight size={16} aria-hidden="true" /></span>{t('handlingAndDestination')}</h3>
-            <SettingSelectVertical label={t('action')} value={value.rule.mode} values={[[t('proxy'), 'proxy'], [t('direct'), 'direct'], [t('block'), 'block']]} onChange={mode => patchRule({ mode, target: mode === 'proxy' ? value.rule.target : { type: 'default' } })} />
-            {value.rule.mode === 'proxy' && <div className="space-y-2"><SettingLabel>{t('destination')}</SettingLabel><RouteTargetPicker compact value={value.rule.target} onChange={target => patchRule({ target })} /></div>}
+            <section className="space-y-4 border-t border-ui-border/60 pt-5">
+                <h3 className="text-sm font-semibold text-ui-heading">{t('handlingAndDestination')}</h3>
+                <div role="group" aria-label={t('action')} className="grid grid-cols-3 gap-2">
+                    {(['proxy', 'direct', 'block'] as const).map(mode => <button key={mode} type="button"
+                        aria-pressed={value.rule.mode === mode}
+                        className={clsx('min-h-10 rounded-ui-md border px-2 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus',
+                            value.rule.mode === mode ? 'border-ui-primary bg-ui-primary-soft text-ui-primary' : 'border-ui-border bg-ui-surface text-ui-muted hover:bg-ui-surface-muted')}
+                        onClick={() => patchRule({ mode })}>{t(mode)}</button>)}
+                </div>
+                {value.rule.mode === 'proxy' && <div className="space-y-2"><SettingLabel>{t('destination')}</SettingLabel><RouteTargetPicker compact value={value.rule.target} onChange={target => patchRule({ target })} /></div>}
             </section>
-            {Boolean(value.rule.resolver || value.rule.resolveStrategy && value.rule.resolveStrategy !== 'default' || value.rule.udpProxyFqdnStrategy && value.rule.udpProxyFqdnStrategy !== 'udp_proxy_fqdn_strategy_default') && <p className="mt-3 text-sm text-ui-muted">{t('customOptions')}</p>}
         </>}
     </div>;
 }
