@@ -19,20 +19,15 @@ const Modal: React.FC<React.ComponentProps<typeof DialogPrimitive.Root>> = ({ ch
         onOpenChange?.(next);
     };
     const getLastClick = useLastClickPosition();
-    const [origin, setOrigin] = React.useState("center center");
-
-    // Capture origin only when opening
-    React.useEffect(() => {
-        if (isOpen) {
-            const pos = getLastClick();
-            if (pos.x !== 0 || pos.y !== 0) {
-                setOrigin(`${pos.x}px ${pos.y}px`);
-                return;
-            }
-        }
-        // Reset or keep previous? Keeping previous is fine, but if we close and open elsewhere?
-        // If open is false, we don't care.
-    }, [getLastClick, isOpen]);
+    const [opening, setOpening] = React.useState({ open: isOpen, origin: "center center" });
+    // Capture the click origin before the new open state is committed, so the
+    // entrance animation starts from the correct point on its first frame.
+    if (opening.open !== isOpen) {
+        const pos = isOpen ? getLastClick() : { x: 0, y: 0 };
+        setOpening({ open: isOpen, origin: pos.x !== 0 || pos.y !== 0
+            ? `${pos.x}px ${pos.y}px` : "center center" });
+    }
+    const origin = opening.origin;
 
     return (
         <DialogPrimitive.Root open={isOpen} onOpenChange={changeOpen} {...props}>
