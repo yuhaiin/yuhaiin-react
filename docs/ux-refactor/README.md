@@ -34,8 +34,10 @@ appear or if the page overflows horizontally.
 
 Run `npm run dev:msw` and then `node scripts/capture-ux.mjs` to create
 screenshots at `/tmp/ux-shots` on a Linux environment with Chrome available
-on the path. CI uploads the images as the `ux-preview-screenshots` artifact.
-The generated screenshots are not committed automatically by CI.
+on the path. CI shows the committed reference screenshots inline in the GitHub Actions
+job summary. The current run's captured PNGs are used for validation only and
+are not uploaded as a separate screenshot artifact. When the UI changes, refresh
+the screenshots committed under `docs/ux-refactor/` so the summary stays current.
 
 ## Screenshots
 
