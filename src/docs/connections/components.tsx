@@ -1,3 +1,5 @@
+import { ConnectionActions } from './connection-actions';
+import { resourceLink } from './actions';
 
 import { getTotalFlow } from "@/api/connections";
 import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datalist";
@@ -153,10 +155,7 @@ export function useFlow(options?: UseFlowOptions) {
     });
 
     useEffect(() => {
-        if (!enabled) {
-            setState(prev => ({ ...prev, isLoading: false, isValidating: false }));
-            return;
-        }
+        if (!enabled) return;
 
         let stopped = false;
         let inFlight: AbortController | undefined;
@@ -238,7 +237,8 @@ export function useFlow(options?: UseFlowOptions) {
 
     return {
         ...state,
-        data: state.data ?? lastFlowRef.current,
+        isLoading: enabled && state.isLoading,
+        isValidating: enabled && state.isValidating,
     };
 }
 
@@ -348,7 +348,8 @@ export const ConnectionInfo: FC<{
 }> = ({ value, startContent, endContent, showNodeModal }) => {
     const { t } = useTranslation(["connections", "common"]);
     const pointLabel = value.nodeName || value.nodeId || value.outbound;
-    const pointId = value.nodeId || value.outbound;
+    const pointId = value.nodeId;
+    const linked = (path: string, key: string, id: string, text: string) => id ? <a className="text-ui-primary underline underline-offset-2" href={resourceLink(path, key, id)}>{text || id}</a> : text;
     const display = (value?: string) => value ? value.split("_").join(" ").toUpperCase() : "";
     const label = (key: string) => t(`detail.${key}`, { defaultValue: key });
     const hasValue = (next: React.ReactNode) => next !== undefined && next !== null && next !== "";
@@ -367,7 +368,7 @@ export const ConnectionInfo: FC<{
         { label: "Component", value: value.component },
     ]);
     const pathRows = renderRows([
-        { label: "Inbound", value: value.inboundName || value.inbound },
+        { label: "Inbound", value: linked("/docs/inbound", "inbound", value.inboundId, value.inboundName || value.inbound) },
         { label: "InboundAddr", value: value.inbound },
         { label: "Source", value: value.source },
         { label: "Interface", value: value.interface },
@@ -379,7 +380,7 @@ export const ConnectionInfo: FC<{
             label: "Point",
             value: showNodeModal && pointId
                 ? <a href="#" onClick={(event) => { event.preventDefault(); showNodeModal(pointId); }}>{pointLabel}</a>
-                : pointLabel,
+                : linked("/docs/group", "node", pointId, pointLabel),
         },
     ]);
     const routeRows = renderRows([
@@ -387,8 +388,9 @@ export const ConnectionInfo: FC<{
         { label: "Hosts", value: value.hosts },
         { label: "Domain", value: value.domain },
         { label: "IP", value: value.ip },
-        { label: "Tag", value: value.tag },
-        { label: "Lists", value: value.lists?.join(", ") },
+        { label: "Selector", value: linked("/docs/group/selectors", "selector", value.selectorId, value.selectorName) },
+        { label: "Rule", value: linked("/docs/bypass", "rule", value.ruleId, value.ruleName) },
+        { label: "Lists", value: value.lists?.map(id => value.listNames?.[id] || id).join(", ") },
         { label: "Resolver", value: value.resolver },
     ]);
     const processRows = renderRows([
@@ -404,6 +406,7 @@ export const ConnectionInfo: FC<{
 
     return (
         <div className="space-y-4">
+            <ConnectionActions connection={value} />
             <ConnectionSection title={label("Basic")}>
                 {startContent}
                 {basicRows}
@@ -448,7 +451,7 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[] }> = ({ value }) => {
                     {value.map((entry, index) => (
                         <div key={`${entry.ruleName}-${index}`} className="rounded-xl border border-sidebar-border bg-sidebar-hover p-3">
                             <div className="mb-2 border-b border-sidebar-border pb-2 text-xs font-bold uppercase tracking-wider text-sidebar-header">
-                                {entry.ruleName || label("Rule")}
+                                {entry.ruleId ? <a href={resourceLink('/docs/bypass', 'rule', entry.ruleId)} className="text-ui-primary underline underline-offset-2">{entry.ruleName || label("Rule")}</a> : entry.ruleName || label("Rule")}
                             </div>
                             <div className="flex flex-col gap-2">
                                 {(entry.history ?? []).map((item, itemIndex) => (

@@ -15,17 +15,19 @@ it('clears a previous error after an unchanged successful response', async () =>
     .mockResolvedValueOnce(unchanged)
     .mockRejectedValueOnce({ msg: 'Synthetic network error' })
     .mockResolvedValue(unchanged);
-  let observed: ReturnType<typeof useFlow>;
-  function Probe() { observed = useFlow({ refreshInterval: 2000 }); return null; }
+  function Probe() {
+    const observed = useFlow({ refreshInterval: 2000 });
+    return createElement('output', { 'data-testid': 'flow-error' }, observed.error ?? '');
+  }
   const host = document.createElement('div');
   document.body.append(host);
   const root = createRoot(host);
   await act(async () => { root.render(createElement(Probe)); });
   await act(async () => { await vi.advanceTimersByTimeAsync(2000); });
-  expect(observed!.error).toBe('Synthetic network error');
+  expect(host.querySelector('[data-testid="flow-error"]')?.textContent).toBe('Synthetic network error');
   await act(async () => { await vi.advanceTimersByTimeAsync(2000); });
   expect(vi.mocked(getTotalFlow)).toHaveBeenCalledTimes(3);
-  expect(observed!.error).toBeUndefined();
+  expect(host.querySelector('[data-testid="flow-error"]')?.textContent).toBe('');
   await act(async () => root.unmount());
   host.remove();
 });

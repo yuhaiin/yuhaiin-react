@@ -1,3 +1,6 @@
+import enRouting from './resources/en/routing.json';
+import jaRouting from './resources/ja/routing.json';
+import koRouting from './resources/ko/routing.json';
 import koDiagnostics from './resources/ko/diagnostics.json';
 import jaDiagnostics from './resources/ja/diagnostics.json';
 import enDiagnostics from './resources/en/diagnostics.json';
@@ -46,9 +49,9 @@ import jaUi from './resources/ja/ui.json';
 import koUi from './resources/ko/ui.json';
 
 const resources = {
-    en: { diagnostics: enDiagnostics, ui: enUi, common: enCommon, nav: enNav, login: enLogin, home: enHome, webui: enWebui, config: enConfig, group: enGroup, inbound: enInbound, bypass: enBypass, connections: enConnections, node: enNode },
-    ja: { diagnostics: jaDiagnostics, ui: jaUi, common: jaCommon, nav: jaNav, login: jaLogin, home: jaHome, webui: jaWebui, config: jaConfig, group: jaGroup, inbound: jaInbound, bypass: jaBypass, connections: jaConnections, node: jaNode },
-    ko: { diagnostics: koDiagnostics, ui: koUi, common: koCommon, nav: koNav, login: koLogin, home: koHome, webui: koWebui, config: koConfig, group: koGroup, inbound: koInbound, bypass: koBypass, connections: koConnections, node: koNode },
+    en: { routing: enRouting, diagnostics: enDiagnostics, ui: enUi, common: enCommon, nav: enNav, login: enLogin, home: enHome, webui: enWebui, config: enConfig, group: enGroup, inbound: enInbound, bypass: enBypass, connections: enConnections, node: enNode },
+    ja: { routing: jaRouting, diagnostics: jaDiagnostics, ui: jaUi, common: jaCommon, nav: jaNav, login: jaLogin, home: jaHome, webui: jaWebui, config: jaConfig, group: jaGroup, inbound: jaInbound, bypass: jaBypass, connections: jaConnections, node: jaNode },
+    ko: { routing: koRouting, diagnostics: koDiagnostics, ui: koUi, common: koCommon, nav: koNav, login: koLogin, home: koHome, webui: koWebui, config: koConfig, group: koGroup, inbound: koInbound, bypass: koBypass, connections: koConnections, node: koNode },
 };
 
 i18n.use(initReactI18next).init({
@@ -56,7 +59,7 @@ i18n.use(initReactI18next).init({
     lng: fallbackLanguage,
     fallbackLng: fallbackLanguage,
     supportedLngs: [...supportedLanguages],
-    ns: ['diagnostics', 'ui', 'common', 'nav', 'login', 'home', 'webui', 'config', 'group', 'inbound', 'bypass', 'connections', 'node'],
+    ns: ['routing', 'diagnostics', 'ui', 'common', 'nav', 'login', 'home', 'webui', 'config', 'group', 'inbound', 'bypass', 'connections', 'node'],
     defaultNS: 'common',
     interpolation: {
         escapeValue: false,

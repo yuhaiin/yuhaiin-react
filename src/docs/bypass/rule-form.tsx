@@ -2,8 +2,10 @@
 
 import { useTranslation } from 'react-i18next';
 
+import { ResolverPicker } from "@/component/resolver-picker";
+import { RouteTargetPicker } from "@/component/route-target-picker";
 import { Button } from "@/component/v2/button";
-import { SettingLabel, SettingsBox } from "@/component/v2/card";
+import { SettingLabel } from "@/component/v2/card";
 import { DropdownSelect, SettingInputVertical, SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
 import { Input } from "@/component/v2/input";
 
@@ -14,17 +16,19 @@ import { normalizeRule } from "@/contract/route";
 
 import { Plus, X } from "lucide-react";
 
-const routeModes = ["bypass", "proxy", "block", "direct"];
+const routeModes = ["proxy", "block", "direct"];
 
-const resolveStrategies = ["default", "prefer_ipv4", "prefer_ipv6", "ipv4_only", "ipv6_only"];
+const resolveStrategies = ["default", "prefer_ipv4", "prefer_ipv6", "only_ipv4", "only_ipv6"];
 
-const udpProxyStrategies = ["udp_proxy_fqdn_strategy_default", "udp_proxy_fqdn_strategy_disabled", "udp_proxy_fqdn_strategy_resolve"];
+const udpProxyStrategies = ["udp_proxy_fqdn_strategy_default", "skip_resolve", "udp_proxy_fqdn_strategy_resolve"];
 
-const leafRuleExprTypes = ["host", "process", "inbound", "network", "port", "geoip"];
 
 type RuleEditorOptions = {
     lists: string[];
+    listNames?: Record<string, string>;
+    listTypes?: Record<string, string>;
     inbounds: string[];
+    inboundNames?: Record<string, string>;
     resolvers: string[];
 };
 
@@ -48,7 +52,7 @@ function RouteRuleForm({ value, onChange, options, lockName }: { value: RouteRul
 
     return (
         <div className="space-y-6">
-            <SettingsBox>
+            <section className="border-b border-ui-border/70 pb-5 last:border-b-0 last:pb-0">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     {!lockName && (
                         <div className="md:col-span-2">
@@ -57,14 +61,13 @@ function RouteRuleForm({ value, onChange, options, lockName }: { value: RouteRul
                     )}
                     <div className="md:col-span-2">
                         <SwitchCard
-                            label={uiT("disabled")}
-                            description={uiT("ignoreThisRuleDuringRouting")}
-                            checked={Boolean(value.disabled)}
-                            onCheckedChange={(disabled) => patch({ disabled })}
+                            label={uiT("enabled")}
+                            checked={!value.disabled}
+                            onCheckedChange={(enabled) => patch({ disabled: !enabled })}
                         />
                     </div>
                     <SettingSelectVertical label={uiT("mode")} value={value.mode} values={routeModes} onChange={(mode) => patch({ mode })} />
-                    <SettingInputVertical label={uiT("tag")} value={value.tag ?? ""} onChange={(tag) => patch({ tag })} placeholder={uiT("optionalTag")} />
+                    <div>{value.mode === "proxy" && <RouteTargetPicker value={value.target} onChange={target => patch({ target })} />}</div>
                     <SettingSelectVertical label={uiT("resolveStrategy")} value={value.resolveStrategy ?? "default"} values={resolveStrategies} onChange={(resolveStrategy) => patch({ resolveStrategy })} />
                     <SettingSelectVertical
                         label={uiT("udpFqdnStrategy")}
@@ -74,21 +77,16 @@ function RouteRuleForm({ value, onChange, options, lockName }: { value: RouteRul
                         onChange={(udpProxyFqdnStrategy) => patch({ udpProxyFqdnStrategy })}
                     />
                     <div className="md:col-span-2">
-                        <SettingSelectVertical
-                            label={uiT("resolver")}
-                            value={value.resolver ?? ""}
-                            values={includeCurrent(options.resolvers, value.resolver ?? "")}
-                            onChange={(resolver) => patch({ resolver })}
-                            emptyChoose
-                            emptyChooseName={uiT("globalDefault")}
-                        />
+                        <label className="block space-y-2"><SettingLabel>{uiT("resolver")}</SettingLabel>
+                            <ResolverPicker value={value.resolver ?? ""} onChange={resolver => patch({ resolver })} />
+                        </label>
                     </div>
                 </div>
-            </SettingsBox>
-            <SettingsBox>
+            </section>
+            <section className="border-b border-ui-border/70 pb-5 last:border-b-0 last:pb-0">
                 <SettingLabel className="mb-0">{uiT("ruleEntries")}</SettingLabel>
                 <RuleExprListEditor value={value.rules ?? []} options={options} onChange={(rules) => patch({ rules })} />
-            </SettingsBox>
+            </section>
         </div>
     );
 }
@@ -97,7 +95,7 @@ function formatUdpProxyStrategy(value: string): string {
     switch (value) {
         case "udp_proxy_fqdn_strategy_default":
             return "global";
-        case "udp_proxy_fqdn_strategy_disabled":
+        case "skip_resolve":
             return "disabled";
         case "udp_proxy_fqdn_strategy_resolve":
             return "resolve";
@@ -108,10 +106,12 @@ function formatUdpProxyStrategy(value: string): string {
 
 function createExpr(type: string): RuleExpr {
     switch (type) {
+        case "always":
+            return { type, always: {} };
         case "all":
-            return { type, all: [] };
+            return { type, all: [createExpr("host")] };
         case "any":
-            return { type, any: [] };
+            return { type, any: [createExpr("host")] };
         case "not":
             return { type, not: createExpr("host") };
         case "process":
@@ -130,182 +130,38 @@ function createExpr(type: string): RuleExpr {
     }
 }
 
-function normalizeExpr(value: RuleExpr): RuleExpr {
-    return createExpr(value.type) && value;
-}
-
-function exprGroupLeaves(expr: RuleExpr): RuleExpr[] {
-    if (expr.type === "all") return expr.all ?? [];
-    return [expr];
-}
-
-function groupToExpr(leaves: RuleExpr[]): RuleExpr {
-    return { type: "all", all: leaves.length > 0 ? leaves : [createExpr("host")] };
-}
-
 function RuleExprListEditor({ value, options, onChange }: { value: RuleExpr[]; options: RuleEditorOptions; onChange: (value: RuleExpr[]) => void }) {
-    const { t: uiT } = useTranslation('ui');
-
-    const groups = (Array.isArray(value) ? value : []).map(exprGroupLeaves);
-    const safeGroups = groups.length > 0 ? groups : [[createExpr("host")]];
-    const updateGroups = (next: RuleExpr[][]) => onChange(next.map(groupToExpr));
-
-    return (
-        <div className="flex min-w-0 flex-col gap-2">
-            {safeGroups.map((group, index) => (
-                <div key={index}>
-                    {index > 0 && <OrSeparator />}
-                    <RuleExprGroupEditor
-                        value={group}
-                        options={options}
-                        onChange={(next) => {
-                            const nextGroups = [...safeGroups];
-                            nextGroups[index] = next;
-                            updateGroups(nextGroups);
-                        }}
-                        onRemove={() => {
-                            const nextGroups = safeGroups.filter((_, current) => current !== index);
-                            updateGroups(nextGroups.length > 0 ? nextGroups : [[createExpr("host")]]);
-                        }}
-                    />
-                </div>
-            ))}
-            <div className="mt-2 flex justify-center sm:justify-start">
-                <Button className="w-full px-3 sm:w-auto" onClick={() => updateGroups([...safeGroups, [createExpr("host")]])}>
-                    <Plus size={16} className="mr-1" />{uiT("or")}</Button>
-            </div>
-        </div>
-    );
+    const { t } = useTranslation('routing');
+    return <div className="space-y-3">
+        <p className="text-sm text-ui-muted">{t('topLevelAny')}</p>
+        {value.map((expr, index) => <ExpressionEditor key={index} value={expr} options={options}
+            onChange={next => onChange(value.map((item, i) => i === index ? next : item))}
+            onRemove={() => onChange(value.filter((_, i) => i !== index))} />)}
+        <Button size="sm" onClick={() => onChange([...value, createExpr('host')])}><Plus size={16} />{t('addCondition')}</Button>
+    </div>;
 }
 
-const OrSeparator = () => {
-    const { t: uiT } = useTranslation('ui');
-    return (
-    <div className="my-4 flex items-center">
-        <hr className="flex-grow opacity-25" />
-        <span className="mx-4 text-xs font-bold uppercase tracking-[1px] text-ui-muted">{uiT("or")}</span>
-        <hr className="flex-grow opacity-25" />
-    </div>
-);
-};
-
-function RuleExprGroupEditor({
-    value,
-    options,
-    onChange,
-    onRemove,
-}: {
-    value: RuleExpr[];
-    options: RuleEditorOptions;
-    onChange: (value: RuleExpr[]) => void;
-    onRemove: () => void;
-}) {
-    const { t: uiT } = useTranslation('ui');
-
-    const leaves = value.length > 0 ? value : [createExpr("host")];
-
-    return (
-        <div className="min-w-0">
-            {leaves.map((item, index) => (
-                <div key={index}>
-                    {index > 0 && <AndConnector />}
-                    <RuleExprLeafEditor
-                        value={item}
-                        options={options}
-                        onChange={(next) => {
-                            const nextLeaves = [...leaves];
-                            nextLeaves[index] = next;
-                            onChange(nextLeaves);
-                        }}
-                        onRemove={() => {
-                            if (leaves.length === 1) onRemove();
-                            else onChange(leaves.filter((_, current) => current !== index));
-                        }}
-                    />
-                </div>
-            ))}
-            <Button size="sm" className="mt-3 w-full border-dashed px-3 sm:w-auto" variant="outline-secondary" onClick={() => onChange([...leaves, createExpr("host")])}>
-                <Plus size={16} className="mr-1" />{uiT("and")}</Button>
+function ExpressionEditor({ value, options, onChange, onRemove }: { value: RuleExpr; options: RuleEditorOptions; onChange: (value: RuleExpr) => void; onRemove: () => void }) {
+    const { t } = useTranslation('routing');
+    const types = ['host', 'process', 'inbound', 'network', 'port', 'geoip', 'all', 'any', 'not', 'always'];
+    const children = value.type === 'all' ? value.all : value.type === 'any' ? value.any : [];
+    const group = value.type === 'all' || value.type === 'any';
+    const patchChildren = (items: RuleExpr[]) => onChange(value.type === 'all' ? { type: 'all', all: items } : { type: 'any', any: items });
+    return <div className="space-y-3 rounded-ui-lg border border-ui-border/70 bg-ui-surface-muted/30 p-3">
+        <div className="flex items-center gap-2">
+            <Select ariaLabel={t("conditionOperator")} value={value.type} items={includeCurrent(types, value.type).map(type => ({ value: type, label: t(`condition.${type}`, { defaultValue: type }) }))} onValueChange={type => onChange(createExpr(type))} />
+            <Button size="icon" variant="outline-danger" aria-label={t('removeCondition')} onClick={onRemove}><X size={16} /></Button>
         </div>
-    );
-}
-
-const AndConnector = () => {
-    const { t: uiT } = useTranslation('ui');
-    return (
-    <div className="my-2 flex items-center gap-3 px-3" aria-label={uiT("and")}>
-        <div className="h-px flex-1 bg-ui-border" />
-        <span className="text-[11px] font-bold uppercase tracking-wider text-ui-primary">{uiT("and")}</span>
-        <div className="h-px flex-1 bg-ui-border" />
-    </div>
-);
-};
-
-function RuleExprLeafEditor({
-    value,
-    options,
-    onChange,
-    onRemove,
-}: {
-    value: RuleExpr;
-    options: RuleEditorOptions;
-    onChange: (value: RuleExpr) => void;
-    onRemove: () => void;
-}) {
-    const { t: uiT } = useTranslation('ui');
-
-    const expr = leafRuleExprTypes.includes(value.type) ? normalizeExpr(value) : createExpr("host");
-    const updateType = (type: string) => onChange(createExpr(type));
-
-    return (
-        <div className="min-w-0 rounded-ui-lg border border-ui-border bg-ui-surface p-3 shadow-inner-subtle sm:p-4">
-            <div className="flex min-w-0 items-end gap-2">
-                <div className="min-w-0 flex-1">
-                    <SettingLabel className="mb-2 block text-xs">{uiT("conditionType")}</SettingLabel>
-                    <Select
-                        value={expr.type}
-                        onValueChange={updateType}
-                        items={includeCurrent(leafRuleExprTypes, expr.type).map(type => ({ value: type, label: formatRuleExprType(type) }))}
-                    />
-                </div>
-                <Button
-                    size="icon"
-                    variant="outline-danger"
-                    onClick={onRemove}
-                    aria-label={uiT("removeRule")}
-                    className="shrink-0"
-                >
-                    <X size={16} />
-                </Button>
-            </div>
-            <div className="mt-3 min-w-0">
-                <SettingLabel className="mb-2 block text-xs">{uiT("conditionValue")}</SettingLabel>
-                <RuleExprLeafFields value={expr} options={options} onChange={onChange} />
-            </div>
-        </div>
-    );
-}
-
-function formatRuleExprType(type: string): string {
-    switch (type) {
-        case "host":
-            return "Host";
-        case "process":
-            return "Process";
-        case "inbound":
-            return "Inbound";
-        case "network":
-            return "Network";
-        case "port":
-            return "Port";
-        case "geoip":
-            return "Geoip";
-        default:
-            return type;
-    }
+        {group ? <div className="space-y-3 border-l-2 border-ui-border pl-3">
+            {children.map((child, index) => <ExpressionEditor key={index} value={child} options={options} onChange={next => patchChildren(children.map((item, i) => i === index ? next : item))} onRemove={() => patchChildren(children.filter((_, i) => i !== index))} />)}
+            <Button size="sm" onClick={() => patchChildren([...children, createExpr('host')])}>{t('addCondition')}</Button>
+        </div> : value.type === 'not' ? <ExpressionEditor value={value.not ?? createExpr('host')} options={options} onChange={not => onChange({ type: 'not', not })} onRemove={() => onChange(createExpr('host'))} />
+        : value.type === 'always' ? <p className="text-sm text-ui-muted">{t('allTrafficHelp')}</p> : <RuleExprLeafFields value={value} options={options} onChange={onChange} />}
+    </div>;
 }
 
 function RuleExprLeafFields({ value, options, onChange }: { value: RuleExpr; options: RuleEditorOptions; onChange: (value: RuleExpr) => void }) {
+    const { t } = useTranslation("routing");
     const { t: uiT } = useTranslation('ui');
 
     switch (value.type) {
@@ -315,7 +171,7 @@ function RuleExprLeafFields({ value, options, onChange }: { value: RuleExpr; opt
                     <Select
                         value={value.host?.list ?? ""}
                         onValueChange={(list) => onChange({ ...value, host: { list } })}
-                        items={listSelectItems(options.lists, value.host?.list ?? "")}
+                        items={listSelectItems(options.lists.filter(id => !options.listTypes?.[id] || ["host", "hosts_as_host"].includes(options.listTypes[id])), value.host?.list ?? "", options.listNames)}
                         placeholder={uiT("list")}
                     />
                 </div>
@@ -326,7 +182,7 @@ function RuleExprLeafFields({ value, options, onChange }: { value: RuleExpr; opt
                     <Select
                         value={value.process?.list ?? ""}
                         onValueChange={(list) => onChange({ ...value, process: { list } })}
-                        items={listSelectItems(options.lists, value.process?.list ?? "")}
+                        items={listSelectItems(options.lists.filter(id => !options.listTypes?.[id] || options.listTypes[id] === "process"), value.process?.list ?? "", options.listNames)}
                         placeholder={uiT("list")}
                     />
                 </div>
@@ -338,6 +194,7 @@ function RuleExprLeafFields({ value, options, onChange }: { value: RuleExpr; opt
                     <DropdownSelect
                         values={selectedInbounds}
                         items={includeSelected(options.inbounds, selectedInbounds)}
+                        format={id => options.inboundNames?.[id] ?? id}
                         onUpdate={(names) => onChange({ ...value, inbound: { names } })}
                     />
                 </div>
@@ -347,9 +204,9 @@ function RuleExprLeafFields({ value, options, onChange }: { value: RuleExpr; opt
             return (
                 <div className="min-w-0 flex-1">
                     <Select
-                        value={value.network?.network ?? "tcp"}
+                        ariaLabel={uiT("network")} value={value.network?.network ?? "tcp"}
                         onValueChange={(network) => onChange({ ...value, network: { network } })}
-                        items={["tcp", "udp", "tcp_udp"].map(network => ({ value: network, label: network }))}
+                        items={["tcp", "udp"].map(network => ({ value: network, label: network }))}
                     />
                 </div>
             );
@@ -357,7 +214,7 @@ function RuleExprLeafFields({ value, options, onChange }: { value: RuleExpr; opt
             return (
                 <div className="min-w-0 flex-1">
                     <Input
-                        value={value.port?.ports ?? ""}
+                        aria-label={uiT("port")} value={value.port?.ports ?? ""}
                         onChange={(event) => onChange({ ...value, port: { ports: event.target.value } })}
                         placeholder="80,443,1000-2000"
                     />
@@ -367,7 +224,7 @@ function RuleExprLeafFields({ value, options, onChange }: { value: RuleExpr; opt
             return (
                 <div className="min-w-0 flex-1">
                     <Input
-                        value={value.geoip?.countries ?? ""}
+                        aria-label={t("countryCodes")} value={value.geoip?.countries ?? ""}
                         onChange={(event) => onChange({ ...value, geoip: { countries: event.target.value } })}
                         placeholder="CN,JP,US"
                     />
@@ -378,10 +235,10 @@ function RuleExprLeafFields({ value, options, onChange }: { value: RuleExpr; opt
     }
 }
 
-function listSelectItems(values: string[], current: string): { value: string; label: string }[] {
+function listSelectItems(values: string[], current: string, names?: Record<string, string>): { value: string; label: string }[] {
     return [
         { value: "", label: "Choose list" },
-        ...includeCurrent(values, current).filter(Boolean).map(list => ({ value: list, label: list })),
+        ...includeCurrent(values, current).filter(Boolean).map(list => ({ value: list, label: names?.[list] ?? list })),
     ];
 }
 

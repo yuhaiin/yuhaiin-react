@@ -9,31 +9,37 @@ afterEach(() => vi.restoreAllMocks());
 
 it('protects hash navigation, confirms once for multiple drafts, and blocks pending saves', () => {
     window.history.replaceState(null, '', '#/docs/config');
-    let navigate: (to: string) => void;
     function Probe({ pending }: { pending: boolean }) {
         const [location, move] = useHashLocation();
-        navigate = move;
         useCloseGuard(true, pending, () => undefined);
         useCloseGuard(true, false, () => undefined);
-        return <span>{location}</span>;
+        return <>
+            <span>{location}</span>
+            <button onClick={() => move('/docs/group')}>to group</button>
+            <button onClick={() => move('/')}>to root</button>
+        </>;
     }
     const host = document.createElement('div');
     const root = createRoot(host);
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    act(() => root.render(<Probe pending={false} />));
-    act(() => navigate('/docs/group'));
-    expect(window.location.hash).toBe('#/docs/config');
-    expect(confirm).toHaveBeenCalledTimes(1);
-    confirm.mockReturnValue(true);
-    act(() => { navigate('/docs/group'); window.dispatchEvent(new HashChangeEvent('hashchange')); });
-    expect(host.textContent).toBe('/docs/group');
-    expect(confirm).toHaveBeenCalledTimes(2);
-    confirm.mockReturnValue(false);
-    act(() => { window.history.replaceState(null, '', '#/docs/config'); window.dispatchEvent(new HashChangeEvent('hashchange')); });
-    expect(window.location.hash).toBe('#/docs/group');
-    expect(host.textContent).toBe('/docs/group');
-    act(() => root.render(<Probe pending />));
-    act(() => navigate('/'));
-    expect(window.location.hash).toBe('#/docs/group');
-    act(() => root.unmount());
+    const navigate = (index: number) => host.querySelectorAll('button')[index].click();
+    try {
+        act(() => root.render(<Probe pending={false} />));
+        act(() => navigate(0));
+        expect(window.location.hash).toBe('#/docs/config');
+        expect(confirm).toHaveBeenCalledTimes(1);
+        confirm.mockReturnValue(true);
+        act(() => { navigate(0); window.dispatchEvent(new HashChangeEvent('hashchange')); });
+        expect(host.querySelector('span')?.textContent).toBe('/docs/group');
+        expect(confirm).toHaveBeenCalledTimes(2);
+        confirm.mockReturnValue(false);
+        act(() => { window.history.replaceState(null, '', '#/docs/config'); window.dispatchEvent(new HashChangeEvent('hashchange')); });
+        expect(window.location.hash).toBe('#/docs/group');
+        expect(host.querySelector('span')?.textContent).toBe('/docs/group');
+        act(() => root.render(<Probe pending />));
+        act(() => navigate(1));
+        expect(window.location.hash).toBe('#/docs/group');
+    } finally {
+        act(() => root.unmount());
+    }
 });

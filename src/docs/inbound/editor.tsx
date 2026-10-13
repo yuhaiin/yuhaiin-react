@@ -17,7 +17,7 @@ import { FC, useId, useState } from "react";
 
 const networkTypes: InboundNetwork["type"][] = ["empty", "tcp_udp", "quic"];
 
-const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "reverse_http", "reverse_tcp", "none"];
+const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "krunlet", "reverse_http", "reverse_tcp", "none"];
 
 const transportTypes: InboundTransport["type"][] = ["normal", "tls", "mux", "http2", "websocket", "reality", "tls_auto", "http_mock", "aead", "proxy"];
 
@@ -30,7 +30,8 @@ function numberValue(value: string): number {
 const InboundEditor: FC<{
     inbound: Inbound;
     onChange: (value: Inbound) => void;
-}> = ({ inbound, onChange }) => {
+    protocols?: string[];
+}> = ({ inbound, onChange, protocols }) => {
     const { t: uiT } = useTranslation('ui');
 
     return (
@@ -64,7 +65,7 @@ const InboundEditor: FC<{
             <Card density="compact">
                 <CardHeader><span className="font-bold">{uiT("protocol")}</span></CardHeader>
                 <CardBody density="compact">
-                    <ProtocolSection inbound={inbound} onChange={onChange} />
+                    <ProtocolSection inbound={inbound} onChange={onChange} protocols={protocols} />
                 </CardBody>
             </Card>
         </div>
@@ -124,7 +125,8 @@ const NetworkSection: FC<{
 const ProtocolSection: FC<{
     inbound: Inbound;
     onChange: (value: Inbound) => void;
-}> = ({ inbound, onChange }) => {
+    protocols?: string[];
+}> = ({ inbound, onChange, protocols }) => {
     const { t: uiT } = useTranslation('ui');
 
     const [choice, setChoice] = useState<InboundProtocol["type"] | undefined>();
@@ -135,7 +137,7 @@ const ProtocolSection: FC<{
             <TypeUseRow
                 label={uiT("protocol")}
                 value={selected}
-                values={protocolTypes}
+                values={protocolTypes.filter(type => !protocols || protocols.includes(type) || type === inbound.protocol.type)}
                 onValueChange={(value) => setChoice(value as InboundProtocol["type"])}
                 onUse={() => {
                     onChange(selectInboundProtocol(inbound, selected));
@@ -245,6 +247,8 @@ const ProtocolConfigEditor: FC<{
             );
         case "socks4a":
             return <SettingInputVertical label={uiT("username")} value={value.socks4a.username} onChange={(username) => onChange({ ...value, socks4a: { ...value.socks4a, username } })} />;
+        case "krunlet":
+            return <SettingInputVertical label="Unix socket" value={value.krunlet.socket} onChange={socket => onChange({ ...value, krunlet: { ...value.krunlet, socket } })} />;
         case "tproxy":
             return (
                 <div className="grid gap-4">
@@ -692,4 +696,4 @@ const TransportConfigEditor: FC<{
     }
 };
 
-export { InboundEditor };
+export { InboundEditor, ProtocolConfigEditor };

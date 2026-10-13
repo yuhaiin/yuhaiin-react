@@ -71,8 +71,8 @@ function ResultView({ value }: { value: RuleTestResponse }) {
                     <Badge variant="info" className="text-sm">{displayValue(value.mode)}</Badge>
                 </div>
                 <div className="rounded-ui-lg border border-ui-border bg-ui-surface px-4 py-3">
-                    <div className="mb-1 text-xs font-medium text-ui-muted">{uiT("tag")}</div>
-                    <div className="truncate font-semibold text-ui-heading">{displayValue(value.tag)}</div>
+                    <div className="mb-1 text-xs font-medium text-ui-muted">{uiT("outbound6")}</div>
+                    <div className="truncate font-semibold text-ui-heading">{displayValue(value.target.id)}</div>
                 </div>
                 <div className="rounded-ui-lg border border-ui-border bg-ui-surface px-4 py-3">
                     <div className="mb-1 text-xs font-medium text-ui-muted">{uiT("resolver")}</div>
@@ -86,7 +86,7 @@ function ResultView({ value }: { value: RuleTestResponse }) {
 
             <div className="grid gap-4 lg:grid-cols-2">
                 <ResultSection title={uiT("matchedLists")} icon={ListChecks}>
-                    <ChipList items={value.lists ?? []} empty="No matched lists." />
+                    <ChipList items={(value.lists ?? []).map(id => value.listNames?.[id] || id)} empty="No matched lists." />
                 </ResultSection>
 
                 <ResultSection title={uiT("resolvedIps")} icon={Tags}>

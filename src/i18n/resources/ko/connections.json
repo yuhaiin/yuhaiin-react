@@ -31,7 +31,7 @@
     "Domain": "도메인",
     "IP": "IP",
     "Tag": "태그",
-    "Lists": "목록",
+    "Lists": "일치한 데이터",
     "Resolver": "리졸버",
     "Pid": "PID",
     "Uid": "UID",
@@ -41,6 +41,7 @@
     "MatchHistory": "매치 기록",
     "Rule": "규칙",
     "Hit": "일치",
-    "Miss": "불일치"
+    "Miss": "불일치",
+    "Selector": "공유 출구"
   }
 }

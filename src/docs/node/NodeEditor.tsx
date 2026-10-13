@@ -18,11 +18,14 @@ import { Select, SettingInputBytes, SettingInputVertical, SettingSelectVertical,
 
 import { InputList } from "@/component/v2/listeditor";
 
-import type { Node, NodeIPVersion, NodeOrigin, NodeProtocol, NodeProtocolConfig, NodeProtocolType } from "@/contract/node";
+import type { Node, NodeIPVersion, NodeProtocol, NodeProtocolConfig, NodeProtocolType } from "@/contract/node";
 import { createDefaultProtocol, normalizeProtocol, patchProtocolConfig, protocolTypes } from "@/contract/node";
+import NodePicker from "@/component/node-picker";
 import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react";
-import React, { FC, useState } from "react";
+import React, { FC, createContext, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+const EditingNodeID = createContext('');
 
 const NodeEditor: FC<{
     value: Node;
@@ -35,18 +38,20 @@ const NodeEditor: FC<{
     onAddProtocol: (type: NodeProtocolType) => void;
 }> = ({ value, editable, groups, onChange, onProtocolChange, onMoveProtocol, onRemoveProtocol, onAddProtocol }) => {
     const { t: uiT } = useTranslation('ui');
+    const { t } = useTranslation('routing');
+    const [advanced, setAdvanced] = useState(false);
     return (
-    <div className="p-1">
+    <EditingNodeID.Provider value={value.id}><div className="p-1">
         {editable && (
             <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
                 <SettingInputVertical label={uiT("name")} value={value.name} onChange={(name) => onChange({ name })} disabled={!editable} />
                 <SettingInputVertical label={uiT("groupLabel")} value={value.group} reminds={groups.map(group => ({ label: group, value: group }))} showAllOnFocus onChange={(group) => onChange({ group })} disabled={!editable} />
-                <SettingInputVertical label={uiT("idLabel")} value={value.id} onChange={(id) => onChange({ id })} disabled={!editable} />
-                <SettingSelectVertical label={uiT("origin")} value={value.origin} values={["reserve", "remote", "manual"]} onChange={(origin) => onChange({ origin: origin as NodeOrigin })} disabled={!editable} />
                 <div className="md:col-span-2">
                     <SwitchCard label={uiT("enabled")} checked={value.enabled} onCheckedChange={(enabled) => onChange({ enabled })} disabled={!editable} />
                 </div>
-                <div className="md:col-span-2">
+                <details className="md:col-span-2"><summary className="mb-3 cursor-pointer text-sm font-medium">{t("nodeAdvancedSettings")}</summary>
+                <p className="mb-3 break-all text-sm text-ui-muted">{t("nodeIdentity")}: {value.id} · {value.origin}</p>
+                <div>
                     <SettingSelectVertical
                         label={uiT("nodeIPVersion")}
                         value={value.ip_version ?? "auto"}
@@ -79,12 +84,15 @@ const NodeEditor: FC<{
                         disabled={!editable}
                     />
                 </div>
+                </details>
             </div>
         )}
 
+        {editable && <div className="mb-3 flex min-w-0 flex-wrap items-center justify-between gap-3"><p className="min-w-0 flex-1 text-sm text-ui-muted">{t("nodeChainHelp")}</p><Button size="sm" variant="outline-secondary" className="shrink-0 whitespace-nowrap" onClick={() => setAdvanced(previous => !previous)}>{t(advanced ? "simpleEditor" : "advancedEditor")}</Button></div>}
         <NodeProtocolChain
             chain={value.chain}
             editable={editable}
+            structureEditable={advanced}
             onProtocolChange={onProtocolChange}
             onMoveProtocol={onMoveProtocol}
             onRemoveProtocol={onRemoveProtocol}
@@ -93,7 +101,7 @@ const NodeEditor: FC<{
         {value.chain.some((protocol) => containsProtocol(protocol, "globalprotect")) && <GlobalProtectRuntimeInfo key={`gp-${value.id}`} nodeId={value.id} />}
         {value.chain.some((protocol) => containsProtocol(protocol, "openvpn")) && <OpenVPNRuntimeInfo key={`ovpn-${value.id}`} nodeId={value.id} />}
         {(["l2tp", "l2tpv3"] as const).map((type) => value.chain.some((protocol) => containsProtocol(protocol, type)) && <L2TPRuntimeInfo key={`${type}-${value.id}`} nodeId={value.id} type={type} />)}
-    </div>
+    </div></EditingNodeID.Provider>
 );
 };
 
@@ -104,13 +112,14 @@ function containsProtocol(protocol: NodeProtocol, type: "globalprotect" | "openv
 }
 
 const NodeProtocolChain: FC<{
+    structureEditable?: boolean;
     chain: NodeProtocol[];
     editable: boolean;
     onProtocolChange: (index: number, protocol: NodeProtocol) => void;
     onMoveProtocol: (index: number, direction: -1 | 1) => void;
     onRemoveProtocol: (index: number) => void;
     onAddProtocol: (type: NodeProtocolType) => void;
-}> = ({ chain, editable, onProtocolChange, onMoveProtocol, onRemoveProtocol, onAddProtocol }) => {
+}> = ({ chain, editable, structureEditable = editable, onProtocolChange, onMoveProtocol, onRemoveProtocol, onAddProtocol }) => {
     const { t: uiT } = useTranslation('ui');
 
     const [newProtocol, setNewProtocol] = useState<NodeProtocolType>("direct");
@@ -123,7 +132,7 @@ const NodeProtocolChain: FC<{
                 <small className="text-ui-muted">{normalizedChain.length} {uiT("steps")}</small>
             </div>
 
-            <Accordion type="multiple" defaultValue={normalizedChain.length > 0 ? ["item-0"] : []} className="mb-3">
+            <Accordion type="multiple" defaultValue={normalizedChain.map((_, index) => `item-${index}`)} className="mb-3">
                 {normalizedChain.map((protocol, index) => (
                     <AccordionItem value={`item-${index}`} key={`${index}-${protocol.type}`}>
                         <AccordionTrigger>
@@ -140,10 +149,11 @@ const NodeProtocolChain: FC<{
                                     value={protocol}
                                     index={index}
                                     editable={editable}
+                                    structureEditable={structureEditable}
                                     onChange={(next) => onProtocolChange(index, next)}
                                 />
 
-                                {editable && (
+                                {editable && structureEditable && (
                                     <div className="mt-3 flex justify-end gap-2 pt-3">
                                         <Button size="sm" aria-label={uiT("moveStepUp")} onClick={() => onMoveProtocol(index, -1)} disabled={index === 0}>
                                             <ArrowUp size={16} />
@@ -161,7 +171,7 @@ const NodeProtocolChain: FC<{
                 ))}
             </Accordion>
 
-            {editable && (
+            {editable && structureEditable && (
                 <div className="flex flex-wrap items-end gap-3 rounded-ui-lg bg-ui-surface-muted p-3 sm:flex-nowrap">
                     <div className="w-full flex-1">
                         <label className="mb-2 block text-sm font-bold opacity-75">{uiT("newProtocolStep")}</label>
@@ -183,11 +193,12 @@ const NodeProtocolChain: FC<{
 };
 
 const ProtocolEditor: FC<{
+    structureEditable?: boolean;
     value: NodeProtocol;
     index: number;
     editable: boolean;
     onChange: (value: NodeProtocol) => void;
-}> = ({ value, index, editable, onChange }) => {
+}> = ({ value, index, editable, structureEditable = editable, onChange }) => {
     const { t: uiT } = useTranslation('ui');
 
     const normalized = normalizeProtocol(value);
@@ -198,7 +209,7 @@ const ProtocolEditor: FC<{
 
     return (
         <div className="grid gap-3">
-            {editable && (
+            {editable && structureEditable && (
                 <div className="grow">
                     <SettingLabel className="mb-2 block">#{index + 1} {uiT("type")}</SettingLabel>
                     <SettingSelectVertical
@@ -241,7 +252,9 @@ const ProtocolConfigEditor: FC<{
 };
 
 function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol; onChange: (value: NodeProtocol) => void; editable: boolean }): React.ReactNode {
+    const nodeId = useContext(EditingNodeID);
     const { t: uiT } = useTranslation('ui');
+    const { t } = useTranslation('routing');
 
     const patch = <T extends NodeProtocolType>(value: NodeProtocol<T>, patchValue: Partial<NodeProtocolConfig<T>>) => {
         onChange(patchProtocolConfig(value, patchValue) as unknown as NodeProtocol);
@@ -444,8 +457,12 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
         case "set":
             return (
                 <div className="grid gap-4">
-                    <InputList title={uiT("nodes")} data={protocol.set.nodes ?? []} disabled={!editable} onChange={(nodes) => patch(protocol, { nodes })} />
-                    <StringField label="Strategy" value={protocol.set.strategy} disabled={!editable} onChange={(strategy) => patch(protocol, { strategy })} />
+                    <SettingLabel>{t("setMembers")}</SettingLabel>
+                    <NodePicker excludeId={nodeId} value={protocol.set.nodes ?? []} disabled={!editable} onChange={(nodes) => patch(protocol, { nodes })} />
+                    <SettingSelectVertical label={t("setStrategy")} value={protocol.set.strategy || "random"} disabled={!editable}
+                        values={[[t("randomFallback"), "random"], [t("orderedFallback"), "round_robin"], ...(!["", "random", "round_robin"].includes(protocol.set.strategy ?? "") ? [[protocol.set.strategy!, protocol.set.strategy!] as [string, string]] : [])]}
+                        onChange={(strategy) => patch(protocol, { strategy })} />
+                    <p className="text-sm text-ui-muted">{t("setFallbackHelp")}</p>
                 </div>
             );
         case "point_as_endpoint":

@@ -32,6 +32,8 @@ interface SelectProps {
     onValueChange: (value: string) => void;
     items: SelectItem[];
     placeholder?: string;
+    ariaLabel?: string;
+    ariaLabelledBy?: string;
     disabled?: boolean;
     triggerClassName?: string;
     contentClassName?: string;
@@ -42,7 +44,7 @@ interface SelectProps {
 
 import { motion } from 'motion/react';
 
-export const Select: FC<SelectProps> = ({ value, onValueChange, items, placeholder, disabled, triggerClassName, contentClassName, viewportClassName, size, groupPosition }) => {
+export const Select: FC<SelectProps> = ({ value, onValueChange, items, placeholder, ariaLabel, ariaLabelledBy, disabled, triggerClassName, contentClassName, viewportClassName, size, groupPosition }) => {
     const internalValue = value === "" ? "___EMPTY___" : value;
     const safeItems = Array.isArray(items) ? items : [];
 
@@ -67,7 +69,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
                 radiusClass,
                 triggerClassName,
                 disabled && "opacity-60 pointer-events-none"
-            )} aria-label={placeholder}>
+            )} aria-label={ariaLabel ?? placeholder} aria-labelledby={ariaLabelledBy}>
                 <SelectPrimitive.Value className="min-w-0 flex-1 truncate text-left" placeholder={placeholder} />
                 <SelectPrimitive.Icon>
                     <ChevronDown className="opacity-50 shrink-0" size={16} />
@@ -143,7 +145,7 @@ const SettingSelectComponent: FC<{
         <div className={clsx("flex items-center mb-4 flex-wrap", disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
             <label className="basis-[150px] shrink-0 mr-6 font-medium max-[576px]:basis-full max-[576px]:mr-0 max-[576px]:mb-2">{label}</label>
             <div className="grow min-w-0 relative">
-                <Select value={value} onValueChange={onChange} items={items} disabled={disabled} />
+                <Select value={value} onValueChange={onChange} items={items} disabled={disabled} ariaLabel={label} />
             </div>
         </div>
     );
@@ -180,10 +182,11 @@ const DropdownSelectComponent: FC<{
     values: string[],
     items: string[],
     onUpdate: (x: string[]) => void,
+    format?: (value: string) => string,
     triggerClassName?: string,
     placeholder?: string,
     groupPosition?: 'first' | 'middle' | 'last' | 'single'
-}> = ({ values, items, onUpdate, triggerClassName, placeholder, groupPosition }) => {
+}> = ({ values, items, onUpdate, triggerClassName, placeholder, groupPosition, format = value => value }) => {
     const { t } = useTranslation('common');
     const safeValues = Array.isArray(values) ? values : [];
     const safeItems = Array.isArray(items) ? items : [];
@@ -214,7 +217,7 @@ const DropdownSelectComponent: FC<{
                             </span>
                         )}
                         <span className={clsx("truncate", safeValues.length === 0 && "opacity-50")}>
-                            {safeValues.length === 0 ? resolvedPlaceholder : safeValues.join(", ")}
+                            {safeValues.length === 0 ? resolvedPlaceholder : safeValues.map(format).join(", ")}
                         </span>
                     </div>
                     <ChevronDown className="opacity-50 flex-shrink-0" size={16} />
@@ -228,7 +231,7 @@ const DropdownSelectComponent: FC<{
                         onSelect={(e) => e.preventDefault()}
                         onCheckedChange={() => onUpdate(safeValues.includes(v) ? safeValues.filter((x) => x !== v) : [...safeValues, v])}
                     >
-                        {v}
+                        {format(v)}
                     </DropdownCheckboxItem>
                 ))}
             </DropdownContent>
@@ -262,7 +265,7 @@ const SettingSelectVerticalComponent: FC<{
     return (
         <div className={clsx("flex flex-col mb-4 relative", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
             <SettingLabel className="mb-2 basis-auto mr-0 font-medium">{label}</SettingLabel>
-            <Select value={value} onValueChange={onChange} items={items} disabled={disabled} />
+            <Select value={value} onValueChange={onChange} items={items} disabled={disabled} ariaLabel={label} />
         </div>
     );
 };

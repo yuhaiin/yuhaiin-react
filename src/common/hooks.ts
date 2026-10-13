@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function useDelay(ms: number) {
     const [isReady, setIsReady] = useState(false);
@@ -51,32 +51,31 @@ export function useElementSize<T extends HTMLElement = HTMLDivElement>(): [
     height: 0,
   })
 
-  const handleSize = useCallback(() => {
-    const nextSize = {
-      width: ref?.offsetWidth || 0,
-      height: ref?.offsetHeight || 0,
-    }
-
-    setSize((previousSize) => (
-      previousSize.width === nextSize.width && previousSize.height === nextSize.height
-        ? previousSize
-        : nextSize
-    ))
-  }, [ref])
-
   useEffect(() => {
     if (!ref) return
 
-    window.addEventListener('resize', handleSize)
-    handleSize()
-    return () => {
-      window.removeEventListener('resize', handleSize)
+    const measure = () => {
+      const nextSize = { width: ref.offsetWidth, height: ref.offsetHeight }
+      setSize(previous => previous.width === nextSize.width && previous.height === nextSize.height
+        ? previous : nextSize)
     }
-  }, [ref, handleSize])
 
-  useEffect(() => {
-    handleSize()
-  }, [handleSize, ref?.offsetHeight, ref?.offsetWidth])
+    // Observe the element, not just the window. Sidebars, accordions and
+    // changing content can resize a component without a window resize event.
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver(measure)
+      observer.observe(ref)
+      return () => observer.disconnect()
+    }
+
+    // Fallback for older engines; schedule initial measurement asynchronously.
+    const frame = window.requestAnimationFrame(measure)
+    window.addEventListener('resize', measure)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.removeEventListener('resize', measure)
+    }
+  }, [ref])
 
   return [setRef, size]
 }

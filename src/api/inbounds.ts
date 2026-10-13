@@ -2,51 +2,21 @@ import type { Go } from "@/api/generated-contracts";
 import { Inbound, InboundConfig, InboundList, normalizeInbound, normalizeInboundConfig } from "@/contract/inbound";
 import { requestJSON } from "./client";
 
+export async function getInboundCapabilities(): Promise<Go.inbound.Capabilities> {
+    return requestJSON<Go.inbound.Capabilities>("GET", "/api/v2/inbounds/capabilities");
+}
+
 export type InboundQuery = {
     page?: number;
     pageSize?: number;
     query?: string;
 };
 
-export type InboundRuntimeState = "disabled" | "starting" | "running" | "degraded" | "failed" | "stopping";
-
-export type InboundRuntimeListener = {
-    kind: string;
-    state: InboundRuntimeState;
-    listen?: string | null;
-    lastError?: string | null;
-    changedAt: number;
-};
-
-export type InboundStatistics = {
-    activeTcp: number;
-    activeUdp: number;
-    totalTcpFlows: number;
-    totalUdpFlows: number;
-    uploadBytes: string;
-    downloadBytes: string;
-};
-
-export type InboundRuntimeStatus = {
-    id: string;
-    name: string;
-    enabled: boolean;
-    status: InboundRuntimeState;
-    lastError?: string | null;
-    changedAt: number;
-    listeners: InboundRuntimeListener[];
-    statistics: InboundStatistics;
-};
-
-export type InboundRuntimeEvent = {
-    id: number;
-    inboundId: string;
-    type: string;
-    state: InboundRuntimeState;
-    error?: string | null;
-    detail: Record<string, unknown>;
-    createdAt: number;
-};
+export type InboundRuntimeState = Go.inbound.RuntimeStatus['status'];
+export type InboundRuntimeListener = Go.inbound.RuntimeListener;
+export type InboundStatistics = Go.inbound.IngressStatistics;
+export type InboundRuntimeStatus = Go.inbound.RuntimeStatus;
+export type InboundRuntimeEvent = Go.inbound.RuntimeEvent;
 
 function listQuery(query?: InboundQuery): Record<string, number | string | undefined> {
     return {

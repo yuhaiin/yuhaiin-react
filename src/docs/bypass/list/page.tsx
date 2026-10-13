@@ -1,8 +1,9 @@
+import { clearHashSearch, useHashSearch } from '@/hooks/useHashLocation';
 import { useServerPageClamp } from "@/hooks/use-pagination";
 import { useTranslation } from 'react-i18next';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
 
-import { createRouteList, deleteRouteList, getRouteActivationStatus, getRouteList, getRouteListConfig, listRouteLists, refreshRouteLists, saveRouteList, saveRouteListConfig } from "@/api/route";
+import { applyRouteChanges, createRouteList, deleteRouteList, getRouteActivationStatus, getRouteList, getRouteListConfig, listRouteLists, refreshRouteLists, saveRouteList, saveRouteListConfig } from "@/api/route";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardFooter, CardHeader, FilterSearch, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
@@ -40,8 +41,8 @@ import {
     Type,
 } from "lucide-react";
 import type { ElementType, FC } from "react";
-import { useContext, useEffect, useState } from "react";
-import useSWR from "swr";
+import { useCallback, useContext, useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
 
 const routeListTypes = ["host", "process", "cidr", "domain", "regexp", "keyword", "suffix"];
 const sourceTypes = ["local", "remote"];
@@ -197,7 +198,11 @@ function Lists() {
     const ctx = useContext(GlobalToastContext);
     const [page, setPage] = useState(1);
     const [query, setQuery] = useState("");
-    const [editing, setEditing] = useState<string | null>(null);
+    const [localEditing, setEditing] = useState<string | null>(null);
+    const search = useHashSearch();
+    const linkedId = new URLSearchParams(search).get('list');
+    const editing = linkedId || localEditing;
+    const closeEditor = () => { setEditing(null); if (linkedId) clearHashSearch(); };
     const [creating, setCreating] = useState(false);
     const [creatingName, setCreatingName] = useState("");
     const [creatingDraft, setCreatingDraft] = useState<RouteListDetail | undefined>();
@@ -208,7 +213,7 @@ function Lists() {
         getRouteActivationStatus,
         {
             revalidateOnFocus: false,
-            refreshInterval: (status) => Math.max(status?.hostIndexRefreshAt ?? 0, status?.ruleApplyAt ?? 0) > Date.now() ? 1000 : 0,
+            refreshInterval: (status) => Math.max(status?.hostIndexRefreshAt ?? 0, status?.ruleApplyAt ?? 0) > 0 || (status?.savedRevision ?? 0) > (status?.appliedRevision ?? 0) ? 1000 : 0,
         },
     );
     const { data, error, isLoading, mutate } = useSWR(
@@ -237,6 +242,7 @@ function Lists() {
         mutate();
         void mutateActivation();
         setEditing(null);
+        if (linkedId) clearHashSearch();
         setCreating(false);
         setCreatingName("");
         setCreatingDraft(undefined);
@@ -247,7 +253,7 @@ function Lists() {
 
     return (
         <MainContainer>
-            <ListConfigCard />
+            <ListConfigCard onSaved={() => { void mutateActivation(); }} />
             <RouteActivationProgress status={activation} onApplied={mutateActivation} />
             <Card density="compact" className="overflow-hidden">
                 <CardHeader>
@@ -278,9 +284,9 @@ function Lists() {
                         <div className="divide-y divide-ui-border/70 overflow-hidden rounded-ui-md border border-ui-border/70">
                             {data.items.map((item) => (
                                 <DefinedListTile
-                                    key={item.name}
+                                    key={item.id}
                                     item={item}
-                                    onClick={() => setEditing(item.name)}
+                                    onClick={() => setEditing(item.id)}
                                 />
                             ))}
                         </div>
@@ -300,7 +306,7 @@ function Lists() {
                     </CardFooter>
                 )}
             </Card>
-            <ListEditorModal name={editing} onSaved={saved} onClose={() => setEditing(null)} />
+            <ListEditorModal name={editing} onSaved={saved} onClose={closeEditor} />
             <RegistryCatalogModal
                 open={registryOpen}
                 onClose={() => setRegistryOpen(false)}
@@ -321,22 +327,31 @@ function Lists() {
     );
 }
 
-function ListConfigCard() {
+function ListConfigCard({ onSaved }: { onSaved: () => void }) {
     const { t: uiT } = useTranslation('ui');
+    const { t } = useTranslation('routing');
+    const { mutate: refreshCache } = useSWRConfig();
+    const [actionError, setActionError] = useState('');
 
     const ctx = useContext(GlobalToastContext);
     const { data: server, error, isLoading, mutate } = useSWR("/api/v2/route/lists/config", getRouteListConfig, { revalidateOnFocus: false });
 
     const { value: data, setValue: setDraft, commit, dirty } = useEditorDraft("getRouteListConfig", server, () => undefined);
-    const { pending: saving, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
+    const { pending: saving, run } = useAsyncAction(error => { const message = String((error as { msg?: string })?.msg ?? error); setActionError(message); ctx.Error(message); void refreshCache("/api/v2/route/activation"); });
     useCloseGuard(dirty, saving, () => undefined);
     const patch = (patchValue: Partial<NonNullable<typeof data>>) => setDraft(prev => prev ? { ...prev, ...patchValue } : prev);
     const save = () => {
         if (!data || saving || error || isLoading) return;
         void run(async () => {
-            const next = await saveRouteListConfig(data);
-            commit(next);
-            await mutate(next, { revalidate: false });
+            setActionError('');
+            if (dirty) {
+                const next = await saveRouteListConfig(data);
+                commit(next);
+                await mutate(next, { revalidate: false });
+            }
+            void refreshCache("/api/v2/route/activation");
+            await applyRouteChanges();
+            onSaved();
             ctx.Info("list config saved");
         });
     };
@@ -359,6 +374,7 @@ function ListConfigCard() {
                 {isLoading && <Spinner size="sm" />}
             </CardHeader>
             <CardBody>
+                {actionError && <p role="alert" className="mb-3 text-sm text-ui-danger">{actionError}</p>}
                 {error ? (
                     <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
                 ) : data ? (
@@ -396,7 +412,7 @@ function ListConfigCard() {
             <CardFooter className="flex justify-end">
                 <Button disabled={saving || !data || Boolean(error)} onClick={save}>
                     {saving ? <Spinner size="sm" className="mr-2" /> : <Save size={16} className="mr-2" />}
-                    {uiT("saveConfiguration")}</Button>
+                    {t(actionError && !dirty ? "retryApply" : "saveAndApply")}</Button>
             </CardFooter>
             </fieldset>
         </Card>
@@ -405,17 +421,30 @@ function ListConfigCard() {
 
 function ListEditorModal({ name, onSaved, onClose }: { name: string | null; onSaved: () => void; onClose: () => void }) {
     const { t: uiT } = useTranslation('ui');
+    const { t } = useTranslation('routing');
+    const { mutate: refreshCache } = useSWRConfig();
+    const [actionError, setActionError] = useState('');
+    const [deleted, setDeleted] = useState(false);
+    const [previousName, setPreviousName] = useState(name);
+    if (previousName !== name) {
+        setPreviousName(name);
+        setActionError('');
+        setDeleted(false);
+    }
 
     const ctx = useContext(GlobalToastContext);
     const { data, error, isLoading, mutate } = useSWR(name ? ["/api/v2/route/lists/detail", name] : null, () => getRouteList(name!), { revalidateOnFocus: false });
 
-    const { value: draft, setValue: setDraft, dirty } = useEditorDraft(name, data, createDefaultRouteList);
-    const { pending, run } = useAsyncAction(error => ctx.Error(error instanceof Error ? error.message : String((error as { msg?: string })?.msg ?? error)));
+    const { value: draft, setValue: setDraft, dirty, commit } = useEditorDraft(name, data, createDefaultRouteList);
+    const { pending, run } = useAsyncAction(error => { const message = error instanceof Error ? error.message : String((error as { msg?: string })?.msg ?? error); setActionError(message); ctx.Error(message); void refreshCache("/api/v2/route/activation"); });
     const close = useCloseGuard(dirty, pending, onClose);
     const save = () => {
         if (!name || !data || error || isLoading || pending) return;
         void run(async () => {
-            await saveRouteList(name, draft);
+            setActionError('');
+            if (dirty && !deleted) commit(await saveRouteList(name, draft));
+            void refreshCache("/api/v2/route/activation");
+            await applyRouteChanges();
             ctx.Info("list saved");
             onSaved();
         });
@@ -424,6 +453,10 @@ function ListEditorModal({ name, onSaved, onClose }: { name: string | null; onSa
         if (!name || name === "bootstrap" || pending || !data || error || isLoading || !window.confirm("Delete this list?")) return;
         void run(async () => {
             await deleteRouteList(name);
+            setDeleted(true);
+            commit(draft);
+            void refreshCache("/api/v2/route/activation");
+            await applyRouteChanges();
             ctx.Info("list deleted");
             onSaved();
         });
@@ -432,24 +465,25 @@ function ListEditorModal({ name, onSaved, onClose }: { name: string | null; onSa
     return (
         <Modal open={!!name} onOpenChange={(open) => !open && close()}>
             <ModalContent width={760}>
-                <ModalHeader closeButton><ModalTitle>{name}</ModalTitle></ModalHeader>
+                <ModalHeader closeButton><ModalTitle>{draft.name || name}</ModalTitle></ModalHeader>
                 <ModalBody>
                     <fieldset disabled={pending} className="contents">
+                    {actionError && <p role="alert" className="mb-3 text-sm text-ui-danger">{actionError}</p>}
                     {error && <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>}
                     {isLoading && <Loading />}
-                    {!isLoading && !error && data && <RouteListForm value={draft} onChange={setDraft} lockName />}
+                    {!isLoading && !error && data && !deleted && <RouteListForm value={draft} onChange={setDraft} />}
                 </fieldset>
                 </ModalBody>
                 <ModalFooter className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         {name !== "bootstrap" && (
-                            <Button variant="outline-danger" disabled={pending || isLoading || Boolean(error) || !data} onClick={remove}>
+                            <Button variant="outline-danger" disabled={pending || deleted || isLoading || Boolean(error) || !data} onClick={remove}>
                                 <Trash className="mr-2" size={16} />{uiT("deleteList")}</Button>
                         )}
                     </div>
                     <div className="flex flex-wrap justify-end gap-2">
                         <Button onClick={close} disabled={pending}>{uiT("cancel")}</Button>
-                        <Button disabled={pending || isLoading || Boolean(error) || !data} onClick={save}><Check className="mr-2" size={16} />{uiT("save")}</Button>
+                        <Button disabled={pending || isLoading || Boolean(error) || !data} onClick={save}><Check className="mr-2" size={16} />{t(actionError && !dirty ? "retryApply" : "saveAndApply")}</Button>
                     </div>
                 </ModalFooter>
             </ModalContent>
@@ -459,24 +493,28 @@ function ListEditorModal({ name, onSaved, onClose }: { name: string | null; onSa
 
 function CreateListModal({ open, initialName, initialValue, onSaved, onClose }: { open: boolean; initialName?: string; initialValue?: RouteListDetail; onSaved: () => void; onClose: () => void }) {
     const { t: uiT } = useTranslation('ui');
+    const { t } = useTranslation('routing');
+    const { mutate: refreshCache } = useSWRConfig();
+    const [actionError, setActionError] = useState('');
+    const [previousOpen, setPreviousOpen] = useState(open);
+    if (previousOpen !== open) {
+        setPreviousOpen(open);
+        setActionError('');
+    }
 
     const ctx = useContext(GlobalToastContext);
-    const [draft, setDraft] = useState<RouteListDetail>(createDefaultRouteList());
-
-    useEffect(() => {
-        if (open) {
-            setDraft(initialValue ? normalizeRouteList(initialValue) : createDefaultRouteList(initialName ?? ""));
-        }
-    }, [open, initialName, initialValue]);
-
-    const { pending, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
-    const baseline = initialValue ? normalizeRouteList(initialValue) : createDefaultRouteList(initialName ?? "");
-    const close = useCloseGuard(JSON.stringify(draft) !== JSON.stringify(baseline), pending, onClose);
+    const createDraft = useCallback(() => initialValue ? normalizeRouteList(initialValue) : createDefaultRouteList(initialName ?? ''), [initialName, initialValue]);
+    const { value: draft, setValue: setDraft, commit, dirty } = useEditorDraft(open ? `new-list:${initialName ?? ''}` : null, undefined, createDraft);
+    const { pending, run } = useAsyncAction(error => { const message = String((error as { msg?: string })?.msg ?? error); setActionError(message); ctx.Error(message); void refreshCache("/api/v2/route/activation"); });
+    const close = useCloseGuard(dirty, pending, onClose);
 
     const save = () => {
         if (pending || !draft.name.trim()) return;
         void run(async () => {
-        await createRouteList(draft);
+        setActionError('');
+        if (dirty || draft.revision === 0) commit(draft.revision > 0 ? await saveRouteList(draft.id, draft) : await createRouteList(draft));
+        void refreshCache("/api/v2/route/activation");
+        await applyRouteChanges();
         ctx.Info("list created");
         onSaved();
         });
@@ -488,12 +526,13 @@ function CreateListModal({ open, initialName, initialValue, onSaved, onClose }: 
                 <ModalHeader closeButton><ModalTitle>{uiT("newRouteList")}</ModalTitle></ModalHeader>
                 <ModalBody>
                     <fieldset disabled={pending} className="contents">
+                    {actionError && <p role="alert" className="mb-3 text-sm text-ui-danger">{actionError}</p>}
                     <RouteListForm value={draft} onChange={setDraft} />
                 </fieldset>
                 </ModalBody>
                 <ModalFooter>
                     <Button onClick={close} disabled={pending}>{uiT("cancel")}</Button>
-                    <Button onClick={save} disabled={pending || !draft.name.trim()}><Check className="mr-2" size={16} />{uiT("save")}</Button>
+                    <Button onClick={save} disabled={pending || !draft.name.trim()}><Check className="mr-2" size={16} />{t(actionError && !dirty && draft.revision > 0 ? "retryApply" : "saveAndApply")}</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>

@@ -1,15 +1,17 @@
 import { useAsyncAction, useCloseGuard } from "@/hooks/use-editor-draft";
 import { NodeEditor, NodeProtocolChain } from "./NodeEditor";
 
-import { createNode, getNode, saveNode } from "@/api/nodes";
+import { createNode, getNode, saveNode, useNode } from "@/api/nodes";
 
 import { Button } from "@/component/v2/button";
+import { SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
+import { nodeTemplates, templateChain, chainTemplate, type NodeTemplate } from "./templates";
 
 import { useClipboard } from "@/component/v2/clipboard";
 import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
 
 import Loading, { Error as ErrorDisplay } from "@/component/v2/loading";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
+import { NodeEditorSurface } from "./editor-surface";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { Node, NodeProtocol } from "@/contract/node";
@@ -25,9 +27,12 @@ type NodeModalProps = {
     node?: Node;
     editable?: boolean;
     onHide: (saved?: boolean) => void;
-    onSave?: () => void;
+    onSave?: (node: Node) => void;
+    onChanged?: (node: Node) => void;
     groups?: string[];
-    onDelete?: () => void;
+    onDelete?: () => void | Promise<void>;
+    presentation?: "modal" | "inline";
+    onStateChange?: (state: { dirty: boolean; pending: boolean }) => void;
     readOnly?: boolean;
     isNew?: boolean;
 };
@@ -72,86 +77,92 @@ const NodeModalComponent: FC<NodeModalProps> = ({
     editable = false,
     onHide,
     onSave,
+    onChanged,
     groups,
     onDelete,
     readOnly,
     isNew,
+    presentation = "modal",
+    onStateChange,
 }) => {
     const { t } = useTranslation(["node", "common"]);
+    const { t: routingT } = useTranslation("routing");
+    const [makeDefault, setMakeDefault] = useState(false);
     const ctx = useContext(GlobalToastContext);
     const nodeId = id ?? hash ?? node?.id ?? "";
     const canEdit = editable && !readOnly;
-    const [draft, setDraft] = useState<Node | undefined>();
     const [retryNonce, setRetryNonce] = useState(0);
-    const [loading, setLoading] = useState(false);
-    const baseline = useRef('');
-    const loadedIdentity = useRef('');
-    const draftRef = useRef(draft);
-    draftRef.current = draft;
     const nodeSource = node ? JSON.stringify(node) : '';
-    const { pending: saving, run } = useAsyncAction(error => ctx.Error(errorMessage(error)));
-    const close = useCloseGuard(show && canEdit && Boolean(draft) && JSON.stringify(draft) !== baseline.current, saving, () => onHide());
+    const initialNode = () => node ? cloneNode(node) : isNew ? createDefaultNode(groups?.[0] ?? 'manual') : undefined;
+    // The draft and its baseline are one atomic state. Ref values must not be
+    // used while rendering because React may retry or discard a render.
+    const [editor, setEditor] = useState(() => {
+        const draft = initialNode();
+        return { draft, baseline: draft ? JSON.stringify(draft) : '' };
+    });
+    const draft = editor.draft;
+    const baseline = editor.baseline;
+    const setDraft = (next: React.SetStateAction<Node | undefined>) => setEditor(previous => ({
+        ...previous,
+        draft: typeof next === 'function' ? (next as (value: Node | undefined) => Node | undefined)(previous.draft) : next,
+    }));
+    const [loading, setLoading] = useState(() => show && !node && !isNew && Boolean(nodeId));
+    const sessionKey = show ? `${nodeId}:${Boolean(isNew)}:${nodeSource}:${retryNonce}` : 'closed';
+    const [previousSession, setPreviousSession] = useState(sessionKey);
+    const [actionError, setActionError] = useState('');
     const [error, setError] = useState<APIError | undefined>();
+    const dirty = show && canEdit && Boolean(draft) && (JSON.stringify(draft) !== baseline || makeDefault);
+
+    // A new editor session is reconciled before committing a stale draft.
+    // Local edits win over a background update to the supplied node.
+    if (previousSession !== sessionKey) {
+        setPreviousSession(sessionKey);
+        const changedNodeSource = Boolean(nodeSource) && previousSession.startsWith(`${nodeId}:${Boolean(isNew)}:`);
+        if (!changedNodeSource || !dirty) {
+            const initial = show ? initialNode() : undefined;
+            setEditor({ draft: initial, baseline: initial ? JSON.stringify(initial) : '' });
+            setLoading(show && !node && !isNew && Boolean(nodeId));
+            setError(show && !node && !isNew && !nodeId ? { code: 400, msg: 'node id is empty' } : undefined);
+            setMakeDefault(false);
+            setActionError('');
+        }
+    }
+    const { pending: saving, run } = useAsyncAction(error => { const message = errorMessage(error); setActionError(message); ctx.Error(message); });
+    const close = useCloseGuard(dirty, saving, () => onHide());
+    const created = useRef(false);
+    useEffect(() => { onStateChange?.({ dirty, pending: saving }); }, [dirty, saving, onStateChange]);
     const { copy, copied, manualCopyModal } = useClipboard({ usePromptAsFallback: true });
 
     const title = draft?.name || node?.name || nodeId || "Node";
-    const defaultGroup = groups?.[0] ?? "manual";
     const groupOptions = useMemo(() => {
         const values = new Set([...(groups ?? []), draft?.group, "manual"].filter(Boolean) as string[]);
         return Array.from(values);
     }, [groups, draft?.group]);
 
     useEffect(() => {
-        if (!show) { loadedIdentity.current = ''; return; }
-        const identity = `${nodeId}:${Boolean(isNew)}`;
-        if (loadedIdentity.current === identity && canEdit && draftRef.current && JSON.stringify(draftRef.current) !== baseline.current) return;
-        loadedIdentity.current = identity;
-
-        const providedNode = nodeSource ? JSON.parse(nodeSource) as Node : undefined;
-        if (providedNode) {
-            baseline.current = JSON.stringify(cloneNode(providedNode));
-            setDraft(cloneNode(providedNode));
-            setLoading(false);
-            setError(undefined);
-            return;
-        }
-
-        if (isNew) {
-            const initial = createDefaultNode(defaultGroup);
-            baseline.current = JSON.stringify(initial);
-            setDraft(initial);
-            setLoading(false);
-            setError(undefined);
-            return;
-        }
-
-        if (!nodeId) {
-            setDraft(undefined);
-            setError({ code: 400, msg: "node id is empty" });
-            return;
-        }
+        if (!show) { created.current = false; return; }
+        if (nodeSource || isNew || !nodeId) return;
 
         let cancelled = false;
         const controller = new AbortController();
-        setDraft(undefined);
-        setLoading(true);
-        setError(undefined);
         getNode(nodeId, controller.signal)
-            .then((value) => {
-                if (!cancelled) { baseline.current = JSON.stringify(cloneNode(value)); setDraft(cloneNode(value)); }
+            .then(value => {
+                if (!cancelled) {
+                    const normalized = cloneNode(value);
+                    setEditor({ draft: normalized, baseline: JSON.stringify(normalized) });
+                }
             })
-            .catch((err) => {
+            .catch(err => {
                 if (!cancelled) setError({ code: err.code, msg: errorMessage(err), raw: err.raw });
             })
             .finally(() => {
                 if (!cancelled) setLoading(false);
             });
-
         return () => {
             cancelled = true;
             controller.abort();
         };
-    }, [show, nodeSource, nodeId, isNew, defaultGroup, canEdit, retryNonce]);
+    }, [show, nodeId, isNew, nodeSource, retryNonce]);
 
     const updateDraft = (patch: Partial<Node>) => {
         setDraft(prev => normalizeNode({ ...(prev ?? createDefaultNode()), ...patch }));
@@ -188,14 +199,25 @@ const NodeModalComponent: FC<NodeModalProps> = ({
     const handleSave = () => {
         if (!draft || !canEdit || saving || loading || error) return;
         void run(async () => {
+            setActionError('');
             const normalized = normalizeNode(draft);
-            const saved = isNew ? await createNode(normalized) : await saveNode(normalized);
-            baseline.current = JSON.stringify(saved);
-            setDraft(cloneNode(saved));
+            const saved = isNew && !created.current ? await createNode(normalized) : await saveNode(normalized);
+            if (isNew) created.current = true;
+            const fresh = cloneNode(saved);
+            setEditor({ draft: fresh, baseline: JSON.stringify(fresh) });
+            onChanged?.(saved);
+            if (makeDefault) await useNode(saved.id);
+            setMakeDefault(false);
             ctx.Info(t("common:state.saved", { defaultValue: "Saved" }));
-            onSave?.();
+            onSave?.(saved);
             onHide(true);
         });
+    };
+
+    const discard = () => {
+        if (saving || !dirty || !window.confirm(t('common:form.discardChanges'))) return;
+        setDraft(cloneNode(JSON.parse(baseline) as Node));
+        setMakeDefault(false);
     };
 
     const handleCopy = async () => {
@@ -209,85 +231,92 @@ const NodeModalComponent: FC<NodeModalProps> = ({
         }
     };
 
-    return (
-        <>
-            {manualCopyModal}
-            <Modal open={show} onOpenChange={(open) => !open && close()}>
-                <ModalContent width={1280}>
-                <ModalHeader closeButton className="border-b-0 pb-0">
-                    <ModalTitle className="font-bold">{title}</ModalTitle>
-                </ModalHeader>
-
-                <ModalBody className="pt-2">
-                    {readOnly && draft && <p className="mb-4 break-words text-sm font-semibold text-ui-heading">{draft.name || draft.id}</p>}
-                    <fieldset disabled={saving} className="contents">
-                    {error ? (
-                        <div><ErrorDisplay statusCode={error.code ?? 500} title={error.msg ?? "request failed"} raw={errorRaw(error.raw)} /><Button className="mt-3" onClick={() => setRetryNonce(value => value + 1)}>{t("common:action.retry")}</Button></div>
-                    ) : loading || !draft ? (
-                        <Loading />
-                    ) : readOnly ? (
-                        <NodeProtocolChain
-                            chain={draft.chain}
-                            editable={false}
-                            onProtocolChange={updateProtocol}
-                            onMoveProtocol={moveProtocol}
-                            onRemoveProtocol={removeProtocol}
-                            onAddProtocol={(type) => updateDraft({ chain: [...draft.chain, createDefaultProtocol(type)] })}
-                        />
-                    ) : (
-                        <NodeEditor
-                            value={draft}
-                            editable={canEdit}
-                            groups={groupOptions}
-                            onChange={updateDraft}
-                            onProtocolChange={updateProtocol}
-                            onMoveProtocol={moveProtocol}
-                            onRemoveProtocol={removeProtocol}
-                            onAddProtocol={(type) => updateDraft({ chain: [...draft.chain, createDefaultProtocol(type)] })}
-                        />
-                    )}
-                </fieldset>
-                </ModalBody>
-
-                <ModalFooter className="flex justify-between">
-                    <div>
-                        {onDelete && (
-                            <Dropdown>
-                                <DropdownTrigger asChild>
-                                    <Button variant="outline-danger" disabled={saving || loading || Boolean(error)}><Trash size={16} className="mr-2" />{t("common:action.remove")}</Button>
-                                </DropdownTrigger>
-                                <DropdownContent>
-                                    <DropdownItem
-                                        className="text-red-500 font-bold"
-                                        onSelect={() => {
-                                            void Promise.resolve(onDelete()).then(() => onHide(true)).catch((err) => ctx.Error(errorMessage(err)));
-                                        }}
-                                    >
-                                        {t("common:action.confirmDelete")}
-                                    </DropdownItem>
-                                    <DropdownItem>{t("common:action.cancel")}</DropdownItem>
-                                </DropdownContent>
-                            </Dropdown>
-                        )}
-                    </div>
-                    <div className="flex gap-2">
-                        {draft && (
-                            <Button onClick={handleCopy} aria-label={t("common:action.copy")}>
-                                {copied ? <ClipboardCheck size={16} /> : <Clipboard size={16} />}
-                            </Button>
-                        )}
-                        <Button onClick={close} disabled={saving}>{t("common:action.close")}</Button>
-                        {canEdit && (
-                            <Button disabled={saving || loading || !!error} onClick={handleSave}>
-                                {saving ? <Spinner size="sm" /> : t("common:action.save")}
-                            </Button>
-                        )}
-                    </div>
-                </ModalFooter>
-                </ModalContent>
-            </Modal>
-        </>
-    );
+    const body = <>
+        {actionError && <p role="alert" className="mb-4 text-sm text-ui-danger">{actionError}</p>}
+        {readOnly && draft && <p className="mb-4 break-words text-sm font-semibold text-ui-heading">{draft.name || draft.id}</p>}
+        <fieldset disabled={saving} className="contents">
+            {error ? (
+                <div><ErrorDisplay statusCode={error.code ?? 500} title={error.msg ?? "request failed"} raw={errorRaw(error.raw)} /><Button className="mt-3" onClick={() => setRetryNonce(value => value + 1)}>{t("common:action.retry")}</Button></div>
+            ) : loading || !draft ? (
+                <Loading />
+            ) : readOnly ? (
+                <NodeProtocolChain
+                    chain={draft.chain}
+                    editable={false}
+                    onProtocolChange={updateProtocol}
+                    onMoveProtocol={moveProtocol}
+                    onRemoveProtocol={removeProtocol}
+                    onAddProtocol={(type) => updateDraft({ chain: [...draft.chain, createDefaultProtocol(type)] })}
+                />
+            ) : (
+                <>
+                {isNew && <SettingSelectVertical label={routingT("nodeTemplate")} value={chainTemplate(draft.chain)}
+                    values={[...nodeTemplates.map(template => [routingT(`template.${template}`), template] as [string, string]), [routingT("template.custom"), "custom"]]}
+                    onChange={template => {
+                        if (template === 'custom') return;
+                        const chain = templateChain(template as NodeTemplate);
+                        const pristine = JSON.stringify(draft.chain) === JSON.stringify(createDefaultNode().chain);
+                        if (pristine || window.confirm(routingT("templateReplaceConfirm"))) updateDraft({ chain });
+                    }} />}
+                <NodeEditor
+                    value={draft}
+                    editable={canEdit}
+                    groups={groupOptions}
+                    onChange={updateDraft}
+                    onProtocolChange={updateProtocol}
+                    onMoveProtocol={moveProtocol}
+                    onRemoveProtocol={removeProtocol}
+                    onAddProtocol={(type) => updateDraft({ chain: [...draft.chain, createDefaultProtocol(type)] })}
+                />
+                {canEdit && (presentation !== 'inline' || isNew) && <SwitchCard className="mt-3" label={routingT("useAsDefault")} checked={makeDefault} onCheckedChange={setMakeDefault} />}
+                </>
+            )}
+        </fieldset>
+    </>;
+    const footer = <>
+        <div>
+            {onDelete && (
+                <Dropdown>
+                    <DropdownTrigger asChild>
+                        <Button variant="outline-danger" disabled={saving || loading || Boolean(error)}><Trash size={16} className="mr-2" />{t("common:action.remove")}</Button>
+                    </DropdownTrigger>
+                    <DropdownContent>
+                        <DropdownItem
+                            className="font-bold text-ui-danger"
+                            disabled={saving}
+                            onSelect={() => {
+                                void run(async () => { setActionError(''); await onDelete(); onHide(true); });
+                            }}
+                        >
+                            {t("common:action.confirmDelete")}
+                        </DropdownItem>
+                        <DropdownItem>{t("common:action.cancel")}</DropdownItem>
+                    </DropdownContent>
+                </Dropdown>
+            )}
+        </div>
+        <div className="flex gap-2">
+            {draft && (
+                <Button onClick={handleCopy} aria-label={t("common:action.copy")}>
+                    {copied ? <ClipboardCheck size={16} /> : <Clipboard size={16} />}
+                </Button>
+            )}
+            {presentation === "inline" && !isNew
+                ? dirty && <Button onClick={discard} disabled={saving}>{routingT('discardChanges')}</Button>
+                : <Button onClick={close} disabled={saving}>{t(presentation === "inline" ? "common:action.cancel" : "common:action.close")}</Button>}
+            {canEdit && (
+                <Button variant="primary" disabled={saving || loading || !!error} onClick={handleSave}>
+                    {saving ? <Spinner size="sm" /> : t("common:action.save")}
+                </Button>
+            )}
+        </div>
+    </>;
+    return <>
+        {manualCopyModal}
+        <NodeEditorSurface presentation={presentation} show={show} title={title} dirty={dirty} onClose={close} footer={footer}>
+            {body}
+        </NodeEditorSurface>
+    </>;
 };
 
 export const NodeModal = React.memo(NodeModalComponent);

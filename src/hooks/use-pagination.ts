@@ -10,11 +10,12 @@ export function usePagination(totalItems: number, pageSize: number, resetKey = '
     const [selection, setSelection] = useState({ key: resetKey, page: 1 });
     const requestedPage = selection.key === resetKey ? selection.page : 1;
     const page = clampPage(requestedPage, totalItems, pageSize);
-    useEffect(() => {
-        if (selection.key !== resetKey || selection.page !== page) {
-            setSelection({ key: resetKey, page });
-        }
-    }, [selection, resetKey, page]);
+    // React can reconcile state tied to incoming props during the same render.
+    // This avoids showing an out-of-range page for a committed render, or
+    // rendering again after an effect solely to synchronize the selection.
+    if (selection.key !== resetKey || selection.page !== page) {
+        setSelection({ key: resetKey, page });
+    }
     return { page, setPage: (next: number) => setSelection({ key: resetKey, page: clampPage(next, totalItems, pageSize) }) };
 }
 

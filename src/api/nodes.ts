@@ -4,13 +4,21 @@ import { LatencyDNSUrlDefault, LatencyHTTPUrlDefault, LatencyIPUrlDefault, Laten
 import type { Node, NodeLatencyRequest, NodeLatencyResponse, NodeList } from "@/contract/node";
 import { normalizeNode } from "@/contract/node";
 
-export async function listNodes(query?: string | { page?: number; pageSize?: number; query?: string }): Promise<NodeList> {
+export type NodeGroup = { name: string; count: number; enabled: number };
+
+export async function listNodeGroups(): Promise<{ items: NodeGroup[] }> {
+  return requestJSON('GET', '/api/v2/nodes/groups');
+}
+
+export async function listNodes(query?: string | { page?: number; pageSize?: number; query?: string; group?: string; enabledOnly?: boolean }): Promise<NodeList> {
   const params = typeof query === "string"
     ? { query }
     : {
       page: query?.page,
       page_size: query?.pageSize,
       query: query?.query,
+      group: query?.group,
+      enabled_only: query?.enabledOnly,
     };
   const data = await requestJSON<{ items: Go.node.Node[]; page: NodeList["page"] }>("GET", "/api/v2/nodes", undefined, params);
   return {
@@ -25,6 +33,11 @@ export async function getNode(id: string, signal?: AbortSignal): Promise<Node> {
 
 export async function createNode(node: Node): Promise<Node> {
   return normalizeNode(await requestJSON<Go.node.Node>("POST", "/api/v2/nodes", normalizeNode(node)) as unknown as Node);
+}
+
+export async function previewNodeImport(text: string, group: string): Promise<{ items: Node[]; errors: Go.node.ImportIssue[] }> {
+  const data = await requestJSON<Go.node.ImportPreview>("POST", "/api/v2/nodes/import/preview", { text, group });
+  return { items: (data.items ?? []).map(item => normalizeNode(item as unknown as Partial<Node>)), errors: data.errors ?? [] };
 }
 
 export async function saveNode(node: Node): Promise<Node> {
@@ -42,6 +55,10 @@ export async function selectedNodes(): Promise<{ tcp?: Node; udp?: Node }> {
     tcp: data.tcp ? normalizeNode(data.tcp as unknown as Partial<Node>) : undefined,
     udp: data.udp ? normalizeNode(data.udp as unknown as Partial<Node>) : undefined,
   };
+}
+
+export async function selectNodes(selection: Go.node.SelectionRequest): Promise<void> {
+  await requestJSON<void>("PUT", "/api/v2/nodes/selected", selection);
 }
 
 export async function activeNodes(): Promise<{ items: Node[] }> {

@@ -54,20 +54,35 @@ function errorMessage(raw: unknown, fallback: string): string {
 export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, body?: unknown, query?: Record<string, QueryValue>, signal?: AbortSignal): Promise<T> {
     const requestScope = JSON.stringify([getApiUrl(), localStorage.getItem(AuthTokenKey)]);
     const route = resolveRPCRoute(method, path);
-    const response = await fetch(apiURL(rpcPath(route.operation)), {
-        signal,
-        method: "POST",
-        headers: {
-            ...authHeaders(),
-            Accept: "application/json",
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            ...toRequestFields(query),
-            ...coercePathParams(route.params),
-            ...toRequestFields(body),
-        }),
-    });
+    let response: Response;
+    try {
+        response = await fetch(apiURL(rpcPath(route.operation)), {
+            signal,
+            method: "POST",
+            headers: {
+                ...authHeaders(),
+                Accept: "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                ...toRequestFields(query),
+                ...coercePathParams(route.params),
+                ...toRequestFields(body),
+            }),
+        });
+    } catch (error) {
+        if (signal?.aborted) throw error;
+        // In cross-origin deployments a failed OPTIONS preflight appears as
+        // TypeError: Failed to fetch, hiding the actual HTTP 405 from JS.
+        if (error instanceof TypeError) {
+            throw {
+                code: 0,
+                msg: `Could not reach the backend RPC ${route.operation}. Check the backend version, CORS preflight, and configured API URL.`,
+                raw: error,
+            } satisfies APIError;
+        }
+        throw error;
+    }
 
     const raw = await decodeBody(response);
     if (!response.ok) {
@@ -76,7 +91,9 @@ export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", 
         }
         throw {
             code: response.status,
-            msg: errorMessage(raw, response.statusText),
+            msg: response.status === 405
+                ? `Backend RPC ${route.operation} does not accept POST (405). Update the paired yuhaiin backend and verify OPTIONS preflight.`
+                : errorMessage(raw, response.statusText),
             raw,
         } satisfies APIError;
     }

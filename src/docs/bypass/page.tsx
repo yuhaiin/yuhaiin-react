@@ -1,4 +1,13 @@
-import { RouteRuleForm, includeCurrent, type RuleEditorOptions } from "./rule-form";
+import { clearHashSearch, useHashSearch } from "@/hooks/useHashLocation";
+import { connectionRuleDraft } from "@/docs/connections/actions";
+import { listNodes } from "@/api/nodes";
+import { listSelectors } from "@/api/selectors";
+import { RuleEditor } from "./rule-editor";
+import { allowNavigation } from "@/hooks/navigation-guard";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { ResolverPicker } from "@/component/resolver-picker";
+import { RouteTargetPicker } from "@/component/route-target-picker";
+import { type RuleEditorOptions } from "./rule-form";
 import { useServerPageClamp } from "@/hooks/use-pagination";
 import { collectPages } from "@/api/paging";
 import { useTranslation } from 'react-i18next';
@@ -6,223 +15,86 @@ import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-edito
 
 import { listInbounds } from "@/api/inbounds";
 import { listResolvers } from "@/api/resolvers";
-import { changeRulePriority, createRule, deleteRule, getRouteActivationStatus, getRouteConfig, getRule, listRouteLists, listRules, saveRouteConfig, saveRule } from "@/api/route";
-import { Badge } from "@/component/v2/badge";
+import { applyRouteChanges, changeRulePriority, getRouteActivationStatus, getRouteConfig, listRouteLists, listRules, saveRouteConfig } from "@/api/route";
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardFooter, CardHeader, FilterSearch, IconBox, MainContainer } from "@/component/v2/card";
+import { FilterSearch, MainContainer, SettingLabel } from "@/component/v2/card";
 import { SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
 
 import Loading from "@/component/v2/loading";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import { Pagination } from "@/component/v2/pagination";
 import { RouteActivationProgress } from "@/component/v2/route-activation-progress";
-import { Select } from "@/component/v2/select";
+import { WorkspaceDetail, WorkspaceDirectory, WorkspaceLayout } from "@/component/workspace-layout";
 import { Spinner } from "@/component/v2/spinner";
-import { Switch } from "@/component/v2/switch";
 import { GlobalToastContext } from "@/component/v2/toast";
-import type { RouteRule, RuleItem } from "@/contract/route";
-import { createDefaultRule } from "@/contract/route";
-import clsx from "clsx";
-import { ArrowUpDown, Plus, Route, Save, ShieldCheck, Trash } from "lucide-react";
-import { useContext, useEffect, useMemo, useState } from "react";
+import type { RuleDraft, RuleItem } from "@/contract/route";
+import { RuleList } from "./rule-list";
+import type { RuleDrop } from "./rule-drag";
+import { ArrowRight, ChevronDown, Plus, Save, ListFilter } from "lucide-react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
-type PriorityOperate = "exchange" | "insert_before" | "insert_after";
-const PAGE_SIZE = 8;
-
-function modeTextTone(mode: string): string {
-    switch (mode.toLowerCase()) {
-        case "proxy":
-            return "text-ui-primary";
-        case "direct":
-            return "text-ui-success";
-        case "block":
-            return "text-ui-danger";
-        case "bypass":
-            return "text-ui-warning";
-        default:
-            return "text-ui-muted";
-    }
-}
-
-const RuleTableRow = ({
-    item,
-    onOpen,
-    onPriority,
-    onToggle,
-}: {
-    item: RuleItem;
-    onOpen: () => void;
-    onPriority: () => void;
-    onToggle: () => void;
-}) => {
-    const { t: uiT } = useTranslation('ui');
-    return (
-    <div
-        role="row"
-        className={clsx(
-            "min-w-0 cursor-pointer border-b border-ui-border/70 px-4 py-2.5 last:border-b-0 md:grid md:grid-cols-[2.5rem_minmax(0,2fr)_4rem_3rem_minmax(0,1fr)_minmax(0,1fr)_5rem] md:items-center md:gap-3 md:py-2",
-            item.disabled && "opacity-60",
-        )}
-        onClick={onOpen}
-    >
-        <div role="cell" className="hidden font-mono text-xs font-semibold tabular-nums text-ui-muted md:block">
-            #{item.index}
-        </div>
-        <div role="cell" className="flex min-w-0 items-center justify-between gap-3">
-            <span className="shrink-0 font-mono text-xs font-semibold tabular-nums text-ui-muted md:hidden">
-                #{item.index}
-            </span>
-            <div className="min-w-0 flex-1">
-                <button
-                    type="button"
-                    className="block max-w-full min-w-0 text-left text-sm font-semibold text-ui-heading underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus"
-                    onClick={(event) => {
-                        event.stopPropagation();
-                        onOpen();
-                    }}
-                    aria-label={item.name}
-                    title={item.name}
-                >
-                    <span className="block truncate">{item.name}</span>
-                </button>
-                <div className="mt-1 flex min-w-0 items-center gap-2 text-xs md:hidden">
-                    <span className={clsx("font-semibold", modeTextTone(item.mode))}>{item.mode || "Unknown"}</span>
-                    <span className="text-ui-muted">{item.ruleCount} {uiT("rules")}</span>
-                    {item.tag && <span className="min-w-0 truncate text-ui-muted"><span className="font-medium">{uiT("tag")}</span>: {item.tag}</span>}
-                    {item.resolver && <span className="min-w-0 truncate font-mono text-ui-muted"><span className="font-sans font-medium">{uiT("resolver")}</span>: {item.resolver}</span>}
-                </div>
-            </div>
-            <div
-                className="flex shrink-0 items-center gap-1.5 md:hidden"
-                onClick={(event) => event.stopPropagation()}
-                onKeyDown={(event) => event.stopPropagation()}
-            >
-                <Button
-                    type="button"
-                    size="icon"
-                    variant="outline-secondary"
-                    className="h-7 w-7"
-                    onClick={onPriority}
-                    aria-label={uiT("changePriority")}
-                    title={uiT("changePriority")}
-                >
-                    <ArrowUpDown size={14} />
-                </Button>
-                <span id={`route-rule-enabled-mobile-${item.index}`} className="sr-only">{uiT("enabled")} {item.name}</span>
-                <Switch
-                    checked={!item.disabled}
-                    onCheckedChange={onToggle}
-                    aria-labelledby={`route-rule-enabled-mobile-${item.index}`}
-                />
-            </div>
-        </div>
-        <div role="cell" className={clsx("hidden text-xs font-semibold capitalize md:block", modeTextTone(item.mode))}>
-            {item.mode || "Unknown"}
-        </div>
-        <div role="cell" className="hidden text-sm tabular-nums text-ui-muted md:block">
-            {item.ruleCount}
-        </div>
-        <div role="cell" className="hidden min-w-0 truncate text-sm text-ui-muted md:block" title={item.tag || undefined}>
-            {item.tag || "—"}
-        </div>
-        <div role="cell" className="hidden min-w-0 truncate font-mono text-xs text-ui-muted md:block" title={item.resolver || undefined}>
-            {item.resolver || "Default"}
-        </div>
-        <div
-            role="cell"
-            className="hidden items-center justify-end gap-1.5 md:flex"
-            onClick={(event) => event.stopPropagation()}
-            onKeyDown={(event) => event.stopPropagation()}
-        >
-            <Button
-                type="button"
-                size="icon"
-                variant="outline-secondary"
-                className="h-7 w-7"
-                onClick={onPriority}
-                aria-label={uiT("changePriority")}
-                title={uiT("changePriority")}
-            >
-                <ArrowUpDown size={14} />
-            </Button>
-            <span id={`route-rule-enabled-${item.index}`} className="sr-only">{uiT("enabled")} {item.name}</span>
-            <Switch
-                checked={!item.disabled}
-                onCheckedChange={onToggle}
-                aria-labelledby={`route-rule-enabled-${item.index}`}
-            />
-        </div>
-    </div>
-);
-};
-
-const RuleTable = ({
-    items,
-    onOpen,
-    onPriority,
-    onToggle,
-}: {
-    items: RuleItem[];
-    onOpen: (item: RuleItem) => void;
-    onPriority: (item: RuleItem) => void;
-    onToggle: (item: RuleItem) => void;
-}) => {
-    const { t: uiT } = useTranslation('ui');
-    return (
-    <div role="table" className="min-w-0">
-        <div role="row" className="hidden border-b border-ui-border bg-ui-surface-muted/50 px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-wide text-ui-muted md:grid md:grid-cols-[2.5rem_minmax(0,2fr)_4rem_3rem_minmax(0,1fr)_minmax(0,1fr)_5rem] md:items-center md:gap-3">
-            <span role="columnheader">{uiT("order")}</span>
-            <span role="columnheader">{uiT("name")}</span>
-            <span role="columnheader">{uiT("mode")}</span>
-            <span role="columnheader">{uiT("rules")}</span>
-            <span role="columnheader">{uiT("tag")}</span>
-            <span role="columnheader">{uiT("resolver")}</span>
-            <span role="columnheader" className="sr-only">{uiT("control")}</span>
-        </div>
-        {items.length > 0 ? items.map((item) => (
-            <RuleTableRow
-                key={`${item.name}-${item.index}`}
-                item={item}
-                onOpen={() => onOpen(item)}
-                onPriority={() => onPriority(item)}
-                onToggle={() => onToggle(item)}
-            />
-        )) : (
-            <div className="px-4 py-8 text-center text-sm text-ui-muted">{uiT("noRecordsFound")}</div>
-        )}
-    </div>
-);
-};
+const PAGE_SIZE = 25;
 
 function BypassComponent() {
     const { t: uiT } = useTranslation('ui');
+    const { t } = useTranslation('routing');
 
     const ctx = useContext(GlobalToastContext);
     const [page, setPage] = useState(1);
     const [query, setQuery] = useState("");
-    const [editing, setEditing] = useState<RuleItem | null>(null);
-    const [priorityItem, setPriorityItem] = useState<RuleItem | null>(null);
-    const [creating, setCreating] = useState(false);
+    const [localEditing, setEditing] = useState<Pick<RuleItem, "id" | "name"> | null>(null);
+    const desktop = useMediaQuery("(min-width: 768px)");
+    const initialized = useRef(false);
+    const [editorState, setEditorState] = useState({ dirty: false, pending: false });
+    const search = useHashSearch();
+    const linkedId = new URLSearchParams(search).get('rule');
+    const linkedDraft = useMemo(() => connectionRuleDraft(search), [search]);
+    const editing = useMemo(() => localEditing ?? (linkedId ? { id: linkedId, name: '' } : null), [localEditing, linkedId]);
+    const closeLink = () => { if (search) clearHashSearch(); };
+    const [localCreating, setCreating] = useState(false);
+    const creating = localCreating || Boolean(linkedDraft);
     const { data: activation, mutate: mutateActivation } = useSWR(
         "/api/v2/route/activation",
         getRouteActivationStatus,
         {
             revalidateOnFocus: false,
-            refreshInterval: (status) => Math.max(status?.hostIndexRefreshAt ?? 0, status?.ruleApplyAt ?? 0) > Date.now() ? 1000 : 0,
+            refreshInterval: (status) => Math.max(status?.hostIndexRefreshAt ?? 0, status?.ruleApplyAt ?? 0) > 0 || (status?.savedRevision ?? 0) > (status?.appliedRevision ?? 0) ? 1000 : 0,
         },
     );
-    const { data, error, isLoading, isValidating, mutate } = useSWR(
+    const { data, error, isValidating, mutate } = useSWR(
         ["/api/v2/route/rules", page, query],
         () => listRules({ page, pageSize: PAGE_SIZE, query }),
-        { revalidateOnFocus: false },
+        { revalidateOnFocus: false, keepPreviousData: true },
     );
     useServerPageClamp(data?.page, page, setPage);
+    useEffect(() => {
+        if (!initialized.current && desktop && data?.items.length && !creating && !editing) {
+            initialized.current = true;
+            setEditing(data.items[0]);
+        }
+    }, [desktop, data?.items, creating, editing]);
+    const selectRule = (item: RuleItem) => {
+        if (reordering || !creating && editing?.id === item.id) return;
+        if (!allowNavigation()) return;
+        initialized.current = true;
+        closeLink();
+        setCreating(false);
+        setEditing(item);
+    };
+    const newRule = () => {
+        if (!allowNavigation()) return;
+        initialized.current = true;
+        closeLink();
+        setEditing(null);
+        setCreating(true);
+    };
+    const backToRules = () => {
+        initialized.current = true;
+        closeLink();
+        setEditing(null);
+        setCreating(false);
+        setEditorState({ dirty: false, pending: false });
+    };
     const needEditorOptions = creating || editing !== null;
-    const { data: allRules, mutate: mutateAllRules } = useSWR(
-        priorityItem ? "/api/v2/route/rules/all" : null,
-        () => collectPages(listRules),
-        { revalidateOnFocus: false },
-    );
     const { data: listsData } = useSWR(
         needEditorOptions ? "/api/v2/route/lists/options" : null,
         () => collectPages(listRouteLists),
@@ -239,78 +111,119 @@ function BypassComponent() {
         { revalidateOnFocus: false },
     );
 
+    const { data: nodes } = useSWR('/api/v2/nodes/all', () => collectPages(listNodes));
+    const { data: selectors } = useSWR('/api/v2/outbound/selectors', listSelectors);
+    const destinations = Object.fromEntries([
+        ...(nodes?.items ?? []).map(node => [`node:${node.id}`, node.name]),
+        ...(selectors?.items ?? []).map(selector => [`selector:${selector.id}`, selector.name]),
+    ]);
+
     const editorOptions = useMemo<RuleEditorOptions>(() => ({
-        lists: (listsData?.items ?? []).map(item => item.name).sort((a, b) => a.localeCompare(b)),
+        listTypes: Object.fromEntries((listsData?.items ?? []).map(item => [item.id, item.type])),
+        listNames: Object.fromEntries((listsData?.items ?? []).map(item => [item.id, item.name])),
+        lists: (listsData?.items ?? []).map(item => item.id).sort((a, b) => a.localeCompare(b)),
+        inboundNames: Object.fromEntries((inboundsData?.items ?? []).map(item => [item.id, item.name])),
         inbounds: (inboundsData?.items ?? []).map(item => item.id).sort((a, b) => a.localeCompare(b)),
         resolvers: (resolversData?.items ?? []).map(item => item.id).sort((a, b) => a.localeCompare(b)),
     }), [inboundsData?.items, listsData?.items, resolversData?.items]);
 
-    const toggleDisabled = (item: RuleItem) => {
-        getRule(item.name, item.index)
-            .then((rule) => saveRule(item.name, item.index, { ...rule, disabled: !item.disabled }))
-            .then(() => {
-                ctx.Info(item.disabled ? "rule enabled" : "rule disabled");
-                mutate();
-                void mutateActivation();
-            })
-            .catch((err) => ctx.Error(err.msg ?? String(err)));
+    const { pending: reordering, run: runReorder } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
+    const moveRule = (item: RuleItem, direction: -1 | 1) => {
+        const currentPage = data;
+        if (!currentPage || query.trim() || reordering || editorState.dirty || editorState.pending || isValidating || currentPage.page.page !== page) return;
+        void runReorder(async () => {
+            const index = currentPage.items.findIndex(rule => rule.id === item.id);
+            if (index < 0) return;
+            let adjacent = currentPage.items[index + direction];
+            if (!adjacent) {
+                const neighboringPage = page + direction;
+                if (neighboringPage < 1) return;
+                const result = await listRules({ page: neighboringPage, pageSize: currentPage.page.pageSize || PAGE_SIZE, query: '' });
+                adjacent = direction < 0 ? result.items[result.items.length - 1] : result.items[0];
+            }
+            if (!adjacent) return;
+            await changeRulePriority({ id: item.id }, { id: adjacent.id }, 'exchange');
+            await mutate();
+            void mutateActivation();
+            try {
+                await applyRouteChanges();
+                ctx.Info(t('ruleReordered'));
+            } finally {
+                await mutateActivation();
+            }
+        });
     };
-
-    const saved = () => {
-        mutate();
-        mutateAllRules();
+    const dropRule = (item: RuleItem, drop: RuleDrop) => {
+        if (!data || query.trim() || reordering || editorState.dirty || editorState.pending || isValidating || data.page.page !== page) return;
+        void runReorder(async () => {
+            await changeRulePriority({ id: item.id }, { id: drop.target.id }, drop.placement);
+            await mutate();
+            void mutateActivation();
+            try { await applyRouteChanges(); ctx.Info(t('ruleReordered')); }
+            finally { await mutateActivation(); }
+        });
+    };
+    const refresh = () => {
+        void mutate();
         void mutateActivation();
-        setEditing(null);
-        setPriorityItem(null);
+    };
+    const saved = (draft: RuleDraft | null) => {
+        initialized.current = true;
+        refresh();
+        closeLink();
         setCreating(false);
+        setEditing(draft ? { id: draft.rule.id, name: draft.rule.name } : null);
+        setEditorState({ dirty: false, pending: false });
     };
 
-    if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
-    if (isLoading || !data) return <Loading />
+    if (error && !data) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
+    if (!data) return <Loading />
 
+    const showEditor = creating || editing !== null;
     return (
-        <MainContainer>
-            <RouteConfigCard resolvers={editorOptions.resolvers} />
+        <MainContainer className="max-w-[1440px]">
+            <header className={`mb-6 flex-wrap items-center justify-between gap-4 ${showEditor ? 'hidden md:flex' : 'flex'}`}>
+                <div><h1 className="text-3xl font-semibold tracking-tight text-ui-heading">{t('routingTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('routingOverviewHelp')}</p></div>
+                <Button variant="primary" onClick={newRule} disabled={reordering || editorState.pending || creating}><Plus size={16} className="mr-1.5" />{uiT('add')}</Button>
+            </header>
+            <div className={showEditor ? 'hidden md:block' : undefined}>
+                <RouteConfigCard destinations={destinations} onSaved={() => { void mutateActivation(); }} />
+            </div>
             <RouteActivationProgress status={activation} onApplied={mutateActivation} />
-            <Card density="compact" className="overflow-hidden shadow-ui-card">
-                <CardHeader>
-                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <IconBox
-                            icon={Route}
-                            tone="primary"
-                            title={uiT("routeRules")}
-                            description={`${data.page.total} rules · match from top to bottom`}
-                        />
-                        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
-                            {isValidating && <Spinner size="sm" />}
-                            <FilterSearch className="min-w-0 flex-1 sm:w-[200px] sm:flex-none" onEnter={(v) => { setPage(1); setQuery(v); }} size="sm" />
-                            <Button size="sm" onClick={() => setCreating(true)}><Plus size={16} className="mr-1" /> {uiT("add")}</Button>
-                        </div>
+            <WorkspaceLayout className={showEditor ? 'md:mt-6' : 'mt-6'}>
+                <WorkspaceDirectory label={t('ruleDirectory')} hiddenOnMobile={showEditor}>
+                    <div className="mb-2 space-y-2 border-b border-ui-border/50 px-1 pb-3">
+                        <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-semibold text-ui-heading">{uiT('routeRules')}</h2>{isValidating && <Spinner size="sm" />}</div>
+                        <p className="text-xs text-ui-muted">{t('ruleOrderHelp', { count: data.page.total })}</p>
+                        <FilterSearch className="w-full" onEnter={v => { setPage(1); setQuery(v); }} size="sm" />
                     </div>
-                </CardHeader>
-                <CardBody density="compact" className="!p-0">
-                    <RuleTable
-                        items={data.items}
-                        onOpen={setEditing}
-                        onPriority={setPriorityItem}
-                        onToggle={toggleDisabled}
-                    />
-                </CardBody>
-                {Math.ceil(data.page.total / (data.page.pageSize || PAGE_SIZE)) > 1 && (
-                    <CardFooter compact className="flex justify-center">
+                    <div className="max-h-[min(72vh,900px)] overflow-y-auto overscroll-contain">
+                        {error ? <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading> : <RuleList items={data.items} selectedId={creating ? undefined : editing?.id} destinations={destinations}
+                            resolverNames={Object.fromEntries((resolversData?.items ?? []).map(item => [item.id, item.name]))}
+                            page={data.page.page || page} pageSize={data.page.pageSize || PAGE_SIZE} total={data.page.total} filtered={Boolean(query.trim())}
+                            busy={reordering || isValidating || editorState.pending || editorState.dirty}
+                            onOpen={selectRule} onMove={moveRule} onDrop={dropRule} />}
+                    </div>
+                    {Math.ceil(data.page.total / (data.page.pageSize || PAGE_SIZE)) > 1 && <div className="flex justify-center border-t border-ui-border/60 pt-3">
                         <Pagination currentPage={data.page.page || page} totalItems={data.page.total} pageSize={data.page.pageSize || PAGE_SIZE} onPageChange={setPage} />
-                    </CardFooter>
-                )}
-            </Card>
-            <RuleEditorModal item={editing} options={editorOptions} onSaved={saved} onClose={() => setEditing(null)} />
-            <PriorityModal item={priorityItem} items={allRules?.items ?? data.items} onSaved={saved} onClose={() => setPriorityItem(null)} />
-            <CreateRuleModal open={creating} options={editorOptions} onSaved={saved} onClose={() => setCreating(false)} />
+                    </div>}
+                </WorkspaceDirectory>
+                <WorkspaceDetail hiddenOnMobile={!showEditor}>
+                    {showEditor ? <RuleEditor key={creating ? 'new-rule' : editing?.id} item={editing} creating={creating} initial={linkedDraft}
+                        options={editorOptions} blocked={reordering} onSaved={saved} onBack={backToRules} onStateChange={setEditorState} />
+                        : <div className="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-ui-muted">
+                            <ListFilter size={28} aria-hidden="true" /><h2 className="text-lg font-medium text-ui-heading">{t('selectRule')}</h2>
+                            <p className="max-w-sm text-sm">{t('selectRuleHelp')}</p><Button variant="outline-primary" className="gap-2" onClick={newRule}><Plus size={16} />{uiT('newRouteRule')}</Button>
+                        </div>}
+                </WorkspaceDetail>
+            </WorkspaceLayout>
         </MainContainer>
     );
 }
 
-function RouteConfigCard({ resolvers }: { resolvers: string[] }) {
+function RouteConfigCard({ onSaved, destinations }: { onSaved: () => void; destinations: Record<string, string> }) {
     const { t: uiT } = useTranslation('ui');
+    const { t } = useTranslation('routing');
 
     const ctx = useContext(GlobalToastContext);
     const { data: server, error, isLoading, mutate } = useSWR("/api/v2/route/config", getRouteConfig, { revalidateOnFocus: false });
@@ -322,26 +235,42 @@ function RouteConfigCard({ resolvers }: { resolvers: string[] }) {
     const save = () => {
         if (!data || saving || error || isLoading) return;
         void run(async () => {
-            const next = await saveRouteConfig(data);
-            commit(next);
-            await mutate(next, { revalidate: false });
-            ctx.Info("route config saved");
+            if (dirty) {
+                const next = await saveRouteConfig(data);
+                commit(next);
+                await mutate(next, { revalidate: false });
+            }
+            onSaved();
+            await applyRouteChanges();
+            onSaved();
+            ctx.Info("route config applied");
         });
     };
 
-    return (
-        <Card className="mb-4">
-            <fieldset disabled={saving} className="contents">
-            <CardHeader>
-                <IconBox icon={ShieldCheck} tone="danger" title={uiT("globalBypassSettings")} description={uiT("dnsResolutionAndRoutingStrategy")} />
-            </CardHeader>
-            <CardBody>
+    const target = data?.defaultTarget;
+    const destination = !target?.type || target.type === 'default' ? t('defaultProxy') : destinations[`${target.type}:${target.id}`] ?? t('unavailableDestination');
+    return <details className="group/fallback rounded-ui-lg bg-ui-surface-muted/50">
+        <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 [&::-webkit-details-marker]:hidden">
+            <span className="text-sm font-medium text-ui-heading">{t('fallbackTitle')}</span>
+            {data && <span className="min-w-0 truncate text-sm text-ui-muted">{data.defaultMode === 'proxy' ? destination : t(data.defaultMode)}</span>}
+            {dirty && <span className="shrink-0 text-xs text-ui-warning">{t('unsavedChanges')}</span>}
+            <ChevronDown size={15} aria-hidden="true" className="shrink-0 text-ui-muted transition-transform group-open/fallback:rotate-180" />
+        </summary>
+        <fieldset disabled={saving} className="min-w-0 border-t border-ui-border/60 p-4 sm:p-5">
                 {error ? (
                     <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
                 ) : data ? (
-                    <div className="grid gap-8">
+                    <div className="min-w-0 space-y-4">
+                        <p className="text-sm text-ui-muted">{t('defaultRoutingHelp')}</p>
                         {isLoading && <Spinner size="sm" />}
-                        <section className="grid gap-4">
+                        <section className="grid grid-cols-2 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1.25fr)]">
+                            <SettingSelectVertical className="mb-0" label={t('defaultAction')} value={data.defaultMode}
+                                values={[[t('proxy'), 'proxy'], [t('direct'), 'direct'], [t('block'), 'block']]}
+                                onChange={defaultMode => patch({ defaultMode })} />
+                            {data.defaultMode === 'proxy' && <><ArrowRight size={16} aria-hidden="true" className="mt-8 hidden text-ui-muted sm:block" /><div className="min-w-0"><SettingLabel className="mb-2">{t('destination')}</SettingLabel><RouteTargetPicker compact value={data.defaultTarget} onChange={defaultTarget => patch({ defaultTarget })} /></div></>}
+                        </section>
+                        <details className="border-t border-ui-border/70 pt-3"><summary className="cursor-pointer text-xs font-medium text-ui-muted">{t("advancedRoutingSettings")}</summary>
+                        <section className="mt-4 grid gap-4">
                             <div className="text-sm font-bold text-ui-muted">{uiT("resolveStrategy")}</div>
                             <SwitchCard
                                 label={uiT("resolveLocally")}
@@ -358,203 +287,21 @@ function RouteConfigCard({ resolvers }: { resolvers: string[] }) {
                         </section>
                         <section className="grid gap-4">
                             <div className="text-sm font-bold text-ui-muted">{uiT("defaultResolver")}</div>
-                            <SettingSelectVertical label={uiT("directResolver")} value={data.directResolver} values={includeCurrent(resolvers, data.directResolver)} onChange={(directResolver) => patch({ directResolver })} emptyChoose emptyChooseName={uiT("globalDefault")} />
-                            <SettingSelectVertical label={uiT("proxyResolver")} value={data.proxyResolver} values={includeCurrent(resolvers, data.proxyResolver)} onChange={(proxyResolver) => patch({ proxyResolver })} emptyChoose emptyChooseName={uiT("globalDefault")} />
-                        </section>
+                            <label className="space-y-2"><SettingLabel>{uiT("directResolver")}</SettingLabel><ResolverPicker label={uiT("directResolver")} value={data.directResolver} onChange={directResolver => patch({ directResolver })} /></label>
+                            <label className="space-y-2"><SettingLabel>{uiT("proxyResolver")}</SettingLabel><ResolverPicker label={uiT("proxyResolver")} value={data.proxyResolver} onChange={proxyResolver => patch({ proxyResolver })} /></label>
+                        </section></details>
                     </div>
                 ) : (
                     <Loading />
                 )}
-            </CardBody>
-            <CardFooter className="flex justify-end">
-                <Button disabled={saving || !data || Boolean(error)} onClick={save}>
+
+            <div className="mt-4 flex justify-end">
+                <Button size="sm" variant="outline-primary" disabled={saving || !data || Boolean(error)} onClick={save}>
                     {saving ? <Spinner size="sm" className="mr-2" /> : <Save size={16} className="mr-2" />}
-                    {uiT("saveConfiguration")}</Button>
-            </CardFooter>
-            </fieldset>
-        </Card>
-    );
-}
-
-function RuleEditorModal({ item, options, onSaved, onClose }: { item: RuleItem | null; options: RuleEditorOptions; onSaved: () => void; onClose: () => void }) {
-    const { t: uiT } = useTranslation('ui');
-
-    const ctx = useContext(GlobalToastContext);
-    const { data, error, isLoading, mutate } = useSWR(item ? ["/api/v2/route/rules/detail", item.name, item.index] : null, () => getRule(item!.name, item!.index), { revalidateOnFocus: false });
-
-    const { value: draft, setValue: setDraft, dirty } = useEditorDraft(item ? JSON.stringify([item.name, item.index]) : null, data, createDefaultRule);
-    const { pending, run } = useAsyncAction(error => ctx.Error(error instanceof Error ? error.message : String((error as { msg?: string })?.msg ?? error)));
-    const close = useCloseGuard(dirty, pending, onClose);
-    const save = () => {
-        if (!item || !data || error || isLoading || pending) return;
-        void run(async () => {
-            await saveRule(item.name, item.index, draft);
-            ctx.Info("rule saved");
-            onSaved();
-        });
-    };
-    const remove = () => {
-        if (!item || pending || !data || error || isLoading || !window.confirm("Delete this rule?")) return;
-        void run(async () => {
-            await deleteRule(item.name, item.index);
-            ctx.Info("rule deleted");
-            onSaved();
-        });
-    };
-
-    return (
-        <Modal open={!!item} onOpenChange={(open) => !open && close()}>
-            <ModalContent width={820}>
-                <ModalHeader closeButton><ModalTitle>{item?.name}</ModalTitle></ModalHeader>
-                <ModalBody>
-                    <fieldset disabled={pending} className="contents">
-                    {error && <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>}
-                    {isLoading && <Loading />}
-                    {!isLoading && !error && data && <RouteRuleForm value={draft} onChange={setDraft} options={options} lockName />}
-                </fieldset>
-                </ModalBody>
-                <ModalFooter className="flex flex-wrap items-center justify-between gap-3">
-                    <Button variant="outline-danger" disabled={pending || isLoading || Boolean(error) || !data} onClick={remove}>
-                        <Trash size={16} /> {uiT("deleteRule")}</Button>
-                    <div className="flex flex-wrap justify-end gap-2">
-                        <Button onClick={close} disabled={pending}>{uiT("cancel")}</Button>
-                        <Button disabled={pending || isLoading || Boolean(error) || !data} onClick={save}><Save size={16} /> {uiT("save")}</Button>
-                    </div>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
-    );
-}
-
-function CreateRuleModal({ open, options, onSaved, onClose }: { open: boolean; options: RuleEditorOptions; onSaved: () => void; onClose: () => void }) {
-    const { t: uiT } = useTranslation('ui');
-
-    const ctx = useContext(GlobalToastContext);
-    const [draft, setDraft] = useState<RouteRule>(createDefaultRule());
-
-    useEffect(() => {
-        if (open) {
-            setDraft(createDefaultRule());
-        }
-    }, [open]);
-
-    const { pending, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
-    const close = useCloseGuard(JSON.stringify(draft) !== JSON.stringify(createDefaultRule()), pending, onClose);
-
-    const save = () => {
-        if (pending || !draft.name.trim()) return;
-        void run(async () => {
-        await createRule(draft);
-        ctx.Info("rule created");
-        onSaved();
-        });
-    };
-
-    return (
-        <Modal open={open} onOpenChange={(next) => !next && close()}>
-            <ModalContent width={820}>
-                <ModalHeader closeButton><ModalTitle>{uiT("newRouteRule")}</ModalTitle></ModalHeader>
-                <ModalBody>
-                    <fieldset disabled={pending} className="contents">
-                    <RouteRuleForm value={draft} onChange={setDraft} options={options} />
-                </fieldset>
-                </ModalBody>
-                <ModalFooter>
-                    <Button onClick={save} disabled={pending || !draft.name.trim()}><Save size={16} /> {uiT("save")}</Button>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
-    );
-}
-
-function PriorityModal({ item, items, onSaved, onClose }: { item: RuleItem | null; items: RuleItem[]; onSaved: () => void; onClose: () => void }) {
-    const { t: uiT } = useTranslation('ui');
-
-    const ctx = useContext(GlobalToastContext);
-    const [target, setTarget] = useState("");
-    const [operate, setOperate] = useState<PriorityOperate>("exchange");
-    const [saving, setSaving] = useState(false);
-
-    useEffect(() => {
-        if (!item) return;
-        setTarget(ruleKey(item));
-        setOperate("exchange");
-    }, [item]);
-
-    const apply = () => {
-        if (!item) return;
-        const targetItem = items.find((value) => ruleKey(value) === target);
-        if (!targetItem) {
-            ctx.Error("target rule not found on current page");
-            return;
-        }
-        setSaving(true);
-        changeRulePriority(
-            { name: item.name, index: item.index },
-            { name: targetItem.name, index: targetItem.index },
-            operate,
-        )
-            .then(() => {
-                ctx.Info("rule priority changed");
-                onSaved();
-            })
-            .catch((err) => ctx.Error(err.msg ?? String(err)))
-            .finally(() => setSaving(false));
-    };
-
-    return (
-        <Modal open={!!item} onOpenChange={(open) => !open && onClose()}>
-            <ModalContent width={520}>
-                <ModalHeader closeButton>
-                    <ModalTitle>{uiT("changePriority")}</ModalTitle>
-                </ModalHeader>
-                <ModalBody>
-                    {item && (
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3 rounded-ui-lg border border-ui-border bg-ui-surface-muted p-3">
-                                <Badge variant="primary">#{item.index}</Badge>
-                                <span className="min-w-0 truncate font-bold">{item.name}</span>
-                            </div>
-                            <div>
-                                <div className="mb-2 text-sm font-semibold text-ui-muted">{uiT("targetRule")}</div>
-                                <Select
-                                    value={target}
-                                    onValueChange={setTarget}
-                                    items={items.map((rule) => ({
-                                        value: ruleKey(rule),
-                                        label: `#${rule.index} - ${rule.name}`,
-                                    }))}
-                                    triggerClassName="w-full"
-                                />
-                            </div>
-                            <div>
-                                <div className="mb-2 text-sm font-semibold text-ui-muted">{uiT("operation")}</div>
-                                <Select
-                                    value={operate}
-                                    onValueChange={(value) => setOperate(value as PriorityOperate)}
-                                    items={[
-                                        { value: "exchange", label: "Exchange" },
-                                        { value: "insert_before", label: "Insert Before" },
-                                        { value: "insert_after", label: "Insert After" },
-                                    ]}
-                                    triggerClassName="w-full"
-                                />
-                            </div>
-                        </div>
-                    )}
-                </ModalBody>
-                <ModalFooter>
-                    <Button onClick={apply} disabled={saving || !item}>
-                        {saving ? <Spinner size="sm" className="mr-2" /> : <Save size={16} className="mr-2" />}
-                        {uiT("apply")}</Button>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
-    );
-}
-
-function ruleKey(item: Pick<RuleItem, "name" | "index">): string {
-    return `${item.name}::${item.index}`;
+                    {t("saveAndApply")}</Button>
+            </div>
+        </fieldset>
+    </details>;
 }
 
 export default BypassComponent;

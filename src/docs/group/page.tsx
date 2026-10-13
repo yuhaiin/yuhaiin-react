@@ -1,9 +1,10 @@
+import { clearHashSearch, useHashSearch } from '@/hooks/useHashLocation';
 import { collectPages } from "@/api/paging";
 import { useTranslation } from 'react-i18next';
 import NodeImportModal from "./NodeImportModal";
 
 import { APIError } from "@/api/client";
-import { deleteNode, latencyNode, listNodes, useNode as selectNode, type NodeLatencyType } from "@/api/nodes";
+import { deleteNode, latencyNode, listNodes, selectedNodes, useNode as selectNode, type NodeLatencyType } from "@/api/nodes";
 import {
     LatencyDNSUrlDefault,
     LatencyDNSUrlKey,
@@ -19,17 +20,20 @@ import {
     LatencyStunUrlKey,
     normalizeLatencyDNSUrl,
 } from "@/common/apiurl";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
+import { allowNavigation } from "@/hooks/navigation-guard";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { useAsyncAction } from "@/hooks/use-editor-draft";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardHeader, IconBox, MainContainer } from "@/component/v2/card";
+import { MainContainer } from "@/component/v2/card";
+import { WorkspaceDetail, WorkspaceDirectory, WorkspaceLayout } from "@/component/workspace-layout";
 import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
 import { Input } from "@/component/v2/input";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { Node, NodeLatencyResponse } from "@/contract/node";
 import clsx from "clsx";
-import { Check, ChevronDown, Gauge, Layers, Network, Plus, Power, Search, Upload } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown, Gauge, Layers, Network, Plus, Power, Search, Upload } from "lucide-react";
 import { FC, memo, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import useSWR from "swr";
 import { useLocalStorage } from "usehooks-ts";
@@ -65,7 +69,6 @@ type NodeSTUNLatency = NonNullable<NodeLatencyResponse["stun"]>;
 type NodeLatencyValue = string | NodeIPLatency | NodeSTUNLatency;
 type NodeLatencyState = Partial<Record<NodeLatencyType, NodeLatencyValue>>;
 
-const collapsedLatencyTypes = ["tcp", "udp"] as const;
 const latencyActions: Array<{ type: NodeLatencyType; label: string }> = [
     { type: "tcp", label: "TCP Ping" },
     { type: "udp", label: "UDP Ping" },
@@ -154,15 +157,6 @@ function latencyResultValue(result: NodeLatencyResponse): NodeLatencyValue {
     return "ok";
 }
 
-const NodeLatencyBadge: FC<{ type: typeof collapsedLatencyTypes[number]; value: NodeLatencyValue | undefined; loading?: boolean }> = ({ type, value, loading }) => {
-    if (!value && !loading) return null;
-    return (
-        <Badge variant={loading ? "secondary" : latencyVariant(value)} pill className="gap-1 px-2 py-0.5 font-medium">
-            <span className="text-[0.62rem] font-semibold uppercase tracking-wide opacity-70">{type}</span>
-            {loading ? <Spinner size="sm" /> : <span className="font-mono text-[0.72rem]">{latencyText(value)}</span>}
-        </Badge>
-    );
-};
 
 function isEmptyLatency(value: NodeLatencyValue | undefined): boolean {
     if (value === undefined || value === null) return true;
@@ -208,8 +202,6 @@ const ResultGroup: FC<{ title: string; children: ReactNode }> = ({ title, childr
     </div>
 );
 
-const CHIP_GROUP_LIMIT = 6;
-
 const GroupPicker: FC<{
     groups: string[];
     counts: Map<string, number>;
@@ -221,41 +213,10 @@ const GroupPicker: FC<{
     const [open, setOpen] = useState(false);
     const [filter, setFilter] = useState("");
 
-    useEffect(() => {
-        if (!open) setFilter("");
-    }, [open]);
-
-    if (groups.length <= CHIP_GROUP_LIMIT) {
-        return (
-            <div className="flex min-w-0 flex-1 flex-wrap gap-2">
-                {groups.map((group) => {
-                    const active = group === value;
-                    const count = counts.get(group) ?? 0;
-                    return (
-                        <button
-                            key={group}
-                            type="button"
-                            onClick={() => onChange(group)}
-                            className={clsx(
-                                "inline-flex max-w-full items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
-                                active
-                                    ? "border-ui-primary bg-ui-primary-soft text-ui-primary shadow-inner-subtle"
-                                    : "border-ui-border bg-ui-surface text-ui-muted hover:border-ui-primary/30 hover:bg-ui-hover hover:text-ui-fg"
-                            )}
-                        >
-                            <span className="min-w-0 truncate">{group}</span>
-                            <span className={clsx(
-                                "rounded-full px-1.5 py-0.5 text-[11px] font-semibold",
-                                active ? "bg-ui-primary/15 text-ui-primary" : "bg-ui-chip text-ui-chip-fg"
-                            )}>
-                                {count}
-                            </span>
-                        </button>
-                    );
-                })}
-            </div>
-        );
-    }
+    const changeOpen = (next: boolean) => {
+        setOpen(next);
+        if (!next) setFilter("");
+    };
 
     const filtered = filter.trim()
         ? groups.filter((group) => group.toLowerCase().includes(filter.trim().toLowerCase()))
@@ -263,12 +224,12 @@ const GroupPicker: FC<{
     const selectedCount = counts.get(value) ?? 0;
 
     return (
-        <Dropdown open={open} onOpenChange={setOpen}>
+        <Dropdown open={open} onOpenChange={changeOpen}>
             <DropdownTrigger asChild>
                 <Button
                     type="button"
                     variant="outline-secondary"
-                    className="h-9 min-w-0 max-w-full justify-between gap-2 px-3 text-sm font-medium lg:min-w-[240px] lg:max-w-[360px]"
+                    className="h-8 w-full min-w-0 justify-between gap-2 rounded-ui-md border-transparent bg-transparent px-1 text-sm font-medium"
                 >
                     <span className="flex min-w-0 items-center gap-2">
                         <Layers size={15} className="shrink-0 opacity-70" />
@@ -276,7 +237,7 @@ const GroupPicker: FC<{
                     </span>
                     <span className="flex shrink-0 items-center gap-1.5">
                         {value && (
-                            <span className="rounded-full bg-ui-chip px-1.5 py-0.5 text-[11px] font-semibold text-ui-chip-fg">
+                            <span className="rounded-ui-sm bg-ui-surface-muted px-1.5 py-0.5 text-[11px] tabular-nums text-ui-muted">
                                 {selectedCount}
                             </span>
                         )}
@@ -299,6 +260,16 @@ const GroupPicker: FC<{
                             value={filter}
                             onChange={(e) => setFilter(e.target.value)}
                             placeholder={uiT("filterGroups")}
+                            onKeyDown={event => {
+                                if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                                    event.preventDefault();
+                                    const choices = event.currentTarget.closest('[role="menu"]')?.querySelectorAll<HTMLElement>('[role="menuitem"]');
+                                    const choice = event.key === 'ArrowDown' ? choices?.[0] : choices?.[choices.length - 1];
+                                    choice?.focus();
+                                } else if (event.key === 'Escape') {
+                                    event.preventDefault(); changeOpen(false);
+                                }
+                            }}
                             className="h-8 pl-8 text-sm"
                         />
                     </div>
@@ -383,172 +354,84 @@ export function pruneBusyLatency(
     return Object.fromEntries(entries);
 }
 
-const NodeItem: FC<{
-    item: Node;
-    onUse: () => void;
-    onLatency: (type: NodeLatencyType) => void;
-    onEdit: () => void;
-    latency?: NodeLatencyState;
-    busy?: Partial<Record<NodeLatencyType, boolean>>;
-}> = memo(({ item, onUse, onLatency, onEdit, latency, busy }) => {
+const NodeDirectoryItem = memo(function NodeDirectoryItem({ item, selected, onOpen, latency, busy, defaults }: {
+    item: Node; selected: boolean; onOpen: () => void; latency?: NodeLatencyState;
+    busy?: Partial<Record<NodeLatencyType, boolean>>; defaults: { tcp?: Node; udp?: Node } | undefined;
+}) {
     const { t: uiT } = useTranslation('ui');
+    const { t } = useTranslation('routing');
+    return <button type="button" aria-label={item.name || item.id} aria-current={selected ? 'true' : undefined} title={item.name || item.id} onClick={onOpen}
+        className={clsx('relative flex w-full min-w-0 items-center gap-2.5 rounded-ui-md px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus', selected ? 'bg-ui-primary-soft/55' : 'hover:bg-ui-surface-muted/75')}>
+        {selected && <span aria-hidden="true" className="absolute inset-y-3 left-0 w-0.5 rounded-full bg-ui-primary" />}
+        <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 items-center gap-2"><span className="min-w-0 flex-1 truncate text-sm font-medium leading-5 text-ui-heading">{item.name || item.id}</span>
+                <span className={clsx('h-1.5 w-1.5 shrink-0 rounded-full', item.enabled ? 'bg-ui-success' : 'bg-ui-muted/50')} role="img" aria-label={item.enabled ? uiT('enabled') : uiT('off')} />
+                {(defaults?.tcp?.id === item.id || defaults?.udp?.id === item.id) && <Check size={13} aria-label={t('defaultNode')} className="shrink-0 text-ui-primary" />}
+            </div>
+            <div className="mt-0.5 flex min-w-0 items-center gap-2">
+                <span className="min-w-0 flex-1 truncate text-[11px] leading-4 text-ui-muted">{chainLabel(item) || t('noProtocol')}{!item.enabled && ` · ${uiT('off')}`}</span>
+                {busy?.tcp ? <Spinner size="sm" /> : latency?.tcp && <span className={clsx('shrink-0 font-mono text-[11px] tabular-nums', latencyTextClass(latency.tcp))}>{latencyText(latency.tcp)}</span>}
+            </div>
+        </div>
+    </button>;
+});
 
-    const chain = chainLabel(item);
+function NodeOverview({ item, latency, busy, defaults, onLatency, onUse, onBack, using, locked }: {
+    item: Node; latency?: NodeLatencyState; busy?: Partial<Record<NodeLatencyType, boolean>>;
+    defaults?: { tcp?: Node; udp?: Node }; onLatency: (type: NodeLatencyType) => void;
+    onUse: () => void; onBack: () => void; using: boolean; locked: boolean;
+}) {
+    const { t: uiT } = useTranslation('ui');
+    const { t } = useTranslation('routing');
     const hasLatency = Boolean(busy?.tcp || busy?.udp || !isEmptyLatency(latency?.tcp) || !isEmptyLatency(latency?.udp));
     const hasIp = Boolean(busy?.ip || latency?.ip);
     const hasStun = Boolean(busy?.stun || busy?.stun_tcp || latency?.stun || latency?.stun_tcp);
-    const hasAnyResult = hasLatency || hasIp || hasStun;
-
-    return (
-        <AccordionItem
-            value={item.id}
-            className="!mt-0 !rounded-none !border-0 !border-b !border-ui-border/80 !bg-transparent last:!border-b-0 hover:!z-0 hover:!border-ui-border/80 focus-within:!z-0 focus-within:!border-ui-border/80"
-        >
-            <AccordionTrigger className="gap-3 px-4 py-3 text-ui-fg hover:!bg-ui-list-hover/80 hover:!text-ui-fg data-[state=open]:!bg-ui-surface-muted/40 data-[state=open]:!text-ui-fg data-[state=open]:!border-ui-border/50">
-                <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <span
-                        className={clsx(
-                            "mt-0.5 h-2 w-2 shrink-0 rounded-full",
-                            item.enabled ? "bg-ui-success shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-success)_18%,transparent)]" : "bg-ui-muted/50"
-                        )}
-                        title={item.enabled ? "Enabled" : "Disabled"}
-                    />
-
-                    <div className="min-w-0 flex-1">
-                        <div className="flex min-w-0 items-center gap-2">
-                            <span
-                                className="min-w-0 flex-1 text-[0.95rem] font-semibold leading-snug text-ui-heading max-sm:break-words sm:truncate"
-                                title={item.name || item.id}
-                            >
-                                {item.name || item.id}
-                            </span>
-                            {item.origin && (
-                                <span className="hidden shrink-0 text-[11px] text-ui-muted sm:inline">
-                                    · {item.origin}
-                                </span>
-                            )}
-                            {!item.enabled && (
-                                <Badge variant="secondary" pill className="shrink-0 px-1.5 py-0 text-[0.62rem]">
-                                    {uiT("off")}</Badge>
-                            )}
-                        </div>
-                        <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
-                            <div className="min-w-0 flex-1 truncate text-xs text-ui-muted">
-                                {chain || "No chain"}
-                            </div>
-                            <div className="flex shrink-0 items-center gap-1.5 sm:hidden">
-                                {collapsedLatencyTypes.map((type) => (
-                                    <NodeLatencyBadge
-                                        key={type}
-                                        type={type}
-                                        value={latency?.[type]}
-                                        loading={busy?.[type]}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="hidden shrink-0 items-center gap-1.5 sm:flex">
-                        {collapsedLatencyTypes.map((type) => (
-                            <NodeLatencyBadge
-                                key={type}
-                                type={type}
-                                value={latency?.[type]}
-                                loading={busy?.[type]}
-                            />
-                        ))}
-                    </div>
+    return <>
+        <header className="mb-5 border-b border-ui-border/60 pb-5">
+            <Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent bg-transparent md:hidden" onClick={onBack}><ArrowLeft size={16} />{t('backToNodes')}</Button>
+            <p className="mb-1 text-xs text-ui-muted">{t('nodeDetails')}</p>
+            <h2 className="break-words text-xl font-semibold tracking-tight text-ui-heading">{item.name || item.id}</h2>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                <Badge pill variant={item.enabled ? 'success' : 'secondary'}>{item.enabled ? uiT('enabled') : uiT('off')}</Badge>
+                <span className="text-ui-muted">{item.group || 'manual'}</span>
+                {defaults?.tcp?.id === item.id && <Badge pill variant="primary">{t('defaultForTCP')}</Badge>}
+                {defaults?.udp?.id === item.id && <Badge pill variant="primary">{t('defaultForUDP')}</Badge>}
+            </div>
+        </header>
+        <section className="mb-6 border-b border-ui-border/60 pb-6" aria-label={t('connectivityChecks')}>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <h3 className="text-sm font-semibold text-ui-heading">{t('connectivityChecks')}</h3>
+                <div className="flex flex-wrap gap-2">
+                    <Dropdown><DropdownTrigger asChild><Button size="sm" variant="outline-secondary" className="gap-2" disabled={locked}><Gauge size={15} />{uiT('test')}<ChevronDown size={14} /></Button></DropdownTrigger>
+                        <DropdownContent align="end">{latencyActions.map(action => <DropdownItem key={action.type} disabled={locked || busy?.[action.type]} onSelect={() => onLatency(action.type)}>{busy?.[action.type] ? <Spinner size="sm" className="mr-2" /> : <Gauge size={15} className="mr-2" />}{action.label}</DropdownItem>)}</DropdownContent>
+                    </Dropdown>
+                    <Button size="sm" variant="outline-primary" className="gap-2" disabled={locked || using || !item.enabled} onClick={onUse}>{using ? <Spinner size="sm" /> : <Power size={15} />}{t('setDefaultNode')}</Button>
                 </div>
-            </AccordionTrigger>
-
-            <AccordionContent className="!bg-ui-surface">
-                <div className="space-y-3.5 px-1 pb-1">
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ui-muted">
-                        <span className="font-mono" title={item.id}>{item.id}</span>
-                        {item.group && (
-                            <span>
-                                <span className="text-ui-muted/70">{uiT("groupLabel")}</span>{" "}
-                                <span className="text-ui-fg">{item.group}</span>
-                            </span>
-                        )}
-                        <span>
-                            <span className="text-ui-muted/70">{uiT("status")}</span>{" "}
-                            <span className={item.enabled ? "text-ui-success" : "text-ui-muted"}>
-                                {item.enabled ? "enabled" : "disabled"}
-                            </span>
-                        </span>
-                    </div>
-
-                    {hasAnyResult ? (
-                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                            {hasLatency && (
-                                <ResultGroup title="Latency">
-                                    <div className="flex flex-wrap gap-2">
-                                        <ResultChip label="TCP" value={latency?.tcp} loading={busy?.tcp} />
-                                        <ResultChip label="UDP" value={latency?.udp} loading={busy?.udp} />
-                                    </div>
-                                </ResultGroup>
-                            )}
-
-                            {hasIp && (
-                                <ResultGroup title={uiT("ip")}>
-                                    <ResultRow label="IPv4" value={latencyDetail(latency?.ip, "ipv4")} loading={busy?.ip} />
-                                    <ResultRow label="IPv6" value={latencyDetail(latency?.ip, "ipv6")} loading={busy?.ip} />
-                                </ResultGroup>
-                            )}
-
-                            {hasStun && (
-                                <ResultGroup title="STUN">
-                                    <div className="flex flex-wrap gap-2">
-                                        <ResultChip label="NAT" value={latencyDetail(latency?.stun, "mapping")} loading={busy?.stun} />
-                                        <ResultChip label="Filter" value={latencyDetail(latency?.stun, "filtering")} loading={busy?.stun} />
-                                    </div>
-                                    <ResultRow label="Mapped" value={latencyDetail(latency?.stun, "mappedAddress")} loading={busy?.stun} />
-                                    <ResultRow label="TCP" value={latencyDetail(latency?.stun_tcp, "mappedAddress")} loading={busy?.stun_tcp} />
-                                </ResultGroup>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="text-xs text-ui-muted">{uiT("noTestResultsYet")}</div>
-                    )}
-
-                    <div className="flex flex-wrap items-center justify-end gap-2 border-t border-ui-border/70 pt-3">
-                        <Dropdown>
-                            <DropdownTrigger asChild>
-                                <Button size="sm" variant="outline-secondary" onClick={(e) => e.stopPropagation()}>
-                                    <Gauge size={15} className="mr-1.5" />
-                                    {uiT("test")}<ChevronDown size={14} className="ml-1" />
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownContent align="end" className="min-w-[180px] max-w-[220px]">
-                                {latencyActions.map((action) => (
-                                    <DropdownItem key={action.type} disabled={busy?.[action.type]} onSelect={() => onLatency(action.type)}>
-                                        {busy?.[action.type] ? <Spinner size="sm" className="mr-2" /> : <Gauge size={16} className="mr-2" />}
-                                        {action.label}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownContent>
-                        </Dropdown>
-                        <Button size="sm" variant="primary" onClick={(e) => { e.stopPropagation(); onUse(); }}>
-                            <Power size={15} className="mr-1.5" />
-                            {uiT("use")}</Button>
-                        <Button size="sm" variant="outline-secondary" onClick={(e) => { e.stopPropagation(); onEdit(); }}>
-                            {uiT("edit")}</Button>
-                    </div>
-                </div>
-            </AccordionContent>
-        </AccordionItem>
-    );
-});
+            </div>
+            {hasLatency || hasIp || hasStun ? <div className="grid gap-4 sm:grid-cols-2">
+                {hasLatency && <ResultGroup title={t('lastLatencyResults')}><div className="flex flex-wrap gap-2"><ResultChip label="TCP" value={latency?.tcp} loading={busy?.tcp} /><ResultChip label="UDP" value={latency?.udp} loading={busy?.udp} /></div></ResultGroup>}
+                {hasIp && <ResultGroup title={uiT('ip')}><ResultRow label="IPv4" value={latencyDetail(latency?.ip, 'ipv4')} loading={busy?.ip} /><ResultRow label="IPv6" value={latencyDetail(latency?.ip, 'ipv6')} loading={busy?.ip} /></ResultGroup>}
+                {hasStun && <ResultGroup title="STUN"><div className="flex flex-wrap gap-2"><ResultChip label="NAT" value={latencyDetail(latency?.stun, 'mapping')} loading={busy?.stun} /><ResultChip label="Filter" value={latencyDetail(latency?.stun, 'filtering')} loading={busy?.stun} /></div><ResultRow label="Mapped" value={latencyDetail(latency?.stun, 'mappedAddress')} loading={busy?.stun} /><ResultRow label="TCP" value={latencyDetail(latency?.stun_tcp, 'mappedAddress')} loading={busy?.stun_tcp} /></ResultGroup>}
+            </div> : <p className="text-sm text-ui-muted">{uiT('noTestResultsYet')}</p>}
+        </section>
+    </>;
+}
 
 export default function Group() {
     const { t: uiT } = useTranslation('ui');
+    const { t } = useTranslation('routing');
 
     const ctx = useContext(GlobalToastContext);
-    const [showdata, setShowdata] = useState({ show: false, id: "", new: false });
+    const desktop = useMediaQuery('(min-width: 768px)');
+    const initialized = useRef(false);
+    const [editorState, setEditorState] = useState({ dirty: false, pending: false });
+    const [localShowdata, setShowdata] = useState({ show: false, id: "", new: false });
+    const search = useHashSearch();
+    const linkedId = new URLSearchParams(search).get('node');
+    const showdata = linkedId ? { show: true, id: linkedId, new: false } : localShowdata;
+    const closeLink = () => { if (linkedId) clearHashSearch(); };
     const [importOpen, setImportOpen] = useState(false);
-    const [selectedGroup, setSelectedGroup] = useState("");
+    const [preferredGroup, setSelectedGroup] = useState("");
     const [query, setQuery] = useState("");
     const [latency, setLatency] = useLocalStorage<Record<string, NodeLatencyState>>("latency-v2-contract", {});
     const [busyLatency, setBusyLatency] = useState<Record<string, Partial<Record<NodeLatencyType, boolean>>>>({});
@@ -558,7 +441,9 @@ export default function Group() {
     const [latencyIPUrl] = useLocalStorage(LatencyIPUrlKey, LatencyIPUrlDefault);
     const [latencyStunUrl] = useLocalStorage(LatencyStunUrlKey, LatencyStunUrlDefault);
     const [latencyStunTCPUrl] = useLocalStorage(LatencyStunTCPUrlKey, LatencyStunTCPUrlDefault);
-    const { data, error, isLoading, mutate } = useSWR("/api/v2/nodes/all", () => collectPages(listNodes), { revalidateOnFocus: false });
+    const { data: defaults, error: defaultsError, mutate: mutateDefaults } = useSWR("/api/v2/nodes/selected", selectedNodes, { revalidateOnFocus: false });
+    const { pending: using, run: runUse } = useAsyncAction(error => ctx.Error(errorOf(error)?.msg ?? t("defaultNodeFailed")));
+    const { data, error, mutate } = useSWR("/api/v2/nodes/all", () => collectPages(listNodes), { revalidateOnFocus: false });
 
     const apiError = errorOf(error);
     const items = useMemo(() => data?.items ?? [], [data?.items]);
@@ -568,6 +453,9 @@ export default function Group() {
         const values = new Set(items.map(item => item.group || "manual"));
         return Array.from(values).sort((a, b) => a.localeCompare(b));
     }, [items]);
+    // Select the first available group without a post-render state update.
+    // If a group disappears after refreshing, fall back to the first available.
+    const selectedGroup = groups.includes(preferredGroup) ? preferredGroup : groups[0] ?? "";
     const groupCounts = useMemo(() => {
         const counts = new Map<string, number>();
         for (const item of items) {
@@ -599,50 +487,65 @@ export default function Group() {
         [groups, selectedGroup],
     );
 
+    // Derive visible results from the current node set. Do not trigger another
+    // synchronous render when SWR updates its data or removes a node.
+    const visibleLatency = useMemo(() => data ? pruneLatencyMap(latency, nodeIds) : latency, [data, latency, nodeIds]);
+    const visibleBusyLatency = useMemo(() => data ? pruneBusyLatency(busyLatency, nodeIds) : busyLatency, [data, busyLatency, nodeIds]);
+    useEffect(() => { nodeIdsRef.current = data ? nodeIds : []; }, [data, nodeIds]);
+
+    const selectedItem = items.find(item => item.id === showdata.id);
     useEffect(() => {
-        if (selectedGroup && !groups.includes(selectedGroup)) setSelectedGroup("");
-    }, [groups, selectedGroup]);
+        if (!initialized.current && desktop && groupItems.length && !showdata.show) {
+            initialized.current = true;
+            setShowdata({ show: true, id: groupItems[0].id, new: false });
+        }
+    }, [desktop, groupItems, showdata.show]);
 
-    useEffect(() => {
-        if (!selectedGroup && groups.length > 0) setSelectedGroup(groups[0]);
-    }, [groups, selectedGroup]);
+    if (apiError && data === undefined) return <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} />;
+    if (data === undefined) return <Loading />;
 
-    useEffect(() => {
-        nodeIdsRef.current = data === undefined ? [] : nodeIds;
-        if (data === undefined) return;
-        setLatency((prev) => pruneLatencyMap(prev, nodeIds));
-        setBusyLatency((prev) => pruneBusyLatency(prev, nodeIds));
-    }, [data, nodeIds, setLatency]);
-
-    if (apiError) return <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} />;
-    if (isLoading || data === undefined) return <Loading />;
-
-    const deleteCurrentNode = () => {
-        const id = showdata.id;
-        deleteNode(id)
-            .then(() => {
-                ctx.Info("Removed successful");
-                setShowdata((prev) => ({ ...prev, show: false }));
-                void mutate();
-            })
-            .catch((err: unknown) => {
-                const apiErr = errorOf(err);
-                ctx.Error(apiErr?.msg ?? "Remove failed");
-            });
+    const closeDetails = () => {
+        initialized.current = true;
+        setShowdata({ show: false, id: '', new: false });
+        setEditorState({ dirty: false, pending: false });
+        closeLink();
     };
-
+    const openNode = (id: string) => {
+        if (showdata.show && !showdata.new && showdata.id === id) return;
+        if (!allowNavigation()) return;
+        initialized.current = true;
+        closeLink();
+        setShowdata({ show: true, id, new: false });
+    };
+    const deleteCurrentNode = async () => {
+        await deleteNode(showdata.id);
+        ctx.Info(t('nodeRemoved'));
+        closeDetails();
+        await mutate();
+    };
     const handleCreate = () => {
-        setShowdata({ show: true, id: "", new: true });
+        if (!allowNavigation()) return;
+        initialized.current = true;
+        closeLink();
+        setShowdata({ show: true, id: '', new: true });
     };
-
+    const changeGroup = (group: string) => {
+        if (group === selectedGroup || !allowNavigation()) return;
+        initialized.current = true;
+        closeLink();
+        setSelectedGroup(group);
+        const first = items.find(item => (item.group || 'manual') === group);
+        setShowdata(desktop && first ? { show: true, id: first.id, new: false } : { show: false, id: '', new: false });
+        setEditorState({ dirty: false, pending: false });
+    };
     const handleUse = (id: string) => {
-        selectNode(id)
-            .then(() => ctx.Info(`Use ${id} successful`))
-            .catch((err: unknown) => {
-                const apiErr = errorOf(err);
-                ctx.Error(apiErr?.msg ?? "Use failed");
-            });
+        void runUse(async () => {
+            await selectNode(id);
+            void mutateDefaults();
+            ctx.Info(t('defaultNodeUpdated'));
+        });
     };
+    const backToNodes = () => { if (allowNavigation()) closeDetails(); };
 
     const handleLatency = (id: string, type: NodeLatencyType) => {
         setBusyLatency((prev) => ({ ...prev, [id]: { ...prev[id], [type]: true } }));
@@ -672,143 +575,37 @@ export default function Group() {
             .finally(() => setBusyLatency((prev) => clearBusyLatency(prev, id, type)));
     };
 
-    return (
-        <MainContainer>
-            <NodeModal
-                show={showdata.show}
-                id={showdata.id}
-                isNew={showdata.new}
-                editable
-                groups={modalGroups}
-                onHide={(save) => {
-                    if (save) void mutate();
-                    setShowdata((prev) => ({ ...prev, show: false }));
-                }}
-                onDelete={deleteCurrentNode}
-            />
-            <NodeImportModal
-                show={importOpen}
-                group={selectedGroup || "manual"}
-                onHide={() => setImportOpen(false)}
-                onChanged={() => { void mutate(); }}
-                onSaved={() => setImportOpen(false)}
-            />
-
-            <Card className="mb-4 overflow-hidden">
-                <CardHeader className="gap-4 px-4 py-4">
-                    <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-3">
-                        <IconBox
-                            icon={Layers}
-                            tone="primary"
-                            title={uiT("outbound6")}
-                            description={`${items.length} nodes across ${groups.length} ${groups.length === 1 ? "group" : "groups"}`}
-                        />
-                        <div className="flex flex-wrap items-center gap-2">
-                            <Button onClick={handleCreate}>
-                                <Plus className="mr-1" size={16} /> {uiT("new")}</Button>
-                            <Button variant="outline-secondary" onClick={() => setImportOpen(true)}>
-                                <Upload className="mr-1" size={16} /> {uiT("import")}</Button>
-                        </div>
-                    </div>
-                </CardHeader>
-
-                <CardBody className="space-y-4 pt-4" density="compact">
-                    {groups.length === 0 ? (
-                        <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center">
-                            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-ui-primary-soft text-ui-primary">
-                                <Network size={22} />
-                            </div>
-                            <div className="text-sm font-semibold text-ui-heading">{uiT("noOutboundGroupsYet")}</div>
-                            <div className="mt-1 text-xs text-ui-muted">{uiT("createANodeOrImportJsonToGetStarted")}</div>
-                            <div className="mt-4 flex justify-center gap-2">
-                                <Button size="sm" onClick={handleCreate}>
-                                    <Plus size={14} className="mr-1" /> {uiT("newNode")}</Button>
-                                <Button size="sm" variant="outline-secondary" onClick={() => setImportOpen(true)}>
-                                    <Upload size={14} className="mr-1" /> {uiT("import")}</Button>
-                            </div>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                <GroupPicker
-                                    groups={groups}
-                                    counts={groupCounts}
-                                    value={selectedGroup}
-                                    onChange={setSelectedGroup}
-                                />
-                                <div className="relative w-full shrink-0 sm:w-[240px] lg:w-[280px]">
-                                    <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" />
-                                    <Input
-                                        value={query}
-                                        onChange={(e) => setQuery(e.target.value)}
-                                        placeholder={uiT("searchNodes")}
-                                        className="h-9 pl-9 text-sm"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="overflow-hidden rounded-ui-xl border border-ui-border bg-ui-surface">
-                                {groupItems.length === 0 ? (
-                                    <div className="px-4 py-12 text-center">
-                                        <Search className="mx-auto mb-2 text-ui-muted" size={28} />
-                                        <div className="text-sm font-medium text-ui-heading">
-                                            {query.trim() ? "No matching nodes" : "No nodes in this group"}
-                                        </div>
-                                        <div className="mt-1 text-xs text-ui-muted">
-                                            {query.trim()
-                                                ? "Try another keyword, or clear the search."
-                                                : "Add a node to this group to see it here."}
-                                        </div>
-                                    </div>
-                                ) : groupItems.length > GROUP_VIRTUALIZE_THRESHOLD ? (
-                                    <VList
-                                        data={groupItems}
-                                        itemSize={72}
-                                        bufferSize={720}
-                                        style={{ height: "min(72vh, 900px)", width: "100%" }}
-                                    >
-                                        {(item) => (
-                                            <Accordion
-                                                key={item.id}
-                                                type="single"
-                                                collapsible
-                                                className="!mb-0 !rounded-none !border-0 !shadow-none !transition-none hover:!translate-y-0 hover:!border-transparent hover:!shadow-none"
-                                            >
-                                                <NodeItem
-                                                    item={item}
-                                                    latency={latency[item.id]}
-                                                    busy={busyLatency[item.id]}
-                                                    onUse={() => handleUse(item.id)}
-                                                    onLatency={(type) => handleLatency(item.id, type)}
-                                                    onEdit={() => setShowdata({ show: true, id: item.id, new: false })}
-                                                />
-                                            </Accordion>
-                                        )}
-                                    </VList>
-                                ) : (
-                                    <Accordion
-                                        type="single"
-                                        collapsible
-                                        className="!mb-0 !rounded-none !border-0 !shadow-none !transition-none hover:!translate-y-0 hover:!border-transparent hover:!shadow-none"
-                                    >
-                                        {groupItems.map((item) => (
-                                            <NodeItem
-                                                key={item.id}
-                                                item={item}
-                                                latency={latency[item.id]}
-                                                busy={busyLatency[item.id]}
-                                                onUse={() => handleUse(item.id)}
-                                                onLatency={(type) => handleLatency(item.id, type)}
-                                                onEdit={() => setShowdata({ show: true, id: item.id, new: false })}
-                                            />
-                                        ))}
-                                    </Accordion>
-                                )}
-                            </div>
-                        </>
-                    )}
-                </CardBody>
-            </Card>
-        </MainContainer>
-    );
+    return <MainContainer className="max-w-[1440px]">
+        <NodeImportModal show={importOpen} group={selectedGroup || 'manual'} onHide={() => setImportOpen(false)} onChanged={() => { void mutate(); }} onSaved={() => setImportOpen(false)} />
+        <header className={clsx('mb-6 flex-wrap items-center justify-between gap-4', showdata.show ? 'hidden md:flex' : 'flex')}>
+            <div><h1 className="text-3xl font-semibold tracking-tight text-ui-heading">{t('nodesTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('nodeDirectoryCount', { count: groups.length, nodes: items.length, groups: groups.length })}</p></div>
+            <div className="flex items-center gap-2"><Button variant="outline-secondary" disabled={editorState.pending} onClick={() => setImportOpen(true)}><Upload className="mr-1.5" size={16} />{uiT('import')}</Button><Button variant="primary" onClick={handleCreate} disabled={editorState.pending || showdata.new}><Plus className="mr-1.5" size={16} />{uiT('new')}</Button></div>
+        </header>
+        {groups.length === 0 && !showdata.show ? <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center">
+            <Network className="mx-auto mb-3 text-ui-primary" size={28} aria-hidden="true" /><h2 className="text-sm font-semibold text-ui-heading">{uiT('noOutboundGroupsYet')}</h2>
+            <p className="mt-1 text-xs text-ui-muted">{uiT('createANodeOrImportJsonToGetStarted')}</p><Button className="mt-4 gap-2" variant="primary" onClick={handleCreate}><Plus size={16} />{uiT('newNode')}</Button>
+        </div> : <WorkspaceLayout>
+            <WorkspaceDirectory label={t('nodeDirectory')} hiddenOnMobile={showdata.show}>
+                <div className="mb-2 space-y-2 border-b border-ui-border/50 px-1 pb-3">
+                    <GroupPicker groups={groups} counts={groupCounts} value={selectedGroup} onChange={changeGroup} />
+                    <div className="relative"><Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" /><Input aria-label={uiT('searchNodes')} value={query} onChange={e => setQuery(e.target.value)} placeholder={uiT('searchNodes')} className="h-8 border-transparent bg-ui-surface-muted/70 pl-9 text-xs shadow-none focus:border-ui-primary/40 focus:bg-ui-surface" /></div>
+                </div>
+                {apiError ? <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} /> : groupItems.length === 0 ? <p className="px-3 py-8 text-center text-sm text-ui-muted">{t(query.trim() ? 'noMatchingNodes' : 'noGroupNodes')}</p> :
+                    groupItems.length > GROUP_VIRTUALIZE_THRESHOLD ? <VList data={groupItems} itemSize={57} bufferSize={456} style={{ height: 'min(72vh, 900px)', width: '100%' }}>
+                        {item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} />}
+                    </VList> : <div>{groupItems.map(item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} />)}</div>}
+            </WorkspaceDirectory>
+            <WorkspaceDetail hiddenOnMobile={!showdata.show}>
+                {showdata.show ? <>
+                    {selectedItem && !showdata.new ? <NodeOverview item={selectedItem} latency={visibleLatency[selectedItem.id]} busy={visibleBusyLatency[selectedItem.id]} defaults={defaults} using={using} locked={editorState.dirty || editorState.pending}
+                        onLatency={type => handleLatency(selectedItem.id, type)} onUse={() => handleUse(selectedItem.id)} onBack={backToNodes} /> : <header className="mb-5 border-b border-ui-border/60 pb-5"><Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent md:hidden" onClick={backToNodes}><ArrowLeft size={16} />{t('backToNodes')}</Button><h2 className="break-words text-xl font-semibold text-ui-heading">{showdata.new ? uiT('newNode') : t('nodeDetails')}</h2></header>}
+                    {defaultsError && <div role="alert" className="mb-4 text-sm text-ui-danger">{t('defaultNodeStateFailed')} <Button size="sm" onClick={() => void mutateDefaults()}>{t('retry')}</Button></div>}
+                    <NodeModal key={showdata.new ? 'new-node' : showdata.id} show id={showdata.id} isNew={showdata.new} editable presentation="inline" groups={modalGroups} onStateChange={setEditorState}
+                        onChanged={() => { void mutate(); }}
+                        onSave={node => { initialized.current = true; closeLink(); setShowdata({ show: true, id: node.id, new: false }); void mutateDefaults(); }}
+                        onHide={saved => { if (!saved) closeDetails(); }} onDelete={showdata.new ? undefined : deleteCurrentNode} />
+                </> : <div className="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-ui-muted"><Network size={28} aria-hidden="true" /><h2 className="text-lg font-medium text-ui-heading">{t('selectNode')}</h2><p className="max-w-sm text-sm">{t('selectNodeHelp')}</p><Button variant="outline-primary" className="gap-2" onClick={handleCreate}><Plus size={16} />{uiT('newNode')}</Button></div>}
+            </WorkspaceDetail>
+        </WorkspaceLayout>}
+    </MainContainer>;
 }

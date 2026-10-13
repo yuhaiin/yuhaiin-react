@@ -69,6 +69,7 @@ export namespace Go {
       source: string;
       inbound: string;
       inboundName: string;
+      inboundId: string;
       interface: string;
       outbound: string;
       localAddr: string;
@@ -77,7 +78,10 @@ export namespace Go {
       hosts: string;
       domain: string;
       ip: string;
-      tag: string;
+      selectorId: string;
+      selectorName: string;
+      ruleId: string;
+      ruleName: string;
       nodeId: string;
       nodeName: string;
       protocol: string;
@@ -93,6 +97,7 @@ export namespace Go {
       resolver: string;
       geo: string;
       outboundGeo: string;
+      listNames?: Record<string, string>;
       lists?: string[];
     }
     export interface NetworkType {
@@ -100,10 +105,13 @@ export namespace Go {
       underlyingType: string;
     }
     export interface MatchHistoryEntry {
+      ruleId?: string;
       ruleName: string;
       history: MatchResult[];
     }
     export interface MatchResult {
+      kind?: string;
+      id?: string;
       listName: string;
       matched: boolean;
     }
@@ -149,6 +157,34 @@ export namespace Go {
     }
   }
   export namespace inbound {
+    export interface RuntimeStatus {
+      id: string;
+      name: string;
+      enabled: boolean;
+      status: string;
+      lastError?: string;
+      changedAt: number;
+      listeners: RuntimeListener[];
+      statistics: IngressStatistics;
+    }
+    export interface RuntimeListener {
+      kind: string;
+      state: string;
+      listen?: string;
+    }
+    export interface IngressStatistics {
+      acceptedStreams: string;
+      receivedPackets: string;
+      receivedPings: string;
+    }
+    export interface RuntimeEvent {
+      id: number;
+      inboundId: string;
+      type: string;
+      state: string;
+      error?: string;
+      createdAt: number;
+    }
     export interface Inbound {
       id: string;
       name: string;
@@ -156,6 +192,10 @@ export namespace Go {
       network: Network;
       transports: Transport[];
       protocol: Protocol;
+    }
+    export interface Capabilities {
+      platform: string;
+      protocols: string[];
     }
     export type Network =
       | { type: "empty"; empty: EmptyNetwork }
@@ -181,6 +221,7 @@ export namespace Go {
       | { type: "tproxy"; tproxy: TProxyProtocol }
       | { type: "redir"; redir: RedirProtocol }
       | { type: "tun"; tun: TunProtocol }
+      | { type: "krunlet"; krunlet: KrunletProtocol }
       | { type: "reverse_http"; reverse_http: ReverseHTTPProtocol }
       | { type: "reverse_tcp"; reverse_tcp: ReverseTCPProtocol }
       | { type: "none"; none: NoneProtocol };
@@ -234,6 +275,9 @@ export namespace Go {
       excludes: string[];
       postUp: string[];
       postDown: string[];
+    }
+    export interface KrunletProtocol {
+      socket: string;
     }
     export interface ReverseHTTPProtocol {
       url: string;
@@ -337,6 +381,31 @@ export namespace Go {
       tcp?: Node;
       udp?: Node;
     }
+    export interface SelectionRequest {
+      tcpId: string;
+      udpId: string;
+    }
+    export interface ImportRequest {
+      text: string;
+      group: string;
+    }
+    export interface ImportIssue {
+      line: number;
+      message: string;
+    }
+    export interface ImportPreview {
+      items: Node[];
+      errors: ImportIssue[];
+    }
+    export interface Selector {
+      id: string;
+      name: string;
+      nodeId: string;
+      revision: number;
+    }
+    export interface SelectorList {
+      items: Selector[];
+    }
     export interface LatencyRequest {
       type: string;
       url: string;
@@ -385,11 +454,11 @@ export namespace Go {
       | { type: "http2"; http2: Concurrency }
       | { type: "reality"; reality: Reality }
       | { type: "tls"; tls: TLS }
+      | { type: "amneziawg"; amneziawg: AmneziaWG }
       | { type: "ikev2"; ikev2: IKEv2 }
       | { type: "anyconnect"; anyconnect: AnyConnect }
       | { type: "sstp"; sstp: SSTP }
       | { type: "fortinet"; fortinet: Fortinet }
-      | { type: "amneziawg"; amneziawg: AmneziaWG }
       | { type: "wireguard"; wireguard: Wireguard }
       | { type: "openvpn"; openvpn: OpenVPN }
       | { type: "l2tp"; l2tp: L2TP }
@@ -652,13 +721,6 @@ export namespace Go {
     export interface TLSTermination {
       tls: ServerTLS;
     }
-    export interface Wireguard {
-      secretKey: string;
-      endpoint?: string[];
-      peers?: WireguardPeer[];
-      mtu?: number;
-      reserved?: string;
-    }
     export interface IKEv2 {
       gateway: string;
       psk?: string;
@@ -695,6 +757,13 @@ export namespace Go {
       insecure_skip_verify?: boolean;
       disable_dtls?: boolean;
       mtu?: number;
+    }
+    export interface Wireguard {
+      secretKey: string;
+      endpoint?: string[];
+      peers?: WireguardPeer[];
+      mtu?: number;
+      reserved?: string;
     }
     export interface AmneziaWG {
       secretKey: string;
@@ -777,6 +846,7 @@ export namespace Go {
   export namespace resolver {
     export interface Resolver {
       id: string;
+      name: string;
       type: string;
       host: string;
       subnet?: string;
@@ -818,12 +888,16 @@ export namespace Go {
   }
   export namespace route {
     export interface Config {
+      revision: number;
+      defaultMode: string;
+      defaultTarget: Target;
       directResolver: string;
       proxyResolver: string;
       resolveLocally: boolean;
       udpProxyFqdnStrategy: string;
     }
     export interface ListConfig {
+      revision: number;
       refreshInterval: string;
       lastRefreshTime: string;
       error: string;
@@ -834,36 +908,64 @@ export namespace Go {
       hostIndexRefreshAt: number;
     }
     export interface RuleActivationStatus {
+      applying?: boolean;
+      runningConfig?: Config;
+      savedRevision: number;
+      appliedRevision: number;
       applyAt: number;
+      error?: string;
     }
     export interface ActivationStatus {
+      applying?: boolean;
+      runningConfig?: Config;
+      savedRevision: number;
+      appliedRevision: number;
       hostIndexRefreshAt: number;
       ruleApplyAt: number;
+      error?: string;
     }
     export interface MaxMindDBGeoIP {
       downloadUrl: string;
       error: string;
     }
     export interface RuleItem {
+      id: string;
       name: string;
       disabled: boolean;
       index: number;
       mode: string;
-      tag: string;
+      target: Target;
       resolver: string;
       ruleCount: number;
     }
     export interface RouteRule {
+      id: string;
+      revision: number;
       name: string;
       mode: string;
-      tag?: string;
+      target: Target;
       resolveStrategy?: string;
       udpProxyFqdnStrategy?: string;
       resolver?: string;
       rules?: RuleExpr[];
       disabled?: boolean;
     }
+    export interface Target {
+      type: string;
+      id?: string;
+    }
+    export interface RuleDraft {
+      shareLists?: string[];
+      rule: RouteRule;
+      lists: RouteListDetail[];
+    }
+    export interface Reference {
+      kind: string;
+      id: string;
+      name: string;
+    }
     export type RuleExpr =
+      | { type: "always"; always: MatchAllExpr }
       | { type: "all"; all: RuleExpr[] }
       | { type: "any"; any: RuleExpr[] }
       | { type: "not"; not: RuleExpr }
@@ -873,6 +975,8 @@ export namespace Go {
       | { type: "network"; network: NetworkExpr }
       | { type: "port"; port: PortExpr }
       | { type: "geoip"; geoip: GeoIPExpr };
+    export interface MatchAllExpr {
+    }
     export interface ListRef {
       list: string;
     }
@@ -894,6 +998,8 @@ export namespace Go {
       page: Page;
     }
     export interface ListItem {
+      id: string;
+      ownerRuleId?: string;
       name: string;
       type: string;
       source: string;
@@ -902,6 +1008,9 @@ export namespace Go {
       preview: string;
     }
     export interface RouteListDetail {
+      revision: number;
+      id: string;
+      ownerRuleId?: string;
       name: string;
       type: string;
       source: ListSource;
@@ -920,20 +1029,6 @@ export namespace Go {
       items: ListItem[];
       page: Page;
     }
-    export interface TagItem {
-      name: string;
-      type: string;
-      hash: string[];
-    }
-    export interface TagList {
-      items: TagItem[];
-      page: Page;
-    }
-    export interface SaveTagRequest {
-      tag: string;
-      type: string;
-      hash: string;
-    }
     export interface Page {
       page: number;
       pageSize: number;
@@ -943,19 +1038,23 @@ export namespace Go {
       host: string;
     }
     export interface RuleTestResponse {
+      target: Target;
       mode: string;
-      tag: string;
       resolver: string;
       afterAddr: string;
+      listNames?: Record<string, string>;
       lists: string[];
       ips: string[];
       matchResult: MatchHistoryEntry[];
     }
     export interface MatchHistoryEntry {
+      ruleId?: string;
       ruleName: string;
       history: MatchResult[];
     }
     export interface MatchResult {
+      kind?: string;
+      id?: string;
       listName: string;
       matched: boolean;
     }
