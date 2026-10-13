@@ -126,6 +126,14 @@ it('retries activation after a deletion without deleting the rule twice', async 
     expect(host.textContent).toContain('selectRule');
 });
 
+it('moves neighboring rules without opening a priority dialog', async () => {
+    await render();
+    await click('moveLater: First');
+    expect(api.changeRulePriority).toHaveBeenCalledWith({ id: '0' }, { id: '1' }, 'exchange');
+    expect(api.applyRouteChanges).toHaveBeenCalledTimes(1);
+    expect(host.querySelector('[role="dialog"]')).toBeNull();
+});
+
 it('preserves the open draft while another directory page is loading', async () => {
     let resolvePage: (value: unknown) => void;
     const nextPage = new Promise(resolve => { resolvePage = resolve; });
