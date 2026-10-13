@@ -1,4 +1,4 @@
-import { act } from 'react';
+import { act, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
 import { useElementSize } from './hooks';
@@ -20,13 +20,14 @@ it('reacts to element resizing even if the window never resizes', () => {
     let width = 100, height = 50;
     function Probe() {
         const [ref, size] = useElementSize<HTMLDivElement>();
-        return <div ref={node => {
+        const attach = useCallback((node: HTMLDivElement | null) => {
             if (node) {
                 Object.defineProperty(node, 'offsetWidth', { configurable: true, get: () => width });
                 Object.defineProperty(node, 'offsetHeight', { configurable: true, get: () => height });
             }
             ref(node);
-        }}>{size.width}x{size.height}</div>;
+        }, [ref]);
+        return <div ref={attach}>{size.width}x{size.height}</div>;
     }
     try {
         act(() => root.render(<Probe />));
