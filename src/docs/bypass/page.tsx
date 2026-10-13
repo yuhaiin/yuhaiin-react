@@ -255,7 +255,7 @@ function RouteConfigCard({ onSaved, destinations }: { onSaved: () => void; desti
                         <section className="grid grid-cols-2 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1.25fr)]">
                             <SettingSelectVertical className="mb-0" label={t('defaultAction')} value={data.defaultMode}
                                 values={[[t('proxy'), 'proxy'], [t('direct'), 'direct'], [t('block'), 'block']]}
-                                onChange={defaultMode => patch({ defaultMode, defaultTarget: defaultMode === 'proxy' ? data.defaultTarget : { type: 'default' } })} />
+                                onChange={defaultMode => patch({ defaultMode })} />
                             {data.defaultMode === 'proxy' && <><ArrowRight size={16} aria-hidden="true" className="mt-8 hidden text-ui-muted sm:block" /><div className="min-w-0"><SettingLabel className="mb-2">{t('destination')}</SettingLabel><RouteTargetPicker compact value={data.defaultTarget} onChange={defaultTarget => patch({ defaultTarget })} /></div></>}
                         </section>
                         <details className="border-t border-ui-border/70 pt-3"><summary className="cursor-pointer text-xs font-medium text-ui-muted">{t("advancedRoutingSettings")}</summary>
