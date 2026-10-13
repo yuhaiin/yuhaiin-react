@@ -150,7 +150,7 @@ function BypassComponent() {
                 const neighboringPage = page + direction;
                 if (neighboringPage < 1) return;
                 const result = await listRules({ page: neighboringPage, pageSize: PAGE_SIZE, query: '' });
-                adjacent = direction < 0 ? result.items.at(-1) : result.items[0];
+                adjacent = direction < 0 ? result.items[result.items.length - 1] : result.items[0];
             }
             if (!adjacent) return;
             await changeRulePriority({ id: item.id }, { id: adjacent.id }, 'exchange');
