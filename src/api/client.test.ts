@@ -2,12 +2,24 @@ import { afterAll, afterEach, beforeAll, expect, it } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { getTotalFlow } from './connections';
+import { blockHistory } from './route';
 import { setApiUrl } from '@/common/apiurl';
 
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => { server.resetHandlers(); localStorage.clear(); window.location.hash = '/'; });
 afterAll(() => server.close());
+
+it('loads block history through its literal RPC route instead of a rule ID', async () => {
+    setApiUrl('http://controller');
+    server.use(
+        http.post('http://controller/api/v2/rpc/route.rule.get', () =>
+            HttpResponse.json({ error: { code: 'not_found', message: 'not found' } }, { status: 404 })),
+        http.post('http://controller/api/v2/rpc/route.rules.block_history', () =>
+            HttpResponse.json({ items: [], dumpProcessEnabled: false })),
+    );
+    await expect(blockHistory()).resolves.toEqual({ items: [], dumpProcessEnabled: false });
+});
 
 it('does not redirect a newly selected controller when an old request returns 401', async () => {
     let complete!: () => void;
