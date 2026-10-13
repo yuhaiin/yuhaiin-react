@@ -51,7 +51,12 @@ const InboundModal: FC<{
     const { t } = useTranslation('routing');
     const [preset, setPreset] = useState('local');
     const [saveError, setSaveError] = useState('');
-    useEffect(() => { setPreset('local'); setSaveError(''); }, [show, id]);
+    const [previousSession, setPreviousSession] = useState({ show, id });
+    if (previousSession.show !== show || previousSession.id !== id) {
+        setPreviousSession({ show, id });
+        setPreset('local');
+        setSaveError('');
+    }
     const { data: capabilities, error: capabilitiesError, mutate: refreshCapabilities } = useSWR(show ? '/api/v2/inbounds/capabilities' : null, getInboundCapabilities);
 
     const ctx = useContext(GlobalToastContext);
