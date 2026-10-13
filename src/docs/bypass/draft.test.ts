@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createDefaultRuleDraft, type RuleDraft } from '@/contract/route';
-import { draftForSave, hasAdvancedRuleOptions, referencedLists, simpleList } from './draft';
+import { buildSimpleMatcher, draftForSave, hasAdvancedRuleOptions, parseSimpleMatcher, referencedLists, simpleList } from './draft';
 
 describe('rule editing views', () => {
     it('keeps DNS and destination overrides while editing simple matching data', () => {
@@ -43,5 +43,47 @@ describe('rule editing views', () => {
         draft.rule.rules = [{ type: 'host', host: { list: 'shared-sites' } }];
         expect(draftForSave(draft).lists).toHaveLength(0);
         expect(draftForSave(draft).rule.rules).toEqual(draft.rule.rules);
+    });
+});
+
+describe('simple multi-condition matching', () => {
+    it('round trips a flat OR/AND without changing rule semantics', () => {
+        const host = { type: 'host' as const, host: { list: 'sites' } };
+        const port = { type: 'port' as const, port: { ports: '443' } };
+        const both = { join: 'all' as const, items: [host, port] };
+        const either = { join: 'any' as const, items: [host, port] };
+        expect(parseSimpleMatcher(buildSimpleMatcher(both))).toEqual(both);
+        expect(parseSimpleMatcher(buildSimpleMatcher(either))).toEqual(either);
+        expect(buildSimpleMatcher(both)).toEqual([{ type: 'all', all: [host, port] }]);
+        expect(buildSimpleMatcher(either)).toEqual([host, port]);
+    });
+
+    it('supports explicit match-all but rejects empty/ambiguous matching', () => {
+        expect(parseSimpleMatcher([{ type: 'always', always: {} }])).toEqual({ join: 'always', items: [] });
+        expect(parseSimpleMatcher([])).toBeUndefined();
+        expect(() => buildSimpleMatcher({ join: 'any', items: [] })).toThrow();
+    });
+
+    it('does not flatten NOT or nested conditions into the task editor', () => {
+        const host = { type: 'host' as const, host: { list: 'sites' } };
+        const port = { type: 'port' as const, port: { ports: '443' } };
+        const not = { type: 'not' as const, not: host };
+        expect(parseSimpleMatcher([not])).toBeUndefined();
+        expect(parseSimpleMatcher([{ type: 'all', all: [host, { type: 'any', any: [host, port] }] }])).toBeUndefined();
+        expect(parseSimpleMatcher([{ type: 'all', all: [] }])).toBeUndefined();
+    });
+
+    it('preserves advanced overrides when rebuilding rule conditions', () => {
+        const draft = createDefaultRuleDraft();
+        draft.rule.resolver = 'dns-1';
+        draft.rule.target = { type: 'node', id: 'proxy-1' };
+        const matcher = parseSimpleMatcher(draft.rule.rules)!;
+        draft.rule.rules = buildSimpleMatcher({ join: 'all', items: [
+            ...matcher.items, { type: 'port', port: { ports: '443' } },
+        ] });
+        expect(draftForSave(draft).rule).toMatchObject({
+            resolver: 'dns-1', target: { type: 'node', id: 'proxy-1' },
+        });
+        expect(draftForSave(draft).lists).toHaveLength(1);
     });
 });
