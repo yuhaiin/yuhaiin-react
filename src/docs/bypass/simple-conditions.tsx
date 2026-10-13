@@ -1,7 +1,7 @@
 import { Button } from '@/component/v2/button';
 import { SettingLabel } from '@/component/v2/card';
 import { DropdownSelect, SettingSelectVertical, SettingInputVertical } from '@/component/v2/forms';
-import { Input, Textarea } from '@/component/v2/input';
+import { Textarea } from '@/component/v2/input';
 import { createDefaultRouteList, type RuleDraft, type RuleExpr, type RouteListDetail } from '@/contract/route';
 import clsx from 'clsx';
 import { Plus, X } from 'lucide-react';
