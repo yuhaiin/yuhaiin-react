@@ -1,35 +1,66 @@
-# Routing and setup refactor
+# Routing and nodes UX refactor
 
-Captured from the local MSW preview using synthetic data, with desktop and 390 px
-mobile viewports. These images document the rendered layout; they do not prove
-network connectivity or accessibility compliance.
+Screenshots were captured from the PR's actual React UI in headless Chrome
+with the isolated MSW fixture server. They use synthetic configuration and test
+responses, not a running yuhaiin backend. Both desktop (1440 x 1100) and
+mobile (390 x 844) were captured after their respective editors appeared in
+the DOM. Screenshots do not constitute connectivity or accessibility certification.
 
-Routing uses a 280–300 px rule directory beside the inline simple/advanced editor
-on desktop. Below 768 px, selecting a rule opens the editor with a return control.
-The desktop opens the first rule by default and keeps the selection after saving.
-Switching rules or returning protects unsaved changes; directory pagination keeps
-the open draft mounted. Nodes use a compact directory panel beside connection settings, connectivity
-checks and default-destination status. Group selection and filtering live in the
-panel toolbar; short rows use a thin selection marker and omit repeated avatars.
-The directory remains virtualized for large groups.
+## Editing flows
 
-Validation: 89 tests in 42 files, TypeScript, i18n, lint (existing React warnings),
-style audit and production build. Five workspace regression tests cover switching,
-mobile return, create/delete activation retries and retaining drafts during page
-loads. Isolated Chrome checks additionally cover save/reopen, simple/advanced
-switching, creation, toggling then saving, desktop light/dark, and 390/834 px layouts
-without horizontal overflow. Synthetic save/apply requests returned 200; no page
-errors were recorded. Node workspace checks cover Node 94 search in a 95-node
-group, guarded switching/mobile return, custom groups selected with the keyboard,
-inline creation/save, TCP testing and updating default TCP/UDP destinations. Six
-node workspace tests cover those transitions, a failed deletion retaining the
-editor, and retrying a saved node after default selection fails without recreating
-it. Saved nodes remain visible in the directory when default selection fails.
+- Routing and Nodes use the same 280–300 px directory/detail workspace shell.
+  Desktop opens an item inline; mobile navigates from directory to editor.
+- The simple route editor can represent flat AND/OR combinations of host,
+  process, inbound, network, port and GeoIP conditions, plus explicit
+  match-all. The advanced editor handles nested expressions and NOT without
+  flattening or modifying them. Existing DNS, target and disabled settings
+  remain in the canonical draft and are signposted when hidden.
+- Shared lists are referenced by stable ID. Private lists belong to the rule,
+  and detached owned lists are omitted during save. Action changes preserve
+  the previously configured proxy target.
+- Rule priority is visible in the directory and can be adjusted by neighboring
+  moves without opening a dialog. The dialog remains available for larger
+  changes; direct moves are disabled while searching or holding an unsaved draft.
+- Node lists keep virtualization and remember drafts while the directory
+  filters or switches groups. The node editor uses the same form behavior in
+  the modal and inline shells without duplicating the default-destination control.
+
+## Validation
+
+Pull-request CI now runs TypeScript checks, Vitest, localization completeness,
+the style audit, lint, and the production build. It also captures browser
+screenshots from the MSW preview and fails when the expected UI does not
+appear or if the page overflows horizontally.
+
+Run `npm run dev:msw` and then `node scripts/capture-ux.mjs` to create
+screenshots at `/tmp/ux-shots` on a Linux environment with Chrome available
+on the path. CI uploads the images as the `ux-preview-screenshots` artifact.
+The generated screenshots are not committed automatically by CI.
+
+## Screenshots
+
+**Routing directory and simple editor**
 
 ![Routing workspace](routing-desktop.png)
-![Mobile rule directory](routing-mobile.png)
+
+**Advanced rule editor**
+
+![Advanced editor](rule-editor.png)
+
+**Node directory and details**
+
 ![Node workspace](nodes-desktop.png)
-![Mobile node directory](nodes-mobile.png)
-![Mobile node details](node-details-mobile.png)
-![Inline rule editor](rule-editor.png)
+
+**Mobile routing directory**
+
+![Mobile rule directory](routing-mobile.png)
+
+**Mobile rule editor**
+
 ![Mobile rule editor](rule-editor-mobile.png)
+
+**Mobile node directory and details**
+
+![Mobile node directory](nodes-mobile.png)
+
+![Mobile node details](node-details-mobile.png)
