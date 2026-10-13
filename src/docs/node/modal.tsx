@@ -134,7 +134,6 @@ const NodeModalComponent: FC<NodeModalProps> = ({
     const { copy, copied, manualCopyModal } = useClipboard({ usePromptAsFallback: true });
 
     const title = draft?.name || node?.name || nodeId || "Node";
-    const defaultGroup = groups?.[0] ?? "manual";
     const groupOptions = useMemo(() => {
         const values = new Set([...(groups ?? []), draft?.group, "manual"].filter(Boolean) as string[]);
         return Array.from(values);
