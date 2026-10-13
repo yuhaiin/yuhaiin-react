@@ -26,6 +26,7 @@ import { useAsyncAction } from "@/hooks/use-editor-draft";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { MainContainer } from "@/component/v2/card";
+import { WorkspaceDetail, WorkspaceDirectory, WorkspaceLayout } from "@/component/workspace-layout";
 import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
 import { Input } from "@/component/v2/input";
 import { Spinner } from "@/component/v2/spinner";
@@ -588,8 +589,8 @@ export default function Group() {
         {groups.length === 0 && !showdata.show ? <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center">
             <Network className="mx-auto mb-3 text-ui-primary" size={28} aria-hidden="true" /><h2 className="text-sm font-semibold text-ui-heading">{uiT('noOutboundGroupsYet')}</h2>
             <p className="mt-1 text-xs text-ui-muted">{uiT('createANodeOrImportJsonToGetStarted')}</p><Button className="mt-4 gap-2" variant="primary" onClick={handleCreate}><Plus size={16} />{uiT('newNode')}</Button>
-        </div> : <div className="grid min-w-0 items-start md:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)]">
-            <aside aria-label={t('nodeDirectory')} className={clsx('min-w-0 rounded-ui-xl border border-ui-border/60 bg-ui-surface-muted/30 p-2.5 md:mr-5', showdata.show && 'hidden md:block')}>
+        </div> : <WorkspaceLayout>
+            <WorkspaceDirectory label={t('nodeDirectory')} hiddenOnMobile={showdata.show}>
                 <div className="mb-2 space-y-2 border-b border-ui-border/50 px-1 pb-3">
                     <GroupPicker groups={groups} counts={groupCounts} value={selectedGroup} onChange={changeGroup} />
                     <div className="relative"><Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" /><Input aria-label={uiT('searchNodes')} value={query} onChange={e => setQuery(e.target.value)} placeholder={uiT('searchNodes')} className="h-8 border-transparent bg-ui-surface-muted/70 pl-9 text-xs shadow-none focus:border-ui-primary/40 focus:bg-ui-surface" /></div>
@@ -598,8 +599,8 @@ export default function Group() {
                     groupItems.length > GROUP_VIRTUALIZE_THRESHOLD ? <VList data={groupItems} itemSize={57} bufferSize={456} style={{ height: 'min(72vh, 900px)', width: '100%' }}>
                         {item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={latency[item.id]} busy={busyLatency[item.id]} defaults={defaults} />}
                     </VList> : <div>{groupItems.map(item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={latency[item.id]} busy={busyLatency[item.id]} defaults={defaults} />)}</div>}
-            </aside>
-            <div className={clsx('min-w-0 md:pl-3 xl:pl-5', !showdata.show && 'hidden md:block')}>
+            </WorkspaceDirectory>
+            <WorkspaceDetail hiddenOnMobile={!showdata.show}>
                 {showdata.show ? <>
                     {selectedItem && !showdata.new ? <NodeOverview item={selectedItem} latency={latency[selectedItem.id]} busy={busyLatency[selectedItem.id]} defaults={defaults} using={using} locked={editorState.dirty || editorState.pending}
                         onLatency={type => handleLatency(selectedItem.id, type)} onUse={() => handleUse(selectedItem.id)} onBack={backToNodes} /> : <header className="mb-5 border-b border-ui-border/60 pb-5"><Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent md:hidden" onClick={backToNodes}><ArrowLeft size={16} />{t('backToNodes')}</Button><h2 className="break-words text-xl font-semibold text-ui-heading">{showdata.new ? uiT('newNode') : t('nodeDetails')}</h2></header>}
@@ -609,7 +610,7 @@ export default function Group() {
                         onSave={node => { initialized.current = true; closeLink(); setShowdata({ show: true, id: node.id, new: false }); void mutateDefaults(); }}
                         onHide={saved => { if (!saved) closeDetails(); }} onDelete={showdata.new ? undefined : deleteCurrentNode} />
                 </> : <div className="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-ui-muted"><Network size={28} aria-hidden="true" /><h2 className="text-lg font-medium text-ui-heading">{t('selectNode')}</h2><p className="max-w-sm text-sm">{t('selectNodeHelp')}</p><Button variant="outline-primary" className="gap-2" onClick={handleCreate}><Plus size={16} />{uiT('newNode')}</Button></div>}
-            </div>
-        </div>}
+            </WorkspaceDetail>
+        </WorkspaceLayout>}
     </MainContainer>;
 }
