@@ -207,7 +207,7 @@ function RuleExprLeafFields({ value, options, onChange }: { value: RuleExpr; opt
                     <Select
                         ariaLabel={uiT("network")} value={value.network?.network ?? "tcp"}
                         onValueChange={(network) => onChange({ ...value, network: { network } })}
-                        items={["tcp", "udp", "tcp_udp"].map(network => ({ value: network, label: network }))}
+                        items={["tcp", "udp"].map(network => ({ value: network, label: network }))}
                     />
                 </div>
             );
