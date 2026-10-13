@@ -16,7 +16,7 @@ import { Spinner } from "@/component/v2/spinner";
 
 import { normalizeInbound } from "@/contract/inbound";
 import { Check, DoorOpen, Trash } from "lucide-react";
-import { FC, useContext, useEffect, useState } from "react";
+import { FC, useContext, useState } from "react";
 import useSWR from "swr";
 import Loading from "../../component/v2/loading";
 import { GlobalToastContext } from "../../component/v2/toast";
