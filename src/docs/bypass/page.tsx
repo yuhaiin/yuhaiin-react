@@ -337,12 +337,14 @@ function PriorityModal({ item, items, onSaved, onClose }: { item: RuleItem | nul
     const { pending: saving, run } = useAsyncAction(error => { const message = String((error as { msg?: string })?.msg ?? error); setActionError(message); ctx.Error(message); void refreshCache('/api/v2/route/activation'); });
     const close = useCloseGuard(false, saving, onClose);
 
-    useEffect(() => {
-        if (!item) return;
-        setTarget(item.id);
-        setCommitted(false); setActionError('');
-        setOperate("exchange");
-    }, [item]);
+    const [previousId, setPreviousId] = useState(item?.id);
+    if (previousId !== item?.id) {
+        setPreviousId(item?.id);
+        setTarget(item?.id ?? '');
+        setCommitted(false);
+        setActionError('');
+        setOperate('exchange');
+    }
 
     const apply = () => {
         if (!item || saving) return;
