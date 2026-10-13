@@ -243,5 +243,11 @@
   "nodeDirectoryCount_other": "{{nodes}} ノード · {{groups}} グループ",
   "defaultNode": "既定の接続先",
   "noProtocol": "接続ステップなし",
-  "ruleReordered": "ルールの優先順位を更新して適用しました。"
+  "ruleReordered": "ルールの優先順位を更新して適用しました。",
+  "matchScope": "マッチ対象",
+  "matchSelectedTraffic": "指定した通信に一致",
+  "combineConditions": "条件の組み合わせ",
+  "matchEveryCondition": "すべてに一致（AND）",
+  "matchAnyCondition": "いずれかに一致（OR）",
+  "selectMatchingData": "保存する前にマッチ対象データを選択してください。"
 }
