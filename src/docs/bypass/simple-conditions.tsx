@@ -5,6 +5,7 @@ import { Textarea } from '@/component/v2/input';
 import { createDefaultRouteList, type RuleDraft, type RuleExpr, type RouteListDetail } from '@/contract/route';
 import clsx from 'clsx';
 import { Plus, X } from 'lucide-react';
+import { createID } from '@/common/id';
 import { useTranslation } from 'react-i18next';
 import { buildSimpleMatcher, type SimpleLeafType, type SimpleMatcher } from './draft';
 import type { RuleEditorOptions } from './rule-form';
@@ -22,7 +23,7 @@ function listExpr(type: 'host' | 'process', list: string): RuleExpr {
 function newPrivateList(type: 'host' | 'process', draft: RuleDraft, name: string): RouteListDetail {
     return {
         ...createDefaultRouteList(name),
-        id: crypto.randomUUID(),
+        id: createID(),
         ownerRuleId: draft.rule.id,
         type,
     };
