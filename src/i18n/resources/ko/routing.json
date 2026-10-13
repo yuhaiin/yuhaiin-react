@@ -23,7 +23,7 @@
   "destination": "출구",
   "domainHelp": "도메인 패턴 또는 IP/CIDR 범위를 입력하세요. 이 데이터는 이 규칙 전용입니다.",
   "processHelp": "애플리케이션 프로세스 경로를 입력하세요. 관리 장치에서 프로세스 감지가 가능해야 합니다.",
-  "customOptions": "이 규칙에는 사용자 지정 DNS 또는 주소 설정이 있습니다. 고급 편집에서 확인하세요.",
+  "customOptions": "DNS 옵션이나 비활성화 상태 같은 고급 설정이 적용되어 있습니다. 간단 편집 중에도 이 설정은 유지됩니다.",
   "topLevelAny": "조건 중 하나라도 일치하면 규칙이 적용됩니다.",
   "addCondition": "조건 추가",
   "removeCondition": "조건 삭제",
@@ -242,5 +242,6 @@
   "nodeDirectoryCount_one": "노드 {{nodes}}개 · 그룹 {{groups}}개",
   "nodeDirectoryCount_other": "노드 {{nodes}}개 · 그룹 {{groups}}개",
   "defaultNode": "기본 대상",
-  "noProtocol": "연결 단계 없음"
+  "noProtocol": "연결 단계 없음",
+  "ruleReordered": "규칙 우선순위를 변경하고 적용했습니다."
 }
