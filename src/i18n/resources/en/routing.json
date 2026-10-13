@@ -23,7 +23,7 @@
   "destination": "Destination",
   "domainHelp": "Enter domain patterns or IP/CIDR ranges. This data belongs to this rule.",
   "processHelp": "Enter application process paths. Process detection must be available on the managed device.",
-  "customOptions": "This rule has custom DNS or address settings. Open the advanced editor to inspect them.",
+  "customOptions": "Advanced settings are active (for example DNS options or disabled status). They are preserved while editing this rule.",
   "topLevelAny": "The rule matches when any of these conditions matches.",
   "addCondition": "Add condition",
   "removeCondition": "Remove condition",
@@ -242,5 +242,6 @@
   "nodeDirectoryCount_one": "{{nodes}} nodes · 1 group",
   "nodeDirectoryCount_other": "{{nodes}} nodes · {{groups}} groups",
   "defaultNode": "Default destination",
-  "noProtocol": "No connection steps"
+  "noProtocol": "No connection steps",
+  "ruleReordered": "Rule priority updated and applied."
 }
