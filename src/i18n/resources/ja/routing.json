@@ -257,5 +257,10 @@
   "nextPage": "次へ",
   "dragRule": "{{name}} の順序を変更",
   "dragRuleHelp": "ハンドルをドラッグして順序を変更します。タッチ画面では長押ししてからドラッグし、通常のスワイプではスクロールします。ハンドルにフォーカスした状態で矢印キーを使うと移動でき、Escape でドラッグを中止できます。",
-  "draggingRule": "{{name}} を移動中"
+  "draggingRule": "{{name}} を移動中",
+  "selectorDetails": "共有出口の設定",
+  "backToSelectors": "共有出口に戻る",
+  "selectSelector": "共有出口を選択",
+  "selectSelectorHelp": "共有出口を選択すると、それを使用するすべてのルールのノードを変更できます。",
+  "searchDestinations": "共有出口を検索…"
 }

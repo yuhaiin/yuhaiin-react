@@ -15,11 +15,14 @@ const base = 'http://127.0.0.1:5175/?scenario=normal#';
 const cases = [
   { name: 'routing-desktop', path: '/docs/bypass', width: 1440, height: 1100, match: 'section[aria-label="Rule editor"] [role="group"][aria-label="Rule editor"]' },
   { name: 'rule-editor', path: '/docs/bypass?rule=rule-0', width: 1440, height: 1100, match: 'section[aria-label="Rule editor"] [role="group"][aria-label="Rule editor"]' },
-  { name: 'nodes-desktop', path: '/docs/group', width: 1440, height: 1100, match: 'aside[aria-label="Node directory"]' },
+  { name: 'nodes-desktop', path: '/docs/group', width: 1440, height: 1100, match: 'section[aria-label="Connection settings"] input' },
+  { name: 'selectors-desktop', path: '/docs/group/selectors', width: 1440, height: 1100, match: 'section[aria-label="Shared destination settings"] input' },
   { name: 'routing-mobile', path: '/docs/bypass', width: 390, height: 844, match: 'aside[aria-label="Rule directory"]' },
   { name: 'rule-editor-mobile', path: '/docs/bypass?rule=rule-0', width: 390, height: 844, match: 'section[aria-label="Rule editor"] [role="group"][aria-label="Rule editor"]' },
   { name: 'nodes-mobile', path: '/docs/group', width: 390, height: 844, match: 'aside[aria-label="Node directory"]' },
-  { name: 'node-details-mobile', path: '/docs/group?node=node-0', width: 390, height: 844, match: 'section[aria-label="Connection settings"]' },
+  { name: 'node-details-mobile', path: '/docs/group?node=node-0', width: 390, height: 844, match: 'section[aria-label="Connection settings"] input' },
+  { name: 'selectors-mobile', path: '/docs/group/selectors', width: 390, height: 844, match: 'aside[aria-label="Shared destinations"]' },
+  { name: 'selector-details-mobile', path: '/docs/group/selectors?selector=selector-work', width: 390, height: 844, match: 'section[aria-label="Shared destination settings"] input' },
 ];
 
 async function readyWebSocket() {
@@ -100,6 +103,13 @@ async function main() {
     const size = layout.result?.value;
     if (!size || Math.max(size.document, size.body) > size.viewport + 1) {
       throw new Error('Horizontal page overflow in ' + shot.name + ': ' + JSON.stringify(size));
+    }
+    const fields = await send('Runtime.evaluate', {
+      expression: '(() => { const match = document.querySelector(' + JSON.stringify(shot.match) + '); const scope = match.closest("section") || match; return [...scope.querySelectorAll("input,button[role=combobox],button[aria-haspopup=dialog]")].filter(el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && (r.left < -1 || r.right > innerWidth + 1); }).map(el => el.getAttribute("aria-label") || el.tagName); })()',
+      returnByValue: true,
+    });
+    if (fields.result?.value?.length) {
+      throw new Error('Clipped form controls in ' + shot.name + ': ' + JSON.stringify(fields.result.value));
     }
     if (shot.name === 'rule-editor') {
       const action = await send('Runtime.evaluate', {

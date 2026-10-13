@@ -1,6 +1,6 @@
 import { clearHashSearch, useHashSearch } from "@/hooks/useHashLocation";
 import { connectionRuleDraft } from "@/docs/connections/actions";
-import { listNodes } from "@/api/nodes";
+import { getNode } from "@/api/nodes";
 import { listSelectors } from "@/api/selectors";
 import { RuleEditor } from "./rule-editor";
 import { allowNavigation } from "@/hooks/navigation-guard";
@@ -111,12 +111,8 @@ function BypassComponent() {
         { revalidateOnFocus: false },
     );
 
-    const { data: nodes } = useSWR('/api/v2/nodes/all', () => collectPages(listNodes));
     const { data: selectors } = useSWR('/api/v2/outbound/selectors', listSelectors);
-    const destinations = Object.fromEntries([
-        ...(nodes?.items ?? []).map(node => [`node:${node.id}`, node.name]),
-        ...(selectors?.items ?? []).map(selector => [`selector:${selector.id}`, selector.name]),
-    ]);
+    const destinations = Object.fromEntries((selectors?.items ?? []).map(selector => [`selector:${selector.id}`, selector.name]));
 
     const editorOptions = useMemo<RuleEditorOptions>(() => ({
         listTypes: Object.fromEntries((listsData?.items ?? []).map(item => [item.id, item.type])),
@@ -229,6 +225,8 @@ function RouteConfigCard({ onSaved, destinations }: { onSaved: () => void; desti
     const { data: server, error, isLoading, mutate } = useSWR("/api/v2/route/config", getRouteConfig, { revalidateOnFocus: false });
 
     const { value: data, setValue: setDraft, commit, dirty } = useEditorDraft("getRouteConfig", server, () => undefined);
+    const nodeId = data?.defaultTarget?.type === 'node' ? data.defaultTarget.id : undefined;
+    const { data: node } = useSWR(nodeId ? ['/api/v2/nodes/detail', nodeId] : null, () => getNode(nodeId!), { revalidateOnFocus: false });
     const { pending: saving, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
     useCloseGuard(dirty, saving, () => undefined);
     const patch = (patchValue: Partial<NonNullable<typeof data>>) => setDraft(prev => prev ? { ...prev, ...patchValue } : prev);
@@ -248,7 +246,7 @@ function RouteConfigCard({ onSaved, destinations }: { onSaved: () => void; desti
     };
 
     const target = data?.defaultTarget;
-    const destination = !target?.type || target.type === 'default' ? t('defaultProxy') : destinations[`${target.type}:${target.id}`] ?? t('unavailableDestination');
+    const destination = !target?.type || target.type === 'default' ? t('defaultProxy') : target.type === 'node' ? node?.name ?? target.id : destinations[`${target.type}:${target.id}`] ?? t('unavailableDestination');
     return <details className="group/fallback rounded-ui-lg bg-ui-surface-muted/50">
         <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 [&::-webkit-details-marker]:hidden">
             <span className="text-sm font-medium text-ui-heading">{t('fallbackTitle')}</span>

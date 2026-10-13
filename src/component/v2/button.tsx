@@ -38,7 +38,7 @@ const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
         const radiusClass = groupPosition ? radiusClasses[groupPosition] : '';
 
         const baseStyles = clsx(
-            "inline-flex items-center justify-center py-2 px-3.5 text-sm leading-normal font-medium font-inherit appearance-none shadow-none cursor-pointer border rounded-ui-md relative no-underline select-none align-middle",
+            "inline-flex items-center justify-center whitespace-nowrap py-2 px-3.5 text-sm leading-normal font-medium font-inherit appearance-none shadow-none cursor-pointer border rounded-ui-md relative no-underline select-none align-middle",
             ui.interactive,
             ui.focusRing,
             ui.disabled
