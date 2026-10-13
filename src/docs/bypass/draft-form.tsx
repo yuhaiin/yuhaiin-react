@@ -5,11 +5,12 @@ import { Textarea } from '@/component/v2/input';
 import { RouteTargetPicker } from '@/component/route-target-picker';
 import { createDefaultRouteList, type RuleDraft } from '@/contract/route';
 import { useState } from 'react';
+import { createID } from '@/common/id';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import { RouteRuleForm, type RuleEditorOptions } from './rule-form';
 import { hasAdvancedRuleOptions, parseSimpleMatcher, referencedLists } from './draft';
-import { SimpleConditions } from './simple-conditions';
+import { SimpleConditions, type PrivateChoiceHistory } from './simple-conditions';
 
 export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; onChange: (value: RuleDraft) => void; options: RuleEditorOptions }) {
     const { t } = useTranslation('routing');
@@ -17,13 +18,14 @@ export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; 
     const used = referencedLists(value.rule.rules ?? []);
     const needsAdvanced = !matcher || value.lists.some(list => used.has(list.id) && list.source.type !== 'local');
     const [advanced, setAdvanced] = useState(needsAdvanced);
+    const [privateHistory] = useState<PrivateChoiceHistory>(() => new WeakMap());
     const hiddenSettings = hasAdvancedRuleOptions(value.rule);
     const patchRule = (patch: Partial<RuleDraft['rule']>) => onChange({ ...value, rule: { ...value.rule, ...patch } });
     const setListText = (id: string, text: string) => onChange({ ...value, lists: value.lists.map(list => list.id === id ? {
         ...list, source: { type: 'local', local: { lists: text.split('\n') } },
     } : list) });
     const addList = () => {
-        const list = { ...createDefaultRouteList(t('privateList')), id: crypto.randomUUID(), ownerRuleId: value.rule.id };
+        const list = { ...createDefaultRouteList(t('privateList')), id: createID(), ownerRuleId: value.rule.id };
         onChange({ ...value, lists: [...value.lists, list] });
     };
     const shareControl = (id: string) => <div className="mt-3 mb-4 space-y-2">
@@ -63,7 +65,7 @@ export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; 
                 <p className="text-sm text-ui-muted">{t('customOptions')}</p>
                 <Button type="button" size="sm" variant="outline-secondary" onClick={() => setAdvanced(true)}>{t('advancedEditor')}</Button>
             </div>}
-            <SimpleConditions value={value} matcher={matcher} options={options} onChange={onChange} />
+            <SimpleConditions privateHistory={privateHistory} value={value} matcher={matcher} options={options} onChange={onChange} />
             <section className="space-y-4 border-t border-ui-border/60 pt-5">
                 <h3 className="text-sm font-semibold text-ui-heading">{t('handlingAndDestination')}</h3>
                 <div role="group" aria-label={t('action')} className="grid grid-cols-3 gap-2">

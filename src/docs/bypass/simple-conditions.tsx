@@ -7,6 +7,7 @@ import clsx from 'clsx';
 import { Plus, X } from 'lucide-react';
 import { createID } from '@/common/id';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { buildSimpleMatcher, type SimpleLeafType, type SimpleMatcher } from './draft';
 import type { RuleEditorOptions } from './rule-form';
 
@@ -39,25 +40,39 @@ function otherCondition(type: SimpleLeafType): RuleExpr {
     }
 }
 
+export type PrivateChoiceHistory = WeakMap<RuleExpr, Partial<Record<'host' | 'process', string>>>;
+
 /** A task-oriented projection of the same rule AST used by the advanced editor. */
-export function SimpleConditions({ value, matcher, options, onChange }: {
+export function SimpleConditions({ value, matcher, options, onChange, privateHistory }: {
     value: RuleDraft;
+    privateHistory?: PrivateChoiceHistory;
     matcher: SimpleMatcher;
     options: RuleEditorOptions;
     onChange: (draft: RuleDraft) => void;
 }) {
     const { t } = useTranslation('routing');
     const { t: uiT } = useTranslation('ui');
+    // Keep per-condition private choices when selecting shared data. Object
+    // identity follows replacement, so deleting a preceding row cannot mix lists.
+    const [localHistory] = useState<PrivateChoiceHistory>(() => new WeakMap());
+    const privateChoices = privateHistory ?? localHistory;
 
     const setMatcher = (next: SimpleMatcher, lists: RouteListDetail[] = value.lists) => {
         onChange({ ...value, lists, rule: { ...value.rule, rules: buildSimpleMatcher(next) } });
     };
     const replaceItem = (index: number, expr: RuleExpr, lists = value.lists) => {
+        const previous = matcher.items[index];
+        const history = { ...privateChoices.get(previous) };
+        const local = value.lists.find(list => list.id === listReference(previous) && list.source.type === 'local');
+        if (local && (previous.type === 'host' || previous.type === 'process')) history[previous.type] = local.id;
+        privateChoices.set(expr, history);
         setMatcher({ ...matcher, items: matcher.items.map((item, i) => i === index ? expr : item) }, lists);
     };
     const newListCondition = (index: number, type: 'host' | 'process') => {
-        const list = newPrivateList(type, value, t('privateList'));
-        replaceItem(index, listExpr(type, list.id), [...value.lists, list]);
+        const remembered = privateChoices.get(matcher.items[index])?.[type];
+        const existing = value.lists.find(list => list.id === remembered && list.type === type && list.source.type === 'local');
+        const list = existing ?? newPrivateList(type, value, t('privateList'));
+        replaceItem(index, listExpr(type, list.id), existing ? value.lists : [...value.lists, list]);
     };
     const chooseType = (index: number, type: SimpleLeafType) => {
         if (type === 'host' || type === 'process') newListCondition(index, type);

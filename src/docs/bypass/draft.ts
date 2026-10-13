@@ -71,7 +71,6 @@ export function parseSimpleMatcher(rules: RuleExpr[] | undefined): SimpleMatcher
 export function buildSimpleMatcher(matcher: SimpleMatcher): RuleExpr[] {
     if (matcher.join === 'always') return [{ type: 'always', always: {} }];
     if (!matcher.items.length) throw new Error('A routing rule must have at least one condition');
-    if (matcher.items.length === 1) return [matcher.items[0]];
     return matcher.join === 'all'
         ? [{ type: 'all', all: matcher.items }]
         : [...matcher.items];
