@@ -155,10 +155,7 @@ export function useFlow(options?: UseFlowOptions) {
     });
 
     useEffect(() => {
-        if (!enabled) {
-            setState(prev => ({ ...prev, isLoading: false, isValidating: false }));
-            return;
-        }
+        if (!enabled) return;
 
         let stopped = false;
         let inFlight: AbortController | undefined;
@@ -240,7 +237,8 @@ export function useFlow(options?: UseFlowOptions) {
 
     return {
         ...state,
-        data: state.data ?? lastFlowRef.current,
+        isLoading: enabled && state.isLoading,
+        isValidating: enabled && state.isValidating,
     };
 }
 
