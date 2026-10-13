@@ -15,7 +15,12 @@ export default function DiagnosticsPage() {
     const { t } = useTranslation('diagnostics');
     const search = useHashSearch();
     const [host, setHost] = useState(() => new URLSearchParams(search).get('host') || 'www.cloudflare.com');
-    useEffect(() => { const target = new URLSearchParams(search).get('host'); if (target) setHost(target); }, [search]);
+    const [previousSearch, setPreviousSearch] = useState(search);
+    if (previousSearch !== search) {
+        setPreviousSearch(search);
+        const target = new URLSearchParams(search).get('host');
+        if (target) setHost(target);
+    }
     const [report, setReport] = useState<DiagnosticReport>();
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState('');
