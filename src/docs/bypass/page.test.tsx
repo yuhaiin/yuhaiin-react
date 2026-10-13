@@ -128,7 +128,7 @@ it('retries activation after a deletion without deleting the rule twice', async 
 
 it('moves neighboring rules without opening a priority dialog', async () => {
     await render();
-    await click('moveLater: First');
+    await act(async () => host.querySelectorAll('[aria-label="dragRule"]')[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })));
     expect(api.changeRulePriority).toHaveBeenCalledWith({ id: '0' }, { id: '1' }, 'exchange');
     expect(api.applyRouteChanges).toHaveBeenCalledTimes(1);
     expect(host.querySelector('[role="dialog"]')).toBeNull();
@@ -146,8 +146,8 @@ it('moves the last visible rule across a page boundary', async () => {
         };
     });
     await render();
-    await click('moveLater: Second');
-    expect(api.listRules).toHaveBeenCalledWith({ page: 2, pageSize: 25, query: '' });
+    await act(async () => host.querySelectorAll('[aria-label="dragRule"]')[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })));
+    expect(api.listRules).toHaveBeenCalledWith({ page: 2, pageSize: 8, query: '' });
     expect(api.changeRulePriority).toHaveBeenCalledWith({ id: '1' }, { id: 'third' }, 'exchange');
 });
 

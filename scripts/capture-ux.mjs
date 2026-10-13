@@ -13,11 +13,11 @@ const browser = spawn('google-chrome', [
 
 const base = 'http://127.0.0.1:5175/?scenario=normal#';
 const cases = [
-  { name: 'routing-desktop', path: '/docs/bypass', width: 1440, height: 1100, match: 'section[aria-label="Rule editor"]' },
-  { name: 'rule-editor', path: '/docs/bypass?rule=rule-0', width: 1440, height: 1100, match: 'section[aria-label="Rule editor"]' },
+  { name: 'routing-desktop', path: '/docs/bypass', width: 1440, height: 1100, match: 'section[aria-label="Rule editor"] [role="group"][aria-label="Rule editor"]' },
+  { name: 'rule-editor', path: '/docs/bypass?rule=rule-0', width: 1440, height: 1100, match: 'section[aria-label="Rule editor"] [role="group"][aria-label="Rule editor"]' },
   { name: 'nodes-desktop', path: '/docs/group', width: 1440, height: 1100, match: 'aside[aria-label="Node directory"]' },
   { name: 'routing-mobile', path: '/docs/bypass', width: 390, height: 844, match: 'aside[aria-label="Rule directory"]' },
-  { name: 'rule-editor-mobile', path: '/docs/bypass?rule=rule-0', width: 390, height: 844, match: 'section[aria-label="Rule editor"]' },
+  { name: 'rule-editor-mobile', path: '/docs/bypass?rule=rule-0', width: 390, height: 844, match: 'section[aria-label="Rule editor"] [role="group"][aria-label="Rule editor"]' },
   { name: 'nodes-mobile', path: '/docs/group', width: 390, height: 844, match: 'aside[aria-label="Node directory"]' },
   { name: 'node-details-mobile', path: '/docs/group?node=node-0', width: 390, height: 844, match: 'section[aria-label="Connection settings"]' },
 ];

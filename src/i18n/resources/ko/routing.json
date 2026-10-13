@@ -254,5 +254,8 @@
   "loading": "불러오는 중…",
   "searchNodes": "검색",
   "previousPage": "이전",
-  "nextPage": "다음"
+  "nextPage": "다음",
+  "dragRule": "{{name}} 순서 변경",
+  "dragRuleHelp": "핸들을 드래그하여 순서를 변경하세요. 터치 화면에서는 길게 누른 뒤 드래그하고, 일반 스와이프로 스크롤하세요. 핸들에 포커스한 상태에서 방향키로 이동할 수 있으며 Escape로 드래그를 취소합니다.",
+  "draggingRule": "{{name}} 이동 중"
 }

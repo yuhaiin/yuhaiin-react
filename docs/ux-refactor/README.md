@@ -17,10 +17,16 @@ the DOM. Screenshots do not constitute connectivity or accessibility certificati
   remain in the canonical draft and are signposted when hidden.
 - Shared lists are referenced by stable ID. Private lists belong to the rule,
   and detached owned lists are omitted during save. Action changes preserve
-  the previously configured proxy target.
-- Rule priority is visible in the directory and can be adjusted by neighboring
-  moves without opening a dialog. The dialog remains available for larger
-  changes; direct moves are disabled while searching or holding an unsaved draft.
+  the previously configured proxy target. Switching a condition between private
+  and shared lists preserves its private input until the draft is saved.
+  Removing an AND condition retains AND when more conditions are added later.
+- Rule priority is visible in the directory. Drag its leading handle to insert
+  a rule before or after another rule on the current page. On touch screens,
+  hold the handle for 400 ms before dragging; ordinary swipes still scroll.
+  Dragging near the directory edges scrolls it, and Escape cancels the drag.
+  Arrow keys on a focused handle move to adjacent positions, including across
+  page boundaries. The priority dialog remains available for larger changes;
+  direct moves are disabled while searching or holding an unsaved draft.
 - Node lists keep virtualization and remember drafts while the directory
   filters or switches groups. The node editor uses the same form behavior in
   the modal and inline shells without duplicating the default-destination control.
@@ -31,6 +37,11 @@ Pull-request CI now runs TypeScript checks, Vitest, localization completeness,
 the style audit, lint, and the production build. It also captures browser
 screenshots from the MSW preview and fails when the expected UI does not
 appear or if the page overflows horizontally.
+
+The follow-up passed 115 tests in 48 files, TypeScript, localization checks,
+strict lint with no warnings, the style audit and the production build. Isolated
+Chrome interaction checks covered mouse insertion, native touch scrolling,
+long-press touch insertion, edge scrolling and cancellation without a save.
 
 Run `npm run dev:msw` and then `node scripts/capture-ux.mjs` to create
 screenshots at `/tmp/ux-shots` on a Linux environment with Chrome available

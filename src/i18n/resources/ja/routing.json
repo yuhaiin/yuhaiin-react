@@ -254,5 +254,8 @@
   "loading": "読み込み中…",
   "searchNodes": "検索",
   "previousPage": "前へ",
-  "nextPage": "次へ"
+  "nextPage": "次へ",
+  "dragRule": "{{name}} の順序を変更",
+  "dragRuleHelp": "ハンドルをドラッグして順序を変更します。タッチ画面では長押ししてからドラッグし、通常のスワイプではスクロールします。ハンドルにフォーカスした状態で矢印キーを使うと移動でき、Escape でドラッグを中止できます。",
+  "draggingRule": "{{name}} を移動中"
 }

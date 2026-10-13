@@ -2,10 +2,12 @@ import { Button } from '@/component/v2/button';
 import { Dropdown, DropdownCheckboxItem, DropdownContent, DropdownItem, DropdownTrigger } from '@/component/v2/dropdown';
 import type { RuleItem } from '@/contract/route';
 import clsx from 'clsx';
-import { ArrowUpDown, ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react';
+import { ArrowUpDown, GripVertical, MoreHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useId } from 'react';
+import { useRuleDrag, type RuleDrop } from './rule-drag';
 
-export function RuleList({ items, selectedId, onOpen, onPriority, onToggle, onMove, destinations, resolverNames, busy, page, pageSize, total, filtered }: {
+export function RuleList({ items, selectedId, onOpen, onPriority, onToggle, onMove, onDrop, destinations, resolverNames, busy, page, pageSize, total, filtered }: {
     items: RuleItem[];
     selectedId?: string;
     destinations: Record<string, string>;
@@ -19,12 +21,17 @@ export function RuleList({ items, selectedId, onOpen, onPriority, onToggle, onMo
     onPriority: (item: RuleItem) => void;
     onToggle: (item: RuleItem) => void;
     onMove: (item: RuleItem, direction: -1 | 1) => void;
+    onDrop: (item: RuleItem, drop: RuleDrop) => void;
 }) {
     const { t } = useTranslation('routing');
     const { t: uiT } = useTranslation('ui');
     const hasPreviousPage = page > 1;
     const hasNextPage = total > (page - 1) * pageSize + items.length;
-    return <ul className="m-0 list-none space-y-1 p-0" aria-label={uiT('routeRules')}>
+    const helpId = useId();
+    const { listRef, drag, start } = useRuleDrag(items, busy || filtered || total < 2, onDrop);
+    return <>
+        <p id={helpId} className="sr-only">{t('dragRuleHelp')}</p>
+        <ul ref={listRef} className="m-0 list-none space-y-1 p-0" aria-label={uiT('routeRules')}>
         {items.map((item, index) => {
             const proxy = item.mode === 'proxy';
             const destination = !item.target.type || item.target.type === 'default'
@@ -32,13 +39,24 @@ export function RuleList({ items, selectedId, onOpen, onPriority, onToggle, onMo
             const selected = item.id === selectedId;
             const canMoveUp = !filtered && !busy && (index > 0 || hasPreviousPage);
             const canMoveDown = !filtered && !busy && (index + 1 < items.length || hasNextPage);
-            return <li key={item.id} className={clsx(
+            return <li key={item.id} data-rule-id={item.id} className={clsx(
                 'group relative flex min-w-0 items-center rounded-ui-md transition-colors',
-                selected ? 'bg-ui-primary-soft/70' : 'hover:bg-ui-surface-muted/75'
+                selected ? 'bg-ui-primary-soft/70' : 'hover:bg-ui-surface-muted/75', drag?.source.id === item.id && 'opacity-35'
             )}>
                 {selected && <span aria-hidden="true" className="absolute inset-y-3 left-0 w-0.5 rounded-full bg-ui-primary" />}
+                {drag?.target?.target.id === item.id && <span aria-hidden="true" className={clsx('pointer-events-none absolute inset-x-0 z-10 h-0.5 rounded-full bg-ui-primary', drag.target.placement === 'insert_before' ? 'top-0' : 'bottom-0')} />}
+                <button type="button" disabled={busy || filtered || total < 2} aria-label={t('dragRule', { name: item.name })} aria-describedby={helpId}
+                    title={t('dragRuleHelp')} onPointerDown={event => start(event, item)} onContextMenu={event => event.preventDefault()}
+                    onKeyDown={event => {
+                        if (event.key === 'ArrowUp' && canMoveUp || event.key === 'ArrowDown' && canMoveDown) {
+                            event.preventDefault(); onMove(item, event.key === 'ArrowUp' ? -1 : 1);
+                        }
+                    }}
+                    className="flex h-11 w-7 shrink-0 touch-pan-y cursor-grab items-center justify-center rounded-ui-md text-ui-muted/70 hover:text-ui-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus active:cursor-grabbing disabled:cursor-default disabled:opacity-25 max-sm:w-11">
+                    <GripVertical size={16} aria-hidden="true" />
+                </button>
                 <button type="button" aria-current={selected ? 'true' : undefined} aria-label={item.name} title={item.name} onClick={() => onOpen(item)}
-                    className="min-w-0 flex-1 rounded-ui-md py-2.5 pl-3 pr-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus">
+                    className="min-w-0 flex-1 rounded-ui-md py-2.5 pl-0 pr-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus">
                     <div className={clsx('min-w-0', item.disabled && 'opacity-60')}>
                         <div className="flex min-w-0 items-center gap-2">
                             <span className="w-6 shrink-0 font-mono text-xs tabular-nums text-ui-muted">#{item.index}</span>
@@ -58,18 +76,6 @@ export function RuleList({ items, selectedId, onOpen, onPriority, onToggle, onMo
                     </div>
                 </button>
                 <div className="flex shrink-0 items-center gap-0.5 pr-1">
-                    <div className="flex flex-col">
-                        <button type="button" disabled={!canMoveUp} aria-label={`${t('moveEarlier')}: ${item.name}`}
-                            title={t('moveEarlier')} onClick={() => onMove(item, -1)}
-                            className="rounded-ui-xs p-0.5 text-ui-muted hover:bg-ui-surface hover:text-ui-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus disabled:opacity-25">
-                            <ChevronUp size={15} />
-                        </button>
-                        <button type="button" disabled={!canMoveDown} aria-label={`${t('moveLater')}: ${item.name}`}
-                            title={t('moveLater')} onClick={() => onMove(item, 1)}
-                            className="rounded-ui-xs p-0.5 text-ui-muted hover:bg-ui-surface hover:text-ui-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus disabled:opacity-25">
-                            <ChevronDown size={15} />
-                        </button>
-                    </div>
                     <Dropdown><DropdownTrigger asChild>
                         <Button type="button" size="icon" variant="outline-secondary" className="h-8 w-8 border-transparent bg-transparent text-ui-muted/80" aria-label={t('ruleActions', { name: item.name })}><MoreHorizontal size={16} /></Button>
                     </DropdownTrigger><DropdownContent align="end">
@@ -80,5 +86,13 @@ export function RuleList({ items, selectedId, onOpen, onPriority, onToggle, onMo
             </li>;
         })}
         {!items.length && <li className="py-12 text-center text-sm text-ui-muted">{uiT('noRecordsFound')}</li>}
-    </ul>;
+        </ul>
+        {drag && <>
+            <div aria-hidden="true" className="pointer-events-none fixed z-[1060] flex min-w-0 items-center gap-2 rounded-ui-md border border-ui-primary/40 bg-ui-surface px-3 py-3 text-sm shadow-ui-elevated"
+                style={{ left: drag.left, top: drag.y - drag.offset, width: drag.width }}>
+                <GripVertical size={16} className="shrink-0 text-ui-primary" /><span className="min-w-0 truncate font-medium text-ui-heading">{drag.source.name}</span>
+            </div>
+            <span role="status" className="sr-only">{t('draggingRule', { name: drag.source.name })}</span>
+        </>}
+    </>;
 }

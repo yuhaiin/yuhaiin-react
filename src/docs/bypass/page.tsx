@@ -31,6 +31,7 @@ import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { RuleDraft, RuleItem } from "@/contract/route";
 import { RuleList } from "./rule-list";
+import type { RuleDrop } from "./rule-drag";
 import { ArrowRight, ChevronDown, Plus, Save, ListFilter } from "lucide-react";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
@@ -149,7 +150,7 @@ function BypassComponent() {
             if (!adjacent) {
                 const neighboringPage = page + direction;
                 if (neighboringPage < 1) return;
-                const result = await listRules({ page: neighboringPage, pageSize: PAGE_SIZE, query: '' });
+                const result = await listRules({ page: neighboringPage, pageSize: currentPage.page.pageSize || PAGE_SIZE, query: '' });
                 adjacent = direction < 0 ? result.items[result.items.length - 1] : result.items[0];
             }
             if (!adjacent) return;
@@ -163,6 +164,17 @@ function BypassComponent() {
             } finally {
                 await mutateActivation();
             }
+        });
+    };
+    const dropRule = (item: RuleItem, drop: RuleDrop) => {
+        if (!data || query.trim() || toggling || reordering || editorState.dirty || editorState.pending || isValidating || data.page.page !== page) return;
+        void runReorder(async () => {
+            await changeRulePriority({ id: item.id }, { id: drop.target.id }, drop.placement);
+            await mutate();
+            void mutateAllRules();
+            void mutateActivation();
+            try { await applyRouteChanges(); ctx.Info(t('ruleReordered')); }
+            finally { await mutateActivation(); }
         });
     };
     const toggleDisabled = (item: RuleItem) => {
@@ -221,7 +233,7 @@ function BypassComponent() {
                             resolverNames={Object.fromEntries((resolversData?.items ?? []).map(item => [item.id, item.name]))}
                             page={data.page.page || page} pageSize={data.page.pageSize || PAGE_SIZE} total={data.page.total} filtered={Boolean(query.trim())}
                             busy={toggling || reordering || isValidating || editorState.pending || editorState.dirty}
-                            onOpen={selectRule} onPriority={setPriorityItem} onToggle={toggleDisabled} onMove={moveRule} />}
+                            onOpen={selectRule} onPriority={setPriorityItem} onToggle={toggleDisabled} onMove={moveRule} onDrop={dropRule} />}
                     </div>
                     {Math.ceil(data.page.total / (data.page.pageSize || PAGE_SIZE)) > 1 && <div className="flex justify-center border-t border-ui-border/60 pt-3">
                         <Pagination currentPage={data.page.page || page} totalItems={data.page.total} pageSize={data.page.pageSize || PAGE_SIZE} onPageChange={setPage} />
