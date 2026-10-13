@@ -12,3 +12,11 @@ const storage: Storage = {
 };
 
 Object.defineProperty(globalThis, "localStorage", { configurable: true, value: storage });
+
+// jsdom has no scrolling implementation; keyboard navigation still updates selection.
+if (!HTMLElement.prototype.scrollIntoView) {
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+        configurable: true,
+        value: () => {},
+    });
+}

@@ -24,6 +24,7 @@ export type DNSCacheClearResponse = Go.resolver.DNSCacheClearResponse;
 export function createDefaultResolver(id: string): Resolver {
   return {
     id,
+    name: id,
     type: id === "bootstrap" ? "system" : "udp",
     host: id === "bootstrap" ? "system default" : "8.8.8.8",
     system: id === "bootstrap",
@@ -36,6 +37,7 @@ export function normalizeResolver(value: Partial<Resolver> | undefined): Resolve
   const type = resolver.type ?? (id === "bootstrap" ? "system" : "udp");
   return {
     id,
+    name: resolver.name ?? id,
     type,
     host: resolver.host ?? (type === "system" ? "system default" : ""),
     subnet: resolver.subnet ?? "",

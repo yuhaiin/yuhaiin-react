@@ -27,6 +27,11 @@ export async function createNode(node: Node): Promise<Node> {
   return normalizeNode(await requestJSON<Go.node.Node>("POST", "/api/v2/nodes", normalizeNode(node)) as unknown as Node);
 }
 
+export async function previewNodeImport(text: string, group: string): Promise<{ items: Node[]; errors: Go.node.ImportIssue[] }> {
+  const data = await requestJSON<Go.node.ImportPreview>("POST", "/api/v2/nodes/import/preview", { text, group });
+  return { items: (data.items ?? []).map(item => normalizeNode(item as unknown as Partial<Node>)), errors: data.errors ?? [] };
+}
+
 export async function saveNode(node: Node): Promise<Node> {
   const normalized = normalizeNode(node);
   return normalizeNode(await requestJSON<Go.node.Node>("PUT", `/api/v2/nodes/${encodeURIComponent(normalized.id)}`, normalized) as unknown as Node);
@@ -42,6 +47,10 @@ export async function selectedNodes(): Promise<{ tcp?: Node; udp?: Node }> {
     tcp: data.tcp ? normalizeNode(data.tcp as unknown as Partial<Node>) : undefined,
     udp: data.udp ? normalizeNode(data.udp as unknown as Partial<Node>) : undefined,
   };
+}
+
+export async function selectNodes(selection: Go.node.SelectionRequest): Promise<void> {
+  await requestJSON<void>("PUT", "/api/v2/nodes/selected", selection);
 }
 
 export async function activeNodes(): Promise<{ items: Node[] }> {

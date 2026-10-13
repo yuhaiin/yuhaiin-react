@@ -343,3 +343,5 @@ export const protocolTypes: NodeProtocolType[] = [
   "fixedv2",
   "point_as_endpoint",
 ];
+
+export type Selector = Go.node.Selector;

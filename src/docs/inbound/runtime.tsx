@@ -8,17 +8,18 @@ import { Button } from "@/component/v2/button";
 
 import { Spinner } from "@/component/v2/spinner";
 
-import { Activity, ArrowDown, ArrowUp, CircleAlert, CircleCheck, RefreshCw } from "lucide-react";
+import { Activity, CircleAlert, CircleCheck, RefreshCw } from "lucide-react";
 import { FC } from "react";
 
 function runtimeLabel(state: InboundRuntimeState): string {
     switch (state) {
         case "disabled": return "Disabled";
         case "starting": return "Starting";
-        case "running": return "Running";
+        case "running": return "Listener initialized";
         case "degraded": return "Degraded";
         case "failed": return "Failed";
         case "stopping": return "Stopping";
+        default: return "Unknown";
     }
 }
 
@@ -30,22 +31,8 @@ function runtimeVariant(state: InboundRuntimeState): "success" | "danger" | "war
         case "starting": return "info";
         case "stopping": return "secondary";
         case "disabled": return "muted";
+        default: return "muted";
     }
-}
-
-function formatBytes(value: string): string {
-    const bytes = Number(value);
-    if (!Number.isFinite(bytes) || bytes < 0) return "0 B";
-    if (bytes < 1024) return `${Math.round(bytes)} B`;
-    const units = ["KiB", "MiB", "GiB", "TiB"];
-    let amount = bytes;
-    let unit = "B";
-    for (const nextUnit of units) {
-        amount /= 1024;
-        unit = nextUnit;
-        if (amount < 1024 || nextUnit === units[units.length - 1]) break;
-    }
-    return `${amount.toFixed(amount >= 10 ? 0 : 1)} ${unit}`;
 }
 
 function eventLabel(event: InboundRuntimeEvent): string {
@@ -68,6 +55,7 @@ const InboundRuntimePanel: FC<{
     retrying?: boolean;
 }> = ({ status, events, eventsLoading, onRetry, retrying }) => {
     const { t: uiT } = useTranslation('ui');
+    const { t } = useTranslation('routing');
 
     if (!status) {
         return (
@@ -101,15 +89,11 @@ const InboundRuntimePanel: FC<{
                 </div>
             )}
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <div><div className="text-xs text-ui-muted">{uiT("activeTcp")}</div><div className="font-semibold">{statistics.activeTcp}</div></div>
-                <div><div className="text-xs text-ui-muted">{uiT("activeUdp")}</div><div className="font-semibold">{statistics.activeUdp}</div></div>
-                <div><div className="text-xs text-ui-muted">{uiT("tcpFlows")}</div><div className="font-semibold">{statistics.totalTcpFlows}</div></div>
-                <div><div className="text-xs text-ui-muted">{uiT("udpFlows")}</div><div className="font-semibold">{statistics.totalUdpFlows}</div></div>
-            </div>
-            <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-ui-muted">
-                <span><ArrowUp className="mr-1 inline text-ui-primary" size={14} />{formatBytes(statistics.uploadBytes)} {uiT("uploaded")}</span>
-                <span><ArrowDown className="mr-1 inline text-ui-primary" size={14} />{formatBytes(statistics.downloadBytes)} {uiT("downloaded")}</span>
+            <p className="text-xs text-ui-muted">{t('listenerStatusHelp')}</p>
+            <div className="grid gap-3 sm:grid-cols-3">
+                <div><div className="text-xs text-ui-muted">{t('acceptedStreams')}</div><div className="font-semibold">{statistics.acceptedStreams}</div></div>
+                <div><div className="text-xs text-ui-muted">{t('receivedPackets')}</div><div className="font-semibold">{statistics.receivedPackets}</div></div>
+                <div><div className="text-xs text-ui-muted">{t('receivedPings')}</div><div className="font-semibold">{statistics.receivedPings}</div></div>
             </div>
 
             {status.listeners.length > 0 && (
@@ -154,4 +138,4 @@ const InboundRuntimePanel: FC<{
 
 export { InboundRuntimePanel };
 
-export { runtimeVariant, runtimeLabel, formatBytes };
+export { runtimeVariant, runtimeLabel };

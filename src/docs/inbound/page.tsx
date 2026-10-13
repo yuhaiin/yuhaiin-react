@@ -1,5 +1,6 @@
+import { clearHashSearch, useHashSearch } from '@/hooks/useHashLocation';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
-import { runtimeVariant, runtimeLabel, formatBytes } from "./runtime";
+import { runtimeVariant, runtimeLabel } from "./runtime";
 import { InboundModal, errorOf } from "./modal";
 
 import { useServerPageClamp } from "@/hooks/use-pagination";
@@ -40,9 +41,9 @@ const InboundItem: FC<{
     onOpen: () => void;
     toggling: boolean;
 }> = ({ item, runtime, onToggle, onOpen, toggling }) => {
-    const { t: uiT } = useTranslation('ui');
+    const { t } = useTranslation('routing');
 
-    const status = runtime?.status ?? (item.enabled ? "starting" : "disabled");
+    const status = runtime?.status ?? "unknown";
     const name = item.name || item.id;
     const listen = inboundListen(item) || "-";
     const transport = transportLabel(item) || "-";
@@ -89,9 +90,9 @@ const InboundItem: FC<{
                 {runtime ? (
                     <div className="hidden min-w-0 text-xs text-ui-muted xl:block">
                         <div className="truncate font-medium text-ui-fg">
-                            {uiT("tcp")} {runtime.statistics.activeTcp} {uiT("udp")} {runtime.statistics.activeUdp}
+                            {runtime.statistics.acceptedStreams} {t("acceptedStreams")} · {runtime.statistics.receivedPackets} {t("receivedPackets")}
                         </div>
-                        <div className="truncate text-[11px]">↑ {formatBytes(runtime.statistics.uploadBytes)} / ↓ {formatBytes(runtime.statistics.downloadBytes)}</div>
+
                     </div>
                 ) : (
                     <div className="hidden text-sm text-ui-muted xl:block">—</div>
@@ -191,14 +192,18 @@ export default function InboudComponent() {
 
     const ctx = useContext(GlobalToastContext);
     const [page, setPage] = useState(1);
-    const [showdata, setShowdata] = useState({ show: false, id: "", new: false });
+    const [localShowdata, setShowdata] = useState({ show: false, id: "", new: false });
+    const search = useHashSearch();
+    const linkedId = new URLSearchParams(search).get('inbound');
+    const showdata = linkedId ? { show: true, id: linkedId, new: false } : localShowdata;
+    const closeLink = () => { if (linkedId) clearHashSearch(); };
     const { data, error, isLoading, mutate } = useSWR(
         `/api/v2/inbounds?page=${page}&pageSize=${PAGE_SIZE}`,
         () => listInbounds({ page, pageSize: PAGE_SIZE }),
         { keepPreviousData: true },
     );
     useServerPageClamp(data?.page, page, setPage);
-    const { data: runtimeStatuses = [], mutate: mutateStatuses } = useSWR(
+    const { data: runtimeStatuses = [], error: statusError, mutate: mutateStatuses } = useSWR(
         "/api/v2/inbounds/status",
         listInboundStatuses,
         { refreshInterval: 3000, revalidateOnFocus: true },
@@ -219,6 +224,7 @@ export default function InboudComponent() {
             .then(() => {
                 ctx.Info("Removed successful");
                 setShowdata((prev) => ({ ...prev, show: false }));
+                closeLink();
                 void mutate();
                 void mutateStatuses();
             })
@@ -271,12 +277,11 @@ export default function InboudComponent() {
                 show={showdata.show}
                 id={showdata.id}
                 isNew={showdata.new}
-                onHide={(save) => {
-                    if (save) {
-                        void mutate();
-                        void mutateStatuses();
-                    }
+                onHide={() => {
+                    void mutate();
+                    void mutateStatuses();
                     setShowdata((prev) => ({ ...prev, show: false }));
+                closeLink();
                 }}
                 onDelete={deleteCurrentInbound}
                 runtime={statusByID.get(showdata.id)}
@@ -285,6 +290,7 @@ export default function InboudComponent() {
             />
 
             <InboundConfigCard />
+            {statusError && <p role="alert" className="mb-4 text-sm text-ui-danger">{uiT('runtimeStatusIsNotAvailableYet')} <Button size="sm" onClick={() => void mutateStatuses()}>{uiT('retry')}</Button></p>}
 
             <CardRowList
                 layout="list"

@@ -4,6 +4,8 @@ export type Page = Go.route.Page;
 export type RuleItem = Go.route.RuleItem;
 export type RuleExpr = Go.route.RuleExpr;
 export type RouteRule = Go.route.RouteRule;
+export type RouteTarget = Go.route.Target;
+export type RuleDraft = { rule: RouteRule; lists: RouteListDetail[]; shareLists?: string[] };
 export type RuleList = Go.route.RuleList;
 export type RouteConfig = Go.route.Config;
 export type RouteListConfig = Go.route.ListConfig;
@@ -19,6 +21,11 @@ export function normalizeRouteActivationStatus(value: Partial<RouteActivationSta
   return {
     hostIndexRefreshAt: value?.hostIndexRefreshAt ?? 0,
     ruleApplyAt: value?.ruleApplyAt ?? 0,
+    savedRevision: value?.savedRevision ?? 0,
+    appliedRevision: value?.appliedRevision ?? 0,
+    error: value?.error ?? "",
+    applying: value?.applying ?? false,
+    runningConfig: value?.runningConfig ? normalizeRouteConfig(value.runningConfig) : undefined,
   };
 }
 
@@ -35,16 +42,17 @@ export type RegistryList = Go.route.RegistryList;
 export type RegistryFile = Go.route.RegistryFile;
 export type RegistryCatalog = Go.route.RegistryCatalog;
 export type RegistryCatalogList = Go.route.RegistryCatalogList;
-export type TagItem = Go.route.TagItem;
-export type TagList = Go.route.TagList;
 export type RuleTestResponse = Go.route.RuleTestResponse;
 export type BlockHistory = Go.route.BlockHistory;
 export type BlockHistoryList = Go.route.BlockHistoryList;
 
 export function createDefaultRule(name = ""): RouteRule {
   return {
+    id: crypto.randomUUID(),
+    revision: 0,
     name,
     mode: "proxy",
+    target: { type: "default" },
     resolveStrategy: "default",
     udpProxyFqdnStrategy: "udp_proxy_fqdn_strategy_default",
     rules: [{ type: "all", all: [{ type: "host", host: { list: "" } }] }],
@@ -53,9 +61,11 @@ export function createDefaultRule(name = ""): RouteRule {
 
 export function normalizeRule(value: Partial<RouteRule>): RouteRule {
   return {
+    id: value.id ?? value.name ?? "",
+    revision: value.revision ?? 0,
     name: value.name ?? "",
+    target: value.target ?? { type: "default" },
     mode: value.mode ?? "bypass",
-    tag: value.tag ?? "",
     resolveStrategy: value.resolveStrategy ?? "default",
     udpProxyFqdnStrategy: value.udpProxyFqdnStrategy ?? "udp_proxy_fqdn_strategy_default",
     resolver: value.resolver ?? "",
@@ -66,6 +76,9 @@ export function normalizeRule(value: Partial<RouteRule>): RouteRule {
 
 export function normalizeRouteConfig(value: Partial<RouteConfig> | undefined): RouteConfig {
   return {
+    revision: value?.revision ?? 0,
+    defaultMode: value?.defaultMode ?? "proxy",
+    defaultTarget: value?.defaultTarget ?? { type: "default" },
     directResolver: value?.directResolver ?? "",
     proxyResolver: value?.proxyResolver ?? "",
     resolveLocally: value?.resolveLocally ?? false,
@@ -75,6 +88,7 @@ export function normalizeRouteConfig(value: Partial<RouteConfig> | undefined): R
 
 export function normalizeRouteListConfig(value: Partial<RouteListConfig> | undefined): RouteListConfig {
   return {
+    revision: value?.revision ?? 0,
     refreshInterval: value?.refreshInterval ?? "0",
     lastRefreshTime: value?.lastRefreshTime ?? "0",
     error: value?.error ?? "",
@@ -88,6 +102,8 @@ export function normalizeRouteListConfig(value: Partial<RouteListConfig> | undef
 
 export function createDefaultRouteList(name = ""): RouteListDetail {
   return {
+    revision: 0,
+    id: "",
     name,
     type: "host",
     source: { type: "local", local: { lists: [] } },
@@ -98,6 +114,9 @@ export function createDefaultRouteList(name = ""): RouteListDetail {
 export function normalizeRouteList(value: Partial<RouteListDetail>): RouteListDetail {
   const source = value.source ?? { type: "local", local: { lists: [] } };
   return {
+    revision: value.revision ?? 0,
+    id: value.id ?? value.name ?? "",
+    ownerRuleId: value.ownerRuleId ?? "",
     name: value.name ?? "",
     type: value.type ?? "host",
     source: {
@@ -116,11 +135,12 @@ function toUint(value: unknown, fallback = 0): number {
 
 export function normalizeRuleItem(value: Partial<RuleItem> | undefined): RuleItem {
   return {
+    id: value?.id ?? value?.name ?? "",
+    target: value?.target ?? { type: "default" },
     name: value?.name ?? "",
     disabled: value?.disabled ?? false,
     index: toUint(value?.index),
     mode: value?.mode ?? "",
-    tag: value?.tag ?? "",
     resolver: value?.resolver ?? "",
     ruleCount: toUint(value?.ruleCount),
   };
@@ -128,6 +148,8 @@ export function normalizeRuleItem(value: Partial<RuleItem> | undefined): RuleIte
 
 export function normalizeListItem(value: Partial<ListItem> | undefined): ListItem {
   return {
+    id: value?.id ?? value?.name ?? "",
+    ownerRuleId: value?.ownerRuleId ?? "",
     name: value?.name ?? "",
     type: value?.type ?? "",
     source: value?.source ?? "",
@@ -136,15 +158,6 @@ export function normalizeListItem(value: Partial<ListItem> | undefined): ListIte
     preview: value?.preview ?? "",
   };
 }
-
-export function normalizeTagItem(value: Partial<TagItem> | undefined): TagItem {
-  return {
-    name: value?.name ?? "",
-    type: value?.type ?? "",
-    hash: Array.isArray(value?.hash) ? value.hash : [],
-  };
-}
-
 
 export function normalizeRegistry(value: Partial<Registry> | undefined): Registry {
   return {
@@ -185,4 +198,15 @@ export function normalizeRegistryCatalog(value: Partial<RegistryCatalog> | undef
     files: Array.isArray(value?.files) ? value.files.map(normalizeRegistryFile) : [],
     error: value?.error ?? "",
   };
+}
+
+export function normalizeRuleDraft(value: Partial<RuleDraft>): RuleDraft {
+  return { shareLists: value.shareLists ?? [], rule: normalizeRule(value.rule ?? {}), lists: (value.lists ?? []).map(normalizeRouteList) };
+}
+
+export function createDefaultRuleDraft(): RuleDraft {
+  const rule = createDefaultRule();
+  const list = { ...createDefaultRouteList("Websites"), id: crypto.randomUUID(), ownerRuleId: rule.id };
+  rule.rules = [{ type: "host", host: { list: list.id } }];
+  return { rule, lists: [list] };
 }

@@ -32,7 +32,7 @@ const variants = {
 };
 
 function AppContent() {
-    const [location] = useLocation();
+    const [location, navigate] = useLocation();
 
     useEffect(() => {
         window.Android?.setRefreshEnabled?.(!location.includes('/docs/config/log'))
@@ -63,7 +63,7 @@ function AppContent() {
                     )}
                     transition={{ duration: reducedMotion ? 0 : 0.2, ease: "easeOut" }}
                 >
-                    <Router hook={() => [location, () => { }]}>
+                    <Router hook={() => [location, navigate]}>
                         <Switch>
                             {appRoutes.map(({ path, component }) => (
                                 <Route key={path} path={path} component={component} />

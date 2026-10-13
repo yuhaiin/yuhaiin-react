@@ -1,28 +1,23 @@
-import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
+import { ResolverModal } from "@/component/resolver-editor";
 import { useServerPageClamp } from "@/hooks/use-pagination";
 import { useTranslation } from 'react-i18next';
 
 import { APIError } from "@/api/client";
-import { createResolver, deleteResolver, getResolver, listResolvers, saveResolver } from "@/api/resolvers";
+import { deleteResolver, listResolvers } from "@/api/resolvers";
 import { Badge } from '@/component/v2/badge';
 import { Button } from '@/component/v2/button';
-import { Card, CardBody, CardFooter, CardHeader, IconBox, MainContainer, SettingsBox } from '@/component/v2/card';
+import { Card, CardBody, CardFooter, CardHeader, IconBox, MainContainer } from '@/component/v2/card';
 import { ConfirmModal } from "@/component/v2/confirm";
-import { SettingInputVertical, SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { Pagination } from "@/component/v2/pagination";
-import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
-import { createDefaultResolver, normalizeResolver, Resolver, ResolverType } from "@/contract/resolver";
+import { Resolver } from "@/contract/resolver";
 import clsx from "clsx";
 import {
-    Check,
     Globe2,
     Layers,
     Network,
     Plus,
     Shield,
-    Trash,
 } from 'lucide-react';
 import type { ElementType } from "react";
 import { FC, useContext, useMemo, useState } from "react";
@@ -32,6 +27,7 @@ import { Fakedns } from "./fakedns";
 import { Hosts } from "./hosts";
 import { Server } from "./server";
 import { DNSCache } from "./cache";
+import { DNSRoles } from "./roles";
 
 const PAGE_SIZE = 12;
 
@@ -41,7 +37,6 @@ function errorOf(error: unknown): APIError | undefined {
     return { code: 500, msg: error instanceof Error ? error.message : String(error) };
 }
 
-const resolverTypes: ResolverType[] = ["udp", "tcp", "doh", "dot", "doq", "doh3", "system"];
 
 type BadgeVariant = "primary" | "secondary" | "success" | "danger" | "warning" | "info" | "muted";
 
@@ -136,8 +131,8 @@ const ResolverTile: FC<{ item: Resolver; onClick: () => void }> = ({ item, onCli
                         <Icon size={18} strokeWidth={1.9} />
                     </div>
                     <div className="min-w-0">
-                        <div className="truncate text-[0.95rem] font-semibold text-ui-heading" title={item.id}>
-                            {item.id}
+                        <div className="truncate text-[0.95rem] font-semibold text-ui-heading" title={item.name}>
+                            {item.name}
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-1.5">
                             <Badge variant={visual.badge} pill className="px-2 py-0.5 text-[0.65rem] font-medium">
@@ -180,23 +175,20 @@ const ResolverTile: FC<{ item: Resolver; onClick: () => void }> = ({ item, onCli
 };
 
 export default function ResolverComponent() {
+    const { t } = useTranslation("routing");
     return (
         <MainContainer>
             <div className="flex flex-col gap-6">
+                <h1 className="text-xl font-semibold text-ui-heading">{t('dnsTask')}</h1>
+                <p className="text-sm text-ui-muted">{t("dnsPageHelp")}</p>
+                <DNSRoles />
                 <ResolverList />
-                <DNSCache />
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <div>
-                        <Hosts />
+                <Server />
+                <details><summary className="cursor-pointer text-sm font-semibold">{t('advancedDNSSettings')}</summary>
+                    <div className="mt-4 space-y-6"><DNSCache />
+                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2"><Hosts /><Fakedns /></div>
                     </div>
-                    <div>
-                        <Fakedns />
-                    </div>
-                </div>
-
-                <div>
-                    <Server />
-                </div>
+                </details>
             </div>
         </MainContainer>
     );
@@ -293,138 +285,4 @@ function ResolverList() {
             )}
         </Card>
     </>
-}
-
-const ResolverModal: FC<{
-    id: string,
-    show: boolean,
-    isNew?: boolean,
-    onHide: (save?: boolean) => void,
-    onDelete: (id: string) => void
-}> = ({ id, show, isNew, onHide, onDelete }) => {
-    const { t: uiT } = useTranslation('ui');
-
-    const ctx = useContext(GlobalToastContext);
-    const shouldFetch = show && id !== "" && !isNew;
-    const { data, error, isLoading, mutate } = useSWR(
-        shouldFetch ? `/api/v2/resolvers/${id}` : null,
-        () => getResolver(id),
-        { shouldRetryOnError: false, keepPreviousData: false, revalidateOnFocus: false },
-    );
-
-    const { value: draft, setValue: setDraft, dirty } = useEditorDraft(show ? id : null, shouldFetch ? data : undefined, () => createDefaultResolver(id));
-    const { pending: saving, run } = useAsyncAction(error => ctx.Error(errorOf(error)?.msg ?? "Save failed"));
-    const close = useCloseGuard(show && dirty, saving, () => onHide());
-
-    const apiError = errorOf(error);
-    const resolver = isNew ? draft : data ? draft : undefined;
-
-    const handleSave = () => {
-        if (!resolver || saving || error || isLoading) return;
-        const nextID = (isNew ? resolver.id : id).trim();
-        if (!nextID) { ctx.Error("Resolver ID cannot be empty"); return; }
-        const next = normalizeResolver({ ...resolver, id: nextID });
-        void run(async () => {
-            const saved = isNew ? await createResolver(next) : await saveResolver(next);
-            ctx.Info("Save successful");
-            await mutate(saved, { revalidate: false });
-            onHide(true);
-        });
-    };
-
-    return (
-        <Modal open={show} onOpenChange={(open) => !open && close()}>
-            <ModalContent width={760}>
-                <ModalHeader closeButton>
-                    <ModalTitle className="flex items-center gap-2">
-                        <Network size={18} />
-                        {id}
-                    </ModalTitle>
-                </ModalHeader>
-                <ModalBody>
-                    <fieldset disabled={saving} className="contents">
-                    {apiError ?
-                        <Loading code={apiError.code} onRetry={() => void mutate()}>{apiError.msg}</Loading> :
-                        isLoading || !resolver ? <Loading /> :
-                            <SettingsBox>
-                                <ResolverEditor value={resolver} onChange={setDraft} />
-                            </SettingsBox>
-                    }
-                </fieldset>
-                </ModalBody>
-                <ModalFooter className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        {id !== 'bootstrap' && !isNew &&
-                            <Button variant="outline-danger" onClick={() => { onHide(false); onDelete(id); }}>
-                                <Trash className="mr-2" size={16} />{uiT("delete")}</Button>
-                        }
-                    </div>
-                    <div className="flex flex-wrap justify-end gap-2">
-                        <Button onClick={close} disabled={saving}>{uiT("cancel")}</Button>
-                        <Button disabled={saving || !resolver || isLoading || Boolean(error)} onClick={handleSave}>
-                            {saving ? <Spinner size="sm" /> : <><Check className="mr-2" size={16} />{isNew ? "Create" : "Save"}</>}
-                        </Button>
-                    </div>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
-    )
-}
-
-const ResolverEditor: FC<{ value: Resolver, onChange: (x: Resolver) => void }> = ({ value, onChange }) => {
-    const { t: uiT } = useTranslation('ui');
-
-    const patch = (patchValue: Partial<Resolver>) => onChange(normalizeResolver({ ...value, ...patchValue }));
-    const endpoint = resolverEndpointMeta(value.type);
-    const hasTLSName = ["tcp", "doh", "dot", "doq", "doh3"].includes(value.type);
-
-    return (
-        <div className="grid gap-4">
-            <div className="rounded-ui-lg border border-ui-border bg-ui-surface-muted p-4">
-                <div className="mb-3 font-bold">{uiT("identity")}</div>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <SettingInputVertical label={uiT("idLabel")} value={value.id} onChange={(id) => patch({ id })} />
-                    <SettingSelectVertical
-                        label={uiT("type")}
-                        value={value.type}
-                        values={resolverTypes}
-                        onChange={(type) => patch({ type: type as ResolverType, system: type === "system", host: type === "system" ? "system default" : value.host })}
-                    />
-                </div>
-            </div>
-
-            <div className="rounded-ui-lg border border-ui-border bg-ui-surface-muted p-4">
-                <div className="mb-3 font-bold">{uiT("endpoint")}</div>
-                {value.type === "system" ? (
-                    <div className="rounded-ui-lg border border-dashed border-ui-border p-4 text-sm text-ui-muted">{uiT("usesTheOperatingSystemResolver")}</div>
-                ) : (
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <SettingInputVertical label={endpoint.label} value={value.host} onChange={(host) => patch({ host })} placeholder={endpoint.placeholder} />
-                        <SettingInputVertical label={uiT("subnet")} value={value.subnet ?? ""} onChange={(subnet) => patch({ subnet })} placeholder={uiT("optionalEcsSubnet")} />
-                        {hasTLSName && <SettingInputVertical label={uiT("tlsServerName")} value={value.tlsServerName ?? ""} onChange={(tlsServerName) => patch({ tlsServerName })} placeholder="dns.example" />}
-                    </div>
-                )}
-            </div>
-
-            <SwitchCard label={uiT("systemResolver")} checked={Boolean(value.system)} onCheckedChange={(system) => patch({ system, type: system ? "system" : "udp", host: system ? "system default" : value.host })} />
-        </div>
-    )
-}
-
-function resolverEndpointMeta(type: ResolverType): { label: string; placeholder: string } {
-    switch (type) {
-        case "doh":
-        case "doh3":
-            return { label: "DoH URL", placeholder: "https://dns.example/dns-query" };
-        case "dot":
-            return { label: "DoT Address", placeholder: "dns.example:853" };
-        case "doq":
-            return { label: "DoQ Address", placeholder: "dns.example:853" };
-        case "tcp":
-            return { label: "TCP Address", placeholder: "8.8.8.8:53" };
-        case "udp":
-            return { label: "UDP Address", placeholder: "8.8.8.8:53" };
-        case "system":
-            return { label: "System Resolver", placeholder: "system default" };
-    }
 }

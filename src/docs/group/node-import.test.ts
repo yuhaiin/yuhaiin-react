@@ -1,14 +1,11 @@
 import { expect, it, vi } from 'vitest';
-import { importNodeBatch, parseNodeImport } from './node-import';
-
-it.each(['null', '42', '{}', '[]', '{"chain":[{"type":"unknown"}]}'])('rejects invalid import %s', value => {
-    expect(() => parseNodeImport(value, 'manual')).toThrow();
-});
+import { importNodeBatch } from './node-import';
+import { normalizeNode } from '@/contract/node';
 
 it('bounds concurrent requests, retains partial successes and retries only failures', async () => {
-    const nodes = parseNodeImport(JSON.stringify(Array.from({ length: 12 }, (_, index) => ({
+    const nodes = Array.from({ length: 12 }, (_, index) => normalizeNode({
         id: String(index), name: String(index), chain: [{ type: 'direct', direct: {} }],
-    }))), 'manual');
+    }));
     let concurrent = 0;
     let peak = 0;
     const create = vi.fn(async (node: typeof nodes[number]) => {

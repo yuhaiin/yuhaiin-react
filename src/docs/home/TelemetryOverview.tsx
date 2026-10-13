@@ -11,7 +11,7 @@ const titles: Record<TelemetryGroup["dimension"], string> = {
     outbound: "Outbound node",
     process: "Process",
     rule: "Rule",
-    tag: "Tag",
+    selector: "Shared destination",
     destination: "Destination",
 };
 

@@ -14,6 +14,7 @@ import Loading from "../../../component/v2/loading";
 
 export const Server: FC = () => {
     const { t: uiT } = useTranslation('ui');
+    const { t } = useTranslation('routing');
 
     const ctx = useContext(GlobalToastContext);
     const { data: server, error, isLoading, mutate } = useSWR("/api/v2/resolver/server", getResolverServer, { revalidateOnFocus: false });
@@ -41,7 +42,7 @@ export const Server: FC = () => {
         <Card className="flex flex-col">
             <fieldset disabled={saving} className="contents">
             <CardHeader>
-                <IconBox icon={ServerIcon} tone="violet" title={uiT("dnsServer")} description={uiT("listenAndServe")} />
+                <IconBox icon={ServerIcon} tone="violet" title={uiT("dnsServer")} description={t("dnsListenHelp")} />
             </CardHeader>
             <CardBody className="p-6">
                 <SettingInputVertical

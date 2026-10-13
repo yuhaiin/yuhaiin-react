@@ -1,0 +1,24 @@
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
+import { expect, it, vi } from 'vitest';
+import { SWRConfig } from 'swr';
+import NodePicker from './node-picker';
+vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+const fetchPage = vi.hoisted(() => vi.fn());
+vi.mock('@/api/nodes', () => ({ listNodes: fetchPage }));
+it('loads all candidates, excludes the node itself, and reorders the selected IDs', async () => {
+    fetchPage.mockImplementation(async ({ page }: { page: number }) => ({ items: page === 1 ? [{ id: 'self', name: 'This set', group: 'manual', enabled: true }, { id: 'a', name: 'First node', enabled: true }] : [{ id: 'b', name: 'Second node', enabled: true }], page: { page, pageSize: 2, total: 3 } }));
+    const host = document.createElement('div');
+    const root = createRoot(host);
+    const onChange = vi.fn();
+    await act(async () => { root.render(<SWRConfig value={{ provider: () => new Map() }}><NodePicker value={['a', 'b']} excludeId="self" onChange={onChange} /></SWRConfig>); });
+    expect(fetchPage).toHaveBeenCalledTimes(2);
+    expect(host.querySelectorAll('input[type="checkbox"]')).toHaveLength(2);
+    expect(host.textContent).not.toContain('This set');
+    const later = host.querySelector('button[aria-label="moveLater First node"]') as HTMLButtonElement;
+    act(() => later.click());
+    expect(onChange).toHaveBeenLastCalledWith(['b', 'a']);
+    const earlier = host.querySelector('button[aria-label="moveEarlier First node"]') as HTMLButtonElement;
+    expect(earlier.disabled).toBe(true);
+    act(() => root.unmount());
+});

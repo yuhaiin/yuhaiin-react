@@ -318,7 +318,7 @@ const ConnectionRow = memo(function ConnectionRow({
             <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-1.5 max-sm:col-span-2 max-sm:row-start-2 max-sm:flex-nowrap max-sm:overflow-x-auto">
                 <ConnectionBadge icon={ShieldCheck} text={conn.mode || "unknown"} />
                 <ConnectionBadge icon={Network} text={conn.network.connType || "unknown"} />
-                {conn.tag && <ConnectionBadge icon={Tag} text={conn.tag} tone="neutral" />}
+                {conn.selectorName && <ConnectionBadge icon={Tag} text={conn.selectorName} tone="neutral" />}
             </div>
 
             <FlowBadge download={download} upload={upload} />

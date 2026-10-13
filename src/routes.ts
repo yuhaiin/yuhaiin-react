@@ -14,7 +14,7 @@ const DiagnosticsPage = dynamic(() => import('@/docs/diagnostics/page'), { loadi
 const InboundPage = dynamic(() => import('@/docs/inbound/page'), { loading });
 const BypassPage = dynamic(() => import('@/docs/bypass/page'), { loading });
 const BypassListPage = dynamic(() => import('@/docs/bypass/list/page'), { loading });
-const BypassTagPage = dynamic(() => import('@/docs/bypass/tag/page'), { loading });
+const SelectorsPage = dynamic(() => import('@/docs/group/selectors/page'), { loading });
 const BypassResolverPage = dynamic(() => import('@/docs/bypass/resolver/page'), { loading });
 const BypassTestPage = dynamic(() => import('@/docs/bypass/test/page'), { loading });
 const BypassBlockPage = dynamic(() => import('@/docs/bypass/block/page'), { loading });
@@ -41,7 +41,7 @@ export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/diagnostics", component: DiagnosticsPage },
     { path: "/docs/bypass", component: BypassPage },
     { path: "/docs/bypass/list", component: BypassListPage },
-    { path: "/docs/bypass/tag", component: BypassTagPage },
+    { path: "/docs/group/selectors", component: SelectorsPage },
     { path: "/docs/bypass/resolver", component: BypassResolverPage },
     { path: "/docs/bypass/test", component: BypassTestPage },
     { path: "/docs/bypass/block", component: BypassBlockPage },

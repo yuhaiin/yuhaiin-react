@@ -13,13 +13,17 @@ export type RPCOperation =
   | "connections.telemetry"
   | "connections.total"
   | "connections.traffic"
+  | "inbound.capabilities"
   | "inbound.delete"
+  | "inbound.events"
   | "inbound.get"
   | "inbound.put"
+  | "inbound.retry"
   | "inbounds.config.get"
   | "inbounds.config.put"
   | "inbounds.get"
   | "inbounds.post"
+  | "inbounds.status"
   | "info"
   | "node.close"
   | "node.delete"
@@ -30,8 +34,14 @@ export type RPCOperation =
   | "node.use"
   | "nodes.active"
   | "nodes.get"
+  | "nodes.import.preview"
   | "nodes.post"
+  | "nodes.select"
   | "nodes.selected"
+  | "outbound.selector.delete"
+  | "outbound.selector.put"
+  | "outbound.selector.references"
+  | "outbound.selectors.get"
   | "publish.delete"
   | "publish.put"
   | "publish.resolve"
@@ -75,9 +85,6 @@ export type RPCOperation =
   | "route.rules.post"
   | "route.rules.priority"
   | "route.rules.test"
-  | "route.tag.delete"
-  | "route.tag.put"
-  | "route.tags.get"
   | "settings.get"
   | "settings.put"
   | "subscriptions.delete"
@@ -139,13 +146,19 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/inbounds/config", operation: "inbounds.config.get" },
   { method: "PUT", pattern: "/api/v2/inbounds/config", operation: "inbounds.config.put" },
   { method: "GET", pattern: "/api/v2/inbounds", operation: "inbounds.get" },
+  { method: "GET", pattern: "/api/v2/inbounds/capabilities", operation: "inbound.capabilities" },
   { method: "POST", pattern: "/api/v2/inbounds", operation: "inbounds.post" },
+  { method: "GET", pattern: "/api/v2/inbounds/status", operation: "inbounds.status" },
+  { method: "GET", pattern: "/api/v2/inbounds/{id}/events", operation: "inbound.events" },
+  { method: "POST", pattern: "/api/v2/inbounds/{id}/retry", operation: "inbound.retry" },
   { method: "GET", pattern: "/api/v2/inbounds/{id}", operation: "inbound.get" },
   { method: "PUT", pattern: "/api/v2/inbounds/{id}", operation: "inbound.put" },
   { method: "DELETE", pattern: "/api/v2/inbounds/{id}", operation: "inbound.delete" },
   { method: "GET", pattern: "/api/v2/nodes", operation: "nodes.get" },
   { method: "POST", pattern: "/api/v2/nodes", operation: "nodes.post" },
+  { method: "POST", pattern: "/api/v2/nodes/import/preview", operation: "nodes.import.preview" },
   { method: "GET", pattern: "/api/v2/nodes/selected", operation: "nodes.selected" },
+  { method: "PUT", pattern: "/api/v2/nodes/selected", operation: "nodes.select" },
   { method: "GET", pattern: "/api/v2/nodes/active", operation: "nodes.active" },
   { method: "GET", pattern: "/api/v2/nodes/{id}", operation: "node.get" },
   { method: "PUT", pattern: "/api/v2/nodes/{id}", operation: "node.put" },
@@ -177,17 +190,18 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/route/registries/catalogs", operation: "route.registries.catalogs" },
   { method: "PUT", pattern: "/api/v2/route/registries/{id}", operation: "route.registry.put" },
   { method: "DELETE", pattern: "/api/v2/route/registries/{id}", operation: "route.registry.delete" },
+  { method: "GET", pattern: "/api/v2/outbound/selectors", operation: "outbound.selectors.get" },
+  { method: "PUT", pattern: "/api/v2/outbound/selectors", operation: "outbound.selector.put" },
+  { method: "DELETE", pattern: "/api/v2/outbound/selectors/{id}", operation: "outbound.selector.delete" },
+  { method: "GET", pattern: "/api/v2/outbound/selectors/{id}/references", operation: "outbound.selector.references" },
   { method: "GET", pattern: "/api/v2/route/rules", operation: "route.rules.get" },
   { method: "POST", pattern: "/api/v2/route/rules", operation: "route.rules.post" },
   { method: "POST", pattern: "/api/v2/route/rules/priority", operation: "route.rules.priority" },
-  { method: "GET", pattern: "/api/v2/route/rules/{name}/{index}", operation: "route.rule.get" },
-  { method: "PUT", pattern: "/api/v2/route/rules/{name}/{index}", operation: "route.rule.put" },
-  { method: "DELETE", pattern: "/api/v2/route/rules/{name}/{index}", operation: "route.rule.delete" },
+  { method: "GET", pattern: "/api/v2/route/rules/{id}", operation: "route.rule.get" },
+  { method: "PUT", pattern: "/api/v2/route/rules/{id}", operation: "route.rule.put" },
+  { method: "DELETE", pattern: "/api/v2/route/rules/{id}", operation: "route.rule.delete" },
   { method: "POST", pattern: "/api/v2/route/rules/test", operation: "route.rules.test" },
   { method: "GET", pattern: "/api/v2/route/rules/block-history", operation: "route.rules.block_history" },
-  { method: "GET", pattern: "/api/v2/route/tags", operation: "route.tags.get" },
-  { method: "PUT", pattern: "/api/v2/route/tags/{tag}", operation: "route.tag.put" },
-  { method: "DELETE", pattern: "/api/v2/route/tags/{tag}", operation: "route.tag.delete" },
 ];
 
 export function rpcPath(operation: RPCOperation): string {

@@ -31,7 +31,7 @@
     "Domain": "ドメイン",
     "IP": "IP",
     "Tag": "タグ",
-    "Lists": "リスト",
+    "Lists": "一致したデータ",
     "Resolver": "リゾルバー",
     "Pid": "PID",
     "Uid": "UID",
@@ -41,6 +41,7 @@
     "MatchHistory": "マッチ履歴",
     "Rule": "ルール",
     "Hit": "ヒット",
-    "Miss": "ミス"
+    "Miss": "ミス",
+    "Selector": "共有出口"
   }
 }

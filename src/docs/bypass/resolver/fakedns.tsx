@@ -47,7 +47,7 @@ export const Fakedns: FC = () => {
                 <IconBox icon={Wand2} tone="success" title={uiT("fakedns")} description={uiT("virtualIpStrategy")} />
                 <div className="flex items-center gap-2">
                     <span className="text-xs text-ui-muted font-medium">{data.enabled ? "ACTIVE" : "DISABLED"}</span>
-                    <Switch
+                    <Switch aria-label={uiT("fakedns")}
                         checked={data.enabled}
                         onCheckedChange={(checked) => handleMutate(prev => ({ ...prev, enabled: checked }))}
                     />

@@ -1,3 +1,4 @@
+import { clearHashSearch, useHashSearch } from '@/hooks/useHashLocation';
 import { collectPages } from "@/api/paging";
 import { useTranslation } from 'react-i18next';
 import NodeImportModal from "./NodeImportModal";
@@ -546,7 +547,11 @@ export default function Group() {
     const { t: uiT } = useTranslation('ui');
 
     const ctx = useContext(GlobalToastContext);
-    const [showdata, setShowdata] = useState({ show: false, id: "", new: false });
+    const [localShowdata, setShowdata] = useState({ show: false, id: "", new: false });
+    const search = useHashSearch();
+    const linkedId = new URLSearchParams(search).get('node');
+    const showdata = linkedId ? { show: true, id: linkedId, new: false } : localShowdata;
+    const closeLink = () => { if (linkedId) clearHashSearch(); };
     const [importOpen, setImportOpen] = useState(false);
     const [selectedGroup, setSelectedGroup] = useState("");
     const [query, setQuery] = useState("");
@@ -623,6 +628,7 @@ export default function Group() {
             .then(() => {
                 ctx.Info("Removed successful");
                 setShowdata((prev) => ({ ...prev, show: false }));
+                closeLink();
                 void mutate();
             })
             .catch((err: unknown) => {
@@ -683,6 +689,7 @@ export default function Group() {
                 onHide={(save) => {
                     if (save) void mutate();
                     setShowdata((prev) => ({ ...prev, show: false }));
+                closeLink();
                 }}
                 onDelete={deleteCurrentNode}
             />

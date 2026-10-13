@@ -25,13 +25,13 @@
     "RemoteAddr": "Remote Address",
     "RemoteGeo": "Remote Geo",
     "Destination": "Destination",
-    "Point": "Point",
+    "Point": "Node",
     "FakeIP": "Fake IP",
     "Hosts": "Hosts",
     "Domain": "Domain",
     "IP": "IP",
     "Tag": "Tag",
-    "Lists": "Lists",
+    "Lists": "Matched data",
     "Resolver": "Resolver",
     "Pid": "PID",
     "Uid": "UID",
@@ -41,6 +41,7 @@
     "MatchHistory": "Match History",
     "Rule": "Rule",
     "Hit": "Hit",
-    "Miss": "Miss"
+    "Miss": "Miss",
+    "Selector": "Shared destination"
   }
 }

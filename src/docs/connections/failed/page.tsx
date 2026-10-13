@@ -1,3 +1,4 @@
+import { ConnectionActions } from '../connection-actions';
 import { useTranslation } from 'react-i18next';
 import { usePagination } from "@/hooks/use-pagination";
 
@@ -88,6 +89,7 @@ function FailedHistory() {
                 <ModalContent>
                     <ModalHeader closeButton><ModalTitle className="font-bold text-red-500">{uiT("failureDetails")}</ModalTitle></ModalHeader>
                     <ModalBody>
+                        {info.data && <ConnectionActions host={info.data.host.replace(/^([^:]+):\d+$/, "$1")} process={info.data.process} />}
                         <DataList>
                             {info.data && (
                                 <>

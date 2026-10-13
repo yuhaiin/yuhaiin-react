@@ -1,3 +1,4 @@
+import { useHashSearch } from '@/hooks/useHashLocation';
 import { runDiagnostics } from '@/api/tools';
 import { Badge } from '@/component/v2/badge';
 import { Button } from '@/component/v2/button';
@@ -12,7 +13,9 @@ import { useTranslation } from 'react-i18next';
 
 export default function DiagnosticsPage() {
     const { t } = useTranslation('diagnostics');
-    const [host, setHost] = useState('www.cloudflare.com');
+    const search = useHashSearch();
+    const [host, setHost] = useState(() => new URLSearchParams(search).get('host') || 'www.cloudflare.com');
+    useEffect(() => { const target = new URLSearchParams(search).get('host'); if (target) setHost(target); }, [search]);
     const [report, setReport] = useState<DiagnosticReport>();
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState('');

@@ -81,6 +81,8 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
                     postDown: [],
                 },
             };
+        case "krunlet":
+            return { type, krunlet: { socket: "" } };
         case "reverse_http":
             return { type, reverse_http: { url: "" } };
         case "reverse_tcp":
@@ -140,8 +142,9 @@ export function createDefaultInbound(id: string): Inbound {
 // Select a protocol with its required listener and certificate setup, keeping a
 // usable existing certificate (and its persisted CA) rather than regenerating it.
 export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["type"]): Inbound {
-    const protocol = type === "hysteria2" && inbound.protocol.type === type
+    const protocol = inbound.protocol.type === type
         ? inbound.protocol : createDefaultProtocol(type);
+    if (["tun", "tproxy", "redir", "krunlet"].includes(type)) return normalizeInbound({ ...inbound, protocol, network: { type: "empty", empty: {} }, transports: [] });
     if (type !== "hysteria2") return normalizeInbound({ ...inbound, protocol });
     const host = inboundListen(inbound) || ":9002";
     const certificate = inbound.transports.find(item => item.type === "tls" || item.type === "tls_auto");

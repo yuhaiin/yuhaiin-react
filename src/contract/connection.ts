@@ -8,7 +8,7 @@ export type TrafficSeries = Omit<Go.connection.TrafficSeries, "interval"> & {
 };
 export type TelemetryItem = Go.connection.TelemetryItem;
 export type TelemetryGroup = Omit<Go.connection.TelemetryGroup, "dimension"> & {
-  dimension: "protocol" | "inbound" | "source" | "addr" | "outbound" | "process" | "rule" | "tag" | "destination";
+  dimension: "protocol" | "inbound" | "source" | "addr" | "outbound" | "process" | "rule" | "selector" | "destination";
 };
 export type TelemetrySummary = Omit<Go.connection.TelemetrySummary, "groups"> & { groups: TelemetryGroup[] };
 export type Connection = Go.connection.Connection;
@@ -31,6 +31,7 @@ export function normalizeConnection(value: Partial<Connection> | undefined): Con
     source: value?.source ?? "",
     inbound: value?.inbound ?? "",
     inboundName: value?.inboundName ?? "",
+    inboundId: value?.inboundId ?? "",
     interface: value?.interface ?? "",
     outbound: value?.outbound ?? "",
     localAddr: value?.localAddr ?? "",
@@ -39,7 +40,10 @@ export function normalizeConnection(value: Partial<Connection> | undefined): Con
     hosts: value?.hosts ?? "",
     domain: value?.domain ?? "",
     ip: value?.ip ?? "",
-    tag: value?.tag ?? "",
+    selectorId: value?.selectorId ?? "",
+    selectorName: value?.selectorName ?? "",
+    ruleId: value?.ruleId ?? "",
+    ruleName: value?.ruleName ?? "",
     nodeId: value?.nodeId ?? "",
     nodeName: value?.nodeName ?? "",
     protocol: value?.protocol ?? "",
@@ -54,12 +58,15 @@ export function normalizeConnection(value: Partial<Connection> | undefined): Con
     resolver: value?.resolver ?? "",
     geo: value?.geo ?? "",
     outboundGeo: value?.outboundGeo ?? "",
+    listNames: value?.listNames ?? {},
     lists: Array.isArray(value?.lists) ? value.lists : [],
     matchHistory: Array.isArray(value?.matchHistory)
       ? value.matchHistory.map(entry => ({
+        ruleId: entry.ruleId,
         ruleName: entry.ruleName ?? "",
         history: Array.isArray(entry.history)
           ? entry.history.map(item => ({
+            kind: item.kind, id: item.id,
             listName: item.listName ?? "",
             matched: item.matched ?? false,
           }))

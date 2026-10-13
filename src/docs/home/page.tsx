@@ -17,6 +17,7 @@ import { Flow, FlowContainer } from "../connections/components";
 import Activates from "../group/activates/page";
 import { NodeModal } from "../node/modal";
 import TelemetryOverview from "./TelemetryOverview";
+import SetupCard from "./SetupCard";
 import { appendTrafficSample } from "./traffic";
 
 const trafficRanges: Array<{ key: string; label: string; interval?: TrafficSeries["interval"]; durationMs?: number }> = [
@@ -66,7 +67,7 @@ const EndpointCard: FC<{
                                 {node.group}
                             </span>
                         )}
-                        <span className="truncate font-mono text-[11px] text-ui-muted" title={node.id}>{node.id}</span>
+                        <span className="truncate text-[11px] text-ui-muted">{node.chain.map(step => step.type).join(" → ")}</span>
                     </div>
                 </div>
             ) : (
@@ -141,6 +142,7 @@ function HomePage() {
             </div>
 
             <MainContainer>
+                <SetupCard />
                 <Card className="min-h-[260px] sm:min-h-[400px]" density="compact">
                     <CardHeader className="flex-col items-stretch gap-3 px-4 py-3.5 sm:flex-row sm:items-center">
                         <div className="flex w-full min-w-0 items-start gap-3 sm:flex-1">

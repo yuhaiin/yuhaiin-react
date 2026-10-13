@@ -1,9 +1,11 @@
 import { useAsyncAction, useCloseGuard } from "@/hooks/use-editor-draft";
 import { NodeEditor, NodeProtocolChain } from "./NodeEditor";
 
-import { createNode, getNode, saveNode } from "@/api/nodes";
+import { createNode, getNode, saveNode, useNode } from "@/api/nodes";
 
 import { Button } from "@/component/v2/button";
+import { SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
+import { nodeTemplates, templateChain, chainTemplate, type NodeTemplate } from "./templates";
 
 import { useClipboard } from "@/component/v2/clipboard";
 import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/component/v2/dropdown";
@@ -25,7 +27,7 @@ type NodeModalProps = {
     node?: Node;
     editable?: boolean;
     onHide: (saved?: boolean) => void;
-    onSave?: () => void;
+    onSave?: (node: Node) => void;
     groups?: string[];
     onDelete?: () => void;
     readOnly?: boolean;
@@ -78,6 +80,8 @@ const NodeModalComponent: FC<NodeModalProps> = ({
     isNew,
 }) => {
     const { t } = useTranslation(["node", "common"]);
+    const { t: routingT } = useTranslation("routing");
+    const [makeDefault, setMakeDefault] = useState(false);
     const ctx = useContext(GlobalToastContext);
     const nodeId = id ?? hash ?? node?.id ?? "";
     const canEdit = editable && !readOnly;
@@ -117,6 +121,7 @@ const NodeModalComponent: FC<NodeModalProps> = ({
         }
 
         if (isNew) {
+            setMakeDefault(false);
             const initial = createDefaultNode(defaultGroup);
             baseline.current = JSON.stringify(initial);
             setDraft(initial);
@@ -192,8 +197,9 @@ const NodeModalComponent: FC<NodeModalProps> = ({
             const saved = isNew ? await createNode(normalized) : await saveNode(normalized);
             baseline.current = JSON.stringify(saved);
             setDraft(cloneNode(saved));
+            if (makeDefault) await useNode(saved.id);
             ctx.Info(t("common:state.saved", { defaultValue: "Saved" }));
-            onSave?.();
+            onSave?.(saved);
             onHide(true);
         });
     };
@@ -213,7 +219,7 @@ const NodeModalComponent: FC<NodeModalProps> = ({
         <>
             {manualCopyModal}
             <Modal open={show} onOpenChange={(open) => !open && close()}>
-                <ModalContent width={1280}>
+                <ModalContent width={960}>
                 <ModalHeader closeButton className="border-b-0 pb-0">
                     <ModalTitle className="font-bold">{title}</ModalTitle>
                 </ModalHeader>
@@ -235,6 +241,15 @@ const NodeModalComponent: FC<NodeModalProps> = ({
                             onAddProtocol={(type) => updateDraft({ chain: [...draft.chain, createDefaultProtocol(type)] })}
                         />
                     ) : (
+                        <>
+                        {isNew && <SettingSelectVertical label={routingT("nodeTemplate")} value={chainTemplate(draft.chain)}
+                            values={[...nodeTemplates.map(template => [routingT(`template.${template}`), template] as [string, string]), [routingT("template.custom"), "custom"]]}
+                            onChange={template => {
+                                if (template === 'custom') return;
+                                const chain = templateChain(template as NodeTemplate);
+                                const pristine = JSON.stringify(draft.chain) === JSON.stringify(createDefaultNode().chain);
+                                if (pristine || window.confirm(routingT("templateReplaceConfirm"))) updateDraft({ chain });
+                            }} />}
                         <NodeEditor
                             value={draft}
                             editable={canEdit}
@@ -245,6 +260,8 @@ const NodeModalComponent: FC<NodeModalProps> = ({
                             onRemoveProtocol={removeProtocol}
                             onAddProtocol={(type) => updateDraft({ chain: [...draft.chain, createDefaultProtocol(type)] })}
                         />
+                        {canEdit && <SwitchCard className="mt-3" label={routingT("useAsDefault")} checked={makeDefault} onCheckedChange={setMakeDefault} />}
+                        </>
                     )}
                 </fieldset>
                 </ModalBody>
@@ -278,7 +295,7 @@ const NodeModalComponent: FC<NodeModalProps> = ({
                         )}
                         <Button onClick={close} disabled={saving}>{t("common:action.close")}</Button>
                         {canEdit && (
-                            <Button disabled={saving || loading || !!error} onClick={handleSave}>
+                            <Button variant="primary" disabled={saving || loading || !!error} onClick={handleSave}>
                                 {saving ? <Spinner size="sm" /> : t("common:action.save")}
                             </Button>
                         )}
