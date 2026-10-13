@@ -65,7 +65,7 @@ export function GroupNodeSelect({ label, value, selected, groups, onChange, disa
                     }
                 }} />
             <Button type="button" size="sm" variant="outline-secondary" disabled={disabled || !group}
-                onClick={() => { setPage(1); setQuery(searchInput.trim()); }}>{uiT('search')}</Button>
+                onClick={() => { setPage(1); setQuery(searchInput.trim()); }}>{t('searchNodes')}</Button>
         </div>
         <Select ariaLabel={label} value={value} placeholder={isLoading ? t('loading') : t('chooseNode')}
             disabled={disabled || !data || Boolean(error) || (items.length === 0)}
