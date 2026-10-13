@@ -8,15 +8,18 @@ export function useEditorDraft<T>(key: string | null, server: T | undefined, cre
         const value = server ?? create();
         return { key, value, baseline: value, source: server };
     });
+    // Reconcile a different record or a pristine server refresh during render.
+    // React immediately retries this component without committing a stale draft.
     const changedKey = state.key !== key;
-    const dirty = !changedKey && JSON.stringify(state.value) !== JSON.stringify(state.baseline);
-    const value = changedKey ? server ?? create() : !dirty && server && server !== state.source ? server : state.value;
-    useEffect(() => {
-        if (state.key !== key || (!dirty && server && server !== state.source)) {
-            const next = server ?? create();
-            setState({ key, value: next, baseline: next, source: server });
-        }
-    }, [key, server, dirty, state.key, state.source, create]);
+    const pristine = JSON.stringify(state.value) === JSON.stringify(state.baseline);
+    let current = state;
+    if (changedKey || (pristine && server !== undefined && server !== state.source)) {
+        const next = server ?? create();
+        current = { key, value: next, baseline: next, source: server };
+        setState(current);
+    }
+    const dirty = JSON.stringify(current.value) !== JSON.stringify(current.baseline);
+    const value = current.value;
     const setValue = (next: SetStateAction<T>) => setState(previous => ({
         key, value: typeof next === 'function' ? (next as (value: T) => T)(previous.key === key ? previous.value : server ?? create()) : next,
         baseline: previous.key === key ? previous.baseline : server ?? create(),
