@@ -42,3 +42,37 @@ export function hasAdvancedRuleOptions(rule: RuleDraft['rule']): boolean {
             rule.udpProxyFqdnStrategy !== 'udp_proxy_fqdn_strategy_default'
     );
 }
+
+/**
+ * A task editor only supports a flat list of conditions joined by AND or OR.
+ * Other expressions are kept intact in the advanced editor: never flatten NOT
+ * or a nested expression, since that would silently change the match result.
+ */
+export type SimpleMatcher = {
+    join: 'all' | 'any' | 'always';
+    items: RuleExpr[];
+};
+export type SimpleLeafType = 'host' | 'process' | 'inbound' | 'network' | 'port' | 'geoip';
+
+const simpleLeafTypes: ReadonlySet<string> = new Set(['host', 'process', 'inbound', 'network', 'port', 'geoip']);
+export function parseSimpleMatcher(rules: RuleExpr[] | undefined): SimpleMatcher | undefined {
+    if (!rules?.length) return undefined;
+    if (rules.length === 1 && rules[0].type === 'always') return { join: 'always', items: [] };
+    let join: SimpleMatcher['join'] = 'any';
+    let items = rules;
+    if (rules.length === 1 && (rules[0].type === 'all' || rules[0].type === 'any')) {
+        join = rules[0].type;
+        items = join === 'all' ? rules[0].all : rules[0].any;
+    }
+    if (!items.length || !items.every(item => simpleLeafTypes.has(item.type))) return undefined;
+    return { join, items };
+}
+
+export function buildSimpleMatcher(matcher: SimpleMatcher): RuleExpr[] {
+    if (matcher.join === 'always') return [{ type: 'always', always: {} }];
+    if (!matcher.items.length) throw new Error('A routing rule must have at least one condition');
+    if (matcher.items.length === 1) return [matcher.items[0]];
+    return matcher.join === 'all'
+        ? [{ type: 'all', all: matcher.items }]
+        : [...matcher.items];
+}
