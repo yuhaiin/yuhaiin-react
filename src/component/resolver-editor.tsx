@@ -9,7 +9,7 @@ import { GlobalToastContext } from '@/component/v2/toast';
 import Loading from '@/component/v2/loading';
 import { createDefaultResolver, normalizeResolver, type Resolver, type ResolverType } from '@/contract/resolver';
 import { Check, Network, Trash } from 'lucide-react';
-import { useContext, useEffect, useState, type FC } from 'react';
+import { useContext, useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR, { useSWRConfig } from 'swr';
 
@@ -30,7 +30,12 @@ export const ResolverModal: FC<{
     const { t: uiT } = useTranslation('ui');
     const { t } = useTranslation('routing');
     const [actionError, setActionError] = useState('');
-    useEffect(() => { setActionError(''); }, [show, id]);
+    // Adjust only when the editing session changes; no post-commit reset effect.
+    const [errorSession, setErrorSession] = useState({ show, id });
+    if (errorSession.show !== show || errorSession.id !== id) {
+        setErrorSession({ show, id });
+        setActionError('');
+    }
 
     const ctx = useContext(GlobalToastContext);
     const { mutate: refreshCaches } = useSWRConfig();
