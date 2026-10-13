@@ -1,4 +1,4 @@
-import { act } from 'react';
+import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { SWRConfig } from 'swr';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
@@ -6,12 +6,14 @@ import { normalizeNode, type Node } from '@/contract/node';
 import { GlobalToastContext } from '@/component/v2/toast';
 import Group from './page';
 
-const api = vi.hoisted(() => ({ listNodes: vi.fn(), getNode: vi.fn(), saveNode: vi.fn(), createNode: vi.fn(), deleteNode: vi.fn(), useNode: vi.fn(), selectedNodes: vi.fn(), latencyNode: vi.fn() }));
+const api = vi.hoisted(() => ({ listNodeGroups: vi.fn(), listNodes: vi.fn(), getNode: vi.fn(), saveNode: vi.fn(), createNode: vi.fn(), deleteNode: vi.fn(), useNode: vi.fn(), selectedNodes: vi.fn(), latencyNode: vi.fn() }));
 const viewport = vi.hoisted(() => ({ desktop: true }));
 vi.mock('@/api/nodes', () => api);
 vi.mock('@/hooks/use-media-query', () => ({ useMediaQuery: () => viewport.desktop }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('./NodeImportModal', () => ({ default: () => null }));
+// Directory paging and draft behavior do not depend on layout virtualization.
+vi.mock('virtua', () => ({ VList: ({ data, children }: { data: Node[]; children: (item: Node) => ReactNode }) => <div>{data.map(children)}</div> }));
 // Use the real load/save/guard controller while keeping connection field widgets out of workspace tests.
 vi.mock('../node/NodeEditor', () => ({
     NodeEditor: ({ value, onChange }: { value: Node; onChange: (patch: Partial<Node>) => void }) => <div><output>{value.name}</output><button onClick={() => onChange({ name: 'Changed' })}>Edit draft</button></div>,
@@ -25,7 +27,14 @@ beforeEach(() => {
     vi.clearAllMocks(); viewport.desktop = true; localStorage.clear(); defaultId = 'a';
     window.history.replaceState(null, '', '#/docs/group');
     nodes = ['a', 'b'].map((id, index) => normalizeNode({ id, name: index ? 'Second' : 'First', group: 'manual', enabled: true }));
-    api.listNodes.mockImplementation(async () => ({ items: [...nodes], page: { page: 1, pageSize: 100, total: nodes.length } }));
+    api.listNodeGroups.mockImplementation(async () => {
+        const names = [...new Set(nodes.map(node => node.group || 'manual'))].sort();
+        return { items: names.map(name => ({ name, count: nodes.filter(node => (node.group || 'manual') === name).length, enabled: nodes.filter(node => (node.group || 'manual') === name && node.enabled).length })) };
+    });
+    api.listNodes.mockImplementation(async ({ group, page, pageSize, query }: { group: string; page: number; pageSize: number; query: string }) => {
+        const matches = nodes.filter(node => (node.group || 'manual') === group && (!query || node.name.toLowerCase().includes(query.toLowerCase())));
+        return { items: matches.slice((page - 1) * pageSize, page * pageSize), page: { page, pageSize, total: matches.length } };
+    });
     api.getNode.mockImplementation(async id => nodes.find(node => node.id === id));
     api.saveNode.mockImplementation(async (saved: Node) => { nodes = nodes.map(node => node.id === saved.id ? saved : node); return saved; });
     api.createNode.mockImplementation(async (saved: Node) => { nodes.push(saved); return saved; });
@@ -59,6 +68,8 @@ it('guards switching nodes, retains drafts through search and keeps the saved no
         input.dispatchEvent(new Event('input', { bubbles: true }));
     });
     expect(settings()?.querySelector('output')?.textContent).toBe('Changed');
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 300)); });
+    expect(api.listNodes).toHaveBeenLastCalledWith({ group: 'manual', page: 1, pageSize: 80, query: 'Second' });
     confirm.mockReturnValue(true); await click('Second');
     expect(settings()?.querySelector('output')?.textContent).toBe('Second');
     await click('Edit draft'); await click('common:action.save');
@@ -123,4 +134,18 @@ it('moves from the group filter to a matching choice with the keyboard', async (
     expect(document.activeElement?.textContent).toContain('work');
     await act(async () => document.activeElement?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
     expect(settings()?.querySelector('output')?.textContent).toBe('Second');
+});
+
+it('loads only the active group page and retains the open draft when paging', async () => {
+    nodes = Array.from({ length: 83 }, (_, index) => normalizeNode({ id: String(index), name: `Node ${index}`, group: 'manual', enabled: true }));
+    nodes.push(normalizeNode({ id: 'other', name: 'Other group', group: 'work', enabled: true }));
+    await render();
+    expect(api.listNodeGroups).toHaveBeenCalledTimes(1);
+    expect(api.listNodes).toHaveBeenCalledExactlyOnceWith({ group: 'manual', page: 1, pageSize: 80, query: '' });
+    await click('Edit draft');
+    await click('pagination.next');
+    expect(api.listNodes).toHaveBeenLastCalledWith({ group: 'manual', page: 2, pageSize: 80, query: '' });
+    expect(settings()?.querySelector('output')?.textContent).toBe('Changed');
+    expect(host.querySelector('[aria-label="Node 82"]')).not.toBeNull();
+    expect(api.listNodes.mock.calls.some(([request]) => request.group === 'work')).toBe(false);
 });

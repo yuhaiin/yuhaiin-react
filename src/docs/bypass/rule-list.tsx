@@ -4,6 +4,8 @@ import { GripVertical } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useId } from 'react';
 import { useRuleDrag, type RuleDrop } from './rule-drag';
+import { getNode } from '@/api/nodes';
+import useSWR from 'swr';
 
 export function RuleList({ items, selectedId, onOpen, onMove, onDrop, destinations, resolverNames, busy, page, pageSize, total, filtered }: {
     items: RuleItem[];
@@ -63,7 +65,7 @@ export function RuleList({ items, selectedId, onOpen, onMove, onDrop, destinatio
                             <span className={clsx('shrink-0 font-medium', item.mode === 'block' ? 'text-ui-danger' : item.mode === 'direct' ? 'text-ui-success' : 'text-ui-primary')}>
                                 {t(item.mode, { defaultValue: item.mode })}
                             </span>
-                            {proxy && <span className="min-w-0 truncate text-ui-muted" title={destination}>· {destination}</span>}
+                            {proxy && <span className="min-w-0 truncate text-ui-muted">· {item.target.type === 'node' && item.target.id ? <NodeName id={item.target.id} /> : destination}</span>}
                         </div>
                         <div className="mt-1 truncate pl-8 text-[11px] text-ui-muted">
                             {item.disabled && `${uiT('off')} · `}{t('matchingConditions', { count: item.ruleCount })}
@@ -83,4 +85,9 @@ export function RuleList({ items, selectedId, onOpen, onMove, onDrop, destinatio
             <span role="status" className="sr-only">{t('draggingRule', { name: drag.source.name })}</span>
         </>}
     </>;
+}
+
+function NodeName({ id }: { id: string }) {
+    const { data } = useSWR(['/api/v2/nodes/detail', id], () => getNode(id), { revalidateOnFocus: false });
+    return <span title={data?.name ?? id}>{data?.name ?? id}</span>;
 }

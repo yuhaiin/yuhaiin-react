@@ -2,6 +2,7 @@ import { useAsyncAction, useCloseGuard } from "@/hooks/use-editor-draft";
 import { NodeEditor, NodeProtocolChain } from "./NodeEditor";
 
 import { createNode, getNode, saveNode, useNode } from "@/api/nodes";
+import { useSWRConfig } from 'swr';
 
 import { Button } from "@/component/v2/button";
 import { SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
@@ -89,6 +90,7 @@ const NodeModalComponent: FC<NodeModalProps> = ({
     const { t: routingT } = useTranslation("routing");
     const [makeDefault, setMakeDefault] = useState(false);
     const ctx = useContext(GlobalToastContext);
+    const { mutate: refreshCache } = useSWRConfig();
     const nodeId = id ?? hash ?? node?.id ?? "";
     const canEdit = editable && !readOnly;
     const [retryNonce, setRetryNonce] = useState(0);
@@ -205,6 +207,9 @@ const NodeModalComponent: FC<NodeModalProps> = ({
             if (isNew) created.current = true;
             const fresh = cloneNode(saved);
             setEditor({ draft: fresh, baseline: JSON.stringify(fresh) });
+            void refreshCache(['/api/v2/nodes/detail', saved.id], saved, { revalidate: false });
+            void refreshCache('/api/v2/nodes/groups');
+            void refreshCache(key => Array.isArray(key) && key[0] === '/api/v2/nodes/group-page');
             onChanged?.(saved);
             if (makeDefault) await useNode(saved.id);
             setMakeDefault(false);

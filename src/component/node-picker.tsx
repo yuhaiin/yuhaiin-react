@@ -1,43 +1,47 @@
-import { collectPages } from '@/api/paging';
-import { ArrowDown, ArrowUp, X } from 'lucide-react';
-import { listNodes } from '@/api/nodes';
+import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react';
+import { getNode } from '@/api/nodes';
+import { NodeSelectionDialog } from './node-select';
 import { Button } from '@/component/v2/button';
-import { Input } from '@/component/v2/input';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import useSWR from 'swr';
+import useSWR, { useSWRConfig } from 'swr';
 
-export default function NodePicker({ value, onChange, disabled = false, excludeId }: {
-    value: string[]; onChange: (ids: string[]) => void; disabled?: boolean; excludeId?: string;
+export default function NodePicker({ value, onChange, disabled = false, excludeId, enabledOnly = true }: {
+    value: string[]; onChange: (ids: string[]) => void; disabled?: boolean; excludeId?: string; enabledOnly?: boolean;
 }) {
     const { t } = useTranslation('routing');
-    const { data, error, mutate } = useSWR('/api/v2/nodes/all', () => collectPages(listNodes));
-    const [query, setQuery] = useState('');
-    const names = new Map(data?.items.map(node => [node.id, node.name]));
+    const [open, setOpen] = useState(false);
+    const { mutate } = useSWRConfig();
     const move = (index: number, direction: -1 | 1) => {
         const next = [...value];
         [next[index], next[index + direction]] = [next[index + direction], next[index]];
         onChange(next);
     };
-    return <div className="grid gap-2">
-        <div className="flex flex-wrap gap-2">{value.map((id, index) => <div key={id} className="flex items-center gap-2 rounded-ui-md border border-ui-border px-2 py-1 text-sm">
-            <span>{index + 1}. {names.get(id) ?? t('unknownNode')}</span>
-            {!disabled && <>
-                <Button size="icon" variant="outline-secondary" disabled={index === 0} aria-label={`${t('moveEarlier')} ${names.get(id) ?? id}`} onClick={() => move(index, -1)}><ArrowUp size={14} /></Button>
-                <Button size="icon" variant="outline-secondary" disabled={index === value.length - 1} aria-label={`${t('moveLater')} ${names.get(id) ?? id}`} onClick={() => move(index, 1)}><ArrowDown size={14} /></Button>
-                <Button size="sm" variant="outline-secondary" aria-label={`${t('delete')} ${names.get(id) ?? id}`}
-                onClick={() => onChange(value.filter(item => item !== id))}><X size={14} /></Button></>}
-        </div>)}</div>
-        {error ? <div role="alert" className="text-sm text-ui-danger">{t('nodePickerFailed')} <Button size="sm" onClick={() => void mutate()}>{t('retry')}</Button></div>
-            : !data ? <p role="status" className="text-sm text-ui-muted">…</p>
-                : !disabled && <>
-                    <Input aria-label={t('nodeSearch')} placeholder={t('nodeSearch')} value={query} onChange={event => setQuery(event.target.value)} />
-                    <div className="max-h-48 overflow-auto rounded-ui-md border border-ui-border p-2">
-                        {data.items.filter(node => node.enabled && node.id !== excludeId && `${node.name} ${node.group}`.toLowerCase().includes(query.toLowerCase())).map(node => <label key={node.id} className="flex cursor-pointer items-center gap-3 p-2 text-sm">
-                            <input type="checkbox" checked={value.includes(node.id)} onChange={event => onChange(event.target.checked ? [...value, node.id] : value.filter(id => id !== node.id))} />
-                            <span className="break-words">{node.name} <span className="text-ui-muted">{node.group}</span></span>
-                        </label>)}
-                    </div>
-                </>}
+    return <div className="grid gap-3">
+        <div className="flex flex-wrap gap-2">{value.map((id, index) => <SelectedNode key={id} id={id} index={index} disabled={disabled} last={index === value.length - 1}
+            onMove={direction => move(index, direction)} onRemove={() => onChange(value.filter(item => item !== id))} />)}</div>
+        {!disabled && <Button type="button" variant="outline-secondary" className="justify-start gap-2" onClick={() => setOpen(true)}><Plus size={16} aria-hidden="true" />{t('chooseNode')}</Button>}
+        <NodeSelectionDialog open={open} label={t('chooseNode')} value="" multiple={value} excludeId={excludeId} enabledOnly={enabledOnly} disabled={disabled} onClose={() => setOpen(false)}
+            onChange={node => {
+                if (node.id === excludeId) return;
+                void mutate(['/api/v2/nodes/detail', node.id], node, { revalidate: false });
+                onChange(value.includes(node.id) ? value.filter(id => id !== node.id) : [...value, node.id]);
+            }} />
+    </div>;
+}
+
+function SelectedNode({ id, index, disabled, last, onMove, onRemove }: {
+    id: string; index: number; disabled: boolean; last: boolean; onMove: (direction: -1 | 1) => void; onRemove: () => void;
+}) {
+    const { t } = useTranslation('routing');
+    const { data } = useSWR(['/api/v2/nodes/detail', id], () => getNode(id), { revalidateOnFocus: false });
+    const name = data?.name || id;
+    return <div className="flex max-w-full items-center gap-2 rounded-ui-md border border-ui-border px-2 py-1 text-sm">
+        <span className="min-w-0 truncate" title={name}>{index + 1}. {name}</span>
+        {!disabled && <div className="flex shrink-0 gap-1">
+            <Button size="icon" variant="outline-secondary" disabled={index === 0} aria-label={`${t('moveEarlier')} ${name}`} onClick={() => onMove(-1)}><ArrowUp size={14} /></Button>
+            <Button size="icon" variant="outline-secondary" disabled={last} aria-label={`${t('moveLater')} ${name}`} onClick={() => onMove(1)}><ArrowDown size={14} /></Button>
+            <Button size="icon" variant="outline-secondary" aria-label={`${t('delete')} ${name}`} onClick={onRemove}><X size={14} /></Button>
+        </div>}
     </div>;
 }
