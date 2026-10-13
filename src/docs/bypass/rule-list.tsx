@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import { ArrowUpDown, ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-export function RuleList({ items, selectedId, onOpen, onPriority, onToggle, onMove, destinations, resolverNames, busy, page, total, filtered }: {
+export function RuleList({ items, selectedId, onOpen, onPriority, onToggle, onMove, destinations, resolverNames, busy, page, pageSize, total, filtered }: {
     items: RuleItem[];
     selectedId?: string;
     destinations: Record<string, string>;
