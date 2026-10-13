@@ -9,7 +9,7 @@ import { Spinner } from '@/component/v2/spinner';
 import type { Go } from '@/api/generated-contracts';
 import type { Node } from '@/contract/node';
 import { useAsyncAction, useCloseGuard } from '@/hooks/use-editor-draft';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { importNodeBatch, type ImportResult } from './node-import';
 
 function message(error: unknown) {
@@ -33,12 +33,16 @@ export default function NodeImportModal({ show, group, onHide, onSaved, onChange
     const successful = results.filter(result => result?.status === 'success').length;
     const failed = results.filter(result => result?.status === 'failed').length;
     const close = useCloseGuard(show && Boolean(text.trim()) && successful === 0, pending, onHide);
-    useEffect(() => {
+    // Reset a new import session before rendering its fields. Partial imports
+    // stay intact while the dialog remains open so failed nodes can be retried.
+    const [previousShow, setPreviousShow] = useState(show);
+    if (previousShow !== show) {
+        setPreviousShow(show);
         if (show) {
             setSource('nodes'); setText(''); setSubscriptionName(''); setNodes(undefined);
             setResults([]); setIssues([]); setError(''); setDefaultID('');
         }
-    }, [show]);
+    }
     const changeText = (value: string) => {
         setText(value); setError(''); setNodes(undefined); setIssues([]); setResults([]); setDefaultID('');
     };
