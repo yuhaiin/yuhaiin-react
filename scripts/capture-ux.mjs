@@ -85,6 +85,14 @@ async function main() {
       await sleep(250);
     }
     if (!loaded) throw new Error('Preview did not render ' + shot.name + ': ' + detail);
+    const layout = await send('Runtime.evaluate', {
+      expression: '({viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth})',
+      returnByValue: true,
+    });
+    const size = layout.result?.value;
+    if (!size || Math.max(size.document, size.body) > size.viewport + 1) {
+      throw new Error('Horizontal page overflow in ' + shot.name + ': ' + JSON.stringify(size));
+    }
     if (shot.name === 'rule-editor') {
       const action = await send('Runtime.evaluate', {
         expression: "(() => { const b = [...document.querySelectorAll('button')].find(el => el.textContent?.trim() === 'Advanced editor'); if (!b) return false; b.click(); return true; })()",
