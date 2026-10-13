@@ -59,12 +59,13 @@ jobs:
             sleep 1
           done
           node scripts/capture-ux.mjs || { cat /tmp/msw-preview.log; exit 1; }
-          for screenshot in /tmp/ux-shots/*.png; do
-            name=$(basename "$screenshot" .png)
-            echo "UX_SCREENSHOT_BEGIN:$name"
-            base64 -w 8192 "$screenshot"
-            echo "UX_SCREENSHOT_END:$name"
-          done
+
+      - name: Upload UX preview screenshots
+        uses: actions/upload-artifact@v7
+        with:
+          name: ux-preview-screenshots
+          path: /tmp/ux-shots/*.png
+          if-no-files-found: error
 
       - run: |
           cat <<EOF > dist/go.mod
