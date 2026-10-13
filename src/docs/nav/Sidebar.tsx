@@ -1,6 +1,6 @@
 
 import { ArrowLeftRight, Download, ExternalLink, Filter, House, Network, Settings, Wrench } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
 import { SidebarCollapsible, SidebarDivider, SidebarItem, SidebarNav, Sidebar as SidebarRoot, SidebarSubLink } from '../../component/v2/sidebar';
@@ -93,7 +93,13 @@ function SidebarGroup({ title, icon, activePath, matchPath, matchPaths, initiall
 }) {
     const isActive = matchPaths ? matchPaths.includes(normalizePath(activePath)) : normalizePath(activePath).startsWith(normalizePath(matchPath));
     const [isOpen, setIsOpen] = useState(() => (initiallyOpen ?? window.innerWidth >= 1024) || isActive);
-    useEffect(() => { if (isActive) setIsOpen(true); }, [activePath, isActive]);
+    const [previousPath, setPreviousPath] = useState(activePath);
+    // Reopen the active section as navigation changes, without an effect.
+    // Manual collapse stays possible while the location is unchanged.
+    if (previousPath !== activePath) {
+        setPreviousPath(activePath);
+        if (isActive) setIsOpen(true);
+    }
 
     return (
         <SidebarCollapsible
