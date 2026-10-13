@@ -85,6 +85,13 @@ async function main() {
       await sleep(250);
     }
     if (!loaded) throw new Error('Preview did not render ' + shot.name + ': ' + detail);
+    if (shot.name === 'rule-editor') {
+      const action = await send('Runtime.evaluate', {
+        expression: "(() => { const b = [...document.querySelectorAll('button')].find(el => el.textContent?.trim() === 'Advanced editor'); if (!b) return false; b.click(); return true; })()",
+        returnByValue: true,
+      });
+      if (action.result?.value !== true) throw new Error('Could not open advanced rule editor');
+    }
     await sleep(1000);
     const result = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
     if (!result.data) throw new Error('Chrome returned no image for ' + shot.name);
