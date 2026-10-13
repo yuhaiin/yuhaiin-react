@@ -1,7 +1,7 @@
 
 import * as Popover from '@radix-ui/react-popover';
 import { clsx } from 'clsx';
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useState } from 'react';
 import { Input, InputProps } from './input';
 
 export interface ComboboxItem {
@@ -31,7 +31,9 @@ export const Combobox: FC<ComboboxProps> = ({
 }) => {
     const [open, setOpen] = useState(false);
     const [showAllOptions, setShowAllOptions] = useState(false);
-    const [highlightedIndex, setHighlightedIndex] = useState(0);
+    // Track the highlighted option by identity, not by an index that may be
+    // invalidated when a parent passes a new options array.
+    const [highlightedValue, setHighlightedValue] = useState<string | null>(null);
 
     const isKeyboardNav = React.useRef(false);
 
@@ -46,11 +48,8 @@ export const Combobox: FC<ComboboxProps> = ({
         );
     }, [options, value, showAllOnFocus, showAllOptions]);
 
-    // Reset highlighted index when options change
-    useEffect(() => {
-        setHighlightedIndex(0);
-        isKeyboardNav.current = true; // Ensure we scroll to top on filter change
-    }, [filteredOptions]);
+    const highlightedIndex = Math.max(0, filteredOptions.findIndex(item => item.value === highlightedValue));
+    const highlightIndex = (index: number) => setHighlightedValue(filteredOptions[index]?.value ?? null);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (!open) {
@@ -67,16 +66,12 @@ export const Combobox: FC<ComboboxProps> = ({
             case 'ArrowDown':
                 e.preventDefault();
                 isKeyboardNav.current = true;
-                setHighlightedIndex(prev =>
-                    prev < filteredOptions.length - 1 ? prev + 1 : prev
-                );
+                highlightIndex(Math.min(highlightedIndex + 1, filteredOptions.length - 1));
                 break;
             case 'ArrowUp':
                 e.preventDefault();
                 isKeyboardNav.current = true;
-                setHighlightedIndex(prev =>
-                    prev > 0 ? prev - 1 : prev
-                );
+                highlightIndex(Math.max(highlightedIndex - 1, 0));
                 break;
             case 'Enter':
                 e.preventDefault();
@@ -107,6 +102,8 @@ export const Combobox: FC<ComboboxProps> = ({
                         value={String(value)}
                         onChange={(e) => {
                             setShowAllOptions(false);
+                            setHighlightedValue(null);
+                            isKeyboardNav.current = true;
                             onChange(e.target.value);
                             setOpen(true);
                         }}
@@ -167,7 +164,7 @@ export const Combobox: FC<ComboboxProps> = ({
                                         }}
                                         onMouseEnter={() => {
                                             isKeyboardNav.current = false;
-                                            setHighlightedIndex(i);
+                                            highlightIndex(i);
                                         }}
                                     >
                                         <span className="font-medium block">{opt.label}</span>
