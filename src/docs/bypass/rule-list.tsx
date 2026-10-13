@@ -23,7 +23,7 @@ export function RuleList({ items, selectedId, onOpen, onPriority, onToggle, onMo
     const { t } = useTranslation('routing');
     const { t: uiT } = useTranslation('ui');
     const hasPreviousPage = page > 1;
-    const hasNextPage = total > (page - 1) * 25 + items.length;
+    const hasNextPage = total > (page - 1) * pageSize + items.length;
     return <ul className="m-0 list-none space-y-1 p-0" aria-label={uiT('routeRules')}>
         {items.map((item, index) => {
             const proxy = item.mode === 'proxy';
