@@ -67,7 +67,7 @@ function RouteRuleForm({ value, onChange, options, lockName }: { value: RouteRul
                             onCheckedChange={(disabled) => patch({ disabled })}
                         />
                     </div>
-                    <SettingSelectVertical label={uiT("mode")} value={value.mode} values={routeModes} onChange={(mode) => patch({ mode, target: mode === "proxy" ? value.target : { type: "default" } })} />
+                    <SettingSelectVertical label={uiT("mode")} value={value.mode} values={routeModes} onChange={(mode) => patch({ mode })} />
                     <div>{value.mode === "proxy" && <RouteTargetPicker value={value.target} onChange={target => patch({ target })} />}</div>
                     <SettingSelectVertical label={uiT("resolveStrategy")} value={value.resolveStrategy ?? "default"} values={resolveStrategies} onChange={(resolveStrategy) => patch({ resolveStrategy })} />
                     <SettingSelectVertical
