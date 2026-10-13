@@ -4,7 +4,7 @@ import { Button } from '@/component/v2/button';
 import { SettingSelectVertical } from '@/component/v2/forms';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 
@@ -17,7 +17,11 @@ export function DefaultSelectionEditor({ open, onClose }: { open: boolean; onClo
     const server = useMemo(() => selection ? { tcpId: selection.tcp?.id ?? '', udpId: selection.udp?.id ?? '' } : undefined, [selection]);
     const { value, setValue, commit, dirty } = useEditorDraft(open ? 'default-selection' : null, server, empty);
     const [error, setError] = useState('');
-    useEffect(() => { setError(''); }, [open]);
+    const [previousOpen, setPreviousOpen] = useState(open);
+    if (previousOpen !== open) {
+        setPreviousOpen(open);
+        setError('');
+    }
     const { pending, run } = useAsyncAction(error => setError(String((error as { msg?: string })?.msg ?? error)));
     const close = useCloseGuard(dirty, pending, onClose);
     const options: [string, string][] = (nodes?.items ?? []).filter(node => node.enabled).map(node => [node.group ? `${node.name} · ${node.group}` : node.name, node.id]);
