@@ -4,13 +4,21 @@ import { LatencyDNSUrlDefault, LatencyHTTPUrlDefault, LatencyIPUrlDefault, Laten
 import type { Node, NodeLatencyRequest, NodeLatencyResponse, NodeList } from "@/contract/node";
 import { normalizeNode } from "@/contract/node";
 
-export async function listNodes(query?: string | { page?: number; pageSize?: number; query?: string }): Promise<NodeList> {
+export type NodeGroup = { name: string; count: number; enabled: number };
+
+export async function listNodeGroups(): Promise<{ items: NodeGroup[] }> {
+  return requestJSON('GET', '/api/v2/nodes/groups');
+}
+
+export async function listNodes(query?: string | { page?: number; pageSize?: number; query?: string; group?: string; enabledOnly?: boolean }): Promise<NodeList> {
   const params = typeof query === "string"
     ? { query }
     : {
       page: query?.page,
       page_size: query?.pageSize,
       query: query?.query,
+      group: query?.group,
+      enabled_only: query?.enabledOnly,
     };
   const data = await requestJSON<{ items: Go.node.Node[]; page: NodeList["page"] }>("GET", "/api/v2/nodes", undefined, params);
   return {
