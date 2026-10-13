@@ -6,8 +6,11 @@ const scenario = new URLSearchParams(location.search).get('scenario') || 'normal
 localStorage.setItem('api_url_v2', JSON.stringify(''));
 localStorage.setItem('auth_token', 'synthetic-msw-token');
 localStorage.setItem('yuhaiin.webui.language','en');
-const size = scenario === 'large' ? 2000 : scenario === 'empty' ? 0 : 95;
+const size = scenario === 'lazy' ? 10000 : scenario === 'large' ? 2000 : scenario === 'empty' ? 0 : 95;
 const nodes = Array.from({length:size},(_,i)=>({id:`node-${i}`,name:i===0?'Mobile test node with a very long name for narrow screens':`Node ${i}`,group:'manual',origin:'manual',enabled:true,chain:[{type:'http_mock',http_mock:{data:'YQ=='}}]}));
+if (scenario === 'lazy') {
+  for (let index = 0; index < nodes.length; index++) nodes[index].group = index < 5000 ? 'manual' : index < 8000 ? 'work' : 'travel';
+}
 if (scenario === 'vpn') {
   nodes[0] = { ...nodes[0], name:'OpenVPN test node', chain:[{type:'openvpn',openvpn:{gateway:'vpn.example.invalid:1194',network:'udp',username:'alice',tls_crypt_key:'synthetic-static-key',auto_reconnect:true,mtu:1400}}] };
   nodes[1] = { ...nodes[1], name:'GlobalProtect ESP test node', chain:[{type:'globalprotect',globalprotect:{gateway:'gp.example.invalid',username:'alice',use_esp:true}}] };
@@ -27,7 +30,12 @@ let inboundConfig={hijackDns:true,hijackDnsFakeIp:false,sniff:true};
 let resolverServer={server:''},fakeDNS={enabled:false,ipv4Range:'198.18.0.0/15',ipv6Range:'fc00::/18'},resolverHosts={hosts:{}};
 let selected={tcpId:nodes[0]?.id,udpId:nodes[0]?.id};
 const failedImports=new Set();
-const selectors=[{id:'selector-work',name:'Work destination',nodeId:nodes[0]?.id||'',revision:1}];
+const selectors=scenario==='empty'?[]:[
+  {id:'selector-work',name:'Work destination',nodeId:nodes[0]?.id||'',revision:1},
+  {id:'selector-cloud',name:'Cloud services',nodeId:nodes[1]?.id||'',revision:1},
+  {id:'selector-travel',name:'Travel destination',nodeId:nodes[2]?.id||'',revision:1},
+  {id:'selector-local',name:'Local network',nodeId:nodes[3]?.id||'',revision:1},
+];
 const resolvers=[{id:'bootstrap',name:'Server address lookup',type:'system',host:'system default',system:true},{id:'dns-local',name:'Local network DNS',type:'system',host:'system default',system:true},{id:'dns-proxy',name:'Encrypted DNS',type:'doh',host:'https://dns.example.invalid/dns-query',system:false}];
 const inbounds=scenario==='empty'?[]:[{id:'inbound-local',name:'Local proxy',enabled:true,network:{type:'tcp_udp',tcp_udp:{host:'127.0.0.1:9002',udp:'enabled'}},transports:[],protocol:{type:'mixed',mixed:{username:'',password:''}}}];
 const lists=[{id:'shared-websites',name:'Work websites',revision:1,type:'host',source:{type:'local',local:{lists:['example.invalid','*.work.example']}}}];

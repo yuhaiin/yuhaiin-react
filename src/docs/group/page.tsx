@@ -1,10 +1,9 @@
 import { clearHashSearch, useHashSearch } from '@/hooks/useHashLocation';
-import { collectPages } from "@/api/paging";
 import { useTranslation } from 'react-i18next';
 import NodeImportModal from "./NodeImportModal";
 
 import { APIError } from "@/api/client";
-import { deleteNode, latencyNode, listNodes, selectedNodes, useNode as selectNode, type NodeLatencyType } from "@/api/nodes";
+import { deleteNode, getNode, latencyNode, listNodeGroups, listNodes, selectedNodes, useNode as selectNode, type NodeLatencyType } from "@/api/nodes";
 import {
     LatencyDNSUrlDefault,
     LatencyDNSUrlKey,
@@ -22,6 +21,7 @@ import {
 } from "@/common/apiurl";
 import { allowNavigation } from "@/hooks/navigation-guard";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { useServerPageClamp } from "@/hooks/use-pagination";
 import { useAsyncAction } from "@/hooks/use-editor-draft";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
@@ -33,16 +33,17 @@ import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { Node, NodeLatencyResponse } from "@/contract/node";
 import clsx from "clsx";
-import { ArrowLeft, Check, ChevronDown, Gauge, Layers, Network, Plus, Power, Search, Upload } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Gauge, Layers, Network, Plus, Power, Search, Upload } from "lucide-react";
 import { FC, memo, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import useSWR from "swr";
-import { useLocalStorage } from "usehooks-ts";
+import { useDebounceValue, useLocalStorage } from "usehooks-ts";
 import { VList } from "virtua";
 import Loading, { Error as ErrorDisplay } from "../../component/v2/loading";
 import { NodeModal } from "../node/modal";
 
 const LATENCY_STORAGE_LIMIT = 500;
 const GROUP_VIRTUALIZE_THRESHOLD = 60;
+const NODE_PAGE_SIZE = 80;
 
 function errorOf(error: unknown): APIError | undefined {
     if (!error) return undefined;
@@ -420,6 +421,7 @@ function NodeOverview({ item, latency, busy, defaults, onLatency, onUse, onBack,
 export default function Group() {
     const { t: uiT } = useTranslation('ui');
     const { t } = useTranslation('routing');
+    const { t: commonT } = useTranslation('common');
 
     const ctx = useContext(GlobalToastContext);
     const desktop = useMediaQuery('(min-width: 768px)');
@@ -433,6 +435,10 @@ export default function Group() {
     const [importOpen, setImportOpen] = useState(false);
     const [preferredGroup, setSelectedGroup] = useState("");
     const [query, setQuery] = useState("");
+    const [page, setPage] = useState(1);
+    const [debouncedQuery] = useDebounceValue(query.trim(), 250);
+    const querySettled = debouncedQuery === query.trim();
+    const [selectedPreview, setSelectedPreview] = useState<Node>();
     const [latency, setLatency] = useLocalStorage<Record<string, NodeLatencyState>>("latency-v2-contract", {});
     const [busyLatency, setBusyLatency] = useState<Record<string, Partial<Record<NodeLatencyType, boolean>>>>({});
     const [latencyHTTP] = useLocalStorage(LatencyHTTPUrlKey, LatencyHTTPUrlDefault);
@@ -443,43 +449,25 @@ export default function Group() {
     const [latencyStunTCPUrl] = useLocalStorage(LatencyStunTCPUrlKey, LatencyStunTCPUrlDefault);
     const { data: defaults, error: defaultsError, mutate: mutateDefaults } = useSWR("/api/v2/nodes/selected", selectedNodes, { revalidateOnFocus: false });
     const { pending: using, run: runUse } = useAsyncAction(error => ctx.Error(errorOf(error)?.msg ?? t("defaultNodeFailed")));
-    const { data, error, mutate } = useSWR("/api/v2/nodes/all", () => collectPages(listNodes), { revalidateOnFocus: false });
-
-    const apiError = errorOf(error);
+    const { data: groupData, error: groupsError, mutate: mutateGroups } = useSWR('/api/v2/nodes/groups', listNodeGroups, { revalidateOnFocus: false });
+    const groups = useMemo(() => groupData?.items.map(group => group.name) ?? [], [groupData]);
+    const selectedGroup = groups.includes(preferredGroup) ? preferredGroup : groups[0] ?? '';
+    const groupCounts = useMemo(() => new Map(groupData?.items.map(group => [group.name, group.count])), [groupData]);
+    const nodeCount = groupData?.items.reduce((sum, group) => sum + group.count, 0) ?? 0;
+    const { data, error, isLoading, mutate } = useSWR(
+        selectedGroup && querySettled ? ['/api/v2/nodes/directory', selectedGroup, page, debouncedQuery] : null,
+        () => listNodes({ group: selectedGroup, page, pageSize: NODE_PAGE_SIZE, query: debouncedQuery }),
+        { revalidateOnFocus: false, keepPreviousData: false },
+    );
+    useServerPageClamp(data?.page, page, setPage);
+    const apiError = errorOf(groupsError || error);
     const items = useMemo(() => data?.items ?? [], [data?.items]);
-    const nodeIds = useMemo(() => items.map((item) => item.id), [items]);
+    const { data: linkedNode } = useSWR(showdata.show && !showdata.new && showdata.id && selectedPreview?.id !== showdata.id && !items.some(item => item.id === showdata.id)
+        ? ['/api/v2/nodes/detail', showdata.id] : null, () => getNode(showdata.id), { revalidateOnFocus: false });
+    const selectedItem = selectedPreview?.id === showdata.id ? selectedPreview : items.find(item => item.id === showdata.id) ?? linkedNode;
+    const nodeIds = useMemo(() => [...new Set([...items.map(item => item.id), ...(selectedItem ? [selectedItem.id] : [])])], [items, selectedItem]);
     const nodeIdsRef = useRef<string[]>([]);
-    const groups = useMemo(() => {
-        const values = new Set(items.map(item => item.group || "manual"));
-        return Array.from(values).sort((a, b) => a.localeCompare(b));
-    }, [items]);
-    // Select the first available group without a post-render state update.
-    // If a group disappears after refreshing, fall back to the first available.
-    const selectedGroup = groups.includes(preferredGroup) ? preferredGroup : groups[0] ?? "";
-    const groupCounts = useMemo(() => {
-        const counts = new Map<string, number>();
-        for (const item of items) {
-            const group = item.group || "manual";
-            counts.set(group, (counts.get(group) ?? 0) + 1);
-        }
-        return counts;
-    }, [items]);
-    const groupItems = useMemo(() => {
-        if (!selectedGroup) return [];
-        const inGroup = items.filter(item => (item.group || "manual") === selectedGroup);
-        const q = query.trim().toLowerCase();
-        if (!q) return inGroup;
-        return inGroup.filter((item) => {
-            const haystack = [
-                item.name,
-                item.id,
-                item.origin,
-                chainLabel(item),
-                ...item.chain.map((step) => step.type),
-            ].join(" ").toLowerCase();
-            return haystack.includes(q);
-        });
-    }, [items, query, selectedGroup]);
+    const groupItems = items;
     const modalGroups = useMemo(
         () => selectedGroup
             ? [selectedGroup, ...groups.filter(group => group !== selectedGroup)]
@@ -493,20 +481,21 @@ export default function Group() {
     const visibleBusyLatency = useMemo(() => data ? pruneBusyLatency(busyLatency, nodeIds) : busyLatency, [data, busyLatency, nodeIds]);
     useEffect(() => { nodeIdsRef.current = data ? nodeIds : []; }, [data, nodeIds]);
 
-    const selectedItem = items.find(item => item.id === showdata.id);
     useEffect(() => {
-        if (!initialized.current && desktop && groupItems.length && !showdata.show) {
+        if (!initialized.current && desktop && groupItems.length && !showdata.show && debouncedQuery === query.trim()) {
             initialized.current = true;
+            setSelectedPreview(groupItems[0]);
             setShowdata({ show: true, id: groupItems[0].id, new: false });
         }
-    }, [desktop, groupItems, showdata.show]);
+    }, [desktop, groupItems, showdata.show, debouncedQuery, query]);
 
-    if (apiError && data === undefined) return <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} />;
-    if (data === undefined) return <Loading />;
+    if (groupsError && !groupData && apiError) return <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} />;
+    if (!groupData) return <Loading />;
 
     const closeDetails = () => {
         initialized.current = true;
         setShowdata({ show: false, id: '', new: false });
+        setSelectedPreview(undefined);
         setEditorState({ dirty: false, pending: false });
         closeLink();
     };
@@ -515,13 +504,14 @@ export default function Group() {
         if (!allowNavigation()) return;
         initialized.current = true;
         closeLink();
+        setSelectedPreview(items.find(item => item.id === id));
         setShowdata({ show: true, id, new: false });
     };
     const deleteCurrentNode = async () => {
         await deleteNode(showdata.id);
         ctx.Info(t('nodeRemoved'));
         closeDetails();
-        await mutate();
+        await Promise.all([mutate(), mutateGroups()]);
     };
     const handleCreate = () => {
         if (!allowNavigation()) return;
@@ -534,8 +524,11 @@ export default function Group() {
         initialized.current = true;
         closeLink();
         setSelectedGroup(group);
-        const first = items.find(item => (item.group || 'manual') === group);
-        setShowdata(desktop && first ? { show: true, id: first.id, new: false } : { show: false, id: '', new: false });
+        setPage(1);
+        setQuery('');
+        setSelectedPreview(undefined);
+        initialized.current = !desktop;
+        setShowdata({ show: false, id: '', new: false });
         setEditorState({ dirty: false, pending: false });
     };
     const handleUse = (id: string) => {
@@ -560,7 +553,7 @@ export default function Group() {
             .then((result) => {
                 setLatency((prev) => pruneLatencyMap(
                     { ...prev, [id]: { ...prev[id], [type]: latencyResultValue(result) } },
-                    nodeIdsRef.current,
+                    [id, ...nodeIdsRef.current, ...Object.keys(prev)],
                 ));
                 if (!result.ok) ctx.Error(result.error ?? "Latency failed");
             })
@@ -568,7 +561,7 @@ export default function Group() {
                 const apiErr = errorOf(err);
                 setLatency((prev) => pruneLatencyMap(
                     { ...prev, [id]: { ...prev[id], [type]: "error" } },
-                    nodeIdsRef.current,
+                    [id, ...nodeIdsRef.current, ...Object.keys(prev)],
                 ));
                 ctx.Error(apiErr?.msg ?? "Latency failed");
             })
@@ -576,9 +569,9 @@ export default function Group() {
     };
 
     return <MainContainer className="max-w-[1440px]">
-        <NodeImportModal show={importOpen} group={selectedGroup || 'manual'} onHide={() => setImportOpen(false)} onChanged={() => { void mutate(); }} onSaved={() => setImportOpen(false)} />
+        <NodeImportModal show={importOpen} group={selectedGroup || 'manual'} onHide={() => setImportOpen(false)} onChanged={() => { void mutate(); void mutateGroups(); }} onSaved={() => setImportOpen(false)} />
         <header className={clsx('mb-6 flex-wrap items-center justify-between gap-4', showdata.show ? 'hidden md:flex' : 'flex')}>
-            <div><h1 className="text-3xl font-semibold tracking-tight text-ui-heading">{t('nodesTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('nodeDirectoryCount', { count: groups.length, nodes: items.length, groups: groups.length })}</p></div>
+            <div><h1 className="text-3xl font-semibold tracking-tight text-ui-heading">{t('nodesTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('nodeDirectoryCount', { count: groups.length, nodes: nodeCount, groups: groups.length })}</p></div>
             <div className="flex items-center gap-2"><Button variant="outline-secondary" disabled={editorState.pending} onClick={() => setImportOpen(true)}><Upload className="mr-1.5" size={16} />{uiT('import')}</Button><Button variant="primary" onClick={handleCreate} disabled={editorState.pending || showdata.new}><Plus className="mr-1.5" size={16} />{uiT('new')}</Button></div>
         </header>
         {groups.length === 0 && !showdata.show ? <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center">
@@ -588,12 +581,17 @@ export default function Group() {
             <WorkspaceDirectory label={t('nodeDirectory')} hiddenOnMobile={showdata.show}>
                 <div className="mb-2 space-y-2 border-b border-ui-border/50 px-1 pb-3">
                     <GroupPicker groups={groups} counts={groupCounts} value={selectedGroup} onChange={changeGroup} />
-                    <div className="relative"><Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" /><Input aria-label={uiT('searchNodes')} value={query} onChange={e => setQuery(e.target.value)} placeholder={uiT('searchNodes')} className="h-8 border-transparent bg-ui-surface-muted/70 pl-9 text-xs shadow-none focus:border-ui-primary/40 focus:bg-ui-surface" /></div>
+                    <div className="relative"><Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" /><Input aria-label={uiT('searchNodes')} value={query} onChange={e => { setPage(1); setQuery(e.target.value); }} placeholder={uiT('searchNodes')} className="h-8 border-transparent bg-ui-surface-muted/70 pl-9 text-xs shadow-none focus:border-ui-primary/40 focus:bg-ui-surface" /></div>
                 </div>
-                {apiError ? <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} /> : groupItems.length === 0 ? <p className="px-3 py-8 text-center text-sm text-ui-muted">{t(query.trim() ? 'noMatchingNodes' : 'noGroupNodes')}</p> :
+                {apiError ? <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} /> : isLoading || !querySettled ? <Loading /> : groupItems.length === 0 ? <p className="px-3 py-8 text-center text-sm text-ui-muted">{t(query.trim() ? 'noMatchingNodes' : 'noGroupNodes')}</p> :
                     groupItems.length > GROUP_VIRTUALIZE_THRESHOLD ? <VList data={groupItems} itemSize={57} bufferSize={456} style={{ height: 'min(72vh, 900px)', width: '100%' }}>
                         {item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} />}
-                    </VList> : <div>{groupItems.map(item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} />)}</div>}
+                    </VList> : <div className="max-h-[min(72vh,900px)] overflow-y-auto overscroll-contain">{groupItems.map(item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} />)}</div>}
+                {data && data.page.total > (data.page.pageSize || NODE_PAGE_SIZE) && <div className="flex items-center justify-center gap-3 border-t border-ui-border/60 pt-3">
+                    <Button type="button" size="icon" variant="outline-secondary" className="h-8 w-8" aria-label={commonT('pagination.previous')} disabled={page <= 1} onClick={() => setPage(page - 1)}><ChevronLeft size={16} aria-hidden="true" /></Button>
+                    <span className="text-xs tabular-nums text-ui-muted">{page} / {Math.ceil(data.page.total / (data.page.pageSize || NODE_PAGE_SIZE))}</span>
+                    <Button type="button" size="icon" variant="outline-secondary" className="h-8 w-8" aria-label={commonT('pagination.next')} disabled={page >= Math.ceil(data.page.total / (data.page.pageSize || NODE_PAGE_SIZE))} onClick={() => setPage(page + 1)}><ChevronRight size={16} aria-hidden="true" /></Button>
+                </div>}
             </WorkspaceDirectory>
             <WorkspaceDetail hiddenOnMobile={!showdata.show}>
                 {showdata.show ? <>
@@ -601,8 +599,8 @@ export default function Group() {
                         onLatency={type => handleLatency(selectedItem.id, type)} onUse={() => handleUse(selectedItem.id)} onBack={backToNodes} /> : <header className="mb-5 border-b border-ui-border/60 pb-5"><Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent md:hidden" onClick={backToNodes}><ArrowLeft size={16} />{t('backToNodes')}</Button><h2 className="break-words text-xl font-semibold text-ui-heading">{showdata.new ? uiT('newNode') : t('nodeDetails')}</h2></header>}
                     {defaultsError && <div role="alert" className="mb-4 text-sm text-ui-danger">{t('defaultNodeStateFailed')} <Button size="sm" onClick={() => void mutateDefaults()}>{t('retry')}</Button></div>}
                     <NodeModal key={showdata.new ? 'new-node' : showdata.id} show id={showdata.id} isNew={showdata.new} editable presentation="inline" groups={modalGroups} onStateChange={setEditorState}
-                        onChanged={() => { void mutate(); }}
-                        onSave={node => { initialized.current = true; closeLink(); setShowdata({ show: true, id: node.id, new: false }); void mutateDefaults(); }}
+                        onChanged={node => { setSelectedPreview(node); void mutate(); }}
+                        onSave={node => { setSelectedPreview(node); setSelectedGroup(node.group || 'manual'); initialized.current = true; closeLink(); setShowdata({ show: true, id: node.id, new: false }); void mutateDefaults(); }}
                         onHide={saved => { if (!saved) closeDetails(); }} onDelete={showdata.new ? undefined : deleteCurrentNode} />
                 </> : <div className="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-ui-muted"><Network size={28} aria-hidden="true" /><h2 className="text-lg font-medium text-ui-heading">{t('selectNode')}</h2><p className="max-w-sm text-sm">{t('selectNodeHelp')}</p><Button variant="outline-primary" className="gap-2" onClick={handleCreate}><Plus size={16} />{uiT('newNode')}</Button></div>}
             </WorkspaceDetail>

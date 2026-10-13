@@ -63,7 +63,7 @@ jobs:
       - name: Show UX screenshots in job summary
         run: |
           set -euo pipefail
-          shots=(routing-desktop rule-editor nodes-desktop routing-mobile rule-editor-mobile nodes-mobile node-details-mobile)
+          shots=(routing-desktop rule-editor nodes-desktop selectors-desktop routing-mobile rule-editor-mobile nodes-mobile node-details-mobile selectors-mobile selector-details-mobile)
           for name in "${shots[@]}"; do
             # The current run verifies rendering. Images in this summary are
             # the committed visual reference, not runner-local PNG files.
@@ -94,6 +94,12 @@ jobs:
             echo '| Desktop | Mobile directory | Mobile details |'
             echo '| :---: | :---: | :---: |'
             echo "| ![Nodes desktop](${images}/nodes-desktop.png) | ![Nodes mobile](${images}/nodes-mobile.png) | ![Node details mobile](${images}/node-details-mobile.png) |"
+            echo ""
+            echo "### Shared destinations"
+            echo ""
+            echo "| Desktop | Mobile directory | Mobile editor |"
+            echo "| --- | --- | --- |"
+            echo "| ![Shared destinations](${images}/selectors-desktop.png) | ![Shared destinations mobile](${images}/selectors-mobile.png) | ![Shared destination editor](${images}/selector-details-mobile.png) |"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - run: |

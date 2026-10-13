@@ -257,5 +257,10 @@
   "nextPage": "Next",
   "dragRule": "Reorder {{name}}",
   "dragRuleHelp": "Drag this handle to reorder. On touch screens, hold it before dragging; swipe normally to scroll. Arrow keys move a focused handle; Escape cancels dragging.",
-  "draggingRule": "Moving {{name}}"
+  "draggingRule": "Moving {{name}}",
+  "selectorDetails": "Shared destination settings",
+  "backToSelectors": "Back to shared destinations",
+  "selectSelector": "Select a shared destination",
+  "selectSelectorHelp": "Choose a destination to update its node for every rule that uses it.",
+  "searchDestinations": "Search destinations…"
 }

@@ -1,8 +1,7 @@
 import { listInbounds } from '@/api/inbounds';
 import { getRouteActivationStatus } from '@/api/route';
 import { listSelectors } from '@/api/selectors';
-import { collectPages } from '@/api/paging';
-import { selectedNodes, listNodes } from '@/api/nodes';
+import { selectedNodes, getNode } from '@/api/nodes';
 import { DefaultSelectionEditor } from '@/component/default-selection-editor';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader } from '@/component/v2/card';
@@ -19,9 +18,9 @@ export default function SetupCard() {
     const { data: routing } = useSWR('/api/v2/route/activation', getRouteActivationStatus, { refreshInterval: 5000 });
     const target = routing?.runningConfig?.defaultTarget;
     const mode = routing?.runningConfig?.defaultMode;
-    const { data: nodes } = useSWR(target?.type === 'node' ? '/api/v2/nodes/all' : null, () => collectPages(listNodes));
+    const { data: node } = useSWR(target?.type === 'node' && target.id ? ['/api/v2/nodes/detail', target.id] : null, () => getNode(target!.id!), { revalidateOnFocus: false });
     const { data: selectors } = useSWR(target?.type === 'selector' ? '/api/v2/outbound/selectors' : null, listSelectors);
-    const destination = target?.type === 'node' ? nodes?.items.find(item => item.id === target.id)?.name
+    const destination = target?.type === 'node' ? node?.name
         : target?.type === 'selector' ? selectors?.items.find(item => item.id === target.id)?.name : t('defaultProxy');
     const { data: inbounds } = useSWR('/api/v2/inbounds', () => listInbounds());
     const hasDefault = Boolean(selection?.tcp && selection?.udp);
