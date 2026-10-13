@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createDefaultRuleDraft, type RuleDraft } from '@/contract/route';
-import { draftForSave, referencedLists, simpleList } from './draft';
+import { draftForSave, hasAdvancedRuleOptions, referencedLists, simpleList } from './draft';
 
 describe('rule editing views', () => {
     it('keeps DNS and destination overrides while editing simple matching data', () => {
@@ -14,6 +14,19 @@ describe('rule editing views', () => {
         expect(saved.rule.resolveStrategy).toBe('only_ipv4');
         expect(saved.rule.target).toEqual({ type: 'selector', id: 'work' });
         expect(simpleList(saved)?.source.local?.lists).toEqual(['example.com']);
+    });
+
+    it('marks active advanced options even when the match is simple', () => {
+        const draft = createDefaultRuleDraft();
+        expect(hasAdvancedRuleOptions(draft.rule)).toBe(false);
+        draft.rule.disabled = true;
+        expect(hasAdvancedRuleOptions(draft.rule)).toBe(true);
+        draft.rule.disabled = false;
+        draft.rule.resolveStrategy = 'only_ipv6';
+        expect(hasAdvancedRuleOptions(draft.rule)).toBe(true);
+        draft.rule.resolveStrategy = 'default';
+        draft.rule.resolver = 'custom-dns';
+        expect(hasAdvancedRuleOptions(draft.rule)).toBe(true);
     });
 
     it('retains private data referenced in recursive and negated conditions', () => {
