@@ -1,3 +1,4 @@
+import { AccentPicker } from '@/component/accent-picker';
 
 import { useTheme } from '@/common/ThemeProvider';
 import type { ThemePreference } from '@/common/theme';
@@ -264,6 +265,7 @@ function Setting() {
                     <div className="flex flex-col mb-4">
                         <SettingLabel className="mb-2 block">{t('language.preference')}</SettingLabel>
                         <Select
+                            ariaLabel={t('language.preference')}
                             value={preference}
                             onValueChange={(value) => setPreference(value as typeof preference)}
                             items={languageOptions.map((option) => ({
@@ -283,6 +285,7 @@ function Setting() {
                     <div className="flex flex-col mb-4">
                         <SettingLabel className="mb-2 block">{t('theme.preference')}</SettingLabel>
                         <Select
+                            ariaLabel={t('theme.preference')}
                             value={themePreference}
                             onValueChange={(value) => setThemePreference(value as ThemePreference)}
                             items={[
@@ -291,6 +294,11 @@ function Setting() {
                                 { value: "dark", label: t('theme.dark') },
                             ]}
                         />
+                    </div>
+                    <div className="space-y-2">
+                        <SettingLabel>{t('theme.accent')}</SettingLabel>
+                        <AccentPicker />
+                        <p className="text-xs text-ui-muted">{t('theme.accentHelp')}</p>
                     </div>
                 </CardBody>
             </Card>

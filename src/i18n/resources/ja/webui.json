@@ -35,7 +35,16 @@
     "preference": "テーマ設定",
     "system": "システム",
     "light": "ライト",
-    "dark": "ダーク"
+    "dark": "ダーク",
+    "accent": "アクセントカラー",
+    "accentHelp": "すぐにプレビューできます。状態や警告の色は変更されません。",
+    "accents": {
+      "olive": "苔緑",
+      "terracotta": "赤陶",
+      "plum": "梅紫",
+      "brass": "黄銅",
+      "graphite": "石墨"
+    }
   },
   "localNotice": "これらの設定はブラウザーのローカルキャッシュに保存されます。"
 }

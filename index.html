@@ -11,13 +11,19 @@
   <link rel="apple-touch-icon" href="/docs/logov2192.png" />
   <script>
     (function () {
+      // Set defaults even when storage access is blocked.
+      var theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      var accent = 'olive';
       try {
         var pref = localStorage.getItem('yuhaiin.theme');
-        var theme = (pref === 'light' || pref === 'dark')
+        theme = (pref === 'light' || pref === 'dark')
           ? pref
           : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-bs-theme', theme);
+        var savedAccent = localStorage.getItem('yuhaiin.accent');
+        if (['olive', 'terracotta', 'plum', 'brass', 'graphite'].indexOf(savedAccent) !== -1) accent = savedAccent;
       } catch (e) {}
+      document.documentElement.setAttribute('data-bs-theme', theme);
+      document.documentElement.setAttribute('data-accent', accent);
     })();
   </script>
 </head>

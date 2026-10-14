@@ -44,7 +44,7 @@ const ToggleItem = ({ className, children, value, ...props }: React.ComponentPro
     return (
         <ToggleGroupPrimitive.Item
             className={clsx(
-                "bg-transparent text-sidebar-color border border-sidebar-border py-2 px-3 text-sm font-medium cursor-pointer transition-colors duration-150 flex items-center justify-center -mr-px whitespace-nowrap",
+                "bg-transparent text-sidebar-color border border-sidebar-border min-h-8 max-sm:min-h-11 py-1.5 px-3 text-sm font-medium cursor-pointer transition-colors duration-150 flex items-center justify-center -mr-px whitespace-nowrap",
                 "first:rounded-l-ui-md last:rounded-r-ui-md last:mr-0",
                 "hover:!bg-sidebar-hover",
                 "data-[state=on]:bg-transparent data-[state=on]:text-sidebar-active data-[state=on]:border-sidebar-active data-[state=on]:font-semibold",
@@ -66,9 +66,9 @@ const ToggleItem = ({ className, children, value, ...props }: React.ComponentPro
                         zIndex: -1,
                         boxShadow: 'none'
                     }}
-                    initial={context.noSlide ? { opacity: 0, scale: 0.95 } : undefined}
-                    animate={context.noSlide ? { opacity: 1, scale: 1 } : undefined}
-                    exit={context.noSlide ? { opacity: 0, scale: 0.95 } : undefined}
+                    initial={context.noSlide ? { opacity: 0 } : undefined}
+                    animate={context.noSlide ? { opacity: 1 } : undefined}
+                    exit={context.noSlide ? { opacity: 0 } : undefined}
                     transition={{ duration: 0.12, ease: "easeOut" }}
                 />
             )}

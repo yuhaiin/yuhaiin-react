@@ -12,7 +12,7 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
 
     return (
         <>
-            <div className="fixed inset-x-0 top-0 z-[1030] h-[calc(80px+env(safe-area-inset-top))] lg:hidden" style={{ backgroundColor: 'var(--bs-body-bg)' }}>
+            <div className="fixed inset-x-0 top-0 z-[1030] h-[calc(80px+env(safe-area-inset-top))] border-b border-ui-border lg:hidden" style={{ backgroundColor: 'var(--sidebar-bg)' }}>
                 <Button
                     ref={triggerRef}
                     type="button"

@@ -35,7 +35,16 @@
     "preference": "테마 설정",
     "system": "시스템",
     "light": "라이트",
-    "dark": "다크"
+    "dark": "다크",
+    "accent": "강조 색상",
+    "accentHelp": "즉시 미리 볼 수 있습니다. 상태와 경고 색상은 변경되지 않습니다.",
+    "accents": {
+      "olive": "올리브",
+      "terracotta": "테라코타",
+      "plum": "자두",
+      "brass": "황동",
+      "graphite": "흑연"
+    }
   },
   "localNotice": "이 설정은 브라우저 캐시에 로컬로 저장됩니다."
 }

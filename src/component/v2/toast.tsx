@@ -69,10 +69,10 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
             >
               <motion.li
                 layout
-                initial={{ opacity: 0, x: 200, scale: 0.9 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 200, scale: 0.9, transition: { duration: 0.2 } }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                initial={{ opacity: 0, x: 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 12, transition: { duration: 0.2 } }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
                 drag="x"
                 dragConstraints={{ left: 0, right: 300 }}
                 dragElastic={0.05}
@@ -95,7 +95,7 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
 
                   <div className="flex items-center gap-2">
                     <small className="text-ui-muted text-xs">{t('toast.justNow')}</small>
-                    <ToastPrimitive.Close className="bg-transparent border-0 text-ui-muted cursor-pointer opacity-50 transition-opacity duration-200 px-[4px] text-[1.2rem] leading-none hover:opacity-100" aria-label={t('action.close')}>
+                    <ToastPrimitive.Close className="bg-transparent border-0 text-ui-muted cursor-pointer transition-opacity duration-200 min-h-11 min-w-11 rounded-ui-sm focus-visible:ring-2 focus-visible:ring-ui-focus text-[1.2rem] leading-none hover:opacity-100" aria-label={t('action.close')}>
                       <span aria-hidden>×</span>
                     </ToastPrimitive.Close>
                   </div>

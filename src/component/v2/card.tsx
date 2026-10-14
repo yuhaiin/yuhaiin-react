@@ -87,6 +87,7 @@ export const ListItem: FC<{
             flat ? "flex items-center cursor-pointer transition-colors duration-150" : ui.listRow,
             !flat && density === "compact" && "min-h-0 p-3",
             selected && "border-ui-primary bg-ui-primary-soft text-ui-primary",
+            onClick && ui.focusRing,
             disabled ? "cursor-not-allowed opacity-60" : onClick && "cursor-pointer",
             className
         )}
@@ -311,6 +312,7 @@ export function CardRowList<T>({
                     disabled={adding}
                 />
                 <button
+                    aria-label={t("state.createNew")}
                     onClick={submitNewData}
                     className={clsx(
                         "flex h-8 w-8 shrink-0 items-center justify-center rounded-ui-sm bg-transparent border-0 text-ui-primary cursor-pointer transition-colors",
@@ -448,7 +450,7 @@ export const MainContainer: FC<{ children: React.ReactNode, className?: string, 
 );
 
 export const SettingsBox: FC<{ children: React.ReactNode }> = ({ children }) => (
-    <div className="p-6 bg-ui-surface-muted border border-ui-border rounded-ui-sm transition-colors duration-300">
+    <div className="p-4 bg-ui-surface-muted/50 rounded-ui-md">
         {children}
     </div>
 );
@@ -487,14 +489,14 @@ export const IconBox: FC<{
     return (
         <div className="flex items-center min-w-0">
             <div
-                className={clsx("flex shrink-0 items-center justify-center w-icon-lg h-icon-lg mr-5 text-xl rounded-ui-lg border", className)}
+                className={clsx("flex shrink-0 items-center justify-center w-icon-lg h-icon-lg mr-3 text-xl rounded-ui-md", className)}
                 style={{ color: resolved.color, borderColor: resolved.borderColor, background: resolved.background, ...style }}
             >
                 <Icon />
             </div>
             {title &&
                 <div className={clsx("min-w-0", textClassName)} title={`${title}${description ? ` - ${description}` : ''}`}>
-                    <h5 className="mb-0 font-bold truncate text-ui-heading">{title}</h5>
+                    <h5 className="mb-0 text-base font-semibold truncate text-ui-heading">{title}</h5>
                     <small className="block text-ui-muted leading-snug sm:truncate">{description}</small>
                 </div>
             }

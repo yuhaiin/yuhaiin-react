@@ -1,3 +1,4 @@
+import { chartPalette } from './chart-palette';
 import { useTheme } from "@/common/ThemeProvider";
 import { useTranslation } from 'react-i18next';
 import type { TrafficSeries } from "@/contract/connection";
@@ -24,7 +25,10 @@ function bucketSeconds(start: string, interval: TrafficSeries["interval"]): numb
 const TrafficHistoryChart: FC<{ data?: TrafficSeries; error?: string; minHeight: number }> = ({ data, error, minHeight }) => {
     const { t: uiT, i18n } = useTranslation('ui');
     const { resolved } = useTheme();
-    const textColor = resolved === 'dark' ? '#94a3b8' : '#64748b';
+    // CSS variables change with the resolved mode, even though the reader has no arguments.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+    const palette = useMemo(() => chartPalette(), [resolved]);
+    const textColor = palette.axis;
 
     const chartData = useMemo(() => {
         const formatter = new Intl.DateTimeFormat(i18n.language, dateFormat[data?.interval ?? "hour"]);
@@ -34,8 +38,8 @@ const TrafficHistoryChart: FC<{ data?: TrafficSeries; error?: string; minHeight:
                 {
                     label: uiT("download"),
                     data: (data?.items ?? []).map(item => Number(item.download)),
-                    borderColor: "#3b82f6",
-                    backgroundColor: "rgba(59, 130, 246, 0.12)",
+                    borderColor: palette.downloadStroke,
+                    backgroundColor: palette.downloadFill,
                     borderWidth: 2,
                     pointRadius: 2,
                     pointHoverRadius: 4,
@@ -45,8 +49,8 @@ const TrafficHistoryChart: FC<{ data?: TrafficSeries; error?: string; minHeight:
                 {
                     label: uiT("upload"),
                     data: (data?.items ?? []).map(item => Number(item.upload)),
-                    borderColor: "#10b981",
-                    backgroundColor: "rgba(16, 185, 129, 0.08)",
+                    borderColor: palette.uploadStroke,
+                    backgroundColor: palette.uploadFill,
                     borderWidth: 2,
                     pointRadius: 2,
                     pointHoverRadius: 4,
@@ -55,7 +59,7 @@ const TrafficHistoryChart: FC<{ data?: TrafficSeries; error?: string; minHeight:
                 },
             ],
         };
-    }, [data, uiT, i18n.language]);
+    }, [data, uiT, i18n.language, palette]);
 
     if (error) return <div className="flex items-center justify-center p-6 text-center text-sm text-ui-danger" style={{ minHeight }}>{error}</div>;
     if (!data) return <div className="flex items-center justify-center p-6 text-center text-sm text-ui-muted" style={{ minHeight }}>{uiT("loadingTrafficHistory")}</div>;
@@ -95,7 +99,7 @@ const TrafficHistoryChart: FC<{ data?: TrafficSeries; error?: string; minHeight:
                         },
                     },
                     scales: {
-                        y: { beginAtZero: true, ticks: { color: textColor, callback: value => formatBytes(Number(value), 1, " ") }, grid: { color: "rgba(148, 163, 184, 0.14)" } },
+                        y: { beginAtZero: true, ticks: { color: textColor, callback: value => formatBytes(Number(value), 1, " ") }, grid: { color: palette.grid } },
                         x: { grid: { display: false }, ticks: { color: textColor, maxRotation: 0, autoSkipPadding: 18 } },
                     },
                 }}

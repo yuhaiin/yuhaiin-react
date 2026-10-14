@@ -362,7 +362,7 @@ const NodeDirectoryItem = memo(function NodeDirectoryItem({ item, selected, onOp
     const { t: uiT } = useTranslation('ui');
     const { t } = useTranslation('routing');
     return <button type="button" aria-label={item.name || item.id} aria-current={selected ? 'true' : undefined} title={item.name || item.id} onClick={onOpen}
-        className={clsx('relative flex w-full min-w-0 items-center gap-2.5 rounded-ui-md px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus', selected ? 'bg-ui-primary-soft/55' : 'hover:bg-ui-surface-muted/75')}>
+        className={clsx('relative flex w-full min-w-0 items-center gap-2.5 rounded-ui-md px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus', selected ? 'bg-ui-primary-soft' : 'hover:bg-ui-surface-muted/75')}>
         {selected && <WorkspaceSelectionMarker />}
         <div className="min-w-0 flex-1">
             <div className="flex min-w-0 items-center gap-2"><span className="min-w-0 flex-1 truncate text-sm font-medium leading-5 text-ui-heading">{item.name || item.id}</span>
@@ -571,7 +571,7 @@ export default function Group() {
     return <MainContainer className="max-w-[1440px]">
         <NodeImportModal show={importOpen} group={selectedGroup || 'manual'} onHide={() => setImportOpen(false)} onChanged={() => { void mutate(); void mutateGroups(); }} onSaved={() => setImportOpen(false)} />
         <header className={clsx('mb-6 flex-wrap items-center justify-between gap-4', showdata.show ? 'hidden md:flex' : 'flex')}>
-            <div><h1 className="text-3xl font-semibold tracking-tight text-ui-heading">{t('nodesTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('nodeDirectoryCount', { count: groups.length, nodes: nodeCount, groups: groups.length })}</p></div>
+            <div><h1 className="text-2xl font-semibold tracking-tight text-ui-heading">{t('nodesTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('nodeDirectoryCount', { count: groups.length, nodes: nodeCount, groups: groups.length })}</p></div>
             <div className="flex items-center gap-2"><Button variant="outline-secondary" disabled={editorState.pending} onClick={() => setImportOpen(true)}><Upload className="mr-1.5" size={16} />{uiT('import')}</Button><Button variant="primary" onClick={handleCreate} disabled={editorState.pending || showdata.new}><Plus className="mr-1.5" size={16} />{uiT('new')}</Button></div>
         </header>
         {groups.length === 0 && !showdata.show ? <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center">

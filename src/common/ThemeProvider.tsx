@@ -2,6 +2,10 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
     applyTheme,
+    applyAccent,
+    readAccent,
+    writeAccent,
+    type Accent,
     getSystemTheme,
     readThemePreference,
     resolveTheme,
@@ -15,6 +19,8 @@ type ThemeContextValue = {
     resolved: ResolvedTheme;
     setPreference: (preference: ThemePreference) => void;
     ready: boolean;
+    accent: Accent;
+    setAccent: (accent: Accent) => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -28,6 +34,13 @@ function getInitialResolved(preference: ThemePreference): ResolvedTheme {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+    const [accent, setAccentState] = useState<Accent>(readAccent);
+    useEffect(() => { applyAccent(accent); }, [accent]);
+    const setAccent = useCallback((next: Accent) => {
+        writeAccent(next);
+        applyAccent(next);
+        setAccentState(next);
+    }, []);
     const [preference, setPreferenceState] = useState<ThemePreference>(getInitialPreference);
     const [resolved, setResolved] = useState<ResolvedTheme>(() => getInitialResolved(getInitialPreference()));
 
@@ -60,7 +73,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         resolved,
         setPreference,
         ready: true,
-    }), [preference, resolved, setPreference]);
+        accent,
+        setAccent,
+    }), [preference, resolved, setPreference, accent, setAccent]);
 
     return (
         <ThemeContext.Provider value={value}>

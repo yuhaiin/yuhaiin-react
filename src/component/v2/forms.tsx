@@ -24,7 +24,7 @@ const SettingCheckComponent: FC<{ label: string, checked: boolean, onChange: (c:
             <div className={clsx("flex items-center mb-4", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
                 <label className="basis-[150px] shrink-0 mr-6 font-medium">{label}</label>
                 <div className="grow min-w-0 relative">
-                    <SwitchComponent checked={checked} onCheckedChange={onChange} disabled={disabled} />
+                    <SwitchComponent ariaLabel={label} checked={checked} onCheckedChange={onChange} disabled={disabled} />
                 </div>
             </div>
         )
@@ -170,13 +170,13 @@ export const SettingRangeVertical: FC<{
                 <SliderPrimitive.Thumb
                     aria-label={label}
                     className={clsx(
-                        "block h-[20px] w-[20px] rounded-full border border-ui-border bg-ui-bg shadow-ui-card transition-transform duration-150 ease-out hover:scale-110 hover:bg-ui-surface active:scale-95",
+                        "block h-[20px] w-[20px] rounded-full border border-ui-primary bg-ui-surface shadow-ui-card transition-transform duration-150 ease-out hover:bg-ui-primary-soft active:scale-[0.98]",
                         ui.focusRing
                     )}
                 />
             </SliderPrimitive.Root>
 
-            <div className="flex justify-between text-ui-muted opacity-50 text-[0.7rem] font-semibold">
+            <div className="flex justify-between text-ui-tertiary text-[0.7rem] font-semibold">
                 <span>{t('form.min')}: {min.toLocaleString()}</span>
                 <span>{t('form.max')}: {max.toLocaleString()}</span>
             </div>

@@ -23,11 +23,11 @@ declare global {
 type AnimationContext = { direction: number; reducedMotion: boolean | null };
 const variants = {
     enter: ({ direction, reducedMotion }: AnimationContext) => ({
-        y: reducedMotion ? 0 : direction > 0 ? '100%' : '-100%', opacity: 0,
+        y: reducedMotion ? 0 : direction > 0 ? 12 : -12, opacity: 0,
     }),
     center: { y: 0, opacity: 1 },
     exit: ({ direction, reducedMotion }: AnimationContext) => ({
-        y: reducedMotion ? 0 : direction > 0 ? '-100%' : '100%', opacity: 0,
+        y: reducedMotion ? 0 : direction > 0 ? -8 : 8, opacity: 0,
     }),
 };
 

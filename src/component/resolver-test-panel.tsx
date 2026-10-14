@@ -40,7 +40,7 @@ export function ResolverTestPanel({ resolver, disabled, onPendingChange }: { res
             finally { if (abort.current === controller) abort.current = null; }
         });
     };
-    return <section aria-label={t('resolverTest')} className="mt-5 space-y-4 rounded-ui-lg border border-ui-border bg-ui-surface p-4">
+    return <section aria-label={t('resolverTest')} className="mt-5 space-y-4 rounded-ui-md bg-ui-surface-muted/50 p-4">
         <div><h3 className="flex items-center gap-2 text-sm font-semibold text-ui-heading"><FlaskConical size={17} />{t('resolverTest')}</h3><p className="mt-1 text-xs text-ui-muted">{t('resolverTestHelp')}</p></div>
         <fieldset disabled={pending || disabled} className="min-w-0 grid gap-3 sm:grid-cols-[minmax(0,1fr)_130px_auto] sm:items-end">
             <label className="min-w-0"><span className="mb-1.5 block text-xs text-ui-muted">{t('testDomain')}</span><Input aria-label={t('testDomain')} value={domain} onChange={event => { setDomain(event.target.value); setResult(undefined); }} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); test(); } }} /></label>
