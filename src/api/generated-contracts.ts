@@ -885,6 +885,23 @@ export namespace Go {
     export interface DNSCacheClearResponse {
       removed: number;
     }
+    export interface QueryTypeList {
+      types: string[];
+    }
+    export interface TestRequest {
+      resolver: Resolver;
+      domain: string;
+      queryType: string;
+    }
+    export interface TestResponse {
+      domain: string;
+      queryType: string;
+      elapsedMs: number;
+      rcode: string;
+      truncated: boolean;
+      records: DNSCacheRecord[];
+      error?: string;
+    }
   }
   export namespace route {
     export interface Config {
@@ -1113,6 +1130,10 @@ export namespace Go {
     }
     export interface RegistryCatalogList {
       items: RegistryCatalog[];
+    }
+    export interface GeoIPCountries {
+      codes: string[];
+      loaded: boolean;
     }
   }
   export namespace settings {

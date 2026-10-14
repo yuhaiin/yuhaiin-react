@@ -127,3 +127,8 @@ export async function blockHistory(): Promise<BlockHistoryList> {
   const data = await requestJSON<Go.route.BlockHistoryList>("GET", "/api/v2/route/rules/block-history");
   return { items: data.items ?? [], dumpProcessEnabled: data.dumpProcessEnabled ?? false };
 }
+
+export async function listGeoIPCountries(): Promise<Go.route.GeoIPCountries> {
+  const data = await requestJSON<Go.route.GeoIPCountries>("GET", "/api/v2/route/geoip/countries");
+  return { codes: data.codes ?? [], loaded: data.loaded ?? false };
+}

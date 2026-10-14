@@ -113,6 +113,7 @@ const worker=setupWorker(
       if(p.operate==='exchange')[rules[source],rules[target]]=[rules[target],rules[source]];
       else{const [item]=rules.splice(source,1);const to=rules.findIndex(draft=>draft.rule.id===p.target.id);rules.splice(to+(p.operate==='insert_after'?1:0),0,item);}bump();
     }
+    else if(op==='route.geoip.countries')result={codes:['CN','JP','US','LAN'],loaded:true};
     else if(op==='route.config.get')result=routeConfig;
     else if(op==='route.config.put'){if(p.revision!==routeConfig.revision)return errorResponse('Configuration changed; reload before saving',409);result=routeConfig={...p,revision:p.revision+1};bump();}
     else if(op==='route.activation')result={savedRevision,appliedRevision,runningConfig,ruleApplyAt:0,hostIndexRefreshAt:0,error:scenario==='apply-error'&&applyAttempts===1?'Synthetic preparation failure':''};
@@ -132,6 +133,8 @@ const worker=setupWorker(
     else if(op==='outbound.selector.put'){const old=selectors.find(item=>item.id===p.id);if((old?.revision||0)!==p.revision)return errorResponse('Configuration changed; reload before saving',409);result=upsert(selectors,{...p,id:p.id||crypto.randomUUID(),revision:p.revision+1});}
     else if(op==='outbound.selector.references')result=references(rule=>rule.target?.type==='selector'&&rule.target.id===p.id);
     else if(op==='outbound.selector.delete'){remove(selectors,p.id);}
+    else if(op==='resolver.query_types')result={types:['A','AAAA','CNAME','HTTPS','MX','NS','PTR','SOA','SRV','SVCB','TXT']};
+    else if(op==='resolver.test')result={domain:p.domain.endsWith('.')?p.domain:p.domain+'.',queryType:p.queryType,elapsedMs:12.4,rcode:'NOERROR',truncated:false,records:p.domain==='fail.example'?[]:[{section:'answer',type:p.queryType,value:`${p.domain}. 300 IN ${p.queryType} ${({A:'192.0.2.1',AAAA:'2001:db8::1',TXT:'"synthetic record"',HTTPS:'1 . alpn="h2"',MX:'10 mail.example.invalid.'})[p.queryType]||'example.invalid.'}`}],error:p.domain==='fail.example'?'Synthetic DNS timeout':''};
     else if(op==='resolvers.get')result=page(resolvers,p);
     else if(op==='resolver.get'){result=resolvers.find(item=>item.id===p.id);if(!result)return errorResponse('Resolver no longer exists',404);}
     else if(op==='resolvers.post'||op==='resolver.put')result=upsert(resolvers,{...p,id:p.id||crypto.randomUUID()});

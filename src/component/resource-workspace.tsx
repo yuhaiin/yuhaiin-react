@@ -46,8 +46,9 @@ export interface ResourceDirectoryItem {
 }
 
 /** Uniform directory/detail shell. Data fetching and forms stay with their owners. */
-export function ResourceWorkspace({ title, description, items, selectedId, editing, onSelect, onCreate, children, actions, search, pagination, createDisabled = false }: {
+export function ResourceWorkspace({ title, description, items, selectedId, editing, onSelect, onCreate, children, actions, search, pagination, createDisabled = false, embedded = false }: {
     title: string;
+    embedded?: boolean;
     createDisabled?: boolean;
     description?: ReactNode;
     items: ResourceDirectoryItem[];
@@ -63,10 +64,11 @@ export function ResourceWorkspace({ title, description, items, selectedId, editi
     const { t } = useTranslation('routing');
     const { t: uiT } = useTranslation('ui');
     const { t: commonT } = useTranslation('common');
+    const Heading = embedded ? 'h2' : 'h1';
     const pages = pagination ? Math.max(1, Math.ceil(pagination.total / pagination.pageSize)) : 1;
     return <>
         <header className={clsx('mb-6 flex-wrap items-center justify-between gap-4', editing ? 'hidden md:flex' : 'flex')}>
-            <div className="min-w-0"><h1 className="text-3xl font-semibold tracking-tight text-ui-heading">{title}</h1>
+            <div className="min-w-0"><Heading className={clsx("font-semibold tracking-tight text-ui-heading", embedded ? "text-xl" : "text-3xl")}>{title}</Heading>
                 {description && <p className="mt-2 text-sm text-ui-muted">{description}</p>}</div>
             <div className="flex flex-wrap items-center gap-2">{actions}<Button variant="primary" onClick={onCreate} disabled={createDisabled} className="gap-1.5"><Plus size={16} aria-hidden="true" />{uiT('add')}</Button></div>
         </header>

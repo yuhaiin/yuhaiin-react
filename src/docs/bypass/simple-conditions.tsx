@@ -1,3 +1,4 @@
+import { GeoIPCountrySelect } from '@/component/geoip-country-select';
 import { Button } from '@/component/v2/button';
 import { SettingLabel } from '@/component/v2/card';
 import { DropdownSelect, SettingSelectVertical, SettingInputVertical } from '@/component/v2/forms';
@@ -182,8 +183,7 @@ export function SimpleConditions({ value, matcher, options, onChange, privateHis
                         {expr.type === 'port' && <SettingInputVertical className="mb-0" label={uiT('port')}
                             value={expr.port.ports} placeholder="80,443,1000-2000"
                             onChange={ports => replaceItem(index, { type: 'port', port: { ports } })} />}
-                        {expr.type === 'geoip' && <SettingInputVertical className="mb-0" label={t('countryCodes')}
-                            value={expr.geoip.countries} placeholder="CN,JP,US"
+                        {expr.type === 'geoip' && <GeoIPCountrySelect value={expr.geoip.countries}
                             onChange={countries => replaceItem(index, { type: 'geoip', geoip: { countries } })} />}
                         {expr.type === 'inbound' && <div className="space-y-2">
                             <SettingLabel>{t('condition.inbound')}</SettingLabel>

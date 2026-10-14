@@ -75,6 +75,37 @@ node switches with no detail RPCs. Normal-motion sampling progressed from opacit
 0.68 to 0.89 to 1; reduced-motion sampling remained at opacity 1 with no transform.
 CI captures 18 desktop/mobile states and checks page and form-control bounds.
 
+## GeoIP countries and DNS diagnostics
+
+Both simple and advanced route editors use the same searchable country picker.
+It lists codes from the currently applied MMDB, with localized country names,
+multiple selection, and manual code entry. Existing custom or removed codes remain
+editable. The catalog loads when the picker opens and revalidates on reopening.
+The backend enumerates unique records once per database instance and returns an
+owned copy of the cached codes. A successful snapshot replacement replaces that
+cache; a failed application continues to expose the previous database.
+
+DNS opens directly to the resolver workspace. Separate tabs contain query policy,
+listening/overrides, and cache, so the directory/editor no longer interrupts one
+long settings page. Leaving a tab observes the existing unsaved/pending guards;
+arrow keys move tab focus, and Enter/Space activate it.
+
+Each resolver editor includes a test panel with an editable domain (default
+`example.com`) and record type (default `A`). Choices come from the backend DNS
+library registry, with A/AAAA/HTTPS/TXT/MX first. Message metadata and zone transfers
+are excluded. The test uses the displayed draft without saving it, creates a fresh
+client, and shows response records, RCODE, truncation, elapsed time, or a diagnostic
+error. It supports cancellation and a 10-second backend query timeout. Bootstrap
+uses its normal direct routing behavior; other resolvers use the existing DNS
+routing dialer. Testing does not replace active resolver configuration.
+
+Isolated Chrome checks verified country selection in both editor depths and the
+saved `CN,JP` value, Japanese country search, unsaved DNS draft queries, TXT and
+HTTPS type selection, error display, guarded tab changes, and 390/320 px form
+bounds. A loopback UDP server separately verified real wire queries and cache
+bypass. That test uncovered an existing UDP response notification race; the
+response is now published before waiting queries are notified.
+
 ## Validation
 
 Pull-request CI now runs TypeScript checks, Vitest, localization completeness,
@@ -82,7 +113,7 @@ the style audit, lint, and the production build. It also captures browser
 screenshots from the MSW preview and fails when the expected UI does not
 appear, if the page overflows horizontally, or if form controls are clipped.
 
-The follow-up passed 126 tests in 51 files, TypeScript, localization checks,
+The current follow-up passed 133 tests in 54 files, TypeScript, localization checks,
 strict lint with no warnings, the style audit and the production build. Isolated
 Chrome interaction checks covered mouse insertion, native touch scrolling,
 long-press touch insertion, edge scrolling and cancellation without a save.
@@ -151,3 +182,15 @@ the screenshots committed under `docs/ux-refactor/` so the summary stays current
 | DNS resolvers | ![Resolver workspace](resolvers-desktop.png) | ![Resolver directory](resolvers-mobile.png) |
 
 ![Japanese dark publishing workspace](publishes-ja-dark.png)
+
+**GeoIP country selection**
+
+![Country picker](country-picker-desktop.png)
+
+![Japanese mobile country picker](country-picker-ja-mobile.png)
+
+**Resolver queries**
+
+![Unsaved resolver test](resolver-test-desktop.png)
+
+![Japanese mobile resolver test](resolver-test-ja-mobile.png)
