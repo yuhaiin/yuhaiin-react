@@ -117,7 +117,8 @@ async function main() {
         })()`,
         returnByValue: true,
       });
-      if (bottom.result?.value < 19) throw new Error('Missing home bottom spacing in ' + shot.name + ': ' + bottom.result.value);
+      const gap = bottom.result?.value;
+      if (!Number.isFinite(gap) || gap < 19) throw new Error('Missing home bottom spacing in ' + shot.name + ': ' + gap);
     }
     const layout = await send('Runtime.evaluate', {
       expression: '({viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth})',
