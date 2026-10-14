@@ -23,7 +23,7 @@ const SwitchComponent: React.FC<SwitchProps> = ({ checked, onCheckedChange, labe
     <div className={clsx("flex items-center justify-between", disabled && "opacity-60 pointer-events-none")}>
       {label && (
         <div className="mr-4">
-          <label htmlFor={id} className="font-medium leading-tight cursor-pointer">{label}</label>
+          <label htmlFor={id} className="text-sm font-medium leading-tight cursor-pointer">{label}</label>
           {description && <div className="text-ui-muted text-xs mt-0.5">{description}</div>}
         </div>
       )}
@@ -58,12 +58,12 @@ export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ lab
       aria-labelledby={label ? labelId : undefined}
       aria-describedby={description ? descriptionId : undefined}
       className={clsx(
-        "flex w-full items-center justify-between cursor-pointer px-3 py-3 rounded-ui-md bg-ui-surface-muted border border-ui-border transition-colors duration-150 mb-2 text-left hover:bg-ui-hover hover:border-ui-primary/40",
+        "flex w-full items-center justify-between min-h-11 cursor-pointer px-2 py-2 rounded-ui-md border-0 bg-transparent transition-colors duration-150 text-left hover:bg-ui-hover/60",
         ui.focusRing, className, disabled && "opacity-60 cursor-not-allowed"
       )}
     >
       <span className="mr-4">
-        <span id={labelId} className="block font-medium leading-tight">{label}</span>
+        <span id={labelId} className="block text-sm font-medium leading-tight">{label}</span>
         {description && <span id={descriptionId} className="block text-ui-muted text-xs mt-0.5">{description}</span>}
       </span>
       <span aria-hidden="true" data-state={isChecked ? "checked" : "unchecked"} className={ui.switchTrack}>
@@ -95,7 +95,7 @@ const Switch = ({ className, label, id, ...props }: React.ComponentProps<typeof 
       </SwitchPrimitive.Root>
 
       {label && (
-        <label className="text-base text-ui-fg leading-[1.5] cursor-pointer select-none" htmlFor={switchId}>
+        <label className="text-sm text-ui-fg leading-[1.5] cursor-pointer select-none" htmlFor={switchId}>
           {label}
         </label>
       )}

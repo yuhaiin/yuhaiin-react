@@ -21,8 +21,12 @@ it('loads on open, searches localized names, and preserves stored codes across d
  await click('countryCodes');expect(api.listGeoIPCountries).toHaveBeenCalledTimes(1);
  await click('United States (US)');expect(change).toHaveBeenLastCalledWith('CN,LEGACY,US');
  await click('action.close');api.listGeoIPCountries.mockResolvedValue({codes:['JP'],loaded:true});
- await act(async()=>{await new Promise(resolve=>setTimeout(resolve,20));});
- await click('countryCodes');expect(api.listGeoIPCountries.mock.calls.length).toBeGreaterThanOrEqual(2);
+ await click('countryCodes');
+ await vi.waitFor(async()=>{
+  await act(async()=>{await Promise.resolve();});
+  expect(api.listGeoIPCountries.mock.calls.length).toBeGreaterThanOrEqual(2);
+  expect(document.querySelector('[role="checkbox"][aria-label="Japan (JP)"]')).not.toBeNull();
+ });
  expect(change).toHaveBeenCalledTimes(1);
  expect(document.querySelector('[role="checkbox"][aria-label="LEGACY"]')?.getAttribute('aria-checked')).toBe('true');
  type(document.querySelector<HTMLInputElement>('input[type="search"]')!,'Japan');

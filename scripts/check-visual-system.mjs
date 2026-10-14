@@ -1,3 +1,4 @@
+import { waitForPreview } from './preview-ready.mjs';
 // Uses the same isolated Chrome/MSW setup as capture-ux, with no extra dependency.
 import { spawn } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -24,12 +25,14 @@ async function connect() {
     ws.send(JSON.stringify({ id, method, params }));
   });
 }
-const accents = ['olive', 'terracotta', 'plum', 'brass', 'graphite'];
+const accents = process.env.VISUAL_ACCENTS?.split(',') || ['olive', 'terracotta', 'plum', 'brass', 'graphite'];
+const galleryOnly = process.env.VISUAL_GALLERY_ONLY === '1';
 const routes = [
-  ['overview', '/', 'summary'], ['nodes', '/docs/group', 'section[aria-label="Connection settings"] input'],
+  ['overview', '/', 'section[aria-label="Active Nodes"] li'], ['nodes', '/docs/group', 'section[aria-label="Connection settings"] input'],
+  ['selectors', '/docs/group/selectors', 'section[aria-label="Shared destination settings"] input'],
   ['routing', '/docs/bypass', 'section[aria-label="Rule editor"]'], ['dns', '/docs/bypass/resolver', 'section[aria-label="Resolvers"]'],
   ['connections', '/docs/connections/v2', '[aria-label="Refresh connections"]'], ['subscriptions', '/docs/group/subscribe', 'section[aria-label="Subscriptions"]'],
-  ['inbounds', '/docs/inbound', 'section[aria-label="Entry Points"]'], ['settings', '/docs/webui', '[role="radiogroup"]'],
+  ['inbounds', '/docs/inbound', 'section[aria-label="Entry Points"]'], ['publish', '/docs/group/publish', 'section[aria-label="Publish Config"]'], ['settings', '/docs/webui', '[role="radiogroup"]'],
 ];
 // Resolve CSS colors through the browser, including color-mix and semantic aliases.
 function measureContrast() {
@@ -48,6 +51,80 @@ function measureContrast() {
   const result = checks.map(([foreground, background, minimum]) => ({ foreground, background, minimum, ratio: ratio(foreground, background) }));
   probe.remove(); return result;
 }
+async function evaluate(send, expression) {
+  const result = await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
+  if (result.exceptionDetails) throw new Error(result.exceptionDetails.text + ': ' + result.exceptionDetails.exception?.description);
+  return result.result?.value;
+}
+async function pageReady(send, selector) {
+  for (let i = 0; i < 100; i++) {
+    try { if (await evaluate(send, `Boolean(document.querySelector(${JSON.stringify(selector)}))`)) { await waitForPreview(send, selector); return; } }
+    catch (error) { if (!/context|navigat/i.test(String(error))) throw error; }
+    await sleep(100);
+  }
+  throw new Error('No ready state: ' + selector);
+}
+async function saveShot(send, name) {
+  const image = await send('Page.captureScreenshot', { format: 'png' });
+  await writeFile(`/tmp/visual-system-shots/${name}.png`, Buffer.from(image.data, 'base64'));
+  process.stdout.write('Captured stable ' + name + '\n');
+}
+async function clickText(send, selector, text, exact = true) {
+  const point = await evaluate(send, `(() => { const el = [...document.querySelectorAll(${JSON.stringify(selector)})].find(el => ${exact ? 'el.textContent.trim() ===' : 'el.textContent.includes('} ${JSON.stringify(text)}${exact ? '' : ')'}); if (!el) return null; el.scrollIntoView({block:'center'}); const r=el.getBoundingClientRect(); return {x:r.x+r.width/2,y:r.y+r.height/2}; })()`);
+  if (!point) throw new Error('Missing action: ' + text);
+  await send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...point });
+  await send('Input.dispatchMouseEvent', { type: 'mousePressed', button: 'left', clickCount: 1, ...point });
+  await send('Input.dispatchMouseEvent', { type: 'mouseReleased', button: 'left', clickCount: 1, ...point });
+}
+async function key(send, value, code) {
+  await send('Input.dispatchKeyEvent', { type: 'keyDown', key: value, code: value, windowsVirtualKeyCode: code });
+  await send('Input.dispatchKeyEvent', { type: 'keyUp', key: value, code: value, windowsVirtualKeyCode: code });
+}
+async function inspectGallery(send, theme) {
+  await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+  await send('Page.navigate', { url: `http://127.0.0.1:5175/?scenario=normal&gallery=1&inspect=${theme}` });
+  await pageReady(send, '[data-gallery-ready]');
+  const metrics = await evaluate(send, `(() => { const button = document.querySelector('[data-testid="gallery-primary"]'); const input = document.querySelector('[aria-label="Gallery input"]'); const select = document.querySelector('[aria-label="Gallery select"]'); const icon = document.querySelector('[aria-label="Icon settings"]'); return [button,input,select,icon].map(el => el.getBoundingClientRect().height); })()`);
+  if (metrics.join(',') !== '38,38,38,32') throw new Error('Control metrics differ: ' + metrics);
+  const point = await evaluate(send, `(() => { const r = document.querySelector('[data-testid="gallery-primary"]').getBoundingClientRect(); return {x: r.x+r.width/2, y:r.y+r.height/2}; })()`);
+  await send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...point });
+  await waitForPreview(send, '[data-gallery-ready]'); await saveShot(send, `${theme}-gallery-hover`);
+  await send('Input.dispatchMouseEvent', { type: 'mousePressed', button: 'left', clickCount: 1, ...point });
+  await waitForPreview(send, '[data-gallery-ready]'); await saveShot(send, `${theme}-gallery-pressed`);
+  await send('Input.dispatchMouseEvent', { type: 'mouseReleased', button: 'left', clickCount: 1, ...point });
+  await key(send, 'Tab', 9); await saveShot(send, `${theme}-gallery-focus`);
+  await clickText(send, 'button', 'Open dropdown'); await waitForPreview(send, '[role="menu"]'); await saveShot(send, `${theme}-gallery-dropdown`); await key(send, 'Escape', 27);
+  await clickText(send, 'button', 'Show toast'); await waitForPreview(send, 'li[data-state="open"]'); await saveShot(send, `${theme}-gallery-toast`);
+  await clickText(send, 'button', 'Tooltip trigger'); await waitForPreview(send, '#gallery-tooltip'); await saveShot(send, `${theme}-gallery-tooltip`);
+  await clickText(send, 'button', 'Open dialog'); await waitForPreview(send, '[role="dialog"]');
+  for (let i = 0; i < 5; i++) { await key(send, 'Tab', 9); if (!await evaluate(send, `document.querySelector('[role="dialog"]').contains(document.activeElement)`)) throw new Error('Focus escaped dialog'); }
+  const locked = await evaluate(send, `document.body.hasAttribute('data-scroll-locked')`);
+  if (!locked) throw new Error('Dialog did not lock background scrolling');
+  await saveShot(send, `${theme}-gallery-dialog`);
+  await clickText(send, 'button', 'Open nested dialog'); await waitForPreview(send, '[role="dialog"] [aria-label="Nested select"]');
+  await clickText(send, '[aria-label="Nested select"]', 'udp'); await pageReady(send, '[role="listbox"]'); await saveShot(send, `${theme}-gallery-nested-select`);
+  await key(send, 'Escape', 27); await pageReady(send, '[data-gallery-ready]'); await key(send, 'Escape', 27);
+  await pageReady(send, '[data-gallery-ready]');
+  const count = await evaluate(send, `document.querySelectorAll('[role="dialog"]').length`);
+  if (count !== 1) throw new Error('Escape did not close only the nested dialog: ' + count);
+  await key(send, 'Escape', 27); await pageReady(send, '[data-gallery-ready]');
+  if (await evaluate(send, `document.querySelectorAll('[role="dialog"]').length`)) throw new Error('Escape did not close dialog');
+  await clickText(send, 'button', 'Open dialog'); await waitForPreview(send, '[role="dialog"]');
+  const before = await evaluate(send, `document.scrollingElement.scrollTop`);
+  await send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: 10, y: 500, deltaX: 0, deltaY: 400 });
+  if (await evaluate(send, `document.scrollingElement.scrollTop`) !== before) throw new Error('Background scrolled through dialog');
+  await send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: 720, y: 600, deltaX: 0, deltaY: 400 });
+  await evaluate(send, `new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
+  if (!await evaluate(send, `document.querySelector('[role="dialog"] .overflow-y-auto').scrollTop > 0`)) throw new Error('Long dialog content did not scroll');
+  await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: 10, y: 10, button: 'left', clickCount: 1 });
+  await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: 10, y: 10, button: 'left', clickCount: 1 });
+  await pageReady(send, '[data-gallery-ready]');
+  if (await evaluate(send, `document.querySelector('[role="dialog"]') !== null`)) throw new Error('Overlay click did not close dialog');
+  await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+  await clickText(send, 'button', 'Open dialog'); await waitForPreview(send, '[role="dialog"]'); await saveShot(send, `${theme}-gallery-dialog-reduced`); await key(send, 'Escape', 27); await pageReady(send, '[data-gallery-ready]');
+  await send('Emulation.setEmulatedMedia', { features: [] });
+  process.stdout.write('Passed gallery metrics, focus, Escape, overlay, scrolling and reduced motion: ' + theme + '\n');
+}
 try {
   const send = await connect();
   await send('Page.enable'); await send('Runtime.enable');
@@ -55,18 +132,19 @@ try {
   const results = [];
   for (const theme of ['light', 'dark']) for (const accent of accents) {
     const script = await send('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('yuhaiin.theme', ${JSON.stringify(theme)}); localStorage.setItem('yuhaiin.accent', ${JSON.stringify(accent)});` });
-    const pages = accent === 'olive' ? routes : [routes[7]];
-    for (const width of accent === 'olive' ? [1440, 390] : [1440]) for (const [name, route, ready] of pages) {
-      await send('Emulation.setDeviceMetricsOverride', { width, height: width === 390 ? 844 : 1000, deviceScaleFactor: 1, mobile: width === 390 });
+    const pages = galleryOnly ? [] : ['olive', 'terracotta', 'graphite'].includes(accent) ? routes : [routes.at(-1)];
+    const widths = galleryOnly ? [1440] : accent === 'olive' ? [1440, 390, 320] : [1440];
+    for (const width of widths) for (const [name, route, ready] of pages) {
+      await send('Emulation.setDeviceMetricsOverride', { width, height: width < 700 ? 844 : 1000, deviceScaleFactor: 1, mobile: width < 700 });
       // Query nonce forces a new document so provider state is initialized from saved settings.
       await send('Page.navigate', { url: `http://127.0.0.1:5175/?scenario=normal&visual=${theme}-${accent}-${name}-${width}#${route}` });
       let loaded = false;
       for (let i = 0; i < 100; i++) {
-        try { const state = await send('Runtime.evaluate', { expression: `Boolean(document.querySelector(${JSON.stringify(width === 390 && !['overview', 'connections', 'settings'].includes(name) ? 'aside' : ready)}))`, returnByValue: true }); if (state.result?.value) { loaded = true; break; } } catch { /* New document is loading. */ }
+        try { const state = await send('Runtime.evaluate', { expression: `Boolean(document.querySelector(${JSON.stringify(width < 700 && !['overview', 'connections', 'settings'].includes(name) ? 'aside' : ready)}))`, returnByValue: true }); if (state.result?.value) { loaded = true; break; } } catch { /* New document is loading. */ }
         await sleep(100);
       }
       if (!loaded) throw new Error('Page did not render: ' + name + ' ' + width);
-      await sleep(350);
+      await waitForPreview(send, width < 700 && !['overview', 'connections', 'settings'].includes(name) ? 'aside' : ready);
       const evaluation = await send('Runtime.evaluate', { expression: `({theme: document.documentElement.dataset.bsTheme, accent: document.documentElement.dataset.accent, width: innerWidth, overflow: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) > innerWidth + 1, clipped: [...document.querySelectorAll('main input,main textarea,main button[role=combobox]')].filter(el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && (r.left < -1 || r.right > innerWidth + 1); }).map(el => el.getAttribute('aria-label') || el.tagName), contrast: (${measureContrast.toString()})()})`, returnByValue: true });
       const state = evaluation.result?.value;
       if (!state || state.theme !== theme || state.accent !== accent || state.overflow || state.clipped.length) throw new Error('Invalid theme/layout: ' + JSON.stringify(state));
@@ -76,6 +154,33 @@ try {
       const image = await send('Page.captureScreenshot', { format: 'png' });
       await writeFile(`/tmp/visual-system-shots/${theme}-${accent}-${name}-${width}.png`, Buffer.from(image.data, 'base64'));
       process.stdout.write(`Verified ${theme}/${accent}/${name}/${width}\n`);
+    }
+    // Gallery is an isolated MSW entry, never a production route.
+    for (const width of widths) {
+      await send('Emulation.setDeviceMetricsOverride', { width, height: width < 700 ? 844 : 1200, deviceScaleFactor: 1, mobile: width < 700 });
+      await send('Page.navigate', { url: `http://127.0.0.1:5175/?scenario=normal&gallery=1&visual=${theme}-${accent}-${width}` });
+      await pageReady(send, '[data-gallery-ready]');
+      await saveShot(send, `${theme}-${accent}-gallery-${width}`);
+    }
+    if (!galleryOnly && ['olive', 'terracotta', 'graphite'].includes(accent)) {
+      await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+      await send('Page.navigate', { url: `http://127.0.0.1:5175/?scenario=normal&visual=picker-${theme}-${accent}#/` });
+      await pageReady(send, 'section[aria-label="Active Nodes"] li');
+      await clickText(send, 'summary', 'Connection setup', false);
+      await clickText(send, 'button', 'Choose node');
+      await waitForPreview(send, '[role="dialog"] [role="group"] button[aria-pressed]');
+      const dialog = await evaluate(send, `(() => { const el = document.querySelector('[role="dialog"]'); const style = getComputedStyle(el); return {opacity: Number(style.opacity), background: style.backgroundColor}; })()`);
+      if (dialog.opacity !== 1 || !dialog.background.startsWith('rgb(')) throw new Error('Nonopaque settled dialog: ' + JSON.stringify(dialog));
+      await saveShot(send, `${theme}-${accent}-node-picker`);
+    }
+    if (accent === 'olive') {
+      for (const width of galleryOnly ? [] : [390, 320]) {
+        await send('Emulation.setDeviceMetricsOverride', { width, height: 844, deviceScaleFactor: 1, mobile: true });
+        await send('Page.navigate', { url: `http://127.0.0.1:5175/?scenario=normal&visual=editor-${theme}-${width}#/docs/group?node=node-0` });
+        await pageReady(send, 'section[aria-label="Connection settings"] input');
+        await saveShot(send, `${theme}-olive-node-editor-${width}`);
+      }
+      await inspectGallery(send, theme);
     }
     await send('Page.removeScriptToEvaluateOnNewDocument', { identifier: script.identifier });
   }

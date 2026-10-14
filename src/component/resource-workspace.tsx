@@ -68,8 +68,8 @@ export function ResourceWorkspace({ title, description, items, selectedId, editi
     const pages = pagination ? Math.max(1, Math.ceil(pagination.total / pagination.pageSize)) : 1;
     return <>
         <header className={clsx('mb-6 flex-wrap items-center justify-between gap-4', editing ? 'hidden md:flex' : 'flex')}>
-            <div className="min-w-0"><Heading className={clsx("font-semibold tracking-tight text-ui-heading", embedded ? "text-xl" : "text-2xl")}>{title}</Heading>
-                {description && <p className="mt-2 text-sm text-ui-muted">{description}</p>}</div>
+            <div className="min-w-0"><Heading className={clsx("font-semibold tracking-tight text-ui-heading", embedded ? "text-base" : "sr-only text-2xl lg:not-sr-only")}>{title}</Heading>
+                {description && <p className="mt-1 text-sm text-ui-muted">{description}</p>}</div>
             <div className="flex flex-wrap items-center gap-2">{actions}<Button variant="primary" onClick={onCreate} disabled={createDisabled} className="gap-1.5"><Plus size={16} aria-hidden="true" />{uiT('add')}</Button></div>
         </header>
         <WorkspaceLayout>

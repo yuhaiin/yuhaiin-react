@@ -1,84 +1,27 @@
-import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group";
-import { clsx } from "clsx";
-import { LayoutGroup, motion } from 'motion/react';
-import React, { createContext, useContext, useId } from "react";
+import * as ToggleGroupPrimitive from '@radix-ui/react-toggle-group';
+import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
+import { createContext, useContext, useId, type ComponentProps } from 'react';
+import { cn, ui } from './styles';
 
-/* -------------------------------------------------------------------------- */
-/*                                ToggleGroup                                 */
-/* -------------------------------------------------------------------------- */
+const Selection = createContext<{ value?: string | string[]; noSlide?: boolean }>({});
 
-const ToggleGroupContext = createContext<{ value?: string | string[], layoutId: string, noSlide?: boolean }>({ layoutId: "default" });
+export function ToggleGroup({ className, children, value, noSlide, ...props }: ComponentProps<typeof ToggleGroupPrimitive.Root> & { noSlide?: boolean }) {
+    const id = useId();
+    return <ToggleGroupPrimitive.Root className={cn('inline-flex min-w-0 gap-1 rounded-ui-md bg-ui-surface-muted p-1', className)} value={value as never} {...props}>
+        <Selection.Provider value={{ value, noSlide }}><LayoutGroup id={id}>{children}</LayoutGroup></Selection.Provider>
+    </ToggleGroupPrimitive.Root>;
+}
 
-const ToggleGroup = ({ className, children, value, noSlide, ...props }: React.ComponentProps<typeof ToggleGroupPrimitive.Root> & { noSlide?: boolean }) => {
-    const layoutId = useId();
-
-    return (
-        <ToggleGroupPrimitive.Root
-            className={clsx("inline-flex bg-transparent rounded-ui-md", className)}
-            value={value as never}
-            {...props}
-        >
-            <ToggleGroupContext.Provider value={{ value, layoutId, noSlide }}>
-                <LayoutGroup id={layoutId}>
-                    {children}
-                </LayoutGroup>
-            </ToggleGroupContext.Provider>
-        </ToggleGroupPrimitive.Root>
-    );
-};
-
-ToggleGroup.displayName = ToggleGroupPrimitive.Root.displayName;
-
-/* -------------------------------------------------------------------------- */
-/*                                ToggleItem                                  */
-/* -------------------------------------------------------------------------- */
-
-const ToggleItem = ({ className, children, value, ...props }: React.ComponentProps<typeof ToggleGroupPrimitive.Item>) => {
-    const context = useContext(ToggleGroupContext);
-    const isActive = context.value === value || (Array.isArray(context.value) && context.value.includes(value));
-
-    // If noSlide is true, we do NOT pass a layoutId to motion.div.
-    // This disables the shared layout animation (the sliding effect).
-    const indicatorLayoutId = context.noSlide ? undefined : `${context.layoutId}-indicator`;
-
-    return (
-        <ToggleGroupPrimitive.Item
-            className={clsx(
-                "bg-transparent text-sidebar-color border border-sidebar-border min-h-8 max-sm:min-h-11 py-1.5 px-3 text-sm font-medium cursor-pointer transition-colors duration-150 flex items-center justify-center -mr-px whitespace-nowrap",
-                "first:rounded-l-ui-md last:rounded-r-ui-md last:mr-0",
-                "hover:!bg-sidebar-hover",
-                "data-[state=on]:bg-transparent data-[state=on]:text-sidebar-active data-[state=on]:border-sidebar-active data-[state=on]:font-semibold",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:z-30",
-                className
-            )}
-            value={value}
-            {...props}
-            style={{ position: 'relative', zIndex: 1, ...props.style }}
-        >
-            {isActive && (
-                <motion.div
-                    layoutId={indicatorLayoutId} // Unique layoutId per group OR undefined to disable sliding
-                    style={{
-                        position: 'absolute',
-                        inset: 0,
-                        backgroundColor: 'var(--sidebar-active-bg)', // Use CSS var or fallback
-                        borderRadius: 'inherit',
-                        zIndex: -1,
-                        boxShadow: 'none'
-                    }}
-                    initial={context.noSlide ? { opacity: 0 } : undefined}
-                    animate={context.noSlide ? { opacity: 1 } : undefined}
-                    exit={context.noSlide ? { opacity: 0 } : undefined}
-                    transition={{ duration: 0.12, ease: "easeOut" }}
-                />
-            )}
-            <span style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {children}
-            </span>
-        </ToggleGroupPrimitive.Item>
-    );
-};
-
-ToggleItem.displayName = ToggleGroupPrimitive.Item.displayName;
-
-export { ToggleGroup, ToggleItem };
+export function ToggleItem({ className, children, value, ...props }: ComponentProps<typeof ToggleGroupPrimitive.Item>) {
+    const selection = useContext(Selection);
+    const reduced = useReducedMotion();
+    const active = selection.value === value || Array.isArray(selection.value) && selection.value.includes(value);
+    return <ToggleGroupPrimitive.Item value={value} className={cn(
+        'relative isolate inline-flex min-h-field-sm min-w-0 items-center justify-center rounded-ui-sm border-0 bg-transparent px-3 py-1.5 text-sm font-medium text-ui-muted transition-colors duration-150 max-sm:min-h-11 hover:bg-ui-hover active:bg-ui-hover data-[state=on]:text-ui-primary disabled:pointer-events-none disabled:opacity-50',
+        selection.value === undefined && 'data-[state=on]:bg-ui-surface', ui.focusRing, className,
+    )} {...props}>
+        {active && <motion.span aria-hidden="true" layoutId={selection.noSlide ? undefined : 'segment-selection'} className="absolute inset-0 -z-10 rounded-[inherit] bg-ui-surface shadow-ui-card"
+            initial={false} transition={{ duration: reduced ? 0 : 0.16, ease: 'easeOut' }} />}
+        <span className="inline-flex min-w-0 items-center justify-center gap-1.5 [&>svg]:size-4">{children}</span>
+    </ToggleGroupPrimitive.Item>;
+}

@@ -50,7 +50,7 @@ export function GroupNodeSelect({ label, value, selected, groups, onChange, mult
     };
     const total = data?.page.total ?? 0;
     const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-    return <div className="min-w-0 space-y-3" role="group" aria-label={label}>
+    return <div className="grid min-w-0 grid-cols-1 gap-3" role="group" aria-label={label}>
         {value && <p className="truncate text-sm font-medium text-ui-heading">{selected?.name || data?.items.find(node => node.id === value)?.name || value}</p>}
         <SettingSelectVertical className="mb-0" label={t('nodeGroup')} value={group}
             values={groups.map(item => [`${item.name} (${item.enabled}/${item.count})`, item.name] as [string, string])}

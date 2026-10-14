@@ -16,6 +16,13 @@
   {
     "theme": "light",
     "accent": "olive",
+    "name": "selectors",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "olive",
     "name": "routing",
     "width": 1440,
     "minimumTextContrast": 4.538340713104851
@@ -45,6 +52,13 @@
     "theme": "light",
     "accent": "olive",
     "name": "inbounds",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "olive",
+    "name": "publish",
     "width": 1440,
     "minimumTextContrast": 4.538340713104851
   },
@@ -72,6 +86,13 @@
   {
     "theme": "light",
     "accent": "olive",
+    "name": "selectors",
+    "width": 390,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "olive",
     "name": "routing",
     "width": 390,
     "minimumTextContrast": 4.538340713104851
@@ -107,8 +128,148 @@
   {
     "theme": "light",
     "accent": "olive",
+    "name": "publish",
+    "width": 390,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "olive",
     "name": "settings",
     "width": 390,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "olive",
+    "name": "overview",
+    "width": 320,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "olive",
+    "name": "nodes",
+    "width": 320,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "olive",
+    "name": "selectors",
+    "width": 320,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "olive",
+    "name": "routing",
+    "width": 320,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "olive",
+    "name": "dns",
+    "width": 320,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "olive",
+    "name": "connections",
+    "width": 320,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "olive",
+    "name": "subscriptions",
+    "width": 320,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "olive",
+    "name": "inbounds",
+    "width": 320,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "olive",
+    "name": "publish",
+    "width": 320,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "olive",
+    "name": "settings",
+    "width": 320,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "terracotta",
+    "name": "overview",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "terracotta",
+    "name": "nodes",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "terracotta",
+    "name": "selectors",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "terracotta",
+    "name": "routing",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "terracotta",
+    "name": "dns",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "terracotta",
+    "name": "connections",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "terracotta",
+    "name": "subscriptions",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "terracotta",
+    "name": "inbounds",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "terracotta",
+    "name": "publish",
+    "width": 1440,
     "minimumTextContrast": 4.538340713104851
   },
   {
@@ -129,6 +290,69 @@
     "theme": "light",
     "accent": "brass",
     "name": "settings",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "graphite",
+    "name": "overview",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "graphite",
+    "name": "nodes",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "graphite",
+    "name": "selectors",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "graphite",
+    "name": "routing",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "graphite",
+    "name": "dns",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "graphite",
+    "name": "connections",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "graphite",
+    "name": "subscriptions",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "graphite",
+    "name": "inbounds",
+    "width": 1440,
+    "minimumTextContrast": 4.538340713104851
+  },
+  {
+    "theme": "light",
+    "accent": "graphite",
+    "name": "publish",
     "width": 1440,
     "minimumTextContrast": 4.538340713104851
   },
@@ -156,6 +380,13 @@
   {
     "theme": "dark",
     "accent": "olive",
+    "name": "selectors",
+    "width": 1440,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "olive",
     "name": "routing",
     "width": 1440,
     "minimumTextContrast": 5.606383205481934
@@ -185,6 +416,13 @@
     "theme": "dark",
     "accent": "olive",
     "name": "inbounds",
+    "width": 1440,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "olive",
+    "name": "publish",
     "width": 1440,
     "minimumTextContrast": 5.606383205481934
   },
@@ -212,6 +450,13 @@
   {
     "theme": "dark",
     "accent": "olive",
+    "name": "selectors",
+    "width": 390,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "olive",
     "name": "routing",
     "width": 390,
     "minimumTextContrast": 5.606383205481934
@@ -247,9 +492,149 @@
   {
     "theme": "dark",
     "accent": "olive",
+    "name": "publish",
+    "width": 390,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "olive",
     "name": "settings",
     "width": 390,
     "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "olive",
+    "name": "overview",
+    "width": 320,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "olive",
+    "name": "nodes",
+    "width": 320,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "olive",
+    "name": "selectors",
+    "width": 320,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "olive",
+    "name": "routing",
+    "width": 320,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "olive",
+    "name": "dns",
+    "width": 320,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "olive",
+    "name": "connections",
+    "width": 320,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "olive",
+    "name": "subscriptions",
+    "width": 320,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "olive",
+    "name": "inbounds",
+    "width": 320,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "olive",
+    "name": "publish",
+    "width": 320,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "olive",
+    "name": "settings",
+    "width": 320,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "terracotta",
+    "name": "overview",
+    "width": 1440,
+    "minimumTextContrast": 5.561870552240032
+  },
+  {
+    "theme": "dark",
+    "accent": "terracotta",
+    "name": "nodes",
+    "width": 1440,
+    "minimumTextContrast": 5.561870552240032
+  },
+  {
+    "theme": "dark",
+    "accent": "terracotta",
+    "name": "selectors",
+    "width": 1440,
+    "minimumTextContrast": 5.561870552240032
+  },
+  {
+    "theme": "dark",
+    "accent": "terracotta",
+    "name": "routing",
+    "width": 1440,
+    "minimumTextContrast": 5.561870552240032
+  },
+  {
+    "theme": "dark",
+    "accent": "terracotta",
+    "name": "dns",
+    "width": 1440,
+    "minimumTextContrast": 5.561870552240032
+  },
+  {
+    "theme": "dark",
+    "accent": "terracotta",
+    "name": "connections",
+    "width": 1440,
+    "minimumTextContrast": 5.561870552240032
+  },
+  {
+    "theme": "dark",
+    "accent": "terracotta",
+    "name": "subscriptions",
+    "width": 1440,
+    "minimumTextContrast": 5.561870552240032
+  },
+  {
+    "theme": "dark",
+    "accent": "terracotta",
+    "name": "inbounds",
+    "width": 1440,
+    "minimumTextContrast": 5.561870552240032
+  },
+  {
+    "theme": "dark",
+    "accent": "terracotta",
+    "name": "publish",
+    "width": 1440,
+    "minimumTextContrast": 5.561870552240032
   },
   {
     "theme": "dark",
@@ -269,6 +654,69 @@
     "theme": "dark",
     "accent": "brass",
     "name": "settings",
+    "width": 1440,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "graphite",
+    "name": "overview",
+    "width": 1440,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "graphite",
+    "name": "nodes",
+    "width": 1440,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "graphite",
+    "name": "selectors",
+    "width": 1440,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "graphite",
+    "name": "routing",
+    "width": 1440,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "graphite",
+    "name": "dns",
+    "width": 1440,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "graphite",
+    "name": "connections",
+    "width": 1440,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "graphite",
+    "name": "subscriptions",
+    "width": 1440,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "graphite",
+    "name": "inbounds",
+    "width": 1440,
+    "minimumTextContrast": 5.606383205481934
+  },
+  {
+    "theme": "dark",
+    "accent": "graphite",
+    "name": "publish",
     "width": 1440,
     "minimumTextContrast": 5.606383205481934
   },

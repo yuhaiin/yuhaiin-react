@@ -67,8 +67,10 @@ const ModalContent = ({ className, children, style, width = 500, ...props }: Rea
                 <ModalPortal forceMount>
                     <DialogPrimitive.Overlay asChild forceMount>
                         <motion.div
+                            data-ui-transition="overlay"
                             className="fixed inset-0 z-[1050] bg-black/50"
                             variants={overlayVariants}
+                            transition={{ duration: reducedMotion ? 0 : 0.18 }}
                             initial="hidden"
                             animate="visible"
                             exit="exit"
@@ -76,14 +78,15 @@ const ModalContent = ({ className, children, style, width = 500, ...props }: Rea
                     </DialogPrimitive.Overlay>
                     <DialogPrimitive.Content asChild forceMount aria-describedby={undefined}>
                         <motion.div
+                            data-ui-transition="dialog"
                             className={cn(
                                 "fixed top-1/2 left-1/2 min-w-0 w-[calc(100vw-24px)] max-h-[calc(100dvh-32px)] z-[1055] flex flex-col outline-none overflow-hidden bg-ui-surface-raised text-ui-fg border border-ui-border rounded-ui-xl shadow-ui-elevated",
                                 className
                             )}
                             variants={reducedMotion ? {
                                 hidden: { opacity: 0, x: '-50%', y: '-50%' },
-                                visible: { opacity: 1, x: '-50%', y: '-50%' },
-                                exit: { opacity: 0, x: '-50%', y: '-50%' },
+                                visible: { opacity: 1, transition: { duration: 0 }, x: '-50%', y: '-50%' },
+                                exit: { opacity: 0, transition: { duration: 0 }, x: '-50%', y: '-50%' },
                             } : contentVariants}
                             initial="hidden"
                             animate="visible"

@@ -9,9 +9,9 @@ import { useTranslation } from 'react-i18next';
 import { createInbound, getInbound, getInboundCapabilities, InboundRuntimeStatus, listInboundEvents, saveInbound } from "@/api/inbounds";
 import { APIError } from "@/api/client";
 import { Button } from "@/component/v2/button";
-import { SettingsBox } from "@/component/v2/card";
+import { FormSection } from "@/component/v2/form-section";
 
-import { Spinner } from "@/component/v2/spinner";
+
 
 import { normalizeInbound } from "@/contract/inbound";
 import { Check, Trash } from "lucide-react";
@@ -107,8 +107,8 @@ const InboundModal: FC<{
                     </div>
                     <div className="flex flex-wrap justify-end gap-2">
                         <Button onClick={close} disabled={saving}>{uiT("cancel")}</Button>
-                        <Button variant="primary" disabled={saving || !inbound || isLoading || Boolean(error) || inbound.enabled && !supportedProtocols.includes(inbound.protocol.type)} onClick={handleSave}>
-                            {saving ? <Spinner size="sm" /> : <><Check className="mr-1" size={16} /> {uiT("save")}</>}
+                        <Button loading={saving} variant="primary" disabled={saving || !inbound || isLoading || Boolean(error) || inbound.enabled && !supportedProtocols.includes(inbound.protocol.type)} onClick={handleSave}>
+                            <Check size={16} />{uiT("save")}
                         </Button>
                     </div>
                 </>}>
@@ -116,7 +116,7 @@ const InboundModal: FC<{
                     {apiError ? <Loading code={apiError.code} onRetry={() => void mutate()}>{apiError.msg}</Loading> : isLoading || !inbound ? (
                         <Loading />
                     ) : (
-                        <SettingsBox>
+                        <div className="min-w-0 space-y-5">
                             {(!isNew || runtime) && (
                                 <InboundRuntimePanel
                                     status={runtime}
@@ -135,9 +135,9 @@ const InboundModal: FC<{
                                     }
                                 }} />}
                             {capabilitiesError && <p role="alert" className="mb-3 text-sm text-ui-danger">{t('entryCapabilitiesFailed')} <Button size="sm" onClick={() => void refreshCapabilities()}>{t('retry')}</Button></p>}
-                            <InboundTaskEditor key={`${id}:${preset}`} value={inbound} onChange={setDraft} protocols={supportedProtocols} defaultAdvanced={preset === 'custom'} />
+                            <FormSection title={uiT("connection")}><InboundTaskEditor key={`${id}:${preset}`} value={inbound} onChange={setDraft} protocols={supportedProtocols} defaultAdvanced={preset === 'custom'} /></FormSection>
                             {saveError && <p role="alert" className="mt-3 text-sm text-ui-danger">{saveError}</p>}
-                        </SettingsBox>
+                        </div>
                     )}
                 </fieldset>
                 </ResourceEditorFrame>;

@@ -17,7 +17,7 @@ const DropdownContent = ({ className, sideOffset = 4, children, ...props }: Reac
             onWheel={(e) => e.stopPropagation()}
             {...props}
         >
-            <motion.div
+            <motion.div data-ui-transition="popover"
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.14, ease: "easeOut" }}

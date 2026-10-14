@@ -436,7 +436,7 @@ export function CardRowList<T>({
 
 // --- Other Styled Components ---
 
-export const IconBadge: FC<{ icon: React.ElementType, text: string | number, color?: "primary" | "secondary" | "success" | "danger" | "warning" | "info" }> = ({ icon: Icon, text, color = "primary" }) => (
+export const IconBadge: FC<{ icon: React.ElementType, text: string | number, color?: "primary" | "secondary" | "success" | "danger" | "warning" | "info" }> = ({ icon: Icon, text, color = "secondary" }) => (
     <Badge variant={color} className="flex shrink-0 items-center gap-1 px-2 py-1 text-[0.7rem] uppercase whitespace-nowrap">
         <Icon size={12} />
         <span>{text}</span>
@@ -461,7 +461,7 @@ function resolveIconToneStyle(options: {
     borderColor?: string;
     background?: string;
 }) {
-    const tone = options.tone ?? (options.color ? undefined : "primary");
+    const tone = options.tone ?? (options.color ? undefined : "neutral");
     const toneStyle = tone ? iconToneStyles[tone] : undefined;
     const color = options.color ?? toneStyle?.color ?? "var(--color-primary)";
     const borderColor = options.borderColor

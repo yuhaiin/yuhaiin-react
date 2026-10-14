@@ -49,6 +49,7 @@ function AppContent() {
         )}>
             <AnimatePresence mode="wait" initial={false} custom={animationContext}>
                 <motion.div
+                    data-ui-transition="page"
                     key={location}
                     custom={animationContext}
                     variants={variants}
@@ -58,7 +59,7 @@ function AppContent() {
                     className={clsx(
                         'absolute inset-0 box-border h-full w-full',
                         'overflow-y-auto overflow-x-hidden',
-                        !isLogin && 'pt-[calc(80px+env(safe-area-inset-top))] px-3 sm:px-5 pb-[calc(20px+env(safe-area-inset-bottom))]',
+                        !isLogin && 'pt-[calc(var(--mobile-app-bar-height)+env(safe-area-inset-top))] px-3 sm:px-5 pb-[calc(20px+env(safe-area-inset-bottom))]',
                         !isLogin && 'lg:pt-[20px] lg:pl-[292px]'
                     )}
                     transition={{ duration: reducedMotion ? 0 : 0.2, ease: "easeOut" }}

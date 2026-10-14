@@ -26,7 +26,7 @@ export function WorkspaceDetail({ children, hiddenOnMobile = false, transitionKe
     const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
     return <div className={clsx('min-w-0 rounded-ui-lg border border-ui-border bg-ui-surface p-4 xl:p-5', hiddenOnMobile && 'hidden md:block')}>
         <AnimatePresence initial={false}>
-        <motion.div key={transitionKey} initial={reducedMotion ? false : { opacity: 0.65, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reducedMotion ? 0 : 0.18, ease: 'easeOut' }} className="min-w-0 min-h-80">{children}</motion.div>
+        <motion.div data-ui-transition="detail" key={transitionKey} initial={reducedMotion ? false : { opacity: 0.65, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reducedMotion ? 0 : 0.18, ease: 'easeOut' }} className="min-w-0 min-h-80">{children}</motion.div>
         </AnimatePresence>
     </div>;
 }

@@ -38,7 +38,7 @@ export const Tooltip: FC<{ children: ReactNode, content: ReactNode, id?: string,
             {createPortal(
                 <AnimatePresence>
                     {visible && (
-                        <motion.div
+                        <motion.div data-ui-transition="popover"
                             id={id}
                             role="tooltip"
                             initial={{ opacity: 0, y: "-100%", x: "-50%" }}

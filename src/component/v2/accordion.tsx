@@ -10,7 +10,7 @@ const Accordion = React.forwardRef<React.ElementRef<typeof AccordionPrimitive.Ro
         ref={ref}
         className={clsx(
             "relative flex w-full min-w-0 max-w-full flex-col",
-            appearance === 'list' ? "mb-0" : "mb-8 rounded-ui-xl border border-transparent shadow-ui-card",
+            appearance === 'list' ? "mb-0" : "mb-4 rounded-ui-md",
             className
         )}
         {...props}
@@ -24,7 +24,7 @@ const AccordionItem = React.forwardRef<React.ElementRef<typeof AccordionPrimitiv
         "min-w-0 max-w-full overflow-hidden",
         appearance === 'list'
             ? "border-b border-ui-border/45 last:border-b-0"
-            : "-mt-px border border-ui-border bg-ui-surface first:mt-0 first:rounded-t-ui-xl last:rounded-b-ui-xl focus-within:relative focus-within:z-10 focus-within:border-ui-primary/40 hover:relative hover:z-10 hover:border-ui-primary/40",
+            : "-mt-px border border-ui-border bg-ui-surface first:mt-0 first:rounded-t-ui-md last:rounded-b-ui-md focus-within:relative focus-within:z-10 focus-within:border-ui-primary/40 hover:relative hover:z-10 hover:border-ui-primary/40",
         className
     )} {...props} />;
 });
@@ -37,7 +37,7 @@ const AccordionTrigger = React.forwardRef<React.ElementRef<typeof AccordionPrimi
             "group flex w-full min-w-0 flex-1 cursor-pointer items-center gap-3 border-0 bg-transparent text-left font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus",
             appearance === 'list'
                 ? "rounded-ui-lg px-3 py-3.5 text-ui-fg hover:bg-ui-surface-muted/65 data-[state=open]:bg-ui-surface-muted/40"
-                : "justify-between border-b border-transparent p-4 text-base leading-none text-sidebar-color hover:!bg-sidebar-hover hover:!text-sidebar-active data-[state=open]:border-ui-border data-[state=open]:bg-sidebar-hover data-[state=open]:text-sidebar-active",
+                : "justify-between border-b border-transparent p-4 text-base leading-none text-ui-fg hover:bg-ui-hover data-[state=open]:border-ui-border data-[state=open]:bg-ui-surface-muted/50 data-[state=open]:text-ui-heading",
             className
         )} {...props}>
             {children}

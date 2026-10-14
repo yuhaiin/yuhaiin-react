@@ -37,7 +37,7 @@ export default function Activates({ showFooter = true }: { showFooter?: boolean 
     const Heading = showFooter ? 'h1' : 'h2';
     return <MainContainer><section aria-label={uiT('activeNodes')} className="min-w-0">
         <header className="mb-5 flex flex-wrap items-start justify-between gap-4">
-            <div><Heading className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-ui-heading"><Activity size={22} className="text-ui-success" />{uiT('activeNodes')}</Heading><p className="mt-2 text-sm text-ui-muted">{uiT('liveOutboundConnectionInstances')}</p></div>
+            <div><Heading className={showFooter ? "flex items-center gap-2 text-2xl font-semibold tracking-tight text-ui-heading" : "flex items-center gap-2 text-base font-semibold text-ui-heading"}><Activity size={22} className="text-ui-success" />{uiT('activeNodes')}</Heading><p className="mt-2 text-sm text-ui-muted">{uiT('liveOutboundConnectionInstances')}</p></div>
             <div className="flex items-center gap-2 rounded-full bg-ui-success-soft px-3 py-1.5 text-xs font-medium text-ui-success"><span className="size-1.5 rounded-full bg-ui-success" aria-hidden="true" />{all.length} {uiT('running')}</div>
         </header>
         {showFooter && <div className="relative mb-5 max-w-sm"><Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" /><Input type="search" className="pl-9" value={query} aria-label={commonT('state.search')} placeholder={commonT('state.search')} onChange={event => setQuery(event.target.value)} /></div>}

@@ -1,3 +1,4 @@
+import { FormSection } from '@/component/v2/form-section';
 import { base64ToBytes, bytesToBase64 } from "@/common/base64";
 
 import { useTranslation } from 'react-i18next';
@@ -5,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
 
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardHeader, SettingLabel } from "@/component/v2/card";
+import { SettingLabel } from "@/component/v2/card";
 import { Select, SettingInputVertical, SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
 import { Textarea } from "@/component/v2/input";
 import { Tooltip } from "@/component/v2/tooltip";
@@ -40,7 +41,6 @@ const InboundEditor: FC<{
                 label={uiT("enabled")}
                 checked={inbound.enabled}
                 onCheckedChange={(enabled) => onChange(normalizeInbound({ ...inbound, enabled }))}
-                className="p-4 rounded-lg bg-ui-surface-muted"
             />
             <SettingInputVertical
                 label={uiT("name")}
@@ -48,26 +48,17 @@ const InboundEditor: FC<{
                 onChange={(name) => onChange(normalizeInbound({ ...inbound, name }))}
             />
 
-            <Card density="compact">
-                <CardHeader><span className="font-bold">{uiT("network")}</span></CardHeader>
-                <CardBody density="compact">
+            <FormSection title={uiT("network")}>
                     <NetworkSection inbound={inbound} onChange={onChange} />
-                </CardBody>
-            </Card>
+            </FormSection>
 
-            <Card density="compact">
-                <CardHeader><span className="font-bold">{uiT("transport")}</span></CardHeader>
-                <CardBody density="compact">
+            <FormSection title={uiT("transport")}>
                     <TransportSection inbound={inbound} onChange={onChange} />
-                </CardBody>
-            </Card>
+            </FormSection>
 
-            <Card density="compact">
-                <CardHeader><span className="font-bold">{uiT("protocol")}</span></CardHeader>
-                <CardBody density="compact">
+            <FormSection title={uiT("protocol")}>
                     <ProtocolSection inbound={inbound} onChange={onChange} protocols={protocols} />
-                </CardBody>
-            </Card>
+            </FormSection>
         </div>
     );
 };

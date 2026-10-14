@@ -65,7 +65,7 @@ const NodeEditor: FC<{
                     />
                     <p className="-mt-3 mb-2 text-sm text-ui-muted">{uiT("nodeIPVersionHelp")}</p>
                 </div>
-                <div className="grid gap-3 rounded-ui-lg border border-ui-border bg-ui-surface-muted p-3 md:col-span-2">
+                <div className="grid gap-3 border-t border-ui-border pt-4 md:col-span-2">
                     <div>
                         <SettingInputVertical
                             label={uiT("nodeLatencyURL")}
@@ -128,7 +128,7 @@ const NodeProtocolChain: FC<{
     return (
         <div className="mb-3">
             <div className="mb-2 flex items-center justify-between px-1">
-                <h6 className="mb-0 font-bold opacity-75">{uiT("protocolChain")}</h6>
+                <h6 className="mb-0 text-base font-semibold text-ui-heading">{uiT("protocolChain")}</h6>
                 <small className="text-ui-muted">{normalizedChain.length} {uiT("steps")}</small>
             </div>
 
@@ -137,7 +137,7 @@ const NodeProtocolChain: FC<{
                     <AccordionItem value={`item-${index}`} key={`${index}-${protocol.type}`}>
                         <AccordionTrigger>
                             <div className="flex min-w-0 flex-1 items-center gap-2">
-                                <Badge variant="primary" pill className="px-2 text-[0.7rem]">
+                                <Badge variant="secondary" className="px-2 text-xs">
                                     {index + 1}
                                 </Badge>
                                 <span className="truncate">{protocol.type}</span>
@@ -172,9 +172,9 @@ const NodeProtocolChain: FC<{
             </Accordion>
 
             {editable && structureEditable && (
-                <div className="flex flex-wrap items-end gap-3 rounded-ui-lg bg-ui-surface-muted p-3 sm:flex-nowrap">
+                <div className="flex flex-wrap items-end gap-3 border-t border-ui-border pt-4 sm:flex-nowrap">
                     <div className="w-full flex-1">
-                        <label className="mb-2 block text-sm font-bold opacity-75">{uiT("newProtocolStep")}</label>
+                        <label className="mb-2 block text-xs font-medium text-ui-muted">{uiT("newProtocolStep")}</label>
                         <Select
                             value={newProtocol}
                             onValueChange={(value) => setNewProtocol(value as NodeProtocolType)}

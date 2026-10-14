@@ -1,5 +1,7 @@
 # Visual system
 
+See the [second-pass component refinement and Gallery](refinement/README.md) for current validation, root-cause findings and screenshots.
+
 Implemented on `codex/visual-system`, starting from main `4c67ae0`. Screenshots use synthetic, local MSW data, not a live controller.
 
 ## Surfaces and hierarchy
@@ -59,9 +61,9 @@ The existing `docs/ux-refactor` snapshots were also refreshed for all 18 directo
 
 ## Validation
 
-- 149 unit/component tests across 60 files, including mode/accent persistence, storage failures, bootstrap initialization, keyboard selection, button busy state and reliable setup-guide conditions.
+- 154 unit/component tests across 62 files, including mode/accent persistence, storage failures, bootstrap initialization, keyboard selection, button busy state and reliable setup-guide conditions.
 - TypeScript, lint, i18n checks for all three supported languages, style audit, production build, workflow actionlint and `git diff --check`.
-- `npm run visual:check`: 40 real Chromium states covering Overview, Nodes, Routing, DNS, Connections, Subscriptions, Inbounds and WebUI at 1440px/390px in both modes, plus all five accents in both modes. Checks initialization, horizontal overflow, clipped visible form controls and computed token contrast. The minimum checked text-pair ratio is 4.538:1; focus/control-border token pairs meet 3:1. Results are saved in [contrast-results.json](contrast-results.json).
+- `npm run visual:check`: 104 real Chromium page states covering Overview, Nodes, Routing, DNS, Connections, Subscriptions, Inbounds and WebUI at 1440px/390px/320px in both modes, plus all five accents in both modes. Checks initialization, horizontal overflow, clipped visible form controls and computed token contrast. The minimum checked text-pair ratio is 4.538:1; focus/control-border token pairs meet 3:1. Results are saved in [contrast-results.json](contrast-results.json).
 - Existing MSW capture script: 18 desktop/mobile directory and editor states, including the advanced rule editor and node details.
 - Additional Chromium interactions: mouse and keyboard swatch selection, reload persistence, OS theme changes, hover/press feedback, switch toggling, dropdown dismissal, unsaved-edit cancellation, configured-guide expansion and node-selection dialog. No page exceptions. The loading-button check measured the same 216.6875px width before and during loading. Home bottom spacing checked at 1440px, 390px and 320px; Japanese node-editor layout checked at 390px and 320px.
 - CI runs the visual matrix and uploads its screenshots and results as the `visual-system` artifact.

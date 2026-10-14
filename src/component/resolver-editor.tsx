@@ -1,3 +1,4 @@
+import { FormSection } from './v2/form-section';
 import { ResolverTestPanel } from './resolver-test-panel';
 import { ResourceEditorFrame } from '@/component/resource-workspace';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
@@ -109,8 +110,7 @@ export const ResolverEditor: FC<{ value: Resolver, onChange: (x: Resolver) => vo
 
     return (
         <div className="grid gap-4">
-            <div className="border-b border-ui-border pb-4">
-                <div className="mb-3 text-sm font-semibold">{t("dnsResolver")}</div>
+            <FormSection title={t("dnsResolver")}>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <SettingInputVertical label={uiT("name")} value={value.name} onChange={(name) => patch({ name })} />
                     <SettingSelectVertical
@@ -120,10 +120,9 @@ export const ResolverEditor: FC<{ value: Resolver, onChange: (x: Resolver) => vo
                         onChange={(type) => patch({ type: type as ResolverType, system: type === "system", host: type === "system" ? "system default" : value.type === "system" ? "" : value.host })}
                     />
                 </div>
-            </div>
+            </FormSection>
 
-            <div className="border-b border-ui-border pb-4">
-                <div className="mb-3 text-sm font-semibold">{uiT("endpoint")}</div>
+            <FormSection title={uiT("endpoint")}>
                 {value.type === "system" ? (
                     <div className="rounded-ui-md bg-ui-surface-muted px-3 py-2 text-sm text-ui-muted">{uiT("usesTheOperatingSystemResolver")}</div>
                 ) : (
@@ -135,7 +134,7 @@ export const ResolverEditor: FC<{ value: Resolver, onChange: (x: Resolver) => vo
                         </details>
                     </div>
                 )}
-            </div>
+            </FormSection>
 
 
         </div>

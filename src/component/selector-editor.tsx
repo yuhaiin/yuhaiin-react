@@ -47,9 +47,9 @@ export function SelectorEditor({ item, onClose, onSaved, onDeleted, presentation
         if (!item || !window.confirm(t('deleteSelectorConfirm'))) return;
         setActionError(''); void run(async () => { await deleteSelector(item.id); (onDeleted ?? onSaved)(item); });
     };
-    const body = <fieldset disabled={pending} className="min-w-0 space-y-4">
+    const body = <fieldset disabled={pending} className="grid min-w-0 grid-cols-1 gap-4 [--field-margin:0px]">
         <SettingInputVertical label={t('name')} value={value.name} onChange={name => setValue(prev => ({ ...prev, name }))} />
-        <div className="space-y-2"><span className="text-sm font-semibold">{t('selectedNode')}</span>
+        <div className="space-y-2"><span className="text-[13px] font-medium text-ui-muted">{t('selectedNode')}</span>
             <NodeSelect label={t('selectedNode')} value={value.nodeId} disabled={pending} onChange={node => { void refreshCache(['/api/v2/nodes/detail', node.id], node, { revalidate: false }); setValue(prev => ({ ...prev, nodeId: node.id })); }} />
         </div>
         <Button size="sm" variant="outline-secondary" onClick={() => setCreatingNode(true)}><Plus size={16} />{t("addNode")}</Button>

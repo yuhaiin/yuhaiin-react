@@ -10,7 +10,7 @@ const MotionSlot = motion.create(Slot);
 export interface ButtonProps
     extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     asChild?: boolean
-    variant?: "default" | "danger" | "outline-danger" | "outline-secondary" | "primary" | "outline-primary";
+    variant?: "ghost" | "default" | "danger" | "outline-danger" | "outline-secondary" | "primary" | "outline-primary";
     size?: "default" | "sm" | "xs" | "icon";
     groupPosition?: "first" | "middle" | "last" | "single";
     animated?: boolean;
@@ -42,13 +42,14 @@ const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
         const radiusClass = groupPosition ? radiusClasses[groupPosition] : '';
 
         const baseStyles = clsx(
-            "inline-flex items-center justify-center whitespace-nowrap py-2 px-3.5 text-sm leading-normal font-medium font-inherit appearance-none shadow-none cursor-pointer border rounded-ui-md relative no-underline select-none align-middle",
+            "inline-flex items-center justify-center whitespace-nowrap gap-2 px-3 py-1.5 text-sm leading-normal font-medium font-inherit appearance-none shadow-none cursor-pointer border rounded-ui-md relative no-underline select-none align-middle",
             "transition-[color,background-color,border-color,transform,scale] duration-150 ease-out active:duration-100 motion-safe:active:scale-[0.98]",
             ui.focusRing,
             ui.disabled
         );
 
         const variantStyles = {
+            ghost: "bg-transparent border-transparent text-ui-muted hover:bg-ui-hover hover:text-ui-fg active:bg-ui-surface-muted data-[state=open]:bg-ui-hover",
             default: "bg-ui-surface border-ui-border text-ui-fg hover:bg-ui-hover hover:border-ui-border-strong active:bg-ui-surface-muted data-[state=open]:bg-ui-hover",
             danger: "bg-ui-danger border-ui-danger text-ui-danger-foreground hover:brightness-95 active:brightness-90",
             "outline-danger": "bg-transparent border-ui-danger/50 text-ui-danger hover:bg-ui-danger-soft hover:border-ui-danger active:bg-ui-danger-soft",
@@ -60,8 +61,8 @@ const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
         const sizeStyles = {
             default: "h-field",
             sm: "h-field-sm px-3 text-sm rounded-ui-md",
-            xs: "py-[0.15rem] px-1.5 text-xs rounded-ui-xs",
-            icon: "p-1.5 inline-flex items-center justify-center leading-none flex-none min-h-8 min-w-8 w-auto [&>i]:text-[1rem] [&>i]:align-middle [&>svg]:text-[1rem] [&>svg]:align-middle"
+            xs: "h-7 px-2 text-xs rounded-ui-sm",
+            icon: "p-1.5 inline-flex items-center justify-center leading-none flex-none h-field-sm w-8 [&>i]:text-[1rem] [&>i]:align-middle [&>svg]:text-[1rem] [&>svg]:align-middle"
         };
 
         const motionProps: HTMLMotionProps<"button"> = animated && !reducedMotion ? {
@@ -86,7 +87,7 @@ const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
                 disabled={disabled || loading}
                 aria-busy={loading || props['aria-busy']}
             >
-                {asChild ? children : <span className={cn("inline-flex min-w-0 items-center justify-center gap-[inherit]", loading && "opacity-0")}>{children}</span>}
+                {asChild ? children : <span className={cn("inline-flex w-full min-w-0 items-center justify-[inherit] gap-[inherit] [&>svg]:m-0 [&_svg]:size-4 [&_svg]:shrink-0", loading && "opacity-0")}>{children}</span>}
                 {loading && !asChild && <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center"><Spinner size="sm" /></span>}
             </Comp>
         )

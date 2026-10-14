@@ -21,7 +21,7 @@ export { SwitchCard } from './switch';
 const SettingCheckComponent: FC<{ label: string, checked: boolean, onChange: (c: boolean) => void, className?: string, disabled?: boolean }> =
     ({ label, checked, onChange, className, disabled }) => {
         return (
-            <div className={clsx("flex items-center mb-4", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
+            <div className={clsx("flex items-center mb-[var(--field-margin,1rem)]", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
                 <label className="basis-[150px] shrink-0 mr-6 font-medium">{label}</label>
                 <div className="grow min-w-0 relative">
                     <SwitchComponent ariaLabel={label} checked={checked} onCheckedChange={onChange} disabled={disabled} />
@@ -66,7 +66,7 @@ export const SettingInputVertical: FC<SettingInputVerticalProps> = React.memo(({
     const id = useId(); // Auto-generate unique ID
 
     return (
-        <div className={clsx("relative mb-4 flex min-w-0 max-w-full flex-col", className)}>
+        <div className={clsx("relative mb-[var(--field-margin,1rem)] flex min-w-0 max-w-full flex-col", className)}>
             {/* 1. Associate Label and Input */}
             <SettingLabel htmlFor={id} className="mb-2 block">
                 {label}
@@ -109,7 +109,7 @@ export const SettingPasswordVertical: FC<{
     const id = useId();
 
     return (
-        <div className={clsx("flex flex-col mb-4 relative", className)}>
+        <div className={clsx("flex flex-col mb-[var(--field-margin,1rem)] relative", className)}>
             <SettingLabel htmlFor={id} className="mb-2 basis-auto mr-0 font-medium">{label}</SettingLabel>
             <div className="flex">
                 <Input
@@ -148,10 +148,10 @@ export const SettingRangeVertical: FC<{
 }> = React.memo(({ label, value, min, max, step, unit, onChange, className }) => {
     const { t } = useTranslation('common');
     return (
-        <div className={clsx("flex flex-col mb-4 relative", className)}>
+        <div className={clsx("flex flex-col mb-[var(--field-margin,1rem)] relative", className)}>
             <div className="flex justify-between items-center mb-1">
                 <SettingLabel className="mb-0 font-medium">{label}</SettingLabel>
-                <div className="text-ui-primary font-bold font-mono text-sm bg-ui-primary-soft px-2 py-1 rounded-ui-xs">
+                <div className="text-ui-heading font-medium font-mono text-sm bg-ui-surface-muted px-2 py-1 rounded-ui-xs">
                     {value.toLocaleString()} {unit}
                 </div>
             </div>
@@ -170,7 +170,7 @@ export const SettingRangeVertical: FC<{
                 <SliderPrimitive.Thumb
                     aria-label={label}
                     className={clsx(
-                        "block h-[20px] w-[20px] rounded-full border border-ui-primary bg-ui-surface shadow-ui-card transition-transform duration-150 ease-out hover:bg-ui-primary-soft active:scale-[0.98]",
+                        "block h-[20px] w-[20px] rounded-full border border-ui-primary bg-ui-surface shadow-ui-card transition-transform duration-150 ease-out hover:bg-ui-primary-soft motion-safe:active:scale-[0.98]",
                         ui.focusRing
                     )}
                 />

@@ -22,3 +22,11 @@ it('uses the rendered menu order for page transitions and keeps every route reac
         expect([...navigationOrder].sort()).toEqual(appRoutes.map(route => route.path).sort());
     } finally { act(() => root.unmount()); host.remove(); }
 });
+
+it('uses the owning page label for mobile titles without resource query or trailing-slash differences', async () => {
+    const { navigationLabel } = await import('./navigation');
+    expect(navigationLabel('/docs/group/?node=node-1')).toEqual({ namespace: 'routing', key: 'nodesTask' });
+    expect(navigationLabel('/docs/bypass?rule=rule-1')).toEqual({ namespace: 'nav', key: 'routeRules' });
+    expect(navigationLabel('/docs/bypass/resolver')).toEqual({ namespace: 'routing', key: 'dnsTask' });
+    expect(navigationLabel('/unknown')).toBeUndefined();
+});

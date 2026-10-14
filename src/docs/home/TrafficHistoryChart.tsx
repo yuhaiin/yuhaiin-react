@@ -5,7 +5,7 @@ import type { TrafficSeries } from "@/contract/connection";
 import { Chart as ChartJS, CategoryScale, Filler, Legend, LinearScale, LineElement, PointElement, Tooltip, type TooltipItem } from "chart.js";
 import { FC, useMemo } from "react";
 import { Line } from "react-chartjs-2";
-import { formatBytes } from "../connections/components";
+import { formatBytes, formatTrafficTicks } from "./format";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler);
 
@@ -99,7 +99,7 @@ const TrafficHistoryChart: FC<{ data?: TrafficSeries; error?: string; minHeight:
                         },
                     },
                     scales: {
-                        y: { beginAtZero: true, ticks: { color: textColor, callback: value => formatBytes(Number(value), 1, " ") }, grid: { color: palette.grid } },
+                        y: { beginAtZero: true, ticks: { color: textColor, callback: (_value, index, ticks) => formatTrafficTicks(ticks.map(tick => Number(tick.value)))[index] }, grid: { color: palette.grid } },
                         x: { grid: { display: false }, ticks: { color: textColor, maxRotation: 0, autoSkipPadding: 18 } },
                     },
                 }}

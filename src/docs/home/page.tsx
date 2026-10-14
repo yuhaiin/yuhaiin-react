@@ -2,11 +2,11 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { getTelemetry, getTraffic } from "@/api/connections";
 import { activeNodes, selectedNodes } from "@/api/nodes";
-import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardHeader, IconBox, MainContainer } from "@/component/v2/card";
 import Loading from "@/component/v2/loading";
 import type { TrafficSeries } from "@/contract/connection";
 import type { Node } from "@/contract/node";
+import { ToggleGroup, ToggleItem } from '@/component/v2/togglegroup';
 import clsx from "clsx";
 import { Activity, ArrowDownToLine, ArrowUpFromLine, Network } from "lucide-react";
 import { FC, useCallback, useMemo, useState } from "react";
@@ -124,7 +124,7 @@ function HomePage() {
             />
 
             <header className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                <h1 className="m-0 text-2xl font-semibold tracking-tight text-ui-heading">{t('nav:home')}</h1>
+                <h1 className="m-0 sr-only text-2xl font-semibold tracking-tight text-ui-heading lg:not-sr-only">{t('nav:home')}</h1>
                 {activeError ? <span className="text-sm text-ui-danger">{activeError.msg}</span> : <span className="flex items-center gap-2 text-xs text-ui-muted"><Activity size={15} aria-hidden="true" className="text-ui-success" />{active?.items.length ?? '—'} {uiT('activeNodes')}</span>}
             </header>
             <div className="mb-4 grid grid-cols-2 shrink-0 gap-2 sm:gap-3">
@@ -151,41 +151,16 @@ function HomePage() {
                         <div className="flex w-full min-w-0 items-start gap-3 sm:flex-1">
                             <IconBox
                                 icon={Activity}
-                                tone="primary"
+                                tone="neutral"
                                 title={isLiveTraffic ? "Live traffic" : "Traffic history"}
                                 description={isLiveTraffic ? "Current download and upload speed" : "Download and upload totals by period"}
                             />
                         </div>
 
                         <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-end">
-                            <div
-                                className="inline-flex flex-wrap items-center rounded-ui-md border border-ui-border bg-ui-surface-muted/50 p-1"
-                                aria-label={uiT("trafficRange")}
-                            >
-                                {trafficRanges.map(item => {
-                                    const active = item.key === range.key;
-                                    return (
-                                        <Button
-                                            key={item.key}
-                                            size="xs"
-                                            variant={active ? "primary" : "outline-secondary"}
-                                            className={clsx(
-                                                "!rounded-ui-sm border-transparent shadow-none",
-                                                !active && "!bg-transparent !text-ui-muted hover:!bg-ui-hover hover:!text-ui-fg"
-                                            )}
-                                            onClick={() => setSelectedRange(item.key)}
-                                        >
-                                            {item.key === "live" && (
-                                                <span className={clsx(
-                                                    "mr-1.5 inline-block h-1.5 w-1.5 rounded-full",
-                                                    active ? "bg-ui-primary-foreground animate-pulse" : "bg-ui-muted"
-                                                )} />
-                                            )}
-                                            {item.label}
-                                        </Button>
-                                    );
-                                })}
-                            </div>
+                            <ToggleGroup type="single" value={selectedRange} aria-label={uiT("trafficRange")} onValueChange={value => { if (value) setSelectedRange(value); }}>
+                                {trafficRanges.map(item => <ToggleItem key={item.key} value={item.key}>{item.key === 'live' && <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />}{item.label}</ToggleItem>)}
+                            </ToggleGroup>
                             <div className="flex items-center justify-end gap-3 text-[11px] text-ui-muted">
                                 <span className="inline-flex items-center gap-1.5">
                                     <ArrowDownToLine size={12} className="text-ui-info" />
@@ -208,7 +183,7 @@ function HomePage() {
                     <CardHeader className="px-4 py-3.5">
                         <IconBox
                             icon={Activity}
-                            tone="violet"
+                            tone="neutral"
                             title={uiT("trafficBreakdown")}
                             description={`Top traffic and failures · ${isLiveTraffic ? "24H" : range.label}`}
                         />

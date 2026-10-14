@@ -71,7 +71,7 @@ const InboundRuntimePanel: FC<{
         <div className="mb-4 space-y-4 rounded-ui-lg border border-ui-border bg-ui-surface-muted p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                    <Activity size={17} className="text-ui-primary" />
+                    <Activity size={17} className="text-ui-muted" />
                     <span className="font-semibold">{uiT("runtimeStatus")}</span>
                     <Badge variant={runtimeVariant(status.status)}>{runtimeLabel(status.status)}</Badge>
                 </div>
@@ -91,9 +91,9 @@ const InboundRuntimePanel: FC<{
 
             <p className="text-xs text-ui-muted">{t('listenerStatusHelp')}</p>
             <div className="grid gap-3 sm:grid-cols-3">
-                <div><div className="text-xs text-ui-muted">{t('acceptedStreams')}</div><div className="font-semibold">{statistics.acceptedStreams}</div></div>
-                <div><div className="text-xs text-ui-muted">{t('receivedPackets')}</div><div className="font-semibold">{statistics.receivedPackets}</div></div>
-                <div><div className="text-xs text-ui-muted">{t('receivedPings')}</div><div className="font-semibold">{statistics.receivedPings}</div></div>
+                <div><div className="text-xs text-ui-muted">{t('acceptedStreams')}</div><div className="font-mono text-sm tabular-nums">{statistics.acceptedStreams}</div></div>
+                <div><div className="text-xs text-ui-muted">{t('receivedPackets')}</div><div className="font-mono text-sm tabular-nums">{statistics.receivedPackets}</div></div>
+                <div><div className="text-xs text-ui-muted">{t('receivedPings')}</div><div className="font-mono text-sm tabular-nums">{statistics.receivedPings}</div></div>
             </div>
 
             {status.listeners.length > 0 && (

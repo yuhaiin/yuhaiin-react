@@ -182,4 +182,5 @@ const worker=setupWorker(
   http.all(/^https?:\/\/[^/]+\/api\//,()=>HttpResponse.json({error:{message:'Unmocked API blocked by audit harness'}},{status:501}))
 );
 await worker.start({quiet:true,onUnhandledRequest:'bypass',serviceWorker:{url:'/mockServiceWorker.js'}});
-await import('/src/main.tsx');
+if (new URL(location.href).searchParams.has('gallery')) await import('/tests/msw/gallery.tsx');
+else await import('/src/main.tsx');

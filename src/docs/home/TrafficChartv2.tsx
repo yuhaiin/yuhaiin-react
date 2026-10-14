@@ -4,7 +4,7 @@ import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 're
 import { useTranslation } from 'react-i18next';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
-import { formatBytes } from './format';
+import { formatBytes, formatTrafficTicks } from './format';
 import { Tooltip, type ChartTooltipHandle } from './tooltip';
 
 const BUFFER_GROWTH_SIZE = 1024;
@@ -252,8 +252,8 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                     font: '10px sans-serif',
                     grid: { show: true, stroke: palette.grid, width: 1 },
                     ticks: { show: true, stroke: palette.grid },
-                    values: (_, ticks) => ticks.map(v => formatBytes(Number(v), 0, " ") + '/S'),
-                    size: 65,
+                    values: (_, ticks) => formatTrafficTicks(ticks, '/s'),
+                    size: 80,
                     gap: 0,
                 }
             ],
