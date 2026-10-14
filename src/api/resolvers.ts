@@ -1,7 +1,7 @@
 import type { Go } from "@/api/generated-contracts";
 import { requestJSON } from "@/api/client";
-import type { DNSCacheClearResponse, DNSCacheList, FakeDNS, Resolver, ResolverHosts, ResolverList, ResolverServer } from "@/contract/resolver";
-import { normalizeFakeDNS, normalizeHosts, normalizeResolver } from "@/contract/resolver";
+import type { DNSCacheClearResponse, DNSCacheList, FakeDNS, Resolver, ResolverList, ResolverServer } from "@/contract/resolver";
+import { normalizeFakeDNS, normalizeResolver } from "@/contract/resolver";
 
 export async function listResolvers(params?: { page?: number; pageSize?: number; query?: string }): Promise<ResolverList> {
   const data = await requestJSON<ResolverList>("GET", "/api/v2/resolvers", undefined, {
@@ -30,14 +30,6 @@ export async function saveResolver(resolver: Resolver): Promise<Resolver> {
 
 export async function deleteResolver(id: string): Promise<void> {
   await requestJSON<void>("DELETE", `/api/v2/resolvers/${encodeURIComponent(id)}`);
-}
-
-export async function getResolverHosts(): Promise<ResolverHosts> {
-  return normalizeHosts(await requestJSON<ResolverHosts>("GET", "/api/v2/resolver/hosts"));
-}
-
-export async function saveResolverHosts(hosts: ResolverHosts): Promise<ResolverHosts> {
-  return normalizeHosts(await requestJSON<ResolverHosts>("PUT", "/api/v2/resolver/hosts", normalizeHosts(hosts)));
 }
 
 export async function getFakeDNS(): Promise<FakeDNS> {
@@ -75,4 +67,16 @@ export function listDNSQueryTypes(): Promise<Go.resolver.QueryTypeList> {
 
 export function testResolver(request: Go.resolver.TestRequest, signal?: AbortSignal): Promise<Go.resolver.TestResponse> {
   return requestJSON("POST", "/api/v2/resolvers/test", request, undefined, signal);
+}
+
+export type HostEntry = Go.resolver.HostEntry;
+export type HostEntryList = { items: HostEntry[]; page: { page: number; pageSize: number; total: number } };
+export async function listHostEntries(page: number, pageSize: number, query: string): Promise<HostEntryList> {
+  return requestJSON('GET', '/api/v2/resolver/hosts/entries', undefined, { page, page_size: pageSize, query });
+}
+export function saveHostEntry(item: HostEntry, create: boolean): Promise<HostEntry> {
+  return create ? requestJSON('POST', '/api/v2/resolver/hosts/entries', item) : requestJSON('PUT', `/api/v2/resolver/hosts/entries/${encodeURIComponent(item.host)}`, item);
+}
+export function deleteHostEntry(host: string): Promise<void> {
+  return requestJSON('DELETE', `/api/v2/resolver/hosts/entries/${encodeURIComponent(host)}`);
 }

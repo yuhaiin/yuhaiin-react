@@ -1,163 +1,92 @@
+import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection } from '@/component/resource-workspace';
+import { deleteSubscriptions, listSubscriptions, saveSubscriptions, updateSubscriptions } from '@/api/subscriptions';
+import { Button } from '@/component/v2/button';
+import { MainContainer } from '@/component/v2/card';
+import { SettingInputVertical, SettingSelectVertical } from '@/component/v2/forms';
+import { useClipboard } from '@/component/v2/clipboard';
+import Loading from '@/component/v2/loading';
+import { Spinner } from '@/component/v2/spinner';
+import { GlobalToastContext } from '@/component/v2/toast';
+import { normalizeLink, type Link } from '@/contract/subscription';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
+import { Check, Copy, RefreshCw, Rss, Trash } from 'lucide-react';
+import { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import useSWR from 'swr';
 
-import { deleteSubscriptions, listSubscriptions, saveSubscriptions, updateSubscriptions } from "@/api/subscriptions";
-import { Badge } from "@/component/v2/badge";
-import { Button } from "@/component/v2/button";
-import { CardRowList, IconBox, IconBoxRounded, MainContainer, SettingsBox } from "@/component/v2/card";
-import { ConfirmModal } from "@/component/v2/confirm";
-import { SettingInputVertical } from "@/component/v2/forms";
-import { SettingSelectVertical } from "@/component/v2/select";
-import Loading from "@/component/v2/loading";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
-import { Spinner } from "@/component/v2/spinner";
-import { GlobalToastContext } from "@/component/v2/toast";
-import type { Link } from "@/contract/subscription";
-import { CloudDownload, Plus, RefreshCw, Rss, Trash } from "lucide-react";
-import { FC, useContext, useEffect, useState } from "react";
-import useSWR from "swr";
-import { useClipboard } from "../../../component/v2/clipboard";
-
-const subscriptionTypes = ["reserve", "trojan", "vmess", "shadowsocks", "shadowsocksr"];
-
-const LinkItem: FC<{ linkData: Link; isUpdating: boolean; onUpdate: () => void; onDelete: () => void }> = ({ linkData, isUpdating, onUpdate, onDelete }) => {
-    const { t: uiT } = useTranslation('ui');
-
-    return (
-        <div className="grid w-full min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-            <div className="flex min-w-0 items-center gap-3">
-                <IconBoxRounded icon={Rss} tone="primary" style={{ width: 40, height: 40, flexShrink: 0 }} />
-                <div className="min-w-0">
-                    <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                        <div className="break-words font-semibold text-ui-heading sm:truncate">{linkData.name}</div>
-                        <Badge variant="secondary" pill className="uppercase tracking-wide">{linkData.type || "reserve"}</Badge>
-                    </div>
-                    <div className="break-all text-sm text-ui-muted sm:truncate" title={linkData.url}>{linkData.url}</div>
-                </div>
-            </div>
-            <div className="flex items-center justify-end gap-2 sm:justify-self-end">
-                <Button size="sm" title={uiT("update") + " " + linkData.name} aria-label={uiT("update") + " " + linkData.name} onClick={(e) => { e.stopPropagation(); onUpdate() }} disabled={isUpdating}>
-                    {isUpdating ? <Spinner size="sm" /> : <RefreshCw size={16} />}
-                    <span className="hidden sm:inline ml-2">{uiT("update")}</span>
-                </Button>
-                <Button variant="outline-danger" size="sm" title={uiT("delete") + " " + linkData.name} aria-label={uiT("delete") + " " + linkData.name} onClick={(e) => { e.stopPropagation(); onDelete() }}>
-                    <Trash size={16} />
-                    <span className="hidden sm:inline ml-2">{uiT("delete")}</span>
-                </Button>
-            </div>
-        </div>
-    );
-};
-
-const AddLinkModal: FC<{ show: boolean; onHide: () => void; onSave: (link: Link) => Promise<void> }> = ({ show, onHide, onSave }) => {
-    const { t: uiT } = useTranslation('ui');
-
-    const ctx = useContext(GlobalToastContext);
-    const { value: newItem, setValue: setNewItem, dirty } = useEditorDraft<Link>(show ? "new" : null, undefined, () => ({ name: "", url: "", type: "reserve" }));
-    const { pending: saving, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
-    const close = useCloseGuard(dirty, saving, onHide);
-    const handleSave = () => {
-        if (!newItem.name || !newItem.url || saving) return;
-        void run(async () => { await onSave(newItem); onHide(); });
-    };
-    return (
-        <Modal open={show} onOpenChange={(open) => !open && close()}>
-            <ModalContent>
-                <ModalHeader closeButton className="border-b-0 pb-0"><ModalTitle className="font-bold">{uiT("addSubscription")}</ModalTitle></ModalHeader>
-                <ModalBody className="pt-2">
-                    <SettingsBox>
-                        <fieldset disabled={saving} className="flex flex-col gap-3">
-                            <SettingInputVertical label={uiT("name")} value={newItem.name} placeholder={uiT("eGMyServer")} onChange={(name) => setNewItem(prev => ({ ...prev, name }))} />
-                            <SettingSelectVertical label={uiT("type")} value={newItem.type || "reserve"} values={subscriptionTypes} onChange={(type) => setNewItem(prev => ({ ...prev, type }))} />
-                            <SettingInputVertical label={uiT("subscriptionUrl")} value={newItem.url} placeholder="https://example.com/sub/..." onChange={(url) => setNewItem(prev => ({ ...prev, url }))} />
-                        </fieldset>
-                    </SettingsBox>
-                </ModalBody>
-                <ModalFooter>
-                    <Button variant="outline-secondary" onClick={close} disabled={saving}>{uiT("cancel")}</Button>
-                    <Button onClick={handleSave} disabled={saving || !newItem.name || !newItem.url}><Plus className="me-1" size={16} /> {uiT("add")}</Button>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
-    );
-};
-
-function Subscribe() {
-    const { t: uiT } = useTranslation('ui');
-
-    const ctx = useContext(GlobalToastContext);
-    const { data, error, isLoading, mutate } = useSWR("/api/v2/subscriptions", listSubscriptions);
-    const [updating, setUpdating] = useState<Record<string, boolean>>({});
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [confirmDelete, setConfirmDelete] = useState<{ show: boolean, name: string }>({ show: false, name: "" });
-    const { copy, copied, manualCopyModal } = useClipboard({ usePromptAsFallback: true });
-
-    useEffect(() => { if (copied) ctx.Info("Copied to clipboard") }, [copied, ctx]);
-
-    if (error !== undefined) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
-    if (isLoading || data === undefined) return <Loading />
-
-    const handleUpdate = (name: string) => {
-        setUpdating(prev => ({ ...prev, [name]: true }));
-        updateSubscriptions([name])
-            .then(() => {
-                ctx.Info("Update successfully");
-                void mutate();
-            })
-            .catch((err) => ctx.Error(`Update failed ${err.code ?? 500}| ${err.msg ?? err}`))
-            .finally(() => setUpdating(prev => {
-                if (!(name in prev)) return prev;
-                const next = { ...prev };
-                delete next[name];
-                return next;
-            }));
-    };
-
-    const handleDelete = (name: string) => {
-        deleteSubscriptions([name])
-            .then(() => mutate())
-            .catch((err) => ctx.Error(`delete ${name} failed, ${err.code ?? 500}| ${err.msg ?? err}`));
-    };
-
-    const handleAdd = async (item: Link) => {
-        await saveSubscriptions([item]);
-        await mutate();
-    };
-
-    return (
-        <MainContainer>
-            {manualCopyModal}
-            <ConfirmModal
-                show={confirmDelete.show}
-                title={uiT("deleteSubscription")}
-                content={<p>{uiT("removeSubscription")} <strong>{confirmDelete.name}</strong>?</p>}
-                onOk={() => { handleDelete(confirmDelete.name); setConfirmDelete({ show: false, name: "" }); }}
-                onHide={() => setConfirmDelete({ show: false, name: "" })}
-            />
-            <AddLinkModal show={showAddModal} onHide={() => setShowAddModal(false)} onSave={handleAdd} />
-            <CardRowList
-                layout="list"
-                items={[...data.items].sort((a, b) => a.name.localeCompare(b.name))}
-                getKey={(value) => value.name}
-                onClickItem={(v) => copy(v.url)}
-                renderListItem={(value) => (
-                    <LinkItem
-                        key={value.name}
-                        linkData={value}
-                        isUpdating={!!updating[value.name]}
-                        onUpdate={() => handleUpdate(value.name)}
-                        onDelete={() => setConfirmDelete({ show: true, name: value.name })}
-                    />
-                )}
-                header={
-                    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <IconBox icon={CloudDownload} tone="primary" title="Subscriptions" description={uiT("manageRemoteConfigurationLinks")} />
-                        <Button size="sm" className="shrink-0 self-start sm:self-auto" onClick={() => setShowAddModal(true)}><Plus className="me-1" size={16} /> {uiT("add")}</Button>
-                    </div>
-                }
-            />
-        </MainContainer>
-    );
+const subscriptionTypes = ['reserve', 'trojan', 'vmess', 'shadowsocks', 'shadowsocksr'];
+/** Keep credentials and long encoded configurations out of directory summaries. */
+export function subscriptionSource(url: string) {
+    try { const source = new URL(url); return ['http:', 'https:'].includes(source.protocol) ? source.hostname : source.protocol.replace(/:$/, ''); }
+    catch { return '—'; }
 }
 
-export default Subscribe;
+function SubscriptionEditor({ item, creating, onClose, onSaved, onDeleted, refresh, existingNames }: {
+    item?: Link; creating: boolean; onClose: () => void; onSaved: (item: Link) => void; existingNames: string[]; onDeleted: () => void; refresh: () => Promise<unknown>;
+}) {
+    const { t } = useTranslation('routing');
+    const { t: uiT } = useTranslation('ui');
+    const ctx = useContext(GlobalToastContext);
+    const { value, setValue, dirty, commit } = useEditorDraft(creating ? 'new-subscription' : item?.name ?? '', item, () => normalizeLink(undefined));
+    const [actionError, setActionError] = useState('');
+    const { pending, run } = useAsyncAction(error => { const message = String((error as { msg?: string })?.msg ?? error); setActionError(message); ctx.Error(message); });
+    const close = useCloseGuard(dirty, pending, onClose);
+    const { copy, copied, manualCopyModal } = useClipboard({ usePromptAsFallback: true });
+    const valid = Boolean(value.name.trim() && value.url.trim());
+    const execute = (action: () => Promise<unknown>) => { setActionError(''); void run(action); };
+    const save = () => {
+        if (!valid || pending) return;
+        if (creating && existingNames.includes(value.name.trim())) { setActionError(t('subscriptionNameConflict')); return; }
+        execute(async () => {
+            const next = normalizeLink({ ...value, name: value.name.trim(), url: value.url.trim() });
+            await saveSubscriptions([next]);
+            commit(next); onSaved(next); await refresh(); ctx.Info(uiT('save'));
+        });
+    };
+    const update = () => {
+        if (!item || dirty || pending) return;
+        execute(async () => { await updateSubscriptions([item.name]); await refresh(); ctx.Info(uiT('update')); });
+    };
+    const remove = () => {
+        if (!item || pending || !window.confirm(`${uiT('removeSubscription')} ${item.name}?`)) return;
+        execute(async () => { await deleteSubscriptions([item.name]); onDeleted(); await refresh(); });
+    };
+    return <ResourceEditorFrame title={creating ? uiT('addSubscription') : value.name} label={t('subscriptionsTitle')} presentation="inline" open onClose={close}
+        footer={<>
+            <div>{!creating && <Button variant="outline-danger" disabled={pending} className="gap-2" onClick={remove}><Trash size={16} />{uiT('delete')}</Button>}</div>
+            <div className="flex flex-wrap justify-end gap-2"><Button disabled={pending} onClick={close}>{uiT('cancel')}</Button><Button variant="primary" disabled={pending || !valid} className="gap-2" onClick={save}>{pending ? <Spinner size="sm" /> : <Check size={16} />}{uiT('save')}</Button></div>
+        </>}>
+        {manualCopyModal}
+        <fieldset disabled={pending} className="min-w-0 space-y-5">
+            <div className="grid gap-4 sm:grid-cols-2"><SettingInputVertical label={uiT('name')} value={value.name} disabled={!creating} onChange={name => setValue(previous => ({ ...previous, name }))} />
+                <SettingSelectVertical label={uiT('type')} value={value.type || 'reserve'} values={subscriptionTypes.map(type => [type === 'reserve' ? t('subscriptionAutoDetect') : type, type] as [string, string])} onChange={type => setValue(previous => ({ ...previous, type }))} /></div>
+            <div className="rounded-ui-lg border border-ui-border p-4"><SettingInputVertical label={uiT('subscriptionUrl')} value={value.url} placeholder="https://example.com/sub/..." onChange={url => setValue(previous => ({ ...previous, url }))} />
+                <Button variant="outline-secondary" className="gap-2" disabled={!value.url} onClick={() => copy(value.url)}><Copy size={15} />{copied ? t('subscriptionCopied') : t('copySubscription')}</Button></div>
+            {!creating && <div className="flex flex-wrap items-center justify-between gap-3 rounded-ui-lg border border-ui-border bg-ui-surface-muted/50 p-4"><p className="max-w-md text-sm text-ui-muted">{dirty ? t('saveSubscriptionBeforeUpdate') : t('subscriptionUpdateHelp')}</p><Button variant="outline-primary" className="gap-2" disabled={dirty || pending} onClick={update}><RefreshCw size={16} />{uiT('update')}</Button></div>}
+        </fieldset>
+        {actionError && <p role="alert" className="mt-3 break-words text-sm text-ui-danger">{actionError}</p>}
+    </ResourceEditorFrame>;
+}
+
+export default function Subscribe() {
+    const { t } = useTranslation('routing');
+    const { t: uiT } = useTranslation('ui');
+    const { data, error, isLoading, mutate } = useSWR('/api/v2/subscriptions', listSubscriptions, { revalidateOnFocus: false });
+    const [query, setQuery] = useState('');
+    const all = [...(data?.items ?? [])].sort((a, b) => a.name.localeCompare(b.name));
+    const items = all.filter(item => `${item.name} ${subscriptionSource(item.url)} ${item.type}`.toLowerCase().includes(query.toLowerCase()));
+    const selection = useResourceSelection(items.map(item => item.name));
+    const selected = all.find(item => item.name === selection.id);
+    if (error && !data) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>;
+    if (isLoading && !data) return <Loading />;
+    return <MainContainer><ResourceWorkspace title={t('subscriptionsTitle')} description={uiT('manageRemoteConfigurationLinks')}
+        items={items.map(item => ({ id: item.name, name: item.name, description: subscriptionSource(item.url), icon: <Rss />, status: <span className="text-[0.625rem] uppercase text-ui-muted">{!item.type || item.type === 'reserve' ? t('subscriptionAutoDetect') : item.type}</span> }))}
+        selectedId={selection.id} editing={selection.creating || Boolean(selected)} onSelect={selection.select} onCreate={() => selection.create()} createDisabled={selection.creating}
+        search={{ value: query, onChange: setQuery }}>
+        {(selection.creating || selected) && <SubscriptionEditor key={selection.creating ? 'new' : selection.id} item={selected} creating={selection.creating} onClose={selection.close}
+            existingNames={all.map(item => item.name)} onSaved={next => {
+                void mutate(previous => ({ items: [...(previous?.items ?? []).filter(item => item.name !== next.name), next] }), { revalidate: false });
+                selection.saved(next.name);
+            }} onDeleted={selection.close} refresh={() => mutate()} />}
+    </ResourceWorkspace></MainContainer>;
+}

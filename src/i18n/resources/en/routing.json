@@ -284,7 +284,21 @@
   "dnsResponseTruncated": "Truncated response",
   "dnsNoRecords": "The server returned no records. Check the response code; an empty answer does not imply a connection failure.",
   "dnsRolesTab": "Query policy",
-  "dnsServerTab": "Listening & overrides",
+  "dnsServerTab": "Listening & FakeDNS",
   "dnsCacheTab": "Cache",
-  "dnsSections": "DNS sections"
+  "dnsSections": "DNS sections",
+  "subscriptionsTitle": "Subscriptions",
+  "copySubscription": "Copy link",
+  "subscriptionCopied": "Copied",
+  "saveSubscriptionBeforeUpdate": "Save your changes before fetching nodes from this link.",
+  "subscriptionUpdateHelp": "Fetch nodes using the saved subscription settings.",
+  "activeNodeDetails": "View {{name}}",
+  "activeNodeClosed": "{{name}} terminated",
+  "addHostMapping": "Add host mapping",
+  "hostMapping": "Host mapping",
+  "hostAddress": "Host",
+  "hostTargetHelp": "Map a host or IP to an IP address or host alias. Port-specific mappings are also supported.",
+  "editHostMapping": "Edit {{host}}",
+  "deleteHostMapping": "Delete {{host}}?",
+  "subscriptionAutoDetect": "Auto"
 }

@@ -284,7 +284,21 @@
   "dnsResponseTruncated": "응답이 잘렸습니다",
   "dnsNoRecords": "서버에서 레코드가 반환되지 않았습니다. 응답 코드를 확인하세요. 빈 응답만으로 연결 실패를 의미하지는 않습니다.",
   "dnsRolesTab": "쿼리 정책",
-  "dnsServerTab": "수신 및 재정의",
+  "dnsServerTab": "수신 및 FakeDNS",
   "dnsCacheTab": "캐시",
-  "dnsSections": "DNS 설정"
+  "dnsSections": "DNS 설정",
+  "subscriptionsTitle": "구독",
+  "copySubscription": "링크 복사",
+  "subscriptionCopied": "복사됨",
+  "saveSubscriptionBeforeUpdate": "이 링크에서 노드를 가져오기 전에 변경 사항을 저장하세요.",
+  "subscriptionUpdateHelp": "저장된 구독 설정으로 노드를 가져옵니다.",
+  "activeNodeDetails": "{{name}} 상세 보기",
+  "activeNodeClosed": "{{name}} 연결 종료됨",
+  "addHostMapping": "호스트 매핑 추가",
+  "hostMapping": "호스트 매핑",
+  "hostAddress": "호스트",
+  "hostTargetHelp": "호스트 또는 IP를 IP 주소나 호스트 별칭에 매핑합니다. 포트별 매핑도 지원합니다.",
+  "editHostMapping": "{{host}} 편집",
+  "deleteHostMapping": "{{host}} 삭제할까요?",
+  "subscriptionAutoDetect": "자동"
 }

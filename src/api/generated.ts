@@ -53,6 +53,11 @@ export type RPCOperation =
   | "resolver.fakedns.get"
   | "resolver.fakedns.put"
   | "resolver.get"
+  | "resolver.hosts.entries"
+  | "resolver.hosts.entry.delete"
+  | "resolver.hosts.entry.get"
+  | "resolver.hosts.entry.post"
+  | "resolver.hosts.entry.put"
   | "resolver.hosts.get"
   | "resolver.hosts.put"
   | "resolver.put"
@@ -173,6 +178,11 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "POST", pattern: "/api/v2/nodes/{id}/close", operation: "node.close" },
   { method: "GET", pattern: "/api/v2/nodes/{id}/extra", operation: "node.extra" },
   { method: "GET", pattern: "/api/v2/resolvers", operation: "resolvers.get" },
+  { method: "GET", pattern: "/api/v2/resolver/hosts/entries", operation: "resolver.hosts.entries" },
+  { method: "POST", pattern: "/api/v2/resolver/hosts/entries", operation: "resolver.hosts.entry.post" },
+  { method: "GET", pattern: "/api/v2/resolver/hosts/entries/{host}", operation: "resolver.hosts.entry.get" },
+  { method: "PUT", pattern: "/api/v2/resolver/hosts/entries/{host}", operation: "resolver.hosts.entry.put" },
+  { method: "DELETE", pattern: "/api/v2/resolver/hosts/entries/{host}", operation: "resolver.hosts.entry.delete" },
   { method: "POST", pattern: "/api/v2/resolvers/test", operation: "resolver.test" },
   { method: "GET", pattern: "/api/v2/resolvers/query-types", operation: "resolver.query_types" },
   { method: "POST", pattern: "/api/v2/resolvers", operation: "resolvers.post" },

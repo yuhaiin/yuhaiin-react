@@ -19,6 +19,11 @@ if (scenario === 'l2tp') {
   nodes[0] = { ...nodes[0], name:'L2TP test node', chain:[{type:'l2tp',l2tp:{gateway:'vpn.example.invalid:1701',username:'alice',auth_type:'mschap-v2',ipv6:true,ipv6_address:'fd88::2/64',mtu:1400}}] };
   nodes[1] = { ...nodes[1], name:'L2TPv3 test node', chain:[{type:'l2tpv3',l2tpv3:{gateway:'vpn.example.invalid:1701',static:true,local_session_id:4294967295,peer_session_id:200,local_cookie:'1122334455667788',peer_cookie:'aabbccdd',sublayer:true,address:'10.89.0.2/24',router:'10.89.0.1',ipv6_address:'fd89::2/64',ipv6_router:'fd89::1',mtu:1400}}] };
 }
+const activeIds = new Set(nodes.slice(0, 3).map(node => node.id));
+const subscriptions = scenario === 'empty' ? [] : [
+  { name: 'Work network', type: 'reserve', url: 'https://work.example.invalid/subscription?token=synthetic-token' },
+  { name: 'Travel routes', type: 'reserve', url: 'yuhaiin://synthetic-long-encoded-configuration' },
+];
 const connections = Array.from({length:size},(_,i)=>({id:String(i+1),addr:i===0?'very-long-host-name-for-mobile-layout-testing.example.invalid:443':`host-${i}.example.invalid:443`,network:{connType:i===0?'udp':'tcp',underlyingType:'tcp'},mode:'proxy',ruleId:'rule-0',ruleName:'Work traffic',selectorId:'selector-work',selectorName:'Work destination',inboundId:'inbound-local',inboundName:'Local proxy',domain:`host-${i}.example.invalid`,process:'audit-process',nodeId:'node-0',nodeName:'Mobile test node',lists:['shared-websites'],listNames:{'shared-websites':'Work websites'},matchHistory:[{ruleId:'rule-0',ruleName:'Work traffic',history:[{kind:'list',id:'shared-websites',listName:'Work websites',matched:true}]}]}));
 const history = connections.map((connection,i)=>({connection,time:new Date(1790992800000-i*1000).toISOString(),count:String(i+1)}));
 let settings=createDefaultSettings(); let total=0;
@@ -27,7 +32,7 @@ let routeConfig={revision:0,defaultMode:'proxy',defaultTarget:{type:'default'},d
 let runningConfig=structuredClone(routeConfig);
 let listConfig={revision:0,refreshInterval:'3600',lastRefreshTime:'0',error:'',hostIndexDisk:false,maxMindDbGeoIp:{downloadUrl:'',error:''}};
 let inboundConfig={hijackDns:true,hijackDnsFakeIp:false,sniff:true};
-let resolverServer={server:''},fakeDNS={enabled:false,ipv4Range:'198.18.0.0/15',ipv6Range:'fc00::/18'},resolverHosts={hosts:{}};
+let resolverServer={server:''},fakeDNS={enabled:false,ipv4Range:'198.18.0.0/15',ipv6Range:'fc00::/18'},resolverHosts={hosts:{'local.example':'127.0.0.1','service.example':'alias.example','router.example':'192.0.2.1','vpn.example:443':'192.0.2.2:8443'}};
 let selected={tcpId:nodes[0]?.id,udpId:nodes[0]?.id};
 const failedImports=new Set();
 const selectors=scenario==='empty'?[]:[
@@ -56,6 +61,7 @@ function stream(event,payload,repeat=false){
   const encoder=new TextEncoder(); let timer;
   return new HttpResponse(new ReadableStream({start(controller){ const send=()=>controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`));send(); if(repeat) timer=setInterval(send,1000); else timer=setInterval(()=>controller.enqueue(encoder.encode(': heartbeat\n\n')),10000); },cancel(){clearInterval(timer);}}),{headers:{'Content-Type':'text/event-stream','Cache-Control':'no-cache'}});
 }
+if (scenario === 'lazy') resolverHosts = {hosts: Object.fromEntries(Array.from({length:10000}, (_, i) => [`host-${String(i).padStart(5,'0')}.example.invalid`, `192.0.2.${i%254+1}`]))};
 const worker=setupWorker(
   http.get('/api/v2/connections/events',()=>stream('connections_added',{connections})),
   http.get('/api/v2/tools/logs/v2',()=>stream('log',{log:Array.from({length:100},(_,i)=>`time=2026-10-03T10:00:00.000+08:00 level=INFO msg="Synthetic log ${i}" source=audit extra="${'long-field-'.repeat(12)}"`)},true)),
@@ -79,13 +85,13 @@ const worker=setupWorker(
     else if(op==='nodes.select'){if(!nodes.some(n=>n.id===p.tcpId&&n.enabled)||!nodes.some(n=>n.id===p.udpId&&n.enabled))return errorResponse('Choose enabled nodes');selected=p;}
     else if(op==='node.use'){selected={tcpId:p.id,udpId:p.id};}
     else if(op==='node.delete'){remove(nodes,p.id);}
-    else if(op==='node.close'){}
+    else if(op==='node.close'){activeIds.delete(p.id);}
     else if(op==='node.latency')result={ok:true,latencyMs:36};
     else if(op==='nodes.import.preview'){
       try { const raw=JSON.parse(p.text); const items=Array.isArray(raw)?raw:[raw];result={items:items.map(node=>({...node,id:crypto.randomUUID(),name:node.name||'Imported node',enabled:true,origin:'manual',group:p.group||'manual'})),errors:[]}; }
       catch {result={items:[],errors:[{line:1,message:'This preview accepts canonical node JSON. Share-link parsing is covered by backend tests.'}]};}
     }
-    else if(op==='nodes.active') result={items:nodes.slice(0,3)};
+    else if(op==='nodes.active') result={items:nodes.filter(node=>activeIds.has(node.id))};
     else if(op==='nodes.post'){ if(p.name==='fail'&&!failedImports.has(p.id)){failedImports.add(p.id);return HttpResponse.json({error:{message:'Synthetic create failure'}},{status:500});} result=upsert(nodes,p); }
     else if(op==='connections') result={connections};
     else if(op==='connections.history') result={items:history};
@@ -139,6 +145,10 @@ const worker=setupWorker(
     else if(op==='resolver.get'){result=resolvers.find(item=>item.id===p.id);if(!result)return errorResponse('Resolver no longer exists',404);}
     else if(op==='resolvers.post'||op==='resolver.put')result=upsert(resolvers,{...p,id:p.id||crypto.randomUUID()});
     else if(op==='resolver.delete'){remove(resolvers,p.id);}
+    else if(op==='resolver.hosts.entries')result=page(Object.entries(resolverHosts.hosts).map(([host,target])=>({host,target})).filter(item=>!p.query||`${item.host} ${item.target}`.toLowerCase().includes(p.query.toLowerCase())).sort((a,b)=>a.host.localeCompare(b.host)),p);
+    else if(op==='resolver.hosts.entry.get'){if(!(p.host in resolverHosts.hosts))return errorResponse('Host no longer exists',404);result={host:p.host,target:resolverHosts.hosts[p.host]};}
+    else if(op==='resolver.hosts.entry.post'||op==='resolver.hosts.entry.put'){if(op.endsWith('post')&&p.host in resolverHosts.hosts)return errorResponse('Host already exists',409);if(op.endsWith('put')&&!(p.host in resolverHosts.hosts))return errorResponse('Host no longer exists',404);resolverHosts.hosts[p.host]=p.target;result=p;}
+    else if(op==='resolver.hosts.entry.delete'){delete resolverHosts.hosts[p.host];}
     else if(op==='resolver.hosts.get')result=resolverHosts;
     else if(op==='resolver.hosts.put')result=resolverHosts=p;
     else if(op==='resolver.fakedns.get')result=fakeDNS;
@@ -157,11 +167,13 @@ const worker=setupWorker(
     else if(op==='inbound.retry'){}
     else if(op==='inbounds.config.get')result=inboundConfig;
     else if(op==='inbounds.config.put')result=inboundConfig=p;
-    else if(op==='subscriptions.get')result={items:[]};
+    else if(op==='subscriptions.get')result={items:subscriptions};
     else if(op==='publishes')result={items:publishes};
     else if(op==='publish.put'){const index=publishes.findIndex(item=>item.name===p.name);if(index<0)publishes.push(p);else publishes[index]=p;}
     else if(op==='publish.delete'){const index=publishes.findIndex(item=>item.name===p.name);if(index>=0)publishes.splice(index,1);}
-    else if(op==='subscriptions.put'||op==='subscriptions.delete'||op==='subscriptions.update'){}
+    else if(op==='subscriptions.put'){for(const item of p.items){const index=subscriptions.findIndex(value=>value.name===item.name);if(index<0)subscriptions.push(item);else subscriptions[index]=item;}}
+    else if(op==='subscriptions.delete'){for(const name of p.names){const index=subscriptions.findIndex(value=>value.name===name);if(index>=0)subscriptions.splice(index,1);}}
+    else if(op==='subscriptions.update'){}
     else if(op==='tools.diagnostics')result={schemaVersion:1,host:p.host,platform:'linux',version:'preview',startedAt:new Date().toISOString(),durationMs:12,ipv6Enabled:true,checks:[],findings:[],report:`Synthetic diagnostics for ${p.host}`};
     else if(op==='info')result={version:'UX preview',platform:'linux',goVersion:'go1.27',arch:'amd64'};
     else return HttpResponse.json({error:{message:`Unmocked operation: ${op}`}},{status:501});
