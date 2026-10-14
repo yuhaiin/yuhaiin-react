@@ -1,3 +1,4 @@
+import type { Go } from "@/api/generated-contracts";
 import { requestJSON } from "@/api/client";
 import type { DNSCacheClearResponse, DNSCacheList, FakeDNS, Resolver, ResolverHosts, ResolverList, ResolverServer } from "@/contract/resolver";
 import { normalizeFakeDNS, normalizeHosts, normalizeResolver } from "@/contract/resolver";
@@ -66,4 +67,12 @@ export async function clearResolverCache(resolver: string, domain: string): Prom
     "DELETE",
     `/api/v2/resolver/cache/${encodeURIComponent(resolver)}/${encodeURIComponent(domain)}`,
   );
+}
+
+export function listDNSQueryTypes(): Promise<Go.resolver.QueryTypeList> {
+  return requestJSON("GET", "/api/v2/resolvers/query-types");
+}
+
+export function testResolver(request: Go.resolver.TestRequest, signal?: AbortSignal): Promise<Go.resolver.TestResponse> {
+  return requestJSON("POST", "/api/v2/resolvers/test", request, undefined, signal);
 }

@@ -1,3 +1,4 @@
+import { GeoIPCountrySelect } from '@/component/geoip-country-select';
 
 
 import { useTranslation } from 'react-i18next';
@@ -161,7 +162,6 @@ function ExpressionEditor({ value, options, onChange, onRemove }: { value: RuleE
 }
 
 function RuleExprLeafFields({ value, options, onChange }: { value: RuleExpr; options: RuleEditorOptions; onChange: (value: RuleExpr) => void }) {
-    const { t } = useTranslation("routing");
     const { t: uiT } = useTranslation('ui');
 
     switch (value.type) {
@@ -223,11 +223,8 @@ function RuleExprLeafFields({ value, options, onChange }: { value: RuleExpr; opt
         case "geoip":
             return (
                 <div className="min-w-0 flex-1">
-                    <Input
-                        aria-label={t("countryCodes")} value={value.geoip?.countries ?? ""}
-                        onChange={(event) => onChange({ ...value, geoip: { countries: event.target.value } })}
-                        placeholder="CN,JP,US"
-                    />
+                    <GeoIPCountrySelect value={value.geoip?.countries ?? ""}
+                        onChange={countries => onChange({ ...value, geoip: { countries } })} />
                 </div>
             );
         default:

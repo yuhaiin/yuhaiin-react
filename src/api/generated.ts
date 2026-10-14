@@ -56,14 +56,17 @@ export type RPCOperation =
   | "resolver.hosts.get"
   | "resolver.hosts.put"
   | "resolver.put"
+  | "resolver.query_types"
   | "resolver.server.get"
   | "resolver.server.put"
+  | "resolver.test"
   | "resolvers.get"
   | "resolvers.post"
   | "route.activation"
   | "route.apply"
   | "route.config.get"
   | "route.config.put"
+  | "route.geoip.countries"
   | "route.list.delete"
   | "route.list.get"
   | "route.list.put"
@@ -170,6 +173,8 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "POST", pattern: "/api/v2/nodes/{id}/close", operation: "node.close" },
   { method: "GET", pattern: "/api/v2/nodes/{id}/extra", operation: "node.extra" },
   { method: "GET", pattern: "/api/v2/resolvers", operation: "resolvers.get" },
+  { method: "POST", pattern: "/api/v2/resolvers/test", operation: "resolver.test" },
+  { method: "GET", pattern: "/api/v2/resolvers/query-types", operation: "resolver.query_types" },
   { method: "POST", pattern: "/api/v2/resolvers", operation: "resolvers.post" },
   { method: "GET", pattern: "/api/v2/resolvers/{id}", operation: "resolver.get" },
   { method: "PUT", pattern: "/api/v2/resolvers/{id}", operation: "resolver.put" },
@@ -178,6 +183,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "POST", pattern: "/api/v2/route/apply", operation: "route.apply" },
   { method: "GET", pattern: "/api/v2/route/config", operation: "route.config.get" },
   { method: "PUT", pattern: "/api/v2/route/config", operation: "route.config.put" },
+  { method: "GET", pattern: "/api/v2/route/geoip/countries", operation: "route.geoip.countries" },
   { method: "GET", pattern: "/api/v2/route/lists", operation: "route.lists.get" },
   { method: "GET", pattern: "/api/v2/route/lists/config", operation: "route.lists.config.get" },
   { method: "PUT", pattern: "/api/v2/route/lists/config", operation: "route.lists.config.put" },

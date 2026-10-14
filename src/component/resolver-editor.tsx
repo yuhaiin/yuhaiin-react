@@ -1,3 +1,4 @@
+import { ResolverTestPanel } from './resolver-test-panel';
 import { ResourceEditorFrame } from '@/component/resource-workspace';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
 import { createResolver, getResolver, saveResolver } from '@/api/resolvers';
@@ -31,6 +32,7 @@ export const ResolverModal: FC<{
     const { t: uiT } = useTranslation('ui');
     const { t } = useTranslation('routing');
     const [actionError, setActionError] = useState('');
+    const [testing, setTesting] = useState(false);
     // Adjust only when the editing session changes; no post-commit reset effect.
     const [errorSession, setErrorSession] = useState({ show, id });
     if (errorSession.show !== show || errorSession.id !== id) {
@@ -49,13 +51,13 @@ export const ResolverModal: FC<{
 
     const { value: draft, setValue: setDraft, dirty, commit } = useEditorDraft(show ? id : null, shouldFetch ? data : undefined, () => createDefaultResolver(id));
     const { pending: saving, run } = useAsyncAction(error => { const message = errorOf(error)?.msg ?? "Save failed"; setActionError(message); ctx.Error(message); });
-    const close = useCloseGuard(show && dirty, saving, () => onHide());
+    const close = useCloseGuard(show && dirty, saving || testing, () => onHide());
 
     const apiError = errorOf(error);
     const resolver = isNew ? draft : data ? draft : undefined;
 
     const handleSave = () => {
-        if (!resolver || saving || error || isLoading) return;
+        if (!resolver || saving || testing || error || isLoading) return;
         const nextID = isNew ? resolver.id : id;
         setActionError('');
         const next = normalizeResolver({ ...resolver, id: nextID });
@@ -74,18 +76,18 @@ export const ResolverModal: FC<{
         footer={<>
                     <div>
                         {onDelete && id !== 'bootstrap' && !isNew &&
-                            <Button variant="outline-danger" disabled={saving || isLoading || Boolean(error)} onClick={() => onDelete?.(id)}>
+                            <Button variant="outline-danger" disabled={saving || testing || isLoading || Boolean(error)} onClick={() => onDelete?.(id)}>
                                 <Trash className="mr-2" size={16} />{uiT("delete")}</Button>
                         }
                     </div>
                     <div className="flex flex-wrap justify-end gap-2">
-                        <Button onClick={close} disabled={saving}>{uiT("cancel")}</Button>
-                        <Button variant="primary" disabled={saving || !resolver || isLoading || Boolean(error)} onClick={handleSave}>
+                        <Button onClick={close} disabled={saving || testing}>{uiT("cancel")}</Button>
+                        <Button variant="primary" disabled={saving || testing || !resolver || isLoading || Boolean(error)} onClick={handleSave}>
                             {saving ? <Spinner size="sm" /> : <><Check className="mr-2" size={16} />{isNew ? uiT("add") : uiT("save")}</>}
                         </Button>
                     </div>
                 </>}>
-                    <fieldset disabled={saving} className="contents">
+                    <fieldset disabled={saving || testing} className="contents">
                     {apiError ?
                         <Loading code={apiError.code} onRetry={() => void mutate()}>{apiError.msg}</Loading> :
                         isLoading || !resolver ? <Loading /> :
@@ -95,6 +97,7 @@ export const ResolverModal: FC<{
                             </SettingsBox>
                     }
                 </fieldset>
+                {resolver && !isLoading && !apiError && <ResolverTestPanel resolver={resolver} disabled={saving} onPendingChange={setTesting} />}
                 </ResourceEditorFrame>
 }
 

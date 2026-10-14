@@ -1,3 +1,5 @@
+import { Tabs } from 'radix-ui';
+import { allowNavigation } from '@/hooks/navigation-guard';
 import { ResolverModal } from '@/component/resolver-editor';
 import { ResourceWorkspace, useResourceSelection } from '@/component/resource-workspace';
 import { useAsyncAction, useCloseGuard } from '@/hooks/use-editor-draft';
@@ -19,23 +21,22 @@ import { DNSRoles } from './roles';
 const PAGE_SIZE = 12;
 
 export default function ResolverComponent() {
-    const { t } = useTranslation("routing");
-    return (
-        <MainContainer className="max-w-[1440px]">
-            <div className="flex flex-col gap-6">
-                <h1 className="text-xl font-semibold text-ui-heading">{t('dnsTask')}</h1>
-                <p className="text-sm text-ui-muted">{t("dnsPageHelp")}</p>
-                <DNSRoles />
-                <ResolverList />
-                <Server />
-                <details><summary className="cursor-pointer text-sm font-semibold">{t('advancedDNSSettings')}</summary>
-                    <div className="mt-4 space-y-6"><DNSCache />
-                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2"><Hosts /><Fakedns /></div>
-                    </div>
-                </details>
-            </div>
-        </MainContainer>
-    );
+    const { t } = useTranslation('routing');
+    const { t: uiT } = useTranslation('ui');
+    const [tab, setTab] = useState('resolvers');
+    const entries = [['resolvers', uiT('resolvers')], ['roles', t('dnsRolesTab')], ['server', t('dnsServerTab')], ['cache', t('dnsCacheTab')]];
+    return <MainContainer className="max-w-[1440px]">
+        <header className="mb-5"><h1 className="text-3xl font-semibold tracking-tight text-ui-heading">{t('dnsTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('dnsPageHelp')}</p></header>
+        <Tabs.Root activationMode="manual" value={tab} onValueChange={next => { if (next !== tab && allowNavigation()) setTab(next); }}>
+            <Tabs.List aria-label={t('dnsSections')} className="mb-6 flex min-w-0 gap-1 overflow-x-auto border-b border-ui-border">
+                {entries.map(([value, label]) => <Tabs.Trigger key={value} value={value} className="min-h-11 shrink-0 whitespace-nowrap border-b-2 border-transparent px-3 py-2 text-sm text-ui-muted transition-colors hover:text-ui-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus data-[state=active]:border-ui-primary data-[state=active]:font-semibold data-[state=active]:text-ui-primary">{label}</Tabs.Trigger>)}
+            </Tabs.List>
+            <Tabs.Content value="resolvers" className="min-w-0"><ResolverList /></Tabs.Content>
+            <Tabs.Content value="roles" className="min-w-0"><DNSRoles /></Tabs.Content>
+            <Tabs.Content value="server" className="min-w-0 space-y-6"><Server /><div className="grid gap-6 lg:grid-cols-2"><Hosts /><Fakedns /></div></Tabs.Content>
+            <Tabs.Content value="cache" className="min-w-0"><DNSCache /></Tabs.Content>
+        </Tabs.Root>
+    </MainContainer>;
 }
 
 function ResolverList() {
@@ -55,7 +56,7 @@ function ResolverList() {
         if (!window.confirm(uiT('deleteResolver'))) return;
         void run(async () => { await deleteResolver(id); selection.close(); await mutate(); });
     };
-    return <ResourceWorkspace createDisabled={selection.creating} title={uiT('resolvers')} description={uiT('upstreamDnsResolvers')} selectedId={selection.id} editing={selection.creating || Boolean(selection.id)}
+    return <ResourceWorkspace embedded createDisabled={selection.creating} title={uiT('resolvers')} description={uiT('upstreamDnsResolvers')} selectedId={selection.id} editing={selection.creating || Boolean(selection.id)}
         onSelect={selection.select} onCreate={() => selection.create()} search={{ value: query, onChange: value => { setQuery(value); setPage(1); } }}
         pagination={{ page: data?.page.page || page, pageSize: PAGE_SIZE, total: data?.page.total ?? 0, onChange: setPage }}
         items={items.map(item => ({ id: item.id, name: item.name, icon: ['doh','doh3'].includes(item.type) ? <Globe2 /> : <Network />, description: `${item.type} · ${item.host || uiT('system')}` }))}>
