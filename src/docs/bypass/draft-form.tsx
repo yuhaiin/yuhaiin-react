@@ -7,7 +7,7 @@ import { RouteTargetPicker } from '@/component/route-target-picker';
 import { createDefaultRouteList, type RuleDraft } from '@/contract/route';
 import { useId, useState } from 'react';
 import { createID } from '@/common/id';
-import clsx from 'clsx';
+import { ToggleGroup, ToggleItem } from '@/component/v2/togglegroup';
 import { useTranslation } from 'react-i18next';
 import { RouteRuleForm, type RuleEditorOptions } from './rule-form';
 import { hasAdvancedRuleOptions, parseSimpleMatcher, referencedLists } from './draft';
@@ -39,14 +39,11 @@ export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; 
     return <div className="space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ui-border/60 pb-4">
             <p className="max-w-lg text-sm text-ui-muted">{t('ruleTask')}</p>
-            <div role="group" aria-label={t('ruleEditor')} className="inline-flex shrink-0 gap-1 rounded-ui-md bg-ui-surface-muted p-1">
-                <Button type="button" size="sm" variant="outline-secondary" disabled={needsAdvanced} aria-pressed={!advanced && !needsAdvanced}
-                    className={clsx('h-8 border-transparent shadow-none', !advanced && !needsAdvanced ? 'bg-ui-surface text-ui-heading' : 'bg-transparent text-ui-muted')}
-                    onClick={() => setAdvanced(false)}>{t('simpleEditor')}</Button>
-                <Button type="button" size="sm" variant="outline-secondary" aria-pressed={advanced || needsAdvanced}
-                    className={clsx('h-8 border-transparent shadow-none', advanced || needsAdvanced ? 'bg-ui-surface text-ui-heading' : 'bg-transparent text-ui-muted')}
-                    onClick={() => setAdvanced(true)}>{t('advancedEditor')}</Button>
-            </div>
+            <ToggleGroup type="single" value={advanced || needsAdvanced ? 'advanced' : 'simple'} aria-label={t('ruleEditor')}
+                onValueChange={mode => { if (mode) setAdvanced(mode === 'advanced'); }}>
+                <ToggleItem value="simple" disabled={needsAdvanced}>{t('simpleEditor')}</ToggleItem>
+                <ToggleItem value="advanced">{t('advancedEditor')}</ToggleItem>
+            </ToggleGroup>
         </div>
         {advanced || needsAdvanced ? <>
             {needsAdvanced && <p className="text-sm text-ui-muted">{t('complexRule')}</p>}
@@ -78,13 +75,10 @@ export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; 
             <SimpleConditions privateHistory={privateHistory} value={value} matcher={matcher} options={options} onChange={onChange} />
             <section className="space-y-4 border-t border-ui-border/60 pt-5">
                 <h3 className="text-sm font-semibold text-ui-heading">{t('handlingAndDestination')}</h3>
-                <div role="group" aria-label={t('action')} className="grid grid-cols-3 gap-2">
-                    {(['proxy', 'direct', 'block'] as const).map(mode => <button key={mode} type="button"
-                        aria-pressed={value.rule.mode === mode}
-                        className={clsx('min-h-10 rounded-ui-md border px-2 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus',
-                            value.rule.mode === mode ? 'border-ui-primary bg-ui-primary-soft text-ui-primary' : 'border-ui-border bg-ui-surface text-ui-muted hover:bg-ui-surface-muted')}
-                        onClick={() => patchRule({ mode })}>{t(mode)}</button>)}
-                </div>
+                <ToggleGroup type="single" value={value.rule.mode} aria-label={t('action')} className="grid grid-cols-3"
+                    onValueChange={mode => { if (mode === 'proxy' || mode === 'direct' || mode === 'block') patchRule({ mode }); }}>
+                    {(['proxy', 'direct', 'block'] as const).map(mode => <ToggleItem key={mode} value={mode}>{t(mode)}</ToggleItem>)}
+                </ToggleGroup>
                 {value.rule.mode === 'proxy' && <div className="space-y-2"><SettingLabel>{t('destination')}</SettingLabel><RouteTargetPicker compact value={value.rule.target} onChange={target => patchRule({ target })} /></div>}
             </section>        </>}
     </div>;

@@ -17,13 +17,13 @@ const DropdownContent = ({ className, sideOffset = 4, children, ...props }: Reac
             onWheel={(e) => e.stopPropagation()}
             {...props}
         >
-            <motion.div
-                initial={{ opacity: 0, scale: 0.96, y: -4 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
+            <motion.div data-ui-transition="popover"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.14, ease: "easeOut" }}
                 style={{ minWidth: "min(12rem, calc(100vw - 24px))", maxWidth: "min(520px, var(--radix-dropdown-menu-content-available-width), calc(100vw - 24px))" }}
                 className={clsx(
-                    "bg-ui-surface border border-ui-border shadow-ui-elevated rounded-ui-xl min-w-[12rem] py-1.5 flex flex-col z-[2000] w-[var(--radix-dropdown-menu-trigger-width)] max-w-[var(--radix-dropdown-menu-trigger-width)] max-h-[var(--radix-dropdown-menu-content-available-height)] overflow-hidden",
+                    "bg-ui-surface-raised border border-ui-border shadow-ui-elevated rounded-ui-md min-w-[12rem] py-1.5 flex flex-col z-[2000] w-[var(--radix-dropdown-menu-trigger-width)] max-w-[var(--radix-dropdown-menu-trigger-width)] max-h-[var(--radix-dropdown-menu-content-available-height)] overflow-hidden",
                     className
                 )}
             >
@@ -40,9 +40,9 @@ DropdownContent.displayName = "DropdownContent";
 const DropdownItem = ({ className, ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Item>) => (
     <DropdownMenuPrimitive.Item
         className={clsx(
-            "relative flex items-center w-full py-1.5 px-3 text-[0.95rem] text-ui-fg select-none cursor-pointer outline-none bg-transparent border-0 text-left no-underline rounded-ui-sm",
+            "relative flex items-center w-full min-h-8 max-sm:min-h-11 py-1.5 px-3 text-sm text-ui-fg select-none cursor-pointer outline-none bg-transparent border-0 text-left no-underline rounded-ui-sm",
             "hover:bg-ui-hover hover:text-ui-heading focus:bg-ui-hover focus:text-ui-heading",
-            "data-[highlighted]:bg-ui-hover data-[highlighted]:text-ui-heading",
+            "data-[highlighted]:bg-ui-hover data-[highlighted]:text-ui-heading data-[highlighted]:ring-1 data-[highlighted]:ring-inset data-[highlighted]:ring-ui-primary data-[disabled]:opacity-50 data-[disabled]:pointer-events-none",
             ui.interactive,
             className
         )}
@@ -68,9 +68,10 @@ DropdownLabel.displayName = "DropdownLabel";
 const DropdownCheckboxItem = ({ className, children, checked, ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.CheckboxItem>) => (
     <DropdownMenuPrimitive.CheckboxItem
         className={clsx(
-            "relative flex items-center w-full py-1.5 px-3 pl-9 text-[0.95rem] text-ui-fg select-none cursor-pointer outline-none bg-transparent border-0 text-left no-underline rounded-ui-sm",
+            "relative flex items-center w-full min-h-8 max-sm:min-h-11 py-1.5 px-3 pl-9 text-sm text-ui-fg select-none cursor-pointer outline-none bg-transparent border-0 text-left no-underline rounded-ui-sm",
             "hover:bg-ui-hover hover:text-ui-heading focus:bg-ui-hover focus:text-ui-heading",
-            "data-[highlighted]:bg-ui-hover data-[highlighted]:text-ui-heading",
+            "data-[highlighted]:bg-ui-hover data-[highlighted]:text-ui-heading data-[highlighted]:ring-1 data-[highlighted]:ring-inset data-[highlighted]:ring-ui-primary data-[disabled]:opacity-50 data-[disabled]:pointer-events-none",
+            "data-[state=checked]:text-ui-primary data-[state=checked]:bg-ui-primary-soft data-[disabled]:opacity-50 data-[disabled]:pointer-events-none",
             ui.interactive,
             className
         )}

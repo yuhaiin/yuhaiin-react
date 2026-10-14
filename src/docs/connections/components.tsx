@@ -311,10 +311,10 @@ export const FlowCard: FC<{
                     : clsx("grid gap-3", hasExtra ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" : "grid-cols-1 sm:grid-cols-2 xl:grid-cols-4"),
             )}
         >
-            <MetricCard summary={summary} accent="download" label={t("totalDownload")} value={lastFlow ? lastFlow.DownloadTotalString() : loading} error={flow_error} />
             <MetricCard summary={summary} accent="download" label={t("downloadRate")} value={lastFlow ? lastFlow.DownloadString() : loading} error={flow_error} />
-            <MetricCard summary={summary} accent="upload" label={t("totalUpload")} value={lastFlow ? lastFlow.UploadTotalString() : loading} error={flow_error} />
             <MetricCard summary={summary} accent="upload" label={t("uploadRate")} value={lastFlow ? lastFlow.UploadString() : loading} error={flow_error} />
+            <MetricCard summary={summary} accent="download" label={t("totalDownload")} value={lastFlow ? lastFlow.DownloadTotalString() : loading} error={flow_error} />
+            <MetricCard summary={summary} accent="upload" label={t("totalUpload")} value={lastFlow ? lastFlow.UploadTotalString() : loading} error={flow_error} />
             {extra_fields?.map((field, index) => (
                 <MetricCard key={`extra-field-${index}`} summary={summary} label={field.label} value={field.value || loading} error={field.error} />
             ))}

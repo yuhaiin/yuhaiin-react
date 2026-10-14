@@ -1,10 +1,10 @@
+import { ToggleGroup, ToggleItem } from '@/component/v2/togglegroup';
 import { GeoIPCountrySelect } from '@/component/geoip-country-select';
 import { Button } from '@/component/v2/button';
 import { SettingLabel } from '@/component/v2/card';
 import { DropdownSelect, SettingSelectVertical, SettingInputVertical } from '@/component/v2/forms';
 import { Textarea } from '@/component/v2/input';
 import { createDefaultRouteList, type RuleDraft, type RuleExpr, type RouteListDetail } from '@/contract/route';
-import clsx from 'clsx';
 import { Plus, X } from 'lucide-react';
 import { createID } from '@/common/id';
 import { useTranslation } from 'react-i18next';
@@ -92,31 +92,17 @@ export function SimpleConditions({ value, matcher, options, onChange, privateHis
     };
 
     return <section className="space-y-4 border-t border-ui-border/60 pt-5">
-        <h3 className="text-sm font-semibold text-ui-heading">{t('matchTraffic')}</h3>
-        <div role="group" aria-label={t('matchScope')} className="grid grid-cols-2 gap-2">
-            {(['any', 'always'] as const).map(mode => <button type="button" key={mode}
-                aria-pressed={mode === 'always' ? matcher.join === 'always' : matcher.join !== 'always'}
-                className={clsx('min-h-10 rounded-ui-md border px-2 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus',
-                    (mode === 'always' ? matcher.join === 'always' : matcher.join !== 'always')
-                        ? 'border-ui-primary bg-ui-primary-soft text-ui-primary'
-                        : 'border-ui-border bg-ui-surface text-ui-muted hover:bg-ui-surface-muted')}
-                onClick={() => mode === 'always'
-                    ? setMatcher({ join: 'always', items: [] })
-                    : matcher.join === 'always' && addCondition()}>
-                {mode === 'always' ? t('condition.always') : t('matchSelectedTraffic')}
-            </button>)}
-        </div>
+        <h3 className="text-base font-semibold text-ui-heading">{t('matchTraffic')}</h3>
+        <ToggleGroup type="single" value={matcher.join === 'always' ? 'always' : 'any'} aria-label={t('matchScope')} className="grid grid-cols-2"
+            onValueChange={mode => { if (mode === 'always') setMatcher({ join: 'always', items: [] }); else if (mode === 'any' && matcher.join === 'always') addCondition(); }}>
+            <ToggleItem value="any">{t('matchSelectedTraffic')}</ToggleItem><ToggleItem value="always">{t('condition.always')}</ToggleItem>
+        </ToggleGroup>
         {matcher.join === 'always' ? <p className="rounded-ui-md border border-ui-warning/30 bg-ui-warning-soft/40 p-3 text-sm text-ui-muted">{t('allTrafficHelp')}</p> : <>
             {matcher.items.length > 1 && <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm text-ui-muted">{t('combineConditions')}</span>
-                <div role="group" aria-label={t('combineConditions')} className="inline-flex gap-1 rounded-ui-md bg-ui-surface-muted p-1">
-                    {(['any', 'all'] as const).map(join => <button type="button" key={join} aria-pressed={matcher.join === join}
-                        onClick={() => setMatcher({ ...matcher, join })}
-                        className={clsx('rounded-ui-sm px-3 py-1.5 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus',
-                            matcher.join === join ? 'bg-ui-surface text-ui-heading' : 'text-ui-muted hover:text-ui-heading')}>
-                        {t(join === 'all' ? 'matchEveryCondition' : 'matchAnyCondition')}
-                    </button>)}
-                </div>
+                <ToggleGroup type="single" value={matcher.join} aria-label={t('combineConditions')} onValueChange={join => { if (join === 'any' || join === 'all') setMatcher({ ...matcher, join }); }}>
+                    {(['any', 'all'] as const).map(join => <ToggleItem key={join} value={join}>{t(join === 'all' ? 'matchEveryCondition' : 'matchAnyCondition')}</ToggleItem>)}
+                </ToggleGroup>
             </div>}
             <div className="space-y-3">
                 {matcher.items.map((expr, index) => {

@@ -1,3 +1,4 @@
+import { waitForPreview } from './preview-ready.mjs';
 import { spawn } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -13,12 +14,12 @@ const browser = spawn('google-chrome', [
 
 const base = 'http://127.0.0.1:5175/?scenario=normal#';
 const cases = [
-  { name: 'routing-desktop', path: '/docs/bypass', width: 1440, height: 1100, match: 'section[aria-label="Rule editor"] [role="group"][aria-label="Rule editor"]' },
-  { name: 'rule-editor', path: '/docs/bypass?rule=rule-0', width: 1440, height: 1100, match: 'section[aria-label="Rule editor"] [role="group"][aria-label="Rule editor"]' },
+  { name: 'routing-desktop', path: '/docs/bypass', width: 1440, height: 1100, match: 'section[aria-label="Rule editor"] [aria-label="Rule editor"]' },
+  { name: 'rule-editor', path: '/docs/bypass?rule=rule-0', width: 1440, height: 1100, match: 'section[aria-label="Rule editor"] [aria-label="Rule editor"]' },
   { name: 'nodes-desktop', path: '/docs/group', width: 1440, height: 1100, match: 'section[aria-label="Connection settings"] input' },
   { name: 'selectors-desktop', path: '/docs/group/selectors', width: 1440, height: 1100, match: 'section[aria-label="Shared destination settings"] input' },
   { name: 'routing-mobile', path: '/docs/bypass', width: 390, height: 844, match: 'aside[aria-label="Rule directory"]' },
-  { name: 'rule-editor-mobile', path: '/docs/bypass?rule=rule-0', width: 390, height: 844, match: 'section[aria-label="Rule editor"] [role="group"][aria-label="Rule editor"]' },
+  { name: 'rule-editor-mobile', path: '/docs/bypass?rule=rule-0', width: 390, height: 844, match: 'section[aria-label="Rule editor"] [aria-label="Rule editor"]' },
   { name: 'nodes-mobile', path: '/docs/group', width: 390, height: 844, match: 'aside[aria-label="Node directory"]' },
   { name: 'node-details-mobile', path: '/docs/group?node=node-0', width: 390, height: 844, match: 'section[aria-label="Connection settings"] input' },
   { name: 'selectors-mobile', path: '/docs/group/selectors', width: 390, height: 844, match: 'aside[aria-label="Shared destinations"]' },
@@ -75,6 +76,7 @@ async function main() {
   }
   await send('Page.enable');
   await send('Runtime.enable');
+  await send('Page.addScriptToEvaluateOnNewDocument', { source: "localStorage.setItem('yuhaiin.theme','light');localStorage.setItem('yuhaiin.accent','olive');" });
   await mkdir('/tmp/ux-shots', { recursive: true });
   for (const shot of cases) {
     await send('Emulation.setDeviceMetricsOverride', {
@@ -82,7 +84,7 @@ async function main() {
       deviceScaleFactor: 1, mobile: shot.width < 700,
       screenWidth: shot.width, screenHeight: shot.height,
     });
-    await send('Page.navigate', { url: base + shot.path });
+    await send('Page.navigate', { url: base.replace('#', '&capture=' + shot.name + '#') + shot.path });
     let loaded = false;
     let detail = '';
     for (let attempt = 0; attempt < 120; attempt++) {
@@ -104,6 +106,7 @@ async function main() {
       await sleep(250);
     }
     if (!loaded) throw new Error('Preview did not render ' + shot.name + ': ' + detail);
+    await waitForPreview(send, shot.match);
     const layout = await send('Runtime.evaluate', {
       expression: '({viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth})',
       returnByValue: true,
@@ -126,7 +129,7 @@ async function main() {
       });
       if (action.result?.value !== true) throw new Error('Could not open advanced rule editor');
     }
-    await sleep(1000);
+    await waitForPreview(send, shot.match);
     const result = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
     if (!result.data) throw new Error('Chrome returned no image for ' + shot.name);
     await writeFile('/tmp/ux-shots/' + shot.name + '.png', Buffer.from(result.data, 'base64'));

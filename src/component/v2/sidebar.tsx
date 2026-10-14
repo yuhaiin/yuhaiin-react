@@ -22,7 +22,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
     const { t } = useTranslation('nav');
     React.useEffect(() => { if (desktop && show) onHide?.(); }, [desktop, show, onHide]);
     const panelClass = clsx(
-        "fixed z-[1050] bg-sidebar-bg text-sidebar-color border border-sidebar-border shadow-sidebar py-5 overflow-y-auto [&::-webkit-scrollbar]:w-0",
+        "fixed z-[1050] bg-sidebar-bg text-sidebar-color border border-sidebar-border shadow-sidebar py-4 overflow-y-auto [&::-webkit-scrollbar]:w-0",
         className
     );
     if (desktop) return (
@@ -78,9 +78,9 @@ const SidebarItem = React.forwardRef<HTMLAnchorElement, SidebarItemProps>(({ cla
             ref={ref}
             aria-current={active ? "page" : undefined}
             className={clsx(
-                "flex min-h-11 items-center w-full px-3.5 py-2.5 text-sm font-medium text-sidebar-color rounded-ui-md transition-colors duration-150 border-none no-underline cursor-pointer bg-transparent outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar-bg",
+                "relative flex min-h-11 items-center w-full px-3.5 py-2.5 text-sm font-medium text-sidebar-color rounded-ui-md transition-colors duration-150 border-none no-underline cursor-pointer bg-transparent outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar-bg",
                 "hover:bg-sidebar-hover hover:text-sidebar-active",
-                active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold",
+                active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold before:absolute before:inset-y-3 before:left-0 before:w-0.5 before:rounded-full before:bg-ui-primary",
                 className
             )}
             {...props}
@@ -130,9 +130,9 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
                 <button
                     type="button"
                     className={clsx(
-                        "group flex min-h-11 items-center w-full px-3.5 py-2.5 text-sm font-medium text-sidebar-color rounded-ui-md transition-colors duration-150 border-none cursor-pointer bg-transparent outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar-bg",
+                        "group relative flex min-h-11 items-center w-full px-3.5 py-2.5 text-sm font-medium text-sidebar-color rounded-ui-md transition-colors duration-150 border-none cursor-pointer bg-transparent outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar-bg",
                         "hover:bg-sidebar-hover hover:text-sidebar-active",
-                        active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold"
+                        active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold before:absolute before:inset-y-3 before:left-0 before:w-0.5 before:rounded-full before:bg-ui-primary"
                     )}
                 >
                     {icon && (
@@ -175,7 +175,7 @@ const SidebarSubLink = React.forwardRef<HTMLAnchorElement, SidebarSubLinkProps>(
             ref={ref}
             aria-current={active ? "page" : undefined}
             className={clsx(
-                "relative flex min-h-11 items-center w-full pl-5 pr-3 py-3 text-[0.8125rem] text-sidebar-color opacity-80 transition-[color,background-color,opacity] duration-150 no-underline cursor-pointer bg-transparent border-none rounded-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar-bg",
+                "relative flex min-h-11 items-center w-full pl-5 pr-3 py-3 text-[0.8125rem] text-sidebar-color transition-[color,background-color,opacity] duration-150 no-underline cursor-pointer bg-transparent border-none rounded-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar-bg",
                 "hover:opacity-100 hover:text-sidebar-active hover:bg-sidebar-hover",
                 // Active state
                 active && "!text-sidebar-active opacity-100 font-semibold",

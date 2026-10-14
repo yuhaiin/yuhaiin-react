@@ -1,12 +1,12 @@
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { getTelemetry, getTraffic } from "@/api/connections";
-import { selectedNodes } from "@/api/nodes";
-import { Button } from "@/component/v2/button";
+import { activeNodes, selectedNodes } from "@/api/nodes";
 import { Card, CardBody, CardHeader, IconBox, MainContainer } from "@/component/v2/card";
 import Loading from "@/component/v2/loading";
 import type { TrafficSeries } from "@/contract/connection";
 import type { Node } from "@/contract/node";
+import { ToggleGroup, ToggleItem } from '@/component/v2/togglegroup';
 import clsx from "clsx";
 import { Activity, ArrowDownToLine, ArrowUpFromLine, Network } from "lucide-react";
 import { FC, useCallback, useMemo, useState } from "react";
@@ -44,7 +44,7 @@ const EndpointCard: FC<{
             disabled={!node || Boolean(error)}
             onClick={() => node && onOpen(node)}
             className={clsx(
-                "group flex min-h-[76px] sm:min-h-[92px] w-full min-w-0 flex-col justify-center rounded-ui-xl border border-ui-border bg-ui-surface p-3 sm:p-4 text-left shadow-ui-card transition-colors",
+                "group flex min-h-[76px] sm:min-h-[82px] w-full min-w-0 flex-col justify-center rounded-ui-xl border border-ui-border bg-ui-surface p-3 sm:p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus",
                 node && !error
                     ? "cursor-pointer hover:border-ui-primary/35 hover:bg-ui-surface-muted/40"
                     : "cursor-default opacity-90"
@@ -79,10 +79,11 @@ const EndpointCard: FC<{
 
 function HomePage() {
     const mobile = useMediaQuery('(max-width: 639px)');
-    const chartHeight = mobile ? 240 : 400;
+    const chartHeight = mobile ? 220 : 300;
     const { t: uiT } = useTranslation('ui');
 
     const { t } = useTranslation(["home", "common"]);
+    const { data: active, error: activeError } = useSWR('/api/v2/nodes/active', activeNodes, { revalidateOnFocus: false, refreshInterval: 15000 });
     const [nodeModal, setNodeModal] = useState<{ show: boolean; node?: Node }>({ show: false });
     const { data: now, error: nowError } = useSWR("/api/v2/nodes/selected", selectedNodes, {
         refreshInterval: 5000,
@@ -114,7 +115,7 @@ function HomePage() {
     }, []);
 
     return (
-        <div className="box-border flex h-full flex-col">
+        <div className="box-border min-h-full">
             <NodeModal
                 show={nodeModal.show}
                 node={nodeModal.node}
@@ -122,10 +123,10 @@ function HomePage() {
                 onHide={() => setNodeModal({ show: false })}
             />
 
-            <div className="mb-3 shrink-0">
-                <FlowContainer onFlow={isLiveTraffic ? appendTraffic : undefined} variant="summary" />
-            </div>
-
+            <header className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <h1 className="m-0 sr-only text-2xl font-semibold tracking-tight text-ui-heading lg:not-sr-only">{t('nav:home')}</h1>
+                {activeError ? <span className="text-sm text-ui-danger">{activeError.msg}</span> : <span className="flex items-center gap-2 text-xs text-ui-muted"><Activity size={15} aria-hidden="true" className="text-ui-success" />{active?.items.length ?? '—'} {uiT('activeNodes')}</span>}
+            </header>
             <div className="mb-4 grid grid-cols-2 shrink-0 gap-2 sm:gap-3">
                 <EndpointCard
                     label={t("tcpEndpoint")}
@@ -141,48 +142,25 @@ function HomePage() {
                 />
             </div>
 
+            <div className="mb-3"><FlowContainer onFlow={isLiveTraffic ? appendTraffic : undefined} variant="summary" /></div>
+
             <MainContainer>
                 <SetupCard />
-                <Card className="min-h-[260px] sm:min-h-[400px]" density="compact">
+                <Card className="min-h-[240px] sm:min-h-[300px]" density="compact">
                     <CardHeader className="flex-col items-stretch gap-3 px-4 py-3.5 sm:flex-row sm:items-center">
                         <div className="flex w-full min-w-0 items-start gap-3 sm:flex-1">
                             <IconBox
                                 icon={Activity}
-                                tone="primary"
+                                tone="neutral"
                                 title={isLiveTraffic ? "Live traffic" : "Traffic history"}
                                 description={isLiveTraffic ? "Current download and upload speed" : "Download and upload totals by period"}
                             />
                         </div>
 
                         <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-end">
-                            <div
-                                className="inline-flex flex-wrap items-center rounded-full border border-ui-border bg-ui-surface-muted/50 p-1"
-                                aria-label={uiT("trafficRange")}
-                            >
-                                {trafficRanges.map(item => {
-                                    const active = item.key === range.key;
-                                    return (
-                                        <Button
-                                            key={item.key}
-                                            size="xs"
-                                            variant={active ? "primary" : "outline-secondary"}
-                                            className={clsx(
-                                                "!rounded-full border-transparent shadow-none",
-                                                !active && "!bg-transparent !text-ui-muted hover:!bg-ui-hover hover:!text-ui-fg"
-                                            )}
-                                            onClick={() => setSelectedRange(item.key)}
-                                        >
-                                            {item.key === "live" && (
-                                                <span className={clsx(
-                                                    "mr-1.5 inline-block h-1.5 w-1.5 rounded-full",
-                                                    active ? "bg-white animate-pulse" : "bg-ui-muted"
-                                                )} />
-                                            )}
-                                            {item.label}
-                                        </Button>
-                                    );
-                                })}
-                            </div>
+                            <ToggleGroup type="single" value={selectedRange} aria-label={uiT("trafficRange")} onValueChange={value => { if (value) setSelectedRange(value); }}>
+                                {trafficRanges.map(item => <ToggleItem key={item.key} value={item.key}>{item.key === 'live' && <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />}{item.label}</ToggleItem>)}
+                            </ToggleGroup>
                             <div className="flex items-center justify-end gap-3 text-[11px] text-ui-muted">
                                 <span className="inline-flex items-center gap-1.5">
                                     <ArrowDownToLine size={12} className="text-ui-info" />
@@ -200,11 +178,12 @@ function HomePage() {
                     </CardBody>
                 </Card>
 
+                <div className="my-5"><Activates showFooter={false} /></div>
                 <Card density="compact">
                     <CardHeader className="px-4 py-3.5">
                         <IconBox
                             icon={Activity}
-                            tone="violet"
+                            tone="neutral"
                             title={uiT("trafficBreakdown")}
                             description={`Top traffic and failures · ${isLiveTraffic ? "24H" : range.label}`}
                         />
@@ -215,7 +194,6 @@ function HomePage() {
                 </Card>
             </MainContainer>
 
-            <Activates showFooter={false} />
         </div>
     );
 }

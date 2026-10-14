@@ -38,13 +38,13 @@ export const Tooltip: FC<{ children: ReactNode, content: ReactNode, id?: string,
             {createPortal(
                 <AnimatePresence>
                     {visible && (
-                        <motion.div
+                        <motion.div data-ui-transition="popover"
                             id={id}
                             role="tooltip"
-                            initial={{ opacity: 0, scale: 0.2, y: "-100%", x: "-50%" }}
-                            animate={{ opacity: 1, scale: 1, y: "-100%", x: "-50%" }}
-                            exit={{ opacity: 0, scale: 0.2, y: "-100%", x: "-50%" }}
-                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                            initial={{ opacity: 0, y: "-100%", x: "-50%" }}
+                            animate={{ opacity: 1, y: "-100%", x: "-50%" }}
+                            exit={{ opacity: 0, y: "-100%", x: "-50%" }}
+                            transition={{ duration: 0.14, ease: "easeOut" }}
                             className="fixed p-[6px_10px] text-xs leading-normal text-ui-bg bg-ui-heading rounded-ui-sm whitespace-normal text-center shadow-ui-elevated z-[9999] max-w-[200px] pointer-events-none origin-[center_bottom]"
                             style={{
                                 left: coords.left,

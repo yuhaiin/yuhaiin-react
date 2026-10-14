@@ -39,7 +39,7 @@ function renderDraft(initial: RuleDraft) {
 }
 
 function action(host: HTMLElement, label: string) {
-    const button = [...host.querySelectorAll('button')].find(item => item.textContent === label && item.hasAttribute('aria-pressed'));
+    const button = [...host.querySelectorAll('[aria-label="action"] button')].find(item => item.textContent === label);
     if (!button) throw Error(`Missing action: ${label}`);
     act(() => (button as HTMLButtonElement).click());
 }

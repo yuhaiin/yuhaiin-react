@@ -1,25 +1,13 @@
+import { chartPalette } from './chart-palette';
 import { useTheme } from '@/common/ThemeProvider';
 import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
-import { formatBytes } from './format';
+import { formatBytes, formatTrafficTicks } from './format';
 import { Tooltip, type ChartTooltipHandle } from './tooltip';
 
 const BUFFER_GROWTH_SIZE = 1024;
-
-function chartPalette(theme: string) {
-    const dark = theme === "dark";
-    return {
-        uploadStroke: dark ? '#8fc7a8' : '#198754',
-        uploadFill: dark ? 'rgba(143, 199, 168, 0.12)' : 'rgba(25, 135, 84, 0.12)',
-        downloadStroke: dark ? '#7dd3fc' : '#0284c7',
-        downloadFill: dark ? 'rgba(125, 211, 252, 0.12)' : 'rgba(2, 132, 199, 0.12)',
-        axis: dark ? '#94a3b8' : '#64748b',
-        grid: dark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(15, 23, 42, 0.06)',
-        pointFill: dark ? '#1e293b' : '#ffffff',
-    };
-}
 
 const TOOLTIP_WIDTH = 176;
 const TOOLTIP_HEIGHT = 72;
@@ -224,7 +212,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
         if (width === 0) width = 600;
         if (height === 0) height = 300;
 
-        const palette = chartPalette(resolved);
+        const palette = chartPalette();
         const opts: uPlot.Options = {
             width: width,
             height: height,
@@ -264,8 +252,8 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
                     font: '10px sans-serif',
                     grid: { show: true, stroke: palette.grid, width: 1 },
                     ticks: { show: true, stroke: palette.grid },
-                    values: (_, ticks) => ticks.map(v => formatBytes(Number(v), 0, " ") + '/S'),
-                    size: 65,
+                    values: (_, ticks) => formatTrafficTicks(ticks, '/s'),
+                    size: 80,
                     gap: 0,
                 }
             ],

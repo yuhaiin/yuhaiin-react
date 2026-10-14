@@ -1,6 +1,5 @@
 
 import * as SelectPrimitive from '@radix-ui/react-select';
-import { clsx } from 'clsx';
 import { Check, ChevronDown } from 'lucide-react';
 import React, { CSSProperties, FC, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +10,7 @@ import {
     DropdownContent,
     DropdownTrigger
 } from './dropdown';
-import { ui } from './styles';
+import { cn, ui } from './styles';
 
 export type DescEnumValue = {
     number: number;
@@ -42,7 +41,6 @@ interface SelectProps {
     groupPosition?: 'first' | 'middle' | 'last' | 'single';
 }
 
-import { motion } from 'motion/react';
 
 export const Select: FC<SelectProps> = ({ value, onValueChange, items, placeholder, ariaLabel, ariaLabelledBy, disabled, triggerClassName, contentClassName, viewportClassName, size, groupPosition }) => {
     const internalValue = value === "" ? "___EMPTY___" : value;
@@ -60,8 +58,8 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
             onValueChange={(val) => onValueChange(val === "___EMPTY___" ? "" : val)}
             disabled={disabled}
         >
-            <SelectPrimitive.Trigger className={clsx(
-                "flex min-w-0 items-center justify-between overflow-hidden rounded-ui-md px-3 text-sm leading-none h-field gap-[5px] bg-ui-bg text-ui-fg border border-ui-border w-full cursor-pointer",
+            <SelectPrimitive.Trigger className={cn(
+                "flex min-w-0 items-center justify-between overflow-hidden rounded-ui-md px-3 text-sm leading-none h-field max-sm:min-h-11 gap-2 bg-ui-surface text-ui-fg border border-ui-border w-full cursor-pointer",
                 ui.interactive,
                 ui.focusRing,
                 "hover:bg-ui-surface-muted hover:border-ui-border data-[state=open]:border-ui-primary",
@@ -72,14 +70,14 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
             )} aria-label={ariaLabel ?? placeholder} aria-labelledby={ariaLabelledBy}>
                 <SelectPrimitive.Value className="min-w-0 flex-1 truncate text-left" placeholder={placeholder} />
                 <SelectPrimitive.Icon>
-                    <ChevronDown className="opacity-50 shrink-0" size={16} />
+                    <ChevronDown className="text-ui-tertiary shrink-0" size={16} />
                 </SelectPrimitive.Icon>
             </SelectPrimitive.Trigger>
             <SelectPrimitive.Portal>
                 <SelectPrimitive.Content
-                    className={clsx(
-                        "overflow-hidden bg-ui-surface rounded-ui-xl border border-ui-border shadow-ui-elevated z-[2000] max-h-[var(--radix-select-content-available-height)] origin-[var(--radix-select-content-transform-origin)] will-change-[transform,opacity]",
-                        "data-[state=open]:animate-slideDownAndFade data-[state=closed]:animate-slideUpAndFade",
+                    className={cn(
+                        "overflow-hidden bg-ui-surface-raised rounded-ui-md border border-ui-border shadow-ui-elevated z-[2000] max-h-[var(--radix-select-content-available-height)] origin-[var(--radix-select-content-transform-origin)] will-change-[transform,opacity]",
+                        "data-[state=closed]:animate-fadeOut",
                         "data-[side=top]:data-[state=open]:animate-slideUpAndFadeIn data-[side=bottom]:data-[state=open]:animate-slideDownAndFadeIn",
                         contentClassName
                     )}
@@ -87,20 +85,15 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
                     sideOffset={5}
                     align="start"
                     style={{ width: 'var(--radix-select-trigger-width)' }}
-                    asChild
                 >
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: -2 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ duration: 0.15, ease: "easeOut" }}
-                    >
-                        <SelectPrimitive.Viewport className={clsx("p-[5px] overflow-y-auto max-h-[50vh] max-h-[var(--radix-select-content-available-height)]", viewportClassName)}>
+
+                        <SelectPrimitive.Viewport className={cn("p-[5px] overflow-y-auto max-h-[50vh] max-h-[var(--radix-select-content-available-height)]", viewportClassName)}>
                             {safeItems.map((item, index) => {
                                 const itemValue = item.value === "" ? "___EMPTY___" : item.value;
                                 return (
-                                    <SelectPrimitive.Item key={`${itemValue}-${index}`} value={itemValue} className={clsx(
-                                        "text-sm leading-none text-ui-fg rounded-ui-md flex items-center h-field-sm pl-[25px] pr-3 relative select-none cursor-pointer",
-                                        "data-[highlighted]:bg-ui-hover data-[highlighted]:text-ui-heading",
+                                    <SelectPrimitive.Item key={`${itemValue}-${index}`} value={itemValue} className={cn(
+                                        "text-sm leading-none text-ui-fg rounded-ui-md flex items-center h-field-sm max-sm:min-h-11 pl-[25px] pr-3 relative select-none cursor-pointer",
+                                        "data-[state=checked]:bg-ui-primary-soft data-[state=checked]:text-ui-primary data-[highlighted]:bg-ui-hover data-[highlighted]:text-ui-heading data-[highlighted]:ring-1 data-[highlighted]:ring-inset data-[highlighted]:ring-ui-primary",
                                         ui.interactive
                                     )}>
                                         <SelectPrimitive.ItemText>{item.label}</SelectPrimitive.ItemText>
@@ -111,7 +104,6 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
                                 )
                             })}
                         </SelectPrimitive.Viewport>
-                    </motion.div>
                 </SelectPrimitive.Content>
             </SelectPrimitive.Portal>
         </SelectPrimitive.Root>
@@ -142,7 +134,7 @@ const SettingSelectComponent: FC<{
         items.unshift({ value: "", label: emptyChooseName ?? t('state.choose') });
     }
     return (
-        <div className={clsx("flex items-center mb-4 flex-wrap", disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
+        <div className={cn("flex items-center mb-[var(--field-margin,1rem)] flex-wrap", disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
             <label className="basis-[150px] shrink-0 mr-6 font-medium max-[576px]:basis-full max-[576px]:mr-0 max-[576px]:mb-2">{label}</label>
             <div className="grow min-w-0 relative">
                 <Select value={value} onValueChange={onChange} items={items} disabled={disabled} ariaLabel={label} />
@@ -201,8 +193,8 @@ const DropdownSelectComponent: FC<{
         <Dropdown>
             <DropdownTrigger asChild>
                 <div
-                    className={clsx(
-                        "flex items-center justify-between rounded-ui-md px-3 text-sm leading-none h-field gap-[5px] bg-ui-bg text-ui-fg border border-ui-border w-full cursor-pointer",
+                    className={cn(
+                        "flex items-center justify-between rounded-ui-md px-3 text-sm leading-none h-field max-sm:min-h-11 gap-2 bg-ui-surface text-ui-fg border border-ui-border w-full cursor-pointer",
                         ui.interactive,
                         ui.focusRing,
                         "hover:bg-ui-surface-muted hover:border-ui-border data-[state=open]:border-ui-primary",
@@ -216,11 +208,11 @@ const DropdownSelectComponent: FC<{
                                 {safeValues.length}
                             </span>
                         )}
-                        <span className={clsx("truncate", safeValues.length === 0 && "opacity-50")}>
+                        <span className={cn("truncate", safeValues.length === 0 && "text-ui-muted")}>
                             {safeValues.length === 0 ? resolvedPlaceholder : safeValues.map(format).join(", ")}
                         </span>
                     </div>
-                    <ChevronDown className="opacity-50 flex-shrink-0" size={16} />
+                    <ChevronDown className="text-ui-tertiary flex-shrink-0" size={16} />
                 </div>
             </DropdownTrigger>
             <DropdownContent className="min-w-[min(300px,90vw)]">
@@ -263,7 +255,7 @@ const SettingSelectVerticalComponent: FC<{
         items.unshift({ value: "", label: emptyChooseName ?? "Choose..." });
     }
     return (
-        <div className={clsx("flex flex-col mb-4 relative", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
+        <div className={cn("flex flex-col mb-[var(--field-margin,1rem)] relative", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
             <SettingLabel className="mb-2 basis-auto mr-0 font-medium">{label}</SettingLabel>
             <Select value={value} onValueChange={onChange} items={items} disabled={disabled} ariaLabel={label} />
         </div>
@@ -288,7 +280,7 @@ const SettingEnumSelectVerticalComponent: FC<{
     }, [type, filter, format]);
 
     return (
-        <div className={clsx("flex flex-col mb-4 relative", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
+        <div className={cn("flex flex-col mb-[var(--field-margin,1rem)] relative", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
             <SettingLabel className="mb-2 basis-auto mr-0 font-medium">{label}</SettingLabel>
             <Select value={String(value)} onValueChange={(val) => onChange(Number(val))} items={items} disabled={disabled} />
         </div>
@@ -322,7 +314,7 @@ const SettingTypeSelectComponent: FC<{
     }
 
     return (
-        <div className={clsx("flex items-center mb-4 flex-wrap", disabled && "opacity-60 pointer-events-none grayscale-[0.5]", className)} style={style}>
+        <div className={cn("flex items-center mb-[var(--field-margin,1rem)] flex-wrap", disabled && "opacity-60 pointer-events-none grayscale-[0.5]", className)} style={style}>
             {label && <label className="basis-[150px] shrink-0 mr-6 font-medium max-[576px]:basis-full max-[576px]:mr-0 max-[576px]:mb-2">{label}</label>}
             <div className="grow min-w-0 relative">
                 <Select value={String(value)} onValueChange={(val) => onChange(Number(val))} items={items} disabled={disabled} triggerClassName={triggerClassName} size={size} />

@@ -8,13 +8,14 @@ interface SwitchProps {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   label?: string;
+  ariaLabel?: string;
   description?: string;
   disabled?: boolean;
 }
 
-const switchTrackClass = clsx(ui.switchTrack, ui.focusRing);
+const switchTargetClass = clsx("inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-ui-md border-0 bg-transparent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed", ui.focusRing);
 
-const SwitchComponent: React.FC<SwitchProps> = ({ checked, onCheckedChange, label, description, disabled }) => {
+const SwitchComponent: React.FC<SwitchProps> = ({ checked, onCheckedChange, label, description, disabled, ariaLabel }) => {
   const isChecked = Boolean(checked);
   const id = React.useId();
 
@@ -22,18 +23,21 @@ const SwitchComponent: React.FC<SwitchProps> = ({ checked, onCheckedChange, labe
     <div className={clsx("flex items-center justify-between", disabled && "opacity-60 pointer-events-none")}>
       {label && (
         <div className="mr-4">
-          <label htmlFor={id} className="font-medium leading-tight cursor-pointer">{label}</label>
+          <label htmlFor={id} className="text-sm font-medium leading-tight cursor-pointer">{label}</label>
           {description && <div className="text-ui-muted text-xs mt-0.5">{description}</div>}
         </div>
       )}
       <SwitchPrimitive.Root
         id={id}
-        className={switchTrackClass}
+        aria-label={ariaLabel}
+        className={switchTargetClass}
         checked={isChecked}
         onCheckedChange={onCheckedChange}
         disabled={disabled}
       >
-        <SwitchPrimitive.Thumb className={ui.switchThumb} />
+        <span aria-hidden="true" data-state={isChecked ? 'checked' : 'unchecked'} className={ui.switchTrack}>
+          <SwitchPrimitive.Thumb className={ui.switchThumb} />
+        </span>
       </SwitchPrimitive.Root>
     </div>
   );
@@ -54,15 +58,15 @@ export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ lab
       aria-labelledby={label ? labelId : undefined}
       aria-describedby={description ? descriptionId : undefined}
       className={clsx(
-        "flex w-full items-center justify-between cursor-pointer px-3 py-3 rounded-ui-md bg-ui-surface-muted border border-ui-border transition-colors duration-150 mb-2 text-left hover:bg-ui-hover hover:border-ui-primary/40",
+        "flex w-full items-center justify-between min-h-11 cursor-pointer px-2 py-2 rounded-ui-md border-0 bg-transparent transition-colors duration-150 text-left hover:bg-ui-hover/60",
         ui.focusRing, className, disabled && "opacity-60 cursor-not-allowed"
       )}
     >
       <span className="mr-4">
-        <span id={labelId} className="block font-medium leading-tight">{label}</span>
+        <span id={labelId} className="block text-sm font-medium leading-tight">{label}</span>
         {description && <span id={descriptionId} className="block text-ui-muted text-xs mt-0.5">{description}</span>}
       </span>
-      <span aria-hidden="true" className={clsx(ui.switchTrack, isChecked && "!bg-ui-primary")}>
+      <span aria-hidden="true" data-state={isChecked ? "checked" : "unchecked"} className={ui.switchTrack}>
         <SwitchPrimitive.Thumb className={ui.switchThumb} />
       </span>
     </SwitchPrimitive.Root>
@@ -82,14 +86,16 @@ const Switch = ({ className, label, id, ...props }: React.ComponentProps<typeof 
     <div className={clsx("flex items-center gap-2 cursor-pointer", className)}>
       <SwitchPrimitive.Root
         id={switchId}
-        className={switchTrackClass}
+        className={clsx("group", switchTargetClass)}
         {...switchProps}
       >
-        <SwitchPrimitive.Thumb className={ui.switchThumb} />
+        <span aria-hidden="true" className={clsx(ui.switchTrack, 'group-data-[state=checked]:bg-ui-primary group-data-[state=checked]:border-ui-primary')}>
+          <SwitchPrimitive.Thumb className={ui.switchThumb} />
+        </span>
       </SwitchPrimitive.Root>
 
       {label && (
-        <label className="text-base text-ui-fg leading-[1.5] cursor-pointer select-none" htmlFor={switchId}>
+        <label className="text-sm text-ui-fg leading-[1.5] cursor-pointer select-none" htmlFor={switchId}>
           {label}
         </label>
       )}

@@ -34,7 +34,8 @@
                 "style:audit": "node scripts/style-audit.mjs",
                 "postinstall": "patch-package",
                 "dev:msw": "vite --config vite.msw.config.mjs",
-                "test": "vitest run"
+                "test": "vitest run",
+                "visual:check": "node scripts/check-visual-system.mjs"
         },
         "devDependencies": {
                 "@tailwindcss/vite": "^4.3.0",

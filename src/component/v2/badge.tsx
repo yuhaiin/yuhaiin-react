@@ -18,11 +18,11 @@ const variantStyles: Record<string, string> = {
     dark: "bg-ui-chip text-ui-heading",
 };
 
-export const Badge: FC<BadgeProps> = ({ variant = "primary", pill, className, children, ...props }) => {
+export const Badge: FC<BadgeProps> = ({ variant = "secondary", pill, className, children, ...props }) => {
     return (
         <span
             className={clsx(
-                "inline-flex items-center justify-center px-[0.65em] py-[0.35em] text-xs font-bold leading-none",
+                "inline-flex items-center justify-center px-[0.65em] py-[0.35em] text-xs font-medium leading-none",
                 variantStyles[variant] || variantStyles.primary,
                 pill ? "rounded-full" : "rounded-ui-xs",
                 className

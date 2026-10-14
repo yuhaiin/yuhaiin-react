@@ -68,8 +68,8 @@ export function ResourceWorkspace({ title, description, items, selectedId, editi
     const pages = pagination ? Math.max(1, Math.ceil(pagination.total / pagination.pageSize)) : 1;
     return <>
         <header className={clsx('mb-6 flex-wrap items-center justify-between gap-4', editing ? 'hidden md:flex' : 'flex')}>
-            <div className="min-w-0"><Heading className={clsx("font-semibold tracking-tight text-ui-heading", embedded ? "text-xl" : "text-3xl")}>{title}</Heading>
-                {description && <p className="mt-2 text-sm text-ui-muted">{description}</p>}</div>
+            <div className="min-w-0"><Heading className={clsx("font-semibold tracking-tight text-ui-heading", embedded ? "text-base" : "sr-only text-2xl lg:not-sr-only")}>{title}</Heading>
+                {description && <p className="mt-1 text-sm text-ui-muted">{description}</p>}</div>
             <div className="flex flex-wrap items-center gap-2">{actions}<Button variant="primary" onClick={onCreate} disabled={createDisabled} className="gap-1.5"><Plus size={16} aria-hidden="true" />{uiT('add')}</Button></div>
         </header>
         <WorkspaceLayout>
@@ -81,7 +81,7 @@ export function ResourceWorkspace({ title, description, items, selectedId, editi
                 </div>
                 <ul className="m-0 max-h-[min(72vh,900px)] list-none space-y-1 overflow-y-auto overscroll-contain p-0">
                     {items.map(item => <li key={item.id}><button type="button" aria-label={item.name} aria-current={selectedId === item.id ? 'true' : undefined}
-                        className={clsx('relative flex min-h-16 w-full min-w-0 items-center gap-3 rounded-ui-md px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus', selectedId === item.id ? 'bg-ui-primary-soft/70' : 'hover:bg-ui-surface-muted/75')}
+                        className={clsx('relative flex min-h-[52px] w-full min-w-0 items-center gap-2.5 rounded-ui-md px-2.5 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus', selectedId === item.id ? 'bg-ui-primary-soft' : 'hover:bg-ui-surface-muted/75')}
                         onClick={() => onSelect(item.id)}>
                         {selectedId === item.id && <WorkspaceSelectionMarker />}
                         <span aria-hidden="true" className="shrink-0 text-ui-muted [&>svg]:size-4">{item.icon}</span>
@@ -115,7 +115,7 @@ export function ResourceEditorFrame({ title, label, presentation = 'modal', open
 }) {
     const { t } = useTranslation('routing');
     if (presentation === 'inline') return <section aria-label={label} className="min-w-0">
-        <header className="mb-5 space-y-3 border-b border-ui-border/60 pb-5"><Button variant="outline-secondary" className="gap-2 md:hidden" onClick={onClose}><ArrowLeft size={16} />{t('backToDirectory')}</Button><h2 className="break-words text-xl font-semibold text-ui-heading">{title}</h2></header>
+        <header className="mb-4 space-y-3 border-b border-ui-border pb-4"><Button variant="outline-secondary" className="gap-2 md:hidden" onClick={onClose}><ArrowLeft size={16} />{t('backToDirectory')}</Button><h2 className="break-words text-xl font-semibold text-ui-heading">{title}</h2></header>
         <div className="min-w-0">{children}</div>
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-ui-border/60 pt-5">{footer}</div>
     </section>;

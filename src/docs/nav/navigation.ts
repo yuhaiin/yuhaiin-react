@@ -54,3 +54,10 @@ export const navigationSections: NavigationSection[] = [
     ] },
 ];
 export const navigationOrder = ['/login', ...navigationSections.flatMap(section => section.items.flatMap(item => 'path' in item ? [item.path] : item.items.map(link => link.path)))];
+
+/** Route aliases and resource queries share the title of their owning page. */
+export function navigationLabel(location: string): Label | undefined {
+    const path = location.split('?')[0].replace(/\/+$/, '') || '/';
+    const links = navigationSections.flatMap(section => section.items.flatMap(item => 'path' in item ? [item] : item.items));
+    return links.find(link => link.path === path)?.label;
+}

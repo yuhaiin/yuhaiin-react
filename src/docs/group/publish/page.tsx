@@ -1,3 +1,4 @@
+import { FormSection } from '@/component/v2/form-section';
 import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection } from '@/component/resource-workspace';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
 import { useTranslation } from 'react-i18next';
@@ -5,9 +6,8 @@ import { useTranslation } from 'react-i18next';
 import NodePicker from "@/component/node-picker";
 import { deletePublish, listPublishes, savePublish } from "@/api/subscriptions";
 import { Button } from "@/component/v2/button";
-import { MainContainer, SettingsBox } from "@/component/v2/card";
+import { MainContainer } from "@/component/v2/card";
 import { SettingInputVertical } from "@/component/v2/forms";
-import { Spinner } from "@/component/v2/spinner";
 import { SwitchCard } from "@/component/v2/switch";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { Publish } from "@/contract/subscription";
@@ -44,20 +44,18 @@ const EditModal: FC<{
             <div>{isEdit && onDelete && <Button variant="outline-danger" onClick={onDelete} disabled={saving}><Trash size={16} className="mr-2" />{uiT("delete")}</Button>}</div>
             <div className="flex flex-wrap justify-end gap-2">
                 <Button variant="outline-secondary" onClick={close} disabled={saving}>{uiT("cancel")}</Button>
-                <Button variant="primary" onClick={handleSave} disabled={saving || !newItem.name}>
-                    {saving ? <Spinner size="sm" /> : <><Check className="mr-1" size={16} />{uiT("saveConfig")}</>}
+                <Button loading={saving} variant="primary" onClick={handleSave} disabled={saving || !newItem.name}>
+                    <Check size={16} />{uiT("saveConfig")}
                 </Button>
             </div>
         </>}>
                     <fieldset disabled={saving} className="min-w-0 flex flex-col gap-4">
-                        <SettingsBox>
-                            <div className="mb-3 font-bold">{uiT("identity")}</div>
+                        <FormSection title={uiT("identity")}>
                             <div className="flex flex-col gap-3">
                                 <SettingInputVertical label={uiT("configIdentifier")} value={newItem.name} disabled={isEdit} onChange={(name) => setNewItem(prev => ({ ...prev, name }))} placeholder="internal-sub" />
                             </div>
-                        </SettingsBox>
-                        <SettingsBox>
-                            <div className="mb-3 font-bold">{uiT("connection")}</div>
+                        </FormSection>
+                        <FormSection title={uiT("connection")}>
                             <div className="flex flex-col gap-3">
                                 <SettingInputVertical label={uiT("displayAddress")} value={newItem.address} onChange={(address) => setNewItem(prev => ({ ...prev, address }))} placeholder="example.com:443" />
                                 <SettingInputVertical label={uiT("path")} value={newItem.path} onChange={(path) => setNewItem(prev => ({ ...prev, path }))} placeholder="custom/path" />
@@ -68,11 +66,10 @@ const EditModal: FC<{
                                     onCheckedChange={(insecure) => setNewItem(prev => ({ ...prev, insecure }))}
                                 />
                             </div>
-                        </SettingsBox>
-                        <SettingsBox>
-                            <div className="mb-3 font-bold">{uiT("nodes")}</div>
+                        </FormSection>
+                        <FormSection title={uiT("nodes")}>
                             {show && <NodePicker value={newItem.points} disabled={saving} enabledOnly={false} onChange={points => setNewItem(prev => ({ ...prev, points }))} />}
-                        </SettingsBox>
+                        </FormSection>
                     </fieldset>
                 </ResourceEditorFrame>;
 };

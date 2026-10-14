@@ -67,12 +67,12 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
               forceMount
               onOpenChange={(open) => handleOpenChange(toast.id, open)}
             >
-              <motion.li
+              <motion.li data-ui-transition="toast"
                 layout
-                initial={{ opacity: 0, x: 200, scale: 0.9 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 200, scale: 0.9, transition: { duration: 0.2 } }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                initial={{ opacity: 0, x: 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 12, transition: { duration: 0.2 } }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
                 drag="x"
                 dragConstraints={{ left: 0, right: 300 }}
                 dragElastic={0.05}
@@ -82,20 +82,20 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
                   }
                 }}
                 className={clsx(
-                  "bg-ui-surface/80 backdrop-blur-[8px] rounded-ui-sm border border-ui-border shadow-ui-card flex flex-col overflow-hidden",
+                  "bg-ui-surface-raised rounded-ui-sm border border-ui-border shadow-ui-elevated flex flex-col overflow-hidden",
                   toast.type === 'info' && "border-l-4 border-l-ui-info",
                   toast.type === 'error' && "border-l-4 border-l-ui-danger"
                 )}
                 style={{ listStyle: 'none' }} // Ensure checking CSS doesn't fail
               >
                 <div className="flex justify-between items-center py-[0.5rem] px-[0.75rem] bg-ui-surface-muted/60 border-b border-ui-border">
-                  <ToastPrimitive.Title className="text-[0.85rem] font-bold text-ui-fg m-0">
+                  <ToastPrimitive.Title className="text-sm font-semibold text-ui-fg m-0">
                     {toast.type === 'error' ? t('toast.systemError') : t('toast.notification')}
                   </ToastPrimitive.Title>
 
                   <div className="flex items-center gap-2">
                     <small className="text-ui-muted text-xs">{t('toast.justNow')}</small>
-                    <ToastPrimitive.Close className="bg-transparent border-0 text-ui-muted cursor-pointer opacity-50 transition-opacity duration-200 px-[4px] text-[1.2rem] leading-none hover:opacity-100" aria-label={t('action.close')}>
+                    <ToastPrimitive.Close className="bg-transparent border-0 text-ui-muted cursor-pointer transition-opacity duration-200 min-h-11 min-w-11 rounded-ui-sm focus-visible:ring-2 focus-visible:ring-ui-focus text-[1.2rem] leading-none hover:opacity-100" aria-label={t('action.close')}>
                       <span aria-hidden>×</span>
                     </ToastPrimitive.Close>
                   </div>

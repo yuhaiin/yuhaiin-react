@@ -35,7 +35,16 @@
     "preference": "Theme Preference",
     "system": "System",
     "light": "Light",
-    "dark": "Dark"
+    "dark": "Dark",
+    "accent": "Accent color",
+    "accentHelp": "Preview instantly. Status and warning colors stay independent.",
+    "accents": {
+      "olive": "Olive",
+      "terracotta": "Terracotta",
+      "plum": "Plum",
+      "brass": "Brass",
+      "graphite": "Graphite"
+    }
   },
   "localNotice": "These settings are stored locally in your browser cache."
 }

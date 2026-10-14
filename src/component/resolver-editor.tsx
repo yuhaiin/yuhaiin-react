@@ -1,11 +1,10 @@
+import { FormSection } from './v2/form-section';
 import { ResolverTestPanel } from './resolver-test-panel';
 import { ResourceEditorFrame } from '@/component/resource-workspace';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
 import { createResolver, getResolver, saveResolver } from '@/api/resolvers';
 import { Button } from '@/component/v2/button';
-import { SettingsBox } from '@/component/v2/card';
 import { SettingInputVertical, SettingSelectVertical } from '@/component/v2/forms';
-import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import Loading from '@/component/v2/loading';
 import { createDefaultResolver, normalizeResolver, type Resolver, type ResolverType } from '@/contract/resolver';
@@ -82,8 +81,8 @@ export const ResolverModal: FC<{
                     </div>
                     <div className="flex flex-wrap justify-end gap-2">
                         <Button onClick={close} disabled={saving || testing}>{uiT("cancel")}</Button>
-                        <Button variant="primary" disabled={saving || testing || !resolver || isLoading || Boolean(error)} onClick={handleSave}>
-                            {saving ? <Spinner size="sm" /> : <><Check className="mr-2" size={16} />{isNew ? uiT("add") : uiT("save")}</>}
+                        <Button loading={saving} variant="primary" disabled={saving || testing || !resolver || isLoading || Boolean(error)} onClick={handleSave}>
+                            <Check className="mr-2" size={16} />{isNew ? uiT("add") : uiT("save")}
                         </Button>
                     </div>
                 </>}>
@@ -91,10 +90,10 @@ export const ResolverModal: FC<{
                     {apiError ?
                         <Loading code={apiError.code} onRetry={() => void mutate()}>{apiError.msg}</Loading> :
                         isLoading || !resolver ? <Loading /> :
-                            <SettingsBox>
+                            <div className="min-w-0">
                                 <ResolverEditor value={resolver} onChange={setDraft} />
                                 {actionError && <p role="alert" className="text-sm text-ui-danger">{actionError}</p>}
-                            </SettingsBox>
+                            </div>
                     }
                 </fieldset>
                 {resolver && !isLoading && !apiError && <ResolverTestPanel resolver={resolver} disabled={saving} onPendingChange={setTesting} />}
@@ -111,8 +110,7 @@ export const ResolverEditor: FC<{ value: Resolver, onChange: (x: Resolver) => vo
 
     return (
         <div className="grid gap-4">
-            <div className="rounded-ui-lg border border-ui-border bg-ui-surface-muted p-4">
-                <div className="mb-3 font-bold">{t("dnsResolver")}</div>
+            <FormSection title={t("dnsResolver")}>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <SettingInputVertical label={uiT("name")} value={value.name} onChange={(name) => patch({ name })} />
                     <SettingSelectVertical
@@ -122,12 +120,11 @@ export const ResolverEditor: FC<{ value: Resolver, onChange: (x: Resolver) => vo
                         onChange={(type) => patch({ type: type as ResolverType, system: type === "system", host: type === "system" ? "system default" : value.type === "system" ? "" : value.host })}
                     />
                 </div>
-            </div>
+            </FormSection>
 
-            <div className="rounded-ui-lg border border-ui-border bg-ui-surface-muted p-4">
-                <div className="mb-3 font-bold">{uiT("endpoint")}</div>
+            <FormSection title={uiT("endpoint")}>
                 {value.type === "system" ? (
-                    <div className="rounded-ui-lg border border-dashed border-ui-border p-4 text-sm text-ui-muted">{uiT("usesTheOperatingSystemResolver")}</div>
+                    <div className="rounded-ui-md bg-ui-surface-muted px-3 py-2 text-sm text-ui-muted">{uiT("usesTheOperatingSystemResolver")}</div>
                 ) : (
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <SettingInputVertical label={endpoint.label} value={value.host} onChange={(host) => patch({ host })} placeholder={endpoint.placeholder} />
@@ -137,7 +134,7 @@ export const ResolverEditor: FC<{ value: Resolver, onChange: (x: Resolver) => vo
                         </details>
                     </div>
                 )}
-            </div>
+            </FormSection>
 
 
         </div>

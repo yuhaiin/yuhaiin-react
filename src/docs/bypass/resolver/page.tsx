@@ -40,7 +40,7 @@ export default function ResolverComponent() {
     }, [tab, t]);
     const entries = [['resolvers', uiT('resolvers')], ['roles', t('dnsRolesTab')], ['server', t('dnsServerTab')], ['hosts', uiT('staticHosts')], ['cache', t('dnsCacheTab')]];
     return <MainContainer className="max-w-[1440px]">
-        <header className="mb-5"><h1 className="text-3xl font-semibold tracking-tight text-ui-heading">{t('dnsTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('dnsPageHelp')}</p></header>
+        <header className="mb-5"><h1 className="sr-only text-2xl font-semibold tracking-tight text-ui-heading lg:not-sr-only">{t('dnsTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('dnsPageHelp')}</p></header>
         <Tabs.Root activationMode="manual" value={tab} onValueChange={next => { if (next !== tab && allowNavigation()) setTab(next); }}>
             <Tabs.List ref={tabs} aria-label={t('dnsSections')} className="mb-6 flex min-w-0 gap-1 overflow-x-auto border-b border-ui-border">
                 {entries.map(([value, label]) => <Tabs.Trigger key={value} value={value} className="min-h-11 shrink-0 whitespace-nowrap border-b-2 border-transparent px-3 py-2 text-sm text-ui-muted transition-colors hover:text-ui-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus data-[state=active]:border-ui-primary data-[state=active]:font-semibold data-[state=active]:text-ui-primary">{label}</Tabs.Trigger>)}

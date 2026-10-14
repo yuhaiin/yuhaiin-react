@@ -52,7 +52,7 @@ const InboundConfigCard: FC = () => {
         <Card className="mb-4">
             <fieldset disabled={saving} className="contents">
             <CardHeader>
-                <IconBox icon={Settings} tone="primary" title={uiT("inboundConfiguration")} description={uiT("dnsInterceptionAndTrafficInspection")} />
+                <IconBox icon={Settings} tone="neutral" title={uiT("inboundConfiguration")} description={uiT("dnsInterceptionAndTrafficInspection")} />
                 <Button disabled={saving || isLoading || !data || Boolean(apiError)} onClick={handleSave}>
                     {saving ? <Spinner size="sm" /> : <><Save className="mr-1" size={16} /> {uiT("applySettings")}</>}
                 </Button>

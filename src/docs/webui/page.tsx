@@ -1,3 +1,4 @@
+import { AccentPicker } from '@/component/accent-picker';
 
 import { useTheme } from '@/common/ThemeProvider';
 import type { ThemePreference } from '@/common/theme';
@@ -107,7 +108,7 @@ function ApiHostsCard() {
     return (
         <Card>
             <CardHeader className="py-3">
-                <IconBox icon={Link} tone="violet" title={t('api.title')} description={t('api.description')} />
+                <IconBox icon={Link} tone="neutral" title={t('api.title')} description={t('api.description')} />
             </CardHeader>
             <CardBody className="pt-2">
                 <div className="mb-3 flex items-center justify-between gap-3">
@@ -258,12 +259,13 @@ function Setting() {
 
             <Card>
                 <CardHeader className="py-3">
-                    <IconBox icon={Languages} tone="violet" title={t('language.title')} description={t('language.description')} />
+                    <IconBox icon={Languages} tone="neutral" title={t('language.title')} description={t('language.description')} />
                 </CardHeader>
                 <CardBody className="pt-2">
                     <div className="flex flex-col mb-4">
                         <SettingLabel className="mb-2 block">{t('language.preference')}</SettingLabel>
                         <Select
+                            ariaLabel={t('language.preference')}
                             value={preference}
                             onValueChange={(value) => setPreference(value as typeof preference)}
                             items={languageOptions.map((option) => ({
@@ -277,12 +279,13 @@ function Setting() {
 
             <Card>
                 <CardHeader className="py-3">
-                    <IconBox icon={Palette} tone="primary" title={t('theme.title')} description={t('theme.description')} />
+                    <IconBox icon={Palette} tone="neutral" title={t('theme.title')} description={t('theme.description')} />
                 </CardHeader>
                 <CardBody className="pt-2">
                     <div className="flex flex-col mb-4">
                         <SettingLabel className="mb-2 block">{t('theme.preference')}</SettingLabel>
                         <Select
+                            ariaLabel={t('theme.preference')}
                             value={themePreference}
                             onValueChange={(value) => setThemePreference(value as ThemePreference)}
                             items={[
@@ -292,13 +295,18 @@ function Setting() {
                             ]}
                         />
                     </div>
+                    <div className="space-y-2">
+                        <SettingLabel>{t('theme.accent')}</SettingLabel>
+                        <AccentPicker />
+                        <p className="text-xs text-ui-muted">{t('theme.accentHelp')}</p>
+                    </div>
                 </CardBody>
             </Card>
 
             {/* 2. Latency Targets */}
             <Card >
                 <CardHeader className="py-3">
-                    <IconBox icon={Gauge} tone="success" title={t('latency.title')} description={t('latency.description')} />
+                    <IconBox icon={Gauge} tone="neutral" title={t('latency.title')} description={t('latency.description')} />
                 </CardHeader>
                 <CardBody>
                     {/* Toggle at the top */}

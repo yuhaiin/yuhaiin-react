@@ -51,27 +51,10 @@ const overlayVariants = {
 };
 
 const contentVariants = {
-    hidden: { opacity: 0, scale: 0.2, y: "-50%", x: "-50%" },
-    visible: {
-        opacity: 1,
-        scale: 1,
-        y: "-50%",
-        x: "-50%",
-        transition: {
-            type: "spring",
-            damping: 25,
-            stiffness: 300
-        }
-    },
-    exit: {
-        opacity: 0,
-        scale: 0.2,
-        y: "-50%",
-        x: "-50%",
-        transition: { duration: 0.2 }
-    }
+    hidden: { opacity: 0, y: "calc(-50% + 6px)", x: "-50%" },
+    visible: { opacity: 1, y: "-50%", x: "-50%", transition: { duration: 0.18, ease: "easeOut" } },
+    exit: { opacity: 0, y: "-50%", x: "-50%", transition: { duration: 0.12 } },
 };
-
 
 // 1. Content Container
 const ModalContent = ({ className, children, style, width = 500, ...props }: React.ComponentProps<typeof DialogPrimitive.Content> & { width?: number }) => {
@@ -84,8 +67,10 @@ const ModalContent = ({ className, children, style, width = 500, ...props }: Rea
                 <ModalPortal forceMount>
                     <DialogPrimitive.Overlay asChild forceMount>
                         <motion.div
+                            data-ui-transition="overlay"
                             className="fixed inset-0 z-[1050] bg-black/50"
                             variants={overlayVariants}
+                            transition={{ duration: reducedMotion ? 0 : 0.18 }}
                             initial="hidden"
                             animate="visible"
                             exit="exit"
@@ -93,14 +78,15 @@ const ModalContent = ({ className, children, style, width = 500, ...props }: Rea
                     </DialogPrimitive.Overlay>
                     <DialogPrimitive.Content asChild forceMount aria-describedby={undefined}>
                         <motion.div
+                            data-ui-transition="dialog"
                             className={cn(
-                                "fixed top-1/2 left-1/2 min-w-0 w-[calc(100vw-24px)] max-h-[calc(100dvh-32px)] z-[1055] flex flex-col outline-none overflow-hidden bg-ui-surface text-ui-fg border border-ui-border rounded-ui-xl shadow-ui-elevated p-[5px]",
+                                "fixed top-1/2 left-1/2 min-w-0 w-[calc(100vw-24px)] max-h-[calc(100dvh-32px)] z-[1055] flex flex-col outline-none overflow-hidden bg-ui-surface-raised text-ui-fg border border-ui-border rounded-ui-xl shadow-ui-elevated",
                                 className
                             )}
                             variants={reducedMotion ? {
                                 hidden: { opacity: 0, x: '-50%', y: '-50%' },
-                                visible: { opacity: 1, x: '-50%', y: '-50%' },
-                                exit: { opacity: 0, x: '-50%', y: '-50%' },
+                                visible: { opacity: 1, transition: { duration: 0 }, x: '-50%', y: '-50%' },
+                                exit: { opacity: 0, transition: { duration: 0 }, x: '-50%', y: '-50%' },
                             } : contentVariants}
                             initial="hidden"
                             animate="visible"
@@ -138,7 +124,7 @@ const ModalHeader = ({
         {children}
 
         {closeButton && (
-            <DialogPrimitive.Close className={clsx("flex items-center justify-center p-2 -m-2 ml-auto text-2xl leading-none text-ui-muted opacity-60 transition-opacity duration-200 bg-transparent border-0 cursor-pointer hover:opacity-100 hover:text-ui-fg hover:no-underline", ui.focusRing)} aria-label={uiT("close")}>
+            <DialogPrimitive.Close className={clsx("flex items-center justify-center p-2 -m-2 ml-auto text-2xl leading-none text-ui-muted min-h-11 min-w-11 rounded-ui-sm transition-colors duration-150 bg-transparent hover:bg-ui-hover border-0 cursor-pointer hover:opacity-100 hover:text-ui-fg hover:no-underline", ui.focusRing)} aria-label={uiT("close")}>
                 {/* Use a standard multiplication sign, or replace with Cross2Icon from @radix-ui/react-icons */}
                 <span aria-hidden="true">×</span>
             </DialogPrimitive.Close>
