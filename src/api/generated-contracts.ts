@@ -844,6 +844,10 @@ export namespace Go {
     export type Mux = Concurrency;
   }
   export namespace resolver {
+    export interface HostEntry {
+      host: string;
+      target: string;
+    }
     export interface Resolver {
       id: string;
       name: string;

@@ -1,5 +1,4 @@
-
-import { Activity, ArrowLeftRight, BookOpen, CircleHelp, Download, ExternalLink, FileClock, FileText, Filter, Gauge, History, House, Layers, ListFilter, Network, Radio, ScrollText, Settings, Share2, ShieldBan, SlidersHorizontal, Upload, Waypoints, Wrench } from 'lucide-react';
+import { navigationSections } from './navigation';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
@@ -39,57 +38,23 @@ function Sidebar({ id, show, onHide, triggerRef }: SidebarProps) {
     const link = (path: string, title: string, icon: React.ReactNode) => <SelectableLink key={path}
         path={path} current={pathname} onSelect={handleNavLinkClick} icon={icon}>{title}</SelectableLink>;
 
+    const labels = { nav: t, ui: uiT, routing: routeT };
     return <SidebarRoot id={id} show={show} onHide={onHide} triggerRef={triggerRef}>
         <SidebarNav aria-label={t('toggle')}>
-            <SidebarSection title={t('monitoring')}>
-                {taskLink('/', t('home'), <House size={20} />)}
-                <SidebarGroup title={t('connections')} icon={<Activity size={20} />} activePath={pathname}
-                    paths={['/docs/connections/v2', '/docs/connections/history', '/docs/connections/failed', '/docs/bypass/block']}>
-                    {link('/docs/connections/v2', uiT('connections18'), <ArrowLeftRight />)}
-                    {link('/docs/connections/history', uiT('history'), <History />)}
-                    {link('/docs/connections/failed', uiT('failedHistory'), <FileClock />)}
-                    {link('/docs/bypass/block', uiT('blockHistory'), <ShieldBan />)}
-                </SidebarGroup>
-            </SidebarSection>
-            <SidebarSection title={t('trafficConfiguration')}>
-                <SidebarGroup title={routeT('destinationsTask')} icon={<ExternalLink size={20} />} activePath={pathname}
-                    paths={['/docs/group', '/docs/group/selectors', '/docs/group/subscribe', '/docs/group/publish', '/docs/group/activates']}>
-                    {link('/docs/group', routeT('nodesTask'), <Network />)}
-                    {link('/docs/group/selectors', routeT('selectorsTitle'), <Waypoints />)}
-                    {link('/docs/group/subscribe', uiT('subscribe'), <Download />)}
-                    <SidebarDivider className="mx-4 w-auto" />
-                    {link('/docs/group/publish', uiT('publish'), <Share2 />)}
-                    {link('/docs/group/activates', uiT('activeNodes'), <Radio />)}
-                </SidebarGroup>
-                <SidebarGroup title={routeT('routingTask')} icon={<Filter size={20} />} activePath={pathname}
-                    paths={['/docs/bypass', '/docs/bypass/list', '/docs/bypass/test']}>
-                    {link('/docs/bypass', t('routeRules'), <ListFilter />)}
-                    {link('/docs/bypass/list', routeT('sharedMatchingData'), <Layers />)}
-                    {link('/docs/bypass/test', uiT('testRoute'), <Waypoints />)}
-                </SidebarGroup>
-                {taskLink('/docs/inbound', routeT('trafficEntryTask'), <Download size={20} />)}
-                {taskLink('/docs/bypass/resolver', routeT('dnsTask'), <Network size={20} />)}
-            </SidebarSection>
-            <SidebarSection title={t('system')}>
-                <SidebarGroup title={t('diagnostics')} icon={<Wrench size={20} />} activePath={pathname}
-                    paths={['/docs/diagnostics', '/docs/config/log', '/docs/config/pprof']}>
-                    {link('/docs/diagnostics', uiT('networkDiagnostics'), <Activity />)}
-                    {link('/docs/config/log', uiT('log'), <ScrollText />)}
-                    {link('/docs/config/pprof', uiT('pprof'), <Gauge />)}
-                </SidebarGroup>
-                <SidebarGroup title={t('setting')} icon={<Settings size={20} />} activePath={pathname}
-                    paths={['/docs/config', '/docs/webui', '/docs/config/backup']}>
-                    {link('/docs/config', uiT('config'), <SlidersHorizontal />)}
-                    {link('/docs/webui', uiT('webui'), <Settings />)}
-                    {link('/docs/config/backup', uiT('backup'), <Upload />)}
-                </SidebarGroup>
-                <SidebarGroup title={t('help')} icon={<CircleHelp size={20} />} activePath={pathname}
-                    paths={['/docs/config/documents', '/docs/config/about', '/docs/config/licenses']}>
-                    {link('/docs/config/documents', uiT('documents'), <BookOpen />)}
-                    {link('/docs/config/about', uiT('about'), <CircleHelp />)}
-                    {link('/docs/config/licenses', uiT('licenses'), <FileText />)}
-                </SidebarGroup>
-            </SidebarSection>
+            {navigationSections.map(section => <SidebarSection key={section.label.key} title={labels[section.label.namespace](section.label.key)}>
+                {section.items.map(item => {
+                    const Icon = item.icon;
+                    const title = labels[item.label.namespace](item.label.key);
+                    if ('path' in item) return taskLink(item.path, title, <Icon size={20} />);
+                    return <SidebarGroup key={item.label.key} title={title} icon={<Icon size={20} />} activePath={pathname} paths={item.items.map(link => link.path)}>
+                        {item.items.map(child => {
+                            const ChildIcon = child.icon;
+                            const childLink = link(child.path, labels[child.label.namespace](child.label.key), <ChildIcon />);
+                            return child.divider ? <React.Fragment key={child.path}><SidebarDivider className="mx-4 w-auto" />{childLink}</React.Fragment> : childLink;
+                        })}
+                    </SidebarGroup>;
+                })}
+            </SidebarSection>)}
         </SidebarNav>
     </SidebarRoot>;
 }

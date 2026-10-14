@@ -7,6 +7,7 @@ import clsx from 'clsx';
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'motion/react';
 import { useEffect } from 'react';
 import { Route, Router, Switch, useLocation } from 'wouter';
+import { navigationOrder } from './docs/nav/navigation';
 import { appRoutes } from './routes';
 
 interface AndroidInterface {
@@ -19,7 +20,6 @@ declare global {
     }
 }
 
-const routeOrder = appRoutes.map(route => route.path);
 type AnimationContext = { direction: number; reducedMotion: boolean | null };
 const variants = {
     enter: ({ direction, reducedMotion }: AnimationContext) => ({
@@ -39,7 +39,7 @@ function AppContent() {
     }, [location])
 
     const reducedMotion = useReducedMotion();
-    const direction = useSmartAnimation(location, routeOrder);
+    const direction = useSmartAnimation(location, navigationOrder);
     const animationContext = { direction, reducedMotion };
     const isLogin = location === '/login';
     const content = (

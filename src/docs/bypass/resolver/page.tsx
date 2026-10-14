@@ -9,7 +9,7 @@ import { MainContainer } from '@/component/v2/card';
 import { GlobalToastContext } from '@/component/v2/toast';
 import Loading from '@/component/v2/loading';
 import { Globe2, Network } from 'lucide-react';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { Fakedns } from './fakedns';
@@ -24,16 +24,31 @@ export default function ResolverComponent() {
     const { t } = useTranslation('routing');
     const { t: uiT } = useTranslation('ui');
     const [tab, setTab] = useState('resolvers');
-    const entries = [['resolvers', uiT('resolvers')], ['roles', t('dnsRolesTab')], ['server', t('dnsServerTab')], ['cache', t('dnsCacheTab')]];
+    const tabs = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        // Keep the active tab visible without scrolling the settings page.
+        const reveal = () => {
+            const list = tabs.current;
+            const active = list?.querySelector<HTMLElement>('[data-state=active]');
+            if (!list || !active || !list.clientWidth) return;
+            const parent = list.getBoundingClientRect(), item = active.getBoundingClientRect();
+            if (item.left < parent.left) list.scrollLeft += item.left - parent.left;
+            else if (item.right > parent.right) list.scrollLeft += item.right - parent.right;
+        };
+        reveal(); window.addEventListener('resize', reveal);
+        return () => window.removeEventListener('resize', reveal);
+    }, [tab, t]);
+    const entries = [['resolvers', uiT('resolvers')], ['roles', t('dnsRolesTab')], ['server', t('dnsServerTab')], ['hosts', uiT('staticHosts')], ['cache', t('dnsCacheTab')]];
     return <MainContainer className="max-w-[1440px]">
         <header className="mb-5"><h1 className="text-3xl font-semibold tracking-tight text-ui-heading">{t('dnsTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('dnsPageHelp')}</p></header>
         <Tabs.Root activationMode="manual" value={tab} onValueChange={next => { if (next !== tab && allowNavigation()) setTab(next); }}>
-            <Tabs.List aria-label={t('dnsSections')} className="mb-6 flex min-w-0 gap-1 overflow-x-auto border-b border-ui-border">
+            <Tabs.List ref={tabs} aria-label={t('dnsSections')} className="mb-6 flex min-w-0 gap-1 overflow-x-auto border-b border-ui-border">
                 {entries.map(([value, label]) => <Tabs.Trigger key={value} value={value} className="min-h-11 shrink-0 whitespace-nowrap border-b-2 border-transparent px-3 py-2 text-sm text-ui-muted transition-colors hover:text-ui-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus data-[state=active]:border-ui-primary data-[state=active]:font-semibold data-[state=active]:text-ui-primary">{label}</Tabs.Trigger>)}
             </Tabs.List>
             <Tabs.Content value="resolvers" className="min-w-0"><ResolverList /></Tabs.Content>
             <Tabs.Content value="roles" className="min-w-0"><DNSRoles /></Tabs.Content>
-            <Tabs.Content value="server" className="min-w-0 space-y-6"><Server /><div className="grid gap-6 lg:grid-cols-2"><Hosts /><Fakedns /></div></Tabs.Content>
+            <Tabs.Content value="server" className="min-w-0 space-y-6"><Server /><Fakedns /></Tabs.Content>
+            <Tabs.Content value="hosts" className="min-w-0"><Hosts /></Tabs.Content>
             <Tabs.Content value="cache" className="min-w-0"><DNSCache /></Tabs.Content>
         </Tabs.Root>
     </MainContainer>;

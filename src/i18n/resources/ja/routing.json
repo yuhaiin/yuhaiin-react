@@ -284,7 +284,21 @@
   "dnsResponseTruncated": "応答が切り詰められています",
   "dnsNoRecords": "レコードが返されませんでした。応答コードを確認してください。空の応答だけでは接続失敗とは限りません。",
   "dnsRolesTab": "問い合わせポリシー",
-  "dnsServerTab": "待ち受けと上書き",
+  "dnsServerTab": "待ち受けと FakeDNS",
   "dnsCacheTab": "キャッシュ",
-  "dnsSections": "DNS 設定項目"
+  "dnsSections": "DNS 設定項目",
+  "subscriptionsTitle": "購読",
+  "copySubscription": "リンクをコピー",
+  "subscriptionCopied": "コピーしました",
+  "saveSubscriptionBeforeUpdate": "変更を保存してから、このリンクのノードを更新してください。",
+  "subscriptionUpdateHelp": "保存された購読設定でノードを取得します。",
+  "activeNodeDetails": "{{name}} の詳細",
+  "activeNodeClosed": "{{name}} を終了しました",
+  "addHostMapping": "ホストを追加",
+  "hostMapping": "ホストマッピング",
+  "hostAddress": "ホスト",
+  "hostTargetHelp": "ホスト名や IP を IP アドレスまたは別のホスト名に対応付けます。ポートごとの設定も使えます。",
+  "editHostMapping": "{{host}} を編集",
+  "deleteHostMapping": "{{host}} を削除しますか？",
+  "subscriptionAutoDetect": "自動"
 }

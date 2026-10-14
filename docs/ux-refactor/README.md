@@ -106,6 +106,43 @@ bounds. A loopback UDP server separately verified real wire queries and cache
 bypass. That test uncovered an existing UDP response notification race; the
 response is now published before waiting queries are notified.
 
+## Navigation, subscriptions, active nodes and Hosts
+
+The sidebar and page slide transitions now use one navigation definition. The
+route matching registry no longer determines animation direction. A regression
+checks the rendered 24-link sidebar order against the animation order and every
+registered route; Chrome checks verify downward/upward transitions and reduced
+motion on the actual pages.
+
+Active nodes use compact status cards, grouping name, source group, protocol
+chain, connection ID, details and termination in the same area. The same cards
+are used on the overview without a second page heading. Termination still
+requires confirmation and closes only the selected running instance.
+
+Subscriptions use the shared directory/editor workspace, including guarded mobile
+return and unsaved edits. The directory shows the source hostname or import scheme
+instead of a full URL. Copy is an explicit action in the editor. Existing names
+remain stable; URL and format can be edited, and duplicate new names are rejected.
+Fetching subscription nodes uses saved settings and is disabled until draft edits
+have been saved. A save sends just the edited subscription, preserving the others.
+
+Hosts have their own DNS tab with searchable, paginated rows and a single-mapping
+editor. The UI requests 20 entries per page. SQL performs counting, filtering and
+LIMIT/OFFSET; the API defaults to 25 entries and caps pages at 100. Creating,
+updating and deleting affect only the selected SQL row, preserve other pages,
+and refresh the runtime matching snapshot after persistence. The full snapshot
+remains an internal activation/startup operation and a legacy configuration API;
+the new browser view never fetches it. Mutations invalidate cached directory pages,
+including when deleting the last record on a page requires moving back a page.
+On narrow screens the active DNS tab stays visible without scrolling the page.
+
+Browser checks use 10,000 synthetic Hosts to verify 20-entry pages, search and a
+single-entry update, with no full Hosts RPC. They also check subscription editing,
+confirmation on switching, saved-link fetching, active instance termination, and
+390/320 px page/control bounds. SQL/store/runtime and RPC tests run with both
+modernc and mattn/FTS5; concurrent entries, alias targets, port-specific mappings,
+duplicate creation and pagination bounds are covered.
+
 ## Validation
 
 Pull-request CI now runs TypeScript checks, Vitest, localization completeness,
@@ -113,7 +150,7 @@ the style audit, lint, and the production build. It also captures browser
 screenshots from the MSW preview and fails when the expected UI does not
 appear, if the page overflows horizontally, or if form controls are clipped.
 
-The current follow-up passed 133 tests in 54 files, TypeScript, localization checks,
+The current follow-up passed 140 tests in 57 files, TypeScript, localization checks,
 strict lint with no warnings, the style audit and the production build. Isolated
 Chrome interaction checks covered mouse insertion, native touch scrolling,
 long-press touch insertion, edge scrolling and cancellation without a save.
@@ -194,3 +231,19 @@ the screenshots committed under `docs/ux-refactor/` so the summary stays current
 ![Unsaved resolver test](resolver-test-desktop.png)
 
 ![Japanese mobile resolver test](resolver-test-ja-mobile.png)
+
+**Active nodes and subscriptions**
+
+![Active nodes](active-nodes-desktop.png)
+
+![Japanese mobile active nodes](active-nodes-ja-mobile.png)
+
+![Subscription workspace](subscriptions-desktop.png)
+
+![Japanese mobile subscription editor](subscription-ja-mobile.png)
+
+**SQL-paged Hosts**
+
+![Hosts directory](hosts-desktop.png)
+
+![Japanese mobile Hosts](hosts-ja-mobile.png)

@@ -1,133 +1,64 @@
+import { activeNodes, closeNode } from '@/api/nodes';
+import { Button } from '@/component/v2/button';
+import { MainContainer } from '@/component/v2/card';
+import { ConfirmModal } from '@/component/v2/confirm';
+import Loading from '@/component/v2/loading';
+import { Spinner } from '@/component/v2/spinner';
+import { GlobalToastContext } from '@/component/v2/toast';
+import { Input } from '@/component/v2/input';
+import type { Node } from '@/contract/node';
+import { useAsyncAction, useCloseGuard } from '@/hooks/use-editor-draft';
+import { Activity, ArrowUpRight, Info, Power, Search } from 'lucide-react';
+import { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import useSWR from 'swr';
+import { NodeModal } from '../../node/modal';
 
-import { activeNodes, closeNode } from "@/api/nodes";
-import { Badge } from "@/component/v2/badge";
-import { Button } from "@/component/v2/button";
-import { CardRowList, IconBox, IconBoxRounded, MainContainer } from "@/component/v2/card";
-import { ConfirmModal } from "@/component/v2/confirm";
-import Loading, { Error } from "@/component/v2/loading";
-import { GlobalToastContext } from "@/component/v2/toast";
-import type { Node } from "@/contract/node";
-import { Activity, Hash, Info, Power, Zap } from "lucide-react";
-import { FC, useContext, useMemo, useState } from "react";
-import useSWR from "swr";
-import { NodeModal } from "../../node/modal";
-
-const ActiveNodeItem: FC<{ v: Node, onClose: () => void }> = ({ v, onClose }) => {
+export default function Activates({ showFooter = true }: { showFooter?: boolean }) {
     const { t: uiT } = useTranslation('ui');
-
-    return (
-        <div className="grid w-full min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-            <div className="flex min-w-0 items-center gap-3">
-                <IconBoxRounded
-                    icon={Zap}
-                    tone="success"
-                    className="flex-shrink-0"
-                    style={{ width: "40px", height: "40px", marginRight: "0px", border: "none" }}
-                />
-                <div className="min-w-0">
-                    <div className="mb-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                        <span className="break-words font-semibold text-ui-heading sm:truncate">{v.name}</span>
-                        <Badge className="border border-ui-primary/25 bg-ui-primary-soft px-2 py-1 text-ui-primary" style={{ fontSize: "0.65rem" }}>
-                            {v.group}
-                        </Badge>
-                    </div>
-                    <div className="break-all text-sm font-mono text-ui-muted opacity-75 sm:truncate">
-                        <Hash className="mr-1 inline" size={12} />{v.id}
-                    </div>
-                </div>
-            </div>
-            <div className="flex items-center justify-end gap-2 sm:justify-self-end">
-                <Button
-                    variant="outline-danger"
-                    size="sm"
-                    onClick={(e) => { e.stopPropagation(); onClose(); }}
-                    title={uiT("closeThisNodeConnection")}
-                    className="flex items-center gap-2 justify-self-end"
-                    style={{ minWidth: "38px" }}
-                >
-                    <Power size={16} />
-                    <span className="hidden sm:inline ml-1">{uiT("terminateLabel")}</span>
-                </Button>
-            </div>
-        </div>
-    );
-};
-
-function Activates({ showFooter = true }: { showFooter?: boolean }) {
-    const { t: uiT } = useTranslation('ui');
-
+    const { t } = useTranslation('routing');
+    const { t: commonT } = useTranslation('common');
     const ctx = useContext(GlobalToastContext);
-    const { data, error, isLoading, mutate } = useSWR("/api/v2/nodes/active", activeNodes, {
-        revalidateOnFocus: false,
-        // Home embeds this list under live traffic work; refresh less aggressively there.
-        refreshInterval: showFooter ? 0 : 15000,
-    });
-    const [confirmData, setConfirmData] = useState({ show: false, id: "" });
-    const [nodeModal, setNodeModal] = useState<{ show: boolean; node?: Node }>({ show: false });
-
-    const sortedNodes = useMemo(() => {
-        return [...(data?.items ?? [])].sort((a, b) => a.id.localeCompare(b.id));
-    }, [data]);
-
-    if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
-    if (isLoading || data === undefined) return <Loading />
-
-    const handleCloseNode = (id: string) => {
-        closeNode(id)
-            .then(async () => {
-                ctx.Info(`Node ${id.substring(0, 8)}... terminated`);
-                await mutate();
-            })
-            .catch((err) => ctx.Error(`Failed to close node: ${err.msg ?? err}`))
-            .finally(() => setConfirmData({ show: false, id: "" }));
+    const { data, error, isLoading, mutate } = useSWR('/api/v2/nodes/active', activeNodes, { revalidateOnFocus: false, refreshInterval: showFooter ? 0 : 15000 });
+    const [confirm, setConfirm] = useState<Node>();
+    const [details, setDetails] = useState<Node>();
+    const [query, setQuery] = useState('');
+    const { pending, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
+    useCloseGuard(false, pending, () => undefined);
+    const all = [...(data?.items ?? [])].sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
+    const items = all.filter(node => `${node.name} ${node.group} ${node.id}`.toLowerCase().includes(query.toLowerCase()));
+    if (error && !data) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>;
+    if (isLoading && !data) return <Loading />;
+    const terminate = () => {
+        if (!confirm || pending) return;
+        const node = confirm;
+        void run(async () => { await closeNode(node.id); setConfirm(undefined); await mutate(); ctx.Info(t('activeNodeClosed', { name: node.name })); });
     };
-
-    return (
-        <MainContainer>
-            <NodeModal
-                show={nodeModal.show}
-                node={nodeModal.node}
-                readOnly
-                onHide={() => setNodeModal({ show: false })}
-            />
-            <ConfirmModal
-                show={confirmData.show}
-                title={
-                    <div className="py-2">
-                        <p className="mb-1">{uiT("areYouSureYouWantTo")}<strong>{uiT("terminate")}</strong> {uiT("thisActiveNodeConnection")}</p>
-                        <code className="text-sm text-ui-muted font-mono">{confirmData.id}</code>
-                    </div>
-                }
-                onHide={() => setConfirmData(prev => ({ ...prev, show: false }))}
-                onOk={() => handleCloseNode(confirmData.id)}
-            />
-
-            <CardRowList
-                layout="list"
-                items={sortedNodes}
-                animated={false}
-                getKey={(v) => v.id}
-                renderListItem={(v) => <ActiveNodeItem v={v} onClose={() => setConfirmData({ show: true, id: v.id })} />}
-                onClickItem={(v) => setNodeModal({ show: true, node: v })}
-                header={
-                    <div className="flex w-full items-center justify-between gap-3">
-                        <IconBox icon={Activity} tone="success" title={uiT("activeNodes")} description={uiT("liveOutboundConnectionInstances")} />
-                        <Badge variant="success" className="shrink-0 rounded-full border border-ui-success/25 bg-ui-success-soft px-3 py-2 text-ui-success">
-                            {sortedNodes.length} {uiT("running")}</Badge>
-                    </div>
-                }
-            />
-
-            {showFooter &&
-                <div className="mt-4 px-3 pb-5 text-center text-xs text-ui-muted">
-                    <small className="flex items-center justify-center leading-relaxed">
-                        <Info className="mr-1 shrink-0" size={16} />
-                        {uiT("closingANodeHereWillForceAReconnectionIfTheRuleStillRequiresIt")}</small>
+    const Heading = showFooter ? 'h1' : 'h2';
+    return <MainContainer><section aria-label={uiT('activeNodes')} className="min-w-0">
+        <header className="mb-5 flex flex-wrap items-start justify-between gap-4">
+            <div><Heading className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-ui-heading"><Activity size={22} className="text-ui-success" />{uiT('activeNodes')}</Heading><p className="mt-2 text-sm text-ui-muted">{uiT('liveOutboundConnectionInstances')}</p></div>
+            <div className="flex items-center gap-2 rounded-full bg-ui-success-soft px-3 py-1.5 text-xs font-medium text-ui-success"><span className="size-1.5 rounded-full bg-ui-success" aria-hidden="true" />{all.length} {uiT('running')}</div>
+        </header>
+        {showFooter && <div className="relative mb-5 max-w-sm"><Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" /><Input type="search" className="pl-9" value={query} aria-label={commonT('state.search')} placeholder={commonT('state.search')} onChange={event => setQuery(event.target.value)} /></div>}
+        <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 xl:grid-cols-3">
+            {items.map(node => <li key={node.id} className="group min-w-0 rounded-ui-lg border border-ui-border bg-ui-surface p-4 transition-colors hover:border-ui-primary/30">
+                <button type="button" className="flex w-full min-w-0 items-start justify-between gap-3 rounded-ui-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus" aria-label={t('activeNodeDetails', { name: node.name })} onClick={() => setDetails(node)}>
+                    <span className="min-w-0"><span className="block truncate text-sm font-semibold text-ui-heading" title={node.name}>{node.name}</span><span className="mt-1.5 block truncate text-xs text-ui-muted">{node.group || 'manual'}</span></span>
+                    <ArrowUpRight size={16} className="shrink-0 text-ui-muted transition-colors group-hover:text-ui-primary" />
+                </button>
+                <div className="mt-4 flex flex-wrap gap-1.5">{node.chain.map((protocol, index) => <span key={index} className="rounded bg-ui-surface-muted px-2 py-1 text-[0.6875rem] text-ui-muted">{protocol.type}</span>)}</div>
+                <div className="mt-4 flex min-w-0 items-center justify-between gap-3 border-t border-ui-border/60 pt-3">
+                    <span className="min-w-0 truncate font-mono text-[0.6875rem] text-ui-muted" title={node.id}>#{node.id.slice(0, 8)}</span>
+                    <Button variant="outline-secondary" size="sm" className="shrink-0 gap-1.5 !text-ui-danger" disabled={pending} aria-label={`${uiT('terminateLabel')} ${node.name}`} onClick={() => setConfirm(node)}><Power size={14} />{uiT('terminateLabel')}</Button>
                 </div>
-            }
-        </MainContainer>
-    );
+            </li>)}
+            {!items.length && <li className="col-span-full rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center text-sm text-ui-muted">{uiT('noRecordsFound')}</li>}
+        </ul>
+        {showFooter && <p className="mt-5 flex items-start gap-2 text-xs leading-relaxed text-ui-muted"><Info size={15} className="shrink-0" />{uiT('closingANodeHereWillForceAReconnectionIfTheRuleStillRequiresIt')}</p>}
+        <NodeModal show={Boolean(details)} node={details} readOnly onHide={() => setDetails(undefined)} />
+        <ConfirmModal show={Boolean(confirm)} disabled={pending} title={uiT('terminateLabel')} content={<p className="break-words">{uiT('thisActiveNodeConnection')}: {confirm?.name}</p>}
+            onHide={() => { if (!pending) setConfirm(undefined); }} onOk={terminate} />
+        {pending && <div role="status" className="mt-3 flex items-center gap-2 text-sm text-ui-muted"><Spinner size="sm" />{uiT('terminateLabel')}</div>}
+    </section></MainContainer>;
 }
-
-export default Activates;

@@ -27,3 +27,22 @@ it('slides in navigation order and retains direction through rerenders and trail
     expect(host.textContent).toBe('1');
     act(() => root.unmount());
 });
+
+it('follows the current sidebar order across groups', async () => {
+    const { navigationOrder: order } = await import('@/docs/nav/navigation');
+    const host = document.createElement('div');
+    const root = createRoot(host);
+    function Probe({ location }: { location: string }) { return <span>{useSmartAnimation(location, order)}</span>; }
+    const render = (location: string) => act(() => root.render(<Probe location={location} />));
+    try {
+        render('/docs/connections/v2');
+        render('/docs/group');
+        expect(host.textContent).toBe('1');
+        render('/docs/group/selectors');
+        render('/docs/group/subscribe');
+        expect(host.textContent).toBe('1');
+        render('/docs/bypass/resolver');
+        render('/docs/diagnostics');
+        expect(host.textContent).toBe('1');
+    } finally { act(() => root.unmount()); }
+});
