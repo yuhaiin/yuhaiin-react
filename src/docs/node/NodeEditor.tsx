@@ -43,7 +43,7 @@ const NodeEditor: FC<{
     return (
     <EditingNodeID.Provider value={value.id}><div className="p-1">
         {editable && (
-            <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div className="mb-4 grid max-w-3xl grid-cols-1 gap-4 md:grid-cols-2">
                 <SettingInputVertical label={uiT("name")} value={value.name} onChange={(name) => onChange({ name })} disabled={!editable} />
                 <SettingInputVertical label={uiT("groupLabel")} value={value.group} reminds={groups.map(group => ({ label: group, value: group }))} showAllOnFocus onChange={(group) => onChange({ group })} disabled={!editable} />
                 <div className="md:col-span-2">
@@ -128,7 +128,7 @@ const NodeProtocolChain: FC<{
     return (
         <div className="mb-3">
             <div className="mb-2 flex items-center justify-between px-1">
-                <h6 className="mb-0 text-base font-semibold text-ui-heading">{uiT("protocolChain")}</h6>
+                <h6 className="mb-0 text-base font-medium text-ui-heading">{uiT("protocolChain")}</h6>
                 <small className="text-ui-muted">{normalizedChain.length} {uiT("steps")}</small>
             </div>
 

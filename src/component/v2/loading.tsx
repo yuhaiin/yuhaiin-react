@@ -8,7 +8,7 @@ function Loading(props: { children?: string, code?: number, style?: CSSPropertie
     const failed = props.children !== undefined || props.code !== undefined;
     return (
         <div
-            className="z-[1090] flex flex-col justify-center items-center"
+            className="min-h-32 gap-2 flex flex-col justify-center items-center"
             style={{ height: "100%", ...props.style }}
         >
             {failed && <><Error statusCode={props.code !== undefined ? props.code : 500} title={props.children}></Error></>}
@@ -20,7 +20,7 @@ function Loading(props: { children?: string, code?: number, style?: CSSPropertie
 
 export const Error: FC<{ statusCode?: number, title?: string, raw?: string }> = ({ statusCode, title, raw }) => {
     return <div role="alert" className="max-w-full px-3 text-center break-words">
-        <p className='text-2xl font-bold'>{statusCode} | <span className='text-base font-normal'>{title}</span></p>
+        <p className='text-lg font-medium text-ui-heading'>{statusCode} | <span className='text-base font-normal'>{title}</span></p>
         {raw && <pre className="my-2 max-w-full whitespace-pre-wrap text-sm text-ui-danger">{raw}</pre>}
     </div>
 }

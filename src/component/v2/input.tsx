@@ -1,4 +1,5 @@
 import * as React from "react";
+import { CircleAlert } from 'lucide-react';
 import { cn, ui } from "./styles";
 
 type NativeInputProps = React.InputHTMLAttributes<HTMLInputElement>;
@@ -6,6 +7,8 @@ type NativeInputProps = React.InputHTMLAttributes<HTMLInputElement>;
 type InputPropsWithoutSize = Omit<NativeInputProps, "size">;
 
 export interface InputProps extends InputPropsWithoutSize {
+    /** Pass an empty string to reserve feedback space before validation. */
+    error?: string;
     size?: "default" | "sm";
 
     /** Native input width in characters. */
@@ -23,14 +26,16 @@ const groupRadiusClass = (groupPosition?: GroupPosition) =>
                 '';
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-    ({ className, size = "default", htmlSize, groupPosition, ...props }, ref) => {
+    ({ className, size = "default", htmlSize, groupPosition, error, ...props }, ref) => {
+        const generatedId = React.useId();
+        const feedbackId = `${props.id ?? generatedId}-error`;
         const inputProps = {
             ...props,
             ...("value" in props ? { value: props.value ?? "" } : {}),
         };
 
         return (
-            <input
+            <FieldFeedback error={error} id={feedbackId}><input
                 ref={ref}
                 size={htmlSize}
                 className={cn(
@@ -44,10 +49,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         "h-field-sm min-h-field-sm py-1 px-2.5 sm:text-[0.8125rem]": size === "sm",
                     },
                     groupRadiusClass(groupPosition),
+                    error && 'pr-9',
                     className
                 )}
                 {...inputProps}
-            />
+                aria-invalid={Boolean(error) || props['aria-invalid'] || undefined}
+                aria-describedby={[props['aria-describedby'], error ? feedbackId : undefined].filter(Boolean).join(' ') || undefined}
+            /></FieldFeedback>
         );
     }
 );
@@ -58,30 +66,47 @@ export { Input };
 
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
     groupPosition?: GroupPosition;
+    error?: string;
 }
 
 export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-    ({ className, groupPosition, ...props }, ref) => {
+    ({ className, groupPosition, error, ...props }, ref) => {
+        const generatedId = React.useId();
+        const feedbackId = `${props.id ?? generatedId}-error`;
         const textareaProps = {
             ...props,
             ...("value" in props ? { value: props.value ?? "" } : {}),
         };
 
         return (
-            <textarea
+            <FieldFeedback error={error} id={feedbackId}><textarea
                 ref={ref}
                 className={cn(
                     ui.field,
                     ui.fieldFocus,
                     ui.fieldReadonly,
                     ui.fieldDisabled,
-                    "min-h-field h-auto py-2",
+                    "min-h-field h-auto py-2.5",
                     groupRadiusClass(groupPosition),
+                    error && 'pr-9',
                     className
                 )}
                 {...textareaProps}
-            />
+                aria-invalid={Boolean(error) || props['aria-invalid'] || undefined}
+                aria-describedby={[props['aria-describedby'], error ? feedbackId : undefined].filter(Boolean).join(' ') || undefined}
+            /></FieldFeedback>
         )
     }
 )
 Textarea.displayName = "Textarea";
+
+/** Optional reserved feedback line; existing controls keep their native wrapper. */
+export function FieldFeedback({ error, id, children }: { error?: string; id: string; children: React.ReactNode }) {
+    if (error === undefined) return children;
+    return <div className="min-w-0 w-full">
+        <div className="relative">{children}</div>
+        <p id={id} aria-live="polite" className="m-0 mt-1 flex min-h-[18px] items-start gap-1.5 text-xs leading-normal text-ui-danger">
+            {error && <><CircleAlert size={14} aria-hidden="true" className="mt-0.5 shrink-0" /><span>{error}</span></>}
+        </p>
+    </div>;
+}

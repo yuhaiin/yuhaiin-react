@@ -1,8 +1,10 @@
 
 import * as ToastPrimitive from '@radix-ui/react-toast';
 import { clsx } from 'clsx';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import React, { createContext, useCallback, useState } from 'react';
+import { motionTiming } from './styles';
+import { CircleAlert, Info, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 // --- Types ---
@@ -30,6 +32,7 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
   duration = 4000
 }) => {
   const { t } = useTranslation('common');
+  const reduced = useReducedMotion();
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const showMessage = useCallback((text: string, type: 'info' | 'error') => {
@@ -71,8 +74,8 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
                 layout
                 initial={{ opacity: 0, x: 12 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 12, transition: { duration: 0.2 } }}
-                transition={{ duration: 0.18, ease: "easeOut" }}
+                exit={{ opacity: 0, x: 12, transition: { duration: reduced ? 0 : motionTiming.fast } }}
+                transition={{ duration: reduced ? 0 : motionTiming.normal, ease: "easeOut" }}
                 drag="x"
                 dragConstraints={{ left: 0, right: 300 }}
                 dragElastic={0.05}
@@ -82,26 +85,26 @@ export const GlobalToastProvider: React.FC<{ children: React.ReactNode, duration
                   }
                 }}
                 className={clsx(
-                  "bg-ui-surface-raised rounded-ui-sm border border-ui-border shadow-ui-elevated flex flex-col overflow-hidden",
+                  "bg-ui-surface-raised rounded-ui-lg border border-ui-border shadow-ui-elevated flex flex-col overflow-hidden",
                   toast.type === 'info' && "border-l-4 border-l-ui-info",
                   toast.type === 'error' && "border-l-4 border-l-ui-danger"
                 )}
                 style={{ listStyle: 'none' }} // Ensure checking CSS doesn't fail
               >
                 <div className="flex justify-between items-center py-[0.5rem] px-[0.75rem] bg-ui-surface-muted/60 border-b border-ui-border">
-                  <ToastPrimitive.Title className="text-sm font-semibold text-ui-fg m-0">
-                    {toast.type === 'error' ? t('toast.systemError') : t('toast.notification')}
+                  <ToastPrimitive.Title className="text-sm flex items-center gap-2 font-medium text-ui-fg m-0">
+                    {toast.type === 'error' ? <CircleAlert size={16} className="text-ui-danger" aria-hidden /> : <Info size={16} className="text-ui-info" aria-hidden />}{toast.type === 'error' ? t('toast.systemError') : t('toast.notification')}
                   </ToastPrimitive.Title>
 
                   <div className="flex items-center gap-2">
                     <small className="text-ui-muted text-xs">{t('toast.justNow')}</small>
                     <ToastPrimitive.Close className="bg-transparent border-0 text-ui-muted cursor-pointer transition-opacity duration-200 min-h-11 min-w-11 rounded-ui-sm focus-visible:ring-2 focus-visible:ring-ui-focus text-[1.2rem] leading-none hover:opacity-100" aria-label={t('action.close')}>
-                      <span aria-hidden>×</span>
+                      <X size={16} aria-hidden />
                     </ToastPrimitive.Close>
                   </div>
                 </div>
 
-                <ToastPrimitive.Description className="py-[0.75rem] px-[1rem] text-ui-fg text-[0.9rem] leading-[1.4]">
+                <ToastPrimitive.Description className="py-[0.75rem] px-[1rem] text-ui-fg text-sm leading-relaxed">
                   {toast.text}
                 </ToastPrimitive.Description>
               </motion.li>

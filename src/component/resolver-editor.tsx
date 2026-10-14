@@ -111,7 +111,7 @@ export const ResolverEditor: FC<{ value: Resolver, onChange: (x: Resolver) => vo
     return (
         <div className="grid gap-4">
             <FormSection title={t("dnsResolver")}>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid min-w-0 max-w-3xl grid-cols-1 gap-4 md:grid-cols-2">
                     <SettingInputVertical label={uiT("name")} value={value.name} onChange={(name) => patch({ name })} />
                     <SettingSelectVertical
                         label={uiT("type")}
@@ -126,7 +126,7 @@ export const ResolverEditor: FC<{ value: Resolver, onChange: (x: Resolver) => vo
                 {value.type === "system" ? (
                     <div className="rounded-ui-md bg-ui-surface-muted px-3 py-2 text-sm text-ui-muted">{uiT("usesTheOperatingSystemResolver")}</div>
                 ) : (
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="grid min-w-0 max-w-3xl grid-cols-1 gap-4 md:grid-cols-2">
                         <SettingInputVertical label={endpoint.label} value={value.host} onChange={(host) => patch({ host })} placeholder={endpoint.placeholder} />
                         <details className="md:col-span-2"><summary className="cursor-pointer text-sm font-medium">{t("advancedEditor")}</summary>
                         <SettingInputVertical label={uiT("subnet")} value={value.subnet ?? ""} onChange={(subnet) => patch({ subnet })} placeholder={uiT("optionalEcsSubnet")} />

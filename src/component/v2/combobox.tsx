@@ -130,7 +130,7 @@ export const Combobox: FC<ComboboxProps> = ({
                 <Popover.Portal>
                     <Popover.Content
                         className={clsx(
-                            "w-[var(--radix-popover-trigger-width)] max-h-[50vh] bg-ui-surface-raised rounded-ui-md border border-ui-border shadow-ui-elevated z-[2000] p-1 will-change-[transform,opacity]",
+                            "w-[var(--radix-popover-trigger-width)] max-h-[50vh] bg-ui-surface-raised rounded-ui-lg border border-ui-border shadow-ui-elevated z-[2000] p-1 will-change-[transform,opacity]",
                             "data-[state=open]:data-[side=top]:animate-slideDownAndFade data-[state=open]:data-[side=right]:animate-slideLeftAndFade data-[state=open]:data-[side=bottom]:animate-slideUpAndFade data-[state=open]:data-[side=left]:animate-slideRightAndFade"
                         )}
 
@@ -153,9 +153,9 @@ export const Combobox: FC<ComboboxProps> = ({
                                             }
                                         }}
                                         className={clsx(
-                                            "group min-h-8 max-sm:min-h-11 p-2 px-3 cursor-pointer rounded-ui-md text-sm transition-colors duration-150 text-ui-fg",
+                                            "group min-h-8 max-sm:min-h-11 p-2 px-3 cursor-pointer rounded-ui-md text-sm transition-colors duration-[var(--motion-fast)] text-ui-fg",
                                             "hover:bg-ui-hover hover:text-ui-fg",
-                                            "data-[highlighted=true]:bg-ui-hover data-[highlighted=true]:text-ui-fg"
+                                            "data-[highlighted=true]:bg-ui-hover data-[highlighted=true]:text-ui-fg data-[highlighted=true]:ring-1 data-[highlighted=true]:ring-inset data-[highlighted=true]:ring-ui-focus"
                                         )}
                                         data-highlighted={i === highlightedIndex}
                                         onClick={() => {
@@ -167,7 +167,7 @@ export const Combobox: FC<ComboboxProps> = ({
                                             highlightIndex(i);
                                         }}
                                     >
-                                        <span className="font-medium block">{opt.label}</span>
+                                        <span className="font-normal block truncate">{opt.label}</span>
                                         {opt.details && opt.details.length > 0 && (
                                             <div className="pl-0 mt-[2px] font-mono text-[0.75em] text-ui-muted whitespace-nowrap overflow-hidden text-ellipsis">
                                                 {opt.details.map((d, di) => (

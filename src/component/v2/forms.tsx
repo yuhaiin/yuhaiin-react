@@ -21,7 +21,7 @@ export { SwitchCard } from './switch';
 const SettingCheckComponent: FC<{ label: string, checked: boolean, onChange: (c: boolean) => void, className?: string, disabled?: boolean }> =
     ({ label, checked, onChange, className, disabled }) => {
         return (
-            <div className={clsx("flex items-center mb-[var(--field-margin,1rem)]", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
+            <div className={clsx("flex items-center mb-[var(--field-margin,var(--space-field))]", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
                 <label className="basis-[150px] shrink-0 mr-6 font-medium">{label}</label>
                 <div className="grow min-w-0 relative">
                     <SwitchComponent ariaLabel={label} checked={checked} onCheckedChange={onChange} disabled={disabled} />
@@ -66,7 +66,7 @@ export const SettingInputVertical: FC<SettingInputVerticalProps> = React.memo(({
     const id = useId(); // Auto-generate unique ID
 
     return (
-        <div className={clsx("relative mb-[var(--field-margin,1rem)] flex min-w-0 max-w-full flex-col", className)}>
+        <div className={clsx("relative mb-[var(--field-margin,var(--space-field))] flex min-w-0 max-w-full flex-col", className)}>
             {/* 1. Associate Label and Input */}
             <SettingLabel htmlFor={id} className="mb-2 block">
                 {label}
@@ -109,7 +109,7 @@ export const SettingPasswordVertical: FC<{
     const id = useId();
 
     return (
-        <div className={clsx("flex flex-col mb-[var(--field-margin,1rem)] relative", className)}>
+        <div className={clsx("flex flex-col mb-[var(--field-margin,var(--space-field))] relative", className)}>
             <SettingLabel htmlFor={id} className="mb-2 basis-auto mr-0 font-medium">{label}</SettingLabel>
             <div className="flex">
                 <Input
@@ -145,10 +145,11 @@ export const SettingRangeVertical: FC<{
     unit?: string;
     onChange: (val: number) => void;
     className?: string;
-}> = React.memo(({ label, value, min, max, step, unit, onChange, className }) => {
+    disabled?: boolean;
+}> = React.memo(({ label, value, min, max, step, unit, onChange, className, disabled }) => {
     const { t } = useTranslation('common');
     return (
-        <div className={clsx("flex flex-col mb-[var(--field-margin,1rem)] relative", className)}>
+        <div className={clsx("flex flex-col mb-[var(--field-margin,var(--space-field))] relative", className)}>
             <div className="flex justify-between items-center mb-1">
                 <SettingLabel className="mb-0 font-medium">{label}</SettingLabel>
                 <div className="text-ui-heading font-medium font-mono text-sm bg-ui-surface-muted px-2 py-1 rounded-ui-xs">
@@ -157,26 +158,28 @@ export const SettingRangeVertical: FC<{
             </div>
 
             <SliderPrimitive.Root
-                className="relative flex items-center select-none touch-none w-full h-11"
+                className="group relative flex items-center select-none touch-none w-full h-11 data-[disabled]:cursor-not-allowed"
                 value={[value]}
                 onValueChange={(newValue) => onChange(newValue[0])}
                 min={min}
                 max={max}
                 step={step}
+                disabled={disabled}
             >
-                <SliderPrimitive.Track className="bg-ui-surface-muted relative grow rounded-full h-[3px]">
-                    <SliderPrimitive.Range className="absolute bg-ui-primary rounded-full h-full transition-[width] duration-150 ease-out" />
+                <SliderPrimitive.Track className="bg-ui-border-strong relative grow rounded-full h-1">
+                    <SliderPrimitive.Range className="absolute bg-ui-primary group-data-[disabled]:bg-ui-disabled-fg rounded-full h-full" />
                 </SliderPrimitive.Track>
                 <SliderPrimitive.Thumb
                     aria-label={label}
+                    aria-valuetext={`${value.toLocaleString()} ${unit ?? ''}`}
                     className={clsx(
-                        "block h-[20px] w-[20px] rounded-full border border-ui-primary bg-ui-surface shadow-ui-card transition-transform duration-150 ease-out hover:bg-ui-primary-soft motion-safe:active:scale-[0.98]",
+                        "relative flex size-11 items-center justify-center rounded-full bg-transparent outline-none sm:size-5 before:size-4 before:rounded-full before:border before:border-ui-border-strong before:bg-ui-surface before:shadow-ui-control hover:before:border-ui-primary data-[disabled]:before:bg-ui-disabled data-[disabled]:before:border-ui-disabled-border",
                         ui.focusRing
                     )}
                 />
             </SliderPrimitive.Root>
 
-            <div className="flex justify-between text-ui-tertiary text-[0.7rem] font-semibold">
+            <div className="flex justify-between text-ui-tertiary text-xs font-normal tabular-nums">
                 <span>{t('form.min')}: {min.toLocaleString()}</span>
                 <span>{t('form.max')}: {max.toLocaleString()}</span>
             </div>

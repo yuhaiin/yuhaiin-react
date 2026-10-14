@@ -41,12 +41,12 @@ function measureContrast() {
   const luminance = rgb => rgb.map(n => n <= 0.04045 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4).reduce((sum, n, i) => sum + n * [0.2126, 0.7152, 0.0722][i], 0);
   const ratio = (a, b) => { const x = luminance(color(a)), y = luminance(color(b)); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
   const checks = [];
-  for (const background of ['--canvas', '--surface', '--surface-muted', '--surface-raised']) {
+  for (const background of ['--canvas', '--surface', '--surface-muted', '--surface-raised', '--surface-selected']) {
     for (const foreground of ['--text-primary', '--text-secondary', '--text-tertiary']) checks.push([foreground, background, 4.5]);
     checks.push(['--accent', background, 4.5], ['--border-strong', background, 3]);
   }
   for (const background of ['--accent', '--accent-hover', '--accent-active']) checks.push(['--accent-foreground', background, 4.5]);
-  checks.push(['--accent', '--accent-soft', 4.5], ['--color-danger-foreground', '--color-danger', 4.5]);
+  checks.push(['--disabled-fg', '--disabled-bg', 4.5], ['--accent', '--surface-selected', 3], ['--accent', '--accent-soft', 4.5], ['--color-danger-foreground', '--color-danger', 4.5]);
   for (const tone of ['success', 'warning', 'danger', 'info']) checks.push([`--color-${tone}`, `--color-${tone}-soft`, 4.5]);
   const result = checks.map(([foreground, background, minimum]) => ({ foreground, background, minimum, ratio: ratio(foreground, background) }));
   probe.remove(); return result;
@@ -86,6 +86,34 @@ async function inspectGallery(send, theme) {
   await pageReady(send, '[data-gallery-ready]');
   const metrics = await evaluate(send, `(() => { const button = document.querySelector('[data-testid="gallery-primary"]'); const input = document.querySelector('[aria-label="Gallery input"]'); const select = document.querySelector('[aria-label="Gallery select"]'); const icon = document.querySelector('[aria-label="Icon settings"]'); return [button,input,select,icon].map(el => el.getBoundingClientRect().height); })()`);
   if (metrics.join(',') !== '38,38,38,32') throw new Error('Control metrics differ: ' + metrics);
+  const pageAligned=await evaluate(send, `(() => {
+    const button=document.querySelector('button[aria-current="page"]');
+    const box=button.getBoundingClientRect(),range=document.createRange();range.selectNodeContents(button.firstElementChild);
+    const text=range.getBoundingClientRect();
+    return Math.abs(box.x+box.width/2-text.x-text.width/2)<1 && Math.abs(box.y+box.height/2-text.y-text.height/2)<1;
+  })()`);
+  if (!pageAligned) throw new Error('Pagination number is not centered');
+  const states = await evaluate(send, `(() => {
+    const disabled=[...document.querySelectorAll('button')].find(el=>el.textContent.trim()==='Disabled');
+    const pending=document.querySelector('button[aria-busy="true"]');
+    const readonly=document.querySelector('[aria-label="Readonly"]');
+    const invalid=document.querySelector('[aria-label="Invalid"]');
+    const error=document.getElementById(invalid.getAttribute('aria-describedby'));
+    const track=[...document.querySelectorAll('[data-switch-track]')].find(el=>el.closest('[data-disabled]'));
+    return {disabled:disabled.disabled,loading:pending.disabled&&pending.getAttribute('aria-busy')==='true',
+      distinct:getComputedStyle(disabled).backgroundColor!==getComputedStyle(pending).backgroundColor,
+      opaque:getComputedStyle(disabled).opacity==='1',readonly:readonly.readOnly&&!readonly.disabled,
+      invalid:invalid.getAttribute('aria-invalid')==='true'&&Boolean(error?.textContent),
+      disabledSwitch:getComputedStyle(track).backgroundColor===getComputedStyle(disabled).backgroundColor};
+  })()`);
+  if (Object.values(states).some(value=>!value)) throw new Error('Control states differ: '+JSON.stringify(states));
+  const loadWidth=await evaluate(send, `document.querySelector('[data-testid="gallery-load-probe"]').getBoundingClientRect().width`);
+  await clickText(send, 'button', 'Test load'); await waitForPreview(send, '[data-gallery-ready]');
+  const pendingLayout=await evaluate(send, `(() => {const el=document.querySelector('[data-testid="gallery-load-probe"]');return {width:el.getBoundingClientRect().width,busy:el.getAttribute('aria-busy')==='true'&&el.disabled,labelVisible:getComputedStyle(el.firstElementChild).opacity==='1'};})()`);
+  if (Math.abs(loadWidth-pendingLayout.width)>0.5 || !pendingLayout.busy || !pendingLayout.labelVisible) throw new Error('Pending action layout changed: '+JSON.stringify(pendingLayout));
+  await saveShot(send, `${theme}-gallery-loading`);
+
+
   const point = await evaluate(send, `(() => { const r = document.querySelector('[data-testid="gallery-primary"]').getBoundingClientRect(); return {x: r.x+r.width/2, y:r.y+r.height/2}; })()`);
   await send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...point });
   await waitForPreview(send, '[data-gallery-ready]'); await saveShot(send, `${theme}-gallery-hover`);
@@ -93,9 +121,22 @@ async function inspectGallery(send, theme) {
   await waitForPreview(send, '[data-gallery-ready]'); await saveShot(send, `${theme}-gallery-pressed`);
   await send('Input.dispatchMouseEvent', { type: 'mouseReleased', button: 'left', clickCount: 1, ...point });
   await key(send, 'Tab', 9); await saveShot(send, `${theme}-gallery-focus`);
-  await clickText(send, 'button', 'Open dropdown'); await waitForPreview(send, '[role="menu"]'); await saveShot(send, `${theme}-gallery-dropdown`); await key(send, 'Escape', 27);
+  await evaluate(send, `document.querySelector('[aria-label="Gallery input"]').focus()`);
+  await waitForPreview(send, '[data-gallery-ready]');
+  const focused=await evaluate(send, `getComputedStyle(document.activeElement).boxShadow`);
+  if (focused==='none') throw new Error('Field focus ring missing');
+  await saveShot(send, `${theme}-gallery-field-focus`);
+  await clickText(send, 'button', 'Open dropdown'); await waitForPreview(send, '[role="menu"]'); await saveShot(send, `${theme}-gallery-dropdown`);
+  await key(send, 'ArrowDown', 40);
+  await waitForPreview(send, '[role=menu]');
+  if (!await evaluate(send, `document.querySelector('[role=menu] [data-highlighted]')?.textContent.trim()==='Action'`)) throw new Error('Dropdown did not enter its first item');
+  await key(send, 'ArrowDown', 40);
+  await waitForPreview(send, '[role=menu]');
+  if (!await evaluate(send, `document.querySelector('[role=menu] [data-highlighted]')?.textContent.includes('Selected option')`)) throw new Error('Dropdown keyboard focus missing');
+  await key(send, 'Escape', 27);
   await clickText(send, 'button', 'Show toast'); await waitForPreview(send, 'li[data-state="open"]'); await saveShot(send, `${theme}-gallery-toast`);
-  await clickText(send, 'button', 'Tooltip trigger'); await waitForPreview(send, '#gallery-tooltip'); await saveShot(send, `${theme}-gallery-tooltip`);
+  const tooltipPoint = await evaluate(send, `(() => { const el=[...document.querySelectorAll('button')].find(el=>el.textContent.trim()==='Tooltip trigger'); el.scrollIntoView({block:'center'}); const r=el.getBoundingClientRect(); return {x:r.x+r.width/2,y:r.y+r.height/2}; })()`);
+  await send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...tooltipPoint }); await pageReady(send, '#gallery-tooltip'); await saveShot(send, `${theme}-gallery-tooltip`);
   await clickText(send, 'button', 'Open dialog'); await waitForPreview(send, '[role="dialog"]');
   for (let i = 0; i < 5; i++) { await key(send, 'Tab', 9); if (!await evaluate(send, `document.querySelector('[role="dialog"]').contains(document.activeElement)`)) throw new Error('Focus escaped dialog'); }
   const locked = await evaluate(send, `document.body.hasAttribute('data-scroll-locked')`);
@@ -123,6 +164,8 @@ async function inspectGallery(send, theme) {
   await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
   await clickText(send, 'button', 'Open dialog'); await waitForPreview(send, '[role="dialog"]'); await saveShot(send, `${theme}-gallery-dialog-reduced`); await key(send, 'Escape', 27); await pageReady(send, '[data-gallery-ready]');
   await send('Emulation.setEmulatedMedia', { features: [] });
+  await evaluate(send, `document.querySelector('[aria-label="Long option"]').scrollIntoView({block:'center'})`);
+  await waitForPreview(send, '[data-gallery-ready]'); await saveShot(send, `${theme}-gallery-multilingual`);
   process.stdout.write('Passed gallery metrics, focus, Escape, overlay, scrolling and reduced motion: ' + theme + '\n');
 }
 try {
@@ -133,7 +176,7 @@ try {
   for (const theme of ['light', 'dark']) for (const accent of accents) {
     const script = await send('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('yuhaiin.theme', ${JSON.stringify(theme)}); localStorage.setItem('yuhaiin.accent', ${JSON.stringify(accent)});` });
     const pages = galleryOnly ? [] : ['olive', 'terracotta', 'graphite'].includes(accent) ? routes : [routes.at(-1)];
-    const widths = galleryOnly ? [1440] : accent === 'olive' ? [1440, 390, 320] : [1440];
+    const widths = accent === 'olive' ? [1440, 768, 390, 320] : [1440];
     for (const width of widths) for (const [name, route, ready] of pages) {
       await send('Emulation.setDeviceMetricsOverride', { width, height: width < 700 ? 844 : 1000, deviceScaleFactor: 1, mobile: width < 700 });
       // Query nonce forces a new document so provider state is initialized from saved settings.
@@ -160,6 +203,12 @@ try {
       await send('Emulation.setDeviceMetricsOverride', { width, height: width < 700 ? 844 : 1200, deviceScaleFactor: 1, mobile: width < 700 });
       await send('Page.navigate', { url: `http://127.0.0.1:5175/?scenario=normal&gallery=1&visual=${theme}-${accent}-${width}` });
       await pageReady(send, '[data-gallery-ready]');
+      const galleryLayout=await evaluate(send, `({overflow:document.documentElement.scrollWidth>innerWidth+1, clipped:[...document.querySelectorAll('button,input,textarea')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&(r.left < -1 || r.right>innerWidth+1);}).map(el=>el.textContent||el.getAttribute('aria-label'))})`);
+      if (width < 640) {
+        const mobilePage=await evaluate(send, `(() => { const trigger=document.querySelector('[data-gallery-pagination] button[role="combobox"]');const value=trigger.firstElementChild;return {height:trigger.getBoundingClientRect().height,align:getComputedStyle(value).textAlign}; })()`);
+        if (mobilePage.height < 44 || mobilePage.align!=='center') throw new Error('Mobile pagination alignment: '+JSON.stringify(mobilePage));
+      }
+      if (galleryLayout.overflow || galleryLayout.clipped.length) throw new Error('Gallery layout: '+JSON.stringify(galleryLayout));
       await saveShot(send, `${theme}-${accent}-gallery-${width}`);
     }
     if (!galleryOnly && ['olive', 'terracotta', 'graphite'].includes(accent)) {
@@ -174,7 +223,7 @@ try {
       await saveShot(send, `${theme}-${accent}-node-picker`);
     }
     if (accent === 'olive') {
-      for (const width of galleryOnly ? [] : [390, 320]) {
+      for (const width of galleryOnly ? [] : [768, 390, 320]) {
         await send('Emulation.setDeviceMetricsOverride', { width, height: 844, deviceScaleFactor: 1, mobile: true });
         await send('Page.navigate', { url: `http://127.0.0.1:5175/?scenario=normal&visual=editor-${theme}-${width}#/docs/group?node=node-0` });
         await pageReady(send, 'section[aria-label="Connection settings"] input');

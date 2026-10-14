@@ -32,18 +32,18 @@ export default function SetupCard() {
         <p className="mb-4 text-sm text-ui-muted">{t('setupHelp')}</p>
         <div className="grid gap-3 sm:grid-cols-3">
             <div className="space-y-2 border-l-2 border-ui-border pl-3">
-                <p className="text-sm font-semibold">1. {t('defaultDestination')}</p>
+                <p className="text-sm font-medium">1. {t('defaultDestination')}</p>
                 <p className="text-sm text-ui-muted">{hasDefault ? selection?.tcp?.id === selection?.udp?.id ? selection?.tcp?.name : t('separateDestinations') : t('setupChooseDestination')}</p>
                 <div className="flex flex-wrap gap-2"><Button size="sm" onClick={() => setEditingDefault(true)}>{t('chooseNode')}</Button>
                     <Button size="sm" variant="outline-secondary" onClick={() => navigate('/docs/group/')}>{t('addNode')}</Button></div>
             </div>
             <div className="space-y-2 border-l-2 border-ui-border pl-3">
-                <p className="text-sm font-semibold">2. {t('setupTrafficEntry')}</p>
+                <p className="text-sm font-medium">2. {t('setupTrafficEntry')}</p>
                 <p className="text-sm text-ui-muted">{t(hasInbound ? 'setupEntryEnabled' : 'setupChooseEntry')}</p>
                 <Button size="sm" variant="outline-secondary" onClick={() => navigate('/docs/inbound')}>{t('setupConfigureEntry')}</Button>
             </div>
             <div className="space-y-2 border-l-2 border-ui-border pl-3">
-                <p className="text-sm font-semibold">3. {t('setupTest')}</p>
+                <p className="text-sm font-medium">3. {t('setupTest')}</p>
                 <p className="text-sm text-ui-muted">{t('setupTestHelp')}</p>
                 <Button size="sm" variant="outline-secondary" onClick={() => navigate('/docs/diagnostics')}>{t('setupRunTest')}</Button>
             </div>
@@ -60,7 +60,7 @@ export default function SetupCard() {
                     <ChevronDown size={16} className="shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
                 </summary>
                 <CardBody density="compact" className="border-t border-ui-border">{body}</CardBody>
-            </details> : <><CardHeader><h2 className="text-base font-semibold">{t('setupTitle')}</h2></CardHeader><CardBody density="compact">{body}</CardBody></>}
+            </details> : <><CardHeader><h2 className="text-base font-medium">{t('setupTitle')}</h2></CardHeader><CardBody density="compact">{body}</CardBody></>}
         </Card>
     </>;
 }

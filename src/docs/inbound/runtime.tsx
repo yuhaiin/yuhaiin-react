@@ -98,7 +98,7 @@ const InboundRuntimePanel: FC<{
 
             {status.listeners.length > 0 && (
                 <div>
-                    <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-ui-muted">{uiT("listeners")}</div>
+                    <div className="mb-2 text-xs font-medium text-ui-muted">{uiT("listeners")}</div>
                     <div className="space-y-1 text-sm">
                         {status.listeners.map((listener) => (
                             <div className="flex flex-wrap items-center justify-between gap-2" key={`${listener.kind}-${listener.listen ?? ""}`}>
@@ -111,7 +111,7 @@ const InboundRuntimePanel: FC<{
             )}
 
             <div>
-                <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-ui-muted">
+                <div className="mb-2 flex items-center gap-2 text-xs font-medium text-ui-muted">
                     <CircleCheck size={14} /> {uiT("recentEvents")}</div>
                 {eventsLoading ? <div className="text-sm text-ui-muted">{uiT("loadingEvents")}</div> : events.length === 0 ? (
                     <div className="text-sm text-ui-muted">{uiT("noLifecycleEventsRecorded")}</div>

@@ -38,14 +38,14 @@ const DimensionPanel = ({ group }: { group: TelemetryGroup }) => {
     const { t: uiT } = useTranslation('ui');
     return (
     <section className="overflow-hidden rounded-ui-lg border border-ui-border/80 bg-ui-surface/20">
-        <h3 className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ui-muted">{titles[group.dimension]}</h3>
+        <h3 className="px-4 py-3 text-[13px] font-medium text-ui-muted">{titles[group.dimension]}</h3>
         {group.items.length === 0 ? (
             <div className="border-t border-ui-border/70 px-4 py-4 text-sm text-ui-muted">{uiT("noRecordsInThisRange")}</div>
         ) : (
             <div className="border-t border-ui-border/70 divide-y divide-ui-border/70">
                 {group.items.map(item => (
                     <div key={item.value} className="grid min-w-0 grid-cols-1 items-center gap-2 px-4 py-2.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-3">
-                        <div className="min-w-0 truncate text-sm font-medium text-ui-heading" title={item.value}>{item.value}</div>
+                        <div className="min-w-0 truncate text-sm font-normal text-ui-heading" title={item.value}>{item.value}</div>
                         <TrafficStats item={item} />
                     </div>
                 ))}
@@ -59,7 +59,7 @@ const ProtocolSummary = ({ group }: { group: TelemetryGroup }) => {
     const { t: uiT } = useTranslation('ui');
     return (
     <section className="overflow-hidden rounded-ui-lg border border-ui-border/80 bg-ui-surface/20">
-        <h3 className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ui-muted">{titles.protocol}</h3>
+        <h3 className="px-4 py-3 text-[13px] font-medium text-ui-muted">{titles.protocol}</h3>
         {group.items.length === 0 ? (
             <div className="border-t border-ui-border/70 px-4 py-4 text-sm text-ui-muted">{uiT("noRecordsInThisRange")}</div>
         ) : (
