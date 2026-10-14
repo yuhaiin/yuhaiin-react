@@ -6,7 +6,7 @@ import React, { FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from "./badge";
 import { Pagination } from './pagination';
-import { iconToneStyles, ui, type IconTone } from "./styles";
+import { cn, iconToneStyles, ui, type IconTone } from "./styles";
 
 type Density = "compact" | "normal";
 
@@ -83,10 +83,10 @@ export const ListItem: FC<{
     flat?: boolean
 }> = ({ children, className, style, onClick, selected = false, disabled = false, density = "normal", flat = false }) => (
     <div
-        className={clsx(
+        className={cn(
             flat ? "flex items-center cursor-pointer transition-colors duration-150" : ui.listRow,
             !flat && density === "compact" && "min-h-0 p-3",
-            selected && "border-ui-primary bg-ui-primary-soft text-ui-primary",
+            selected && "border-ui-border-strong bg-ui-selected text-ui-heading",
             onClick && ui.focusRing,
             disabled ? "cursor-not-allowed opacity-60" : onClick && "cursor-pointer",
             className
@@ -221,7 +221,7 @@ export const ErrorBox: FC<{ msgs: string[] }> = ({ msgs }) => {
         <div className="flex items-start gap-3 p-4 rounded-ui-sm bg-ui-danger-soft border border-ui-danger/25 text-ui-danger">
             <TriangleAlert className="mt-1" size={20} />
             <div className="grow">
-                <h6 className="font-bold mb-2">{t('state.configurationError', { defaultValue: 'Configuration Error' })}</h6>
+                <h6 className="font-medium mb-2">{t('state.configurationError', { defaultValue: 'Configuration Error' })}</h6>
                 <ul className="mb-0 pl-4 list-disc">
                     {msgs.map((v, index) => (
                         <li key={index}>{v}</li>
@@ -437,7 +437,7 @@ export function CardRowList<T>({
 // --- Other Styled Components ---
 
 export const IconBadge: FC<{ icon: React.ElementType, text: string | number, color?: "primary" | "secondary" | "success" | "danger" | "warning" | "info" }> = ({ icon: Icon, text, color = "secondary" }) => (
-    <Badge variant={color} className="flex shrink-0 items-center gap-1 px-2 py-1 text-[0.7rem] uppercase whitespace-nowrap">
+    <Badge variant={color} className="flex shrink-0 items-center gap-1 px-2 py-1 text-xs whitespace-nowrap">
         <Icon size={12} />
         <span>{text}</span>
     </Badge>
@@ -496,7 +496,7 @@ export const IconBox: FC<{
             </div>
             {title &&
                 <div className={clsx("min-w-0", textClassName)} title={`${title}${description ? ` - ${description}` : ''}`}>
-                    <h5 className="mb-0 text-base font-semibold truncate text-ui-heading">{title}</h5>
+                    <h5 className="mb-0 text-base font-medium truncate text-ui-heading">{title}</h5>
                     <small className="block text-ui-muted leading-snug sm:truncate">{description}</small>
                 </div>
             }

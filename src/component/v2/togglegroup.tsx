@@ -17,7 +17,7 @@ export function ToggleItem({ className, children, value, ...props }: ComponentPr
     const reduced = useReducedMotion();
     const active = selection.value === value || Array.isArray(selection.value) && selection.value.includes(value);
     return <ToggleGroupPrimitive.Item value={value} className={cn(
-        'relative isolate inline-flex min-h-field-sm min-w-0 items-center justify-center rounded-ui-sm border-0 bg-transparent px-3 py-1.5 text-sm font-medium text-ui-muted transition-colors duration-150 max-sm:min-h-11 hover:bg-ui-hover active:bg-ui-hover data-[state=on]:text-ui-primary disabled:pointer-events-none disabled:opacity-50',
+        'relative isolate inline-flex min-h-field-sm min-w-0 items-center justify-center rounded-ui-sm border-0 bg-transparent px-3 py-1.5 text-sm font-medium text-ui-muted transition-colors duration-[var(--motion-fast)] max-sm:min-h-11 hover:bg-ui-hover active:bg-ui-hover data-[state=on]:text-ui-heading disabled:pointer-events-none disabled:opacity-50',
         selection.value === undefined && 'data-[state=on]:bg-ui-surface', ui.focusRing, className,
     )} {...props}>
         {active && <motion.span aria-hidden="true" layoutId={selection.noSlide ? undefined : 'segment-selection'} className="absolute inset-0 -z-10 rounded-[inherit] bg-ui-surface shadow-ui-card"

@@ -28,7 +28,7 @@ export function AccentPicker() {
         if (next) setAccent(next);
     }} aria-label={t('theme.accent')} className="grid grid-cols-2 gap-2 sm:grid-cols-5">
         {ACCENTS.map(value => <RadioGroup.Item key={value} value={value} aria-label={t(`theme.accents.${value}`)}
-            className={cn('flex min-h-11 items-center gap-2 rounded-ui-md border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-fg transition-colors hover:border-ui-border-strong data-[state=checked]:border-ui-primary data-[state=checked]:bg-ui-primary-soft', ui.focusRing)}>
+            className={cn('flex min-h-11 items-center gap-2 rounded-ui-md border border-ui-border bg-ui-surface px-3 py-2 text-sm text-ui-fg transition-colors hover:border-ui-border-strong data-[state=checked]:border-ui-primary data-[state=checked]:bg-ui-selected', ui.focusRing)}>
             <span data-accent={value} className="shrink-0"><span className="accent-swatch block size-4 rounded-full" /></span>
             <span className="min-w-0 flex-1 text-left">{t(`theme.accents.${value}`)}</span>
             <RadioGroup.Indicator><Check size={14} aria-hidden="true" /></RadioGroup.Indicator>

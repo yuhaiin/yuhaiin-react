@@ -1,10 +1,11 @@
+import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { clsx } from "clsx";
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import * as React from "react";
 import { useLastClickPosition } from "../../hooks/use-last-click";
-import { cn, ui } from "./styles";
+import { cn, motionTiming, ui } from "./styles";
 
 // --- Context ---
 const ModalContext = React.createContext<{ open: boolean, transformOrigin: string }>({ open: false, transformOrigin: 'center center' });
@@ -47,13 +48,13 @@ const ModalClose = DialogPrimitive.Close;
 const overlayVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },
-    exit: { opacity: 0, transition: { duration: 0.2 } }
+    exit: { opacity: 0, transition: { duration: motionTiming.slow } }
 };
 
 const contentVariants = {
     hidden: { opacity: 0, y: "calc(-50% + 6px)", x: "-50%" },
-    visible: { opacity: 1, y: "-50%", x: "-50%", transition: { duration: 0.18, ease: "easeOut" } },
-    exit: { opacity: 0, y: "-50%", x: "-50%", transition: { duration: 0.12 } },
+    visible: { opacity: 1, y: "-50%", x: "-50%", transition: { duration: motionTiming.normal, ease: "easeOut" } },
+    exit: { opacity: 0, y: "-50%", x: "-50%", transition: { duration: motionTiming.fast } },
 };
 
 // 1. Content Container
@@ -70,7 +71,7 @@ const ModalContent = ({ className, children, style, width = 500, ...props }: Rea
                             data-ui-transition="overlay"
                             className="fixed inset-0 z-[1050] bg-black/50"
                             variants={overlayVariants}
-                            transition={{ duration: reducedMotion ? 0 : 0.18 }}
+                            transition={{ duration: reducedMotion ? 0 : motionTiming.normal }}
                             initial="hidden"
                             animate="visible"
                             exit="exit"
@@ -80,7 +81,7 @@ const ModalContent = ({ className, children, style, width = 500, ...props }: Rea
                         <motion.div
                             data-ui-transition="dialog"
                             className={cn(
-                                "fixed top-1/2 left-1/2 min-w-0 w-[calc(100vw-24px)] max-h-[calc(100dvh-32px)] z-[1055] flex flex-col outline-none overflow-hidden bg-ui-surface-raised text-ui-fg border border-ui-border rounded-ui-xl shadow-ui-elevated",
+                                "fixed top-1/2 left-1/2 min-w-0 w-[calc(100vw-24px)] max-h-[calc(100dvh-32px)] z-[1055] flex flex-col outline-none overflow-hidden bg-ui-surface-raised text-ui-fg border border-ui-border rounded-ui-lg shadow-ui-elevated",
                                 className
                             )}
                             variants={reducedMotion ? {
@@ -126,7 +127,7 @@ const ModalHeader = ({
         {closeButton && (
             <DialogPrimitive.Close className={clsx("flex items-center justify-center p-2 -m-2 ml-auto text-2xl leading-none text-ui-muted min-h-11 min-w-11 rounded-ui-sm transition-colors duration-150 bg-transparent hover:bg-ui-hover border-0 cursor-pointer hover:opacity-100 hover:text-ui-fg hover:no-underline", ui.focusRing)} aria-label={uiT("close")}>
                 {/* Use a standard multiplication sign, or replace with Cross2Icon from @radix-ui/react-icons */}
-                <span aria-hidden="true">×</span>
+                <X size={16} aria-hidden="true" />
             </DialogPrimitive.Close>
         )}
     </div>
@@ -136,7 +137,7 @@ const ModalHeader = ({
 // 3. Title (Must use DialogPrimitive.Title for accessibility)
 const ModalTitle = ({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) => (
     <DialogPrimitive.Title
-        className={clsx("m-0 min-w-0 truncate leading-normal text-[1.25rem] font-medium text-ui-heading", className)}
+        className={clsx("m-0 min-w-0 truncate leading-normal text-base font-medium text-ui-heading", className)}
         {...props}
     />
 );

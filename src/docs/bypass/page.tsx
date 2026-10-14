@@ -189,7 +189,7 @@ function BypassComponent() {
             <WorkspaceLayout className={showEditor ? 'md:mt-6' : 'mt-6'}>
                 <WorkspaceDirectory label={t('ruleDirectory')} hiddenOnMobile={showEditor}>
                     <div className="mb-2 space-y-2 border-b border-ui-border/50 px-1 pb-3">
-                        <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-semibold text-ui-heading">{uiT('routeRules')}</h2>{isValidating && <Spinner size="sm" />}</div>
+                        <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-medium text-ui-heading">{uiT('routeRules')}</h2>{isValidating && <Spinner size="sm" />}</div>
                         <p className="text-xs text-ui-muted">{t('ruleOrderHelp', { count: data.page.total })}</p>
                         <FilterSearch className="w-full" onEnter={v => { setPage(1); setQuery(v); }} size="sm" />
                     </div>

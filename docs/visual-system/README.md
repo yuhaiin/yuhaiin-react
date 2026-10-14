@@ -1,3 +1,5 @@
+Latest refinement: [Design System 2.0](../design-system-2/README.md), with current screenshots and tokens. The following records describe the earlier PR #473 work.
+
 # Visual system
 
 See the [second-pass component refinement and Gallery](refinement/README.md) for current validation, root-cause findings and screenshots.

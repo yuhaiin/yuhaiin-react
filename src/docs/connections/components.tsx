@@ -242,7 +242,7 @@ export function useFlow(options?: UseFlowOptions) {
     };
 }
 
-const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral"; summary?: boolean }> = ({ label, value, error, accent = "neutral", summary = false }) => {
+const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral"; summary?: boolean; emphasized?: boolean }> = ({ label, value, error, accent = "neutral", summary = false, emphasized = false }) => {
     const display = error || value;
     const prevRef = useRef(display);
     const [pulse, setPulse] = useState(false);
@@ -266,13 +266,13 @@ const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral";
             )}
         >
             <div className={clsx(
-                "mb-1.5 flex items-center gap-1.5 text-[11px] font-medium leading-none text-[var(--metric-label,#64748b)]",
-                !summary && "uppercase tracking-[0.08em]",
+                "mb-1.5 flex items-center gap-1.5 text-xs font-normal leading-normal text-[var(--metric-label)]",
+                !summary && "tracking-normal",
             )}>
                 {summary && (
                     <span className={clsx(
-                        "inline-flex h-5 w-5 items-center justify-center rounded-ui-xs",
-                        accent === "upload" ? "bg-ui-success-soft text-ui-success" : "bg-ui-info-soft text-ui-info",
+                        "inline-flex items-center justify-center",
+                        accent === "upload" ? "text-ui-success" : "text-ui-info",
                     )}>
                         {accent === "upload" ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
                     </span>
@@ -280,7 +280,8 @@ const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral";
                 <span>{label}</span>
             </div>
             <div className={clsx(
-                "truncate font-mono text-[1.25rem] font-semibold leading-tight tabular-nums text-[var(--metric-value,#0f172a)]",
+                "truncate font-mono font-medium leading-tight tabular-nums text-[var(--metric-value)]",
+                summary && emphasized ? "text-2xl" : "text-xl",
                 pulse && "animate-dataUpdate",
                 error && "text-ui-danger"
             )}>
@@ -311,8 +312,8 @@ export const FlowCard: FC<{
                     : clsx("grid gap-3", hasExtra ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" : "grid-cols-1 sm:grid-cols-2 xl:grid-cols-4"),
             )}
         >
-            <MetricCard summary={summary} accent="download" label={t("downloadRate")} value={lastFlow ? lastFlow.DownloadString() : loading} error={flow_error} />
-            <MetricCard summary={summary} accent="upload" label={t("uploadRate")} value={lastFlow ? lastFlow.UploadString() : loading} error={flow_error} />
+            <MetricCard summary={summary} emphasized accent="download" label={t("downloadRate")} value={lastFlow ? lastFlow.DownloadString() : loading} error={flow_error} />
+            <MetricCard summary={summary} emphasized accent="upload" label={t("uploadRate")} value={lastFlow ? lastFlow.UploadString() : loading} error={flow_error} />
             <MetricCard summary={summary} accent="download" label={t("totalDownload")} value={lastFlow ? lastFlow.DownloadTotalString() : loading} error={flow_error} />
             <MetricCard summary={summary} accent="upload" label={t("totalUpload")} value={lastFlow ? lastFlow.UploadTotalString() : loading} error={flow_error} />
             {extra_fields?.map((field, index) => (

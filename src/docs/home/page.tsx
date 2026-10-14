@@ -51,23 +51,23 @@ const EndpointCard: FC<{
             )}
         >
             <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ui-muted">{label}</span>
+                <span className="text-xs font-normal text-ui-muted">{label}</span>
                 <Network size={14} className="shrink-0 text-ui-muted/70 transition-colors group-hover:text-ui-primary" />
             </div>
             {error ? (
                 <div className="truncate text-sm font-medium text-ui-danger" title={error}>{error}</div>
             ) : node ? (
                 <div className="min-w-0 space-y-1">
-                    <div className="truncate text-sm font-semibold text-ui-heading" title={node.name || node.id}>
+                    <div className="truncate text-base font-medium text-ui-heading" title={node.name || node.id}>
                         {node.name || node.id}
                     </div>
                     <div className="flex min-w-0 items-center gap-2">
                         {node.group && (
-                            <span className="shrink-0 rounded-full bg-ui-chip px-2 py-0.5 text-[11px] font-medium text-ui-chip-fg">
+                            <span className="shrink-0 rounded-full bg-ui-chip px-2 py-0.5 text-xs font-medium text-ui-chip-fg">
                                 {node.group}
                             </span>
                         )}
-                        <span className="truncate text-[11px] text-ui-muted">{node.chain.map(step => step.type).join(" → ")}</span>
+                        <span className="truncate text-xs text-ui-muted">{node.chain.map(step => step.type).join(" → ")}</span>
                     </div>
                 </div>
             ) : (
@@ -161,7 +161,7 @@ function HomePage() {
                             <ToggleGroup type="single" value={selectedRange} aria-label={uiT("trafficRange")} onValueChange={value => { if (value) setSelectedRange(value); }}>
                                 {trafficRanges.map(item => <ToggleItem key={item.key} value={item.key}>{item.key === 'live' && <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />}{item.label}</ToggleItem>)}
                             </ToggleGroup>
-                            <div className="flex items-center justify-end gap-3 text-[11px] text-ui-muted">
+                            <div className="flex items-center justify-end gap-3 text-xs text-ui-muted">
                                 <span className="inline-flex items-center gap-1.5">
                                     <ArrowDownToLine size={12} className="text-ui-info" />
                                     {uiT("download")}</span>

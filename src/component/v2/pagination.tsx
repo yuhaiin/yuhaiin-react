@@ -51,7 +51,7 @@ export function Pagination({
 
     const controlClass = "h-11 min-w-11 sm:h-8 sm:min-w-8 rounded-ui-md border-ui-border bg-transparent text-ui-muted hover:bg-ui-surface-muted hover:text-ui-fg";
     const pageClass = "h-11 min-w-11 sm:h-8 sm:min-w-8 rounded-ui-md border-transparent bg-transparent text-ui-muted hover:border-ui-border hover:bg-ui-surface-muted hover:text-ui-fg";
-    const activePageClass = "!border-ui-primary/50 !bg-ui-primary-soft !text-ui-primary font-semibold shadow-none";
+    const activePageClass = "!border-ui-border-strong !bg-ui-selected !text-ui-heading font-medium tabular-nums shadow-none";
 
     if (totalPages <= 1) return <Button variant="outline-secondary" size="icon" className={`${pageClass} ${activePageClass}`} aria-current="page" disabled>1</Button>;
 
@@ -68,7 +68,7 @@ export function Pagination({
                 >
                     <ChevronLeft size={16} />
                 </Button>
-                <div className="flex h-8 min-w-[112px] items-center rounded-ui-md border border-ui-primary/30 bg-ui-primary-soft pr-3 text-sm font-semibold tabular-nums text-ui-primary">
+                <div className="flex h-11 min-w-[112px] items-center rounded-ui-md border border-ui-border-strong bg-ui-selected pr-3 text-sm font-medium tabular-nums text-ui-heading">
                     <div className="min-w-0 flex-1">
                         <Select
                             value={String(currentPage)}
@@ -78,7 +78,7 @@ export function Pagination({
                                 return { value: String(page), label: String(page) };
                             })}
                             size="sm"
-                            triggerClassName="!border-0 !bg-transparent !font-semibold !tabular-nums !text-ui-primary !shadow-none"
+                            triggerClassName="border-0 bg-transparent font-medium tabular-nums text-ui-heading shadow-none [&>span:first-child]:text-center"
                             contentClassName="min-w-[72px]"
                             viewportClassName="max-h-[min(50vh,320px)]"
                         />

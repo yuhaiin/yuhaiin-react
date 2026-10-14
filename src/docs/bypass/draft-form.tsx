@@ -74,7 +74,7 @@ export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; 
             </div>}
             <SimpleConditions privateHistory={privateHistory} value={value} matcher={matcher} options={options} onChange={onChange} />
             <section className="space-y-4 border-t border-ui-border/60 pt-5">
-                <h3 className="text-sm font-semibold text-ui-heading">{t('handlingAndDestination')}</h3>
+                <h3 className="text-sm font-medium text-ui-heading">{t('handlingAndDestination')}</h3>
                 <ToggleGroup type="single" value={value.rule.mode} aria-label={t('action')} className="grid grid-cols-3"
                     onValueChange={mode => { if (mode === 'proxy' || mode === 'direct' || mode === 'block') patchRule({ mode }); }}>
                     {(['proxy', 'direct', 'block'] as const).map(mode => <ToggleItem key={mode} value={mode}>{t(mode)}</ToggleItem>)}

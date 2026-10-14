@@ -126,7 +126,7 @@ function ApiHostsCard() {
                         className={clsx(
                             "flex w-full items-center gap-3 rounded-ui-lg border px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus",
                             active === ""
-                                ? "border-ui-primary/40 bg-ui-primary-soft/50"
+                                ? "border-ui-border-strong bg-ui-selected"
                                 : "border-ui-border bg-ui-surface hover:border-ui-primary/25 hover:bg-ui-surface-muted/50"
                         )}
                     >
@@ -139,7 +139,7 @@ function ApiHostsCard() {
                             <Network size={16} />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-semibold text-ui-heading">
+                            <div className="truncate text-sm font-medium text-ui-heading">
                                 {t('api.sameOrigin')}
                             </div>
                             <div className="mt-0.5 truncate font-mono text-[11px] text-ui-muted">
@@ -162,7 +162,7 @@ function ApiHostsCard() {
                                 className={clsx(
                                     "flex w-full items-center gap-2 rounded-ui-lg border px-2 py-2 transition-colors",
                                     isActive
-                                        ? "border-ui-primary/40 bg-ui-primary-soft/50"
+                                        ? "border-ui-border-strong bg-ui-selected"
                                         : "border-ui-border bg-ui-surface hover:border-ui-primary/25 hover:bg-ui-surface-muted/50"
                                 )}
                             >
@@ -180,7 +180,7 @@ function ApiHostsCard() {
                                         <Link size={16} />
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <div className="truncate font-mono text-sm font-semibold text-ui-heading" title={host}>
+                                        <div className="truncate font-mono text-sm font-medium text-ui-heading" title={host}>
                                             {displayApiHost(host, t('api.sameOrigin'))}
                                         </div>
                                         <div className="mt-0.5 text-[11px] text-ui-muted">

@@ -47,9 +47,9 @@ export function SelectorEditor({ item, onClose, onSaved, onDeleted, presentation
         if (!item || !window.confirm(t('deleteSelectorConfirm'))) return;
         setActionError(''); void run(async () => { await deleteSelector(item.id); (onDeleted ?? onSaved)(item); });
     };
-    const body = <fieldset disabled={pending} className="grid min-w-0 grid-cols-1 gap-4 [--field-margin:0px]">
+    const body = <fieldset disabled={pending} className="grid min-w-0 max-w-2xl grid-cols-1 gap-4 [--field-margin:0px]">
         <SettingInputVertical label={t('name')} value={value.name} onChange={name => setValue(prev => ({ ...prev, name }))} />
-        <div className="space-y-2"><span className="text-[13px] font-medium text-ui-muted">{t('selectedNode')}</span>
+        <div className="space-y-2"><span className="text-[13px] font-normal text-ui-muted">{t('selectedNode')}</span>
             <NodeSelect label={t('selectedNode')} value={value.nodeId} disabled={pending} onChange={node => { void refreshCache(['/api/v2/nodes/detail', node.id], node, { revalidate: false }); setValue(prev => ({ ...prev, nodeId: node.id })); }} />
         </div>
         <Button size="sm" variant="outline-secondary" onClick={() => setCreatingNode(true)}><Plus size={16} />{t("addNode")}</Button>
@@ -67,7 +67,7 @@ export function SelectorEditor({ item, onClose, onSaved, onDeleted, presentation
             <header className="mb-5 border-b border-ui-border/60 pb-5">
                 <Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent md:hidden" onClick={close}><ArrowLeft size={16} aria-hidden="true" />{t('backToSelectors')}</Button>
                 <p className="mb-1 text-xs font-medium text-ui-muted">{t('selectorDetails')}</p>
-                <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="break-words text-xl font-semibold tracking-tight text-ui-heading">{value.name || t('newSelector')}</h2>
+                <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="break-words text-xl font-medium tracking-tight text-ui-heading">{value.name || t('newSelector')}</h2>
                     {dirty && <span role="status" className="text-xs text-ui-warning">{t('unsavedChanges')}</span>}</div>
             </header>
             {body}

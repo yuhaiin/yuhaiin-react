@@ -1,7 +1,7 @@
 
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown } from 'lucide-react';
-import React, { CSSProperties, FC, useMemo } from 'react';
+import React, { CSSProperties, FC, useId, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SettingLabel } from './card';
 import {
@@ -10,6 +10,7 @@ import {
     DropdownContent,
     DropdownTrigger
 } from './dropdown';
+import { FieldFeedback } from './input';
 import { cn, ui } from './styles';
 
 export type DescEnumValue = {
@@ -38,11 +39,15 @@ interface SelectProps {
     contentClassName?: string;
     viewportClassName?: string;
     size?: 'sm' | 'lg';
+    error?: string;
+    ariaDescribedBy?: string;
+    ariaInvalid?: boolean;
     groupPosition?: 'first' | 'middle' | 'last' | 'single';
 }
 
 
-export const Select: FC<SelectProps> = ({ value, onValueChange, items, placeholder, ariaLabel, ariaLabelledBy, disabled, triggerClassName, contentClassName, viewportClassName, size, groupPosition }) => {
+export const Select: FC<SelectProps> = ({ value, onValueChange, items, placeholder, ariaLabel, ariaLabelledBy, disabled, triggerClassName, contentClassName, viewportClassName, size, groupPosition, error, ariaDescribedBy, ariaInvalid }) => {
+    const feedbackId = useId();
     const internalValue = value === "" ? "___EMPTY___" : value;
     const safeItems = Array.isArray(items) ? items : [];
 
@@ -53,21 +58,21 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
                     '';
 
     return (
-        <SelectPrimitive.Root
+        <FieldFeedback error={error} id={feedbackId}><SelectPrimitive.Root
             value={internalValue}
             onValueChange={(val) => onValueChange(val === "___EMPTY___" ? "" : val)}
             disabled={disabled}
         >
             <SelectPrimitive.Trigger className={cn(
-                "flex min-w-0 items-center justify-between overflow-hidden rounded-ui-md px-3 text-sm leading-none h-field max-sm:min-h-11 gap-2 bg-ui-surface text-ui-fg border border-ui-border w-full cursor-pointer",
+                "flex min-w-0 items-center justify-between rounded-ui-sm px-3 text-sm leading-none h-field max-sm:min-h-11 gap-2 bg-ui-surface text-ui-fg border border-ui-border w-full cursor-pointer",
                 ui.interactive,
                 ui.focusRing,
-                "hover:bg-ui-surface-muted hover:border-ui-border data-[state=open]:border-ui-primary",
+                "hover:bg-ui-hover hover:border-ui-border-strong data-[state=open]:border-ui-primary aria-invalid:border-ui-danger",
                 size === 'sm' && "h-field-sm text-[0.875rem] px-2.5",
                 radiusClass,
                 triggerClassName,
-                disabled && "opacity-60 pointer-events-none"
-            )} aria-label={ariaLabel ?? placeholder} aria-labelledby={ariaLabelledBy}>
+                disabled && "bg-ui-disabled border-ui-disabled-border text-ui-disabled-fg cursor-not-allowed"
+            )} aria-label={ariaLabel ?? placeholder} aria-labelledby={ariaLabelledBy} aria-invalid={Boolean(error) || ariaInvalid || undefined} aria-describedby={[ariaDescribedBy, error ? feedbackId : undefined].filter(Boolean).join(' ') || undefined}>
                 <SelectPrimitive.Value className="min-w-0 flex-1 truncate text-left" placeholder={placeholder} />
                 <SelectPrimitive.Icon>
                     <ChevronDown className="text-ui-tertiary shrink-0" size={16} />
@@ -76,7 +81,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
             <SelectPrimitive.Portal>
                 <SelectPrimitive.Content
                     className={cn(
-                        "overflow-hidden bg-ui-surface-raised rounded-ui-md border border-ui-border shadow-ui-elevated z-[2000] max-h-[var(--radix-select-content-available-height)] origin-[var(--radix-select-content-transform-origin)] will-change-[transform,opacity]",
+                        "overflow-hidden bg-ui-surface-raised rounded-ui-lg border border-ui-border shadow-ui-elevated z-[2000] max-h-[var(--radix-select-content-available-height)] origin-[var(--radix-select-content-transform-origin)] will-change-[transform,opacity]",
                         "data-[state=closed]:animate-fadeOut",
                         "data-[side=top]:data-[state=open]:animate-slideUpAndFadeIn data-[side=bottom]:data-[state=open]:animate-slideDownAndFadeIn",
                         contentClassName
@@ -87,16 +92,16 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
                     style={{ width: 'var(--radix-select-trigger-width)' }}
                 >
 
-                        <SelectPrimitive.Viewport className={cn("p-[5px] overflow-y-auto max-h-[50vh] max-h-[var(--radix-select-content-available-height)]", viewportClassName)}>
+                        <SelectPrimitive.Viewport className={cn("p-1 overflow-y-auto max-h-[50vh] max-h-[var(--radix-select-content-available-height)]", viewportClassName)}>
                             {safeItems.map((item, index) => {
                                 const itemValue = item.value === "" ? "___EMPTY___" : item.value;
                                 return (
                                     <SelectPrimitive.Item key={`${itemValue}-${index}`} value={itemValue} className={cn(
-                                        "text-sm leading-none text-ui-fg rounded-ui-md flex items-center h-field-sm max-sm:min-h-11 pl-[25px] pr-3 relative select-none cursor-pointer",
-                                        "data-[state=checked]:bg-ui-primary-soft data-[state=checked]:text-ui-primary data-[highlighted]:bg-ui-hover data-[highlighted]:text-ui-heading data-[highlighted]:ring-1 data-[highlighted]:ring-inset data-[highlighted]:ring-ui-primary",
+                                        "min-w-0 text-sm leading-normal text-ui-fg rounded-ui-sm flex items-center h-field-sm max-sm:min-h-11 pl-[25px] pr-3 relative select-none cursor-pointer",
+                                        "data-[state=checked]:bg-ui-selected data-[state=checked]:text-ui-heading data-[highlighted]:bg-ui-hover data-[highlighted]:text-ui-heading data-[highlighted]:ring-1 data-[highlighted]:ring-inset data-[highlighted]:ring-ui-primary",
                                         ui.interactive
                                     )}>
-                                        <SelectPrimitive.ItemText>{item.label}</SelectPrimitive.ItemText>
+                                        <SelectPrimitive.ItemText className="min-w-0 truncate">{item.label}</SelectPrimitive.ItemText>
                                         <SelectPrimitive.ItemIndicator className="absolute left-0 w-[25px] inline-flex items-center justify-center">
                                             <Check size={14} />
                                         </SelectPrimitive.ItemIndicator>
@@ -106,7 +111,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
                         </SelectPrimitive.Viewport>
                 </SelectPrimitive.Content>
             </SelectPrimitive.Portal>
-        </SelectPrimitive.Root>
+        </SelectPrimitive.Root></FieldFeedback>
     );
 }
 
@@ -134,7 +139,7 @@ const SettingSelectComponent: FC<{
         items.unshift({ value: "", label: emptyChooseName ?? t('state.choose') });
     }
     return (
-        <div className={cn("flex items-center mb-[var(--field-margin,1rem)] flex-wrap", disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
+        <div className={cn("flex items-center mb-[var(--field-margin,var(--space-field))] flex-wrap", disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
             <label className="basis-[150px] shrink-0 mr-6 font-medium max-[576px]:basis-full max-[576px]:mr-0 max-[576px]:mb-2">{label}</label>
             <div className="grow min-w-0 relative">
                 <Select value={value} onValueChange={onChange} items={items} disabled={disabled} ariaLabel={label} />
@@ -197,7 +202,7 @@ const DropdownSelectComponent: FC<{
                         "flex items-center justify-between rounded-ui-md px-3 text-sm leading-none h-field max-sm:min-h-11 gap-2 bg-ui-surface text-ui-fg border border-ui-border w-full cursor-pointer",
                         ui.interactive,
                         ui.focusRing,
-                        "hover:bg-ui-surface-muted hover:border-ui-border data-[state=open]:border-ui-primary",
+                        "hover:bg-ui-hover hover:border-ui-border-strong data-[state=open]:border-ui-primary aria-invalid:border-ui-danger",
                         radiusClass,
                         triggerClassName
                     )}
@@ -255,7 +260,7 @@ const SettingSelectVerticalComponent: FC<{
         items.unshift({ value: "", label: emptyChooseName ?? "Choose..." });
     }
     return (
-        <div className={cn("flex flex-col mb-[var(--field-margin,1rem)] relative", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
+        <div className={cn("flex flex-col mb-[var(--field-margin,var(--space-field))] relative", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
             <SettingLabel className="mb-2 basis-auto mr-0 font-medium">{label}</SettingLabel>
             <Select value={value} onValueChange={onChange} items={items} disabled={disabled} ariaLabel={label} />
         </div>
@@ -280,7 +285,7 @@ const SettingEnumSelectVerticalComponent: FC<{
     }, [type, filter, format]);
 
     return (
-        <div className={cn("flex flex-col mb-[var(--field-margin,1rem)] relative", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
+        <div className={cn("flex flex-col mb-[var(--field-margin,var(--space-field))] relative", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
             <SettingLabel className="mb-2 basis-auto mr-0 font-medium">{label}</SettingLabel>
             <Select value={String(value)} onValueChange={(val) => onChange(Number(val))} items={items} disabled={disabled} />
         </div>
@@ -314,7 +319,7 @@ const SettingTypeSelectComponent: FC<{
     }
 
     return (
-        <div className={cn("flex items-center mb-[var(--field-margin,1rem)] flex-wrap", disabled && "opacity-60 pointer-events-none grayscale-[0.5]", className)} style={style}>
+        <div className={cn("flex items-center mb-[var(--field-margin,var(--space-field))] flex-wrap", disabled && "opacity-60 pointer-events-none grayscale-[0.5]", className)} style={style}>
             {label && <label className="basis-[150px] shrink-0 mr-6 font-medium max-[576px]:basis-full max-[576px]:mr-0 max-[576px]:mb-2">{label}</label>}
             <div className="grow min-w-0 relative">
                 <Select value={String(value)} onValueChange={(val) => onChange(Number(val))} items={items} disabled={disabled} triggerClassName={triggerClassName} size={size} />

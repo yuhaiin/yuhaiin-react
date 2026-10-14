@@ -175,7 +175,7 @@ const ResultChip: FC<{ label: string; value: NodeLatencyValue | undefined; loadi
             <span className="shrink-0 text-[11px] font-medium uppercase tracking-wide text-ui-muted">{label}</span>
             {loading
                 ? <Spinner size="sm" />
-                : <span className={clsx("truncate text-sm font-semibold font-mono", latencyTextClass(value))}>{latencyText(value)}</span>}
+                : <span className={clsx("truncate text-sm font-medium font-mono", latencyTextClass(value))}>{latencyText(value)}</span>}
         </div>
     );
 };
@@ -198,7 +198,7 @@ const ResultRow: FC<{ label: string; value: NodeLatencyValue | undefined; loadin
 
 const ResultGroup: FC<{ title: string; children: ReactNode }> = ({ title, children }) => (
     <div className="min-w-0 space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ui-muted">{title}</div>
+        <div className="text-xs font-medium text-ui-muted">{title}</div>
         <div className="space-y-2">{children}</div>
     </div>
 );
@@ -238,7 +238,7 @@ const GroupPicker: FC<{
                     </span>
                     <span className="flex shrink-0 items-center gap-1.5">
                         {value && (
-                            <span className="rounded-ui-sm bg-ui-surface-muted px-1.5 py-0.5 text-[11px] tabular-nums text-ui-muted">
+                            <span className="rounded-ui-sm bg-ui-surface-muted px-1.5 py-0.5 text-xs tabular-nums text-ui-muted">
                                 {selectedCount}
                             </span>
                         )}
@@ -362,7 +362,7 @@ const NodeDirectoryItem = memo(function NodeDirectoryItem({ item, selected, onOp
     const { t: uiT } = useTranslation('ui');
     const { t } = useTranslation('routing');
     return <button type="button" aria-label={item.name || item.id} aria-current={selected ? 'true' : undefined} title={item.name || item.id} onClick={onOpen}
-        className={clsx('relative flex w-full min-w-0 items-center gap-2.5 rounded-ui-md px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus', selected ? 'bg-ui-primary-soft' : 'hover:bg-ui-surface-muted/75')}>
+        className={clsx('relative flex w-full min-w-0 items-center gap-2.5 rounded-ui-md px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus', selected ? 'bg-ui-selected' : 'hover:bg-ui-surface-muted/75')}>
         {selected && <WorkspaceSelectionMarker />}
         <div className="min-w-0 flex-1">
             <div className="flex min-w-0 items-center gap-2"><span className="min-w-0 flex-1 truncate text-sm font-medium leading-5 text-ui-heading">{item.name || item.id}</span>
@@ -370,8 +370,8 @@ const NodeDirectoryItem = memo(function NodeDirectoryItem({ item, selected, onOp
                 {(defaults?.tcp?.id === item.id || defaults?.udp?.id === item.id) && <Check size={13} aria-label={t('defaultNode')} className="shrink-0 text-ui-primary" />}
             </div>
             <div className="mt-0.5 flex min-w-0 items-center gap-2">
-                <span className="min-w-0 flex-1 truncate text-[11px] leading-4 text-ui-muted">{chainLabel(item) || t('noProtocol')}{!item.enabled && ` · ${uiT('off')}`}</span>
-                {busy?.tcp ? <Spinner size="sm" /> : latency?.tcp && <span className={clsx('shrink-0 font-mono text-[11px] tabular-nums', latencyTextClass(latency.tcp))}>{latencyText(latency.tcp)}</span>}
+                <span className="min-w-0 flex-1 truncate text-xs leading-4 text-ui-muted">{chainLabel(item) || t('noProtocol')}{!item.enabled && ` · ${uiT('off')}`}</span>
+                {busy?.tcp ? <Spinner size="sm" /> : latency?.tcp && <span className={clsx('shrink-0 font-mono text-xs tabular-nums', latencyTextClass(latency.tcp))}>{latencyText(latency.tcp)}</span>}
             </div>
         </div>
     </button>;
@@ -391,7 +391,7 @@ function NodeOverview({ item, latency, busy, defaults, onLatency, onUse, onBack,
         <header className="mb-5 border-b border-ui-border/60 pb-5">
             <Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent bg-transparent md:hidden" onClick={onBack}><ArrowLeft size={16} />{t('backToNodes')}</Button>
             <p className="mb-1 text-xs text-ui-muted">{t('nodeDetails')}</p>
-            <h2 className="break-words text-xl font-semibold tracking-tight text-ui-heading">{item.name || item.id}</h2>
+            <h2 className="break-words text-xl font-medium tracking-tight text-ui-heading">{item.name || item.id}</h2>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                 <Badge pill variant={item.enabled ? 'success' : 'secondary'}>{item.enabled ? uiT('enabled') : uiT('off')}</Badge>
                 <span className="text-ui-muted">{item.group || 'manual'}</span>
@@ -401,12 +401,12 @@ function NodeOverview({ item, latency, busy, defaults, onLatency, onUse, onBack,
         </header>
         <section className="mb-6 border-b border-ui-border/60 pb-6" aria-label={t('connectivityChecks')}>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                <h3 className="text-base font-semibold text-ui-heading">{t('connectivityChecks')}</h3>
+                <h3 className="text-base font-medium text-ui-heading">{t('connectivityChecks')}</h3>
                 <div className="flex flex-wrap gap-2">
                     <Dropdown><DropdownTrigger asChild><Button size="sm" variant="outline-secondary" className="gap-2" disabled={locked}><Gauge size={15} />{uiT('test')}<ChevronDown size={14} /></Button></DropdownTrigger>
                         <DropdownContent align="end">{latencyActions.map(action => <DropdownItem key={action.type} disabled={locked || busy?.[action.type]} onSelect={() => onLatency(action.type)}>{busy?.[action.type] ? <Spinner size="sm" className="mr-2" /> : <Gauge size={15} className="mr-2" />}{action.label}</DropdownItem>)}</DropdownContent>
                     </Dropdown>
-                    <Button size="sm" variant="outline-primary" className="gap-2" disabled={locked || using || !item.enabled} onClick={onUse}>{using ? <Spinner size="sm" /> : <Power size={15} />}{t('setDefaultNode')}</Button>
+                    <Button size="sm" variant="outline-secondary" className="gap-2" disabled={locked || using || !item.enabled} onClick={onUse}>{using ? <Spinner size="sm" /> : <Power size={15} />}{t('setDefaultNode')}</Button>
                 </div>
             </div>
             {hasLatency || hasIp || hasStun ? <div className="grid gap-4 sm:grid-cols-2">
@@ -575,7 +575,7 @@ export default function Group() {
             <div className="flex items-center gap-2"><Button variant="outline-secondary" disabled={editorState.pending} onClick={() => setImportOpen(true)}><Upload className="mr-1.5" size={16} />{uiT('import')}</Button><Button variant="primary" onClick={handleCreate} disabled={editorState.pending || showdata.new}><Plus className="mr-1.5" size={16} />{uiT('new')}</Button></div>
         </header>
         {groups.length === 0 && !showdata.show ? <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center">
-            <Network className="mx-auto mb-3 text-ui-primary" size={28} aria-hidden="true" /><h2 className="text-sm font-semibold text-ui-heading">{uiT('noOutboundGroupsYet')}</h2>
+            <Network className="mx-auto mb-3 text-ui-primary" size={28} aria-hidden="true" /><h2 className="text-sm font-medium text-ui-heading">{uiT('noOutboundGroupsYet')}</h2>
             <p className="mt-1 text-xs text-ui-muted">{uiT('createANodeOrImportJsonToGetStarted')}</p><Button className="mt-4 gap-2" variant="primary" onClick={handleCreate}><Plus size={16} />{uiT('newNode')}</Button>
         </div> : <WorkspaceLayout>
             <WorkspaceDirectory label={t('nodeDirectory')} hiddenOnMobile={showdata.show}>
@@ -596,7 +596,7 @@ export default function Group() {
             <WorkspaceDetail hiddenOnMobile={!showdata.show} transitionKey={showdata.new ? 'new-node' : showdata.id}>
                 {showdata.show ? <>
                     {selectedItem && !showdata.new ? <NodeOverview item={selectedItem} latency={visibleLatency[selectedItem.id]} busy={visibleBusyLatency[selectedItem.id]} defaults={defaults} using={using} locked={editorState.dirty || editorState.pending}
-                        onLatency={type => handleLatency(selectedItem.id, type)} onUse={() => handleUse(selectedItem.id)} onBack={backToNodes} /> : <header className="mb-5 border-b border-ui-border/60 pb-5"><Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent md:hidden" onClick={backToNodes}><ArrowLeft size={16} />{t('backToNodes')}</Button><h2 className="break-words text-xl font-semibold text-ui-heading">{showdata.new ? uiT('newNode') : t('nodeDetails')}</h2></header>}
+                        onLatency={type => handleLatency(selectedItem.id, type)} onUse={() => handleUse(selectedItem.id)} onBack={backToNodes} /> : <header className="mb-5 border-b border-ui-border/60 pb-5"><Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent md:hidden" onClick={backToNodes}><ArrowLeft size={16} />{t('backToNodes')}</Button><h2 className="break-words text-xl font-medium text-ui-heading">{showdata.new ? uiT('newNode') : t('nodeDetails')}</h2></header>}
                     {defaultsError && <div role="alert" className="mb-4 text-sm text-ui-danger">{t('defaultNodeStateFailed')} <Button size="sm" onClick={() => void mutateDefaults()}>{t('retry')}</Button></div>}
                     <NodeModal node={selectedItem} key={showdata.new ? 'new-node' : showdata.id} show id={showdata.id} isNew={showdata.new} editable presentation="inline" groups={modalGroups} onStateChange={setEditorState}
                         onChanged={node => { setSelectedPreview(node); void mutate(); }}

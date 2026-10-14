@@ -51,12 +51,12 @@ const EditModal: FC<{
         </>}>
                     <fieldset disabled={saving} className="min-w-0 flex flex-col gap-4">
                         <FormSection title={uiT("identity")}>
-                            <div className="flex flex-col gap-3">
+                            <div className="flex min-w-0 max-w-2xl flex-col gap-4">
                                 <SettingInputVertical label={uiT("configIdentifier")} value={newItem.name} disabled={isEdit} onChange={(name) => setNewItem(prev => ({ ...prev, name }))} placeholder="internal-sub" />
                             </div>
                         </FormSection>
                         <FormSection title={uiT("connection")}>
-                            <div className="flex flex-col gap-3">
+                            <div className="flex min-w-0 max-w-2xl flex-col gap-4">
                                 <SettingInputVertical label={uiT("displayAddress")} value={newItem.address} onChange={(address) => setNewItem(prev => ({ ...prev, address }))} placeholder="example.com:443" />
                                 <SettingInputVertical label={uiT("path")} value={newItem.path} onChange={(path) => setNewItem(prev => ({ ...prev, path }))} placeholder="custom/path" />
                                 <SettingInputVertical label={uiT("password")} value={newItem.password} onChange={(password) => setNewItem(prev => ({ ...prev, password }))} placeholder={uiT("optionalPassword")} />
