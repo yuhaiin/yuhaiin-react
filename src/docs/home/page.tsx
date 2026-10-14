@@ -114,7 +114,7 @@ function HomePage() {
     }, []);
 
     return (
-        <div className="box-border flex h-full flex-col">
+        <div className="box-border min-h-full">
             <NodeModal
                 show={nodeModal.show}
                 node={nodeModal.node}

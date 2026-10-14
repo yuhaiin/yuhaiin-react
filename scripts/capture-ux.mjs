@@ -13,6 +13,8 @@ const browser = spawn('google-chrome', [
 
 const base = 'http://127.0.0.1:5175/?scenario=normal#';
 const cases = [
+  { name: 'home-desktop', path: '/', width: 1440, height: 1100, match: 'section[aria-label="Active Nodes"] li' },
+  { name: 'home-mobile', path: '/', width: 390, height: 844, match: 'section[aria-label="Active Nodes"] li' },
   { name: 'routing-desktop', path: '/docs/bypass', width: 1440, height: 1100, match: 'section[aria-label="Rule editor"] [role="group"][aria-label="Rule editor"]' },
   { name: 'rule-editor', path: '/docs/bypass?rule=rule-0', width: 1440, height: 1100, match: 'section[aria-label="Rule editor"] [role="group"][aria-label="Rule editor"]' },
   { name: 'nodes-desktop', path: '/docs/group', width: 1440, height: 1100, match: 'section[aria-label="Connection settings"] input' },
@@ -104,6 +106,19 @@ async function main() {
       await sleep(250);
     }
     if (!loaded) throw new Error('Preview did not render ' + shot.name + ': ' + detail);
+    if (shot.path === '/') {
+      await sleep(1000);
+      const bottom = await send('Runtime.evaluate', {
+        expression: `(() => {
+          const scroller = document.querySelector('main > div > div');
+          const list = document.querySelector('section[aria-label="Active Nodes"] ul');
+          scroller.scrollTop = scroller.scrollHeight;
+          return scroller.getBoundingClientRect().bottom - list.getBoundingClientRect().bottom;
+        })()`,
+        returnByValue: true,
+      });
+      if (bottom.result?.value < 19) throw new Error('Missing home bottom spacing in ' + shot.name + ': ' + bottom.result.value);
+    }
     const layout = await send('Runtime.evaluate', {
       expression: '({viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth})',
       returnByValue: true,

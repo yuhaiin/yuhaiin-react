@@ -63,7 +63,7 @@ jobs:
       - name: Show UX screenshots in job summary
         run: |
           set -euo pipefail
-          shots=(routing-desktop rule-editor nodes-desktop selectors-desktop routing-mobile rule-editor-mobile nodes-mobile node-details-mobile selectors-mobile selector-details-mobile inbounds-desktop inbounds-mobile lists-desktop lists-mobile publishes-desktop publishes-mobile resolvers-desktop resolvers-mobile)
+          shots=(home-desktop home-mobile routing-desktop rule-editor nodes-desktop selectors-desktop routing-mobile rule-editor-mobile nodes-mobile node-details-mobile selectors-mobile selector-details-mobile inbounds-desktop inbounds-mobile lists-desktop lists-mobile publishes-desktop publishes-mobile resolvers-desktop resolvers-mobile)
           for name in "${shots[@]}"; do
             # The current run verifies rendering. Images in this summary are
             # the committed visual reference, not runner-local PNG files.
@@ -75,7 +75,13 @@ jobs:
           {
             echo '## Routing and Nodes UX previews'
             echo
-            echo 'The current CI run captured 18 desktop and mobile states and checked their layout. The inline images below are the screenshots committed to this revision, not the transient runner PNGs. If the layout changes, refresh the committed images as part of the PR.'
+            echo 'The current CI run captured 20 desktop and mobile states and checked their layout. The inline images below are the screenshots committed to this revision, not the transient runner PNGs. If the layout changes, refresh the committed images as part of the PR.'
+            echo
+            echo '### Home bottom spacing'
+            echo
+            echo '| Desktop | Mobile |'
+            echo '| :---: | :---: |'
+            echo "| ![Home desktop](${images}/home-desktop.png) | ![Home mobile](${images}/home-mobile.png) |"
             echo
             echo '### Routing'
             echo

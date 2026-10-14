@@ -73,7 +73,7 @@ Browser checks exercised editing, draft protection, save retention, creation,
 deletion, mobile return, the publish node picker's 40-item page, and five consecutive
 node switches with no detail RPCs. Normal-motion sampling progressed from opacity
 0.68 to 0.89 to 1; reduced-motion sampling remained at opacity 1 with no transform.
-CI captures 18 desktop/mobile states and checks page and form-control bounds.
+CI captures 20 desktop/mobile states and checks page and form-control bounds.
 
 ## GeoIP countries and DNS diagnostics
 
@@ -114,8 +114,10 @@ checks the rendered 24-link sidebar order against the animation order and every
 registered route; Chrome checks verify downward/upward transitions and reduced
 motion on the actual pages.
 
-Active nodes use compact status cards, grouping name, source group, protocol
-chain, connection ID, details and termination in the same area. The same cards
+Active nodes use compact two-line connection tiles, grouping name, source group,
+protocol chain, details and termination in the same area. The full ID remains in
+the details tooltip. Columns adapt to container width instead of stretching a
+fixed three-column layout across wide screens. The same cards
 are used on the overview without a second page heading. Termination still
 requires confirmation and closes only the selected running instance.
 
@@ -247,3 +249,21 @@ the screenshots committed under `docs/ux-refactor/` so the summary stays current
 ![Hosts directory](hosts-desktop.png)
 
 ![Japanese mobile Hosts](hosts-ja-mobile.png)
+
+## Home spacing and compact connection tiles
+
+The homepage uses content height rather than a fixed-height flex column. This
+keeps its contents inside the route scroller's existing bottom padding. Browser
+checks measured approximately 20 px of trailing space at 1440, 2560, 390 and
+320 px widths. CI now checks home desktop/mobile bottom spacing as part of its
+20 captures.
+
+Active tiles are 70 px tall in these fixtures. Names and group/protocol metadata
+share two lines beside a node icon and running indicator. Details and confirmed
+termination remain available; touch controls retain a 44 px target.
+
+![Home connection section](home-active-section.png)
+
+![Home bottom spacing](home-desktop.png)
+
+![Mobile home bottom spacing](home-mobile.png)
