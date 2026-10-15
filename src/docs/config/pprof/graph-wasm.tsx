@@ -23,7 +23,7 @@ function layoutDOT(dot: string): Promise<string> {
 // those strings without removing active content, external references and URLs.
 function parseSafeSVG(svgSource: string): SVGSVGElement {
     const doc = new DOMParser().parseFromString(svgSource, "image/svg+xml");
-    const svg = doc.documentElement as SVGSVGElement;
+    const svg = doc.documentElement as unknown as SVGSVGElement;
     if (svg.localName !== "svg" || svg.namespaceURI !== "http://www.w3.org/2000/svg") {
         throw new Error("Invalid SVG returned by Graphviz");
     }
