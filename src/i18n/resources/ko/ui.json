@@ -659,5 +659,6 @@
   "profilerGraphZoomOut": "축소",
   "profilerGraphZoomIn": "확대",
   "profilerGraphZoomReset": "배율 초기화",
-  "profilerGraphRendering": "브라우저에서 그래프 생성 중…"
+  "profilerGraphRendering": "브라우저에서 그래프 생성 중…",
+  "profilerExitFullscreen": "전체 화면 종료"
 }

@@ -659,5 +659,6 @@
   "profilerGraphZoomOut": "Zoom out",
   "profilerGraphZoomIn": "Zoom in",
   "profilerGraphZoomReset": "Reset zoom",
-  "profilerGraphRendering": "Building graph in browser…"
+  "profilerGraphRendering": "Building graph in browser…",
+  "profilerExitFullscreen": "Exit fullscreen"
 }
