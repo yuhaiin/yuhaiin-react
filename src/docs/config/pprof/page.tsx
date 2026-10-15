@@ -84,7 +84,11 @@ export default function PprofPage() {
     }, []);
 
     useEffect(() => {
-        void refresh().catch(e => setError(String(e)));
+        // Defer the initial fetch so state updates never cascade from this effect.
+        const timer = window.setTimeout(() => {
+            void refresh().catch(e => setError(String(e)));
+        }, 0);
+        return () => window.clearTimeout(timer);
     }, [refresh]);
 
     const hasRunning = sessions.some(item => item.status === "running");
