@@ -40,6 +40,10 @@ try {
     return point;
   }
   async function key(key,code){await send('Input.dispatchKeyEvent',{type:'keyDown',key,code:key,windowsVirtualKeyCode:code,...(key==='Enter'?{text:'\r'}:{})});await send('Input.dispatchKeyEvent',{type:'keyUp',key,windowsVirtualKeyCode:code});}
+  async function assertDialogBounce() {
+  const scales=await evaluate(`new Promise(resolve=>{const values=[];let i=0;function frame(){const e=document.querySelector('[role="dialog"]');if(e)values.push(new DOMMatrix(getComputedStyle(e).transform).a);if(++i<30)requestAnimationFrame(frame);else resolve(values);}frame();})`);
+  assert(scales.some(value=>value<0.5)&&scales.some(value=>value>1.01),'Dialog lost its original expanding spring bounce');
+  }
   const firstId=()=>evaluate(`document.querySelector('[data-connection-id]')?.dataset.connectionId`);
   const table='[role="table"]', row='[data-connection-id]';
   await send('Page.enable'); await send('Runtime.enable');
@@ -81,12 +85,13 @@ try {
       const fullAddress=await evaluate(`document.querySelector('${row} button').title`);
       if(mobile) await click(`${row} button`,true);
       else {await evaluate(`document.querySelector('${row} button').focus()`);await key('Enter',13);}
+      await assertDialogBounce();
       await ready('[role="dialog"]');
       assert(await evaluate(`(()=>{const d=document.querySelector('[role="dialog"]');return d.textContent.includes(${JSON.stringify(fullAddress)})&&[d,...d.querySelectorAll('li')].every(e=>e.scrollWidth<=e.clientWidth+1);})()`),'Long host is missing or overflows in details');
       assert(await evaluate(`document.querySelector('[role="dialog"]').contains(document.activeElement)`),'Dialog did not receive focus');
       for(let i=0;i<8;i++)await key('Tab',9);
       assert(await evaluate(`document.querySelector('[role="dialog"]').contains(document.activeElement)`),'Focus escaped dialog');
-      await key('Escape',27);await waitForPreview(send,table);
+      await closeWithMotion('escape',table);
       assert(!await evaluate(`Boolean(document.querySelector('[role="dialog"]'))`),'Escape failed');
       if(mobile) {await click('main button[title="Asc"]',true);}
       else {await click('[role="columnheader"]:first-child button');}
@@ -108,13 +113,12 @@ try {
   await send('Page.navigate',{url:'http://127.0.0.1:5175/?gallery=1&motion=connections'});await ready('[data-gallery-ready]');
   await evaluate(`(()=>{const e=[...document.querySelectorAll('button')].find(e=>e.textContent.trim()==='Open dialog');e.dataset.motionTrigger='';e.scrollIntoView({block:'center'});})()`);
   const point=await click('[data-motion-trigger]');
-  const scales=await evaluate(`new Promise(resolve=>{const values=[];let i=0;function frame(){const e=document.querySelector('[role="dialog"]');if(e)values.push(new DOMMatrix(getComputedStyle(e).transform).a);if(++i<30)requestAnimationFrame(frame);else resolve(values);}frame();})`);
-  assert(scales.some(value=>value<0.999)&&Math.abs(scales.at(-1)-1)<0.001,'Dialog scale entrance missing');
+  await assertDialogBounce();
   await ready('[role="dialog"]');
   const origin=await evaluate(`(()=>{const e=document.querySelector('[role="dialog"]'),r=e.getBoundingClientRect(),o=getComputedStyle(e).transformOrigin.split(' ').map(parseFloat);return {ok:Math.abs(o[0]+r.x-${point.x})<1&&Math.abs(o[1]+r.y-${point.y})<1,origin:o,rect:[r.x,r.y,r.width,r.height],click:${JSON.stringify(point)}};})()`);
   assert(origin.ok,'Dialog origin differs from clicked viewport position: '+JSON.stringify(origin));
   // Observe the actual close event, rather than starting a timer before CDP dispatch.
-  async function closeWithMotion(action) {
+  async function closeWithMotion(action, readySelector='[data-gallery-ready]') {
     const event=action==='escape'?'keydown':'click';
     await evaluate(`window.modalExitFrames=new Promise(resolve=>{document.addEventListener('${event}',()=>{const start=performance.now(),frames=[],content=document.querySelector('[role="dialog"]').textContent;function sample(){const d=document.querySelector('[role="dialog"]');if(!d){resolve(frames);return;}frames.push({time:performance.now()-start,opacity:Number(getComputedStyle(d).opacity),scale:new DOMMatrix(getComputedStyle(d).transform).a,sameContent:d.textContent===content});if(performance.now()-start>700){resolve(frames);return;}requestAnimationFrame(sample);}requestAnimationFrame(sample);},{once:true,capture:true});});true`);
     if(action==='escape') await key('Escape',27);
@@ -122,8 +126,9 @@ try {
     else {await send('Input.dispatchMouseEvent',{type:'mousePressed',x:10,y:10,button:'left',clickCount:1});await send('Input.dispatchMouseEvent',{type:'mouseReleased',x:10,y:10,button:'left',clickCount:1});}
     const frames=await evaluate('window.modalExitFrames');
     assert(frames.some(f=>f.time>=140&&f.time<200&&f.opacity>.01&&f.scale<.99),`Closing motion too brief or absent (${action}): ${JSON.stringify(frames)}`);
+    assert(frames.some(f=>f.opacity>.01&&f.scale<.5),`Closing dialog did not shrink back toward its trigger (${action})`);
     assert(frames.every(f=>f.sameContent),`Closing content changed before exit finished (${action})`);
-    await waitForPreview(send,'[data-gallery-ready]');
+    await waitForPreview(send,readySelector);
     assert(!await evaluate(`Boolean(document.querySelector('[role="dialog"]'))`),`Dialog remained after closing (${action})`);
   }
   for(const action of ['escape','button','overlay']) {
@@ -135,7 +140,7 @@ try {
   assert(await evaluate(`new DOMMatrix(getComputedStyle(document.querySelector('[role="dialog"]')).transform).a`)===1,'Reduced motion still scales');
   await key('Escape',27);await waitForPreview(send,'[data-gallery-ready]');
   assert(!await evaluate(`Boolean(document.querySelector('[data-ui-transition=overlay]'))`),'Reduced-motion overlay lingered after closing');
-  console.log('Verified small/empty lists, dialog origin/scale, 200ms exit via Escape/button/overlay and reduced motion');
+  console.log('Verified small/empty lists, dialog origin/scale, original spring bounce and shrink-back via Escape/button/overlay and reduced motion');
 } finally {
   ws?.close();
   const exited=new Promise(resolve=>chrome.once('exit',resolve));chrome.kill('SIGTERM');await exited;

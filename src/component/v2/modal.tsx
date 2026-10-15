@@ -51,12 +51,12 @@ const overlayVariants = {
 };
 
 const contentVariants = {
-    hidden: { opacity: 0, scale: 0.92, y: "-50%", x: "-50%" },
+    hidden: { opacity: 0, scale: 0.2, y: "-50%", x: "-50%" },
     visible: { opacity: 1, scale: 1, y: "-50%", x: "-50%", transition: {
-        type: 'spring', stiffness: 420, damping: 34, mass: 0.8,
+        type: 'spring', stiffness: 300, damping: 25,
         opacity: { duration: motionTiming.normal, ease: 'easeOut' },
     } },
-    exit: { opacity: 0, scale: 0.92, y: "-50%", x: "-50%", transition: { duration: motionTiming.slow, ease: 'easeInOut' } },
+    exit: { opacity: 0, scale: 0.2, y: "-50%", x: "-50%", transition: { duration: motionTiming.slow, ease: 'easeInOut' } },
 };
 
 // 1. Content Container
