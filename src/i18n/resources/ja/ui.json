@@ -659,5 +659,6 @@
   "profilerGraphZoomOut": "縮小",
   "profilerGraphZoomIn": "拡大",
   "profilerGraphZoomReset": "倍率をリセット",
-  "profilerGraphRendering": "ブラウザーでグラフを生成中…"
+  "profilerGraphRendering": "ブラウザーでグラフを生成中…",
+  "profilerExitFullscreen": "全画面表示を終了"
 }
