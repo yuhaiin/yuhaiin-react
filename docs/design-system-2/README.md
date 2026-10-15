@@ -8,7 +8,7 @@ The Sidebar, resource directory and detail pane keep their existing structure, w
 2. **Nodes / Overview / Publish:** existing columns and meaningful containers are sound. Node metadata and test actions needed quieter emphasis; Overview rates and totals had the same weight; simple Publish fields stretched across the whole detail area. Headings and metadata are now calmer, rate values take priority, and simple field groups cap their reading width inside the same pane.
 3. **Other pages / interactions:** shared controls carry the refinements into Routing, DNS, Inbounds, Shared Destinations, subscriptions, Connections and Settings. Directory selection uses a neutral surface plus the existing accent marker. Focus, validation, readonly, disabled and popup behavior are checked through the Gallery and real pages.
 
-The initial and updated browser captures below use the same synthetic MSW data, accent, mode and viewport. Both sets were captured in this task after fonts, finite animations and layout settled. Existing animations and the mobile App Bar are retained.
+The implementation was verified with browser captures using the same synthetic MSW data, accent, mode and viewport. Both sets were captured in this task after fonts, finite animations and layout settled. Existing animations and the mobile App Bar are retained.
 
 ## Actual tokens
 
@@ -64,18 +64,9 @@ Semantic colors remain independent: `--color-success` (`#237546` / `#98CCA9`), `
 - **Floats:** raised surfaces, 10px radius, one border/elevation language. Tooltip uses the existing Radix stack for collision handling and keeps the old hover/focus/click-to-pin API; labels remain independent of descriptions. Toast keeps semantic color and adds an icon to distinguish errors/information. Modal focus, scrolling, Escape, overlays and nested popup behavior are retained.
 - **Pagination correction:** `justify-[inherit]` did not emit the intended inherited content alignment in the current Tailwind setup. A 32px page button had its text center about 5px left of its center. Explicit `[justify-content:inherit]` fixes shared Button content; browser checks assert both horizontal and vertical centering. Mobile page-value text is also centered.
 
-## Before / after
+## Browser captures
 
-| Surface | Before | After |
-| --- | --- | --- |
-| Gallery Light, 1440px | ![Before light gallery](before-light-olive-gallery-1440.png) | ![After light gallery](after-light-olive-gallery-1440.png) |
-| Gallery Dark, 1440px | ![Before dark gallery](before-dark-olive-gallery-1440.png) | ![After dark gallery](after-dark-olive-gallery-1440.png) |
-| Nodes, 1440px | ![Before nodes](before-light-olive-nodes-1440.png) | ![After nodes](after-light-olive-nodes-1440.png) |
-| Overview, 1440px | ![Before overview](before-light-olive-overview-1440.png) | ![After overview](after-light-olive-overview-1440.png) |
-| Publish, 1440px | ![Before publish](before-light-olive-publish-1440.png) | ![After publish](after-light-olive-publish-1440.png) |
-| Node editor, 390px | ![Before mobile](before-light-olive-node-editor-390.png) | ![After mobile](after-light-olive-node-editor-390.png) |
-
-Additional state, popup, locale and tablet screenshots accompany this record. The unchanged outer panes remain visible in the page comparisons. Gallery stays an MSW-only development entry, with no production route or navigation item.
+Generated comparisons and state screenshots are no longer committed. CI stores the current run in the `visual-system` artifact; see [capture instructions](../README.md). Gallery stays an MSW-only development entry, with no production route or navigation item.
 
 ## Validation and limits
 

@@ -26,35 +26,13 @@ Switches use one track/thumb style; whole-row switches no longer need a large gr
 
 The mobile App Bar is 56px plus safe area, includes the owning navigation title and retains the drawer. Page headings remain accessible but are visually hidden at small widths. Existing editor back actions, draft guards and scrolling remain available.
 
-## Before / after
-
-| Before | Updated |
-| --- | --- |
-| ![Overview before](before-overview.png) | ![Overview after](../light-overview.png) |
-| ![Nodes before](before-nodes.png) | ![Nodes after](../light-nodes.png) |
-| ![Early node-picker frame](before-node-picker.png) | ![Settled node picker](../node-picker.png) |
-
-| Publish sections | Dark Inbound runtime / fields | Mobile node editor |
-| --- | --- | --- |
-| ![Publish](light-olive-publish-1440.png) | ![Inbound](dark-graphite-inbounds-1440.png) | ![Mobile](light-olive-node-editor-320.png) |
-
 ## Component Gallery
 
 The Gallery is **only** an MSW development entry: `http://127.0.0.1:5175/?gallery=1`. It is not registered as a production route or linked in the product navigation.
 
 It covers buttons (primary, secondary, ghost, danger, icon, disabled, loading), inputs/textarea, select/dropdown/combobox, segments, switches, checkbox/radio, badges/chips, slider, lists, pagination, modal, tooltip and toast. Pointer hover/press, keyboard focus, selected and expanded states are captured from actual interactions. It includes English, Chinese, Japanese and Korean glyph samples.
 
-| Light | Dark |
-| --- | --- |
-| ![Light gallery](light-olive-gallery-1440.png) | ![Dark gallery](dark-olive-gallery-1440.png) |
-
-| Hover | Pressed | Keyboard focus |
-| --- | --- | --- |
-| ![Hover](light-gallery-hover.png) | ![Pressed](light-gallery-pressed.png) | ![Focus](light-gallery-focus.png) |
-
-| Dropdown | Nested Select over Dialog |
-| --- | --- |
-| ![Dropdown](dark-gallery-dropdown.png) | ![Nested select](dark-gallery-nested-select.png) |
+Gallery and interaction captures are available in the CI `visual-system` artifact. See [capture instructions](../../README.md).
 
 ## Verification
 

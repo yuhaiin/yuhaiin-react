@@ -29,3 +29,9 @@ dist
 *.log
 .codebase-index
 .playwright-cli
+
+# Generated UI screenshots are stored in CI artifacts or /tmp.
+/docs/ux-refactor/**/*.png
+/docs/visual-system/**/*.png
+/docs/design-system-2/**/*.png
+/docs/connection-table/**/*.png

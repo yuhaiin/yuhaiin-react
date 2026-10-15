@@ -371,6 +371,7 @@
   "eGEth0Wlan0": "e.g. eth0, wlan0",
   "saveAllSettings": "Save all settings",
   "idLabel": "ID: #",
+  "connectionExit": "출구",
   "refreshConnections": "Refresh connections",
   "disconnect": "Disconnect",
   "nodeJson": "Node JSON",

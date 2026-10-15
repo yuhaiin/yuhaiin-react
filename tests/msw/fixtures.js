@@ -6,7 +6,7 @@ const scenario = new URLSearchParams(location.search).get('scenario') || 'normal
 localStorage.setItem('api_url_v2', JSON.stringify(''));
 localStorage.setItem('auth_token', 'synthetic-msw-token');
 localStorage.setItem('yuhaiin.webui.language','en');
-const size = scenario === 'lazy' ? 10000 : scenario === 'large' ? 2000 : scenario === 'empty' ? 0 : 95;
+const size = scenario === 'lazy' ? 10000 : scenario === 'large' ? 2000 : scenario === 'empty' ? 0 : scenario === 'connections-small' ? 3 : 95;
 const nodes = Array.from({length:size},(_,i)=>({id:`node-${i}`,name:i===0?'Mobile test node with a very long name for narrow screens':`Node ${i}`,group:'manual',origin:'manual',enabled:true,chain:[{type:'http_mock',http_mock:{data:'YQ=='}}]}));
 if (scenario === 'lazy') {
   for (let index = 0; index < nodes.length; index++) nodes[index].group = index < 5000 ? 'manual' : index < 8000 ? 'work' : 'travel';
@@ -25,6 +25,11 @@ const subscriptions = scenario === 'empty' ? [] : [
   { name: 'Travel routes', type: 'reserve', url: 'yuhaiin://synthetic-long-encoded-configuration' },
 ];
 const connections = Array.from({length:size},(_,i)=>({id:String(i+1),addr:i===0?'very-long-host-name-for-mobile-layout-testing.example.invalid:443':`host-${i}.example.invalid:443`,network:{connType:i===0?'udp':'tcp',underlyingType:'tcp'},mode:'proxy',ruleId:'rule-0',ruleName:'Work traffic',selectorId:'selector-work',selectorName:'Work destination',inboundId:'inbound-local',inboundName:'Local proxy',domain:`host-${i}.example.invalid`,process:'audit-process',nodeId:'node-0',nodeName:'Mobile test node',lists:['shared-websites'],listNames:{'shared-websites':'Work websites'},matchHistory:[{ruleId:'rule-0',ruleName:'Work traffic',history:[{kind:'list',id:'shared-websites',listName:'Work websites',matched:true}]}]}));
+// Stress the connection table without changing the other preview scenarios.
+if (scenario.startsWith('connections') && connections.length) {
+  Object.assign(connections.at(-1), {id:'9999999999',addr:'very-long-destination-for-mobile-layout-testing.example.invalid:443',selectorName:'Work destination with a very long shared exit name'});
+  connections.forEach((connection,index) => { if (index % 2) connection.mode='direct'; });
+}
 const history = connections.map((connection,i)=>({connection,time:new Date(1790992800000-i*1000).toISOString(),count:String(i+1)}));
 let settings=createDefaultSettings(); let total=0;
 let savedRevision=1, appliedRevision=1, applyAttempts=0;
@@ -96,7 +101,7 @@ const worker=setupWorker(
     else if(op==='connections') result={connections};
     else if(op==='connections.history') result={items:history};
     else if(op==='connections.failed_history') result={items:history.map((x,i)=>({host:x.connection.addr,protocol:'tcp',error:'Synthetic timeout',process:'audit',time:x.time,failedCount:String(i+1)}))};
-    else if(op==='connections.total'){total+=1024;result={download:String(total),upload:String(total/2),counters:Object.fromEntries(connections.map(c=>[c.id,{download:String(total),upload:String(total/2)}]))};}
+    else if(op==='connections.total'){total+=1024;result={download:String(total),upload:String(total/2),counters:Object.fromEntries(connections.map((c,i)=>[c.id,{download:String(scenario.startsWith('connections')?(i+1)*1234567890123+total:total),upload:String(scenario.startsWith('connections')?(connections.length-i)*987654321123+total:total/2)}]))};}
     else if(op==='connections.telemetry') result={groups:[{dimension:'protocol',items:[{value:'tcp',download:'2048',upload:'1024',failures:'0'}]}]};
     else if(op==='connections.traffic') result={interval:p.interval,items:[]};
     else if(op==='settings.get') result=settings;
