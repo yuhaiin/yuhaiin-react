@@ -648,5 +648,16 @@
   "updateRecoveryTimeout": "The new version could not be verified yet. Check the service and retry.",
   "updateToVersion": "Update to {{version}}",
   "profilerNoSessions": "No profiles yet",
-  "profilerConnectionError": "Cannot reach the yuhaiin backend. Check the API address, backend version, browser network restrictions and CORS settings."
+  "profilerConnectionError": "Cannot reach the yuhaiin backend. Check the API address, backend version, browser network restrictions and CORS settings.",
+  "profilerGraph": "Call graph",
+  "profilerGraphBack": "Flame Graph",
+  "profilerGraphFocus": "Focus (regexp)",
+  "profilerGraphIgnore": "Ignore (regexp)",
+  "profilerGraphNodes": "Max nodes",
+  "profilerGraphApply": "Apply",
+  "profilerGraphHint": "Select a node to focus on its function, then apply filters.",
+  "profilerGraphZoomOut": "Zoom out",
+  "profilerGraphZoomIn": "Zoom in",
+  "profilerGraphZoomReset": "Reset zoom",
+  "profilerGraphRendering": "Building graph in browser…"
 }
