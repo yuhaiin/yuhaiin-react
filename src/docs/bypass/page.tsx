@@ -72,16 +72,16 @@ function BypassComponent() {
             setEditing(data.items[0]);
         }
     }, [desktop, data?.items, creating, editing]);
-    const selectRule = (item: RuleItem) => {
+    const selectRule = async (item: RuleItem) => {
         if (reordering || !creating && editing?.id === item.id) return;
-        if (!allowNavigation()) return;
+        if (!await allowNavigation()) return;
         initialized.current = true;
         closeLink();
         setCreating(false);
         setEditing(item);
     };
-    const newRule = () => {
-        if (!allowNavigation()) return;
+    const newRule = async () => {
+        if (!await allowNavigation()) return;
         initialized.current = true;
         closeLink();
         setEditing(null);

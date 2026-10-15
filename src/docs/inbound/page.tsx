@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { ResourceWorkspace, useResourceSelection } from '@/component/resource-workspace';
 import { useHashSearch } from '@/hooks/useHashLocation';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
@@ -109,8 +110,8 @@ export default function InboundComponent() {
     useCloseGuard(false, pending, () => undefined);
     const id = selection.creating ? newId : selection.id;
     const create = () => selection.create(() => setNewId(crypto.randomUUID()));
-    const remove = () => {
-        if (!window.confirm(uiT('areYouSureToDelete'))) return;
+    const remove = async () => {
+        if (!await confirmAction(uiT('areYouSureToDelete'))) return;
         void run(async () => { await deleteInbound(id); selection.close(); await Promise.all([mutate(), refreshStatuses()]); });
     };
     if (error && !data) return <Loading onRetry={() => void mutate()}>{errorOf(error)?.msg}</Loading>;

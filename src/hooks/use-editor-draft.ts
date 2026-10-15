@@ -1,3 +1,5 @@
+import { confirmAction } from '@/component/v2/confirmation';
+import type { NavigationAttempt } from './navigation-guard';
 import { NAVIGATION_ATTEMPT } from './navigation-guard';
 import { useCallback, useEffect, useRef, useState, type SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -40,18 +42,15 @@ export function useCloseGuard(dirty: boolean, pending: boolean, onClose: () => v
     useEffect(() => {
         if (!dirty && !pending) return;
         const guard = (event: Event) => {
-            const attempt = event as CustomEvent<{ confirmed: boolean }>;
+            const attempt = event as CustomEvent<NavigationAttempt>;
             if (pending) { attempt.preventDefault(); return; }
-            if (!attempt.defaultPrevented && !attempt.detail.confirmed) {
-                if (!window.confirm(t('form.discardChanges'))) attempt.preventDefault();
-                else attempt.detail.confirmed = true;
-            }
+            if (!attempt.detail.message) attempt.detail.message = t('form.discardChanges');
         };
         window.addEventListener(NAVIGATION_ATTEMPT, guard);
         return () => window.removeEventListener(NAVIGATION_ATTEMPT, guard);
     }, [dirty, pending, t]);
-    return () => {
-        if (!pending && (!dirty || window.confirm(t('form.discardChanges')))) onClose();
+    return async () => {
+        if (!pending && (!dirty || await confirmAction(t('form.discardChanges')))) onClose();
     };
 }
 

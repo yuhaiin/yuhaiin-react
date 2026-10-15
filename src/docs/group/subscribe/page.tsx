@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection } from '@/component/resource-workspace';
 import { deleteSubscriptions, listSubscriptions, saveSubscriptions, updateSubscriptions } from '@/api/subscriptions';
 import { Button } from '@/component/v2/button';
@@ -47,8 +48,8 @@ function SubscriptionEditor({ item, creating, onClose, onSaved, onDeleted, refre
         if (!item || dirty || pending) return;
         execute(async () => { await updateSubscriptions([item.name]); await refresh(); ctx.Info(uiT('update')); });
     };
-    const remove = () => {
-        if (!item || pending || !window.confirm(`${uiT('removeSubscription')} ${item.name}?`)) return;
+    const remove = async () => {
+        if (!item || pending || !await confirmAction(`${uiT('removeSubscription')} ${item.name}?`)) return;
         execute(async () => { await deleteSubscriptions([item.name]); onDeleted(); await refresh(); });
     };
     return <ResourceEditorFrame title={creating ? uiT('addSubscription') : value.name} label={t('subscriptionsTitle')} presentation="inline" open onClose={close}

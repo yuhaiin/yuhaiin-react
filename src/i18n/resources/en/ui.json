@@ -641,5 +641,10 @@
   "profilerAllocsDescription": "Inspect cumulative allocation hotspots.",
   "profilerGoroutineDescription": "Inspect goroutine stacks.",
   "profilerMutexDescription": "Find lock contention and wait time.",
-  "profilerBlockDescription": "Find blocking and synchronization waits."
+  "profilerBlockDescription": "Find blocking and synchronization waits.",
+  "updateCompleted": "Update completed. The new version is running.",
+  "updateWaitingForRestart": "Waiting for the service to restart and verifying the installed version…",
+  "updateInProgress": "Updating…",
+  "updateRecoveryTimeout": "The new version could not be verified yet. Check the service and retry.",
+  "updateToVersion": "Update to {{version}}"
 }

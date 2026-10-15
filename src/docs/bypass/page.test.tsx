@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { SWRConfig } from 'swr';
@@ -70,11 +71,11 @@ it('selects a rule inline, guards switching drafts and keeps the saved rule sele
     expect(editor()?.textContent).toContain('First');
     expect(host.querySelector('[role="dialog"]')).toBeNull();
     await click('Edit draft');
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const confirm = vi.mocked(confirmAction).mockResolvedValue(false);
     await click('Second');
     expect(editor()?.querySelector('output')?.textContent).toBe('Changed');
     expect(api.getRule).not.toHaveBeenCalledWith('1');
-    confirm.mockReturnValue(true);
+    confirm.mockResolvedValue(true);
     await click('Second');
     expect(editor()?.querySelector('output')?.textContent).toBe('Second');
     await click('Edit draft');
@@ -91,9 +92,9 @@ it('shows the mobile directory first and protects returning from the editor', as
     await click('Second');
     expect(editor()?.querySelector('output')?.textContent).toBe('Second');
     await click('Edit draft');
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const confirm = vi.mocked(confirmAction).mockResolvedValue(false);
     await click('backToRules'); expect(editor()).not.toBeNull();
-    confirm.mockReturnValue(true);
+    confirm.mockResolvedValue(true);
     await click('backToRules'); expect(editor()).toBeNull();
     await click('Second'); expect(editor()?.querySelector('output')?.textContent).toBe('Second');
 });
@@ -113,7 +114,7 @@ it('retries a saved new rule after failed activation without creating it twice',
 
 it('retries activation after a deletion without deleting the rule twice', async () => {
     await render();
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    vi.mocked(confirmAction).mockResolvedValue(true);
     api.deleteRule.mockImplementation(async id => { drafts = drafts.filter(draft => draft.rule.id !== id); });
     api.applyRouteChanges.mockRejectedValueOnce(new Error('Apply failed'));
     await click('deleteRule');
@@ -165,3 +166,5 @@ it('preserves the open draft while another directory page is loading', async () 
     expect(editor()?.querySelector('output')?.textContent).toBe('Changed');
     expect(api.getRule).toHaveBeenCalledTimes(1);
 });
+
+vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));

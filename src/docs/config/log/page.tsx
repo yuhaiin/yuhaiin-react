@@ -33,6 +33,7 @@ const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
 
     return (
         <div
+            data-log-id={entry.id}
             className="group grid grid-cols-[3px_minmax(0,1fr)] border-b border-ui-border/70 bg-ui-surface/80 hover:bg-ui-surface-muted/70"
             style={{ contain: "layout paint style" }}
         >
@@ -186,18 +187,18 @@ export default function LogComponent() {
                         </Badge>
                     </div>
                     <div className="grid w-full min-w-0 grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-3">
-                        <FilterSearch onEnter={setSearchTerm} className="w-full min-w-0" />
+                        <FilterSearch size="sm" onEnter={setSearchTerm} className="w-full min-w-0" inputClassName="max-sm:min-h-11 max-sm:text-base" />
                         <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-end">
-                            <ToggleGroup className="shrink-0 flex-nowrap" type="single" value={String(retention)} onValueChange={(v) => v && changeRetention(v)}>
+                            <ToggleGroup className="shrink-0 flex-nowrap max-sm:p-0" type="single" value={String(retention)} onValueChange={(v) => v && changeRetention(v)}>
                                 {LOG_RETENTION_OPTIONS.map(value => (
-                                    <ToggleItem className="h-11 min-w-11 !px-1.5 sm:!px-2.5" key={value} value={String(value)}>{value}</ToggleItem>
+                                    <ToggleItem className="h-6 min-h-6 min-w-11 py-0 !px-1.5 sm:!px-2.5" key={value} value={String(value)}>{value}</ToggleItem>
                                 ))}
                             </ToggleGroup>
                             <div className="flex shrink-0 items-center gap-2">
-                                <Button className="!h-11 !w-11" size="icon" variant="outline-secondary" aria-label={uiT("clearLogs")} title={uiT("clearLogs")} onClick={clearLogs}>
+                                <Button className="max-sm:!h-11 max-sm:!w-11" size="icon" variant="outline-secondary" aria-label={uiT("clearLogs")} title={uiT("clearLogs")} onClick={clearLogs}>
                                     <Trash2 size={16} />
                                 </Button>
-                                <Button className="!h-11 !w-11" size="icon" variant="outline-secondary" aria-label={uiT(paused ? "resumeCollection" : "pauseCollection")} title={uiT(paused ? "resumeCollection" : "pauseCollection")} aria-pressed={paused} onClick={() => { if (!paused) setCollectionGap(true); setPaused(!paused); }}>{paused ? <Play size={16} /> : <Pause size={16} />}</Button>
+                                <Button className="max-sm:!h-11 max-sm:!w-11" size="icon" variant="outline-secondary" aria-label={uiT(paused ? "resumeCollection" : "pauseCollection")} title={uiT(paused ? "resumeCollection" : "pauseCollection")} aria-pressed={paused} onClick={() => { if (!paused) setCollectionGap(true); setPaused(!paused); }}>{paused ? <Play size={16} /> : <Pause size={16} />}</Button>
                             </div>
                         </div>
                     </div>

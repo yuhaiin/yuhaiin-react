@@ -107,7 +107,6 @@ function ConfigComponent() {
                                         socks5: value.includes("socks5"),
                                     },
                                 }))}
-                                noSlide
                             >
                                 <ToggleItem value="http" className="flex-grow py-1 h-10">{uiT("httpProxy")}</ToggleItem>
                                 <ToggleItem value="socks5" className="flex-grow py-1 h-10">{uiT("socks5Proxy")}</ToggleItem>

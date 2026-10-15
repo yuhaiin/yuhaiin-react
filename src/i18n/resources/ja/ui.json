@@ -641,5 +641,10 @@
   "profilerAllocsDescription": "累積メモリ割り当てのホットスポットを調べます。",
   "profilerGoroutineDescription": "Goroutine のスタックを調べます。",
   "profilerMutexDescription": "ロック競合と待機時間を調べます。",
-  "profilerBlockDescription": "ブロックと同期の待機を調べます。"
+  "profilerBlockDescription": "ブロックと同期の待機を調べます。",
+  "updateCompleted": "更新が完了し、新しいバージョンが稼働しています。",
+  "updateWaitingForRestart": "サービスの再起動と新しいバージョンの確認を待っています…",
+  "updateInProgress": "更新中…",
+  "updateRecoveryTimeout": "新しいバージョンをまだ確認できません。サービスを確認して再試行してください。",
+  "updateToVersion": "{{version}} に更新"
 }

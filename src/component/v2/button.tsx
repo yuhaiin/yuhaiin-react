@@ -93,8 +93,8 @@ const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
                 } : props.onClickCapture}
             >
                 {asChild ? children : <>
-                    <span className={cn("inline-flex w-full min-w-0 items-center [justify-content:inherit] [gap:inherit] [&>svg]:m-0 [&_svg]:size-4 [&_svg]:shrink-0", loading !== undefined && "pr-6")}>{children}</span>
-                    {loading && <span aria-hidden="true" className="absolute inset-y-0 right-3 flex items-center justify-center"><Spinner size="sm" /></span>}
+                    <span className={cn("inline-flex w-full min-w-0 items-center [justify-content:inherit] [gap:inherit] [&>svg]:m-0 [&_svg]:size-4 [&_svg]:shrink-0", loading !== undefined && "px-4")}>{children}</span>
+                    {loading && <span aria-hidden="true" className="absolute inset-y-0 right-2 flex items-center justify-center"><Spinner size="sm" /></span>}
                 </>}
             </Comp>
         )

@@ -2,8 +2,8 @@ import { requestJSON } from "@/api/client";
 import type { Info, Settings } from "@/contract/settings";
 import { normalizeSettings } from "@/contract/settings";
 
-export async function getInfo(): Promise<Info> {
-  return requestJSON<Info>("GET", "/api/v2/info");
+export async function getInfo(signal?: AbortSignal): Promise<Info> {
+  return requestJSON<Info>("GET", "/api/v2/info", undefined, undefined, signal);
 }
 
 export async function loadSettings(): Promise<Settings> {

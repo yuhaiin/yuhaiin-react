@@ -1,3 +1,6 @@
+import { TabContent } from '@/component/v2/tab-content';
+import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
+import { confirmAction } from '@/component/v2/confirmation';
 import { Tabs } from 'radix-ui';
 import { allowNavigation } from '@/hooks/navigation-guard';
 import { ResolverModal } from '@/component/resolver-editor';
@@ -9,7 +12,7 @@ import { MainContainer } from '@/component/v2/card';
 import { GlobalToastContext } from '@/component/v2/toast';
 import Loading from '@/component/v2/loading';
 import { Globe2, Network } from 'lucide-react';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState, useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { Fakedns } from './fakedns';
@@ -24,6 +27,9 @@ export default function ResolverComponent() {
     const { t } = useTranslation('routing');
     const { t: uiT } = useTranslation('ui');
     const [tab, setTab] = useState('resolvers');
+    const [direction, setDirection] = useState(1);
+    const groupId = useId();
+    const reduced = useReducedMotion();
     const tabs = useRef<HTMLDivElement>(null);
     useEffect(() => {
         // Keep the active tab visible without scrolling the settings page.
@@ -41,16 +47,16 @@ export default function ResolverComponent() {
     const entries = [['resolvers', uiT('resolvers')], ['roles', t('dnsRolesTab')], ['server', t('dnsServerTab')], ['hosts', uiT('staticHosts')], ['cache', t('dnsCacheTab')]];
     return <MainContainer className="max-w-[1440px]">
         <header className="mb-5"><h1 className="sr-only text-2xl font-semibold tracking-tight text-ui-heading lg:not-sr-only">{t('dnsTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('dnsPageHelp')}</p></header>
-        <Tabs.Root activationMode="manual" value={tab} onValueChange={next => { if (next !== tab && allowNavigation()) setTab(next); }}>
+        <LayoutGroup id={groupId}><Tabs.Root activationMode="manual" value={tab} onValueChange={async next => { if (next !== tab && await allowNavigation()) { setDirection(Math.sign(entries.findIndex(([key]) => key === next) - entries.findIndex(([key]) => key === tab))); setTab(next); } }}>
             <Tabs.List ref={tabs} aria-label={t('dnsSections')} className="mb-6 flex min-w-0 gap-1 overflow-x-auto border-b border-ui-border">
-                {entries.map(([value, label]) => <Tabs.Trigger key={value} value={value} className="min-h-11 shrink-0 whitespace-nowrap border-b-2 border-transparent px-3 py-2 text-sm text-ui-muted transition-colors hover:text-ui-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus data-[state=active]:border-ui-primary data-[state=active]:font-semibold data-[state=active]:text-ui-primary">{label}</Tabs.Trigger>)}
+                {entries.map(([value, label]) => <Tabs.Trigger key={value} value={value} className="relative min-h-11 shrink-0 whitespace-nowrap border-b-2 border-transparent px-3 py-2 text-sm text-ui-muted transition-colors hover:text-ui-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus data-[state=active]:font-semibold data-[state=active]:text-ui-primary">{label}{value === tab && <motion.span aria-hidden="true" layoutId="dns-active-tab" className="absolute -bottom-0.5 inset-x-0 h-0.5 bg-ui-primary" transition={{ duration: reduced ? 0 : 0.2, ease: "easeOut" }} />}</Tabs.Trigger>)}
             </Tabs.List>
-            <Tabs.Content value="resolvers" className="min-w-0"><ResolverList /></Tabs.Content>
-            <Tabs.Content value="roles" className="min-w-0"><DNSRoles /></Tabs.Content>
-            <Tabs.Content value="server" className="min-w-0 space-y-6"><Server /><Fakedns /></Tabs.Content>
-            <Tabs.Content value="hosts" className="min-w-0"><Hosts /></Tabs.Content>
-            <Tabs.Content value="cache" className="min-w-0"><DNSCache /></Tabs.Content>
-        </Tabs.Root>
+            <TabContent direction={direction} value="resolvers" className="min-w-0"><ResolverList /></TabContent>
+            <TabContent direction={direction} value="roles" className="min-w-0"><DNSRoles /></TabContent>
+            <TabContent direction={direction} value="server" className="min-w-0 space-y-6"><Server /><Fakedns /></TabContent>
+            <TabContent direction={direction} value="hosts" className="min-w-0"><Hosts /></TabContent>
+            <TabContent direction={direction} value="cache" className="min-w-0"><DNSCache /></TabContent>
+        </Tabs.Root></LayoutGroup>
     </MainContainer>;
 }
 
@@ -67,8 +73,8 @@ function ResolverList() {
     useCloseGuard(false, pending, () => undefined);
     if (error && !data) return <Loading onRetry={() => void mutate()}>{error.msg}</Loading>;
     if (isLoading && !data) return <Loading />;
-    const remove = (id: string) => {
-        if (!window.confirm(uiT('deleteResolver'))) return;
+    const remove = async (id: string) => {
+        if (!await confirmAction(uiT('deleteResolver'))) return;
         void run(async () => { await deleteResolver(id); selection.close(); await mutate(); });
     };
     return <ResourceWorkspace embedded createDisabled={selection.creating} title={uiT('resolvers')} description={uiT('upstreamDnsResolvers')} selectedId={selection.id} editing={selection.creating || Boolean(selection.id)}

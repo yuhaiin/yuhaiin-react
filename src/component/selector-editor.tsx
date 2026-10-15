@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { deleteSelector, saveSelector, selectorReferences } from '@/api/selectors';
 import { Button } from '@/component/v2/button';
 import { SettingInputVertical } from '@/component/v2/forms';
@@ -43,8 +44,8 @@ export function SelectorEditor({ item, onClose, onSaved, onDeleted, presentation
     useEffect(() => { onStateChange?.({ dirty, pending }); }, [dirty, pending, onStateChange]);
     const close = useCloseGuard(dirty, pending, onClose);
     const save = () => { setActionError(''); void run(async () => { const saved = await saveSelector(value); commit(saved); onSaved(saved); }); };
-    const remove = () => {
-        if (!item || !window.confirm(t('deleteSelectorConfirm'))) return;
+    const remove = async () => {
+        if (!item || !await confirmAction(t('deleteSelectorConfirm'))) return;
         setActionError(''); void run(async () => { await deleteSelector(item.id); (onDeleted ?? onSaved)(item); });
     };
     const body = <fieldset disabled={pending} className="grid min-w-0 max-w-2xl grid-cols-1 gap-4 [--field-margin:0px]">

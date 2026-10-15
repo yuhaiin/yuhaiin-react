@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { applyRouteChanges, createRule, deleteRule, getRule, saveRule } from '@/api/route';
 import Loading from '@/component/v2/loading';
 import { Button } from '@/component/v2/button';
@@ -58,8 +59,8 @@ export function RuleEditor({ item, creating, initial, options, blocked = false, 
             onSaved(deleted ? null : saved);
         });
     };
-    const remove = () => {
-        if (!item || busy || unavailable || deleted || !window.confirm(t('deleteRuleConfirm'))) return;
+    const remove = async () => {
+        if (!item || busy || unavailable || deleted || !await confirmAction(t('deleteRuleConfirm'))) return;
         void run(async () => {
             setActionError('');
             await deleteRule(item.id);
@@ -71,8 +72,8 @@ export function RuleEditor({ item, creating, initial, options, blocked = false, 
             onSaved(null);
         });
     };
-    const reset = () => {
-        if (busy || !data || !dirty || !window.confirm(t('discardRuleChanges'))) return;
+    const reset = async () => {
+        if (busy || !data || !dirty || !await confirmAction(t('discardRuleChanges'))) return;
         commit(data);
         setActionError('');
     };

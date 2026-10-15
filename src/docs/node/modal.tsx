@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { useAsyncAction, useCloseGuard } from "@/hooks/use-editor-draft";
 import { NodeEditor, NodeProtocolChain } from "./NodeEditor";
 
@@ -219,8 +220,8 @@ const NodeModalComponent: FC<NodeModalProps> = ({
         });
     };
 
-    const discard = () => {
-        if (saving || !dirty || !window.confirm(t('common:form.discardChanges'))) return;
+    const discard = async () => {
+        if (saving || !dirty || !await confirmAction(t('common:form.discardChanges'))) return;
         setDraft(cloneNode(JSON.parse(baseline) as Node));
         setMakeDefault(false);
     };
@@ -257,11 +258,11 @@ const NodeModalComponent: FC<NodeModalProps> = ({
                 <>
                 {isNew && <SettingSelectVertical label={routingT("nodeTemplate")} value={chainTemplate(draft.chain)}
                     values={[...nodeTemplates.map(template => [routingT(`template.${template}`), template] as [string, string]), [routingT("template.custom"), "custom"]]}
-                    onChange={template => {
+                    onChange={async template => {
                         if (template === 'custom') return;
                         const chain = templateChain(template as NodeTemplate);
                         const pristine = JSON.stringify(draft.chain) === JSON.stringify(createDefaultNode().chain);
-                        if (pristine || window.confirm(routingT("templateReplaceConfirm"))) updateDraft({ chain });
+                        if (pristine || await confirmAction(routingT("templateReplaceConfirm"))) updateDraft({ chain });
                     }} />}
                 <NodeEditor
                     value={draft}

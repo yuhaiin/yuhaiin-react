@@ -499,9 +499,9 @@ export default function Group() {
         setEditorState({ dirty: false, pending: false });
         closeLink();
     };
-    const openNode = (id: string) => {
+    const openNode = async (id: string) => {
         if (showdata.show && !showdata.new && showdata.id === id) return;
-        if (!allowNavigation()) return;
+        if (!await allowNavigation()) return;
         initialized.current = true;
         closeLink();
         setSelectedPreview(items.find(item => item.id === id));
@@ -513,14 +513,14 @@ export default function Group() {
         closeDetails();
         await Promise.all([mutate(), mutateGroups()]);
     };
-    const handleCreate = () => {
-        if (!allowNavigation()) return;
+    const handleCreate = async () => {
+        if (!await allowNavigation()) return;
         initialized.current = true;
         closeLink();
         setShowdata({ show: true, id: '', new: true });
     };
-    const changeGroup = (group: string) => {
-        if (group === selectedGroup || !allowNavigation()) return;
+    const changeGroup = async (group: string) => {
+        if (group === selectedGroup || !await allowNavigation()) return;
         initialized.current = true;
         closeLink();
         setSelectedGroup(group);
@@ -538,7 +538,7 @@ export default function Group() {
             ctx.Info(t('defaultNodeUpdated'));
         });
     };
-    const backToNodes = () => { if (allowNavigation()) closeDetails(); };
+    const backToNodes = async () => { if (await allowNavigation()) closeDetails(); };
 
     const handleLatency = (id: string, type: NodeLatencyType) => {
         setBusyLatency((prev) => ({ ...prev, [id]: { ...prev[id], [type]: true } }));

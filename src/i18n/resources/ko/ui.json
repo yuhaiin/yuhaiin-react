@@ -641,5 +641,10 @@
   "profilerAllocsDescription": "누적 메모리 할당 병목을 분석합니다.",
   "profilerGoroutineDescription": "Goroutine 스택을 분석합니다.",
   "profilerMutexDescription": "잠금 경쟁과 대기 시간을 분석합니다.",
-  "profilerBlockDescription": "블로킹 및 동기화 대기를 분석합니다."
+  "profilerBlockDescription": "블로킹 및 동기화 대기를 분석합니다.",
+  "updateCompleted": "업데이트가 완료되어 새 버전이 실행 중입니다.",
+  "updateWaitingForRestart": "서비스 재시작 및 설치된 버전 확인을 기다리는 중…",
+  "updateInProgress": "업데이트 중…",
+  "updateRecoveryTimeout": "새 버전을 아직 확인하지 못했습니다. 서비스를 확인하고 다시 시도하세요.",
+  "updateToVersion": "{{version}}(으)로 업데이트"
 }

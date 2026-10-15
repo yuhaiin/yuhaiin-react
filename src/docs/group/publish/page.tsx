@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { FormSection } from '@/component/v2/form-section';
 import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection } from '@/component/resource-workspace';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
@@ -86,8 +87,8 @@ function PublishPage() {
     useCloseGuard(false, pending, () => undefined);
     if (error && !data) return <Loading onRetry={() => void mutate()}>{error.msg}</Loading>;
     if (isLoading && !data) return <Loading />;
-    const remove = () => {
-        if (!editing || !window.confirm(uiT('deletePublishConfig'))) return;
+    const remove = async () => {
+        if (!editing || !await confirmAction(uiT('deletePublishConfig'))) return;
         void run(async () => { await deletePublish(editing.name); selection.close(); await mutate(); });
     };
     return <MainContainer className="max-w-[1440px]">

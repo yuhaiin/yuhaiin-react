@@ -156,7 +156,7 @@ function Connections() {
     if (isLoading && !initial) return <Loading />
 
     return (
-        <MainContainer className="flex h-full min-h-0 min-w-0 flex-col max-lg:pt-3">
+        <MainContainer className="flex h-full min-h-0 min-w-0 flex-col">
             <NodeModal
                 show={nodeModal.show}
                 id={nodeModal.id}
