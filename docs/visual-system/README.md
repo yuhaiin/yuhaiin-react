@@ -1,8 +1,8 @@
-Latest refinement: [Design System 2.0](../design-system-2/README.md), with current screenshots and tokens. The following records describe the earlier PR #473 work.
+Latest refinement: [Design System 2.0](../design-system-2/README.md), with current tokens and validation. The following records describe the earlier PR #473 work.
 
 # Visual system
 
-See the [second-pass component refinement and Gallery](refinement/README.md) for current validation, root-cause findings and screenshots.
+See the [second-pass component refinement and Gallery](refinement/README.md) for current validation, root-cause findings and capture instructions.
 
 Implemented on `codex/visual-system`, starting from main `4c67ae0`. Screenshots use synthetic, local MSW data, not a live controller.
 
@@ -44,22 +44,9 @@ The overview puts an existing active-node count and TCP/UDP selections before ra
 
 The live chart is shorter, with download/upload colors shared with the corresponding semantic labels. Compact active-node tiles precede detailed traffic breakdowns. The home wrapper uses natural minimum height so the route scroller's bottom padding remains visible. Existing APIs, data sources, pagination, lazy loading, draft protection and destructive confirmations are retained; no backend changes or dependencies were added.
 
-## Before / after
+## Browser captures
 
-| Main baseline | Updated |
-| --- | --- |
-| ![Nodes before](before-nodes.png) | ![Nodes light](light-nodes.png) |
-| ![Overview before](before-overview.png) | ![Overview light](light-overview.png) |
-
-| Graphite dark DNS | Appearance |
-| --- | --- |
-| ![DNS dark](dark-dns.png) | ![Appearance dark](dark-appearance.png) |
-
-| Terracotta light | Node picker | Japanese mobile editor (320px) |
-| --- | --- | --- |
-| ![Terracotta](terracotta.png) | ![Node picker](node-picker.png) | ![Mobile editor](mobile-ja.png) |
-
-The existing `docs/ux-refactor` snapshots were also refreshed for all 18 directory/editor states.
+Generated screenshots are kept in the CI `visual-system` artifact, rather than committed here. See [capture instructions](../README.md).
 
 ## Validation
 

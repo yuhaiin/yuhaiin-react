@@ -62,78 +62,32 @@ jobs:
           node scripts/check-connections.mjs || { cat /tmp/msw-preview.log; exit 1; }
           npm run visual:check || { cat /tmp/msw-preview.log; exit 1; }
 
-      - name: Upload theme and accent visual checks
+      - name: Upload browser verification artifacts
+        id: visual-artifacts
         uses: actions/upload-artifact@v7
         with:
           name: visual-system
+          retention-days: 14
           path: |
+            /tmp/ux-shots
             /tmp/visual-system-shots
             /tmp/connections-shots
 
-      - name: Show UX screenshots in job summary
+      - name: Link browser captures in job summary
+        env:
+          VISUAL_ARTIFACT_URL: ${{ steps.visual-artifacts.outputs.artifact-url }}
         run: |
           set -euo pipefail
           shots=(routing-desktop rule-editor nodes-desktop selectors-desktop routing-mobile rule-editor-mobile nodes-mobile node-details-mobile selectors-mobile selector-details-mobile inbounds-desktop inbounds-mobile lists-desktop lists-mobile publishes-desktop publishes-mobile resolvers-desktop resolvers-mobile)
           for name in "${shots[@]}"; do
-            # The current run verifies rendering. Images in this summary are
-            # the committed visual reference, not runner-local PNG files.
             test -s "/tmp/ux-shots/${name}.png"
-            test -s "docs/ux-refactor/${name}.png"
           done
-
-          images="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${{ github.event.pull_request.head.sha || github.sha }}/docs/ux-refactor"
           {
-            echo '## Routing and Nodes UX previews'
+            echo '## Browser verification'
             echo
-            echo 'The current CI run captured 18 desktop and mobile states and checked their layout. The inline images below are the screenshots committed to this revision, not the transient runner PNGs. If the layout changes, refresh the committed images as part of the PR.'
+            echo "[Download this run's screenshots and visual results](${VISUAL_ARTIFACT_URL})"
             echo
-            echo '### Routing'
-            echo
-            echo '| Desktop | Mobile |'
-            echo '| :---: | :---: |'
-            echo "| ![Routing desktop](${images}/routing-desktop.png) | ![Routing mobile](${images}/routing-mobile.png) |"
-            echo
-            echo '### Rule editor'
-            echo
-            echo '| Advanced editor | Mobile editor |'
-            echo '| :---: | :---: |'
-            echo "| ![Advanced rule editor](${images}/rule-editor.png) | ![Mobile rule editor](${images}/rule-editor-mobile.png) |"
-            echo
-            echo '### Nodes'
-            echo
-            echo '| Desktop | Mobile directory | Mobile details |'
-            echo '| :---: | :---: | :---: |'
-            echo "| ![Nodes desktop](${images}/nodes-desktop.png) | ![Nodes mobile](${images}/nodes-mobile.png) | ![Node details mobile](${images}/node-details-mobile.png) |"
-            echo ""
-            echo "### Shared destinations"
-            echo ""
-            echo "| Desktop | Mobile directory | Mobile editor |"
-            echo "| --- | --- | --- |"
-            echo "| ![Shared destinations](${images}/selectors-desktop.png) | ![Shared destinations mobile](${images}/selectors-mobile.png) | ![Shared destination editor](${images}/selector-details-mobile.png) |"
-            echo ""
-            echo "### Traffic entry"
-            echo ""
-            echo "| Desktop | Mobile directory |"
-            echo "| --- | --- |"
-            echo "| ![Traffic entry desktop](${images}/inbounds-desktop.png) | ![Traffic entry mobile](${images}/inbounds-mobile.png) |"
-            echo ""
-            echo "### Shared matching data"
-            echo ""
-            echo "| Desktop | Mobile directory |"
-            echo "| --- | --- |"
-            echo "| ![Shared matching data desktop](${images}/lists-desktop.png) | ![Shared matching data mobile](${images}/lists-mobile.png) |"
-            echo ""
-            echo "### Node publishing"
-            echo ""
-            echo "| Desktop | Mobile directory |"
-            echo "| --- | --- |"
-            echo "| ![Node publishing desktop](${images}/publishes-desktop.png) | ![Node publishing mobile](${images}/publishes-mobile.png) |"
-            echo ""
-            echo "### DNS resolvers"
-            echo ""
-            echo "| Desktop | Mobile directory |"
-            echo "| --- | --- |"
-            echo "| ![DNS resolvers desktop](${images}/resolvers-desktop.png) | ![DNS resolvers mobile](${images}/resolvers-mobile.png) |"
+            echo 'Includes 18 desktop/mobile workspace captures, the theme/accent matrix and responsive connection-list captures. Images are generated from synthetic MSW data and retained for 14 days; they are not committed to Git.'
           } >> "$GITHUB_STEP_SUMMARY"
 
       - run: |
