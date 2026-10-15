@@ -646,5 +646,7 @@
   "updateWaitingForRestart": "Waiting for the service to restart and verifying the installed version…",
   "updateInProgress": "Updating…",
   "updateRecoveryTimeout": "The new version could not be verified yet. Check the service and retry.",
-  "updateToVersion": "Update to {{version}}"
+  "updateToVersion": "Update to {{version}}",
+  "profilerNoSessions": "No profiles yet",
+  "profilerConnectionError": "Cannot reach the yuhaiin backend. Check the API address, backend version, browser network restrictions and CORS settings."
 }

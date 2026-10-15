@@ -646,5 +646,7 @@
   "updateWaitingForRestart": "サービスの再起動と新しいバージョンの確認を待っています…",
   "updateInProgress": "更新中…",
   "updateRecoveryTimeout": "新しいバージョンをまだ確認できません。サービスを確認して再試行してください。",
-  "updateToVersion": "{{version}} に更新"
+  "updateToVersion": "{{version}} に更新",
+  "profilerNoSessions": "まだプロファイルがありません",
+  "profilerConnectionError": "yuhaiin バックエンドに接続できません。API アドレス、バックエンドのバージョン、ブラウザーのネットワーク制限、CORS 設定を確認してください。"
 }
