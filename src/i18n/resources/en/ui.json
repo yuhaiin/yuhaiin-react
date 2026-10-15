@@ -641,5 +641,7 @@
   "profilerAllocsDescription": "Inspect cumulative allocation hotspots.",
   "profilerGoroutineDescription": "Inspect goroutine stacks.",
   "profilerMutexDescription": "Find lock contention and wait time.",
-  "profilerBlockDescription": "Find blocking and synchronization waits."
+  "profilerBlockDescription": "Find blocking and synchronization waits.",
+  "profilerNoSessions": "No profiles yet",
+  "profilerConnectionError": "Cannot reach the yuhaiin backend. Check the API address, backend version, browser network restrictions and CORS settings."
 }
