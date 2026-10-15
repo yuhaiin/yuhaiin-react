@@ -191,9 +191,9 @@ export default function PprofPage() {
     const waiting = current?.status === "running";
 
     return (
-        <MainContainer className="flex h-full min-h-0 flex-col">
-            <Card noMargin className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                <CardHeader className="!block shrink-0 space-y-4 !px-4 !py-4 sm:!px-5">
+        <MainContainer className="flex h-full min-h-0 flex-col max-sm:h-auto max-sm:min-h-full">
+            <Card noMargin className="flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden max-sm:overflow-visible">
+                <CardHeader className="!block shrink-0 space-y-3 !px-3 !py-3 sm:space-y-4 sm:!px-5 sm:!py-4">
                     <div className="flex w-full flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                             <Activity size={20} className="text-ui-muted" />
@@ -217,7 +217,7 @@ export default function PprofPage() {
                         )}
                     </div>
 
-                    <div className="grid w-full grid-cols-1 items-end gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(200px,320px)_minmax(180px,240px)_auto]">
+                    <div className="grid w-full grid-cols-1 items-end gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(200px,320px)_minmax(180px,240px)_auto]">
                         <SettingSelectVertical
                             className="!mb-0 min-w-0"
                             label={t("profilerType")}
@@ -248,9 +248,9 @@ export default function PprofPage() {
                     {!enabled && <p role="status" className="w-full text-sm text-ui-danger">{t("profilerDisabled")}</p>}
                 </CardHeader>
 
-                <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-ui-border px-4 py-3 sm:px-5">
-                    <SettingLabel className="shrink-0">{t("profilerRecent")}</SettingLabel>
-                    <div className="min-w-0 flex-1 basis-[220px] sm:max-w-[520px]">
+                <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-ui-border px-3 py-2 sm:gap-3 sm:px-5 sm:py-3">
+                    <SettingLabel className="shrink-0 max-sm:sr-only">{t("profilerRecent")}</SettingLabel>
+                    <div className="min-w-0 flex-1 basis-[170px] sm:max-w-[520px]">
                         <Select
                             size="sm"
                             ariaLabel={t("profilerRecent")}
@@ -285,7 +285,7 @@ export default function PprofPage() {
                     )}
                 </div>
 
-                <CardBody className={expanded ? "!p-0 flex min-h-[75vh] flex-1 flex-col" : "!p-0 flex min-h-[500px] flex-1 flex-col"}>
+                <CardBody className={expanded ? "!p-0 flex min-w-0 min-h-[75dvh] flex-1 flex-col" : "!p-0 flex min-w-0 min-h-[500px] flex-1 flex-col max-sm:min-h-[65dvh]"}>
                     {viewer && graphOpen && current ? (
                         <PprofWASMGraph
                             key={current.id}
@@ -302,7 +302,7 @@ export default function PprofPage() {
                         <iframe ref={iframeRef} key={current?.id} src={viewer}
                             title={t("profilerTitle")} referrerPolicy="no-referrer"
                             sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
-                            className="min-h-[500px] w-full flex-1 border-0 bg-white"
+                            className="min-h-[500px] w-full min-w-0 flex-1 border-0 bg-white max-sm:min-h-[65dvh]"
                             style={{ colorScheme: "light" }} />
                     ) : (
                         <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center text-sm text-ui-muted">
