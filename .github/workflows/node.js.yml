@@ -59,13 +59,16 @@ jobs:
             sleep 1
           done
           node scripts/capture-ux.mjs || { cat /tmp/msw-preview.log; exit 1; }
+          node scripts/check-connections.mjs || { cat /tmp/msw-preview.log; exit 1; }
           npm run visual:check || { cat /tmp/msw-preview.log; exit 1; }
 
       - name: Upload theme and accent visual checks
         uses: actions/upload-artifact@v7
         with:
           name: visual-system
-          path: /tmp/visual-system-shots
+          path: |
+            /tmp/visual-system-shots
+            /tmp/connections-shots
 
       - name: Show UX screenshots in job summary
         run: |

@@ -52,15 +52,22 @@ const overlayVariants = {
 };
 
 const contentVariants = {
-    hidden: { opacity: 0, y: "calc(-50% + 6px)", x: "-50%" },
-    visible: { opacity: 1, y: "-50%", x: "-50%", transition: { duration: motionTiming.normal, ease: "easeOut" } },
-    exit: { opacity: 0, y: "-50%", x: "-50%", transition: { duration: motionTiming.fast } },
+    hidden: { opacity: 0, scale: 0.92, y: "-50%", x: "-50%" },
+    visible: { opacity: 1, scale: 1, y: "-50%", x: "-50%", transition: {
+        type: 'spring', stiffness: 420, damping: 34, mass: 0.8,
+        opacity: { duration: motionTiming.normal, ease: 'easeOut' },
+    } },
+    exit: { opacity: 0, scale: 0.96, y: "-50%", x: "-50%", transition: { duration: motionTiming.fast, ease: 'easeOut' } },
 };
 
 // 1. Content Container
 const ModalContent = ({ className, children, style, width = 500, ...props }: React.ComponentProps<typeof DialogPrimitive.Content> & { width?: number }) => {
     const { open, transformOrigin } = React.useContext(ModalContext);
     const reducedMotion = useReducedMotion();
+    // Resolve the viewport click in the centered dialog's local coordinates.
+    // CSS keeps this correct when Radix locks scrolling or the viewport resizes.
+    const localOrigin = transformOrigin === 'center center' ? transformOrigin
+        : transformOrigin.split(' ').map((coordinate, index) => `calc(${coordinate} - 50${index === 0 ? 'vw' : 'dvh'} + 50%)`).join(' ');
 
     return (
         <AnimatePresence>
@@ -92,7 +99,7 @@ const ModalContent = ({ className, children, style, width = 500, ...props }: Rea
                             initial="hidden"
                             animate="visible"
                             exit="exit"
-                            style={{ maxWidth: width, transformOrigin, ...style }}
+                            style={{ maxWidth: width, transformOrigin: localOrigin, ...style }}
                             // Oxlint cannot express the overlap between Radix
                             // content props and Motion's props at this boundary.
                             // oxlint-disable-next-line typescript/no-explicit-any
