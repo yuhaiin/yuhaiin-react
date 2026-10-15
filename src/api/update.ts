@@ -9,6 +9,6 @@ export async function applyUpdate(channel: UpdateChannel, targetTag: string): Pr
   await requestJSON<Record<string, never>>("POST", "/api/v2/update/apply", { channel, targetTag });
 }
 
-export async function getUpdateStatus(): Promise<UpdateStatus> {
-  return requestJSON<UpdateStatus>("GET", "/api/v2/update/status");
+export async function getUpdateStatus(signal?: AbortSignal): Promise<UpdateStatus> {
+  return requestJSON<UpdateStatus>("GET", "/api/v2/update/status", undefined, undefined, signal);
 }

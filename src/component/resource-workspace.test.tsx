@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
@@ -37,10 +38,10 @@ function edit(name: string) {
 }
 it('protects drafts while switching and keeps off-page selections mounted', async () => {
     await render(); edit('Draft');
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const confirm = vi.mocked(confirmAction).mockResolvedValue(false);
     await click('Beta'); expect(host.querySelector('input')?.value).toBe('Draft');
     await click('Alpha'); expect(confirm).toHaveBeenCalledTimes(1);
-    confirm.mockReturnValue(true); await click('Beta'); expect(host.querySelector('input')?.value).toBe('Beta');
+    confirm.mockResolvedValue(true); await click('Beta'); expect(host.querySelector('input')?.value).toBe('Beta');
     edit('Saved beta'); await click('Save');
     await render({ ids: ['a'] }); expect(host.querySelector('input')?.value).toBe('Saved beta');
     confirm.mockClear(); await click('Alpha'); expect(confirm).not.toHaveBeenCalled();
@@ -52,7 +53,9 @@ it('blocks switching and creating during an operation', async () => {
 });
 it('starts with the directory on mobile and guards the editor back button', async () => {
     viewport.desktop = false; await render(); expect(host.querySelector('input')).toBeNull();
-    await click('Beta'); edit('Draft'); const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    await click('Beta'); edit('Draft'); const confirm = vi.mocked(confirmAction).mockResolvedValue(false);
     await click('backToDirectory'); expect(host.querySelector('input')?.value).toBe('Draft');
-    confirm.mockReturnValue(true); await click('backToDirectory'); expect(host.querySelector('input')).toBeNull();
+    confirm.mockResolvedValue(true); await click('backToDirectory'); expect(host.querySelector('input')).toBeNull();
 });
+
+vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));

@@ -1,3 +1,4 @@
+import { motion, useReducedMotion } from 'motion/react';
 import { bytesToBase64 } from "@/common/base64";
 
 import * as SliderPrimitive from '@radix-ui/react-slider';
@@ -148,6 +149,9 @@ export const SettingRangeVertical: FC<{
     disabled?: boolean;
 }> = React.memo(({ label, value, min, max, step, unit, onChange, className, disabled }) => {
     const { t } = useTranslation('common');
+    const reduced = useReducedMotion();
+    const [dragging, setDragging] = useState(false);
+    const slide = dragging || reduced ? { duration: 0 } : { type: 'spring' as const, stiffness: 350, damping: 28 };
     return (
         <div className={clsx("flex flex-col mb-[var(--field-margin,var(--space-field))] relative", className)}>
             <div className="flex justify-between items-center mb-1">
@@ -159,6 +163,10 @@ export const SettingRangeVertical: FC<{
 
             <SliderPrimitive.Root
                 className="group relative flex items-center select-none touch-none w-full h-11 data-[disabled]:cursor-not-allowed"
+                onPointerDownCapture={event => setDragging(event.target instanceof Element && Boolean(event.target.closest('[role="slider"]')))}
+                onPointerMoveCapture={event => { if (event.buttons) setDragging(true); }}
+                onPointerUpCapture={() => setDragging(false)}
+                onPointerCancel={() => setDragging(false)}
                 value={[value]}
                 onValueChange={(newValue) => onChange(newValue[0])}
                 min={min}
@@ -167,16 +175,16 @@ export const SettingRangeVertical: FC<{
                 disabled={disabled}
             >
                 <SliderPrimitive.Track className="bg-ui-border-strong relative grow rounded-full h-1">
-                    <SliderPrimitive.Range className="absolute bg-ui-primary group-data-[disabled]:bg-ui-disabled-fg rounded-full h-full" />
+                    <SliderPrimitive.Range asChild><motion.div layout transition={{ layout: slide }} className="absolute bg-ui-primary group-data-[disabled]:bg-ui-disabled-fg rounded-full h-full" /></SliderPrimitive.Range>
                 </SliderPrimitive.Track>
-                <SliderPrimitive.Thumb
+                <SliderPrimitive.Thumb asChild><motion.span tabIndex={disabled ? -1 : 0} layout transition={{ layout: slide }} whileHover={reduced ? undefined : { scale: 1.1 }} whileTap={reduced ? undefined : { scale: 0.95 }}
                     aria-label={label}
                     aria-valuetext={`${value.toLocaleString()} ${unit ?? ''}`}
                     className={clsx(
                         "relative flex size-11 items-center justify-center rounded-full bg-transparent outline-none sm:size-5 before:size-4 before:rounded-full before:border before:border-ui-border-strong before:bg-ui-surface before:shadow-ui-control hover:before:border-ui-primary data-[disabled]:before:bg-ui-disabled data-[disabled]:before:border-ui-disabled-border",
                         ui.focusRing
                     )}
-                />
+                /></SliderPrimitive.Thumb>
             </SliderPrimitive.Root>
 
             <div className="flex justify-between text-ui-tertiary text-xs font-normal tabular-nums">

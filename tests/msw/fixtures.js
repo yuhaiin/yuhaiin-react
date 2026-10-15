@@ -31,7 +31,7 @@ if (scenario.startsWith('connections') && connections.length) {
   connections.forEach((connection,index) => { if (index % 2) connection.mode='direct'; });
 }
 const history = connections.map((connection,i)=>({connection,time:new Date(1790992800000-i*1000).toISOString(),count:String(i+1)}));
-let settings=createDefaultSettings(); let total=0;
+let settings=createDefaultSettings(); let total=0; let updateStartedAt=scenario==='update'?Number(sessionStorage.getItem('preview:updateStartedAt')||0):0;
 let savedRevision=1, appliedRevision=1, applyAttempts=0;
 let routeConfig={revision:0,defaultMode:'proxy',defaultTarget:{type:'default'},directResolver:'dns-local',proxyResolver:'dns-proxy',resolveLocally:false,udpProxyFqdnStrategy:'default'};
 let runningConfig=structuredClone(routeConfig);
@@ -180,7 +180,18 @@ const worker=setupWorker(
     else if(op==='subscriptions.delete'){for(const name of p.names){const index=subscriptions.findIndex(value=>value.name===name);if(index>=0)subscriptions.splice(index,1);}}
     else if(op==='subscriptions.update'){}
     else if(op==='tools.diagnostics')result={schemaVersion:1,host:p.host,platform:'linux',version:'preview',startedAt:new Date().toISOString(),durationMs:12,ipv6Enabled:true,checks:[],findings:[],report:`Synthetic diagnostics for ${p.host}`};
-    else if(op==='info')result={version:'UX preview',platform:'linux',goVersion:'go1.27',arch:'amd64'};
+    else if(op==='update.check')result={channel:p.channel,supported:true,currentVersion:'v1.0.0',targetVersion:'v2.0.0',targetTag:'v2.0.0',prerelease:false,releaseUrl:'',releaseNotes:'Synthetic update',publishedAt:'',assetName:'preview',assetUrl:'',assetSha256:'',updateAvailable:true,reason:''};
+    else if(op==='update.apply'){updateStartedAt=Date.now();if(scenario==='update')sessionStorage.setItem('preview:updateStartedAt',String(updateStartedAt));}
+    else if(op==='update.status'){
+      const elapsed=updateStartedAt?Date.now()-updateStartedAt:0;
+      if(updateStartedAt&&elapsed>=3000&&elapsed<4500)return HttpResponse.error();
+      result={running:Boolean(updateStartedAt&&elapsed<1500),stage:elapsed>=1500&&elapsed<3000?'completed':updateStartedAt&&elapsed<1500?'downloading':'',progress:updateStartedAt&&elapsed<3000?100:0,bytesDownloaded:0,totalBytes:0,error:''};
+    }
+    else if(op==='info'){
+      const elapsed=updateStartedAt?Date.now()-updateStartedAt:0;
+      if(updateStartedAt&&elapsed>=3000&&elapsed<4500)return HttpResponse.error();
+      result={version:scenario==='update'?(elapsed>=4500?'v2.0.0':'v1.0.0'):scenario==='ui-long'?'main-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa':'UX preview',commit:elapsed>=4500?'bbbbbbbccccccccccccccccccccccccccccccccc':'aaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',buildTime:'2026-10-15T03:29:44Z',platform:'linux/amd64',os:'linux',goVersion:'go1.27',arch:'amd64',compiler:'gc',build:[]};
+    }
     else return HttpResponse.json({error:{message:`Unmocked operation: ${op}`}},{status:501});
     return HttpResponse.json(result);
   }),

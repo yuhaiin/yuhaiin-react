@@ -31,16 +31,20 @@ export const useHashLocation = (): [string, (to: string) => void] => {
 
   const accepted = useRef<string | null>(null);
   const current = useRef(loc);
+  const attemptId = useRef(0);
   useEffect(() => {
     // handler for when the hash changes
-    const handler = () => {
+    const handler = async () => {
       const next = currentLocation();
       if (next === current.current) return;
       const approved = accepted.current === next;
       accepted.current = null;
-      if (!approved && !allowNavigation()) {
+      const attempt = ++attemptId.current;
+      if (!approved) {
+        // Hold the accepted URL and mounted draft while our modal is open.
         window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#${current.current}`);
-        return;
+        if (!await allowNavigation() || attempt !== attemptId.current) return;
+        window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#${next}`);
       }
       current.current = next;
       acceptedLocation = next;
@@ -59,9 +63,11 @@ export const useHashLocation = (): [string, (to: string) => void] => {
     return () => { window.removeEventListener("hashchange", handler); window.removeEventListener(LOCATION_ACCEPTED, syncAccepted); };
   }, []);
 
-  const navigate = useCallback((to: string) => {
+  const navigate = useCallback(async (to: string) => {
     const next = normalizeLocation(to);
-    if (next === current.current || !allowNavigation()) return;
+    if (next === current.current) return;
+    const attempt = ++attemptId.current;
+    if (!await allowNavigation() || attempt !== attemptId.current) return;
     accepted.current = next;
     window.location.hash = next;
   }, []);

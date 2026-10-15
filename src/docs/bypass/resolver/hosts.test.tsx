@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { SWRConfig } from 'swr';
@@ -45,8 +46,8 @@ it('loads server pages, retains a failed edit, and saves just the selected entry
     await click('save');
     expect(document.querySelector('[role=alert]')?.textContent).toBe('Retry this entry');
     expect(target.value).toBe('alias.example');
-    vi.spyOn(window, 'confirm').mockReturnValue(false);
-    expect(allowNavigation()).toBe(false);
+    vi.mocked(confirmAction).mockResolvedValue(false);
+    expect(await allowNavigation()).toBe(false);
     await click('save');
     expect(api.saveHostEntry).toHaveBeenLastCalledWith({ host: 'host-20.example', target: 'alias.example' }, false);
     expect(items[0].target).toBe('192.0.2.1');
@@ -56,9 +57,11 @@ it('loads server pages, retains a failed edit, and saves just the selected entry
 it('refetches the last valid server page after its only entry is removed', async () => {
     await render(); await click('pagination.next'); await click('pagination.next');
     expect(host.querySelectorAll('li')).toHaveLength(1);
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    vi.mocked(confirmAction).mockResolvedValue(true);
     await click('deleteHostMapping host-40.example');
     expect(api.deleteHostEntry).toHaveBeenCalledExactlyOnceWith('host-40.example');
     expect(api.listHostEntries).toHaveBeenLastCalledWith(2, 20, '');
     expect(host.querySelectorAll('li')).toHaveLength(20);
 });
+
+vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));

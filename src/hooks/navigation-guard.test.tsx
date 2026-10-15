@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, expect, it, vi } from 'vitest';
@@ -7,7 +8,7 @@ import { useHashLocation } from './useHashLocation';
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 afterEach(() => vi.restoreAllMocks());
 
-it('protects hash navigation, confirms once for multiple drafts, and blocks pending saves', () => {
+it('protects hash navigation, confirms once for multiple drafts, and blocks pending saves', async () => {
     window.history.replaceState(null, '', '#/docs/config');
     function Probe({ pending }: { pending: boolean }) {
         const [location, move] = useHashLocation();
@@ -21,25 +22,27 @@ it('protects hash navigation, confirms once for multiple drafts, and blocks pend
     }
     const host = document.createElement('div');
     const root = createRoot(host);
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const confirm = vi.mocked(confirmAction).mockResolvedValue(false);
     const navigate = (index: number) => host.querySelectorAll('button')[index].click();
     try {
         act(() => root.render(<Probe pending={false} />));
-        act(() => navigate(0));
+        await act(async () => navigate(0));
         expect(window.location.hash).toBe('#/docs/config');
         expect(confirm).toHaveBeenCalledTimes(1);
-        confirm.mockReturnValue(true);
-        act(() => { navigate(0); window.dispatchEvent(new HashChangeEvent('hashchange')); });
+        confirm.mockResolvedValue(true);
+        await act(async () => { navigate(0); await Promise.resolve(); await Promise.resolve(); window.dispatchEvent(new HashChangeEvent('hashchange')); });
         expect(host.querySelector('span')?.textContent).toBe('/docs/group');
         expect(confirm).toHaveBeenCalledTimes(2);
-        confirm.mockReturnValue(false);
-        act(() => { window.history.replaceState(null, '', '#/docs/config'); window.dispatchEvent(new HashChangeEvent('hashchange')); });
+        confirm.mockResolvedValue(false);
+        await act(async () => { window.history.replaceState(null, '', '#/docs/config'); window.dispatchEvent(new HashChangeEvent('hashchange')); });
         expect(window.location.hash).toBe('#/docs/group');
         expect(host.querySelector('span')?.textContent).toBe('/docs/group');
         act(() => root.render(<Probe pending />));
-        act(() => navigate(1));
+        await act(async () => navigate(1));
         expect(window.location.hash).toBe('#/docs/group');
     } finally {
         act(() => root.unmount());
     }
 });
+
+vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));

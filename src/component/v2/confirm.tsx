@@ -17,7 +17,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({ content, show, onOk,
   const { t } = useTranslation('common');
 
   return (
-    <Modal open={show} onOpenChange={onHide}>
+    <Modal open={show} onOpenChange={open => { if (!open) onHide(); }}>
       <ModalContent>
         <ModalHeader style={{ border: "0px" }}>
           <ModalTitle>{title}</ModalTitle>

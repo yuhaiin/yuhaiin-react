@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { SWRConfig } from 'swr';
@@ -45,9 +46,9 @@ function editName(name: string) {
 it('guards inline switching and retains the saved shared destination', async () => {
     await render(); expect(editor()?.textContent).toContain('Work');
     expect(api.listNodes).not.toHaveBeenCalled(); expect(api.listNodeGroups).not.toHaveBeenCalled();
-    editName('Changed'); const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    editName('Changed'); const confirm = vi.mocked(confirmAction).mockResolvedValue(false);
     await click('Travel'); expect(editor()?.querySelector('input')?.value).toBe('Changed');
-    confirm.mockReturnValue(true); await click('Travel'); expect(editor()?.querySelector('input')?.value).toBe('Travel');
+    confirm.mockResolvedValue(true); await click('Travel'); expect(editor()?.querySelector('input')?.value).toBe('Travel');
     editName('Updated travel'); await click('save');
     expect(api.saveSelector).toHaveBeenCalledWith(expect.objectContaining({ id: 'travel', name: 'Updated travel', nodeId: 'b' }));
     expect(editor()?.querySelector('input')?.value).toBe('Updated travel');
@@ -61,6 +62,8 @@ it('uses the lazy group browser and saves the selected node ID', async () => {
 });
 it('opens the editor from the mobile directory and guards returning', async () => {
     viewport.desktop = false; await render(); expect(editor()).toBeNull();
-    await click('Travel'); editName('Changed'); vi.spyOn(window, 'confirm').mockReturnValue(false);
+    await click('Travel'); editName('Changed'); vi.mocked(confirmAction).mockResolvedValue(false);
     await click('backToSelectors'); expect(editor()).not.toBeNull();
 });
+
+vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));

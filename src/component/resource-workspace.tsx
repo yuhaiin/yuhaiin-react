@@ -30,8 +30,8 @@ export function useResourceSelection(ids: string[], linkedId?: string | null) {
     return {
         id: creating ? '' : linkedId || id,
         creating,
-        select: (next: string) => { if (!creating && next === (linkedId || id)) return; if (allowNavigation()) update(next); },
-        create: (onStart?: () => void) => { if (allowNavigation()) { update('', true); onStart?.(); } },
+        select: async (next: string) => { if (!creating && next === (linkedId || id)) return; if (await allowNavigation()) update(next); },
+        create: async (onStart?: () => void) => { if (await allowNavigation()) { update('', true); onStart?.(); } },
         saved: (next: string) => update(next),
         close: () => update(''),
     };

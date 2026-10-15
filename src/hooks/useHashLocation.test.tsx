@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
@@ -6,7 +7,7 @@ import { useCloseGuard } from './use-editor-draft';
 import { clearHashSearch, useHashLocation, useHashSearch } from './useHashLocation';
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
-it('matches a hash route with query parameters and keeps rejected navigation from changing editor targets', () => {
+it('matches a hash route with query parameters and keeps rejected navigation from changing editor targets', async () => {
     window.history.replaceState(null, '', '#/docs/bypass/?rule=stable-1');
     function Page() {
         const [, move] = useLocation();
@@ -23,20 +24,22 @@ it('matches a hash route with query parameters and keeps rejected navigation fro
     try {
         act(() => root.render(<Router hook={useHashLocation}><Switch><Route path="/docs/bypass" component={Page} /></Switch></Router>));
         expect(host.querySelector('span')?.textContent).toBe('rule=stable-1');
-        const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
-        act(() => { window.history.replaceState(null, '', '#/docs/bypass?rule=stable-2'); window.dispatchEvent(new HashChangeEvent('hashchange')); });
+        const confirm = vi.mocked(confirmAction).mockResolvedValue(false);
+        await act(async () => { window.history.replaceState(null, '', '#/docs/bypass?rule=stable-2'); window.dispatchEvent(new HashChangeEvent('hashchange')); });
         expect(host.querySelector('span')?.textContent).toBe('rule=stable-1');
         expect(window.location.hash).toBe('#/docs/bypass?rule=stable-1');
-        confirm.mockReturnValue(true);
-        act(() => { host.querySelectorAll('button')[0].click(); window.dispatchEvent(new HashChangeEvent('hashchange')); });
+        confirm.mockResolvedValue(true);
+        await act(async () => { host.querySelectorAll('button')[0].click(); await Promise.resolve(); await Promise.resolve(); window.dispatchEvent(new HashChangeEvent('hashchange')); });
         expect(new URLSearchParams(host.querySelector('span')?.textContent).get('value')).toBe('/opt/App/');
         act(() => clearHashSearch());
         expect(host.querySelector('span')?.textContent).toBe('');
         expect(window.location.hash).toBe('#/docs/bypass');
-        act(() => { host.querySelectorAll('button')[1].click(); window.dispatchEvent(new HashChangeEvent('hashchange')); });
+        await act(async () => { host.querySelectorAll('button')[1].click(); await Promise.resolve(); await Promise.resolve(); window.dispatchEvent(new HashChangeEvent('hashchange')); });
         expect(host.querySelector('span')?.textContent).toBe('rule=stable-3');
     } finally {
         act(() => root.unmount());
         vi.restoreAllMocks();
     }
 });
+
+vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));

@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { SWRConfig } from 'swr';
@@ -59,11 +60,13 @@ it('guards leaving a tab with an unsaved resolver draft', async () => {
         Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, 'Changed');
         input.dispatchEvent(new Event('input', { bubbles: true }));
     });
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const confirm = vi.mocked(confirmAction).mockResolvedValue(false);
     await tab('dnsCacheTab');
     expect(host.querySelector<HTMLInputElement>('[aria-label="Editor name"]')?.value).toBe('Changed');
     expect(confirm).toHaveBeenCalledOnce();
-    confirm.mockReturnValue(true);
+    confirm.mockResolvedValue(true);
     await tab('dnsCacheTab');
     expect(host.textContent).toContain('Cache browser');
 });
+
+vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));

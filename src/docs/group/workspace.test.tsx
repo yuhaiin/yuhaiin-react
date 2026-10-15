@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { SWRConfig } from 'swr';
@@ -60,7 +61,7 @@ it('guards switching nodes, retains drafts through search and keeps the saved no
     await render(); expect(settings()?.querySelector('output')?.textContent).toBe('First');
     expect(document.querySelector('[role="dialog"]')).toBeNull();
     await click('Edit draft');
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const confirm = vi.mocked(confirmAction).mockResolvedValue(false);
     await click('Second'); expect(settings()?.querySelector('output')?.textContent).toBe('Changed');
     const input = host.querySelector<HTMLInputElement>('input[aria-label="searchNodes"]')!;
     await act(async () => {
@@ -70,7 +71,7 @@ it('guards switching nodes, retains drafts through search and keeps the saved no
     expect(settings()?.querySelector('output')?.textContent).toBe('Changed');
     await act(async () => { await new Promise(resolve => setTimeout(resolve, 300)); });
     expect(api.listNodes).toHaveBeenLastCalledWith({ group: 'manual', page: 1, pageSize: 80, query: 'Second' });
-    confirm.mockReturnValue(true); await click('Second');
+    confirm.mockResolvedValue(true); await click('Second');
     expect(settings()?.querySelector('output')?.textContent).toBe('Second');
     await click('Edit draft'); await click('common:action.save');
     expect(api.saveNode).toHaveBeenCalledWith(expect.objectContaining({ id: 'b', name: 'Changed' }));
@@ -80,9 +81,9 @@ it('guards switching nodes, retains drafts through search and keeps the saved no
 it('shows the mobile directory first and protects returning from an edited node', async () => {
     viewport.desktop = false; await render(); expect(settings()).toBeNull();
     await click('Second'); await click('Edit draft');
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const confirm = vi.mocked(confirmAction).mockResolvedValue(false);
     await click('backToNodes'); expect(settings()).not.toBeNull();
-    confirm.mockReturnValue(true); await click('backToNodes'); expect(settings()).toBeNull();
+    confirm.mockResolvedValue(true); await click('backToNodes'); expect(settings()).toBeNull();
     await click('Second'); expect(settings()?.querySelector('output')?.textContent).toBe('Second');
 });
 
@@ -149,3 +150,5 @@ it('loads only the active group page and retains the open draft when paging', as
     expect(host.querySelector('[aria-label="Node 82"]')).not.toBeNull();
     expect(api.listNodes.mock.calls.some(([request]) => request.group === 'work')).toBe(false);
 });
+
+vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));

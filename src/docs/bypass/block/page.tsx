@@ -158,14 +158,14 @@ function BypassBlockHistory() {
                         <DropdownContent className="w-[min(320px,calc(100vw-2rem))] min-w-0 max-w-[calc(100vw-2rem)] p-3">
                             <div className="mb-3">
                                 <SettingLabel className="mb-2">{uiT("order")}</SettingLabel>
-                                <ToggleGroup noSlide type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-full">
+                                <ToggleGroup type="single" value={sortOrder} onValueChange={(v) => v && setSortOrder(v as "asc" | "desc")} className="w-full">
                                     <ToggleItem value="asc" className="grow">{uiT("ascLabel")}</ToggleItem>
                                     <ToggleItem value="desc" className="grow">{uiT("descLabel")}</ToggleItem>
                                 </ToggleGroup>
                             </div>
                             <div>
                                 <SettingLabel className="mb-2">{uiT("by")}</SettingLabel>
-                                <ToggleGroup noSlide type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="flex w-full flex-wrap">
+                                <ToggleGroup type="single" value={sortBy} onValueChange={(v) => v && setSortBy(v)} className="flex w-full flex-wrap">
                                     <ToggleItem value="Time" className="grow">{uiT("time")}</ToggleItem>
                                     <ToggleItem value="Host" className="grow">{uiT("host")}</ToggleItem>
                                     <ToggleItem value="Count" className="grow">{uiT("count")}</ToggleItem>

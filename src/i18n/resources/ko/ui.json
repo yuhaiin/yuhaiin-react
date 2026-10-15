@@ -642,6 +642,11 @@
   "profilerGoroutineDescription": "Goroutine 스택을 분석합니다.",
   "profilerMutexDescription": "잠금 경쟁과 대기 시간을 분석합니다.",
   "profilerBlockDescription": "블로킹 및 동기화 대기를 분석합니다.",
+  "updateCompleted": "업데이트가 완료되어 새 버전이 실행 중입니다.",
+  "updateWaitingForRestart": "서비스 재시작 및 설치된 버전 확인을 기다리는 중…",
+  "updateInProgress": "업데이트 중…",
+  "updateRecoveryTimeout": "새 버전을 아직 확인하지 못했습니다. 서비스를 확인하고 다시 시도하세요.",
+  "updateToVersion": "{{version}}(으)로 업데이트",
   "profilerNoSessions": "아직 프로파일이 없습니다",
   "profilerConnectionError": "yuhaiin 백엔드에 연결할 수 없습니다. API 주소, 백엔드 버전, 브라우저 네트워크 제한 및 CORS 설정을 확인하세요."
 }

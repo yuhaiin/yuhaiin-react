@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { deleteHostEntry, listHostEntries, saveHostEntry, type HostEntry } from '@/api/resolvers';
 import { ResourceEditorFrame } from '@/component/resource-workspace';
 import { Button } from '@/component/v2/button';
@@ -55,8 +56,8 @@ export function Hosts() {
     useServerPageClamp(data?.page, page, setPage);
     const { pending, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
     useCloseGuard(false, pending, () => undefined);
-    const remove = (item: HostEntry) => {
-        if (pending || !window.confirm(t('deleteHostMapping', { host: item.host }))) return;
+    const remove = async (item: HostEntry) => {
+        if (pending || !await confirmAction(t('deleteHostMapping', { host: item.host }))) return;
         void run(async () => { await deleteHostEntry(item.host); await refreshPages(); });
     };
     if (error && !data) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>;

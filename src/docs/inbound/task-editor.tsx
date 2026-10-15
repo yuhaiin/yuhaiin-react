@@ -12,8 +12,8 @@ export function InboundTaskEditor({ value, onChange, protocols, defaultAdvanced 
     const [advanced, setAdvanced] = useState(!simple || defaultAdvanced);
     const patch = (fields: Partial<Inbound>) => onChange({ ...value, ...fields });
     const unsupported = protocols && !protocols.includes(value.protocol.type);
-    return <div className="space-y-4">
-        <div className="flex items-center justify-between gap-3"><p className="text-sm text-ui-muted">{t('entryTaskHelp')}</p>
+    return <div className="grid min-w-0 gap-4 [--field-margin:0px]">
+        <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-ui-muted">{t('entryTaskHelp')}</p>
             <Button size="sm" variant="outline-secondary" disabled={!simple} onClick={() => setAdvanced(previous => !previous)}>{t(advanced ? 'simpleEditor' : 'advancedEditor')}</Button></div>
         {unsupported && <p role="alert" className="text-sm text-ui-danger">{t('entryUnsupported')}</p>}
         {advanced || !simple ? <InboundEditor inbound={value} onChange={onChange} protocols={protocols} /> : <>

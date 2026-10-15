@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { SWRConfig } from 'swr';
@@ -33,13 +34,13 @@ it('guards selection, saves only the edited subscription, and updates saved sett
     await render();
     expect(host.querySelector('aside')?.textContent).not.toContain('token=private');
     input(items[0].url, 'https://changed.example/sub');
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const confirm = vi.mocked(confirmAction).mockResolvedValue(false);
     await click('Beta');
     expect([...host.querySelectorAll('input')].some(input => input.value === 'https://changed.example/sub')).toBe(true);
     await click('save');
     expect(api.saveSubscriptions).toHaveBeenCalledExactlyOnceWith([{ name: 'Alpha', type: 'reserve', url: 'https://changed.example/sub' }]);
     await click('update'); expect(api.updateSubscriptions).toHaveBeenCalledExactlyOnceWith(['Alpha']);
-    confirm.mockReturnValue(true); await click('Beta');
+    confirm.mockResolvedValue(true); await click('Beta');
     expect([...host.querySelectorAll('input')].some(input => input.value === 'https://beta.example/sub')).toBe(true);
 });
 it('rejects a duplicate name when adding instead of replacing the existing subscription', async () => {
@@ -59,3 +60,5 @@ it('shows only a source summary for HTTP and encoded subscription links', () => 
     expect(subscriptionSource('yuhaiin://very-long-encoded-secret')).toBe('yuhaiin');
     expect(subscriptionSource('invalid encoded secret')).toBe('—');
 });
+
+vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));

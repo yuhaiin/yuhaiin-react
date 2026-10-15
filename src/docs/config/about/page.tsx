@@ -1,12 +1,13 @@
+import { useUpdateRecovery } from '@/hooks/use-update-recovery';
 import { useTranslation } from 'react-i18next';
 
-import { applyUpdate, checkUpdate, getUpdateStatus } from "@/api/update";
+import { applyUpdate, checkUpdate } from "@/api/update";
 import { getInfo } from "@/api/settings";
-import { Card, CardBody, CardFooter, CardHeader, IconBadge, IconBox, IconBoxRounded, ListItem, MainContainer, SettingLabel } from '@/component/v2/card';
+import { Card, CardBody, CardFooter, CardHeader, IconBox, IconBoxRounded, ListItem, MainContainer, SettingLabel } from '@/component/v2/card';
 import { Button } from "@/component/v2/button";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import { GlobalToastContext } from "@/component/v2/toast";
-import type { UpdateChannel, UpdateCheck, UpdateStatus } from "@/contract/update";
+import type { UpdateChannel, UpdateCheck } from "@/contract/update";
 import { BadgeCheck, Calendar, Check, Code, Cpu, Download, ExternalLink, GitBranch, GitFork, Info, Laptop, Layers, LayoutGrid, RefreshCw, Rocket, Terminal } from 'lucide-react';
 import React, { FC, useContext, useEffect, useState } from "react";
 import useSWR from "swr";
@@ -20,16 +21,6 @@ const updateChannels: Array<{ value: UpdateChannel; label: string }> = [
 ];
 
 const COPYRIGHT_YEAR = new Date().getFullYear();
-
-function updateStageLabel(stage: string): string {
-    switch (stage) {
-        case "preparing": return "Preparing update...";
-        case "downloading": return "Downloading update...";
-        case "verifying": return "Verifying downloaded file...";
-        case "installing": return "Installing update...";
-        default: return "Updating...";
-    }
-}
 
 function formatBytes(value: number): string {
     if (value < 1024 * 1024) return `${Math.max(1, Math.round(value / 1024))} KB`;
@@ -59,7 +50,7 @@ const InfoRow: FC<{
 }> = ({ label, value, icon, url, isBadge, isMonospace }) => (
     <div className="col-span-1">
         <ListItem className={url ? 'cursor-pointer' : 'cursor-default'}>
-            <div className="flex w-full items-center justify-between gap-3">
+            <div className="grid w-full min-w-0 grid-cols-1 items-center gap-2 sm:grid-cols-2 sm:gap-3">
                 <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
                     <IconBoxRounded
                         icon={icon || LayoutGrid}
@@ -71,13 +62,13 @@ const InfoRow: FC<{
                     </span>
                 </div>
 
-                <div className="min-w-0 flex-1 overflow-hidden text-right">
+                <div className="min-w-0 text-left sm:text-right">
                     {url ? (
-                        <a href={url} target="_blank" rel="noreferrer" className="no-underline font-mono text-ui-primary truncate block">
-                            {value} <ExternalLink className="ml-1" size={12} />
+                        <a href={url} target="_blank" rel="noreferrer" className="inline-flex max-w-full items-center justify-start sm:justify-end gap-1.5 font-mono text-ui-primary no-underline" title={value}>
+                            <span className="min-w-0 truncate">{value}</span><ExternalLink className="shrink-0" size={12} aria-hidden="true" />
                         </a>
                     ) : isBadge ?
-                        <IconBadge icon={icon || LayoutGrid} text={value} color="primary" />
+                        <span className="inline-flex max-w-full items-center gap-1.5 rounded-ui-sm bg-ui-primary-soft px-2 py-1 text-xs text-ui-primary" title={value}><BadgeCheck size={14} className="shrink-0" /><span className="min-w-0 truncate">{value}</span></span>
                         : (
                             <span className={`${isMonospace ? 'font-mono' : ''} truncate block text-[0.9rem]`} >
                                 {value}
@@ -94,39 +85,22 @@ export default function About() {
     const { t: uiT } = useTranslation('ui');
 
     const ctx = useContext(GlobalToastContext);
-    const { data: info, isLoading, isValidating, error } = useSWR("/api/v2/info", getInfo);
+    const { data: info, isLoading, error, mutate: refreshInfo } = useSWR("/api/v2/info", () => getInfo());
     const [channel, setChannel] = useState<UpdateChannel>(() => {
         if (typeof window === "undefined") return "stable";
         const saved = window.localStorage.getItem(updateChannelKey);
         return saved === "stable" || saved === "beta" || saved === "main" ? saved : "stable";
     });
     const [update, setUpdate] = useState<UpdateCheck>();
-    const [updateStatus, setUpdateStatus] = useState<UpdateStatus>();
     const [checkingUpdate, setCheckingUpdate] = useState(false);
     const [applyingUpdate, setApplyingUpdate] = useState(false);
 
-    useEffect(() => {
-        let active = true;
-        let timer: ReturnType<typeof setTimeout> | undefined;
-
-        const poll = async () => {
-            try {
-                const status = await getUpdateStatus();
-                if (!active) return;
-                setUpdateStatus(status);
-                if (status.running) timer = setTimeout(() => void poll(), 1000);
-            } catch {
-                // The service can briefly be unavailable while it restarts.
-                if (active) timer = setTimeout(() => void poll(), 2000);
-            }
-        };
-
-        void poll();
-        return () => {
-            active = false;
-            if (timer) clearTimeout(timer);
-        };
-    }, [updateStatus?.running]);
+    const recovery = useUpdateRecovery(next => {
+        void refreshInfo(next, { revalidate: false });
+        setUpdate(undefined);
+        ctx.Info(uiT('updateCompleted'));
+    });
+    const updateStatus = recovery.status;
 
     useEffect(() => {
         window.localStorage.setItem(updateChannelKey, channel);
@@ -144,21 +118,28 @@ export default function About() {
     };
 
     const handleApplyUpdate = async () => {
-        if (!update?.updateAvailable || !update.targetTag || updateStatus?.running) return;
+        if (!update?.updateAvailable || !update.targetTag || recovery.active || !info) return;
         setApplyingUpdate(true);
+        recovery.begin(update, info);
         try {
             await applyUpdate(channel, update.targetTag);
-            setUpdateStatus({ running: true, stage: "preparing", progress: 0, bytesDownloaded: 0, totalBytes: 0, error: "" });
             ctx.Info("Update started. The service will restart shortly.");
         } catch (err) {
-            ctx.Error(`Update failed: ${updateErrorMessage(err)}`);
+            // A network disconnect may be the service restarting after accepting the update.
+            if (err && typeof err === 'object' && 'code' in err && err.code !== 0) {
+                recovery.fail(updateErrorMessage(err)); ctx.Error(`Update failed: ${updateErrorMessage(err)}`);
+            }
         } finally {
             setApplyingUpdate(false);
         }
     };
 
-    if (error !== undefined) return <Error statusCode={error.code} title={error.msg} />
-    if (isLoading || isValidating || !info) return <Loading />
+    if (!info && (recovery.active || recovery.phase === 'timeout')) return <MainContainer><Card><CardBody>
+        <p role="status" data-update-phase={recovery.phase}>{uiT(recovery.phase === 'timeout' ? 'updateRecoveryTimeout' : 'updateWaitingForRestart')}</p>
+        {recovery.phase === 'timeout' && <Button className="mt-3" onClick={recovery.retry}>{uiT('retry')}</Button>}
+    </CardBody></Card></MainContainer>;
+    if (error && !info) return <Error statusCode={error.code} title={error.msg} />
+    if (isLoading || !info) return <Loading />
 
     return (
         <MainContainer className="flex flex-col">
@@ -175,7 +156,7 @@ export default function About() {
                             label={uiT("commit")}
                             value={info.commit?.substring(0, 7) || "N/A"}
                             icon={GitBranch}
-                            url={`https://github.com/yuhaiin/yuhaiin/commit/${info.commit}`}
+                            url={info.commit ? `https://github.com/yuhaiin/yuhaiin/commit/${info.commit}` : undefined}
                             isMonospace
                         />
                         <InfoRow label={uiT("buildTime")} value={info.buildTime || "N/A"} icon={Calendar} />
@@ -225,7 +206,6 @@ export default function About() {
                                 value={channel}
                                 onValueChange={(value) => value && setChannel(value as UpdateChannel)}
                                 className="w-full"
-                                noSlide
                             >
                                 {updateChannels.map((item) => (
                                     <ToggleItem key={item.value} value={item.value} className="flex-grow py-1 h-10">
@@ -236,39 +216,44 @@ export default function About() {
                         </div>
 
                         <div className="flex flex-wrap items-center gap-3">
-                            <Button variant="default" onClick={handleCheckUpdate} disabled={checkingUpdate || applyingUpdate || updateStatus?.running}>
+                            <Button variant="default" onClick={handleCheckUpdate} disabled={checkingUpdate || applyingUpdate || recovery.active}>
                                 <RefreshCw className={checkingUpdate ? "mr-2 animate-spin" : "mr-2"} size={16} />
                                 {uiT("checkForUpdates")}</Button>
                             {update?.updateAvailable && (
-                                <Button variant="default" onClick={handleApplyUpdate} disabled={applyingUpdate || updateStatus?.running || !update.supported}>
+                                <Button className="min-w-0 max-w-full" variant="default" onClick={handleApplyUpdate} disabled={applyingUpdate || recovery.active || !update.supported}>
                                     <Download className="mr-2" size={16} />
-                                    {applyingUpdate || updateStatus?.running ? "Updating..." : `Update to ${update.targetVersion}`}
+                                    <span className="min-w-0 truncate">{applyingUpdate || recovery.active ? uiT('updateInProgress') : uiT('updateToVersion', { version: update.targetVersion })}</span>
                                 </Button>
                             )}
                         </div>
 
-                        {updateStatus?.running && (
-                            <div className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
+                        {recovery.active && (
+                            <div role="status" data-update-phase={recovery.phase} className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
                                 <div className="flex items-center justify-between gap-3 font-semibold text-ui-heading">
-                                    <span>{updateStageLabel(updateStatus.stage)}</span>
-                                    <span>{updateStatus.progress > 0 ? `${updateStatus.progress}%` : "..."}</span>
+                                    <span>{uiT(recovery.phase === 'restarting' ? 'updateWaitingForRestart' : 'updateInProgress')}</span>
+                                    <span>{(updateStatus?.progress ?? 0) > 0 ? `${(updateStatus?.progress ?? 0)}%` : "..."}</span>
                                 </div>
-                                <div className="mt-3 h-2 overflow-hidden rounded-full bg-ui-border" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={updateStatus.progress}>
-                                    <div className="h-full rounded-full bg-ui-primary transition-[width] duration-300" style={{ width: `${Math.max(2, updateStatus.progress)}%` }} />
+                                <div className="mt-3 h-2 overflow-hidden rounded-full bg-ui-border" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={(updateStatus?.progress ?? 0)}>
+                                    <div className="h-full rounded-full bg-ui-primary transition-[width] duration-300" style={{ width: `${Math.max(2, (updateStatus?.progress ?? 0))}%` }} />
                                 </div>
-                                {updateStatus.totalBytes > 0 && (
+                                {(updateStatus?.totalBytes ?? 0) > 0 && (
                                     <div className="mt-2 text-xs text-ui-muted">
-                                        {formatBytes(updateStatus.bytesDownloaded)} / {formatBytes(updateStatus.totalBytes)}
+                                        {formatBytes((updateStatus?.bytesDownloaded ?? 0))} / {formatBytes((updateStatus?.totalBytes ?? 0))}
                                     </div>
                                 )}
                             </div>
                         )}
 
-                        {!updateStatus?.running && updateStatus?.error && (
+                        {recovery.phase === 'error' && (
                             <div className="rounded-ui-md border border-ui-danger/40 bg-ui-danger-soft p-4 text-sm text-ui-danger">
-                                {uiT("updateFailed")} {updateStatus.error}
+                                {uiT("updateFailed")} {recovery.failure}
                             </div>
                         )}
+
+                        {(recovery.phase === 'complete' || recovery.phase === 'timeout') && <div role="status" data-update-phase={recovery.phase} className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
+                            {uiT(recovery.phase === 'complete' ? 'updateCompleted' : 'updateRecoveryTimeout')}
+                            {recovery.phase === 'timeout' && <Button size="sm" className="ml-3" onClick={recovery.retry}>{uiT('retry')}</Button>}
+                        </div>}
 
                         {update && (
                             <div className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
@@ -276,10 +261,10 @@ export default function About() {
                                     <>
                                         <div className="flex items-center gap-2 font-semibold text-ui-heading">
                                             <Check size={16} className="text-ui-success" />
-                                            {update.targetVersion} {uiT("isAvailable")}</div>
+                                            <span className="min-w-0 break-all">{update.targetVersion} {uiT("isAvailable")}</span></div>
                                         <div className="mt-2 space-y-1 text-ui-muted">
-                                            <div>{uiT("currentVersion")}<span className="font-mono">{update.currentVersion || "Unknown"}</span></div>
-                                            <div>{uiT("asset")}<span className="font-mono">{update.assetName}</span></div>
+                                            <div>{uiT("currentVersion")}<span className="break-all font-mono">{update.currentVersion || "Unknown"}</span></div>
+                                            <div>{uiT("asset")}<span className="break-all font-mono">{update.assetName}</span></div>
                                             {update.publishedAt && <div>{uiT("published")} {new Date(update.publishedAt).toLocaleString()}</div>}
                                         </div>
                                         {update.releaseNotes && <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap text-xs text-ui-muted">{update.releaseNotes}</pre>}

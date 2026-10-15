@@ -36,7 +36,7 @@ const InboundEditor: FC<{
     const { t: uiT } = useTranslation('ui');
 
     return (
-        <div className="space-y-4">
+        <div className="grid min-w-0 gap-5 [--field-margin:0px]">
             <SwitchCard
                 label={uiT("enabled")}
                 checked={inbound.enabled}

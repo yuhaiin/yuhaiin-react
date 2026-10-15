@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection } from '@/component/resource-workspace';
 import { useHashSearch } from '@/hooks/useHashLocation';
 import { useServerPageClamp } from "@/hooks/use-pagination";
@@ -217,8 +218,8 @@ function ListEditorModal({ name, onSaved, onClose, presentation = "modal" }: { n
             onSaved(deleted);
         });
     };
-    const remove = () => {
-        if (!name || name === "bootstrap" || pending || !data || error || isLoading || !window.confirm("Delete this list?")) return;
+    const remove = async () => {
+        if (!name || name === "bootstrap" || pending || !data || error || isLoading || !await confirmAction("Delete this list?")) return;
         void run(async () => {
             await deleteRouteList(name);
             setDeleted(true);

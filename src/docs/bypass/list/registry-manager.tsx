@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { createRouteRegistry, deleteRouteRegistry, listRouteRegistries, saveRouteRegistry } from "@/api/route";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
@@ -88,8 +89,8 @@ export function RegistryManagerModal({
     const toggle = (registry: Registry, enabled: boolean) =>
         run(registry.id, () => saveRouteRegistry(registry.id, { ...registry, enabled }));
 
-    const remove = (registry: Registry) => {
-        if (registry.builtin || !window.confirm(`Delete registry "${registry.name}"?`)) return;
+    const remove = async (registry: Registry) => {
+        if (registry.builtin || !await confirmAction(`Delete registry "${registry.name}"?`)) return;
         void run(registry.id, () => deleteRouteRegistry(registry.id));
     };
 

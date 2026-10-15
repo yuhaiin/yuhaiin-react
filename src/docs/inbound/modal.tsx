@@ -1,3 +1,4 @@
+import { confirmAction } from '@/component/v2/confirmation';
 import { ResourceEditorFrame } from '@/component/resource-workspace';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
 import { InboundRuntimePanel } from "./runtime";
@@ -128,9 +129,9 @@ const InboundModal: FC<{
                             )}
                             {isNew && <SettingSelectVertical label={t('entryPreset')} value={preset}
                                 values={[[t('presetLocal'), 'local'], [t('presetLAN'), 'lan'], ...(capabilities?.protocols.includes('tun') ? [[t('presetTun'), 'tun'] as [string, string]] : []), [t('presetCustom'), 'custom']]}
-                                onChange={next => {
+                                onChange={async next => {
                                     if (next === 'custom') { setPreset(next); return; }
-                                    if (!dirty || window.confirm(t('entryPresetReplace'))) {
+                                    if (!dirty || await confirmAction(t('entryPresetReplace'))) {
                                         setPreset(next); setDraft(presetInbound(inbound, next as InboundPreset, capabilities?.platform ?? ''));
                                     }
                                 }} />}

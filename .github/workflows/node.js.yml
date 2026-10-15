@@ -59,6 +59,7 @@ jobs:
             sleep 1
           done
           node scripts/capture-ux.mjs || { cat /tmp/msw-preview.log; exit 1; }
+          node scripts/check-ui-interactions.mjs || { cat /tmp/msw-preview.log; exit 1; }
           node scripts/check-connections.mjs || { cat /tmp/msw-preview.log; exit 1; }
           npm run visual:check || { cat /tmp/msw-preview.log; exit 1; }
 
@@ -72,6 +73,7 @@ jobs:
             /tmp/ux-shots
             /tmp/visual-system-shots
             /tmp/connections-shots
+            /tmp/ui-interactions-shots
 
       - name: Link browser captures in job summary
         env:
