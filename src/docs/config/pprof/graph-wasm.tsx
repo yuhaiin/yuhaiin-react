@@ -58,9 +58,9 @@ export function PprofWASMGraph({ sessionId, initialQuery, makeURL, onNavigate }:
     const { t } = useTranslation("ui");
     const start = new URLSearchParams(initialQuery);
     const [query, setQuery] = useState(initialQuery);
-    const [focus, setFocus] = useState(start.get("focus") ?? "");
-    const [ignore, setIgnore] = useState(start.get("ignore") ?? "");
-    const [nodeCount, setNodeCount] = useState(start.get("nodecount") ?? "");
+    const [focus, setFocus] = useState(start.get("f") ?? start.get("focus") ?? "");
+    const [ignore, setIgnore] = useState(start.get("i") ?? start.get("ignore") ?? "");
+    const [nodeCount, setNodeCount] = useState(start.get("n") ?? start.get("nodecount") ?? "");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [svg, setSVG] = useState("");
@@ -112,7 +112,11 @@ export function PprofWASMGraph({ sessionId, initialQuery, makeURL, onNavigate }:
 
     const applyFilters = () => {
         const params = new URLSearchParams(query);
-        for (const [key, value] of [["focus", focus], ["ignore", ignore], ["nodecount", nodeCount]]) {
+        // Prefer official pprof URL keys; do not send conflicting aliases.
+        params.delete("focus");
+        params.delete("ignore");
+        params.delete("nodecount");
+        for (const [key, value] of [["f", focus], ["i", ignore], ["n", nodeCount]]) {
             if (value.trim()) params.set(key, value.trim());
             else params.delete(key);
         }
