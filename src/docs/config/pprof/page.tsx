@@ -211,18 +211,19 @@ export default function PprofPage() {
 
     useEffect(() => {
         if (!expanded) return;
+        const panel = viewerPanelRef.current;
         const previousOverflow = document.body.style.overflow;
         document.body.style.overflow = "hidden";
         const onKeyDown = (event: KeyboardEvent) => {
             if (event.key !== "Escape") return;
             setExpanded(false);
-            if (document.fullscreenElement === viewerPanelRef.current) {
+            if (document.fullscreenElement === panel) {
                 void document.exitFullscreen().catch(() => {});
             }
         };
         const onFullscreenChange = () => {
             // The browser can also exit native fullscreen via Escape or its UI.
-            if (document.fullscreenElement !== viewerPanelRef.current) {
+            if (document.fullscreenElement !== panel) {
                 setExpanded(false);
             }
         };
@@ -232,7 +233,7 @@ export default function PprofPage() {
             document.removeEventListener("keydown", onKeyDown);
             document.removeEventListener("fullscreenchange", onFullscreenChange);
             document.body.style.overflow = previousOverflow;
-            if (document.fullscreenElement === viewerPanelRef.current) {
+            if (document.fullscreenElement === panel) {
                 void document.exitFullscreen().catch(() => {});
             }
         };
