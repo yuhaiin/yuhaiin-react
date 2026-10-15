@@ -48,50 +48,6 @@ jobs:
         env:
           CI: false
 
-      - name: Capture updated desktop and mobile UX snapshots
-        run: |
-          set -euo pipefail
-          npm run dev:msw > /tmp/msw-preview.log 2>&1 &
-          server=$!
-          trap 'kill "$server" || true' EXIT
-          for i in $(seq 1 45); do
-            if curl -fsS http://127.0.0.1:5175/ > /dev/null; then break; fi
-            sleep 1
-          done
-          node scripts/capture-ux.mjs || { cat /tmp/msw-preview.log; exit 1; }
-          node scripts/check-ui-interactions.mjs || { cat /tmp/msw-preview.log; exit 1; }
-          node scripts/check-connections.mjs || { cat /tmp/msw-preview.log; exit 1; }
-          npm run visual:check || { cat /tmp/msw-preview.log; exit 1; }
-
-      - name: Upload browser verification artifacts
-        id: visual-artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: visual-system
-          retention-days: 14
-          path: |
-            /tmp/ux-shots
-            /tmp/visual-system-shots
-            /tmp/connections-shots
-            /tmp/ui-interactions-shots
-
-      - name: Link browser captures in job summary
-        env:
-          VISUAL_ARTIFACT_URL: ${{ steps.visual-artifacts.outputs.artifact-url }}
-        run: |
-          set -euo pipefail
-          shots=(routing-desktop rule-editor nodes-desktop selectors-desktop routing-mobile rule-editor-mobile nodes-mobile node-details-mobile selectors-mobile selector-details-mobile inbounds-desktop inbounds-mobile lists-desktop lists-mobile publishes-desktop publishes-mobile resolvers-desktop resolvers-mobile)
-          for name in "${shots[@]}"; do
-            test -s "/tmp/ux-shots/${name}.png"
-          done
-          {
-            echo '## Browser verification'
-            echo
-            echo "[Download this run's screenshots and visual results](${VISUAL_ARTIFACT_URL})"
-            echo
-            echo 'Includes 18 desktop/mobile workspace captures, the theme/accent matrix and responsive connection-list captures. Images are generated from synthetic MSW data and retained for 14 days; they are not committed to Git.'
-          } >> "$GITHUB_STEP_SUMMARY"
-
       - run: |
           cat <<EOF > dist/go.mod
           module github.com/yuhaiin/yuhaiin.github.io
