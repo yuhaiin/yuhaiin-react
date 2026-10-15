@@ -1,3 +1,4 @@
+import flowStyles from './flow-summary.module.css';
 import { ConnectionActions } from './connection-actions';
 import { resourceLink } from './actions';
 
@@ -242,7 +243,7 @@ export function useFlow(options?: UseFlowOptions) {
     };
 }
 
-const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral"; summary?: boolean; emphasized?: boolean }> = ({ label, value, error, accent = "neutral", summary = false, emphasized = false }) => {
+const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral"; summary?: boolean; emphasized?: boolean; compact?: boolean }> = ({ label, value, error, accent = "neutral", summary = false, emphasized = false, compact = false }) => {
     const display = error || value;
     const prevRef = useRef(display);
     const [pulse, setPulse] = useState(false);
@@ -260,6 +261,7 @@ const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral";
         <div
             className={clsx(
                 "relative flex min-h-[76px] flex-col justify-center overflow-hidden transition-colors",
+                compact && flowStyles.metric,
                 summary
                     ? "border-ui-border/80 bg-transparent px-4 py-3 first:border-l-0 sm:border-l sm:first:border-l-0"
                     : "rounded-ui-xl border bg-[var(--metric-bg)] p-4 shadow-ui-card border-[var(--metric-border)] hover:border-ui-primary/25",
@@ -268,6 +270,7 @@ const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral";
             <div className={clsx(
                 "mb-1.5 flex items-center gap-1.5 text-xs font-normal leading-normal text-[var(--metric-label)]",
                 !summary && "tracking-normal",
+                compact && flowStyles.label,
             )}>
                 {summary && (
                     <span className={clsx(
@@ -282,6 +285,7 @@ const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral";
             <div className={clsx(
                 "truncate font-mono font-medium leading-tight tabular-nums text-[var(--metric-value)]",
                 summary && emphasized ? "text-2xl" : "text-xl",
+                compact && flowStyles.value,
                 pulse && "animate-dataUpdate",
                 error && "text-ui-danger"
             )}>
@@ -296,7 +300,8 @@ export const FlowCard: FC<{
     flow_error?: string;
     extra_fields?: MetricProps[];
     variant?: "default" | "summary";
-}> = ({ lastFlow, flow_error, extra_fields, variant = "default" }) => {
+    compact?: boolean;
+}> = ({ lastFlow, flow_error, extra_fields, variant = "default", compact = false }) => {
     const { t } = useTranslation(["connections", "common"]);
     const loading = t("common:state.loading");
     const hasExtra = Boolean(extra_fields?.length);
@@ -306,18 +311,19 @@ export const FlowCard: FC<{
         <div
             className={clsx(
                 "mb-3 w-full",
+                summary && compact && flowStyles.compact,
                 summary && "grid overflow-hidden rounded-ui-lg border border-ui-border bg-ui-surface shadow-ui-card",
                 summary
                     ? hasExtra ? "grid-cols-2 sm:grid-cols-2 xl:grid-cols-3" : "grid-cols-2 sm:grid-cols-2 xl:grid-cols-4"
                     : clsx("grid gap-3", hasExtra ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" : "grid-cols-1 sm:grid-cols-2 xl:grid-cols-4"),
             )}
         >
-            <MetricCard summary={summary} emphasized accent="download" label={t("downloadRate")} value={lastFlow ? lastFlow.DownloadString() : loading} error={flow_error} />
-            <MetricCard summary={summary} emphasized accent="upload" label={t("uploadRate")} value={lastFlow ? lastFlow.UploadString() : loading} error={flow_error} />
-            <MetricCard summary={summary} accent="download" label={t("totalDownload")} value={lastFlow ? lastFlow.DownloadTotalString() : loading} error={flow_error} />
-            <MetricCard summary={summary} accent="upload" label={t("totalUpload")} value={lastFlow ? lastFlow.UploadTotalString() : loading} error={flow_error} />
+            <MetricCard compact={summary && compact} summary={summary} emphasized accent="download" label={t("downloadRate")} value={lastFlow ? lastFlow.DownloadString() : loading} error={flow_error} />
+            <MetricCard compact={summary && compact} summary={summary} emphasized accent="upload" label={t("uploadRate")} value={lastFlow ? lastFlow.UploadString() : loading} error={flow_error} />
+            <MetricCard compact={summary && compact} summary={summary} accent="download" label={t("totalDownload")} value={lastFlow ? lastFlow.DownloadTotalString() : loading} error={flow_error} />
+            <MetricCard compact={summary && compact} summary={summary} accent="upload" label={t("totalUpload")} value={lastFlow ? lastFlow.UploadTotalString() : loading} error={flow_error} />
             {extra_fields?.map((field, index) => (
-                <MetricCard key={`extra-field-${index}`} summary={summary} label={field.label} value={field.value || loading} error={field.error} />
+                <MetricCard key={`extra-field-${index}`} compact={summary && compact} summary={summary} label={field.label} value={field.value || loading} error={field.error} />
             ))}
         </div>
     );
@@ -330,7 +336,8 @@ export const FlowContainer: FC<{
     enabled?: boolean;
     refreshInterval?: number;
     variant?: "default" | "summary";
-}> = React.memo(({ onUpdate, onFlow, extra_fields, enabled, refreshInterval, variant }) => {
+    compact?: boolean;
+}> = React.memo(({ onUpdate, onFlow, extra_fields, enabled, refreshInterval, variant, compact }) => {
     const { data: lastFlow, error: flow_error } = useFlow({ enabled, refreshInterval });
 
     useEffect(() => {
@@ -338,7 +345,7 @@ export const FlowContainer: FC<{
         if (onFlow && lastFlow) onFlow(lastFlow);
     }, [onUpdate, onFlow, lastFlow]);
 
-    return <FlowCard lastFlow={lastFlow} flow_error={lastFlow ? undefined : flow_error} extra_fields={extra_fields} variant={variant} />;
+    return <FlowCard lastFlow={lastFlow} flow_error={lastFlow ? undefined : flow_error} extra_fields={extra_fields} variant={variant} compact={compact} />;
 });
 
 export const ConnectionInfo: FC<{

@@ -48,24 +48,26 @@ try {
   const table='[role="table"]', row='[data-connection-id]';
   await send('Page.enable'); await send('Runtime.enable');
   await mkdir('/tmp/connections-shots',{recursive:true});
-  for(const theme of ['light','dark']) for(const width of [320,390,767,768,1440,1920]) {
+  for(const theme of ['light','dark']) for(const [width,height] of [[320,844],[390,844],[767,844],[320,568],[640,360],[844,390],[768,1000],[1440,1000],[1920,1000]]) {
     const mobile=width<768;
-    await send('Emulation.setDeviceMetricsOverride',{width,height:width<768?844:1000,deviceScaleFactor:1,mobile});
+    await send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile});
     await send('Emulation.setTouchEmulationEnabled',{enabled:mobile});
     const init=await send('Page.addScriptToEvaluateOnNewDocument',{source:`localStorage.setItem('yuhaiin.theme',${JSON.stringify(theme)});localStorage.setItem('yuhaiin.accent','olive');`});
     await send('Page.navigate',{url:`http://127.0.0.1:5175/?scenario=connections&check=${theme}-${width}#/docs/connections/v2`});
     await ready(row);
     // Use real translated resources, including long labels on the mobile toolbar.
     if(width===390||width===768) {await evaluate(`import('/src/i18n/index.ts').then(m=>m.default.changeLanguage(${JSON.stringify(width===390?'ja':'ko')}))`);await waitForPreview(send,row);}
-    const metrics=await evaluate(`(()=>{const visible=e=>e.getBoundingClientRect().width>0, r=document.querySelector('${row}'),cells=[...r.querySelectorAll('[role="cell"]')].filter(visible),headers=[...document.querySelectorAll('[role="columnheader"]')].filter(visible),box=r.getBoundingClientRect();return {overflow:document.documentElement.scrollWidth>innerWidth+1,height:box.height,count:document.querySelectorAll('${row}').length,headerCount:headers.length,bodyCentered:cells.every(cell=>{const content=cell.querySelector('button')||cell,style=getComputedStyle(content);return style.display==='flex'?style.justifyContent==='center':style.textAlign==='center';}),centered:headers.every(h=>{const label=h.querySelector('button .truncate')||h,range=document.createRange();range.selectNodeContents(label);const text=range.getBoundingClientRect(),box=h.getBoundingClientRect();return Math.abs(text.x+text.width/2-box.x-box.width/2)<1;}),topGap:document.querySelector('main button[aria-label]').getBoundingClientRect().top-(document.querySelector('header.fixed')?.getBoundingClientRect().bottom||0),positions:[headers.map(h=>h.getBoundingClientRect().x),cells.map(c=>c.getBoundingClientRect().x)],aligned:headers.every((h,i)=>Math.abs(h.getBoundingClientRect().x-cells[i].getBoundingClientRect().x)<=5),clipped:cells.some(e=>{const b=e.getBoundingClientRect();return b.x<box.x-1||b.right>box.right+1;}),buttons:[...document.querySelectorAll('main button')].filter(e=>visible(e)&&!e.closest('${table}')).map(e=>({h:e.getBoundingClientRect().height,w:e.getBoundingClientRect().width})),metadataBelowTarget:cells[1].getBoundingClientRect().bottom<=cells[2].getBoundingClientRect().top+1};})()`);
+    const metrics=await evaluate(`(()=>{const visible=e=>e.getBoundingClientRect().width>0, r=document.querySelector('${row}'),cells=[...r.querySelectorAll('[role="cell"]')].filter(visible),headers=[...document.querySelectorAll('[role="columnheader"]')].filter(visible),box=r.getBoundingClientRect();return {listHeight:[...document.querySelectorAll('${table} [role=rowgroup]')].find(group=>group.querySelector('${row}'))?.getBoundingClientRect().height,overflow:document.documentElement.scrollWidth>innerWidth+1,height:box.height,count:document.querySelectorAll('${row}').length,headerCount:headers.length,bodyCentered:cells.every(cell=>{const content=cell.querySelector('button')||cell,style=getComputedStyle(content);return style.display==='flex'?style.justifyContent==='center':style.textAlign==='center';}),centered:headers.every(h=>{const label=h.querySelector('button .truncate')||h,range=document.createRange();range.selectNodeContents(label);const text=range.getBoundingClientRect(),box=h.getBoundingClientRect();return Math.abs(text.x+text.width/2-box.x-box.width/2)<1;}),topGap:[...document.querySelectorAll('main button[aria-label]')].find(visible).getBoundingClientRect().top-(document.querySelector('header.fixed')?.getBoundingClientRect().bottom||0),positions:[headers.map(h=>h.getBoundingClientRect().x),cells.map(c=>c.getBoundingClientRect().x)],aligned:headers.every((h,i)=>Math.abs(h.getBoundingClientRect().x-cells[i].getBoundingClientRect().x)<=5),clipped:cells.some(e=>{const b=e.getBoundingClientRect();return b.x<box.x-1||b.right>box.right+1;}),buttons:[...document.querySelectorAll('main button')].filter(e=>visible(e)&&!e.closest('${table}')).map(e=>({h:e.getBoundingClientRect().height,w:e.getBoundingClientRect().width})),metadataBelowTarget:cells[1].getBoundingClientRect().bottom<=cells[2].getBoundingClientRect().top+1};})()`);
     assert(!metrics.overflow&&!metrics.clipped,`Overflow at ${width}: ${JSON.stringify(metrics)}`);
     assert(metrics.height===(mobile?92:52),`Virtual row height at ${width}: ${metrics.height}`);
     assert(metrics.count<95,`Virtualization missing at ${width}`);
+    if(mobile&&height>=800) assert(metrics.listHeight>=height*.62,`Mobile list is squeezed at ${width}x${height}: ${metrics.listHeight}px`);
+    if(height<=500) assert(metrics.listHeight>=(mobile?92:104),`Short viewport cannot show full connection rows at ${width}x${height}: ${metrics.listHeight}px`);
     if(width<1024) assert(metrics.topGap>=12,`Missing top spacing at ${width}`);
     assert(await evaluate(`(()=>{const r=document.querySelector('${row}'),exit=r.querySelector('[role=cell] > span[title]');return innerWidth>=1280||Boolean(exit&&exit.getBoundingClientRect().height);})()`),'Shared exit hidden on narrow screens');
     if(mobile) assert(metrics.headerCount===0&&metrics.metadataBelowTarget&&metrics.buttons.every(b=>b.h>=44&&b.w>=44),`Mobile layout at ${width}: ${JSON.stringify(metrics)}`);
     else assert(metrics.aligned&&metrics.centered&&metrics.bodyCentered&&metrics.headerCount===(width>=1280?7:6),`Column alignment at ${width}: ${JSON.stringify(metrics)}`);
-    const shot=await send('Page.captureScreenshot',{format:'png'});await writeFile(`/tmp/connections-shots/${theme}-${width}.png`,Buffer.from(shot.data,'base64'));
+    const shot=await send('Page.captureScreenshot',{format:'png'});await writeFile(`/tmp/connections-shots/${theme}-${width}-${height}.png`,Buffer.from(shot.data,'base64'));
     if(width===320||width===1440) {
       if(mobile) await click('main button[title="Asc"]',true);
       else await click('[role="columnheader"]:first-child button');
@@ -102,7 +104,7 @@ try {
     await waitForPreview(send,row);
     assert(await evaluate(`(()=>{const rows=[...document.querySelectorAll('${row}')].map(e=>e.getBoundingClientRect()).sort((a,b)=>a.y-b.y);return rows.every((r,i)=>!i||Math.abs(r.y-rows[i-1].bottom)<1);})()`),`Virtual row gaps at ${width}`);
     await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:init.identifier});
-    console.log(`Verified ${theme}/${width}: layout, touch targets, columns and virtual scrolling`);
+    console.log(`Verified ${theme}/${width}x${height}: list ${metrics.listHeight}px, layout, touch targets, columns and virtual scrolling`);
   }
   // Below the virtualization threshold the same component and keyboard action apply.
   await send('Page.navigate',{url:'http://127.0.0.1:5175/?scenario=connections-small#/docs/connections/v2'});await ready(row);

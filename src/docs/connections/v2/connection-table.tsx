@@ -30,8 +30,7 @@ export function MobileConnectionSort({ sortBy, sortOrder, onFieldChange, onOrder
 }) {
     const { t } = useTranslation('ui');
     const Direction = sortOrder === 'asc' ? ArrowUp : ArrowDown;
-    return <div className="mb-3 flex min-w-0 items-center gap-2 md:hidden">
-        <span className="shrink-0 text-xs text-ui-muted">{t('sort')}</span>
+    return <div className="flex min-w-0 flex-1 items-center gap-2 md:hidden">
         <div className="min-w-0 flex-1"><Select size="sm" triggerClassName="min-h-11" value={sortBy} ariaLabel={t('sort')} onValueChange={value => onFieldChange(value as SortBy)}
             items={(['id', 'name', 'download', 'upload'] as const).map(value => ({ value, label: t(value === 'id' ? 'idLabel' : value) }))} /></div>
         <Button size="icon" className="min-h-11 min-w-11" variant="outline-secondary" onClick={onOrderChange} aria-label={t(sortOrder === 'asc' ? 'descLabel' : 'ascLabel')} title={t(sortOrder === 'asc' ? 'descLabel' : 'ascLabel')}><Direction size={16} /></Button>
