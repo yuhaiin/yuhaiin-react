@@ -265,8 +265,8 @@ export function PprofWASMGraph({ sessionId, initialQuery, makeURL, onNavigate }:
                 </div>
             </div>
             <div ref={viewportRef}
-                className="relative min-h-[320px] flex-1 overflow-hidden bg-white text-slate-900 select-none"
-                style={{ touchAction: "none", cursor: pointersRef.current.size ? "grabbing" : "grab" }}
+                className="relative min-h-[320px] flex-1 overflow-hidden bg-white text-slate-900 select-none cursor-grab active:cursor-grabbing"
+                style={{ touchAction: "none" }}
                 onPointerDown={onPointerDown} onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp} onPointerCancel={onPointerCancel}
                 onWheel={onWheel}
