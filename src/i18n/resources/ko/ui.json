@@ -641,5 +641,7 @@
   "profilerAllocsDescription": "누적 메모리 할당 병목을 분석합니다.",
   "profilerGoroutineDescription": "Goroutine 스택을 분석합니다.",
   "profilerMutexDescription": "잠금 경쟁과 대기 시간을 분석합니다.",
-  "profilerBlockDescription": "블로킹 및 동기화 대기를 분석합니다."
+  "profilerBlockDescription": "블로킹 및 동기화 대기를 분석합니다.",
+  "profilerNoSessions": "아직 프로파일이 없습니다",
+  "profilerConnectionError": "yuhaiin 백엔드에 연결할 수 없습니다. API 주소, 백엔드 버전, 브라우저 네트워크 제한 및 CORS 설정을 확인하세요."
 }
