@@ -1,7 +1,7 @@
 import { Button } from "@/component/v2/button";
 import { Input } from "@/component/v2/input";
 import { ChevronLeft, Minus, Plus, RotateCcw } from "lucide-react";
-import { useEffect, useRef, useState, type PointerEvent, type WheelEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import {
     INITIAL_GRAPH_VIEW, graphPointDistance, graphPointMiddle, panGraph,
     prepareProfilerDOT, zoomGraph, type GraphPoint, type GraphViewport,
@@ -85,10 +85,10 @@ export function PprofWASMGraph({ sessionId, initialQuery, makeURL, onNavigate }:
     const dragDistanceRef = useRef(0);
     const pointerNodeRef = useRef<Element | null>(null);
 
-    const updateView = (next: GraphViewport) => {
+    const updateView = useCallback((next: GraphViewport) => {
         viewRef.current = next;
         setView(next);
-    };
+    }, []);
     const zoomBy = (factor: number) => {
         const box = viewportRef.current?.getBoundingClientRect();
         const anchor = { x: (box?.width ?? 600) / 2, y: (box?.height ?? 400) / 2 };
@@ -213,20 +213,28 @@ export function PprofWASMGraph({ sessionId, initialQuery, makeURL, onNavigate }:
         pointerNodeRef.current = null;
         dragDistanceRef.current = Infinity;
     };
-    const onWheel = (event: WheelEvent<HTMLDivElement>) => {
-        event.preventDefault();
-        const rect = event.currentTarget.getBoundingClientRect();
-        const cursor = { x: event.clientX - rect.left, y: event.clientY - rect.top };
-        // Trackpad pinch emits ctrl+wheel. Ordinary two-finger scrolling pans;
-        // a mouse wheel zooms around the pointer position.
-        if (!event.ctrlKey && !event.metaKey && (Math.abs(event.deltaX) > 0 ||
-            (event.deltaMode === 0 && Math.abs(event.deltaY) < 10))) {
-            updateView(panGraph(viewRef.current, -event.deltaX, -event.deltaY));
-        } else {
-            const factor = Math.exp(-event.deltaY * (event.deltaMode === 1 ? 0.04 : 0.002));
-            updateView(zoomGraph(viewRef.current, factor, cursor));
-        }
-    };
+    useEffect(() => {
+        const viewport = viewportRef.current;
+        if (!viewport) return;
+        // React delegates wheel listeners as passive on modern browsers.
+        // A non-passive native listener is required for cursor-centered zoom
+        // to prevent the outer page from scrolling/zooming at the same time.
+        const onWheel = (event: globalThis.WheelEvent) => {
+            event.preventDefault();
+            const rect = viewport.getBoundingClientRect();
+            const cursor = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+            // Trackpad pinch emits ctrl+wheel. Two-finger trackpad scroll pans.
+            if (!event.ctrlKey && !event.metaKey && (Math.abs(event.deltaX) > 0 ||
+                (event.deltaMode === 0 && Math.abs(event.deltaY) < 10))) {
+                updateView(panGraph(viewRef.current, -event.deltaX, -event.deltaY));
+            } else {
+                const factor = Math.exp(-event.deltaY * (event.deltaMode === 1 ? 0.04 : 0.002));
+                updateView(zoomGraph(viewRef.current, factor, cursor));
+            }
+        };
+        viewport.addEventListener("wheel", onWheel, { passive: false });
+        return () => viewport.removeEventListener("wheel", onWheel);
+    }, [updateView]);
 
     return (
         <section className="flex h-full w-full min-w-0 min-h-[360px] flex-col overflow-hidden bg-ui-surface text-ui-fg" aria-label={t("profilerGraph")}>
@@ -269,7 +277,6 @@ export function PprofWASMGraph({ sessionId, initialQuery, makeURL, onNavigate }:
                 style={{ touchAction: "none" }}
                 onPointerDown={onPointerDown} onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp} onPointerCancel={onPointerCancel}
-                onWheel={onWheel}
                 aria-label={t("profilerGraph")}>
                 {loading && <div className="absolute inset-x-0 top-3 z-10 text-center text-sm text-slate-700" role="status">{t("profilerGraphRendering")}</div>}
                 {error && <p role="alert" className="absolute inset-x-3 top-3 z-10 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
