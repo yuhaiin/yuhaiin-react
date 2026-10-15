@@ -648,5 +648,16 @@
   "updateRecoveryTimeout": "新しいバージョンをまだ確認できません。サービスを確認して再試行してください。",
   "updateToVersion": "{{version}} に更新",
   "profilerNoSessions": "まだプロファイルがありません",
-  "profilerConnectionError": "yuhaiin バックエンドに接続できません。API アドレス、バックエンドのバージョン、ブラウザーのネットワーク制限、CORS 設定を確認してください。"
+  "profilerConnectionError": "yuhaiin バックエンドに接続できません。API アドレス、バックエンドのバージョン、ブラウザーのネットワーク制限、CORS 設定を確認してください。",
+  "profilerGraph": "コールグラフ",
+  "profilerGraphBack": "フレームグラフ",
+  "profilerGraphFocus": "フォーカス（正規表現）",
+  "profilerGraphIgnore": "除外（正規表現）",
+  "profilerGraphNodes": "最大ノード数",
+  "profilerGraphApply": "適用",
+  "profilerGraphHint": "ノードを選択して関数名を指定し、フィルターを適用できます。",
+  "profilerGraphZoomOut": "縮小",
+  "profilerGraphZoomIn": "拡大",
+  "profilerGraphZoomReset": "倍率をリセット",
+  "profilerGraphRendering": "ブラウザーでグラフを生成中…"
 }

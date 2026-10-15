@@ -648,5 +648,16 @@
   "updateRecoveryTimeout": "새 버전을 아직 확인하지 못했습니다. 서비스를 확인하고 다시 시도하세요.",
   "updateToVersion": "{{version}}(으)로 업데이트",
   "profilerNoSessions": "아직 프로파일이 없습니다",
-  "profilerConnectionError": "yuhaiin 백엔드에 연결할 수 없습니다. API 주소, 백엔드 버전, 브라우저 네트워크 제한 및 CORS 설정을 확인하세요."
+  "profilerConnectionError": "yuhaiin 백엔드에 연결할 수 없습니다. API 주소, 백엔드 버전, 브라우저 네트워크 제한 및 CORS 설정을 확인하세요.",
+  "profilerGraph": "호출 그래프",
+  "profilerGraphBack": "플레임 그래프",
+  "profilerGraphFocus": "집중 (정규식)",
+  "profilerGraphIgnore": "제외 (정규식)",
+  "profilerGraphNodes": "최대 노드 수",
+  "profilerGraphApply": "적용",
+  "profilerGraphHint": "노드를 선택해 함수 이름을 채운 뒤 필터를 적용할 수 있습니다.",
+  "profilerGraphZoomOut": "축소",
+  "profilerGraphZoomIn": "확대",
+  "profilerGraphZoomReset": "배율 초기화",
+  "profilerGraphRendering": "브라우저에서 그래프 생성 중…"
 }
