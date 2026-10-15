@@ -21,7 +21,7 @@
     }
     .row { min-height: 52px; grid-template-rows: auto; row-gap: 0; }
     .id, .target, .mode, .protocol, .download, .upload { grid-column: auto; grid-row: auto; max-width: none; }
-    .id { position: static; text-align: left; }
+    .id { position: static; text-align: center; }
     .target { padding-right: 0; }
 }
 @media (min-width: 1280px) {

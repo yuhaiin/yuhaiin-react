@@ -48,16 +48,15 @@ const ModalClose = DialogPrimitive.Close;
 const overlayVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },
-    exit: { opacity: 0, transition: { duration: motionTiming.slow } }
 };
 
 const contentVariants = {
-    hidden: { opacity: 0, scale: 0.92, y: "-50%", x: "-50%" },
+    hidden: { opacity: 0, scale: 0.2, y: "-50%", x: "-50%" },
     visible: { opacity: 1, scale: 1, y: "-50%", x: "-50%", transition: {
-        type: 'spring', stiffness: 420, damping: 34, mass: 0.8,
+        type: 'spring', stiffness: 300, damping: 25,
         opacity: { duration: motionTiming.normal, ease: 'easeOut' },
     } },
-    exit: { opacity: 0, scale: 0.96, y: "-50%", x: "-50%", transition: { duration: motionTiming.fast, ease: 'easeOut' } },
+    exit: { opacity: 0, scale: 0.2, y: "-50%", x: "-50%", transition: { duration: motionTiming.slow, ease: 'easeInOut' } },
 };
 
 // 1. Content Container
@@ -81,7 +80,7 @@ const ModalContent = ({ className, children, style, width = 500, ...props }: Rea
                             transition={{ duration: reducedMotion ? 0 : motionTiming.normal }}
                             initial="hidden"
                             animate="visible"
-                            exit="exit"
+                            exit={{ opacity: 0, transition: { duration: reducedMotion ? 0 : motionTiming.slow } }}
                         />
                     </DialogPrimitive.Overlay>
                     <DialogPrimitive.Content asChild forceMount aria-describedby={undefined}>

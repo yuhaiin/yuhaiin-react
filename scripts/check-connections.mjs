@@ -40,6 +40,10 @@ try {
     return point;
   }
   async function key(key,code){await send('Input.dispatchKeyEvent',{type:'keyDown',key,code:key,windowsVirtualKeyCode:code,...(key==='Enter'?{text:'\r'}:{})});await send('Input.dispatchKeyEvent',{type:'keyUp',key,windowsVirtualKeyCode:code});}
+  async function assertDialogBounce() {
+  const scales=await evaluate(`new Promise(resolve=>{const values=[];let i=0;function frame(){const e=document.querySelector('[role="dialog"]');if(e)values.push(new DOMMatrix(getComputedStyle(e).transform).a);if(++i<30)requestAnimationFrame(frame);else resolve(values);}frame();})`);
+  assert(scales.some(value=>value<0.5)&&scales.some(value=>value>1.01),'Dialog lost its original expanding spring bounce');
+  }
   const firstId=()=>evaluate(`document.querySelector('[data-connection-id]')?.dataset.connectionId`);
   const table='[role="table"]', row='[data-connection-id]';
   await send('Page.enable'); await send('Runtime.enable');
@@ -53,14 +57,14 @@ try {
     await ready(row);
     // Use real translated resources, including long labels on the mobile toolbar.
     if(width===390||width===768) {await evaluate(`import('/src/i18n/index.ts').then(m=>m.default.changeLanguage(${JSON.stringify(width===390?'ja':'ko')}))`);await waitForPreview(send,row);}
-    const metrics=await evaluate(`(()=>{const visible=e=>e.getBoundingClientRect().width>0, r=document.querySelector('${row}'),cells=[...r.querySelectorAll('[role="cell"]')].filter(visible),headers=[...document.querySelectorAll('[role="columnheader"]')].filter(visible),box=r.getBoundingClientRect();return {overflow:document.documentElement.scrollWidth>innerWidth+1,height:box.height,count:document.querySelectorAll('${row}').length,headerCount:headers.length,centered:headers.every(h=>{const label=h.querySelector('button .truncate')||h,range=document.createRange();range.selectNodeContents(label);const text=range.getBoundingClientRect(),box=h.getBoundingClientRect();return Math.abs(text.x+text.width/2-box.x-box.width/2)<1;}),topGap:document.querySelector('main button[aria-label]').getBoundingClientRect().top-document.querySelector('[role=table]').parentElement.getBoundingClientRect().top,positions:[headers.map(h=>h.getBoundingClientRect().x),cells.map(c=>c.getBoundingClientRect().x)],aligned:headers.every((h,i)=>Math.abs(h.getBoundingClientRect().x-cells[i].getBoundingClientRect().x)<=5),clipped:cells.some(e=>{const b=e.getBoundingClientRect();return b.x<box.x-1||b.right>box.right+1;}),buttons:[...document.querySelectorAll('main button')].filter(e=>visible(e)&&!e.closest('${table}')).map(e=>({h:e.getBoundingClientRect().height,w:e.getBoundingClientRect().width})),metadataBelowTarget:cells[1].getBoundingClientRect().bottom<=cells[2].getBoundingClientRect().top+1};})()`);
+    const metrics=await evaluate(`(()=>{const visible=e=>e.getBoundingClientRect().width>0, r=document.querySelector('${row}'),cells=[...r.querySelectorAll('[role="cell"]')].filter(visible),headers=[...document.querySelectorAll('[role="columnheader"]')].filter(visible),box=r.getBoundingClientRect();return {overflow:document.documentElement.scrollWidth>innerWidth+1,height:box.height,count:document.querySelectorAll('${row}').length,headerCount:headers.length,bodyCentered:cells.every(cell=>{const content=cell.querySelector('button')||cell,style=getComputedStyle(content);return style.display==='flex'?style.justifyContent==='center':style.textAlign==='center';}),centered:headers.every(h=>{const label=h.querySelector('button .truncate')||h,range=document.createRange();range.selectNodeContents(label);const text=range.getBoundingClientRect(),box=h.getBoundingClientRect();return Math.abs(text.x+text.width/2-box.x-box.width/2)<1;}),topGap:document.querySelector('main button[aria-label]').getBoundingClientRect().top-document.querySelector('[role=table]').parentElement.getBoundingClientRect().top,positions:[headers.map(h=>h.getBoundingClientRect().x),cells.map(c=>c.getBoundingClientRect().x)],aligned:headers.every((h,i)=>Math.abs(h.getBoundingClientRect().x-cells[i].getBoundingClientRect().x)<=5),clipped:cells.some(e=>{const b=e.getBoundingClientRect();return b.x<box.x-1||b.right>box.right+1;}),buttons:[...document.querySelectorAll('main button')].filter(e=>visible(e)&&!e.closest('${table}')).map(e=>({h:e.getBoundingClientRect().height,w:e.getBoundingClientRect().width})),metadataBelowTarget:cells[1].getBoundingClientRect().bottom<=cells[2].getBoundingClientRect().top+1};})()`);
     assert(!metrics.overflow&&!metrics.clipped,`Overflow at ${width}: ${JSON.stringify(metrics)}`);
     assert(metrics.height===(mobile?92:52),`Virtual row height at ${width}: ${metrics.height}`);
     assert(metrics.count<95,`Virtualization missing at ${width}`);
     if(width<1024) assert(metrics.topGap>=12,`Missing top spacing at ${width}`);
     assert(await evaluate(`(()=>{const r=document.querySelector('${row}'),exit=r.querySelector('[role=cell] > span[title]');return innerWidth>=1280||Boolean(exit&&exit.getBoundingClientRect().height);})()`),'Shared exit hidden on narrow screens');
     if(mobile) assert(metrics.headerCount===0&&metrics.metadataBelowTarget&&metrics.buttons.every(b=>b.h>=44&&b.w>=44),`Mobile layout at ${width}: ${JSON.stringify(metrics)}`);
-    else assert(metrics.aligned&&metrics.centered&&metrics.headerCount===(width>=1280?7:6),`Column alignment at ${width}: ${JSON.stringify(metrics)}`);
+    else assert(metrics.aligned&&metrics.centered&&metrics.bodyCentered&&metrics.headerCount===(width>=1280?7:6),`Column alignment at ${width}: ${JSON.stringify(metrics)}`);
     const shot=await send('Page.captureScreenshot',{format:'png'});await writeFile(`/tmp/connections-shots/${theme}-${width}.png`,Buffer.from(shot.data,'base64'));
     if(width===320||width===1440) {
       if(mobile) await click('main button[title="Asc"]',true);
@@ -81,12 +85,13 @@ try {
       const fullAddress=await evaluate(`document.querySelector('${row} button').title`);
       if(mobile) await click(`${row} button`,true);
       else {await evaluate(`document.querySelector('${row} button').focus()`);await key('Enter',13);}
+      await assertDialogBounce();
       await ready('[role="dialog"]');
       assert(await evaluate(`(()=>{const d=document.querySelector('[role="dialog"]');return d.textContent.includes(${JSON.stringify(fullAddress)})&&[d,...d.querySelectorAll('li')].every(e=>e.scrollWidth<=e.clientWidth+1);})()`),'Long host is missing or overflows in details');
       assert(await evaluate(`document.querySelector('[role="dialog"]').contains(document.activeElement)`),'Dialog did not receive focus');
       for(let i=0;i<8;i++)await key('Tab',9);
       assert(await evaluate(`document.querySelector('[role="dialog"]').contains(document.activeElement)`),'Focus escaped dialog');
-      await key('Escape',27);await waitForPreview(send,table);
+      await closeWithMotion('escape',table);
       assert(!await evaluate(`Boolean(document.querySelector('[role="dialog"]'))`),'Escape failed');
       if(mobile) {await click('main button[title="Asc"]',true);}
       else {await click('[role="columnheader"]:first-child button');}
@@ -108,16 +113,34 @@ try {
   await send('Page.navigate',{url:'http://127.0.0.1:5175/?gallery=1&motion=connections'});await ready('[data-gallery-ready]');
   await evaluate(`(()=>{const e=[...document.querySelectorAll('button')].find(e=>e.textContent.trim()==='Open dialog');e.dataset.motionTrigger='';e.scrollIntoView({block:'center'});})()`);
   const point=await click('[data-motion-trigger]');
-  const scales=await evaluate(`new Promise(resolve=>{const values=[];let i=0;function frame(){const e=document.querySelector('[role="dialog"]');if(e)values.push(new DOMMatrix(getComputedStyle(e).transform).a);if(++i<30)requestAnimationFrame(frame);else resolve(values);}frame();})`);
-  assert(scales.some(value=>value<0.999)&&Math.abs(scales.at(-1)-1)<0.001,'Dialog scale entrance missing');
+  await assertDialogBounce();
   await ready('[role="dialog"]');
   const origin=await evaluate(`(()=>{const e=document.querySelector('[role="dialog"]'),r=e.getBoundingClientRect(),o=getComputedStyle(e).transformOrigin.split(' ').map(parseFloat);return {ok:Math.abs(o[0]+r.x-${point.x})<1&&Math.abs(o[1]+r.y-${point.y})<1,origin:o,rect:[r.x,r.y,r.width,r.height],click:${JSON.stringify(point)}};})()`);
   assert(origin.ok,'Dialog origin differs from clicked viewport position: '+JSON.stringify(origin));
-  await key('Escape',27);await waitForPreview(send,'[data-gallery-ready]');
+  // Observe the actual close event, rather than starting a timer before CDP dispatch.
+  async function closeWithMotion(action, readySelector='[data-gallery-ready]') {
+    const event=action==='escape'?'keydown':'click';
+    await evaluate(`window.modalExitFrames=new Promise(resolve=>{document.addEventListener('${event}',()=>{const start=performance.now(),frames=[],content=document.querySelector('[role="dialog"]').textContent;function sample(){const d=document.querySelector('[role="dialog"]');if(!d){resolve(frames);return;}frames.push({time:performance.now()-start,opacity:Number(getComputedStyle(d).opacity),scale:new DOMMatrix(getComputedStyle(d).transform).a,sameContent:d.textContent===content});if(performance.now()-start>700){resolve(frames);return;}requestAnimationFrame(sample);}requestAnimationFrame(sample);},{once:true,capture:true});});true`);
+    if(action==='escape') await key('Escape',27);
+    else if(action==='button') await click('[role="dialog"] button[aria-label="Close"]');
+    else {await send('Input.dispatchMouseEvent',{type:'mousePressed',x:10,y:10,button:'left',clickCount:1});await send('Input.dispatchMouseEvent',{type:'mouseReleased',x:10,y:10,button:'left',clickCount:1});}
+    const frames=await evaluate('window.modalExitFrames');
+    assert(frames.some(f=>f.time>=140&&f.time<200&&f.opacity>.01&&f.scale<.99),`Closing motion too brief or absent (${action}): ${JSON.stringify(frames)}`);
+    assert(frames.some(f=>f.opacity>.01&&f.scale<.5),`Closing dialog did not shrink back toward its trigger (${action})`);
+    assert(frames.every(f=>f.sameContent),`Closing content changed before exit finished (${action})`);
+    await waitForPreview(send,readySelector);
+    assert(!await evaluate(`Boolean(document.querySelector('[role="dialog"]'))`),`Dialog remained after closing (${action})`);
+  }
+  for(const action of ['escape','button','overlay']) {
+    if(action!=='escape'){await click('[data-motion-trigger]');await ready('[role="dialog"]');}
+    await closeWithMotion(action);
+  }
   await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
   await click('[data-motion-trigger]');await ready('[role="dialog"]');
   assert(await evaluate(`new DOMMatrix(getComputedStyle(document.querySelector('[role="dialog"]')).transform).a`)===1,'Reduced motion still scales');
-  console.log('Verified small/empty lists, dialog origin, scale and reduced motion');
+  await key('Escape',27);await waitForPreview(send,'[data-gallery-ready]');
+  assert(!await evaluate(`Boolean(document.querySelector('[data-ui-transition=overlay]'))`),'Reduced-motion overlay lingered after closing');
+  console.log('Verified small/empty lists, dialog origin/scale, original spring bounce and shrink-back via Escape/button/overlay and reduced motion');
 } finally {
   ws?.close();
   const exited=new Promise(resolve=>chrome.once('exit',resolve));chrome.kill('SIGTERM');await exited;
