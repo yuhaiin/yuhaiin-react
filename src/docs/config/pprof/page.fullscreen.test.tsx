@@ -44,8 +44,8 @@ function teardown(host: HTMLDivElement, root: Root) {
 afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
-    delete (document as Document & { fullscreenElement?: Element | null }).fullscreenElement;
-    delete (document as Document & { exitFullscreen?: () => Promise<void> }).exitFullscreen;
+    Reflect.deleteProperty(document, "fullscreenElement");
+    Reflect.deleteProperty(document, "exitFullscreen");
 });
 
 it("expands viewer to a viewport overlay and exits with Escape when Fullscreen API is unavailable", async () => {
