@@ -4,8 +4,9 @@ import { Card, CardBody, CardHeader, MainContainer, SettingLabel } from "@/compo
 import { SettingSelectVertical } from "@/component/v2/forms";
 import { Select } from "@/component/v2/select";
 import { Activity, Download, Maximize2, Play, Square, Trash2, TriangleAlert } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { PprofWASMGraph } from "./graph-wasm";
 
 type ProfileKind = "cpu" | "heap" | "allocs" | "goroutine" | "mutex" | "block";
 type CaptureStatus = "running" | "completed" | "failed" | "cancelled";
@@ -88,6 +89,10 @@ export default function PprofPage() {
     const [enabled, setEnabled] = useState(true);
     const [pending, setPending] = useState(false);
     const [expanded, setExpanded] = useState(false);
+    const [graphOpen, setGraphOpen] = useState(false);
+    const [graphQuery, setGraphQuery] = useState("");
+    const [viewerPage, setViewerPage] = useState<"flamegraph" | "top" | "peek">("flamegraph");
+    const iframeRef = useRef<HTMLIFrameElement>(null);
     const [error, setError] = useState<string | null>(null);
 
     const refresh = useCallback(async () => {
@@ -119,8 +124,25 @@ export default function PprofPage() {
 
     const current = useMemo(() => sessions.find(s => s.id === selected), [sessions, selected]);
     const viewer = current?.status === "completed"
-        ? profilerURL(`/debug/profiler/${current.id}/flamegraph`)
+        ? profilerURL("/debug/profiler/" + current.id + "/" + viewerPage + graphQuery)
         : null;
+
+    useEffect(() => {
+        const origin = new URL(profilerURL("/debug/profiler/")).origin;
+        const onMessage = (event: MessageEvent) => {
+            if (event.origin !== origin || event.source !== iframeRef.current?.contentWindow ||
+                !current || current.status !== "completed") return;
+            const message = event.data;
+            if (!message || typeof message !== "object" || message.type !== "yuhaiin:pprof-graph") return;
+            const query = message.query;
+            if (typeof query !== "string" || query.length > 4096 ||
+                (query !== "" && !query.startsWith("?"))) return;
+            setGraphQuery(query);
+            setGraphOpen(true);
+        };
+        window.addEventListener("message", onMessage);
+        return () => window.removeEventListener("message", onMessage);
+    }, [current]);
 
     const changeKind = (next: ProfileKind) => {
         setKind(next);
@@ -135,6 +157,9 @@ export default function PprofPage() {
                 type: kind, seconds,
             });
             setSelected(session.id);
+            setGraphOpen(false);
+            setGraphQuery("");
+            setViewerPage("flamegraph");
             await refresh();
         } catch (e) {
             setError(profilerErrorMessage(e, t("profilerConnectionError")));
@@ -238,7 +263,12 @@ export default function PprofPage() {
                                     label: `${profileNames[session.type]} · ${session.seconds ? `${session.seconds}s` : t("profilerSnapshot")} · ${new Date(session.createdAt).toLocaleTimeString()} (${session.status})`,
                                 }))
                             }
-                            onValueChange={value => setSelected(value || null)}
+                            onValueChange={value => {
+                                setSelected(value || null);
+                                setGraphOpen(false);
+                                setGraphQuery("");
+                                setViewerPage("flamegraph");
+                            }}
                         />
                     </div>
                     {current?.status === "running" && (
@@ -256,8 +286,20 @@ export default function PprofPage() {
                 </div>
 
                 <CardBody className={expanded ? "!p-0 flex min-h-[75vh] flex-1 flex-col" : "!p-0 flex min-h-[500px] flex-1 flex-col"}>
-                    {viewer ? (
-                        <iframe key={current?.id} src={viewer}
+                    {viewer && graphOpen && current ? (
+                        <PprofWASMGraph
+                            key={current.id}
+                            sessionId={current.id}
+                            initialQuery={graphQuery}
+                            makeURL={profilerURL}
+                            onNavigate={(nextView, query) => {
+                                setViewerPage(nextView);
+                                setGraphQuery(query);
+                                setGraphOpen(false);
+                            }}
+                        />
+                    ) : viewer ? (
+                        <iframe ref={iframeRef} key={current?.id} src={viewer}
                             title={t("profilerTitle")} referrerPolicy="no-referrer"
                             sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
                             className="min-h-[500px] w-full flex-1 border-0 bg-white"
