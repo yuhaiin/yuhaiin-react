@@ -176,12 +176,13 @@ export default function PprofPage() {
                         </div>
                         {current?.status === "completed" && (
                             <div className="flex items-center gap-1">
-                                <a href={profilerURL(`/debug/profiler/${current.id}/download`)} download
-                                    referrerPolicy="no-referrer"
-                                    className="inline-flex h-9 w-9 items-center justify-center rounded-ui-sm border border-ui-border"
-                                    title={t("profilerDownload")} aria-label={t("profilerDownload")}>
-                                    <Download size={16} />
-                                </a>
+                                <Button variant="outline-secondary" size="icon" asChild>
+                                    <a href={profilerURL(`/debug/profiler/${current.id}/download`)} download
+                                        referrerPolicy="no-referrer"
+                                        title={t("profilerDownload")} aria-label={t("profilerDownload")}>
+                                        <Download size={16} />
+                                    </a>
+                                </Button>
                                 <Button variant="outline-secondary" size="icon"
                                     title={t("profilerExpand")} aria-label={t("profilerExpand")}
                                     onClick={() => setExpanded(v => !v)}>
