@@ -1,7 +1,9 @@
 import { AuthTokenKey, getApiUrl } from "@/common/apiurl";
 import { Button } from "@/component/v2/button";
-import { Card, CardBody, CardHeader, MainContainer } from "@/component/v2/card";
-import { Activity, Download, Maximize2, Play, Square, Trash2 } from "lucide-react";
+import { Card, CardBody, CardHeader, MainContainer, SettingLabel } from "@/component/v2/card";
+import { SettingSelectVertical } from "@/component/v2/forms";
+import { Select } from "@/component/v2/select";
+import { Activity, Download, Maximize2, Play, Square, Trash2, TriangleAlert } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -25,6 +27,21 @@ type SessionList = {
 };
 
 const types: ProfileKind[] = ["cpu", "heap", "allocs", "goroutine", "mutex", "block"];
+const profileNames: Record<ProfileKind, string> = {
+    cpu: "CPU",
+    heap: "Heap",
+    allocs: "Allocations",
+    goroutine: "Goroutine",
+    mutex: "Mutex",
+    block: "Block",
+};
+const profileOptions: [string, string][] = types.map(type => [profileNames[type], type]);
+
+function profilerErrorMessage(error: unknown, networkMessage: string): string {
+    if (error instanceof TypeError) return networkMessage;
+    if (error instanceof Error) return error.message;
+    return String(error);
+}
 const descriptions: Record<ProfileKind, string> = {
     cpu: "profilerCpuDescription",
     heap: "profilerHeapDescription",
@@ -86,19 +103,19 @@ export default function PprofPage() {
     useEffect(() => {
         // Defer the initial fetch so state updates never cascade from this effect.
         const timer = window.setTimeout(() => {
-            void refresh().catch(e => setError(String(e)));
+            void refresh().catch(e => setError(profilerErrorMessage(e, t("profilerConnectionError"))));
         }, 0);
         return () => window.clearTimeout(timer);
-    }, [refresh]);
+    }, [refresh, t]);
 
     const hasRunning = sessions.some(item => item.status === "running");
     useEffect(() => {
         if (!hasRunning) return;
         const poll = window.setInterval(() => {
-            void refresh().catch(e => setError(String(e)));
+            void refresh().catch(e => setError(profilerErrorMessage(e, t("profilerConnectionError"))));
         }, 1000);
         return () => window.clearInterval(poll);
-    }, [hasRunning, refresh]);
+    }, [hasRunning, refresh, t]);
 
     const current = useMemo(() => sessions.find(s => s.id === selected), [sessions, selected]);
     const viewer = current?.status === "completed"
@@ -120,7 +137,7 @@ export default function PprofPage() {
             setSelected(session.id);
             await refresh();
         } catch (e) {
-            setError(String(e));
+            setError(profilerErrorMessage(e, t("profilerConnectionError")));
         } finally {
             setPending(false);
         }
@@ -133,7 +150,7 @@ export default function PprofPage() {
             await profilerRequest<void>("DELETE", `/api/v2/profiler/sessions/${id}`);
             await refresh();
         } catch (e) {
-            setError(String(e));
+            setError(profilerErrorMessage(e, t("profilerConnectionError")));
         } finally {
             setPending(false);
         }
@@ -142,12 +159,16 @@ export default function PprofPage() {
     const isSnapshot = seconds === 0;
     const canSnapshot = kind === "heap" || kind === "allocs" || kind === "goroutine";
     const canInterval = kind !== "goroutine";
+    const durationOptions: [string, string][] = [
+        ...(canSnapshot ? [[t("profilerSnapshot"), "0"] as [string, string]] : []),
+        ...(canInterval ? [10, 30, 60].map(n => [`${n}s`, String(n)] as [string, string]) : []),
+    ];
     const waiting = current?.status === "running";
 
     return (
         <MainContainer className="flex h-full min-h-0 flex-col">
             <Card noMargin className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                <CardHeader className="shrink-0 !px-3 py-3 sm:!px-4">
+                <CardHeader className="!block shrink-0 space-y-4 !px-4 !py-4 sm:!px-5">
                     <div className="flex w-full flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                             <Activity size={20} className="text-ui-muted" />
@@ -170,46 +191,55 @@ export default function PprofPage() {
                         )}
                     </div>
 
-                    <div className="grid w-full grid-cols-1 items-end gap-3 sm:grid-cols-[minmax(150px,1fr)_minmax(140px,1fr)_auto]">
-                        <label className="flex min-w-0 flex-col gap-1 text-xs text-ui-muted">
-                            {t("profilerType")}
-                            <select value={kind} onChange={e => changeKind(e.target.value as ProfileKind)}
-                                className="h-10 w-full rounded-ui-sm border border-ui-border bg-ui-surface px-3 text-sm text-ui-fg">
-                                {types.map(value => <option key={value} value={value}>{value === "allocs" ? "Allocations" : value[0].toUpperCase() + value.slice(1)}</option>)}
-                            </select>
-                        </label>
-                        <label className="flex min-w-0 flex-col gap-1 text-xs text-ui-muted">
-                            {t("profilerDuration")}
-                            <select value={seconds} onChange={e => setSeconds(Number(e.target.value))}
-                                className="h-10 w-full rounded-ui-sm border border-ui-border bg-ui-surface px-3 text-sm text-ui-fg">
-                                {canSnapshot && <option value={0}>{t("profilerSnapshot")}</option>}
-                                {canInterval && [10, 30, 60].map(n => <option key={n} value={n}>{n}s</option>)}
-                            </select>
-                        </label>
-                        <Button variant="primary" className="h-10" loading={pending}
+                    <div className="grid w-full grid-cols-1 items-end gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(200px,320px)_minmax(180px,240px)_auto]">
+                        <SettingSelectVertical
+                            className="!mb-0 min-w-0"
+                            label={t("profilerType")}
+                            value={kind}
+                            values={profileOptions}
+                            onChange={value => changeKind(value as ProfileKind)}
+                        />
+                        <SettingSelectVertical
+                            className="!mb-0 min-w-0"
+                            label={t("profilerDuration")}
+                            value={String(seconds)}
+                            values={durationOptions}
+                            onChange={value => setSeconds(Number(value))}
+                        />
+                        <Button variant="primary" className="h-field w-full justify-center sm:col-span-2 lg:col-span-1 lg:min-w-[150px]"
+                            loading={pending}
                             disabled={!enabled || pending || (kind === "cpu" && sessions.some(s => s.type === "cpu" && s.status === "running"))}
                             onClick={() => void capture()}>
                             <Play size={16} />{t("profilerCapture")}
                         </Button>
                     </div>
-                    <p className="w-full text-xs text-ui-muted">
-                        {t(descriptions[kind])} {isSnapshot ? t("profilerSnapshot") : `${seconds}s`}
+                    <p className="text-xs text-ui-muted">
+                        {t(descriptions[kind])} · {isSnapshot ? t("profilerSnapshot") : `${seconds}s`}
                     </p>
-                    {error && <p role="alert" className="w-full text-sm text-ui-danger">{error}</p>}
+                    {error && <div role="alert" className="flex items-start gap-2 rounded-ui-md border border-ui-danger/30 bg-ui-danger-soft px-3 py-2 text-sm text-ui-danger">
+                        <TriangleAlert size={16} className="mt-0.5 shrink-0" /><span>{error}</span>
+                    </div>}
                     {!enabled && <p role="status" className="w-full text-sm text-ui-danger">{t("profilerDisabled")}</p>}
                 </CardHeader>
 
-                <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-ui-border px-3 py-2 sm:px-4">
-                    <label htmlFor="profiler-history" className="text-xs text-ui-muted">{t("profilerRecent")}</label>
-                    <select id="profiler-history" className="h-9 min-w-0 flex-1 rounded-ui-sm border border-ui-border bg-ui-surface px-2 text-sm"
-                        value={selected ?? ""} onChange={e => setSelected(e.target.value || null)}>
-                        {sessions.length === 0 && <option value="">{t("profilerEmpty")}</option>}
-                        {sessions.map(s => (
-                            <option key={s.id} value={s.id}>
-                                {s.type.toUpperCase()} · {s.seconds ? `${s.seconds}s` : t("profilerSnapshot")} · {new Date(s.createdAt).toLocaleTimeString()} ({s.status})
-                            </option>
-                        ))}
-                    </select>
+                <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-ui-border px-4 py-3 sm:px-5">
+                    <SettingLabel className="shrink-0">{t("profilerRecent")}</SettingLabel>
+                    <div className="min-w-0 flex-1 basis-[220px] sm:max-w-[520px]">
+                        <Select
+                            size="sm"
+                            ariaLabel={t("profilerRecent")}
+                            value={selected ?? ""}
+                            disabled={sessions.length === 0}
+                            items={sessions.length === 0
+                                ? [{ value: "", label: t("profilerNoSessions") }]
+                                : sessions.map(session => ({
+                                    value: session.id,
+                                    label: `${profileNames[session.type]} · ${session.seconds ? `${session.seconds}s` : t("profilerSnapshot")} · ${new Date(session.createdAt).toLocaleTimeString()} (${session.status})`,
+                                }))
+                            }
+                            onValueChange={value => setSelected(value || null)}
+                        />
+                    </div>
                     {current?.status === "running" && (
                         <Button size="sm" variant="outline-danger" disabled={pending} onClick={() => void remove(current.id)}>
                             <Square size={14} />{t("profilerCancel")}
