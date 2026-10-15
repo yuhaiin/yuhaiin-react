@@ -1,7 +1,11 @@
 import { Button } from "@/component/v2/button";
 import { Input } from "@/component/v2/input";
 import { ChevronLeft, Minus, Plus, RotateCcw } from "lucide-react";
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent, type WheelEvent } from "react";
+import {
+    INITIAL_GRAPH_VIEW, graphPointDistance, graphPointMiddle, panGraph,
+    prepareProfilerDOT, zoomGraph, type GraphPoint, type GraphViewport,
+} from "./graph-viewport";
 import { useTranslation } from "react-i18next";
 
 // Lazily loaded, locally bundled by Vite. No CDN or system Graphviz process.
@@ -10,7 +14,7 @@ function layoutDOT(dot: string): Promise<string> {
     rendererPromise ??= import("@hpcc-js/wasm-graphviz")
         .then(async ({ Graphviz }) => {
             const graphviz = await Graphviz.load();
-            return (source: string) => graphviz.layout(source, "svg", "dot");
+            return (source: string) => graphviz.layout(prepareProfilerDOT(source), "svg", "dot");
         })
         .catch(error => {
             rendererPromise = undefined;
@@ -39,12 +43,21 @@ function parseSafeSVG(svgSource: string): SVGSVGElement {
             }
         }
     }
-    svg.removeAttribute("width");
-    svg.removeAttribute("height");
+    // Keep Graphviz's native viewBox size. The previous min-width fallback
+    // shrank large graphs to 640px, turning readable text into tiny letters.
+    const rawWidth = svg.getAttribute("width") || "";
+    const rawHeight = svg.getAttribute("height") || "";
+    const vb = (svg.getAttribute("viewBox") || "").trim().split(/[ ,]+/).map(Number);
+    const width = parseFloat(rawWidth) * (rawWidth.endsWith("pt") ? 4 / 3 : 1);
+    const height = parseFloat(rawHeight) * (rawHeight.endsWith("pt") ? 4 / 3 : 1);
+    const intrinsicWidth = Number.isFinite(width) && width > 0 ? width : (vb[2] || 800) * 4 / 3;
+    const intrinsicHeight = Number.isFinite(height) && height > 0 ? height : (vb[3] || 600) * 4 / 3;
+    svg.setAttribute("width", String(intrinsicWidth));
+    svg.setAttribute("height", String(intrinsicHeight));
+    svg.style.display = "block";
     svg.style.maxWidth = "none";
-    svg.style.height = "auto";
-    svg.style.minWidth = "640px";
-    return svg as SVGSVGElement;
+    svg.style.userSelect = "none";
+    return svg;
 }
 
 interface GraphProps {
@@ -64,8 +77,23 @@ export function PprofWASMGraph({ sessionId, initialQuery, makeURL, onNavigate }:
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [svg, setSVG] = useState("");
-    const [zoom, setZoom] = useState(1);
+    const [view, setView] = useState<GraphViewport>(INITIAL_GRAPH_VIEW);
+    const viewRef = useRef<GraphViewport>(INITIAL_GRAPH_VIEW);
     const svgHost = useRef<HTMLDivElement>(null);
+    const viewportRef = useRef<HTMLDivElement>(null);
+    const pointersRef = useRef(new Map<number, GraphPoint>());
+    const dragDistanceRef = useRef(0);
+    const pointerNodeRef = useRef<Element | null>(null);
+
+    const updateView = (next: GraphViewport) => {
+        viewRef.current = next;
+        setView(next);
+    };
+    const zoomBy = (factor: number) => {
+        const box = viewportRef.current?.getBoundingClientRect();
+        const anchor = { x: (box?.width ?? 600) / 2, y: (box?.height ?? 400) / 2 };
+        updateView(zoomGraph(viewRef.current, factor, anchor));
+    };
 
     useEffect(() => {
         const controller = new AbortController();
@@ -124,18 +152,85 @@ export function PprofWASMGraph({ sessionId, initialQuery, makeURL, onNavigate }:
         setLoading(true);
         setQuery(next ? "?" + next : "");
     };
-    const handleNode = (event: MouseEvent<HTMLDivElement>) => {
-        const target = event.target;
-        if (!(target instanceof Element)) return;
-        const node = target.closest("g.node");
-        if (!node) return;
-        const firstLine = node.querySelector("text")?.textContent?.trim();
-        if (firstLine) setFocus(firstLine);
+    const pointInViewport = (event: { clientX: number; clientY: number }): GraphPoint => {
+        const rect = viewportRef.current!.getBoundingClientRect();
+        return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    };
+    const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+        if (event.pointerType === "mouse" && event.button !== 0) return;
+        const pointers = pointersRef.current;
+        pointers.set(event.pointerId, pointInViewport(event));
+        if (pointers.size === 1) {
+            dragDistanceRef.current = 0;
+            pointerNodeRef.current = event.target instanceof Element
+                ? event.target.closest("g.node") : null;
+        } else {
+            dragDistanceRef.current = Infinity;
+            pointerNodeRef.current = null;
+        }
+        event.currentTarget.setPointerCapture(event.pointerId);
+    };
+    const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+        const pointers = pointersRef.current;
+        const previous = pointers.get(event.pointerId);
+        if (!previous) return;
+        const next = pointInViewport(event);
+        if (pointers.size === 1) {
+            const dx = next.x - previous.x;
+            const dy = next.y - previous.y;
+            dragDistanceRef.current += Math.hypot(dx, dy);
+            if (dx || dy) updateView(panGraph(viewRef.current, dx, dy));
+        } else if (pointers.size === 2) {
+            const before = [...pointers.values()];
+            pointers.set(event.pointerId, next);
+            const after = [...pointers.values()];
+            const distance = graphPointDistance(before[0], before[1]);
+            if (distance > 1) {
+                updateView(zoomGraph(
+                    viewRef.current,
+                    graphPointDistance(after[0], after[1]) / distance,
+                    graphPointMiddle(before[0], before[1]),
+                    graphPointMiddle(after[0], after[1]),
+                ));
+            }
+            return;
+        }
+        pointers.set(event.pointerId, next);
+    };
+    const onPointerUp = (event: PointerEvent<HTMLDivElement>) => {
+        const pointers = pointersRef.current;
+        const isClick = pointers.size === 1 && dragDistanceRef.current < 6;
+        pointers.delete(event.pointerId);
+        if (isClick && pointerNodeRef.current) {
+            const name = pointerNodeRef.current.querySelector("text")?.textContent?.trim();
+            if (name) setFocus(name);
+        }
+        pointerNodeRef.current = null;
+        if (pointers.size) dragDistanceRef.current = Infinity;
+    };
+    const onPointerCancel = (event: PointerEvent<HTMLDivElement>) => {
+        pointersRef.current.delete(event.pointerId);
+        pointerNodeRef.current = null;
+        dragDistanceRef.current = Infinity;
+    };
+    const onWheel = (event: WheelEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        const rect = event.currentTarget.getBoundingClientRect();
+        const cursor = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+        // Trackpad pinch emits ctrl+wheel. Ordinary two-finger scrolling pans;
+        // a mouse wheel zooms around the pointer position.
+        if (!event.ctrlKey && !event.metaKey && (Math.abs(event.deltaX) > 0 ||
+            (event.deltaMode === 0 && Math.abs(event.deltaY) < 10))) {
+            updateView(panGraph(viewRef.current, -event.deltaX, -event.deltaY));
+        } else {
+            const factor = Math.exp(-event.deltaY * (event.deltaMode === 1 ? 0.04 : 0.002));
+            updateView(zoomGraph(viewRef.current, factor, cursor));
+        }
     };
 
     return (
-        <section className="flex h-full min-h-[500px] flex-col bg-ui-surface text-ui-fg" aria-label={t("profilerGraph")}>
-            <div className="flex flex-wrap items-center gap-2 border-b border-ui-border px-4 py-3">
+        <section className="flex h-full w-full min-w-0 min-h-[360px] flex-col overflow-hidden bg-ui-surface text-ui-fg" aria-label={t("profilerGraph")}>
+            <div className="flex flex-wrap items-center gap-2 border-b border-ui-border px-3 py-2 sm:px-4 sm:py-3">
                 <Button variant="outline-secondary" size="sm" onClick={() => onNavigate("flamegraph", query)}>
                     <ChevronLeft size={15} />{t("profilerGraphBack")}
                 </Button>
@@ -143,37 +238,45 @@ export function PprofWASMGraph({ sessionId, initialQuery, makeURL, onNavigate }:
                 <Button variant="outline-secondary" size="sm" onClick={() => onNavigate("peek", query)}>Peek</Button>
                 <strong className="ml-auto text-sm text-ui-heading">{t("profilerGraph")}</strong>
             </div>
-            <form className="flex flex-wrap items-end gap-3 border-b border-ui-border px-4 py-3"
+            <form className="flex flex-wrap items-end gap-2 border-b border-ui-border px-3 py-2 sm:gap-3 sm:px-4 sm:py-3"
                 onSubmit={event => { event.preventDefault(); applyFilters(); }}>
-                <label className="min-w-[160px] flex-1 text-xs text-ui-muted">
+                <label className="min-w-[135px] flex-1 text-xs text-ui-muted">
                     {t("profilerGraphFocus")}
                     <Input size="sm" className="mt-1" value={focus} onChange={event => setFocus(event.target.value)} />
                 </label>
-                <label className="min-w-[160px] flex-1 text-xs text-ui-muted">
+                <label className="min-w-[135px] flex-1 text-xs text-ui-muted">
                     {t("profilerGraphIgnore")}
                     <Input size="sm" className="mt-1" value={ignore} onChange={event => setIgnore(event.target.value)} />
                 </label>
-                <label className="w-28 text-xs text-ui-muted">
+                <label className="w-24 sm:w-28 text-xs text-ui-muted">
                     {t("profilerGraphNodes")}
                     <Input size="sm" type="number" min="0" max="500" className="mt-1"
                         value={nodeCount} onChange={event => setNodeCount(event.target.value)} />
                 </label>
                 <Button variant="primary" size="sm" type="submit" disabled={loading}>{t("profilerGraphApply")}</Button>
             </form>
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ui-border px-4 py-2 text-xs text-ui-muted">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ui-border px-3 py-2 sm:px-4 text-xs text-ui-muted">
                 <span>{t("profilerGraphHint")}</span>
                 <div className="flex items-center gap-1">
-                    <Button variant="outline-secondary" size="icon" title={t("profilerGraphZoomOut")} onClick={() => setZoom(v => Math.max(0.2, v / 1.25))}><Minus size={15}/></Button>
-                    <span className="w-14 text-center">{Math.round(zoom * 100)}%</span>
-                    <Button variant="outline-secondary" size="icon" title={t("profilerGraphZoomIn")} onClick={() => setZoom(v => Math.min(5, v * 1.25))}><Plus size={15}/></Button>
-                    <Button variant="outline-secondary" size="icon" title={t("profilerGraphZoomReset")} onClick={() => setZoom(1)}><RotateCcw size={15}/></Button>
+                    <Button variant="outline-secondary" size="icon" title={t("profilerGraphZoomOut")} onClick={() => zoomBy(1 / 1.25)}><Minus size={15}/></Button>
+                    <span className="w-14 text-center">{Math.round(view.scale * 100)}%</span>
+                    <Button variant="outline-secondary" size="icon" title={t("profilerGraphZoomIn")} onClick={() => zoomBy(1.25)}><Plus size={15}/></Button>
+                    <Button variant="outline-secondary" size="icon" title={t("profilerGraphZoomReset")} onClick={() => updateView(INITIAL_GRAPH_VIEW)}><RotateCcw size={15}/></Button>
                 </div>
             </div>
-            <div className="relative min-h-[420px] flex-1 overflow-auto bg-white p-5 text-slate-900">
+            <div ref={viewportRef}
+                className="relative min-h-[320px] flex-1 overflow-hidden bg-white text-slate-900 select-none"
+                style={{ touchAction: "none", cursor: pointersRef.current.size ? "grabbing" : "grab" }}
+                onPointerDown={onPointerDown} onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp} onPointerCancel={onPointerCancel}
+                onWheel={onWheel}
+                aria-label={t("profilerGraph")}>
                 {loading && <div className="absolute inset-x-0 top-3 z-10 text-center text-sm text-slate-700" role="status">{t("profilerGraphRendering")}</div>}
-                {error && <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-                <div style={{ transform: "scale(" + zoom + ")", transformOrigin: "top left", width: "max-content" }}
-                    onClick={handleNode} ref={svgHost} aria-label={t("profilerGraph")}/>
+                {error && <p role="alert" className="absolute inset-x-3 top-3 z-10 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+                <div ref={svgHost}
+                    className="absolute left-0 top-0"
+                    style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})`,
+                        transformOrigin: "0 0", willChange: "transform" }} />
             </div>
         </section>
     );
