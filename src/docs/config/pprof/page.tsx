@@ -3,7 +3,7 @@ import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardHeader, MainContainer, SettingLabel } from "@/component/v2/card";
 import { SettingSelectVertical } from "@/component/v2/forms";
 import { Select } from "@/component/v2/select";
-import { Activity, Download, Maximize2, Play, Square, Trash2, TriangleAlert } from "lucide-react";
+import { Activity, Download, Maximize2, Minimize2, Play, Square, Trash2, TriangleAlert } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PprofWASMGraph } from "./graph-wasm";
@@ -93,6 +93,7 @@ export default function PprofPage() {
     const [graphQuery, setGraphQuery] = useState("");
     const [viewerPage, setViewerPage] = useState<"flamegraph" | "top" | "peek">("flamegraph");
     const iframeRef = useRef<HTMLIFrameElement>(null);
+    const viewerPanelRef = useRef<HTMLDivElement>(null);
     const [error, setError] = useState<string | null>(null);
 
     const refresh = useCallback(async () => {
@@ -190,6 +191,53 @@ export default function PprofPage() {
     ];
     const waiting = current?.status === "running";
 
+    const enterFullscreen = () => {
+        const panel = viewerPanelRef.current;
+        if (!panel) return;
+        // The CSS overlay remains available on iOS Safari or when the browser
+        // denies requestFullscreen (for example, inside an embedded webview).
+        setExpanded(true);
+        if (typeof panel.requestFullscreen === "function") {
+            void panel.requestFullscreen().catch(() => {});
+        }
+    };
+
+    const exitFullscreen = () => {
+        setExpanded(false);
+        if (document.fullscreenElement === viewerPanelRef.current) {
+            void document.exitFullscreen().catch(() => {});
+        }
+    };
+
+    useEffect(() => {
+        if (!expanded) return;
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key !== "Escape") return;
+            setExpanded(false);
+            if (document.fullscreenElement === viewerPanelRef.current) {
+                void document.exitFullscreen().catch(() => {});
+            }
+        };
+        const onFullscreenChange = () => {
+            // The browser can also exit native fullscreen via Escape or its UI.
+            if (document.fullscreenElement !== viewerPanelRef.current) {
+                setExpanded(false);
+            }
+        };
+        document.addEventListener("keydown", onKeyDown);
+        document.addEventListener("fullscreenchange", onFullscreenChange);
+        return () => {
+            document.removeEventListener("keydown", onKeyDown);
+            document.removeEventListener("fullscreenchange", onFullscreenChange);
+            document.body.style.overflow = previousOverflow;
+            if (document.fullscreenElement === viewerPanelRef.current) {
+                void document.exitFullscreen().catch(() => {});
+            }
+        };
+    }, [expanded]);
+
     return (
         <MainContainer className="flex h-full min-h-0 flex-col max-sm:h-auto max-sm:min-h-full">
             <Card noMargin className="flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden max-sm:overflow-visible">
@@ -210,7 +258,7 @@ export default function PprofPage() {
                                 </Button>
                                 <Button variant="outline-secondary" size="icon"
                                     title={t("profilerExpand")} aria-label={t("profilerExpand")}
-                                    onClick={() => setExpanded(v => !v)}>
+                                    onClick={enterFullscreen}>
                                     <Maximize2 size={16} />
                                 </Button>
                             </div>
@@ -285,8 +333,21 @@ export default function PprofPage() {
                     )}
                 </div>
 
-                <CardBody className={expanded ? "!p-0 flex min-w-0 min-h-[75dvh] flex-1 flex-col" : "!p-0 flex min-w-0 min-h-[500px] flex-1 flex-col max-sm:min-h-[65dvh]"}>
-                    {viewer && graphOpen && current ? (
+                <CardBody className="!p-0 flex min-w-0 min-h-[500px] flex-1 flex-col max-sm:min-h-[65dvh]">
+                    <div ref={viewerPanelRef} data-testid="profiler-viewer-panel"
+                        className={expanded
+                            ? "fixed inset-0 z-[200] flex h-[100dvh] w-screen min-h-0 flex-col overflow-hidden bg-ui-surface"
+                            : "flex min-h-0 min-w-0 flex-1 flex-col bg-ui-surface"}>
+                        {expanded && (
+                            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-ui-border bg-ui-surface px-3 py-2 sm:px-4">
+                                <span className="min-w-0 truncate text-sm font-semibold text-ui-heading">{t("profilerTitle")}</span>
+                                <Button variant="outline-secondary" size="sm" onClick={exitFullscreen}
+                                    title={t("profilerExitFullscreen")} aria-label={t("profilerExitFullscreen")}>
+                                    <Minimize2 size={16} />{t("profilerExitFullscreen")}
+                                </Button>
+                            </div>
+                        )}
+                        {viewer && graphOpen && current ? (
                         <PprofWASMGraph
                             key={current.id}
                             sessionId={current.id}
@@ -302,7 +363,9 @@ export default function PprofPage() {
                         <iframe ref={iframeRef} key={current?.id} src={viewer}
                             title={t("profilerTitle")} referrerPolicy="no-referrer"
                             sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
-                            className="min-h-[500px] w-full min-w-0 flex-1 border-0 bg-white max-sm:min-h-[65dvh]"
+                            className={expanded
+                                ? "h-full min-h-0 w-full min-w-0 flex-1 border-0 bg-white"
+                                : "min-h-[500px] w-full min-w-0 flex-1 border-0 bg-white max-sm:min-h-[65dvh]"}
                             style={{ colorScheme: "light" }} />
                     ) : (
                         <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center text-sm text-ui-muted">
@@ -310,7 +373,8 @@ export default function PprofPage() {
                             <span>{waiting ? t("profilerRunning") : current?.error || t("profilerEmpty")}</span>
                             {waiting && <span>{t("profilerRunningHint")}</span>}
                         </div>
-                    )}
+                        )}
+                    </div>
                 </CardBody>
             </Card>
         </MainContainer>
