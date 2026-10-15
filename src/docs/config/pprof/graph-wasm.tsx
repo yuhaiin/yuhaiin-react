@@ -1,7 +1,7 @@
 import { Button } from "@/component/v2/button";
 import { Input } from "@/component/v2/input";
 import { ChevronLeft, Minus, Plus, RotateCcw } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 // Lazily loaded, locally bundled by Vite. No CDN or system Graphviz process.
@@ -23,7 +23,7 @@ function layoutDOT(dot: string): Promise<string> {
 // those strings without removing active content, external references and URLs.
 function parseSafeSVG(svgSource: string): SVGSVGElement {
     const doc = new DOMParser().parseFromString(svgSource, "image/svg+xml");
-    const svg = doc.documentElement;
+    const svg = doc.documentElement as SVGSVGElement;
     if (svg.localName !== "svg" || svg.namespaceURI !== "http://www.w3.org/2000/svg") {
         throw new Error("Invalid SVG returned by Graphviz");
     }
@@ -120,7 +120,7 @@ export function PprofWASMGraph({ sessionId, initialQuery, makeURL, onNavigate }:
         setLoading(true);
         setQuery(next ? "?" + next : "");
     };
-    const handleNode = (event: React.MouseEvent<HTMLDivElement>) => {
+    const handleNode = (event: MouseEvent<HTMLDivElement>) => {
         const target = event.target;
         if (!(target instanceof Element)) return;
         const node = target.closest("g.node");
