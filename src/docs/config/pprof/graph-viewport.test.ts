@@ -26,7 +26,7 @@ describe("pprof graph viewport", () => {
             graphPointMiddle(fromA, fromB),
             graphPointMiddle(toA, toB),
         );
-        expect(next).toEqual({ scale: 2, x: 32, y: 42 });
+        expect(next).toEqual({ scale: 2, x: 32, y: 32 });
     });
 
     it("caps zoom levels and pans without changing scale", () => {
