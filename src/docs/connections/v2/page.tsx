@@ -164,27 +164,22 @@ function Connections() {
                 onHide={() => setNodeModal({ show: false })}
             />
 
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                <div className="min-w-0">
-                    <h1 className="sr-only mt-1 text-2xl font-semibold leading-tight text-ui-heading lg:not-sr-only">{uiT("activeConnections")}</h1>
-                </div>
-                <div className="ml-auto flex items-center gap-3">
-                    <span className="flex items-baseline gap-2 text-xs text-ui-muted"><span className="font-mono text-sm font-medium tabular-nums text-ui-heading">{sorted.length}</span>{uiT("active")}</span>
-                    <Button onClick={() => { setStreamError(""); setStreamNonce(value => value + 1); }} size="sm" className="max-md:min-h-11 max-md:min-w-11" variant="outline-secondary" aria-label={uiT("refreshConnections")}>
-                        <RefreshCw size={14} /><span className="hidden sm:inline">{uiT("refresh")}</span>
-                    </Button>
-                </div>
+            <div className="mb-3 flex shrink-0 items-center gap-2 md:gap-3">
+                <h1 className="sr-only mt-1 text-2xl font-semibold leading-tight text-ui-heading lg:not-sr-only lg:mr-auto">{uiT("activeConnections")}</h1>
+                <span className="flex shrink-0 items-baseline gap-1 text-xs text-ui-muted md:ml-auto"><span className="font-mono text-sm font-medium tabular-nums text-ui-heading">{sorted.length}</span>{uiT("active")}</span>
+                <MobileConnectionSort sortBy={sortBy} sortOrder={sortOrder} onFieldChange={setSortBy} onOrderChange={() => setSortOrder(order => order === 'asc' ? 'desc' : 'asc')} />
+                <Button onClick={() => { setStreamError(""); setStreamNonce(value => value + 1); }} size="sm" className="shrink-0 max-md:min-h-11 max-md:min-w-11" variant="outline-secondary" aria-label={uiT("refreshConnections")}>
+                    <RefreshCw size={14} /><span className="hidden md:inline">{uiT("refresh")}</span>
+                </Button>
             </div>
 
-            <FlowContainer onUpdate={setCounters} variant="summary" />
+            <FlowContainer onUpdate={setCounters} variant="summary" compact />
 
             {streamError && (
                 <div className="mb-3 rounded-ui-lg border border-ui-warning/40 bg-ui-warning/10 px-4 py-3 text-sm text-ui-warning">
                     {streamError}
                 </div>
             )}
-
-            <MobileConnectionSort sortBy={sortBy} sortOrder={sortOrder} onFieldChange={setSortBy} onOrderChange={() => setSortOrder(order => order === 'asc' ? 'desc' : 'asc')} />
 
             <section role="table" aria-label={uiT("activeConnections")} aria-rowcount={sorted.length + (isMobile ? 0 : 1)} className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-ui-lg border border-ui-border bg-ui-surface">
                 <ConnectionTableHeader sortBy={sortBy} sortOrder={sortOrder} onSort={changeSort} />
