@@ -660,5 +660,12 @@
   "profilerGraphZoomIn": "Zoom in",
   "profilerGraphZoomReset": "Reset zoom",
   "profilerGraphRendering": "Building graph in browser…",
-  "profilerExitFullscreen": "Exit fullscreen"
+  "profilerExitFullscreen": "Exit fullscreen",
+  "tunStack": "TCP/IP stack",
+  "tunStackLegacy": "Existing (gVisor / tun2socket)",
+  "tunStackLightweight": "Lightweight (experimental)",
+  "tunStackExperimentalWarning": "Experimental: requires a backend with lightweight TUN support (PR #544). Not yet fully validated on macOS, Windows or mobile; Linux offload is not available. Leave the existing stack selected for production use.",
+  "tunStackDriverHint": "Lightweight currently requires the channel driver; selecting it switches the driver to channel.",
+  "tunCongestionControl": "Congestion control",
+  "tunCongestionControlHint": "CUBIC is the lightweight default. Reno, CUBIC and BBR apply to new TCP connections; this does not change existing VPN outbounds."
 }

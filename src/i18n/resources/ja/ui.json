@@ -660,5 +660,12 @@
   "profilerGraphZoomIn": "拡大",
   "profilerGraphZoomReset": "倍率をリセット",
   "profilerGraphRendering": "ブラウザーでグラフを生成中…",
-  "profilerExitFullscreen": "全画面表示を終了"
+  "profilerExitFullscreen": "全画面表示を終了",
+  "tunStack": "TCP/IP スタック",
+  "tunStackLegacy": "既存（gVisor / tun2socket）",
+  "tunStackLightweight": "軽量スタック（実験的）",
+  "tunStackExperimentalWarning": "実験的機能：軽量 TUN 対応バックエンド（PR #544）が必要です。macOS・Windows・モバイルでの動作検証は未完了で、Linux オフロードにも非対応です。本番環境では既存スタックを使用してください。",
+  "tunStackDriverHint": "軽量スタックは現在 channel ドライバー専用です。選択するとドライバーを channel に切り替えます。",
+  "tunCongestionControl": "輻輳制御",
+  "tunCongestionControlHint": "軽量スタックの既定は CUBIC です。Reno・CUBIC・BBR は新規 TCP 接続に適用され、既存の VPN アウトバウンドは変更されません。"
 }

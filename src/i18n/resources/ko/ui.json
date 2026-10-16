@@ -660,5 +660,12 @@
   "profilerGraphZoomIn": "확대",
   "profilerGraphZoomReset": "배율 초기화",
   "profilerGraphRendering": "브라우저에서 그래프 생성 중…",
-  "profilerExitFullscreen": "전체 화면 종료"
+  "profilerExitFullscreen": "전체 화면 종료",
+  "tunStack": "TCP/IP 스택",
+  "tunStackLegacy": "기존 (gVisor / tun2socket)",
+  "tunStackLightweight": "경량 스택 (실험적)",
+  "tunStackExperimentalWarning": "실험적 기능: 경량 TUN을 지원하는 백엔드(PR #544)가 필요합니다. macOS, Windows 및 모바일 환경의 실행 검증은 완료되지 않았으며 Linux 오프로드도 지원하지 않습니다. 운영 환경에서는 기존 스택을 사용하세요.",
+  "tunStackDriverHint": "현재 경량 스택은 channel 드라이버만 지원합니다. 선택하면 드라이버가 channel로 변경됩니다.",
+  "tunCongestionControl": "혼잡 제어",
+  "tunCongestionControlHint": "경량 스택의 기본값은 CUBIC입니다. Reno, CUBIC, BBR은 새 TCP 연결에 적용되며 기존 VPN 아웃바운드에는 영향을 주지 않습니다."
 }

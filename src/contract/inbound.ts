@@ -128,6 +128,15 @@ export function createDefaultTransport(type: InboundTransport["type"] = "normal"
     }
 }
 
+// The backend accepts the lightweight stack only with the channel device driver.
+// Keep an omitted stack as the legacy default, including in serialized configurations.
+export function selectTunStack(value: TunProtocol, stack: "" | "lightweight", legacyDriver?: string): TunProtocol {
+    if (stack === "lightweight") {
+        return { ...value, stack, driver: "channel", congestionControl: value.congestionControl || "cubic" };
+    }
+    return { ...value, stack: undefined, congestionControl: undefined, driver: legacyDriver ?? value.driver };
+}
+
 export function createDefaultInbound(id: string): Inbound {
     return {
         id,
