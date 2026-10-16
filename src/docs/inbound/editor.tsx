@@ -326,9 +326,7 @@ const TunEditor: FC<{
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <SettingInputVertical label={uiT("name")} value={value.name} onChange={(name) => patch({ name })} />
                 <SettingInputVertical label="MTU" type="number" value={String(value.mtu)} onChange={(mtu) => patch({ mtu: numberValue(mtu) })} />
-                {lightweight
-                    ? <SettingSelectVertical label="Driver" value={value.driver || "channel"} values={["channel"]} onChange={(driver) => patch({ driver })} />
-                    : <SettingInputVertical label="Driver" value={value.driver} onChange={(driver) => patch({ driver })} />}
+                <SettingSelectVertical label="Driver" value={value.driver || "channel"} values={lightweight ? ["channel"] : ["fdbased", "channel", "system_gvisor"]} onChange={(driver) => patch({ driver })} />
                 <SettingInputVertical label={uiT("portalIpv4")} value={value.portal} onChange={(portal) => patch({ portal })} />
                 <SettingInputVertical label={uiT("portalIpv6")} value={value.portalV6} onChange={(portalV6) => patch({ portalV6 })} />
             </div>

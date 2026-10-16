@@ -81,6 +81,9 @@ it('shows experimental TCP/IP stack options only when lightweight is selected', 
         act(render);
         expect(host.textContent).toContain('tunStack');
         expect(host.textContent).not.toContain('tunCongestionControl');
+        const driver = host.querySelector('[role="combobox"][aria-label="Driver"]');
+        expect(driver?.textContent).toContain('fdbased');
+        expect(host.querySelector('input[aria-label="Driver"]')).toBeNull();
         if (saved.protocol.type !== 'tun') throw new Error('unexpected protocol');
         saved = { ...saved, protocol: { ...saved.protocol, tun: { ...saved.protocol.tun, stack: 'lightweight', driver: 'channel', congestionControl: 'bbr' } } };
         act(render);
