@@ -314,7 +314,7 @@ const TunEditor: FC<{
                             <SettingSelectVertical
                                 label={uiT("tunCongestionControl")}
                                 value={value.congestionControl || "cubic"}
-                                values={["reno", "cubic", "bbr"]}
+                                values={[["Reno + HyStart++", "reno"], ["CUBIC + HyStart++", "cubic"], ["BBR v3", "bbr"]]}
                                 onChange={(congestionControl) => patch({ congestionControl })}
                             />
                             <p className="text-xs text-ui-muted">{uiT("tunCongestionControlHint")}</p>

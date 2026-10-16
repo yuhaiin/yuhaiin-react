@@ -664,8 +664,8 @@
   "tunStack": "TCP/IP スタック",
   "tunStackLegacy": "既存（gVisor / tun2socket）",
   "tunStackLightweight": "軽量スタック（実験的）",
-  "tunStackExperimentalWarning": "実験的機能：軽量 TUN 対応バックエンド（PR #544）が必要です。macOS・Windows・モバイルでの動作検証は未完了で、Linux オフロードにも非対応です。本番環境では既存スタックを使用してください。",
+  "tunStackExperimentalWarning": "実験的な機能です。既定は既存のスタックです。Linux オフロードは非対応で、macOS・Windows・モバイルでの動作検証は未完了です。",
   "tunStackDriverHint": "軽量スタックは現在 channel ドライバー専用です。選択するとドライバーを channel に切り替えます。",
   "tunCongestionControl": "輻輳制御",
-  "tunCongestionControlHint": "軽量スタックの既定は CUBIC です。Reno・CUBIC・BBR は新規 TCP 接続に適用され、既存の VPN アウトバウンドは変更されません。"
+  "tunCongestionControlHint": "既定は CUBIC + HyStart++ です。Reno も HyStart++ を使用し、BBR は独自の起動制御を持つ v3 を使用します。この設定は、この TUN スタックの新規 TCP 接続に適用されます。"
 }

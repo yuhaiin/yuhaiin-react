@@ -664,8 +664,8 @@
   "tunStack": "TCP/IP stack",
   "tunStackLegacy": "Existing (gVisor / tun2socket)",
   "tunStackLightweight": "Lightweight (experimental)",
-  "tunStackExperimentalWarning": "Experimental: requires a backend with lightweight TUN support (PR #544). Not yet fully validated on macOS, Windows or mobile; Linux offload is not available. Leave the existing stack selected for production use.",
+  "tunStackExperimentalWarning": "Experimental. The existing stack remains the default. Linux offload is unavailable; macOS, Windows and mobile runtime support is not yet validated.",
   "tunStackDriverHint": "Lightweight currently requires the channel driver; selecting it switches the driver to channel.",
   "tunCongestionControl": "Congestion control",
-  "tunCongestionControlHint": "CUBIC is the lightweight default. Reno, CUBIC and BBR apply to new TCP connections; this does not change existing VPN outbounds."
+  "tunCongestionControlHint": "CUBIC + HyStart++ is the default. Reno also uses HyStart++; BBR uses v3 with its own startup. This setting applies to new TCP connections in this TUN stack."
 }

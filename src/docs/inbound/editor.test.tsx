@@ -89,7 +89,8 @@ it('shows experimental TCP/IP stack options only when lightweight is selected', 
         expect(host.textContent).toContain('tunStackDriverHint');
         const combos = [...host.querySelectorAll('[role="combobox"]')];
         expect(combos.length).toBeGreaterThanOrEqual(3);
-        expect(combos.some(combo => combo.getAttribute('aria-label') === 'tunCongestionControl')).toBe(true);
+        const congestion = combos.find(combo => combo.getAttribute('aria-label') === 'tunCongestionControl');
+        expect(congestion?.textContent).toContain('BBR v3');
         expect(combos.some(combo => combo.getAttribute('aria-label') === 'Driver')).toBe(true);
     } finally {
         act(() => root.unmount());
