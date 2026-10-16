@@ -660,5 +660,12 @@
   "profilerGraphZoomIn": "Zoom in",
   "profilerGraphZoomReset": "Reset zoom",
   "profilerGraphRendering": "Building graph in browser…",
-  "profilerExitFullscreen": "Exit fullscreen"
+  "profilerExitFullscreen": "Exit fullscreen",
+  "tunStack": "TCP/IP stack",
+  "tunStackLegacy": "Existing (gVisor / tun2socket)",
+  "tunStackLightweight": "Lightweight (experimental)",
+  "tunStackExperimentalWarning": "Experimental. The existing stack remains the default. Linux offload is unavailable; macOS, Windows and mobile runtime support is not yet validated.",
+  "tunStackDriverHint": "Lightweight currently requires the channel driver; selecting it switches the driver to channel.",
+  "tunCongestionControl": "Congestion control",
+  "tunCongestionControlHint": "CUBIC + HyStart++ is the default. Reno also uses HyStart++; BBR uses v3 with its own startup. This setting applies to new TCP connections in this TUN stack."
 }

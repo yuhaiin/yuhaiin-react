@@ -12,9 +12,9 @@ import { Textarea } from "@/component/v2/input";
 import { Tooltip } from "@/component/v2/tooltip";
 import { InputBytesList, InputList } from "@/component/v2/listeditor";
 
-import { createDefaultNetwork, createDefaultTransport, selectInboundProtocol, Certificate, ClientTLSConfig, Inbound, InboundNetwork, InboundProtocol, InboundTransport, normalizeInbound, ServerTLSConfig, TLSAutoTransport } from "@/contract/inbound";
+import { createDefaultNetwork, createDefaultTransport, selectInboundProtocol, Certificate, ClientTLSConfig, Inbound, InboundNetwork, InboundProtocol, InboundTransport, normalizeInbound, selectTunStack, ServerTLSConfig, TLSAutoTransport } from "@/contract/inbound";
 import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react";
-import { FC, useId, useState } from "react";
+import { FC, useId, useRef, useState } from "react";
 
 const networkTypes: InboundNetwork["type"][] = ["empty", "tcp_udp", "quic"];
 
@@ -285,14 +285,50 @@ const TunEditor: FC<{
     onChange: (value: Extract<InboundProtocol, { type: "tun" }>["tun"]) => void;
 }> = ({ value, onChange }) => {
     const { t: uiT } = useTranslation('ui');
+    const previousLegacyDriver = useRef<string | undefined>(undefined);
+    const lightweight = value.stack === "lightweight";
 
     const patch = (patchValue: Partial<typeof value>) => onChange({ ...value, ...patchValue });
+    const changeStack = (stack: string) => {
+        if (stack === "lightweight") {
+            if (!lightweight) previousLegacyDriver.current = value.driver;
+            onChange(selectTunStack(value, "lightweight"));
+        } else if (stack === "") {
+            onChange(selectTunStack(value, "", previousLegacyDriver.current));
+            previousLegacyDriver.current = undefined;
+        }
+    };
     return (
         <div className="grid gap-4">
+            <div className="grid gap-3 rounded-ui-lg border border-ui-border p-4">
+                <SettingSelectVertical
+                    label={uiT("tunStack")}
+                    value={value.stack ?? ""}
+                    values={[[uiT("tunStackLegacy"), ""], [uiT("tunStackLightweight"), "lightweight"]]}
+                    onChange={changeStack}
+                />
+                {lightweight && (
+                    <>
+                        <p className="text-sm text-ui-muted">{uiT("tunStackExperimentalWarning")}</p>
+                        <div className="grid gap-1">
+                            <SettingSelectVertical
+                                label={uiT("tunCongestionControl")}
+                                value={value.congestionControl || "cubic"}
+                                values={[["Reno + HyStart++", "reno"], ["CUBIC + HyStart++", "cubic"], ["BBR v3", "bbr"]]}
+                                onChange={(congestionControl) => patch({ congestionControl })}
+                            />
+                            <p className="text-xs text-ui-muted">{uiT("tunCongestionControlHint")}</p>
+                        </div>
+                        <p className="text-xs text-ui-muted">{uiT("tunStackDriverHint")}</p>
+                    </>
+                )}
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <SettingInputVertical label={uiT("name")} value={value.name} onChange={(name) => patch({ name })} />
                 <SettingInputVertical label="MTU" type="number" value={String(value.mtu)} onChange={(mtu) => patch({ mtu: numberValue(mtu) })} />
-                <SettingInputVertical label="Driver" value={value.driver} onChange={(driver) => patch({ driver })} />
+                {lightweight
+                    ? <SettingSelectVertical label="Driver" value={value.driver || "channel"} values={["channel"]} onChange={(driver) => patch({ driver })} />
+                    : <SettingInputVertical label="Driver" value={value.driver} onChange={(driver) => patch({ driver })} />}
                 <SettingInputVertical label={uiT("portalIpv4")} value={value.portal} onChange={(portal) => patch({ portal })} />
                 <SettingInputVertical label={uiT("portalIpv6")} value={value.portalV6} onChange={(portalV6) => patch({ portalV6 })} />
             </div>

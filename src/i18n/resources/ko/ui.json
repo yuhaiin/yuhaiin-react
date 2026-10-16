@@ -660,5 +660,12 @@
   "profilerGraphZoomIn": "확대",
   "profilerGraphZoomReset": "배율 초기화",
   "profilerGraphRendering": "브라우저에서 그래프 생성 중…",
-  "profilerExitFullscreen": "전체 화면 종료"
+  "profilerExitFullscreen": "전체 화면 종료",
+  "tunStack": "TCP/IP 스택",
+  "tunStackLegacy": "기존 (gVisor / tun2socket)",
+  "tunStackLightweight": "경량 스택 (실험적)",
+  "tunStackExperimentalWarning": "실험적 기능입니다. 기존 스택이 기본값으로 유지됩니다. Linux 오프로드는 지원하지 않으며 macOS, Windows 및 모바일 환경의 실행 검증은 완료되지 않았습니다.",
+  "tunStackDriverHint": "현재 경량 스택은 channel 드라이버만 지원합니다. 선택하면 드라이버가 channel로 변경됩니다.",
+  "tunCongestionControl": "혼잡 제어",
+  "tunCongestionControlHint": "기본값은 CUBIC + HyStart++입니다. Reno도 HyStart++를 사용하고 BBR은 자체 시작 제어를 갖춘 v3를 사용합니다. 이 설정은 이 TUN 스택의 새 TCP 연결에 적용됩니다."
 }

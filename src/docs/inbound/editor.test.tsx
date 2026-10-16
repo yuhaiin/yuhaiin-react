@@ -70,3 +70,30 @@ it('edits hopping ports and explains why automatic server hopping needs root', (
         host.remove();
     }
 });
+
+it('shows experimental TCP/IP stack options only when lightweight is selected', () => {
+    let saved: Inbound = { ...createDefaultInbound('tun'), protocol: createDefaultProtocol('tun') };
+    const host = document.createElement('div');
+    document.body.append(host);
+    const root = createRoot(host);
+    const render = () => root.render(<InboundEditor inbound={saved} onChange={(value) => { saved = value; }} />);
+    try {
+        act(render);
+        expect(host.textContent).toContain('tunStack');
+        expect(host.textContent).not.toContain('tunCongestionControl');
+        if (saved.protocol.type !== 'tun') throw new Error('unexpected protocol');
+        saved = { ...saved, protocol: { ...saved.protocol, tun: { ...saved.protocol.tun, stack: 'lightweight', driver: 'channel', congestionControl: 'bbr' } } };
+        act(render);
+        expect(host.textContent).toContain('tunStackExperimentalWarning');
+        expect(host.textContent).toContain('tunCongestionControl');
+        expect(host.textContent).toContain('tunStackDriverHint');
+        const combos = [...host.querySelectorAll('[role="combobox"]')];
+        expect(combos.length).toBeGreaterThanOrEqual(3);
+        const congestion = combos.find(combo => combo.getAttribute('aria-label') === 'tunCongestionControl');
+        expect(congestion?.textContent).toContain('BBR v3');
+        expect(combos.some(combo => combo.getAttribute('aria-label') === 'Driver')).toBe(true);
+    } finally {
+        act(() => root.unmount());
+        host.remove();
+    }
+});

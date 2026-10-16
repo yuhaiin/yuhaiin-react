@@ -263,6 +263,8 @@ export namespace Go {
       host: string;
     }
     export interface TunProtocol {
+      stack?: string;
+      congestionControl?: string;
       autoFakeIpRoute: boolean;
       name: string;
       mtu: number;

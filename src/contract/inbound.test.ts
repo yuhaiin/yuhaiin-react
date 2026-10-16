@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createDefaultProtocol, normalizeInbound, type Inbound } from './inbound';
+import { createDefaultProtocol, normalizeInbound, selectTunStack, type Inbound } from './inbound';
 
 describe('TUN automatic FakeIP route defaults', () => {
     it('enables automatic FakeIP routes for newly created TUNs', () => {
@@ -29,5 +29,49 @@ describe('TUN automatic FakeIP route defaults', () => {
         const restored = normalizeInbound(JSON.parse(JSON.stringify({ id: 'tun', protocol })) as Inbound);
         if (restored.protocol.type !== 'tun') throw new Error('unexpected protocol');
         expect(restored.protocol.tun.autoFakeIpRoute).toBe(enabled);
+    });
+});
+
+describe('TUN lightweight stack config', () => {
+    it('leaves the legacy stack and driver unchanged in new or existing configs', () => {
+        const protocol = createDefaultProtocol('tun');
+        if (protocol.type !== 'tun') throw new Error('unexpected protocol');
+        expect(protocol.tun.stack).toBeUndefined();
+        expect(protocol.tun.congestionControl).toBeUndefined();
+        expect(protocol.tun.driver).toBe('fdbased');
+        const restored = normalizeInbound(JSON.parse(JSON.stringify({ id: 'legacy', protocol })) as Inbound);
+        if (restored.protocol.type !== 'tun') throw new Error('unexpected protocol');
+        expect(restored.protocol.tun.stack).toBeUndefined();
+        expect(restored.protocol.tun.driver).toBe('fdbased');
+    });
+
+    it.each(['reno', 'cubic', 'bbr'])('round-trips lightweight %s selection in the JSON contract', (cc) => {
+        const original = createDefaultProtocol('tun');
+        if (original.type !== 'tun') throw new Error('unexpected protocol');
+        const enabled = { ...selectTunStack(original.tun, 'lightweight'), congestionControl: cc };
+        expect(enabled.driver).toBe('channel');
+        const parsed = normalizeInbound(JSON.parse(JSON.stringify({ id: 'lightweight', protocol: { type: 'tun', tun: enabled } })) as Inbound);
+        if (parsed.protocol.type !== 'tun') throw new Error('unexpected protocol');
+        expect(parsed.protocol.tun).toMatchObject({ stack: 'lightweight', congestionControl: cc, driver: 'channel' });
+    });
+
+    it('restores the previous legacy driver and clears both experimental fields on exit', () => {
+        const original = createDefaultProtocol('tun');
+        if (original.type !== 'tun') throw new Error('unexpected protocol');
+        const system = { ...original.tun, driver: 'system_gvisor' };
+        const lightweight = selectTunStack(system, 'lightweight');
+        expect(lightweight).toMatchObject({ driver: 'channel', stack: 'lightweight', congestionControl: 'cubic' });
+        const restored = selectTunStack(lightweight, '', system.driver);
+        const serialized = JSON.parse(JSON.stringify(restored));
+        expect(serialized.driver).toBe('system_gvisor');
+        expect(serialized).not.toHaveProperty('stack');
+        expect(serialized).not.toHaveProperty('congestionControl');
+    });
+
+    it('keeps custom fields and preserves a prior algorithm on reselect', () => {
+        const original = createDefaultProtocol('tun');
+        if (original.type !== 'tun') throw new Error('unexpected protocol');
+        const chosen = { ...original.tun, mtu: 1400, portal: '172.19.0.1/30', congestionControl: 'bbr' };
+        expect(selectTunStack(chosen, 'lightweight')).toMatchObject({ mtu: 1400, portal: '172.19.0.1/30', stack: 'lightweight', congestionControl: 'bbr', driver: 'channel' });
     });
 });
