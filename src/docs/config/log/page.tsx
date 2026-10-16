@@ -1,5 +1,5 @@
 import { usePageVisible } from "@/common/hooks";
-import { LogRingBuffer, levelStyles, type LogEntry } from "./log-buffer";
+import { LogRingBuffer, levelStyles, parseLogLine, type LogEntry } from "./log-buffer";
 
 import { AuthTokenKey, getApiUrl } from "@/common/apiurl"
 import { Badge } from "@/component/v2/badge"
@@ -13,6 +13,8 @@ import { FC, memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, us
 import { useTranslation } from "react-i18next"
 import { VList, type VListHandle } from "virtua"
 
+// Keep collecting every event; publishing the snapshot less often avoids rebuilding a virtual list at SSE frequency.
+const LOG_RENDER_INTERVAL_MS = 250;
 const LOG_RETENTION_OPTIONS = [500, 2000, 10000] as const
 type LogRetention = typeof LOG_RETENTION_OPTIONS[number]
 function logsURL() {
@@ -28,7 +30,8 @@ function logsURL() {
 
 
 const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
-    const { parsed } = entry;
+    // Most streamed lines are never mounted by the virtualizer. Parse only visible rows.
+    const parsed = useMemo(() => parseLogLine(entry.line), [entry.line]);
     const style = levelStyles[parsed.level];
 
     return (
@@ -67,6 +70,8 @@ const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
     );
 });
 
+const renderLogLine = (entry: LogEntry) => <LogLine key={entry.id} entry={entry} />;
+
 export default function LogComponent() {
     const { t: uiT } = useTranslation('ui');
 
@@ -104,11 +109,13 @@ export default function LogComponent() {
                 if (event.data.length > 2 * 1024 * 1024) throw new Error("Log batch exceeds 2 MB limit");
                 const batch = JSON.parse(event.data) as LogBatch;
                 if (!Array.isArray(batch.log) || batch.log.some(line => typeof line !== 'string')) throw new Error("Invalid log batch");
-                logBuffer.append(batch.log.slice(-retention).reverse());
-                if (flushTimer === undefined) flushTimer = window.setTimeout(() => {
-                    flushTimer = undefined;
-                    if (!stopped) setLocalVersion(logBuffer.currentVersion);
-                }, 100);
+                if (batch.log.length > 0) {
+                    logBuffer.append(batch.log.slice(-retention).reverse());
+                    if (flushTimer === undefined) flushTimer = window.setTimeout(() => {
+                        flushTimer = undefined;
+                        if (!stopped) setLocalVersion(logBuffer.currentVersion);
+                    }, LOG_RENDER_INTERVAL_MS);
+                }
                 setLogError(undefined);
             } catch (error) {
                 setLogError({ code: 500, msg: error instanceof globalThis.Error ? error.message : "decode log failed" });
@@ -130,7 +137,8 @@ export default function LogComponent() {
         };
     }, [logBuffer, streamNonce, paused, visible, retention])
 
-    const version = Math.max(localVersion, logBuffer.currentVersion)
+    // Snapshot publication, not mutable buffer writes, controls virtual-list reconciliation.
+    const version = localVersion
 
     const visibleLog = useMemo(() => {
         void version;
@@ -153,7 +161,7 @@ export default function LogComponent() {
         if (!followLatestRef.current) return;
 
         const frame = requestAnimationFrame(() => {
-            logListRef.current?.scrollTo(0);
+            if (followLatestRef.current) logListRef.current?.scrollTo(0);
         });
 
         return () => cancelAnimationFrame(frame);
@@ -187,7 +195,7 @@ export default function LogComponent() {
                         </Badge>
                     </div>
                     <div className="grid w-full min-w-0 grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-3">
-                        <FilterSearch size="sm" onEnter={setSearchTerm} className="w-full min-w-0" inputClassName="max-sm:min-h-11 max-sm:text-base" />
+                        <FilterSearch size="sm" onEnter={(term) => { followLatestRef.current = true; setSearchTerm(term); }} className="w-full min-w-0" inputClassName="max-sm:min-h-11 max-sm:text-base" />
                         <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-end">
                             <ToggleGroup className="shrink-0 flex-nowrap max-sm:p-0" type="single" value={String(retention)} onValueChange={(v) => v && changeRetention(v)}>
                                 {LOG_RETENTION_OPTIONS.map(value => (
@@ -214,18 +222,29 @@ export default function LogComponent() {
                             {searchTerm ? t("log.noSearchResults") : t("log.empty")}
                         </div>
                     ) : (
-                        <div className="h-full min-h-0 w-full rounded-[inherit] font-mono">
+                        <div
+                            className="h-full min-h-0 w-full rounded-[inherit] font-mono"
+                            onWheelCapture={(event) => { if (event.deltaY > 0) followLatestRef.current = false; }}
+                            onTouchMoveCapture={() => { followLatestRef.current = false; }}
+                            onPointerDownCapture={() => { followLatestRef.current = false; }}
+                            onKeyDownCapture={(event) => {
+                                if (["ArrowDown", "PageDown", "End", " "].includes(event.key)) followLatestRef.current = false;
+                            }}
+                        >
                             <VList
+                                key={deferredSearchTerm}
                                 ref={logListRef}
                                 data={visibleLog}
-                                bufferSize={360}
+                                bufferSize={200}
                                 shift
                                 onScroll={(offset) => {
-                                    followLatestRef.current = offset < 40;
+                                    // Shift may adjust the offset without user input. Only user gestures
+                                    // disable following; returning to the top re-enables it.
+                                    if (offset < 40) followLatestRef.current = true;
                                 }}
                                 style={{ height: '100%', width: '100%', overflowAnchor: 'none' }}
                             >
-                                {(entry) => <LogLine key={entry.id} entry={entry} />}
+                                {renderLogLine}
                             </VList>
                         </div>
                     )}

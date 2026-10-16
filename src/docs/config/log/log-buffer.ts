@@ -12,7 +12,6 @@ type ParsedLogLine = {
 export type LogEntry = {
     id: number;
     line: string;
-    parsed: ParsedLogLine;
 }
 
 export const levelStyles: Record<LogLevel, { bar: string; badge: string; text: string }> = {
@@ -100,7 +99,7 @@ const formatLogTime = (value?: string) => {
     return `${time}.${String(date.getMilliseconds()).padStart(3, "0")}`;
 }
 
-const parseLogLine = (line: string): ParsedLogLine => {
+export const parseLogLine = (line: string): ParsedLogLine => {
     const rawLevel = readSlogValue(line, "level")?.toUpperCase();
     const level = rawLevel && rawLevel in levelStyles ? rawLevel as LogLevel : "LOG";
     const message = readSlogValue(line, "msg") ?? line;
@@ -147,7 +146,6 @@ export class LogRingBuffer {
             this.entries[this.head] = {
                 id: ++this.nextId,
                 line,
-                parsed: parseLogLine(line),
             }
             if (this.count < this.capacity) this.count++
             while (this.retainedChars > 2 * 1024 * 1024 && this.count > 1) {
