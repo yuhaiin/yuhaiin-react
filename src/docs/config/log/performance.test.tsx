@@ -95,6 +95,8 @@ it('batches frequent SSE events without dropping newer logs or rendering each ev
 it('does not force-scroll after a user moves away and resumes following at the top', async () => {
     emit(['first']);
     await advance(300);
+    // React commits the list after the timer; the scheduled follow frame runs next.
+    await advance(1);
     expect(list.scrollTo).toHaveBeenCalledWith(0);
     list.scrollTo.mockClear();
 
@@ -107,6 +109,8 @@ it('does not force-scroll after a user moves away and resumes following at the t
 
     emit(['second']);
     await advance(300);
+    // React commits the list after the timer; the scheduled follow frame runs next.
+    await advance(1);
     expect(list.scrollTo).not.toHaveBeenCalled();
 
     act(() => {
@@ -115,6 +119,8 @@ it('does not force-scroll after a user moves away and resumes following at the t
     });
     emit(['third']);
     await advance(300);
+    // React commits the list after the timer; the scheduled follow frame runs next.
+    await advance(1);
     expect(list.scrollTo).toHaveBeenCalledTimes(1);
     expect(list.scrollTo).toHaveBeenCalledWith(0);
 });
