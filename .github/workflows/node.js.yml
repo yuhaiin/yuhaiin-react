@@ -9,10 +9,10 @@ on:
   pull_request:
     branches: ["main"]
 
-# Keep PR checks fresh while letting main deployments finish safely.
+# Cancel superseded workflow runs on the same ref.
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: true
 
 jobs:
   build:
