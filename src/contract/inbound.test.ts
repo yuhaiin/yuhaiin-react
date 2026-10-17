@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createDefaultProtocol, normalizeInbound, selectTunStack, type Inbound } from './inbound';
+import { createDefaultInbound, createDefaultProtocol, normalizeInbound, selectTunStack, type Inbound } from './inbound';
 
 describe('TUN automatic FakeIP route defaults', () => {
     it('enables automatic FakeIP routes for newly created TUNs', () => {
@@ -74,4 +74,18 @@ describe('TUN lightweight stack config', () => {
         const chosen = { ...original.tun, mtu: 1400, portal: '172.19.0.1/30', congestionControl: 'bbr' };
         expect(selectTunStack(chosen, 'lightweight')).toMatchObject({ mtu: 1400, portal: '172.19.0.1/30', stack: 'lightweight', congestionControl: 'bbr', driver: 'channel' });
     });
+});
+
+it('keeps Darwin batching off by default and persists per-TUN choices', () => {
+    const protocol = createDefaultProtocol('tun');
+    if (protocol.type !== 'tun') throw new Error('unexpected protocol');
+    expect(protocol.tun.darwin).toEqual({ experimentalBatch: false, batchSize: 32, pendingPackets: 32 });
+    const selected = { ...protocol.tun, darwin: { experimentalBatch: true, batchSize: 64, pendingPackets: 128 } };
+    const value = normalizeInbound({ ...createDefaultInbound('batch'), protocol: { type: 'tun', tun: selected } });
+    const restored = normalizeInbound(JSON.parse(JSON.stringify(value)));
+    expect(restored.protocol).toMatchObject({ type: 'tun', tun: { darwin: selected.darwin } });
+    delete protocol.tun.darwin;
+    const legacy = normalizeInbound({ ...createDefaultInbound('legacy'), protocol });
+    if (legacy.protocol.type !== 'tun') throw new Error('unexpected protocol');
+    expect(legacy.protocol.tun.darwin?.experimentalBatch ?? false).toBe(false);
 });

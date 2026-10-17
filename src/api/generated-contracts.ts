@@ -263,6 +263,7 @@ export namespace Go {
       host: string;
     }
     export interface TunProtocol {
+      darwin?: DarwinTunOptions;
       stack?: string;
       congestionControl?: string;
       autoFakeIpRoute: boolean;
@@ -277,6 +278,11 @@ export namespace Go {
       excludes: string[];
       postUp: string[];
       postDown: string[];
+    }
+    export interface DarwinTunOptions {
+      experimentalBatch: boolean;
+      batchSize?: number;
+      pendingPackets?: number;
     }
     export interface KrunletProtocol {
       socket: string;

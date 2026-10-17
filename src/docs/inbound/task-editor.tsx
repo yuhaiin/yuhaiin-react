@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { InboundEditor, ProtocolConfigEditor } from './editor';
 import { supportsSimpleInbound, proxyInstructions } from './presets';
 
-export function InboundTaskEditor({ value, onChange, protocols, defaultAdvanced = false }: { value: Inbound; onChange: (value: Inbound) => void; protocols?: string[]; defaultAdvanced?: boolean }) {
+export function InboundTaskEditor({ value, onChange, protocols, platform, defaultAdvanced = false }: { value: Inbound; onChange: (value: Inbound) => void; protocols?: string[]; platform?: string; defaultAdvanced?: boolean }) {
     const { t } = useTranslation('routing');
     const simple = supportsSimpleInbound(value);
     const [advanced, setAdvanced] = useState(!simple || defaultAdvanced);
@@ -16,7 +16,7 @@ export function InboundTaskEditor({ value, onChange, protocols, defaultAdvanced 
         <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-ui-muted">{t('entryTaskHelp')}</p>
             <Button size="sm" variant="outline-secondary" disabled={!simple} onClick={() => setAdvanced(previous => !previous)}>{t(advanced ? 'simpleEditor' : 'advancedEditor')}</Button></div>
         {unsupported && <p role="alert" className="text-sm text-ui-danger">{t('entryUnsupported')}</p>}
-        {advanced || !simple ? <InboundEditor inbound={value} onChange={onChange} protocols={protocols} /> : <>
+        {advanced || !simple ? <InboundEditor inbound={value} onChange={onChange} protocols={protocols} platform={platform} /> : <>
             <SettingInputVertical label={t('name')} value={value.name} onChange={name => patch({ name })} />
             <SwitchCard label={t('enableTrafficEntry')} checked={value.enabled} onCheckedChange={enabled => patch({ enabled })} />
             {value.network.type === 'tcp_udp' && <SettingInputVertical label={t('entryListenAddress')} value={value.network.tcp_udp.host}

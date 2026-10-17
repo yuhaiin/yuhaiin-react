@@ -49,6 +49,8 @@ const selectors=scenario==='empty'?[]:[
 const publishes=scenario==='empty'?[]:[{name:'Work devices',address:'example.invalid:443',path:'work',password:'',insecure:false,points:['node-0','node-1']},{name:'Travel devices',address:'example.invalid:443',path:'travel',password:'',insecure:false,points:['node-2']}];
 const resolvers=[{id:'bootstrap',name:'Server address lookup',type:'system',host:'system default',system:true},{id:'dns-local',name:'Local network DNS',type:'system',host:'system default',system:true},{id:'dns-proxy',name:'Encrypted DNS',type:'doh',host:'https://dns.example.invalid/dns-query',system:false}];
 const inbounds=scenario==='empty'?[]:[{id:'inbound-local',name:'Local proxy',enabled:true,network:{type:'tcp_udp',tcp_udp:{host:'127.0.0.1:9002',udp:'enabled'}},transports:[],protocol:{type:'mixed',mixed:{username:'',password:''}}}];
+if (scenario === 'utun') inbounds[0] = {id:'inbound-local',name:'macOS TUN',enabled:true,network:{type:'empty',empty:{}},transports:[],protocol:{type:'tun',tun:{name:'tun://utun8',mtu:1500,forceFakeIp:false,skipMulticast:true,autoFakeIpRoute:true,driver:'channel',portal:'172.19.0.1/30',portalV6:'fdfe:dcba:9876::1/126',routes:['0.0.0.0/0'],excludes:[],postUp:[],postDown:[],darwin:{experimentalBatch:false,batchSize:32,pendingPackets:32}}}};
+
 const lists=[{id:'shared-websites',name:'Work websites',revision:1,type:'host',source:{type:'local',local:{lists:['example.invalid','*.work.example']}}}];
 const rules=scenario==='empty'?[]:Array.from({length:35},(_,i)=>({rule:{id:`rule-${i}`,revision:1,name:i===0?'Work traffic':`Rule ${i}`,mode:'proxy',target:{type:'selector',id:'selector-work'},rules:[{type:'host',host:{list:'shared-websites'}}]},lists:[]}));
 const bump=()=>{savedRevision++;};
@@ -162,7 +164,7 @@ const worker=setupWorker(
     else if(op==='resolver.server.put')result=resolverServer=p;
     else if(op==='resolver.cache.get')result={items:[]};
     else if(op==='resolver.cache.delete')result={removed:0};
-    else if(op==='inbound.capabilities')result={platform:'linux',protocols:['mixed','http','socks5','socks4a','redir','tproxy','tun','yuubinsya','hysteria2']};
+    else if(op==='inbound.capabilities')result={platform:scenario==='utun'?'darwin':'linux',protocols:['mixed','http','socks5','socks4a','redir','tproxy','tun','yuubinsya','hysteria2']};
     else if(op==='inbounds.get')result=page(inbounds,p);
     else if(op==='inbound.get'){result=inbounds.find(item=>item.id===p.id);if(!result)return errorResponse('Inbound no longer exists',404);}
     else if(op==='inbounds.post'||op==='inbound.put')result=upsert(inbounds,p);

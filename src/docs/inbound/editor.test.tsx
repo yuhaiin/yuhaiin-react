@@ -100,3 +100,45 @@ it('shows experimental TCP/IP stack options only when lightweight is selected', 
         host.remove();
     }
 });
+
+it('configures Darwin batching per TUN and hides it on other backends', () => {
+    let saved = createDefaultInbound('batch');
+    saved = { ...saved, protocol: createDefaultProtocol('tun') };
+    const host = document.createElement('div');
+    document.body.append(host);
+    const root = createRoot(host);
+    const render = (platform = 'darwin') => root.render(<InboundEditor platform={platform} inbound={saved} onChange={value => { saved = value; }} />);
+    try {
+        act(() => render());
+        const toggle = () => [...host.querySelectorAll<HTMLButtonElement>('[role="switch"]')].find(item => item.textContent?.includes('tunDarwinBatch'))!;
+        expect(toggle().getAttribute('aria-checked')).toBe('false');
+        expect(host.querySelector('[aria-label="tunDarwinBatchSize"]')).toBeNull();
+        act(() => toggle().click());
+        act(() => render());
+        expect(host.querySelector('[aria-label="tunDarwinBatchSize"]')?.textContent).toContain('32');
+        if (saved.protocol.type !== 'tun') throw new Error('unexpected protocol');
+        expect(saved.protocol.tun.darwin).toEqual({ experimentalBatch: true, batchSize: 32, pendingPackets: 32 });
+        const choose = (label: string, value: string) => {
+            const combo = host.querySelector<HTMLButtonElement>(`[role="combobox"][aria-label="${label}"]`)!;
+            act(() => combo.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
+            const option = [...document.querySelectorAll<HTMLElement>('[role="option"]')].find(item => item.textContent === value)!;
+            expect(option).toBeDefined();
+            act(() => option.click());
+            act(() => render());
+        };
+        choose('tunDarwinBatchSize', '64');
+        choose('tunDarwinPendingPackets', '128');
+        if (saved.protocol.type !== 'tun') throw new Error('unexpected protocol');
+        expect(saved.protocol.tun.darwin).toEqual({ experimentalBatch: true, batchSize: 64, pendingPackets: 128 });
+        saved = JSON.parse(JSON.stringify(saved));
+        act(() => render());
+        expect(toggle().getAttribute('aria-checked')).toBe('true');
+        act(() => toggle().click());
+        if (saved.protocol.type !== 'tun') throw new Error('unexpected protocol');
+        expect(saved.protocol.tun.darwin?.experimentalBatch).toBe(false);
+        for (const platform of ['linux', 'android', 'windows', '']) {
+            act(() => render(platform));
+            expect(host.textContent).not.toContain('tunDarwinBatch');
+        }
+    } finally { act(() => root.unmount()); host.remove(); }
+});

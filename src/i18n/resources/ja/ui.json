@@ -667,5 +667,10 @@
   "tunStackExperimentalWarning": "実験的な機能です。既定は既存のスタックです。Linux オフロードは非対応で、macOS・Windows・モバイルでの動作検証は未完了です。",
   "tunStackDriverHint": "軽量スタックは現在 channel ドライバー専用です。選択するとドライバーを channel に切り替えます。",
   "tunCongestionControl": "輻輳制御",
-  "tunCongestionControlHint": "既定は CUBIC + HyStart++ です。Reno も HyStart++ を使用し、BBR は独自の起動制御を持つ v3 を使用します。この設定は、この TUN スタックの新規 TCP 接続に適用されます。"
+  "tunCongestionControlHint": "既定は CUBIC + HyStart++ です。Reno も HyStart++ を使用し、BBR は独自の起動制御を持つ v3 を使用します。この設定は、この TUN スタックの新規 TCP 接続に適用されます。",
+  "tunDarwinBatch": "実験的なパケット一括処理",
+  "tunDarwinBatchDescription": "初期状態では無効です。保存するとこの TUN が再起動します。未対応の macOS デバイスでは単一パケット処理に自動で戻ります。",
+  "tunDarwinBatchSize": "バッチあたりの最大パケット数",
+  "tunDarwinPendingPackets": "待機パケット数の上限",
+  "tunDarwinPendingHint": "実際のキュー長は MTU やシステムのバッファ制限により小さくなる場合があります。"
 }

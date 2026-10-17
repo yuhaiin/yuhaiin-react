@@ -32,7 +32,8 @@ const InboundEditor: FC<{
     inbound: Inbound;
     onChange: (value: Inbound) => void;
     protocols?: string[];
-}> = ({ inbound, onChange, protocols }) => {
+    platform?: string;
+}> = ({ inbound, onChange, protocols, platform }) => {
     const { t: uiT } = useTranslation('ui');
 
     return (
@@ -57,7 +58,7 @@ const InboundEditor: FC<{
             </FormSection>
 
             <FormSection title={uiT("protocol")}>
-                    <ProtocolSection inbound={inbound} onChange={onChange} protocols={protocols} />
+                    <ProtocolSection inbound={inbound} onChange={onChange} protocols={protocols} platform={platform} />
             </FormSection>
         </div>
     );
@@ -117,7 +118,8 @@ const ProtocolSection: FC<{
     inbound: Inbound;
     onChange: (value: Inbound) => void;
     protocols?: string[];
-}> = ({ inbound, onChange, protocols }) => {
+    platform?: string;
+}> = ({ inbound, onChange, protocols, platform }) => {
     const { t: uiT } = useTranslation('ui');
 
     const [choice, setChoice] = useState<InboundProtocol["type"] | undefined>();
@@ -137,6 +139,7 @@ const ProtocolSection: FC<{
             />
             <ProtocolConfigEditor
                 value={inbound.protocol}
+                platform={platform}
                 onChange={(protocol) => onChange(normalizeInbound({ ...inbound, protocol }))}
             />
         </>
@@ -189,7 +192,8 @@ const NetworkEditor: FC<{
 const ProtocolConfigEditor: FC<{
     value: InboundProtocol;
     onChange: (value: InboundProtocol) => void;
-}> = ({ value, onChange }) => {
+    platform?: string;
+}> = ({ value, onChange, platform }) => {
     const { t: uiT } = useTranslation('ui');
     const hoppingHelpID = useId();
 
@@ -251,7 +255,7 @@ const ProtocolConfigEditor: FC<{
         case "redir":
             return <SettingInputVertical label={uiT("host")} value={value.redir.host} onChange={(host) => onChange({ ...value, redir: { ...value.redir, host } })} placeholder=":12345" />;
         case "tun":
-            return <TunEditor value={value.tun} onChange={(tun) => onChange({ ...value, tun })} />;
+            return <TunEditor value={value.tun} platform={platform} onChange={(tun) => onChange({ ...value, tun })} />;
         case "reverse_http":
             return (
                 <div className="grid gap-4">
@@ -283,12 +287,16 @@ const AuthFields: FC<{
 const TunEditor: FC<{
     value: Extract<InboundProtocol, { type: "tun" }>["tun"];
     onChange: (value: Extract<InboundProtocol, { type: "tun" }>["tun"]) => void;
-}> = ({ value, onChange }) => {
+    platform?: string;
+}> = ({ value, onChange, platform }) => {
     const { t: uiT } = useTranslation('ui');
     const previousLegacyDriver = useRef<string | undefined>(undefined);
     const lightweight = value.stack === "lightweight";
 
     const patch = (patchValue: Partial<typeof value>) => onChange({ ...value, ...patchValue });
+    const patchDarwin = (fields: Partial<NonNullable<typeof value.darwin>>) => patch({
+        darwin: { experimentalBatch: false, batchSize: 32, pendingPackets: 32, ...value.darwin, ...fields },
+    });
     const changeStack = (stack: string) => {
         if (stack === "lightweight") {
             if (!lightweight) previousLegacyDriver.current = value.driver;
@@ -333,6 +341,20 @@ const TunEditor: FC<{
             <SwitchCard label={uiT("forceFakeip")} checked={value.forceFakeIp} onCheckedChange={(forceFakeIp) => patch({ forceFakeIp })} />
             <SwitchCard label={uiT("skipMulticast")} checked={value.skipMulticast} onCheckedChange={(skipMulticast) => patch({ skipMulticast })} />
             <SwitchCard label={uiT("autoFakeIpRoute")} description={uiT("autoFakeIpRouteDescription")} checked={value.autoFakeIpRoute ?? false} onCheckedChange={(autoFakeIpRoute) => patch({ autoFakeIpRoute })} />
+            {platform === "darwin" && <FormSection title="macOS">
+                <SwitchCard label={uiT("tunDarwinBatch")} description={uiT("tunDarwinBatchDescription")}
+                    checked={value.darwin?.experimentalBatch ?? false}
+                    onCheckedChange={(experimentalBatch) => patchDarwin({ experimentalBatch })} />
+                {value.darwin?.experimentalBatch && <>
+                    <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
+                        <SettingSelectVertical label={uiT("tunDarwinBatchSize")} value={String(value.darwin.batchSize || 32)} values={["1", "16", "32", "64", "128"]}
+                            onChange={(batchSize) => patchDarwin({ batchSize: Number(batchSize) })} />
+                        <SettingSelectVertical label={uiT("tunDarwinPendingPackets")} value={String(value.darwin.pendingPackets || value.darwin.batchSize || 32)} values={["1", "16", "32", "64", "128"]}
+                            onChange={(pendingPackets) => patchDarwin({ pendingPackets: Number(pendingPackets) })} />
+                    </div>
+                    <p className="text-xs text-ui-muted">{uiT("tunDarwinPendingHint")}</p>
+                </>}
+            </FormSection>}
             <InputList title={uiT("routes")} data={value.routes} onChange={(routes) => patch({ routes })} textarea />
             <InputList title="Excludes" data={value.excludes} onChange={(excludes) => patch({ excludes })} textarea />
             <InputList title={uiT("postUp")} data={value.postUp} onChange={(postUp) => patch({ postUp })} textarea />
