@@ -136,7 +136,7 @@ const InboundModal: FC<{
                                     }
                                 }} />}
                             {capabilitiesError && <p role="alert" className="mb-3 text-sm text-ui-danger">{t('entryCapabilitiesFailed')} <Button size="sm" onClick={() => void refreshCapabilities()}>{t('retry')}</Button></p>}
-                            <FormSection title={uiT("connection")}><InboundTaskEditor key={`${id}:${preset}`} value={inbound} onChange={setDraft} protocols={supportedProtocols} defaultAdvanced={preset === 'custom'} /></FormSection>
+                            <FormSection title={uiT("connection")}><InboundTaskEditor key={`${id}:${preset}`} value={inbound} onChange={setDraft} protocols={supportedProtocols} platform={capabilities?.platform} defaultAdvanced={preset === 'custom'} /></FormSection>
                             {saveError && <p role="alert" className="mt-3 text-sm text-ui-danger">{saveError}</p>}
                         </div>
                     )}

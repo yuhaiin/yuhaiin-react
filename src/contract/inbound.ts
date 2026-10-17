@@ -71,6 +71,7 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
                     mtu: 0,
                     forceFakeIp: false,
                     autoFakeIpRoute: true,
+                    darwin: { experimentalBatch: false, batchSize: 32, pendingPackets: 32 },
                     skipMulticast: false,
                     driver: "fdbased",
                     portal: "",
