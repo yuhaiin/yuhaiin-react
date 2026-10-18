@@ -91,6 +91,15 @@ it('keeps Darwin batching off by default and persists per-TUN choices', () => {
 });
 
 describe('WireGuard inbound contract', () => {
+    it('does not use the WireGuard display label as the Hysteria2 listen address', () => {
+        const wireguard = selectInboundProtocol(createDefaultInbound('wg'), 'wireguard');
+        const hysteria = selectInboundProtocol(wireguard, 'hysteria2');
+        expect(hysteria.network).toEqual({
+            type: 'tcp_udp',
+            tcp_udp: { host: ':9002', udp: 'udp_only' },
+        });
+    });
+
     it('creates a memory-only listener with editable peers', () => {
         const result = selectInboundProtocol(createDefaultInbound('wg'), 'wireguard');
         expect(result.network.type).toBe('empty');
