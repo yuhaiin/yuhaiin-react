@@ -672,5 +672,17 @@
   "tunDarwinBatchDescription": "Off by default. Saving restarts this TUN. Unsupported macOS devices automatically use single-packet I/O.",
   "tunDarwinBatchSize": "Maximum packets per batch",
   "tunDarwinPendingPackets": "Pending packet limit",
-  "tunDarwinPendingHint": "The actual queue may be smaller due to MTU and system buffer limits."
+  "tunDarwinPendingHint": "The actual queue may be smaller due to MTU and system buffer limits.",
+  "wgNoSystemTun": "WireGuard serves UDP clients through the in-memory lightweight stack; no system TUN, kernel routes or root privileges are needed.",
+  "wgNoExtraTransports": "WireGuard manages its own encrypted UDP transport. Additional transports are not supported.",
+  "wgPrivateKey": "Server private key (base64)",
+  "wgListenPort": "UDP listen port",
+  "wgServerAddresses": "Server tunnel addresses (CIDR)",
+  "wgAddressesHint": "For example: 10.66.0.1/24 and fd66::1/64. Each client must receive a unique host address.",
+  "wgPeers": "Client peers",
+  "wgPeer": "Peer",
+  "wgPublicKey": "Client public key (base64)",
+  "wgPresharedKey": "Preshared key (optional, base64)",
+  "wgAllowedIps": "Client host IPs (/32 or /128)",
+  "wgSecurityHint": "Set only a unique /32 or /128 client address per peer on the server. The client can use 0.0.0.0/0 as its AllowedIPs. Protect private keys and backups."
 }

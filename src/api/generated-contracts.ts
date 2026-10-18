@@ -221,6 +221,7 @@ export namespace Go {
       | { type: "tproxy"; tproxy: TProxyProtocol }
       | { type: "redir"; redir: RedirProtocol }
       | { type: "tun"; tun: TunProtocol }
+      | { type: "wireguard"; wireguard: WireguardProtocol }
       | { type: "krunlet"; krunlet: KrunletProtocol }
       | { type: "reverse_http"; reverse_http: ReverseHTTPProtocol }
       | { type: "reverse_tcp"; reverse_tcp: ReverseTCPProtocol }
@@ -283,6 +284,18 @@ export namespace Go {
       experimentalBatch: boolean;
       batchSize?: number;
       pendingPackets?: number;
+    }
+    export interface WireguardProtocol {
+      privateKey: string;
+      listenPort: number;
+      addresses: string[];
+      mtu?: number;
+      peers: WireguardPeer[];
+    }
+    export interface WireguardPeer {
+      publicKey: string;
+      preSharedKey?: string;
+      allowedIps: string[];
     }
     export interface KrunletProtocol {
       socket: string;

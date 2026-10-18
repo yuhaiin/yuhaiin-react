@@ -82,6 +82,8 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
                     postDown: [],
                 },
             };
+        case "wireguard":
+            return { type, wireguard: { privateKey: "", listenPort: 51820, addresses: ["10.66.0.1/24"], mtu: 1420, peers: [] } };
         case "krunlet":
             return { type, krunlet: { socket: "" } };
         case "reverse_http":
@@ -154,8 +156,15 @@ export function createDefaultInbound(id: string): Inbound {
 export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["type"]): Inbound {
     const protocol = inbound.protocol.type === type
         ? inbound.protocol : createDefaultProtocol(type);
-    if (["tun", "tproxy", "redir", "krunlet"].includes(type)) return normalizeInbound({ ...inbound, protocol, network: { type: "empty", empty: {} }, transports: [] });
-    if (type !== "hysteria2") return normalizeInbound({ ...inbound, protocol });
+    if (["tun", "tproxy", "redir", "krunlet", "wireguard"].includes(type)) return normalizeInbound({ ...inbound, protocol, network: { type: "empty", empty: {} }, transports: [] });
+    if (type !== "hysteria2") {
+        // A virtual inbound has no network listener; restore a normal listener
+        // when switching back to a stream protocol.
+        if (inbound.protocol.type === "wireguard" && inbound.network.type === "empty") {
+            return normalizeInbound({ ...inbound, protocol, network: createDefaultNetwork(), transports: [] });
+        }
+        return normalizeInbound({ ...inbound, protocol });
+    }
     const host = inboundListen(inbound) || ":9002";
     const certificate = inbound.transports.find(item => item.type === "tls" || item.type === "tls_auto");
     return normalizeInbound({
@@ -197,6 +206,7 @@ export function inboundListen(value: Inbound): string {
             if (value.protocol.type === "tproxy") return value.protocol.tproxy.host;
             if (value.protocol.type === "redir") return value.protocol.redir.host;
             if (value.protocol.type === "tun") return value.protocol.tun.portal;
+            if (value.protocol.type === "wireguard") return `UDP :${value.protocol.wireguard.listenPort}`;
             return "";
     }
 }
