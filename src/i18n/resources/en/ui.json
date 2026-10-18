@@ -685,4 +685,9 @@
   "wgPresharedKey": "Preshared key (optional, base64)",
   "wgAllowedIps": "Client host IPs (/32 or /128)",
   "wgSecurityHint": "Set only a unique /32 or /128 client address per peer on the server. The client can use 0.0.0.0/0 as its AllowedIPs. Protect private keys and backups."
+  "sshHostKey": "Server host key / SHA256 fingerprint",
+  "sshKeepAliveSeconds": "SSH keep-alive (seconds, 0 = off)",
+  "sshPrivateKeyPassphrase": "Private key passphrase",
+  "sshPrivateKey": "SSH private key (PEM / OpenSSH)",
+  "sshTCPOnlyHelp": "SSH forwards TCP only. UDP traffic needs a separate outbound. Verify the server's host key independently."
 }

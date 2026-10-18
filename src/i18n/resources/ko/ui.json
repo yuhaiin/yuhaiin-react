@@ -685,4 +685,9 @@
   "wgPresharedKey": "사전 공유 키 (선택, base64)",
   "wgAllowedIps": "클라이언트 호스트 IP (/32 또는 /128)",
   "wgSecurityHint": "서버에서 피어마다 고유한 /32 또는 /128을 설정하세요. 클라이언트 AllowedIPs는 0.0.0.0/0을 사용할 수 있습니다. 개인 키와 백업을 보호하세요."
+  "sshHostKey": "서버 호스트 키 / SHA256 지문",
+  "sshKeepAliveSeconds": "SSH 킵얼라이브 (초, 0 = 끔)",
+  "sshPrivateKeyPassphrase": "개인 키 암호",
+  "sshPrivateKey": "SSH 개인 키 (PEM / OpenSSH)",
+  "sshTCPOnlyHelp": "SSH는 TCP만 전달합니다. UDP에는 별도 아웃바운드가 필요합니다. 서버 호스트 키를 별도로 확인하세요."
 }

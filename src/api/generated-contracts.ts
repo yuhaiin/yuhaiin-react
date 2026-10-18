@@ -468,6 +468,7 @@ export namespace Go {
       | { type: "simple"; simple: Fixed }
       | { type: "none"; none: None }
       | { type: "socks5"; socks5: Socks5 }
+      | { type: "ssh"; ssh: SSH }
       | { type: "http"; http: HTTP }
       | { type: "direct"; direct: Direct }
       | { type: "reject"; reject: Reject }
@@ -700,6 +701,14 @@ export namespace Go {
       password: string;
       hostname: string;
       override_port?: number;
+    }
+    export interface SSH {
+      user: string;
+      password?: string;
+      private_key?: string;
+      private_key_passphrase?: string;
+      host_key: string;
+      keep_alive_seconds?: number;
     }
     export interface HTTP {
       user: string;

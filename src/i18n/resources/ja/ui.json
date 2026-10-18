@@ -685,4 +685,9 @@
   "wgPresharedKey": "事前共有鍵（任意、base64）",
   "wgAllowedIps": "クライアント IP（/32 または /128）",
   "wgSecurityHint": "サーバー側は Peer ごとに重複しない /32 または /128 を設定してください。クライアント側では AllowedIPs に 0.0.0.0/0 を使用できます。秘密鍵とバックアップを保護してください。"
+  "sshHostKey": "サーバーホスト鍵 / SHA256 指紋",
+  "sshKeepAliveSeconds": "SSH キープアライブ (秒、0 = 無効)",
+  "sshPrivateKeyPassphrase": "秘密鍵のパスフレーズ",
+  "sshPrivateKey": "SSH 秘密鍵 (PEM / OpenSSH)",
+  "sshTCPOnlyHelp": "SSH は TCP のみ転送します。UDP は別のアウトバウンドが必要です。ホスト鍵は別経路で検証してください。"
 }
