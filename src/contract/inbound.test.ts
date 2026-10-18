@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createDefaultInbound, createDefaultProtocol, normalizeInbound, selectTunStack, type Inbound } from './inbound';
+import { createDefaultInbound, createDefaultProtocol, normalizeInbound, selectInboundProtocol, selectTunStack, type Inbound } from './inbound';
 
 describe('TUN automatic FakeIP route defaults', () => {
     it('enables automatic FakeIP routes for newly created TUNs', () => {
@@ -88,4 +88,27 @@ it('keeps Darwin batching off by default and persists per-TUN choices', () => {
     const legacy = normalizeInbound({ ...createDefaultInbound('legacy'), protocol });
     if (legacy.protocol.type !== 'tun') throw new Error('unexpected protocol');
     expect(legacy.protocol.tun.darwin?.experimentalBatch ?? false).toBe(false);
+});
+
+describe('WireGuard inbound contract', () => {
+    it('does not use the WireGuard display label as the Hysteria2 listen address', () => {
+        const wireguard = selectInboundProtocol(createDefaultInbound('wg'), 'wireguard');
+        const hysteria = selectInboundProtocol(wireguard, 'hysteria2');
+        expect(hysteria.network).toEqual({
+            type: 'tcp_udp',
+            tcp_udp: { host: ':9002', udp: 'udp_only' },
+        });
+    });
+
+    it('creates a memory-only listener with editable peers', () => {
+        const result = selectInboundProtocol(createDefaultInbound('wg'), 'wireguard');
+        expect(result.network.type).toBe('empty');
+        expect(result.transports).toEqual([]);
+        if (result.protocol.type !== 'wireguard') throw new Error('expected WireGuard');
+        expect(result.protocol.wireguard).toMatchObject({
+            listenPort: 51820, addresses: ['10.66.0.1/24'], mtu: 1420, peers: [],
+        });
+        const restored = normalizeInbound(JSON.parse(JSON.stringify(result)));
+        expect(restored.protocol).toEqual(result.protocol);
+    });
 });

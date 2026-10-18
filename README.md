@@ -36,3 +36,14 @@ To preview the forms with synthetic API data:
 npm run dev:msw
 # Open http://127.0.0.1:5175/?scenario=vpn and choose Outbound.
 ```
+
+## WireGuard server inbound
+
+The inbound editor supports **WireGuard** servers backed by yuhaiin's userspace
+lightweight TCP/IP stack. Configure a UDP listen port, server key, gateway CIDRs,
+and one or more client public keys with unique /32 or /128 addresses.
+This feature requires the matching yuhaiin backend, and does not create a host
+TUN interface or install host routes. See the
+[backend setup guide](https://github.com/yuhaiin/yuhaiin/blob/main/docs/wireguard-inbound.md)
+for a complete server JSON and standard WireGuard client example.
+Protect saved configurations and backups containing private keys.

@@ -18,7 +18,7 @@ import { FC, useId, useRef, useState } from "react";
 
 const networkTypes: InboundNetwork["type"][] = ["empty", "tcp_udp", "quic"];
 
-const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "krunlet", "reverse_http", "reverse_tcp", "none"];
+const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "wireguard", "krunlet", "reverse_http", "reverse_tcp", "none"];
 
 const transportTypes: InboundTransport["type"][] = ["normal", "tls", "mux", "http2", "websocket", "reality", "tls_auto", "http_mock", "aead", "proxy"];
 
@@ -89,6 +89,10 @@ const NetworkSection: FC<{
 
     const [choice, setChoice] = useState<InboundNetwork["type"] | undefined>();
     const selected = choice ?? inbound.network.type;
+
+    if (inbound.protocol.type === "wireguard") {
+        return <p className="text-sm text-ui-muted">{uiT("wgNoSystemTun")}</p>;
+    }
 
     if (inbound.protocol.type === "hysteria2") {
         return <NetworkEditor value={inbound.network} udpOnly onChange={(network) => onChange(normalizeInbound({ ...inbound, network }))} />;
@@ -254,6 +258,8 @@ const ProtocolConfigEditor: FC<{
             );
         case "redir":
             return <SettingInputVertical label={uiT("host")} value={value.redir.host} onChange={(host) => onChange({ ...value, redir: { ...value.redir, host } })} placeholder=":12345" />;
+        case "wireguard":
+            return <WireguardServerEditor value={value.wireguard} onChange={(wireguard) => onChange({ ...value, wireguard })} />;
         case "tun":
             return <TunEditor value={value.tun} platform={platform} onChange={(tun) => onChange({ ...value, tun })} />;
         case "reverse_http":
@@ -280,6 +286,59 @@ const AuthFields: FC<{
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <SettingInputVertical label={uiT("username")} value={username} onChange={(username) => onChange({ username })} />
             <SettingInputVertical label={uiT("password")} value={password} onChange={(password) => onChange({ password })} />
+        </div>
+    );
+};
+
+const WireguardServerEditor: FC<{
+    value: Extract<InboundProtocol, { type: "wireguard" }>["wireguard"];
+    onChange: (value: Extract<InboundProtocol, { type: "wireguard" }>["wireguard"]) => void;
+}> = ({ value, onChange }) => {
+    const { t: uiT } = useTranslation("ui");
+    const peers = value.peers ?? [];
+    const patch = (fields: Partial<typeof value>) => onChange({ ...value, ...fields });
+    const updatePeer = (index: number, fields: Partial<(typeof peers)[number]>) =>
+        patch({ peers: peers.map((peer, i) => i === index ? { ...peer, ...fields } : peer) });
+
+    return (
+        <div className="grid gap-4">
+            <p className="text-sm text-ui-muted">{uiT("wgNoSystemTun")}</p>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <SettingInputVertical label={uiT("wgPrivateKey")} type="password" value={value.privateKey}
+                    onChange={(privateKey) => patch({ privateKey })} />
+                <SettingInputVertical label={uiT("wgListenPort")} type="number" min={1} max={65535}
+                    value={String(value.listenPort)} onChange={(listenPort) => patch({ listenPort: numberValue(listenPort) })} />
+                <SettingInputVertical label="MTU" type="number" min={576} max={65535}
+                    value={String(value.mtu ?? 1420)} onChange={(mtu) => patch({ mtu: numberValue(mtu) })} />
+            </div>
+            <InputList title={uiT("wgServerAddresses")} data={value.addresses ?? []}
+                onChange={(addresses) => patch({ addresses })} textarea />
+            <p className="text-xs text-ui-muted">{uiT("wgAddressesHint")}</p>
+            <div className="flex items-center justify-between gap-3">
+                <SettingLabel className="mb-0">{uiT("wgPeers")}</SettingLabel>
+                <Button size="sm" onClick={() => patch({ peers: [...peers, { publicKey: "", preSharedKey: "", allowedIps: [] }] })}>
+                    <Plus size={16} className="mr-1" />{uiT("add")}
+                </Button>
+            </div>
+            {peers.map((peer, index) => (
+                <div key={index} className="grid gap-4 rounded-ui-lg border border-ui-border p-4">
+                    <div className="flex items-center justify-between">
+                        <span className="font-semibold">{uiT("wgPeer")} #{index + 1}</span>
+                        <Button size="icon" variant="outline-danger"
+                            aria-label={`${uiT("delete")} ${uiT("wgPeer")} ${index + 1}`}
+                            onClick={() => patch({ peers: peers.filter((_, i) => i !== index) })}>
+                            <Trash size={16} />
+                        </Button>
+                    </div>
+                    <SettingInputVertical label={uiT("wgPublicKey")} value={peer.publicKey}
+                        onChange={(publicKey) => updatePeer(index, { publicKey })} />
+                    <SettingInputVertical label={uiT("wgPresharedKey")} type="password" value={peer.preSharedKey ?? ""}
+                        onChange={(preSharedKey) => updatePeer(index, { preSharedKey })} />
+                    <InputList title={uiT("wgAllowedIps")} data={peer.allowedIps}
+                        onChange={(allowedIps) => updatePeer(index, { allowedIps })} textarea />
+                </div>
+            ))}
+            <p className="text-xs text-ui-muted">{uiT("wgSecurityHint")}</p>
         </div>
     );
 };
@@ -608,6 +667,7 @@ const TransportSection: FC<{
         onChange(normalizeInbound({ ...inbound, transports: transports.filter((_, current) => current !== index) }));
     };
 
+    if (inbound.protocol.type === "wireguard") return <p className="text-sm text-ui-muted">{uiT("wgNoExtraTransports")}</p>;
     if (inbound.protocol.type === "hysteria2") return <HysteriaTLSSection inbound={inbound} onChange={onChange} />;
 
     return (
