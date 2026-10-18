@@ -300,5 +300,11 @@
   "hostTargetHelp": "호스트 또는 IP를 IP 주소나 호스트 별칭에 매핑합니다. 포트별 매핑도 지원합니다.",
   "editHostMapping": "{{host}} 편집",
   "deleteHostMapping": "{{host}} 삭제할까요?",
-  "subscriptionAutoDetect": "자동"
+  "subscriptionAutoDetect": "자동",
+  "fakeIPTab": "FakeIP 매핑",
+  "fakeIPListHelp": "현재 IPv4 및 IPv6 풀의 매핑입니다. 삭제하면 역방향 조회도 제거됩니다. DNS 요청으로 매핑이 다시 생성될 수 있습니다.",
+  "searchFakeIP": "도메인 또는 전체 IP 주소 검색",
+  "deleteFakeIPMapping": "{{domain}} → {{ip}} 매핑을 삭제할까요?",
+  "fakeIPDeleted": "FakeIP 매핑이 삭제되었습니다.",
+  "fakeIPAlreadyRemoved": "이 매핑은 더 이상 존재하지 않습니다."
 }

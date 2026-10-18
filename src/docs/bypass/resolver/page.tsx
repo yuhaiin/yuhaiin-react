@@ -19,6 +19,7 @@ import { Fakedns } from './fakedns';
 import { Hosts } from './hosts';
 import { Server } from './server';
 import { DNSCache } from './cache';
+import { FakeIPList } from './fakeip';
 import { DNSRoles } from './roles';
 
 const PAGE_SIZE = 12;
@@ -44,17 +45,18 @@ export default function ResolverComponent() {
         reveal(); window.addEventListener('resize', reveal);
         return () => window.removeEventListener('resize', reveal);
     }, [tab, t]);
-    const entries = [['resolvers', uiT('resolvers')], ['roles', t('dnsRolesTab')], ['server', t('dnsServerTab')], ['hosts', uiT('staticHosts')], ['cache', t('dnsCacheTab')]];
+    const entries = [['resolvers', uiT('resolvers')], ['roles', t('dnsRolesTab')], ['server', t('dnsServerTab')], ['hosts', uiT('staticHosts')], ['cache', t('dnsCacheTab')], ['fakeip', t('fakeIPTab')]];
     return <MainContainer className="max-w-[1440px]">
         <header className="mb-5"><h1 className="sr-only text-2xl font-semibold tracking-tight text-ui-heading lg:not-sr-only">{t('dnsTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('dnsPageHelp')}</p></header>
         <LayoutGroup id={groupId}><Tabs.Root activationMode="manual" value={tab} onValueChange={async next => { if (next !== tab && await allowNavigation()) { setDirection(Math.sign(entries.findIndex(([key]) => key === next) - entries.findIndex(([key]) => key === tab))); setTab(next); } }}>
             <Tabs.List ref={tabs} aria-label={t('dnsSections')} className="mb-6 flex min-w-0 gap-1 overflow-x-auto border-b border-ui-border">
-                {entries.map(([value, label]) => <Tabs.Trigger key={value} value={value} className="relative min-h-11 shrink-0 whitespace-nowrap border-b-2 border-transparent px-3 py-2 text-sm text-ui-muted transition-colors hover:text-ui-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus data-[state=active]:font-semibold data-[state=active]:text-ui-primary">{label}{value === tab && <motion.span aria-hidden="true" layoutId="dns-active-tab" className="absolute -bottom-0.5 inset-x-0 h-0.5 bg-ui-primary" transition={{ duration: reduced ? 0 : 0.2, ease: "easeOut" }} />}</Tabs.Trigger>)}
+                {entries.map(([value, label]) => <Tabs.Trigger key={value} value={value} className="relative min-h-11 shrink-0 whitespace-nowrap rounded-t-ui-md px-3 py-2 text-sm text-ui-muted transition-colors hover:text-ui-heading focus-visible:bg-ui-selected focus-visible:outline-none data-[state=active]:font-semibold data-[state=active]:text-ui-primary">{label}{value === tab && <motion.span aria-hidden="true" layoutId="dns-active-tab" className="pointer-events-none absolute bottom-0 inset-x-0 h-0.5 bg-ui-primary" transition={{ duration: reduced ? 0 : 0.2, ease: "easeOut" }} />}</Tabs.Trigger>)}
             </Tabs.List>
             <TabContent direction={direction} value="resolvers" className="min-w-0"><ResolverList /></TabContent>
             <TabContent direction={direction} value="roles" className="min-w-0"><DNSRoles /></TabContent>
             <TabContent direction={direction} value="server" className="min-w-0 space-y-6"><Server /><Fakedns /></TabContent>
             <TabContent direction={direction} value="hosts" className="min-w-0"><Hosts /></TabContent>
+            <TabContent direction={direction} value="fakeip" className="min-w-0"><FakeIPList /></TabContent>
             <TabContent direction={direction} value="cache" className="min-w-0"><DNSCache /></TabContent>
         </Tabs.Root></LayoutGroup>
     </MainContainer>;

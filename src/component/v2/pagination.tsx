@@ -73,10 +73,7 @@ export function Pagination({
                         <Select
                             value={String(currentPage)}
                             onValueChange={(value) => onPageChange(Number(value))}
-                            items={Array.from({ length: totalPages }, (_, index) => {
-                                const page = index + 1;
-                                return { value: String(page), label: String(page) };
-                            })}
+                            items={pages.filter((page): page is number => typeof page === 'number').map(page => ({ value: String(page), label: String(page) }))}
                             size="sm"
                             triggerClassName="border-0 bg-transparent font-medium tabular-nums text-ui-heading shadow-none [&>span:first-child]:text-center"
                             contentClassName="min-w-[72px]"

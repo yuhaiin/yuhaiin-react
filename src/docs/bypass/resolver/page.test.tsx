@@ -14,6 +14,7 @@ vi.mock('./roles', () => ({ DNSRoles: () => <div>Query policies</div> }));
 vi.mock('./server', () => ({ Server: () => <div>DNS listener</div> }));
 vi.mock('./hosts', () => ({ Hosts: () => null }));
 vi.mock('./fakedns', () => ({ Fakedns: () => null }));
+vi.mock('./fakeip', () => ({ FakeIPList: () => <div>FakeIP mappings</div> }));
 vi.mock('./cache', () => ({ DNSCache: () => <div>Cache browser</div> }));
 vi.mock('@/component/resolver-editor', () => ({ ResolverModal: ({ id }: { id: string }) => {
     const { value, setValue, dirty } = useEditorDraft(id, undefined, () => ({ name: id }));
@@ -70,3 +71,9 @@ it('guards leaving a tab with an unsaved resolver draft', async () => {
 });
 
 vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));
+
+it('opens the FakeIP mappings tab', async () => {
+    await render();
+    await tab('fakeIPTab');
+    expect(host.textContent).toContain('FakeIP mappings');
+});

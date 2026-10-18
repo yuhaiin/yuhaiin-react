@@ -300,5 +300,11 @@
   "hostTargetHelp": "ホスト名や IP を IP アドレスまたは別のホスト名に対応付けます。ポートごとの設定も使えます。",
   "editHostMapping": "{{host}} を編集",
   "deleteHostMapping": "{{host}} を削除しますか？",
-  "subscriptionAutoDetect": "自動"
+  "subscriptionAutoDetect": "自動",
+  "fakeIPTab": "FakeIP マッピング",
+  "fakeIPListHelp": "現在の IPv4・IPv6 プールのマッピングです。削除すると逆引きも削除されます。DNS リクエストにより再作成される場合があります。",
+  "searchFakeIP": "ドメインまたは完全な IP アドレスで検索",
+  "deleteFakeIPMapping": "{{domain}} → {{ip}} のマッピングを削除しますか？",
+  "fakeIPDeleted": "FakeIP マッピングを削除しました。",
+  "fakeIPAlreadyRemoved": "このマッピングは既に存在しません。"
 }

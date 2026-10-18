@@ -59,3 +59,7 @@ export function normalizeFakeDNS(value: Partial<FakeDNS> | undefined): FakeDNS {
     skipCheckList: value?.skipCheckList ?? [],
   };
 }
+
+export type FakeIPEntry = Go.resolver.FakeIPEntry;
+export type FakeIPDeleteResponse = Go.resolver.FakeIPDeleteResponse;
+export type FakeIPEntryList = { items: FakeIPEntry[]; page: { page: number; pageSize: number; total: number } };

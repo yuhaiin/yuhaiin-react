@@ -1,6 +1,6 @@
 import type { Go } from "@/api/generated-contracts";
 import { requestJSON } from "@/api/client";
-import type { DNSCacheClearResponse, DNSCacheList, FakeDNS, Resolver, ResolverList, ResolverServer } from "@/contract/resolver";
+import type { DNSCacheClearResponse, DNSCacheList, FakeDNS, FakeIPEntry, FakeIPEntryList, FakeIPDeleteResponse, Resolver, ResolverList, ResolverServer } from "@/contract/resolver";
 import { normalizeFakeDNS, normalizeResolver } from "@/contract/resolver";
 
 export async function listResolvers(params?: { page?: number; pageSize?: number; query?: string }): Promise<ResolverList> {
@@ -79,4 +79,12 @@ export function saveHostEntry(item: HostEntry, create: boolean): Promise<HostEnt
 }
 export function deleteHostEntry(host: string): Promise<void> {
   return requestJSON('DELETE', `/api/v2/resolver/hosts/entries/${encodeURIComponent(host)}`);
+}
+
+export function listFakeIPEntries(page: number, pageSize: number, query: string): Promise<FakeIPEntryList> {
+  return requestJSON("GET", "/api/v2/resolver/fakeip/entries", undefined, { page, page_size: pageSize, query });
+}
+
+export function deleteFakeIPEntry(entry: FakeIPEntry): Promise<FakeIPDeleteResponse> {
+  return requestJSON("DELETE", `/api/v2/resolver/fakeip/entries/${encodeURIComponent(entry.ip)}/${encodeURIComponent(entry.domain)}`);
 }

@@ -52,6 +52,8 @@ export type RPCOperation =
   | "resolver.delete"
   | "resolver.fakedns.get"
   | "resolver.fakedns.put"
+  | "resolver.fakeip.entries"
+  | "resolver.fakeip.entry.delete"
   | "resolver.get"
   | "resolver.hosts.entries"
   | "resolver.hosts.entry.delete"
@@ -142,6 +144,8 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "PUT", pattern: "/api/v2/resolver/fakedns", operation: "resolver.fakedns.put" },
   { method: "GET", pattern: "/api/v2/resolver/server", operation: "resolver.server.get" },
   { method: "PUT", pattern: "/api/v2/resolver/server", operation: "resolver.server.put" },
+  { method: "GET", pattern: "/api/v2/resolver/fakeip/entries", operation: "resolver.fakeip.entries" },
+  { method: "DELETE", pattern: "/api/v2/resolver/fakeip/entries/{ip}/{domain}", operation: "resolver.fakeip.entry.delete" },
   { method: "GET", pattern: "/api/v2/resolver/cache", operation: "resolver.cache.get" },
   { method: "DELETE", pattern: "/api/v2/resolver/cache/{resolver}/{domain}", operation: "resolver.cache.delete" },
   { method: "GET", pattern: "/api/v2/subscriptions", operation: "subscriptions.get" },
