@@ -165,7 +165,9 @@ export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["t
         }
         return normalizeInbound({ ...inbound, protocol });
     }
-    const host = inboundListen(inbound) || ":9002";
+    // inboundListen() returns a display label ("UDP :51820") for WireGuard,
+    // not a socket address that Hysteria2 can bind.
+    const host = inbound.protocol.type === "wireguard" ? ":9002" : inboundListen(inbound) || ":9002";
     const certificate = inbound.transports.find(item => item.type === "tls" || item.type === "tls_auto");
     return normalizeInbound({
         ...inbound,
