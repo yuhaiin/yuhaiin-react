@@ -852,6 +852,13 @@ export namespace Go {
     export type Mux = Concurrency;
   }
   export namespace resolver {
+    export interface FakeIPEntry {
+      domain: string;
+      ip: string;
+    }
+    export interface FakeIPDeleteResponse {
+      removed: number;
+    }
     export interface HostEntry {
       host: string;
       target: string;

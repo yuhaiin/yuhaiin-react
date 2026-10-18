@@ -300,5 +300,11 @@
   "hostTargetHelp": "Map a host or IP to an IP address or host alias. Port-specific mappings are also supported.",
   "editHostMapping": "Edit {{host}}",
   "deleteHostMapping": "Delete {{host}}?",
-  "subscriptionAutoDetect": "Auto"
+  "subscriptionAutoDetect": "Auto",
+  "fakeIPTab": "FakeIP mappings",
+  "fakeIPListHelp": "Mappings in the current IPv4 and IPv6 pools. Deleting a mapping removes its reverse lookup; DNS requests may create a new mapping.",
+  "searchFakeIP": "Search domain or full IP address",
+  "deleteFakeIPMapping": "Delete mapping for {{domain}} → {{ip}}?",
+  "fakeIPDeleted": "FakeIP mapping deleted.",
+  "fakeIPAlreadyRemoved": "This mapping no longer exists."
 }

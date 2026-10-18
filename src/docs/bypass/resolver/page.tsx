@@ -19,6 +19,7 @@ import { Fakedns } from './fakedns';
 import { Hosts } from './hosts';
 import { Server } from './server';
 import { DNSCache } from './cache';
+import { FakeIPList } from './fakeip';
 import { DNSRoles } from './roles';
 
 const PAGE_SIZE = 12;
@@ -44,7 +45,7 @@ export default function ResolverComponent() {
         reveal(); window.addEventListener('resize', reveal);
         return () => window.removeEventListener('resize', reveal);
     }, [tab, t]);
-    const entries = [['resolvers', uiT('resolvers')], ['roles', t('dnsRolesTab')], ['server', t('dnsServerTab')], ['hosts', uiT('staticHosts')], ['cache', t('dnsCacheTab')]];
+    const entries = [['resolvers', uiT('resolvers')], ['roles', t('dnsRolesTab')], ['server', t('dnsServerTab')], ['hosts', uiT('staticHosts')], ['cache', t('dnsCacheTab')], ['fakeip', t('fakeIPTab')]];
     return <MainContainer className="max-w-[1440px]">
         <header className="mb-5"><h1 className="sr-only text-2xl font-semibold tracking-tight text-ui-heading lg:not-sr-only">{t('dnsTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('dnsPageHelp')}</p></header>
         <LayoutGroup id={groupId}><Tabs.Root activationMode="manual" value={tab} onValueChange={async next => { if (next !== tab && await allowNavigation()) { setDirection(Math.sign(entries.findIndex(([key]) => key === next) - entries.findIndex(([key]) => key === tab))); setTab(next); } }}>
@@ -55,6 +56,7 @@ export default function ResolverComponent() {
             <TabContent direction={direction} value="roles" className="min-w-0"><DNSRoles /></TabContent>
             <TabContent direction={direction} value="server" className="min-w-0 space-y-6"><Server /><Fakedns /></TabContent>
             <TabContent direction={direction} value="hosts" className="min-w-0"><Hosts /></TabContent>
+            <TabContent direction={direction} value="fakeip" className="min-w-0"><FakeIPList /></TabContent>
             <TabContent direction={direction} value="cache" className="min-w-0"><DNSCache /></TabContent>
         </Tabs.Root></LayoutGroup>
     </MainContainer>;
