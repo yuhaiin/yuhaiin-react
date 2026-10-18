@@ -136,7 +136,7 @@
   "averageDuration": "Average request duration",
   "activeRequests": "Active requests",
   "connectionsLink": "Open existing Connections and traffic monitoring",
-  "testerHelp": "Tests the saved running snapshot. Save and activate edited rules first. Test inputs are not forwarded to any upstream.",
+  "testerHelp": "Tests the saved running snapshot. Save and activate edited rules first. Test inputs are not forwarded to any upstream. Use an inbound ID to test interception; leave it blank for a reverse listener. Fill source IP and process when admission restricts them. Tests use the saved configuration.",
   "runTest": "Test policy",
   "matchedRule": "Matched rule",
   "requiresMitm": "HTTPS request parsing requires termination or MITM",
@@ -169,5 +169,6 @@
   "acceptedRules": "accepted rules",
   "rejectedRules": "unsupported rules",
   "overrideQuery": "Replace query parameters",
-  "upstreamInUse": "Remove references from Gateway actions and rules before deleting this upstream."
+  "upstreamInUse": "Remove references from Gateway actions and rules before deleting this upstream.",
+  "clientSourceIP": "Client source IP (for interception admission)"
 }

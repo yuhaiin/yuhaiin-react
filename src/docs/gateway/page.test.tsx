@@ -152,12 +152,16 @@ it("retains unsaved input when the backend rejects an obsolete revision", async 
 it("runs the rule tester without sending HTTP traffic to the upstream", async () => {
   await render();
   await click("tester");
+  edit(input("clientSourceIP"), "192.0.2.5");
+  edit(input("process"), "browser");
   await click("runTest");
   expect(api.testGateway).toHaveBeenCalledWith(
     expect.objectContaining({
       gatewayId: "g",
       url: "https://example.com/ads/banner.js",
       method: "GET",
+      sourceIp: "192.0.2.5",
+      process: "browser",
     }),
   );
   expect(host.textContent).toContain("Ads");

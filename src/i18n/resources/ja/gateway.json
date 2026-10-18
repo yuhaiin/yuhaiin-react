@@ -136,7 +136,7 @@
   "averageDuration": "Average request duration",
   "activeRequests": "Active requests",
   "connectionsLink": "Open existing Connections and traffic monitoring",
-  "testerHelp": "Tests the saved running snapshot. Save and activate edited rules first. Test inputs are not forwarded to any upstream.",
+  "testerHelp": "Tests the saved running snapshot. Save and activate edited rules first. Test inputs are not forwarded to any upstream. 傍受のテストでは inbound ID を指定します。リバースリスナーでは空欄にします。制限がある場合は送信元 IP とプロセスも指定してください。保存済み設定で判定します。",
   "runTest": "Test policy",
   "matchedRule": "Matched rule",
   "requiresMitm": "HTTPS request parsing requires termination or MITM",
@@ -169,5 +169,6 @@
   "acceptedRules": "accepted rules",
   "rejectedRules": "unsupported rules",
   "overrideQuery": "Replace query parameters",
-  "upstreamInUse": "この上流を削除する前に、Gateway アクションとルールから参照を削除してください。"
+  "upstreamInUse": "この上流を削除する前に、Gateway アクションとルールから参照を削除してください。",
+  "clientSourceIP": "クライアント送信元 IP（傍受の判定用）"
 }

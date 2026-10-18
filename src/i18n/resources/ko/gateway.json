@@ -136,7 +136,7 @@
   "averageDuration": "Average request duration",
   "activeRequests": "Active requests",
   "connectionsLink": "Open existing Connections and traffic monitoring",
-  "testerHelp": "Tests the saved running snapshot. Save and activate edited rules first. Test inputs are not forwarded to any upstream.",
+  "testerHelp": "Tests the saved running snapshot. Save and activate edited rules first. Test inputs are not forwarded to any upstream. 가로채기 테스트에는 inbound ID를 입력하고 리버스 리스너는 비워 둡니다. 제한이 있으면 소스 IP와 프로세스도 입력하세요. 저장된 설정으로 테스트합니다.",
   "runTest": "Test policy",
   "matchedRule": "Matched rule",
   "requiresMitm": "HTTPS request parsing requires termination or MITM",
@@ -169,5 +169,6 @@
   "acceptedRules": "accepted rules",
   "rejectedRules": "unsupported rules",
   "overrideQuery": "Replace query parameters",
-  "upstreamInUse": "이 업스트림을 삭제하기 전에 Gateway 작업과 규칙에서 참조를 제거하세요."
+  "upstreamInUse": "이 업스트림을 삭제하기 전에 Gateway 작업과 규칙에서 참조를 제거하세요.",
+  "clientSourceIP": "클라이언트 소스 IP (가로채기 조건)"
 }

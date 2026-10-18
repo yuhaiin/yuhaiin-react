@@ -19,6 +19,8 @@ export function RuleTester({ config }: { config: Config }) {
   const [url, setURL] = useState("https://example.com/ads/banner.js");
   const [method, setMethod] = useState("GET");
   const [inboundId, setInbound] = useState("");
+  const [sourceIp, setSourceIP] = useState("");
+  const [process, setProcess] = useState("");
   const [headers, setHeaders] = useState<Headers>({});
   const [result, setResult] = useState<Go.gateway.TestResult>();
   const [pending, setPending] = useState(false);
@@ -29,7 +31,15 @@ export function RuleTester({ config }: { config: Config }) {
     setResult(undefined);
     try {
       setResult(
-        await testGateway({ gatewayId, url, method, inboundId, headers }),
+        await testGateway({
+          gatewayId,
+          url,
+          method,
+          inboundId,
+          sourceIp,
+          process,
+          headers,
+        }),
       );
     } catch (error) {
       setError(errorMessage(error));
@@ -58,6 +68,14 @@ export function RuleTester({ config }: { config: Config }) {
           value={inboundId}
           onChange={setInbound}
         />
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <TextField
+          label={t("clientSourceIP")}
+          value={sourceIp}
+          onChange={setSourceIP}
+        />
+        <TextField label={t("process")} value={process} onChange={setProcess} />
       </div>
       <HeaderEditor
         label={t("requestHeaders")}

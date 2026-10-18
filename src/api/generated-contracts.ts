@@ -268,6 +268,7 @@ export namespace Go {
       method: string;
       inboundId: string;
       process?: string;
+      sourceIp?: string;
       headers: Record<string, string[]>;
     }
     export interface MatchStep {
