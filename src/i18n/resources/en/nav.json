@@ -12,5 +12,6 @@
   "system": "System",
   "diagnostics": "Diagnostics",
   "help": "Help & about",
-  "routeRules": "Routing rules"
+  "routeRules": "Routing rules",
+  "gateway": "HTTP Gateway"
 }

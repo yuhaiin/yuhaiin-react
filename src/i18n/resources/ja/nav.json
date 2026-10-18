@@ -12,5 +12,6 @@
   "system": "システム",
   "diagnostics": "診断",
   "help": "ヘルプと情報",
-  "routeRules": "振り分けルール"
+  "routeRules": "振り分けルール",
+  "gateway": "HTTP Gateway"
 }
