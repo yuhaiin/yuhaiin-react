@@ -168,5 +168,6 @@
   "refreshFilter": "Update remote filter (save edits first)",
   "acceptedRules": "accepted rules",
   "rejectedRules": "unsupported rules",
-  "overrideQuery": "Replace query parameters"
+  "overrideQuery": "Replace query parameters",
+  "upstreamInUse": "Remove references from Gateway actions and rules before deleting this upstream."
 }

@@ -173,3 +173,109 @@ it("requires a separate explicit confirmation for CA generation", async () => {
   expect(api.generateGatewayCA).toHaveBeenCalledExactlyOnceWith(0);
   expect(host.textContent).toContain("fingerprint");
 });
+
+it("keeps a newly named resource expanded while editing", async () => {
+  await render();
+  await click("addGateway");
+  const details = host.querySelectorAll("details")[1];
+  expect(details.open).toBe(true);
+  const name = details.querySelector<HTMLInputElement>("input")!;
+  edit(name, "New site");
+  expect(details.open).toBe(true);
+  expect(name.value).toBe("New site");
+});
+
+it("deletes rules together with their Gateway references", async () => {
+  await render();
+  await click("rules");
+  await click("delete");
+  await click("saveActivate");
+  expect(api.saveGatewayConfig).toHaveBeenCalledWith(
+    expect.objectContaining({
+      rules: [],
+      gateways: [expect.objectContaining({ ruleIds: [] })],
+    }),
+  );
+});
+
+it("deletes a Gateway together with its interception and filters", async () => {
+  config.interceptions = [
+    {
+      inboundId: "mixed",
+      gatewayId: "g",
+      mode: "http_only",
+      domains: [],
+      excludeDomains: [],
+      ports: [],
+      sources: [],
+      processes: [],
+      unknownTls: "passthrough",
+    },
+  ];
+  config.filterLists = [
+    {
+      id: "f",
+      name: "Filter",
+      gatewayId: "g",
+      enabled: true,
+      revision: 1,
+      text: "||example.com^",
+    },
+  ];
+  await render();
+  await click("delete");
+  await click("saveActivate");
+  expect(api.saveGatewayConfig).toHaveBeenCalledWith(
+    expect.objectContaining({
+      gateways: [],
+      interceptions: [],
+      filterLists: [],
+    }),
+  );
+});
+
+it("restores header fields when discarding changes", async () => {
+  config.gateways[0].default.responseHeaders = { "X-Policy": ["original"] };
+  await render();
+  const header = () =>
+    host.querySelector<HTMLInputElement>(
+      '[aria-label="responseHeaders value 1"]',
+    )!;
+  edit(header(), "discard me");
+  expect(header().value).toBe("discard me");
+  await click("discard");
+  expect(header().value).toBe("original");
+  edit(header(), "new value");
+  await click("saveActivate");
+  expect(api.saveGatewayConfig).toHaveBeenCalledWith(
+    expect.objectContaining({
+      gateways: [
+        expect.objectContaining({
+          default: expect.objectContaining({
+            responseHeaders: { "X-Policy": ["new value"] },
+          }),
+        }),
+      ],
+    }),
+  );
+});
+
+it("clears previous response headers when changing action type", async () => {
+  config.gateways[0].default.responseHeaders = { "X-Old": ["old action"] };
+  await render();
+  const combo = host.querySelector<HTMLButtonElement>(
+    '[role="combobox"][aria-label="action"]',
+  )!;
+  await act(async () =>
+    combo.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+    ),
+  );
+  const option = [
+    ...document.querySelectorAll<HTMLElement>('[role="option"]'),
+  ].find((item) => item.textContent === "respond")!;
+  await act(async () => option.click());
+  expect(
+    host.querySelector('[aria-label="responseHeaders value 1"]'),
+  ).toBeNull();
+});

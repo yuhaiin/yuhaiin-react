@@ -11,6 +11,9 @@ import { MainContainer } from "@/component/v2/card";
 import Loading from "@/component/v2/loading";
 import type { Config } from "@/contract/gateway";
 import {
+  deleteGateway,
+  deleteRule,
+  upstreamInUse,
   errorMessage,
   newGateway,
   newRule,
@@ -24,7 +27,7 @@ import {
   FilterEditor,
 } from "./resources";
 import { AuthorityPanel, RuleTester } from "./tools";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useCloseGuard } from "@/hooks/use-editor-draft";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
@@ -180,11 +183,7 @@ export default function GatewayPage() {
               {config.gateways.map((item) => {
                 const runtime = status?.gateways.find((g) => g.id === item.id);
                 return (
-                  <details
-                    key={item.id}
-                    className="rounded-ui-sm border border-ui-border p-4"
-                    open={!item.name}
-                  >
+                  <ResourceDetails key={item.id} initialOpen={!item.name}>
                     <summary className="cursor-pointer break-words font-medium">
                       {item.name || t("newGateway")} ·{" "}
                       {item.enabled ? t("enabled") : t("disabled")} ·{" "}
@@ -207,22 +206,12 @@ export default function GatewayPage() {
                       />
                       <Button
                         variant="outline-danger"
-                        onClick={() =>
-                          change({
-                            ...config,
-                            gateways: config.gateways.filter(
-                              (g) => g.id !== item.id,
-                            ),
-                            interceptions: config.interceptions.filter(
-                              (i) => i.gatewayId !== item.id,
-                            ),
-                          })
-                        }
+                        onClick={() => change(deleteGateway(config, item.id))}
                       >
                         {t("delete")}
                       </Button>
                     </div>
-                  </details>
+                  </ResourceDetails>
                 );
               })}
             </div>
@@ -237,11 +226,7 @@ export default function GatewayPage() {
                 {t("addRule")}
               </Button>
               {config.rules.map((item) => (
-                <details
-                  key={item.id}
-                  className="rounded-ui-sm border border-ui-border p-4"
-                  open={!item.name}
-                >
+                <ResourceDetails key={item.id} initialOpen={!item.name}>
                   <summary className="cursor-pointer font-medium">
                     {item.name || t("newRule")} · {item.priority} ·{" "}
                     {t(item.action.type)}
@@ -261,17 +246,12 @@ export default function GatewayPage() {
                     />
                     <Button
                       variant="outline-danger"
-                      onClick={() =>
-                        change({
-                          ...config,
-                          rules: config.rules.filter((r) => r.id !== item.id),
-                        })
-                      }
+                      onClick={() => change(deleteRule(config, item.id))}
                     >
                       {t("delete")}
                     </Button>
                   </div>
-                </details>
+                </ResourceDetails>
               ))}
             </div>
           )}
@@ -288,11 +268,7 @@ export default function GatewayPage() {
                 {t("addUpstream")}
               </Button>
               {config.upstreams.map((item) => (
-                <details
-                  key={item.id}
-                  className="rounded-ui-sm border border-ui-border p-4"
-                  open={!item.name}
-                >
+                <ResourceDetails key={item.id} initialOpen={!item.name}>
                   <summary className="cursor-pointer font-medium">
                     {item.name || t("newUpstream")} · {item.backends.length}{" "}
                     {t("backends")}
@@ -311,6 +287,7 @@ export default function GatewayPage() {
                     />
                     <Button
                       variant="outline-danger"
+                      disabled={upstreamInUse(config, item.id)}
                       onClick={() =>
                         change({
                           ...config,
@@ -322,8 +299,13 @@ export default function GatewayPage() {
                     >
                       {t("delete")}
                     </Button>
+                    {upstreamInUse(config, item.id) && (
+                      <p className="text-sm text-ui-secondary">
+                        {t("upstreamInUse")}
+                      </p>
+                    )}
                   </div>
-                </details>
+                </ResourceDetails>
               ))}
             </div>
           )}
@@ -347,10 +329,7 @@ export default function GatewayPage() {
                   unknownTls: "passthrough",
                 };
                 return (
-                  <details
-                    key={inbound.id}
-                    className="rounded-ui-sm border border-ui-border p-4"
-                  >
+                  <ResourceDetails key={inbound.id} initialOpen={false}>
                     <summary className="cursor-pointer font-medium">
                       {inbound.name} · {t(item.mode)}
                     </summary>
@@ -372,7 +351,7 @@ export default function GatewayPage() {
                         }
                       />
                     </div>
-                  </details>
+                  </ResourceDetails>
                 );
               })}
             </div>
@@ -401,11 +380,7 @@ export default function GatewayPage() {
                 {t("addFilter")}
               </Button>
               {config.filterLists.map((item) => (
-                <details
-                  key={item.id}
-                  className="rounded-ui-sm border border-ui-border p-4"
-                  open={!item.name}
-                >
+                <ResourceDetails key={item.id} initialOpen={!item.name}>
                   <summary className="cursor-pointer font-medium">
                     {item.name || t("newFilter")}
                   </summary>
@@ -461,7 +436,7 @@ export default function GatewayPage() {
                       {t("delete")}
                     </Button>
                   </div>
-                </details>
+                </ResourceDetails>
               ))}
             </div>
           )}
@@ -548,5 +523,24 @@ export default function GatewayPage() {
         </div>
       </div>
     </MainContainer>
+  );
+}
+
+function ResourceDetails({
+  initialOpen,
+  children,
+}: {
+  initialOpen: boolean;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(initialOpen);
+  return (
+    <details
+      className="rounded-ui-sm border border-ui-border p-4"
+      open={open}
+      onToggle={(event) => setOpen(event.currentTarget.open)}
+    >
+      {children}
+    </details>
   );
 }

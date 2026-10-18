@@ -141,16 +141,21 @@ export function HeaderEditor({
   onChange: (value: Headers) => void;
 }) {
   const { t } = useTranslation("gateway");
-  const [rows, setRows] = useState(() =>
-    Object.entries(value ?? {}).flatMap(([key, values]) =>
+  const signature = JSON.stringify(value ?? {});
+  const fromValue = () => ({
+    signature,
+    rows: Object.entries(value ?? {}).flatMap(([key, values]) =>
       values.map((item) => ({ key, value: item })),
     ),
-  );
+  });
+  const [draft, setDraft] = useState(fromValue);
+  if (draft.signature !== signature) setDraft(fromValue());
+  const rows = draft.rows;
   const change = (next: typeof rows) => {
-    setRows(next);
     const headers: Headers = {};
     for (const row of next)
       if (row.key.trim()) (headers[row.key.trim()] ??= []).push(row.value);
+    setDraft({ rows: next, signature: JSON.stringify(headers) });
     onChange(headers);
   };
   return (

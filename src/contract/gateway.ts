@@ -68,3 +68,29 @@ export function errorMessage(error: unknown): string {
     return String(error.msg);
   return String(error);
 }
+
+// Delete references in the same atomic draft as their owner.
+export function deleteGateway(config: Config, id: string): Config {
+  return {
+    ...config,
+    gateways: config.gateways.filter((g) => g.id !== id),
+    interceptions: config.interceptions.filter((i) => i.gatewayId !== id),
+    filterLists: config.filterLists.filter((f) => f.gatewayId !== id),
+  };
+}
+export function deleteRule(config: Config, id: string): Config {
+  return {
+    ...config,
+    rules: config.rules.filter((r) => r.id !== id),
+    gateways: config.gateways.map((g) => ({
+      ...g,
+      ruleIds: g.ruleIds.filter((rule) => rule !== id),
+    })),
+  };
+}
+export function upstreamInUse(config: Config, id: string): boolean {
+  return [
+    ...config.rules.map((r) => r.action),
+    ...config.gateways.map((g) => g.default),
+  ].some((action) => action.type === "reverse_proxy" && action.upstream === id);
+}

@@ -168,5 +168,6 @@
   "refreshFilter": "Update remote filter (save edits first)",
   "acceptedRules": "accepted rules",
   "rejectedRules": "unsupported rules",
-  "overrideQuery": "Replace query parameters"
+  "overrideQuery": "Replace query parameters",
+  "upstreamInUse": "この上流を削除する前に、Gateway アクションとルールから参照を削除してください。"
 }

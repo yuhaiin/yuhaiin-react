@@ -168,5 +168,6 @@
   "refreshFilter": "Update remote filter (save edits first)",
   "acceptedRules": "accepted rules",
   "rejectedRules": "unsupported rules",
-  "overrideQuery": "Replace query parameters"
+  "overrideQuery": "Replace query parameters",
+  "upstreamInUse": "이 업스트림을 삭제하기 전에 Gateway 작업과 규칙에서 참조를 제거하세요."
 }
