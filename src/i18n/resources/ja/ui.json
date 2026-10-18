@@ -672,5 +672,10 @@
   "tunDarwinBatchDescription": "初期状態では無効です。保存するとこの TUN が再起動します。未対応の macOS デバイスでは単一パケット処理に自動で戻ります。",
   "tunDarwinBatchSize": "バッチあたりの最大パケット数",
   "tunDarwinPendingPackets": "待機パケット数の上限",
-  "tunDarwinPendingHint": "実際のキュー長は MTU やシステムのバッファ制限により小さくなる場合があります。"
+  "tunDarwinPendingHint": "実際のキュー長は MTU やシステムのバッファ制限により小さくなる場合があります。",
+  "sshHostKey": "サーバーホスト鍵 / SHA256 指紋",
+  "sshKeepAliveSeconds": "SSH キープアライブ (秒、0 = 無効)",
+  "sshPrivateKeyPassphrase": "秘密鍵のパスフレーズ",
+  "sshPrivateKey": "SSH 秘密鍵 (PEM / OpenSSH)",
+  "sshTCPOnlyHelp": "SSH は TCP のみ転送します。UDP は別のアウトバウンドが必要です。ホスト鍵は別経路で検証してください。"
 }

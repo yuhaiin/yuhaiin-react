@@ -1,6 +1,6 @@
 import { createDefaultProtocol, type NodeProtocol } from '@/contract/node';
 
-export const nodeTemplates = ['direct', 'socks5', 'http', 'shadowsocks', 'trojan', 'set'] as const;
+export const nodeTemplates = ['direct', 'socks5', 'http', 'shadowsocks', 'trojan', 'ssh', 'set'] as const;
 export type NodeTemplate = typeof nodeTemplates[number];
 
 export function templateChain(template: NodeTemplate): NodeProtocol[] {

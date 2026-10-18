@@ -285,6 +285,23 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                     <NumberField label={uiT("overridePort")} value={protocol.socks5.override_port} disabled={!editable} onChange={(override_port) => patch(protocol, { override_port })} />
                 </div>
             );
+        case "ssh":
+            return (
+                <div className="grid gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <StringField label={uiT("username")} value={protocol.ssh.user} disabled={!editable} onChange={(user) => patch(protocol, { user })} />
+                        <SettingInputVertical label={uiT("password")} type="password" value={protocol.ssh.password ?? ""} disabled={!editable} onChange={(password) => patch(protocol, { password })} />
+                        <SettingInputVertical label={uiT("sshHostKey")} value={protocol.ssh.host_key ?? ""} placeholder="SHA256:... / ssh-ed25519 AAAA..." disabled={!editable} onChange={(host_key) => patch(protocol, { host_key })} />
+                        <NumberField label={uiT("sshKeepAliveSeconds")} value={protocol.ssh.keep_alive_seconds} disabled={!editable} onChange={(keep_alive_seconds) => patch(protocol, { keep_alive_seconds })} />
+                        <SettingInputVertical label={uiT("sshPrivateKeyPassphrase")} type="password" value={protocol.ssh.private_key_passphrase ?? ""} disabled={!editable} onChange={(private_key_passphrase) => patch(protocol, { private_key_passphrase })} />
+                    </div>
+                    <div className="grid gap-2">
+                        <SettingLabel>{uiT("sshPrivateKey")}</SettingLabel>
+                        <textarea aria-label={uiT("sshPrivateKey")} className="min-h-32 w-full rounded-ui-md border border-ui-border bg-ui-surface p-3 font-mono text-sm text-ui-heading" spellCheck={false} autoComplete="off" value={protocol.ssh.private_key ?? ""} disabled={!editable} onChange={(event) => patch(protocol, { private_key: event.target.value })} />
+                    </div>
+                    <p className="text-sm text-ui-muted">{uiT("sshTCPOnlyHelp")}</p>
+                </div>
+            );
         case "http":
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

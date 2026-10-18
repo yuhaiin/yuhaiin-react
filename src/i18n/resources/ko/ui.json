@@ -672,5 +672,10 @@
   "tunDarwinBatchDescription": "기본적으로 꺼져 있습니다. 저장하면 이 TUN이 다시 시작됩니다. 지원하지 않는 macOS 장치는 자동으로 단일 패킷 I/O를 사용합니다.",
   "tunDarwinBatchSize": "일괄 처리당 최대 패킷 수",
   "tunDarwinPendingPackets": "대기 패킷 한도",
-  "tunDarwinPendingHint": "MTU와 시스템 버퍼 제한으로 실제 큐가 더 작을 수 있습니다."
+  "tunDarwinPendingHint": "MTU와 시스템 버퍼 제한으로 실제 큐가 더 작을 수 있습니다.",
+  "sshHostKey": "서버 호스트 키 / SHA256 지문",
+  "sshKeepAliveSeconds": "SSH 킵얼라이브 (초, 0 = 끔)",
+  "sshPrivateKeyPassphrase": "개인 키 암호",
+  "sshPrivateKey": "SSH 개인 키 (PEM / OpenSSH)",
+  "sshTCPOnlyHelp": "SSH는 TCP만 전달합니다. UDP에는 별도 아웃바운드가 필요합니다. 서버 호스트 키를 별도로 확인하세요."
 }
