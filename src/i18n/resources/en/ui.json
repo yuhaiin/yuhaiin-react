@@ -672,5 +672,10 @@
   "tunDarwinBatchDescription": "Off by default. Saving restarts this TUN. Unsupported macOS devices automatically use single-packet I/O.",
   "tunDarwinBatchSize": "Maximum packets per batch",
   "tunDarwinPendingPackets": "Pending packet limit",
-  "tunDarwinPendingHint": "The actual queue may be smaller due to MTU and system buffer limits."
+  "tunDarwinPendingHint": "The actual queue may be smaller due to MTU and system buffer limits.",
+  "sshHostKey": "Server host key / SHA256 fingerprint",
+  "sshKeepAliveSeconds": "SSH keep-alive (seconds, 0 = off)",
+  "sshPrivateKeyPassphrase": "Private key passphrase",
+  "sshPrivateKey": "SSH private key (PEM / OpenSSH)",
+  "sshTCPOnlyHelp": "SSH forwards TCP only. UDP traffic needs a separate outbound. Verify the server's host key independently."
 }

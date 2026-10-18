@@ -16,6 +16,7 @@ export type FixedAddressConfig = Partial<Go.node.FixedAddress>;
 export type FixedConfig = Omit<Partial<Go.node.Fixed>, "alternate_host"> & { alternate_host?: FixedAddressConfig[] };
 export type FixedV2Config = Omit<Partial<Go.node.FixedV2>, "addresses"> & { addresses?: FixedAddressConfig[] };
 export type Socks5Config = Partial<Go.node.Socks5>;
+export type SSHConfig = Partial<Go.node.SSH>;
 export type HTTPConfig = Partial<Go.node.HTTP>;
 export type YuubinsyaConfig = Partial<Go.node.Yuubinsya>;
 export type ConcurrencyConfig = Partial<Go.node.Concurrency>;
@@ -64,6 +65,7 @@ export type NodeProtocolConfigByType = {
   simple: FixedConfig;
   none: EmptyNodeProtocolConfig;
   socks5: Socks5Config;
+  ssh: SSHConfig;
   http: HTTPConfig;
   direct: { network_interface?: string };
   reject: EmptyNodeProtocolConfig;
@@ -206,6 +208,8 @@ function defaultProtocolConfig<T extends NodeProtocolType>(type: T): NodeProtoco
       return { headers: {} } as NodeProtocolConfig<T>;
     case "fixedv2":
       return { addresses: [] } as NodeProtocolConfig<T>;
+    case "ssh":
+      return { user: "", password: "", private_key: "", private_key_passphrase: "", host_key: "", keep_alive_seconds: 0 } as NodeProtocolConfig<T>;
     case "ikev2":
       return { gateway: "", local_id: "", psk: "", tcp: false } as NodeProtocolConfig<T>;
     case "anyconnect":
@@ -308,6 +312,7 @@ export const protocolTypes: NodeProtocolType[] = [
   "simple",
   "none",
   "socks5",
+  "ssh",
   "http",
   "direct",
   "reject",
