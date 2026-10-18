@@ -684,7 +684,7 @@
   "wgPublicKey": "Client public key (base64)",
   "wgPresharedKey": "Preshared key (optional, base64)",
   "wgAllowedIps": "Client host IPs (/32 or /128)",
-  "wgSecurityHint": "Set only a unique /32 or /128 client address per peer on the server. The client can use 0.0.0.0/0 as its AllowedIPs. Protect private keys and backups."
+  "wgSecurityHint": "Set only a unique /32 or /128 client address per peer on the server. The client can use 0.0.0.0/0 as its AllowedIPs. Protect private keys and backups.",
   "sshHostKey": "Server host key / SHA256 fingerprint",
   "sshKeepAliveSeconds": "SSH keep-alive (seconds, 0 = off)",
   "sshPrivateKeyPassphrase": "Private key passphrase",
