@@ -59,16 +59,24 @@ const newFilter = (gatewayId: string): FilterList => ({
  * remain in the current API payload until the atomic L4/L7 API is available.
  * Every edit still commits in the same revisioned Gateway transaction.
  */
+function pruneUnusedPools(config: Config): Config {
+  const used = new Set([
+    ...config.gateways.map((gateway) => gateway.default),
+    ...config.rules.map((rule) => rule.action),
+  ].filter((action) => action.type === "reverse_proxy").map((action) => action.upstream));
+  return { ...config, upstreams: config.upstreams.filter((pool) => used.has(pool.id)) };
+}
+
 export function GatewayWorkspace({ config, inbounds, status, onChange, refreshFilter, canRefreshFilter }: Props) {
   const { t } = useTranslation("gateway");
   const [selectedInbound, setSelectedInbound] = useState<Record<string, string>>({});
 
-  const updateGateway = (gateway: Gateway) => onChange({
+  const updateGateway = (gateway: Gateway) => onChange(pruneUnusedPools({
     ...config, gateways: config.gateways.map((item) => item.id === gateway.id ? gateway : item),
-  });
-  const updateRule = (rule: Rule) => onChange({
+  }));
+  const updateRule = (rule: Rule) => onChange(pruneUnusedPools({
     ...config, rules: config.rules.map((item) => item.id === rule.id ? rule : item),
-  });
+  }));
   const updateUpstream = (upstream: Upstream) => onChange({
     ...config, upstreams: config.upstreams.map((item) => item.id === upstream.id ? upstream : item),
   });
@@ -158,14 +166,14 @@ export function GatewayWorkspace({ config, inbounds, status, onChange, refreshFi
             <Section title={t("rules")} count={rules.length} initiallyOpen>
               {rules.map((rule) => (
                 <Section key={rule.id} title={rule.name || t("newRule")}>
-                  <RuleEditor item={rule} config={config} change={updateRule} />
+                  <RuleEditor item={rule} config={{ ...config, upstreams: pools }} change={updateRule} />
                   <Button variant="outline-danger" onClick={() => {
                     const isShared = config.gateways.some((other) =>
                       other.id !== gateway.id && other.ruleIds.includes(rule.id));
-                    onChange(isShared
+                    onChange(pruneUnusedPools(isShared
                       ? { ...config, gateways: config.gateways.map((g) => g.id === gateway.id
                           ? { ...g, ruleIds: g.ruleIds.filter((id) => id !== rule.id) } : g) }
-                      : deleteRule(config, rule.id));
+                      : deleteRule(config, rule.id)));
                   }}>{t("delete")}</Button>
                 </Section>
               ))}
@@ -202,7 +210,7 @@ export function GatewayWorkspace({ config, inbounds, status, onChange, refreshFi
               })}>{t("addFilter")}</Button>
             </Section>
             <Section title={t("defaultAction")} initiallyOpen>
-              <ActionEditor value={gateway.default} upstreams={config.upstreams}
+              <ActionEditor value={gateway.default} upstreams={pools}
                 onChange={(action) => updateGateway({ ...gateway, default: action })} />
             </Section>
             <Section title={t("backendPools")} count={pools.length}>
@@ -234,8 +242,8 @@ export function GatewayWorkspace({ config, inbounds, status, onChange, refreshFi
                       ...g.default, type: "reverse_proxy", upstream: upstream.id,
                     },
                   } : g);
-                onChange({ ...config, rules: nextRules, gateways: nextGateways,
-                  upstreams: [...config.upstreams, upstream] });
+                onChange(pruneUnusedPools({ ...config, rules: nextRules, gateways: nextGateways,
+                  upstreams: [...config.upstreams, upstream] }));
               }}>{t("addUpstream")}</Button>
               <p className="text-xs text-ui-secondary">{t("backendPoolHelp")}</p>
             </Section>
