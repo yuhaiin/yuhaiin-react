@@ -17,7 +17,7 @@ it('loads, saves and refreshes the nested Gateway workspace through its real RPC
     setApiUrl('http://controller');
     const workspace: GatewayWorkspaceDocument = {
         version: 2, revision: 4, gateways: [{
-            id: 'site', name: 'Site', enabled: true, revision: 1,
+            id: 'site', name: 'Site', enabled: true, debug: false, revision: 1,
             policies: [], backendPools: [], filters: [],
             interception: { mode: "https_mitm", domains: ["app.example.com"], excludeDomains: [], ports: [], sources: [], processes: [], unknownTls: "passthrough" },
             fallback: newAction('block'), maxBodyBytes: 0,

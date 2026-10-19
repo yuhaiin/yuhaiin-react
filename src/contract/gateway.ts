@@ -23,6 +23,7 @@ export const newGateway = (): Gateway => ({
   name: "",
   revision: 0,
   enabled: false,
+  debug: false,
   listen: "127.0.0.1:8080",
   allowedSources: [],
   tlsMode: "off",
@@ -118,6 +119,7 @@ export function flattenWorkspace(document: GatewayWorkspaceDocument): Config {
       id: item.id,
       name: item.name,
       enabled: item.enabled,
+      debug: item.debug,
       revision: item.revision,
       listen: item.listener?.listen ?? "",
       allowedSources: item.listener?.allowedSources ?? [],
@@ -157,6 +159,7 @@ export function groupWorkspace(config: Config): GatewayWorkspaceDocument {
         id: gateway.id,
         name: gateway.name,
         enabled: gateway.enabled,
+        debug: gateway.debug,
         revision: gateway.revision,
         listener: gateway.listen ? {
           listen: gateway.listen,

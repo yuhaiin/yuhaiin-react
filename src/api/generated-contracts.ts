@@ -169,6 +169,7 @@ export namespace Go {
       id: string;
       name: string;
       enabled: boolean;
+      debug: boolean;
       revision: number;
       listen: string;
       allowedSources: string[];
@@ -342,6 +343,7 @@ export namespace Go {
       id: string;
       name: string;
       enabled: boolean;
+      debug: boolean;
       revision: number;
       listener?: ListenerSource;
       policies: Rule[];

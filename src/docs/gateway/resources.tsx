@@ -83,6 +83,17 @@ export function GatewayEditor({
         value={item.maxBodyBytes}
         onChange={(value) => change({ ...item, maxBodyBytes: Number(value) })}
       />
+      <Toggle
+        label={t("debugLogging")}
+        value={item.debug}
+        onChange={(debug) => change({ ...item, debug })}
+      />
+      <p className="text-sm text-ui-secondary">
+        {t("debugLoggingHelp")} {" "}
+        <a className="text-ui-primary underline" href="#/docs/config/log">
+          {t("viewLogs")}
+        </a>
+      </p>
       {!minimal && <Field label={t("rules")}>
         {config.rules.length === 0 && (
           <p className="text-sm text-ui-secondary">{t("createRulesFirst")}</p>
