@@ -94,3 +94,93 @@ export function upstreamInUse(config: Config, id: string): boolean {
     ...config.gateways.map((g) => g.default),
   ].some((action) => action.type === "reverse_proxy" && action.upstream === id);
 }
+
+
+/**
+ * Gateway-first API document. Individual resource arrays are implementation
+ * details of the HTTP engine; they are not independent top-level UI objects.
+ * Route admission still requires an explicit Gateway action.
+ */
+export type WorkspaceGateway = {
+  id: string;
+  name: string;
+  enabled: boolean;
+  revision: number;
+  listener?: {
+    listen: string;
+    allowedSources: string[];
+    tlsMode: string;
+    certificateFile?: string;
+    keyFile?: string;
+  };
+  policies: Rule[];
+  backendPools: Upstream[];
+  sources: Omit<Interception, "gatewayId">[];
+  filters: FilterList[];
+  fallback: Action;
+  maxBodyBytes: number;
+};
+
+export type GatewayWorkspaceDocument = {
+  revision: number;
+  gateways: WorkspaceGateway[];
+};
+
+export function flattenWorkspace(document: GatewayWorkspaceDocument): Config {
+  return {
+    revision: document.revision,
+    gateways: document.gateways.map((item) => ({
+      id: item.id,
+      name: item.name,
+      enabled: item.enabled,
+      revision: item.revision,
+      listen: item.listener?.listen ?? "",
+      allowedSources: item.listener?.allowedSources ?? [],
+      tlsMode: item.listener?.tlsMode ?? "off",
+      certificateFile: item.listener?.certificateFile ?? "",
+      keyFile: item.listener?.keyFile ?? "",
+      ruleIds: item.policies.map((rule) => rule.id),
+      default: item.fallback,
+      maxBodyBytes: item.maxBodyBytes,
+    })),
+    rules: document.gateways.flatMap((item) => item.policies),
+    upstreams: document.gateways.flatMap((item) => item.backendPools),
+    interceptions: document.gateways.flatMap((item) =>
+      item.sources.map((source) => ({ ...source, gatewayId: item.id }))),
+    filterLists: document.gateways.flatMap((item) =>
+      item.filters.map((filter) => ({ ...filter, gatewayId: item.id }))),
+  };
+}
+
+export function groupWorkspace(config: Config): GatewayWorkspaceDocument {
+  return {
+    revision: config.revision,
+    gateways: config.gateways.map((gateway) => {
+      const policies = gateway.ruleIds.map((id) => config.rules.find((rule) => rule.id === id))
+        .filter((rule): rule is Rule => Boolean(rule));
+      const poolIDs = new Set([gateway.default, ...policies.map((rule) => rule.action)]
+        .filter((action) => action.type === "reverse_proxy")
+        .map((action) => action.upstream));
+      return {
+        id: gateway.id,
+        name: gateway.name,
+        enabled: gateway.enabled,
+        revision: gateway.revision,
+        listener: gateway.listen ? {
+          listen: gateway.listen,
+          allowedSources: gateway.allowedSources,
+          tlsMode: gateway.tlsMode,
+          certificateFile: gateway.certificateFile,
+          keyFile: gateway.keyFile,
+        } : undefined,
+        policies,
+        backendPools: config.upstreams.filter((pool) => poolIDs.has(pool.id)),
+        sources: config.interceptions.filter((source) => source.gatewayId === gateway.id)
+          .map(({ gatewayId: _owner, ...source }) => source),
+        filters: config.filterLists.filter((filter) => filter.gatewayId === gateway.id),
+        fallback: gateway.default,
+        maxBodyBytes: gateway.maxBodyBytes,
+      };
+    }),
+  };
+}
