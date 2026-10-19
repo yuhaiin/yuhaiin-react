@@ -1,5 +1,16 @@
 {
   "saveSuccess": "save successful",
   "copySuccess": "Copied JSON to clipboard",
-  "copyFailed": "Failed to copy JSON: {{message}}"
+  "copyFailed": "Failed to copy JSON: {{message}}",
+  "zeroTierNetworkId": "ZeroTier Network ID (16 hexadecimal digits)",
+  "zeroTierIdentityName": "Identity name (optional)",
+  "zeroTierListenAddress": "Physical UDP listen address",
+  "zeroTierLibraryPath": "Native library path (optional)",
+  "zeroTierLowBandwidth": "Low bandwidth mode",
+  "zeroTierMoons": "Moons (optional private roots)",
+  "zeroTierAddMoon": "Add Moon",
+  "zeroTierMoonId": "Moon {{index}} ID (hex)",
+  "zeroTierSeedAddress": "Seed node address (hex)",
+  "zeroTierJoinHelp": "Join a ZeroTier network without a system TUN device. Approve this node in the ZeroTier controller before using the outbound. Managed IPv4/IPv6 addresses and MTU come from the controller. Identity state is saved under yuhaiin's data directory so rejoining does not require authorizing a new device each time. Use distinct identity names for concurrent clients. The UDP underlay connects directly, so do not chain an upstream outbound before this protocol.",
+  "zeroTierNativeLibraryHelp": "The native library must be available for the target OS and CPU. On macOS it must be installed as a signed application library; Android builds need libztgo.so in jniLibs. The library path is primarily for development and native diagnostics."
 }

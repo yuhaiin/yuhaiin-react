@@ -1,5 +1,16 @@
 {
   "saveSuccess": "저장되었습니다",
   "copySuccess": "JSON을 클립보드에 복사했습니다",
-  "copyFailed": "JSON 복사 실패: {{message}}"
+  "copyFailed": "JSON 복사 실패: {{message}}",
+  "zeroTierNetworkId": "ZeroTier 네트워크 ID (16자리 16진수)",
+  "zeroTierIdentityName": "Identity 이름 (선택 사항)",
+  "zeroTierListenAddress": "물리 UDP 수신 주소",
+  "zeroTierLibraryPath": "네이티브 라이브러리 경로 (선택 사항)",
+  "zeroTierLowBandwidth": "저대역폭 모드",
+  "zeroTierMoons": "Moon (선택적 개인 루트)",
+  "zeroTierAddMoon": "Moon 추가",
+  "zeroTierMoonId": "Moon {{index}} ID (16진수)",
+  "zeroTierSeedAddress": "시드 노드 주소 (16진수)",
+  "zeroTierJoinHelp": "시스템 TUN 장치 없이 ZeroTier 네트워크에 참여합니다. 아웃바운드를 사용하기 전에 ZeroTier 컨트롤러에서 이 노드를 승인하세요. 관리되는 IPv4/IPv6 주소와 MTU는 컨트롤러에서 가져옵니다. Identity 상태는 yuhaiin 데이터 디렉터리에 저장되어 재시작 후에도 같은 장치로 다시 참여합니다. 여러 클라이언트를 동시에 사용하는 경우 서로 다른 Identity 이름을 지정하세요. UDP 하위 연결은 직접 연결되므로 이 프로토콜 앞에 다른 아웃바운드를 연결할 수 없습니다.",
+  "zeroTierNativeLibraryHelp": "대상 OS와 CPU에 맞는 네이티브 라이브러리가 필요합니다. macOS에서는 서명된 앱 라이브러리로 설치해야 합니다. Android 빌드에서는 libztgo.so를 jniLibs에 포함하세요. 라이브러리 경로는 주로 개발 및 네이티브 진단용입니다."
 }
