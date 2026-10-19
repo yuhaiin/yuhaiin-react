@@ -25,5 +25,7 @@ export const importGatewayCA = (request: Go.gateway.CAImport) =>
     "/api/v2/gateway/ca/import",
     request,
   );
-export const refreshGatewayFilter = (id: string) =>
-  requestJSON<Config>("POST", "/api/v2/gateway/filters/refresh", { id });
+export const refreshGatewayFilter = async (id: string): Promise<Config> =>
+  flattenWorkspace(await requestJSON<GatewayWorkspaceDocument>(
+    "POST", "/api/v2/gateway/filters/refresh", { id },
+  ));
