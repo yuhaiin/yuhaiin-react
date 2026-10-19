@@ -405,7 +405,7 @@ export function FilterEditor({
           label: g.name || g.id,
         }))}
         onChange={(gatewayId) => change({ ...item, gatewayId })}
-      />
+      />}
       <TextField
         label={t("sourceUrl")}
         value={item.url}
