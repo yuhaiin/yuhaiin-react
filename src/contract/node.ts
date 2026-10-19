@@ -32,6 +32,7 @@ export type SSTPConfig = Partial<Go.node.SSTP>;
 export type FortinetConfig = Partial<Go.node.Fortinet>;
 export type AmneziaWGConfig = Omit<Partial<Go.node.AmneziaWG>, "peers"> & { peers?: WireguardPeerConfig[] };
 export type NebulaConfig = Partial<Go.node.Nebula>;
+export type ZeroTierConfig = Omit<Partial<Go.node.ZeroTier>, 'moons'> & { moons?: Go.node.ZeroTierMoon[] };
 export type WireguardConfig = Omit<Partial<Go.node.Wireguard>, "peers"> & { peers?: WireguardPeerConfig[] };
 export type GlobalProtectConfig = Partial<Go.node.GlobalProtect>;
 export type L2TPConfig = Partial<Go.node.L2TP>;
@@ -77,6 +78,7 @@ export type NodeProtocolConfigByType = {
   fortinet: FortinetConfig;
   amneziawg: AmneziaWGConfig;
   nebula: NebulaConfig;
+  zerotier: ZeroTierConfig;
   wireguard: WireguardConfig;
   openvpn: OpenVPNConfig;
   l2tp: L2TPConfig;
@@ -218,6 +220,8 @@ function defaultProtocolConfig<T extends NodeProtocolType>(type: T): NodeProtoco
       return { endpoint: [], peers: [], mtu: 1400 } as NodeProtocolConfig<T>;
     case "nebula":
       return { config_yaml: "" } as NodeProtocolConfig<T>;
+    case "zerotier":
+      return { network_id: "", identity: "", listen: "", moons: [], low_bandwidth: false } as NodeProtocolConfig<T>;
     case "wireguard":
       return { endpoint: [], peers: [] } as NodeProtocolConfig<T>;
     case "globalprotect":
@@ -324,6 +328,7 @@ export const protocolTypes: NodeProtocolType[] = [
   "fortinet",
   "amneziawg",
   "nebula",
+  "zerotier",
   "wireguard",
   "openvpn",
   "l2tp",

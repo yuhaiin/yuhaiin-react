@@ -677,6 +677,7 @@ export namespace Go {
       | { type: "tls"; tls: TLS }
       | { type: "amneziawg"; amneziawg: AmneziaWG }
       | { type: "nebula"; nebula: Nebula }
+      | { type: "zerotier"; zerotier: ZeroTier }
       | { type: "ikev2"; ikev2: IKEv2 }
       | { type: "anyconnect"; anyconnect: AnyConnect }
       | { type: "sstp"; sstp: SSTP }
@@ -996,6 +997,18 @@ export namespace Go {
     }
     export interface Nebula {
       config_yaml: string;
+    }
+    export interface ZeroTier {
+      network_id: string;
+      identity?: string;
+      listen?: string;
+      library_path?: string;
+      low_bandwidth?: boolean;
+      moons?: ZeroTierMoon[];
+    }
+    export interface ZeroTierMoon {
+      id: string;
+      seed: string;
     }
     export interface AmneziaWG {
       secretKey: string;

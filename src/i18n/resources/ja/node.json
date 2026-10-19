@@ -1,5 +1,16 @@
 {
   "saveSuccess": "保存しました",
   "copySuccess": "JSON をクリップボードにコピーしました",
-  "copyFailed": "JSON のコピーに失敗しました: {{message}}"
+  "copyFailed": "JSON のコピーに失敗しました: {{message}}",
+  "zeroTierNetworkId": "ZeroTier ネットワーク ID（16 桁の16進数）",
+  "zeroTierIdentityName": "アイデンティティ名（任意）",
+  "zeroTierListenAddress": "物理 UDP リッスンアドレス",
+  "zeroTierLibraryPath": "ネイティブライブラリのパス（任意）",
+  "zeroTierLowBandwidth": "低帯域幅モード",
+  "zeroTierMoons": "Moon（プライベートルート、任意）",
+  "zeroTierAddMoon": "Moon を追加",
+  "zeroTierMoonId": "Moon {{index}} ID（16進数）",
+  "zeroTierSeedAddress": "シードノードアドレス（16進数）",
+  "zeroTierJoinHelp": "システム TUN デバイスを作成せずに ZeroTier ネットワークへ参加します。アウトバウンドを使う前に ZeroTier コントローラーでこのノードを承認してください。管理対象の IPv4/IPv6 アドレスと MTU はコントローラーから取得します。アイデンティティは yuhaiin のデータディレクトリに保存され、再起動後も同じデバイスとして再参加します。同時に複数のクライアントを使う場合は異なるアイデンティティ名を指定してください。UDP の下位通信は直接接続するため、このプロトコルの前に別のアウトバウンドを置けません。",
+  "zeroTierNativeLibraryHelp": "対象 OS と CPU 向けのネイティブライブラリが必要です。macOS では署名済みアプリライブラリとしてインストールしてください。Android ビルドでは libztgo.so を jniLibs に配置してください。ライブラリパスは主に開発とネイティブ診断用です。"
 }
