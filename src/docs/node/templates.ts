@@ -1,11 +1,12 @@
 import { createDefaultProtocol, type NodeProtocol } from '@/contract/node';
 
-export const nodeTemplates = ['direct', 'socks5', 'http', 'shadowsocks', 'trojan', 'ssh', 'set'] as const;
+export const nodeTemplates = ['direct', 'socks5', 'http', 'shadowsocks', 'trojan', 'ssh', 'zerotier', 'set'] as const;
 export type NodeTemplate = typeof nodeTemplates[number];
 
 export function templateChain(template: NodeTemplate): NodeProtocol[] {
     switch (template) {
         case 'direct': return [createDefaultProtocol('direct')];
+        case 'zerotier': return [createDefaultProtocol('zerotier')];
         case 'set': return [createDefaultProtocol('set')];
         case 'trojan': return [createDefaultProtocol('simple'), createDefaultProtocol('tls'), createDefaultProtocol('trojan')];
         default: return [createDefaultProtocol('simple'), createDefaultProtocol(template)];
