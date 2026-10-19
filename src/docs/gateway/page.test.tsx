@@ -31,6 +31,11 @@ let root: Root;
 let config: Config;
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubGlobal("matchMedia", () => ({
+    matches: false,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+  }));
   const gateway = {
     ...newGateway(),
     id: "g",
@@ -86,6 +91,7 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount());
   host.remove();
+  vi.unstubAllGlobals();
 });
 async function render() {
   await act(async () =>
@@ -98,9 +104,17 @@ async function render() {
 }
 async function click(label: string) {
   const button = [...host.querySelectorAll<HTMLButtonElement>("button")].find(
-    (button) => button.textContent?.trim() === label,
+    (button) => button.textContent?.trim() === label || button.getAttribute("aria-label") === label,
   );
   if (!button) throw Error(`Missing button ${label}`);
+  await act(async () => button.click());
+}
+async function selectGatewayItem(label: string) {
+  const navigation = host.querySelector<HTMLElement>('nav[aria-label="gateway"]');
+  const button = [...(navigation?.querySelectorAll<HTMLButtonElement>("button") ?? [])].find(
+    (item) => item.querySelector("span")?.textContent?.trim() === label,
+  );
+  if (!button) throw Error(`Missing Gateway item ${label}`);
   await act(async () => button.click());
 }
 
@@ -195,20 +209,19 @@ it("requires a separate explicit confirmation for CA generation", async () => {
   expect(host.textContent).toContain("fingerprint");
 });
 
-it("keeps a newly named resource expanded while editing", async () => {
+it("selects a newly created Gateway for editing", async () => {
   await render();
   await click("addGateway");
-  const details = [...host.querySelectorAll("details")].find((item) =>
-    item.querySelector("summary")?.textContent?.includes("newGateway"))!;
-  expect(details.open).toBe(true);
-  const name = details.querySelector<HTMLInputElement>("input")!;
+  const selectedGateway = host.querySelector('aside[aria-label="gateways"] button[aria-current="true"]');
+  expect(selectedGateway?.textContent).toContain("newGateway");
+  const name = input("name");
   edit(name, "New site");
-  expect(details.open).toBe(true);
   expect(name.value).toBe("New site");
 });
 
 it("deletes rules together with their Gateway references", async () => {
   await render();
+  await selectGatewayItem("Ads");
   await click("delete");
   await click("saveActivate");
   expect(api.saveGatewayConfig).toHaveBeenCalledWith(
@@ -257,6 +270,7 @@ it("deletes a Gateway together with its interception and filters", async () => {
 it("restores header fields when discarding changes", async () => {
   config.gateways[0].default.responseHeaders = { "X-Policy": ["original"] };
   await render();
+  await selectGatewayItem("defaultAction");
   const header = () =>
     host.querySelector<HTMLInputElement>(
       '[aria-label="responseHeaders value 1"]',
@@ -283,12 +297,8 @@ it("restores header fields when discarding changes", async () => {
 it("clears previous response headers when changing action type", async () => {
   config.gateways[0].default.responseHeaders = { "X-Old": ["old action"] };
   await render();
-  const fallback = [...host.querySelectorAll<HTMLDetailsElement>("details")].find(
-    (item) => item.querySelector("summary")?.textContent?.trim() === "defaultAction",
-  )!;
-  const combo = fallback.querySelector<HTMLButtonElement>(
-    '[role="combobox"][aria-label="action"]',
-  )!;
+  await selectGatewayItem("defaultAction");
+  const combo = host.querySelector<HTMLButtonElement>('[role="combobox"][aria-label="action"]')!;
   await act(async () =>
     combo.dispatchEvent(
       new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
@@ -333,9 +343,7 @@ it("creates an interception-only gateway with a safe forward fallback", async ()
 
 it("never changes the Gateway fallback merely to create a backend pool", async () => {
   await render();
-  const button = [...host.querySelectorAll<HTMLButtonElement>("button")].find(
-    (item) => item.textContent?.trim() === "addUpstream",
-  );
+  const button = host.querySelector<HTMLButtonElement>('nav[aria-label="gateway"] button[aria-label="addUpstream"]');
   expect(button?.disabled).toBe(true);
   await click("addUpstream");
   expect(api.saveGatewayConfig).not.toHaveBeenCalled();
@@ -360,13 +368,13 @@ it("creates a second backend pool for a new reverse rule without changing the fa
   config.upstreams = [pool];
   config.gateways[0].default = { ...config.gateways[0].default, type: "reverse_proxy", upstream: pool.id };
   await render();
+  await selectGatewayItem("Ads");
   const action = host.querySelector<HTMLButtonElement>('[role="combobox"][aria-label="action"]')!;
   await act(async () => action.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
   const reverse = [...document.querySelectorAll<HTMLElement>('[role="option"]')]
     .find(option => option.textContent === "reverse_proxy")!;
   await act(async () => reverse.click());
-  const addPool = [...host.querySelectorAll<HTMLButtonElement>("button")]
-    .find(button => button.textContent?.trim() === "addUpstream")!;
+  const addPool = host.querySelector<HTMLButtonElement>('nav[aria-label="gateway"] button[aria-label="addUpstream"]')!;
   expect(addPool.disabled).toBe(false);
   await click("addUpstream");
   await click("saveActivate");
@@ -382,6 +390,7 @@ it("lets an existing reverse rule select a new pool while the fallback retains i
   config.gateways[0].default = { ...config.gateways[0].default, type: "reverse_proxy", upstream: pool.id };
   config.rules[0].action = { ...config.rules[0].action, type: "reverse_proxy", upstream: pool.id };
   await render();
+  await selectGatewayItem("Ads");
   const upstream = host.querySelector<HTMLButtonElement>('[role="combobox"][aria-label="upstream"]')!;
   await act(async () => upstream.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
   const create = [...document.querySelectorAll<HTMLElement>('[role="option"]')]
@@ -409,6 +418,7 @@ it("shows scoped filters and allows editing within the owning gateway", async ()
 
 it("configures HTTPS MITM directly on the Gateway without attaching an Inbound", async () => {
   await render();
+  await selectGatewayItem("interception");
   expect(host.textContent).not.toContain("addSource");
   const mode = host.querySelector<HTMLButtonElement>('[role="combobox"][aria-label="interceptionMode"]')!;
   await act(async () => mode.click());
