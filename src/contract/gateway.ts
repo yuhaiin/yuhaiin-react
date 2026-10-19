@@ -101,30 +101,10 @@ export function upstreamInUse(config: Config, id: string): boolean {
  * details of the HTTP engine; they are not independent top-level UI objects.
  * Route admission still requires an explicit Gateway action.
  */
-export type WorkspaceGateway = {
-  id: string;
-  name: string;
-  enabled: boolean;
-  revision: number;
-  listener?: {
-    listen: string;
-    allowedSources: string[];
-    tlsMode: string;
-    certificateFile?: string;
-    keyFile?: string;
-  };
-  policies: Rule[];
-  backendPools: Upstream[];
-  sources: Omit<Interception, "gatewayId">[];
-  filters: FilterList[];
-  fallback: Action;
-  maxBodyBytes: number;
-};
+export type WorkspaceGateway = Go.gateway.WorkspaceGateway;
 
-export type GatewayWorkspaceDocument = {
+export type GatewayWorkspaceDocument = Omit<Go.gateway.Workspace, "version"> & {
   version: 2;
-  revision: number;
-  gateways: WorkspaceGateway[];
 };
 
 export function flattenWorkspace(document: GatewayWorkspaceDocument): Config {

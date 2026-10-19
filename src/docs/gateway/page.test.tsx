@@ -3,7 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { SWRConfig } from "swr";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { Config } from "@/contract/gateway";
-import { newGateway, newRule } from "@/contract/gateway";
+import { newGateway, newRule, newUpstream } from "@/contract/gateway";
 import GatewayPage from "./page";
 
 const api = vi.hoisted(() => ({
@@ -352,6 +352,47 @@ it("creates a backend pool only for an explicitly selected reverse proxy action"
   expect(saved.gateways[0].default).toEqual(
     expect.objectContaining({ type: "reverse_proxy", upstream: saved.upstreams[0].id }),
   );
+});
+
+it("creates a second backend pool for a new reverse rule without changing the fallback pool", async () => {
+  const pool = { ...newUpstream(), id: "pool-a", name: "Pool A" };
+  config.upstreams = [pool];
+  config.gateways[0].default = { ...config.gateways[0].default, type: "reverse_proxy", upstream: pool.id };
+  await render();
+  const action = host.querySelector<HTMLButtonElement>('[role="combobox"][aria-label="action"]')!;
+  await act(async () => action.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
+  const reverse = [...document.querySelectorAll<HTMLElement>('[role="option"]')]
+    .find(option => option.textContent === "reverse_proxy")!;
+  await act(async () => reverse.click());
+  const addPool = [...host.querySelectorAll<HTMLButtonElement>("button")]
+    .find(button => button.textContent?.trim() === "addUpstream")!;
+  expect(addPool.disabled).toBe(false);
+  await click("addUpstream");
+  await click("saveActivate");
+  const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
+  expect(saved.upstreams).toHaveLength(2);
+  expect(saved.rules[0].action.upstream).toBe(saved.upstreams[1].id);
+  expect(saved.gateways[0].default.upstream).toBe(pool.id);
+});
+
+it("lets an existing reverse rule select a new pool while the fallback retains its pool", async () => {
+  const pool = { ...newUpstream(), id: "pool-a", name: "Pool A" };
+  config.upstreams = [pool];
+  config.gateways[0].default = { ...config.gateways[0].default, type: "reverse_proxy", upstream: pool.id };
+  config.rules[0].action = { ...config.rules[0].action, type: "reverse_proxy", upstream: pool.id };
+  await render();
+  const upstream = host.querySelector<HTMLButtonElement>('[role="combobox"][aria-label="upstream"]')!;
+  await act(async () => upstream.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
+  const create = [...document.querySelectorAll<HTMLElement>('[role="option"]')]
+    .find(option => option.textContent === "newBackendPool");
+  expect(create).toBeDefined();
+  await act(async () => create!.click());
+  await click("addUpstream");
+  await click("saveActivate");
+  const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
+  expect(saved.upstreams).toHaveLength(2);
+  expect(saved.rules[0].action.upstream).toBe(saved.upstreams[1].id);
+  expect(saved.gateways[0].default.upstream).toBe(pool.id);
 });
 
 it("shows scoped filters and allows editing within the owning gateway", async () => {

@@ -178,7 +178,8 @@
   "addSource": "Inbound 추가",
   "routeHandoffHelp": "기존 Inbound를 가로채려면 Routing에 일치하는 HTTP Gateway 작업을 추가하고 적용해야 합니다. 이 설정만으로는 트래픽이 전환되지 않습니다.",
   "backendPools": "백엔드 풀",
-  "backendPoolHelp": "먼저 HTTP 규칙이나 기본 작업에서 Reverse proxy를 선택하세요. 백엔드 풀은 해당 작업에 연결되며 기존 라우팅은 자동으로 변경되지 않습니다.",
+  "newBackendPool": "새 백엔드 풀 만들기",
+  "backendPoolHelp": "HTTP 규칙이나 기본 작업에서 Reverse proxy를 선택하고 '새 백엔드 풀 만들기'를 선택한 뒤 아래에서 풀을 추가하세요. 해당 작업에만 연결되며 다른 작업은 변경되지 않습니다.",
   "newFilterGateway": "HTTP 필터",
   "addInterceptionGateway": "가로채기 Gateway 추가",
   "diagnostics": "진단"

@@ -5,11 +5,47 @@ import { deleteFakeIPEntry, listFakeIPEntries } from './resolvers';
 import { getTotalFlow } from './connections';
 import { blockHistory } from './route';
 import { setApiUrl } from '@/common/apiurl';
+import { getGatewayConfig, saveGatewayConfig, refreshGatewayFilter } from './gateway';
+import { newAction, type GatewayWorkspaceDocument } from '@/contract/gateway';
 
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => { server.resetHandlers(); localStorage.clear(); window.location.hash = '/'; });
 afterAll(() => server.close());
+
+it('loads, saves and refreshes the nested Gateway workspace through its real RPC adapter', async () => {
+    setApiUrl('http://controller');
+    const workspace: GatewayWorkspaceDocument = {
+        version: 2, revision: 4, gateways: [{
+            id: 'site', name: 'Site', enabled: true, revision: 1,
+            policies: [], backendPools: [], sources: [], filters: [],
+            fallback: newAction('block'), maxBodyBytes: 0,
+        }],
+    };
+    server.use(
+        http.post('http://controller/api/v2/rpc/gateway.workspace.get', () => HttpResponse.json(workspace)),
+        http.post('http://controller/api/v2/rpc/gateway.workspace.put', async ({ request }) => {
+            expect(await request.json()).toEqual({
+                ...workspace,
+                gateways: [{ ...workspace.gateways[0], name: 'Updated site' }],
+            });
+            return HttpResponse.json({ ...workspace, revision: 5,
+                gateways: [{ ...workspace.gateways[0], name: 'Updated site' }],
+            });
+        }),
+        http.post('http://controller/api/v2/rpc/gateway.filters.refresh', async ({ request }) => {
+            expect(await request.json()).toEqual({ id: 'filter' });
+            return HttpResponse.json({ ...workspace, revision: 6 });
+        }),
+    );
+    const config = await getGatewayConfig();
+    expect(config).toMatchObject({ revision: 4, gateways: [{ id: 'site' }], rules: [], upstreams: [] });
+    config.gateways[0].name = 'Updated site';
+    await expect(saveGatewayConfig(config)).resolves.toMatchObject({
+        revision: 5, gateways: [{ name: 'Updated site' }],
+    });
+    await expect(refreshGatewayFilter('filter')).resolves.toMatchObject({ revision: 6, gateways: [{ id: 'site' }] });
+});
 
 it('loads block history through its literal RPC route instead of a rule ID', async () => {
     setApiUrl('http://controller');

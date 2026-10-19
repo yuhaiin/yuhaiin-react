@@ -178,7 +178,8 @@
   "addSource": "Inbound を追加",
   "routeHandoffHelp": "既存 Inbound を処理する場合、Routing に HTTP Gateway アクションを追加して適用する必要があります。ここでの許可だけではトラフィックは切り替わりません。",
   "backendPools": "バックエンドプール",
-  "backendPoolHelp": "先に HTTP ルールまたは既定アクションで Reverse proxy を選んでください。追加したバックエンドプールはそのアクションに紐付けられ、既存のルーティングが自動変更されることはありません。",
+  "newBackendPool": "新しいバックエンドプールを作成",
+  "backendPoolHelp": "HTTP ルールまたは既定アクションで Reverse proxy を選び、「新しいバックエンドプールを作成」を選択してから、下のボタンで追加してください。そのアクションにのみ紐付けられ、他のアクションは変更されません。",
   "newFilterGateway": "HTTP フィルター",
   "addInterceptionGateway": "傍受 Gateway を追加",
   "diagnostics": "診断"
