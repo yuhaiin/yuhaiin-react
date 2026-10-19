@@ -284,7 +284,10 @@ it("restores header fields when discarding changes", async () => {
 it("clears previous response headers when changing action type", async () => {
   config.gateways[0].default.responseHeaders = { "X-Old": ["old action"] };
   await render();
-  const combo = host.querySelector<HTMLButtonElement>(
+  const fallback = [...host.querySelectorAll<HTMLDetailsElement>("details")].find(
+    (item) => item.querySelector("summary")?.textContent?.trim() === "defaultAction",
+  )!;
+  const combo = fallback.querySelector<HTMLButtonElement>(
     '[role="combobox"][aria-label="action"]',
   )!;
   await act(async () =>
