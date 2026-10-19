@@ -103,6 +103,7 @@ async function click(label: string) {
   if (!button) throw Error(`Missing button ${label}`);
   await act(async () => button.click());
 }
+
 function input(label: string) {
   const target = [...host.querySelectorAll("label")].find(
     (element) => element.textContent === label,
@@ -121,6 +122,22 @@ function edit(element: HTMLInputElement, value: string) {
     element.dispatchEvent(new Event("input", { bubbles: true }));
   });
 }
+
+it("shows a startup failure while retaining the saved Gateway for repair", async () => {
+  api.gatewayStatus.mockResolvedValue({
+    revision: 1,
+    gateways: [],
+    startupError: "listen 127.0.0.1:8080: address already in use",
+  });
+  await render();
+  expect(host.querySelector('[role="alert"]')?.textContent).toContain("address already in use");
+  expect(host.textContent).toContain("Site gateway");
+  edit(input("name"), "Repaired gateway");
+  await click("saveActivate");
+  expect(api.saveGatewayConfig).toHaveBeenCalledWith(expect.objectContaining({
+    gateways: [expect.objectContaining({ name: "Repaired gateway" })],
+  }));
+});
 
 it("edits named gateway fields and saves the whole revision atomically", async () => {
   await render();

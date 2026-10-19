@@ -121,7 +121,13 @@ export default function InboundComponent() {
         <ResourceWorkspace createDisabled={selection.creating} title={uiT('entryPoints')} description={t('entryTaskHelp')} selectedId={selection.id} editing={selection.creating || Boolean(selection.id)}
             onSelect={selection.select} onCreate={create} search={{ value: query, onChange: value => { setQuery(value); setPage(1); } }}
             pagination={{ page: data?.page.page || page, pageSize: PAGE_SIZE, total: data?.page.total ?? 0, onChange: setPage }}
-            items={items.map(item => ({ id: item.id, name: item.name || item.id, icon: <DoorOpen />, description: `${item.protocol.type} · ${inboundListen(item) || '—'}`, status: <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${item.enabled ? 'bg-ui-success' : 'bg-ui-muted'}`} title={runtimeLabel(statusById.get(item.id)?.status ?? 'unknown')} /> }))}>
+            items={items.map(item => {
+                const runtime = statusById.get(item.id);
+                const state = runtime?.status ?? 'unknown';
+                const label = [runtimeLabel(state), runtime?.lastError].filter(Boolean).join(': ');
+                const color = state === 'failed' ? 'bg-ui-danger' : state === 'degraded' ? 'bg-ui-warning' : state === 'running' ? 'bg-ui-success' : 'bg-ui-muted';
+                return { id: item.id, name: item.name || item.id, icon: <DoorOpen />, description: `${item.protocol.type} · ${inboundListen(item) || '—'}`, status: <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${color}`} title={label} aria-label={label} /> };
+            })}>
             <fieldset disabled={pending} className="min-w-0" aria-busy={pending}>
                 <InboundModal presentation="inline" show={Boolean(id)} id={id} isNew={selection.creating} onHide={selection.close} onDelete={remove}
                     onSaved={value => { selection.saved(value.id); void mutate(); void refreshStatuses(); }} runtime={statusById.get(id)}
