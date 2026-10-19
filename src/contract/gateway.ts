@@ -122,6 +122,7 @@ export type WorkspaceGateway = {
 };
 
 export type GatewayWorkspaceDocument = {
+  version: 2;
   revision: number;
   gateways: WorkspaceGateway[];
 };
@@ -154,6 +155,7 @@ export function flattenWorkspace(document: GatewayWorkspaceDocument): Config {
 
 export function groupWorkspace(config: Config): GatewayWorkspaceDocument {
   return {
+    version: 2,
     revision: config.revision,
     gateways: config.gateways.map((gateway) => {
       const policies = gateway.ruleIds.map((id) => config.rules.find((rule) => rule.id === id))
