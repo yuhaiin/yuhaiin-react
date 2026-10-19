@@ -401,7 +401,6 @@ export namespace Go {
       | { type: "tun"; tun: TunProtocol }
       | { type: "wireguard"; wireguard: WireguardProtocol }
       | { type: "krunlet"; krunlet: KrunletProtocol }
-      | { type: "reverse_http"; reverse_http: ReverseHTTPProtocol }
       | { type: "reverse_tcp"; reverse_tcp: ReverseTCPProtocol }
       | { type: "none"; none: NoneProtocol };
     export interface Hysteria2Protocol {
@@ -478,10 +477,6 @@ export namespace Go {
     export interface KrunletProtocol {
       socket: string;
     }
-    export interface ReverseHTTPProtocol {
-      url: string;
-      tls?: ClientTLSConfig;
-    }
     export interface ReverseTCPProtocol {
       target: string;
     }
@@ -539,14 +534,6 @@ export namespace Go {
       cryptoMethod: string;
     }
     export interface ProxyTransport {
-    }
-    export interface ClientTLSConfig {
-      enabled: boolean;
-      serverNames: string[];
-      caCertsBase64: string[];
-      insecureSkipVerify: boolean;
-      nextProtos: string[];
-      echConfigBase64: string;
     }
     export interface ServerTLSConfig {
       certificates: Certificate[];
@@ -672,7 +659,6 @@ export namespace Go {
       | { type: "tailscale"; tailscale: Tailscale }
       | { type: "set"; set: Set }
       | { type: "tls_termination"; tls_termination: TLSTermination }
-      | { type: "http_termination"; http_termination: HTTPTermination }
       | { type: "http_mock"; http_mock: HTTPMock }
       | { type: "aead"; aead: AEAD }
       | { type: "fixed"; fixed: Fixed }
@@ -1015,16 +1001,6 @@ export namespace Go {
     export interface Set {
       nodes?: string[];
       strategy?: string;
-    }
-    export interface HTTPTermination {
-      headers?: Record<string, HTTPHeaders>;
-    }
-    export interface HTTPHeaders {
-      headers?: HTTPHeader[];
-    }
-    export interface HTTPHeader {
-      key: string;
-      value: string;
     }
     export interface HTTPMock {
       data?: string;

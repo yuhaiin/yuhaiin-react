@@ -6,7 +6,7 @@ import { GlobalProtectForm, GlobalProtectRuntimeInfo } from "./globalprotect-for
 import { SoftEtherForm } from "./softether-forms";
 import { L2TPForm, L2TPv3Form, L2TPRuntimeInfo } from "./l2tp-forms";
 import { OpenVPNForm, OpenVPNRuntimeInfo } from "./openvpn-forms";
-import { TLSConfigForm, TLSTerminationForm, HTTPTerminationForm } from "./tls-forms";
+import { TLSConfigForm, TLSTerminationForm } from "./tls-forms";
 import { StringField, NumberField, BoolField } from "./fields";
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
@@ -498,8 +498,6 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             );
         case "tls_termination":
             return <TLSTerminationForm config={protocol.tls_termination} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
-        case "http_termination":
-            return <HTTPTerminationForm config={protocol.http_termination} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "fixedv2":
             return <FixedV2Form config={protocol.fixedv2} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         default:

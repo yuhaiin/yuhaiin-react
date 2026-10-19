@@ -43,9 +43,6 @@ export type GlobalProtectInfo = Go.node.GlobalProtectInfo;
 export type OpenVPNInfo = Go.node.OpenVPNInfo;
 export type TailscaleConfig = Partial<Go.node.Tailscale>;
 export type SetConfig = Partial<Go.node.Set>;
-export type HTTPHeaderConfig = Partial<Go.node.HTTPHeader>;
-export type HTTPHeadersConfig = Partial<Go.node.HTTPHeaders>;
-export type HTTPTerminationConfig = Omit<Partial<Go.node.HTTPTermination>, "headers"> & { headers?: Record<string, HTTPHeadersConfig> };
 export type HTTPMockConfig = Partial<Go.node.HTTPMock>;
 export type AEADConfig = Partial<Go.node.AEAD>;
 export type NodeIPVersion = "auto" | "ipv4" | "ipv6";
@@ -91,7 +88,6 @@ export type NodeProtocolConfigByType = {
   tailscale: TailscaleConfig;
   set: SetConfig;
   tls_termination: TLSTerminationConfig;
-  http_termination: HTTPTerminationConfig;
   http_mock: HTTPMockConfig;
   aead: AEADConfig;
   fixed: FixedConfig;
@@ -204,8 +200,6 @@ function defaultProtocolConfig<T extends NodeProtocolType>(type: T): NodeProtoco
       return { tls: { enable: true } } as NodeProtocolConfig<T>;
     case "tls_termination":
       return { tls: {} } as NodeProtocolConfig<T>;
-    case "http_termination":
-      return { headers: {} } as NodeProtocolConfig<T>;
     case "fixedv2":
       return { addresses: [] } as NodeProtocolConfig<T>;
     case "ssh":
@@ -338,7 +332,6 @@ export const protocolTypes: NodeProtocolType[] = [
   "tailscale",
   "set",
   "tls_termination",
-  "http_termination",
   "http_mock",
   "aead",
   "fixed",

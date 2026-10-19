@@ -10,15 +10,15 @@ import { SettingLabel } from "@/component/v2/card";
 import { Select, SettingInputVertical, SettingSelectVertical, SwitchCard } from "@/component/v2/forms";
 import { Textarea } from "@/component/v2/input";
 import { Tooltip } from "@/component/v2/tooltip";
-import { InputBytesList, InputList } from "@/component/v2/listeditor";
+import { InputList } from "@/component/v2/listeditor";
 
-import { createDefaultNetwork, createDefaultTransport, selectInboundProtocol, Certificate, ClientTLSConfig, Inbound, InboundNetwork, InboundProtocol, InboundTransport, normalizeInbound, selectTunStack, ServerTLSConfig, TLSAutoTransport } from "@/contract/inbound";
+import { createDefaultNetwork, createDefaultTransport, selectInboundProtocol, Certificate, Inbound, InboundNetwork, InboundProtocol, InboundTransport, normalizeInbound, selectTunStack, ServerTLSConfig, TLSAutoTransport } from "@/contract/inbound";
 import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react";
 import { FC, useId, useRef, useState } from "react";
 
 const networkTypes: InboundNetwork["type"][] = ["empty", "tcp_udp", "quic"];
 
-const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "wireguard", "krunlet", "reverse_http", "reverse_tcp", "none"];
+const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "wireguard", "krunlet", "reverse_tcp", "none"];
 
 const transportTypes: InboundTransport["type"][] = ["normal", "tls", "mux", "http2", "websocket", "reality", "tls_auto", "http_mock", "aead", "proxy"];
 
@@ -262,13 +262,6 @@ const ProtocolConfigEditor: FC<{
             return <WireguardServerEditor value={value.wireguard} onChange={(wireguard) => onChange({ ...value, wireguard })} />;
         case "tun":
             return <TunEditor value={value.tun} platform={platform} onChange={(tun) => onChange({ ...value, tun })} />;
-        case "reverse_http":
-            return (
-                <div className="grid gap-4">
-                    <SettingInputVertical label={uiT("url")} value={value.reverse_http.url} onChange={(url) => onChange({ ...value, reverse_http: { ...value.reverse_http, url } })} placeholder="http://127.0.0.1:3000" />
-                    <ClientTLSConfigEditor value={value.reverse_http.tls} onChange={(tls) => onChange({ ...value, reverse_http: { ...value.reverse_http, tls } })} />
-                </div>
-            );
         case "reverse_tcp":
             return <SettingInputVertical label={uiT("target")} value={value.reverse_tcp.target} onChange={(target) => onChange({ ...value, reverse_tcp: { ...value.reverse_tcp, target } })} placeholder="127.0.0.1:9000" />;
         case "none":
@@ -426,17 +419,6 @@ function defaultCertificate(): Certificate {
     return { certBase64: "", keyBase64: "", certFile: "", keyFile: "" };
 }
 
-function defaultClientTLS(): ClientTLSConfig {
-    return {
-        enabled: false,
-        serverNames: [],
-        caCertsBase64: [],
-        insecureSkipVerify: false,
-        nextProtos: [],
-        echConfigBase64: "",
-    };
-}
-
 function defaultServerTLS(): ServerTLSConfig {
     return { certificates: [], nextProtos: [], serverNameCertificate: {} };
 }
@@ -579,34 +561,6 @@ const ServerTLSConfigEditor: FC<{
             {showNextProtos && <InputList title={uiT("nextProtos")} data={current.nextProtos ?? []} onChange={(nextProtos) => patch({ nextProtos })} />}
             <CertificateListEditor value={current.certificates ?? []} onChange={(certificates) => patch({ certificates })} />
             <NamedCertificateEditor value={current.serverNameCertificate} onChange={(serverNameCertificate) => patch({ serverNameCertificate })} />
-        </div>
-    );
-};
-
-const ClientTLSConfigEditor: FC<{
-    value?: ClientTLSConfig;
-    onChange: (value: ClientTLSConfig) => void;
-}> = ({ value, onChange }) => {
-    const { t: uiT } = useTranslation('ui');
-
-    const current = value ?? defaultClientTLS();
-    const patch = (patchValue: Partial<ClientTLSConfig>) => onChange({ ...current, ...patchValue });
-    return (
-        <div className="grid gap-4">
-            <SwitchCard label={uiT("tlsEnabled")} checked={current.enabled} onCheckedChange={(enabled) => patch({ enabled })} />
-            <SwitchCard label={uiT("skipCertificateVerify")} checked={current.insecureSkipVerify} onCheckedChange={(insecureSkipVerify) => patch({ insecureSkipVerify })} />
-            <InputList title={uiT("serverNames")} data={current.serverNames ?? []} onChange={(serverNames) => patch({ serverNames })} />
-            <InputList title={uiT("nextProtos")} data={current.nextProtos ?? []} onChange={(nextProtos) => patch({ nextProtos })} />
-            <InputBytesList
-                title={uiT("caCertificate")}
-                data={(current.caCertsBase64 ?? []).map(base64ToBytes)}
-                onChange={(caCerts) => patch({ caCertsBase64: caCerts.map(bytesToBase64) })}
-            />
-            <BytesTextarea
-                label={uiT("echConfigList")}
-                valueBase64={current.echConfigBase64 ?? ""}
-                onChangeBase64={(echConfigBase64) => patch({ echConfigBase64 })}
-            />
         </div>
     );
 };
