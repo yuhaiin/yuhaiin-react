@@ -66,11 +66,14 @@ requires explicit domain admission, a trusted local CA and a selected
 any catch-all Direct/Proxy rule and must be applied separately; assigning an
 Inbound here does not independently divert TCP traffic.
 
-This PR changes the editor's user-facing organization but does not yet make
-Gateway and Route commits a single transaction. Until that API is implemented,
-the Routing selection remains a separate explicit step and the backend stores
-its existing resource format. Existing rule ordering, CA security restrictions,
-HTTP/2 request-specific outbound selection and TLS limitations remain
-unchanged. Certificate pinning, ECH and HTTP/3 are not bypassed.
+The backend now exposes and persists a versioned, nested Gateway workspace.
+Legacy flat-config and individual resource management endpoints were removed.
+The UI still uses a temporary flat in-memory editor adapter for established
+components; this is not a supported persisted or public API format.
+
+Gateway and Route commits are **not** a single transaction yet, so the Routing
+selection remains a separate explicit step. Existing rule ordering, CA
+security restrictions, HTTP/2 request-specific outbound selection and TLS
+limitations remain unchanged. Certificate pinning, ECH and HTTP/3 are not bypassed.
 
 Backend details: https://github.com/yuhaiin/yuhaiin/tree/main/docs/gateway
