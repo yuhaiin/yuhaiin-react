@@ -198,7 +198,8 @@ it("requires a separate explicit confirmation for CA generation", async () => {
 it("keeps a newly named resource expanded while editing", async () => {
   await render();
   await click("addGateway");
-  const details = host.querySelectorAll("details")[1];
+  const details = [...host.querySelectorAll("details")].find((item) =>
+    item.querySelector("summary")?.textContent?.includes("newGateway"))!;
   expect(details.open).toBe(true);
   const name = details.querySelector<HTMLInputElement>("input")!;
   edit(name, "New site");
@@ -208,7 +209,6 @@ it("keeps a newly named resource expanded while editing", async () => {
 
 it("deletes rules together with their Gateway references", async () => {
   await render();
-  await click("rules");
   await click("delete");
   await click("saveActivate");
   expect(api.saveGatewayConfig).toHaveBeenCalledWith(
@@ -244,7 +244,7 @@ it("deletes a Gateway together with its interception and filters", async () => {
     },
   ];
   await render();
-  await click("delete");
+  await click("delete Site gateway");
   await click("saveActivate");
   expect(api.saveGatewayConfig).toHaveBeenCalledWith(
     expect.objectContaining({
@@ -299,4 +299,51 @@ it("clears previous response headers when changing action type", async () => {
   expect(
     host.querySelector('[aria-label="responseHeaders value 1"]'),
   ).toBeNull();
+});
+
+
+it("creates an owned HTTP rule inline without navigating away", async () => {
+  await render();
+  await click("addRule");
+  await click("saveActivate");
+  expect(api.saveGatewayConfig).toHaveBeenCalledWith(
+    expect.objectContaining({
+      rules: expect.arrayContaining([expect.objectContaining({ revision: 0 })]),
+      gateways: [expect.objectContaining({ ruleIds: expect.arrayContaining(["ads"]) })],
+    }),
+  );
+});
+
+it("creates an interception-only gateway with a safe forward fallback", async () => {
+  await render();
+  await click("addInterceptionGateway");
+  await click("saveActivate");
+  const saved = api.saveGatewayConfig.mock.calls.at(-1)?.[0] as Config;
+  expect(saved.gateways).toHaveLength(2);
+  expect(saved.gateways[1]).toEqual(expect.objectContaining({
+    enabled: true, listen: "", default: expect.objectContaining({
+      type: "forward", outbound: { type: "inherit_route" },
+    }),
+  }));
+});
+
+it("creates a backend pool and binds it to the current gateway", async () => {
+  await render();
+  await click("addUpstream");
+  await click("saveActivate");
+  const saved = api.saveGatewayConfig.mock.calls.at(-1)?.[0] as Config;
+  expect(saved.upstreams).toHaveLength(1);
+  expect(saved.gateways[0].default).toEqual(
+    expect.objectContaining({ type: "reverse_proxy", upstream: saved.upstreams[0].id }),
+  );
+});
+
+it("shows scoped filters and allows editing within the owning gateway", async () => {
+  await render();
+  await click("addFilter");
+  await click("saveActivate");
+  const saved = api.saveGatewayConfig.mock.calls.at(-1)?.[0] as Config;
+  expect(saved.filterLists).toEqual([
+    expect.objectContaining({ gatewayId: "g", enabled: true }),
+  ]);
 });
