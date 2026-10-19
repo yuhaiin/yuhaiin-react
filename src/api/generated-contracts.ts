@@ -334,6 +334,41 @@ export namespace Go {
       rejected: number;
       errors: string[];
     }
+    export interface Workspace {
+      version: number;
+      revision: number;
+      gateways: WorkspaceGateway[];
+    }
+    export interface WorkspaceGateway {
+      id: string;
+      name: string;
+      enabled: boolean;
+      revision: number;
+      listener?: ListenerSource;
+      policies: Rule[];
+      backendPools: Upstream[];
+      sources: InboundSource[];
+      filters: FilterList[];
+      fallback: Action;
+      maxBodyBytes: number;
+    }
+    export interface ListenerSource {
+      listen: string;
+      allowedSources: string[];
+      tlsMode: string;
+      certificateFile?: string;
+      keyFile?: string;
+    }
+    export interface InboundSource {
+      inboundId: string;
+      mode: string;
+      domains: string[];
+      excludeDomains: string[];
+      ports: number[];
+      sources: string[];
+      processes: string[];
+      unknownTls: string;
+    }
   }
   export namespace inbound {
     export interface RuntimeStatus {

@@ -50,24 +50,30 @@ Protect saved configurations and backups containing private keys.
 
 ## HTTP Gateway
 
-The **HTTP Gateway** entry provides listener and interception configuration, a
-visual AND/OR/NOT HTTP rule editor, upstream backends/outbound selection, CA
-management, a saved-policy tester, URL filters and request/health statistics.
-Save and activate publishes the complete revision atomically; a conflict retains
-local edits. The RPC routes and TypeScript models are generated from the paired
-backend Contract.
+The HTTP Gateway editor is organized by Gateway instead of by resource type.
+Each Gateway owns its traffic sources, HTTP rules, URL filters, default action,
+and backend pools in one expandable workspace. A new rule is immediately
+attached to its Gateway; a new backend pool is attached to a reverse-proxy
+action so it stays visible. The same API revision is saved and activated
+atomically. CA management, policy testing and statistics remain in the
+Diagnostics section.
 
-HTTPS MITM is off by default and requires a generated/imported CA plus explicit
-inbound/domain admission. In the existing **Routing** editor, add an **HTTP
-Gateway** action with the desired host/process/inbound conditions and select the
-Gateway; only those matching TCP connections enter interception. Put it before
-any catch-all action, then apply Routing changes. Installing a CA does not itself
-enable interception. The Gateway tester tests the selected Gateway policy; use
-the Routing tester to verify the preceding handoff decision.
-The UI downloads only the public root and offers platform trust instructions.
-Certificate pinning, ECH, client private keys and HTTP/3 are not bypassed.
-Without management authentication, the backend restricts Gateway RPCs to local
-peers and local browser origins; configure authentication/TLS for a hosted UI.
+Create a listener-based Gateway to expose an HTTP reverse proxy. Create an
+interception-only Gateway to handle selected existing Inbound traffic, then
+attach an Inbound in the Gateway's **Traffic sources** section. HTTPS MITM
+requires explicit domain admission, a trusted local CA and a selected
+**HTTP Gateway** action in **Routing**. The Routing action must appear before
+any catch-all Direct/Proxy rule and must be applied separately; assigning an
+Inbound here does not independently divert TCP traffic.
 
-Backend architecture, complete JSON examples and limitations live in
-[the Gateway documentation](https://github.com/yuhaiin/yuhaiin/tree/main/docs/gateway).
+The backend now exposes and persists a versioned, nested Gateway workspace.
+Legacy flat-config and individual resource management endpoints were removed.
+The UI still uses a temporary flat in-memory editor adapter for established
+components; this is not a supported persisted or public API format.
+
+Gateway and Route commits are **not** a single transaction yet, so the Routing
+selection remains a separate explicit step. Existing rule ordering, CA
+security restrictions, HTTP/2 request-specific outbound selection and TLS
+limitations remain unchanged. Certificate pinning, ECH and HTTP/3 are not bypassed.
+
+Backend details: https://github.com/yuhaiin/yuhaiin/tree/main/docs/gateway

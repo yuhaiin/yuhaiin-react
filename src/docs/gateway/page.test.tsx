@@ -3,7 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { SWRConfig } from "swr";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { Config } from "@/contract/gateway";
-import { newGateway, newRule } from "@/contract/gateway";
+import { newGateway, newRule, newUpstream } from "@/contract/gateway";
 import GatewayPage from "./page";
 
 const api = vi.hoisted(() => ({
@@ -198,7 +198,8 @@ it("requires a separate explicit confirmation for CA generation", async () => {
 it("keeps a newly named resource expanded while editing", async () => {
   await render();
   await click("addGateway");
-  const details = host.querySelectorAll("details")[1];
+  const details = [...host.querySelectorAll("details")].find((item) =>
+    item.querySelector("summary")?.textContent?.includes("newGateway"))!;
   expect(details.open).toBe(true);
   const name = details.querySelector<HTMLInputElement>("input")!;
   edit(name, "New site");
@@ -208,7 +209,6 @@ it("keeps a newly named resource expanded while editing", async () => {
 
 it("deletes rules together with their Gateway references", async () => {
   await render();
-  await click("rules");
   await click("delete");
   await click("saveActivate");
   expect(api.saveGatewayConfig).toHaveBeenCalledWith(
@@ -244,7 +244,7 @@ it("deletes a Gateway together with its interception and filters", async () => {
     },
   ];
   await render();
-  await click("delete");
+  await click("delete Site gateway");
   await click("saveActivate");
   expect(api.saveGatewayConfig).toHaveBeenCalledWith(
     expect.objectContaining({
@@ -284,7 +284,10 @@ it("restores header fields when discarding changes", async () => {
 it("clears previous response headers when changing action type", async () => {
   config.gateways[0].default.responseHeaders = { "X-Old": ["old action"] };
   await render();
-  const combo = host.querySelector<HTMLButtonElement>(
+  const fallback = [...host.querySelectorAll<HTMLDetailsElement>("details")].find(
+    (item) => item.querySelector("summary")?.textContent?.trim() === "defaultAction",
+  )!;
+  const combo = fallback.querySelector<HTMLButtonElement>(
     '[role="combobox"][aria-label="action"]',
   )!;
   await act(async () =>
@@ -299,4 +302,105 @@ it("clears previous response headers when changing action type", async () => {
   expect(
     host.querySelector('[aria-label="responseHeaders value 1"]'),
   ).toBeNull();
+});
+
+
+it("creates an owned HTTP rule inline without navigating away", async () => {
+  await render();
+  await click("addRule");
+  await click("saveActivate");
+  expect(api.saveGatewayConfig).toHaveBeenCalledWith(
+    expect.objectContaining({
+      rules: expect.arrayContaining([expect.objectContaining({ revision: 0 })]),
+      gateways: [expect.objectContaining({ ruleIds: expect.arrayContaining(["ads"]) })],
+    }),
+  );
+});
+
+it("creates an interception-only gateway with a safe forward fallback", async () => {
+  await render();
+  await click("addInterceptionGateway");
+  await click("saveActivate");
+  const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
+  expect(saved.gateways).toHaveLength(2);
+  expect(saved.gateways[1]).toEqual(expect.objectContaining({
+    enabled: true, listen: "", default: expect.objectContaining({
+      type: "forward", outbound: { type: "inherit_route" },
+    }),
+  }));
+});
+
+it("never changes the Gateway fallback merely to create a backend pool", async () => {
+  await render();
+  const button = [...host.querySelectorAll<HTMLButtonElement>("button")].find(
+    (item) => item.textContent?.trim() === "addUpstream",
+  );
+  expect(button?.disabled).toBe(true);
+  await click("addUpstream");
+  expect(api.saveGatewayConfig).not.toHaveBeenCalled();
+});
+
+it("creates a backend pool only for an explicitly selected reverse proxy action", async () => {
+  config.gateways[0].default = {
+    ...config.gateways[0].default, type: "reverse_proxy", upstream: "",
+  };
+  await render();
+  await click("addUpstream");
+  await click("saveActivate");
+  const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
+  expect(saved.upstreams).toHaveLength(1);
+  expect(saved.gateways[0].default).toEqual(
+    expect.objectContaining({ type: "reverse_proxy", upstream: saved.upstreams[0].id }),
+  );
+});
+
+it("creates a second backend pool for a new reverse rule without changing the fallback pool", async () => {
+  const pool = { ...newUpstream(), id: "pool-a", name: "Pool A" };
+  config.upstreams = [pool];
+  config.gateways[0].default = { ...config.gateways[0].default, type: "reverse_proxy", upstream: pool.id };
+  await render();
+  const action = host.querySelector<HTMLButtonElement>('[role="combobox"][aria-label="action"]')!;
+  await act(async () => action.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
+  const reverse = [...document.querySelectorAll<HTMLElement>('[role="option"]')]
+    .find(option => option.textContent === "reverse_proxy")!;
+  await act(async () => reverse.click());
+  const addPool = [...host.querySelectorAll<HTMLButtonElement>("button")]
+    .find(button => button.textContent?.trim() === "addUpstream")!;
+  expect(addPool.disabled).toBe(false);
+  await click("addUpstream");
+  await click("saveActivate");
+  const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
+  expect(saved.upstreams).toHaveLength(2);
+  expect(saved.rules[0].action.upstream).toBe(saved.upstreams[1].id);
+  expect(saved.gateways[0].default.upstream).toBe(pool.id);
+});
+
+it("lets an existing reverse rule select a new pool while the fallback retains its pool", async () => {
+  const pool = { ...newUpstream(), id: "pool-a", name: "Pool A" };
+  config.upstreams = [pool];
+  config.gateways[0].default = { ...config.gateways[0].default, type: "reverse_proxy", upstream: pool.id };
+  config.rules[0].action = { ...config.rules[0].action, type: "reverse_proxy", upstream: pool.id };
+  await render();
+  const upstream = host.querySelector<HTMLButtonElement>('[role="combobox"][aria-label="upstream"]')!;
+  await act(async () => upstream.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
+  const create = [...document.querySelectorAll<HTMLElement>('[role="option"]')]
+    .find(option => option.textContent === "newBackendPool");
+  expect(create).toBeDefined();
+  await act(async () => create!.click());
+  await click("addUpstream");
+  await click("saveActivate");
+  const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
+  expect(saved.upstreams).toHaveLength(2);
+  expect(saved.rules[0].action.upstream).toBe(saved.upstreams[1].id);
+  expect(saved.gateways[0].default.upstream).toBe(pool.id);
+});
+
+it("shows scoped filters and allows editing within the owning gateway", async () => {
+  await render();
+  await click("addFilter");
+  await click("saveActivate");
+  const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
+  expect(saved.filterLists).toEqual([
+    expect.objectContaining({ gatewayId: "g", enabled: true }),
+  ]);
 });

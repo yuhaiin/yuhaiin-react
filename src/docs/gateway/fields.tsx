@@ -362,22 +362,20 @@ export function ActionEditor({
           "rewrite",
           "respond",
         ].map((item) => ({ value: item, label: t(item) }))}
-        onChange={(type) =>
-          onChange({
-            ...newAction(type),
-            upstream: type === "reverse_proxy" ? upstreams[0]?.id : undefined,
-          })
-        }
+        onChange={(type) => onChange(newAction(type))}
       />
       {value.type === "reverse_proxy" && (
         <>
           <Choice
             label={t("upstream")}
             value={value.upstream ?? ""}
-            values={upstreams.map((item) => ({
-              value: item.id,
-              label: item.name || item.id,
-            }))}
+            values={[
+              { value: "", label: t("newBackendPool") },
+              ...upstreams.map((item) => ({
+                value: item.id,
+                label: item.name || item.id,
+              })),
+            ]}
             onChange={(upstream) => onChange({ ...value, upstream })}
           />
           <Toggle

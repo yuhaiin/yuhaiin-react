@@ -170,5 +170,17 @@
   "rejectedRules": "unsupported rules",
   "overrideQuery": "Replace query parameters",
   "upstreamInUse": "この上流を削除する前に、Gateway アクションとルールから参照を削除してください。",
-  "clientSourceIP": "クライアント送信元 IP（傍受の判定用）"
+  "clientSourceIP": "クライアント送信元 IP（傍受の判定用）",
+  "unifiedDescription": "Gateway ごとにトラフィック入口、HTTP ルール、フィルター、バックエンドをまとめて設定します。",
+  "gatewaySettings": "Gateway 設定",
+  "trafficSources": "トラフィック入口",
+  "sourceHelp": "ここで Gateway のリスナーと既存 Inbound の許可を設定します。HTTPS 復号には CA の信頼と明示的なドメイン許可が必要です。",
+  "addSource": "Inbound を追加",
+  "routeHandoffHelp": "既存 Inbound を処理する場合、Routing に HTTP Gateway アクションを追加して適用する必要があります。ここでの許可だけではトラフィックは切り替わりません。",
+  "backendPools": "バックエンドプール",
+  "newBackendPool": "新しいバックエンドプールを作成",
+  "backendPoolHelp": "HTTP ルールまたは既定アクションで Reverse proxy を選び、「新しいバックエンドプールを作成」を選択してから、下のボタンで追加してください。そのアクションにのみ紐付けられ、他のアクションは変更されません。",
+  "newFilterGateway": "HTTP フィルター",
+  "addInterceptionGateway": "傍受 Gateway を追加",
+  "diagnostics": "診断"
 }
