@@ -180,7 +180,7 @@ export function AuthorityPanel() {
       <h2 className="text-lg font-semibold">{t("authority")}</h2>
       <p
         role="note"
-        className="rounded-ui-sm border border-ui-border bg-ui-muted p-4 text-sm"
+        className="rounded-ui-sm border border-ui-warning/20 bg-ui-warning-soft p-4 text-sm text-ui-warning"
       >
         {t("mitmWarning")}
       </p>
