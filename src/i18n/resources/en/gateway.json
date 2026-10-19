@@ -178,7 +178,7 @@
   "addSource": "Attach inbound",
   "routeHandoffHelp": "For intercepted traffic, also add and apply a matching HTTP Gateway action in Routing. Source permissions do not divert traffic by themselves.",
   "backendPools": "Backend pools",
-  "backendPoolHelp": "Backend pools are referenced by Reverse proxy actions. A pool can use an existing outbound, balancing and health checks.",
+  "backendPoolHelp": "Choose Reverse proxy as an HTTP rule or fallback action first. Adding a backend pool will attach it to that action; existing routing is never changed automatically.",
   "newFilterGateway": "HTTP filter",
   "addInterceptionGateway": "Add interception Gateway",
   "diagnostics": "Diagnostics"
