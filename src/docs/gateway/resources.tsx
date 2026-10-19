@@ -151,11 +151,13 @@ export function RuleEditor({
         value={item.match}
         onChange={(match) => change({ ...item, match })}
       />
-      <ActionEditor
-        value={item.action}
-        upstreams={config.upstreams}
-        onChange={(action) => change({ ...item, action })}
-      />
+      <div className="border-t border-ui-border/60 pt-4">
+        <ActionEditor
+          value={item.action}
+          upstreams={config.upstreams}
+          onChange={(action) => change({ ...item, action })}
+        />
+      </div>
     </div>
   );
 }
@@ -308,7 +310,7 @@ export function InterceptionEditor({ item, change }: {
       {item.mode === "https_mitm" && (
         <p
           role="note"
-          className="rounded-ui-sm border border-ui-border bg-ui-muted p-3 text-sm"
+          className="rounded-ui-sm border border-ui-warning/20 bg-ui-warning-soft p-3 text-sm text-ui-warning"
         >
           {t("mitmWarning")}
         </p>
