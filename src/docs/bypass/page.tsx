@@ -1,6 +1,7 @@
 import { clearHashSearch, useHashSearch } from "@/hooks/useHashLocation";
 import { connectionRuleDraft } from "@/docs/connections/actions";
 import { getNode } from "@/api/nodes";
+import { getGatewayConfig } from "@/api/gateway";
 import { listSelectors } from "@/api/selectors";
 import { RuleEditor } from "./rule-editor";
 import { allowNavigation } from "@/hooks/navigation-guard";
@@ -112,7 +113,8 @@ function BypassComponent() {
     );
 
     const { data: selectors } = useSWR('/api/v2/outbound/selectors', listSelectors);
-    const destinations = Object.fromEntries((selectors?.items ?? []).map(selector => [`selector:${selector.id}`, selector.name]));
+    const { data: gateways } = useSWR(data?.items.some(item => item.mode === 'gateway') ? '/api/v2/gateway/config' : null, getGatewayConfig, { revalidateOnFocus: false });
+    const destinations = Object.fromEntries([...(selectors?.items ?? []).map(selector => [`selector:${selector.id}`, selector.name]), ...(gateways?.gateways ?? []).map(g => [`gateway:${g.id}`, g.name])]);
 
     const editorOptions = useMemo<RuleEditorOptions>(() => ({
         listTypes: Object.fromEntries((listsData?.items ?? []).map(item => [item.id, item.type])),

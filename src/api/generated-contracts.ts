@@ -156,6 +156,184 @@ export namespace Go {
       failed: string;
     }
   }
+  export namespace gateway {
+    export interface Config {
+      revision: number;
+      gateways: Gateway[];
+      rules: Rule[];
+      upstreams: Upstream[];
+      interceptions: Interception[];
+      filterLists: FilterList[];
+    }
+    export interface Gateway {
+      id: string;
+      name: string;
+      enabled: boolean;
+      revision: number;
+      listen: string;
+      allowedSources: string[];
+      tlsMode: string;
+      certificateFile: string;
+      keyFile: string;
+      ruleIds: string[];
+      default: Action;
+      maxBodyBytes: number;
+    }
+    export interface Rule {
+      id: string;
+      name: string;
+      enabled: boolean;
+      priority: number;
+      revision: number;
+      match: Condition;
+      action: Action;
+    }
+    export interface Condition {
+      all?: Condition[];
+      any?: Condition[];
+      not?: Condition;
+      field?: string;
+      operator?: string;
+      key?: string;
+      value?: string;
+    }
+    export interface Action {
+      type: string;
+      upstream?: string;
+      outbound: Go.route.Target;
+      status?: number;
+      body?: string;
+      location?: string;
+      preserveHost: boolean;
+      rewrite: Rewrite;
+      responseHeaders?: Record<string, string[]>;
+    }
+    export interface Rewrite {
+      scheme?: string;
+      host?: string;
+      path?: string;
+      query?: string;
+      headers?: Record<string, string[]>;
+    }
+    export interface Upstream {
+      id: string;
+      name: string;
+      revision: number;
+      backends: Backend[];
+      balance: string;
+      outbound: Go.route.Target;
+      serverName?: string;
+      trustPem?: string;
+      connectTimeoutMs: number;
+      idleTimeoutMs: number;
+      requestTimeoutMs: number;
+      maxConnections: number;
+      maxConcurrent: number;
+      requestsPerSecond: number;
+      burst: number;
+      healthPath?: string;
+      healthIntervalMs: number;
+      failureThreshold: number;
+      recoveryMs: number;
+      retries: number;
+    }
+    export interface Backend {
+      url: string;
+      weight: number;
+    }
+    export interface Interception {
+      inboundId: string;
+      gatewayId: string;
+      mode: string;
+      domains: string[];
+      excludeDomains: string[];
+      ports: number[];
+      sources: string[];
+      processes: string[];
+      unknownTls: string;
+    }
+    export interface FilterList {
+      id: string;
+      name: string;
+      enabled: boolean;
+      gatewayId: string;
+      revision: number;
+      url?: string;
+      text: string;
+      updatedAt?: string;
+    }
+    export interface TestRequest {
+      gatewayId: string;
+      url: string;
+      method: string;
+      inboundId: string;
+      process?: string;
+      sourceIp?: string;
+      headers: Record<string, string[]>;
+    }
+    export interface MatchStep {
+      ruleId: string;
+      name: string;
+      matched: boolean;
+    }
+    export interface TestResult {
+      ruleId: string;
+      steps: MatchStep[];
+      action: Action;
+      requiresMitm: boolean;
+    }
+    export interface CAStatus {
+      present: boolean;
+      subject: string;
+      fingerprint: string;
+      notBefore: string;
+      notAfter: string;
+      certificatePem: string;
+      cachedCertificates: number;
+      cacheCapacity: number;
+      revision: number;
+    }
+    export interface CAImport {
+      certificatePem: string;
+      privateKeyPem: string;
+      revision: number;
+    }
+    export interface RuntimeStatus {
+      revision: number;
+      gateways: GatewayStatus[];
+    }
+    export interface GatewayStatus {
+      filterReports: FilterReport[];
+      id: string;
+      enabled: boolean;
+      requests: number;
+      blocked: number;
+      forwarded: number;
+      errors: number;
+      tlsFailures: number;
+      protocolFailures: number;
+      durationNs: number;
+      lastOutbound: string;
+      upstreams: UpstreamStatus[];
+    }
+    export interface UpstreamStatus {
+      id: string;
+      activeRequests: number;
+      backends: BackendStatus[];
+    }
+    export interface BackendStatus {
+      url: string;
+      healthy: boolean;
+      activeRequests: number;
+      failures: number;
+    }
+    export interface FilterReport {
+      id: string;
+      accepted: number;
+      rejected: number;
+      errors: string[];
+    }
+  }
   export namespace inbound {
     export interface RuntimeStatus {
       id: string;

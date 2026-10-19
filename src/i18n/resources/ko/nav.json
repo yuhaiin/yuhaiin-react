@@ -12,5 +12,6 @@
   "system": "시스템",
   "diagnostics": "진단",
   "help": "도움말 및 정보",
-  "routeRules": "라우팅 규칙"
+  "routeRules": "라우팅 규칙",
+  "gateway": "HTTP Gateway"
 }

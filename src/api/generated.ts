@@ -13,6 +13,18 @@ export type RPCOperation =
   | "connections.telemetry"
   | "connections.total"
   | "connections.traffic"
+  | "gateway.ca.generate"
+  | "gateway.ca.import"
+  | "gateway.ca.status"
+  | "gateway.config.get"
+  | "gateway.config.put"
+  | "gateway.filters.refresh"
+  | "gateway.resource.delete"
+  | "gateway.resource.get"
+  | "gateway.resource.put"
+  | "gateway.resources.list"
+  | "gateway.status"
+  | "gateway.test"
   | "inbound.capabilities"
   | "inbound.delete"
   | "inbound.events"
@@ -115,6 +127,18 @@ export type RPCOperation =
 type LegacyRoute = { method: string; pattern: string; operation: RPCOperation };
 
 const legacyRoutes: LegacyRoute[] = [
+  { method: "GET", pattern: "/api/v2/gateway/resources", operation: "gateway.resources.list" },
+  { method: "GET", pattern: "/api/v2/gateway/resources/{id}", operation: "gateway.resource.get" },
+  { method: "PUT", pattern: "/api/v2/gateway/resources/{id}", operation: "gateway.resource.put" },
+  { method: "DELETE", pattern: "/api/v2/gateway/resources/{id}", operation: "gateway.resource.delete" },
+  { method: "POST", pattern: "/api/v2/gateway/filters/refresh", operation: "gateway.filters.refresh" },
+  { method: "GET", pattern: "/api/v2/gateway/config", operation: "gateway.config.get" },
+  { method: "PUT", pattern: "/api/v2/gateway/config", operation: "gateway.config.put" },
+  { method: "GET", pattern: "/api/v2/gateway/status", operation: "gateway.status" },
+  { method: "POST", pattern: "/api/v2/gateway/test", operation: "gateway.test" },
+  { method: "GET", pattern: "/api/v2/gateway/ca", operation: "gateway.ca.status" },
+  { method: "POST", pattern: "/api/v2/gateway/ca/generate", operation: "gateway.ca.generate" },
+  { method: "POST", pattern: "/api/v2/gateway/ca/import", operation: "gateway.ca.import" },
   { method: "GET", pattern: "/api/v2/info", operation: "info" },
   { method: "POST", pattern: "/api/v2/update/check", operation: "update.check" },
   { method: "POST", pattern: "/api/v2/update/apply", operation: "update.apply" },

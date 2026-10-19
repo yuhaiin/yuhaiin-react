@@ -15,7 +15,7 @@ export function referencedLists(rules: RuleExpr[]): Set<string> {
 
 export function draftForSave(draft: RuleDraft): RuleDraft {
     const used = referencedLists(draft.rule.rules ?? []);
-    return { ...draft, lists: draft.lists.filter(list => used.has(list.id)), shareLists: draft.shareLists?.filter(id => used.has(id)) };
+    return { ...draft, rule: { ...draft.rule, target: draft.rule.mode === "direct" || draft.rule.mode === "block" ? { type: "default" } : draft.rule.target }, lists: draft.lists.filter(list => used.has(list.id)), shareLists: draft.shareLists?.filter(id => used.has(id)) };
 }
 
 export function simpleCondition(draft: RuleDraft): { type: 'host' | 'process'; list: string } | undefined {

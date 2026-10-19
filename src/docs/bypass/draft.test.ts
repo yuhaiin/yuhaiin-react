@@ -87,3 +87,11 @@ describe('simple multi-condition matching', () => {
         expect(draftForSave(draft).lists).toHaveLength(1);
     });
 });
+
+it('preserves Gateway destinations and clears inactive destinations only at save', () => {
+ const draft=createDefaultRuleDraft();draft.rule.mode='gateway';draft.rule.target={type:'gateway',id:'spotify'};
+ expect(draftForSave(draft).rule.target).toEqual({type:'gateway',id:'spotify'});
+ draft.rule.mode='direct';
+ expect(draftForSave(draft).rule.target).toEqual({type:'default'});
+ expect(draft.rule.target).toEqual({type:'gateway',id:'spotify'});
+});

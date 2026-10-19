@@ -306,5 +306,10 @@
   "searchFakeIP": "Search domain or full IP address",
   "deleteFakeIPMapping": "Delete mapping for {{domain}} → {{ip}}?",
   "fakeIPDeleted": "FakeIP mapping deleted.",
-  "fakeIPAlreadyRemoved": "This mapping no longer exists."
+  "fakeIPAlreadyRemoved": "This mapping no longer exists.",
+  "gateway": "HTTP Gateway",
+  "chooseGateway": "Choose a Gateway",
+  "gatewayDisabled": "disabled",
+  "gatewayLoadFailed": "Could not load Gateways.",
+  "gatewayRouteHelp": "TCP only. Matching connections enter this Gateway when its inbound interception settings permit them. Other traffic continues through normal routing; UDP and DNS skip this action."
 }

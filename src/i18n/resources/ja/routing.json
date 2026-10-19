@@ -306,5 +306,10 @@
   "searchFakeIP": "ドメインまたは完全な IP アドレスで検索",
   "deleteFakeIPMapping": "{{domain}} → {{ip}} のマッピングを削除しますか？",
   "fakeIPDeleted": "FakeIP マッピングを削除しました。",
-  "fakeIPAlreadyRemoved": "このマッピングは既に存在しません。"
+  "fakeIPAlreadyRemoved": "このマッピングは既に存在しません。",
+  "gateway": "HTTP Gateway",
+  "chooseGateway": "Gateway を選択",
+  "gatewayDisabled": "無効",
+  "gatewayLoadFailed": "Gateway を読み込めませんでした。",
+  "gatewayRouteHelp": "TCP のみ。入口の傍受設定が許可する接続を Gateway に渡します。それ以外の通信は通常のルーティングを続行し、UDP と DNS はこのアクションをスキップします。"
 }

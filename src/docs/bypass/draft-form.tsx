@@ -3,8 +3,9 @@ import { SettingLabel, SettingsBox } from '@/component/v2/card';
 import { SettingInputVertical, SettingSelectVertical } from '@/component/v2/forms';
 import { Input, Textarea } from '@/component/v2/input';
 import SwitchComponent from '@/component/v2/switch';
+import { GatewayPicker } from '@/component/gateway-picker';
 import { RouteTargetPicker } from '@/component/route-target-picker';
-import { createDefaultRouteList, type RuleDraft } from '@/contract/route';
+import { changeRuleAction, createDefaultRouteList, type RuleDraft } from '@/contract/route';
 import { useId, useState } from 'react';
 import { createID } from '@/common/id';
 import { ToggleGroup, ToggleItem } from '@/component/v2/togglegroup';
@@ -75,10 +76,11 @@ export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; 
             <SimpleConditions privateHistory={privateHistory} value={value} matcher={matcher} options={options} onChange={onChange} />
             <section className="space-y-4 border-t border-ui-border/60 pt-5">
                 <h3 className="text-sm font-medium text-ui-heading">{t('handlingAndDestination')}</h3>
-                <ToggleGroup type="single" value={value.rule.mode} aria-label={t('action')} className="grid grid-cols-3"
-                    onValueChange={mode => { if (mode === 'proxy' || mode === 'direct' || mode === 'block') patchRule({ mode }); }}>
-                    {(['proxy', 'direct', 'block'] as const).map(mode => <ToggleItem key={mode} value={mode}>{t(mode)}</ToggleItem>)}
+                <ToggleGroup type="single" value={value.rule.mode} aria-label={t('action')} className="grid grid-cols-2 sm:grid-cols-4"
+                    onValueChange={mode => { if (['proxy', 'direct', 'block', 'gateway'].includes(mode)) onChange({ ...value, rule: changeRuleAction(value.rule, mode) }); }}>
+                    {(['proxy', 'direct', 'block', 'gateway'] as const).map(mode => <ToggleItem key={mode} value={mode}>{t(mode)}</ToggleItem>)}
                 </ToggleGroup>
+                {value.rule.mode === 'gateway' && <GatewayPicker value={value.rule.target} onChange={target => patchRule({ target })} />}
                 {value.rule.mode === 'proxy' && <div className="space-y-2"><SettingLabel>{t('destination')}</SettingLabel><RouteTargetPicker compact value={value.rule.target} onChange={target => patchRule({ target })} /></div>}
             </section>        </>}
     </div>;

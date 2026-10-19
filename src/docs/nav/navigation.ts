@@ -32,6 +32,7 @@ export const navigationSections: NavigationSection[] = [
             { path: '/docs/bypass/list', label: routing('sharedMatchingData'), icon: Layers },
             { path: '/docs/bypass/test', label: ui('testRoute'), icon: Waypoints },
         ] },
+        { path: '/docs/gateway', label: nav('gateway'), icon: Network },
         { path: '/docs/inbound', label: routing('trafficEntryTask'), icon: Download },
         { path: '/docs/bypass/resolver', label: routing('dnsTask'), icon: Network },
     ] },

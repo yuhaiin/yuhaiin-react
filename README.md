@@ -47,3 +47,27 @@ TUN interface or install host routes. See the
 [backend setup guide](https://github.com/yuhaiin/yuhaiin/blob/main/docs/wireguard-inbound.md)
 for a complete server JSON and standard WireGuard client example.
 Protect saved configurations and backups containing private keys.
+
+## HTTP Gateway
+
+The **HTTP Gateway** entry provides listener and interception configuration, a
+visual AND/OR/NOT HTTP rule editor, upstream backends/outbound selection, CA
+management, a saved-policy tester, URL filters and request/health statistics.
+Save and activate publishes the complete revision atomically; a conflict retains
+local edits. The RPC routes and TypeScript models are generated from the paired
+backend Contract.
+
+HTTPS MITM is off by default and requires a generated/imported CA plus explicit
+inbound/domain admission. In the existing **Routing** editor, add an **HTTP
+Gateway** action with the desired host/process/inbound conditions and select the
+Gateway; only those matching TCP connections enter interception. Put it before
+any catch-all action, then apply Routing changes. Installing a CA does not itself
+enable interception. The Gateway tester tests the selected Gateway policy; use
+the Routing tester to verify the preceding handoff decision.
+The UI downloads only the public root and offers platform trust instructions.
+Certificate pinning, ECH, client private keys and HTTP/3 are not bypassed.
+Without management authentication, the backend restricts Gateway RPCs to local
+peers and local browser origins; configure authentication/TLS for a hosted UI.
+
+Backend architecture, complete JSON examples and limitations live in
+[the Gateway documentation](https://github.com/yuhaiin/yuhaiin/tree/main/docs/gateway).

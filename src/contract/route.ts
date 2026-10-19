@@ -211,3 +211,12 @@ export function createDefaultRuleDraft(): RuleDraft {
   rule.rules = [{ type: "host", host: { list: list.id } }];
   return { rule, lists: [list] };
 }
+
+/** Each action owns its destination type. Direct/block drafts retain the current
+ * selection while toggling; the save boundary clears their unused target. */
+export function changeRuleAction(rule: RouteRule, mode: string): RouteRule {
+  let target = rule.target;
+  if (mode === "gateway" && target.type !== "gateway") target = {type:"gateway", id:""};
+  if (mode === "proxy" && target.type === "gateway") target = {type:"default"};
+  return {...rule, mode, target};
+}
