@@ -676,6 +676,7 @@ export namespace Go {
       | { type: "reality"; reality: Reality }
       | { type: "tls"; tls: TLS }
       | { type: "amneziawg"; amneziawg: AmneziaWG }
+      | { type: "nebula"; nebula: Nebula }
       | { type: "ikev2"; ikev2: IKEv2 }
       | { type: "anyconnect"; anyconnect: AnyConnect }
       | { type: "sstp"; sstp: SSTP }
@@ -992,6 +993,9 @@ export namespace Go {
       peers?: WireguardPeer[];
       mtu?: number;
       reserved?: string;
+    }
+    export interface Nebula {
+      config_yaml: string;
     }
     export interface AmneziaWG {
       secretKey: string;
