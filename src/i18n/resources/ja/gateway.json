@@ -124,7 +124,7 @@
   "unknownTls": "Unsupported TLS behavior",
   "passthrough": "Passthrough",
   "reject": "Reject",
-  "protocolLimits": "ECH, certificate pinning, mutual TLS, non-HTTP TLS and HTTP/3 are outside MITM support. Exclude affected domains or choose passthrough. UDP/QUIC remains unchanged. A failed MITM handshake cannot fall back to passthrough.",
+  "protocolLimits": "GREASE ECH is handled as ordinary TLS. Real ECH inner names and requests are not decrypted; Gateway uses the visible outer name and clients may retry with ECH disabled. Certificate pinning, mutual TLS, non-HTTP TLS and HTTP/3 are outside MITM support. Exclude affected domains or choose passthrough. UDP/QUIC remains unchanged. A failed MITM handshake cannot fall back to passthrough.",
   "interceptionHelp": "Only explicitly selected TCP inbounds enter interception. TLS passthrough cannot match HTTP paths or headers. Generate a CA before enabling HTTPS MITM. 既存のルーティング画面で HTTP Gateway アクションのルールを作成し、この Gateway を選択します。傍受設定は、そのルールが一致した接続の処理を許可します。",
   "sourceUrl": "Remote rule source URL (optional)",
   "filterText": "Filter rules",
