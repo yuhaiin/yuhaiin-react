@@ -1,7 +1,7 @@
 import { createID } from "@/common/id";
 import { Button } from "@/component/v2/button";
 import type { Config, Gateway, Rule, Upstream, Interception, FilterList } from "@/contract/gateway";
-import { deleteGateway, deleteRule, newRule, newUpstream } from "@/contract/gateway";
+import { deleteGateway, deleteRule, newRule, newUpstream, newInterception } from "@/contract/gateway";
 import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { ActionEditor } from "./fields";
@@ -13,13 +13,11 @@ import {
   FilterEditor,
 } from "./resources";
 
-type InboundItem = { id: string; name: string };
 type FilterReport = { id: string; accepted: number; rejected: number; errors: string[] };
 type GatewayRuntime = { id: string; requests: number; blocked: number; forwarded: number; errors: number; tlsFailures: number; filterReports?: FilterReport[] };
 
 type Props = {
   config: Config;
-  inbounds: InboundItem[];
   status: GatewayRuntime[];
   onChange: (value: Config) => void;
   refreshFilter: (id: string) => void;
@@ -44,11 +42,6 @@ function Section({ title, count, children, initiallyOpen = false }: {
   );
 }
 
-const emptyInterception = (inboundId: string, gatewayId: string): Interception => ({
-  inboundId, gatewayId, mode: "http_only", domains: [], excludeDomains: [],
-  ports: [], sources: [], processes: [], unknownTls: "passthrough",
-});
-
 const newFilter = (gatewayId: string): FilterList => ({
   id: createID(), name: "", revision: 0, enabled: true,
   gatewayId, text: "||example.com/ads/*",
@@ -67,9 +60,8 @@ function pruneUnusedPools(config: Config): Config {
   return { ...config, upstreams: config.upstreams.filter((pool) => used.has(pool.id)) };
 }
 
-export function GatewayWorkspace({ config, inbounds, status, onChange, refreshFilter, canRefreshFilter }: Props) {
+export function GatewayWorkspace({ config, status, onChange, refreshFilter, canRefreshFilter }: Props) {
   const { t } = useTranslation("gateway");
-  const [selectedInbound, setSelectedInbound] = useState<Record<string, string>>({});
 
   const updateGateway = (gateway: Gateway) => onChange(pruneUnusedPools({
     ...config, gateways: config.gateways.map((item) => item.id === gateway.id ? gateway : item),
@@ -82,7 +74,7 @@ export function GatewayWorkspace({ config, inbounds, status, onChange, refreshFi
   });
   const updateInterception = (interception: Interception) => onChange({
     ...config,
-    interceptions: [...config.interceptions.filter((item) => item.inboundId !== interception.inboundId), interception],
+    interceptions: [...config.interceptions.filter((item) => item.gatewayId !== interception.gatewayId), interception],
   });
   const updateFilter = (filter: FilterList) => onChange({
     ...config, filterLists: config.filterLists.map((item) => item.id === filter.id ? filter : item),
@@ -108,7 +100,8 @@ export function GatewayWorkspace({ config, inbounds, status, onChange, refreshFi
     <div className="space-y-5">
       {config.gateways.map((gateway) => {
         const rules = config.rules.filter((rule) => gateway.ruleIds.includes(rule.id));
-        const interceptions = config.interceptions.filter((item) => item.gatewayId === gateway.id);
+        const interception = config.interceptions.find((item) => item.gatewayId === gateway.id)
+          ?? newInterception(gateway.id);
         const filters = config.filterLists.filter((item) => item.gatewayId === gateway.id);
         const neededUpstreams = new Set([
           gateway.default,
@@ -120,8 +113,6 @@ export function GatewayWorkspace({ config, inbounds, status, onChange, refreshFi
         const unassignedFallback = gateway.default.type === "reverse_proxy" && !gateway.default.upstream;
         const canAddPool = Boolean(unassignedRule || unassignedFallback);
         const runtime = status.find((item) => item.id === gateway.id);
-        const availableInbounds = inbounds.filter((item) =>
-          !config.interceptions.some((entry) => entry.inboundId === item.id));
         return (
           <Section key={gateway.id}
             title={gateway.name || t("newGateway")}
@@ -134,38 +125,9 @@ export function GatewayWorkspace({ config, inbounds, status, onChange, refreshFi
               <GatewayEditor item={gateway} config={config} minimal
                 change={updateGateway} />
             </Section>
-            <Section title={t("trafficSources")} count={interceptions.length + (gateway.listen ? 1 : 0)}
-              initiallyOpen={interceptions.length > 0}>
-              <p className="text-sm text-ui-secondary">{t("sourceHelp")}</p>
-              {gateway.listen && <p className="text-sm">{t("listen")}: {gateway.listen}</p>}
-              {interceptions.map((entry) => (
-                <Section key={entry.inboundId}
-                  title={inbounds.find((item) => item.id === entry.inboundId)?.name || entry.inboundId}>
-                  <InterceptionEditor item={entry} config={config} hideGateway
-                    inboundName={inbounds.find((item) => item.id === entry.inboundId)?.name || entry.inboundId}
-                    change={updateInterception} />
-                  <Button variant="outline-danger" onClick={() => onChange({
-                    ...config, interceptions: config.interceptions.filter((item) => item.inboundId !== entry.inboundId),
-                  })}>{t("remove")}</Button>
-                </Section>
-              ))}
-              <div className="flex flex-wrap gap-2 items-center">
-                <select className="max-w-full rounded-ui-sm border border-ui-border bg-ui-surface p-2 text-sm"
-                  aria-label={t("inbound")} value={selectedInbound[gateway.id] ?? ""}
-                  onChange={(event) => setSelectedInbound((previous) => ({ ...previous, [gateway.id]: event.target.value }))}>
-                  <option value="">{t("inbound")}</option>
-                  {availableInbounds.map((item) =>
-                    <option key={item.id} value={item.id}>{item.name}</option>)}
-                </select>
-                <Button disabled={!selectedInbound[gateway.id]}
-                  onClick={() => {
-                    const inboundId = selectedInbound[gateway.id];
-                    if (!inboundId || !availableInbounds.some((item) => item.id === inboundId)) return;
-                    onChange({ ...config, interceptions: [...config.interceptions, emptyInterception(inboundId, gateway.id)] });
-                    setSelectedInbound((previous) => ({ ...previous, [gateway.id]: "" }));
-                  }}>{t("addSource")}</Button>
-              </div>
+            <Section title={t("interception")} initiallyOpen>
               <p className="text-sm text-ui-secondary">{t("routeHandoffHelp")}</p>
+              <InterceptionEditor item={interception} change={updateInterception} />
             </Section>
             <Section title={t("rules")} count={rules.length} initiallyOpen>
               {rules.map((rule) => (
