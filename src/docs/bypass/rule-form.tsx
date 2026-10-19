@@ -4,6 +4,7 @@ import { GeoIPCountrySelect } from '@/component/geoip-country-select';
 import { useTranslation } from 'react-i18next';
 
 import { ResolverPicker } from "@/component/resolver-picker";
+import { GatewayPicker } from "@/component/gateway-picker";
 import { RouteTargetPicker } from "@/component/route-target-picker";
 import { Button } from "@/component/v2/button";
 import { SettingLabel } from "@/component/v2/card";
@@ -13,11 +14,11 @@ import { Input } from "@/component/v2/input";
 import { Select } from "@/component/v2/select";
 
 import type { RouteRule, RuleExpr } from "@/contract/route";
-import { normalizeRule } from "@/contract/route";
+import { changeRuleAction, normalizeRule } from "@/contract/route";
 
 import { Plus, X } from "lucide-react";
 
-const routeModes = ["proxy", "block", "direct"];
+const routeModes = ["proxy", "block", "direct", "gateway"];
 
 const resolveStrategies = ["default", "prefer_ipv4", "prefer_ipv6", "only_ipv4", "only_ipv6"];
 
@@ -67,8 +68,8 @@ function RouteRuleForm({ value, onChange, options, lockName }: { value: RouteRul
                             onCheckedChange={(enabled) => patch({ disabled: !enabled })}
                         />
                     </div>
-                    <SettingSelectVertical label={uiT("mode")} value={value.mode} values={routeModes} onChange={(mode) => patch({ mode })} />
-                    <div>{value.mode === "proxy" && <RouteTargetPicker value={value.target} onChange={target => patch({ target })} />}</div>
+                    <SettingSelectVertical label={uiT("mode")} value={value.mode} values={routeModes} onChange={(mode) => onChange(changeRuleAction(value, mode))} />
+                    <div>{value.mode === "gateway" && <GatewayPicker value={value.target} onChange={target => patch({ target })} />}{value.mode === "proxy" && <RouteTargetPicker value={value.target} onChange={target => patch({ target })} />}</div>
                     <SettingSelectVertical label={uiT("resolveStrategy")} value={value.resolveStrategy ?? "default"} values={resolveStrategies} onChange={(resolveStrategy) => patch({ resolveStrategy })} />
                     <SettingSelectVertical
                         label={uiT("udpFqdnStrategy")}

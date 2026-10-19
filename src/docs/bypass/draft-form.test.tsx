@@ -9,6 +9,7 @@ vi.mock('@/component/route-target-picker', () => ({
     RouteTargetPicker: ({ value }: { value: { type: string; id?: string } }) =>
         <output data-testid="target">{value.type}:{value.id}</output>,
 }));
+vi.mock('@/component/gateway-picker', () => ({ GatewayPicker: ({value, onChange}: {value:{type:string;id?:string};onChange:(target:{type:string;id:string})=>void}) => <button onClick={() => onChange({type:'gateway',id:'spotify'})}>gateway:{value.id}</button> }));
 vi.mock('@/component/resolver-picker', () => ({ ResolverPicker: () => null }));
 
 let host: HTMLDivElement | undefined;
@@ -117,4 +118,15 @@ it('does not simplify nested or negated rules', () => {
     expect(simple?.disabled).toBe(true);
     expect(host.textContent).toContain('complexRule');
     expect(JSON.parse(host.querySelector('[data-testid="rule-expressions"]')?.textContent ?? '[]')).toEqual(draft.rule.rules);
+});
+
+it('selects a Gateway action separately from proxy destinations', () => {
+ const draft=createDefaultRuleDraft();draft.rule.target={type:'node',id:'old-node'};
+ const host=renderDraft(draft);
+ action(host,'gateway');
+ expect(host.querySelector('[data-testid="saved-target"]')?.textContent).toBe('{"type":"gateway","id":""}');
+ clickButton(host,'gateway:');
+ expect(host.querySelector('[data-testid="saved-target"]')?.textContent).toContain('spotify');
+ action(host,'proxy');
+ expect(host.querySelector('[data-testid="target"]')?.textContent).toBe('default:');
 });

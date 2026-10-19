@@ -32,7 +32,7 @@ export function RuleList({ items, selectedId, onOpen, onMove, onDrop, destinatio
         <p id={helpId} className="sr-only">{t('dragRuleHelp')}</p>
         <ul ref={listRef} className="m-0 list-none space-y-1 p-0" aria-label={uiT('routeRules')}>
         {items.map((item, index) => {
-            const proxy = item.mode === 'proxy';
+            const proxy = item.mode === 'proxy' || item.mode === 'gateway';
             const destination = !item.target.type || item.target.type === 'default'
                 ? t('defaultProxy') : destinations[`${item.target.type}:${item.target.id}`] ?? t('unavailableDestination');
             const selected = item.id === selectedId;

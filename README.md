@@ -58,7 +58,12 @@ local edits. The RPC routes and TypeScript models are generated from the paired
 backend Contract.
 
 HTTPS MITM is off by default and requires a generated/imported CA plus explicit
-inbound/domain admission. Installing a CA does not itself enable interception.
+inbound/domain admission. In the existing **Routing** editor, add an **HTTP
+Gateway** action with the desired host/process/inbound conditions and select the
+Gateway; only those matching TCP connections enter interception. Put it before
+any catch-all action, then apply Routing changes. Installing a CA does not itself
+enable interception. The Gateway tester tests the selected Gateway policy; use
+the Routing tester to verify the preceding handoff decision.
 The UI downloads only the public root and offers platform trust instructions.
 Certificate pinning, ECH, client private keys and HTTP/3 are not bypassed.
 Without management authentication, the backend restricts Gateway RPCs to local

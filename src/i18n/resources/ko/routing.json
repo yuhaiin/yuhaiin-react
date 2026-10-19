@@ -306,5 +306,10 @@
   "searchFakeIP": "도메인 또는 전체 IP 주소 검색",
   "deleteFakeIPMapping": "{{domain}} → {{ip}} 매핑을 삭제할까요?",
   "fakeIPDeleted": "FakeIP 매핑이 삭제되었습니다.",
-  "fakeIPAlreadyRemoved": "이 매핑은 더 이상 존재하지 않습니다."
+  "fakeIPAlreadyRemoved": "이 매핑은 더 이상 존재하지 않습니다.",
+  "gateway": "HTTP Gateway",
+  "chooseGateway": "Gateway 선택",
+  "gatewayDisabled": "비활성화",
+  "gatewayLoadFailed": "Gateway를 불러오지 못했습니다.",
+  "gatewayRouteHelp": "TCP 전용입니다. 인바운드 가로채기 설정이 허용하는 연결을 Gateway로 전달합니다. 나머지 트래픽은 일반 라우팅을 계속하며 UDP와 DNS는 이 작업을 건너뜁니다."
 }
