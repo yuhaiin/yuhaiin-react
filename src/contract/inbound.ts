@@ -13,7 +13,6 @@ export type TunProtocol = Go.inbound.TunProtocol;
 export type InboundTransport = Go.inbound.Transport;
 export type RealityTransport = Go.inbound.RealityTransport;
 export type TLSAutoTransport = Go.inbound.TLSAutoTransport;
-export type ClientTLSConfig = Go.inbound.ClientTLSConfig;
 export type Certificate = Go.inbound.Certificate;
 export type ServerTLSConfig = Go.inbound.ServerTLSConfig;
 export type Inbound = Omit<Go.inbound.Inbound, "network" | "transports" | "protocol"> & {
@@ -86,8 +85,6 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
             return { type, wireguard: { privateKey: "", listenPort: 51820, addresses: ["10.66.0.1/24"], mtu: 1420, peers: [] } };
         case "krunlet":
             return { type, krunlet: { socket: "" } };
-        case "reverse_http":
-            return { type, reverse_http: { url: "" } };
         case "reverse_tcp":
             return { type, reverse_tcp: { target: "" } };
         case "none":

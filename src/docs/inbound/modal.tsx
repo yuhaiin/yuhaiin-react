@@ -79,7 +79,7 @@ const InboundModal: FC<{
     const { pending: saving, run } = useAsyncAction(error => { const message = errorOf(error)?.msg ?? "Save failed"; setSaveError(message); ctx.Error(message); });
     const close = useCloseGuard(dirty && show, saving, () => onHide());
 
-    const supportedProtocols = capabilities?.protocols ?? ['mixed', 'http', 'socks5', 'socks4a', 'hysteria2', 'yuubinsya', 'krunlet', 'reverse_http', 'reverse_tcp', 'none'];
+    const supportedProtocols = capabilities?.protocols ?? ['mixed', 'http', 'socks5', 'socks4a', 'hysteria2', 'yuubinsya', 'krunlet', 'reverse_tcp', 'none'];
     const apiError = errorOf(error);
     const inbound = isNew ? draft : data ? draft : undefined;
     const title = isNew ? "New Inbound" : inbound?.name || id || "Inbound";
