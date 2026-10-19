@@ -115,6 +115,10 @@ export function GatewayWorkspace({ config, inbounds, status, onChange, refreshFi
           ...rules.map((rule) => rule.action),
         ].filter((action) => action.type === "reverse_proxy").map((action) => action.upstream));
         const pools = config.upstreams.filter((upstream) => neededUpstreams.has(upstream.id));
+        const unassignedRule = rules.find((rule) =>
+          rule.action.type === "reverse_proxy" && !rule.action.upstream);
+        const unassignedFallback = gateway.default.type === "reverse_proxy" && !gateway.default.upstream;
+        const canAddPool = Boolean(unassignedRule || unassignedFallback);
         const runtime = status.find((item) => item.id === gateway.id);
         const availableInbounds = inbounds.filter((item) =>
           !config.interceptions.some((entry) => entry.inboundId === item.id));
@@ -226,22 +230,20 @@ export function GatewayWorkspace({ config, inbounds, status, onChange, refreshFi
                     })}>{t("delete")}</Button>
                 </Section>
               ))}
-              <Button onClick={() => {
+              <Button disabled={!canAddPool} onClick={() => {
+                // Creating a backend pool must never implicitly change the
+                // Gateway's fallback from Block/Forward to Reverse Proxy.
+                // Require an explicit reverse-proxy action selection first.
+                if (!canAddPool) return;
                 const upstream = newUpstream();
-                // A newly created pool must be referenced immediately, otherwise
-                // a scoped workspace has no place to display or edit it.
-                const firstRule = rules.find((rule) =>
-                  rule.action.type === "reverse_proxy" && !rule.action.upstream);
-                const nextRules = firstRule
-                  ? config.rules.map((rule) => rule.id === firstRule.id
+                const nextRules = unassignedRule
+                  ? config.rules.map((rule) => rule.id === unassignedRule.id
                     ? { ...rule, action: { ...rule.action, upstream: upstream.id } } : rule)
                   : config.rules;
-                const nextGateways = firstRule ? config.gateways : config.gateways.map((g) =>
-                  g.id === gateway.id ? {
-                    ...g, default: {
-                      ...g.default, type: "reverse_proxy", upstream: upstream.id,
-                    },
-                  } : g);
+                const nextGateways = unassignedRule ? config.gateways : config.gateways.map((g) =>
+                  g.id === gateway.id
+                    ? { ...g, default: { ...g.default, upstream: upstream.id } }
+                    : g);
                 onChange(pruneUnusedPools({ ...config, rules: nextRules, gateways: nextGateways,
                   upstreams: [...config.upstreams, upstream] }));
               }}>{t("addUpstream")}</Button>
