@@ -32,6 +32,10 @@ export const newGateway = (): Gateway => ({
   default: newAction(),
   maxBodyBytes: 0,
 });
+export const newInterception = (gatewayId: string, mode = "off"): Interception => ({
+  gatewayId, mode, domains: [], excludeDomains: [], ports: [], sources: [],
+  processes: [], unknownTls: "passthrough",
+});
 export const newRule = (): Rule => ({
   id: createID(),
   name: "",
@@ -127,7 +131,7 @@ export function flattenWorkspace(document: GatewayWorkspaceDocument): Config {
     rules: document.gateways.flatMap((item) => item.policies),
     upstreams: document.gateways.flatMap((item) => item.backendPools),
     interceptions: document.gateways.flatMap((item) =>
-      item.sources.map((source) => ({ ...source, gatewayId: item.id }))),
+      item.interception ? [{ ...item.interception, gatewayId: item.id }] : []),
     filterLists: document.gateways.flatMap((item) =>
       item.filters.map((filter) => ({ ...filter, gatewayId: item.id }))),
   };
@@ -143,6 +147,12 @@ export function groupWorkspace(config: Config): GatewayWorkspaceDocument {
       const poolIDs = new Set([gateway.default, ...policies.map((rule) => rule.action)]
         .filter((action) => action.type === "reverse_proxy")
         .map((action) => action.upstream));
+      const interception = config.interceptions.find((item) => item.gatewayId === gateway.id);
+      let settings: WorkspaceGateway["interception"];
+      if (interception) {
+        const { gatewayId: _owner, ...value } = interception;
+        settings = value;
+      }
       return {
         id: gateway.id,
         name: gateway.name,
@@ -157,8 +167,7 @@ export function groupWorkspace(config: Config): GatewayWorkspaceDocument {
         } : undefined,
         policies,
         backendPools: config.upstreams.filter((pool) => poolIDs.has(pool.id)),
-        sources: config.interceptions.filter((source) => source.gatewayId === gateway.id)
-          .map(({ gatewayId: _owner, ...source }) => source),
+        interception: settings,
         filters: config.filterLists.filter((filter) => filter.gatewayId === gateway.id),
         fallback: gateway.default,
         maxBodyBytes: gateway.maxBodyBytes,

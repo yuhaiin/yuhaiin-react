@@ -18,7 +18,8 @@ it('loads, saves and refreshes the nested Gateway workspace through its real RPC
     const workspace: GatewayWorkspaceDocument = {
         version: 2, revision: 4, gateways: [{
             id: 'site', name: 'Site', enabled: true, revision: 1,
-            policies: [], backendPools: [], sources: [], filters: [],
+            policies: [], backendPools: [], filters: [],
+            interception: { mode: "https_mitm", domains: ["app.example.com"], excludeDomains: [], ports: [], sources: [], processes: [], unknownTls: "passthrough" },
             fallback: newAction('block'), maxBodyBytes: 0,
         }],
     };
@@ -39,7 +40,9 @@ it('loads, saves and refreshes the nested Gateway workspace through its real RPC
         }),
     );
     const config = await getGatewayConfig();
-    expect(config).toMatchObject({ revision: 4, gateways: [{ id: 'site' }], rules: [], upstreams: [] });
+    expect(config).toMatchObject({ revision: 4, gateways: [{ id: 'site' }], rules: [], upstreams: [],
+        interceptions: [{ gatewayId: 'site', mode: 'https_mitm', domains: ['app.example.com'] }],
+    });
     config.gateways[0].name = 'Updated site';
     await expect(saveGatewayConfig(config)).resolves.toMatchObject({
         revision: 5, gateways: [{ name: 'Updated site' }],

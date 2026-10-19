@@ -242,7 +242,6 @@ export namespace Go {
       weight: number;
     }
     export interface Interception {
-      inboundId: string;
       gatewayId: string;
       mode: string;
       domains: string[];
@@ -347,7 +346,7 @@ export namespace Go {
       listener?: ListenerSource;
       policies: Rule[];
       backendPools: Upstream[];
-      sources: InboundSource[];
+      interception?: InterceptionSettings;
       filters: FilterList[];
       fallback: Action;
       maxBodyBytes: number;
@@ -359,8 +358,7 @@ export namespace Go {
       certificateFile?: string;
       keyFile?: string;
     }
-    export interface InboundSource {
-      inboundId: string;
+    export interface InterceptionSettings {
       mode: string;
       domains: string[];
       excludeDomains: string[];

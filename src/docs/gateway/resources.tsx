@@ -290,32 +290,13 @@ export function UpstreamEditor({
   );
 }
 
-export function InterceptionEditor({
-  item,
-  config,
-  inboundName,
-  change,
-  hideGateway = false,
-}: {
+export function InterceptionEditor({ item, change }: {
   item: Interception;
-  config: Config;
-  inboundName: string;
   change: (next: Interception) => void;
-  hideGateway?: boolean;
 }) {
   const { t } = useTranslation("gateway");
   return (
     <div className="space-y-4">
-      <h3 className="font-medium">{inboundName}</h3>
-      {!hideGateway && <Choice
-        label={t("gateway")}
-        value={item.gatewayId}
-        values={config.gateways.map((gateway) => ({
-          value: gateway.id,
-          label: gateway.name || gateway.id,
-        }))}
-        onChange={(gatewayId) => change({ ...item, gatewayId })}
-      />}
       <Choice
         label={t("interceptionMode")}
         value={item.mode}

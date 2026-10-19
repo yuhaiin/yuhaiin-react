@@ -51,7 +51,7 @@ Protect saved configurations and backups containing private keys.
 ## HTTP Gateway
 
 The HTTP Gateway editor is organized by Gateway instead of by resource type.
-Each Gateway owns its traffic sources, HTTP rules, URL filters, default action,
+Each Gateway owns its listener, HTTP/TLS settings, HTTP rules, URL filters, default action,
 and backend pools in one expandable workspace. A new rule is immediately
 attached to its Gateway; a new backend pool is attached to a reverse-proxy
 action so it stays visible. The same API revision is saved and activated
@@ -59,12 +59,13 @@ atomically. CA management, policy testing and statistics remain in the
 Diagnostics section.
 
 Create a listener-based Gateway to expose an HTTP reverse proxy. Create an
-interception-only Gateway to handle selected existing Inbound traffic, then
-attach an Inbound in the Gateway's **Traffic sources** section. HTTPS MITM
-requires explicit domain admission, a trusted local CA and a selected
-**HTTP Gateway** action in **Routing**. The Routing action must appear before
-any catch-all Direct/Proxy rule and must be applied separately; assigning an
-Inbound here does not independently divert TCP traffic.
+interception-only Gateway to handle traffic selected by Routing. Set its
+**Interception mode** directly, including **HTTPS MITM** when needed. HTTPS MITM
+requires explicit domain admission and a trusted local CA. In **Routing**, choose
+an **HTTP Gateway** action and its Gateway; use existing Inbound conditions there
+to limit which traffic is selected. Apply the Routing rule before a catch-all
+Direct/Proxy rule. No additional Inbound attachment is required.
+
 
 The backend now exposes and persists a versioned, nested Gateway workspace.
 Legacy flat-config and individual resource management endpoints were removed.

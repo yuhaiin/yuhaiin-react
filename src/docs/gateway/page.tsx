@@ -4,12 +4,11 @@ import useSWR from "swr";
 import {
   getGatewayConfig, gatewayStatus, saveGatewayConfig, refreshGatewayFilter,
 } from "@/api/gateway";
-import { listInbounds } from "@/api/inbounds";
 import { Button } from "@/component/v2/button";
 import { MainContainer } from "@/component/v2/card";
 import Loading from "@/component/v2/loading";
 import type { Config } from "@/contract/gateway";
-import { errorMessage, newGateway } from "@/contract/gateway";
+import { errorMessage, newGateway, newInterception } from "@/contract/gateway";
 import { useCloseGuard } from "@/hooks/use-editor-draft";
 import { GatewayWorkspace } from "./workspace";
 import { AuthorityPanel, RuleTester } from "./tools";
@@ -24,7 +23,6 @@ export default function GatewayPage() {
   const { data: status, error: statusError } = useSWR(
     "/api/v2/gateway/status", gatewayStatus, { refreshInterval: 5000 },
   );
-  const { data: inbounds } = useSWR("/api/v2/inbounds/gateway", listInbounds);
   const [draft, setDraft] = useState<Config>();
   const [tool, setTool] = useState<Tool>(null);
   const [pending, setPending] = useState(false);
@@ -106,11 +104,11 @@ export default function GatewayPage() {
               default: { type: "forward", status: 200, outbound: { type: "inherit_route" },
                 preserveHost: false, rewrite: {} },
             };
-            change({ ...draft, gateways: [...draft.gateways, gateway] });
+            change({ ...draft, gateways: [...draft.gateways, gateway],
+              interceptions: [...draft.interceptions, newInterception(gateway.id, "http_only")] });
           }}>{t("addInterceptionGateway")}</Button>
         </div>
         <GatewayWorkspace config={draft} onChange={change}
-          inbounds={inbounds?.items ?? []}
           status={status?.gateways ?? []}
           canRefreshFilter={!dirty && !pending}
           refreshFilter={(id) => void refreshFilter(id)} />

@@ -222,7 +222,6 @@ it("deletes rules together with their Gateway references", async () => {
 it("deletes a Gateway together with its interception and filters", async () => {
   config.interceptions = [
     {
-      inboundId: "mixed",
       gatewayId: "g",
       mode: "http_only",
       domains: [],
@@ -323,6 +322,8 @@ it("creates an interception-only gateway with a safe forward fallback", async ()
   await click("saveActivate");
   const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
   expect(saved.gateways).toHaveLength(2);
+  expect(saved.interceptions).toEqual([expect.objectContaining({ gatewayId: saved.gateways[1].id, mode: "http_only" })]);
+  expect(api.listInbounds).not.toHaveBeenCalled();
   expect(saved.gateways[1]).toEqual(expect.objectContaining({
     enabled: true, listen: "", default: expect.objectContaining({
       type: "forward", outbound: { type: "inherit_route" },
@@ -403,4 +404,21 @@ it("shows scoped filters and allows editing within the owning gateway", async ()
   expect(saved.filterLists).toEqual([
     expect.objectContaining({ gatewayId: "g", enabled: true }),
   ]);
+});
+
+
+it("configures HTTPS MITM directly on the Gateway without attaching an Inbound", async () => {
+  await render();
+  expect(host.textContent).not.toContain("addSource");
+  const mode = host.querySelector<HTMLButtonElement>('[role="combobox"][aria-label="interceptionMode"]')!;
+  await act(async () => mode.click());
+  const mitm = [...document.querySelectorAll<HTMLElement>('[role="option"]')]
+    .find(option => option.textContent === "https_mitm")!;
+  await act(async () => mitm.click());
+  edit(input("domains"), "app.example.com");
+  await click("saveActivate");
+  expect(api.saveGatewayConfig).toHaveBeenCalledWith(expect.objectContaining({
+    interceptions: [expect.objectContaining({ gatewayId: "g", mode: "https_mitm", domains: ["app.example.com"] })],
+  }));
+  expect(api.listInbounds).not.toHaveBeenCalled();
 });
