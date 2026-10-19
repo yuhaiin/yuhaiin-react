@@ -23,10 +23,12 @@ export function GatewayEditor({
   item,
   config,
   change,
+  minimal = false,
 }: {
   item: Gateway;
   config: Config;
   change: (next: Gateway) => void;
+  minimal?: boolean;
 }) {
   const { t } = useTranslation("gateway");
   return (
@@ -81,7 +83,7 @@ export function GatewayEditor({
         value={item.maxBodyBytes}
         onChange={(value) => change({ ...item, maxBodyBytes: Number(value) })}
       />
-      <Field label={t("rules")}>
+      {!minimal && <Field label={t("rules")}>
         {config.rules.length === 0 && (
           <p className="text-sm text-ui-secondary">{t("createRulesFirst")}</p>
         )}
@@ -102,14 +104,14 @@ export function GatewayEditor({
             />
           ))}
         </div>
-      </Field>
-      <Field label={t("defaultAction")}>
+      </Field>}
+      {!minimal && <Field label={t("defaultAction")}>
         <ActionEditor
           value={item.default}
           upstreams={config.upstreams}
           onChange={(action) => change({ ...item, default: action })}
         />
-      </Field>
+      </Field>}
     </div>
   );
 }
@@ -293,17 +295,19 @@ export function InterceptionEditor({
   config,
   inboundName,
   change,
+  hideGateway = false,
 }: {
   item: Interception;
   config: Config;
   inboundName: string;
   change: (next: Interception) => void;
+  hideGateway?: boolean;
 }) {
   const { t } = useTranslation("gateway");
   return (
     <div className="space-y-4">
       <h3 className="font-medium">{inboundName}</h3>
-      <Choice
+      {!hideGateway && <Choice
         label={t("gateway")}
         value={item.gatewayId}
         values={config.gateways.map((gateway) => ({
@@ -311,7 +315,7 @@ export function InterceptionEditor({
           label: gateway.name || gateway.id,
         }))}
         onChange={(gatewayId) => change({ ...item, gatewayId })}
-      />
+      />}
       <Choice
         label={t("interceptionMode")}
         value={item.mode}
@@ -373,10 +377,12 @@ export function FilterEditor({
   item,
   config,
   change,
+  hideGateway = false,
 }: {
   item: FilterList;
   config: Config;
   change: (next: FilterList) => void;
+  hideGateway?: boolean;
 }) {
   const { t } = useTranslation("gateway");
   return (
@@ -391,7 +397,7 @@ export function FilterEditor({
         value={item.enabled}
         onChange={(enabled) => change({ ...item, enabled })}
       />
-      <Choice
+      {!hideGateway && <Choice
         label={t("gateway")}
         value={item.gatewayId}
         values={config.gateways.map((g) => ({
