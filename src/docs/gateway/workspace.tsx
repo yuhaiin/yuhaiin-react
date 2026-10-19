@@ -220,7 +220,22 @@ export function GatewayWorkspace({ config, inbounds, status, onChange, refreshFi
               ))}
               <Button onClick={() => {
                 const upstream = newUpstream();
-                onChange({ ...config, upstreams: [...config.upstreams, upstream] });
+                // A newly created pool must be referenced immediately, otherwise
+                // a scoped workspace has no place to display or edit it.
+                const firstRule = rules.find((rule) =>
+                  rule.action.type === "reverse_proxy" && !rule.action.upstream);
+                const nextRules = firstRule
+                  ? config.rules.map((rule) => rule.id === firstRule.id
+                    ? { ...rule, action: { ...rule.action, upstream: upstream.id } } : rule)
+                  : config.rules;
+                const nextGateways = firstRule ? config.gateways : config.gateways.map((g) =>
+                  g.id === gateway.id ? {
+                    ...g, default: {
+                      ...g.default, type: "reverse_proxy", upstream: upstream.id,
+                    },
+                  } : g);
+                onChange({ ...config, rules: nextRules, gateways: nextGateways,
+                  upstreams: [...config.upstreams, upstream] });
               }}>{t("addUpstream")}</Button>
               <p className="text-xs text-ui-secondary">{t("backendPoolHelp")}</p>
             </Section>
