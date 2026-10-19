@@ -330,7 +330,20 @@ it("creates an interception-only gateway with a safe forward fallback", async ()
   }));
 });
 
-it("creates a backend pool and binds it to the current gateway", async () => {
+it("never changes the Gateway fallback merely to create a backend pool", async () => {
+  await render();
+  const button = [...host.querySelectorAll<HTMLButtonElement>("button")].find(
+    (item) => item.textContent?.trim() === "addUpstream",
+  );
+  expect(button?.disabled).toBe(true);
+  await click("addUpstream");
+  expect(api.saveGatewayConfig).not.toHaveBeenCalled();
+});
+
+it("creates a backend pool only for an explicitly selected reverse proxy action", async () => {
+  config.gateways[0].default = {
+    ...config.gateways[0].default, type: "reverse_proxy", upstream: "",
+  };
   await render();
   await click("addUpstream");
   await click("saveActivate");
