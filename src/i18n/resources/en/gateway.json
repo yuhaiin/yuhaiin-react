@@ -170,5 +170,16 @@
   "rejectedRules": "unsupported rules",
   "overrideQuery": "Replace query parameters",
   "upstreamInUse": "Remove references from Gateway actions and rules before deleting this upstream.",
-  "clientSourceIP": "Client source IP (for interception admission)"
+  "clientSourceIP": "Client source IP (for interception admission)",
+  "unifiedDescription": "Configure traffic sources, HTTP policies, filters and backend pools together for each Gateway.",
+  "gatewaySettings": "Gateway settings",
+  "trafficSources": "Traffic sources",
+  "sourceHelp": "Gateway listener and admitted existing inbounds are configured here. HTTPS inspection requires CA trust and an explicit allowlist.",
+  "addSource": "Attach inbound",
+  "routeHandoffHelp": "For intercepted traffic, also add and apply a matching HTTP Gateway action in Routing. Source permissions do not divert traffic by themselves.",
+  "backendPools": "Backend pools",
+  "backendPoolHelp": "Backend pools are referenced by Reverse proxy actions. A pool can use an existing outbound, balancing and health checks.",
+  "newFilterGateway": "HTTP filter",
+  "addInterceptionGateway": "Add interception Gateway",
+  "diagnostics": "Diagnostics"
 }
