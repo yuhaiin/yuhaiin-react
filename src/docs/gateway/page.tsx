@@ -138,12 +138,12 @@ export default function GatewayPage() {
             </Button>
           </div>
         </div>
-        {failure && (
+        {(failure || status?.startupError) && (
           <p
             role="alert"
             className="rounded-ui-sm border border-ui-border p-3 text-sm text-ui-danger"
           >
-            {failure}
+            {failure || status?.startupError}
           </p>
         )}
         {saved && (

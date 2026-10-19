@@ -301,6 +301,7 @@ export namespace Go {
     export interface RuntimeStatus {
       revision: number;
       gateways: GatewayStatus[];
+      startupError?: string;
     }
     export interface GatewayStatus {
       filterReports: FilterReport[];
@@ -1019,6 +1020,7 @@ export namespace Go {
       endpoint_public_key: string;
       local_addresses?: string[];
       mtu?: number;
+      transport?: string;
     }
     export interface PointAsEndpoint {
       hash: string;
