@@ -318,7 +318,7 @@ it("creates an interception-only gateway with a safe forward fallback", async ()
   await render();
   await click("addInterceptionGateway");
   await click("saveActivate");
-  const saved = api.saveGatewayConfig.mock.calls.at(-1)?.[0] as Config;
+  const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
   expect(saved.gateways).toHaveLength(2);
   expect(saved.gateways[1]).toEqual(expect.objectContaining({
     enabled: true, listen: "", default: expect.objectContaining({
@@ -331,7 +331,7 @@ it("creates a backend pool and binds it to the current gateway", async () => {
   await render();
   await click("addUpstream");
   await click("saveActivate");
-  const saved = api.saveGatewayConfig.mock.calls.at(-1)?.[0] as Config;
+  const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
   expect(saved.upstreams).toHaveLength(1);
   expect(saved.gateways[0].default).toEqual(
     expect.objectContaining({ type: "reverse_proxy", upstream: saved.upstreams[0].id }),
@@ -342,7 +342,7 @@ it("shows scoped filters and allows editing within the owning gateway", async ()
   await render();
   await click("addFilter");
   await click("saveActivate");
-  const saved = api.saveGatewayConfig.mock.calls.at(-1)?.[0] as Config;
+  const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
   expect(saved.filterLists).toEqual([
     expect.objectContaining({ gatewayId: "g", enabled: true }),
   ]);
