@@ -1,6 +1,7 @@
 import { base64ToBytes, bytesToBase64 } from "@/common/base64";
 import { WireguardForm, FixedForm, FixedV2Form } from "./tunnel-forms";
 import { AmneziaWGForm } from "./amneziawg-forms";
+import { NebulaForm } from "./nebula-form";
 import { IKEv2Form, AnyConnectForm, SSTPForm, FortinetForm } from "./enterprisevpn-forms";
 import { GlobalProtectForm, GlobalProtectRuntimeInfo } from "./globalprotect-forms";
 import { SoftEtherForm } from "./softether-forms";
@@ -430,6 +431,8 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             return <FortinetForm config={protocol.fortinet} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "amneziawg":
             return <AmneziaWGForm config={protocol.amneziawg} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
+        case "nebula":
+            return <NebulaForm config={protocol.nebula} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "wireguard":
             return <WireguardForm config={protocol.wireguard} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
         case "globalprotect":
