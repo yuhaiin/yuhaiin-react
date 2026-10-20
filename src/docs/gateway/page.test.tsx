@@ -10,6 +10,7 @@ const api = vi.hoisted(() => ({
   getGatewayConfig: vi.fn(),
   saveGatewayConfig: vi.fn(),
   gatewayStatus: vi.fn(),
+  resetGatewayStatistics: vi.fn(),
   getGatewayCA: vi.fn(),
   generateGatewayCA: vi.fn(),
   importGatewayCA: vi.fn(),
@@ -55,6 +56,7 @@ beforeEach(() => {
   };
   api.getGatewayConfig.mockResolvedValue(config);
   api.gatewayStatus.mockResolvedValue({ revision: 1, gateways: [] });
+  api.resetGatewayStatistics.mockResolvedValue({});
   api.listInbounds.mockResolvedValue({
     items: [{ id: "mixed", name: "Mixed entry" }],
   });
@@ -136,6 +138,41 @@ function edit(element: HTMLInputElement, value: string) {
     element.dispatchEvent(new Event("input", { bubbles: true }));
   });
 }
+
+it("requires confirmation before resetting per-Gateway statistics", async () => {
+  api.gatewayStatus.mockResolvedValue({
+    revision: 1, gateways: [{
+      id: "g", enabled: true, requests: 3, blocked: 2, forwarded: 1,
+      errors: 0, tlsFailures: 0, protocolFailures: 0, durationNs: 9000000,
+      lastOutbound: "", filterReports: [], upstreams: [],
+    }],
+  });
+  await render();
+  await click("statistics");
+  await click("resetStatistics");
+  expect(api.resetGatewayStatistics).not.toHaveBeenCalled();
+  await click("cancel");
+  expect(api.resetGatewayStatistics).not.toHaveBeenCalled();
+  await click("resetStatistics");
+  await click("confirmResetStatistics");
+  expect(api.resetGatewayStatistics).toHaveBeenCalledExactlyOnceWith("g");
+});
+
+it("requires confirmation before resetting all Gateway statistics", async () => {
+  api.gatewayStatus.mockResolvedValue({
+    revision: 1, gateways: [{
+      id: "g", enabled: true, requests: 1, blocked: 1, forwarded: 0,
+      errors: 0, tlsFailures: 0, protocolFailures: 0, durationNs: 1000000,
+      lastOutbound: "", filterReports: [], upstreams: [],
+    }],
+  });
+  await render();
+  await click("statistics");
+  await click("resetAllStatistics");
+  expect(api.resetGatewayStatistics).not.toHaveBeenCalled();
+  await click("confirmResetStatistics");
+  expect(api.resetGatewayStatistics).toHaveBeenCalledExactlyOnceWith("");
+});
 
 it("shows a startup failure while retaining the saved Gateway for repair", async () => {
   api.gatewayStatus.mockResolvedValue({
