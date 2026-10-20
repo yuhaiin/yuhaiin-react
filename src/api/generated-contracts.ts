@@ -229,6 +229,7 @@ export namespace Go {
       connectTimeoutMs: number;
       idleTimeoutMs: number;
       requestTimeoutMs: number;
+      streamIdleTimeoutMs: number;
       maxConnections: number;
       maxConcurrent: number;
       requestsPerSecond: number;

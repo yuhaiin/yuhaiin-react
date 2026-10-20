@@ -181,10 +181,13 @@ export function UpstreamEditor({
   change: (next: Upstream) => void;
 }) {
   const { t } = useTranslation("gateway");
-  const numbers = [
+  const timeouts = [
     "connectTimeoutMs",
     "idleTimeoutMs",
     "requestTimeoutMs",
+    "streamIdleTimeoutMs",
+  ] as const;
+  const numbers = [
     "maxConnections",
     "maxConcurrent",
     "requestsPerSecond",
@@ -288,6 +291,25 @@ export function UpstreamEditor({
         value={item.healthPath}
         onChange={(healthPath) => change({ ...item, healthPath })}
       />
+      <fieldset className="space-y-3">
+        <legend className="text-sm font-medium text-ui-heading">
+          {t("timeoutSettings")}
+        </legend>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {timeouts.map((key) => (
+            <TextField
+              key={key}
+              type="number"
+              label={t(key)}
+              value={item[key] ?? 0}
+              onChange={(value) => change({ ...item, [key]: Math.max(0, Number(value)) })}
+            />
+          ))}
+        </div>
+        <p className="text-sm text-ui-secondary">
+          {t("streamIdleTimeoutHelp")}
+        </p>
+      </fieldset>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {numbers.map((key) => (
           <TextField

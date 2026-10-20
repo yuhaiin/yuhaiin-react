@@ -349,6 +349,67 @@ it("never changes the Gateway fallback merely to create a backend pool", async (
   expect(api.saveGatewayConfig).not.toHaveBeenCalled();
 });
 
+
+it("initializes the stream idle timeout to disabled", () => {
+  expect(newUpstream().streamIdleTimeoutMs).toBe(0);
+});
+
+it("preserves a configured stream idle timeout when editing another upstream field", async () => {
+  const pool = {
+    ...newUpstream(),
+    id: "pool-a",
+    name: "Pool A",
+    streamIdleTimeoutMs: 45000,
+  };
+  config.upstreams = [pool];
+  config.gateways[0].default = {
+    ...config.gateways[0].default,
+    type: "reverse_proxy",
+    upstream: pool.id,
+  };
+  await render();
+  await selectGatewayItem("Pool A");
+  expect(input("streamIdleTimeoutMs").value).toBe("45000");
+  edit(input("name"), "Renamed pool");
+  await click("saveActivate");
+  const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
+  expect(saved.upstreams).toEqual([
+    expect.objectContaining({
+      id: pool.id,
+      name: "Renamed pool",
+      streamIdleTimeoutMs: 45000,
+    }),
+  ]);
+});
+
+it("edits and saves the stream idle timeout independently of request timeout", async () => {
+  const pool = {
+    ...newUpstream(),
+    id: "pool-a",
+    name: "Pool A",
+    requestTimeoutMs: 5000,
+  };
+  config.upstreams = [pool];
+  config.gateways[0].default = {
+    ...config.gateways[0].default,
+    type: "reverse_proxy",
+    upstream: pool.id,
+  };
+  await render();
+  await selectGatewayItem("Pool A");
+  expect(input("streamIdleTimeoutMs").value).toBe("0");
+  edit(input("streamIdleTimeoutMs"), "30000");
+  await click("saveActivate");
+  const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
+  expect(saved.upstreams[0]).toEqual(
+    expect.objectContaining({
+      requestTimeoutMs: 5000,
+      idleTimeoutMs: 90000,
+      streamIdleTimeoutMs: 30000,
+    }),
+  );
+});
+
 it("creates a backend pool only for an explicitly selected reverse proxy action", async () => {
   config.gateways[0].default = {
     ...config.gateways[0].default, type: "reverse_proxy", upstream: "",
