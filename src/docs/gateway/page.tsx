@@ -8,7 +8,7 @@ import { Button } from "@/component/v2/button";
 import { MainContainer } from "@/component/v2/card";
 import Loading from "@/component/v2/loading";
 import type { Config } from "@/contract/gateway";
-import { errorMessage, newGateway, newInterception } from "@/contract/gateway";
+import { errorMessage } from "@/contract/gateway";
 import { useCloseGuard } from "@/hooks/use-editor-draft";
 import { GatewayWorkspace } from "./workspace";
 import { AuthorityPanel, RuleTester } from "./tools";
@@ -94,20 +94,6 @@ export default function GatewayPage() {
           {failure || status?.startupError}
         </p>}
         {saved && <p role="status" className="text-sm text-ui-secondary">{t("saved")}</p>}
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={() => change({
-            ...draft, gateways: [...draft.gateways, newGateway()],
-          })}>{t("addGateway")}</Button>
-          <Button variant="outline-secondary" onClick={() => {
-            const gateway = {
-              ...newGateway(), enabled: true, listen: "", name: t("newFilterGateway"),
-              default: { type: "forward", status: 200, outbound: { type: "inherit_route" },
-                preserveHost: false, rewrite: {} },
-            };
-            change({ ...draft, gateways: [...draft.gateways, gateway],
-              interceptions: [...draft.interceptions, newInterception(gateway.id, "http_only")] });
-          }}>{t("addInterceptionGateway")}</Button>
-        </div>
         <GatewayWorkspace config={draft} onChange={change}
           status={status?.gateways ?? []}
           canRefreshFilter={!dirty && !pending}
