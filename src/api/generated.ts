@@ -42,6 +42,7 @@ export type RPCOperation =
   | "node.put"
   | "node.use"
   | "nodes.active"
+  | "nodes.status"
   | "nodes.get"
   | "nodes.groups"
   | "nodes.import.preview"
@@ -192,6 +193,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/nodes/selected", operation: "nodes.selected" },
   { method: "PUT", pattern: "/api/v2/nodes/selected", operation: "nodes.select" },
   { method: "GET", pattern: "/api/v2/nodes/active", operation: "nodes.active" },
+  { method: "POST", pattern: "/api/v2/nodes/status", operation: "nodes.status" },
   { method: "GET", pattern: "/api/v2/nodes/{id}", operation: "node.get" },
   { method: "PUT", pattern: "/api/v2/nodes/{id}", operation: "node.put" },
   { method: "DELETE", pattern: "/api/v2/nodes/{id}", operation: "node.delete" },
