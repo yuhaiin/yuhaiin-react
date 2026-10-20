@@ -4,6 +4,7 @@ import type { ComponentType } from 'react';
 
 const loading = Loading;
 
+const TrafficControlPage = dynamic(() => import('@/docs/traffic-control/page'), { loading });
 const GatewayPage = dynamic(() => import('@/docs/gateway/page'), { loading });
 const LoginPage = dynamic(() => import('@/docs/login/page'), { loading });
 const HomePage = dynamic(() => import('@/docs/home/page'), { loading });
@@ -39,6 +40,7 @@ export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/group/publish", component: GroupPublishPage },
     { path: "/docs/group/activates", component: GroupActivatesPage },
     { path: "/docs/gateway", component: GatewayPage },
+    { path: "/docs/traffic-control", component: TrafficControlPage },
     { path: "/docs/inbound", component: InboundPage },
     { path: "/docs/diagnostics", component: DiagnosticsPage },
     { path: "/docs/bypass", component: BypassPage },

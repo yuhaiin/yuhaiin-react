@@ -32,6 +32,9 @@ export type RPCOperation =
   | "inbounds.get"
   | "inbounds.post"
   | "inbounds.status"
+  | "traffic_control.get"
+  | "traffic_control.put"
+  | "traffic_control.status"
   | "info"
   | "node.close"
   | "node.delete"
@@ -173,6 +176,9 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "DELETE", pattern: "/api/v2/publishes/{name}", operation: "publish.delete" },
   { method: "POST", pattern: "/api/v2/publishes/{name}/resolve", operation: "publish.resolve" },
   { method: "GET", pattern: "/api/v2/inbounds/config", operation: "inbounds.config.get" },
+  { method: "GET", pattern: "/api/v2/traffic-control", operation: "traffic_control.get" },
+  { method: "PUT", pattern: "/api/v2/traffic-control", operation: "traffic_control.put" },
+  { method: "GET", pattern: "/api/v2/traffic-control/status", operation: "traffic_control.status" },
   { method: "PUT", pattern: "/api/v2/inbounds/config", operation: "inbounds.config.put" },
   { method: "GET", pattern: "/api/v2/inbounds", operation: "inbounds.get" },
   { method: "GET", pattern: "/api/v2/inbounds/capabilities", operation: "inbound.capabilities" },

@@ -13,5 +13,6 @@
   "diagnostics": "診断",
   "help": "ヘルプと情報",
   "routeRules": "振り分けルール",
-  "gateway": "HTTP Gateway"
+  "gateway": "HTTP Gateway",
+  "trafficControl": "トラフィック制御"
 }

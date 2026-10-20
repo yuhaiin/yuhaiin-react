@@ -1,3 +1,6 @@
+import enTrafficControl from './resources/en/traffic-control.json';
+import jaTrafficControl from './resources/ja/traffic-control.json';
+import koTrafficControl from './resources/ko/traffic-control.json';
 import enGateway from './resources/en/gateway.json';
 import jaGateway from './resources/ja/gateway.json';
 import koGateway from './resources/ko/gateway.json';
@@ -52,9 +55,9 @@ import jaUi from './resources/ja/ui.json';
 import koUi from './resources/ko/ui.json';
 
 const resources = {
-    en: { gateway: enGateway, routing: enRouting, diagnostics: enDiagnostics, ui: enUi, common: enCommon, nav: enNav, login: enLogin, home: enHome, webui: enWebui, config: enConfig, group: enGroup, inbound: enInbound, bypass: enBypass, connections: enConnections, node: enNode },
-    ja: { gateway: jaGateway, routing: jaRouting, diagnostics: jaDiagnostics, ui: jaUi, common: jaCommon, nav: jaNav, login: jaLogin, home: jaHome, webui: jaWebui, config: jaConfig, group: jaGroup, inbound: jaInbound, bypass: jaBypass, connections: jaConnections, node: jaNode },
-    ko: { gateway: koGateway, routing: koRouting, diagnostics: koDiagnostics, ui: koUi, common: koCommon, nav: koNav, login: koLogin, home: koHome, webui: koWebui, config: koConfig, group: koGroup, inbound: koInbound, bypass: koBypass, connections: koConnections, node: koNode },
+    en: { trafficControl: enTrafficControl, gateway: enGateway, routing: enRouting, diagnostics: enDiagnostics, ui: enUi, common: enCommon, nav: enNav, login: enLogin, home: enHome, webui: enWebui, config: enConfig, group: enGroup, inbound: enInbound, bypass: enBypass, connections: enConnections, node: enNode },
+    ja: { trafficControl: jaTrafficControl, gateway: jaGateway, routing: jaRouting, diagnostics: jaDiagnostics, ui: jaUi, common: jaCommon, nav: jaNav, login: jaLogin, home: jaHome, webui: jaWebui, config: jaConfig, group: jaGroup, inbound: jaInbound, bypass: jaBypass, connections: jaConnections, node: jaNode },
+    ko: { trafficControl: koTrafficControl, gateway: koGateway, routing: koRouting, diagnostics: koDiagnostics, ui: koUi, common: koCommon, nav: koNav, login: koLogin, home: koHome, webui: koWebui, config: koConfig, group: koGroup, inbound: koInbound, bypass: koBypass, connections: koConnections, node: koNode },
 };
 
 i18n.use(initReactI18next).init({
@@ -62,7 +65,7 @@ i18n.use(initReactI18next).init({
     lng: fallbackLanguage,
     fallbackLng: fallbackLanguage,
     supportedLngs: [...supportedLanguages],
-    ns: ['gateway', 'routing', 'diagnostics', 'ui', 'common', 'nav', 'login', 'home', 'webui', 'config', 'group', 'inbound', 'bypass', 'connections', 'node'],
+    ns: ['trafficControl', 'gateway', 'routing', 'diagnostics', 'ui', 'common', 'nav', 'login', 'home', 'webui', 'config', 'group', 'inbound', 'bypass', 'connections', 'node'],
     defaultNS: 'common',
     interpolation: {
         escapeValue: false,
