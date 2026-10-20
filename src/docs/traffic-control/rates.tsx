@@ -43,7 +43,8 @@ function RateInput({
             onChange={(event) => {
                 setText(event.currentTarget.value);
                 onChange(
-                    event.currentTarget.validity.badInput
+                    event.currentTarget.validity.badInput ||
+                        event.currentTarget.value === ''
                         ? NaN
                         : Number(event.currentTarget.value),
                 );

@@ -246,3 +246,31 @@ it('reports a diagnostics refresh failure separately from a successful save', as
     expect(alerts).toHaveLength(1);
     expect(alerts[0].textContent).toBe('statusUnavailable');
 });
+
+it('preserves a configured burst when replacing a rate through an empty field', async () => {
+    const saved = structuredClone(config);
+    saved.enabled = true;
+    saved.global.upload = { bytesPerSecond: 125000, burstBytes: 256 * 1024 };
+    api.getTrafficControl.mockResolvedValue(saved);
+    await render();
+    editInput(input('upload mbps'), '');
+    expect(button('save').disabled).toBe(true);
+    editInput(input('upload mbps'), '2');
+    await act(async () => button('save').click());
+    expect(api.putTrafficControl).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+            global: expect.objectContaining({
+                upload: { bytesPerSecond: 250000, burstBytes: 256 * 1024 },
+            }),
+        }),
+    );
+    editInput(input('upload mbps'), '0');
+    await act(async () => button('save').click());
+    expect(api.putTrafficControl).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+            global: expect.objectContaining({
+                upload: { bytesPerSecond: 0, burstBytes: 0 },
+            }),
+        }),
+    );
+});
