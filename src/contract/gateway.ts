@@ -43,7 +43,7 @@ export const newRule = (): Rule => ({
   revision: 0,
   enabled: true,
   priority: 100,
-  match: { field: "path", operator: "prefix", value: "/" },
+  match: { field: "path", operator: "prefix", values: ["/"] },
   action: newAction(),
 });
 export const newUpstream = (): Upstream => ({
