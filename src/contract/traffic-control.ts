@@ -51,7 +51,7 @@ export const toMbps = (bytesPerSecond:number) => Number((bytesPerSecond*8/1_000_
 export const fromMbps = (value:number) => Math.round(value*1_000_000/8);
 export function validateTrafficControl(config:TrafficControlConfig):string|null {
   const profiles=config.profiles??{};
-  const references=[config.defaultProfile,...Object.values(config.inboundProfiles??{}),...Object.values(config.routeProfiles??{})].filter(Boolean);
+  const references=[config.defaultProfile,...Object.values(config.inboundProfiles??{}),...Object.values(config.routeProfiles??{})].filter((name):name is string=>typeof name==="string"&&name.length>0);
   for(const name of references) {
     if(!(name in profiles)) return "Unknown profile: "+name;
   }
