@@ -95,6 +95,17 @@ it('shows experimental TCP/IP stack options only when lightweight is selected', 
         const congestion = combos.find(combo => combo.getAttribute('aria-label') === 'tunCongestionControl');
         expect(congestion?.textContent).toContain('BBR v3');
         expect(combos.some(combo => combo.getAttribute('aria-label') === 'Driver')).toBe(true);
+        const scheduler = () => host.querySelector<HTMLButtonElement>('[role="combobox"][aria-label="tunOutputScheduler"]')!;
+        expect(scheduler().textContent).toContain('tunOutputSchedulerFIFO');
+        act(() => scheduler().dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
+        const fair = [...document.querySelectorAll<HTMLElement>('[role="option"]')].find(option => option.textContent === 'tunOutputSchedulerFair')!;
+        act(() => fair.click());
+        if (saved.protocol.type !== 'tun') throw new Error('unexpected protocol');
+        expect(saved.protocol.tun.outputScheduler).toBe('fq_codel');
+        saved = JSON.parse(JSON.stringify(saved)) as Inbound;
+        act(render);
+        expect(scheduler().textContent).toContain('tunOutputSchedulerFair');
+
     } finally {
         act(() => root.unmount());
         host.remove();

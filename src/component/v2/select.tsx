@@ -48,8 +48,10 @@ interface SelectProps {
 
 export const Select: FC<SelectProps> = ({ value, onValueChange, items, placeholder, ariaLabel, ariaLabelledBy, disabled, triggerClassName, contentClassName, viewportClassName, size, groupPosition, error, ariaDescribedBy, ariaInvalid }) => {
     const feedbackId = useId();
-    const internalValue = value === "" ? "___EMPTY___" : value;
     const safeItems = Array.isArray(items) ? items : [];
+    let emptyValue = "___EMPTY___";
+    while (safeItems.some(item => item.value === emptyValue)) emptyValue += "_";
+    const internalValue = value === "" ? emptyValue : value;
 
     const radiusClass =
         groupPosition === 'first' ? '!rounded-r-none !border-r-0' :
@@ -60,7 +62,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
     return (
         <FieldFeedback error={error} id={feedbackId}><SelectPrimitive.Root
             value={internalValue}
-            onValueChange={(val) => onValueChange(val === "___EMPTY___" ? "" : val)}
+            onValueChange={(val) => onValueChange(val === emptyValue ? "" : val)}
             disabled={disabled}
         >
             <SelectPrimitive.Trigger className={cn(
@@ -94,7 +96,7 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
 
                         <SelectPrimitive.Viewport className={cn("p-1 overflow-y-auto max-h-[50vh] max-h-[var(--radix-select-content-available-height)]", viewportClassName)}>
                             {safeItems.map((item, index) => {
-                                const itemValue = item.value === "" ? "___EMPTY___" : item.value;
+                                const itemValue = item.value === "" ? emptyValue : item.value;
                                 return (
                                     <SelectPrimitive.Item key={`${itemValue}-${index}`} value={itemValue} className={cn(
                                         "min-w-0 text-sm leading-normal text-ui-fg rounded-ui-sm flex items-center h-field-sm max-sm:min-h-11 pl-[25px] pr-3 relative select-none cursor-pointer",

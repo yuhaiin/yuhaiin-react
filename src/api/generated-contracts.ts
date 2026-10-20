@@ -196,8 +196,8 @@ export namespace Go {
       field?: string;
       operator?: string;
       key?: string;
-      value?: string;
       values?: string[];
+      value?: string;
     }
     export interface Action {
       type: string;
@@ -300,6 +300,15 @@ export namespace Go {
       privateKeyPem: string;
       revision: number;
     }
+    export interface StatisticsTotals {
+      Requests: number;
+      Blocked: number;
+      Forwarded: number;
+      Errors: number;
+      TLSFailures: number;
+      ProtocolFailures: number;
+      DurationNS: number;
+    }
     export interface RuntimeStatus {
       revision: number;
       gateways: GatewayStatus[];
@@ -387,6 +396,11 @@ export namespace Go {
       kind: string;
       state: string;
       listen?: string;
+    }
+    export interface IngressTotals {
+      AcceptedStreams: number;
+      ReceivedPackets: number;
+      ReceivedPings: number;
     }
     export interface IngressStatistics {
       acceptedStreams: string;
@@ -479,6 +493,7 @@ export namespace Go {
       host: string;
     }
     export interface TunProtocol {
+      outputScheduler?: string;
       darwin?: DarwinTunOptions;
       stack?: string;
       congestionControl?: string;
@@ -586,6 +601,39 @@ export namespace Go {
     }
   }
   export namespace node {
+    export interface ProbeStatus {
+      checkedAt: number;
+      result: LatencyResponse;
+    }
+    export interface RuntimeStatus {
+      id: string;
+      state: string;
+      uploadBytes: string;
+      downloadBytes: string;
+      uploadBps: string;
+      downloadBps: string;
+      udpSentPackets: string;
+      udpRecvPackets: string;
+      tcpAttempts: string;
+      tcpConnections: string;
+      udpAttempts: string;
+      udpSessions: string;
+      pingAttempts: string;
+      failures: string;
+      activeTCP: number;
+      activeUDP: number;
+      lastSuccessAt: number;
+      lastFailureAt: number;
+      lastUsedAt: number;
+      lastError?: string;
+      probes?: Record<string, ProbeStatus>;
+      protocol?: ProtocolRuntimeStatus;
+    }
+    export interface ProtocolRuntimeStatus {
+      state: string;
+      lastError?: string;
+      updatedAt: number;
+    }
     export type IPVersion = string;
     export interface Node {
       id: string;
@@ -992,13 +1040,6 @@ export namespace Go {
       disable_dtls?: boolean;
       mtu?: number;
     }
-    export interface Wireguard {
-      secretKey: string;
-      endpoint?: string[];
-      peers?: WireguardPeer[];
-      mtu?: number;
-      reserved?: string;
-    }
     export interface Nebula {
       config_yaml: string;
     }
@@ -1013,6 +1054,13 @@ export namespace Go {
     export interface ZeroTierMoon {
       id: string;
       seed: string;
+    }
+    export interface Wireguard {
+      secretKey: string;
+      endpoint?: string[];
+      peers?: WireguardPeer[];
+      mtu?: number;
+      reserved?: string;
     }
     export interface AmneziaWG {
       secretKey: string;

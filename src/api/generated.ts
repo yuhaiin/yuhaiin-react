@@ -17,8 +17,8 @@ export type RPCOperation =
   | "gateway.ca.import"
   | "gateway.ca.status"
   | "gateway.filters.refresh"
-  | "gateway.status"
   | "gateway.statistics.reset"
+  | "gateway.status"
   | "gateway.test"
   | "gateway.workspace.get"
   | "gateway.workspace.put"
@@ -42,13 +42,13 @@ export type RPCOperation =
   | "node.put"
   | "node.use"
   | "nodes.active"
-  | "nodes.status"
   | "nodes.get"
   | "nodes.groups"
   | "nodes.import.preview"
   | "nodes.post"
   | "nodes.select"
   | "nodes.selected"
+  | "nodes.status"
   | "outbound.selector.delete"
   | "outbound.selector.put"
   | "outbound.selector.references"
@@ -117,6 +117,9 @@ export type RPCOperation =
   | "tools.licenses"
   | "tools.logs"
   | "tools.logs.v2"
+  | "traffic_control.get"
+  | "traffic_control.put"
+  | "traffic_control.status"
   | "update.apply"
   | "update.check"
   | "update.status"
@@ -176,6 +179,9 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "DELETE", pattern: "/api/v2/publishes/{name}", operation: "publish.delete" },
   { method: "POST", pattern: "/api/v2/publishes/{name}/resolve", operation: "publish.resolve" },
   { method: "GET", pattern: "/api/v2/inbounds/config", operation: "inbounds.config.get" },
+  { method: "GET", pattern: "/api/v2/traffic-control", operation: "traffic_control.get" },
+  { method: "GET", pattern: "/api/v2/traffic-control/status", operation: "traffic_control.status" },
+  { method: "PUT", pattern: "/api/v2/traffic-control", operation: "traffic_control.put" },
   { method: "PUT", pattern: "/api/v2/inbounds/config", operation: "inbounds.config.put" },
   { method: "GET", pattern: "/api/v2/inbounds", operation: "inbounds.get" },
   { method: "GET", pattern: "/api/v2/inbounds/capabilities", operation: "inbound.capabilities" },
@@ -193,11 +199,11 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/nodes/selected", operation: "nodes.selected" },
   { method: "PUT", pattern: "/api/v2/nodes/selected", operation: "nodes.select" },
   { method: "GET", pattern: "/api/v2/nodes/active", operation: "nodes.active" },
-  { method: "POST", pattern: "/api/v2/nodes/status", operation: "nodes.status" },
   { method: "GET", pattern: "/api/v2/nodes/{id}", operation: "node.get" },
   { method: "PUT", pattern: "/api/v2/nodes/{id}", operation: "node.put" },
   { method: "DELETE", pattern: "/api/v2/nodes/{id}", operation: "node.delete" },
   { method: "POST", pattern: "/api/v2/nodes/{id}/use", operation: "node.use" },
+  { method: "POST", pattern: "/api/v2/nodes/status", operation: "nodes.status" },
   { method: "POST", pattern: "/api/v2/nodes/{id}/latency", operation: "node.latency" },
   { method: "POST", pattern: "/api/v2/nodes/{id}/close", operation: "node.close" },
   { method: "GET", pattern: "/api/v2/nodes/{id}/extra", operation: "node.extra" },

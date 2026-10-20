@@ -379,6 +379,13 @@ const TunEditor: FC<{
                             />
                             <p className="text-xs text-ui-muted">{uiT("tunCongestionControlHint")}</p>
                         </div>
+                        <SettingSelectVertical
+                            label={uiT("tunOutputScheduler")}
+                            value={value.outputScheduler || "fifo"}
+                            values={[[uiT("tunOutputSchedulerFIFO"), "fifo"], [uiT("tunOutputSchedulerFair"), "fq_codel"]]}
+                            onChange={(outputScheduler) => patch({ outputScheduler })}
+                        />
+                        <p className="text-xs text-ui-muted">{uiT("tunOutputSchedulerHint")}</p>
                         <p className="text-xs text-ui-muted">{uiT("tunStackDriverHint")}</p>
                     </>
                 )}
