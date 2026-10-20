@@ -381,8 +381,8 @@ const TunEditor: FC<{
                         </div>
                         <SettingSelectVertical
                             label={uiT("tunOutputScheduler")}
-                            value={value.outputScheduler || "fq_codel"}
-                            values={[[uiT("tunOutputSchedulerFair"), "fq_codel"], [uiT("tunOutputSchedulerFIFO"), "fifo"]]}
+                            value={value.outputScheduler || "fifo"}
+                            values={[[uiT("tunOutputSchedulerFIFO"), "fifo"], [uiT("tunOutputSchedulerFair"), "fq_codel"]]}
                             onChange={(outputScheduler) => patch({ outputScheduler })}
                         />
                         <p className="text-xs text-ui-muted">{uiT("tunOutputSchedulerHint")}</p>
