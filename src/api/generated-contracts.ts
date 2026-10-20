@@ -197,6 +197,7 @@ export namespace Go {
       operator?: string;
       key?: string;
       value?: string;
+      values?: string[];
     }
     export interface Action {
       type: string;
