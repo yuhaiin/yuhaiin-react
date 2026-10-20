@@ -211,12 +211,46 @@ it("requires a separate explicit confirmation for CA generation", async () => {
 
 it("selects a newly created Gateway for editing", async () => {
   await render();
+  const create = host.querySelector<HTMLButtonElement>('aside[aria-label="gateways"] button[aria-expanded]');
+  expect(create?.getAttribute("aria-expanded")).toBe("false");
+  expect(host.querySelector('[role="group"][aria-label="chooseGatewayMode"]')).toBeNull();
   await click("addGateway");
+  expect(create?.getAttribute("aria-expanded")).toBe("true");
+  await click("createHttpListener");
+  expect(host.querySelector('[role="group"][aria-label="chooseGatewayMode"]')).toBeNull();
+  expect(config.gateways).toHaveLength(1);
   const selectedGateway = host.querySelector('aside[aria-label="gateways"] button[aria-current="true"]');
   expect(selectedGateway?.textContent).toContain("newGateway");
   const name = input("name");
   edit(name, "New site");
   expect(name.value).toBe("New site");
+});
+
+
+it("offers both Gateway modes inside the directory and can dismiss the chooser", async () => {
+  await render();
+  expect(host.textContent).not.toContain("addInterceptionGateway");
+  expect(host.querySelector('aside[aria-label="gateways"] button[aria-label="addGateway"]')).toBeNull();
+  await click("addGateway");
+  expect(host.querySelector('[role="group"][aria-label="chooseGatewayMode"]')).not.toBeNull();
+  await click("addGateway");
+  expect(host.querySelector('[role="group"][aria-label="chooseGatewayMode"]')).toBeNull();
+  expect(api.saveGatewayConfig).not.toHaveBeenCalled();
+});
+
+it("creates an HTTP listener Gateway without enabling interception", async () => {
+  await render();
+  await click("addGateway");
+  await click("createHttpListener");
+  await click("saveActivate");
+  const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
+  expect(saved.gateways).toHaveLength(2);
+  expect(saved.gateways[1]).toEqual(expect.objectContaining({
+    enabled: false,
+    listen: "127.0.0.1:8080",
+    default: expect.objectContaining({ type: "block" }),
+  }));
+  expect(saved.interceptions).toEqual([]);
 });
 
 it("deletes rules together with their Gateway references", async () => {
@@ -328,7 +362,8 @@ it("creates an owned HTTP rule inline without navigating away", async () => {
 
 it("creates an interception-only gateway with a safe forward fallback", async () => {
   await render();
-  await click("addInterceptionGateway");
+  await click("addGateway");
+  await click("createTrafficInterception");
   await click("saveActivate");
   const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
   expect(saved.gateways).toHaveLength(2);

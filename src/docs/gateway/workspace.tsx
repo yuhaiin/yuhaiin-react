@@ -7,7 +7,7 @@ import {
   WorkspaceSelectionMarker,
 } from "@/component/workspace-layout";
 import type { Config, Gateway, Rule, Upstream, Interception, FilterList } from "@/contract/gateway";
-import { deleteGateway, deleteRule, newRule, newUpstream, newInterception } from "@/contract/gateway";
+import { deleteGateway, deleteRule, newRule, newUpstream, newInterception, newGateway } from "@/contract/gateway";
 import { ArrowLeft, ListFilter, Plus } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -116,6 +116,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
   const [selectedId, setSelectedId] = useState<string | null>(() => config.gateways[0]?.id ?? null);
   const [editorByGateway, setEditorByGateway] = useState<Record<string, GatewayEditorSelection>>({});
   const [narrowEditorOpen, setNarrowEditorOpen] = useState(false);
+  const [creatingGateway, setCreatingGateway] = useState(false);
   const knownGatewayIds = useRef(new Set(config.gateways.map((gateway) => gateway.id)));
   useEffect(() => {
     const added = config.gateways.find((gateway) => !knownGatewayIds.current.has(gateway.id));
@@ -125,6 +126,34 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
       setSelectedId(config.gateways[0]?.id ?? null);
   }, [config.gateways, selectedId]);
   const selectedGateway = config.gateways.find((gateway) => gateway.id === selectedId) ?? null;
+
+  const createGateway = (mode: "listener" | "interception") => {
+    const gateway = mode === "interception"
+      ? {
+          ...newGateway(),
+          enabled: true,
+          listen: "",
+          name: t("newFilterGateway"),
+          default: {
+            type: "forward",
+            status: 200,
+            outbound: { type: "inherit_route" },
+            preserveHost: false,
+            rewrite: {},
+          },
+        } satisfies Gateway
+      : newGateway();
+    setCreatingGateway(false);
+    setSelectedId(gateway.id);
+    setNarrowEditorOpen(false);
+    onChange({
+      ...config,
+      gateways: [...config.gateways, gateway],
+      interceptions: mode === "interception"
+        ? [...config.interceptions, newInterception(gateway.id, "http_only")]
+        : config.interceptions,
+    });
+  };
 
   const updateGateway = (gateway: Gateway) => onChange(pruneUnusedPools({
     ...config, gateways: config.gateways.map((item) => item.id === gateway.id ? gateway : item),
@@ -265,6 +294,35 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
         <div className="mb-2 border-b border-ui-border/50 px-1 pb-3">
           <h2 className="text-sm font-medium text-ui-heading">{t("gateways")}</h2>
           <p className="mt-1 text-xs text-ui-secondary">{t("gatewayDirectoryHelp")}</p>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline-secondary"
+            className="mt-3 w-full justify-start gap-2"
+            aria-expanded={creatingGateway}
+            aria-controls="gateway-create-modes"
+            onClick={() => setCreatingGateway((open) => !open)}
+          >
+            <Plus aria-hidden="true" size={16} />
+            {t("addGateway")}
+          </Button>
+          {creatingGateway && (
+            <div id="gateway-create-modes" role="group" aria-label={t("chooseGatewayMode")}
+              className="mt-2 space-y-1 rounded-ui-md border border-ui-border bg-ui-surface p-1">
+              <button type="button" aria-label={t("createHttpListener")}
+                className="w-full rounded-ui-sm px-3 py-2.5 text-left transition-colors hover:bg-ui-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus"
+                onClick={() => createGateway("listener")}>
+                <span className="block text-sm font-medium text-ui-heading">{t("createHttpListener")}</span>
+                <span className="mt-1 block text-xs text-ui-secondary">{t("createHttpListenerHelp")}</span>
+              </button>
+              <button type="button" aria-label={t("createTrafficInterception")}
+                className="w-full rounded-ui-sm px-3 py-2.5 text-left transition-colors hover:bg-ui-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus"
+                onClick={() => createGateway("interception")}>
+                <span className="block text-sm font-medium text-ui-heading">{t("createTrafficInterception")}</span>
+                <span className="mt-1 block text-xs text-ui-secondary">{t("createTrafficInterceptionHelp")}</span>
+              </button>
+            </div>
+          )}
         </div>
         <ul className="m-0 max-h-[min(72vh,900px)] list-none space-y-1 overflow-y-auto overscroll-contain p-0">
           {config.gateways.map((item) => {
