@@ -206,6 +206,42 @@ export function HeaderEditor({
     </fieldset>
   );
 }
+const emptyCondition = (): Condition => ({
+  field: "path",
+  operator: "exact",
+  values: [""],
+});
+
+// Keep the raw textarea draft while typing. Parsing it eagerly and rendering
+// values.join("\n") back into the control used to swallow newlines and made
+// multi-value conditions effectively impossible to edit.
+function ConditionValuesEditor({
+  value,
+  onChange,
+}: {
+  value: Condition;
+  onChange: (value: Condition) => void;
+}) {
+  const { t } = useTranslation("gateway");
+  const canonical = (value.values ?? (value.value ? [value.value] : [])).join("\n");
+  const [draft, setDraft] = useState({ canonical, text: canonical });
+  if (draft.canonical !== canonical) {
+    setDraft({ canonical, text: canonical });
+  }
+  return (
+    <TextField
+      label={t("valuesOnePerLine")}
+      value={draft.text}
+      multiline
+      onChange={(text) => {
+        const values = text.split(/\r?\n/).filter((line) => line.trim().length > 0);
+        setDraft({ canonical: values.join("\n"), text });
+        onChange({ ...value, value: undefined, values });
+      }}
+    />
+  );
+}
+
 export function ConditionEditor({
   value,
   onChange,
@@ -224,24 +260,27 @@ export function ConditionEditor({
         ? "not"
         : "leaf";
   const children = value.all ?? value.any ?? (value.not ? [value.not] : []);
-  const alternatives = kind === "any" ? compatibleValueAlternatives(children) : null;
-  const sample = kind === "leaf" ? value : alternatives?.[0];
-  const updateFields = (patch: Partial<Condition>) => {
-    if (kind === "leaf") {
-      onChange({ ...value, ...patch });
+  const canUnwrap = children.length === 1 &&
+    !children[0].all && !children[0].any && !children[0].not;
+  const changeKind = (next: string) => {
+    if (next === kind) return;
+    if (next === "leaf") {
+      if (canUnwrap) onChange(children[0]);
       return;
     }
-    if (!alternatives) return;
-    const next = alternatives.map((item) => ({ ...item, ...patch }));
-    if (patch.operator === "present") onChange({ ...next[0], value: undefined });
-    else onChange({ any: next });
+    const preserved = kind === "leaf" ? [value] : children;
+    if (next === "not") {
+      // NOT has exactly one child. Do not silently discard additional ones.
+      if (preserved.length === 1) onChange({ not: preserved[0] });
+      return;
+    }
+    if (next === "all") onChange({ all: preserved.length ? preserved : [emptyCondition()] });
+    if (next === "any") onChange({ any: preserved.length ? preserved : [emptyCondition()] });
   };
-  const updateValues = (text: string) => {
-    if (!sample) return;
-    const next = splitConditionValues(text).map((item) => ({ ...sample, value: item }));
-    if (kind === "leaf" && next.length === 1) onChange(next[0]);
-    else onChange({ any: next });
-  };
+  const kinds = ["leaf", "all", "any", "not"].filter((next) =>
+    next === kind ||
+    (next === "leaf" ? canUnwrap : next === "not" ? kind === "leaf" || children.length === 1 : true),
+  );
   return (
     <div className={depth === 0 ? "space-y-3" : "space-y-3 border-l border-ui-border/60 pl-3"}>
       {depth === 0 && (
@@ -250,67 +289,41 @@ export function ConditionEditor({
       <Choice
         label={t("combination")}
         value={kind}
-        values={["leaf", "all", "any", "not"].map((item) => ({
-          value: item,
-          label: t(item),
-        }))}
-        onChange={(next) =>
-          onChange(
-            next === "leaf"
-              ? { field: "path", operator: "prefix", value: "/" }
-              : next === "not"
-                ? { not: {} }
-                : { [next]: [{}] },
-          )
-        }
+        values={kinds.map((item) => ({ value: item, label: t(item) }))}
+        onChange={changeKind}
       />
-      {sample ? (
+      {kind === "leaf" ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Choice
             label={t("field")}
-            value={sample.field ?? "path"}
-            values={[
-              "host",
-              "path",
-              "url",
-              "method",
-              "query",
-              "header",
-              "inbound",
-              "process",
-            ].map((item) => ({ value: item, label: t(item) }))}
-            onChange={(field) => updateFields({ field })}
+            value={value.field ?? "path"}
+            values={["host", "path", "url", "method", "query", "header", "inbound", "process"].map(
+              (item) => ({ value: item, label: t(item) }),
+            )}
+            onChange={(field) => onChange({ ...value, field })}
           />
           <Choice
             label={t("operator")}
-            value={sample.operator ?? "exact"}
-            values={[
-              "exact",
-              "prefix",
-              "suffix",
-              "domain",
-              "regex",
-              "present",
-            ].map((item) => ({ value: item, label: t(item) }))}
-            onChange={(operator) => updateFields({ operator })}
+            value={value.operator ?? "exact"}
+            values={["exact", "prefix", "suffix", "domain", "regex", "present"].map(
+              (item) => ({ value: item, label: t(item) }),
+            )}
+            onChange={(operator) => onChange({
+              ...value,
+              operator,
+              ...(operator === "present" ? { values: undefined, value: undefined } : {}),
+            })}
           />
-          {(sample.field === "query" || sample.field === "header") && (
+          {(value.field === "query" || value.field === "header") && (
             <TextField
               label={t("key")}
-              value={sample.key}
-              onChange={(key) => updateFields({ key })}
+              value={value.key}
+              onChange={(key) => onChange({ ...value, key })}
             />
           )}
-          {sample.operator !== "present" && (
+          {value.operator !== "present" && (
             <div className="sm:col-span-2">
-              <TextField
-                label={t("valuesOnePerLine")}
-                value={alternatives
-                  ? alternatives.map((item) => item.value ?? "").join("\n")
-                  : sample.value}
-                multiline
-                onChange={updateValues}
-              />
+              <ConditionValuesEditor value={value} onChange={onChange} />
             </div>
           )}
         </div>
@@ -321,25 +334,17 @@ export function ConditionEditor({
               <ConditionEditor
                 depth={depth + 1}
                 value={child}
-                onChange={(next) =>
-                  onChange(
-                    kind === "not"
-                      ? { not: next }
-                      : {
-                          [kind]: children.map((item, n) =>
-                            n === index ? next : item,
-                          ),
-                        },
-                  )
-                }
+                onChange={(next) => onChange(
+                  kind === "not" ? { not: next } : {
+                    [kind]: children.map((item, i) => i === index ? next : item),
+                  },
+                )}
               />
               {kind !== "not" && children.length > 1 && (
                 <Button
                   size="sm"
                   variant="outline-danger"
-                  onClick={() =>
-                    onChange({ [kind]: children.filter((_, n) => n !== index) })
-                  }
+                  onClick={() => onChange({ [kind]: children.filter((_, i) => i !== index) })}
                 >
                   {t("remove")}
                 </Button>
@@ -350,49 +355,17 @@ export function ConditionEditor({
             <Button
               size="sm"
               variant="outline-secondary"
-              onClick={() =>
-                onChange({
-                  [kind]: [...children, { field: "path", value: "/" }],
-                })
-              }
+              onClick={() => onChange({ [kind]: [...children, emptyCondition()] })}
             >
               {t("addCondition")}
             </Button>
           )}
         </div>
       )}
-      {sample && kind === "any" && depth < 12 && (
-        <Button
-          size="sm"
-          variant="outline-secondary"
-          onClick={() => onChange({ any: [...(alternatives ?? []), { field: "path", value: "/" }] })}
-        >
-          {t("addCondition")}
-        </Button>
-      )}
     </div>
   );
 }
 
-function compatibleValueAlternatives(children: Condition[]): Condition[] | null {
-  if (!children.length || children.some((child) => child.all || child.any || child.not))
-    return null;
-  const first = children[0];
-  const field = first.field ?? "path";
-  const operator = first.operator ?? "exact";
-  const key = first.key ?? "";
-  if (operator === "present") return null;
-  return children.every((child) =>
-    (child.field ?? "path") === field &&
-    (child.operator ?? "exact") === operator &&
-    (child.key ?? "") === key,
-  ) ? children : null;
-}
-
-function splitConditionValues(text: string): string[] {
-  const values = text.split(/\r?\n/).filter((item) => item.length > 0);
-  return values.length ? values : [""];
-}
 export function ActionEditor({
   value,
   upstreams,
