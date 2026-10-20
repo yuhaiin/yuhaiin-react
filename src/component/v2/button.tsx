@@ -85,6 +85,7 @@ const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
                 ref={ref}
                 {...motionProps}
                 {...props}
+                data-variant={variant}
                 disabled={disabled || loading}
                 aria-disabled={asChild && (disabled || loading) ? true : props['aria-disabled']}
                 aria-busy={loading || props['aria-busy']}

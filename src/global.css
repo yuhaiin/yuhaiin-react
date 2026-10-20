@@ -327,13 +327,33 @@ html[data-bs-theme="dark"] .accent-swatch { background: var(--accent-dark); }
 @keyframes sidebar-expand { from { height: 0; } to { height: var(--radix-collapsible-content-height); } }
 @keyframes sidebar-collapse { from { height: var(--radix-collapsible-content-height); } to { height: 0; } }
 
-/* Disabled actions have their own surface; pending actions retain their variant. */
-.ui-button:disabled:not([aria-busy="true"]), .ui-button[aria-disabled="true"] {
-    background: var(--disabled-bg);
+/* Disabled actions retain the visual hierarchy of their variant instead of
+   inheriting the heavy grey filled-button treatment used by disabled fields.
+   A pending button stays in its original variant and keeps its spinner. */
+.ui-button:is(:disabled, [aria-disabled="true"]):not([aria-busy="true"]) {
+    background: color-mix(in srgb, var(--surface-muted) 30%, var(--surface));
     color: var(--disabled-fg);
-    border-color: var(--disabled-border);
+    border-color: color-mix(in srgb, var(--border) 70%, transparent);
+    box-shadow: none;
     cursor: not-allowed;
     opacity: 1;
+    scale: 1;
+}
+.ui-button:is(:disabled, [aria-disabled="true"]):not([aria-busy="true"])[data-variant="primary"] {
+    background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+    border-color: color-mix(in srgb, var(--accent) 12%, var(--border));
+}
+.ui-button:is(:disabled, [aria-disabled="true"]):not([aria-busy="true"]):is(
+    [data-variant="outline-secondary"],
+    [data-variant="outline-primary"],
+    [data-variant="outline-danger"]
+) {
+    background: transparent;
+    border-color: color-mix(in srgb, var(--border) 75%, transparent);
+}
+.ui-button:is(:disabled, [aria-disabled="true"]):not([aria-busy="true"])[data-variant="ghost"] {
+    background: transparent;
+    border-color: transparent;
 }
 .ui-button[aria-busy="true"] { cursor: progress; }
 

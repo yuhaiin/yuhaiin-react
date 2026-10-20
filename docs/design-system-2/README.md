@@ -4,7 +4,7 @@ The Sidebar, resource directory and detail pane keep their existing structure, w
 
 ## Review and implementation sequence
 
-1. **Gallery / tokens:** the previous light canvas, borders and supporting text all leaned green; selected rows combined a large accent background with accent text. Button disabled/loading states depended on opacity. New neutral surfaces separate the five accent hues from everyday content; disabled actions have their own colors and pending actions keep visible labels.
+1. **Gallery / tokens:** the previous light canvas, borders and supporting text all leaned green; selected rows combined a large accent background with accent text. Button disabled/loading states depended on opacity. New neutral surfaces separate the five accent hues from everyday content; disabled actions now keep their variant hierarchy (quiet primary tint, transparent outlined/ghost controls) rather than uniformly filled gray rectangles; pending actions keep visible labels and their original variant.
 2. **Nodes / Overview / Publish:** existing columns and meaningful containers are sound. Node metadata and test actions needed quieter emphasis; Overview rates and totals had the same weight; simple Publish fields stretched across the whole detail area. Headings and metadata are now calmer, rate values take priority, and simple field groups cap their reading width inside the same pane.
 3. **Other pages / interactions:** shared controls carry the refinements into Routing, DNS, Inbounds, Shared Destinations, subscriptions, Connections and Settings. Directory selection uses a neutral surface plus the existing accent marker. Focus, validation, readonly, disabled and popup behavior are checked through the Gallery and real pages.
 
