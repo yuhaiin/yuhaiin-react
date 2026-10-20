@@ -684,5 +684,12 @@
   "sshKeepAliveSeconds": "SSH キープアライブ (秒、0 = 無効)",
   "sshPrivateKeyPassphrase": "秘密鍵のパスフレーズ",
   "sshPrivateKey": "SSH 秘密鍵 (PEM / OpenSSH)",
-  "sshTCPOnlyHelp": "SSH は TCP のみ転送します。UDP は別のアウトバウンドが必要です。ホスト鍵は別経路で検証してください。"
+  "sshTCPOnlyHelp": "SSH は TCP のみ転送します。UDP は別のアウトバウンドが必要です。ホスト鍵は別経路で検証してください。",
+  "trustedUiOrigins": "信頼するフロントエンドのオリジン",
+  "trustedUiOriginsDescription": "管理 API にアクセスできる Web サイトを制限します。",
+  "builtinTrustedOrigin": "組み込みの信頼済みサイト（常に許可）",
+  "additionalTrustedOrigins": "追加で信頼するオリジン（1 行に 1 つ）",
+  "trustedOriginsHelp": "https://admin.example.com または http://localhost:5173 のようにオリジンを正確に指定してください。ループバック以外は HTTPS が必須です。ワイルドカードや URL パスは使用できません。信頼するサイトからローカル管理 API を操作できるため、管理下のサイトだけを追加してください。リモート接続には引き続き認証が必要です。",
+  "trustedOriginsInvalid": "パスやワイルドカードを含まない HTTP(S) オリジンを 32 件以内で入力してください。ローカル以外は HTTPS が必須で、重複は許可されません。",
+  "saveSuccess": "設定を保存しました。"
 }
