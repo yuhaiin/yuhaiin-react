@@ -1,0 +1,40 @@
+name: Traffic Control P4 UI validation
+
+on:
+  push:
+    branches: [feat/traffic-control-p4-ui]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: traffic-control-p4-ui-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Use Node.js 23.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 23.x
+          cache: npm
+      - run: npm install --force
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Unit and component tests
+        run: npm run test
+      - name: Translations
+        run: npm run i18n:check
+      - name: Style audit
+        run: npm run style:audit
+      - name: Lint
+        run: npm run lint
+      - name: Production build
+        run: npm run build
+        env:
+          CI: false

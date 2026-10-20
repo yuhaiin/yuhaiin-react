@@ -6,7 +6,9 @@ import {Card,CardBody,CardHeader,MainContainer} from "@/component/v2/card";
 import {Input} from "@/component/v2/input";
 import Loading from "@/component/v2/loading";
 import {SwitchCard} from "@/component/v2/forms";
+import {Pagination} from "@/component/v2/pagination";
 import {useEditorDraft,useCloseGuard} from "@/hooks/use-editor-draft";
+import {useServerPageClamp} from "@/hooks/use-pagination";
 import {
   blankProfile,blankTrafficConfig,fromMbps,toMbps,validateTrafficControl,
   type Profile,type Rate,type ResourceCounters,type TrafficControlConfig,
@@ -17,6 +19,7 @@ import {useTranslation} from "react-i18next";
 import useSWR from "swr";
 
 const inputClass="w-full h-10 rounded-ui-sm border border-ui-border bg-ui-surface px-3 text-sm text-ui-fg";
+const BINDING_PAGE_SIZE=100;
 
 function RateControl({title,value,onChange,disabled}:{
   title:string; value:Rate;onChange:(value:Rate)=>void;disabled:boolean;
@@ -61,30 +64,37 @@ function ProfileEditor({profile,onChange,disabled}:{
  </div>;
 }
 
-function BindingTable({title,options,values,profiles,onChange,disabled}:{
+function BindingTable({title,options,values,profiles,onChange,disabled,page,pageSize,total,onPageChange,optionsError,optionsLoading}:{
  title:string;options:{id:string;name:string}[];values:Record<string,string>;
  profiles:string[];onChange:(v:Record<string,string>)=>void;disabled:boolean;
+  page:number;pageSize:number;total:number;onPageChange:(page:number)=>void;optionsError:boolean;optionsLoading:boolean;
 }) {
  const {t}=useTranslation("trafficControl");
- const rows=options.slice(0,120);
+ const rows=options;
  const known=new Set(rows.map(x=>x.id));
  const extra=Object.keys(values).filter(id=>!known.has(id)).map(id=>({id,name:id}));
+ const renderRow=(item:{id:string;name:string})=><label key={item.id} className="flex flex-wrap items-center justify-between gap-3 px-3 py-2 text-sm">
+   <span className="min-w-0 break-all">{item.name||item.id}<span className="ml-2 text-xs text-ui-muted">{item.id!==item.name?item.id:""}</span></span>
+   <select className={inputClass+" w-auto min-w-32 max-w-48"} aria-label={item.name} disabled={disabled}
+    value={values[item.id]??""} onChange={e=>{
+     const next={...values};if(e.target.value)next[item.id]=e.target.value;else delete next[item.id];onChange(next);
+    }}>
+    <option value="">{t("inherit")}</option>
+    {profiles.map(name=><option key={name} value={name}>{name}</option>)}
+   </select>
+ </label>;
  return <section className="space-y-2">
    <h3 className="text-sm font-semibold">{title}</h3>
    <div className="max-h-72 overflow-auto rounded-ui-sm border border-ui-border divide-y divide-ui-border">
-     {[...rows,...extra].map(item=><label key={item.id} className="flex flex-wrap items-center justify-between gap-3 px-3 py-2 text-sm">
-       <span className="min-w-0 break-all">{item.name||item.id}<span className="ml-2 text-xs text-ui-muted">{item.id!==item.name?item.id:""}</span></span>
-       <select className={inputClass+" w-auto min-w-32 max-w-48"} aria-label={item.name} disabled={disabled}
-        value={values[item.id]??""} onChange={e=>{
-         const next={...values};if(e.target.value)next[item.id]=e.target.value;else delete next[item.id];onChange(next);
-        }}>
-        <option value="">{t("inherit")}</option>
-        {profiles.map(name=><option key={name} value={name}>{name}</option>)}
-       </select>
-     </label>)}
-     {!rows.length&&!extra.length&&<p className="p-3 text-xs text-ui-muted">{t("noBindings")}</p>}
+     {rows.map(renderRow)}
+     {!rows.length&&!extra.length&&<p className="p-3 text-xs text-ui-muted">{optionsLoading?t("loading"):t("noBindings")}</p>}
    </div>
-   {options.length>120&&<p className="text-xs text-ui-muted">{t("bindingLimit")}</p>}
+   {extra.length>0&&<details className="rounded-ui-sm border border-ui-border px-3 py-2">
+     <summary className="cursor-pointer text-xs text-ui-muted">{t("existingBindingsOutsidePage",{count:extra.length})}</summary>
+     <div className="mt-2 max-h-72 overflow-auto divide-y divide-ui-border">{extra.map(renderRow)}</div>
+   </details>}
+   {optionsError&&<p role="alert" className="text-xs text-ui-danger">{t("bindingOptionsUnavailable")}</p>}
+   {total>pageSize&&<div className="flex justify-end"><Pagination currentPage={page} totalItems={total} pageSize={pageSize} onPageChange={onPageChange}/></div>}
  </section>;
 }
 const formatNum=(n:number|undefined)=>Number(n??0).toLocaleString();
@@ -104,8 +114,12 @@ export default function TrafficControlPage(){
  const {t}=useTranslation("trafficControl");
  const {data,error,isLoading,mutate}=useSWR("/api/v2/traffic-control",getTrafficControl,{revalidateOnFocus:false});
  const {data:status,error:statusError,mutate:refreshStatus}=useSWR("/api/v2/traffic-control/status",getTrafficStatus,{refreshInterval:5000});
- const {data:inbounds}=useSWR("/api/v2/inbounds?qos-bindings",()=>listInbounds({pageSize:200}),{revalidateOnFocus:false});
- const {data:rules}=useSWR("/api/v2/route/rules?qos-bindings",()=>listRules({pageSize:200}),{revalidateOnFocus:false});
+ const [inboundPage,setInboundPage]=useState(1);
+ const [routePage,setRoutePage]=useState(1);
+ const {data:inbounds,error:inboundsError,isLoading:inboundsLoading}=useSWR(["/api/v2/inbounds?qos-bindings",inboundPage],()=>listInbounds({page:inboundPage,pageSize:BINDING_PAGE_SIZE}),{keepPreviousData:true,revalidateOnFocus:false});
+ const {data:rules,error:rulesError,isLoading:rulesLoading}=useSWR(["/api/v2/route/rules?qos-bindings",routePage],()=>listRules({page:routePage,pageSize:BINDING_PAGE_SIZE}),{keepPreviousData:true,revalidateOnFocus:false});
+ useServerPageClamp(inbounds?.page,inboundPage,setInboundPage);
+ useServerPageClamp(rules?.page,routePage,setRoutePage);
  const {value:draft,setValue:setDraft,commit,dirty}=useEditorDraft("traffic-control",data,blankTrafficConfig);
  const [profileName,setProfileName]=useState("");
  const [saving,setSaving]=useState(false);
@@ -121,9 +135,12 @@ export default function TrafficControlPage(){
   setSaving(true);setFailure("");setSaved(false);
   try{
     const next=await putTrafficControl(draft);
-    commit(next);await mutate(next,{revalidate:false});
-    await refreshStatus();
+    commit(next);
+    void mutate(next,{revalidate:false}).catch(()=>undefined);
     setSaved(true);
+    // The config write is the activation result. A diagnostics refresh has
+    // its own error state and must not make a successful save look failed.
+    void refreshStatus().catch(()=>undefined);
   }catch(e){setFailure((e as {msg?:string})?.msg??String(e))}
   finally{setSaving(false)}
  };
@@ -191,9 +208,13 @@ export default function TrafficControlPage(){
     <CardBody className="grid gap-5 lg:grid-cols-2">
      <BindingTable title={t("inbounds")} options={(inbounds?.items??[]).map(x=>({id:x.id,name:x.name??x.id}))}
       profiles={names} values={draft.inboundProfiles} disabled={saving}
+      page={inboundPage} pageSize={BINDING_PAGE_SIZE} total={inbounds?.page.total??0} onPageChange={setInboundPage}
+      optionsError={Boolean(inboundsError)} optionsLoading={inboundsLoading}
       onChange={inboundProfiles=>patch(c=>({...c,inboundProfiles}))}/>
      <BindingTable title={t("routes")} options={(rules?.items??[]).map(x=>({id:x.id,name:x.name??x.id}))}
       profiles={names} values={draft.routeProfiles} disabled={saving}
+      page={routePage} pageSize={BINDING_PAGE_SIZE} total={rules?.page.total??0} onPageChange={setRoutePage}
+      optionsError={Boolean(rulesError)} optionsLoading={rulesLoading}
       onChange={routeProfiles=>patch(c=>({...c,routeProfiles}))}/>
     </CardBody>
    </Card>
