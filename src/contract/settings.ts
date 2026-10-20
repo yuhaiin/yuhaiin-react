@@ -8,6 +8,7 @@ export function createDefaultSettings(value?: Partial<Settings>): Settings {
     ipv6: value?.ipv6 ?? false,
     useDefaultInterface: value?.useDefaultInterface ?? true,
     netInterface: value?.netInterface ?? "",
+    trustedOrigins: value?.trustedOrigins ?? [],
 	pprof: value?.pprof ?? true,
     systemProxy: {
       http: value?.systemProxy?.http ?? false,

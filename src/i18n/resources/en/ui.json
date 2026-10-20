@@ -684,5 +684,12 @@
   "sshKeepAliveSeconds": "SSH keep-alive (seconds, 0 = off)",
   "sshPrivateKeyPassphrase": "Private key passphrase",
   "sshPrivateKey": "SSH private key (PEM / OpenSSH)",
-  "sshTCPOnlyHelp": "SSH forwards TCP only. UDP traffic needs a separate outbound. Verify the server's host key independently."
+  "sshTCPOnlyHelp": "SSH forwards TCP only. UDP traffic needs a separate outbound. Verify the server's host key independently.",
+  "trustedUiOrigins": "Trusted frontend origins",
+  "trustedUiOriginsDescription": "Control which browser websites can access the management API.",
+  "builtinTrustedOrigin": "Built-in trusted static UI (always allowed)",
+  "additionalTrustedOrigins": "Additional trusted origins (one per line)",
+  "trustedOriginsHelp": "Enter exact origins such as https://admin.example.com or http://localhost:5173. HTTPS is required except for loopback addresses. Wildcards and URL paths are not allowed. A trusted website can manage your local backend; add only websites you control. Remote network clients still require authentication.",
+  "trustedOriginsInvalid": "Enter up to 32 distinct full HTTP(S) origins without paths or wildcards. Non-local sites must use HTTPS.",
+  "saveSuccess": "Settings saved successfully."
 }

@@ -1397,6 +1397,7 @@ export namespace Go {
       logcat: Logcat;
       advanced: AdvancedConfig;
       backup: BackupReference;
+      trustedOrigins: string[];
     }
     export interface SystemProxy {
       http: boolean;
