@@ -84,18 +84,9 @@ export default function LogComponent() {
     const [logError, setLogError] = useState<{ code: number, msg: string } | undefined>()
     const visible = usePageVisible();
     const [paused, setPaused] = useState(false);
-    const [collectionGap, setCollectionGap] = useState(false);
     const [streamNonce, setStreamNonce] = useState(0)
     const logListRef = useRef<VListHandle>(null);
     const followLatestRef = useRef(true);
-
-    useEffect(() => {
-        const recordGap = () => {
-            if (document.visibilityState === 'hidden') setCollectionGap(true);
-        };
-        document.addEventListener('visibilitychange', recordGap);
-        return () => document.removeEventListener('visibilitychange', recordGap);
-    }, []);
 
     useEffect(() => {
         if (paused || !visible) return;
@@ -206,11 +197,11 @@ export default function LogComponent() {
                                 <Button className="max-sm:!h-11 max-sm:!w-11" size="icon" variant="outline-secondary" aria-label={uiT("clearLogs")} title={uiT("clearLogs")} onClick={clearLogs}>
                                     <Trash2 size={16} />
                                 </Button>
-                                <Button className="max-sm:!h-11 max-sm:!w-11" size="icon" variant="outline-secondary" aria-label={uiT(paused ? "resumeCollection" : "pauseCollection")} title={uiT(paused ? "resumeCollection" : "pauseCollection")} aria-pressed={paused} onClick={() => { if (!paused) setCollectionGap(true); setPaused(!paused); }}>{paused ? <Play size={16} /> : <Pause size={16} />}</Button>
+                                <Button className="max-sm:!h-11 max-sm:!w-11" size="icon" variant="outline-secondary" aria-label={uiT(paused ? "resumeCollection" : "pauseCollection")} title={uiT(paused ? "resumeCollection" : "pauseCollection")} aria-pressed={paused} onClick={() => setPaused(value => !value)}>{paused ? <Play size={16} /> : <Pause size={16} />}</Button>
                             </div>
                         </div>
                     </div>
-                    {collectionGap && <p role="status" className="mt-2 text-xs text-ui-muted">{uiT("collectionPausesInTheBackgroundOrWhenPausedEventsDuringThatTimeAreNotCollectedRetainedLogsStayAvailable")}</p>}
+                    {(paused || !visible) && <p role="status" className="mt-2 text-xs text-ui-muted">{uiT("collectionPausesInTheBackgroundOrWhenPausedEventsDuringThatTimeAreNotCollectedRetainedLogsStayAvailable")}</p>}
                     {logError && (
                         <div className="mt-2 rounded-ui-lg border border-ui-danger/30 bg-ui-danger/10 px-3 py-2 text-xs text-ui-danger">
                             {logError.msg}{uiT("retrying")}</div>
