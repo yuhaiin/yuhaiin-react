@@ -134,7 +134,7 @@ export function selectTunStack(value: TunProtocol, stack: "" | "lightweight", le
     if (stack === "lightweight") {
         return { ...value, stack, driver: "channel", congestionControl: value.congestionControl || "cubic" };
     }
-    return { ...value, stack: undefined, congestionControl: undefined, outputScheduler:undefined, driver: legacyDriver ?? value.driver };
+    return { ...value, stack: undefined, congestionControl: undefined, outputScheduler: undefined, driver: legacyDriver ?? value.driver };
 }
 
 export function createDefaultInbound(id: string): Inbound {

@@ -59,20 +59,21 @@ describe('TUN lightweight stack config', () => {
         const original = createDefaultProtocol('tun');
         if (original.type !== 'tun') throw new Error('unexpected protocol');
         const system = { ...original.tun, driver: 'system_gvisor' };
-        const lightweight = selectTunStack(system, 'lightweight');
+        const lightweight = { ...selectTunStack(system, 'lightweight'), outputScheduler: 'fifo' };
         expect(lightweight).toMatchObject({ driver: 'channel', stack: 'lightweight', congestionControl: 'cubic' });
         const restored = selectTunStack(lightweight, '', system.driver);
         const serialized = JSON.parse(JSON.stringify(restored));
         expect(serialized.driver).toBe('system_gvisor');
         expect(serialized).not.toHaveProperty('stack');
         expect(serialized).not.toHaveProperty('congestionControl');
+        expect(serialized).not.toHaveProperty('outputScheduler');
     });
 
     it('keeps custom fields and preserves a prior algorithm on reselect', () => {
         const original = createDefaultProtocol('tun');
         if (original.type !== 'tun') throw new Error('unexpected protocol');
-        const chosen = { ...original.tun, mtu: 1400, portal: '172.19.0.1/30', congestionControl: 'bbr' };
-        expect(selectTunStack(chosen, 'lightweight')).toMatchObject({ mtu: 1400, portal: '172.19.0.1/30', stack: 'lightweight', congestionControl: 'bbr', driver: 'channel' });
+        const chosen = { ...original.tun, mtu: 1400, portal: '172.19.0.1/30', congestionControl: 'bbr', outputScheduler: 'fifo' };
+        expect(selectTunStack(chosen, 'lightweight')).toMatchObject({ mtu: 1400, portal: '172.19.0.1/30', stack: 'lightweight', congestionControl: 'bbr', outputScheduler: 'fifo', driver: 'channel' });
     });
 });
 
