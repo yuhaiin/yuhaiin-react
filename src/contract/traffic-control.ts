@@ -24,7 +24,15 @@ export interface ResourceCounters {
   DeniedRateSessions: number;
   DeniedPackets: number;
 }
+export interface ShapingUsage {
+  admittedUploadBytes: number;
+  admittedDownloadBytes: number;
+  rejectedUploadDatagrams: number;
+  rejectedDownloadDatagrams: number;
+  pacingWaitNanos: number;
+}
 export interface TrafficStatus {
+  shaping?: ShapingUsage;
   global: ResourceCounters;
   nat: ResourceCounters;
   inboundScopes: {id: string; counters: ResourceCounters}[];

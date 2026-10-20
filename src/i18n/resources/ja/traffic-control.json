@@ -46,5 +46,13 @@
     "DeniedPending": "タスク上限による拒否",
     "DeniedRateSessions": "CPS 制限による拒否",
     "DeniedPackets": "PPS 制限による拒否"
+  },
+  "shaperUsage": "シェーピングの許可状況",
+  "shaping": {
+    "admittedUploadBytes": "許可したアップロードバイト",
+    "admittedDownloadBytes": "許可したダウンロードバイト",
+    "rejectedUploadDatagrams": "破棄したアップロード UDP",
+    "rejectedDownloadDatagrams": "破棄したダウンロード UDP",
+    "pacingWaitNanos": "TCP ペーシング待機 (ms)"
   }
 }

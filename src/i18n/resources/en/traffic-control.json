@@ -46,5 +46,13 @@
     "DeniedPending": "Pending-task denials",
     "DeniedRateSessions": "CPS denials",
     "DeniedPackets": "PPS denials"
+  },
+  "shaperUsage": "Shaping admission",
+  "shaping": {
+    "admittedUploadBytes": "Admitted upload bytes",
+    "admittedDownloadBytes": "Admitted download bytes",
+    "rejectedUploadDatagrams": "Dropped upload datagrams",
+    "rejectedDownloadDatagrams": "Dropped download datagrams",
+    "pacingWaitNanos": "TCP pacing wait (ms)"
   }
 }

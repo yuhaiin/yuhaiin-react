@@ -46,5 +46,13 @@
     "DeniedPending": "대기 작업 제한 거부",
     "DeniedRateSessions": "CPS 제한 거부",
     "DeniedPackets": "PPS 제한 거부"
+  },
+  "shaperUsage": "속도 제어 승인 통계",
+  "shaping": {
+    "admittedUploadBytes": "허용된 업로드 바이트",
+    "admittedDownloadBytes": "허용된 다운로드 바이트",
+    "rejectedUploadDatagrams": "폐기된 업로드 UDP",
+    "rejectedDownloadDatagrams": "폐기된 다운로드 UDP",
+    "pacingWaitNanos": "TCP 속도 조절 대기 (ms)"
   }
 }

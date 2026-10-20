@@ -205,6 +205,17 @@ export default function TrafficControlPage(){
      {status&&<>
       <p className="text-xs text-ui-muted">{t("diagnosticsHint")}</p>
       <div className="grid gap-3 lg:grid-cols-2"><StatsCard title={t("globalResources")} counters={status.global}/><StatsCard title={t("natResources")} counters={status.nat}/></div>
+      {status.shaping&&<section className="rounded-ui-sm border border-ui-border p-4 space-y-3">
+       <h3 className="font-semibold">{t("shaperUsage")}</h3>
+       <dl className="grid grid-cols-2 gap-3 text-sm md:grid-cols-5">
+         {(["admittedUploadBytes","admittedDownloadBytes","rejectedUploadDatagrams","rejectedDownloadDatagrams","pacingWaitNanos"] as const).map(key=>
+          <div key={key}>
+           <dt className="text-xs text-ui-muted">{t("shaping."+key)}</dt>
+           <dd className="mt-1 font-semibold tabular-nums">{formatNum(key==="pacingWaitNanos"?status.shaping!.pacingWaitNanos/1e6:status.shaping![key])}</dd>
+          </div>
+         )}
+       </dl>
+      </section>}
       {status.inboundScopes?.length>0&&<div className="space-y-2">
         <h3 className="font-semibold text-sm">{t("scopeUsage")}</h3>
         <div className="grid gap-3 md:grid-cols-2">
