@@ -684,5 +684,9 @@
   "sshKeepAliveSeconds": "SSH キープアライブ (秒、0 = 無効)",
   "sshPrivateKeyPassphrase": "秘密鍵のパスフレーズ",
   "sshPrivateKey": "SSH 秘密鍵 (PEM / OpenSSH)",
-  "sshTCPOnlyHelp": "SSH は TCP のみ転送します。UDP は別のアウトバウンドが必要です。ホスト鍵は別経路で検証してください。"
+  "sshTCPOnlyHelp": "SSH は TCP のみ転送します。UDP は別のアウトバウンドが必要です。ホスト鍵は別経路で検証してください。",
+  "tunOutputScheduler": "出力スケジューリング",
+  "tunOutputSchedulerFair": "ホスト・フロー間の公平性 (FQ-CoDel)",
+  "tunOutputSchedulerFIFO": "FIFO 互換モード",
+  "tunOutputSchedulerHint": "公平なスケジューリングは競合するホストとフローを分離します。比較や問題の切り分けには FIFO を選択できます。"
 }

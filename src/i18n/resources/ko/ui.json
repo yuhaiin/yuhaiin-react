@@ -684,5 +684,9 @@
   "sshKeepAliveSeconds": "SSH 킵얼라이브 (초, 0 = 끔)",
   "sshPrivateKeyPassphrase": "개인 키 암호",
   "sshPrivateKey": "SSH 개인 키 (PEM / OpenSSH)",
-  "sshTCPOnlyHelp": "SSH는 TCP만 전달합니다. UDP에는 별도 아웃바운드가 필요합니다. 서버 호스트 키를 별도로 확인하세요."
+  "sshTCPOnlyHelp": "SSH는 TCP만 전달합니다. UDP에는 별도 아웃바운드가 필요합니다. 서버 호스트 키를 별도로 확인하세요.",
+  "tunOutputScheduler": "출력 스케줄링",
+  "tunOutputSchedulerFair": "호스트 및 흐름 공정성 (FQ-CoDel)",
+  "tunOutputSchedulerFIFO": "FIFO 호환 모드",
+  "tunOutputSchedulerHint": "공정 스케줄링은 경쟁하는 호스트와 흐름을 분리합니다. 비교 및 문제 해결 시 FIFO를 사용할 수 있습니다."
 }

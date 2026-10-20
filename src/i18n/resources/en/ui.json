@@ -684,5 +684,9 @@
   "sshKeepAliveSeconds": "SSH keep-alive (seconds, 0 = off)",
   "sshPrivateKeyPassphrase": "Private key passphrase",
   "sshPrivateKey": "SSH private key (PEM / OpenSSH)",
-  "sshTCPOnlyHelp": "SSH forwards TCP only. UDP traffic needs a separate outbound. Verify the server's host key independently."
+  "sshTCPOnlyHelp": "SSH forwards TCP only. UDP traffic needs a separate outbound. Verify the server's host key independently.",
+  "tunOutputScheduler": "Output scheduling",
+  "tunOutputSchedulerFair": "Host and flow fairness (FQ-CoDel)",
+  "tunOutputSchedulerFIFO": "FIFO compatibility mode",
+  "tunOutputSchedulerHint": "Fair scheduling isolates contending hosts and flows. FIFO is available for rollout comparisons and troubleshooting."
 }

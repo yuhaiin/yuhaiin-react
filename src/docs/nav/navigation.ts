@@ -33,6 +33,7 @@ export const navigationSections: NavigationSection[] = [
             { path: '/docs/bypass/test', label: ui('testRoute'), icon: Waypoints },
         ] },
         { path: '/docs/gateway', label: nav('gateway'), icon: Network },
+        { path: '/docs/traffic-control', label: nav('trafficControl'), icon: Gauge },
         { path: '/docs/inbound', label: routing('trafficEntryTask'), icon: Download },
         { path: '/docs/bypass/resolver', label: routing('dnsTask'), icon: Network },
     ] },

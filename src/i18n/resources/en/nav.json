@@ -13,5 +13,6 @@
   "diagnostics": "Diagnostics",
   "help": "Help & about",
   "routeRules": "Routing rules",
-  "gateway": "HTTP Gateway"
+  "gateway": "HTTP Gateway",
+  "trafficControl": "Traffic Control"
 }

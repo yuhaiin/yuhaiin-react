@@ -115,6 +115,9 @@ export type RPCOperation =
   | "tools.licenses"
   | "tools.logs"
   | "tools.logs.v2"
+  | "traffic_control.get"
+  | "traffic_control.put"
+  | "traffic_control.status"
   | "update.apply"
   | "update.check"
   | "update.status"
@@ -173,6 +176,9 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "DELETE", pattern: "/api/v2/publishes/{name}", operation: "publish.delete" },
   { method: "POST", pattern: "/api/v2/publishes/{name}/resolve", operation: "publish.resolve" },
   { method: "GET", pattern: "/api/v2/inbounds/config", operation: "inbounds.config.get" },
+  { method: "GET", pattern: "/api/v2/traffic-control", operation: "traffic_control.get" },
+  { method: "GET", pattern: "/api/v2/traffic-control/status", operation: "traffic_control.status" },
+  { method: "PUT", pattern: "/api/v2/traffic-control", operation: "traffic_control.put" },
   { method: "PUT", pattern: "/api/v2/inbounds/config", operation: "inbounds.config.put" },
   { method: "GET", pattern: "/api/v2/inbounds", operation: "inbounds.get" },
   { method: "GET", pattern: "/api/v2/inbounds/capabilities", operation: "inbound.capabilities" },

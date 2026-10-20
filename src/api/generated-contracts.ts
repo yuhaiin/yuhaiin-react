@@ -196,8 +196,8 @@ export namespace Go {
       field?: string;
       operator?: string;
       key?: string;
-      value?: string;
       values?: string[];
+      value?: string;
     }
     export interface Action {
       type: string;
@@ -479,6 +479,7 @@ export namespace Go {
       host: string;
     }
     export interface TunProtocol {
+      outputScheduler?: string;
       darwin?: DarwinTunOptions;
       stack?: string;
       congestionControl?: string;
@@ -992,13 +993,6 @@ export namespace Go {
       disable_dtls?: boolean;
       mtu?: number;
     }
-    export interface Wireguard {
-      secretKey: string;
-      endpoint?: string[];
-      peers?: WireguardPeer[];
-      mtu?: number;
-      reserved?: string;
-    }
     export interface Nebula {
       config_yaml: string;
     }
@@ -1013,6 +1007,13 @@ export namespace Go {
     export interface ZeroTierMoon {
       id: string;
       seed: string;
+    }
+    export interface Wireguard {
+      secretKey: string;
+      endpoint?: string[];
+      peers?: WireguardPeer[];
+      mtu?: number;
+      reserved?: string;
     }
     export interface AmneziaWG {
       secretKey: string;
