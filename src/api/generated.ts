@@ -18,6 +18,7 @@ export type RPCOperation =
   | "gateway.ca.status"
   | "gateway.filters.refresh"
   | "gateway.status"
+  | "gateway.statistics.reset"
   | "gateway.test"
   | "gateway.workspace.get"
   | "gateway.workspace.put"
@@ -127,6 +128,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/gateway/workspace", operation: "gateway.workspace.get" },
   { method: "PUT", pattern: "/api/v2/gateway/workspace", operation: "gateway.workspace.put" },
   { method: "GET", pattern: "/api/v2/gateway/status", operation: "gateway.status" },
+  { method: "POST", pattern: "/api/v2/gateway/statistics/reset", operation: "gateway.statistics.reset" },
   { method: "POST", pattern: "/api/v2/gateway/test", operation: "gateway.test" },
   { method: "GET", pattern: "/api/v2/gateway/ca", operation: "gateway.ca.status" },
   { method: "POST", pattern: "/api/v2/gateway/ca/generate", operation: "gateway.ca.generate" },

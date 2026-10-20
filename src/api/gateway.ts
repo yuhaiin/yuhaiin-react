@@ -11,6 +11,8 @@ export const saveGatewayConfig = async (config: Config): Promise<Config> =>
   ));
 export const gatewayStatus = () =>
   requestJSON<Go.gateway.RuntimeStatus>("GET", "/api/v2/gateway/status");
+export const resetGatewayStatistics = (id = "") =>
+  requestJSON<Record<string, never>>("POST", "/api/v2/gateway/statistics/reset", { id });
 export const testGateway = (request: Go.gateway.TestRequest) =>
   requestJSON<Go.gateway.TestResult>("POST", "/api/v2/gateway/test", request);
 export const getGatewayCA = () =>
