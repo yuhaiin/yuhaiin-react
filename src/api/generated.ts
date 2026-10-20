@@ -18,6 +18,7 @@ export type RPCOperation =
   | "gateway.ca.status"
   | "gateway.filters.refresh"
   | "gateway.status"
+  | "gateway.statistics.reset"
   | "gateway.test"
   | "gateway.workspace.get"
   | "gateway.workspace.put"
@@ -41,6 +42,7 @@ export type RPCOperation =
   | "node.put"
   | "node.use"
   | "nodes.active"
+  | "nodes.status"
   | "nodes.get"
   | "nodes.groups"
   | "nodes.import.preview"
@@ -130,6 +132,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/gateway/workspace", operation: "gateway.workspace.get" },
   { method: "PUT", pattern: "/api/v2/gateway/workspace", operation: "gateway.workspace.put" },
   { method: "GET", pattern: "/api/v2/gateway/status", operation: "gateway.status" },
+  { method: "POST", pattern: "/api/v2/gateway/statistics/reset", operation: "gateway.statistics.reset" },
   { method: "POST", pattern: "/api/v2/gateway/test", operation: "gateway.test" },
   { method: "GET", pattern: "/api/v2/gateway/ca", operation: "gateway.ca.status" },
   { method: "POST", pattern: "/api/v2/gateway/ca/generate", operation: "gateway.ca.generate" },
@@ -196,6 +199,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/nodes/selected", operation: "nodes.selected" },
   { method: "PUT", pattern: "/api/v2/nodes/selected", operation: "nodes.select" },
   { method: "GET", pattern: "/api/v2/nodes/active", operation: "nodes.active" },
+  { method: "POST", pattern: "/api/v2/nodes/status", operation: "nodes.status" },
   { method: "GET", pattern: "/api/v2/nodes/{id}", operation: "node.get" },
   { method: "PUT", pattern: "/api/v2/nodes/{id}", operation: "node.put" },
   { method: "DELETE", pattern: "/api/v2/nodes/{id}", operation: "node.delete" },

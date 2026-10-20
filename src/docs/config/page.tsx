@@ -5,18 +5,35 @@ import { saveSettings, loadSettings } from "@/api/settings";
 import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardHeader, IconBox, MainContainer, SettingLabel } from "@/component/v2/card";
 import { SettingInputVertical, SettingRangeVertical, SwitchCard } from "@/component/v2/forms";
+import { Textarea } from "@/component/v2/input";
 import Loading from "@/component/v2/loading";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import type { Settings } from "@/contract/settings";
-import { Cpu, Globe, NotebookText, Save } from "lucide-react";
-import { useContext, useMemo } from "react";
+import { Cpu, Globe, NotebookText, Save, ShieldCheck } from "lucide-react";
+import { useContext, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import useSWR from "swr";
 import { useInterfaces } from "../../common/interfaces";
 
 const logLevels = ["debug", "info", "warning", "error"] as const;
+const builtinTrustedOrigin = "https://yuhaiin.github.io";
+
+// An Origin is a single scheme/host/port tuple, not a URL path or wildcard.
+function validTrustedOrigin(value: string): boolean {
+    try {
+        const url = new URL(value);
+        if (url.origin !== value || url.username || url.password || value.includes("*")) return false;
+        if (url.protocol === "https:") return true;
+        if (url.protocol !== "http:") return false;
+        return url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]";
+    } catch { return false; }
+}
+function additionalOrigins(value: string): string[] {
+    return value.split(/\r?\n/).map((origin) => origin.trim()).filter(Boolean);
+}
+
 
 function ConfigComponent() {
     const { t: uiT } = useTranslation('ui');
@@ -26,9 +43,13 @@ function ConfigComponent() {
         revalidateOnFocus: false,
     });
     const interfaces = useInterfaces();
+    const [originsText, setOriginsText] = useState<string | null>(null);
     const { value: setting, setValue: setSetting, commit, dirty } = useEditorDraft("settings", server, () => undefined);
     const { pending: saving, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
     useCloseGuard(dirty, saving, () => undefined);
+
+    const origins = additionalOrigins(originsText ?? setting?.trustedOrigins?.join("\n") ?? "");
+    const invalidOrigin = origins.length > 32 || origins.some((origin) => !validTrustedOrigin(origin)) || new Set(origins).size !== origins.length;
 
     const systemProxy = useMemo(() => {
         const value: string[] = [];
@@ -43,11 +64,16 @@ function ConfigComponent() {
 
     const handleSave = () => {
         if (!setting || saving || error || isLoading) return;
+        if (invalidOrigin) {
+            ctx.Error(uiT("trustedOriginsInvalid"));
+            return;
+        }
         void run(async () => {
             const next = await saveSettings(setting);
             commit(next);
+            setOriginsText(null);
             await mutate(next, { revalidate: false });
-            ctx.Info("Save successful");
+            ctx.Info(uiT("saveSuccess"));
         });
     };
 
@@ -151,6 +177,35 @@ function ConfigComponent() {
                             checked={setting.logcat.ignoreDnsError}
                             onCheckedChange={(checked) => update(prev => ({ ...prev, logcat: { ...prev.logcat, ignoreDnsError: checked } }))}
                         />
+                    </div>
+                </CardBody>
+            </Card>
+
+            <Card>
+                <CardHeader className="py-3">
+                    <IconBox icon={ShieldCheck} tone="neutral" title={uiT("trustedUiOrigins")} description={uiT("trustedUiOriginsDescription")} />
+                </CardHeader>
+                <CardBody>
+                    <div className="max-w-3xl space-y-3">
+                        <div>
+                            <SettingLabel>{uiT("builtinTrustedOrigin")}</SettingLabel>
+                            <p className="mt-1 rounded-ui-sm border border-ui-border bg-ui-surface-muted/40 px-3 py-2 font-mono text-sm text-ui-secondary">{builtinTrustedOrigin}</p>
+                        </div>
+                        <div>
+                            <SettingLabel htmlFor="trusted-ui-origins">{uiT("additionalTrustedOrigins")}</SettingLabel>
+                            <Textarea id="trusted-ui-origins" aria-label={uiT("additionalTrustedOrigins")} spellCheck={false}
+                                rows={4} autoCapitalize="off" autoComplete="off"
+                                placeholder="https://admin.example.com"
+                                value={originsText ?? setting.trustedOrigins.join("\n")}
+                                aria-invalid={invalidOrigin}
+                                onChange={(event) => {
+                                    setOriginsText(event.target.value);
+                                    update((prev) => ({ ...prev, trustedOrigins: additionalOrigins(event.target.value) }));
+                                }}
+                            />
+                            {invalidOrigin && <p role="alert" className="mt-2 text-sm text-ui-danger">{uiT("trustedOriginsInvalid")}</p>}
+                            <p className="mt-2 text-sm text-ui-secondary">{uiT("trustedOriginsHelp")}</p>
+                        </div>
                     </div>
                 </CardBody>
             </Card>

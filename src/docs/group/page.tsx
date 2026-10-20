@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import NodeImportModal from "./NodeImportModal";
 
 import { APIError } from "@/api/client";
+import { getNodeStatuses, type OutboundRuntimeStatus } from "@/api/node-observability";
+import { NodeRuntimeOverview, outboundStateVariant, formatNodeBytes } from "./NodeRuntimeOverview";
 import { deleteNode, getNode, latencyNode, listNodeGroups, listNodes, selectedNodes, useNode as selectNode, type NodeLatencyType } from "@/api/nodes";
 import {
     LatencyDNSUrlDefault,
@@ -355,9 +357,10 @@ export function pruneBusyLatency(
     return Object.fromEntries(entries);
 }
 
-const NodeDirectoryItem = memo(function NodeDirectoryItem({ item, selected, onOpen, latency, busy, defaults }: {
+const NodeDirectoryItem = memo(function NodeDirectoryItem({ item, selected, onOpen, latency, busy, defaults, runtime }: {
     item: Node; selected: boolean; onOpen: () => void; latency?: NodeLatencyState;
     busy?: Partial<Record<NodeLatencyType, boolean>>; defaults: { tcp?: Node; udp?: Node } | undefined;
+    runtime?: OutboundRuntimeStatus;
 }) {
     const { t: uiT } = useTranslation('ui');
     const { t } = useTranslation('routing');
@@ -368,19 +371,24 @@ const NodeDirectoryItem = memo(function NodeDirectoryItem({ item, selected, onOp
             <div className="flex min-w-0 items-center gap-2"><span className="min-w-0 flex-1 truncate text-sm font-medium leading-5 text-ui-heading">{item.name || item.id}</span>
                 <span className={clsx('h-1.5 w-1.5 shrink-0 rounded-full', item.enabled ? 'bg-ui-success' : 'bg-ui-muted/50')} role="img" aria-label={item.enabled ? uiT('enabled') : uiT('off')} />
                 {(defaults?.tcp?.id === item.id || defaults?.udp?.id === item.id) && <Check size={13} aria-label={t('defaultNode')} className="shrink-0 text-ui-primary" />}
+                {runtime && <Badge pill variant={outboundStateVariant(runtime.state)}>{t(`outboundState_${runtime.state}`)}</Badge>}
             </div>
             <div className="mt-0.5 flex min-w-0 items-center gap-2">
                 <span className="min-w-0 flex-1 truncate text-xs leading-4 text-ui-muted">{chainLabel(item) || t('noProtocol')}{!item.enabled && ` · ${uiT('off')}`}</span>
+                {runtime && <span className="shrink-0 font-mono text-[11px] tabular-nums text-ui-muted" title={t('outboundTrafficHelp')}>
+                    ↓ {formatNodeBytes(runtime.downloadBps)}/s
+                </span>}
                 {busy?.tcp ? <Spinner size="sm" /> : latency?.tcp && <span className={clsx('shrink-0 font-mono text-xs tabular-nums', latencyTextClass(latency.tcp))}>{latencyText(latency.tcp)}</span>}
             </div>
         </div>
     </button>;
 });
 
-function NodeOverview({ item, latency, busy, defaults, onLatency, onUse, onBack, using, locked }: {
+function NodeOverview({ item, latency, busy, defaults, onLatency, onUse, onBack, using, locked, runtime, runtimeError }: {
     item: Node; latency?: NodeLatencyState; busy?: Partial<Record<NodeLatencyType, boolean>>;
     defaults?: { tcp?: Node; udp?: Node }; onLatency: (type: NodeLatencyType) => void;
     onUse: () => void; onBack: () => void; using: boolean; locked: boolean;
+    runtime?: OutboundRuntimeStatus; runtimeError?: string;
 }) {
     const { t: uiT } = useTranslation('ui');
     const { t } = useTranslation('routing');
@@ -399,6 +407,7 @@ function NodeOverview({ item, latency, busy, defaults, onLatency, onUse, onBack,
                 {defaults?.udp?.id === item.id && <span className="text-ui-muted">{t('defaultForUDP')}</span>}
             </div>
         </header>
+        <NodeRuntimeOverview status={runtime} error={runtimeError} />
         <section className="mb-6 border-b border-ui-border/60 pb-6" aria-label={t('connectivityChecks')}>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                 <h3 className="text-base font-medium text-ui-heading">{t('connectivityChecks')}</h3>
@@ -439,7 +448,9 @@ export default function Group() {
     const [debouncedQuery] = useDebounceValue(query.trim(), 250);
     const querySettled = debouncedQuery === query.trim();
     const [selectedPreview, setSelectedPreview] = useState<Node>();
-    const [latency, setLatency] = useLocalStorage<Record<string, NodeLatencyState>>("latency-v2-contract", {});
+    // Immediate test results are ephemeral; the backend stores authoritative
+    // probe results for all browsers and application restarts.
+    const [latency, setLatency] = useState<Record<string, NodeLatencyState>>({});
     const [busyLatency, setBusyLatency] = useState<Record<string, Partial<Record<NodeLatencyType, boolean>>>>({});
     const [latencyHTTP] = useLocalStorage(LatencyHTTPUrlKey, LatencyHTTPUrlDefault);
     const [latencyDNS] = useLocalStorage(LatencyDNSUrlKey, LatencyDNSUrlDefault);
@@ -467,6 +478,11 @@ export default function Group() {
     const selectedItem = selectedPreview?.id === showdata.id ? selectedPreview : items.find(item => item.id === showdata.id) ?? linkedNode;
     const nodeIds = useMemo(() => [...new Set([...items.map(item => item.id), ...(selectedItem ? [selectedItem.id] : [])])], [items, selectedItem]);
     const nodeIdsRef = useRef<string[]>([]);
+    const { data: nodeStatuses, error: statusesError, mutate: mutateNodeStatuses } = useSWR(
+        nodeIds.length ? ["/api/v2/nodes/status", ...nodeIds] : null,
+        () => getNodeStatuses(nodeIds),
+        { refreshInterval: 5000, revalidateOnFocus: true },
+    );
     const groupItems = items;
     const modalGroups = useMemo(
         () => selectedGroup
@@ -477,7 +493,21 @@ export default function Group() {
 
     // Derive visible results from the current node set. Do not trigger another
     // synchronous render when SWR updates its data or removes a node.
-    const visibleLatency = useMemo(() => data ? pruneLatencyMap(latency, nodeIds) : latency, [data, latency, nodeIds]);
+    const visibleLatency = useMemo(() => {
+        const serverResults: Record<string, NodeLatencyState> = {};
+        for (const id of nodeIds) {
+            const probes = nodeStatuses?.[id]?.probes;
+            if (!probes) continue;
+            serverResults[id] = {};
+            for (const [kind, observation] of Object.entries(probes)) {
+                const uiKind = kind === "doq" || kind === "dns" ? "udp" : kind;
+                if (uiKind === "tcp" || uiKind === "udp" || uiKind === "ip" || uiKind === "stun" || uiKind === "stun_tcp") {
+                    serverResults[id][uiKind] = latencyResultValue(observation.result);
+                }
+            }
+        }
+        return data ? pruneLatencyMap({ ...serverResults, ...latency }, nodeIds) : { ...serverResults, ...latency };
+    }, [data, latency, nodeIds, nodeStatuses]);
     const visibleBusyLatency = useMemo(() => data ? pruneBusyLatency(busyLatency, nodeIds) : busyLatency, [data, busyLatency, nodeIds]);
     useEffect(() => { nodeIdsRef.current = data ? nodeIds : []; }, [data, nodeIds]);
 
@@ -565,7 +595,10 @@ export default function Group() {
                 ));
                 ctx.Error(apiErr?.msg ?? "Latency failed");
             })
-            .finally(() => setBusyLatency((prev) => clearBusyLatency(prev, id, type)));
+            .finally(() => {
+                setBusyLatency((prev) => clearBusyLatency(prev, id, type));
+                void mutateNodeStatuses();
+            });
     };
 
     return <MainContainer className="max-w-[1440px]">
@@ -585,8 +618,8 @@ export default function Group() {
                 </div>
                 {apiError ? <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} /> : isLoading || !querySettled ? <Loading /> : groupItems.length === 0 ? <p className="px-3 py-8 text-center text-sm text-ui-muted">{t(query.trim() ? 'noMatchingNodes' : 'noGroupNodes')}</p> :
                     groupItems.length > GROUP_VIRTUALIZE_THRESHOLD ? <VList data={groupItems} itemSize={57} bufferSize={456} style={{ height: 'min(72vh, 900px)', width: '100%' }}>
-                        {item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} />}
-                    </VList> : <div className="max-h-[min(72vh,900px)] overflow-y-auto overscroll-contain">{groupItems.map(item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} />)}</div>}
+                        {item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} runtime={nodeStatuses?.[item.id]} />}
+                    </VList> : <div className="max-h-[min(72vh,900px)] overflow-y-auto overscroll-contain">{groupItems.map(item => <NodeDirectoryItem key={item.id} item={item} selected={!showdata.new && showdata.id === item.id} onOpen={() => openNode(item.id)} latency={visibleLatency[item.id]} busy={visibleBusyLatency[item.id]} defaults={defaults} runtime={nodeStatuses?.[item.id]} />)}</div>}
                 {data && data.page.total > (data.page.pageSize || NODE_PAGE_SIZE) && <div className="flex items-center justify-center gap-3 border-t border-ui-border/60 pt-3">
                     <Button type="button" size="icon" variant="outline-secondary" className="h-8 w-8" aria-label={commonT('pagination.previous')} disabled={page <= 1} onClick={() => setPage(page - 1)}><ChevronLeft size={16} aria-hidden="true" /></Button>
                     <span className="text-xs tabular-nums text-ui-muted">{page} / {Math.ceil(data.page.total / (data.page.pageSize || NODE_PAGE_SIZE))}</span>
@@ -596,6 +629,7 @@ export default function Group() {
             <WorkspaceDetail hiddenOnMobile={!showdata.show} transitionKey={showdata.new ? 'new-node' : showdata.id}>
                 {showdata.show ? <>
                     {selectedItem && !showdata.new ? <NodeOverview item={selectedItem} latency={visibleLatency[selectedItem.id]} busy={visibleBusyLatency[selectedItem.id]} defaults={defaults} using={using} locked={editorState.dirty || editorState.pending}
+                        runtime={nodeStatuses?.[selectedItem.id]} runtimeError={statusesError ? t("outboundStatusError") : undefined}
                         onLatency={type => handleLatency(selectedItem.id, type)} onUse={() => handleUse(selectedItem.id)} onBack={backToNodes} /> : <header className="mb-5 border-b border-ui-border/60 pb-5"><Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent md:hidden" onClick={backToNodes}><ArrowLeft size={16} />{t('backToNodes')}</Button><h2 className="break-words text-xl font-medium text-ui-heading">{showdata.new ? uiT('newNode') : t('nodeDetails')}</h2></header>}
                     {defaultsError && <div role="alert" className="mb-4 text-sm text-ui-danger">{t('defaultNodeStateFailed')} <Button size="sm" onClick={() => void mutateDefaults()}>{t('retry')}</Button></div>}
                     <NodeModal node={selectedItem} key={showdata.new ? 'new-node' : showdata.id} show id={showdata.id} isNew={showdata.new} editable presentation="inline" groups={modalGroups} onStateChange={setEditorState}

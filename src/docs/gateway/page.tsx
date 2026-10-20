@@ -2,13 +2,13 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import {
-  getGatewayConfig, gatewayStatus, saveGatewayConfig, refreshGatewayFilter,
+  getGatewayConfig, gatewayStatus, saveGatewayConfig, refreshGatewayFilter, resetGatewayStatistics,
 } from "@/api/gateway";
 import { Button } from "@/component/v2/button";
 import { MainContainer } from "@/component/v2/card";
 import Loading from "@/component/v2/loading";
 import type { Config } from "@/contract/gateway";
-import { errorMessage, newGateway, newInterception } from "@/contract/gateway";
+import { errorMessage } from "@/contract/gateway";
 import { useCloseGuard } from "@/hooks/use-editor-draft";
 import { GatewayWorkspace } from "./workspace";
 import { AuthorityPanel, RuleTester } from "./tools";
@@ -20,7 +20,7 @@ export default function GatewayPage() {
   const { data, error, isLoading, mutate } = useSWR(
     "/api/v2/gateway/config", getGatewayConfig, { revalidateOnFocus: false },
   );
-  const { data: status, error: statusError } = useSWR(
+  const { data: status, error: statusError, mutate: mutateStatus } = useSWR(
     "/api/v2/gateway/status", gatewayStatus, { refreshInterval: 5000 },
   );
   const [draft, setDraft] = useState<Config>();
@@ -28,6 +28,8 @@ export default function GatewayPage() {
   const [pending, setPending] = useState(false);
   const [failure, setFailure] = useState("");
   const [saved, setSaved] = useState(false);
+  const [resetTarget, setResetTarget] = useState<string | null>(null);
+  const [resetPending, setResetPending] = useState(false);
   if (data && !draft) setDraft(structuredClone(data));
   const dirty = Boolean(data && draft && JSON.stringify(data) !== JSON.stringify(draft));
   useCloseGuard(dirty, pending, () => undefined);
@@ -69,6 +71,21 @@ export default function GatewayPage() {
     }
   };
 
+  const resetStatistics = async () => {
+    if (resetTarget === null || resetPending || pending) return;
+    setResetPending(true);
+    setFailure("");
+    try {
+      await resetGatewayStatistics(resetTarget);
+      await mutateStatus();
+      setResetTarget(null);
+    } catch (error) {
+      setFailure(errorMessage(error));
+    } finally {
+      setResetPending(false);
+    }
+  };
+
   if (error && !data) return <Loading onRetry={() => void mutate()}>{errorMessage(error)}</Loading>;
   if (isLoading || !draft) return <Loading />;
 
@@ -94,20 +111,6 @@ export default function GatewayPage() {
           {failure || status?.startupError}
         </p>}
         {saved && <p role="status" className="text-sm text-ui-secondary">{t("saved")}</p>}
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={() => change({
-            ...draft, gateways: [...draft.gateways, newGateway()],
-          })}>{t("addGateway")}</Button>
-          <Button variant="outline-secondary" onClick={() => {
-            const gateway = {
-              ...newGateway(), enabled: true, listen: "", name: t("newFilterGateway"),
-              default: { type: "forward", status: 200, outbound: { type: "inherit_route" },
-                preserveHost: false, rewrite: {} },
-            };
-            change({ ...draft, gateways: [...draft.gateways, gateway],
-              interceptions: [...draft.interceptions, newInterception(gateway.id, "http_only")] });
-          }}>{t("addInterceptionGateway")}</Button>
-        </div>
         <GatewayWorkspace config={draft} onChange={change}
           status={status?.gateways ?? []}
           canRefreshFilter={!dirty && !pending}
@@ -127,13 +130,31 @@ export default function GatewayPage() {
           {tool === "authority" && <AuthorityPanel />}
           {tool === "statistics" && (
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold">{t("statistics")}</h2>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold">{t("statistics")}</h2>
+                <Button size="sm" variant="outline-secondary" disabled={pending || resetPending || !status?.gateways.length}
+                  onClick={() => setResetTarget("")}>{t("resetAllStatistics")}</Button>
+              </div>
+              {resetTarget !== null && (
+                <div className="flex flex-wrap items-center gap-3 rounded-ui-sm border border-ui-border p-3 text-sm"
+                  role="group" aria-label={t("confirmResetStatistics")}>
+                  <p className="flex-1">{resetTarget === "" ? t("resetAllStatisticsWarning") : t("resetStatisticsWarning")}</p>
+                  <Button size="sm" variant="primary" loading={resetPending} disabled={pending}
+                    onClick={() => void resetStatistics()}>{t("confirmResetStatistics")}</Button>
+                  <Button size="sm" variant="outline-secondary" disabled={resetPending}
+                    onClick={() => setResetTarget(null)}>{t("cancel")}</Button>
+                </div>
+              )}
               {statusError && <p role="alert" className="text-ui-danger">{errorMessage(statusError)}</p>}
               {status?.gateways.map((gateway) => (
                 <div key={gateway.id} className="space-y-3 rounded-ui-sm border border-ui-border p-4">
-                  <h3 className="font-medium">
-                    {draft.gateways.find((g) => g.id === gateway.id)?.name || gateway.id}
-                  </h3>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="font-medium">
+                      {draft.gateways.find((g) => g.id === gateway.id)?.name || gateway.id}
+                    </h3>
+                    <Button size="sm" variant="outline-secondary" disabled={pending || resetPending}
+                      onClick={() => setResetTarget(gateway.id)}>{t("resetStatistics")}</Button>
+                  </div>
                   <dl className="grid grid-cols-2 gap-2 text-sm">
                     {(["requests", "blocked", "forwarded", "errors", "tlsFailures", "protocolFailures"] as const)
                       .map((key) => (
