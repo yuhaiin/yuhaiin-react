@@ -8,8 +8,10 @@ import { GlobalToastContext } from '@/component/v2/toast';
 import Group from './page';
 
 const api = vi.hoisted(() => ({ listNodeGroups: vi.fn(), listNodes: vi.fn(), getNode: vi.fn(), saveNode: vi.fn(), createNode: vi.fn(), deleteNode: vi.fn(), useNode: vi.fn(), selectedNodes: vi.fn(), latencyNode: vi.fn() }));
+const statusApi = vi.hoisted(() => ({ getNodeStatuses: vi.fn() }));
 const viewport = vi.hoisted(() => ({ desktop: true }));
 vi.mock('@/api/nodes', () => api);
+vi.mock('@/api/node-observability', () => statusApi);
 vi.mock('@/hooks/use-media-query', () => ({ useMediaQuery: () => viewport.desktop }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('./NodeImportModal', () => ({ default: () => null }));
@@ -43,6 +45,7 @@ beforeEach(() => {
     api.useNode.mockImplementation(async id => { defaultId = id; });
     api.selectedNodes.mockImplementation(async () => ({ tcp: nodes.find(node => node.id === defaultId), udp: nodes.find(node => node.id === defaultId) }));
     api.latencyNode.mockResolvedValue({ ok: true, latencyMs: 42 });
+    statusApi.getNodeStatuses.mockResolvedValue({});
     host = document.createElement('div'); document.body.append(host); root = createRoot(host);
 });
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.restoreAllMocks(); });
