@@ -56,6 +56,7 @@ export const newUpstream = (): Upstream => ({
   connectTimeoutMs: 10000,
   idleTimeoutMs: 90000,
   requestTimeoutMs: 0,
+  streamIdleTimeoutMs: 0,
   maxConnections: 0,
   maxConcurrent: 0,
   requestsPerSecond: 0,
