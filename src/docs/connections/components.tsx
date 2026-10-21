@@ -1,5 +1,5 @@
 import flowStyles from './flow-summary.module.css';
-import { MatchTraceTree } from "./match-trace-tree";
+import { MatchTraceTree } from "./match-trace-view";
 import { ConnectionActions } from './connection-actions';
 import { resourceLink } from './actions';
 
