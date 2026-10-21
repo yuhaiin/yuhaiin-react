@@ -440,7 +440,7 @@ const ConnectionSection: FC<{ title: string; children: React.ReactNode }> = ({ t
 const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string; matchedRuleId?: string }> = ({ value, connectionId, matchedRuleId }) => {
     const { t } = useTranslation(["connections", "common"]);
     const winningIndex = matchedRuleId
-        ? value.findIndex(entry => entry.ruleId === matchedRuleId)
+        ? value.findLastIndex(entry => entry.ruleId === matchedRuleId)
         : -1;
     const [opened, setOpened] = useState<Set<number>>(() => new Set(winningIndex >= 0 ? [winningIndex] : []));
     const [loaded, setLoaded] = useState<Record<number, MatchHistoryEntry>>({});
