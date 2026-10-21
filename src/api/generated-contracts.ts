@@ -108,6 +108,15 @@ export namespace Go {
       ruleId?: string;
       ruleName: string;
       history: MatchResult[];
+      trace?: MatchTrace;
+    }
+    export interface MatchTrace {
+      type: string;
+      label?: string;
+      state: string;
+      kind?: string;
+      id?: string;
+      children?: MatchTrace[];
     }
     export interface MatchResult {
       kind?: string;
@@ -1389,6 +1398,15 @@ export namespace Go {
       ruleId?: string;
       ruleName: string;
       history: MatchResult[];
+      trace?: MatchTrace;
+    }
+    export interface MatchTrace {
+      type: string;
+      label?: string;
+      state: string;
+      kind?: string;
+      id?: string;
+      children?: MatchTrace[];
     }
     export interface MatchResult {
       kind?: string;
