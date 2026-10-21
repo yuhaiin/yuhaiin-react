@@ -117,7 +117,7 @@
   "activationFailed": "変更を適用できませんでした。",
   "activationRunning": "保存した変更を適用中",
   "activationDegraded": "一部のルーティングルールを適用できませんでした",
-  "activationDegradedHelp": "取得できないリモートリストがあります。他のルールは有効ですが、スキップされたルールは適用されていません。",
+  "activationDegradedHelp": "一部のリモートリストを取得できませんでした。正常な条件は引き続き判定されますが、欠落したデータだけに依存するルールは実行されません。",
   "activationListUnavailable": "リストを利用できません",
   "activationSkippedRule": "適用されなかったルール",
   "activationPartialRule": "一部の条件のみ有効なルール（正常な条件は引き続き適用）",
