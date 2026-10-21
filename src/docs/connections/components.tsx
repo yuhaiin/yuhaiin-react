@@ -475,6 +475,8 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string }>
         return t("circuit.unknown", { defaultValue: "Unknown" });
     };
 
+    if (!value || value.length === 0) return null;
+
     return (
         <DataListCustomItem>
             <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start">
