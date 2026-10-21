@@ -1,3 +1,4 @@
+import { authorizeTest, resetTestAuth } from '@/test/auth';
 import { confirmAction } from '@/component/v2/confirmation';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -19,6 +20,7 @@ beforeEach(() => {
     api.updateSubscriptions.mockResolvedValue(undefined);
     host = document.createElement('div'); document.body.append(host); root = createRoot(host);
 });
+beforeEach(authorizeTest);
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.restoreAllMocks(); });
 async function render() { await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><Subscribe /></SWRConfig>)); }
 async function click(label: string) {
@@ -62,3 +64,5 @@ it('shows only a source summary for HTTP and encoded subscription links', () => 
 });
 
 vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));
+
+afterEach(resetTestAuth);

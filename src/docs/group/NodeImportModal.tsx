@@ -124,7 +124,7 @@ export default function NodeImportModal({ show, group, onHide, onSaved, onChange
                 <ModalFooter>
                     <Button variant="outline-secondary" onClick={close} disabled={pending}>{uiT('close')}</Button>
                     {source === 'subscription' ? <Button onClick={subscribe} disabled={pending || !text.trim()}>{pending && <Spinner size="sm" className="mr-2" />}{t('addAndFetchSubscription')}</Button>
-                        : nodes?.length ? <Button onClick={save} disabled={pending}>{pending && <Spinner size="sm" className="mr-2" />}{failed ? uiT('retryFailedItems') : t(issues.length ? 'importValidNodes' : 'importNodes')}</Button>
+                        : nodes?.length ? <Button permission="nodes:write" onClick={save} disabled={pending}>{pending && <Spinner size="sm" className="mr-2" />}{failed ? uiT('retryFailedItems') : t(issues.length ? 'importValidNodes' : 'importNodes')}</Button>
                             : <Button onClick={preview} disabled={pending || !text.trim()}>{pending && <Spinner size="sm" className="mr-2" />}{t('previewImport')}</Button>}
                 </ModalFooter>
             </ModalContent>

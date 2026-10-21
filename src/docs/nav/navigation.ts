@@ -38,6 +38,7 @@ export const navigationSections: NavigationSection[] = [
         { path: '/docs/bypass/resolver', label: routing('dnsTask'), icon: Network },
     ] },
     { label: nav('system'), items: [
+        { path: '/docs/security', label: nav('accountSecurity'), icon: Settings },
         { label: nav('diagnostics'), icon: Wrench, items: [
             { path: '/docs/diagnostics', label: ui('networkDiagnostics'), icon: Activity },
             { path: '/docs/config/log', label: ui('log'), icon: ScrollText },

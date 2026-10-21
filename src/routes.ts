@@ -6,6 +6,7 @@ const loading = Loading;
 
 const TrafficControlPage = dynamic(() => import('@/docs/traffic-control/page'), { loading });
 const GatewayPage = dynamic(() => import('@/docs/gateway/page'), { loading });
+const SecurityPage = dynamic(() => import('@/docs/security/page'), { loading });
 const LoginPage = dynamic(() => import('@/docs/login/page'), { loading });
 const HomePage = dynamic(() => import('@/docs/home/page'), { loading });
 const GroupPage = dynamic(() => import('@/docs/group/page'), { loading });
@@ -33,6 +34,7 @@ const ConfigLicensesPage = dynamic(() => import('@/docs/config/licenses/page'), 
 const ConfigAboutPage = dynamic(() => import('@/docs/config/about/page'), { loading });
 
 export const appRoutes: { path: string; component: ComponentType }[] = [
+    { path: "/docs/security", component: SecurityPage },
     { path: "/login", component: LoginPage },
     { path: "/", component: HomePage },
     { path: "/docs/group", component: GroupPage },

@@ -93,10 +93,10 @@ export function RuleEditor({ item, creating, initial, options, blocked = false, 
             {!unavailable && !deleted && <RuleDraftForm value={draft} onChange={setDraft} options={options} />}
         </fieldset>
         <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-ui-border/60 pt-4">
-            {item && !creating ? <Button variant="outline-danger" className="gap-2 border-transparent" disabled={busy || deleted || unavailable} onClick={remove}><Trash size={16} />{uiT('deleteRule')}</Button> : <Button disabled={busy} onClick={back}>{uiT('cancel')}</Button>}
+            {item && !creating ? <Button permission="routes:write" variant="outline-danger" className="gap-2 border-transparent" disabled={busy || deleted || unavailable} onClick={remove}><Trash size={16} />{uiT('deleteRule')}</Button> : <Button disabled={busy} onClick={back}>{uiT('cancel')}</Button>}
             <div className="flex flex-wrap items-center gap-2">
                 {!creating && dirty && <Button disabled={busy} onClick={reset}>{t('discardChanges')}</Button>}
-                <Button variant="primary" className="gap-2" disabled={busy || unavailable || !draft.rule.name.trim()} onClick={save}>{pending ? <Spinner size="sm" /> : <Save size={16} />}{t(actionError && !dirty ? 'retryApply' : 'saveAndApply')}</Button>
+                <Button permission="routes:write" variant="primary" className="gap-2" disabled={busy || unavailable || !draft.rule.name.trim()} onClick={save}>{pending ? <Spinner size="sm" /> : <Save size={16} />}{t(actionError && !dirty ? 'retryApply' : 'saveAndApply')}</Button>
             </div>
         </footer>
     </section>;

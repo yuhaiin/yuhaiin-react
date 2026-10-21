@@ -50,7 +50,7 @@ export default function Activates({ showFooter = true }: { showFooter?: boolean 
                         <span className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-ui-muted" title={`${node.group || 'manual'} · ${node.chain.map(protocol => protocol.type).join(' → ')}`}><span className="max-w-[45%] truncate">{node.group || 'manual'}</span><span aria-hidden="true" className="text-ui-border">·</span><span className="min-w-0 truncate">{node.chain.map(protocol => protocol.type).join(' → ')}</span></span>
                     </span>
                 </button>
-                <Button variant="outline-secondary" size="icon" className="h-11 w-11 min-h-11 min-w-11 shrink-0 !border-transparent !bg-transparent !text-ui-muted hover:!bg-ui-danger-soft hover:!text-ui-danger" disabled={pending} aria-label={`${uiT('terminateLabel')} ${node.name}`} title={`${uiT('terminateLabel')} ${node.name}`} onClick={() => setConfirm(node)}><Power size={17} /></Button>
+                <Button permission="nodes:write" variant="outline-secondary" size="icon" className="h-11 w-11 min-h-11 min-w-11 shrink-0 !border-transparent !bg-transparent !text-ui-muted hover:!bg-ui-danger-soft hover:!text-ui-danger" disabled={pending} aria-label={`${uiT('terminateLabel')} ${node.name}`} title={`${uiT('terminateLabel')} ${node.name}`} onClick={() => setConfirm(node)}><Power size={17} /></Button>
             </li>)}
             {!items.length && <li className="col-span-full rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center text-sm text-ui-muted">{uiT('noRecordsFound')}</li>}
         </ul>

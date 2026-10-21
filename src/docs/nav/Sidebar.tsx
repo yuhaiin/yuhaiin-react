@@ -1,3 +1,5 @@
+import { useSession } from '@/auth/context';
+import { routePermissions } from '@/auth/policy';
 import { navigationSections } from './navigation';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -38,10 +40,20 @@ function Sidebar({ id, show, onHide, triggerRef }: SidebarProps) {
     const link = (path: string, title: string, icon: React.ReactNode) => <SelectableLink key={path}
         path={path} current={pathname} onSelect={handleNavLinkClick} icon={icon}>{title}</SelectableLink>;
 
+    const session = useSession();
+    const visible = (path: string) => !session || !routePermissions[path] || session.principal.permissions.includes(routePermissions[path].read);
+    const sections = navigationSections.map(section => ({
+        ...section,
+        items: section.items.flatMap<(typeof navigationSections)[number]['items'][number]>(item => {
+            if ('path' in item) return visible(item.path) ? [item] : [];
+            const items = item.items.filter(link => visible(link.path));
+            return items.length ? [{ ...item, items }] : [];
+        }),
+    }));
     const labels = { nav: t, ui: uiT, routing: routeT };
     return <SidebarRoot id={id} show={show} onHide={onHide} triggerRef={triggerRef}>
         <SidebarNav aria-label={t('toggle')}>
-            {navigationSections.map(section => <SidebarSection key={section.label.key} title={labels[section.label.namespace](section.label.key)}>
+            {sections.filter(section => section.items.length > 0).map(section => <SidebarSection key={section.label.key} title={labels[section.label.namespace](section.label.key)}>
                 {section.items.map(item => {
                     const Icon = item.icon;
                     const title = labels[item.label.namespace](item.label.key);

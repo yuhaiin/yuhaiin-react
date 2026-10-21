@@ -120,7 +120,7 @@ export function RegistryManagerModal({
                                     <X size={15} className="mr-1.5" /> Cancel edit
                                 </Button>
                             )}
-                            <Button size="sm" disabled={saving || !url.trim()} onClick={saveEditor}>
+                            <Button permission="routes:write" size="sm" disabled={saving || !url.trim()} onClick={saveEditor}>
                                 {saving ? <Spinner size="sm" className="mr-1.5" /> : editingID ? <Pencil size={15} className="mr-1.5" /> : <Plus size={15} className="mr-1.5" />}
                                 {editingID ? "Save registry" : "Add registry"}
                             </Button>

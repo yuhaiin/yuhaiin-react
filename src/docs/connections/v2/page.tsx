@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import { closeConnections, getConnections } from "@/api/connections";
-import { AuthTokenKey, getApiUrl } from "@/common/apiurl";
+import { AuthenticatedEventSource } from "@/auth/event-stream";
 import { Button } from "@/component/v2/button";
 import { MainContainer } from "@/component/v2/card";
 import Loading from "@/component/v2/loading";
@@ -22,16 +22,7 @@ import { ConnectionInfo, FlowContainer } from "../components";
 
 const VIRTUALIZE_THRESHOLD = 40;
 
-function eventsURL() {
-    const apiUrl = getApiUrl();
-    const base = apiUrl !== "" ? apiUrl : window.location.toString();
-    const url = new URL(base);
-    url.hash = "";
-    url.pathname = "/api/v2/connections/events";
-    const token = localStorage.getItem(AuthTokenKey);
-    if (token) url.searchParams.set("token", token);
-    return url.toString();
-}
+
 
 function Connections() {
     const { t: uiT } = useTranslation('ui');
@@ -91,7 +82,7 @@ function Connections() {
             if (pending.length >= 1000) flush();
             else if (flushTimer === undefined) flushTimer = window.setTimeout(flush, 100);
         };
-        const source = new EventSource(eventsURL());
+        const source = new AuthenticatedEventSource("/api/v2/connections/events");
         source.onopen = () => { if (!stopped) setStreamError(""); };
         const onAdded = (event: MessageEvent<string>) => {
             if (stopped) return;
@@ -237,7 +228,7 @@ function Connections() {
                     </ModalBody>
                     <ModalFooter className="border-t-0 pt-0 pb-3 px-3">
                         {selected && (
-                            <Button
+                            <Button permission="connections:write"
                                 variant="danger"
                                 className="w-full py-2 flex items-center justify-center notranslate"
                                 disabled={closing}

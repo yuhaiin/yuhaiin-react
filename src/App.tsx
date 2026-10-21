@@ -1,3 +1,6 @@
+import { ApiCacheBoundary } from '@/common/ApiCacheBoundary';
+import { useSession, SessionMonitor } from '@/auth/context';
+import { PagePermissions } from '@/auth/policy';
 import { ConfirmationHost } from '@/component/v2/confirmation';
 import { useSmartAnimation } from "@/hooks/useSmartAnimation";
 import { ThemeProvider } from '@/common/ThemeProvider';
@@ -34,6 +37,8 @@ const variants = {
 
 function AppContent() {
     const [location, navigate] = useLocation();
+    const session = useSession();
+    useEffect(() => { if (!session && location !== "/login") navigate("/login"); }, [session, location, navigate]);
 
     useEffect(() => {
         window.Android?.setRefreshEnabled?.(!location.includes('/docs/config/log'))
@@ -42,7 +47,7 @@ function AppContent() {
     const reducedMotion = useReducedMotion();
     const direction = useSmartAnimation(location, navigationOrder);
     const animationContext = { direction, reducedMotion };
-    const isLogin = location === '/login';
+    const isLogin = location === '/login' || !session;
     const content = (
         <div className={clsx(
             'relative w-auto min-h-screen h-screen overflow-hidden box-border',
@@ -67,8 +72,11 @@ function AppContent() {
                 >
                     <Router hook={() => [location, navigate]}>
                         <Switch>
-                            {appRoutes.map(({ path, component }) => (
-                                <Route key={path} path={path} component={component} />
+                            {appRoutes.filter(route => !isLogin || route.path === "/login").map(({ path, component }) => (
+                                <Route key={path} path={path}>{() => {
+                                    const Page = component;
+                                    return <PagePermissions path={path}><Page /></PagePermissions>;
+                                }}</Route>
                             ))}
                         </Switch>
                     </Router>
@@ -80,7 +88,8 @@ function AppContent() {
     return (
         <GlobalToastProvider>
             <ConfirmationHost />
-            {isLogin ? content : <NavBarContainer>{content}</NavBarContainer>}
+            <SessionMonitor />
+            {isLogin ? content : <ApiCacheBoundary><NavBarContainer>{content}</NavBarContainer></ApiCacheBoundary>}
         </GlobalToastProvider>
     )
 }

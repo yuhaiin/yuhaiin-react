@@ -182,7 +182,7 @@ function BypassComponent() {
         <MainContainer className="max-w-[1440px]">
             <header className={`mb-6 flex-wrap items-center justify-between gap-4 ${showEditor ? 'hidden md:flex' : 'flex'}`}>
                 <div><h1 className="sr-only text-2xl font-semibold tracking-tight text-ui-heading lg:not-sr-only">{t('routingTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('routingOverviewHelp')}</p></div>
-                <Button variant="primary" onClick={newRule} disabled={reordering || editorState.pending || creating}><Plus size={16} className="mr-1.5" />{uiT('add')}</Button>
+                <Button permission="routes:write" variant="primary" onClick={newRule} disabled={reordering || editorState.pending || creating}><Plus size={16} className="mr-1.5" />{uiT('add')}</Button>
             </header>
             <div className={showEditor ? 'hidden md:block' : undefined}>
                 <RouteConfigCard destinations={destinations} onSaved={() => { void mutateActivation(); }} />
@@ -211,7 +211,7 @@ function BypassComponent() {
                         options={editorOptions} blocked={reordering} onSaved={saved} onBack={backToRules} onStateChange={setEditorState} />
                         : <div className="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-ui-muted">
                             <ListFilter size={28} aria-hidden="true" /><h2 className="text-lg font-medium text-ui-heading">{t('selectRule')}</h2>
-                            <p className="max-w-sm text-sm">{t('selectRuleHelp')}</p><Button variant="outline-primary" className="gap-2" onClick={newRule}><Plus size={16} />{uiT('newRouteRule')}</Button>
+                            <p className="max-w-sm text-sm">{t('selectRuleHelp')}</p><Button permission="routes:write" variant="outline-primary" className="gap-2" onClick={newRule}><Plus size={16} />{uiT('newRouteRule')}</Button>
                         </div>}
                 </WorkspaceDetail>
             </WorkspaceLayout>
@@ -296,7 +296,7 @@ function RouteConfigCard({ onSaved, destinations }: { onSaved: () => void; desti
                 )}
 
             <div className="mt-4 flex justify-end">
-                <Button size="sm" variant="outline-primary" disabled={saving || !data || Boolean(error)} onClick={save}>
+                <Button permission="routes:write" size="sm" variant="outline-primary" disabled={saving || !data || Boolean(error)} onClick={save}>
                     {saving ? <Spinner size="sm" className="mr-2" /> : <Save size={16} className="mr-2" />}
                     {t("saveAndApply")}</Button>
             </div>

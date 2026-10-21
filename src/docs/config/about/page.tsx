@@ -216,11 +216,11 @@ export default function About() {
                         </div>
 
                         <div className="flex flex-wrap items-center gap-3">
-                            <Button variant="default" onClick={handleCheckUpdate} disabled={checkingUpdate || applyingUpdate || recovery.active}>
+                            <Button permission="update:manage" variant="default" onClick={handleCheckUpdate} disabled={checkingUpdate || applyingUpdate || recovery.active}>
                                 <RefreshCw className={checkingUpdate ? "mr-2 animate-spin" : "mr-2"} size={16} />
                                 {uiT("checkForUpdates")}</Button>
                             {update?.updateAvailable && (
-                                <Button className="min-w-0 max-w-full" variant="default" onClick={handleApplyUpdate} disabled={applyingUpdate || recovery.active || !update.supported}>
+                                <Button permission="update:manage" className="min-w-0 max-w-full" variant="default" onClick={handleApplyUpdate} disabled={applyingUpdate || recovery.active || !update.supported}>
                                     <Download className="mr-2" size={16} />
                                     <span className="min-w-0 truncate">{applyingUpdate || recovery.active ? uiT('updateInProgress') : uiT('updateToVersion', { version: update.targetVersion })}</span>
                                 </Button>

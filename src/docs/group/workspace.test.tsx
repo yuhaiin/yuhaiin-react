@@ -1,3 +1,4 @@
+import { authorizeTest, resetTestAuth } from '@/test/auth';
 import { confirmAction } from '@/component/v2/confirmation';
 import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -48,6 +49,7 @@ beforeEach(() => {
     statusApi.getNodeStatuses.mockResolvedValue({});
     host = document.createElement('div'); document.body.append(host); root = createRoot(host);
 });
+beforeEach(authorizeTest);
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.restoreAllMocks(); });
 async function render() {
     await act(async () => root.render(<SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}><GlobalToastContext.Provider value={{ Info: vi.fn(), Error: vi.fn() }}><Group /></GlobalToastContext.Provider></SWRConfig>));
@@ -155,3 +157,5 @@ it('loads only the active group page and retains the open draft when paging', as
 });
 
 vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));
+
+afterEach(resetTestAuth);

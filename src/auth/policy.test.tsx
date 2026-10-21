@@ -1,0 +1,20 @@
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
+import { afterEach, expect, it, vi } from 'vitest';
+import { PagePermissions } from './policy';
+import { Button } from '@/component/v2/button';
+import { clearSession, establishSession, updatePrincipal } from './session';
+import { setApiUrl } from '@/common/apiurl';
+vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+afterEach(() => { clearSession(); localStorage.clear(); });
+it('keeps read controls available while disabling mutation controls, and reacts to role changes', async () => {
+    setApiUrl('https://controller.example'); establishSession('test', { userId: 'reader', credentialType: 'session', permissions: ['nodes:read'] }, Math.floor(Date.now() / 1000) + 100, 'https://controller.example');
+    const host = document.createElement('div'); const root = createRoot(host);
+    await act(async () => root.render(<PagePermissions path="/docs/group"><Button>Filter</Button><Button variant="primary">Save</Button><Button permission="nodes:write">Use node</Button></PagePermissions>));
+    const buttons = host.querySelectorAll('button'); expect(buttons[0].disabled).toBe(false); expect(buttons[1].disabled).toBe(true); expect(buttons[2].disabled).toBe(true);
+    expect(host.textContent).toContain('readOnlyNotice');
+    await act(async () => updatePrincipal({ userId: 'reader', credentialType: 'session', permissions: ['nodes:read', 'nodes:write'] }));
+    expect(buttons[1].disabled).toBe(false); expect(buttons[2].disabled).toBe(false);
+    await act(async () => root.render(<PagePermissions path="/docs/config/backup"><span>Backup controls</span></PagePermissions>));
+    expect(host.textContent).toContain('forbidden'); expect(host.textContent).not.toContain('Backup controls'); act(() => root.unmount());
+});

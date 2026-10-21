@@ -1,3 +1,4 @@
+import { authorizeTest, resetTestAuth } from '@/test/auth';
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { SWRConfig } from "swr";
@@ -90,6 +91,7 @@ beforeEach(() => {
   document.body.append(host);
   root = createRoot(host);
 });
+beforeEach(authorizeTest);
 afterEach(() => {
   act(() => root.unmount());
   host.remove();
@@ -565,3 +567,5 @@ it("configures HTTPS MITM directly on the Gateway without attaching an Inbound",
   }));
   expect(api.listInbounds).not.toHaveBeenCalled();
 });
+
+afterEach(resetTestAuth);

@@ -1,3 +1,4 @@
+import { authorizeTest, resetTestAuth } from '@/test/auth';
 import { confirmAction } from '@/component/v2/confirmation';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -22,6 +23,7 @@ beforeEach(() => {
     api.deleteHostEntry.mockImplementation(async (name: string) => { items = items.filter(item => item.host !== name); });
     host = document.createElement('div'); document.body.append(host); root = createRoot(host);
 });
+beforeEach(authorizeTest);
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.restoreAllMocks(); });
 async function render() { await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><Hosts /></SWRConfig>)); }
 async function click(label: string) {
@@ -65,3 +67,5 @@ it('refetches the last valid server page after its only entry is removed', async
 });
 
 vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));
+
+afterEach(resetTestAuth);

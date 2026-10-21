@@ -1,3 +1,4 @@
+import { authorizeTest, resetTestAuth } from '@/test/auth';
 import { confirmAction } from '@/component/v2/confirmation';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -53,6 +54,7 @@ beforeEach(() => {
     api.getRouteConfig.mockResolvedValue({ revision: 1, defaultMode: 'proxy', defaultTarget: { type: 'default' } });
     host = document.createElement('div'); document.body.append(host); root = createRoot(host);
 });
+beforeEach(authorizeTest);
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.restoreAllMocks(); });
 async function render() {
     await act(async () => root.render(<SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}><GlobalToastContext.Provider value={{ Info: vi.fn(), Error: vi.fn() }}><BypassComponent /></GlobalToastContext.Provider></SWRConfig>));
@@ -168,3 +170,5 @@ it('preserves the open draft while another directory page is loading', async () 
 });
 
 vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));
+
+afterEach(resetTestAuth);

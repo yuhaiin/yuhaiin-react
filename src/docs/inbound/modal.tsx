@@ -108,7 +108,7 @@ const InboundModal: FC<{
                     </div>
                     <div className="flex flex-wrap justify-end gap-2">
                         <Button onClick={close} disabled={saving}>{uiT("cancel")}</Button>
-                        <Button loading={saving} variant="primary" disabled={saving || !inbound || isLoading || Boolean(error) || inbound.enabled && !supportedProtocols.includes(inbound.protocol.type)} onClick={handleSave}>
+                        <Button permission="inbounds:write" loading={saving} variant="primary" disabled={saving || !inbound || isLoading || Boolean(error) || inbound.enabled && !supportedProtocols.includes(inbound.protocol.type)} onClick={handleSave}>
                             <Check size={16} />{uiT("save")}
                         </Button>
                     </div>

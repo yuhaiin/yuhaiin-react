@@ -1,3 +1,5 @@
+const streamMock = vi.hoisted(() => ({ source: null as null | (new (path: string) => object) }));
+vi.mock('@/auth/event-stream', () => ({ AuthenticatedEventSource: function (path: string) { return new streamMock.source!(path); } }));
 import { act, type ReactNode, type UIEvent as ReactUIEvent } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
@@ -52,7 +54,7 @@ beforeEach(async () => {
     vi.clearAllMocks();
     sources.length = 0;
     Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
-    vi.stubGlobal('EventSource', FakeSource);
+    streamMock.source = FakeSource;
     vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) =>
         setTimeout(() => callback(0), 0));
     vi.stubGlobal('cancelAnimationFrame', (handle: number) => clearTimeout(handle));

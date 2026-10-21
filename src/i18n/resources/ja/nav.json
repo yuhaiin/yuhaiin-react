@@ -14,5 +14,6 @@
   "help": "ヘルプと情報",
   "routeRules": "振り分けルール",
   "gateway": "HTTP Gateway",
-  "trafficControl": "トラフィック制御"
+  "trafficControl": "トラフィック制御",
+  "accountSecurity": "アカウントとセキュリティ"
 }
