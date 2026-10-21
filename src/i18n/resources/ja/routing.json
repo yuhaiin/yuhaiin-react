@@ -120,6 +120,7 @@
   "activationDegradedHelp": "取得できないリモートリストがあります。他のルールは有効ですが、スキップされたルールは適用されていません。",
   "activationListUnavailable": "リストを利用できません",
   "activationSkippedRule": "適用されなかったルール",
+  "activationPartialRule": "一部の条件のみ有効なルール（正常な条件は引き続き適用）",
   "entryTaskHelp": "アプリやデバイスをこのサーバーに接続する方法を選択します。",
   "entryUnsupported": "管理対象サーバーの環境はこのプロトコルをサポートしていません。有効にする前に対応するプロトコルを選択してください。",
   "enableTrafficEntry": "有効にして待ち受けを開始",
