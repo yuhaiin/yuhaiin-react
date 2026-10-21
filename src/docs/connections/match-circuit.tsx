@@ -1,6 +1,6 @@
 import { clsx } from "clsx";
 import { ChevronDown, ChevronRight, Maximize2, Minus, Plus } from "lucide-react";
-import { useMemo, useRef, useState, type FC, type PointerEvent } from "react";
+import { useId, useMemo, useRef, useState, type FC, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { buildCircuitLayout, initialCollapsed, traceState, type MatchTrace, type TraceState } from "./match-circuit-layout";
 
@@ -31,6 +31,7 @@ export const MatchCircuit: FC<{ trace: MatchTrace }> = ({ trace }) => {
     const [selected, setSelected] = useState("0");
     const [scale, setScale] = useState(1);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const gridId = useId();
     const dragRef = useRef<{ x: number; y: number; left: number; top: number } | null>(null);
     const layout = useMemo(() => buildCircuitLayout(trace, collapsed), [trace, collapsed]);
     const inspected = layout.nodes.find(node => node.key === selected) ?? layout.nodes[0];
@@ -95,11 +96,11 @@ export const MatchCircuit: FC<{ trace: MatchTrace }> = ({ trace }) => {
                 onPointerUp={() => { dragRef.current = null; }}
                 onPointerCancel={() => { dragRef.current = null; }}
             >
-                <svg role="img" aria-label={t("circuit.title", { defaultValue: "Logic circuit" })} viewBox={`0 0 ${layout.width} ${layout.height}`} width={layout.width * scale} height={layout.height * scale} className="block max-w-none" style={{ minWidth: layout.width * scale }}>
+                <svg role="group" aria-label={t("circuit.title", { defaultValue: "Logic circuit" })} viewBox={`0 0 ${layout.width} ${layout.height}`} width={layout.width * scale} height={layout.height * scale} className="block max-w-none" style={{ minWidth: layout.width * scale }}>
                     <defs>
-                        <pattern id="match-circuit-grid" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="0.7" fill="currentColor" opacity=".11"/></pattern>
+                        <pattern id={gridId} width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="0.7" fill="currentColor" opacity=".11"/></pattern>
                     </defs>
-                    <rect width={layout.width} height={layout.height} fill="url(#match-circuit-grid)" className="text-ui-muted"/>
+                    <rect width={layout.width} height={layout.height} fill={`url(#${gridId})`} className="text-ui-muted"/>
                     {layout.nodes.filter(node => node.trace.children?.length && !node.collapsed).map(node => {
                         const status = traceState(node.trace.state);
                         return <rect key={node.key} x={node.x} y={node.y} width={node.width} height={node.height} rx={10} fill="var(--color-ui-surface, #fff)" stroke={colors[status]} strokeWidth="1.1" opacity=".9"/>;
