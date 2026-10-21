@@ -60,6 +60,12 @@ function isGroup(trace: MatchTrace): boolean {
 
 export function initialCollapsed(trace: MatchTrace): Set<string> {
     const result = new Set<string>();
+    // A large flat OR can contain thousands of leaves and has no nested
+    // groups to fold. Start as a summary rather than mounting all SVG nodes.
+    if ((trace.children?.length ?? 0) > 32) {
+        result.add("0");
+        return result;
+    }
     function visit(node: MatchTrace, key: string, depth: number) {
         if (!isGroup(node)) return;
         if (depth >= 1) {
