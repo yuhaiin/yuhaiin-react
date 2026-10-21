@@ -1,4 +1,5 @@
 import flowStyles from './flow-summary.module.css';
+import { MatchCircuit } from "./match-circuit";
 import { ConnectionActions } from './connection-actions';
 import { resourceLink } from './actions';
 
@@ -6,7 +7,7 @@ import { getTotalFlow } from "@/api/connections";
 import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datalist";
 import type { Connection, Counter, MatchHistoryEntry, TotalFlow } from "@/contract/connection";
 import { clsx } from "clsx";
-import { ArrowDown, ArrowUp, Check, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, ChevronDown, ChevronRight, X } from "lucide-react";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -438,38 +439,81 @@ const ConnectionSection: FC<{ title: string; children: React.ReactNode }> = ({ t
 
 const MatchHistoryItem: FC<{ value: MatchHistoryEntry[] }> = ({ value }) => {
     const { t } = useTranslation(["connections", "common"]);
+    const [opened, setOpened] = useState<Set<number>>(() => new Set());
     if (!value || value.length === 0) return null;
     const label = (key: string) => t(`detail.${key}`, { defaultValue: key });
+    const toggle = (index: number) => setOpened(current => {
+        const next = new Set(current);
+        if (next.has(index)) next.delete(index);
+        else next.add(index);
+        return next;
+    });
+    const stateLabel = (state: string) => {
+        if (state === "hit") return t("detail.Hit");
+        if (state === "miss") return t("detail.Miss");
+        if (state === "skipped") return t("circuit.skipped", { defaultValue: "Not evaluated" });
+        return t("circuit.unknown", { defaultValue: "Unknown" });
+    };
 
     return (
         <DataListCustomItem>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start">
                 <div className="notranslate shrink-0 text-sm font-semibold capitalize text-sidebar-header sm:min-w-[120px]">
                     {label("MatchHistory")}
                 </div>
-                <div className="flex w-full grow flex-col gap-3">
-                    {value.map((entry, index) => (
-                        <div key={`${entry.ruleName}-${index}`} className="rounded-xl border border-sidebar-border bg-sidebar-hover p-3">
-                            <div className="mb-2 border-b border-sidebar-border pb-2 text-xs font-bold uppercase tracking-wider text-sidebar-header">
-                                {entry.ruleId ? <a href={resourceLink('/docs/bypass', 'rule', entry.ruleId)} className="text-ui-primary underline underline-offset-2">{entry.ruleName || label("Rule")}</a> : entry.ruleName || label("Rule")}
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                {(entry.history ?? []).map((item, itemIndex) => (
-                                    <div key={`${item.listName}-${itemIndex}`} className="flex items-center justify-between gap-3">
-                                        <span className="notranslate break-all text-sm text-sidebar-color">{item.listName || "-"}</span>
-                                        <div className="flex shrink-0 items-center gap-2">
-                                            <span className={clsx("text-xs font-medium", item.matched ? "text-ui-success" : "text-sidebar-color opacity-70")}>
-                                                {item.matched ? label("Hit") : label("Miss")}
-                                            </span>
-                                            <div className={clsx("flex h-6 w-6 items-center justify-center rounded-full", item.matched ? "bg-ui-success-soft text-ui-success" : "bg-ui-surface-muted text-ui-danger")}>
-                                                {item.matched ? <Check size={14} /> : <X size={14} />}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                <div className="min-w-0 w-full grow overflow-hidden rounded-ui-lg border border-sidebar-border">
+                    <div className="flex items-center justify-between gap-2 border-b border-sidebar-border bg-ui-surface-muted/50 px-3 py-2 text-[11px] text-ui-muted">
+                        <span>{value.length} {t("circuit.rules", { defaultValue: "rules checked" })}</span>
+                        <div className="flex gap-2">
+                            <button type="button" className="hover:text-ui-heading" onClick={() => setOpened(new Set(value.map((_, index) => index)))}>
+                                {t("circuit.expand", { defaultValue: "Expand all" })}
+                            </button>
+                            <button type="button" className="hover:text-ui-heading" onClick={() => setOpened(new Set())}>
+                                {t("circuit.collapseAll", { defaultValue: "Collapse all" })}
+                            </button>
                         </div>
-                    ))}
+                    </div>
+                    {value.map((entry, index) => {
+                        const expanded = opened.has(index);
+                        const trace = entry.trace;
+                        const state = trace?.state;
+                        const positive = state === "hit";
+                        const legacy = !trace;
+                        return (
+                            <div key={`${entry.ruleId || entry.ruleName}-${index}`} className="border-b border-sidebar-border/60 last:border-0">
+                                <div className="flex min-w-0 items-center gap-2 px-2 py-1.5">
+                                    <button type="button" className="flex min-w-0 flex-1 items-center gap-2 rounded-ui-sm px-1 py-1 text-left hover:bg-ui-surface-muted"
+                                        onClick={() => toggle(index)} aria-expanded={expanded} aria-label={entry.ruleName || label("Rule")}>
+                                        {expanded ? <ChevronDown size={15} className="shrink-0 text-ui-muted"/> : <ChevronRight size={15} className="shrink-0 text-ui-muted"/>}
+                                        <span className="notranslate truncate text-xs font-semibold text-sidebar-header">{entry.ruleName || label("Rule")}</span>
+                                    </button>
+                                    {entry.ruleId && <a href={resourceLink("/docs/bypass", "rule", entry.ruleId)} className="shrink-0 text-[11px] text-ui-primary underline underline-offset-2">
+                                        {label("Rule")}
+                                    </a>}
+                                    <span className={clsx("shrink-0 text-[11px] font-medium", positive ? "text-ui-success" : "text-ui-muted")}>
+                                        {state ? stateLabel(state) : `${entry.history?.length ?? 0} ${t("circuit.checks", { defaultValue: "checks" })}`}
+                                    </span>
+                                </div>
+                                {expanded && <div className="border-t border-sidebar-border/50 bg-ui-surface p-2">
+                                    {trace ? <MatchCircuit key={`${entry.ruleId || index}-circuit`} trace={trace}/> :
+                                        <div className="space-y-1" aria-label={t("circuit.legacy", { defaultValue: "Flat history (no logical structure available)" })}>
+                                            <p className="pb-1 text-[11px] text-ui-muted">
+                                                {t("circuit.legacy", { defaultValue: "Flat history (no logical structure available)" })}
+                                            </p>
+                                            {(entry.history ?? []).map((item, itemIndex) => (
+                                                <div key={`${item.id || item.listName}-${itemIndex}`} className="flex min-w-0 items-center justify-between gap-3 px-2 py-1">
+                                                    <span className="notranslate min-w-0 break-all text-xs text-sidebar-color">{item.listName || "-"}</span>
+                                                    <span className={clsx("inline-flex shrink-0 items-center gap-1.5 text-xs", item.matched ? "text-ui-success" : "text-ui-muted")}>
+                                                        {item.matched ? <Check size={13}/> : <X size={13}/>}
+                                                        {item.matched ? label("Hit") : label("Miss")}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>}
+                                </div>}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </DataListCustomItem>
