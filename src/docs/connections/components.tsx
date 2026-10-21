@@ -513,8 +513,7 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string }>
                                     </span>
                                 </div>
                                 {expanded && <div className="border-t border-sidebar-border/50 bg-ui-surface p-2">
-                                    {loading.has(index) && !trace && <p className="pb-1 text-[11px] text-ui-muted">{t("common:state.loading")}</p>}
-                                    {trace ? <MatchCircuit key={`${entry.ruleId || index}-circuit`} trace={trace}/> :
+                                    {trace ? <MatchCircuit key={`${entry.ruleId || index}-circuit`} trace={trace}/> : loading.has(index) ? <p className="text-xs text-ui-muted">{t("common:state.loading")}</p> :
                                         <div className="space-y-1" aria-label={t("circuit.legacy", { defaultValue: "Flat history (no logical structure available)" })}>
                                             <p className="pb-1 text-[11px] text-ui-muted">
                                                 {t("circuit.legacy", { defaultValue: "Flat history (no logical structure available)" })}
