@@ -3,6 +3,23 @@
   "downloadRate": "다운로드 속도",
   "totalUpload": "총 업로드",
   "uploadRate": "업로드 속도",
+  "circuit": {
+    "title": "논리 회로",
+    "hit": "참",
+    "miss": "거짓",
+    "skipped": "평가하지 않음",
+    "unknown": "알 수 없음",
+    "expand": "모두 펼치기",
+    "collapse": "그룹 접기",
+    "collapseAll": "모두 접기",
+    "zoomIn": "확대",
+    "zoomOut": "축소",
+    "fit": "너비 맞춤",
+    "hint": "AND: 직렬 · OR: 병렬 · NOT: 반전",
+    "rules": "개 규칙 검사",
+    "checks": "개 검사",
+    "legacy": "단순 기록: 이 백엔드에서는 논리 구조를 사용할 수 없습니다"
+  },
   "detail": {
     "Basic": "기본",
     "Path": "경로",
