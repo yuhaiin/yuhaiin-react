@@ -88,3 +88,13 @@ export function listFakeIPEntries(page: number, pageSize: number, query: string)
 export function deleteFakeIPEntry(entry: FakeIPEntry): Promise<FakeIPDeleteResponse> {
   return requestJSON("DELETE", `/api/v2/resolver/fakeip/entries/${encodeURIComponent(entry.ip)}/${encodeURIComponent(entry.domain)}`);
 }
+
+export type ResponseRule = Go.resolver.ResponseRule;
+export type ResponseRules = Go.resolver.ResponseRules;
+export async function getResponseRules(): Promise<ResponseRules> {
+  const config = await requestJSON<ResponseRules>('GET', '/api/v2/resolver/responses');
+  return { rules: config.rules ?? [] };
+}
+export function saveResponseRules(config: ResponseRules): Promise<ResponseRules> {
+  return requestJSON('PUT', '/api/v2/resolver/responses', config);
+}

@@ -1141,6 +1141,17 @@ export namespace Go {
     export type Mux = Concurrency;
   }
   export namespace resolver {
+    export interface ResponseRule {
+      domain: string;
+      queryType: string;
+      rcode: string;
+      ttl: number;
+      answers: string[];
+    }
+    export interface ResponseRules {
+      rules: ResponseRule[];
+    }
+
     export interface FakeIPEntry {
       domain: string;
       ip: string;

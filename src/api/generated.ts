@@ -75,6 +75,8 @@ export type RPCOperation =
   | "resolver.hosts.put"
   | "resolver.put"
   | "resolver.query_types"
+  | "resolver.responses.get"
+  | "resolver.responses.put"
   | "resolver.server.get"
   | "resolver.server.put"
   | "resolver.test"
@@ -162,6 +164,8 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "POST", pattern: "/api/v2/connections/close", operation: "connections.close" },
   { method: "GET", pattern: "/api/v2/connections/failed-history", operation: "connections.failed_history" },
   { method: "GET", pattern: "/api/v2/connections/history", operation: "connections.history" },
+  { method: "GET", pattern: "/api/v2/resolver/responses", operation: "resolver.responses.get" },
+  { method: "PUT", pattern: "/api/v2/resolver/responses", operation: "resolver.responses.put" },
   { method: "GET", pattern: "/api/v2/resolver/hosts", operation: "resolver.hosts.get" },
   { method: "PUT", pattern: "/api/v2/resolver/hosts", operation: "resolver.hosts.put" },
   { method: "GET", pattern: "/api/v2/resolver/fakedns", operation: "resolver.fakedns.get" },
