@@ -18,7 +18,10 @@
     "hint": "AND: 직렬 · OR: 병렬 · NOT: 반전",
     "rules": "개 규칙 검사",
     "checks": "개 검사",
-    "legacy": "단순 기록: 이 백엔드에서는 논리 구조를 사용할 수 없습니다"
+    "legacy": "단순 기록: 이 백엔드에서는 논리 구조를 사용할 수 없습니다",
+    "focusPath": "판정 경로",
+    "more": "나머지 {{count}}개 보기",
+    "showConditions": "조건 보기"
   },
   "detail": {
     "Basic": "기본",
