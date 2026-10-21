@@ -18,7 +18,10 @@
     "hint": "AND: series · OR: parallel · NOT: inversion",
     "rules": "rules checked",
     "checks": "checks",
-    "legacy": "Flat history: logical structure unavailable from this backend"
+    "legacy": "Flat history: logical structure unavailable from this backend",
+    "focusPath": "Decisive path",
+    "more": "Show {{count}} more",
+    "showConditions": "Show conditions"
   },
   "detail": {
     "Basic": "Basic",
