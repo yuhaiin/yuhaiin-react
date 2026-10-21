@@ -1,5 +1,5 @@
 import flowStyles from './flow-summary.module.css';
-import { MatchCircuit } from "./match-circuit";
+import { MatchTraceTree } from "./match-trace-view";
 import { ConnectionActions } from './connection-actions';
 import { resourceLink } from './actions';
 
@@ -439,15 +439,61 @@ const ConnectionSection: FC<{ title: string; children: React.ReactNode }> = ({ t
 
 const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string; matchedRuleId?: string }> = ({ value, connectionId, matchedRuleId }) => {
     const { t } = useTranslation(["connections", "common"]);
-    const [opened, setOpened] = useState<Set<number>>(() => new Set());
+    const winningIndex = matchedRuleId
+        ? value.map(entry => entry.ruleId).lastIndexOf(matchedRuleId)
+        : -1;
+    const [opened, setOpened] = useState<Set<number>>(() => new Set(winningIndex >= 0 ? [winningIndex] : []));
     const [loaded, setLoaded] = useState<Record<number, MatchHistoryEntry>>({});
-    const [loading, setLoading] = useState<Set<number>>(() => new Set());
+    const [loading, setLoading] = useState<Set<number>>(() => new Set(winningIndex >= 0 ? [winningIndex] : []));
     const attempted = useRef<Set<number>>(new Set());
     const requestVersion = useRef<Map<number, number>>(new Map());
     const controllers = useRef<Map<number, AbortController>>(new Map());
-    useEffect(() => () => {
-        for (const controller of controllers.current.values()) controller.abort();
-        controllers.current.clear();
+    // Auto-load only the winning rule on the first detail view. All other
+    // rules are fetched on click; no synchronous state updates in this effect.
+    useEffect(() => {
+        if (winningIndex < 0 || !connectionId) return;
+        // Capture stable maps once so cleanup does not read mutable ref.current.
+        const versions = requestVersion.current;
+        const activeControllers = controllers.current;
+        const attemptedIndices = attempted.current;
+        const controller = new AbortController();
+        const version = (versions.get(winningIndex) ?? 0) + 1;
+        versions.set(winningIndex, version);
+        attemptedIndices.add(winningIndex);
+        activeControllers.set(winningIndex, controller);
+        void getConnectionMatchTrace(connectionId, winningIndex, controller.signal)
+            .then(response => {
+                if (versions.get(winningIndex) === version)
+                    setLoaded(current => ({ ...current, [winningIndex]: response.entry }));
+            })
+            .catch(() => {
+                // Older backend or connection closed. Fall back to flat history.
+            })
+            .finally(() => {
+                if (versions.get(winningIndex) !== version) return;
+                activeControllers.delete(winningIndex);
+                setLoading(current => {
+                    const next = new Set(current);
+                    next.delete(winningIndex);
+                    return next;
+                });
+            });
+        return () => {
+            controller.abort();
+            if (activeControllers.get(winningIndex) === controller)
+                activeControllers.delete(winningIndex);
+            if (versions.get(winningIndex) === version)
+                versions.set(winningIndex, version + 1);
+            attemptedIndices.delete(winningIndex);
+        };
+    }, [connectionId, winningIndex]);
+
+    useEffect(() => {
+        const activeControllers = controllers.current;
+        return () => {
+            for (const controller of activeControllers.values()) controller.abort();
+            activeControllers.clear();
+        };
     }, []);
     const invalidate = (index: number) => {
         controllers.current.get(index)?.abort();
@@ -542,41 +588,51 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string; m
                         // The connection already records the winning rule ID.
                         // No detailed trace request is needed for this summary.
                         const state = trace?.state ?? (matchedRuleId && entry.ruleId
-                            ? entry.ruleId === matchedRuleId ? "hit" : "miss"
+                            ? index === winningIndex ? "hit" : "miss"
                             : undefined);
                         const positive = state === "hit";
                         return (
-                            <div key={`${entry.ruleId || entry.ruleName}-${index}`} className="border-b border-sidebar-border/60 last:border-0">
-                                <div className="flex min-w-0 items-center gap-2 px-2 py-1.5">
-                                    <button type="button" className="flex min-w-0 flex-1 items-center gap-2 rounded-ui-sm px-1 py-1 text-left hover:bg-ui-surface-muted"
-                                        onClick={() => toggle(index)} aria-expanded={expanded} aria-label={entry.ruleName || label("Rule")}>
+                            <div key={`${entry.ruleId || entry.ruleName}-${index}`} className="min-w-0 border-b border-sidebar-border/60 last:border-0">
+                                <div className={clsx(
+                                    "flex min-w-0 items-center gap-2 px-2 py-1.5",
+                                    expanded && "bg-ui-surface-muted/50",
+                                )}>
+                                    {/* This row is the rule's single visible root node.
+                                        AND/OR/NOT descendants start directly below it. */}
+                                    <button type="button"
+                                        className="flex min-w-0 flex-1 items-center gap-2 rounded-ui-sm px-1 py-1.5 text-left hover:bg-ui-surface-muted"
+                                        onClick={() => toggle(index)}
+                                        aria-expanded={expanded}
+                                        aria-label={entry.ruleName || label("Rule")}>
                                         {expanded ? <ChevronDown size={15} className="shrink-0 text-ui-muted"/> : <ChevronRight size={15} className="shrink-0 text-ui-muted"/>}
-                                        <span className="notranslate truncate text-xs font-semibold text-sidebar-header">{entry.ruleName || label("Rule")}</span>
+                                        <span className="notranslate min-w-0 break-words text-xs font-semibold text-sidebar-header [overflow-wrap:anywhere]">{entry.ruleName || label("Rule")}</span>
+                                        {trace && <span className="shrink-0 rounded-ui-xs border border-ui-border bg-ui-surface px-1.5 py-0.5 text-[10px] font-semibold text-ui-muted">{trace.type.toUpperCase()}</span>}
                                     </button>
-                                    {entry.ruleId && <a href={resourceLink("/docs/bypass", "rule", entry.ruleId)} className="shrink-0 text-[11px] text-ui-primary underline underline-offset-2">
-                                        {label("Rule")}
-                                    </a>}
                                     <span className={clsx("shrink-0 text-[11px] font-medium", positive ? "text-ui-success" : "text-ui-muted")}>
                                         {state ? stateLabel(state) : `${entry.history?.length ?? 0} ${t("circuit.checks", { defaultValue: "checks" })}`}
                                     </span>
+                                    {entry.ruleId && <a href={resourceLink("/docs/bypass", "rule", entry.ruleId)}
+                                        className="shrink-0 text-[11px] text-ui-primary underline underline-offset-2">{label("Rule")}</a>}
                                 </div>
-                                {expanded && <div className="border-t border-sidebar-border/50 bg-ui-surface p-2">
-                                    {trace ? <MatchCircuit key={`${entry.ruleId || index}-circuit`} trace={trace}/> : loading.has(index) ? <p className="text-xs text-ui-muted">{t("common:state.loading")}</p> :
-                                        <div className="space-y-1" aria-label={t("circuit.legacy", { defaultValue: "Flat history (no logical structure available)" })}>
-                                            <p className="pb-1 text-[11px] text-ui-muted">
-                                                {t("circuit.legacy", { defaultValue: "Flat history (no logical structure available)" })}
-                                            </p>
-                                            {(entry.history ?? []).map((item, itemIndex) => (
-                                                <div key={`${item.id || item.listName}-${itemIndex}`} className="flex min-w-0 items-center justify-between gap-3 px-2 py-1">
-                                                    <span className="notranslate min-w-0 break-all text-xs text-sidebar-color">{item.listName || "-"}</span>
-                                                    <span className={clsx("inline-flex shrink-0 items-center gap-1.5 text-xs", item.matched ? "text-ui-success" : "text-ui-muted")}>
-                                                        {item.matched ? <Check size={13}/> : <X size={13}/>}
-                                                        {item.matched ? label("Hit") : label("Miss")}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>}
-                                </div>}
+                                {expanded && (trace
+                                    ? <MatchTraceTree key={`${entry.ruleId || index}-tree`} trace={trace}/>
+                                    : <div className="min-w-0 border-t border-sidebar-border/50 bg-ui-surface px-2 py-2">
+                                        {loading.has(index) ? <p className="text-xs text-ui-muted">{t("common:state.loading")}</p> :
+                                            <div className="space-y-1" aria-label={t("circuit.legacy", { defaultValue: "Flat history (no logical structure available)" })}>
+                                                <p className="pb-1 text-[11px] text-ui-muted">
+                                                    {t("circuit.legacy", { defaultValue: "Flat history (no logical structure available)" })}
+                                                </p>
+                                                {(entry.history ?? []).map((item, itemIndex) => (
+                                                    <div key={`${item.id || item.listName}-${itemIndex}`} className="flex min-w-0 items-center justify-between gap-3 rounded-ui-sm px-2 py-1">
+                                                        <span className="notranslate min-w-0 break-words text-xs text-sidebar-color [overflow-wrap:anywhere]">{item.listName || "-"}</span>
+                                                        <span className={clsx("inline-flex shrink-0 items-center gap-1.5 text-[11px]", item.matched ? "text-ui-success" : "text-ui-muted")}>
+                                                            {item.matched ? <Check size={13}/> : <X size={13}/>}
+                                                            {item.matched ? label("Hit") : label("Miss")}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>}
+                                    </div>)}
                             </div>
                         );
                     })}
