@@ -38,6 +38,19 @@ describe("match circuit layout", () => {
         expect(layout.height).toBeGreaterThan(0);
     });
 
+    it("defaults to a collapsed summary for very wide flat expressions", () => {
+        const trace: MatchTrace = {
+            type: "or", state: "miss",
+            children: Array.from({ length: 1000 }, (_, index) => ({
+                type: "condition", label: "list-" + index, state: "miss",
+            })),
+        };
+        const layout = buildCircuitLayout(trace, initialCollapsed(trace));
+        expect(layout.nodes).toHaveLength(1);
+        expect(layout.nodes[0].collapsed).toBe(true);
+        expect(layout.wires).toHaveLength(0);
+    });
+
     it("preserves unknown and skipped separately from false", () => {
         expect(traceState("unknown")).toBe("unknown");
         expect(traceState("skipped")).toBe("skipped");
