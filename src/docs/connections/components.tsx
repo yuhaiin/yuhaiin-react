@@ -443,24 +443,58 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string }>
     const [loaded, setLoaded] = useState<Record<number, MatchHistoryEntry>>({});
     const [loading, setLoading] = useState<Set<number>>(() => new Set());
     const attempted = useRef<Set<number>>(new Set());
+    const requestVersion = useRef<Map<number, number>>(new Map());
+    const invalidate = (index: number) => {
+        requestVersion.current.set(index, (requestVersion.current.get(index) ?? 0) + 1);
+        attempted.current.delete(index);
+    };
     const fetchWhenNeeded = (index: number) => {
         if (attempted.current.has(index) || !connectionId) return;
         attempted.current.add(index);
+        const version = (requestVersion.current.get(index) ?? 0) + 1;
+        requestVersion.current.set(index, version);
         setLoading(current => new Set(current).add(index));
         void getConnectionMatchTrace(connectionId, index)
-            .then(response => setLoaded(current => ({ ...current, [index]: response.entry })))
+            .then(response => {
+                if (requestVersion.current.get(index) !== version) return;
+                setLoaded(current => ({ ...current, [index]: response.entry }));
+            })
             .catch(() => {
                 // The live trace is optional. Old/closed connections retain flat history.
             })
-            .finally(() => setLoading(current => {
-                const next = new Set(current);
-                next.delete(index);
-                return next;
-            }));
+            .finally(() => {
+                if (requestVersion.current.get(index) !== version) return;
+                setLoading(current => {
+                    const next = new Set(current);
+                    next.delete(index);
+                    return next;
+                });
+            });
+    };
+    const release = (index: number) => {
+        invalidate(index);
+        setLoaded(current => {
+            if (!(index in current)) return current;
+            const next = { ...current };
+            delete next[index];
+            return next;
+        });
+        setLoading(current => {
+            const next = new Set(current);
+            next.delete(index);
+            return next;
+        });
+    };
+    const collapseAll = () => {
+        for (const index of attempted.current) invalidate(index);
+        setLoaded({});
+        setLoading(new Set());
+        setOpened(new Set());
     };
     const label = (key: string) => t(`detail.${key}`, { defaultValue: key });
     const toggle = (index: number) => {
-        if (!opened.has(index)) fetchWhenNeeded(index);
+        if (opened.has(index)) release(index);
+        else fetchWhenNeeded(index);
         setOpened(current => {
             const next = new Set(current);
             if (next.has(index)) next.delete(index);
@@ -487,7 +521,7 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string }>
                     <div className="flex items-center justify-between gap-2 border-b border-sidebar-border bg-ui-surface-muted/50 px-3 py-2 text-[11px] text-ui-muted">
                         <span>{value.length} {t("circuit.rules", { defaultValue: "rules checked" })}</span>
                         <div className="flex gap-2">
-                            <button type="button" className="hover:text-ui-heading" onClick={() => setOpened(new Set())}>
+                            <button type="button" className="hover:text-ui-heading" onClick={collapseAll}>
                                 {t("circuit.collapseAll", { defaultValue: "Collapse all" })}
                             </button>
                         </div>
