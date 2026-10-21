@@ -1223,11 +1223,24 @@ export namespace Go {
     export interface ListActivationStatus {
       hostIndexRefreshAt: number;
     }
+    export interface ListActivationIssue {
+      id: string;
+      name: string;
+      error: string;
+      unavailable: boolean;
+    }
+    export interface SkippedRouteRule {
+      id: string;
+      name: string;
+      listIds: string[];
+    }
     export interface RuleActivationStatus {
       applying?: boolean;
       runningConfig?: Config;
       savedRevision: number;
       appliedRevision: number;
+      listIssues?: ListActivationIssue[];
+      skippedRules?: SkippedRouteRule[];
       applyAt: number;
       error?: string;
     }
@@ -1236,6 +1249,8 @@ export namespace Go {
       runningConfig?: Config;
       savedRevision: number;
       appliedRevision: number;
+      listIssues?: ListActivationIssue[];
+      skippedRules?: SkippedRouteRule[];
       hostIndexRefreshAt: number;
       ruleApplyAt: number;
       error?: string;
