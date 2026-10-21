@@ -25,6 +25,8 @@ export function normalizeRouteActivationStatus(value: Partial<RouteActivationSta
     savedRevision: value?.savedRevision ?? 0,
     appliedRevision: value?.appliedRevision ?? 0,
     error: value?.error ?? "",
+    listIssues: value?.listIssues ?? [],
+    skippedRules: value?.skippedRules ?? [],
     applying: value?.applying ?? false,
     runningConfig: value?.runningConfig ? normalizeRouteConfig(value.runningConfig) : undefined,
   };
