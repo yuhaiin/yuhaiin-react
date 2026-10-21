@@ -444,7 +444,14 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string }>
     const [loading, setLoading] = useState<Set<number>>(() => new Set());
     const attempted = useRef<Set<number>>(new Set());
     const requestVersion = useRef<Map<number, number>>(new Map());
+    const controllers = useRef<Map<number, AbortController>>(new Map());
+    useEffect(() => () => {
+        for (const controller of controllers.current.values()) controller.abort();
+        controllers.current.clear();
+    }, []);
     const invalidate = (index: number) => {
+        controllers.current.get(index)?.abort();
+        controllers.current.delete(index);
         requestVersion.current.set(index, (requestVersion.current.get(index) ?? 0) + 1);
         attempted.current.delete(index);
     };
@@ -454,7 +461,9 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string }>
         const version = (requestVersion.current.get(index) ?? 0) + 1;
         requestVersion.current.set(index, version);
         setLoading(current => new Set(current).add(index));
-        void getConnectionMatchTrace(connectionId, index)
+        const controller = new AbortController();
+        controllers.current.set(index, controller);
+        void getConnectionMatchTrace(connectionId, index, controller.signal)
             .then(response => {
                 if (requestVersion.current.get(index) !== version) return;
                 setLoaded(current => ({ ...current, [index]: response.entry }));
@@ -463,6 +472,7 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string }>
                 // The live trace is optional. Old/closed connections retain flat history.
             })
             .finally(() => {
+                if (controllers.current.get(index) === controller) controllers.current.delete(index);
                 if (requestVersion.current.get(index) !== version) return;
                 setLoading(current => {
                     const next = new Set(current);
