@@ -581,7 +581,7 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string; m
                         // The connection already records the winning rule ID.
                         // No detailed trace request is needed for this summary.
                         const state = trace?.state ?? (matchedRuleId && entry.ruleId
-                            ? entry.ruleId === matchedRuleId ? "hit" : "miss"
+                            ? index === winningIndex ? "hit" : "miss"
                             : undefined);
                         const positive = state === "hit";
                         return (
