@@ -478,7 +478,6 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[] }> = ({ value }) => {
                         const trace = entry.trace;
                         const state = trace?.state;
                         const positive = state === "hit";
-                        const legacy = !trace;
                         return (
                             <div key={`${entry.ruleId || entry.ruleName}-${index}`} className="border-b border-sidebar-border/60 last:border-0">
                                 <div className="flex min-w-0 items-center gap-2 px-2 py-1.5">
