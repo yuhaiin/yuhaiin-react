@@ -28,6 +28,11 @@ export async function getConnections(): Promise<Connections> {
   return { connections: (data.connections ?? []).map(item => normalizeConnection(item as unknown as Partial<Connections["connections"][number]>)) };
 }
 
+// Expands a shared logic template only for the selected active connection.
+export async function getConnectionMatchTrace(id: string, ruleIndex: number, signal?: AbortSignal): Promise<{ ruleIndex: number; entry: Go.connection.MatchHistoryEntry }> {
+  return requestJSON<{ ruleIndex: number; entry: Go.connection.MatchHistoryEntry }>("POST", "/api/v2/connections/trace", { id, ruleIndex }, undefined, signal);
+}
+
 export async function closeConnections(ids: string[]): Promise<void> {
   await requestJSON<void>("POST", "/api/v2/connections/close", { ids });
 }

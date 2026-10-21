@@ -7,6 +7,7 @@ export type RPCOperation =
   | "backup.run"
   | "connections"
   | "connections.close"
+  | "connections.trace"
   | "connections.events"
   | "connections.failed_history"
   | "connections.history"
@@ -157,6 +158,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/connections/telemetry", operation: "connections.telemetry" },
   { method: "GET", pattern: "/api/v2/connections/events", operation: "connections.events" },
   { method: "GET", pattern: "/api/v2/connections", operation: "connections" },
+  { method: "POST", pattern: "/api/v2/connections/trace", operation: "connections.trace" },
   { method: "POST", pattern: "/api/v2/connections/close", operation: "connections.close" },
   { method: "GET", pattern: "/api/v2/connections/failed-history", operation: "connections.failed_history" },
   { method: "GET", pattern: "/api/v2/connections/history", operation: "connections.history" },
