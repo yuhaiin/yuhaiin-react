@@ -452,22 +452,26 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string; m
     // rules are fetched on click; no synchronous state updates in this effect.
     useEffect(() => {
         if (winningIndex < 0 || !connectionId) return;
+        // Capture stable maps once so cleanup does not read mutable ref.current.
+        const versions = requestVersion.current;
+        const activeControllers = controllers.current;
+        const attemptedIndices = attempted.current;
         const controller = new AbortController();
-        const version = (requestVersion.current.get(winningIndex) ?? 0) + 1;
-        requestVersion.current.set(winningIndex, version);
-        attempted.current.add(winningIndex);
-        controllers.current.set(winningIndex, controller);
+        const version = (versions.get(winningIndex) ?? 0) + 1;
+        versions.set(winningIndex, version);
+        attemptedIndices.add(winningIndex);
+        activeControllers.set(winningIndex, controller);
         void getConnectionMatchTrace(connectionId, winningIndex, controller.signal)
             .then(response => {
-                if (requestVersion.current.get(winningIndex) === version)
+                if (versions.get(winningIndex) === version)
                     setLoaded(current => ({ ...current, [winningIndex]: response.entry }));
             })
             .catch(() => {
                 // Older backend or connection closed. Fall back to flat history.
             })
             .finally(() => {
-                if (requestVersion.current.get(winningIndex) !== version) return;
-                controllers.current.delete(winningIndex);
+                if (versions.get(winningIndex) !== version) return;
+                activeControllers.delete(winningIndex);
                 setLoading(current => {
                     const next = new Set(current);
                     next.delete(winningIndex);
@@ -476,17 +480,20 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string; m
             });
         return () => {
             controller.abort();
-            if (controllers.current.get(winningIndex) === controller)
-                controllers.current.delete(winningIndex);
-            if (requestVersion.current.get(winningIndex) === version)
-                requestVersion.current.set(winningIndex, version + 1);
-            attempted.current.delete(winningIndex);
+            if (activeControllers.get(winningIndex) === controller)
+                activeControllers.delete(winningIndex);
+            if (versions.get(winningIndex) === version)
+                versions.set(winningIndex, version + 1);
+            attemptedIndices.delete(winningIndex);
         };
     }, [connectionId, winningIndex]);
 
-    useEffect(() => () => {
-        for (const controller of controllers.current.values()) controller.abort();
-        controllers.current.clear();
+    useEffect(() => {
+        const activeControllers = controllers.current;
+        return () => {
+            for (const controller of activeControllers.values()) controller.abort();
+            activeControllers.clear();
+        };
     }, []);
     const invalidate = (index: number) => {
         controllers.current.get(index)?.abort();
