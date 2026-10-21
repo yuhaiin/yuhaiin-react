@@ -417,7 +417,7 @@ export const ConnectionInfo: FC<{
             {(routeRows.length > 0 || (value.matchHistory?.length ?? 0) > 0) && (
                 <ConnectionSection title={label("Route")}>
                     {routeRows}
-                    <MatchHistoryItem key={value.id} connectionId={value.id} value={value.matchHistory ?? []} />
+                    <MatchHistoryItem key={value.id} connectionId={value.id} matchedRuleId={value.ruleId} value={value.matchHistory ?? []} />
                 </ConnectionSection>
             )}
             {processRows.length > 0 && <ConnectionSection title={label("Process")}>{processRows}</ConnectionSection>}
@@ -437,7 +437,7 @@ const ConnectionSection: FC<{ title: string; children: React.ReactNode }> = ({ t
     </section>
 );
 
-const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string }> = ({ value, connectionId }) => {
+const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string; matchedRuleId?: string }> = ({ value, connectionId, matchedRuleId }) => {
     const { t } = useTranslation(["connections", "common"]);
     const [opened, setOpened] = useState<Set<number>>(() => new Set());
     const [loaded, setLoaded] = useState<Record<number, MatchHistoryEntry>>({});
@@ -539,7 +539,11 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string }>
                     {value.map((entry, index) => {
                         const expanded = opened.has(index);
                         const trace = loaded[index]?.trace ?? entry.trace;
-                        const state = trace?.state;
+                        // The connection already records the winning rule ID.
+                        // No detailed trace request is needed for this summary.
+                        const state = trace?.state ?? (matchedRuleId && entry.ruleId
+                            ? entry.ruleId === matchedRuleId ? "hit" : "miss"
+                            : undefined);
                         const positive = state === "hit";
                         return (
                             <div key={`${entry.ruleId || entry.ruleName}-${index}`} className="border-b border-sidebar-border/60 last:border-0">
