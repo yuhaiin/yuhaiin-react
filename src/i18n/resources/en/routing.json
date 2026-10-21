@@ -117,7 +117,7 @@
   "activationFailed": "Changes could not be applied.",
   "activationRunning": "Applying saved changes",
   "activationDegraded": "Some routing rules were skipped",
-  "activationDegradedHelp": "One or more remote lists could not be loaded. Other rules are active, but skipped rules are NOT enforced.",
+  "activationDegradedHelp": "Some remote list data could not be loaded. Healthy conditions still match; rules that depend only on missing data will not run.",
   "activationListUnavailable": "list unavailable",
   "activationSkippedRule": "Skipped rule",
   "activationPartialRule": "Partially active rule (healthy conditions still apply)",
