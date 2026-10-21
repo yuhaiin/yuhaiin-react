@@ -1234,6 +1234,11 @@ export namespace Go {
       name: string;
       listIds: string[];
     }
+    export interface DegradedRouteRule {
+      id: string;
+      name: string;
+      listIds: string[];
+    }
     export interface RuleActivationStatus {
       applying?: boolean;
       runningConfig?: Config;
@@ -1241,6 +1246,7 @@ export namespace Go {
       appliedRevision: number;
       listIssues?: ListActivationIssue[];
       skippedRules?: SkippedRouteRule[];
+      degradedRules?: DegradedRouteRule[];
       applyAt: number;
       error?: string;
     }
@@ -1251,6 +1257,7 @@ export namespace Go {
       appliedRevision: number;
       listIssues?: ListActivationIssue[];
       skippedRules?: SkippedRouteRule[];
+      degradedRules?: DegradedRouteRule[];
       hostIndexRefreshAt: number;
       ruleApplyAt: number;
       error?: string;

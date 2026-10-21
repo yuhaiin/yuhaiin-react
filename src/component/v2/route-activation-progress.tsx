@@ -18,7 +18,7 @@ export function RouteActivationProgress({ status, onApplied }: { status?: RouteA
     const [applying, setApplying] = useState(false);
     const listPending = (status?.hostIndexRefreshAt ?? 0) > 0;
     const rulePending = (status?.ruleApplyAt ?? 0) > 0 || (status?.savedRevision ?? 0) > (status?.appliedRevision ?? 0);
-    const hasWarnings = Boolean(status?.listIssues?.length || status?.skippedRules?.length);
+    const hasWarnings = Boolean(status?.listIssues?.length || status?.skippedRules?.length || status?.degradedRules?.length);
     const target = Math.max(status?.hostIndexRefreshAt ?? 0, status?.ruleApplyAt ?? 0);
     const remaining = Math.max(0, target - now);
     const isPending = remaining > 0;
@@ -77,6 +77,9 @@ export function RouteActivationProgress({ status, onApplied }: { status?: RouteA
                     </p>)}
                     {(status?.skippedRules ?? []).map(rule => <p key={rule.id} className="break-all text-ui-danger">
                         {t("activationSkippedRule")}: {rule.name || rule.id} ({rule.listIds.join(", ")})
+                    </p>)}
+                    {(status?.degradedRules ?? []).map(rule => <p key={rule.id} className="break-all text-ui-heading">
+                        {t("activationPartialRule")}: {rule.name || rule.id} ({rule.listIds.join(", ")})
                     </p>)}
                 </div>}
                 {(listPending || rulePending) && <div className="h-2 overflow-hidden rounded-full bg-ui-primary/15" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)} aria-label={uiT("routeActivationProgress")}>

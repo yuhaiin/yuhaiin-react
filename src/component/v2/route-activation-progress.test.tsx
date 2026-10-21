@@ -63,11 +63,13 @@ describe("RouteActivationProgress", () => {
             savedRevision: 22, appliedRevision: 22, hostIndexRefreshAt: 0, ruleApplyAt: 0,
             listIssues: [{ id: "telegram", name: "Telegram", error: "HTTP 404", unavailable: true }],
             skippedRules: [{ id: "blocking-rule", name: "Block Telegram", listIds: ["telegram"] }],
+            degradedRules: [{ id: "degraded-block", name: "Block ads or Telegram", listIds: ["telegram"] }],
         }} onApplied={() => undefined} />));
         const alert = container.querySelector('[role="alert"]');
         expect(alert?.textContent).toContain("Telegram");
         expect(alert?.textContent).toContain("HTTP 404");
         expect(alert?.textContent).toContain("Block Telegram");
+        expect(alert?.textContent).toContain("Block ads or Telegram");
         expect(container.querySelector('button')).not.toBeNull();
         expect(container.querySelector('[role="progressbar"]')).toBeNull();
         act(() => root.render(<RouteActivationProgress status={{
