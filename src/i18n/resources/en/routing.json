@@ -120,6 +120,7 @@
   "activationDegradedHelp": "One or more remote lists could not be loaded. Other rules are active, but skipped rules are NOT enforced.",
   "activationListUnavailable": "list unavailable",
   "activationSkippedRule": "Skipped rule",
+  "activationPartialRule": "Partially active rule (healthy conditions still apply)",
   "entryTaskHelp": "Choose how applications or devices connect to this server.",
   "entryUnsupported": "This protocol is not supported by the managed server platform. Choose a supported protocol before enabling it.",
   "enableTrafficEntry": "Enable and start listening",
