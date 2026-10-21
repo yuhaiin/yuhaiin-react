@@ -3,7 +3,7 @@ import { MatchCircuit } from "./match-circuit";
 import { ConnectionActions } from './connection-actions';
 import { resourceLink } from './actions';
 
-import { getTotalFlow } from "@/api/connections";
+import { getConnectionMatchTrace, getTotalFlow } from "@/api/connections";
 import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datalist";
 import type { Connection, Counter, MatchHistoryEntry, TotalFlow } from "@/contract/connection";
 import { clsx } from "clsx";
@@ -417,7 +417,7 @@ export const ConnectionInfo: FC<{
             {(routeRows.length > 0 || (value.matchHistory?.length ?? 0) > 0) && (
                 <ConnectionSection title={label("Route")}>
                     {routeRows}
-                    <MatchHistoryItem value={value.matchHistory ?? []} />
+                    <MatchHistoryItem key={value.id} connectionId={value.id} value={value.matchHistory ?? []} />
                 </ConnectionSection>
             )}
             {processRows.length > 0 && <ConnectionSection title={label("Process")}>{processRows}</ConnectionSection>}
@@ -437,17 +437,36 @@ const ConnectionSection: FC<{ title: string; children: React.ReactNode }> = ({ t
     </section>
 );
 
-const MatchHistoryItem: FC<{ value: MatchHistoryEntry[] }> = ({ value }) => {
+const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string }> = ({ value, connectionId }) => {
     const { t } = useTranslation(["connections", "common"]);
     const [opened, setOpened] = useState<Set<number>>(() => new Set());
+    const [loaded, setLoaded] = useState<MatchHistoryEntry[] | null>(null);
+    const [loading, setLoading] = useState(false);
+    const attempted = useRef(false);
+    const fetchWhenNeeded = () => {
+        if (attempted.current || !connectionId) return;
+        attempted.current = true;
+        setLoading(true);
+        void getConnectionMatchTrace(connectionId)
+            .then(response => setLoaded(response.matchHistory ?? []))
+            .catch(() => {
+                // Older backend, closed connection, or persisted history:
+                // use the original flat results without inventing structure.
+            })
+            .finally(() => setLoading(false));
+    };
+
     if (!value || value.length === 0) return null;
     const label = (key: string) => t(`detail.${key}`, { defaultValue: key });
-    const toggle = (index: number) => setOpened(current => {
+    const toggle = (index: number) => {
+        if (!opened.has(index)) fetchWhenNeeded();
+        setOpened(current => {
         const next = new Set(current);
         if (next.has(index)) next.delete(index);
         else next.add(index);
         return next;
     });
+    };
     const stateLabel = (state: string) => {
         if (state === "hit") return t("detail.Hit");
         if (state === "miss") return t("detail.Miss");
@@ -465,7 +484,7 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[] }> = ({ value }) => {
                     <div className="flex items-center justify-between gap-2 border-b border-sidebar-border bg-ui-surface-muted/50 px-3 py-2 text-[11px] text-ui-muted">
                         <span>{value.length} {t("circuit.rules", { defaultValue: "rules checked" })}</span>
                         <div className="flex gap-2">
-                            <button type="button" className="hover:text-ui-heading" onClick={() => setOpened(new Set(value.map((_, index) => index)))}>
+                            <button type="button" className="hover:text-ui-heading" onClick={() => { fetchWhenNeeded(); setOpened(new Set(value.map((_, index) => index))); }}>
                                 {t("circuit.expand", { defaultValue: "Expand all" })}
                             </button>
                             <button type="button" className="hover:text-ui-heading" onClick={() => setOpened(new Set())}>
@@ -475,7 +494,7 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[] }> = ({ value }) => {
                     </div>
                     {value.map((entry, index) => {
                         const expanded = opened.has(index);
-                        const trace = entry.trace;
+                        const trace = loaded?.[index]?.trace ?? entry.trace;
                         const state = trace?.state;
                         const positive = state === "hit";
                         return (
@@ -494,6 +513,7 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[] }> = ({ value }) => {
                                     </span>
                                 </div>
                                 {expanded && <div className="border-t border-sidebar-border/50 bg-ui-surface p-2">
+                                    {loading && !trace && <p className="pb-1 text-[11px] text-ui-muted">{t("common:state.loading")}</p>}
                                     {trace ? <MatchCircuit key={`${entry.ruleId || index}-circuit`} trace={trace}/> :
                                         <div className="space-y-1" aria-label={t("circuit.legacy", { defaultValue: "Flat history (no logical structure available)" })}>
                                             <p className="pb-1 text-[11px] text-ui-muted">
