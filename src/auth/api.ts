@@ -8,6 +8,26 @@ export interface Token { id: string; userId: string; kind: string; prefix: strin
 export interface Issued extends Token { secret: string }
 export const authAPI = <T>(method: string, path: string, body?: unknown) => directJSON<T>(method, `/api/v2/auth${path}`, body);
 
+// Check an edited controller without persisting it or attaching any session.
+export async function initializationStatus(controller: string, signal: AbortSignal): Promise<{ required: boolean; expiresAt: number }> {
+    requireSecureController(controller);
+    const url = new URL('/api/v2/auth/setup', new URL(controller || window.location.href).origin);
+    const response = await fetch(url, { signal, credentials: 'omit', cache: 'no-store', redirect: 'error', referrerPolicy: 'no-referrer' });
+    if (!response.ok) throw { code: response.status };
+    const status = await response.json();
+    if (typeof status.required !== 'boolean' || typeof status.expiresAt !== 'number') throw new Error('Invalid setup status');
+    return status;
+}
+
+export async function initialize(secret: string, name: string, password: string) {
+    requireSecureController();
+    const scope = authScope();
+    const parameters = await directJSON<PasswordParameters>('POST', '/api/v2/auth/setup/parameters', {}, `Setup ${secret}`);
+    const clientCredential = await deriveCredential(password, parameters);
+    if (scope !== authScope()) throw new Error('Controller or session changed');
+    await directJSON('POST', '/api/v2/auth/setup', { login: name, clientCredential }, `Setup ${secret}`);
+}
+
 export async function deriveCredential(password: string, parameters: PasswordParameters): Promise<string> {
     if (parameters.algorithm !== 'pbkdf2-sha256-v1' || parameters.iterations !== 600000 || parameters.digest !== 'SHA-256' ||
         parameters.bytes !== 32 || parameters.normalization !== 'NFC' || parameters.encoding !== 'utf-8/base64url-unpadded') throw new Error('Unsupported password KDF parameters');

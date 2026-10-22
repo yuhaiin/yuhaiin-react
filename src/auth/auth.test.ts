@@ -1,13 +1,35 @@
 /// <reference types="node" />
 import { pbkdf2Sync, webcrypto } from 'node:crypto';
 import { afterEach, expect, it, vi } from 'vitest';
-import { deriveCredential, login, enroll, type PasswordParameters } from './api';
+import { deriveCredential, login, enroll, initialize, initializationStatus, type PasswordParameters } from './api';
 import { authorizedFetch } from './transport';
 import { authHeaders, authScope, clearSession, establishSession, getSession } from './session';
 import { getApiUrl, setApiUrl } from '@/common/apiurl';
 const parameters: PasswordParameters = { algorithm: 'pbkdf2-sha256-v1', salt: 'AAECAwQFBgcICQoLDA0ODw', iterations: 600000, digest: 'SHA-256', bytes: 32, normalization: 'NFC', encoding: 'utf-8/base64url-unpadded' };
 const principal = { userId: 'reader', credentialType: 'session', permissions: ['identity:read', 'nodes:read'] };
 afterEach(() => { clearSession(); localStorage.clear(); vi.unstubAllGlobals(); vi.useRealTimers(); });
+it('checks a draft controller without credentials and initializes with only a derived credential', async () => {
+    vi.stubGlobal('crypto', webcrypto); setApiUrl('https://controller.example');
+    const password = 'new administrator password';
+    const fetch = vi.fn(async (url: URL, init: RequestInit) => {
+        expect(init.credentials).toBe('omit'); expect(init.redirect).toBe('error');
+        expect(String(init.body)).not.toContain(password);
+        if (url.hostname === 'draft.example') {
+            expect(new Headers(init.headers).has('Authorization')).toBe(false);
+            return Response.json({ required: true, expiresAt: 12345 });
+        }
+        expect(new Headers(init.headers).get('Authorization')).toBe('Setup startup-code');
+        if (url.pathname.endsWith('/parameters')) return Response.json(parameters);
+        const body = JSON.parse(String(init.body));
+        expect(body).toEqual({ login: 'owner', clientCredential: expect.stringMatching(/^[A-Za-z0-9_-]{43}$/) });
+        return Response.json({});
+    }); vi.stubGlobal('fetch', fetch);
+    const status = await initializationStatus('https://draft.example', new AbortController().signal);
+    expect(status.required).toBe(true); expect(getApiUrl()).toBe('https://controller.example');
+    await initialize('startup-code', 'owner', password);
+    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(getSession()).toBeNull();
+});
 it('matches the Go PBKDF2 contract and normalizes Unicode without trimming', async () => {
     vi.stubGlobal('crypto', webcrypto);
     for (const password of ['密码-é-🦊', '密码-e\u0301-🦊', ' do not trim ']) {

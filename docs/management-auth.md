@@ -4,7 +4,11 @@ This UI requires the management identity API in [yuhaiin PR #608](https://github
 
 ## First login and recovery
 
-On the controller host, run `yuhaiin auth bootstrap -path /your/data-directory -login admin`. Open **Activate account**, choose the controller URL, paste the one-time enrollment capability and set a password. Then sign in with the account name and password. Remote controllers require HTTPS; HTTP is accepted only on loopback. A separately hosted UI must also be allowed by the backend's trusted-origin configuration.
+Start the controller normally, then open the Web UI and choose its URL. An uninitialized controller automatically shows **Create administrator**. Copy the **Initialization code** from the controller's startup output, choose your login and password, and submit. Then sign in with those credentials. No extra bootstrap command is required.
+
+The code lasts 15 minutes. Restarting before setup finishes generates a new code and invalidates the old one, even if the first run received no interaction. If the code expires, restart the controller and use the newest startup output. Creating the administrator permanently closes first-time setup; later restarts and password resets cannot reopen it. No account is created just by starting the service or opening this page. Public setup status never includes the code, and the UI never stores it persistently.
+
+Remote controllers require HTTPS; HTTP is accepted only on loopback. A separately hosted UI must also be allowed by the backend's trusted-origin configuration. Optional manual `auth bootstrap` capabilities and user invitations still use **Activate account** on the login screen.
 
 **Account & security** provides local user creation, role/status updates, credential resets and security events for administrators. New users and credential resets issue an enrollment capability that expires after 15 minutes. The UI displays it once. Preserve a copy until enrollment finishes. If all access is lost, use the backend's local `auth recover` command.
 
