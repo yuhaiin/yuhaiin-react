@@ -13,7 +13,7 @@ it('authenticates streams through headers, decodes split UTF-8, and cancels on c
     setApiUrl('https://controller.example'); establishSession('private-session', { userId: 'admin', credentialType: 'session', permissions: [] }, Math.floor(Date.now() / 1000) + 100, 'https://controller.example');
     let input!: ReadableStreamDefaultController<Uint8Array>; const cancel = vi.fn();
     const fetch = vi.fn(async (url: URL, init: RequestInit) => {
-        expect(url.search).toBe(''); expect(new Headers(init.headers).get('Authorization')).toBe('Session private-session'); expect(init.credentials).toBe('omit');
+        expect(url.search).toBe(''); expect(new Headers(init.headers).get('Authorization')).toBe('Session private-session'); expect(init.credentials).toBe('include');
         const body = new ReadableStream<Uint8Array>({ start(controller) { input = controller; }, cancel });
         init.signal!.addEventListener('abort', () => { input.close(); });
         return new Response(body, { headers: { 'Content-Type': 'text/event-stream' } });

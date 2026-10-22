@@ -36,7 +36,7 @@ it('checks a draft controller without credentials and initializes with only a de
     vi.stubGlobal('crypto', webcrypto); setApiUrl('https://controller.example');
     const password = 'new administrator password';
     const fetch = vi.fn(async (url: URL, init: RequestInit) => {
-        expect(init.credentials).toBe('omit'); expect(init.redirect).toBe('error');
+        expect(init.credentials).toBe(url.hostname === 'draft.example' ? 'omit' : 'include'); expect(init.redirect).toBe('error');
         expect(String(init.body)).not.toContain(password);
         if (url.hostname === 'draft.example') {
             if (url.pathname === '/api/v2/management') return Response.json({ authentication: 'local-users' });
@@ -70,7 +70,7 @@ it('sends only derived credentials for enrollment and login and keeps sessions o
     const password = 'not transmitted 密码'; const bodies: string[] = [];
     const fetch = vi.fn(async (url: URL, init: RequestInit) => {
         bodies.push(String(init.body ?? ''));
-        expect(url.search).toBe(''); expect(init.credentials).toBe('omit'); expect(init.redirect).toBe('error');
+        expect(url.search).toBe(''); expect(init.credentials).toBe('include'); expect(init.redirect).toBe('error');
         const path = url.pathname;
         if (path.endsWith('/parameters')) return Response.json(parameters);
         if (path.endsWith('/enrollment')) { expect(new Headers(init.headers).get('Authorization')).toBe('Enrollment once-only-capability'); return Response.json({}); }

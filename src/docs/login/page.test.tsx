@@ -7,6 +7,7 @@ import { getApiUrl, setApiUrl } from '@/common/apiurl';
 import { clearSession, getSession, authHeaders } from '@/auth/session';
 import { SessionMonitor } from '@/auth/context';
 
+vi.mock('./oauth', () => ({ OAuthLogin: () => null }));
 vi.mock('@/auth/api', () => ({ initializationStatus: vi.fn(), initialize: vi.fn(), login: vi.fn(), enroll: vi.fn() }));
 vi.mock('react-i18next', () => { const t = (key: string) => key; return { useTranslation: () => ({ t }) }; });
 let host: HTMLDivElement; let root: Root;
