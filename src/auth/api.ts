@@ -3,7 +3,7 @@ import { directJSON, requireSecureController } from './transport';
 import { authScope, getSession, establishSession, clearSession, type Principal } from './session';
 
 export interface PasswordParameters { algorithm: string; salt: string; iterations: number; digest: string; bytes: number; normalization: string; encoding: string }
-export interface User { id: string; login: string; role: 'admin' | 'read-only'; disabled: boolean; enrolled: boolean; createdAt: number; updatedAt: number }
+export interface User { id: string; login: string; role: 'admin' | 'read-only' | 'none'; disabled: boolean; enrolled: boolean; createdAt: number; updatedAt: number }
 export interface Token { id: string; userId: string; kind: string; prefix: string; scopes: string[]; createdAt: number; expiresAt: number; revoked: boolean }
 export interface Issued extends Token { secret: string }
 export const authAPI = <T>(method: string, path: string, body?: unknown) => directJSON<T>(method, `/api/v2/auth${path}`, body);

@@ -105,7 +105,7 @@ export type NodeProtocolConfigByType = {
 export type NodeProtocolConfig<T extends NodeProtocolType = NodeProtocolType> = NodeProtocolConfigByType[T];
 
 export type NodeProtocol<T extends NodeProtocolType = NodeProtocolType> = {
-  [K in T]: { type: K } & { [P in K]: NodeProtocolConfigByType[P] }
+  [K in T]: { type: K; credentialRef?: string } & { [P in K]: NodeProtocolConfigByType[P] }
 }[T];
 
 export type Node = Omit<Go.node.Node, "origin" | "chain"> & {
@@ -137,7 +137,9 @@ export function createDefaultNode(group = "manual"): Node {
 
 export function normalizeProtocol(value: unknown): NodeProtocol {
   const type = normalizeProtocolType(protocolObject(value)?.type) ?? findProtocolType(value) ?? "direct";
-  return protocolWithConfig(type, protocolObject(value)?.[type]);
+  const protocol = protocolWithConfig(type, protocolObject(value)?.[type]);
+  const ref = protocolObject(value)?.credentialRef;
+  return typeof ref === 'string' && ref ? { ...protocol, credentialRef: ref } : protocol;
 }
 
 export function normalizeNode(value: Partial<Node> | undefined): Node {
@@ -167,7 +169,7 @@ export function patchProtocolConfig<T extends NodeProtocolType>(
   protocol: NodeProtocol<T>,
   patch: Partial<NodeProtocolConfig<T>>,
 ): NodeProtocol<T> {
-  return protocolWithConfig(protocol.type, { ...getProtocolConfig(protocol), ...patch });
+  return { ...protocolWithConfig(protocol.type, { ...getProtocolConfig(protocol), ...patch }), ...(protocol.credentialRef ? { credentialRef: protocol.credentialRef } : {}) };
 }
 
 export function protocolWithConfig<T extends NodeProtocolType>(type: T, value: unknown): NodeProtocol<T> {
@@ -249,6 +251,7 @@ function defaultProtocolConfig<T extends NodeProtocolType>(type: T): NodeProtoco
 
 type ProtocolObject = {
   type?: unknown;
+  credentialRef?: unknown;
 } & {
   [K in NodeProtocolType]?: unknown;
 };
