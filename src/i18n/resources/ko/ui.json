@@ -695,5 +695,14 @@
   "additionalTrustedOrigins": "추가로 신뢰할 출처 (한 줄에 하나)",
   "trustedOriginsHelp": "https://admin.example.com 또는 http://localhost:5173처럼 정확한 출처를 입력하세요. 루프백을 제외하면 HTTPS가 필요합니다. 와일드카드 및 URL 경로는 허용하지 않습니다. 신뢰한 사이트에서 로컬 관리 API를 조작할 수 있으므로 직접 관리하는 사이트만 추가하세요. 원격 네트워크 연결은 계속 인증이 필요합니다.",
   "trustedOriginsInvalid": "경로와 와일드카드가 없는 정확한 HTTP(S) 출처를 32개 이내로 입력하세요. 로컬 이외의 사이트에는 HTTPS가 필요하며 중복은 허용하지 않습니다.",
-  "saveSuccess": "설정을 저장했습니다."
+  "saveSuccess": "설정을 저장했습니다.",
+  "previousVersions": "이전 버전",
+    "retainTwoVersions": "이전 바이너리 최대 2개를 로컬에 보관",
+    "versionHistoryUnavailable": "버전 기록을 불러올 수 없습니다.",
+    "noPreviousVersions": "보관된 이전 버전이 없습니다.",
+    "restoreVersion": "복원",
+    "restoreVersionConfirm": "yuhaiin {version}(으)로 복원할까요? 서비스가 재시작되며 활성 연결이 중단됩니다.",
+    "restoreVersionStarted": "선택한 버전을 복원 중입니다. 서비스 재시작을 확인합니다.",
+    "rollbackBinaryOnly": "실행 파일만 복원됩니다. 설정과 데이터베이스 마이그레이션은 되돌려지지 않습니다."
+
 }
