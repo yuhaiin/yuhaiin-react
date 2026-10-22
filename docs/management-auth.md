@@ -49,7 +49,7 @@ Run `npm run test`, `npx tsc --noEmit`, `npm run lint`, `npm run i18n:check`, `n
 
 ## GitHub and Google sign-in
 
-Both providers are supported. An administrator opens **Account & security → OAuth application settings** and saves the OAuth web application's client ID, secret and exact callback URL:
+Both providers are supported. An administrator opens **Account & security → Connected accounts → OAuth application settings** and saves the OAuth web application's client ID, secret and exact callback URL:
 
 - `https://YOUR_CONTROLLER/api/v2/auth/oauth/github/callback`
 - `https://YOUR_CONTROLLER/api/v2/auth/oauth/google/callback`
@@ -59,3 +59,12 @@ Remote callbacks require public HTTPS. Google also requires a configured consent
 Activate a local account first, then connect GitHub or Google under **Connected accounts**. Enabled providers appear on the login screen. OAuth sign-in requires an existing connection and respects the local user's current role and disabled status. There is no public registration or automatic email-based account merge. Disconnecting signs out sessions authenticated with that provider. A password credential reset also clears connected accounts.
 
 The popup returns a one-use completion proof to the exact initiating UI. The parent checks popup identity, controller origin and state before completing the exchange with its memory-only start secret. Neither provider tokens nor session secrets are placed in callback URLs or messages. Cancelling, switching controllers or unmounting the page cancels the flow. Provider tokens are not stored by the backend.
+
+Administrator app settings open in a dialog from **Connected accounts**, rather
+than appearing as always-visible account-binding fields. When no provider is
+configured, the page explains the setup step. After saving, it refreshes enabled
+providers and closes the dialog; click **Connect GitHub** or **Connect Google**
+to open that provider's authorization page for the currently signed-in admin.
+Saving configuration alone never binds an external identity. Ordinary users see
+account binding controls and a contact-administrator notice when unavailable,
+without client-ID/secret settings.
