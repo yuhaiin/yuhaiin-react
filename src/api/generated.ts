@@ -126,6 +126,8 @@ export type RPCOperation =
   | "update.apply"
   | "update.check"
   | "update.status"
+  | "update.history"
+  | "update.rollback"
 ;
 
 type LegacyRoute = { method: string; pattern: string; operation: RPCOperation };
@@ -144,6 +146,8 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "POST", pattern: "/api/v2/update/check", operation: "update.check" },
   { method: "POST", pattern: "/api/v2/update/apply", operation: "update.apply" },
   { method: "GET", pattern: "/api/v2/update/status", operation: "update.status" },
+  { method: "GET", pattern: "/api/v2/update/history", operation: "update.history" },
+  { method: "POST", pattern: "/api/v2/update/rollback", operation: "update.rollback" },
   { method: "GET", pattern: "/api/v2/settings", operation: "settings.get" },
   { method: "PUT", pattern: "/api/v2/settings", operation: "settings.put" },
   { method: "GET", pattern: "/api/v2/backup/config", operation: "backup.config.get" },

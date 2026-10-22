@@ -1,14 +1,14 @@
 import { useUpdateRecovery } from '@/hooks/use-update-recovery';
 import { useTranslation } from 'react-i18next';
 
-import { applyUpdate, checkUpdate } from "@/api/update";
+import { applyUpdate, checkUpdate, getUpdateHistory, rollbackUpdate } from "@/api/update";
 import { getInfo } from "@/api/settings";
 import { Card, CardBody, CardFooter, CardHeader, IconBox, IconBoxRounded, ListItem, MainContainer, SettingLabel } from '@/component/v2/card';
 import { Button } from "@/component/v2/button";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import { GlobalToastContext } from "@/component/v2/toast";
-import type { UpdateChannel, UpdateCheck } from "@/contract/update";
-import { BadgeCheck, Calendar, Check, Code, Cpu, Download, ExternalLink, GitBranch, GitFork, Info, Laptop, Layers, LayoutGrid, RefreshCw, Rocket, Terminal } from 'lucide-react';
+import type { UpdateChannel, UpdateCheck, UpdateHistoryEntry } from "@/contract/update";
+import { BadgeCheck, Calendar, Check, Code, Cpu, Download, ExternalLink, GitBranch, GitFork, Info, Laptop, Layers, LayoutGrid, RefreshCw, Rocket, Terminal, RotateCcw, History } from 'lucide-react';
 import React, { FC, useContext, useEffect, useState } from "react";
 import useSWR from "swr";
 import Loading, { Error } from "../../../component/v2/loading";
@@ -94,10 +94,17 @@ export default function About() {
     const [update, setUpdate] = useState<UpdateCheck>();
     const [checkingUpdate, setCheckingUpdate] = useState(false);
     const [applyingUpdate, setApplyingUpdate] = useState(false);
+    const [restoringVersion, setRestoringVersion] = useState(false);
+    const { data: history, error: historyError, mutate: refreshHistory } = useSWR(
+        "/api/v2/update/history",
+        getUpdateHistory,
+        { revalidateOnFocus: false },
+    );
 
     const recovery = useUpdateRecovery(next => {
         void refreshInfo(next, { revalidate: false });
         setUpdate(undefined);
+        void refreshHistory();
         ctx.Info(uiT('updateCompleted'));
     });
     const updateStatus = recovery.status;
@@ -131,6 +138,24 @@ export default function About() {
             }
         } finally {
             setApplyingUpdate(false);
+        }
+    };
+
+    const handleRollback = async (entry: UpdateHistoryEntry) => {
+        if (recovery.active || restoringVersion || applyingUpdate || !info) return;
+        if (!window.confirm(uiT("restoreVersionConfirm", { version: entry.version || entry.id.slice(0, 8) }))) return;
+        setRestoringVersion(true);
+        recovery.beginTarget(entry.version || entry.id, info);
+        try {
+            await rollbackUpdate(entry.id);
+            ctx.Info(uiT("restoreVersionStarted"));
+        } catch (err) {
+            if (err && typeof err === "object" && "code" in err && err.code !== 0) {
+                recovery.fail(updateErrorMessage(err));
+                ctx.Error(updateErrorMessage(err));
+            }
+        } finally {
+            setRestoringVersion(false);
         }
     };
 
@@ -254,6 +279,43 @@ export default function About() {
                             {uiT(recovery.phase === 'complete' ? 'updateCompleted' : 'updateRecoveryTimeout')}
                             {recovery.phase === 'timeout' && <Button size="sm" className="ml-3" onClick={recovery.retry}>{uiT('retry')}</Button>}
                         </div>}
+
+                        <section className="border-t border-ui-border pt-4" aria-label={uiT("previousVersions")}>
+                            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 font-semibold text-ui-heading">
+                                    <History size={16} />
+                                    <span>{uiT("previousVersions")}</span>
+                                </div>
+                                <span className="text-xs text-ui-muted">{uiT("retainTwoVersions")}</span>
+                            </div>
+                            {historyError && <p role="alert" className="text-sm text-ui-danger">{uiT("versionHistoryUnavailable")}</p>}
+                            {!historyError && history && history.items.length === 0 && (
+                                <p className="text-sm text-ui-muted">{uiT("noPreviousVersions")}</p>
+                            )}
+                            <div className="space-y-2">
+                                {history?.items.map(entry => (
+                                    <div key={entry.id} className="flex flex-wrap items-center justify-between gap-3 rounded-ui-md border border-ui-border bg-ui-surface-muted p-3">
+                                        <div className="min-w-0 flex-1">
+                                            <div className="font-mono text-sm font-semibold break-all">{entry.version || entry.id.slice(0, 12)}</div>
+                                            <div className="mt-1 text-xs text-ui-muted">
+                                                {new Date(entry.savedAt).toLocaleString()} · {formatBytes(entry.size)}
+                                                {entry.commit ? ` · ${entry.commit.slice(0, 7)}` : ""}
+                                            </div>
+                                        </div>
+                                        <Button
+                                            size="sm"
+                                            variant="default"
+                                            disabled={recovery.active || applyingUpdate || restoringVersion}
+                                            onClick={() => void handleRollback(entry)}
+                                        >
+                                            <RotateCcw size={14} className="mr-1.5" />
+                                            {uiT("restoreVersion")}
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                            {history?.items.length ? <p className="mt-3 text-xs text-ui-muted">{uiT("rollbackBinaryOnly")}</p> : null}
+                        </section>
 
                         {update && (
                             <div className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
