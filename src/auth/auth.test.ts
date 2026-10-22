@@ -3,11 +3,35 @@ import { pbkdf2Sync, webcrypto } from 'node:crypto';
 import { afterEach, expect, it, vi } from 'vitest';
 import { deriveCredential, login, enroll, initialize, initializationStatus, type PasswordParameters } from './api';
 import { authorizedFetch } from './transport';
-import { authHeaders, authScope, clearSession, establishSession, getSession } from './session';
+import { authHeaders, authScope, clearSession, establishSession, establishLocalConnection, getSession, can } from './session';
 import { getApiUrl, setApiUrl } from '@/common/apiurl';
 const parameters: PasswordParameters = { algorithm: 'pbkdf2-sha256-v1', salt: 'AAECAwQFBgcICQoLDA0ODw', iterations: 600000, digest: 'SHA-256', bytes: 32, normalization: 'NFC', encoding: 'utf-8/base64url-unpadded' };
 const principal = { userId: 'reader', credentialType: 'session', permissions: ['identity:read', 'nodes:read'] };
 afterEach(() => { clearSession(); localStorage.clear(); vi.unstubAllGlobals(); vi.useRealTimers(); });
+it('connects to an explicitly local controller without creating credentials or granting account-management permissions', async () => {
+    vi.useFakeTimers(); setApiUrl('http://127.0.0.1:50051');
+    const fetch = vi.fn(async (url: URL, init: RequestInit) => {
+        expect(url.pathname).toBe('/api/v2/management'); expect(new Headers(init.headers).has('Authorization')).toBe(false);
+        return Response.json({ authentication: 'none' });
+    }); vi.stubGlobal('fetch', fetch);
+    expect(await initializationStatus(getApiUrl(), new AbortController().signal)).toEqual({ authentication: 'none', required: false, expiresAt: 0 });
+    establishLocalConnection(getApiUrl());
+    expect(authHeaders()).toEqual({}); expect(getSession()?.principal.credentialType).toBe('local');
+    expect(can('settings:write')).toBe(true); expect(can('users:manage')).toBe(false); expect(can('identity:read')).toBe(false);
+    await vi.advanceTimersByTimeAsync(8 * 3600 * 1000); expect(getSession()).not.toBeNull();
+    expect(fetch).toHaveBeenCalledTimes(1);
+    setApiUrl('https://remote.example'); expect(getSession()).toBeNull();
+    expect(() => establishLocalConnection(getApiUrl())).toThrow('loopback');
+    await expect(initializationStatus(getApiUrl(), new AbortController().signal)).rejects.toThrow('loopback');
+});
+it('does not interpret missing or unknown management capabilities as anonymous access', async () => {
+    setApiUrl('http://127.0.0.1:50051');
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 404 })));
+    await expect(initializationStatus(getApiUrl(), new AbortController().signal)).rejects.toEqual({ code: 404 });
+    vi.stubGlobal('fetch', vi.fn(async () => Response.json({ authentication: 'unknown' })));
+    await expect(initializationStatus(getApiUrl(), new AbortController().signal)).rejects.toThrow('Unsupported');
+    expect(getSession()).toBeNull();
+});
 it('checks a draft controller without credentials and initializes with only a derived credential', async () => {
     vi.stubGlobal('crypto', webcrypto); setApiUrl('https://controller.example');
     const password = 'new administrator password';
@@ -15,6 +39,7 @@ it('checks a draft controller without credentials and initializes with only a de
         expect(init.credentials).toBe('omit'); expect(init.redirect).toBe('error');
         expect(String(init.body)).not.toContain(password);
         if (url.hostname === 'draft.example') {
+            if (url.pathname === '/api/v2/management') return Response.json({ authentication: 'local-users' });
             expect(new Headers(init.headers).has('Authorization')).toBe(false);
             return Response.json({ required: true, expiresAt: 12345 });
         }
@@ -27,7 +52,7 @@ it('checks a draft controller without credentials and initializes with only a de
     const status = await initializationStatus('https://draft.example', new AbortController().signal);
     expect(status.required).toBe(true); expect(getApiUrl()).toBe('https://controller.example');
     await initialize('startup-code', 'owner', password);
-    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(fetch).toHaveBeenCalledTimes(4);
     expect(getSession()).toBeNull();
 });
 it('matches the Go PBKDF2 contract and normalizes Unicode without trimming', async () => {

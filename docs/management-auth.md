@@ -4,6 +4,15 @@ This UI requires the management identity API in [yuhaiin PR #608](https://github
 
 ## First login and recovery
 
+The UI first checks `/api/v2/management` for an explicit authentication mode.
+Android omits the identity middleware and reports `none` on its loopback
+controller: the UI opens directly, without login/setup, account controls,
+credentials or identity polling. This connection has no fabricated user or
+session secret. Changing controllers clears it. Only loopback URLs can use this
+mode; a missing endpoint or unknown mode is an error, never an anonymous-access
+fallback. The server executable installs the identity middleware and reports
+`local-users`, using the setup/login flow below.
+
 Start the controller normally, then open the Web UI and choose its URL. An uninitialized controller automatically shows **Create administrator**. Copy the **Initialization code** from the controller's startup output, choose your login and password, and submit. Then sign in with those credentials. No extra bootstrap command is required.
 
 The code lasts 15 minutes. Restarting before setup finishes generates a new code and invalidates the old one, even if the first run received no interaction. If the code expires, restart the controller and use the newest startup output. Creating the administrator permanently closes first-time setup; later restarts and password resets cannot reopen it. No account is created just by starting the service or opening this page. Public setup status never includes the code, and the UI never stores it persistently.

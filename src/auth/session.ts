@@ -1,4 +1,5 @@
 import { getApiUrl } from '@/common/apiurl';
+import { operationPermissions } from './operations';
 
 export interface Principal { userId: string; credentialType: string; permissions: string[] }
 export interface Session { authorization: string; principal: Principal; expiresAt: number; controller: string }
@@ -11,7 +12,7 @@ function changed() { version++; listeners.forEach(listener => listener()); }
 export function subscribeAuth(listener: () => void) { listeners.add(listener); return () => { listeners.delete(listener); }; }
 export function authScope() { return JSON.stringify([getApiUrl(), version]); }
 export function getSession() { return session?.controller === getApiUrl() ? session : null; }
-export function authHeaders(): Record<string, string> { const current = getSession(); return current ? { Authorization: current.authorization } : {}; }
+export function authHeaders(): Record<string, string> { const current = getSession(); return current?.authorization ? { Authorization: current.authorization } : {}; }
 export function clearSession() { clearTimeout(expiry); session = null; changed(); }
 export function establishSession(secret: string, principal: Principal, expiresAt: number, controller: string) {
     if (controller !== getApiUrl() || expiresAt * 1000 <= Date.now()) throw new Error('Session expired or controller changed');
@@ -19,6 +20,16 @@ export function establishSession(secret: string, principal: Principal, expiresAt
     session = { authorization: `Session ${secret}`, principal, expiresAt, controller };
     enrollment = null;
     expiry = setTimeout(clearSession, expiresAt * 1000 - Date.now());
+    changed();
+}
+/** A local controller explicitly advertises that no identity module is installed.
+ * This is a connection state, with no fabricated account, secret or expiry. */
+export function establishLocalConnection(controller: string) {
+    const url = new URL(controller || window.location.href);
+    if (controller !== getApiUrl() || !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) || !['http:', 'https:'].includes(url.protocol)) throw new Error('Local management requires a loopback controller');
+    clearTimeout(expiry);
+    session = { authorization: '', controller, expiresAt: 0, principal: { userId: '', credentialType: 'local', permissions: [...new Set(Object.values(operationPermissions))] } };
+    enrollment = null;
     changed();
 }
 export function updatePrincipal(principal: Principal) {

@@ -73,6 +73,7 @@ function stream(event,payload,repeat=false){
 }
 if (scenario === 'lazy') resolverHosts = {hosts: Object.fromEntries(Array.from({length:10000}, (_, i) => [`host-${String(i).padStart(5,'0')}.example.invalid`, `192.0.2.${i%254+1}`]))};
 const worker=setupWorker(
+  http.get('/api/v2/management',()=>HttpResponse.json({authentication:'local-users'})),
   http.get('/api/v2/auth/setup',()=>HttpResponse.json({required:false,expiresAt:0})),
   http.get('/api/v2/auth/me',()=>HttpResponse.json(principal)),
   http.get('/api/v2/connections/events',()=>stream('connections_added',{connections})),

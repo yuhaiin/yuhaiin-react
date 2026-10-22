@@ -6,7 +6,7 @@ export function usePermission(permission: string) { return useSession()?.princip
 export function SessionMonitor() {
     const session = useSession();
     useEffect(() => {
-        if (!session) return;
+        if (!session || session.principal.credentialType === 'local') return;
         const refresh = () => { void authAPI<Principal>('GET', '/me').then(principal => { if (getSession() === session) updatePrincipal(principal); }).catch(() => undefined); };
         const timer = window.setInterval(refresh, 30000);
         window.addEventListener('focus', refresh);

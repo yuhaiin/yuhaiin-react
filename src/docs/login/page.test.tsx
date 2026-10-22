@@ -4,7 +4,8 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import LoginPage from './page';
 import { initializationStatus, initialize, login } from '@/auth/api';
 import { getApiUrl, setApiUrl } from '@/common/apiurl';
-import { clearSession } from '@/auth/session';
+import { clearSession, getSession, authHeaders } from '@/auth/session';
+import { SessionMonitor } from '@/auth/context';
 
 vi.mock('@/auth/api', () => ({ initializationStatus: vi.fn(), initialize: vi.fn(), login: vi.fn(), enroll: vi.fn() }));
 vi.mock('react-i18next', () => { const t = (key: string) => key; return { useTranslation: () => ({ t }) }; });
@@ -22,7 +23,7 @@ async function input(label: string, value: string) {
 }
 async function submit() { await act(async () => { host.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); }); }
 it('automatically shows first-time setup, checks confirmation, and returns to login with no retained secret', async () => {
-    vi.mocked(initializationStatus).mockResolvedValue({ required: true, expiresAt: 1234567890 });
+    vi.mocked(initializationStatus).mockResolvedValue({ authentication: 'local-users', required: true, expiresAt: 1234567890 });
     vi.mocked(initialize).mockResolvedValue(undefined);
     await mount();
     expect(host.textContent).toContain('createAdministrator'); expect(host.textContent).toContain('setupRestartHint');
@@ -37,16 +38,27 @@ it('automatically shows first-time setup, checks confirmation, and returns to lo
     await input('password', 'chosen password'); await submit(); expect(login).toHaveBeenCalledWith('owner', 'chosen password');
 });
 it('uses ordinary login and enrollment when the controller is initialized', async () => {
-    vi.mocked(initializationStatus).mockResolvedValue({ required: false, expiresAt: 0 });
+    vi.mocked(initializationStatus).mockResolvedValue({ authentication: 'local-users', required: false, expiresAt: 0 });
     await mount(); expect(host.textContent).not.toContain('createAdministrator'); expect(host.textContent).toContain('signIn');
     await act(async () => { [...host.querySelectorAll('button')].find(button => button.textContent === 'activateAccount')!.click(); });
     expect(host.textContent).toContain('enrollmentCapability'); expect(host.textContent).not.toContain('initializationCode');
 });
+it('enters local Android management directly and never polls identity endpoints', async () => {
+    setApiUrl('http://127.0.0.1:50051');
+    vi.mocked(initializationStatus).mockResolvedValue({ authentication: 'none', required: false, expiresAt: 0 });
+    await mount();
+    expect(getSession()?.principal.credentialType).toBe('local'); expect(authHeaders()).toEqual({});
+    expect(initialize).not.toHaveBeenCalled(); expect(login).not.toHaveBeenCalled();
+    const fetch = vi.fn(); vi.stubGlobal('fetch', fetch);
+    await act(async () => root.render(<SessionMonitor />));
+    await act(async () => { await vi.advanceTimersByTimeAsync(60000); window.dispatchEvent(new Event('focus')); });
+    expect(fetch).not.toHaveBeenCalled(); vi.unstubAllGlobals();
+});
 it('ignores a stale setup response after editing the controller without persisting the draft address', async () => {
-    let release!: (value: { required: boolean; expiresAt: number }) => void;
-    vi.mocked(initializationStatus).mockImplementationOnce(() => new Promise(resolve => { release = resolve; })).mockResolvedValue({ required: false, expiresAt: 0 });
+    let release!: (value: { authentication: 'local-users', required: boolean; expiresAt: number }) => void;
+    vi.mocked(initializationStatus).mockImplementationOnce(() => new Promise(resolve => { release = resolve; })).mockResolvedValue({ authentication: 'local-users', required: false, expiresAt: 0 });
     await mount(); await input('controller', 'https://new.example');
     await act(async () => { await vi.advanceTimersByTimeAsync(300); });
-    await act(async () => { release({ required: true, expiresAt: 1234567890 }); });
+    await act(async () => { release({ authentication: 'local-users', required: true, expiresAt: 1234567890 }); });
     expect(host.textContent).toContain('signIn'); expect(host.textContent).not.toContain('createAdministrator'); expect(getApiUrl()).toBe('https://controller.example');
 });

@@ -1,7 +1,7 @@
 import { getApiUrl, setApiUrl } from '@/common/apiurl';
 import { enroll, initialize, initializationStatus, login } from '@/auth/api';
 import { requireSecureController } from '@/auth/transport';
-import { discardEnrollment, pendingEnrollment } from '@/auth/session';
+import { discardEnrollment, pendingEnrollment, establishLocalConnection } from '@/auth/session';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardFooter, CardHeader, CardTitle } from '@/component/v2/card';
 import { Input } from '@/component/v2/input';
@@ -30,6 +30,12 @@ export default function LoginPage() {
         const timer = window.setTimeout(() => {
             void initializationStatus(controller, request.signal).then(status => {
                 if (request.signal.aborted) return;
+                if (status.authentication === 'none') {
+                    setApiUrl(controller);
+                    establishLocalConnection(getApiUrl());
+                    window.location.hash = '/';
+                    return;
+                }
                 setRequired(status.required); setExpiresAt(status.expiresAt);
                 setMode(previous => status.required ? 'setup' : previous === 'setup' ? 'login' : previous);
             }).catch(() => { if (!request.signal.aborted) setError(t('requestFailed')); });

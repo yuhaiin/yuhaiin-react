@@ -9,14 +9,23 @@ export interface Issued extends Token { secret: string }
 export const authAPI = <T>(method: string, path: string, body?: unknown) => directJSON<T>(method, `/api/v2/auth${path}`, body);
 
 // Check an edited controller without persisting it or attaching any session.
-export async function initializationStatus(controller: string, signal: AbortSignal): Promise<{ required: boolean; expiresAt: number }> {
+export async function initializationStatus(controller: string, signal: AbortSignal): Promise<{ authentication: 'none' | 'local-users'; required: boolean; expiresAt: number }> {
     requireSecureController(controller);
-    const url = new URL('/api/v2/auth/setup', new URL(controller || window.location.href).origin);
-    const response = await fetch(url, { signal, credentials: 'omit', cache: 'no-store', redirect: 'error', referrerPolicy: 'no-referrer' });
+    const base = new URL(controller || window.location.href).origin;
+    const options: RequestInit = { signal, credentials: 'omit', cache: 'no-store', redirect: 'error', referrerPolicy: 'no-referrer' };
+    const capabilities = await fetch(new URL('/api/v2/management', base), options);
+    if (!capabilities.ok) throw { code: capabilities.status };
+    const mode = (await capabilities.json()).authentication;
+    if (mode === 'none') {
+        if (!['localhost', '127.0.0.1', '[::1]'].includes(new URL(base).hostname)) throw new Error('Local management requires a loopback controller');
+        return { authentication: 'none', required: false, expiresAt: 0 };
+    }
+    if (mode !== 'local-users') throw new Error('Unsupported management authentication');
+    const response = await fetch(new URL('/api/v2/auth/setup', base), options);
     if (!response.ok) throw { code: response.status };
     const status = await response.json();
     if (typeof status.required !== 'boolean' || typeof status.expiresAt !== 'number') throw new Error('Invalid setup status');
-    return status;
+    return { ...status, authentication: 'local-users' };
 }
 
 export async function initialize(secret: string, name: string, password: string) {
