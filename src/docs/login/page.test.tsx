@@ -62,3 +62,10 @@ it('ignores a stale setup response after editing the controller without persisti
     await act(async () => { release({ authentication: 'local-users', required: true, expiresAt: 1234567890 }); });
     expect(host.textContent).toContain('signIn'); expect(host.textContent).not.toContain('createAdministrator'); expect(getApiUrl()).toBe('https://controller.example');
 });
+it('takes a proxy-only user directly to credential self-service after login', async () => {
+    vi.mocked(initializationStatus).mockResolvedValue({ authentication: 'local-users', required: false, expiresAt: 0 });
+    const { establishSession } = await import('@/auth/session');
+    vi.mocked(login).mockImplementationOnce(async () => { establishSession('session', { userId: 'alice', credentialType: 'session', permissions: ['identity:read', 'proxy-credentials:own'] }, 2000000000, 'https://controller.example'); });
+    await mount(); await input('loginName', 'alice'); await input('password', 'password'); await submit();
+    expect(window.location.hash).toBe('#/docs/security');
+});

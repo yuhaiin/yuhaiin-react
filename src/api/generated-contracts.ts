@@ -31,6 +31,14 @@ export namespace Go {
     }
   }
   export namespace connection {
+    export interface MatchTraceTemplate {
+      Type: string;
+      Label: string;
+      Constant: string;
+      EmitsHistory: boolean;
+      Children: MatchTraceTemplate[];
+    }
+    export type traceValue = number;
     export interface Counter {
       download: string;
       upload: string;
@@ -63,6 +71,8 @@ export namespace Go {
       groups: TelemetryGroup[];
     }
     export interface Connection {
+      userId?: string;
+      credentialId?: string;
       id: string;
       addr: string;
       network: NetworkType;
@@ -117,6 +127,14 @@ export namespace Go {
       kind?: string;
       id?: string;
       children?: MatchTrace[];
+    }
+    export interface MatchTraceRequest {
+      id: string;
+      ruleIndex: number;
+    }
+    export interface MatchTraceResponse {
+      ruleIndex: number;
+      entry: MatchHistoryEntry;
     }
     export interface MatchResult {
       kind?: string;
@@ -424,7 +442,11 @@ export namespace Go {
       error?: string;
       createdAt: number;
     }
+    export interface Authentication {
+      users: string[];
+    }
     export interface Inbound {
+      authentication?: Authentication;
       id: string;
       name: string;
       enabled: boolean;
@@ -717,53 +739,53 @@ export namespace Go {
       filtering?: string;
     }
     export type Protocol =
-      | { type: "shadowsocks"; shadowsocks: Shadowsocks }
-      | { type: "shadowsocksr"; shadowsocksr: Shadowsocksr }
-      | { type: "vmess"; vmess: Vmess }
-      | { type: "websocket"; websocket: Websocket }
-      | { type: "hysteria2"; hysteria2: Hysteria2 }
-      | { type: "quic"; quic: Quic }
-      | { type: "obfs_http"; obfs_http: ObfsHTTP }
-      | { type: "trojan"; trojan: Trojan }
-      | { type: "simple"; simple: Fixed }
-      | { type: "none"; none: None }
-      | { type: "socks5"; socks5: Socks5 }
-      | { type: "ssh"; ssh: SSH }
-      | { type: "http"; http: HTTP }
-      | { type: "direct"; direct: Direct }
-      | { type: "reject"; reject: Reject }
-      | { type: "yuubinsya"; yuubinsya: Yuubinsya }
-      | { type: "http2"; http2: Concurrency }
-      | { type: "reality"; reality: Reality }
-      | { type: "tls"; tls: TLS }
-      | { type: "amneziawg"; amneziawg: AmneziaWG }
-      | { type: "nebula"; nebula: Nebula }
-      | { type: "zerotier"; zerotier: ZeroTier }
-      | { type: "ikev2"; ikev2: IKEv2 }
-      | { type: "anyconnect"; anyconnect: AnyConnect }
-      | { type: "sstp"; sstp: SSTP }
-      | { type: "fortinet"; fortinet: Fortinet }
-      | { type: "wireguard"; wireguard: Wireguard }
-      | { type: "openvpn"; openvpn: OpenVPN }
-      | { type: "l2tp"; l2tp: L2TP }
-      | { type: "l2tpv3"; l2tpv3: L2TPv3 }
-      | { type: "globalprotect"; globalprotect: GlobalProtect }
-      | { type: "softether"; softether: SoftEther }
-      | { type: "mux"; mux: Concurrency }
-      | { type: "drop"; drop: Drop }
-      | { type: "vless"; vless: Vless }
-      | { type: "bootstrap_dns_warp"; bootstrap_dns_warp: BootstrapDNSWarp }
-      | { type: "tailscale"; tailscale: Tailscale }
-      | { type: "set"; set: Set }
-      | { type: "tls_termination"; tls_termination: TLSTermination }
-      | { type: "http_mock"; http_mock: HTTPMock }
-      | { type: "aead"; aead: AEAD }
-      | { type: "fixed"; fixed: Fixed }
-      | { type: "network_split"; network_split: NetworkSplit }
-      | { type: "cloudflare_warp_masque"; cloudflare_warp_masque: CloudflareWarpMasque }
-      | { type: "proxy"; proxy: Proxy }
-      | { type: "fixedv2"; fixedv2: FixedV2 }
-      | { type: "point_as_endpoint"; point_as_endpoint: PointAsEndpoint };
+      | { type: "shadowsocks"; credentialRef?: string; shadowsocks: Shadowsocks }
+      | { type: "shadowsocksr"; credentialRef?: string; shadowsocksr: Shadowsocksr }
+      | { type: "vmess"; credentialRef?: string; vmess: Vmess }
+      | { type: "websocket"; credentialRef?: string; websocket: Websocket }
+      | { type: "hysteria2"; credentialRef?: string; hysteria2: Hysteria2 }
+      | { type: "quic"; credentialRef?: string; quic: Quic }
+      | { type: "obfs_http"; credentialRef?: string; obfs_http: ObfsHTTP }
+      | { type: "trojan"; credentialRef?: string; trojan: Trojan }
+      | { type: "simple"; credentialRef?: string; simple: Fixed }
+      | { type: "none"; credentialRef?: string; none: None }
+      | { type: "socks5"; credentialRef?: string; socks5: Socks5 }
+      | { type: "ssh"; credentialRef?: string; ssh: SSH }
+      | { type: "http"; credentialRef?: string; http: HTTP }
+      | { type: "direct"; credentialRef?: string; direct: Direct }
+      | { type: "reject"; credentialRef?: string; reject: Reject }
+      | { type: "yuubinsya"; credentialRef?: string; yuubinsya: Yuubinsya }
+      | { type: "http2"; credentialRef?: string; http2: Concurrency }
+      | { type: "reality"; credentialRef?: string; reality: Reality }
+      | { type: "tls"; credentialRef?: string; tls: TLS }
+      | { type: "amneziawg"; credentialRef?: string; amneziawg: AmneziaWG }
+      | { type: "nebula"; credentialRef?: string; nebula: Nebula }
+      | { type: "zerotier"; credentialRef?: string; zerotier: ZeroTier }
+      | { type: "ikev2"; credentialRef?: string; ikev2: IKEv2 }
+      | { type: "anyconnect"; credentialRef?: string; anyconnect: AnyConnect }
+      | { type: "sstp"; credentialRef?: string; sstp: SSTP }
+      | { type: "fortinet"; credentialRef?: string; fortinet: Fortinet }
+      | { type: "wireguard"; credentialRef?: string; wireguard: Wireguard }
+      | { type: "openvpn"; credentialRef?: string; openvpn: OpenVPN }
+      | { type: "l2tp"; credentialRef?: string; l2tp: L2TP }
+      | { type: "l2tpv3"; credentialRef?: string; l2tpv3: L2TPv3 }
+      | { type: "globalprotect"; credentialRef?: string; globalprotect: GlobalProtect }
+      | { type: "softether"; credentialRef?: string; softether: SoftEther }
+      | { type: "mux"; credentialRef?: string; mux: Concurrency }
+      | { type: "drop"; credentialRef?: string; drop: Drop }
+      | { type: "vless"; credentialRef?: string; vless: Vless }
+      | { type: "bootstrap_dns_warp"; credentialRef?: string; bootstrap_dns_warp: BootstrapDNSWarp }
+      | { type: "tailscale"; credentialRef?: string; tailscale: Tailscale }
+      | { type: "set"; credentialRef?: string; set: Set }
+      | { type: "tls_termination"; credentialRef?: string; tls_termination: TLSTermination }
+      | { type: "http_mock"; credentialRef?: string; http_mock: HTTPMock }
+      | { type: "aead"; credentialRef?: string; aead: AEAD }
+      | { type: "fixed"; credentialRef?: string; fixed: Fixed }
+      | { type: "network_split"; credentialRef?: string; network_split: NetworkSplit }
+      | { type: "cloudflare_warp_masque"; credentialRef?: string; cloudflare_warp_masque: CloudflareWarpMasque }
+      | { type: "proxy"; credentialRef?: string; proxy: Proxy }
+      | { type: "fixedv2"; credentialRef?: string; fixedv2: FixedV2 }
+      | { type: "point_as_endpoint"; credentialRef?: string; point_as_endpoint: PointAsEndpoint };
     export interface L2TP {
       auth_type?: string;
       gateway: string;
@@ -1141,17 +1163,6 @@ export namespace Go {
     export type Mux = Concurrency;
   }
   export namespace resolver {
-    export interface ResponseRule {
-      domain: string;
-      queryType: string;
-      rcode: string;
-      ttl: number;
-      answers: string[];
-    }
-    export interface ResponseRules {
-      rules: ResponseRule[];
-    }
-
     export interface FakeIPEntry {
       domain: string;
       ip: string;
@@ -1162,6 +1173,16 @@ export namespace Go {
     export interface HostEntry {
       host: string;
       target: string;
+    }
+    export interface ResponseRule {
+      domain: string;
+      queryType: string;
+      rcode: string;
+      ttl: number;
+      answers: string[];
+    }
+    export interface ResponseRules {
+      rules: ResponseRule[];
     }
     export interface Resolver {
       id: string;
@@ -1260,24 +1281,24 @@ export namespace Go {
       listIds: string[];
     }
     export interface RuleActivationStatus {
+      listIssues?: ListActivationIssue[];
+      skippedRules?: SkippedRouteRule[];
+      degradedRules?: DegradedRouteRule[];
       applying?: boolean;
       runningConfig?: Config;
       savedRevision: number;
       appliedRevision: number;
-      listIssues?: ListActivationIssue[];
-      skippedRules?: SkippedRouteRule[];
-      degradedRules?: DegradedRouteRule[];
       applyAt: number;
       error?: string;
     }
     export interface ActivationStatus {
+      listIssues?: ListActivationIssue[];
+      skippedRules?: SkippedRouteRule[];
+      degradedRules?: DegradedRouteRule[];
       applying?: boolean;
       runningConfig?: Config;
       savedRevision: number;
       appliedRevision: number;
-      listIssues?: ListActivationIssue[];
-      skippedRules?: SkippedRouteRule[];
-      degradedRules?: DegradedRouteRule[];
       hostIndexRefreshAt: number;
       ruleApplyAt: number;
       error?: string;
@@ -1639,6 +1660,19 @@ export namespace Go {
       bytesDownloaded: number;
       totalBytes: number;
       error: string;
+    }
+    export interface HistoryEntry {
+      id: string;
+      version: string;
+      commit: string;
+      size: number;
+      savedAt: string;
+    }
+    export interface HistoryResult {
+      items: HistoryEntry[];
+    }
+    export interface RollbackRequest {
+      id: string;
     }
   }
 }

@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { Tokens } from './tokens';
 import { Users } from './users';
+import { ProxyCredentials, UpstreamCredentials } from './proxy-credentials';
 export default function SecurityPage() {
     const { t } = useTranslation('auth'); const session = useSession();
     const [busy, setBusy] = useState(false); const [error, setError] = useState('');
@@ -29,6 +30,8 @@ export default function SecurityPage() {
         </CardBody></Card>
         {permissions.includes('users:manage') && <Users />}
         {permissions.includes('tokens:own') && <Tokens />}
+        {permissions.includes('proxy-credentials:own') && <ProxyCredentials />}
+        {permissions.includes('upstream-credentials:manage') && <UpstreamCredentials />}
         {permissions.includes('security:read') && <SecurityEvents />}
     </MainContainer>;
 }
