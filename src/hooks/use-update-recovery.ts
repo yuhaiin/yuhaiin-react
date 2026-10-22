@@ -92,6 +92,10 @@ export function useUpdateRecovery(onVerified: (info: Info) => void) {
     return {
         phase, status, failure,
         active: phase === 'updating' || phase === 'restarting',
+        beginTarget: (target: string, info: Info) => {
+            const next = { target, previous: { version: info.version, commit: info.commit, buildTime: info.buildTime }, startedAt: Date.now() };
+            persist(next); setPending(next); setFailure(''); setPhase('updating');
+        },
         begin: (update: UpdateCheck, info: Info) => {
             const next = { target: update.targetVersion || update.targetTag, previous: { version: info.version, commit: info.commit, buildTime: info.buildTime }, startedAt: Date.now() };
             persist(next); setPending(next); setFailure(''); setPhase('updating');
