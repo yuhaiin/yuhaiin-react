@@ -16,6 +16,8 @@ import { createDefaultNetwork, createDefaultTransport, selectInboundProtocol, Ce
 import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react";
 import { FC, useId, useRef, useState } from "react";
 
+import { UserAuthentication } from "./authentication";
+
 const networkTypes: InboundNetwork["type"][] = ["empty", "tcp_udp", "quic"];
 
 const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "wireguard", "krunlet", "reverse_tcp", "none"];
@@ -60,6 +62,7 @@ const InboundEditor: FC<{
             <FormSection title={uiT("protocol")}>
                     <ProtocolSection inbound={inbound} onChange={onChange} protocols={protocols} platform={platform} />
             </FormSection>
+            <UserAuthentication inbound={inbound} onChange={onChange} />
         </div>
     );
 };

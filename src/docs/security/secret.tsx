@@ -4,11 +4,11 @@ import { Textarea } from '@/component/v2/input';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
 import { useTranslation } from 'react-i18next';
 import type { Issued } from '@/auth/api';
-export function IssuedSecret({ value, onClose }: { value: Issued; onClose: () => void }) {
+export function IssuedSecret({ value, onClose }: { value: Pick<Issued, 'secret' | 'kind' | 'userId' | 'expiresAt'> & { scopes?: string[] }; onClose: () => void }) {
     const { t } = useTranslation('auth');
     const clipboard = useClipboard({ usePromptAsFallback: true });
     return <Modal open onOpenChange={open => { if (!open) onClose(); }}><ModalContent>
-        <ModalHeader><ModalTitle>{t(value.kind === 'enrollment' ? 'enrollmentCapability' : 'tokenCreated')}</ModalTitle></ModalHeader>
+        <ModalHeader><ModalTitle>{t(value.kind === 'enrollment' ? 'enrollmentCapability' : value.kind === 'proxy' ? 'proxyCredentialCreated' : 'tokenCreated')}</ModalTitle></ModalHeader>
         <ModalBody className="space-y-3">
             <p className="text-sm text-ui-muted">{t('copyOnce')}</p>
             <label className="block space-y-2"><span>{t('secret')}</span><Textarea readOnly value={value.secret} rows={3} onFocus={event => event.target.select()} className="break-all font-mono" /></label>

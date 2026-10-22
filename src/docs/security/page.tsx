@@ -11,6 +11,7 @@ import { Sessions } from './sessions';
 import { OAuthLinks } from './oauth-links';
 import { Tokens } from './tokens';
 import { Users } from './users';
+import { ProxyCredentials, UpstreamCredentials } from './proxy-credentials';
 export default function SecurityPage() {
     const { t } = useTranslation('auth'); const session = useSession();
     const [busy, setBusy] = useState(false); const [error, setError] = useState('');
@@ -32,6 +33,8 @@ export default function SecurityPage() {
         {session.principal.credentialType === 'session' && <><Sessions /><OAuthLinks /></>}
         {permissions.includes('users:manage') && <Users />}
         {permissions.includes('tokens:own') && <Tokens />}
+        {permissions.includes('proxy-credentials:own') && <ProxyCredentials />}
+        {permissions.includes('upstream-credentials:manage') && <UpstreamCredentials />}
         {permissions.includes('security:read') && <SecurityEvents />}
     </MainContainer>;
 }

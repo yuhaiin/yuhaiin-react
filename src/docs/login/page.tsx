@@ -1,7 +1,7 @@
 import { getApiUrl, setApiUrl } from '@/common/apiurl';
 import { enroll, initialize, initializationStatus, login } from '@/auth/api';
 import { requireSecureController } from '@/auth/transport';
-import { discardEnrollment, pendingEnrollment, establishLocalConnection } from '@/auth/session';
+import { discardEnrollment, pendingEnrollment, establishLocalConnection, getSession } from '@/auth/session';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardFooter, CardHeader, CardTitle } from '@/component/v2/card';
 import { Input } from '@/component/v2/input';
@@ -62,7 +62,7 @@ export default function LoginPage() {
                 await enroll(capability, enteredPassword);
                 setCapability(''); discardEnrollment(); setRequired(false); setMode('login'); setNotice(t('enrolled'));
             } else {
-                await login(name, enteredPassword); window.location.hash = '/';
+                await login(name, enteredPassword); window.location.hash = getSession()?.principal.permissions.includes('connections:read') ? '/' : '/docs/security';
             }
         } catch (cause) {
             const code = cause && typeof cause === 'object' && 'code' in cause ? cause.code : 0;

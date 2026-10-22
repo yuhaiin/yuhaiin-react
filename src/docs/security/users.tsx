@@ -37,7 +37,7 @@ export function Users() {
         <CardBody className="space-y-5">
             <form onSubmit={create} className="flex flex-wrap items-end gap-3">
                 <label className="min-w-0 flex-1 space-y-2"><span>{t('loginName')}</span><Input value={name} onChange={event => setName(event.target.value)} pattern="[A-Za-z0-9_.-]{1,64}" required maxLength={64} disabled={busy} /></label>
-                <div className="min-w-40"><Select ariaLabel={t('role')} value={role} onValueChange={setRole} items={[{ value: 'read-only', label: t('readOnly') }, { value: 'admin', label: t('admin') }]} disabled={busy} /></div>
+                <div className="min-w-40"><Select ariaLabel={t('role')} value={role} onValueChange={setRole} items={[{ value: 'read-only', label: t('readOnly') }, { value: 'none', label: t('proxyOnly') }, { value: 'admin', label: t('admin') }]} disabled={busy} /></div>
                 <Button type="submit" variant="primary" disabled={busy}>{t('createUser')}</Button>
             </form>
             {(error || loadError) && <p role="alert" className="text-sm text-ui-danger">{error || t('requestFailed')}</p>}
@@ -60,7 +60,7 @@ function UserRow({ user, busy, lastAdmin, onSave, onReset, onDelete }: { user: U
         <p className="break-all text-xs text-ui-muted">{user.id}</p>
         <form className="flex flex-wrap items-end gap-3" onSubmit={event => { event.preventDefault(); onSave({ login: name, role, disabled }); }}>
             <label className="min-w-0 flex-1 space-y-2"><span>{t('loginName')}</span><Input value={name} onChange={event => setName(event.target.value)} pattern="[A-Za-z0-9_.-]{1,64}" required disabled={busy} /></label>
-            <div className="min-w-40"><Select ariaLabel={t('role')} value={role} onValueChange={value => setRole(value as User['role'])} items={[{ value: 'admin', label: t('admin') }, { value: 'read-only', label: t('readOnly') }]} disabled={busy || lastAdmin} /></div>
+            <div className="min-w-40"><Select ariaLabel={t('role')} value={role} onValueChange={value => setRole(value as User['role'])} items={[{ value: 'admin', label: t('admin') }, { value: 'read-only', label: t('readOnly') }, { value: 'none', label: t('proxyOnly') }]} disabled={busy || lastAdmin} /></div>
             <label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={disabled} onChange={event => setDisabled(event.target.checked)} disabled={busy || lastAdmin} />{t('disabled')}</label>
             <Button type="submit" disabled={busy}>{t('save')}</Button>
         </form>
