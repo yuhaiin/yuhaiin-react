@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { SessionBootstrap } from './auth/context';
 import './global.css';
 import './i18n';
 import { LanguageProvider } from './i18n/LanguageProvider';
@@ -12,7 +13,7 @@ if (!rootElement.innerHTML) {
     root.render(
         <StrictMode>
             <LanguageProvider>
-                <App />
+                <SessionBootstrap><App /></SessionBootstrap>
             </LanguageProvider>
         </StrictMode>,
     )

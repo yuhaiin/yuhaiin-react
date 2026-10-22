@@ -7,6 +7,9 @@ import { confirmAction } from '@/component/v2/confirmation';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
+import { Sessions } from './sessions';
+import { OAuthLinks } from './oauth-links';
+import { OAuthSettingsPanel } from './oauth-settings';
 import { Tokens } from './tokens';
 import { Users } from './users';
 export default function SecurityPage() {
@@ -24,9 +27,10 @@ export default function SecurityPage() {
         <Card><CardHeader><h1 className="text-lg font-medium">{t('accountSecurity')}</h1></CardHeader><CardBody className="space-y-4">
             <p className="break-all text-sm text-ui-muted">{session.principal.userId}</p>
             <p className="text-sm text-ui-muted">{t('sessionExpires')}: {new Date(session.expiresAt * 1000).toLocaleString()}</p>
-            <div className="flex flex-wrap gap-2"><Button disabled={busy} onClick={() => void changePassword()}>{t('changePassword')}</Button><Button disabled={busy} onClick={() => { setBusy(true); void logout().catch(() => undefined); }}>{t('signOut')}</Button></div>
+            <div className="flex flex-wrap gap-2"><Button disabled={busy} onClick={() => void changePassword()}>{t('changePassword')}</Button><Button disabled={busy} onClick={() => { setBusy(true); void logout().catch(() => { setError(t('requestFailed')); setBusy(false); }); }}>{t('signOut')}</Button></div>
             {error && <p role="alert" className="text-sm text-ui-danger">{error}</p>}
         </CardBody></Card>
+        {session.principal.credentialType === 'session' && <><Sessions /><OAuthLinks />{permissions.includes('users:manage') && <OAuthSettingsPanel />}</>}
         {permissions.includes('users:manage') && <Users />}
         {permissions.includes('tokens:own') && <Tokens />}
         {permissions.includes('security:read') && <SecurityEvents />}

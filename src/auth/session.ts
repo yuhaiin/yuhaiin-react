@@ -1,7 +1,7 @@
 import { getApiUrl } from '@/common/apiurl';
 import { operationPermissions } from './operations';
 
-export interface Principal { userId: string; credentialType: string; permissions: string[] }
+export interface Principal { credentialId?: string; userId: string; credentialType: string; permissions: string[] }
 export interface Session { authorization: string; principal: Principal; expiresAt: number; controller: string }
 let session: Session | null = null;
 let enrollment: { secret: string; controller: string } | null = null;
@@ -17,7 +17,7 @@ export function clearSession() { clearTimeout(expiry); session = null; changed()
 export function establishSession(secret: string, principal: Principal, expiresAt: number, controller: string) {
     if (controller !== getApiUrl() || expiresAt * 1000 <= Date.now()) throw new Error('Session expired or controller changed');
     clearTimeout(expiry);
-    session = { authorization: `Session ${secret}`, principal, expiresAt, controller };
+    session = { authorization: secret ? `Session ${secret}` : '', principal, expiresAt, controller };
     enrollment = null;
     expiry = setTimeout(clearSession, expiresAt * 1000 - Date.now());
     changed();

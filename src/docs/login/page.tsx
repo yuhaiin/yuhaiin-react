@@ -9,6 +9,8 @@ import { LockKeyhole } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { OAuthLogin } from './oauth';
+
 type Mode = 'login' | 'enroll' | 'setup';
 export default function LoginPage() {
     const { t } = useTranslation('auth');
@@ -93,6 +95,7 @@ export default function LoginPage() {
                     </>}
                 </CardFooter>
             </form>
+            {required === false && mode === 'login' && <div className="px-5 pb-5"><OAuthLogin key={controller} controller={controller} /></div>}
         </Card>
     </div>;
 }

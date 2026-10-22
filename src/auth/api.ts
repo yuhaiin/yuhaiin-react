@@ -70,4 +70,21 @@ export async function enroll(secret: string, password: string) {
     if (controller !== getApiUrl()) throw new Error('Controller changed');
     await directJSON('POST', '/api/v2/auth/enrollment', { clientCredential }, `Enrollment ${secret}`);
 }
-export async function logout() { const session = getSession(); try { await authAPI('DELETE', '/session'); } finally { if (getSession() === session) clearSession(); } }
+export async function logout() { const session = getSession(); await authAPI('DELETE', '/session'); if (getSession() === session) clearSession(); }
+
+// Restore using the controller's HttpOnly cookie before routing the app. A
+// missing/expired/revoked cookie is ordinary anonymous state, without redirects.
+export async function restoreSession(signal: AbortSignal): Promise<boolean> {
+    requireSecureController();
+    const controller = getApiUrl(); const scope = authScope();
+    const base = new URL(controller || window.location.href).origin;
+    const response = await fetch(new URL('/api/v2/auth/session', base), {
+        signal, credentials: 'include', cache: 'no-store', redirect: 'error', referrerPolicy: 'no-referrer',
+    });
+    if (!response.ok) return false;
+    const restored: { principal: Principal; expiresAt: number } = await response.json();
+    if (signal.aborted || controller !== getApiUrl() || scope !== authScope()) return false;
+    if (restored.principal?.credentialType !== 'session' || !Array.isArray(restored.principal.permissions) || !Number.isFinite(restored.expiresAt)) throw new Error('Invalid restored session');
+    establishSession('', restored.principal, restored.expiresAt, controller);
+    return true;
+}

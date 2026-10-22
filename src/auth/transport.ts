@@ -1,5 +1,5 @@
 import { getApiUrl } from '@/common/apiurl';
-import { authHeaders, authScope, clearSession } from './session';
+import { authHeaders, authScope, clearSession, getSession } from './session';
 
 export function apiURL(path: string) {
     const url = new URL(getApiUrl() || window.location.href);
@@ -19,8 +19,8 @@ export async function authorizedFetch(path: string | URL, init: RequestInit = {}
     if (url.origin !== apiURL('/').origin || !/^\/(api\/v2\/|debug\/profiler\/|debug\/pprof\/|metrics$)/.test(url.pathname) || url.searchParams.has('token')) {
         throw new Error('Invalid management endpoint');
     }
-    if (new Headers({ ...authHeaders(), ...Object.fromEntries(new Headers(init.headers)) }).has('Authorization')) requireSecureController();
-    const response = await fetch(url, { ...init, credentials: 'omit', cache: 'no-store', redirect: 'error', referrerPolicy: 'no-referrer',
+    if (getSession()?.principal.credentialType === 'session' || new Headers({ ...authHeaders(), ...Object.fromEntries(new Headers(init.headers)) }).has('Authorization')) requireSecureController();
+    const response = await fetch(url, { ...init, credentials: 'include', cache: 'no-store', redirect: 'error', referrerPolicy: 'no-referrer',
         headers: { ...authHeaders(), ...Object.fromEntries(new Headers(init.headers)) } });
     if (response.status === 401 && scope === authScope()) { clearSession(); window.location.hash = '/login'; }
     if (response.status === 403 && scope === authScope()) window.dispatchEvent(new Event('management-permissions'));

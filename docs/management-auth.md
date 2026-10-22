@@ -27,7 +27,11 @@ Changing your own password starts enrollment and immediately invalidates your ol
 
 The browser derives the credential with WebCrypto PBKDF2-SHA-256 using the backend's versioned parameters (NFC, 600,000 iterations, 32 bytes). Plaintext passwords are not sent to the server. The derived credential remains password-equivalent and needs HTTPS protection.
 
-Sessions stay in memory, use explicit Authorization headers and expire after eight hours. Refreshing the page, signing out, changing controllers or receiving a 401 requires signing in again. Credentials are absent from cookies, URL queries, persistent storage and SWR cache keys. Controller/account changes discard the previous data cache.
+Sessions expire after eight hours. Password and OAuth login set a host-only HttpOnly cookie on the controller. After refreshing, the UI restores the existing principal and expiry before routing, preserving the requested page. It never extends the session or stores a secret in localStorage/sessionStorage, IndexedDB, URLs or SWR cache keys. Explicit header sessions remain supported. Signing out, expiry, account reset/disable or session revocation prevents restoration. Controller/account changes discard the previous data cache.
+
+Management fetches (including SSE) use `credentials: 'include'` and the controller accepts credentialed CORS only for trusted origins. HTTPS cookies use Secure and SameSite=None, supporting the official separately hosted UI; loopback HTTP uses SameSite=Lax. If the browser blocks third-party cookies, serve the UI from the controller origin or allow its cookies for the trusted UI site. Draft-controller discovery stays anonymous.
+
+**Signed-in sessions** shows your active sessions, marks the current one, and displays browser, actual connection address, login method, creation, expiry and recent activity. You can sign out any of your sessions, including the current one. Revoking another session leaves this one logged in. New requests fail immediately after revocation; active streams stop within the backend's one-second recheck interval.
 
 Create API tokens with selected scopes and an optional expiry. Administrators can choose another enrolled, enabled owner. The secret is displayed once and is absent from subsequent listings; store it before dismissing the dialog. Rotation invalidates the old token immediately while keeping its scopes and expiry. Revocation is immediate. External clients use `Authorization: Bearer <secret>`.
 
@@ -35,10 +39,23 @@ Create API tokens with selected scopes and an optional expiry. Administrators ca
 
 The UI consumes `/api/v2/auth/me` permissions. Navigation and protected pages check read permissions; mutation buttons check the corresponding write permissions. Read-only accounts can inspect configuration and manage their own tokens. They cannot save configuration, run diagnostics or administer users. Backend authorization remains authoritative. Permissions refresh on focus, every 30 seconds and after a forbidden response.
 
-Log and connection streams use fetch-based SSE with Authorization headers and cancellation. Profiler assets and downloads also use authenticated fetch. Its viewer runs in an opaque-origin sandbox with network access disabled; the parent handles navigation without passing it credentials.
+Log and connection streams use fetch-based SSE with session cookies or Authorization headers and cancellation. Profiler assets and downloads also use authenticated fetch. Its viewer runs in an opaque-origin sandbox with network access disabled; the parent handles navigation without passing it credentials.
 
-`src/auth/operations.ts` mirrors the backend RPC permission registry and is exhaustive over the generated operation type. Update it when adding operations. Development MSW previews establish a synthetic memory session exclusively from `tests/msw/fixtures.js`; production startup has no automatic login.
+`src/auth/operations.ts` mirrors the backend RPC permission registry and is exhaustive over the generated operation type. Update it when adding operations. Development MSW previews establish a synthetic memory session exclusively from `tests/msw/fixtures.js`; production startup restores only an existing valid controller cookie.
 
 ## Validation
 
 Run `npm run test`, `npx tsc --noEmit`, `npm run lint`, `npm run i18n:check`, `npm run style:audit` and `npm run build`. For connection browser checks, start `npm run dev:msw` and run `CHROME_PATH=/path/to/chrome node scripts/check-connections.mjs`.
+
+## GitHub and Google sign-in
+
+Both providers are supported. An administrator opens **Account & security → OAuth application settings** and saves the OAuth web application's client ID, secret and exact callback URL:
+
+- `https://YOUR_CONTROLLER/api/v2/auth/oauth/github/callback`
+- `https://YOUR_CONTROLLER/api/v2/auth/oauth/google/callback`
+
+Remote callbacks require public HTTPS. Google also requires a configured consent screen/audience and test users while the application is in testing. The UI must be a trusted controller Origin and popups must be allowed. Existing app secrets are never returned to the browser; leaving the secret blank keeps it. Disabling a provider retains user connections.
+
+Activate a local account first, then connect GitHub or Google under **Connected accounts**. Enabled providers appear on the login screen. OAuth sign-in requires an existing connection and respects the local user's current role and disabled status. There is no public registration or automatic email-based account merge. Disconnecting signs out sessions authenticated with that provider. A password credential reset also clears connected accounts.
+
+The popup returns a one-use completion proof to the exact initiating UI. The parent checks popup identity, controller origin and state before completing the exchange with its memory-only start secret. Neither provider tokens nor session secrets are placed in callback URLs or messages. Cancelling, switching controllers or unmounting the page cancels the flow. Provider tokens are not stored by the backend.
