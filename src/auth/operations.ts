@@ -7,6 +7,8 @@ export const operationPermissions: Record<RPCOperation, string> = {
     "update.check": "update:manage",
     "update.apply": "update:manage",
     "update.status": "update:manage",
+    "update.history": "update:manage",
+    "update.rollback": "update:manage",
     "backup.run": "backup:manage",
     "backup.restore": "backup:manage",
     "backup.config.get": "backup:manage",
