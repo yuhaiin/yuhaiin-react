@@ -1,4 +1,5 @@
 import { useUpdateRecovery } from '@/hooks/use-update-recovery';
+import { usePermission } from '@/auth/context';
 import { useTranslation } from 'react-i18next';
 
 import { applyUpdate, checkUpdate, getUpdateHistory, rollbackUpdate } from "@/api/update";
@@ -95,8 +96,9 @@ export default function About() {
     const [checkingUpdate, setCheckingUpdate] = useState(false);
     const [applyingUpdate, setApplyingUpdate] = useState(false);
     const [restoringVersion, setRestoringVersion] = useState(false);
+    const canManageUpdates = usePermission('update:manage');
     const { data: history, error: historyError, mutate: refreshHistory } = useSWR(
-        "/api/v2/update/history",
+        canManageUpdates ? "/api/v2/update/history" : null,
         getUpdateHistory,
         { revalidateOnFocus: false },
     );
@@ -241,11 +243,11 @@ export default function About() {
                         </div>
 
                         <div className="flex flex-wrap items-center gap-3">
-                            <Button variant="default" onClick={handleCheckUpdate} disabled={checkingUpdate || applyingUpdate || recovery.active}>
+                            <Button permission="update:manage" variant="default" onClick={handleCheckUpdate} disabled={checkingUpdate || applyingUpdate || recovery.active}>
                                 <RefreshCw className={checkingUpdate ? "mr-2 animate-spin" : "mr-2"} size={16} />
                                 {uiT("checkForUpdates")}</Button>
                             {update?.updateAvailable && (
-                                <Button className="min-w-0 max-w-full" variant="default" onClick={handleApplyUpdate} disabled={applyingUpdate || recovery.active || !update.supported}>
+                                <Button permission="update:manage" className="min-w-0 max-w-full" variant="default" onClick={handleApplyUpdate} disabled={applyingUpdate || recovery.active || !update.supported}>
                                     <Download className="mr-2" size={16} />
                                     <span className="min-w-0 truncate">{applyingUpdate || recovery.active ? uiT('updateInProgress') : uiT('updateToVersion', { version: update.targetVersion })}</span>
                                 </Button>
@@ -280,7 +282,7 @@ export default function About() {
                             {recovery.phase === 'timeout' && <Button size="sm" className="ml-3" onClick={recovery.retry}>{uiT('retry')}</Button>}
                         </div>}
 
-                        <section className="border-t border-ui-border pt-4" aria-label={uiT("previousVersions")}>
+                        {canManageUpdates && <section className="border-t border-ui-border pt-4" aria-label={uiT("previousVersions")}>
                             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                                 <div className="flex items-center gap-2 font-semibold text-ui-heading">
                                     <History size={16} />
@@ -303,6 +305,7 @@ export default function About() {
                                             </div>
                                         </div>
                                         <Button
+                                            permission="update:manage"
                                             size="sm"
                                             variant="default"
                                             disabled={recovery.active || applyingUpdate || restoringVersion}
@@ -315,7 +318,7 @@ export default function About() {
                                 ))}
                             </div>
                             {history?.items.length ? <p className="mt-3 text-xs text-ui-muted">{uiT("rollbackBinaryOnly")}</p> : null}
-                        </section>
+                        </section>}
 
                         {update && (
                             <div className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">

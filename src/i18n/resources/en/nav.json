@@ -14,5 +14,6 @@
   "help": "Help & about",
   "routeRules": "Routing rules",
   "gateway": "HTTP Gateway",
-  "trafficControl": "Traffic Control"
+  "trafficControl": "Traffic Control",
+  "accountSecurity": "Account & security"
 }

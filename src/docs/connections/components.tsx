@@ -153,7 +153,7 @@ export function useFlow(options?: UseFlowOptions) {
 
         let stopped = false;
         let inFlight: AbortController | undefined;
-        let timer: ReturnType<typeof window.setTimeout> | undefined;
+        let timer: number | undefined;
         let visible = typeof document === "undefined" || document.visibilityState !== "hidden";
 
         const clearTimer = () => {

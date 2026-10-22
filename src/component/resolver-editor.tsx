@@ -75,13 +75,13 @@ export const ResolverModal: FC<{
         footer={<>
                     <div>
                         {onDelete && id !== 'bootstrap' && !isNew &&
-                            <Button variant="outline-danger" disabled={saving || testing || isLoading || Boolean(error)} onClick={() => onDelete?.(id)}>
+                            <Button permission="resolver:write" variant="outline-danger" disabled={saving || testing || isLoading || Boolean(error)} onClick={() => onDelete?.(id)}>
                                 <Trash className="mr-2" size={16} />{uiT("delete")}</Button>
                         }
                     </div>
                     <div className="flex flex-wrap justify-end gap-2">
                         <Button onClick={close} disabled={saving || testing}>{uiT("cancel")}</Button>
-                        <Button loading={saving} variant="primary" disabled={saving || testing || !resolver || isLoading || Boolean(error)} onClick={handleSave}>
+                        <Button permission="resolver:write" loading={saving} variant="primary" disabled={saving || testing || !resolver || isLoading || Boolean(error)} onClick={handleSave}>
                             <Check className="mr-2" size={16} />{isNew ? uiT("add") : uiT("save")}
                         </Button>
                     </div>

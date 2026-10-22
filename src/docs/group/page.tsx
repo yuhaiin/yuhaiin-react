@@ -412,10 +412,10 @@ function NodeOverview({ item, latency, busy, defaults, onLatency, onUse, onBack,
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                 <h3 className="text-base font-medium text-ui-heading">{t('connectivityChecks')}</h3>
                 <div className="flex flex-wrap gap-2">
-                    <Dropdown><DropdownTrigger asChild><Button size="sm" variant="outline-secondary" className="gap-2" disabled={locked}><Gauge size={15} />{uiT('test')}<ChevronDown size={14} /></Button></DropdownTrigger>
+                    <Dropdown><DropdownTrigger asChild><Button permission="nodes:write" size="sm" variant="outline-secondary" className="gap-2" disabled={locked}><Gauge size={15} />{uiT('test')}<ChevronDown size={14} /></Button></DropdownTrigger>
                         <DropdownContent align="end">{latencyActions.map(action => <DropdownItem key={action.type} disabled={locked || busy?.[action.type]} onSelect={() => onLatency(action.type)}>{busy?.[action.type] ? <Spinner size="sm" className="mr-2" /> : <Gauge size={15} className="mr-2" />}{action.label}</DropdownItem>)}</DropdownContent>
                     </Dropdown>
-                    <Button size="sm" variant="outline-secondary" className="gap-2" disabled={locked || using || !item.enabled} onClick={onUse}>{using ? <Spinner size="sm" /> : <Power size={15} />}{t('setDefaultNode')}</Button>
+                    <Button permission="nodes:write" size="sm" variant="outline-secondary" className="gap-2" disabled={locked || using || !item.enabled} onClick={onUse}>{using ? <Spinner size="sm" /> : <Power size={15} />}{t('setDefaultNode')}</Button>
                 </div>
             </div>
             {hasLatency || hasIp || hasStun ? <div className="grid gap-4 sm:grid-cols-2">
@@ -605,11 +605,11 @@ export default function Group() {
         <NodeImportModal show={importOpen} group={selectedGroup || 'manual'} onHide={() => setImportOpen(false)} onChanged={() => { void mutate(); void mutateGroups(); }} onSaved={() => setImportOpen(false)} />
         <header className={clsx('mb-6 flex-wrap items-center justify-between gap-4', showdata.show ? 'hidden md:flex' : 'flex')}>
             <div><h1 className="sr-only text-2xl font-semibold tracking-tight text-ui-heading lg:not-sr-only">{t('nodesTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('nodeDirectoryCount', { count: groups.length, nodes: nodeCount, groups: groups.length })}</p></div>
-            <div className="flex items-center gap-2"><Button variant="outline-secondary" disabled={editorState.pending} onClick={() => setImportOpen(true)}><Upload className="mr-1.5" size={16} />{uiT('import')}</Button><Button variant="primary" onClick={handleCreate} disabled={editorState.pending || showdata.new}><Plus className="mr-1.5" size={16} />{uiT('new')}</Button></div>
+            <div className="flex items-center gap-2"><Button permission="nodes:write" variant="outline-secondary" disabled={editorState.pending} onClick={() => setImportOpen(true)}><Upload className="mr-1.5" size={16} />{uiT('import')}</Button><Button permission="nodes:write" variant="primary" onClick={handleCreate} disabled={editorState.pending || showdata.new}><Plus className="mr-1.5" size={16} />{uiT('new')}</Button></div>
         </header>
         {groups.length === 0 && !showdata.show ? <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center">
             <Network className="mx-auto mb-3 text-ui-primary" size={28} aria-hidden="true" /><h2 className="text-sm font-medium text-ui-heading">{uiT('noOutboundGroupsYet')}</h2>
-            <p className="mt-1 text-xs text-ui-muted">{uiT('createANodeOrImportJsonToGetStarted')}</p><Button className="mt-4 gap-2" variant="primary" onClick={handleCreate}><Plus size={16} />{uiT('newNode')}</Button>
+            <p className="mt-1 text-xs text-ui-muted">{uiT('createANodeOrImportJsonToGetStarted')}</p><Button permission="nodes:write" className="mt-4 gap-2" variant="primary" onClick={handleCreate}><Plus size={16} />{uiT('newNode')}</Button>
         </div> : <WorkspaceLayout>
             <WorkspaceDirectory label={t('nodeDirectory')} hiddenOnMobile={showdata.show}>
                 <div className="mb-2 space-y-2 border-b border-ui-border/50 px-1 pb-3">
@@ -636,7 +636,7 @@ export default function Group() {
                         onChanged={node => { setSelectedPreview(node); void mutate(); }}
                         onSave={node => { setSelectedPreview(node); setSelectedGroup(node.group || 'manual'); initialized.current = true; closeLink(); setShowdata({ show: true, id: node.id, new: false }); void mutateDefaults(); }}
                         onHide={saved => { if (!saved) closeDetails(); }} onDelete={showdata.new ? undefined : deleteCurrentNode} />
-                </> : <div className="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-ui-muted"><Network size={28} aria-hidden="true" /><h2 className="text-lg font-medium text-ui-heading">{t('selectNode')}</h2><p className="max-w-sm text-sm">{t('selectNodeHelp')}</p><Button variant="outline-primary" className="gap-2" onClick={handleCreate}><Plus size={16} />{uiT('newNode')}</Button></div>}
+                </> : <div className="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-ui-muted"><Network size={28} aria-hidden="true" /><h2 className="text-lg font-medium text-ui-heading">{t('selectNode')}</h2><p className="max-w-sm text-sm">{t('selectNodeHelp')}</p><Button permission="nodes:write" variant="outline-primary" className="gap-2" onClick={handleCreate}><Plus size={16} />{uiT('newNode')}</Button></div>}
             </WorkspaceDetail>
         </WorkspaceLayout>}
     </MainContainer>;

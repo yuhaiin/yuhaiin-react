@@ -250,7 +250,7 @@ function ConfigComponent() {
 
             {createPortal(
                 <div className="fixed bottom-10 right-10 z-[100] sm:bottom-12 sm:right-12">
-                    <Button
+                    <Button permission="settings:write"
                         variant="primary"
                         size="icon"
                         className="h-12 w-12 rounded-full shadow-ui-elevated"

@@ -46,6 +46,6 @@ export function DNSRoles() {
         <ResolverModal id="bootstrap" show={editingBootstrap} isNew={!bootstrap} onHide={() => setEditingBootstrap(false)} onSaved={() => { void refreshResolvers(); }} />
         {error && <p role="alert" className="mt-3 text-sm text-ui-danger">{error}</p>}
         </CardBody>
-        <CardFooter><Button disabled={pending} onClick={save}>{t(error && !dirty ? 'retryApply' : 'saveAndApply')}</Button></CardFooter>
+        <CardFooter><Button permission="resolver:write" disabled={pending} onClick={save}>{t(error && !dirty ? 'retryApply' : 'saveAndApply')}</Button></CardFooter>
     </Card>;
 }

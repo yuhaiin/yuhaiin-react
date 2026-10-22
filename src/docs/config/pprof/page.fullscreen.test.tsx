@@ -3,9 +3,10 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import PprofPage from "./page";
 
-vi.mock("react-i18next", () => ({
-    useTranslation: () => ({ t: (key: string) => key }),
-}));
+vi.mock("react-i18next", () => {
+    const t = (key: string) => key;
+    return { useTranslation: () => ({ t }) };
+});
 
 const session = {
     id: "a".repeat(48),

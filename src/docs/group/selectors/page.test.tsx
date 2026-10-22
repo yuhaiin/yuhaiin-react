@@ -1,3 +1,4 @@
+import { authorizeTest, resetTestAuth } from '@/test/auth';
 import { confirmAction } from '@/component/v2/confirmation';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -29,6 +30,7 @@ beforeEach(() => {
     api.listNodes.mockResolvedValue({ items: [normalizeNode({ id: 'c', name: 'Node c', group: 'manual', enabled: true })], page: { page: 1, pageSize: 40, total: 10000 } });
     host = document.createElement('div'); document.body.append(host); root = createRoot(host);
 });
+beforeEach(authorizeTest);
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.restoreAllMocks(); });
 async function render() {
     await act(async () => root.render(<SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}><GlobalToastContext.Provider value={{ Info: vi.fn(), Error: vi.fn() }}><SelectorsPage /></GlobalToastContext.Provider></SWRConfig>));
@@ -67,3 +69,5 @@ it('opens the editor from the mobile directory and guards returning', async () =
 });
 
 vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));
+
+afterEach(resetTestAuth);

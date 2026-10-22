@@ -132,7 +132,7 @@ export default function GatewayPage() {
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-semibold">{t("statistics")}</h2>
-                <Button size="sm" variant="outline-secondary" disabled={pending || resetPending || !status?.gateways.length}
+                <Button permission="gateway:write" size="sm" variant="outline-secondary" disabled={pending || resetPending || !status?.gateways.length}
                   onClick={() => setResetTarget("")}>{t("resetAllStatistics")}</Button>
               </div>
               {resetTarget !== null && (
@@ -152,7 +152,7 @@ export default function GatewayPage() {
                     <h3 className="font-medium">
                       {draft.gateways.find((g) => g.id === gateway.id)?.name || gateway.id}
                     </h3>
-                    <Button size="sm" variant="outline-secondary" disabled={pending || resetPending}
+                    <Button permission="gateway:write" size="sm" variant="outline-secondary" disabled={pending || resetPending}
                       onClick={() => setResetTarget(gateway.id)}>{t("resetStatistics")}</Button>
                   </div>
                   <dl className="grid grid-cols-2 gap-2 text-sm">

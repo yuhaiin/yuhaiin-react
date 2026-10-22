@@ -1,4 +1,5 @@
-import { AuthTokenKey, getApiUrl } from "@/common/apiurl";
+import { apiURL, directJSON } from "@/auth/transport";
+import { profileDocument, downloadProfile } from "./authenticated-view";
 import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardHeader, MainContainer, SettingLabel } from "@/component/v2/card";
 import { SettingSelectVertical } from "@/component/v2/forms";
@@ -52,33 +53,8 @@ const descriptions: Record<ProfileKind, string> = {
     block: "profilerBlockDescription",
 };
 
-function profilerURL(path: string): string {
-    const api = getApiUrl();
-    const url = new URL(api || window.location.href);
-    url.hash = "";
-    url.pathname = path;
-    url.search = "";
-    return url.toString();
-}
-
-async function profilerRequest<T>(method: "GET" | "POST" | "DELETE", path: string, body?: unknown): Promise<T> {
-    const token = localStorage.getItem(AuthTokenKey);
-    const response = await fetch(profilerURL(path), {
-        method,
-        headers: {
-            ...(token ? { Authorization: `Basic ${token}` } : {}),
-            ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-            Accept: "application/json",
-        },
-        ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-    });
-    if (!response.ok) {
-        const message = await response.text();
-        throw new Error(message.trim() || `HTTP ${response.status}`);
-    }
-    if (response.status === 204) return undefined as T;
-    return response.json() as Promise<T>;
-}
+function profilerURL(path: string) { return apiURL(path).toString(); }
+function profilerRequest<T>(method: "GET" | "POST" | "DELETE", path: string, body?: unknown) { return directJSON<T>(method, path, body); }
 
 export default function PprofPage() {
     const { t } = useTranslation("ui");
@@ -91,7 +67,8 @@ export default function PprofPage() {
     const [expanded, setExpanded] = useState(false);
     const [graphOpen, setGraphOpen] = useState(false);
     const [graphQuery, setGraphQuery] = useState("");
-    const [viewerPage, setViewerPage] = useState<"flamegraph" | "top" | "peek">("flamegraph");
+    const [viewerPage, setViewerPage] = useState<"flamegraph" | "top" | "peek" | "source" | "disasm">("flamegraph");
+    const [viewerHTML, setViewerHTML] = useState("");
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const viewerPanelRef = useRef<HTMLDivElement>(null);
     const [error, setError] = useState<string | null>(null);
@@ -125,24 +102,32 @@ export default function PprofPage() {
 
     const current = useMemo(() => sessions.find(s => s.id === selected), [sessions, selected]);
     const viewer = current?.status === "completed"
-        ? profilerURL("/debug/profiler/" + current.id + "/" + viewerPage + graphQuery)
+        ? "/debug/profiler/" + current.id + "/" + viewerPage + graphQuery
         : null;
 
     useEffect(() => {
-        const origin = new URL(profilerURL("/debug/profiler/")).origin;
+        if (!viewer || graphOpen) return;
+        const controller = new AbortController();
+        void profileDocument(viewer, controller.signal).then(html => { if (!controller.signal.aborted) setViewerHTML(html); }).catch(cause => { if (!controller.signal.aborted) { setViewerHTML(''); setError(profilerErrorMessage(cause, t("profilerConnectionError"))); } });
+        return () => controller.abort();
+    }, [viewer, graphOpen, t]);
+    useEffect(() => {
         const onMessage = (event: MessageEvent) => {
-            if (event.origin !== origin || event.source !== iframeRef.current?.contentWindow ||
-                !current || current.status !== "completed") return;
+            if (event.source !== iframeRef.current?.contentWindow || event.origin !== 'null' || !current || current.status !== 'completed') return;
             const message = event.data;
-            if (!message || typeof message !== "object" || message.type !== "yuhaiin:pprof-graph") return;
-            const query = message.query;
-            if (typeof query !== "string" || query.length > 4096 ||
-                (query !== "" && !query.startsWith("?"))) return;
-            setGraphQuery(query);
-            setGraphOpen(true);
+            if (!message || typeof message !== 'object' || typeof message.query !== 'string' || message.query.length > 4096 || (message.query && !message.query.startsWith('?'))) return;
+            if (message.type === 'yuhaiin:pprof-graph') { setGraphQuery(message.query); setGraphOpen(true); }
+            if (message.type !== 'yuhaiin:pprof-navigate' || typeof message.path !== 'string') return;
+            const prefix = `/debug/profiler/${current.id}/`;
+            if (!message.path.startsWith(prefix)) return;
+            const page = message.path.slice(prefix.length);
+            if (page === '') { setViewerPage('flamegraph'); setGraphQuery(message.query); return; }
+            if (page === 'download') { void downloadProfile(prefix + page, `${current.id}.pprof`).catch(cause => setError(String(cause))); return; }
+            if (page === 'graph') { setGraphQuery(message.query); setGraphOpen(true); }
+            else if (page === 'flamegraph' || page === 'top' || page === 'peek' || page === 'source' || page === 'disasm') { setViewerPage(page); setGraphQuery(message.query); }
         };
-        window.addEventListener("message", onMessage);
-        return () => window.removeEventListener("message", onMessage);
+        window.addEventListener('message', onMessage);
+        return () => window.removeEventListener('message', onMessage);
     }, [current]);
 
     const changeKind = (next: ProfileKind) => {
@@ -250,13 +235,8 @@ export default function PprofPage() {
                         </div>
                         {current?.status === "completed" && (
                             <div className="flex items-center gap-1">
-                                <Button variant="outline-secondary" size="icon" asChild>
-                                    <a href={profilerURL(`/debug/profiler/${current.id}/download`)} download
-                                        referrerPolicy="no-referrer"
-                                        title={t("profilerDownload")} aria-label={t("profilerDownload")}>
-                                        <Download size={16} />
-                                    </a>
-                                </Button>
+                                <Button variant="outline-secondary" size="icon" title={t("profilerDownload")} aria-label={t("profilerDownload")}
+                                    onClick={() => void downloadProfile(`/debug/profiler/${current.id}/download`, `${current.id}.pprof`).catch(cause => setError(String(cause)))}><Download size={16} /></Button>
                                 <Button variant="outline-secondary" size="icon"
                                     title={t("profilerExpand")} aria-label={t("profilerExpand")}
                                     onClick={enterFullscreen}>
@@ -361,9 +341,9 @@ export default function PprofPage() {
                             }}
                         />
                     ) : viewer ? (
-                        <iframe ref={iframeRef} key={current?.id} src={viewer}
+                        <iframe ref={iframeRef} key={viewer} srcDoc={viewerHTML}
                             title={t("profilerTitle")} referrerPolicy="no-referrer"
-                            sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
+                            sandbox="allow-scripts"
                             className={expanded
                                 ? "h-full min-h-0 w-full min-w-0 flex-1 border-0 bg-white"
                                 : "min-h-[500px] w-full min-w-0 flex-1 border-0 bg-white max-sm:min-h-[65dvh]"}

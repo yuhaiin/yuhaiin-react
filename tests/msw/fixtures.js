@@ -1,10 +1,13 @@
 import { http, HttpResponse } from 'msw';
 import { setupWorker } from 'msw/browser';
 import { createDefaultSettings } from '/src/contract/settings.ts';
+import { establishSession } from '/src/auth/session.ts';
+import { operationPermissions } from '/src/auth/operations.ts';
 const scenario = new URLSearchParams(location.search).get('scenario') || 'normal';
 // The preview has its own localhost origin and never connects to a configured controller.
 localStorage.setItem('api_url_v2', JSON.stringify(''));
-localStorage.setItem('auth_token', 'synthetic-msw-token');
+const principal = { userId: 'preview-admin', credentialType: 'session', permissions: [...new Set([...Object.values(operationPermissions), 'identity:read', 'tokens:own', 'users:manage', 'tokens:manage', 'security:read', 'metrics:read'])] };
+establishSession('synthetic-msw-session', principal, Math.floor(Date.now() / 1000) + 28800, '');
 localStorage.setItem('yuhaiin.webui.language','en');
 const size = scenario === 'lazy' ? 10000 : scenario === 'large' ? 2000 : scenario === 'empty' ? 0 : scenario === 'connections-small' ? 3 : 95;
 const nodes = Array.from({length:size},(_,i)=>({id:`node-${i}`,name:i===0?'Mobile test node with a very long name for narrow screens':`Node ${i}`,group:'manual',origin:'manual',enabled:true,chain:[{type:'http_mock',http_mock:{data:'YQ=='}}]}));
@@ -70,6 +73,9 @@ function stream(event,payload,repeat=false){
 }
 if (scenario === 'lazy') resolverHosts = {hosts: Object.fromEntries(Array.from({length:10000}, (_, i) => [`host-${String(i).padStart(5,'0')}.example.invalid`, `192.0.2.${i%254+1}`]))};
 const worker=setupWorker(
+  http.get('/api/v2/management',()=>HttpResponse.json({authentication:'local-users'})),
+  http.get('/api/v2/auth/setup',()=>HttpResponse.json({required:false,expiresAt:0})),
+  http.get('/api/v2/auth/me',()=>HttpResponse.json(principal)),
   http.get('/api/v2/connections/events',()=>stream('connections_added',{connections})),
   http.get('/api/v2/tools/logs/v2',()=>stream('log',{log:Array.from({length:100},(_,i)=>`time=2026-10-03T10:00:00.000+08:00 level=INFO msg="Synthetic log ${i}" source=audit extra="${'long-field-'.repeat(12)}"`)},true)),
   http.post('/api/v2/rpc/:operation',async({params,request})=>{

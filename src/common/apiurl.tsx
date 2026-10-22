@@ -1,7 +1,6 @@
 export const APIUrlDefault = ""
 export const APIUrlKey = "api_url_v2"
 export const APIUrlListKey = "api_url_list_v2"
-export const AuthTokenKey = "auth_token"
 
 export function normalizeApiUrl(value?: string) {
     const trimmed = (value ?? "").trim()

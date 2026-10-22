@@ -1,17 +1,13 @@
 import { useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { SWRConfig } from 'swr';
-import { AuthTokenKey, getApiUrl } from './apiurl';
+import { authScope, subscribeAuth } from '@/auth/session';
 
-function snapshot() {
-    return JSON.stringify([getApiUrl(), localStorage.getItem(AuthTokenKey)]);
-}
+const snapshot = authScope;
 function subscribe(update: () => void) {
+    const unsubscribe = subscribeAuth(update);
     window.addEventListener('storage', update);
     window.addEventListener('local-storage', update);
-    return () => {
-        window.removeEventListener('storage', update);
-        window.removeEventListener('local-storage', update);
-    };
+    return () => { unsubscribe(); window.removeEventListener('storage', update); window.removeEventListener('local-storage', update); };
 }
 
 /** Retain only the current controller/session cache; old requests cannot populate the new cache. */

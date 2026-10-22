@@ -1,3 +1,4 @@
+import { useActionAllowed } from '@/auth/policy';
 import { Slot } from "@radix-ui/react-slot";
 import { clsx } from "clsx";
 import { HTMLMotionProps, motion, useReducedMotion } from 'motion/react';
@@ -9,6 +10,7 @@ const MotionSlot = motion.create(Slot);
 
 export interface ButtonProps
     extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    permission?: string;
     asChild?: boolean
     variant?: "destructive" | "ghost" | "default" | "danger" | "outline-danger" | "outline-secondary" | "primary" | "outline-primary";
     size?: "default" | "sm" | "xs" | "icon";
@@ -21,7 +23,9 @@ export interface ButtonProps
 type CombinedButtonProps = ButtonProps & HTMLMotionProps<"button">;
 
 const Button = React.forwardRef<HTMLButtonElement, CombinedButtonProps>(
-    ({ className, variant = "default", asChild = false, size = "default", groupPosition, animated = false, loading, children, disabled, ...props }, ref) => {
+    ({ className, variant = "default", asChild = false, size = "default", groupPosition, animated = false, loading, children, disabled: providedDisabled, permission, ...props }, ref) => {
+        const allowed = useActionAllowed(permission, props.type === 'submit' || ['primary', 'danger', 'destructive', 'outline-danger'].includes(variant));
+        const disabled = providedDisabled || !allowed;
         const reducedMotion = useReducedMotion();
         const hasMotionProps = animated ||
             "whileHover" in props ||

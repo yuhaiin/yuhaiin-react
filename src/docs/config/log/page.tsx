@@ -1,7 +1,7 @@
 import { usePageVisible } from "@/common/hooks";
 import { LogRingBuffer, levelStyles, parseLogLine, type LogEntry } from "./log-buffer";
 
-import { AuthTokenKey, getApiUrl } from "@/common/apiurl"
+import { AuthenticatedEventSource } from "@/auth/event-stream";
 import { Badge } from "@/component/v2/badge"
 import { Button } from "@/component/v2/button"
 import { Card, CardBody, CardHeader, FilterSearch, IconBox, MainContainer } from '@/component/v2/card'
@@ -17,16 +17,7 @@ import { VList, type VListHandle } from "virtua"
 const LOG_RENDER_INTERVAL_MS = 250;
 const LOG_RETENTION_OPTIONS = [500, 2000, 10000] as const
 type LogRetention = typeof LOG_RETENTION_OPTIONS[number]
-function logsURL() {
-    const apiUrl = getApiUrl();
-    const base = apiUrl !== "" ? apiUrl : window.location.toString();
-    const url = new URL(base);
-    url.hash = "";
-    url.pathname = "/api/v2/tools/logs/v2";
-    const token = localStorage.getItem(AuthTokenKey);
-    if (token) url.searchParams.set("token", token);
-    return url.toString();
-}
+
 
 
 const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
@@ -93,7 +84,7 @@ export default function LogComponent() {
         let reconnectTimer: number | undefined;
         let flushTimer: number | undefined;
         let stopped = false;
-        const source = new EventSource(logsURL());
+        const source = new AuthenticatedEventSource("/api/v2/tools/logs/v2");
         const onLog = (event: MessageEvent<string>) => {
             if (stopped) return;
             try {

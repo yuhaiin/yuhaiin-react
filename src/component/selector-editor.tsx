@@ -59,8 +59,8 @@ export function SelectorEditor({ item, onClose, onSaved, onDeleted, presentation
         {actionError && <p role="alert" className="text-sm text-ui-danger">{actionError}</p>}
         </fieldset>;
     const footer = <>
-        <div>{item && <Button variant="outline-danger" disabled={pending || !refs || refs.items.length > 0} onClick={remove}><Trash size={16} className="mr-1.5" aria-hidden="true" />{t('delete')}</Button>}</div>
-        <div className="flex gap-2"><Button disabled={pending} onClick={close}>{t('cancel')}</Button><Button loading={pending} variant="primary" className="gap-2" disabled={pending || !value.name.trim() || !value.nodeId} onClick={save}><Save size={15} aria-hidden="true" />{t('save')}</Button></div>
+        <div>{item && <Button permission="nodes:write" variant="outline-danger" disabled={pending || !refs || refs.items.length > 0} onClick={remove}><Trash size={16} className="mr-1.5" aria-hidden="true" />{t('delete')}</Button>}</div>
+        <div className="flex gap-2"><Button disabled={pending} onClick={close}>{t('cancel')}</Button><Button permission="nodes:write" loading={pending} variant="primary" className="gap-2" disabled={pending || !value.name.trim() || !value.nodeId} onClick={save}><Save size={15} aria-hidden="true" />{t('save')}</Button></div>
     </>;
     return <>
         <NodeModal show={creatingNode} isNew editable groups={["manual"]} onHide={() => setCreatingNode(false)} onSave={node => { setValue(previous => ({ ...previous, nodeId: node.id })); }} />

@@ -45,7 +45,7 @@ const EditModal: FC<{
             <div>{isEdit && onDelete && <Button variant="outline-danger" onClick={onDelete} disabled={saving}><Trash size={16} className="mr-2" />{uiT("delete")}</Button>}</div>
             <div className="flex flex-wrap justify-end gap-2">
                 <Button variant="outline-secondary" onClick={close} disabled={saving}>{uiT("cancel")}</Button>
-                <Button loading={saving} variant="primary" onClick={handleSave} disabled={saving || !newItem.name}>
+                <Button permission="nodes:write" loading={saving} variant="primary" onClick={handleSave} disabled={saving || !newItem.name}>
                     <Check size={16} />{uiT("saveConfig")}
                 </Button>
             </div>

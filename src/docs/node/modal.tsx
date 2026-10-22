@@ -284,7 +284,7 @@ const NodeModalComponent: FC<NodeModalProps> = ({
             {onDelete && (
                 <Dropdown>
                     <DropdownTrigger asChild>
-                        <Button variant="outline-danger" disabled={saving || loading || Boolean(error)}><Trash size={16} className="mr-2" />{t("common:action.remove")}</Button>
+                        <Button permission="nodes:write" variant="outline-danger" disabled={saving || loading || Boolean(error)}><Trash size={16} className="mr-2" />{t("common:action.remove")}</Button>
                     </DropdownTrigger>
                     <DropdownContent>
                         <DropdownItem
@@ -311,7 +311,7 @@ const NodeModalComponent: FC<NodeModalProps> = ({
                 ? dirty && <Button onClick={discard} disabled={saving}>{routingT('discardChanges')}</Button>
                 : <Button onClick={close} disabled={saving}>{t(presentation === "inline" ? "common:action.cancel" : "common:action.close")}</Button>}
             {canEdit && (
-                <Button variant="primary" disabled={saving || loading || !!error} onClick={handleSave}>
+                <Button permission="nodes:write" variant="primary" disabled={saving || loading || !!error} onClick={handleSave}>
                     {saving ? <Spinner size="sm" /> : t("common:action.save")}
                 </Button>
             )}

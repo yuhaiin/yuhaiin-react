@@ -1,5 +1,8 @@
 import { resolveRPCRoute, rpcPath } from "@/api/generated";
-import { AuthTokenKey, getApiUrl } from "@/common/apiurl";
+import { operationPermissions } from "@/auth/operations";
+import { can, getSession } from "@/auth/session";
+import { authScope } from "@/auth/session";
+import { apiURL, authorizedFetch } from "@/auth/transport";
 
 export type APIError = {
     code: number;
@@ -7,22 +10,7 @@ export type APIError = {
     raw?: unknown;
 };
 
-function authHeaders(): HeadersInit {
-    const token = localStorage.getItem(AuthTokenKey);
-    return token ? { Authorization: `Basic ${token}` } : {};
-}
-
 type QueryValue = string | number | boolean | null | undefined;
-
-function apiURL(path: string): URL {
-    const apiUrl = getApiUrl();
-    const base = apiUrl !== "" ? apiUrl : window.location.toString();
-    const url = new URL(base);
-    url.hash = "";
-    url.pathname = path;
-    url.search = "";
-    return url;
-}
 
 async function decodeBody(response: Response): Promise<unknown> {
     const text = await response.text();
@@ -52,15 +40,15 @@ function errorMessage(raw: unknown, fallback: string): string {
 }
 
 export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, body?: unknown, query?: Record<string, QueryValue>, signal?: AbortSignal): Promise<T> {
-    const requestScope = JSON.stringify([getApiUrl(), localStorage.getItem(AuthTokenKey)]);
+    const requestScope = authScope();
     const route = resolveRPCRoute(method, path);
+    if (getSession() && !can(operationPermissions[route.operation])) throw { code: 403, msg: 'Permission denied' } satisfies APIError;
     let response: Response;
     try {
-        response = await fetch(apiURL(rpcPath(route.operation)), {
+        response = await authorizedFetch(apiURL(rpcPath(route.operation)), {
             signal,
             method: "POST",
             headers: {
-                ...authHeaders(),
                 Accept: "application/json",
                 "Content-Type": "application/json",
             },
@@ -86,7 +74,7 @@ export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", 
 
     const raw = await decodeBody(response);
     if (!response.ok) {
-        if (requestScope === JSON.stringify([getApiUrl(), localStorage.getItem(AuthTokenKey)])) {
+        if (requestScope === authScope()) {
             redirectUnauthorized(response.status);
         }
         throw {

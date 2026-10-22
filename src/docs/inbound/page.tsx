@@ -54,7 +54,7 @@ const InboundConfigCard: FC = () => {
             <fieldset disabled={saving} className="contents">
             <CardHeader>
                 <IconBox icon={Settings} tone="neutral" title={uiT("inboundConfiguration")} description={uiT("dnsInterceptionAndTrafficInspection")} />
-                <Button disabled={saving || isLoading || !data || Boolean(apiError)} onClick={handleSave}>
+                <Button permission="inbounds:write" disabled={saving || isLoading || !data || Boolean(apiError)} onClick={handleSave}>
                     {saving ? <Spinner size="sm" /> : <><Save className="mr-1" size={16} /> {uiT("applySettings")}</>}
                 </Button>
             </CardHeader>

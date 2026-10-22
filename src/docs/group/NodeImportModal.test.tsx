@@ -1,3 +1,5 @@
+import { beforeEach, afterEach } from 'vitest';
+import { authorizeTest, resetTestAuth } from '@/test/auth';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
@@ -66,3 +68,7 @@ it('starts a fresh import when the dialog reopens after being closed', async () 
         host.remove();
     }
 });
+
+beforeEach(authorizeTest);
+
+afterEach(resetTestAuth);

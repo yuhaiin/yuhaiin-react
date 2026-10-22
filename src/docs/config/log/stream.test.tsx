@@ -1,3 +1,5 @@
+const streamMock = vi.hoisted(() => ({ source: null as null | (new (path: string) => object) }));
+vi.mock('@/auth/event-stream', () => ({ AuthenticatedEventSource: function (path: string) { return new streamMock.source!(path); } }));
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, expect, it, vi } from 'vitest';
@@ -17,7 +19,7 @@ it('closes the log stream when hidden or paused and cancels delayed reconnects o
         onerror?: () => void;
         constructor() { streams.push(this); }
     }
-    vi.stubGlobal('EventSource', Source);
+    streamMock.source = Source;
     const host = document.createElement('div');
     const root = createRoot(host);
     await act(async () => root.render(<LogComponent />));
@@ -55,7 +57,7 @@ it('keeps the notice in sync when manual pause and page visibility overlap', asy
         addEventListener = vi.fn();
         constructor() { streams.push(this); }
     }
-    vi.stubGlobal('EventSource', Source);
+    streamMock.source = Source;
     const host = document.createElement('div');
     const root = createRoot(host);
     const hasNotice = () => host.textContent?.includes('collectionPausesInTheBackground') ?? false;

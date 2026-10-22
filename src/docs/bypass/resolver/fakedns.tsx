@@ -97,7 +97,7 @@ export const Fakedns: FC = () => {
                     onClick={() => server && commit(server)}
                 >
                     <RotateCw className="mr-2" size={16} />{uiT("reset")}</Button>
-                <Button
+                <Button permission="resolver:write"
                     size="sm"
                     disabled={saving || !isDirty}
                     onClick={handleSave}

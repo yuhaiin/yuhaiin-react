@@ -179,7 +179,7 @@ function ListConfigCard({ onSaved }: { onSaved: () => void }) {
                 )}
             </CardBody>
             <CardFooter className="flex justify-end">
-                <Button disabled={saving || !data || Boolean(error)} onClick={save}>
+                <Button permission="routes:write" disabled={saving || !data || Boolean(error)} onClick={save}>
                     {saving ? <Spinner size="sm" className="mr-2" /> : <Save size={16} className="mr-2" />}
                     {t(actionError && !dirty ? "retryApply" : "saveAndApply")}</Button>
             </CardFooter>
@@ -235,13 +235,13 @@ function ListEditorModal({ name, onSaved, onClose, presentation = "modal" }: { n
         footer={<>
                     <div>
                         {name !== "bootstrap" && (
-                            <Button variant="outline-danger" disabled={pending || deleted || isLoading || Boolean(error) || !data} onClick={remove}>
+                            <Button permission="routes:write" variant="outline-danger" disabled={pending || deleted || isLoading || Boolean(error) || !data} onClick={remove}>
                                 <Trash className="mr-2" size={16} />{uiT("deleteList")}</Button>
                         )}
                     </div>
                     <div className="flex flex-wrap justify-end gap-2">
                         <Button onClick={close} disabled={pending}>{uiT("cancel")}</Button>
-                        <Button variant="primary" disabled={pending || isLoading || Boolean(error) || !data} onClick={save}><Check className="mr-2" size={16} />{t(actionError && !dirty ? "retryApply" : "saveAndApply")}</Button>
+                        <Button permission="routes:write" variant="primary" disabled={pending || isLoading || Boolean(error) || !data} onClick={save}><Check className="mr-2" size={16} />{t(actionError && !dirty ? "retryApply" : "saveAndApply")}</Button>
                     </div>
                 </>}>
                     <fieldset disabled={pending} className="contents">
@@ -287,7 +287,7 @@ function CreateListModal({ open, initialName, initialValue, onSaved, onClose, pr
     return <ResourceEditorFrame title={uiT("newRouteList")} label={uiT('definedLists')} presentation={presentation} open={open} onClose={close}
         footer={<>
                     <Button onClick={close} disabled={pending}>{uiT("cancel")}</Button>
-                    <Button variant="primary" onClick={save} disabled={pending || !draft.name.trim()}><Check className="mr-2" size={16} />{t(actionError && !dirty && draft.revision > 0 ? "retryApply" : "saveAndApply")}</Button>
+                    <Button permission="routes:write" variant="primary" onClick={save} disabled={pending || !draft.name.trim()}><Check className="mr-2" size={16} />{t(actionError && !dirty && draft.revision > 0 ? "retryApply" : "saveAndApply")}</Button>
                 </>}>
                     <fieldset disabled={pending} className="contents">
                     {actionError && <p role="alert" className="mb-3 text-sm text-ui-danger">{actionError}</p>}

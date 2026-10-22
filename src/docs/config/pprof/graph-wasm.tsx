@@ -1,3 +1,4 @@
+import { authorizedFetch } from '@/auth/transport';
 import { Button } from "@/component/v2/button";
 import { Input } from "@/component/v2/input";
 import { ChevronLeft, Minus, Plus, RotateCcw } from "lucide-react";
@@ -101,7 +102,7 @@ export function PprofWASMGraph({ sessionId, initialQuery, makeURL, onNavigate }:
         url.search = query;
         void (async () => {
             try {
-                const response = await fetch(url.toString(), {
+                const response = await authorizedFetch(url, {
                     signal: controller.signal,
                     credentials: "omit",
                     referrerPolicy: "no-referrer",
