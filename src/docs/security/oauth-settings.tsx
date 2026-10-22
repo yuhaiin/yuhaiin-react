@@ -8,21 +8,23 @@ import { Input } from '@/component/v2/input';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR, { useSWRConfig } from 'swr';
-export function OAuthSettingsPanel() {
+export function OAuthSettingsPanel({ embedded = false, onConfigured }: { embedded?: boolean; onConfigured?: () => void } = {}) {
     const { t } = useTranslation('auth');
     const { data, error, mutate } = useSWR('auth-oauth-settings', () => authAPI<OAuthSettings[]>('GET', '/oauth/settings'));
     const { mutate: refresh } = useSWRConfig();
     const updated = async () => { await mutate(); await refresh('auth-oauth-providers'); };
-    return <Card><CardHeader><h2 className="font-medium">{t('oauthSettings')}</h2></CardHeader><CardBody className="space-y-5">
+    const configured = async () => { await updated(); onConfigured?.(); };
+    const content = <div className="space-y-5">
         <p className="text-sm text-ui-muted">{t('oauthSetupHint')}</p>
         {error && <p role="alert" className="text-sm text-ui-danger">{t('requestFailed')}</p>}
         {data && (['github', 'google'] as const).map(provider => {
             const settings = data.find(item => item.provider === provider);
-            return <ProviderSettings key={JSON.stringify([provider, settings])} provider={provider} settings={settings} updated={updated} />;
+            return <ProviderSettings key={JSON.stringify([provider, settings])} provider={provider} settings={settings} updated={updated} configured={configured} />;
         })}
-    </CardBody></Card>;
+    </div>;
+    return embedded ? content : <Card><CardHeader><h2 className="font-medium">{t('oauthSettings')}</h2></CardHeader><CardBody>{content}</CardBody></Card>;
 }
-function ProviderSettings({ provider, settings, updated }: { provider: OAuthProvider; settings?: OAuthSettings; updated: () => Promise<void> }) {
+function ProviderSettings({ provider, settings, updated, configured }: { provider: OAuthProvider; settings?: OAuthSettings; updated: () => Promise<void>; configured: () => Promise<void> }) {
     const { t } = useTranslation('auth');
     const [clientId, setClientId] = useState(settings?.clientId || '');
     const [secret, setSecret] = useState('');
@@ -30,7 +32,7 @@ function ProviderSettings({ provider, settings, updated }: { provider: OAuthProv
     const [busy, setBusy] = useState(false); const [error, setError] = useState(''); const [saved, setSaved] = useState(false);
     const save = async (event: FormEvent) => {
         event.preventDefault(); setBusy(true); setError(''); setSaved(false);
-        try { await authAPI('PUT', `/oauth/settings/${provider}`, { clientId, clientSecret: secret, redirectUrl }); setSecret(''); setSaved(true); await updated(); }
+        try { await authAPI('PUT', `/oauth/settings/${provider}`, { clientId, clientSecret: secret, redirectUrl }); setSecret(''); setSaved(true); await configured(); }
         catch { setError(t('requestFailed')); } finally { setBusy(false); }
     };
     const disable = async () => {
