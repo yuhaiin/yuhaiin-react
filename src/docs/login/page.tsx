@@ -5,7 +5,7 @@ import { discardEnrollment, pendingEnrollment, establishLocalConnection } from '
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardFooter, CardHeader, CardTitle } from '@/component/v2/card';
 import { Input } from '@/component/v2/input';
-import { LockKeyhole } from 'lucide-react';
+import { LockKeyhole, Settings } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -93,6 +93,7 @@ export default function LoginPage() {
                         <Button type="submit" variant="primary" loading={busy}>{t(title)}</Button>
                         <Button type="button" variant="ghost" disabled={busy} onClick={() => { setMode(mode === 'enroll' ? required ? 'setup' : 'login' : 'enroll'); setPassword(''); setConfirmation(''); setCapability(''); discardEnrollment(); setError(''); setNotice(''); }}>{t(mode === 'enroll' ? required ? 'createAdministrator' : 'backToLogin' : 'activateAccount')}</Button>
                     </>}
+                    <Button asChild variant="ghost"><a href="#/docs/webui"><Settings size={16} />{t('ui:webui')}</a></Button>
                 </CardFooter>
             </form>
             {required === false && mode === 'login' && <div className="px-5 pb-5"><OAuthLogin key={controller} controller={controller} /></div>}

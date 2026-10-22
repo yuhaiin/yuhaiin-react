@@ -1,4 +1,5 @@
 import { AccentPicker } from '@/component/accent-picker';
+import { useSession } from '@/auth/context';
 
 import { useTheme } from '@/common/ThemeProvider';
 import type { ThemePreference } from '@/common/theme';
@@ -10,7 +11,7 @@ import { Select } from '@/component/v2/select';
 import { useLanguage } from '@/i18n/LanguageProvider';
 import { languageOptions } from '@/i18n/languages';
 import clsx from 'clsx';
-import { Check, Gauge, Globe, Info, Languages, Link, MapPin, Network, Palette, Plus, Radio, Shield, Terminal, Trash } from 'lucide-react';
+import { ArrowLeft, Check, Gauge, Globe, Info, Languages, Link, MapPin, Network, Palette, Plus, Radio, Shield, Terminal, Trash } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { useLocalStorage } from "usehooks-ts";
@@ -243,6 +244,7 @@ function ApiHostsCard() {
 
 function Setting() {
     const { t } = useTranslation('webui');
+    const session = useSession();
     const { preference, setPreference } = useLanguage();
     const { preference: themePreference, setPreference: setThemePreference } = useTheme();
     const [latencyHTTP, setLatencyHTTP] = useLocalStorage(LatencyHTTPUrlKey, LatencyHTTPUrlDefault);
@@ -254,6 +256,7 @@ function Setting() {
 
     return (
         <MainContainer>
+            {!session && <div className="mb-4"><Button asChild variant="ghost"><a href="#/login"><ArrowLeft size={16} />{t('auth:backToLogin')}</a></Button></div>}
             {/* 1. API Connection */}
             <ApiHostsCard />
 
