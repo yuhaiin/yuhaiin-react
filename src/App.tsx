@@ -35,10 +35,13 @@ const variants = {
     }),
 };
 
+// WebUI preferences are local to this browser and need no controller session.
+const publicPaths = ['/login', '/docs/webui'];
+
 function AppContent() {
     const [location, navigate] = useLocation();
     const session = useSession();
-    useEffect(() => { if (!session && location !== "/login") navigate("/login"); }, [session, location, navigate]);
+    useEffect(() => { if (!session && !publicPaths.includes(location)) navigate("/login"); }, [session, location, navigate]);
 
     useEffect(() => {
         window.Android?.setRefreshEnabled?.(!location.includes('/docs/config/log'))
@@ -47,7 +50,7 @@ function AppContent() {
     const reducedMotion = useReducedMotion();
     const direction = useSmartAnimation(location, navigationOrder);
     const animationContext = { direction, reducedMotion };
-    const isLogin = location === '/login' || !session;
+    const isStandalone = location === '/login' || !session;
     const content = (
         <div className={clsx(
             'relative w-auto min-h-screen h-screen overflow-hidden box-border',
@@ -65,14 +68,15 @@ function AppContent() {
                     className={clsx(
                         'absolute inset-0 box-border h-full w-full',
                         'overflow-y-auto overflow-x-hidden',
-                        !isLogin && 'pt-[calc(var(--mobile-app-bar-height)+env(safe-area-inset-top)+12px)] px-3 sm:px-5 pb-[calc(20px+env(safe-area-inset-bottom))]',
-                        !isLogin && 'lg:pt-[20px] lg:pl-[292px]'
+                        !session && location === '/docs/webui' && 'p-4 sm:p-5',
+                        !isStandalone && 'pt-[calc(var(--mobile-app-bar-height)+env(safe-area-inset-top)+12px)] px-3 sm:px-5 pb-[calc(20px+env(safe-area-inset-bottom))]',
+                        !isStandalone && 'lg:pt-[20px] lg:pl-[292px]'
                     )}
                     transition={{ duration: reducedMotion ? 0 : 0.2, ease: "easeOut" }}
                 >
                     <Router hook={() => [location, navigate]}>
                         <Switch>
-                            {appRoutes.filter(route => !isLogin || route.path === "/login").map(({ path, component }) => (
+                            {appRoutes.filter(route => session || publicPaths.includes(route.path)).map(({ path, component }) => (
                                 <Route key={path} path={path}>{() => {
                                     const Page = component;
                                     return <PagePermissions path={path}><Page /></PagePermissions>;
@@ -89,7 +93,7 @@ function AppContent() {
         <GlobalToastProvider>
             <ConfirmationHost />
             <SessionMonitor />
-            {isLogin ? content : <ApiCacheBoundary><NavBarContainer>{content}</NavBarContainer></ApiCacheBoundary>}
+            {isStandalone ? content : <ApiCacheBoundary><NavBarContainer>{content}</NavBarContainer></ApiCacheBoundary>}
         </GlobalToastProvider>
     )
 }
