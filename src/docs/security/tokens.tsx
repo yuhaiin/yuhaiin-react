@@ -9,7 +9,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { IssuedSecret } from './secret';
-const readerScopes = new Set(['nodes:read', 'inbounds:read', 'routes:read', 'resolver:read', 'connections:read', 'gateway:read', 'settings:read', 'metrics:read', 'identity:read', 'tokens:own']);
+const readerScopes = new Set(['nodes:read', 'inbounds:read', 'routes:read', 'resolver:read', 'connections:read', 'gateway:read', 'settings:read', 'metrics:read', 'identity:read', 'tokens:own', 'proxy-credentials:own']);
 export function Tokens() {
     const { t } = useTranslation('auth'); const session = useSession()!;
     const [now, setNow] = useState(() => Date.now());
@@ -21,7 +21,7 @@ export function Tokens() {
     const { data: users } = useSWR(session.principal.permissions.includes('users:manage') && session.principal.permissions.includes('tokens:manage') ? 'auth-users' : null, () => authAPI<User[]>('GET', '/users'));
     const { data: tokens, error: loadError, mutate } = useSWR(['auth-tokens', owner], () => authAPI<Token[]>('GET', `/tokens?owner=${encodeURIComponent(owner)}`));
     const target = users?.find(user => user.id === owner);
-    const available = session.principal.permissions.filter(permission => target?.role !== 'read-only' || readerScopes.has(permission));
+    const available = session.principal.permissions.filter(permission => target?.role === 'none' ? ['identity:read', 'proxy-credentials:own'].includes(permission) : target?.role !== 'read-only' || readerScopes.has(permission));
     const run = async (operation: () => Promise<void>) => {
         setBusy(true); setError('');
         try { await operation(); await mutate(); } catch { setError(t('requestFailed')); } finally { setBusy(false); }
