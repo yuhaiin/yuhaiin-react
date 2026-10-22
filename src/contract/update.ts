@@ -25,3 +25,15 @@ export interface UpdateStatus {
   totalBytes: number;
   error: string;
 }
+
+export interface UpdateHistoryEntry {
+  id: string;
+  version: string;
+  commit: string;
+  size: number;
+  savedAt: string;
+}
+
+export interface UpdateHistory {
+  items: UpdateHistoryEntry[];
+}
