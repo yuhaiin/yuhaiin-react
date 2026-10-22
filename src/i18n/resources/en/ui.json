@@ -695,5 +695,14 @@
   "additionalTrustedOrigins": "Additional trusted origins (one per line)",
   "trustedOriginsHelp": "Enter exact origins such as https://admin.example.com or http://localhost:5173. HTTPS is required except for loopback addresses. Wildcards and URL paths are not allowed. A trusted website can manage your local backend; add only websites you control. Remote network clients still require authentication.",
   "trustedOriginsInvalid": "Enter up to 32 distinct full HTTP(S) origins without paths or wildcards. Non-local sites must use HTTPS.",
-  "saveSuccess": "Settings saved successfully."
+  "saveSuccess": "Settings saved successfully.",
+  "previousVersions": "Previous versions",
+    "retainTwoVersions": "Up to two previous binaries are stored locally",
+    "versionHistoryUnavailable": "Unable to load version history.",
+    "noPreviousVersions": "No previous versions have been archived yet.",
+    "restoreVersion": "Restore",
+    "restoreVersionConfirm": "Restore yuhaiin {version}? The service will restart and active connections will be interrupted.",
+    "restoreVersionStarted": "Restoring the selected version. Waiting for the service to restart.",
+    "rollbackBinaryOnly": "Restoration changes the executable only. It does not roll back configuration or database migrations."
+
 }

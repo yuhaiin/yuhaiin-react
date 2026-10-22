@@ -13,7 +13,7 @@ export const navigationSections: NavigationSection[] = [
     { label: nav('monitoring'), items: [
         { path: '/', label: nav('home'), icon: House },
         { label: nav('connections'), icon: Activity, items: [
-            { path: '/docs/connections/v2', label: ui('connections18'), icon: ArrowLeftRight },
+            { path: '/docs/connections/v2', label: ui('activeConnections'), icon: ArrowLeftRight },
             { path: '/docs/connections/history', label: ui('history'), icon: History },
             { path: '/docs/connections/failed', label: ui('failedHistory'), icon: FileClock },
             { path: '/docs/bypass/block', label: ui('blockHistory'), icon: ShieldBan },

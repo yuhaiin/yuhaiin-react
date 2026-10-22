@@ -695,5 +695,14 @@
   "additionalTrustedOrigins": "追加で信頼するオリジン（1 行に 1 つ）",
   "trustedOriginsHelp": "https://admin.example.com または http://localhost:5173 のようにオリジンを正確に指定してください。ループバック以外は HTTPS が必須です。ワイルドカードや URL パスは使用できません。信頼するサイトからローカル管理 API を操作できるため、管理下のサイトだけを追加してください。リモート接続には引き続き認証が必要です。",
   "trustedOriginsInvalid": "パスやワイルドカードを含まない HTTP(S) オリジンを 32 件以内で入力してください。ローカル以外は HTTPS が必須で、重複は許可されません。",
-  "saveSuccess": "設定を保存しました。"
+  "saveSuccess": "設定を保存しました。",
+  "previousVersions": "以前のバージョン",
+    "retainTwoVersions": "直前の2つのバイナリをローカルに保存",
+    "versionHistoryUnavailable": "バージョン履歴を取得できません。",
+    "noPreviousVersions": "保存された以前のバージョンはありません。",
+    "restoreVersion": "復元",
+    "restoreVersionConfirm": "yuhaiin {version} に戻しますか？ サービスが再起動し、接続が一時的に切断されます。",
+    "restoreVersionStarted": "選択したバージョンを復元しています。サービスの再起動を確認します。",
+    "rollbackBinaryOnly": "復元するのは実行ファイルのみです。設定やデータベースの変更は元に戻りません。"
+
 }
