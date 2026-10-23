@@ -68,3 +68,36 @@ to open that provider's authorization page for the currently signed-in admin.
 Saving configuration alone never binds an external identity. Ordinary users see
 account binding controls and a contact-administrator notice when unavailable,
 without client-ID/secret settings.
+
+## User traffic and audit
+
+**Account & security → User traffic and audit** reads the paired backend's
+`/api/v2/auth/usage` endpoints. Proxy-only users see their own lifetime/period
+payload usage, transfer rates, activity minutes, session duration, node/inbound/
+credential/protocol breakdowns and cursor-paged session audits. Read-only operators
+and administrators may select another owner or unattributed traffic. Administrators
+can change retention. Counters use decimal strings/BigInt; dates and presets use
+UTC. Session duration includes idle and parallel sessions. This view does not
+apply quotas or rate limits.
+
+The owner selector combines known users with the first 200 historical IDs. Audit
+filters match exact source/target addresses and session start times. Errors and
+incomplete audit coverage remain visible. Cache keys include controller, identity,
+owner and filters to isolate data across accounts.
+
+For a real browser check, build the paired backend and this frontend first, then:
+
+```sh
+USAGE_BACKEND=/absolute/path/to/yuhaiin \
+CHROME_PATH=/opt/google/chrome/chrome \
+ARTIFACT_DIR=/tmp/user-usage-ui \
+node scripts/check-user-usage.mjs
+```
+
+The script launches an isolated Chrome profile unless `CHROME_DEBUG_PORT` selects
+an existing disposable CDP browser. It creates temporary backend state, enrolls
+two users, sends real authenticated HTTP proxy traffic, verifies separated totals
+and 55 independent audit rows, exercises owner selection/pagination and proxy-only
+self-service, checks 360px layout, and saves screenshots. It leaves production
+state and browser profiles untouched. Its backend logs contain disposable setup
+capabilities and are created with private file permissions.
