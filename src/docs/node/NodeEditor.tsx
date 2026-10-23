@@ -495,6 +495,28 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             return <StringField label="Hash" value={protocol.point_as_endpoint.hash} disabled={!editable} onChange={(hash) => patch(protocol, { hash })} />;
         case "network_split":
             return <NetworkSplitForm config={protocol.network_split} editable={editable} onChange={(patchValue) => patch(protocol, patchValue)} />;
+        case "masque":
+            return (
+                <div className="grid gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <StringField label="Endpoint (host:port)" value={protocol.masque.endpoint} disabled={!editable} onChange={(endpoint) => patch(protocol, { endpoint })} />
+                        <StringField label="Server name (SNI)" value={protocol.masque.server_name} disabled={!editable} onChange={(server_name) => patch(protocol, { server_name })} />
+                    </div>
+                    <StringField label="HTTPS CONNECT-IP URL" value={protocol.masque.url} disabled={!editable} onChange={(url) => patch(protocol, { url })} />
+                    <StringField label="Bearer token" value={protocol.masque.bearer_token} disabled={!editable || !!protocol.credentialRef} onChange={(bearer_token) => patch(protocol, { bearer_token })} />
+                    <InputList title={uiT("localAddresses")} data={protocol.masque.local_addresses ?? []} disabled={!editable} onChange={(local_addresses) => patch(protocol, { local_addresses })} />
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <NumberField label="MTU" value={protocol.masque.mtu} disabled={!editable} onChange={(mtu) => patch(protocol, { mtu })} />
+                        <SettingSelectVertical label="Transport" value={protocol.masque.transport || "h3"} disabled={!editable}
+                            values={[["HTTP/3 (QUIC / BBR)", "h3"], ["HTTP/2 (TLS / TCP)", "h2"]]}
+                            onChange={(transport) => patch(protocol, { transport })} />
+                    </div>
+                    <StringField label="Custom CA (PEM)" value={protocol.masque.ca_cert_pem} disabled={!editable} onChange={(ca_cert_pem) => patch(protocol, { ca_cert_pem })} />
+                    <StringField label="Client certificate (PEM)" value={protocol.masque.client_cert_pem} disabled={!editable} onChange={(client_cert_pem) => patch(protocol, { client_cert_pem })} />
+                    <StringField label="Client private key (PEM)" value={protocol.masque.client_key_pem} disabled={!editable} onChange={(client_key_pem) => patch(protocol, { client_key_pem })} />
+                    <BoolField label="Skip TLS verification (unsafe)" value={protocol.masque.insecure_skip_verify} disabled={!editable} onChange={(insecure_skip_verify) => patch(protocol, { insecure_skip_verify })} />
+                </div>
+            );
         case "cloudflare_warp_masque":
             return (
                 <div className="grid gap-4">
