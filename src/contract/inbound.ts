@@ -46,6 +46,8 @@ export function createDefaultNetwork(type: InboundNetwork["type"] = "tcp_udp"): 
 
 export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): InboundProtocol {
     switch (type) {
+        case "masque":
+            return { type, masque: { authToken: "", path: "/.well-known/masque/ip/*/*/", serverAddresses: ["10.88.0.1/32"], clientAddresses: ["10.88.0.2/32"], mtu: 1280, maxSessions: 64 } };
         case "hysteria2":
             return { type, hysteria2: { auth: "", uploadBps: 0, downloadBps: 0 } };
         case "http":
@@ -155,7 +157,7 @@ export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["t
     const protocol = inbound.protocol.type === type
         ? inbound.protocol : createDefaultProtocol(type);
     if (["tun", "tproxy", "redir", "krunlet", "wireguard"].includes(type)) return normalizeInbound({ ...inbound, protocol, network: { type: "empty", empty: {} }, transports: [] });
-    if (type !== "hysteria2") {
+    if (type !== "hysteria2" && type !== "masque") {
         // A virtual inbound has no network listener; restore a normal listener
         // when switching back to a stream protocol.
         if (inbound.protocol.type === "wireguard" && inbound.network.type === "empty") {
@@ -166,12 +168,12 @@ export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["t
     // inboundListen() returns a display label ("UDP :51820") for WireGuard,
     // not a socket address that Hysteria2 can bind.
     const host = inbound.protocol.type === "wireguard" ? ":9002" : inboundListen(inbound) || ":9002";
-    const certificate = inbound.transports.find(item => item.type === "tls" || item.type === "tls_auto");
+    const certificate = inbound.transports.find(item => item.type === "tls" || (type === "hysteria2" && item.type === "tls_auto"));
     return normalizeInbound({
         ...inbound,
         protocol,
         network: { type: "tcp_udp", tcp_udp: { host, udp: "udp_only" } },
-        transports: [certificate ?? createDefaultTransport("tls_auto")],
+        transports: [certificate ?? createDefaultTransport(type === "masque" ? "tls" : "tls_auto")],
     });
 }
 
