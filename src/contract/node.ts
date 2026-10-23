@@ -50,6 +50,7 @@ export type AEADConfig = Partial<Go.node.AEAD>;
 export type NodeIPVersion = "auto" | "ipv4" | "ipv6";
 export type NetworkSplitConfig = { tcp?: NodeProtocol; udp?: NodeProtocol };
 export type CloudflareWarpMasqueConfig = Omit<Partial<Go.node.CloudflareWarpMasque>, "endpoint"> & { endpoint?: string[] };
+export type MasqueConfig = Partial<Go.node.Masque>;
 export type PointAsEndpointConfig = Partial<Go.node.PointAsEndpoint>;
 
 export type NodeProtocolConfigByType = {
@@ -97,6 +98,7 @@ export type NodeProtocolConfigByType = {
   fixed: FixedConfig;
   network_split: NetworkSplitConfig;
   cloudflare_warp_masque: CloudflareWarpMasqueConfig;
+  masque: MasqueConfig;
   proxy: EmptyNodeProtocolConfig;
   fixedv2: FixedV2Config;
   point_as_endpoint: PointAsEndpointConfig;
@@ -206,6 +208,8 @@ function defaultProtocolConfig<T extends NodeProtocolType>(type: T): NodeProtoco
       return { tls: { enable: true } } as NodeProtocolConfig<T>;
     case "tls_termination":
       return { tls: {} } as NodeProtocolConfig<T>;
+    case "masque":
+      return { endpoint: "", url: "https://example.com/.well-known/masque/ip/*/*/", local_addresses: [], mtu: 1280, transport: "h3" } as NodeProtocolConfig<T>;
     case "fixedv2":
       return { addresses: [] } as NodeProtocolConfig<T>;
     case "ssh":
@@ -350,6 +354,7 @@ export const protocolTypes: NodeProtocolType[] = [
   "fixed",
   "network_split",
   "cloudflare_warp_masque",
+  "masque",
   "proxy",
   "fixedv2",
   "point_as_endpoint",
