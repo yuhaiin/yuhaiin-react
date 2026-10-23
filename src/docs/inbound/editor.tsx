@@ -20,7 +20,7 @@ import { UserAuthentication } from "./authentication";
 
 const networkTypes: InboundNetwork["type"][] = ["empty", "tcp_udp", "quic"];
 
-const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "wireguard", "krunlet", "reverse_tcp", "none"];
+const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "masque", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "wireguard", "krunlet", "reverse_tcp", "none"];
 
 const transportTypes: InboundTransport["type"][] = ["normal", "tls", "mux", "http2", "websocket", "reality", "tls_auto", "http_mock", "aead", "proxy"];
 
@@ -205,6 +205,20 @@ const ProtocolConfigEditor: FC<{
     const hoppingHelpID = useId();
 
     switch (value.type) {
+        case "masque":
+            return (
+                <div className="grid gap-4">
+                    <p className="text-sm text-ui-muted">Standard HTTP/3 CONNECT-IP. Requires an HTTPS certificate in the TLS transport and a Bearer token; HTTP/2 server mode is not supported.</p>
+                    <SettingInputVertical label="CONNECT-IP path" value={value.masque.path ?? ""} onChange={(path) => onChange({ ...value, masque: { ...value.masque, path } })} placeholder="/.well-known/masque/ip/*/*/" />
+                    <SettingInputVertical label="Bearer token" value={value.masque.authToken} onChange={(authToken) => onChange({ ...value, masque: { ...value.masque, authToken } })} />
+                    <InputList title="Server IP addresses" data={value.masque.serverAddresses} onChange={(serverAddresses) => onChange({ ...value, masque: { ...value.masque, serverAddresses } })} />
+                    <InputList title="Client IP addresses (host CIDRs)" data={value.masque.clientAddresses} onChange={(clientAddresses) => onChange({ ...value, masque: { ...value.masque, clientAddresses } })} />
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <SettingInputVertical label="MTU" type="number" min={1280} max={65535} step={1} value={String(value.masque.mtu ?? 1280)} onChange={(mtu) => onChange({ ...value, masque: { ...value.masque, mtu: numberValue(mtu) } })} />
+                        <SettingInputVertical label="Max sessions" type="number" min={1} max={1024} step={1} value={String(value.masque.maxSessions ?? 64)} onChange={(maxSessions) => onChange({ ...value, masque: { ...value.masque, maxSessions: numberValue(maxSessions) } })} />
+                    </div>
+                </div>
+            );
         case "hysteria2":
             return (
                 <div className="grid gap-4">
