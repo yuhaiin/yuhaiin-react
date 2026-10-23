@@ -209,7 +209,7 @@ function defaultProtocolConfig<T extends NodeProtocolType>(type: T): NodeProtoco
     case "tls_termination":
       return { tls: {} } as NodeProtocolConfig<T>;
     case "masque":
-      return { endpoint: "", url: "https://example.com/.well-known/masque/ip/*/*/", local_addresses: [], mtu: 1280, transport: "h3" } as NodeProtocolConfig<T>;
+      return { endpoint: "", url: "https://example.com/.well-known/masque/ip/*/*/", local_addresses: [], mtu: 1280, transport: "h3" } as MasqueConfig as NodeProtocolConfig<T>;
     case "fixedv2":
       return { addresses: [] } as NodeProtocolConfig<T>;
     case "ssh":
@@ -223,13 +223,13 @@ function defaultProtocolConfig<T extends NodeProtocolType>(type: T): NodeProtoco
     case "fortinet":
       return { gateway: "", username: "", password: "", realm: "", disable_dtls: false, insecure_skip_verify: false } as NodeProtocolConfig<T>;
     case "amneziawg":
-      return { endpoint: [], peers: [], mtu: 1400 } as NodeProtocolConfig<T>;
+      return { endpoint: [], peers: [], mtu: 1400 } as unknown as NodeProtocolConfig<T>;
     case "nebula":
       return { config_yaml: "" } as NodeProtocolConfig<T>;
     case "zerotier":
       return { network_id: "", identity: "", listen: "", moons: [], low_bandwidth: false } as NodeProtocolConfig<T>;
     case "wireguard":
-      return { endpoint: [], peers: [] } as NodeProtocolConfig<T>;
+      return { endpoint: [], peers: [] } as unknown as NodeProtocolConfig<T>;
     case "globalprotect":
       return { gateway: "", username: "", password: "", insecure_skip_verify: false, use_esp: false, mtu: 0 } as NodeProtocolConfig<T>;
     case "l2tp":
