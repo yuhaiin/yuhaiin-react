@@ -474,6 +474,7 @@ export namespace Go {
     }
     export type Protocol =
       | { type: "hysteria2"; hysteria2: Hysteria2Protocol }
+      | { type: "masque"; masque: MasqueProtocol }
       | { type: "http"; http: HTTPProtocol }
       | { type: "socks5"; socks5: Socks5Protocol }
       | { type: "yuubinsya"; yuubinsya: YuubinsyaProtocol }
@@ -486,6 +487,14 @@ export namespace Go {
       | { type: "krunlet"; krunlet: KrunletProtocol }
       | { type: "reverse_tcp"; reverse_tcp: ReverseTCPProtocol }
       | { type: "none"; none: NoneProtocol };
+    export interface MasqueProtocol {
+      path?: string;
+      authToken: string;
+      serverAddresses: string[];
+      clientAddresses: string[];
+      mtu?: number;
+      maxSessions?: number;
+    }
     export interface Hysteria2Protocol {
       auth: string;
       uploadBps?: number;
@@ -783,6 +792,7 @@ export namespace Go {
       | { type: "fixed"; credentialRef?: string; fixed: Fixed }
       | { type: "network_split"; credentialRef?: string; network_split: NetworkSplit }
       | { type: "cloudflare_warp_masque"; credentialRef?: string; cloudflare_warp_masque: CloudflareWarpMasque }
+      | { type: "masque"; credentialRef?: string; masque: Masque }
       | { type: "proxy"; credentialRef?: string; proxy: Proxy }
       | { type: "fixedv2"; credentialRef?: string; fixedv2: FixedV2 }
       | { type: "point_as_endpoint"; credentialRef?: string; point_as_endpoint: PointAsEndpoint };
@@ -1152,6 +1162,19 @@ export namespace Go {
       endpoint: string;
       endpoint_public_key: string;
       local_addresses?: string[];
+      mtu?: number;
+      transport?: string;
+    }
+    export interface Masque {
+      endpoint: string;
+      url: string;
+      server_name?: string;
+      ca_cert_pem?: string;
+      client_cert_pem?: string;
+      client_key_pem?: string;
+      insecure_skip_verify?: boolean;
+      bearer_token?: string;
+      local_addresses: string[];
       mtu?: number;
       transport?: string;
     }
