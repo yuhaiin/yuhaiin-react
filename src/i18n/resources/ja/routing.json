@@ -41,7 +41,8 @@
     "always": "すべての通信",
     "user": "認証済みユーザー ID",
     "group": "トラフィックグループ ID",
-    "credential": "トラフィック認証情報 ID"
+    "credential": "トラフィック認証情報 ID",
+    "destination": "宛先ドメイン / IP"
   },
   "selectorsTitle": "共有出口",
   "selectorsHelp": "選択したノードを変更すると、この出口を使うすべてのルールに適用されます。",

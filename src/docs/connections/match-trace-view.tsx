@@ -50,7 +50,7 @@ const Branch: FC<BranchProps> = ({
     const limit = visibleCounts[path] ?? PAGE_SIZE;
     const remaining = Math.max(0, children.length - limit);
     const rawLabel = trace.label || trace.kind || trace.type;
-    const label = ['user', 'group', 'credential'].includes(rawLabel) ? authT(`identityConditions.${rawLabel}`) : rawLabel;
+    const label = ['user', 'group', 'credential'].includes(rawLabel) ? authT(`identityConditions.${rawLabel}`) : rawLabel === 'Destination' || rawLabel === 'destination' ? authT('access.destination') : rawLabel;
     const groupLabel = trace.type.toUpperCase();
     const hasExtraLabel = group && label.toUpperCase() !== groupLabel;
     const hasDetails = Boolean(trace.kind || trace.id);

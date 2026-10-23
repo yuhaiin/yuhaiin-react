@@ -41,7 +41,8 @@
     "always": "All traffic",
     "user": "Authenticated user IDs",
     "group": "Traffic group IDs",
-    "credential": "Traffic credential IDs"
+    "credential": "Traffic credential IDs",
+    "destination": "Destination domain / IP"
   },
   "selectorsTitle": "Shared destinations",
   "selectorsHelp": "Change one selected node to update every rule using this destination.",

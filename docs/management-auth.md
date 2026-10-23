@@ -123,7 +123,44 @@ Existing objects without a mode remain mixed. Mixed mode displays a shared-secre
 revocation warning, and saving membership changes preserves the selected mode.
 No UI control grants permissions independently of the backend.
 
-This UI increment is paired with the backend traffic identity foundations. The
-dedicated Traffic Access Policy gate, enterprise quotas/resource governance,
-custom roles and generic OIDC controls are not part of this increment. Routing
-conditions must not be presented as a complete enterprise access boundary.
+## Traffic Access Policy
+
+Account & Security includes the active policy and status for `traffic-access:read`.
+The editor also requires `traffic-access:write` to validate or activate changes.
+The backend enforces both permissions. Existing scoped tokens do not acquire the
+new scopes automatically; issue a suitably scoped token where needed.
+
+Choose all inbounds or explicit stable inbound IDs, an explicit default action,
+and ordered allow/deny rules. The existing route expression editor supports
+identity, inbound IDs, domain/IP destinations, network, port and nested AND/OR/NOT
+conditions. It omits routing-only host/process lists and GeoIP from access policy
+choices. Rules use first-match precedence, with no implicit group or deny
+priority. Top-level conditions are OR; the initial rule template uses AND for a
+group and destination. Domains and CIDRs in one leaf are OR: separate them inside
+AND when both original name and resolved address must match.
+
+Validate leaves the active policy unchanged. Save and activate asks for
+confirmation because sessions that lose access close. Validation failures and
+revision conflicts retain the draft. Reload explicitly discards it after
+confirmation. Policy-referenced groups cannot be deleted until the references
+are removed; disabled rules also retain their group references.
+
+Effective access preview takes an active proxy credential ID, trusted inbound ID,
+TCP/UDP, destination host:port and an explicit resolved IP. It uses the current
+active policy, not the draft, and never looks up DNS. Inspecting another owner's
+credential requires `users:manage`. Credential/inbound authentication restrictions
+are still applied by the listener separately from this authorization preview.
+The result distinguishes allowed, denied and unprotected scope, and shows the
+revision, reason and matched rule ID. Connection audit details include historical
+access decision metadata and distinguish policy denial/revocation from ordinary
+close and credential invalidation.
+
+Protected scope requires a valid authenticated user even with default allow.
+Legacy shared/anonymous traffic does not acquire user identity. A direct Gateway
+listener currently lacks proxy-user authentication and is denied when protected;
+use an authenticated proxy inbound with Gateway interception for that flow.
+Review all alternate listeners before selecting only a subset of inbounds.
+
+This is the Phase 1 frontend. User resource governance, custom roles, security
+change history and generic OIDC are separate subsequent phases. Routing conditions
+alone remain insufficient as an enterprise authorization boundary.

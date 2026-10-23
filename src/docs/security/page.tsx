@@ -13,6 +13,7 @@ import { OAuthLinks } from './oauth-links';
 import { Tokens } from './tokens';
 import { Users } from './users';
 import { Groups } from './groups';
+import { TrafficAccess } from './traffic-access';
 import { ProxyCredentials, UpstreamCredentials } from './proxy-credentials';
 import { UserUsage } from './usage';
 export default function SecurityPage() {
@@ -36,6 +37,7 @@ export default function SecurityPage() {
         {session.principal.credentialType === 'session' && <><Sessions /><OAuthLinks /></>}
         {permissions.includes('usage:own') && <UserUsage />}
         {permissions.includes('users:manage') && <><Users /><Groups /></>}
+        {permissions.includes('traffic-access:read') && <TrafficAccess writable={permissions.includes('traffic-access:write')} />}
         {permissions.includes('tokens:own') && <Tokens />}
         {permissions.includes('proxy-credentials:own') && <ProxyCredentials />}
         {permissions.includes('upstream-credentials:manage') && <UpstreamCredentials />}

@@ -41,7 +41,8 @@
     "always": "모든 트래픽",
     "user": "인증된 사용자 ID",
     "group": "트래픽 그룹 ID",
-    "credential": "트래픽 인증 정보 ID"
+    "credential": "트래픽 인증 정보 ID",
+    "destination": "목적지 도메인 / IP"
   },
   "selectorsTitle": "공유 출구",
   "selectorsHelp": "선택한 노드를 바꾸면 이 출구를 사용하는 모든 규칙에 적용됩니다.",
