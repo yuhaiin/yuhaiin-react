@@ -74,7 +74,9 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
                     autoFakeIpRoute: true,
                     darwin: { experimentalBatch: false, batchSize: 32, pendingPackets: 32 },
                     skipMulticast: false,
-                    driver: "fdbased",
+                    driver: "channel",
+                    stack: "lightweight",
+                    congestionControl: "cubic",
                     portal: "",
                     portalV6: "",
                     routes: [],
@@ -130,13 +132,10 @@ export function createDefaultTransport(type: InboundTransport["type"] = "normal"
     }
 }
 
-// The backend accepts the lightweight stack only with the channel device driver.
-// Keep an omitted stack as the legacy default, including in serialized configurations.
-export function selectTunStack(value: TunProtocol, stack: "" | "lightweight", legacyDriver?: string): TunProtocol {
-    if (stack === "lightweight") {
-        return { ...value, stack, driver: "channel", congestionControl: value.congestionControl || "cubic" };
-    }
-    return { ...value, stack: undefined, congestionControl: undefined, outputScheduler: undefined, driver: legacyDriver ?? value.driver };
+// A persisted legacy TUN configuration is normalized before editing and
+// serialization. The backend no longer includes gVisor or tun2socket paths.
+export function normalizeTunProtocol(value: TunProtocol): TunProtocol {
+    return { ...value, stack: "lightweight", driver: "channel", congestionControl: value.congestionControl || "cubic" };
 }
 
 export function createDefaultInbound(id: string): Inbound {
@@ -186,7 +185,7 @@ export function normalizeInbound(value: Partial<Inbound> & { id?: string }): Inb
         network: value.network ?? createDefaultNetwork(),
         transports: Array.isArray(value.transports) ? value.transports : [],
         protocol: value.protocol?.type === "tun"
-            ? { ...value.protocol, tun: { ...value.protocol.tun, autoFakeIpRoute: value.protocol.tun.autoFakeIpRoute ?? false } }
+            ? { ...value.protocol, tun: normalizeTunProtocol({ ...value.protocol.tun, autoFakeIpRoute: value.protocol.tun.autoFakeIpRoute ?? false }) }
             : value.protocol ?? createDefaultProtocol(),
     };
 }
