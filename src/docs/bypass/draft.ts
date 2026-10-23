@@ -51,9 +51,9 @@ export type SimpleMatcher = {
     join: 'all' | 'any' | 'always';
     items: RuleExpr[];
 };
-export type SimpleLeafType = 'host' | 'process' | 'inbound' | 'network' | 'port' | 'geoip';
+export type SimpleLeafType = 'host' | 'process' | 'inbound' | 'network' | 'port' | 'geoip' | 'user' | 'group' | 'credential';
 
-const simpleLeafTypes: ReadonlySet<string> = new Set(['host', 'process', 'inbound', 'network', 'port', 'geoip']);
+const simpleLeafTypes: ReadonlySet<string> = new Set(['host', 'process', 'inbound', 'network', 'port', 'geoip', 'user', 'group', 'credential']);
 export function parseSimpleMatcher(rules: RuleExpr[] | undefined): SimpleMatcher | undefined {
     if (!rules?.length) return undefined;
     if (rules.length === 1 && rules[0].type === 'always') return { join: 'always', items: [] };

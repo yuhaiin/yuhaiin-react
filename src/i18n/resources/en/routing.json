@@ -38,7 +38,11 @@
     "all": "All conditions (AND)",
     "any": "Any condition (OR)",
     "not": "Exclude condition (NOT)",
-    "always": "All traffic"
+    "always": "All traffic",
+    "user": "Authenticated user IDs",
+    "group": "Traffic group IDs",
+    "credential": "Traffic credential IDs",
+    "destination": "Destination domain / IP"
   },
   "selectorsTitle": "Shared destinations",
   "selectorsHelp": "Change one selected node to update every rule using this destination.",
@@ -316,8 +320,7 @@
   "chooseGateway": "Choose a Gateway",
   "gatewayDisabled": "disabled",
   "gatewayLoadFailed": "Could not load Gateways.",
-  "gatewayRouteHelp": "TCP only. Matching connections enter this Gateway when its inbound interception settings permit them. Other traffic continues through normal routing; UDP and DNS skip this action."
-,
+  "gatewayRouteHelp": "TCP only. Matching connections enter this Gateway when its inbound interception settings permit them. Other traffic continues through normal routing; UDP and DNS skip this action.",
   "outboundRuntime": "Outbound runtime",
   "outboundNoObservations": "No observations yet. This does not mean the node is offline.",
   "outboundState_unknown": "Not checked",
@@ -342,7 +345,6 @@
   "outboundProtocolState": "Protocol status",
   "outboundStatusError": "Failed to load outbound runtime status.",
   "outboundTrafficHelp": "Payload traffic at this node boundary. Nested proxy chains can account bytes on multiple nodes.",
-  "dnsResponseTruncated": "Truncated response",
   "dnsResponsesTab": "Custom replies",
   "dnsResponsesHelp": "Return your own DNS records or response codes before FakeIP, hosts and upstream DNS.",
   "dnsResponsesMatching": "The first matching rule wins. An exact name matches only itself; *.example.com matches subdomains at any depth, excluding example.com. Use * for all names or query types.",

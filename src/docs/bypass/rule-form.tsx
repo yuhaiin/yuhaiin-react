@@ -17,6 +17,9 @@ import type { RouteRule, RuleExpr } from "@/contract/route";
 import { changeRuleAction, normalizeRule } from "@/contract/route";
 
 import { Plus, X } from "lucide-react";
+import { IdentityCondition, identityCondition } from './identity-condition';
+import { DestinationCondition } from './destination-condition';
+import { InboundCondition } from './inbound-condition';
 
 const routeModes = ["proxy", "block", "direct", "gateway"];
 
@@ -26,6 +29,8 @@ const udpProxyStrategies = ["udp_proxy_fqdn_strategy_default", "skip_resolve", "
 
 
 type RuleEditorOptions = {
+    allowedTypes?: RuleExpr['type'][];
+    rawInboundIDs?: boolean;
     lists: string[];
     listNames?: Record<string, string>;
     listTypes?: Record<string, string>;
@@ -106,16 +111,18 @@ function formatUdpProxyStrategy(value: string): string {
     }
 }
 
-function createExpr(type: string): RuleExpr {
+function createExpr(type: string, leaf = "host"): RuleExpr {
     switch (type) {
+        case 'user': case 'group': case 'credential': return identityCondition(type, []);
+        case 'destination': return { type, destination: { domains: [], cidrs: [] } };
         case "always":
             return { type, always: {} };
         case "all":
-            return { type, all: [createExpr("host")] };
+            return { type, all: [createExpr(leaf)] };
         case "any":
-            return { type, any: [createExpr("host")] };
+            return { type, any: [createExpr(leaf)] };
         case "not":
-            return { type, not: createExpr("host") };
+            return { type, not: createExpr(leaf) };
         case "process":
             return { type, process: { list: "" } };
         case "inbound":
@@ -132,32 +139,32 @@ function createExpr(type: string): RuleExpr {
     }
 }
 
-function RuleExprListEditor({ value, options, onChange }: { value: RuleExpr[]; options: RuleEditorOptions; onChange: (value: RuleExpr[]) => void }) {
+export function RuleExprListEditor({ value, options, onChange }: { value: RuleExpr[]; options: RuleEditorOptions; onChange: (value: RuleExpr[]) => void }) {
     const { t } = useTranslation('routing');
     return <div className="space-y-3">
         <p className="text-sm text-ui-muted">{t('topLevelAny')}</p>
         {value.map((expr, index) => <ExpressionEditor key={index} value={expr} options={options}
             onChange={next => onChange(value.map((item, i) => i === index ? next : item))}
             onRemove={() => onChange(value.filter((_, i) => i !== index))} />)}
-        <Button size="sm" onClick={() => onChange([...value, createExpr('host')])}><Plus size={16} />{t('addCondition')}</Button>
+        <Button size="sm" onClick={() => onChange([...value, createExpr(options.allowedTypes?.[0] ?? 'host')])}><Plus size={16} />{t('addCondition')}</Button>
     </div>;
 }
 
 function ExpressionEditor({ value, options, onChange, onRemove }: { value: RuleExpr; options: RuleEditorOptions; onChange: (value: RuleExpr) => void; onRemove: () => void }) {
     const { t } = useTranslation('routing');
-    const types = ['host', 'process', 'inbound', 'network', 'port', 'geoip', 'all', 'any', 'not', 'always'];
+    const types = options.allowedTypes ?? ['destination', 'host', 'process', 'inbound', 'network', 'port', 'geoip', 'user', 'group', 'credential', 'all', 'any', 'not', 'always'];
     const children = value.type === 'all' ? value.all : value.type === 'any' ? value.any : [];
     const group = value.type === 'all' || value.type === 'any';
     const patchChildren = (items: RuleExpr[]) => onChange(value.type === 'all' ? { type: 'all', all: items } : { type: 'any', any: items });
     return <div className="space-y-3 rounded-ui-lg border border-ui-border/70 bg-ui-surface-muted/30 p-3">
         <div className="flex items-center gap-2">
-            <Select ariaLabel={t("conditionOperator")} value={value.type} items={includeCurrent(types, value.type).map(type => ({ value: type, label: t(`condition.${type}`, { defaultValue: type }) }))} onValueChange={type => onChange(createExpr(type))} />
+            <Select ariaLabel={t("conditionOperator")} value={value.type} items={includeCurrent(types, value.type).map(type => ({ value: type, label: t(`condition.${type}`, { defaultValue: type }) }))} onValueChange={type => onChange(createExpr(type, options.allowedTypes?.[0]))} />
             <Button size="icon" variant="outline-danger" aria-label={t('removeCondition')} onClick={onRemove}><X size={16} /></Button>
         </div>
         {group ? <div className="space-y-3 border-l-2 border-ui-border pl-3">
             {children.map((child, index) => <ExpressionEditor key={index} value={child} options={options} onChange={next => patchChildren(children.map((item, i) => i === index ? next : item))} onRemove={() => patchChildren(children.filter((_, i) => i !== index))} />)}
-            <Button size="sm" onClick={() => patchChildren([...children, createExpr('host')])}>{t('addCondition')}</Button>
-        </div> : value.type === 'not' ? <ExpressionEditor value={value.not ?? createExpr('host')} options={options} onChange={not => onChange({ type: 'not', not })} onRemove={() => onChange(createExpr('host'))} />
+            <Button size="sm" onClick={() => patchChildren([...children, createExpr(options.allowedTypes?.[0] ?? 'host')])}>{t('addCondition')}</Button>
+        </div> : value.type === 'not' ? <ExpressionEditor value={value.not ?? createExpr(options.allowedTypes?.[0] ?? 'host')} options={options} onChange={not => onChange({ type: 'not', not })} onRemove={() => onChange(createExpr(options.allowedTypes?.[0] ?? 'host'))} />
         : value.type === 'always' ? <p className="text-sm text-ui-muted">{t('allTrafficHelp')}</p> : <RuleExprLeafFields value={value} options={options} onChange={onChange} />}
     </div>;
 }
@@ -166,6 +173,10 @@ function RuleExprLeafFields({ value, options, onChange }: { value: RuleExpr; opt
     const { t: uiT } = useTranslation('ui');
 
     switch (value.type) {
+        case 'destination': return <DestinationCondition value={value.destination} onChange={destination => onChange({ type: 'destination', destination })} />;
+        case 'user': return <IdentityCondition kind="user" ids={value.user.ids} onChange={ids => onChange(identityCondition('user', ids))} />;
+        case 'group': return <IdentityCondition kind="group" ids={value.group.ids} onChange={ids => onChange(identityCondition('group', ids))} />;
+        case 'credential': return <IdentityCondition kind="credential" ids={value.credential.ids} onChange={ids => onChange(identityCondition('credential', ids))} />;
         case "host":
             return (
                 <div className="min-w-0 flex-1">
@@ -190,6 +201,7 @@ function RuleExprLeafFields({ value, options, onChange }: { value: RuleExpr; opt
             );
         case "inbound": {
             const selectedInbounds = value.inbound?.names ?? (value.inbound?.name ? [value.inbound.name] : []);
+            if (options.rawInboundIDs) return <InboundCondition values={selectedInbounds} onChange={names => onChange({ type: 'inbound', inbound: { names } })} />;
             return (
                 <div className="min-w-0 flex-1">
                     <DropdownSelect
