@@ -179,7 +179,7 @@ export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["t
 
 export function normalizeInbound(value: Partial<Inbound> & { id?: string }): Inbound {
     return {
-        ...(value.authentication ? { authentication: { users: [...value.authentication.users] } } : {}),
+        ...(value.authentication ? { authentication: { ...value.authentication, users: [...value.authentication.users] } } : {}),
         id: value.id ?? "",
         name: value.name ?? value.id ?? "",
         enabled: value.enabled ?? false,

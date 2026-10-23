@@ -17,6 +17,7 @@ import type { RouteRule, RuleExpr } from "@/contract/route";
 import { changeRuleAction, normalizeRule } from "@/contract/route";
 
 import { Plus, X } from "lucide-react";
+import { IdentityCondition, identityCondition } from './identity-condition';
 
 const routeModes = ["proxy", "block", "direct", "gateway"];
 
@@ -108,6 +109,7 @@ function formatUdpProxyStrategy(value: string): string {
 
 function createExpr(type: string): RuleExpr {
     switch (type) {
+        case 'user': case 'group': case 'credential': return identityCondition(type, []);
         case "always":
             return { type, always: {} };
         case "all":
@@ -145,7 +147,7 @@ function RuleExprListEditor({ value, options, onChange }: { value: RuleExpr[]; o
 
 function ExpressionEditor({ value, options, onChange, onRemove }: { value: RuleExpr; options: RuleEditorOptions; onChange: (value: RuleExpr) => void; onRemove: () => void }) {
     const { t } = useTranslation('routing');
-    const types = ['host', 'process', 'inbound', 'network', 'port', 'geoip', 'all', 'any', 'not', 'always'];
+    const types = ['host', 'process', 'inbound', 'network', 'port', 'geoip', 'user', 'group', 'credential', 'all', 'any', 'not', 'always'];
     const children = value.type === 'all' ? value.all : value.type === 'any' ? value.any : [];
     const group = value.type === 'all' || value.type === 'any';
     const patchChildren = (items: RuleExpr[]) => onChange(value.type === 'all' ? { type: 'all', all: items } : { type: 'any', any: items });
@@ -166,6 +168,9 @@ function RuleExprLeafFields({ value, options, onChange }: { value: RuleExpr; opt
     const { t: uiT } = useTranslation('ui');
 
     switch (value.type) {
+        case 'user': return <IdentityCondition kind="user" ids={value.user.ids} onChange={ids => onChange(identityCondition('user', ids))} />;
+        case 'group': return <IdentityCondition kind="group" ids={value.group.ids} onChange={ids => onChange(identityCondition('group', ids))} />;
+        case 'credential': return <IdentityCondition kind="credential" ids={value.credential.ids} onChange={ids => onChange(identityCondition('credential', ids))} />;
         case "host":
             return (
                 <div className="min-w-0 flex-1">

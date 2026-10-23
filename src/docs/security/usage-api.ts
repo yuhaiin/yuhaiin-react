@@ -11,6 +11,7 @@ export interface UsageReport {
     interval: string; from: number; to: number; updatedAt: number; health: UsageHealth;
 }
 export interface UsageAudit {
+	groupIds?: string[];
     id: string; userId: string; credentialId: string; inboundId: string; inboundName: string; nodeId: string; nodeName: string;
     selectorId: string; selectorName: string; ruleId: string; ruleName: string; protocol: string; mode: string; source: string; target: string; ip: string;
     startedAt: number; endedAt: number; lastSeen: number; durationMillis: string; upload: string; download: string; result: string; reason: string;

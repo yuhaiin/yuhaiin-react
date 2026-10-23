@@ -73,6 +73,7 @@ export namespace Go {
     export interface Connection {
       userId?: string;
       credentialId?: string;
+      groupIds?: string[];
       id: string;
       addr: string;
       network: NetworkType;
@@ -443,6 +444,7 @@ export namespace Go {
       createdAt: number;
     }
     export interface Authentication {
+      mode?: string;
       users: string[];
     }
     export interface Inbound {
@@ -503,6 +505,14 @@ export namespace Go {
       disableUdp?: boolean;
       salamanderPassword?: string;
       hopPorts?: string;
+    }
+    export interface MasqueProtocol {
+      path?: string;
+      authToken: string;
+      serverAddresses: string[];
+      clientAddresses: string[];
+      mtu?: number;
+      maxSessions?: number;
     }
     export interface HTTPProtocol {
       username: string;
@@ -1376,7 +1386,13 @@ export namespace Go {
       | { type: "inbound"; inbound: SourceRef }
       | { type: "network"; network: NetworkExpr }
       | { type: "port"; port: PortExpr }
-      | { type: "geoip"; geoip: GeoIPExpr };
+      | { type: "geoip"; geoip: GeoIPExpr }
+      | { type: "user"; user: IdentityExpr }
+      | { type: "group"; group: IdentityExpr }
+      | { type: "credential"; credential: IdentityExpr };
+    export interface IdentityExpr {
+      ids: string[];
+    }
     export interface MatchAllExpr {
     }
     export interface ListRef {
@@ -1696,6 +1712,103 @@ export namespace Go {
     }
     export interface RollbackRequest {
       id: string;
+    }
+  }
+  export namespace usage {
+    export interface Options {
+      auditDays: number;
+      maxAuditRows: number;
+      hourlyDays: number;
+      dailyDays: number;
+    }
+    export interface Counters {
+      upload: string;
+      download: string;
+      opened: string;
+      failed: string;
+      sessionMillis: string;
+      firstSeen: number;
+      lastSeen: number;
+    }
+    export interface Summary {
+      userId: string;
+      lifetime: Counters;
+      period: Counters;
+      activeTcp: number;
+      activeUdp: number;
+      peakTcp: number;
+      peakUdp: number;
+      activeMinutes: string;
+      periodActiveMinutes: string;
+      uploadRate: string;
+      downloadRate: string;
+    }
+    export interface Point extends Counters {
+      start: number;
+    }
+    export interface Breakdown extends Counters {
+      id: string;
+      name: string;
+    }
+    export interface Report {
+      summary: Summary;
+      series: Point[];
+      nodes: Breakdown[];
+      inbounds: Breakdown[];
+      credentials: Breakdown[];
+      protocols: Breakdown[];
+      interval: string;
+      from: number;
+      to: number;
+      updatedAt: number;
+      health: Health;
+    }
+    export interface Health {
+      pendingAudit: number;
+      droppedAudit: string;
+      lastFlush: number;
+      persistenceError: boolean;
+    }
+    export interface Query {
+      UserID: string;
+      From: number;
+      Interval: string;
+      CredentialID: string;
+      Result: string;
+      Before: string;
+      Limit: number;
+    }
+    export interface Audit {
+      id: string;
+      userId: string;
+      credentialId: string;
+      groupIds?: string[];
+      inboundId: string;
+      inboundName: string;
+      nodeId: string;
+      nodeName: string;
+      selectorId: string;
+      selectorName: string;
+      ruleId: string;
+      ruleName: string;
+      protocol: string;
+      mode: string;
+      source: string;
+      target: string;
+      ip: string;
+      startedAt: number;
+      endedAt: number;
+      lastSeen: number;
+      durationMillis: string;
+      upload: string;
+      download: string;
+      result: string;
+      reason: string;
+    }
+    export interface AuditPage {
+      items: Audit[];
+      next: string;
+      health: Health;
     }
   }
 }

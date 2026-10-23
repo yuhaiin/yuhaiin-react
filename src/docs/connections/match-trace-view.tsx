@@ -41,6 +41,7 @@ const Branch: FC<BranchProps> = ({
     trace, path, depth, expanded, decisive, visibleCounts, detailPath,
     onToggle, onMore, onDetail, stateLabel, moreLabel,
 }) => {
+    const { t: authT } = useTranslation('auth');
     const state = traceState(trace.state);
     const group = isTraceGroup(trace);
     const open = group && expanded.has(path);
@@ -48,7 +49,8 @@ const Branch: FC<BranchProps> = ({
     const children = trace.children ?? [];
     const limit = visibleCounts[path] ?? PAGE_SIZE;
     const remaining = Math.max(0, children.length - limit);
-    const label = trace.label || trace.kind || trace.type;
+    const rawLabel = trace.label || trace.kind || trace.type;
+    const label = ['user', 'group', 'credential'].includes(rawLabel) ? authT(`identityConditions.${rawLabel}`) : rawLabel;
     const groupLabel = trace.type.toUpperCase();
     const hasExtraLabel = group && label.toUpperCase() !== groupLabel;
     const hasDetails = Boolean(trace.kind || trace.id);

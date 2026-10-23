@@ -39,6 +39,7 @@ export function UsageAuditList({ owner, preset, from, to }: { owner: string; pre
 function AuditRow({ item }: { item: UsageAudit }) {
     const { t } = useTranslation('auth');
     const fields = [
+		[t('groups.title'), item.groupIds?.join(', ') ?? ''],
         [t('usage.started'), usageDate(item.startedAt)], [t('usage.ended'), usageDate(item.endedAt)],
         [t('usage.sessionDuration'), usageDuration(item.durationMillis)], [t('usage.source'), item.source], [t('usage.target'), item.target],
         [t('usage.ip'), item.ip], [t('usage.credential'), item.credentialId], [t('usage.inbound'), item.inboundName || item.inboundId],

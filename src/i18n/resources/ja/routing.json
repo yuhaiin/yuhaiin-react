@@ -38,7 +38,10 @@
     "all": "すべて一致 (AND)",
     "any": "いずれか一致 (OR)",
     "not": "条件を除外 (NOT)",
-    "always": "すべての通信"
+    "always": "すべての通信",
+    "user": "認証済みユーザー ID",
+    "group": "トラフィックグループ ID",
+    "credential": "トラフィック認証情報 ID"
   },
   "selectorsTitle": "共有出口",
   "selectorsHelp": "選択したノードを変更すると、この出口を使うすべてのルールに適用されます。",
@@ -316,8 +319,7 @@
   "chooseGateway": "Gateway を選択",
   "gatewayDisabled": "無効",
   "gatewayLoadFailed": "Gateway を読み込めませんでした。",
-  "gatewayRouteHelp": "TCP のみ。入口の傍受設定が許可する接続を Gateway に渡します。それ以外の通信は通常のルーティングを続行し、UDP と DNS はこのアクションをスキップします。"
-,
+  "gatewayRouteHelp": "TCP のみ。入口の傍受設定が許可する接続を Gateway に渡します。それ以外の通信は通常のルーティングを続行し、UDP と DNS はこのアクションをスキップします。",
   "outboundRuntime": "出口ノードの稼働状況",
   "outboundNoObservations": "記録がまだありません。オフラインとは限りません。",
   "outboundState_unknown": "未確認",
@@ -342,7 +344,6 @@
   "outboundProtocolState": "プロトコル状態",
   "outboundStatusError": "出口ノードの状態を取得できませんでした。",
   "outboundTrafficHelp": "ノード境界で計測した有効データ。多段プロキシでは複数ノードに計上される場合があります。",
-  "dnsResponseTruncated": "応答が切り詰められています",
   "dnsResponsesTab": "カスタム応答",
   "dnsResponsesHelp": "FakeIP、hosts、上流 DNS より先に、独自の DNS レコードや応答コードを返します。",
   "dnsResponsesMatching": "最初に一致したルールを適用します。完全な名前はその名前のみ、*.example.com は深さを問わずサブドメインに一致し、example.com 自体は含みません。* はすべての名前やクエリタイプに一致します。",

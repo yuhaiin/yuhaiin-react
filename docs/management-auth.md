@@ -101,3 +101,29 @@ and 55 independent audit rows, exercises owner selection/pagination and proxy-on
 self-service, checks 360px layout, and saves screenshots. It leaves production
 state and browser profiles untouched. Its backend logs contain disposable setup
 capabilities and are created with private file permissions.
+
+## Traffic groups and identity conditions
+
+Account & Security includes Traffic groups for identities with `users:manage`.
+Create a named group, expand its form to edit the description and select multiple
+members, then save. A conflicting revision leaves the unsaved form visible for
+review. Deletion requires confirmation and removes memberships; the backend
+retains the stable ID as an immutable tombstone. Deleted groups are omitted from
+the active list. Management roles remain separate from traffic memberships.
+
+Both routing condition editors support user, group and credential ID leaves
+inside the existing Boolean expressions. Administrators can select users/groups
+by name; stable IDs remain visible and can be entered directly. The trace viewer
+shows translated identity condition labels and evaluation results. Connection
+audits include the group IDs recorded at observation time.
+
+Inbound user authentication now has explicit legacy, users and mixed modes.
+Newly enabling user authentication chooses users-only with no users selected.
+Existing objects without a mode remain mixed. Mixed mode displays a shared-secret
+revocation warning, and saving membership changes preserves the selected mode.
+No UI control grants permissions independently of the backend.
+
+This UI increment is paired with the backend traffic identity foundations. The
+dedicated Traffic Access Policy gate, enterprise quotas/resource governance,
+custom roles and generic OIDC controls are not part of this increment. Routing
+conditions must not be presented as a complete enterprise access boundary.
