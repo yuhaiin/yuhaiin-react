@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { UsageAuditList } from './usage-audit';
 import { UsageRetention } from './usage-retention';
+import { ResourceUsage } from './resource-usage';
 import { fetchUsage, usageBytes, usageDate, usageDuration, usageRange, type UsageBreakdown, type UsageReport } from './usage-api';
 
 export function UserUsage() {
@@ -72,6 +73,7 @@ function UsagePanel({ self, canReadAll, canManage }: { self: string; canReadAll:
                 <div role="group" aria-label={t('usage.breakdown')} className="flex flex-wrap gap-2">{(['nodes', 'inbounds', 'credentials', 'protocols'] as const).map(value => <Button key={value} aria-pressed={group === value} variant={group === value ? 'primary' : 'default'} onClick={() => setGroup(value)}>{t(`usage.${value}`)}</Button>)}</div>
                 <BreakdownTable rows={data[group]} label={t(`usage.${group}`)} />
             </>}
+            <ResourceUsage key={`${scope}:${owner}`} owner={owner} />
             <UsageAuditList key={`${scope}:${owner}:${preset}:${applied.from}:${applied.to}`} owner={owner} preset={preset} from={applied.from} to={applied.to} />
             {canManage && <UsageRetention />}
         </CardBody>
