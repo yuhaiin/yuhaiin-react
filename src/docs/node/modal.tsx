@@ -1,3 +1,4 @@
+import { hasSecretPlaceholder } from "@/auth/secret-fields";
 import { confirmAction } from '@/component/v2/confirmation';
 import { useAsyncAction, useCloseGuard } from "@/hooks/use-editor-draft";
 import { NodeEditor, NodeProtocolChain } from "./NodeEditor";
@@ -303,7 +304,7 @@ const NodeModalComponent: FC<NodeModalProps> = ({
         </div>
         <div className="flex gap-2">
             {draft && (
-                <Button onClick={handleCopy} aria-label={t("common:action.copy")}>
+                <Button onClick={handleCopy} aria-label={hasSecretPlaceholder(draft) ? t("auth:secrets.copyMasked") : t("common:action.copy")}>
                     {copied ? <ClipboardCheck size={16} /> : <Clipboard size={16} />}
                 </Button>
             )}

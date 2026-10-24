@@ -1,3 +1,4 @@
+import { StageChangeButton } from "@/component/configuration-change";
 import { confirmAction } from '@/component/v2/confirmation';
 import { applyRouteChanges, createRule, deleteRule, getRule, saveRule } from '@/api/route';
 import Loading from '@/component/v2/loading';
@@ -96,6 +97,7 @@ export function RuleEditor({ item, creating, initial, options, blocked = false, 
             {item && !creating ? <Button permission="routes:write" variant="outline-danger" className="gap-2 border-transparent" disabled={busy || deleted || unavailable} onClick={remove}><Trash size={16} />{uiT('deleteRule')}</Button> : <Button disabled={busy} onClick={back}>{uiT('cancel')}</Button>}
             <div className="flex flex-wrap items-center gap-2">
                 {!creating && dirty && <Button disabled={busy} onClick={reset}>{t('discardChanges')}</Button>}
+                <StageChangeButton disabled={busy || unavailable || deleted || !draft.rule.name.trim() || (draft.shareLists?.length ?? 0) > 0} request={{ store: "configuration", kind: "route-rule", resourceId: draft.rule.id || undefined, payload: draftForSave(draft) }} onCommitted={async () => { const next = draft.rule.id ? await getRule(draft.rule.id) : null; if (next) { commit(next); await mutate(next, { revalidate: false }); } onSaved(next); }} />
                 <Button permission="routes:write" variant="primary" className="gap-2" disabled={busy || unavailable || !draft.rule.name.trim()} onClick={save}>{pending ? <Spinner size="sm" /> : <Save size={16} />}{t(actionError && !dirty ? 'retryApply' : 'saveAndApply')}</Button>
             </div>
         </footer>

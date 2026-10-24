@@ -12,13 +12,13 @@ import { RuntimeInfoList } from "./globalprotect-forms";
 const defaultCiphers = ["AES-256-GCM", "AES-128-GCM", "CHACHA20-POLY1305"];
 
 const PEMField: FC<{
-    label: string; value?: string; placeholder: string;
+    label: string; secret?: boolean; value?: string; placeholder: string;
     disabled: boolean; onChange: (value: string) => void;
-}> = ({ label, value, placeholder, disabled, onChange }) => {
+}> = ({ label, value, secret, placeholder, disabled, onChange }) => {
     const id = useId();
     return <div className="min-w-0">
         <SettingLabel htmlFor={id} className="mb-2 block">{label}</SettingLabel>
-        <Textarea id={id} rows={4} spellCheck={false} autoComplete="off"
+        <Textarea secret={secret} id={id} rows={4} spellCheck={false} autoComplete="off"
             value={value ?? ""} disabled={disabled} placeholder={placeholder}
             onChange={(event) => onChange(event.target.value)} />
     </div>;
@@ -44,7 +44,7 @@ export const OpenVPNForm: FC<{
                 onChange={(network) => onChange({ network })} />
             <SettingInputVertical label={uiT("username")} value={config.username ?? ""}
                 disabled={!editable} onChange={(username) => onChange({ username })} />
-            <SettingInputVertical label={uiT("password")} type="password" value={config.password ?? ""}
+            <SettingInputVertical secret label={uiT("password")} type="password" value={config.password ?? ""}
                 disabled={!editable} onChange={(password) => onChange({ password })} />
             <SettingInputVertical label={uiT("serverName")} value={config.server_name ?? ""}
                 disabled={!editable} onChange={(server_name) => onChange({ server_name })} />
@@ -57,7 +57,7 @@ export const OpenVPNForm: FC<{
             <PEMField label={uiT("openVPNClientCert")} value={config.client_cert_pem}
                 placeholder="-----BEGIN CERTIFICATE-----" disabled={!editable}
                 onChange={(client_cert_pem) => onChange({ client_cert_pem })} />
-            <PEMField label={uiT("openVPNClientKey")} value={config.client_key_pem}
+            <PEMField secret label={uiT("openVPNClientKey")} value={config.client_key_pem}
                 placeholder="-----BEGIN PRIVATE KEY-----" disabled={!editable}
                 onChange={(client_key_pem) => onChange({ client_key_pem })} />
         </div>
@@ -68,7 +68,7 @@ export const OpenVPNForm: FC<{
                 tls_auth_key: next === "tls-auth" ? config.tls_auth_key ?? "" : undefined,
                 tls_crypt_key: next === "tls-crypt" ? config.tls_crypt_key ?? "" : undefined,
             })} />
-        {protection !== "none" && <PEMField label={uiT("openVPNStaticKey")}
+        {protection !== "none" && <PEMField secret label={uiT("openVPNStaticKey")}
             value={protection === "tls-auth" ? config.tls_auth_key : config.tls_crypt_key}
             placeholder="-----BEGIN OpenVPN Static key V1-----" disabled={!editable}
             onChange={(value) => onChange(protection === "tls-auth" ? { tls_auth_key: value } : { tls_crypt_key: value })} />}

@@ -7,12 +7,12 @@ export type RPCOperation =
   | "backup.run"
   | "connections"
   | "connections.close"
-  | "connections.trace"
   | "connections.events"
   | "connections.failed_history"
   | "connections.history"
   | "connections.telemetry"
   | "connections.total"
+  | "connections.trace"
   | "connections.traffic"
   | "gateway.ca.generate"
   | "gateway.ca.import"
@@ -45,6 +45,7 @@ export type RPCOperation =
   | "nodes.active"
   | "nodes.get"
   | "nodes.groups"
+  | "nodes.import.commit"
   | "nodes.import.preview"
   | "nodes.post"
   | "nodes.select"
@@ -125,9 +126,9 @@ export type RPCOperation =
   | "traffic_control.status"
   | "update.apply"
   | "update.check"
-  | "update.status"
   | "update.history"
   | "update.rollback"
+  | "update.status"
 ;
 
 type LegacyRoute = { method: string; pattern: string; operation: RPCOperation };
@@ -206,6 +207,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/nodes/groups", operation: "nodes.groups" },
   { method: "POST", pattern: "/api/v2/nodes", operation: "nodes.post" },
   { method: "POST", pattern: "/api/v2/nodes/import/preview", operation: "nodes.import.preview" },
+  { method: "POST", pattern: "/api/v2/nodes/import/commit", operation: "nodes.import.commit" },
   { method: "GET", pattern: "/api/v2/nodes/selected", operation: "nodes.selected" },
   { method: "PUT", pattern: "/api/v2/nodes/selected", operation: "nodes.select" },
   { method: "GET", pattern: "/api/v2/nodes/active", operation: "nodes.active" },

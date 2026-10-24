@@ -37,3 +37,10 @@ export async function resolvePublish(name: string, password: string, path: strin
   const data = await requestJSON<ResolvePublishResponse>("POST", `/api/v2/publishes/${encodeURIComponent(name)}/resolve`, { name, password, path });
   return { points: (data.points ?? []) };
 }
+
+export async function getSubscriptionSecrets(name: string, signal?: AbortSignal): Promise<Link> {
+ const data = await requestJSON<LinkList>("GET", "/api/v2/subscriptions", undefined, undefined, signal, { revealSecrets: true });
+ const item = data.items.find(item => item.name === name);
+ if (!item) throw { code: 404, msg: 'Subscription not found' };
+ return normalizeLink(item);
+}

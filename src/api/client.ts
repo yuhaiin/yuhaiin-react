@@ -39,8 +39,9 @@ function errorMessage(raw: unknown, fallback: string): string {
     return fallback;
 }
 
-export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, body?: unknown, query?: Record<string, QueryValue>, signal?: AbortSignal): Promise<T> {
+export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, body?: unknown, query?: Record<string, QueryValue>, signal?: AbortSignal, options?: { revealSecrets?: boolean }): Promise<T> {
     const requestScope = authScope();
+    if (options?.revealSecrets && getSession()?.principal.credentialType !== 'local' && !can('secrets:read')) throw { code: 403, msg: 'Permission denied' } satisfies APIError;
     const route = resolveRPCRoute(method, path);
     if (getSession() && !can(operationPermissions[route.operation])) throw { code: 403, msg: 'Permission denied' } satisfies APIError;
     let response: Response;
@@ -51,6 +52,7 @@ export async function requestJSON<T>(method: "GET" | "POST" | "PUT" | "DELETE", 
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
+                ...(options?.revealSecrets ? { "X-Yuhaiin-Secret-Access": "reveal" } : {}),
             },
             body: JSON.stringify({
                 ...toRequestFields(query),

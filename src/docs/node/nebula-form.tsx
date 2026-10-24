@@ -13,7 +13,7 @@ export const NebulaForm: FC<{
     <div className="grid gap-3">
         <div>
             <SettingLabel className="mb-2 block">Nebula client configuration (YAML)</SettingLabel>
-            <Textarea
+            <Textarea secret
                 aria-label="Nebula client configuration (YAML)"
                 rows={18}
                 spellCheck={false}

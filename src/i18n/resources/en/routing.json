@@ -363,5 +363,6 @@
   "dnsResponseMoveUp": "Move rule up",
   "dnsResponseMoveDown": "Move rule down",
   "dnsResponseRemove": "Remove rule",
-  "dnsResponseAllTypes": "All query types (*)"
+  "dnsResponseAllTypes": "All query types (*)",
+  "nodeImportSaveFailed": "The node could not be imported. Retry the failed item after checking permissions and configuration."
 }

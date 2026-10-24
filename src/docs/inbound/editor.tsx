@@ -30,6 +30,9 @@ function numberValue(value: string): number {
 }
 
 
+import { SecretValues } from "@/component/secret-values";
+import { getInboundSecrets } from "@/api/inbounds";
+
 const InboundEditor: FC<{
     inbound: Inbound;
     onChange: (value: Inbound) => void;
@@ -39,7 +42,7 @@ const InboundEditor: FC<{
     const { t: uiT } = useTranslation('ui');
 
     return (
-        <div className="grid min-w-0 gap-5 [--field-margin:0px]">
+        <SecretValues key={inbound.id} value={inbound} load={inbound.id ? signal => getInboundSecrets(inbound.id, signal) : undefined}><div className="grid min-w-0 gap-5 [--field-margin:0px]">
             <SwitchCard
                 label={uiT("enabled")}
                 checked={inbound.enabled}
@@ -63,7 +66,7 @@ const InboundEditor: FC<{
                     <ProtocolSection inbound={inbound} onChange={onChange} protocols={protocols} platform={platform} />
             </FormSection>
             <UserAuthentication inbound={inbound} onChange={onChange} />
-        </div>
+        </div></SecretValues>
     );
 };
 
@@ -433,8 +436,8 @@ const TunEditor: FC<{
             </FormSection>}
             <InputList title={uiT("routes")} data={value.routes} onChange={(routes) => patch({ routes })} textarea />
             <InputList title="Excludes" data={value.excludes} onChange={(excludes) => patch({ excludes })} textarea />
-            <InputList title={uiT("postUp")} data={value.postUp} onChange={(postUp) => patch({ postUp })} textarea />
-            <InputList title={uiT("postDown")} data={value.postDown} onChange={(postDown) => patch({ postDown })} textarea />
+            <InputList secret executable title={uiT("postUp")} data={value.postUp} onChange={(postUp) => patch({ postUp })} textarea />
+            <InputList secret executable title={uiT("postDown")} data={value.postDown} onChange={(postDown) => patch({ postDown })} textarea />
         </div>
     );
 };
@@ -468,7 +471,7 @@ const CertificateEditor: FC<{
                     valueBase64={value.certBase64}
                     onChangeBase64={(certBase64) => patch({ certBase64 })}
                 />
-                <BytesTextarea
+                <BytesTextarea secret
                     label={uiT("privateKeyPem")}
                     valueBase64={value.keyBase64}
                     onChangeBase64={(keyBase64) => patch({ keyBase64 })}
@@ -476,7 +479,7 @@ const CertificateEditor: FC<{
             </div>
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <SettingInputVertical label={uiT("certFile")} value={value.certFile} onChange={(certFile) => patch({ certFile })} />
-                <SettingInputVertical label={uiT("keyFile")} value={value.keyFile} onChange={(keyFile) => patch({ keyFile })} />
+                <SettingInputVertical secret label={uiT("keyFile")} value={value.keyFile} onChange={(keyFile) => patch({ keyFile })} />
             </div>
         </div>
     );
@@ -485,15 +488,16 @@ const CertificateEditor: FC<{
 const BytesTextarea: FC<{
     label: string;
     valueBase64: string | undefined;
+    secret?: boolean;
     onChangeBase64: (value: string) => void;
     rows?: number;
     readOnly?: boolean;
-}> = ({ label, valueBase64, onChangeBase64, rows = 4, readOnly }) => {
+}> = ({ label, valueBase64, onChangeBase64, rows = 4, readOnly, secret }) => {
     const text = new TextDecoder().decode(base64ToBytes(valueBase64));
     return (
         <div>
             <SettingLabel className="mb-2 block">{label}</SettingLabel>
-            <Textarea
+            <Textarea secret={secret}
                 value={text}
                 readOnly={readOnly}
                 onChange={(event) => onChangeBase64(bytesToBase64(new TextEncoder().encode(event.target.value)))}
@@ -738,11 +742,11 @@ const TransportConfigEditor: FC<{
         case "reality":
             return (
                 <div className="grid gap-4">
-                    <InputList title={uiT("shortIds")} data={value.reality.shortIds} onChange={(shortIds) => onChange({ ...value, reality: { ...value.reality, shortIds } })} />
+                    <InputList secret title={uiT("shortIds")} data={value.reality.shortIds} onChange={(shortIds) => onChange({ ...value, reality: { ...value.reality, shortIds } })} />
                     <InputList title={uiT("serverNames")} data={value.reality.serverNames} onChange={(serverNames) => onChange({ ...value, reality: { ...value.reality, serverNames } })} />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <SettingInputVertical label={uiT("destination")} value={value.reality.dest} onChange={(dest) => onChange({ ...value, reality: { ...value.reality, dest } })} />
-                        <SettingInputVertical label={uiT("privateKey")} value={value.reality.privateKey} onChange={(privateKey) => onChange({ ...value, reality: { ...value.reality, privateKey } })} />
+                        <SettingInputVertical secret label={uiT("privateKey")} value={value.reality.privateKey} onChange={(privateKey) => onChange({ ...value, reality: { ...value.reality, privateKey } })} />
                         <SettingInputVertical label={uiT("publicKey")} value={value.reality.publicKey} onChange={(publicKey) => onChange({ ...value, reality: { ...value.reality, publicKey } })} />
                         <SettingInputVertical label={uiT("mldsa65Seed")} value={value.reality.mldsa65Seed} onChange={(mldsa65Seed) => onChange({ ...value, reality: { ...value.reality, mldsa65Seed } })} />
                     </div>
@@ -761,7 +765,7 @@ const TransportConfigEditor: FC<{
                         onChangeBase64={(caCertBase64) => onChange({ ...value, tls_auto: { ...value.tls_auto, caCertBase64 } })}
                         readOnly
                     />
-                    <BytesTextarea
+                    <BytesTextarea secret
                         label={uiT("caKey")}
                         valueBase64={value.tls_auto.caKeyBase64}
                         onChangeBase64={(caKeyBase64) => onChange({ ...value, tls_auto: { ...value.tls_auto, caKeyBase64 } })}

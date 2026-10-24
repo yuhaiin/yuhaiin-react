@@ -363,5 +363,6 @@
   "dnsResponseMoveUp": "규칙 위로 이동",
   "dnsResponseMoveDown": "규칙 아래로 이동",
   "dnsResponseRemove": "규칙 삭제",
-  "dnsResponseAllTypes": "모든 쿼리 유형 (*)"
+  "dnsResponseAllTypes": "모든 쿼리 유형 (*)",
+  "nodeImportSaveFailed": "노드를 가져오지 못했습니다. 권한과 설정을 확인한 뒤 실패한 항목을 다시 시도하세요."
 }

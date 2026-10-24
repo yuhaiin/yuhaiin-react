@@ -1,3 +1,4 @@
+import { StageChangeButton } from "@/component/configuration-change";
 import { clearHashSearch, useHashSearch } from "@/hooks/useHashLocation";
 import { connectionRuleDraft } from "@/docs/connections/actions";
 import { getNode } from "@/api/nodes";
@@ -196,7 +197,7 @@ function BypassComponent() {
                         <FilterSearch className="w-full" onEnter={v => { setPage(1); setQuery(v); }} size="sm" />
                     </div>
                     <div className="max-h-[min(72vh,900px)] overflow-y-auto overscroll-contain">
-                        {error ? <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading> : <RuleList items={data.items} selectedId={creating ? undefined : editing?.id} destinations={destinations}
+                        {error ? <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading> : <RuleList onReordered={refresh} items={data.items} selectedId={creating ? undefined : editing?.id} destinations={destinations}
                             resolverNames={Object.fromEntries((resolversData?.items ?? []).map(item => [item.id, item.name]))}
                             page={data.page.page || page} pageSize={data.page.pageSize || PAGE_SIZE} total={data.page.total} filtered={Boolean(query.trim())}
                             busy={reordering || isValidating || editorState.pending || editorState.dirty}
@@ -295,7 +296,8 @@ function RouteConfigCard({ onSaved, destinations }: { onSaved: () => void; desti
                     <Loading />
                 )}
 
-            <div className="mt-4 flex justify-end">
+            <div className="mt-4 flex flex-wrap justify-end gap-2">
+                {data && <StageChangeButton disabled={saving || Boolean(error)} request={{ store: "configuration", kind: "route-defaults", payload: data }} onCommitted={async () => { const next = await getRouteConfig(); commit(next); await mutate(next, { revalidate: false }); onSaved(); }} />}
                 <Button permission="routes:write" size="sm" variant="outline-primary" disabled={saving || !data || Boolean(error)} onClick={save}>
                     {saving ? <Spinner size="sm" className="mr-2" /> : <Save size={16} className="mr-2" />}
                     {t("saveAndApply")}</Button>

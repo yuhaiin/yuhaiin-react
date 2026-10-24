@@ -1,3 +1,4 @@
+import { StageChangeButton } from "@/component/configuration-change";
 import { authAPI, type User } from '@/auth/api';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader } from '@/component/v2/card';
@@ -30,18 +31,18 @@ export function Groups() {
         <CardBody className="space-y-4">
             <p className="text-sm text-ui-muted">{t('groups.help')}</p>
             {(error || usersError || failure) && <p role="alert" className="text-sm text-ui-danger">{failure || t('requestFailed')}</p>}
-            {creating && <GroupEditor users={users ?? []} busy={busy || !users} onCancel={() => setCreating(false)} onSave={request => void run(async () => { await authAPI('POST', '/groups', request); setCreating(false); })} />}
-            {data?.map(group => <GroupEditor key={`${group.id}:${group.revision}`} group={group} users={users ?? []} busy={busy || !users} onSave={request => void run(() => authAPI('PUT', `/groups/${group.id}`, request))}
+            {creating && <GroupEditor onCommitted={async () => { setCreating(false); await mutate(); }} users={users ?? []} busy={busy || !users} onCancel={() => setCreating(false)} onSave={request => void run(async () => { await authAPI('POST', '/groups', request); setCreating(false); })} />}
+            {data?.map(group => <GroupEditor onCommitted={() => mutate()} key={`${group.id}:${group.revision}`} group={group} users={users ?? []} busy={busy || !users} onSave={request => void run(() => authAPI('PUT', `/groups/${group.id}`, request))}
                 onDelete={() => void run(async () => { if (await confirmAction(t('groups.deleteConfirm', { name: group.name }))) await authAPI('DELETE', `/groups/${group.id}?revision=${group.revision}`); })} />)}
             {!data?.length && !creating && <p className="text-sm text-ui-muted">{t('groups.empty')}</p>}
         </CardBody>
     </Card>;
 }
 
-function GroupEditor({ group, users, busy, onSave, onDelete, onCancel }: {
+function GroupEditor({ group, users, busy, onSave, onDelete, onCancel, onCommitted }: {
     group?: TrafficGroup; users: User[]; busy: boolean;
     onSave: (request: Pick<TrafficGroup, 'name' | 'description' | 'members' | 'revision'>) => void;
-    onDelete?: () => void; onCancel?: () => void;
+    onDelete?: () => void; onCancel?: () => void; onCommitted?: () => void | Promise<unknown>;
 }) {
     const { t } = useTranslation('auth');
     const [name, setName] = useState(group?.name ?? '');
@@ -58,7 +59,7 @@ function GroupEditor({ group, users, busy, onSave, onDelete, onCancel }: {
                 {users.map(user => <label key={user.id} className="flex min-h-11 items-center gap-2 break-all"><input type="checkbox" checked={members.includes(user.id)} disabled={busy} onChange={() => setMembers(selected => selected.includes(user.id) ? selected.filter(id => id !== user.id) : [...selected, user.id])} />{user.login}{user.disabled && ` (${t('disabled')})`}</label>)}
                 {members.filter(id => !users.some(user => user.id === id)).map(id => <label key={id} className="flex min-h-11 items-center gap-2 break-all"><input type="checkbox" checked disabled={busy} onChange={() => setMembers(selected => selected.filter(member => member !== id))} />{id}</label>)}
             </fieldset>
-            <div className="flex flex-wrap gap-2"><Button type="submit" disabled={busy}>{t('save')}</Button>{onDelete && <Button type="button" variant="outline-danger" disabled={busy} onClick={onDelete}>{t('delete')}</Button>}{onCancel && <Button type="button" disabled={busy} onClick={onCancel}>{t('cancel')}</Button>}</div>
+            <div className="flex flex-wrap gap-2"><Button type="submit" disabled={busy}>{t('save')}</Button><StageChangeButton disabled={busy || !name.trim()} request={{ store: "identity", kind: "group", resourceId: group?.id, payload: { name, description, members, revision: group?.revision ?? 0 } }} onCommitted={onCommitted} />{onDelete && <Button type="button" variant="outline-danger" disabled={busy} onClick={onDelete}>{t('delete')}</Button>}{onCancel && <Button type="button" disabled={busy} onClick={onCancel}>{t('cancel')}</Button>}</div>
         </form>
     </details>;
 }

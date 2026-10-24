@@ -3,21 +3,34 @@ import { type Issued } from './api';
 import { authScope, establishSession, type Principal } from './session';
 import { apiURL, authorizedFetch, directJSON, requireSecureController } from './transport';
 
-export type OAuthProvider = 'github' | 'google';
-export const oauthNames: Record<OAuthProvider, string> = { github: 'GitHub', google: 'Google' };
-export interface OAuthLink { provider: OAuthProvider; subject: string; displayName: string; createdAt: number }
-export interface OAuthSettings { provider: OAuthProvider; clientId: string; redirectUrl: string; secretConfigured: boolean }
+export type OAuthProvider = 'github' | 'google' | `oidc-${string}`;
+export type OAuthChoice = OAuthProvider | { provider: OAuthProvider; name: string };
+export const providerID = (choice: OAuthChoice): OAuthProvider => typeof choice === 'string' ? choice : choice.provider;
+export function providerLabel(choice: OAuthChoice): string { const id = providerID(choice); return oauthNames[id] || (typeof choice === 'object' && choice.name) || 'OpenID Connect'; }
+export function validOAuthProvider(value: unknown): value is OAuthProvider { return typeof value === 'string' && (value === 'github' || value === 'google' || /^oidc-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value)); }
+export const oauthNames: Record<string, string> = { github: 'GitHub', google: 'Google' };
+export interface OAuthLink { provider: OAuthProvider; subject: string; displayName: string; createdAt: number; issuer?: string }
+export interface OAuthSettings { provider: OAuthProvider; clientId: string; redirectUrl: string; secretConfigured: boolean; issuer?: string; name?: string; enabled?: boolean; revision?: number }
 interface OAuthStart { state: string; secret: string; authorizationUrl: string; expiresAt: number }
 
-export async function oauthProviders(controller: string, signal: AbortSignal): Promise<OAuthProvider[]> {
+export async function oauthProviders(controller: string, signal: AbortSignal): Promise<OAuthChoice[]> {
     requireSecureController(controller);
-    const response = await fetch(new URL('/api/v2/auth/oauth/providers', new URL(controller || window.location.href).origin), {
+    const response = await fetch(new URL('/api/v2/auth/oauth/providers?details=1', new URL(controller || window.location.href).origin), {
         signal, credentials: 'omit', cache: 'no-store', redirect: 'error', referrerPolicy: 'no-referrer',
     });
     if (!response.ok) throw new Error('Unable to load OAuth providers');
     const providers: unknown = await response.json();
     if (!Array.isArray(providers)) throw new Error('Invalid OAuth providers');
-    return providers.filter((provider): provider is OAuthProvider => provider === 'github' || provider === 'google');
+    return normalizeOAuthChoices(providers);
+}
+
+export function normalizeOAuthChoices(raw: unknown): OAuthChoice[] {
+    if (!Array.isArray(raw)) throw new Error('Invalid OAuth providers');
+    return raw.slice(0,32).flatMap((item): OAuthChoice[] => {
+        if (validOAuthProvider(item)) return [item];
+        if (item && typeof item === 'object' && validOAuthProvider(item.provider) && typeof item.name === 'string' && item.name.length <= 128) return [{ provider: item.provider, name: item.name }];
+        return [];
+    });
 }
 
 async function oauthRequest<T>(path: string, body: unknown, signal: AbortSignal): Promise<T> {
@@ -31,6 +44,7 @@ async function oauthRequest<T>(path: string, body: unknown, signal: AbortSignal)
  * captured controller can complete the one-use, memory-only exchange. */
 export async function beginOAuth(provider: OAuthProvider, link: boolean, signal: AbortSignal) {
     requireSecureController();
+    if (!validOAuthProvider(provider)) throw new Error('Invalid identity provider');
     const controller = getApiUrl(); const scope = authScope(); const origin = apiURL('/').origin;
     if (signal.aborted) throw new Error('OAuth cancelled');
     const popup = window.open('about:blank', '_blank', 'popup,width=620,height=760');
@@ -57,7 +71,7 @@ export async function beginOAuth(provider: OAuthProvider, link: boolean, signal:
         if (scope !== authScope() || signal.aborted) throw new Error('Controller or session changed');
         const authorization = new URL(start.authorizationUrl);
         const expectedHost = provider === 'github' ? 'github.com' : 'accounts.google.com';
-        if (authorization.protocol !== 'https:' || authorization.hostname !== expectedHost || authorization.username || authorization.password) throw new Error('Invalid authorization URL');
+        if (authorization.protocol !== 'https:' || (!provider.startsWith('oidc-') && authorization.hostname !== expectedHost) || authorization.username || authorization.password || authorization.hash) throw new Error('Invalid authorization URL');
         popup.location.href = authorization.href;
         const proof = await completion;
         if (scope !== authScope() || signal.aborted) throw new Error('Controller or session changed');

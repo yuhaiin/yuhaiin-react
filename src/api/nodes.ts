@@ -31,6 +31,10 @@ export async function getNode(id: string, signal?: AbortSignal): Promise<Node> {
   return normalizeNode(await requestJSON<Go.node.Node>("GET", `/api/v2/nodes/${encodeURIComponent(id)}`, undefined, undefined, signal) as unknown as Node);
 }
 
+export async function getNodeSecrets(id: string, signal?: AbortSignal): Promise<Node> {
+  return normalizeNode(await requestJSON<Go.node.Node>("GET", `/api/v2/nodes/${encodeURIComponent(id)}`, undefined, undefined, signal, { revealSecrets: true }) as unknown as Node);
+}
+
 export async function createNode(node: Node): Promise<Node> {
   return normalizeNode(await requestJSON<Go.node.Node>("POST", "/api/v2/nodes", normalizeNode(node)) as unknown as Node);
 }
@@ -107,4 +111,8 @@ function createLatencyBody(type: NodeLatencyType, options: NodeLatencyOptions): 
     case "stun_tcp":
       return { type, host: options.stunTCPHost || LatencyStunTCPUrlDefault, tcp: true, ipv6: options.ipv6 ?? true };
   }
+}
+
+export async function commitNodeImport(request: Go.node.ImportCommit): Promise<Go.node.ImportResults> {
+  return requestJSON<Go.node.ImportResults>("POST", "/api/v2/nodes/import/commit", request);
 }

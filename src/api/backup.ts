@@ -17,3 +17,7 @@ export async function runBackup(): Promise<void> {
 export async function restoreBackup(option: RestoreOption): Promise<void> {
   await requestJSON<void>("POST", "/api/v2/backup/restore", option);
 }
+
+export async function getBackupSecrets(signal?: AbortSignal): Promise<BackupOption> {
+  return normalizeBackupOption(await requestJSON<BackupOption>("GET", "/api/v2/backup/config", undefined, undefined, signal, { revealSecrets: true }));
+}

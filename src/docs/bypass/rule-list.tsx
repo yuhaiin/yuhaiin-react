@@ -1,3 +1,4 @@
+import { StageChangeButton } from "@/component/configuration-change";
 import { WorkspaceSelectionMarker } from '@/component/workspace-layout';
 import type { RuleItem } from '@/contract/route';
 import clsx from 'clsx';
@@ -8,7 +9,7 @@ import { useRuleDrag, type RuleDrop } from './rule-drag';
 import { getNode } from '@/api/nodes';
 import useSWR from 'swr';
 
-export function RuleList({ items, selectedId, onOpen, onMove, onDrop, destinations, resolverNames, busy, page, pageSize, total, filtered }: {
+export function RuleList({ items, selectedId, onOpen, onMove, onDrop, destinations, resolverNames, busy, page, pageSize, total, filtered, onReordered }: {
     items: RuleItem[];
     selectedId?: string;
     destinations: Record<string, string>;
@@ -18,6 +19,7 @@ export function RuleList({ items, selectedId, onOpen, onMove, onDrop, destinatio
     pageSize: number;
     total: number;
     filtered: boolean;
+    onReordered?: () => void;
     onOpen: (item: RuleItem) => void;
     onMove: (item: RuleItem, direction: -1 | 1) => void;
     onDrop: (item: RuleItem, drop: RuleDrop) => void;
@@ -74,6 +76,7 @@ export function RuleList({ items, selectedId, onOpen, onMove, onDrop, destinatio
                         </div>
                     </div>
                 </button>
+                {index > 0 && <StageChangeButton disabled={busy || filtered} label={t("moveEarlier")} request={{ store: "configuration", kind: "route-order", payload: { source: { id: item.id }, target: { id: items[index - 1].id }, operate: "exchange" } }} onCommitted={() => onReordered?.()} />}
             </li>;
         })}
         {!items.length && <li className="py-12 text-center text-sm text-ui-muted">{uiT('noRecordsFound')}</li>}

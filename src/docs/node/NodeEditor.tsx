@@ -29,6 +29,10 @@ import { useTranslation } from "react-i18next";
 
 import { OutboundCredential } from "./credential";
 
+import { Textarea } from "@/component/v2/input";
+import { SecretValues } from "@/component/secret-values";
+import { getNodeSecrets } from "@/api/nodes";
+
 const EditingNodeID = createContext('');
 
 const NodeEditor: FC<{
@@ -45,7 +49,7 @@ const NodeEditor: FC<{
     const { t } = useTranslation('routing');
     const [advanced, setAdvanced] = useState(false);
     return (
-    <EditingNodeID.Provider value={value.id}><div className="p-1">
+    <EditingNodeID.Provider value={value.id}><SecretValues key={value.id} value={value} load={value.id ? signal => getNodeSecrets(value.id, signal) : undefined}><div className="p-1">
         {editable && (
             <div className="mb-4 grid max-w-3xl grid-cols-1 gap-4 md:grid-cols-2">
                 <SettingInputVertical label={uiT("name")} value={value.name} onChange={(name) => onChange({ name })} disabled={!editable} />
@@ -105,7 +109,7 @@ const NodeEditor: FC<{
         {value.chain.some((protocol) => containsProtocol(protocol, "globalprotect")) && <GlobalProtectRuntimeInfo key={`gp-${value.id}`} nodeId={value.id} />}
         {value.chain.some((protocol) => containsProtocol(protocol, "openvpn")) && <OpenVPNRuntimeInfo key={`ovpn-${value.id}`} nodeId={value.id} />}
         {(["l2tp", "l2tpv3"] as const).map((type) => value.chain.some((protocol) => containsProtocol(protocol, type)) && <L2TPRuntimeInfo key={`${type}-${value.id}`} nodeId={value.id} type={type} />)}
-    </div></EditingNodeID.Provider>
+    </div></SecretValues></EditingNodeID.Provider>
 );
 };
 
@@ -286,7 +290,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <StringField label={uiT("hostname")} value={protocol.socks5.hostname} disabled={!editable} onChange={(hostname) => patch(protocol, { hostname })} />
                     <StringField label={uiT("username")} value={protocol.socks5.user} disabled={!editable || !!protocol.credentialRef} onChange={(user) => patch(protocol, { user })} />
-                    <StringField label={uiT("password")} value={protocol.socks5.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
+                    <StringField secret label={uiT("password")} value={protocol.socks5.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
                     <NumberField label={uiT("overridePort")} value={protocol.socks5.override_port} disabled={!editable} onChange={(override_port) => patch(protocol, { override_port })} />
                 </div>
             );
@@ -295,14 +299,14 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                 <div className="grid gap-4">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <StringField label={uiT("username")} value={protocol.ssh.user} disabled={!editable || !!protocol.credentialRef} onChange={(user) => patch(protocol, { user })} />
-                        <SettingInputVertical label={uiT("password")} type="password" value={protocol.ssh.password ?? ""} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
+                        <SettingInputVertical secret label={uiT("password")} type="password" value={protocol.ssh.password ?? ""} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
                         <SettingInputVertical label={uiT("sshHostKey")} value={protocol.ssh.host_key ?? ""} placeholder="SHA256:... / ssh-ed25519 AAAA..." disabled={!editable} onChange={(host_key) => patch(protocol, { host_key })} />
                         <NumberField label={uiT("sshKeepAliveSeconds")} value={protocol.ssh.keep_alive_seconds} disabled={!editable} onChange={(keep_alive_seconds) => patch(protocol, { keep_alive_seconds })} />
-                        <SettingInputVertical label={uiT("sshPrivateKeyPassphrase")} type="password" value={protocol.ssh.private_key_passphrase ?? ""} disabled={!editable} onChange={(private_key_passphrase) => patch(protocol, { private_key_passphrase })} />
+                        <SettingInputVertical secret label={uiT("sshPrivateKeyPassphrase")} type="password" value={protocol.ssh.private_key_passphrase ?? ""} disabled={!editable} onChange={(private_key_passphrase) => patch(protocol, { private_key_passphrase })} />
                     </div>
                     <div className="grid gap-2">
                         <SettingLabel>{uiT("sshPrivateKey")}</SettingLabel>
-                        <textarea aria-label={uiT("sshPrivateKey")} className="min-h-32 w-full rounded-ui-md border border-ui-border bg-ui-surface p-3 font-mono text-sm text-ui-heading" spellCheck={false} autoComplete="off" value={protocol.ssh.private_key ?? ""} disabled={!editable} onChange={(event) => patch(protocol, { private_key: event.target.value })} />
+                        <Textarea secret aria-label={uiT("sshPrivateKey")} className="min-h-32 w-full rounded-ui-md border border-ui-border bg-ui-surface p-3 font-mono text-sm text-ui-heading" spellCheck={false} autoComplete="off" value={protocol.ssh.private_key ?? ""} disabled={!editable} onChange={(event) => patch(protocol, { private_key: event.target.value })} />
                     </div>
                     <p className="text-sm text-ui-muted">{uiT("sshTCPOnlyHelp")}</p>
                 </div>
@@ -311,14 +315,14 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <StringField label={uiT("username")} value={protocol.http.user} disabled={!editable || !!protocol.credentialRef} onChange={(user) => patch(protocol, { user })} />
-                    <StringField label={uiT("password")} value={protocol.http.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
+                    <StringField secret label={uiT("password")} value={protocol.http.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
                 </div>
             );
         case "shadowsocks":
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <StringField label={uiT("method")} value={protocol.shadowsocks.method} disabled={!editable} onChange={(method) => patch(protocol, { method })} />
-                    <StringField label={uiT("password")} value={protocol.shadowsocks.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
+                    <StringField secret label={uiT("password")} value={protocol.shadowsocks.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
                 </div>
             );
         case "shadowsocksr":
@@ -327,34 +331,34 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                     <StringField label={uiT("server")} value={protocol.shadowsocksr.server} disabled={!editable} onChange={(server) => patch(protocol, { server })} />
                     <StringField label={uiT("port")} value={protocol.shadowsocksr.port} disabled={!editable} onChange={(port) => patch(protocol, { port })} />
                     <StringField label={uiT("method")} value={protocol.shadowsocksr.method} disabled={!editable} onChange={(method) => patch(protocol, { method })} />
-                    <StringField label={uiT("password")} value={protocol.shadowsocksr.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
+                    <StringField secret label={uiT("password")} value={protocol.shadowsocksr.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
                     <StringField label="Obfs" value={protocol.shadowsocksr.obfs} disabled={!editable} onChange={(obfs) => patch(protocol, { obfs })} />
                     <StringField label={uiT("obfsParam")} value={protocol.shadowsocksr.obfsparam} disabled={!editable} onChange={(obfsparam) => patch(protocol, { obfsparam })} />
                     <StringField label={uiT("protocol")} value={protocol.shadowsocksr.protocol} disabled={!editable} onChange={(nextProtocol) => patch(protocol, { protocol: nextProtocol })} />
-                    <StringField label={uiT("protocolParam")} value={protocol.shadowsocksr.protoparam} disabled={!editable} onChange={(protoparam) => patch(protocol, { protoparam })} />
+                    <StringField secret label={uiT("protocolParam")} value={protocol.shadowsocksr.protoparam} disabled={!editable} onChange={(protoparam) => patch(protocol, { protoparam })} />
                 </div>
             );
         case "vmess":
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <StringField label={uiT("uuid")} value={protocol.vmess.id} disabled={!editable} onChange={(id) => patch(protocol, { id })} />
+                    <StringField secret label={uiT("uuid")} value={protocol.vmess.id} disabled={!editable} onChange={(id) => patch(protocol, { id })} />
                     <StringField label={uiT("alterId")} value={protocol.vmess.aid} disabled={!editable} onChange={(aid) => patch(protocol, { aid })} />
                     <StringField label="Security" value={protocol.vmess.security} disabled={!editable} onChange={(security) => patch(protocol, { security })} />
                 </div>
             );
         case "vless":
-            return <StringField label={uiT("uuid")} value={protocol.vless.uuid} disabled={!editable} onChange={(uuid) => patch(protocol, { uuid })} />;
+            return <StringField secret label={uiT("uuid")} value={protocol.vless.uuid} disabled={!editable} onChange={(uuid) => patch(protocol, { uuid })} />;
         case "trojan":
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <StringField label={uiT("password")} value={protocol.trojan.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
+                    <StringField secret label={uiT("password")} value={protocol.trojan.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
                     <StringField label="Peer" value={protocol.trojan.peer} disabled={!editable} onChange={(peer) => patch(protocol, { peer })} />
                 </div>
             );
         case "yuubinsya":
             return (
                 <div className="grid gap-4">
-                    <StringField label={uiT("password")} value={protocol.yuubinsya.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
+                    <StringField secret label={uiT("password")} value={protocol.yuubinsya.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
                     <BoolField label={uiT("udpOverStream")} value={protocol.yuubinsya.udp_over_stream} disabled={!editable} onChange={(udp_over_stream) => patch(protocol, { udp_over_stream })} />
                     <BoolField label={uiT("udpCoalesce")} value={protocol.yuubinsya.udp_coalesce} disabled={!editable} onChange={(udp_coalesce) => patch(protocol, { udp_coalesce })} />
                 </div>
@@ -371,10 +375,10 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                 <div className="grid gap-4">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <StringField label={uiT("host")} value={protocol.hysteria2.host} disabled={!editable} onChange={(host) => patch(protocol, { host })} />
-                        <StringField label={uiT("password")} value={protocol.hysteria2.auth} disabled={!editable || !!protocol.credentialRef} onChange={(auth) => patch(protocol, { auth })} />
+                        <StringField secret label={uiT("password")} value={protocol.hysteria2.auth} disabled={!editable || !!protocol.credentialRef} onChange={(auth) => patch(protocol, { auth })} />
                         <NumberField label={uiT("uploadBandwidthBytes")} value={protocol.hysteria2.upload_bps} disabled={!editable} onChange={(upload_bps) => patch(protocol, { upload_bps })} />
                         <NumberField label={uiT("downloadBandwidthBytes")} value={protocol.hysteria2.download_bps} disabled={!editable} onChange={(download_bps) => patch(protocol, { download_bps })} />
-                        <StringField label={uiT("salamanderPassword")} value={protocol.hysteria2.salamander_password} disabled={!editable} onChange={(salamander_password) => patch(protocol, { salamander_password })} />
+                        <StringField secret label={uiT("salamanderPassword")} value={protocol.hysteria2.salamander_password} disabled={!editable} onChange={(salamander_password) => patch(protocol, { salamander_password })} />
                     </div>
                     <p className="text-sm text-ui-muted">{uiT("hysteria2BandwidthHelp")}</p>
                     <InputList title={uiT("hysteria2HopAddresses")} data={protocol.hysteria2.hop_addresses ?? []} textarea placeholder="relay-b.example:443,20000-20020" disabled={!editable} onChange={(hop_addresses) => patch(protocol, { hop_addresses })} />
@@ -414,7 +418,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                         <StringField label={uiT("serverName")} value={protocol.reality.server_name} disabled={!editable} onChange={(server_name) => patch(protocol, { server_name })} />
                         <StringField label={uiT("publicKey")} value={protocol.reality.public_key} disabled={!editable} onChange={(public_key) => patch(protocol, { public_key })} />
                         <StringField label={uiT("mldsa65Verify")} value={protocol.reality.mldsa65_verify} disabled={!editable} onChange={(mldsa65_verify) => patch(protocol, { mldsa65_verify })} />
-                        <StringField label={uiT("shortId")} value={protocol.reality.short_id} disabled={!editable} onChange={(short_id) => patch(protocol, { short_id })} />
+                        <StringField secret label={uiT("shortId")} value={protocol.reality.short_id} disabled={!editable} onChange={(short_id) => patch(protocol, { short_id })} />
                     </div>
                     <BoolField label={uiT("debug")} value={protocol.reality.debug} disabled={!editable} onChange={(debug) => patch(protocol, { debug })} />
                 </div>
@@ -455,7 +459,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <StringField label={uiT("hostname")} value={protocol.tailscale.hostname} disabled={!editable} onChange={(hostname) => patch(protocol, { hostname })} />
-                    <StringField label={uiT("authKey")} value={protocol.tailscale.auth_key} disabled={!editable} onChange={(auth_key) => patch(protocol, { auth_key })} />
+                    <StringField secret label={uiT("authKey")} value={protocol.tailscale.auth_key} disabled={!editable} onChange={(auth_key) => patch(protocol, { auth_key })} />
                     <StringField label={uiT("controlUrl")} value={protocol.tailscale.control_url} disabled={!editable} onChange={(control_url) => patch(protocol, { control_url })} />
                     <BoolField label={uiT("debug")} value={protocol.tailscale.debug} disabled={!editable} onChange={(debug) => patch(protocol, { debug })} />
                 </div>
@@ -472,7 +476,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
         case "aead":
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <StringField label={uiT("password")} value={protocol.aead.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
+                    <StringField secret label={uiT("password")} value={protocol.aead.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
                     <StringField label={uiT("cryptoMethod")} value={protocol.aead.crypto_method} disabled={!editable} onChange={(crypto_method) => patch(protocol, { crypto_method })} />
                 </div>
             );
@@ -503,7 +507,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                         <StringField label="Server name (SNI)" value={protocol.masque.server_name} disabled={!editable} onChange={(server_name) => patch(protocol, { server_name })} />
                     </div>
                     <StringField label="HTTPS CONNECT-IP URL" value={protocol.masque.url} disabled={!editable} onChange={(url) => patch(protocol, { url })} />
-                    <StringField label="Bearer token" value={protocol.masque.bearer_token} disabled={!editable || !!protocol.credentialRef} onChange={(bearer_token) => patch(protocol, { bearer_token })} />
+                    <StringField secret label="Bearer token" value={protocol.masque.bearer_token} disabled={!editable || !!protocol.credentialRef} onChange={(bearer_token) => patch(protocol, { bearer_token })} />
                     <InputList title={uiT("localAddresses")} data={protocol.masque.local_addresses ?? []} disabled={!editable} onChange={(local_addresses) => patch(protocol, { local_addresses })} />
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <NumberField label="MTU" value={protocol.masque.mtu} disabled={!editable} onChange={(mtu) => patch(protocol, { mtu })} />
@@ -513,14 +517,14 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                     </div>
                     <StringField label="Custom CA (PEM)" value={protocol.masque.ca_cert_pem} disabled={!editable} onChange={(ca_cert_pem) => patch(protocol, { ca_cert_pem })} />
                     <StringField label="Client certificate (PEM)" value={protocol.masque.client_cert_pem} disabled={!editable} onChange={(client_cert_pem) => patch(protocol, { client_cert_pem })} />
-                    <StringField label="Client private key (PEM)" value={protocol.masque.client_key_pem} disabled={!editable} onChange={(client_key_pem) => patch(protocol, { client_key_pem })} />
+                    <StringField secret label="Client private key (PEM)" value={protocol.masque.client_key_pem} disabled={!editable} onChange={(client_key_pem) => patch(protocol, { client_key_pem })} />
                     <BoolField label="Skip TLS verification (unsafe)" value={protocol.masque.insecure_skip_verify} disabled={!editable} onChange={(insecure_skip_verify) => patch(protocol, { insecure_skip_verify })} />
                 </div>
             );
         case "cloudflare_warp_masque":
             return (
                 <div className="grid gap-4">
-                    <StringField label={uiT("privateKey")} value={protocol.cloudflare_warp_masque.private_key} disabled={!editable} onChange={(private_key) => patch(protocol, { private_key })} />
+                    <StringField secret label={uiT("privateKey")} value={protocol.cloudflare_warp_masque.private_key} disabled={!editable} onChange={(private_key) => patch(protocol, { private_key })} />
                     <StringField label={uiT("endpointPublicKey")} value={protocol.cloudflare_warp_masque.endpoint_public_key} disabled={!editable} onChange={(endpoint_public_key) => patch(protocol, { endpoint_public_key })} />
                     <InputList title="Endpoints" data={protocol.cloudflare_warp_masque.endpoint ?? []} disabled={!editable} onChange={(endpoint) => patch(protocol, { endpoint })} />
                     <InputList title={uiT("localAddresses")} data={protocol.cloudflare_warp_masque.local_addresses ?? []} disabled={!editable} onChange={(local_addresses) => patch(protocol, { local_addresses })} />
