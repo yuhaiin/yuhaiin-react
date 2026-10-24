@@ -205,3 +205,20 @@ Node import commits the original caller-provided source when previews are masked
 It retains preview IDs, submits only failed indices on retry, and does not require
 secret read permission. Older servers with unmasked previews retain the existing
 batch-save flow. Source edits and authentication-scope changes reset the preview.
+
+## Enterprise OpenID Connect
+
+Account & Security reuses its identity-provider settings and account-linking popup
+for generic OIDC providers. Security readers can inspect configuration; security
+writers can create revisioned provider settings, check fresh discovery, enable or
+disable a provider, and remove it. Client secrets are write-only and require
+`secrets:manage` to change or explicitly clear. A blank update preserves the
+existing secret. Configure public clients without a secret and use PKCE S256.
+
+The form allocates a stable provider ID and exact HTTPS callback before saving,
+so the callback can first be registered with the external IdP. It retains the
+draft on revision conflict. Issuers are immutable; existing accounts must be
+linked explicitly. Provider display names appear in the existing login and
+account-linking controls. Email and role claims never create accounts or grant
+local permissions. Local password login/recovery remain available during an IdP
+outage; provider changes revoke that provider's existing sessions.

@@ -1,4 +1,4 @@
-import { beginOAuth, oauthNames, oauthProviders, type OAuthProvider } from '@/auth/oauth';
+import { beginOAuth, providerID, providerLabel, oauthProviders, type OAuthProvider, type OAuthChoice } from '@/auth/oauth';
 import { setApiUrl } from '@/common/apiurl';
 import { getSession } from '@/auth/session';
 import { Button } from '@/component/v2/button';
@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 export function OAuthLogin({ controller }: { controller: string }) {
     const { t } = useTranslation('auth');
-    const [providers, setProviders] = useState<OAuthProvider[]>([]);
+    const [providers, setProviders] = useState<OAuthChoice[]>([]);
     const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
     const request = useRef<AbortController | null>(null);
     useEffect(() => {
@@ -20,7 +20,7 @@ export function OAuthLogin({ controller }: { controller: string }) {
         catch { if (!request.current.signal.aborted) setError(t('oauthFailed')); } finally { setBusy(false); }
     };
     return <div className="space-y-3">
-        {providers.map(provider => <Button key={provider} className="w-full" disabled={busy} onClick={() => void signIn(provider)}>{t('signInOAuth', { provider: oauthNames[provider] })}</Button>)}
+        {providers.map(provider => <Button key={providerID(provider)} className="w-full" disabled={busy} onClick={() => void signIn(providerID(provider))}>{t('signInOAuth', { provider: providerLabel(provider) })}</Button>)}
         {busy && <Button className="w-full" onClick={() => request.current?.abort()}>{t('cancelOAuth')}</Button>}
         {error && <p role="alert" className="text-sm text-ui-danger">{error}</p>}
     </div>;

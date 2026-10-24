@@ -6,7 +6,7 @@ export interface PasswordParameters { algorithm: string; salt: string; iteration
 export interface User { id: string; login: string; role: 'admin' | 'read-only' | 'none'; disabled: boolean; enrolled: boolean; createdAt: number; updatedAt: number }
 export interface Token { id: string; userId: string; kind: string; prefix: string; scopes: string[]; createdAt: number; expiresAt: number; revoked: boolean }
 export interface Issued extends Token { secret: string }
-export const authAPI = <T>(method: string, path: string, body?: unknown) => directJSON<T>(method, `/api/v2/auth${path}`, body);
+export const authAPI = <T>(method: string, path: string, body?: unknown, signal?: AbortSignal) => directJSON<T>(method, `/api/v2/auth${path}`, body, undefined, signal);
 
 // Check an edited controller without persisting it or attaching any session.
 export async function initializationStatus(controller: string, signal: AbortSignal): Promise<{ authentication: 'none' | 'local-users'; required: boolean; expiresAt: number }> {
