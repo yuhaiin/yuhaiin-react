@@ -222,3 +222,17 @@ linked explicitly. Provider display names appear in the existing login and
 account-linking controls. Email and role claims never create accounts or grant
 local permissions. Local password login/recovery remain available during an IdP
 outage; provider changes revoke that provider's existing sessions.
+
+The security audit panel uses server-side filters and fixed-upper-ID cursor
+pagination. It displays exact decimal event IDs, safe before/after metadata,
+authentication method and policy revision. `security:export` separately controls
+authenticated JSON export of the current filtered page. Exports do not put tokens
+in URLs. Retention and external forwarding use revision-checked forms; conflicts
+retain edits, and explicit reload confirms discarding them. Full webhook URLs
+and bearer tokens stay write-only, blank preserves saved values, and replacement
+or clearing requires `secrets:manage`. The panel shows persistent delivery/drop
+counters and backlog separately from process-local audit write failures. HTTPS
+may replay events, syslog TLS only confirms socket writes, and expired/full
+forward queues may drop delivery copies. Management history, connection audit
+and aggregate usage have distinct durability semantics. Scope changes/unmount
+abort pending writes/exports and reset form state. EN/JA/KO strings are included.
