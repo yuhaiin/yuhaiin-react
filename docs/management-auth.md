@@ -165,3 +165,23 @@ User resource policies and reports extend the existing Traffic Control and usage
 pages; see [resource governance](resource-governance.md). Custom roles, security
 change history and generic OIDC are subsequent work. Routing conditions alone
 remain insufficient as an enterprise authorization boundary.
+
+
+## Custom management roles
+
+Account & Security shows effective permissions for the current session or scoped
+API token. The Management roles card requires `roles:read`; definition edits
+require `roles:write`, and assignments also require `users:manage`. Built-in
+Administrator, Read-only and Proxy-only roles remain protected. Custom roles add
+permission collections to the base role; use Proxy-only as the base for a narrowly
+scoped operator, auditor or helpdesk account. Traffic groups remain independent.
+The backend rejects grants above the actor's current permissions, changes to
+stronger accounts and deletion of assigned roles. Old scoped tokens do not gain
+new scopes after a promotion. Active requests recheck permissions within one
+second. Revision conflicts retain drafts, and reload confirms discard.
+
+Password changes keep the old local verifier until replacement enrollment
+commits, then revoke earlier credentials atomically. Abandoning a change cannot
+remove the last administrator's login. Administrative enrollment reset is disabled
+for that last active local administrator; its own password-change flow remains
+available. Deliberate local recovery retains its separate backend capability.

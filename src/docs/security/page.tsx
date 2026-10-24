@@ -13,6 +13,7 @@ import { OAuthLinks } from './oauth-links';
 import { Tokens } from './tokens';
 import { Users } from './users';
 import { Groups } from './groups';
+import { EffectivePermissions, ManagementRoles } from './roles';
 import { TrafficAccess } from './traffic-access';
 import { ProxyCredentials, UpstreamCredentials } from './proxy-credentials';
 import { UserUsage } from './usage';
@@ -35,6 +36,7 @@ export default function SecurityPage() {
             {error && <p role="alert" className="text-sm text-ui-danger">{error}</p>}
         </CardBody></Card>
         {session.principal.credentialType === 'session' && <><Sessions /><OAuthLinks /></>}
+        <EffectivePermissions /><ManagementRoles />
         {permissions.includes('usage:own') && <UserUsage />}
         {permissions.includes('users:manage') && <><Users /><Groups /></>}
         {permissions.includes('traffic-access:read') && <TrafficAccess writable={permissions.includes('traffic-access:write')} />}
