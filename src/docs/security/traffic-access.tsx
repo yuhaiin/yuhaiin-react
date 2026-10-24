@@ -1,3 +1,4 @@
+import { StageChangeButton } from "@/component/configuration-change";
 import type { Go } from '@/api/generated-contracts';
 import { authAPI } from '@/auth/api';
 import { createID } from '@/common/id';
@@ -71,7 +72,7 @@ function AccessEditor({ initial, writable, onSaved }: { initial: Go.access.Confi
                 <RuleExprListEditor value={rule.conditions} options={options} onChange={conditions => patch({ ...config, rules: config.rules.map(item => item.id === rule.id ? { ...item, conditions } : item) })} />
             </section>)}
             <Button type="button" onClick={() => patch({ ...config, rules: [...config.rules, { id: createID(), name: '', action: 'allow', disabled: false, conditions: [{ type: 'all', all: [{ type: 'group', group: { ids: [] } }, { type: 'destination', destination: { domains: [], cidrs: [] } }] }] }] })}>{t('access.addRule')}</Button>
-            <div className="flex flex-wrap gap-2"><Button type="button" onClick={() => void submit(false)}>{t('access.validate')}</Button><Button type="submit">{t('access.activate')}</Button></div>
+            <div className="flex flex-wrap gap-2"><Button type="button" onClick={() => void submit(false)}>{t('access.validate')}</Button><Button type="submit">{t('access.activate')}</Button><StageChangeButton request={{ store: "identity", kind: "access-policy", payload: config }} onCommitted={async () => { const next = await authAPI<Go.access.Config>("GET", "/traffic-access"); setConfig(next); await onSaved(next); }} /></div>
         </fieldset>
         {failure && <p role="alert" className="text-ui-danger">{failure}</p>}
         {validation.length > 0 && <ul role="alert" className="space-y-1 break-words text-sm text-ui-danger">{validation.map((message, index) => <li key={index}>{message}</li>)}</ul>}

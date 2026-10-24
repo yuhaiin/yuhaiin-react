@@ -1,3 +1,4 @@
+import { StageChangeButton } from "@/component/configuration-change";
 import { authAPI } from '@/auth/api';
 import { useSession } from '@/auth/context';
 import { authScope } from '@/auth/session';
@@ -101,7 +102,7 @@ function AuditSettingsEditor({ scope, settings, permissions, onSaved, onReload }
             <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" disabled={!manage || !settings.endpointConfigured} checked={clearEndpoint} onChange={event => setClearEndpoint(event.target.checked)} />{t('audit.clearEndpoint')}</label>
             <label className="block space-y-2"><span className="text-sm">{t('audit.token')}</span><Input type="password" autoComplete="new-password" disabled={!manage || clearToken || draft.transport !== 'https'} maxLength={4096} value={token} placeholder={t(settings.tokenConfigured ? 'audit.preserve' : 'audit.optional')} onChange={event => setToken(event.target.value)} /></label>
             <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" disabled={!manage || !settings.tokenConfigured} checked={clearToken} onChange={event => setClearToken(event.target.checked)} />{t('audit.clearToken')}</label>
-            <p className="text-xs text-ui-muted">{t('audit.secretHelp')}</p>{writable && <Button type="submit">{t('save')}</Button>}
+            <p className="text-xs text-ui-muted">{t('audit.secretHelp')}</p>{writable && <><Button type="submit">{t('save')}</Button><StageChangeButton disabled={busy} request={{ store: "identity", kind: "audit-settings", payload: { revision: draft.revision, maxEvents: draft.maxEvents, maxAgeDays: draft.maxAgeDays, outboxLimit: draft.outboxLimit, forwardEnabled: draft.forwardEnabled, transport: draft.transport, endpoint: draft.endpoint, token, clearToken, clearEndpoint } }} onCommitted={onSaved} /></>}
         </fieldset>
     </form></details>;
 }

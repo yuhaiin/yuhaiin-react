@@ -236,3 +236,36 @@ may replay events, syslog TLS only confirms socket writes, and expired/full
 forward queues may drop delivery copies. Management history, connection audit
 and aggregate usage have distinct durability semantics. Scope changes/unmount
 abort pending writes/exports and reset form state. EN/JA/KO strings are included.
+
+## Configuration stages, differences and rollback
+
+The enterprise backend adds `configuration:read`, `configuration:write` and
+`configuration:rollback`. These permissions supplement each resource's existing
+read/write permissions. Built-in read-only accounts keep their existing scopes;
+assign a custom role to grant history access. Provider settings additionally
+require a browser session.
+
+Use **Stage and preview** in the existing group, role, role assignment, access,
+Traffic Control resource, provider, audit, routing rule/default and list editors.
+Review the changed fields, select **Validate**, then **Commit and activate**.
+Validation is repeated by the server at commit. Closing the preview keeps the
+draft in **Account & security → Configuration changes**. Filter by resource or
+state, inspect actor/activation metadata, discard a draft, or prepare rollback
+from a commit. A rollback is a new draft and requires its own review/validation.
+Routing order can also be staged using **Move earlier** in the routing list;
+existing drag operations retain their direct-save behavior and record history.
+
+Each change commits one resource in one database. Create prerequisites before
+staging dependent policies. History is bounded to 128 commits and 32 live drafts
+per store; drafts expire after 24 hours. Private matching data cannot be promoted
+into a separate shared list in a staged rule change. The existing direct editor
+supports that ownership transfer. Revision conflicts retain local editor values.
+Backend documentation defines the transaction and recovery guarantees.
+
+Differences never return private rollback documents. Remote routing-list URLs
+and previews are masked in full, including path-only access capabilities.
+Operators without `secrets:manage` can edit metadata while preserving saved URLs;
+explicit reveal requires `secrets:read` and remains read-only editor-local state.
+Changing sessions/controllers or closing the editor aborts pending requests.
+
+The workflow adds no enterprise initialization to local Android controllers.

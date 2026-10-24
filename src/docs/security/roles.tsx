@@ -1,3 +1,4 @@
+import { StageChangeButton } from "@/component/configuration-change";
 import { authAPI, type User } from '@/auth/api';
 import { useSession } from '@/auth/context';
 import { authScope, updatePrincipal, type Principal } from '@/auth/session';
@@ -61,14 +62,14 @@ function RoleWorkspace({ permissions, userId }: { permissions: string[]; userId:
     return <Card><CardHeader><h2 className="font-medium">{t('roles.title')}</h2><div className="flex flex-wrap gap-2"><Button disabled={busy} onClick={async () => { if (await confirmAction(t('roles.reloadConfirm')) && scope === authScope()) void mutate(); }}>{t('refresh')}</Button>{writable && <Button disabled={busy || !catalog} onClick={() => setCreating(true)}>{t('roles.create')}</Button>}</div></CardHeader>
         <CardBody className="space-y-4"><p className="text-sm text-ui-muted">{t('roles.help')}</p>
             {(failure || error || catalogError) && <p role="alert" className="text-sm text-ui-danger">{failure || t('requestFailed')}</p>}
-            {creating && <RoleEditor catalog={catalog ?? []} permissions={permissions} writable busy={busy} onSave={save} onCancel={() => setCreating(false)} />}
-            {roles?.map(role => <RoleEditor key={`${role.id}:${role.revision}`} role={role} catalog={catalog ?? []} permissions={permissions} writable={writable && !role.builtIn && role.permissions.every(permission => permissions.includes(permission))} busy={busy} onSave={save}
+            {creating && <RoleEditor catalog={catalog ?? []} permissions={permissions} writable busy={busy} onSave={save} onCommitted={async () => { setCreating(false); await mutate(); }} onCancel={() => setCreating(false)} />}
+            {roles?.map(role => <RoleEditor key={`${role.id}:${role.revision}`} role={role} catalog={catalog ?? []} permissions={permissions} writable={writable && !role.builtIn && role.permissions.every(permission => permissions.includes(permission))} busy={busy} onSave={save} onCommitted={async () => { setCreating(false); await mutate(); }}
                 onDelete={() => void run(async () => { await authAPI('DELETE', `/roles/${encodeURIComponent(role.id)}?revision=${role.revision}`); })} />)}
             {roles && <RoleAssignments key={scope} roles={roles} users={users ?? []} userId={userId} writable={assignable} />}
         </CardBody></Card>;
 }
 
-function RoleEditor({ role, catalog, permissions, writable, busy, onSave, onDelete, onCancel }: { role?: ManagementRole; catalog: Permission[]; permissions: string[]; writable: boolean; busy: boolean; onSave: (role: ManagementRole) => void; onDelete?: () => void; onCancel?: () => void }) {
+function RoleEditor({ role, catalog, permissions, writable, busy, onSave, onDelete, onCancel, onCommitted }: { role?: ManagementRole; catalog: Permission[]; permissions: string[]; writable: boolean; busy: boolean; onSave: (role: ManagementRole) => void; onDelete?: () => void; onCancel?: () => void; onCommitted?: () => Promise<void> }) {
     const { t } = useTranslation('auth');
     const [name, setName] = useState(role?.name ?? '');
     const [description, setDescription] = useState(role?.description ?? '');
@@ -81,7 +82,7 @@ function RoleEditor({ role, catalog, permissions, writable, busy, onSave, onDele
                 <label className="block space-y-2"><span>{t('roles.name')}</span><Input required maxLength={128} value={name} onChange={event => setName(event.target.value)} /></label>
                 <label className="block space-y-2"><span>{t('groups.description')}</span><Textarea maxLength={2048} value={description} onChange={event => setDescription(event.target.value)} /></label>
                 <fieldset className="grid max-h-80 gap-1 overflow-auto sm:grid-cols-2"><legend>{t('roles.permissions')}</legend>{catalog.map(permission => <label key={permission.id} className="flex min-h-11 items-center gap-2 break-all text-xs"><input type="checkbox" aria-label={permission.id} checked={selected.includes(permission.id)} disabled={!permissions.includes(permission.id)} onChange={() => setSelected(current => current.includes(permission.id) ? current.filter(id => id !== permission.id) : [...current, permission.id])} />{permission.id}</label>)}</fieldset>
-                {writable && <div className="flex flex-wrap gap-2"><Button type="submit">{t('save')}</Button>{role && onDelete && <Button type="button" variant="outline-danger" onClick={onDelete}>{t('delete')}</Button>}{onCancel && <Button type="button" onClick={onCancel}>{t('cancel')}</Button>}</div>}
+                {writable && <div className="flex flex-wrap gap-2"><Button type="submit">{t('save')}</Button><StageChangeButton request={{ store: "identity", kind: "role", resourceId: role?.id, payload: { id: role?.id ?? "", revision: role?.revision ?? 0, name, description, permissions: selected, builtIn: false } }} onCommitted={onCommitted} />{role && onDelete && <Button type="button" variant="outline-danger" onClick={onDelete}>{t('delete')}</Button>}{onCancel && <Button type="button" onClick={onCancel}>{t('cancel')}</Button>}</div>}
             </fieldset>
         </form></details>;
 }
@@ -118,7 +119,7 @@ function AssignmentEditor({ assignment, roles, writable, onSaved }: { assignment
         {assignment.disabled && <p className="text-sm text-ui-muted">{t('disabled')}</p>}{assignment.enrolled === false && <p className="text-sm text-ui-muted">{t('pending')}</p>}
         {failure && <p role="alert" className="text-sm text-ui-danger">{failure}</p>}
         <fieldset disabled={!writable || busy} className="grid gap-1 sm:grid-cols-2"><legend>{t('roles.additional')}</legend>{roles.map(role => <label key={role.id} className="flex min-h-11 items-center gap-2 break-words text-sm"><input type="checkbox" checked={selected.includes(role.id)} onChange={() => setSelected(current => current.includes(role.id) ? current.filter(id => id !== role.id) : [...current, role.id])} />{role.name}</label>)}</fieldset>
-        {writable && <Button disabled={busy} type="submit">{t('roles.saveAssignment')}</Button>}
+        {writable && <><Button disabled={busy} type="submit">{t('roles.saveAssignment')}</Button><StageChangeButton disabled={busy} request={{ store: "identity", kind: "role-assignment", resourceId: assignment.userId, payload: { revision: assignment.revision, roleIds: selected } }} onCommitted={onSaved} /></>}
         <details><summary className="cursor-pointer text-sm">{t('roles.effective')}</summary><ul className="mt-3 grid gap-2 text-xs sm:grid-cols-2">{assignment.permissions.map(permission => <li key={permission} className="break-all">{permission}</li>)}</ul></details>
     </form>;
 }

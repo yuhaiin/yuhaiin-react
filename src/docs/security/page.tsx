@@ -1,3 +1,4 @@
+import { ConfigurationChanges } from './configuration-changes';
 import { authAPI, logout, type Issued } from '@/auth/api';
 import { useSession } from '@/auth/context';
 import { clearSession, setPendingEnrollment } from '@/auth/session';
@@ -35,7 +36,7 @@ export default function SecurityPage() {
             {error && <p role="alert" className="text-sm text-ui-danger">{error}</p>}
         </CardBody></Card>
         {session.principal.credentialType === 'session' && <><Sessions /><OAuthLinks /></>}
-        <EffectivePermissions /><ManagementRoles />
+        <EffectivePermissions /><ManagementRoles /><ConfigurationChanges />
         {permissions.includes('usage:own') && <UserUsage />}
         {permissions.includes('users:manage') && <><Users /><Groups /></>}
         {permissions.includes('traffic-access:read') && <TrafficAccess writable={permissions.includes('traffic-access:write')} />}

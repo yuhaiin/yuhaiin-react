@@ -1,3 +1,4 @@
+import { StageChangeButton } from "@/component/configuration-change";
 import { authAPI } from '@/auth/api';
 import { useSession } from '@/auth/context';
 import { authScope } from '@/auth/session';
@@ -91,7 +92,7 @@ function ProviderSettings({ provider, settings, creating, updated, configured, c
         <label className="block space-y-2"><span>{t('oauthRedirectUrl')}</span><Input type="url" required maxLength={2048} disabled={!writable || busy} value={redirectUrl} onChange={event => setRedirectUrl(event.target.value)} /></label>
         {generic && <label className="flex items-center gap-2"><input type="checkbox" disabled={!writable || busy} checked={enabled} onChange={event => setEnabled(event.target.checked)} />{t('oidc.enabled')}</label>}
         <div className="flex flex-wrap gap-2">
-            {writable && <Button type="submit" variant="primary" permission="security:write" loading={busy}>{t('save')}</Button>}
+            {writable && <><Button type="submit" variant="primary" permission="security:write" loading={busy}>{t('save')}</Button><StageChangeButton disabled={busy} request={{ store: "identity", kind: "oidc-provider", resourceId: provider, payload: { provider, clientId, clientSecret: clearSecret ? "" : secret, redirectUrl, revision: settings?.revision ?? 0, enabled, ...(generic ? { issuer, name, clearSecret } : {}) } }} onCommitted={async () => { setSecret(""); setClearSecret(false); await updated(); }} /></>}
             {settings && <><Button disabled={busy} onClick={() => void check()}>{t('oidc.check')}</Button>{writable && <Button permission="security:write" variant="outline-danger" disabled={busy} onClick={() => void disable()}>{t('disableOAuth')}</Button>}</>}
             {cancel && <Button disabled={busy} onClick={cancel}>{t('cancel')}</Button>}
         </div>

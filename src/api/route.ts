@@ -44,6 +44,10 @@ export async function getRouteList(id: string): Promise<RouteListDetail> {
   return normalizeRouteList(await requestJSON<Go.route.RouteListDetail>("GET", `/api/v2/route/lists/${encodeURIComponent(id)}`) as unknown as RouteListDetail);
 }
 
+export async function getRouteListSecrets(id: string, signal?: AbortSignal): Promise<RouteListDetail> {
+  return normalizeRouteList(await requestJSON<Go.route.RouteListDetail>("GET", `/api/v2/route/lists/${encodeURIComponent(id)}`, undefined, undefined, signal, { revealSecrets: true }) as unknown as RouteListDetail);
+}
+
 export async function saveRouteList(id: string, list: RouteListDetail): Promise<RouteListDetail> {
   return normalizeRouteList(await requestJSON<Go.route.RouteListDetail>("PUT", `/api/v2/route/lists/${encodeURIComponent(id)}`, normalizeRouteList({ ...list, id })) as unknown as RouteListDetail);
 }
