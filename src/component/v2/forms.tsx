@@ -115,6 +115,7 @@ export const SettingPasswordVertical: FC<{
             <div className="flex">
                 <Input
                     id={id}
+                    secret
                     type={show ? "text" : "password"}
                     groupPosition="first"
                     value={value}
@@ -205,7 +206,8 @@ export const SettingInputBytes: FC<{
     placeholder?: string;
     className?: string;
     disabled?: boolean;
-}> = React.memo(({ label, value, onChange, placeholder, className, disabled }) => {
+    secret?: boolean;
+}> = React.memo(({ label, value, onChange, placeholder, className, disabled, secret }) => {
     const { t } = useTranslation('common');
     const canonical = bytesToBase64(value);
     const lastCanonical = useRef(canonical);
@@ -246,6 +248,7 @@ export const SettingInputBytes: FC<{
 
     return (
         <SettingInputVertical
+            secret={secret}
             label={labelWithWarning}
             value={text}
             aria-invalid={invalid}

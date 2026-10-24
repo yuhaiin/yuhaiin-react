@@ -159,7 +159,7 @@ const WireguardForm: FC<{
 
     return (
         <div className="grid gap-4">
-            <StringField label={uiT("secretKey")} value={config.secretKey} disabled={!editable} onChange={(secretKey) => onChange({ secretKey })} />
+            <StringField secret label={uiT("secretKey")} value={config.secretKey} disabled={!editable} onChange={(secretKey) => onChange({ secretKey })} />
             <NumberField label="MTU" value={config.mtu} disabled={!editable} onChange={(mtu) => onChange({ mtu })} />
             {!hideReserved && <SettingInputBytes
                 label={uiT("reserved")}
@@ -185,7 +185,7 @@ const WireguardForm: FC<{
                                 <div className="grid gap-4 p-1">
                                     <StringField label={uiT("endpoint")} value={peer.endpoint} disabled={!editable} onChange={(endpoint) => updatePeer(index, { endpoint })} />
                                     <StringField label={uiT("publicKey")} value={peer.publicKey} disabled={!editable} onChange={(publicKey) => updatePeer(index, { publicKey })} />
-                                    <StringField label={uiT("preSharedKey")} value={peer.preSharedKey} disabled={!editable} onChange={(preSharedKey) => updatePeer(index, { preSharedKey })} />
+                                    <StringField secret label={uiT("preSharedKey")} value={peer.preSharedKey} disabled={!editable} onChange={(preSharedKey) => updatePeer(index, { preSharedKey })} />
                                     <NumberField label={uiT("keepAlive")} value={peer.keepAlive} disabled={!editable} onChange={(keepAlive) => updatePeer(index, { keepAlive })} />
                                     <InputList title={uiT("allowedIps")} data={peer.allowedIps ?? []} disabled={!editable} onChange={(allowedIps) => updatePeer(index, { allowedIps })} />
 

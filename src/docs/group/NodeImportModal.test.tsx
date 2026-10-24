@@ -6,8 +6,8 @@ import { expect, it, vi } from 'vitest';
 import { normalizeNode } from '@/contract/node';
 import NodeImportModal from './NodeImportModal';
 
-const api = vi.hoisted(() => ({ preview: vi.fn(), create: vi.fn(), use: vi.fn() }));
-vi.mock('@/api/nodes', () => ({ previewNodeImport: api.preview, createNode: api.create, useNode: api.use }));
+const api = vi.hoisted(() => ({ preview: vi.fn(), commit: vi.fn(), create: vi.fn(), use: vi.fn() }));
+vi.mock('@/api/nodes', () => ({ previewNodeImport: api.preview, commitNodeImport: api.commit, createNode: api.create, useNode: api.use }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('@/component/v2/forms', () => ({
     SettingInputVertical: ({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) => <input aria-label={label} value={value} onChange={event => onChange(event.target.value)} />,
@@ -72,3 +72,26 @@ it('starts a fresh import when the dialog reopens after being closed', async () 
 beforeEach(authorizeTest);
 
 afterEach(resetTestAuth);
+
+it('commits a masked preview using the original source and retries only failed positions', async () => {
+    const nodes = ['a', 'b'].map(id => normalizeNode({ id, name: id, chain: [{ type: 'trojan', trojan: { password: '__yuhaiin_secret_preserved_v1__.opaque.signature' } }] }));
+    api.preview.mockResolvedValue({ items: nodes, errors: [] });
+    api.commit.mockResolvedValueOnce({ items: [{ index: 0, id: 'a', saved: true }, { index: 1, id: 'b', saved: false, error: 'node could not be saved' }] });
+    api.commit.mockResolvedValueOnce({ items: [{ index: 1, id: 'b', saved: true }] });
+    const previousCreates = api.create.mock.calls.length;
+    const saved = vi.fn();
+    const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
+    try {
+        await act(async () => root.render(<NodeImportModal show group="manual" onHide={vi.fn()} onSaved={saved} onChanged={vi.fn()} />));
+        const text = document.querySelector<HTMLTextAreaElement>('textarea[aria-label="nodeLinksOrJSON"]')!;
+        await act(async () => { Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(text, 'caller-owned-source'); text.dispatchEvent(new Event('input', { bubbles: true })); });
+        const button = (label: string) => [...document.querySelectorAll<HTMLButtonElement>('button')].find(item => item.textContent === label)!;
+        await act(async () => button('previewImport').click());
+        await act(async () => button('importNodes').click());
+        expect(api.commit).toHaveBeenLastCalledWith({ text: 'caller-owned-source', group: 'manual', ids: ['a','b'], indices: [0,1] });
+        expect(api.create.mock.calls.length).toBe(previousCreates); expect(saved).not.toHaveBeenCalled();
+        await act(async () => button('retryFailedItems').click());
+        expect(api.commit).toHaveBeenLastCalledWith({ text: 'caller-owned-source', group: 'manual', ids: ['a','b'], indices: [1] });
+        expect(saved).toHaveBeenCalledOnce(); expect(text.value).toBe('caller-owned-source');
+    } finally { act(() => root.unmount()); host.remove(); }
+});

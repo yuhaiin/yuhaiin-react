@@ -1,3 +1,4 @@
+import { useProtectedSetting } from "@/auth/secret-fields";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import type { NodeProtocolConfig } from "@/contract/node";
@@ -14,6 +15,7 @@ export const ZeroTierForm: FC<{
 }> = ({ config, editable, onChange }) => {
     const { t } = useTranslation("node");
     const { t: uiT } = useTranslation("ui");
+    const execute = useProtectedSetting("execute");
     const moons = config.moons ?? [];
     const changeMoon = (index: number, patch: Partial<(typeof moons)[number]>) => {
         onChange({ moons: moons.map((moon, i) => i === index ? { ...moon, ...patch } : moon) });
@@ -27,7 +29,7 @@ export const ZeroTierForm: FC<{
                     disabled={!editable}
                     onChange={(network_id) => onChange({ network_id: network_id.trim() })}
                 />
-                <StringField
+                <StringField secret
                     label={t("zeroTierIdentityName")}
                     value={config.identity ?? ""}
                     disabled={!editable}
@@ -42,7 +44,7 @@ export const ZeroTierForm: FC<{
                 <StringField
                     label={t("zeroTierLibraryPath")}
                     value={config.library_path ?? ""}
-                    disabled={!editable}
+                    disabled={!editable || !execute}
                     onChange={(library_path) => onChange({ library_path })}
                 />
             </div>

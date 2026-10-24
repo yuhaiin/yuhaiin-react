@@ -48,6 +48,10 @@ export function retryInbound(id: string): Promise<void> {
     return requestJSON<void>("POST", `/api/v2/inbounds/${encodeURIComponent(id)}/retry`);
 }
 
+export async function getInboundSecrets(id: string, signal?: AbortSignal): Promise<Inbound> {
+    return normalizeInbound(await requestJSON<Go.inbound.Inbound>("GET", `/api/v2/inbounds/${encodeURIComponent(id)}`, undefined, undefined, signal, { revealSecrets: true }) as unknown as Inbound);
+}
+
 export async function getInbound(id: string): Promise<Inbound> {
     const value = await requestJSON<Go.inbound.Inbound>("GET", `/api/v2/inbounds/${encodeURIComponent(id)}`);
     return normalizeInbound(value as unknown as Inbound);

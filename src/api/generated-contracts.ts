@@ -678,6 +678,21 @@ export namespace Go {
     }
   }
   export namespace node {
+    export interface ImportCommit {
+      text: string;
+      group: string;
+      ids: string[];
+      indices?: number[];
+    }
+    export interface ImportResult {
+      index: number;
+      id: string;
+      saved: boolean;
+      error?: string;
+    }
+    export interface ImportResults {
+      items: ImportResult[];
+    }
     export interface ProbeStatus {
       checkedAt: number;
       result: LatencyResponse;

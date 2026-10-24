@@ -36,7 +36,7 @@ export const SoftEtherForm: FC<{
                         <option value="certificate">{t("softEtherCertificateAuth")}</option>
                     </select>
                 </div>
-                {!certificateAuth && <SettingInputVertical label={t("password")}
+                {!certificateAuth && <SettingInputVertical secret label={t("password")}
                     type="password" value={config.password ?? ""} disabled={!editable}
                     onChange={(password) => onChange({ password })} />}
                 <NumberField label={t("mtuOverride")} value={config.mtu}
@@ -52,7 +52,7 @@ export const SoftEtherForm: FC<{
                 </div>
                 <div>
                     <SettingLabel className="mb-2 block">{t("softEtherClientKey")}</SettingLabel>
-                    <Textarea aria-label={t("softEtherClientKey")} rows={5} spellCheck={false}
+                    <Textarea secret aria-label={t("softEtherClientKey")} rows={5} spellCheck={false}
                         disabled={!editable} placeholder="-----BEGIN PRIVATE KEY-----"
                         value={config.client_key_pem ?? ""} onChange={(e) => onChange({ client_key_pem: e.target.value })} />
                 </div>

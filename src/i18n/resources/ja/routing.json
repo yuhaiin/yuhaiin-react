@@ -363,5 +363,6 @@
   "dnsResponseMoveUp": "ルールを上へ移動",
   "dnsResponseMoveDown": "ルールを下へ移動",
   "dnsResponseRemove": "ルールを削除",
-  "dnsResponseAllTypes": "すべてのクエリタイプ（*）"
+  "dnsResponseAllTypes": "すべてのクエリタイプ（*）",
+  "nodeImportSaveFailed": "ノードをインポートできませんでした。権限と設定を確認し、失敗した項目を再試行してください。"
 }

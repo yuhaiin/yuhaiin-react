@@ -1,3 +1,5 @@
+import { useSecretIsolation } from "@/component/secret-values";
+import { useSession } from "@/auth/context";
 import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
 import { useTranslation } from 'react-i18next';
 
@@ -48,6 +50,9 @@ function ConfigComponent() {
     const { pending: saving, run } = useAsyncAction(error => ctx.Error(String((error as { msg?: string })?.msg ?? error)));
     useCloseGuard(dirty, saving, () => undefined);
 
+    const session = useSession();
+    const isolated = useSecretIsolation();
+    const securityWritable = !isolated || session?.principal.credentialType === "local" || session?.principal.permissions.includes("security:write");
     const origins = additionalOrigins(originsText ?? setting?.trustedOrigins?.join("\n") ?? "");
     const invalidOrigin = origins.length > 32 || origins.some((origin) => !validTrustedOrigin(origin)) || new Set(origins).size !== origins.length;
 
@@ -194,7 +199,7 @@ function ConfigComponent() {
                         <div>
                             <SettingLabel htmlFor="trusted-ui-origins">{uiT("additionalTrustedOrigins")}</SettingLabel>
                             <Textarea id="trusted-ui-origins" aria-label={uiT("additionalTrustedOrigins")} spellCheck={false}
-                                rows={4} autoCapitalize="off" autoComplete="off"
+                                rows={4} autoCapitalize="off" autoComplete="off" disabled={!securityWritable}
                                 placeholder="https://admin.example.com"
                                 value={originsText ?? setting.trustedOrigins.join("\n")}
                                 aria-invalid={invalidOrigin}

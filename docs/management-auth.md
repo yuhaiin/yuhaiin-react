@@ -185,3 +185,23 @@ commits, then revoke earlier credentials atomically. Abandoning a change cannot
 remove the last administrator's login. Administrative enrollment reset is disabled
 for that last active local administrator; its own password-change flow remains
 available. Deliberate local recovery retains its separate backend capability.
+
+## Secret configuration editing
+
+Managed servers advertise `secret-isolation` in `/api/v2/management`. Ordinary
+configuration responses keep upstream credential references and replace inline
+proofs with resource-bound preservation markers. Editors retain these markers
+while showing a saved-value placeholder. Secret inputs require `secrets:manage`;
+trusted Origin changes require `security:write`, and executable TUN/native-library
+settings also require `system:execute`. The backend independently checks writes.
+
+The explicit reveal action requires `secrets:read` and requests
+`X-Yuhaiin-Secret-Access: reveal`. Plaintext is displayed separately from the draft
+and shared caches, and is discarded on hide, unmount or authentication-scope change.
+Copying a masked node copies masked configuration, not a portable credential
+export. Reload an editor after a server restart or a stale-reference conflict.
+
+Node import commits the original caller-provided source when previews are masked.
+It retains preview IDs, submits only failed indices on retry, and does not require
+secret read permission. Older servers with unmasked previews retain the existing
+batch-save flow. Source edits and authentication-scope changes reset the preview.

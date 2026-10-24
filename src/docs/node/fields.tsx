@@ -1,3 +1,5 @@
+import { useSecretField } from "@/auth/secret-fields";
+import { useTranslation } from "react-i18next";
 
 
 import { SettingLabel } from "@/component/v2/card";
@@ -24,17 +26,19 @@ function boolValue(value: unknown): boolean {
     return value === true;
 }
 
-const StringField: FC<{ label: string; value: unknown; disabled?: boolean; onChange: (value: string) => void }> = ({ label, value, disabled, onChange }) => {
+const StringField: FC<{ label: string; value: unknown; secret?: boolean; disabled?: boolean; onChange: (value: string) => void }> = ({ label, value, secret, disabled, onChange }) => {
     const text = stringValue(value);
+    const access = useSecretField(text, secret);
+    const { t } = useTranslation("auth");
     if (!disabled) {
-        return <SettingInputVertical label={label} value={text} onChange={onChange} />;
+        return <SettingInputVertical secret={secret} disabled={access.disabled} label={label} value={text} onChange={onChange} />;
     }
 
     return (
         <div className="relative mb-4 min-w-0 max-w-full">
             <SettingLabel className="mb-2 block">{label}</SettingLabel>
             <div className="min-h-field min-w-0 max-w-full whitespace-pre-wrap break-all rounded-ui-md border border-ui-border bg-ui-surface-muted px-3.5 py-2 text-[0.9375rem] leading-normal text-ui-muted shadow-inner-subtle">
-                {text || "-"}
+                {access.masked ? t("secrets.savedValue") : text || "-"}
             </div>
         </div>
     );

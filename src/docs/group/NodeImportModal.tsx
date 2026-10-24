@@ -1,3 +1,6 @@
+import { commitNodeImport } from "@/api/nodes";
+import { authScope } from "@/auth/session";
+import { hasSecretPlaceholder } from "@/auth/secret-fields";
 import { useTranslation } from 'react-i18next';
 import { createNode, previewNodeImport, useNode } from '@/api/nodes';
 import { listSubscriptions, saveSubscriptions, updateSubscriptions } from '@/api/subscriptions';
@@ -35,8 +38,11 @@ export default function NodeImportModal({ show, group, onHide, onSaved, onChange
     const close = useCloseGuard(show && Boolean(text.trim()) && successful === 0, pending, onHide);
     // Reset a new import session before rendering its fields. Partial imports
     // stay intact while the dialog remains open so failed nodes can be retried.
+    const scope = authScope();
+    const [previousScope, setPreviousScope] = useState(scope);
     const [previousShow, setPreviousShow] = useState(show);
-    if (previousShow !== show) {
+    if (previousShow !== show || previousScope !== scope) {
+        setPreviousScope(scope);
         setPreviousShow(show);
         if (show) {
             setSource('nodes'); setText(''); setSubscriptionName(''); setNodes(undefined);
@@ -49,12 +55,24 @@ export default function NodeImportModal({ show, group, onHide, onSaved, onChange
     const preview = () => void run(async () => {
         setError('');
         const result = await previewNodeImport(text, group);
+        if (scope !== authScope()) return;
         setNodes(result.items); setIssues(result.errors); setResults([]); setDefaultID('');
     });
     const save = () => void run(async () => {
         setError('');
         if (!nodes?.length) return;
-        const next = await importNodeBatch(nodes, createNode, results, setResults);
+        let next: ImportResult[];
+        if (hasSecretPlaceholder(nodes)) {
+            const outcome = await commitNodeImport({ text, group, ids: nodes.map(node => node.id), indices: nodes.flatMap((_, index) => results[index]?.status === 'success' ? [] : [index]) });
+            if (scope !== authScope()) return;
+            const merged = [...results];
+            for (const item of outcome.items) merged[item.index] = item.saved ? { status: 'success' } : { status: 'failed', error: item.error || t('nodeImportSaveFailed') };
+            next = nodes.map((_, index) => merged[index] ?? { status: 'failed', error: t('nodeImportSaveFailed') });
+            setResults(next);
+        } else {
+            next = await importNodeBatch(nodes, node => { if (scope !== authScope()) throw new Error('Context changed'); return createNode(node); }, results, next => { if (scope === authScope()) setResults(next); });
+        }
+        if (scope !== authScope()) return;
         if (next.some(result => result.status === 'success')) onChanged();
         if (next.every(result => result.status === 'success')) {
             if (defaultID) await useNode(defaultID);
@@ -71,9 +89,12 @@ export default function NodeImportModal({ show, group, onHide, onSaved, onChange
             name = parsed.hostname;
         }
         const existing = (await listSubscriptions()).items.find(item => item.name === name);
+        if (scope !== authScope()) return;
         if (existing && existing.url !== url) throw new Error(t('subscriptionNameConflict'));
         await saveSubscriptions([{ name, url, type: 'reserve' }]);
+        if (scope !== authScope()) return;
         await updateSubscriptions([name]);
+        if (scope !== authScope()) return;
         onChanged(); onSaved();
     });
     return (
@@ -92,7 +113,8 @@ export default function NodeImportModal({ show, group, onHide, onSaved, onChange
                                 const file = event.target.files?.[0];
                                 if (file) void run(async () => {
                                     if (file.size > 4 * 1024 * 1024) throw new Error(t('importFileTooLarge'));
-                                    changeText(await file.text());
+                                    const next = await file.text();
+                                    if (scope === authScope()) changeText(next);
                                 });
                                 event.target.value = '';
                             }} />

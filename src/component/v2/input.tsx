@@ -1,4 +1,6 @@
 import * as React from "react";
+import { useSecretField } from "@/auth/secret-fields";
+import { useTranslation } from "react-i18next";
 import { CircleAlert } from 'lucide-react';
 import { cn, ui } from "./styles";
 
@@ -9,6 +11,7 @@ type InputPropsWithoutSize = Omit<NativeInputProps, "size">;
 export interface InputProps extends InputPropsWithoutSize {
     /** Pass an empty string to reserve feedback space before validation. */
     error?: string;
+    secret?: boolean;
     size?: "default" | "sm";
 
     /** Native input width in characters. */
@@ -26,12 +29,16 @@ const groupRadiusClass = (groupPosition?: GroupPosition) =>
                 '';
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-    ({ className, size = "default", htmlSize, groupPosition, error, ...props }, ref) => {
+    ({ className, size = "default", htmlSize, groupPosition, error, secret, ...props }, ref) => {
+        const { t } = useTranslation('auth');
+        const access = useSecretField(props.value, secret || props.type === 'password');
         const generatedId = React.useId();
         const feedbackId = `${props.id ?? generatedId}-error`;
         const inputProps = {
             ...props,
-            ...("value" in props ? { value: props.value ?? "" } : {}),
+            ...("value" in props ? { value: access.masked ? '' : props.value ?? "" } : {}),
+            disabled: props.disabled || access.disabled,
+            ...(access.masked ? { placeholder: t('secrets.savedValue'), required: false, pattern: undefined, minLength: undefined, maxLength: undefined, type: props.type === 'password' ? 'password' : 'text', title: t('secrets.savedValue') } : {}),
         };
 
         return (
@@ -65,17 +72,22 @@ Input.displayName = "Input";
 export { Input };
 
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+    secret?: boolean;
     groupPosition?: GroupPosition;
     error?: string;
 }
 
 export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-    ({ className, groupPosition, error, ...props }, ref) => {
+    ({ className, groupPosition, error, secret, ...props }, ref) => {
+        const { t } = useTranslation('auth');
+        const access = useSecretField(props.value, secret);
         const generatedId = React.useId();
         const feedbackId = `${props.id ?? generatedId}-error`;
         const textareaProps = {
             ...props,
-            ...("value" in props ? { value: props.value ?? "" } : {}),
+            ...("value" in props ? { value: access.masked ? '' : props.value ?? "" } : {}),
+            disabled: props.disabled || access.disabled,
+            ...(access.masked ? { placeholder: t('secrets.savedValue'), required: false, minLength: undefined, maxLength: undefined, title: t('secrets.savedValue') } : {}),
         };
 
         return (

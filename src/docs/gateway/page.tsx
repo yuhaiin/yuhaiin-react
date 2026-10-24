@@ -1,8 +1,9 @@
+import { SecretValues } from "@/component/secret-values";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import {
-  getGatewayConfig, gatewayStatus, saveGatewayConfig, refreshGatewayFilter, resetGatewayStatistics,
+  getGatewayConfig, getGatewaySecrets, gatewayStatus, saveGatewayConfig, refreshGatewayFilter, resetGatewayStatistics,
 } from "@/api/gateway";
 import { Button } from "@/component/v2/button";
 import { MainContainer } from "@/component/v2/card";
@@ -111,10 +112,10 @@ export default function GatewayPage() {
           {failure || status?.startupError}
         </p>}
         {saved && <p role="status" className="text-sm text-ui-secondary">{t("saved")}</p>}
-        <GatewayWorkspace config={draft} onChange={change}
+        <SecretValues value={draft} load={getGatewaySecrets}><GatewayWorkspace config={draft} onChange={change}
           status={status?.gateways ?? []}
           canRefreshFilter={!dirty && !pending}
-          refreshFilter={(id) => void refreshFilter(id)} />
+          refreshFilter={(id) => void refreshFilter(id)} /></SecretValues>
         <div className="rounded-ui border border-ui-border bg-ui-surface p-4 sm:p-6 space-y-4">
           <div className="flex flex-wrap gap-2" aria-label={t("diagnostics")}>
             {(["tester", "statistics", "authority"] as const).map((item) => (
