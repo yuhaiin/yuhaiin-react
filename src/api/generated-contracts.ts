@@ -1303,6 +1303,138 @@ export namespace Go {
       error?: string;
     }
   }
+  export namespace resource {
+    export interface Rate {
+      bytesPerSecond: number;
+      burstBytes: number;
+    }
+    export interface Profile {
+      upload: Rate;
+      download: Rate;
+    }
+    export interface Limits {
+      maxTcpSessions: number;
+      maxUdpSessions: number;
+      maxSessions: number;
+      connectionsPerSecond: number;
+      connectionBurst: number;
+      packetsPerSecond: number;
+      packetBurst: number;
+    }
+    export interface Quota {
+      id: string;
+      period: string;
+      upload: string;
+      download: string;
+      combined: string;
+      action: string;
+      reducedSpeed: Profile;
+      thresholds: number[];
+    }
+    export interface Policy {
+      profile: Profile;
+      limits: Limits;
+      quotas: Quota[];
+    }
+    export interface GroupPolicy {
+      groupId: string;
+      sharedProfile: Profile;
+      individualProfile: Profile;
+      userLimits: Limits;
+      quotas: Quota[];
+    }
+    export interface UserPolicy {
+      userId: string;
+      policy: Policy;
+    }
+    export interface CredentialPolicy {
+      credentialId: string;
+      policy: Policy;
+    }
+    export interface Config {
+      revision: number;
+      enabled: boolean;
+      defaultUser: Policy;
+      groups: GroupPolicy[];
+      users: UserPolicy[];
+      credentials: CredentialPolicy[];
+    }
+    export interface Bytes {
+      upload: string;
+      download: string;
+      combined: string;
+    }
+    export interface QuotaUsage {
+      quotaId: string;
+      scope: string;
+      scopeId: string;
+      period: string;
+      startsAt: number;
+      resetsAt: number;
+      measured: Bytes;
+      recoveryCharge: Bytes;
+      used: Bytes;
+      remaining: Bytes;
+      limit: Bytes;
+      action: string;
+      exceeded: boolean;
+      thresholds: number[];
+      violations: string;
+    }
+    export interface Sessions {
+      tcp: number;
+      udp: number;
+      total: number;
+    }
+    export interface ScopeUsage {
+      lastRejection: string;
+      lastRejectedAt: number;
+      scope: string;
+      scopeId: string;
+      name: string;
+      configuredProfile: Profile;
+      enforcedProfile: Profile;
+      configuredLimits: Limits;
+      enforcedLimits: Limits;
+      sessions: Sessions;
+      rejectedSessions: string;
+      rejectedPackets: string;
+    }
+    export interface Report {
+      revision: number;
+      enabled: boolean;
+      userId: string;
+      scopes: ScopeUsage[];
+      quotas: QuotaUsage[];
+      persistenceDegraded: boolean;
+    }
+    export interface Alert {
+      id: string;
+      occurredAt: number;
+      scope: string;
+      scopeId: string;
+      quotaId: string;
+      period: string;
+      startsAt: number;
+      threshold: number;
+    }
+    export interface AlertPage {
+      items: Alert[];
+      next: string;
+      retentionRows: number;
+    }
+    export interface Status {
+      revision: number;
+      windows: number;
+      pendingWrites: number;
+      denied: string;
+      persistenceFailures: string;
+      refreshFailures: string;
+      droppedAlerts: string;
+      pendingAlerts: number;
+      alertPersistenceFailures: string;
+    }
+  }
   export namespace route {
     export interface Config {
       revision: number;

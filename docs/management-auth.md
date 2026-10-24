@@ -161,6 +161,7 @@ listener currently lacks proxy-user authentication and is denied when protected;
 use an authenticated proxy inbound with Gateway interception for that flow.
 Review all alternate listeners before selecting only a subset of inbounds.
 
-This is the Phase 1 frontend. User resource governance, custom roles, security
-change history and generic OIDC are separate subsequent phases. Routing conditions
-alone remain insufficient as an enterprise authorization boundary.
+User resource policies and reports extend the existing Traffic Control and usage
+pages; see [resource governance](resource-governance.md). Custom roles, security
+change history and generic OIDC are subsequent work. Routing conditions alone
+remain insufficient as an enterprise authorization boundary.
