@@ -90,11 +90,17 @@ it('always shows lightweight congestion/scheduling and never offers deleted TUN 
         // becomes lightweight/channel as soon as the user edits it.
         if (saved.protocol.type !== 'tun') throw new Error('unexpected protocol');
         saved = { ...saved, protocol: { ...saved.protocol, tun: {
-            ...saved.protocol.tun, stack: undefined, driver: 'system_gvisor', congestionControl: undefined,
+            ...saved.protocol.tun, stack: undefined, driver: 'system_gvisor', congestionControl: undefined, mtu: 1200,
         } } };
         act(render);
         const congestion = host.querySelector('[role="combobox"][aria-label="tunCongestionControl"]');
         expect(congestion?.textContent).toContain('CUBIC');
+        const mtuLabel = [...host.querySelectorAll<HTMLLabelElement>('label')].find(label => label.textContent === 'MTU')!;
+        const mtu = document.getElementById(mtuLabel.htmlFor) as HTMLInputElement;
+        expect(mtu.value).toBe('1200');
+        expect(mtu.checkValidity()).toBe(true);
+        expect(mtu.min).toBe('576');
+        expect(mtu.max).toBe('65535');
         const scheduler = () => host.querySelector<HTMLButtonElement>('[role="combobox"][aria-label="tunOutputScheduler"]')!;
         expect(scheduler().textContent).toContain('tunOutputSchedulerFIFO');
         act(() => scheduler().dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
@@ -102,7 +108,7 @@ it('always shows lightweight congestion/scheduling and never offers deleted TUN 
         act(() => fair.click());
         if (saved.protocol.type !== 'tun') throw new Error('unexpected protocol');
         expect(saved.protocol.tun).toMatchObject({
-            stack: 'lightweight', driver: 'channel', outputScheduler: 'fq_codel',
+            stack: 'lightweight', driver: 'channel', outputScheduler: 'fq_codel', mtu: 1200,
         });
         saved = JSON.parse(JSON.stringify(saved)) as Inbound;
         act(render);

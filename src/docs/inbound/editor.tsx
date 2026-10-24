@@ -387,7 +387,7 @@ const TunEditor: FC<{
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <SettingInputVertical label={uiT("name")} value={value.name} onChange={(name) => patch({ name })} />
-                <SettingInputVertical label="MTU" type="number" value={String(value.mtu)} onChange={(mtu) => patch({ mtu: numberValue(mtu) })} />
+                <SettingInputVertical label="MTU" type="number" min={576} max={65535} step={1} value={String(value.mtu)} onChange={(mtu) => patch({ mtu: numberValue(mtu) })} />
                 <SettingInputVertical label={uiT("portalIpv4")} value={value.portal} onChange={(portal) => patch({ portal })} />
                 <SettingInputVertical label={uiT("portalIpv6")} value={value.portalV6} onChange={(portalV6) => patch({ portalV6 })} />
             </div>
