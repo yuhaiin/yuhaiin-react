@@ -3,20 +3,25 @@
 // Run: CHROME_PATH=google-chrome-stable node scripts/check-reliability.mjs
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { waitForPreview } from './preview-ready.mjs';
 const base=process.env.RELIABILITY_PREVIEW_URL || 'http://127.0.0.1:5187';
 const output=process.env.RELIABILITY_SCREENSHOTS || '/tmp/yuhaiin-reliability-shots';
 const profile=await mkdtemp(`${tmpdir()}/yuhaiin-reliability-chrome-`);
-const chrome=spawn(process.env.CHROME_PATH || 'google-chrome-stable',['--headless=new','--no-sandbox','--disable-dev-shm-usage','--no-first-run','--remote-allow-origins=*','--remote-debugging-port=9237',`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore'});
+const chrome=spawn(process.env.CHROME_PATH || 'google-chrome-stable',['--headless=new','--no-sandbox','--disable-dev-shm-usage','--no-first-run','--remote-allow-origins=*','--remote-debugging-port=0',`--user-data-dir=${profile}`,'about:blank'],{stdio:['ignore','ignore','pipe']});
+let chromeLog='',spawnError;
+chrome.stderr.on('data',chunk=>{chromeLog=(chromeLog+chunk).slice(-8192);});
+chrome.on('error',error=>{spawnError=error;});
+const chromeClosed=new Promise(resolve=>chrome.once('close',resolve));
 let ws;
 try {
- for(let i=0;i<80;i++){
-  try {const pages=await(await fetch('http://127.0.0.1:9237/json/list')).json();ws=new WebSocket(pages.find(p=>p.type==='page').webSocketDebuggerUrl);await new Promise(resolve=>ws.addEventListener('open',resolve,{once:true}));break;}catch{await sleep(100);}
+ for(let i=0;i<300;i++){
+  if(spawnError||chrome.exitCode!==null)break;
+  try {const port=(await readFile(`${profile}/DevToolsActivePort`,'utf8')).split('\n')[0];const pages=await(await fetch(`http://127.0.0.1:${port}/json/list`)).json();const socket=new WebSocket(pages.find(p=>p.type==='page').webSocketDebuggerUrl);await new Promise((resolve,reject)=>{socket.addEventListener('open',resolve,{once:true});socket.addEventListener('error',reject,{once:true});});ws=socket;break;}catch{await sleep(100);}
  }
- assert(ws,'Chrome did not start');
+ assert(ws,`Chrome did not start: ${spawnError||chrome.exitCode}\n${chromeLog}`);
  let id=0;const pending=new Map();
  ws.addEventListener('message',({data})=>{const m=JSON.parse(data),entry=pending.get(m.id);if(entry){pending.delete(m.id);if(m.error)entry.reject(Error(m.error.message));else entry.resolve(m.result);}});
  const send=(method,params={})=>new Promise((resolve,reject)=>{const key=++id,timer=setTimeout(()=>{pending.delete(key);reject(Error(`CDP timeout ${method}`));},20000);pending.set(key,{resolve:r=>{clearTimeout(timer);resolve(r);},reject:e=>{clearTimeout(timer);reject(e);}});ws.send(JSON.stringify({id:key,method,params}));});
@@ -71,4 +76,4 @@ try {
  }
  await writeFile(`${output}/checks.json`,JSON.stringify({source:'synthetic MSW visual/interaction data; backend behavior tested separately',checks},null,2));
  process.stdout.write(JSON.stringify(checks)+'\n');
-} finally {ws?.close();chrome.kill();await new Promise(resolve=>chrome.once('exit',resolve));await rm(profile,{recursive:true,force:true,maxRetries:10,retryDelay:100});}
+} finally {ws?.close();chrome.kill();await chromeClosed;await rm(profile,{recursive:true,force:true,maxRetries:10,retryDelay:100});}
