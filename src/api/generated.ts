@@ -7,12 +7,12 @@ export type RPCOperation =
   | "backup.run"
   | "connections"
   | "connections.close"
-  | "connections.trace"
   | "connections.events"
   | "connections.failed_history"
   | "connections.history"
   | "connections.telemetry"
   | "connections.total"
+  | "connections.trace"
   | "connections.traffic"
   | "gateway.ca.generate"
   | "gateway.ca.import"
@@ -41,6 +41,7 @@ export type RPCOperation =
   | "node.get"
   | "node.latency"
   | "node.put"
+  | "node.speed"
   | "node.use"
   | "nodes.active"
   | "nodes.get"
@@ -53,6 +54,7 @@ export type RPCOperation =
   | "outbound.selector.delete"
   | "outbound.selector.put"
   | "outbound.selector.references"
+  | "outbound.selector.status"
   | "outbound.selectors.get"
   | "publish.delete"
   | "publish.put"
@@ -125,9 +127,9 @@ export type RPCOperation =
   | "traffic_control.status"
   | "update.apply"
   | "update.check"
-  | "update.status"
   | "update.history"
   | "update.rollback"
+  | "update.status"
 ;
 
 type LegacyRoute = { method: string; pattern: string; operation: RPCOperation };
@@ -214,6 +216,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "DELETE", pattern: "/api/v2/nodes/{id}", operation: "node.delete" },
   { method: "POST", pattern: "/api/v2/nodes/{id}/use", operation: "node.use" },
   { method: "POST", pattern: "/api/v2/nodes/status", operation: "nodes.status" },
+  { method: "POST", pattern: "/api/v2/nodes/{id}/speed", operation: "node.speed" },
   { method: "POST", pattern: "/api/v2/nodes/{id}/latency", operation: "node.latency" },
   { method: "POST", pattern: "/api/v2/nodes/{id}/close", operation: "node.close" },
   { method: "GET", pattern: "/api/v2/nodes/{id}/extra", operation: "node.extra" },
@@ -252,6 +255,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "PUT", pattern: "/api/v2/outbound/selectors", operation: "outbound.selector.put" },
   { method: "DELETE", pattern: "/api/v2/outbound/selectors/{id}", operation: "outbound.selector.delete" },
   { method: "GET", pattern: "/api/v2/outbound/selectors/{id}/references", operation: "outbound.selector.references" },
+  { method: "GET", pattern: "/api/v2/outbound/selectors/{id}/status", operation: "outbound.selector.status" },
   { method: "GET", pattern: "/api/v2/route/rules", operation: "route.rules.get" },
   { method: "POST", pattern: "/api/v2/route/rules", operation: "route.rules.post" },
   { method: "POST", pattern: "/api/v2/route/rules/priority", operation: "route.rules.priority" },

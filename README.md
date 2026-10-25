@@ -78,3 +78,10 @@ security restrictions, HTTP/2 request-specific outbound selection and TLS
 limitations remain unchanged. Certificate pinning, ECH and HTTP/3 are not bypassed.
 
 Backend details: https://github.com/yuhaiin/yuhaiin/tree/main/docs/gateway
+
+## Intelligent selectors
+
+The existing Selector editor supports opt-in failover, lowest RTT, measured
+throughput, balanced scoring and weighted new connections, with candidate
+controls, manual lock, and explainable TCP/UDP status. It requires the companion
+backend; see [configuration and delivery boundaries](docs/intelligent-selectors.md).

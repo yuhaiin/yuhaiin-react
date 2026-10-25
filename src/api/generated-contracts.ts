@@ -487,14 +487,6 @@ export namespace Go {
       | { type: "krunlet"; krunlet: KrunletProtocol }
       | { type: "reverse_tcp"; reverse_tcp: ReverseTCPProtocol }
       | { type: "none"; none: NoneProtocol };
-    export interface MasqueProtocol {
-      path?: string;
-      authToken: string;
-      serverAddresses: string[];
-      clientAddresses: string[];
-      mtu?: number;
-      maxSessions?: number;
-    }
     export interface Hysteria2Protocol {
       auth: string;
       uploadBps?: number;
@@ -503,6 +495,14 @@ export namespace Go {
       disableUdp?: boolean;
       salamanderPassword?: string;
       hopPorts?: string;
+    }
+    export interface MasqueProtocol {
+      path?: string;
+      authToken: string;
+      serverAddresses: string[];
+      clientAddresses: string[];
+      mtu?: number;
+      maxSessions?: number;
     }
     export interface HTTPProtocol {
       username: string;
@@ -668,11 +668,136 @@ export namespace Go {
       lastError?: string;
       probes?: Record<string, ProbeStatus>;
       protocol?: ProtocolRuntimeStatus;
+      tcpHealth: ChannelHealth;
+      udpHealth: ChannelHealth;
+      throughput: ThroughputMeasurement;
+    }
+    export interface ChannelHealth {
+      state: string;
+      consecutiveFailures: number;
+      consecutiveSuccesses: number;
+      samples?: HealthSample[];
+      latencySamples?: HealthSample[];
+    }
+    export interface HealthSample {
+      at: number;
+      ok: boolean;
+      timeout?: boolean;
+      rttMs?: number;
+      kind: string;
+      target?: string;
+    }
+    export interface ThroughputMeasurement {
+      at: number;
+      ok: boolean;
+      target: string;
+      downloadMbps: number;
+      uploadMbps?: number;
+      bytes: number;
+      durationMs: number;
+      samples: number;
+      error?: string;
+    }
+    export interface SelectorCandidateStatus {
+      nodeId: string;
+      eligible: boolean;
+      reason: string;
+      state: string;
+      rttMs: number;
+      jitterMs: number;
+      failureRate: number;
+      samples: number;
+      downloadMbps: number;
+      uploadMbps: number;
+      activeConnections: number;
+      score: number;
+      components?: SelectorScoreComponents;
+    }
+    export interface SelectorDecision {
+      nodeId: string;
+      reason: string;
+      since: number;
+      candidates: SelectorCandidateStatus[];
+    }
+    export interface SelectorEvent {
+      at: number;
+      network: string;
+      from: string;
+      to: string;
+      reason: string;
+    }
+    export interface SelectorRuntimeStatus {
+      id: string;
+      revision: number;
+      tcp: SelectorDecision;
+      udp: SelectorDecision;
+      events: SelectorEvent[];
+      switches: number;
+      suppressed: number;
     }
     export interface ProtocolRuntimeStatus {
       state: string;
       lastError?: string;
       updatedAt: number;
+    }
+    export interface SelectorScoreComponents {
+      rtt: number;
+      download: number;
+      upload: number;
+      stability: number;
+      jitter: number;
+      load: number;
+    }
+    export interface SelectorPolicy {
+      mode?: string;
+      candidates?: SelectorCandidate[];
+      preferredId?: string;
+      locked?: boolean;
+      fallback?: string;
+      returnToPreferred?: boolean;
+      latencyTarget?: string;
+      udpLatencyTarget?: string;
+      speedTarget?: string;
+      speedTest?: SpeedTestRequest;
+      minSamples?: number;
+      failureThreshold?: number;
+      recoveryThreshold?: number;
+      maxAgeMs?: number;
+      maxRttMs?: number;
+      maxFailureRate?: number;
+      minImprovementMs?: number;
+      minImprovementPercent?: number;
+      minScoreImprovement?: number;
+      minHoldMs?: number;
+      cooldownMs?: number;
+      minDownloadMbps?: number;
+      minUploadMbps?: number;
+      weights: SelectorWeights;
+    }
+    export interface SelectorCandidate {
+      nodeId: string;
+      enabled: boolean;
+      priority: number;
+      weight: number;
+    }
+    export interface SelectorWeights {
+      rtt?: number;
+      download?: number;
+      upload?: number;
+      stability?: number;
+      jitter?: number;
+      load?: number;
+      rttReferenceMs?: number;
+      downloadReferenceMbps?: number;
+      uploadReferenceMbps?: number;
+      loadReference?: number;
+    }
+    export interface SpeedTestRequest {
+      url: string;
+      maxBytes?: number;
+      durationMs?: number;
+      timeoutMs?: number;
+      dailyBudgetBytes?: number;
     }
     export type IPVersion = string;
     export interface Node {
@@ -714,6 +839,7 @@ export namespace Go {
       name: string;
       nodeId: string;
       revision: number;
+      policy?: SelectorPolicy;
     }
     export interface SelectorList {
       items: Selector[];
@@ -1696,6 +1822,102 @@ export namespace Go {
     }
     export interface RollbackRequest {
       id: string;
+    }
+  }
+  export namespace usage {
+    export interface Options {
+      auditDays: number;
+      maxAuditRows: number;
+      hourlyDays: number;
+      dailyDays: number;
+    }
+    export interface Counters {
+      upload: string;
+      download: string;
+      opened: string;
+      failed: string;
+      sessionMillis: string;
+      firstSeen: number;
+      lastSeen: number;
+    }
+    export interface Summary {
+      userId: string;
+      lifetime: Counters;
+      period: Counters;
+      activeTcp: number;
+      activeUdp: number;
+      peakTcp: number;
+      peakUdp: number;
+      activeMinutes: string;
+      periodActiveMinutes: string;
+      uploadRate: string;
+      downloadRate: string;
+    }
+    export interface Point extends Counters {
+      start: number;
+    }
+    export interface Breakdown extends Counters {
+      id: string;
+      name: string;
+    }
+    export interface Report {
+      summary: Summary;
+      series: Point[];
+      nodes: Breakdown[];
+      inbounds: Breakdown[];
+      credentials: Breakdown[];
+      protocols: Breakdown[];
+      interval: string;
+      from: number;
+      to: number;
+      updatedAt: number;
+      health: Health;
+    }
+    export interface Health {
+      pendingAudit: number;
+      droppedAudit: string;
+      lastFlush: number;
+      persistenceError: boolean;
+    }
+    export interface Query {
+      UserID: string;
+      From: number;
+      Interval: string;
+      CredentialID: string;
+      Result: string;
+      Before: string;
+      Limit: number;
+    }
+    export interface Audit {
+      id: string;
+      userId: string;
+      credentialId: string;
+      inboundId: string;
+      inboundName: string;
+      nodeId: string;
+      nodeName: string;
+      selectorId: string;
+      selectorName: string;
+      ruleId: string;
+      ruleName: string;
+      protocol: string;
+      mode: string;
+      source: string;
+      target: string;
+      ip: string;
+      startedAt: number;
+      endedAt: number;
+      lastSeen: number;
+      durationMillis: string;
+      upload: string;
+      download: string;
+      result: string;
+      reason: string;
+    }
+    export interface AuditPage {
+      items: Audit[];
+      next: string;
+      health: Health;
     }
   }
 }
