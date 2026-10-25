@@ -59,7 +59,7 @@ it('shows measured throughput, raw RTT, score explanation, and separate UDP choi
     expect(host.textContent).toContain('52.0 ms (3)'); expect(host.textContent).toContain('20.00 Mbps');
     expect(host.textContent).toContain('auto.measuredDownload'); expect(host.textContent).toContain('auto.weightLabels.rtt: 0.800');
     await click('auto.measureNow'); expect(api.measureNodeSpeed).toHaveBeenCalledWith('a', { url: 'https://speed.example/data' });
-    await click('auto.probeNow'); expect(api.requestJSON).toHaveBeenCalledWith('POST', '/api/v2/nodes/a/latency', { type: 'http', url: '' });
+    await click('auto.probeNow'); expect(api.requestJSON).toHaveBeenCalledWith('POST', '/api/v2/nodes/a/latency', { type: 'https', url: 'https://www.gstatic.com/generate_204' });
     await click('UDP'); expect(host.textContent).toContain('auto.reasons.no_healthy_candidate');
     expect(host.textContent).not.toContain('52.0 ms');
 });

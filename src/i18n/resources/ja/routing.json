@@ -398,7 +398,7 @@
     "durationMs": "データ測定時間 (ms)",
     "timeoutMs": "測定全体のタイムアウト (ms)",
     "dailyBudgetBytes": "インスタンスの日次測定上限 (bytes)",
-    "measurementHint": "測定は手動です。値はこの測定先と時点の推定で、実際の通信速度とは別です。最低サンプル数まで繰り返してください。失敗・取消でも予約した日次上限を消費します。",
+    "measurementHint": "測定値はこの測定先と時点の推定で、実際の通信速度とは別です。最低サンプル数まで繰り返してください。定期測定には明示的な有効化が必要です。失敗・取消でも予約した日次上限を消費します。",
     "liveStatus": "現在の選択と観測",
     "current": "選択中のノード",
     "none": "利用可能なノードなし",
@@ -470,5 +470,50 @@
       "eligible": "選択可能",
       "selected_node_unavailable": "選択ノード利用不可"
     }
+  },
+  "monitor": {
+    "defaults": "監視の既定値",
+    "probeEnabled": "定期的な疎通確認を有効化",
+    "intervalMs": "確認間隔 (ms)",
+    "timeoutMs": "確認タイムアウト (ms)",
+    "concurrency": "同時確認の上限",
+    "failureThreshold": "連続失敗のしきい値",
+    "recoveryThreshold": "連続復旧のしきい値",
+    "cooldownMs": "復旧クールダウン (ms)",
+    "jitter": "確認間隔の揺らぎ (0–0.5)",
+    "maxProbeBandwidth": "疎通確認の総通信上限 (bytes/s)",
+    "latencyTarget": "既定の HTTPS 遅延測定 URL",
+    "tcpAddress": "TCP 接続先 (host:port)",
+    "dnsAddress": "UDP DNS サーバー (host:port)",
+    "dnsDomain": "DNS 確認用ドメイン",
+    "stunAddress": "STUN サーバー (host:port)",
+    "networkCostPolicy": "ネットワーク負荷の方針",
+    "allowMobile": "モバイルホストが前面と報告中のみ許可",
+    "allowMetered": "従量制ネットワークで速度測定を許可",
+    "probeHint": "確認は候補ノードを経由します。定期処理は企業 VPN の認証を開始せず、手動で確立したクライアントを再利用します。モバイルではネイティブホストの前面状態通知が必要です。",
+    "speedEnabled": "定期ダウンロード測定を有効化",
+    "speedIntervalMs": "ダウンロード測定間隔 (ms、最小 300000)",
+    "speedConcurrency": "同時ダウンロード測定 (1–2)",
+    "speedHint": "定期測定も手動測定と同じ転送量・時間・日次共有上限に従います。従量制ネットワークとモバイルのバックグラウンドでは既定で無効です。",
+    "selectorSchedule": "疎通確認と速度測定の予定",
+    "overrideProbe": "インスタンスの確認設定を上書き",
+    "overrideSpeed": "インスタンスの速度測定予定を上書き",
+    "inherited": "保存済みのインスタンス監視設定を使用します。",
+    "runtime": "タスク: {{jobs}} · 実行中: {{running}} · ワーカー: {{workers}} · 失敗: {{failed}} · スキップ/取消: {{skipped}}",
+    "network": "ホスト: {{platform}} · 接続: {{online}} · 従量制: {{metered}} · 前面: {{foreground}}",
+    "periodicSpeed": "定期ダウンロード測定",
+    "kinds": {
+      "tcp_connect": "TCP チャネル作成",
+      "https": "検証済み HTTPS 応答",
+      "dns": "UDP 経由の DNS 応答",
+      "stun": "UDP 経由の STUN 応答",
+      "native": "ネイティブトンネル状態（対応時）"
+    },
+    "costPolicies": {
+      "conservative": "非従量制・確立済み VPN を再利用",
+      "cached_only": "既存の出力クライアントのみ",
+      "allow_expensive": "従量制での確認を許可・確立済み VPN を再利用"
+    },
+    "measurementHistory": "最近のダウンロード測定"
   }
 }

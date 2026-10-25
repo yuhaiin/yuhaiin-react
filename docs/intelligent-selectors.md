@@ -40,14 +40,38 @@ traffic. Errors remain visible in the editor/status panel. The same fields and
 candidate cards work in the mobile workspace. EN/JA/KO strings use the existing
 routing namespace and theme tokens.
 
-This UI requires the matching intelligent-selector backend and schema 18. The
-current backend delivery provides passive observation, snapshot-based selection,
-and manual tests. Shared periodic probe scheduling, full Closed/Open/Half-open
-admission, periodic throughput tests and metrics extensions are subsequent
-reliability work; there are no automatic test switches implying those features
-are already present. Existing Backup, Software Update and TLS/CA pages are
-unchanged in this delivery.
+The initial editor requires schema 18; the monitoring follow-up described below
+requires schema 19. Full Closed/Open/Half-open admission and metrics extensions
+remain ongoing. Existing Backup, Software Update and TLS/CA pages are unchanged
+in this component delivery.
 
 See the [backend guide](https://github.com/yuhaiin/yuhaiin/blob/main/docs/intelligent-selectors.md)
 for scoring formulas, fallback semantics, safety limits and reproducible
 benchmarks. While the backend PR is unmerged, use its branch version of the guide.
+
+## Monitoring follow-up
+
+**Monitoring defaults** now configures the shared scheduler and optional periodic
+download tests. A Selector's **Probe and speed schedules** can inherit these
+settings or override them; creating an override leaves it disabled until an
+administrator explicitly enables and saves it. Per-selector targets remain the
+source of comparable RTT and speed observations. Manual selector probes use the
+same verified HTTPS HEAD cohort as periodic probes; legacy Nodes GET probes are
+still available and keep their separate evidence type.
+
+The backend deduplicates shared node/transport/target tasks, bounds concurrency,
+spreads initial execution, applies configurable jitter and probe-failure cooldown,
+and cancels old tasks on configuration/network changes. Periodic download tests
+use the existing durable daily allowance and byte/time caps. Busy/exhausted tests
+are skipped; no unbounded fallback testing is started. Recent raw download samples
+are fetched only when their history is expanded.
+
+Android monitoring requires an explicit opt-in plus foreground state reported
+by the native host. Metered networks are excluded by default; download schedules
+have their own metered-network permission. Periodic work never initiates a new
+enterprise VPN login: it can reuse a manually established client. Host network
+state is shown for diagnosis and does not depend on an open browser.
+
+This follow-up requires backend schema 19 and the paired monitoring branch.
+Full circuit-breaker request admission, metrics additions, traffic-control
+qualification, visual browser checks, disaster recovery and ACME remain ongoing.

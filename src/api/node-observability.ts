@@ -1,4 +1,5 @@
 import { requestJSON } from "@/api/client";
+import type { Go } from './generated-contracts';
 import type { NodeLatencyResponse } from "@/contract/node";
 
 export type OutboundState = "disabled" | "healthy" | "degraded" | "unknown";
@@ -30,6 +31,10 @@ export type OutboundRuntimeStatus = {
     lastUsedAt: number;
     lastError?: string;
     probes?: Record<string, OutboundProbe>;
+    tcpHealth?: Go.node.ChannelHealth;
+    udpHealth?: Go.node.ChannelHealth;
+    throughput?: Go.node.ThroughputMeasurement;
+    throughputHistory?: Go.node.ThroughputMeasurement[];
     protocol?: { state: string; lastError?: string; updatedAt: number };
 };
 

@@ -40,6 +40,9 @@ export type RPCOperation =
   | "node.extra"
   | "node.get"
   | "node.latency"
+  | "node.monitoring.get"
+  | "node.monitoring.network.put"
+  | "node.monitoring.put"
   | "node.put"
   | "node.speed"
   | "node.use"
@@ -251,6 +254,9 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/route/registries/catalogs", operation: "route.registries.catalogs" },
   { method: "PUT", pattern: "/api/v2/route/registries/{id}", operation: "route.registry.put" },
   { method: "DELETE", pattern: "/api/v2/route/registries/{id}", operation: "route.registry.delete" },
+  { method: "GET", pattern: "/api/v2/nodes/monitoring", operation: "node.monitoring.get" },
+  { method: "PUT", pattern: "/api/v2/nodes/monitoring", operation: "node.monitoring.put" },
+  { method: "PUT", pattern: "/api/v2/nodes/monitoring/network", operation: "node.monitoring.network.put" },
   { method: "GET", pattern: "/api/v2/outbound/selectors", operation: "outbound.selectors.get" },
   { method: "PUT", pattern: "/api/v2/outbound/selectors", operation: "outbound.selector.put" },
   { method: "DELETE", pattern: "/api/v2/outbound/selectors/{id}", operation: "outbound.selector.delete" },

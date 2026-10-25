@@ -1,4 +1,6 @@
 import { getSelectorStatus, measureNodeSpeed } from '@/api/selectors';
+import { getNodeStatuses } from '@/api/node-observability';
+import { getMonitoring } from '@/api/monitoring';
 import { requestJSON } from '@/api/client';
 import type { Go } from '@/api/generated-contracts';
 import type { Selector } from '@/contract/node';
@@ -6,6 +8,7 @@ import { NodeSelect } from './node-select';
 import { Button } from './v2/button';
 import { Select, SettingInputVertical } from './v2/forms';
 import SwitchComponent from './v2/switch';
+import { SelectorMonitoringEditor } from './selector-monitoring';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
@@ -21,6 +24,9 @@ export function SelectorPolicyEditor({ value, onChange }: { value: Selector; onC
     const policy = value.policy ?? emptyPolicy();
     const automatic = (policy.mode ?? 'manual') !== 'manual';
     const update = (changes: Partial<Policy>) => onChange({ ...value, policy: { ...policy, ...changes } });
+    const { data: monitoring } = useSWR(automatic ? 'node-monitoring' : null, getMonitoring, { revalidateOnFocus: false });
+    const defaults = monitoring?.config;
+    const probe = policy.probe ?? defaults?.probe;
     const candidates = policy.candidates ?? [];
     const hasWeights = (['rtt', 'download', 'upload', 'stability', 'jitter', 'load'] as const).some(key => (policy.weights[key] ?? 0) > 0);
     const shownWeights = hasWeights ? policy.weights : { ...defaultWeights, ...policy.weights };
@@ -46,19 +52,20 @@ export function SelectorPolicyEditor({ value, onChange }: { value: Selector; onC
             <details className="space-y-3"><summary className="cursor-pointer text-sm font-medium">{t('auto.thresholds')}</summary><div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {numeric('minSamples', 3)}{numeric('maxAgeMs', 120000)}{numeric('maxRttMs', 5000)}{numeric('maxFailureRate', .5, .01)}
                 {numeric('minImprovementMs', 10)}{numeric('minImprovementPercent', 10)}{numeric('minScoreImprovement', .05, .01)}
-                {numeric('minHoldMs', 30000)}{numeric('cooldownMs', 15000)}{numeric('failureThreshold', 3)}{numeric('recoveryThreshold', 2)}
+                {numeric('minHoldMs', 30000)}{numeric('cooldownMs', 15000)}{numeric('failureThreshold', probe?.failureThreshold || 3)}{numeric('recoveryThreshold', probe?.recoveryThreshold || 2)}
                 {numeric('minDownloadMbps', 0, .1)}{numeric('minUploadMbps', 0, .1)}
             </div></details>
             <details className="space-y-3"><summary className="cursor-pointer text-sm font-medium">{t('auto.weights')}</summary><div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {(['rtt', 'download', 'upload', 'stability', 'jitter', 'load', 'rttReferenceMs', 'downloadReferenceMbps', 'uploadReferenceMbps', 'loadReference'] as const).map(key => <SettingInputVertical key={key} label={t(`auto.weightLabels.${key}`)} type="number" min={0} step={.1} value={String(shownWeights[key] ?? (key.endsWith('ReferenceMs') || key.endsWith('ReferenceMbps') || key === 'loadReference' ? defaultWeights[key] ?? 0 : 0))} onChange={text => { const n = Number(text); if (Number.isFinite(n) && n >= 0) update({ weights: { ...shownWeights, [key]: n } }); }} />)}
             </div></details>
-            <SettingInputVertical label={t('auto.latencyTarget')} value={policy.latencyTarget ?? 'https://www.gstatic.com/generate_204'} onChange={latencyTarget => update({ latencyTarget })} />
-            <SettingInputVertical label={t('auto.udpLatencyTarget')} value={policy.udpLatencyTarget ?? '223.5.5.5:53/www.google.com'} onChange={udpLatencyTarget => update({ udpLatencyTarget })} />
-            <SettingInputVertical label={t('auto.speedTarget')} value={policy.speedTarget ?? ''} onChange={speedTarget => update({ speedTarget })} placeholder="https://example.com/test.bin" />
+            <SettingInputVertical label={t('auto.latencyTarget')} value={policy.latencyTarget ?? probe?.latencyTarget ?? 'https://www.gstatic.com/generate_204'} onChange={latencyTarget => update({ latencyTarget })} />
+            <SettingInputVertical label={t('auto.udpLatencyTarget')} value={policy.udpLatencyTarget ?? `${probe?.dnsAddress ?? '223.5.5.5:53'}/${probe?.dnsDomain ?? 'www.google.com'}`} onChange={udpLatencyTarget => update({ udpLatencyTarget })} />
+            <SettingInputVertical label={t('auto.speedTarget')} value={policy.speedTarget ?? policy.periodicSpeed?.test.url ?? defaults?.speed.test.url ?? ''} onChange={speedTarget => update({ speedTarget })} placeholder="https://example.com/test.bin" />
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {(['maxBytes', 'durationMs', 'timeoutMs', 'dailyBudgetBytes'] as const).map(key => <SettingInputVertical key={key} label={t(`auto.${key}`)} type="number" min={0} value={String(policy.speedTest?.[key] ?? { maxBytes: 4194304, durationMs: 5000, timeoutMs: 10000, dailyBudgetBytes: 67108864 }[key])} onChange={text => { const n = Number(text); if (Number.isSafeInteger(n) && n >= 0) update({ speedTest: { ...policy.speedTest, url: '', [key]: n } }); }} />)}
             </div>
             <p className="text-xs text-ui-muted">{t('auto.measurementHint')}</p>
+            <SelectorMonitoringEditor value={policy} onChange={policy => onChange({ ...value, policy })} />
         </>}
     </section>;
 }
@@ -69,15 +76,18 @@ export function SelectorLiveStatus({ value }: { value: Selector }) {
     const [pending, setPending] = useState('');
     const [error, setError] = useState('');
     const { data, error: loadError, mutate } = useSWR(value.id ? ['selector-status', value.id] : null, () => getSelectorStatus(value.id), { refreshInterval: 2500, revalidateOnFocus: false });
+    const { data: monitoring } = useSWR(value.policy && value.policy.mode !== 'manual' ? 'node-monitoring' : null, getMonitoring, { revalidateOnFocus: false });
+    const savedProbe = value.policy?.probe ?? monitoring?.config?.probe;
+    const speedTarget = value.policy?.speedTarget ?? value.policy?.periodicSpeed?.test.url ?? monitoring?.config?.speed?.test.url ?? '';
     const describe = (reason: string) => reasons.includes(reason) ? t(`auto.reasons.${reason}`) : modes.includes(reason) ? t(`auto.modes.${reason}`) : reason;
     const test = async (nodeId: string, speed: boolean) => {
         setPending(nodeId); setError('');
         try {
             const p = value.policy;
-            if (speed) await measureNodeSpeed(nodeId, { ...p?.speedTest, url: p?.speedTarget ?? '' });
-            else if (network === 'tcp') await requestJSON('POST', `/api/v2/nodes/${encodeURIComponent(nodeId)}/latency`, { type: 'http', url: p?.latencyTarget ?? '' });
+            if (speed) await measureNodeSpeed(nodeId, { ...(p?.speedTest ?? p?.periodicSpeed?.test ?? monitoring?.config?.speed?.test), url: speedTarget });
+            else if (network === 'tcp') await requestJSON('POST', `/api/v2/nodes/${encodeURIComponent(nodeId)}/latency`, { type: 'https', url: p?.latencyTarget ?? savedProbe?.latencyTarget ?? 'https://www.gstatic.com/generate_204' });
             else {
-                const target = (p?.udpLatencyTarget ?? '223.5.5.5:53/www.google.com').split('/');
+                const target = (p?.udpLatencyTarget ?? `${savedProbe?.dnsAddress ?? '223.5.5.5:53'}/${savedProbe?.dnsDomain ?? 'www.google.com'}`).split('/');
                 await requestJSON('POST', `/api/v2/nodes/${encodeURIComponent(nodeId)}/latency`, { type: 'dns', host: target[0], targetDomain: target[1] });
             }
             await mutate();
@@ -98,9 +108,27 @@ export function SelectorLiveStatus({ value }: { value: Selector }) {
                     {[[t('auto.rtt'), c.samples ? `${c.rttMs.toFixed(1)} ms (${c.samples})` : t('auto.unmeasured')], [t('auto.measuredDownload'), c.downloadMbps ? `${c.downloadMbps.toFixed(2)} Mbps` : t('auto.unmeasured')], [t('auto.measuredUpload'), c.uploadMbps ? `${c.uploadMbps.toFixed(2)} Mbps` : t('auto.unmeasured')], [t('auto.failureRate'), `${(c.failureRate * 100).toFixed(1)}%`], [t('auto.active'), String(c.activeConnections)], [t('auto.score'), c.components ? c.score.toFixed(3) : '—']].map(([label, content]) => <div key={label}><dt className="text-xs text-ui-muted">{label}</dt><dd>{content}</dd></div>)}
                 </dl>
                 {c.components && <ul className="mt-2 space-y-1 text-xs text-ui-muted">{Object.entries(c.components).map(([key, component]) => <li key={key}>{t(`auto.weightLabels.${key}`)}: {component.toFixed(3)}</li>)}</ul>}
-                <div className="mt-3 flex flex-wrap gap-2"><Button permission="nodes:write" size="sm" disabled={!!pending} onClick={() => void test(c.nodeId, false)}>{t('auto.probeNow')}</Button><Button permission="nodes:write" size="sm" disabled={!!pending || !value.policy?.speedTarget} onClick={() => void test(c.nodeId, true)}>{t('auto.measureNow')}</Button></div>
+                <NodeMeasurementHistory nodeId={c.nodeId} />
+                <div className="mt-3 flex flex-wrap gap-2"><Button permission="nodes:write" size="sm" disabled={!!pending} onClick={() => void test(c.nodeId, false)}>{t('auto.probeNow')}</Button><Button permission="nodes:write" size="sm" disabled={!!pending || !speedTarget} onClick={() => void test(c.nodeId, true)}>{t('auto.measureNow')}</Button></div>
             </details>)}</div>
             <details><summary className="cursor-pointer text-sm">{t('auto.history')}</summary><ol className="mt-2 space-y-2 text-xs text-ui-muted">{[...data.events].reverse().map((event, index) => <li key={`${event.at}:${event.network}:${index}`} className="break-words">{new Date(event.at).toLocaleString()} · {event.network.toUpperCase()} · {event.from || '—'} → {event.to || '—'} · {describe(event.reason)}</li>)}</ol></details>
         </>}
     </section>;
+}
+
+function NodeMeasurementHistory({ nodeId }: { nodeId: string }) {
+    const { t } = useTranslation('routing');
+    const [open, setOpen] = useState(false);
+    return <details className="mt-3 text-xs" onToggle={e => setOpen(e.currentTarget.open)}><summary className="cursor-pointer">{t('monitor.measurementHistory')}</summary>{open && <MeasurementHistoryData nodeId={nodeId} />}</details>;
+}
+function MeasurementHistoryData({ nodeId }: { nodeId: string }) {
+    const { t } = useTranslation('routing');
+    const { data, error } = useSWR(['node-measurement-history', nodeId], () => getNodeStatuses([nodeId]), { revalidateOnFocus: false, refreshInterval: 5000 });
+    if (error) return <p role="alert" className="mt-2 text-ui-danger">{t('loadFailed')}</p>;
+    if (!data) return <p role="status" className="mt-2 text-ui-muted">{t('loading')}</p>;
+    const samples = data[nodeId]?.throughputHistory ?? [];
+    return <ol className="mt-2 space-y-2 text-ui-muted">{samples.length === 0 ? <li>{t('auto.unmeasured')}</li> : [...samples].reverse().map((sample, index) => <li className="break-words" key={`${sample.at}:${index}`}>
+        {new Date(sample.at).toLocaleString()} · {sample.ok ? `${sample.downloadMbps.toFixed(2)} Mbps` : t('loadFailed')} · {sample.bytes} B / {sample.durationMs} ms
+        <p>{sample.target}</p>
+    </li>)}</ol>;
 }

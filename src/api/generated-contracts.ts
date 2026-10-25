@@ -641,6 +641,55 @@ export namespace Go {
     }
   }
   export namespace node {
+    export interface MonitoringConfig {
+      revision: number;
+      probe: ProbeSchedule;
+      speed: SpeedSchedule;
+    }
+    export interface ProbeSchedule {
+      enabled: boolean;
+      intervalMs?: number;
+      timeoutMs?: number;
+      concurrency?: number;
+      failureThreshold?: number;
+      recoveryThreshold?: number;
+      cooldownMs?: number;
+      jitter?: number;
+      latencyTarget?: string;
+      tcpAddress?: string;
+      dnsAddress?: string;
+      dnsDomain?: string;
+      stunAddress?: string;
+      kinds?: string[];
+      maxProbeBandwidth?: number;
+      networkCostPolicy?: string;
+      allowMobile?: boolean;
+    }
+    export interface SpeedSchedule {
+      allowMetered?: boolean;
+      enabled: boolean;
+      intervalMs?: number;
+      concurrency?: number;
+      allowMobile?: boolean;
+      test: SpeedTestRequest;
+    }
+    export interface MonitoringNetworkState {
+      online: boolean;
+      metered: boolean;
+      foreground: boolean;
+      generation: number;
+    }
+    export interface MonitoringStatus {
+      config: MonitoringConfig;
+      network: MonitoringNetworkState;
+      platform: string;
+      jobs: number;
+      running: number;
+      workers: number;
+      completed: number;
+      skipped: number;
+      failed: number;
+    }
     export interface ProbeStatus {
       checkedAt: number;
       result: LatencyResponse;
@@ -670,6 +719,7 @@ export namespace Go {
       protocol?: ProtocolRuntimeStatus;
       tcpHealth: ChannelHealth;
       udpHealth: ChannelHealth;
+      throughputHistory?: ThroughputMeasurement[];
       throughput: ThroughputMeasurement;
     }
     export interface ChannelHealth {
@@ -749,6 +799,8 @@ export namespace Go {
       load: number;
     }
     export interface SelectorPolicy {
+      probe?: ProbeSchedule;
+      periodicSpeed?: SpeedSchedule;
       mode?: string;
       candidates?: SelectorCandidate[];
       preferredId?: string;

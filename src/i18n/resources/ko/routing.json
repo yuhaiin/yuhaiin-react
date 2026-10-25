@@ -398,7 +398,7 @@
     "durationMs": "데이터 측정 시간 (ms)",
     "timeoutMs": "전체 측정 제한 시간 (ms)",
     "dailyBudgetBytes": "인스턴스 일일 측정 한도 (bytes)",
-    "measurementHint": "측정은 수동입니다. 값은 해당 대상과 시점의 추정치이며 실시간 업무 전송률과 다릅니다. 최소 샘플 수까지 반복하세요. 실패 및 취소 시에도 예약된 일일 한도가 사용됩니다.",
+    "measurementHint": "다운로드 측정값은 해당 대상과 시점의 추정치이며 실시간 업무 전송률과 다릅니다. 최소 샘플 수까지 반복하세요. 주기적 측정은 명시적으로 사용해야 합니다. 실패 및 취소 시에도 예약된 일일 한도가 사용됩니다.",
     "liveStatus": "현재 선택 및 관측",
     "current": "선택된 노드",
     "none": "사용 가능한 노드 없음",
@@ -470,5 +470,50 @@
       "eligible": "선택 가능",
       "selected_node_unavailable": "선택 노드 사용 불가"
     }
+  },
+  "monitor": {
+    "defaults": "모니터링 기본값",
+    "probeEnabled": "주기적 상태 확인 사용",
+    "intervalMs": "확인 간격 (ms)",
+    "timeoutMs": "확인 제한 시간 (ms)",
+    "concurrency": "동시 확인 상한",
+    "failureThreshold": "연속 실패 임계값",
+    "recoveryThreshold": "연속 복구 임계값",
+    "cooldownMs": "복구 대기 시간 (ms)",
+    "jitter": "예약 시간 변동 (0–0.5)",
+    "maxProbeBandwidth": "상태 확인 총 트래픽 한도 (bytes/s)",
+    "latencyTarget": "기본 HTTPS 지연 측정 URL",
+    "tcpAddress": "TCP 연결 대상 (host:port)",
+    "dnsAddress": "UDP DNS 서버 (host:port)",
+    "dnsDomain": "DNS 확인 도메인",
+    "stunAddress": "STUN 서버 (host:port)",
+    "networkCostPolicy": "네트워크 비용 정책",
+    "allowMobile": "모바일 호스트가 전경 상태일 때 허용",
+    "allowMetered": "종량제 네트워크에서 속도 측정 허용",
+    "probeHint": "확인은 후보 노드를 경유합니다. 주기적 작업은 기업 VPN 인증을 시작하지 않고 수동으로 연결한 클라이언트를 재사용합니다. 모바일에서는 네이티브 호스트의 전경 상태 알림이 필요합니다.",
+    "speedEnabled": "주기적 다운로드 측정 사용",
+    "speedIntervalMs": "다운로드 측정 간격 (ms, 최소 300000)",
+    "speedConcurrency": "동시 다운로드 측정 (1–2)",
+    "speedHint": "주기적 측정도 수동 측정과 같은 바이트, 시간 및 공유 일일 한도를 따릅니다. 종량제 네트워크와 모바일 백그라운드 작업은 기본적으로 꺼져 있습니다.",
+    "selectorSchedule": "상태 확인 및 속도 측정 일정",
+    "overrideProbe": "인스턴스 확인 기본값 재정의",
+    "overrideSpeed": "인스턴스 속도 측정 일정 재정의",
+    "inherited": "저장된 인스턴스 모니터링 기본값을 사용합니다.",
+    "runtime": "작업: {{jobs}} · 실행 중: {{running}} · 작업자: {{workers}} · 실패: {{failed}} · 건너뜀/취소: {{skipped}}",
+    "network": "호스트: {{platform}} · 온라인: {{online}} · 종량제: {{metered}} · 전경: {{foreground}}",
+    "periodicSpeed": "주기적 다운로드 측정",
+    "kinds": {
+      "tcp_connect": "TCP 채널 생성",
+      "https": "검증된 HTTPS 응답",
+      "dns": "UDP를 통한 DNS 응답",
+      "stun": "UDP를 통한 STUN 응답",
+      "native": "기본 터널 상태 (지원 시)"
+    },
+    "costPolicies": {
+      "conservative": "비종량제, 연결된 VPN 재사용",
+      "cached_only": "기존 아웃바운드 클라이언트만",
+      "allow_expensive": "종량제 확인 허용, 연결된 VPN 재사용"
+    },
+    "measurementHistory": "최근 다운로드 측정"
   }
 }

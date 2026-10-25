@@ -398,7 +398,7 @@
     "durationMs": "Payload measurement duration (ms)",
     "timeoutMs": "Total test timeout (ms)",
     "dailyBudgetBytes": "Instance daily download budget (bytes)",
-    "measurementHint": "Tests are manual. Download measurements approximate this target at this time; live business Bps is separate. Repeat tests to reach the sample threshold. Failed or cancelled tests consume the reserved daily budget.",
+    "measurementHint": "Download measurements approximate this target at this time; live business Bps is separate. Repeat tests to reach the sample threshold. Periodic tests require explicit schedule enablement. Failed or cancelled tests consume the reserved daily budget.",
     "liveStatus": "Active selection and evidence",
     "current": "Selected node",
     "none": "No available node",
@@ -470,5 +470,50 @@
       "eligible": "Eligible",
       "selected_node_unavailable": "Selected node unavailable"
     }
+  },
+  "monitor": {
+    "defaults": "Monitoring defaults",
+    "probeEnabled": "Enable periodic probes",
+    "intervalMs": "Probe interval (ms)",
+    "timeoutMs": "Probe timeout (ms)",
+    "concurrency": "Maximum concurrent probes",
+    "failureThreshold": "Consecutive failure threshold",
+    "recoveryThreshold": "Consecutive recovery threshold",
+    "cooldownMs": "Recovery cooldown (ms)",
+    "jitter": "Schedule jitter (0–0.5)",
+    "maxProbeBandwidth": "Aggregate probe traffic limit (bytes/s)",
+    "latencyTarget": "Default HTTPS latency URL",
+    "tcpAddress": "TCP connect target (host:port)",
+    "dnsAddress": "UDP DNS server (host:port)",
+    "dnsDomain": "DNS test domain",
+    "stunAddress": "STUN server (host:port)",
+    "networkCostPolicy": "Network cost policy",
+    "allowMobile": "Allow while mobile host reports foreground",
+    "allowMetered": "Allow speed tests on metered networks",
+    "probeHint": "Probes use the candidate node. Enterprise VPN authentication is never started by periodic work; it can reuse a manually established client. Mobile probes require an explicit foreground signal from the native host.",
+    "speedEnabled": "Enable periodic download tests",
+    "speedIntervalMs": "Download test interval (ms, minimum 300000)",
+    "speedConcurrency": "Concurrent download tests (1–2)",
+    "speedHint": "Periodic tests use the same byte, time and shared daily limits as manual tests. Metered networks and mobile background work are disabled by default.",
+    "selectorSchedule": "Probe and speed schedules",
+    "overrideProbe": "Override instance probe defaults",
+    "overrideSpeed": "Override instance speed schedule",
+    "inherited": "Uses saved instance monitoring defaults.",
+    "runtime": "Tasks: {{jobs}} · Running: {{running}} · Workers: {{workers}} · Failed: {{failed}} · Skipped/cancelled: {{skipped}}",
+    "network": "Host: {{platform}} · Online: {{online}} · Metered: {{metered}} · Foreground: {{foreground}}",
+    "periodicSpeed": "Periodic download tests",
+    "kinds": {
+      "tcp_connect": "TCP channel creation",
+      "https": "Verified HTTPS response",
+      "dns": "DNS response over UDP",
+      "stun": "STUN response over UDP",
+      "native": "Native tunnel state (if supported)"
+    },
+    "costPolicies": {
+      "conservative": "Unmetered; reuse established VPNs",
+      "cached_only": "Only existing outbound clients",
+      "allow_expensive": "Allow metered probes; reuse established VPNs"
+    },
+    "measurementHistory": "Recent download measurements"
   }
 }
