@@ -6,6 +6,7 @@ import { spawn } from 'node:child_process';
 import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { setTimeout as sleep } from 'node:timers/promises';
+import { waitForPreview } from './preview-ready.mjs';
 const base=process.env.RELIABILITY_PREVIEW_URL || 'http://127.0.0.1:5187';
 const output=process.env.RELIABILITY_SCREENSHOTS || '/tmp/yuhaiin-reliability-shots';
 const profile=await mkdtemp(`${tmpdir()}/yuhaiin-reliability-chrome-`);
@@ -20,7 +21,7 @@ try {
  ws.addEventListener('message',({data})=>{const m=JSON.parse(data),entry=pending.get(m.id);if(entry){pending.delete(m.id);if(m.error)entry.reject(Error(m.error.message));else entry.resolve(m.result);}});
  const send=(method,params={})=>new Promise((resolve,reject)=>{const key=++id,timer=setTimeout(()=>{pending.delete(key);reject(Error(`CDP timeout ${method}`));},20000);pending.set(key,{resolve:r=>{clearTimeout(timer);resolve(r);},reject:e=>{clearTimeout(timer);reject(e);}});ws.send(JSON.stringify({id:key,method,params}));});
  const evaluate=async expression=>{const r=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(r.exceptionDetails)throw Error(r.exceptionDetails.exception?.description||r.exceptionDetails.text);return r.result?.value;};
- async function wait(expression){for(let i=0;i<150;i++){try{if(await evaluate(expression))return;}catch(e){if(!/context|navigat/i.test(String(e)))throw e;}await sleep(100);}throw Error(`Not ready: ${expression}; ${await evaluate('document.body.innerText')}`);}
+ async function wait(expression){for(let i=0;i<150;i++){try{if(await evaluate(expression))return;}catch(e){if(!/context|navigat/i.test(String(e)))throw e;}await sleep(100);}throw Error(`Not ready: ${expression}; ${await evaluate('document.body?.innerText')}`);}
  async function clickText(text,selector='button, summary'){
   const point=await evaluate(`(()=>{const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.textContent.trim()===${JSON.stringify(text)}&&e.getBoundingClientRect().width);if(!e)throw Error('Missing '+${JSON.stringify(text)});e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);
   await send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...point});await send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...point});await sleep(150);
@@ -32,7 +33,8 @@ try {
   const init=await send('Page.addScriptToEvaluateOnNewDocument',{source:`localStorage.setItem('yuhaiin.theme','light');localStorage.setItem('yuhaiin.accent','olive');`});
   await send('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:width<768});
   await send('Page.navigate',{url:`${base}/?scenario=reliability&viewport=${width}#/docs/group/selectors?selector=selector-work`});
-  await wait(`document.body.innerText.includes('Circuit breaker and recovery')`);
+  await wait(`location.href.includes('viewport=${width}') && document.body?.innerText.includes('Circuit breaker and recovery')`);
+  await waitForPreview(send,'fieldset');
   await clickText('Circuit breaker and recovery');
   const toggle='[role="switch"][aria-label="Enable circuit breaker"]';
   await wait(`Boolean(document.querySelector(${JSON.stringify(toggle)}))`);
@@ -57,6 +59,7 @@ try {
   await shot(`${width}-recovery-evidence`);
   await clickText('Monitoring defaults','button');
   await wait(`Boolean(document.querySelector('[role="dialog"]'))`);
+  await waitForPreview(send,'[role="dialog"]');
   const modalOverflow=await evaluate(`(()=>{const e=document.querySelector('[role="dialog"]');return e.scrollWidth-e.clientWidth;})()`);
   assert(modalOverflow<=1,`${width}px monitoring dialog overflow: ${modalOverflow}`);
   await shot(`${width}-monitoring-defaults`);
