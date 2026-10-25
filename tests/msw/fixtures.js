@@ -49,6 +49,18 @@ const selectors=scenario==='empty'?[]:[
   {id:'selector-travel',name:'Travel destination',nodeId:nodes[2]?.id||'',revision:1},
   {id:'selector-local',name:'Local network',nodeId:nodes[3]?.id||'',revision:1},
 ];
+// Synthetic reliability data is scoped to browser layout/interaction checks.
+if (scenario === 'reliability') selectors[0].policy = {
+  mode:'balanced', latencyTarget:'https://probe.example.invalid/health', speedTarget:'https://speed.example.invalid/sample',
+  candidates:[{nodeId:'node-0',enabled:true,priority:0,weight:2},{nodeId:'node-1',enabled:true,priority:1,weight:1}],
+  weights:{rtt:2,download:1,stability:2}, circuit:{halfOpenConcurrency:2,halfOpenMaxRequests:6},
+};
+let monitoringConfig={revision:1,probe:{enabled:false},speed:{enabled:false,test:{url:''}}};
+const monitoringStatus=()=>({config:monitoringConfig,network:{online:true,metered:false,foreground:true,generation:1},platform:'linux',jobs:0,workers:0,running:0,completed:0,failed:0,skipped:0});
+function selectorStatus(id) {
+  const candidate=(nodeId,trial,udp=false)=>({nodeId,state:trial?'degraded':'healthy',eligible:true,reason:trial?'recovery_trial':'eligible',samples:4,rttMs:trial?58:42,jitterMs:3,downloadMbps:trial?35:80,uploadMbps:0,failureRate:trial?.2:0,activeConnections:3,score:trial?.65:.83,components:{rtt:.7,download:.6,upload:0,stability:trial?.8:1,jitter:.9,load:.75},evidence:trial?(udp?'reply':'tcp_connect'):'https',circuit:{state:trial?'half_open':'closed',reason:trial?'cooldown_elapsed':'recovered',inFlight:trial?1:0,issued:trial?2:0,recovered:trial?1:0}});
+  return {id,revision:selectors.find(s=>s.id===id)?.revision||1,tcp:{nodeId:'node-0',reason:'balanced',since:Date.now()-60000,candidates:[candidate('node-0',false),candidate('node-1',true)]},udp:{nodeId:'node-1',reason:'failover',since:Date.now()-30000,candidates:[candidate('node-1',true,true)]},switches:2,suppressed:3,events:[{at:Date.now()-30000,network:'tcp',from:'node-1',to:'node-0',reason:'balanced'}]};
+}
 const publishes=scenario==='empty'?[]:[{name:'Work devices',address:'example.invalid:443',path:'work',password:'',insecure:false,points:['node-0','node-1']},{name:'Travel devices',address:'example.invalid:443',path:'travel',password:'',insecure:false,points:['node-2']}];
 const resolvers=[{id:'bootstrap',name:'Server address lookup',type:'system',host:'system default',system:true},{id:'dns-local',name:'Local network DNS',type:'system',host:'system default',system:true},{id:'dns-proxy',name:'Encrypted DNS',type:'doh',host:'https://dns.example.invalid/dns-query',system:false}];
 const inbounds=scenario==='empty'?[]:[{id:'inbound-local',name:'Local proxy',enabled:true,network:{type:'tcp_udp',tcp_udp:{host:'127.0.0.1:9002',udp:'enabled'}},transports:[],protocol:{type:'mixed',mixed:{username:'',password:''}}}];
@@ -148,6 +160,9 @@ const worker=setupWorker(
     else if(op==='route.registries.get'||op==='route.registries.catalogs')result={items:[]};
     else if(op==='route.rules.test')result={mode:'proxy',target:{type:'selector',id:'selector-work'},resolver:'dns-proxy',afterAddr:p.host,lists:['shared-websites'],listNames:{'shared-websites':'Work websites'},ips:['192.0.2.1'],matchResult:connections[0]?.matchHistory||[]};
     else if(op==='route.rules.block_history')result={items:[]};
+    else if(scenario==='reliability' && op==='node.monitoring.get')result=monitoringStatus();
+    else if(scenario==='reliability' && op==='node.monitoring.put'){monitoringConfig={...p,revision:p.revision+1};result=monitoringStatus();}
+    else if(scenario==='reliability' && op==='outbound.selector.status')result=selectorStatus(p.id);
     else if(op==='outbound.selectors.get')result={items:selectors};
     else if(op==='outbound.selector.put'){const old=selectors.find(item=>item.id===p.id);if((old?.revision||0)!==p.revision)return errorResponse('Configuration changed; reload before saving',409);result=upsert(selectors,{...p,id:p.id||crypto.randomUUID(),revision:p.revision+1});}
     else if(op==='outbound.selector.references')result=references(rule=>rule.target?.type==='selector'&&rule.target.id===p.id);

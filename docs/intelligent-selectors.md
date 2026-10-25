@@ -99,5 +99,21 @@ state are owned by the backend; leaving this screen does not stop recovery.
 
 Frontend validation: lint, TypeScript, EN/JA/KO key checks, style audit, build and
 104 test files / 309 tests pass. The paired backend provides virtual-clock and
-1,024-creator concurrency tests plus connection/selection benchmarks. Desktop and
-mobile browser qualification remains a separate delivery requirement.
+1,024-creator concurrency tests plus connection/selection benchmarks. Chrome layout/interaction checks also pass at 1440, 360 and 320 px, using
+isolated synthetic data for the Selector/circuit controls and monitoring dialog.
+These checks exercise saving the circuit switch, separate UDP recovery evidence,
+readable counters, modal dismissal and absence of horizontal overflow. Backend
+network behavior is tested separately; this harness makes no live VPN claim.
+
+To reproduce browser checks without a personal Chrome profile:
+
+```sh
+npm run dev:msw -- --port 5187
+# In a second shell:
+CHROME_PATH=google-chrome-stable node scripts/check-reliability.mjs
+```
+
+Screenshots and machine-readable results are written under
+`/tmp/yuhaiin-reliability-shots`. The reliability UI workflow runs these checks
+and retains a `reliability-browser` artifact. Synthetic credentials/targets remain
+scoped to the existing local MSW preview; they are not production configuration.
