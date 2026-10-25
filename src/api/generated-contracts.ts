@@ -641,6 +641,21 @@ export namespace Go {
     }
   }
   export namespace node {
+    export interface CircuitConfig {
+      disabled?: boolean;
+      cooldownMs?: number;
+      halfOpenConcurrency?: number;
+      halfOpenMaxRequests?: number;
+      trialTimeoutMs?: number;
+    }
+    export interface CircuitStatus {
+      state: string;
+      openUntil?: number;
+      inFlight: number;
+      issued: number;
+      recovered: number;
+      reason: string;
+    }
     export interface MonitoringConfig {
       revision: number;
       probe: ProbeSchedule;
@@ -723,6 +738,7 @@ export namespace Go {
       throughput: ThroughputMeasurement;
     }
     export interface ChannelHealth {
+      sequence?: number;
       state: string;
       consecutiveFailures: number;
       consecutiveSuccesses: number;
@@ -730,6 +746,7 @@ export namespace Go {
       latencySamples?: HealthSample[];
     }
     export interface HealthSample {
+      sequence?: number;
       at: number;
       ok: boolean;
       timeout?: boolean;
@@ -749,6 +766,8 @@ export namespace Go {
       error?: string;
     }
     export interface SelectorCandidateStatus {
+      evidence: string;
+      circuit?: CircuitStatus;
       nodeId: string;
       eligible: boolean;
       reason: string;
@@ -799,6 +818,7 @@ export namespace Go {
       load: number;
     }
     export interface SelectorPolicy {
+      circuit?: CircuitConfig;
       probe?: ProbeSchedule;
       periodicSpeed?: SpeedSchedule;
       mode?: string;

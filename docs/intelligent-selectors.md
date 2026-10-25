@@ -41,8 +41,8 @@ candidate cards work in the mobile workspace. EN/JA/KO strings use the existing
 routing namespace and theme tokens.
 
 The initial editor requires schema 18; the monitoring follow-up described below
-requires schema 19. Full Closed/Open/Half-open admission and metrics extensions
-remain ongoing. Existing Backup, Software Update and TLS/CA pages are unchanged
+requires schema 19. Circuit admission uses the existing policy/observation JSON
+and does not add a migration; metrics extensions remain ongoing. Existing Backup, Software Update and TLS/CA pages are unchanged
 in this component delivery.
 
 See the [backend guide](https://github.com/yuhaiin/yuhaiin/blob/main/docs/intelligent-selectors.md)
@@ -73,5 +73,31 @@ enterprise VPN login: it can reuse a manually established client. Host network
 state is shown for diagnosis and does not depend on an open browser.
 
 This follow-up requires backend schema 19 and the paired monitoring branch.
-Full circuit-breaker request admission, metrics additions, traffic-control
-qualification, visual browser checks, disaster recovery and ACME remain ongoing.
+Metrics additions, traffic-control qualification, visual browser checks,
+disaster recovery and ACME remain ongoing.
+
+## Circuit breaker and recovery
+
+Expand **Circuit breaker and recovery** in an automatic Selector. Its failure,
+recovery and minimum-sample thresholds are shared with the controls above. Set
+the open cooldown, concurrent recovery requests, total request quota per cycle
+and recovery-window duration. Turning the breaker off preserves custom limits
+for later re-enabling. Manual selection and manual lock retain their behavior.
+
+Candidate details separate remote evidence from the circuit state. Closed admits
+new connections, Open blocks them until cooldown, and Half-open permits a bounded
+trial. The reason, next trial, in-flight count, issued quota and confirmed
+recoveries explain what the backend is doing. A TCP response strengthens connect
+evidence without counting the same connection twice; UDP needs an actual reply.
+A constructed proxy or PacketConn is not shown as a completed remote handshake.
+
+A failed transport attempt is returned to its caller without replay. New
+connections can choose a pre-ranked backup; existing connections/sessions keep
+their original outbound. Changing a transport or referenced credential invalidates
+old observations. Renames alone preserve the VPN client. Metrics and current
+state are owned by the backend; leaving this screen does not stop recovery.
+
+Frontend validation: lint, TypeScript, EN/JA/KO key checks, style audit, build and
+104 test files / 309 tests pass. The paired backend provides virtual-clock and
+1,024-creator concurrency tests plus connection/selection benchmarks. Desktop and
+mobile browser qualification remains a separate delivery requirement.

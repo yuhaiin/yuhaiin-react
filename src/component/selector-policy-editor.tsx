@@ -8,6 +8,7 @@ import { NodeSelect } from './node-select';
 import { Button } from './v2/button';
 import { Select, SettingInputVertical } from './v2/forms';
 import SwitchComponent from './v2/switch';
+import { SelectorCircuitEditor, CircuitEvidence } from './selector-circuit';
 import { SelectorMonitoringEditor } from './selector-monitoring';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +16,7 @@ import useSWR from 'swr';
 
 type Policy = Go.node.SelectorPolicy;
 const modes = ['manual', 'failover', 'lowest_latency', 'highest_throughput', 'balanced', 'weighted'];
-const reasons = ['manual', 'manual_lock', 'no_healthy_candidate', 'fallback_selected', 'fallback_unknown', 'hold_or_cooldown', 'latency_hysteresis', 'score_hysteresis', 'throughput_hysteresis', 'sticky_failover', 'disabled', 'no_recent_remote_evidence', 'failure_threshold', 'no_successful_remote_evidence', 'recovering', 'insufficient_comparable_rtt', 'rtt_limit', 'no_fresh_speed_measurement', 'throughput_limit', 'no_upload_measurement', 'zero_weight', 'eligible', 'selected_node_unavailable'];
+const reasons = ['manual', 'manual_lock', 'no_healthy_candidate', 'fallback_selected', 'fallback_unknown', 'hold_or_cooldown', 'latency_hysteresis', 'score_hysteresis', 'throughput_hysteresis', 'sticky_failover', 'disabled', 'no_recent_remote_evidence', 'failure_threshold', 'no_successful_remote_evidence', 'recovering', 'insufficient_comparable_rtt', 'rtt_limit', 'no_fresh_speed_measurement', 'throughput_limit', 'no_upload_measurement', 'zero_weight', 'eligible', 'selected_node_unavailable', 'circuit_open', 'recovery_trial'];
 const defaultWeights: Partial<Go.node.SelectorWeights> = { rtt: .5, download: .3, stability: .2, rttReferenceMs: 100, downloadReferenceMbps: 100, uploadReferenceMbps: 30, loadReference: 100 };
 const emptyPolicy = (): Policy => ({ mode: 'manual', weights: {} });
 
@@ -65,6 +66,7 @@ export function SelectorPolicyEditor({ value, onChange }: { value: Selector; onC
                 {(['maxBytes', 'durationMs', 'timeoutMs', 'dailyBudgetBytes'] as const).map(key => <SettingInputVertical key={key} label={t(`auto.${key}`)} type="number" min={0} value={String(policy.speedTest?.[key] ?? { maxBytes: 4194304, durationMs: 5000, timeoutMs: 10000, dailyBudgetBytes: 67108864 }[key])} onChange={text => { const n = Number(text); if (Number.isSafeInteger(n) && n >= 0) update({ speedTest: { ...policy.speedTest, url: '', [key]: n } }); }} />)}
             </div>
             <p className="text-xs text-ui-muted">{t('auto.measurementHint')}</p>
+            <SelectorCircuitEditor value={policy.circuit} recovery={policy.recoveryThreshold || probe?.recoveryThreshold || 2} cooldown={probe?.cooldownMs || 30000} onChange={circuit => update({ circuit })} />
             <SelectorMonitoringEditor value={policy} onChange={policy => onChange({ ...value, policy })} />
         </>}
     </section>;
@@ -108,6 +110,7 @@ export function SelectorLiveStatus({ value }: { value: Selector }) {
                     {[[t('auto.rtt'), c.samples ? `${c.rttMs.toFixed(1)} ms (${c.samples})` : t('auto.unmeasured')], [t('auto.measuredDownload'), c.downloadMbps ? `${c.downloadMbps.toFixed(2)} Mbps` : t('auto.unmeasured')], [t('auto.measuredUpload'), c.uploadMbps ? `${c.uploadMbps.toFixed(2)} Mbps` : t('auto.unmeasured')], [t('auto.failureRate'), `${(c.failureRate * 100).toFixed(1)}%`], [t('auto.active'), String(c.activeConnections)], [t('auto.score'), c.components ? c.score.toFixed(3) : '—']].map(([label, content]) => <div key={label}><dt className="text-xs text-ui-muted">{label}</dt><dd>{content}</dd></div>)}
                 </dl>
                 {c.components && <ul className="mt-2 space-y-1 text-xs text-ui-muted">{Object.entries(c.components).map(([key, component]) => <li key={key}>{t(`auto.weightLabels.${key}`)}: {component.toFixed(3)}</li>)}</ul>}
+                <CircuitEvidence value={c} />
                 <NodeMeasurementHistory nodeId={c.nodeId} />
                 <div className="mt-3 flex flex-wrap gap-2"><Button permission="nodes:write" size="sm" disabled={!!pending} onClick={() => void test(c.nodeId, false)}>{t('auto.probeNow')}</Button><Button permission="nodes:write" size="sm" disabled={!!pending || !speedTarget} onClick={() => void test(c.nodeId, true)}>{t('auto.measureNow')}</Button></div>
             </details>)}</div>

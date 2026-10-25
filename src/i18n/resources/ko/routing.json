@@ -468,7 +468,9 @@
       "no_upload_measurement": "업로드 측정 없음",
       "zero_weight": "연결 가중치 0",
       "eligible": "선택 가능",
-      "selected_node_unavailable": "선택 노드 사용 불가"
+      "selected_node_unavailable": "선택 노드 사용 불가",
+      "circuit_open": "회로 차단",
+      "recovery_trial": "제한된 복구 시도"
     }
   },
   "monitor": {
@@ -515,5 +517,47 @@
       "allow_expensive": "종량제 확인 허용, 연결된 VPN 재사용"
     },
     "measurementHistory": "최근 다운로드 측정"
+  },
+  "circuit": {
+    "title": "서킷 브레이커 및 복구",
+    "enabled": "서킷 브레이커 사용",
+    "cooldownMs": "차단 후 대기 시간 (ms)",
+    "halfOpenConcurrency": "동시 복구 요청 수",
+    "halfOpenMaxRequests": "복구 주기당 요청 한도",
+    "trialTimeoutMs": "복구 시도 시간 (ms)",
+    "hint": "위의 실패 및 복구 임계값을 함께 사용합니다. 차단 상태에서는 새 연결을 막고 반개방 상태에서는 제한된 복구 요청을 허용합니다. 기존 연결은 원래 노드를 유지합니다.",
+    "evidence": "원격 도달 근거",
+    "state": "회로 상태",
+    "nextTrial": "다음 복구 시도",
+    "permits": "진행 중: {{inFlight}} · 발급: {{issued}} · 복구 확인: {{recovered}}",
+    "states": {
+      "closed": "정상",
+      "open": "차단",
+      "half_open": "복구 시도"
+    },
+    "reasons": {
+      "initial": "근거 대기 중",
+      "recent_recovery": "최근 정상 응답",
+      "consecutive_failures": "연속 실패",
+      "failure_rate": "실패율 임계값",
+      "cooldown_elapsed": "대기 시간 경과",
+      "trial_timeout": "복구 시도 시간 초과",
+      "recovery_failure": "복구 실패",
+      "recovered": "복구 확인 완료"
+    },
+    "evidenceKinds": {
+      "unknown": "최근 원격 도달 근거 없음",
+      "connect": "원격 TCP 연결 성공",
+      "tcp_connect": "TCP 연결 프로브",
+      "response": "TCP 응답 수신",
+      "reply": "UDP 응답 수신",
+      "https": "검증된 HTTPS HEAD",
+      "https_get": "검증된 HTTPS GET",
+      "dns": "DNS 응답 수신",
+      "doq": "DNS over QUIC 응답",
+      "stun": "UDP STUN 응답",
+      "stun_tcp": "TCP STUN 응답",
+      "native": "프로토콜 자체 핸드셰이크"
+    }
   }
 }

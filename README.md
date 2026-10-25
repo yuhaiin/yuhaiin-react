@@ -89,3 +89,8 @@ backend; see [configuration and delivery boundaries](docs/intelligent-selectors.
 The monitoring follow-up also exposes shared probe schedules, per-selector
 inheritance/overrides, explicit periodic download controls, mobile/network-cost
 policy and bounded measurement history. Automatic monitoring remains opt-in.
+
+Automatic selectors also expose Circuit Breaker cooldown, bounded half-open
+recovery controls and distinct TCP/UDP evidence. Candidate details explain
+whether the remote observation was a connect, response, DNS/HTTPS/STUN probe or
+protocol-native handshake; the circuit state and recovery counters are separate.

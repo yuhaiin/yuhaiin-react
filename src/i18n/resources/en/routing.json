@@ -468,7 +468,9 @@
       "no_upload_measurement": "No upload measurement",
       "zero_weight": "Zero connection weight",
       "eligible": "Eligible",
-      "selected_node_unavailable": "Selected node unavailable"
+      "selected_node_unavailable": "Selected node unavailable",
+      "circuit_open": "Circuit open",
+      "recovery_trial": "Limited recovery trial"
     }
   },
   "monitor": {
@@ -515,5 +517,47 @@
       "allow_expensive": "Allow metered probes; reuse established VPNs"
     },
     "measurementHistory": "Recent download measurements"
+  },
+  "circuit": {
+    "title": "Circuit breaker and recovery",
+    "enabled": "Enable circuit breaker",
+    "cooldownMs": "Open cooldown (ms)",
+    "halfOpenConcurrency": "Concurrent recovery requests",
+    "halfOpenMaxRequests": "Recovery request quota per cycle",
+    "trialTimeoutMs": "Recovery window (ms)",
+    "hint": "Failure and recovery thresholds above also control the breaker. Open blocks new connections; half-open admits a limited recovery trial. Established connections keep their outbound node.",
+    "evidence": "Remote evidence",
+    "state": "Circuit",
+    "nextTrial": "Next recovery trial",
+    "permits": "In flight: {{inFlight}} · Issued: {{issued}} · Recovered: {{recovered}}",
+    "states": {
+      "closed": "Closed",
+      "open": "Open",
+      "half_open": "Half-open"
+    },
+    "reasons": {
+      "initial": "Awaiting evidence",
+      "recent_recovery": "Recent healthy evidence",
+      "consecutive_failures": "Consecutive failures",
+      "failure_rate": "Failure rate threshold",
+      "cooldown_elapsed": "Cooldown elapsed",
+      "trial_timeout": "Recovery window expired",
+      "recovery_failure": "Recovery failed",
+      "recovered": "Recovery confirmed"
+    },
+    "evidenceKinds": {
+      "unknown": "No recent remote evidence",
+      "connect": "Remote TCP connection established",
+      "tcp_connect": "TCP connect probe",
+      "response": "Remote TCP response received",
+      "reply": "Remote UDP reply received",
+      "https": "Verified HTTPS HEAD request",
+      "https_get": "Verified HTTPS GET request",
+      "dns": "DNS response received",
+      "doq": "DNS over QUIC response",
+      "stun": "UDP STUN response",
+      "stun_tcp": "TCP STUN response",
+      "native": "Protocol native handshake"
+    }
   }
 }

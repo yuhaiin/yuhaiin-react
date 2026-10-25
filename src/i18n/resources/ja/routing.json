@@ -468,7 +468,9 @@
       "no_upload_measurement": "アップロード測定なし",
       "zero_weight": "接続の重みがゼロ",
       "eligible": "選択可能",
-      "selected_node_unavailable": "選択ノード利用不可"
+      "selected_node_unavailable": "選択ノード利用不可",
+      "circuit_open": "回路遮断中",
+      "recovery_trial": "制限付き復旧試行"
     }
   },
   "monitor": {
@@ -515,5 +517,47 @@
       "allow_expensive": "従量制での確認を許可・確立済み VPN を再利用"
     },
     "measurementHistory": "最近のダウンロード測定"
+  },
+  "circuit": {
+    "title": "サーキットブレーカーと復旧",
+    "enabled": "サーキットブレーカーを有効にする",
+    "cooldownMs": "遮断後の待機時間（ms）",
+    "halfOpenConcurrency": "同時復旧リクエスト数",
+    "halfOpenMaxRequests": "復旧サイクルごとの上限",
+    "trialTimeoutMs": "復旧試行期間（ms）",
+    "hint": "上記の失敗・復旧しきい値を共有します。遮断中は新規接続を止め、半開状態では限られた復旧試行を許可します。既存接続の出口は変わりません。",
+    "evidence": "リモート到達の根拠",
+    "state": "回路状態",
+    "nextTrial": "次の復旧試行",
+    "permits": "実行中: {{inFlight}} · 発行済み: {{issued}} · 復旧確認: {{recovered}}",
+    "states": {
+      "closed": "通常",
+      "open": "遮断",
+      "half_open": "復旧試行"
+    },
+    "reasons": {
+      "initial": "根拠待ち",
+      "recent_recovery": "最近の正常な応答",
+      "consecutive_failures": "連続失敗",
+      "failure_rate": "失敗率のしきい値",
+      "cooldown_elapsed": "待機時間経過",
+      "trial_timeout": "復旧試行期間終了",
+      "recovery_failure": "復旧失敗",
+      "recovered": "復旧確認済み"
+    },
+    "evidenceKinds": {
+      "unknown": "最近の到達確認なし",
+      "connect": "リモートTCP接続成功",
+      "tcp_connect": "TCP接続プローブ",
+      "response": "TCP応答受信",
+      "reply": "UDP応答受信",
+      "https": "検証済みHTTPS HEAD",
+      "https_get": "検証済みHTTPS GET",
+      "dns": "DNS応答受信",
+      "doq": "DNS over QUIC応答",
+      "stun": "UDP STUN応答",
+      "stun_tcp": "TCP STUN応答",
+      "native": "プロトコル固有のハンドシェイク"
+    }
   }
 }
