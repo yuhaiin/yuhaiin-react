@@ -56,7 +56,7 @@ if (scenario === 'reliability') selectors[0].policy = {
   weights:{rtt:2,download:1,stability:2}, circuit:{halfOpenConcurrency:2,halfOpenMaxRequests:6},
 };
 let monitoringConfig={revision:1,probe:{enabled:false},speed:{enabled:false,test:{url:''}}};
-const monitoringStatus=()=>({config:monitoringConfig,network:{online:true,metered:false,foreground:true,generation:1},platform:'linux',jobs:0,workers:0,running:0,completed:0,failed:0,skipped:0});
+const monitoringStatus=()=>({policyState:'enforced',config:monitoringConfig,network:{online:true,metered:false,foreground:true,generation:1},platform:'linux',jobs:0,workers:0,running:0,completed:0,failed:0,skipped:0});
 function selectorStatus(id) {
   const candidate=(nodeId,trial,udp=false)=>({nodeId,state:trial?'degraded':'healthy',eligible:true,reason:trial?'recovery_trial':'eligible',samples:4,rttMs:trial?58:42,jitterMs:3,downloadMbps:trial?35:80,uploadMbps:0,failureRate:trial?.2:0,activeConnections:3,score:trial?.65:.83,components:{rtt:.7,download:.6,upload:0,stability:trial?.8:1,jitter:.9,load:.75},evidence:trial?(udp?'reply':'tcp_connect'):'https',circuit:{state:trial?'half_open':'closed',reason:trial?'cooldown_elapsed':'recovered',inFlight:trial?1:0,issued:trial?2:0,recovered:trial?1:0}});
   return {id,revision:selectors.find(s=>s.id===id)?.revision||1,tcp:{nodeId:'node-0',reason:'balanced',since:Date.now()-60000,candidates:[candidate('node-0',false),candidate('node-1',true)]},udp:{nodeId:'node-1',reason:'failover',since:Date.now()-30000,candidates:[candidate('node-1',true,true)]},switches:2,suppressed:3,events:[{at:Date.now()-30000,network:'tcp',from:'node-1',to:'node-0',reason:'balanced'}]};

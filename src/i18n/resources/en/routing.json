@@ -516,7 +516,12 @@
       "cached_only": "Only existing outbound clients",
       "allow_expensive": "Allow metered probes; reuse established VPNs"
     },
-    "measurementHistory": "Recent download measurements"
+    "measurementHistory": "Recent download measurements",
+    "policyStates": {
+      "waiting": "Routing or traffic policy is not ready. Network probes and speed tests are paused until policy loading succeeds.",
+      "enforced": "Measurements obey routing and traffic controls. Measured speeds include these limits.",
+      "standalone": "No application routing or traffic policy is attached to measurements in this standalone runtime."
+    }
   },
   "circuit": {
     "title": "Circuit breaker and recovery",

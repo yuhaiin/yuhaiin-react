@@ -16,7 +16,7 @@ let latest: Go.node.SelectorPolicy;
 beforeEach(() => {
     vi.clearAllMocks(); authorizeTest();
     host = document.createElement('div'); document.body.append(host); root = createRoot(host);
-    const status = { config: { probe: { enabled: false }, speed: { enabled: false, test: { url: '' } } }, network: { online: true, metered: false, foreground: true }, jobs: 0, running: 0, workers: 0, completed: 0, failed: 0, skipped: 0, platform: 'linux' };
+    const status = { policyState: 'enforced', config: { probe: { enabled: false }, speed: { enabled: false, test: { url: '' } } }, network: { online: true, metered: false, foreground: true }, jobs: 0, running: 0, workers: 0, completed: 0, failed: 0, skipped: 0, platform: 'linux' };
     api.getMonitoring.mockResolvedValue(status);
     api.saveMonitoring.mockImplementation(async config => ({ ...status, config }));
 });
@@ -52,4 +52,13 @@ it('loads global settings only when opened and saves actual enabled state', asyn
     expect(save.disabled).toBe(false);
     await act(async () => save.click());
     expect(api.saveMonitoring).toHaveBeenCalledWith(expect.objectContaining({ probe: expect.objectContaining({ enabled: true }), speed: expect.objectContaining({ enabled: false }) }));
+});
+
+it('explains that measurements wait for policy readiness without changing saved enablement', async () => {
+    const status = await api.getMonitoring();
+    api.getMonitoring.mockResolvedValue({ ...status, policyState: 'waiting' });
+    await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><MonitoringSettings /></SWRConfig>));
+    await act(async () => [...host.querySelectorAll('button')].find(b => b.textContent === 'monitor.defaults')!.click());
+    expect(document.querySelector('[role="alert"]')?.textContent).toBe('monitor.policyStates.waiting');
+    expect(api.saveMonitoring).not.toHaveBeenCalled();
 });

@@ -117,3 +117,18 @@ Screenshots and machine-readable results are written under
 `/tmp/yuhaiin-reliability-shots`. The reliability UI workflow runs these checks
 and retains a `reliability-browser` artifact. Synthetic credentials/targets remain
 scoped to the existing local MSW preview; they are not production configuration.
+
+## Measurement policy status
+
+The monitoring dialog reports whether measurements are waiting for initial policy
+loading, governed by application routing/traffic controls, or running in a
+standalone core without attached app policy. Waiting pauses network tests before
+Node construction or budget spend. Fixing configuration through the existing API
+resumes readiness without the browser making any selection decision. Status
+refreshes while the dialog is open. EN/JA/KO messages make the scope explicit.
+
+Measured download speeds include configured global/default/route traffic limits.
+Local admission, routing block and pacing timeouts do not condemn a remote Node.
+The backend uses the existing forwarding policy components and keeps UDP probe
+sessions pinned to their candidate. Backend schema remains 19; the generated
+monitoring type adds the read-only `policyState` field.

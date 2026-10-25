@@ -61,7 +61,7 @@ export function MonitoringSettings() {
     const { t } = useTranslation('routing');
     const [open, setOpen] = useState(false);
     const [error, setError] = useState('');
-    const { data, error: loadError, mutate } = useSWR(open ? 'node-monitoring' : null, getMonitoring, { revalidateOnFocus: false });
+    const { data, error: loadError, mutate } = useSWR(open ? 'node-monitoring' : null, getMonitoring, { revalidateOnFocus: false, refreshInterval: 5000 });
     const { value, setValue, dirty, commit } = useEditorDraft(open ? 'monitoring' : null, data?.config, emptyMonitoring);
     const { pending, run } = useAsyncAction(e => setError(e instanceof Error ? e.message : String((e as { msg?: string }).msg ?? e)));
     const close = useCloseGuard(dirty, pending, () => setOpen(false));
@@ -74,6 +74,7 @@ export function MonitoringSettings() {
                 {!data ? <p role="status">{t('loading')}</p> : <>
                     <p className="mb-4 text-sm text-ui-muted">{t('monitor.runtime', { jobs: data.jobs, running: data.running, workers: data.workers, failed: data.failed, skipped: data.skipped })}</p>
                     <p className="mb-4 text-xs text-ui-muted">{t('monitor.network', { platform: data.platform, online: String(data.network.online), metered: String(data.network.metered), foreground: String(data.network.foreground) })}</p>
+                    {['waiting', 'enforced', 'standalone'].includes(data.policyState) && <p role={data.policyState === 'waiting' ? 'alert' : undefined} className={`mb-4 text-xs ${data.policyState === 'waiting' ? 'text-ui-warning' : 'text-ui-muted'}`}>{t(`monitor.policyStates.${data.policyState}`)}</p>}
                     <fieldset disabled={pending} className="space-y-5 [--field-margin:0px]">
                         <ProbeScheduleFields value={value.probe} onChange={probe => setValue({ ...value, probe })} />
                         <details className="space-y-4"><summary className="cursor-pointer text-sm font-medium">{t('monitor.periodicSpeed')}</summary><SpeedScheduleFields value={value.speed} showTarget onChange={speed => setValue({ ...value, speed })} /></details>

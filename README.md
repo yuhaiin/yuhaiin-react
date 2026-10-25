@@ -94,3 +94,7 @@ Automatic selectors also expose Circuit Breaker cooldown, bounded half-open
 recovery controls and distinct TCP/UDP evidence. Candidate details explain
 whether the remote observation was a connect, response, DNS/HTTPS/STUN probe or
 protocol-native handshake; the circuit state and recovery counters are separate.
+
+The monitoring dialog also reports policy readiness and explains that measured
+speeds include configured routing/traffic controls. Tests pause while the backend
+loads its initial policy; selection and recovery continue to be backend-owned.

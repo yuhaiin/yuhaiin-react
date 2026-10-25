@@ -64,6 +64,7 @@ try {
   await shot(`${width}-recovery-evidence`);
   await clickText('Monitoring defaults','button');
   await wait(`Boolean(document.querySelector('[role="dialog"]'))`);
+  await wait(`document.body.innerText.includes('Measurements obey routing and traffic controls.')`);
   await waitForPreview(send,'[role="dialog"]');
   const modalOverflow=await evaluate(`(()=>{const e=document.querySelector('[role="dialog"]');return e.scrollWidth-e.clientWidth;})()`);
   assert(modalOverflow<=1,`${width}px monitoring dialog overflow: ${modalOverflow}`);

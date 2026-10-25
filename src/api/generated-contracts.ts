@@ -695,6 +695,7 @@ export namespace Go {
       generation: number;
     }
     export interface MonitoringStatus {
+      policyState: string;
       config: MonitoringConfig;
       network: MonitoringNetworkState;
       platform: string;
