@@ -695,6 +695,8 @@ export namespace Go {
       generation: number;
     }
     export interface MonitoringStatus {
+      activeMeasurements: number;
+      measurementLimit: number;
       policyState: string;
       config: MonitoringConfig;
       network: MonitoringNetworkState;

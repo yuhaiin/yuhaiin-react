@@ -98,3 +98,5 @@ protocol-native handshake; the circuit state and recovery counters are separate.
 The monitoring dialog also reports policy readiness and explains that measured
 speeds include configured routing/traffic controls. Tests pause while the backend
 loads its initial policy; selection and recovery continue to be backend-owned.
+
+Shared probe/measurement limits and inclusive speed-budget behavior are documented in [intelligent selectors](docs/intelligent-selectors.md).

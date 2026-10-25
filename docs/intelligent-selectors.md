@@ -132,3 +132,24 @@ Local admission, routing block and pacing timeouts do not condemn a remote Node.
 The backend uses the existing forwarding policy components and keeps UDP probe
 sessions pinned to their candidate. Backend schema remains 19; the generated
 monitoring type adds the read-only `policyState` field.
+
+## Shared measurements and inclusive download reservations
+
+The monitoring dialog shows all active manual/periodic network measurements
+against the backend shared limit (`activeMeasurements` / `measurementLimit`).
+Scheduler `running` remains a separate counter. Measurements remain opt-in and
+backend-driven; opening this dialog does not start background tests.
+
+Speed test controls now explain that every test reserves the requested response
+body limit plus 65,536 bytes for TLS, HTTP headers and read-ahead. Failed or
+cancelled tests consume that full reservation. VPN framing and protocol control
+traffic are outside the logical Node-stream cap. The daily budget must fit an
+inclusive reservation. After backend schema-20 migration, a nonzero old-format
+reservation pauses tests until the next UTC day. Restart/export cannot reset it.
+EN/JA/KO provide the same explanation; current traffic Bps and measured Mbps
+remain distinct. Older servers lacking shared counters omit that status; deploy the backend
+companion to obtain authoritative admission counts.
+
+Browser coverage verifies the shared count and expanded budget explanation at
+1440, 360 and 320 pixels using synthetic MSW fixtures; actual transport and
+budget persistence are covered by backend tests.

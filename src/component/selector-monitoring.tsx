@@ -46,6 +46,7 @@ export function SpeedScheduleFields({ value, onChange, showTarget = false }: { v
         <Toggle label={t('monitor.allowMobile')} checked={value.allowMobile ?? false} onChange={allowMobile => onChange({ ...value, allowMobile })} />
         <Toggle label={t('monitor.allowMetered')} checked={value.allowMetered ?? false} onChange={allowMetered => onChange({ ...value, allowMetered })} />
         <p className="text-xs text-ui-muted">{t('monitor.speedHint')}</p>
+        <p className="text-xs text-ui-muted" data-testid="measurement-budget">{t('auto.budgetHint')}</p>
     </div>;
 }
 export function SelectorMonitoringEditor({ value, onChange }: { value: Policy; onChange: (value: Policy) => void }) {
@@ -73,6 +74,7 @@ export function MonitoringSettings() {
                 {(error || loadError) && <p role="alert" className="text-sm text-ui-danger">{error || t('loadFailed')}</p>}
                 {!data ? <p role="status">{t('loading')}</p> : <>
                     <p className="mb-4 text-sm text-ui-muted">{t('monitor.runtime', { jobs: data.jobs, running: data.running, workers: data.workers, failed: data.failed, skipped: data.skipped })}</p>
+                    {Number.isInteger(data.activeMeasurements) && Number.isInteger(data.measurementLimit) && <p className="mb-4 text-xs text-ui-muted" data-testid="measurement-slots">{t('monitor.measurementSlots', { active: data.activeMeasurements, limit: data.measurementLimit })}</p>}
                     <p className="mb-4 text-xs text-ui-muted">{t('monitor.network', { platform: data.platform, online: String(data.network.online), metered: String(data.network.metered), foreground: String(data.network.foreground) })}</p>
                     {['waiting', 'enforced', 'standalone'].includes(data.policyState) && <p role={data.policyState === 'waiting' ? 'alert' : undefined} className={`mb-4 text-xs ${data.policyState === 'waiting' ? 'text-ui-warning' : 'text-ui-muted'}`}>{t(`monitor.policyStates.${data.policyState}`)}</p>}
                     <fieldset disabled={pending} className="space-y-5 [--field-margin:0px]">

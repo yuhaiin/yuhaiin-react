@@ -8,7 +8,7 @@ import { authorizeTest, resetTestAuth } from '@/test/auth';
 
 const api = vi.hoisted(() => ({ getMonitoring: vi.fn(), saveMonitoring: vi.fn() }));
 vi.mock('@/api/monitoring', () => api);
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string, options?: Record<string, unknown>) => key === 'monitor.measurementSlots' ? `${options?.active} / ${options?.limit}` : key }) }));
 vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));
 let host: HTMLDivElement;
 let root: Root;
@@ -16,7 +16,7 @@ let latest: Go.node.SelectorPolicy;
 beforeEach(() => {
     vi.clearAllMocks(); authorizeTest();
     host = document.createElement('div'); document.body.append(host); root = createRoot(host);
-    const status = { policyState: 'enforced', config: { probe: { enabled: false }, speed: { enabled: false, test: { url: '' } } }, network: { online: true, metered: false, foreground: true }, jobs: 0, running: 0, workers: 0, completed: 0, failed: 0, skipped: 0, platform: 'linux' };
+    const status = { activeMeasurements: 2, measurementLimit: 4, policyState: 'enforced', config: { probe: { enabled: false }, speed: { enabled: false, test: { url: '' } } }, network: { online: true, metered: false, foreground: true }, jobs: 0, running: 0, workers: 0, completed: 0, failed: 0, skipped: 0, platform: 'linux' };
     api.getMonitoring.mockResolvedValue(status);
     api.saveMonitoring.mockImplementation(async config => ({ ...status, config }));
 });
@@ -60,5 +60,13 @@ it('explains that measurements wait for policy readiness without changing saved 
     await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><MonitoringSettings /></SWRConfig>));
     await act(async () => [...host.querySelectorAll('button')].find(b => b.textContent === 'monitor.defaults')!.click());
     expect(document.querySelector('[role="alert"]')?.textContent).toBe('monitor.policyStates.waiting');
+    expect(api.saveMonitoring).not.toHaveBeenCalled();
+});
+
+it('shows shared admission status and the inclusive daily budget explanation', async () => {
+    await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><MonitoringSettings /></SWRConfig>));
+    await act(async () => [...host.querySelectorAll('button')].find(b => b.textContent === 'monitor.defaults')!.click());
+    expect(document.querySelector('[data-testid="measurement-slots"]')?.textContent).toBe('2 / 4');
+    expect(document.body.textContent).toContain('auto.budgetHint');
     expect(api.saveMonitoring).not.toHaveBeenCalled();
 });

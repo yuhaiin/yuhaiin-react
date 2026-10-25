@@ -397,7 +397,7 @@
     "maxBytes": "Download sample budget (bytes)",
     "durationMs": "Payload measurement duration (ms)",
     "timeoutMs": "Total test timeout (ms)",
-    "dailyBudgetBytes": "Instance daily download budget (bytes)",
+    "dailyBudgetBytes": "Instance daily measurement budget (bytes)",
     "measurementHint": "Download measurements approximate this target at this time; live business Bps is separate. Repeat tests to reach the sample threshold. Periodic tests require explicit schedule enablement. Failed or cancelled tests consume the reserved daily budget.",
     "liveStatus": "Active selection and evidence",
     "current": "Selected node",
@@ -471,7 +471,8 @@
       "selected_node_unavailable": "Selected node unavailable",
       "circuit_open": "Circuit open",
       "recovery_trial": "Limited recovery trial"
-    }
+    },
+    "budgetHint": "Each test reserves the payload limit plus 65,536 bytes for TLS, HTTP headers and read-ahead. Failed and cancelled tests consume the reservation. VPN framing is outside this logical limit. Existing usage from an older accounting version pauses tests until the next UTC day."
   },
   "monitor": {
     "defaults": "Monitoring defaults",
@@ -521,7 +522,8 @@
       "waiting": "Routing or traffic policy is not ready. Network probes and speed tests are paused until policy loading succeeds.",
       "enforced": "Measurements obey routing and traffic controls. Measured speeds include these limits.",
       "standalone": "No application routing or traffic policy is attached to measurements in this standalone runtime."
-    }
+    },
+    "measurementSlots": "Measurements: {{active}} / {{limit}} shared slots (manual probes, periodic probes and speed tests)."
   },
   "circuit": {
     "title": "Circuit breaker and recovery",

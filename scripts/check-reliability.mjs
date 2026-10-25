@@ -65,10 +65,16 @@ try {
   await clickText('Monitoring defaults','button');
   await wait(`Boolean(document.querySelector('[role="dialog"]'))`);
   await wait(`document.body.innerText.includes('Measurements obey routing and traffic controls.')`);
+  await wait(`document.body.innerText.includes('Measurements: 2 / 4 shared slots')`);
+  await clickText('Periodic download tests','summary');
+  await wait(`document.body.innerText.includes('65,536 bytes')`);
   await waitForPreview(send,'[role="dialog"]');
   const modalOverflow=await evaluate(`(()=>{const e=document.querySelector('[role="dialog"]');return e.scrollWidth-e.clientWidth;})()`);
   assert(modalOverflow<=1,`${width}px monitoring dialog overflow: ${modalOverflow}`);
+  await evaluate(`document.querySelector('[data-testid="measurement-slots"]').scrollIntoView({block:'center'})`);
   await shot(`${width}-monitoring-defaults`);
+  await evaluate(`document.querySelector('[role="dialog"] [data-testid="measurement-budget"]').scrollIntoView({block:'center'})`);
+  await shot(`${width}-measurement-budget`);
   await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
   await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
   await wait(`!document.querySelector('[role="dialog"]')`);

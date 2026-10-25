@@ -66,6 +66,7 @@ export function SelectorPolicyEditor({ value, onChange }: { value: Selector; onC
                 {(['maxBytes', 'durationMs', 'timeoutMs', 'dailyBudgetBytes'] as const).map(key => <SettingInputVertical key={key} label={t(`auto.${key}`)} type="number" min={0} value={String(policy.speedTest?.[key] ?? { maxBytes: 4194304, durationMs: 5000, timeoutMs: 10000, dailyBudgetBytes: 67108864 }[key])} onChange={text => { const n = Number(text); if (Number.isSafeInteger(n) && n >= 0) update({ speedTest: { ...policy.speedTest, url: '', [key]: n } }); }} />)}
             </div>
             <p className="text-xs text-ui-muted">{t('auto.measurementHint')}</p>
+            <p className="text-xs text-ui-muted">{t('auto.budgetHint')}</p>
             <SelectorCircuitEditor value={policy.circuit} recovery={policy.recoveryThreshold || probe?.recoveryThreshold || 2} cooldown={probe?.cooldownMs || 30000} onChange={circuit => update({ circuit })} />
             <SelectorMonitoringEditor value={policy} onChange={policy => onChange({ ...value, policy })} />
         </>}
