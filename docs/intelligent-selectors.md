@@ -183,3 +183,23 @@ identity/login or wake an idle GlobalProtect reconnect, even through a cached
 Set/endpoint chain. Ordinary traffic and manual checks retain protocol semantics.
 Not every protocol exposes native status; those continue to show the existing
 passive/explicit network evidence. All additions use the existing status API.
+
+## Offline recovery contract synchronization
+
+Generated contracts include `RecoveryRestorePreview`, per-file installation/
+replacement/removal decisions and `RecoveryRestoreResult`. The backend CLI now
+supports authenticated preview, explicit original/clone confirmation, staged
+activation, durable rollback and startup verification. File activation reports
+`awaiting_startup`; the actual healthy server start commits the transaction.
+This synchronization does not add a Web maintenance coordinator or claim a
+complete backup/restore UI. Scheduled full backups, retention/history, update
+recovery-point controls and certificate management remain in progress.
+
+Original-instance recovery explicitly acknowledges revived credentials and
+reverted quota state. Clone recovery disables restored nodes/listeners, resets
+management identities and selected native machine identities, and disables S3/
+measurement schedules pending administrator review. Any future restore UI must
+present these backend warnings and require confirmation of backup/source/target
+identifiers; it must not overwrite live SQLite files through the legacy route.
+See the backend [offline operator workflow](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/recovery-archive.md)
+for current support, tests and platform limits.

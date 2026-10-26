@@ -102,3 +102,8 @@ loads its initial policy; selection and recovery continue to be backend-owned.
 Shared probe/measurement limits and inclusive speed-budget behavior are documented in [intelligent selectors](docs/intelligent-selectors.md).
 
 Enterprise reliability is being developed in one [frontend PR](https://github.com/yuhaiin/yuhaiin-react/pull/535) with its [backend companion](https://github.com/yuhaiin/yuhaiin/pull/622). Further health-routing, backup/restore and certificate lifecycle work continues in these two entries.
+
+The backend now provides offline encrypted recovery preview/activation and
+startup rollback; generated models are synchronized here. The corresponding Web
+backup/restore maintenance workflow and certificate UI remain in progress in
+the same two PRs. See [recovery contract status](docs/intelligent-selectors.md#offline-recovery-contract-synchronization).

@@ -46,6 +46,28 @@ export namespace Go {
       nodeId?: string;
       path?: string;
     }
+    export interface RecoveryRestorePreview {
+      manifest: RecoveryManifest;
+      mode: string;
+      targetInstanceId: string;
+      instanceId: string;
+      runtime: RecoveryRuntime;
+      files: RecoveryChange[];
+      warnings: string[];
+    }
+    export interface RecoveryChange {
+      path: string;
+      replace: boolean;
+      install: boolean;
+    }
+    export interface RecoveryRestoreResult {
+      backupId: string;
+      transactionId: string;
+      instanceId: string;
+      recoveryPoint: string;
+      state: string;
+      runtime: RecoveryRuntime;
+    }
     export interface Option {
       instanceName: string;
       s3: S3;
