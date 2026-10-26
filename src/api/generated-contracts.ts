@@ -46,6 +46,48 @@ export namespace Go {
       nodeId?: string;
       path?: string;
     }
+    export interface RecoveryPolicy {
+      enabled: boolean;
+      target: string;
+      recipient: string;
+      intervalMinutes: number;
+      timeoutMinutes: number;
+      keepCount: number;
+      keepDays: number;
+      includeHistory: boolean;
+      allowMaintenance: boolean;
+    }
+    export interface RecoveryBackup {
+      id: string;
+      backupId?: string;
+      instanceId?: string;
+      createdAt: string;
+      completedAt?: string;
+      target: string;
+      state: string;
+      size: number;
+      sha256?: string;
+      objectKey?: string;
+      verification?: string;
+      errorCode?: string;
+      includesHistory: boolean;
+      uploadAttempts: number;
+      archiveCheck?: string;
+      archiveCheckedAt?: string;
+    }
+    export interface RecoveryVerifyRequest {
+      id: string;
+      identity?: string;
+      passphrase?: string;
+    }
+    export interface RecoveryBackupRequest {
+      confirmMaintenance: boolean;
+    }
+    export interface RecoveryBackupStatus {
+      supported: boolean;
+      reason?: string;
+      items: RecoveryBackup[];
+    }
     export interface RecoveryRestorePreview {
       manifest: RecoveryManifest;
       mode: string;
@@ -73,6 +115,7 @@ export namespace Go {
       s3: S3;
       interval: number;
       lastBackupHash: string;
+      recovery?: RecoveryPolicy;
     }
     export interface S3 {
       enabled: boolean;

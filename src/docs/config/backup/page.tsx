@@ -1,3 +1,4 @@
+import { RecoveryBackupPanel } from './recovery-panel';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
 import { useTranslation } from 'react-i18next';
 
@@ -78,7 +79,7 @@ function BackupPage() {
                             placeholder={uiT("uniqueIdentifierForThisNode")}
                         />
                         <SettingInputVertical
-                            label={uiT("backupIntervalSeconds")}
+                            label={uiT("backupIntervalMinutes")}
                             value={String(data.interval)}
                             onChange={(value) => update(prev => ({ ...prev, interval: Math.max(0, Number.parseInt(value, 10) || 0) }))}
                             placeholder={uiT("eG")}
@@ -97,6 +98,7 @@ function BackupPage() {
             </Card>
 
             <Card>
+                <CardHeader><IconBox icon={CloudUpload} tone="primary" title={uiT('recoveryBackup.legacyTitle')} description={uiT('recoveryBackup.legacyHint')} /></CardHeader>
                 <CardBody>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <SwitchCard
@@ -165,6 +167,8 @@ function BackupPage() {
             </Card>
 
             </fieldset>
+            <RecoveryBackupPanel policy={data.recovery} dirty={dirty} saving={saving} onSave={handleSave}
+                onChange={recovery => update(previous => ({ ...previous, recovery }))} />
             <div className="text-center mt-3 opacity-50 pb-20">
                 <small className="text-ui-muted">
                     <Info className="mr-1 inline" size={14} />

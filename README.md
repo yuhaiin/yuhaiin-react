@@ -105,5 +105,7 @@ Enterprise reliability is being developed in one [frontend PR](https://github.co
 
 The backend now provides offline encrypted recovery preview/activation and
 startup rollback; generated models are synchronized here. The corresponding Web
-backup/restore maintenance workflow and certificate UI remain in progress in
-the same two PRs. See [recovery contract status](docs/intelligent-selectors.md#offline-recovery-contract-synchronization).
+backup page now manages confirmed local/S3 encrypted captures, schedules,
+history, verification, downloads and retention on root-owned Linux systemd.
+Web restore, safe updates, broader host maintenance and certificate UI remain
+in progress in the same two PRs. See [recovery contract status](docs/intelligent-selectors.md#offline-recovery-contract-synchronization).

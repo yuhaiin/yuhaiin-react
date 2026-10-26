@@ -9,6 +9,10 @@ localStorage.setItem('api_url_v2', JSON.stringify(''));
 const principal = { userId: 'preview-admin', credentialType: 'session', permissions: [...new Set([...Object.values(operationPermissions), 'identity:read', 'tokens:own', 'users:manage', 'tokens:manage', 'security:read', 'metrics:read'])] };
 establishSession('synthetic-msw-session', principal, Math.floor(Date.now() / 1000) + 28800, '');
 localStorage.setItem('yuhaiin.webui.language','en');
+// Synthetic backup state is confined to the reliability UI preview.
+let backupConfig={instanceName:'preview',interval:0,lastBackupHash:'',s3:{enabled:false,accessKey:'',secretKey:'',bucket:'',region:'',endpointUrl:'',usePathStyle:false,storageClass:''},recovery:{enabled:false,target:'local',recipient:'age1-synthetic-public-recipient',intervalMinutes:1440,timeoutMinutes:30,keepCount:10,keepDays:30,includeHistory:false,allowMaintenance:false}};
+let recoveryItems=[{id:'11111111-1111-4111-8111-111111111111',backupId:'22222222-2222-4222-8222-222222222222',instanceId:'33333333-3333-4333-8333-333333333333',target:'s3',state:'verified',createdAt:'2026-10-26T10:00:00Z',size:1048576,verification:'s3_ciphertext_readback',uploadAttempts:1,includesHistory:false}];
+let recoveryStartedAt=0;
 const size = scenario === 'lazy' ? 10000 : scenario === 'large' ? 2000 : scenario === 'empty' ? 0 : scenario === 'connections-small' ? 3 : 95;
 const nodes = Array.from({length:size},(_,i)=>({id:`node-${i}`,name:i===0?'Mobile test node with a very long name for narrow screens':`Node ${i}`,group:'manual',origin:'manual',enabled:true,chain:[{type:'http_mock',http_mock:{data:'YQ=='}}]}));
 if (scenario === 'lazy') {
@@ -94,7 +98,29 @@ const worker=setupWorker(
     const p=await request.json(); const op=params.operation;
     if(scenario==='error' && ['connections.history','node.get','route.rule.get'].includes(op)) return HttpResponse.json({error:{message:'Synthetic upstream unavailable'}},{status:503});
     let result={};
-    if(op==='nodes.groups') {
+    if(scenario==='reliability' && op==='backup.config.get')result=backupConfig;
+    else if(scenario==='reliability' && op==='backup.config.put')result=backupConfig=structuredClone(p);
+    else if(scenario==='reliability' && op==='backup.recovery.status'){
+      if(recoveryStartedAt && Date.now()-recoveryStartedAt>1200)recoveryItems[0].state='local_ready';
+      result={supported:true,items:recoveryItems};
+    }
+    else if(scenario==='reliability' && op==='backup.recovery.create'){
+      if(!p.confirmMaintenance)return errorResponse('Maintenance confirmation required',400);
+      recoveryStartedAt=Date.now();
+      result={id:crypto.randomUUID(),backupId:crypto.randomUUID(),instanceId:'33333333-3333-4333-8333-333333333333',target:'local',state:'queued',createdAt:new Date().toISOString(),size:1048576,verification:'ciphertext_sha256',uploadAttempts:0,includesHistory:false};
+      recoveryItems.unshift(result);
+    }
+    else if(scenario==='reliability' && op==='backup.recovery.verify'){
+      if(!p.identity)return errorResponse('A private fixture identity is required',400);
+      const item=recoveryItems.find(item=>item.id===p.id);item.archiveCheck='passed';
+      result={completeInventory:true,files:[],id:item.backupId,instanceId:item.instanceId};
+    }
+    else if(scenario==='reliability' && op==='backup.recovery.delete'){
+      if(!p.confirm)return errorResponse('Deletion confirmation required',400);
+      recoveryItems=recoveryItems.filter(item=>item.id!==p.id);
+    }
+    else if(scenario==='reliability' && op==='backup.recovery.retry')recoveryItems.find(item=>item.id===p.id).state='verified';
+    else if(op==='nodes.groups') {
       const byGroup=new Map();
       for(const node of nodes){const name=node.group||'manual';const entry=byGroup.get(name)||{name,count:0,enabled:0};entry.count++;if(node.enabled)entry.enabled++;byGroup.set(name,entry);}
       result={items:[...byGroup.values()].sort((a,b)=>a.name.localeCompare(b.name))};

@@ -42,8 +42,9 @@ routing namespace and theme tokens.
 
 The initial editor requires schema 18; the monitoring follow-up described below
 requires schema 19. Circuit admission uses the existing policy/observation JSON
-and does not add a migration; metrics extensions remain ongoing. Existing Backup, Software Update and TLS/CA pages are unchanged
-in this component delivery.
+and does not add a migration. Managed backup history subsequently adds backend
+schema 21. The existing Backup page now includes the full-backup controls
+described below; safe-update and certificate management remain in progress.
 
 See the [backend guide](https://github.com/yuhaiin/yuhaiin/blob/main/docs/intelligent-selectors.md)
 for scoring formulas, fallback semantics, safety limits and reproducible
@@ -159,13 +160,13 @@ budget persistence are covered by backend tests.
 All reliability work now uses [frontend #535](https://github.com/yuhaiin/yuhaiin-react/pull/535)
 and [backend #622](https://github.com/yuhaiin/yuhaiin/pull/622), both targeting main.
 Earlier component PRs are superseded. The three-stage goal remains in progress;
-future backup/restore and ACME work will use the same entries.
+backup/restore and ACME changes continue in the same entries.
 
 The generated recovery contract now includes version 2 complete-inventory,
 startup-input, external dependency and uninitialized-identity metadata for the
 backend's offline create/verify commands. External source paths are descriptive
-metadata, never destinations to write. This synchronization does not yet expose
-full disaster-recovery creation or restore activation in the management UI.
+metadata, never destinations to write. Full disaster-recovery creation is now
+exposed by the managed-backup panel below. Web restore activation remains pending.
 
 ## Native protocol lifecycle
 
@@ -191,9 +192,9 @@ replacement/removal decisions and `RecoveryRestoreResult`. The backend CLI now
 supports authenticated preview, explicit original/clone confirmation, staged
 activation, durable rollback and startup verification. File activation reports
 `awaiting_startup`; the actual healthy server start commits the transaction.
-This synchronization does not add a Web maintenance coordinator or claim a
-complete backup/restore UI. Scheduled full backups, retention/history, update
-recovery-point controls and certificate management remain in progress.
+The managed-backup panel adds root-owned Linux systemd capture coordination,
+schedules, history and retention. Web restore activation, update recovery-point
+controls, broader host coordination and certificate management remain in progress.
 
 Original-instance recovery explicitly acknowledges revived credentials and
 reverted quota state. Clone recovery disables restored nodes/listeners, resets
@@ -203,3 +204,36 @@ present these backend warnings and require confirmation of backup/source/target
 identifiers; it must not overwrite live SQLite files through the legacy route.
 See the backend [offline operator workflow](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/recovery-archive.md)
 for current support, tests and platform limits.
+
+
+## Managed full backups
+
+Open **Backup** to distinguish the existing configuration-only S3 snapshot from
+**Full disaster recovery backup**. Set a public age recipient, local/S3 target,
+maintenance consent, timeout and count/age retention. Scheduling is opt-in and
+runs in the backend. Save before creating a backup; the confirmation explains
+the temporary service interruption. Automatic maintenance currently requires a
+root-owned Linux systemd service. Other hosts keep the offline CLI workflow.
+
+History shows size, target, finite job state and failures. Ciphertext S3 readback
+and authenticated archive verification are distinct: **Verify archive** accepts
+a transient private identity, clears the field on submission and validates the
+complete archive. No private identity enters saved settings or browser storage.
+Downloads stream to a native file writer when available; the compatibility
+fallback has a hard 64 MiB limit. Failed S3 uploads can be explicitly retried;
+archive deletion requires confirmation and the backend protects active readers.
+The newest successful point remains protected from automatic age retention.
+
+The panel uses existing management permissions, components, draft state and
+EN/JA/KO translations. It polls only while an operation is active or waiting for
+restart. Automated 1440/360/320 px checks cover save, maintenance confirmation,
+history and the verification dialog without horizontal overflow. These browser
+fixtures are synthetic; the backend separately exercises a real installed
+service, HTTPS authorization, S3 readback and helper-crash restart in an isolated
+systemd container.
+
+Web restore upload/preview/activation and recent-restore presentation are still
+required. Existing plaintext offline rollback points have separate retention;
+the managed encrypted-archive policy does not delete them. See the backend
+[managed-backup operator guide](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/managed-recovery-backups.md)
+for lifecycle details, resource limits and the remaining work.

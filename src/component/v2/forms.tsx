@@ -104,7 +104,8 @@ export const SettingPasswordVertical: FC<{
     onChange: (val: string) => void;
     placeholder?: string;
     className?: string;
-}> = React.memo(({ label, value, onChange, placeholder, className }) => {
+    autoComplete?: React.InputHTMLAttributes<HTMLInputElement>['autoComplete'];
+}> = React.memo(({ label, value, onChange, placeholder, className, autoComplete }) => {
     const { t } = useTranslation('common');
     const [show, setShow] = useState(false);
     const id = useId();
@@ -116,6 +117,7 @@ export const SettingPasswordVertical: FC<{
                 <Input
                     id={id}
                     type={show ? "text" : "password"}
+                    autoComplete={autoComplete}
                     groupPosition="first"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}

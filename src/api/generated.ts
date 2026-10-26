@@ -3,6 +3,12 @@
 export type RPCOperation =
   | "backup.config.get"
   | "backup.config.put"
+  | "backup.recovery.create"
+  | "backup.recovery.delete"
+  | "backup.recovery.download"
+  | "backup.recovery.retry"
+  | "backup.recovery.status"
+  | "backup.recovery.verify"
   | "backup.restore"
   | "backup.run"
   | "connections"
@@ -159,6 +165,12 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "PUT", pattern: "/api/v2/backup/config", operation: "backup.config.put" },
   { method: "POST", pattern: "/api/v2/backup/run", operation: "backup.run" },
   { method: "POST", pattern: "/api/v2/backup/restore", operation: "backup.restore" },
+  { method: "GET", pattern: "/api/v2/backup/recovery", operation: "backup.recovery.status" },
+  { method: "POST", pattern: "/api/v2/backup/recovery", operation: "backup.recovery.create" },
+  { method: "GET", pattern: "/api/v2/backup/recovery/{id}/download", operation: "backup.recovery.download" },
+  { method: "DELETE", pattern: "/api/v2/backup/recovery/{id}", operation: "backup.recovery.delete" },
+  { method: "POST", pattern: "/api/v2/backup/recovery/{id}/retry", operation: "backup.recovery.retry" },
+  { method: "POST", pattern: "/api/v2/backup/recovery/{id}/verify", operation: "backup.recovery.verify" },
   { method: "POST", pattern: "/api/v2/tools/diagnostics", operation: "tools.diagnostics" },
   { method: "GET", pattern: "/api/v2/tools/interfaces", operation: "tools.interfaces" },
   { method: "GET", pattern: "/api/v2/tools/licenses", operation: "tools.licenses" },
