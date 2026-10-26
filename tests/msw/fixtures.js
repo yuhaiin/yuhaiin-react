@@ -13,6 +13,7 @@ localStorage.setItem('yuhaiin.webui.language','en');
 let backupConfig={instanceName:'preview',interval:0,lastBackupHash:'',s3:{enabled:false,accessKey:'',secretKey:'',bucket:'',region:'',endpointUrl:'',usePathStyle:false,storageClass:''},recovery:{enabled:false,target:'local',recipient:'age1-synthetic-public-recipient',intervalMinutes:1440,timeoutMinutes:30,keepCount:10,keepDays:30,includeHistory:false,allowMaintenance:false}};
 let recoveryItems=[{id:'11111111-1111-4111-8111-111111111111',backupId:'22222222-2222-4222-8222-222222222222',instanceId:'33333333-3333-4333-8333-333333333333',target:'s3',state:'verified',createdAt:'2026-10-26T10:00:00Z',size:1048576,verification:'s3_ciphertext_readback',uploadAttempts:1,includesHistory:false}];
 let recoveryStartedAt=0;
+let recoveryImports=[];
 const size = scenario === 'lazy' ? 10000 : scenario === 'large' ? 2000 : scenario === 'empty' ? 0 : scenario === 'connections-small' ? 3 : 95;
 const nodes = Array.from({length:size},(_,i)=>({id:`node-${i}`,name:i===0?'Mobile test node with a very long name for narrow screens':`Node ${i}`,group:'manual',origin:'manual',enabled:true,chain:[{type:'http_mock',http_mock:{data:'YQ=='}}]}));
 if (scenario === 'lazy') {
@@ -89,6 +90,13 @@ function stream(event,payload,repeat=false){
 }
 if (scenario === 'lazy') resolverHosts = {hosts: Object.fromEntries(Array.from({length:10000}, (_, i) => [`host-${String(i).padStart(5,'0')}.example.invalid`, `192.0.2.${i%254+1}`]))};
 const worker=setupWorker(
+  http.post('/api/v2/backup/recovery/imports',()=>{
+    if(scenario!=='reliability')return errorResponse('Synthetic import fixture is unavailable',404);
+    // Synthetic browser data only; actual age verification is covered by the
+    // backend's real HTTPS/systemd integration test.
+    const item={id:crypto.randomUUID(),createdAt:new Date().toISOString(),expiresAt:new Date(Date.now()+1800000).toISOString(),size:1048576,sha256:'synthetic',state:'uploaded'};
+    recoveryImports.push(item);return HttpResponse.json(item);
+  }),
   http.get('/api/v2/management',()=>HttpResponse.json({authentication:'local-users'})),
   http.get('/api/v2/auth/setup',()=>HttpResponse.json({required:false,expiresAt:0})),
   http.get('/api/v2/auth/me',()=>HttpResponse.json(principal)),
@@ -120,6 +128,17 @@ const worker=setupWorker(
       recoveryItems=recoveryItems.filter(item=>item.id!==p.id);
     }
     else if(scenario==='reliability' && op==='backup.recovery.retry')recoveryItems.find(item=>item.id===p.id).state='verified';
+    else if(scenario==='reliability' && op==='backup.recovery.imports')result=recoveryImports;
+    else if(scenario==='reliability' && op==='backup.recovery.import.preview'){
+      if(!p.identity && !p.passphrase)return errorResponse('Private synthetic fixture input required',400);
+      const item=recoveryImports.find(item=>item.id===p.id);
+      if(!item)return errorResponse('Synthetic import not found',404);
+      item.state='previewed';item.preview={mode:p.mode,targetInstanceId:'33333333-3333-4333-8333-333333333333',instanceId:'33333333-3333-4333-8333-333333333333',manifest:{id:recoveryItems[0].backupId,instanceId:'33333333-3333-4333-8333-333333333333',build:{version:'synthetic-preview'},completeInventory:true,files:[]},files:[{path:'state.db',install:true,replace:true},{path:'management.db',install:true,replace:true},{path:'identity/native/'+('long-device-file-'.repeat(8))+'.json',install:true,replace:false}],warnings:['service_restart_required','revoked_credentials_may_be_restored','quota_and_usage_state_can_move_backwards']};result=item;
+    }
+    else if(scenario==='reliability' && op==='backup.recovery.import.discard'){
+      if(!p.confirm)return errorResponse('Discard confirmation required',400);
+      recoveryImports=recoveryImports.filter(item=>item.id!==p.id);
+    }
     else if(op==='nodes.groups') {
       const byGroup=new Map();
       for(const node of nodes){const name=node.group||'manual';const entry=byGroup.get(name)||{name,count:0,enabled:0};entry.count++;if(node.enabled)entry.enabled++;byGroup.set(name,entry);}

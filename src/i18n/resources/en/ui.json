@@ -775,5 +775,47 @@
     "legacyTitle": "Legacy S3 configuration snapshot",
     "legacyHint": "This compatibility snapshot can contain configuration secrets and is not an encrypted full deployment archive."
   },
-  "backupIntervalMinutes": "Configuration snapshot interval (minutes)"
+  "backupIntervalMinutes": "Configuration snapshot interval (minutes)",
+  "recoveryImport": {
+    "title": "Disaster recovery preview",
+    "description": "Upload and authenticate a full backup before reviewing its replacement plan.",
+    "archive": "Encrypted recovery archive",
+    "limits": "Up to two imports, 100 GiB combined. Imports and private staging expire after 30 minutes. Keep at least 256 MiB free for the active deployment.",
+    "sizeLimit": "Choose a nonempty encrypted archive no larger than 100 GiB.",
+    "upload": "Upload encrypted archive",
+    "selected": "Uploaded archive",
+    "mode": "Recovery identity mode",
+    "original": "Restore original instance",
+    "clone": "Clone as a new instance",
+    "keyType": "Decryption input",
+    "passphrase": "Backup passphrase",
+    "keyHint": "The decryption input is cleared on submission. Authenticated plaintext stays in private, expiring server staging; the decryption input is not saved.",
+    "preview": "Authenticate and preview",
+    "discard": "Discard staged import",
+    "discardWarning": "Remove this uploaded archive and its private prepared files.",
+    "cancel": "Cancel upload",
+    "expires": "Staging expires: {{time}}",
+    "version": "Backup application version: {{version}}",
+    "source": "Source instance: {{id}}",
+    "target": "Current target instance: {{id}}",
+    "resultInstance": "Resulting instance: {{id}}",
+    "files": "File changes ({{count}})",
+    "replace": "Replace",
+    "install": "Install",
+    "remove": "Remove",
+    "activationHint": "Review this plan before a maintenance window. Web activation is still being integrated; use the offline recovery CLI to perform an actual restoration.",
+    "warnings": {
+      "service_restart_required": "Restoration requires a controlled service restart.",
+      "recovery_point_contains_private_identity_material": "The pre-restore recovery point contains private identity material; protect its storage.",
+      "application_version_differs_requires_offline_review": "The application version differs; review compatibility offline before activation.",
+      "clone_credentials_reset": "Clone mode resets management credentials.",
+      "clone_outbounds_and_listeners_disabled": "Clone mode disables restored outbounds and listeners for review.",
+      "clone_protocol_reenrollment_required": "Clone mode requires protocol and device re-enrollment.",
+      "clone_s3_credentials_and_schedules_disabled": "Clone mode clears source S3 credentials and disables restored schedules.",
+      "original_instance_must_be_stopped": "Keep the original deployment stopped to avoid duplicate machine identities.",
+      "revoked_credentials_may_be_restored": "Previously revoked credentials or devices can become valid again.",
+      "quota_and_usage_state_can_move_backwards": "Quota and usage state can move backwards to the backup time.",
+      "different_or_damaged_target_identity_will_be_replaced": "The target has a different or damaged identity that restoration would replace."
+    }
+  }
 }

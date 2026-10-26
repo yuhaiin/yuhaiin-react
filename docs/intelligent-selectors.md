@@ -232,8 +232,33 @@ fixtures are synthetic; the backend separately exercises a real installed
 service, HTTPS authorization, S3 readback and helper-crash restart in an isolated
 systemd container.
 
-Web restore upload/preview/activation and recent-restore presentation are still
-required. Existing plaintext offline rollback points have separate retention;
+Web archive upload and authenticated preview are described below. Actual Web
+activation and recent-restore presentation are still required. Existing plaintext offline rollback points have separate retention;
 the managed encrypted-archive policy does not delete them. See the backend
 [managed-backup operator guide](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/managed-recovery-backups.md)
 for lifecycle details, resource limits and the remaining work.
+
+
+## Disaster recovery preview
+
+The existing Backup page can upload a full encrypted archive and authenticate
+an original-instance or clone preview using a transient private age identity or
+passphrase. The UI clears that input on submission and keeps it out of saved
+drafts/storage. The server displays source/target/resulting identity, build
+version, file changes and explicit credential/device/quota warnings. Expanded
+file paths wrap on mobile. Discard requires confirmation.
+
+Backend schema 22 bounds staging to two imports, 100 GiB combined ciphertext
+and a 30-minute lifetime. Uploads stream the File directly, support cancellation
+and never call File.arrayBuffer. The server reuses the existing authenticated
+archive decoder and restore planner, keeps prepared files private, protects a
+disk reserve and runs expiry cleanup on the existing Backup scheduler. Import
+records belong to the creating administrator. Browser refresh can reload the
+remaining staged previews.
+
+Current Web operations stop at preview; actual activation remains in progress.
+The offline CLI continues to provide complete restoration and startup rollback.
+Browser tests at 1440/360/320 px cover upload, private input clearing, identity
+warnings, file expansion and confirmed discard. Fixtures are synthetic; the
+backend's actual HTTPS service drill independently checks import authentication,
+read-only denial, a stable service PID during preview and staging removal.

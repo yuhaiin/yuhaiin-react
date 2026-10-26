@@ -46,6 +46,21 @@ export namespace Go {
       nodeId?: string;
       path?: string;
     }
+    export interface RecoveryImport {
+      id: string;
+      createdAt: string;
+      expiresAt: string;
+      size: number;
+      sha256: string;
+      state: string;
+      preview?: RecoveryRestorePreview;
+    }
+    export interface RecoveryImportPreviewRequest {
+      id: string;
+      mode: string;
+      identity?: string;
+      passphrase?: string;
+    }
     export interface RecoveryPolicy {
       enabled: boolean;
       target: string;

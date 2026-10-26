@@ -34,6 +34,8 @@ try {
  async function shot(name){const r=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});await writeFile(`${output}/${name}.png`,Buffer.from(r.data,'base64'));}
  await mkdir(output,{recursive:true});await send('Page.enable');await send('Runtime.enable');
  const checks=[];
+ const importFixture=`${profile}/synthetic-preview.yhb`;
+ await writeFile(importFixture,'synthetic ciphertext; not a real recovery archive');
  for(const width of [1440,360,320]){
   const init=await send('Page.addScriptToEvaluateOnNewDocument',{source:`localStorage.setItem('yuhaiin.theme','light');localStorage.setItem('yuhaiin.accent','olive');`});
   await send('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:width<768});
@@ -115,7 +117,30 @@ try {
   await shot(`${width}-backup-verification`);
   await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
   await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
-  checks.push({width,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow});
+  await wait(`Boolean(document.querySelector('[data-testid="recovery-import-panel"]'))`);
+  await wait(`!document.querySelector('[role="dialog"]')`);
+  const documentRoot=await send('DOM.getDocument');
+  const fileInput=await send('DOM.querySelector',{nodeId:documentRoot.root.nodeId,selector:'[data-testid="recovery-import-panel"] input[type="file"]'});
+  await send('DOM.setFileInputFiles',{nodeId:fileInput.nodeId,files:[importFixture]});
+  await wait(`[...document.querySelectorAll('[data-testid="recovery-import-panel"] button')].some(e=>e.textContent.includes('Upload encrypted archive')&&!e.disabled)`);
+  await clickText('Upload encrypted archive','button');
+  await wait(`Boolean(document.querySelector('[data-testid="recovery-import-panel"] input[type="password"]'))`);
+  await evaluate(`document.querySelector('[data-testid="recovery-import-panel"] input[type="password"]').focus()`);
+  await send('Input.insertText',{text:'AGE-SECRET-KEY-SYNTHETIC-BROWSER-FIXTURE'});
+  await clickText('Authenticate and preview','button');
+  await wait(`document.querySelector('[data-testid="recovery-import-panel"]').textContent.includes('Previously revoked credentials or devices can become valid again.')`);
+  assert.equal(await evaluate(`document.querySelector('[data-testid="recovery-import-panel"] input[type="password"]').value`),'');
+  await clickText('File changes (3)','summary');
+  await evaluate(`document.querySelector('[data-testid="recovery-import-panel"] article').scrollIntoView({block:'center'})`);
+  const importOverflow=await evaluate('document.documentElement.scrollWidth-innerWidth');
+  assert(importOverflow<=1,`${width}px restore preview overflow: ${importOverflow}`);
+  await shot(`${width}-restore-preview`);
+  const discardPoint=await evaluate(`(()=>{const e=document.querySelector('[data-testid="recovery-import-panel"] button[aria-label="Discard staged import"]');e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2};})()`);
+  await send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...discardPoint});await send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...discardPoint});
+  await wait(`Boolean(document.querySelector('[role="dialog"]'))`);
+  await clickText('OK','[role="dialog"] button');
+  await wait(`!document.querySelector('[data-testid="recovery-import-panel"] article')`);
+  checks.push({width,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow});
   await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:init.identifier});
  }
  await writeFile(`${output}/checks.json`,JSON.stringify({source:'synthetic MSW visual/interaction data; backend behavior tested separately',checks},null,2));

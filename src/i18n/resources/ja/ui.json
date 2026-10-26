@@ -775,5 +775,47 @@
     "legacyTitle": "従来のS3設定スナップショット",
     "legacyHint": "この互換スナップショットには設定の秘密情報が含まれる場合があります。暗号化された完全な展開アーカイブではありません。"
   },
-  "backupIntervalMinutes": "設定スナップショット間隔（分）"
+  "backupIntervalMinutes": "設定スナップショット間隔（分）",
+  "recoveryImport": {
+    "title": "災害復旧のプレビュー",
+    "description": "完全バックアップをアップロードして認証し、置換計画を確認します。",
+    "archive": "暗号化された復旧アーカイブ",
+    "limits": "最大2件、合計100 GiBまで。アップロードと非公開ステージングは30分で期限切れになります。稼働中の環境用に最低256 MiBの空き容量を確保します。",
+    "sizeLimit": "空でない、100 GiB以下の暗号化アーカイブを選択してください。",
+    "upload": "暗号化アーカイブをアップロード",
+    "selected": "アップロード済みアーカイブ",
+    "mode": "復旧時の識別情報",
+    "original": "元のインスタンスを復元",
+    "clone": "新しいインスタンスとして複製",
+    "keyType": "復号入力の種類",
+    "passphrase": "バックアップのパスフレーズ",
+    "keyHint": "復号入力は送信時に消去され、保存されません。認証済みの平文は、期限付きの非公開サーバーステージングに保管されます。",
+    "preview": "認証してプレビュー",
+    "discard": "ステージングを破棄",
+    "discardWarning": "アップロードしたアーカイブと非公開の準備済みファイルを削除します。",
+    "cancel": "アップロードを中止",
+    "expires": "ステージング期限: {{time}}",
+    "version": "バックアップのアプリケーションバージョン: {{version}}",
+    "source": "元のインスタンス: {{id}}",
+    "target": "現在の復元先インスタンス: {{id}}",
+    "resultInstance": "復旧後のインスタンス: {{id}}",
+    "files": "ファイル変更 ({{count}})",
+    "replace": "置換",
+    "install": "配置",
+    "remove": "削除",
+    "activationHint": "メンテナンスの前に計画を確認してください。Webからの有効化は統合中です。実際の復元にはオフライン復旧CLIを使用してください。",
+    "warnings": {
+      "service_restart_required": "復元には制御されたサービス再起動が必要です。",
+      "recovery_point_contains_private_identity_material": "復元前の復旧ポイントには秘密の識別情報が含まれます。保存先を保護してください。",
+      "application_version_differs_requires_offline_review": "アプリケーションバージョンが異なります。有効化前にオフラインで互換性を確認してください。",
+      "clone_credentials_reset": "複製モードでは管理認証情報をリセットします。",
+      "clone_outbounds_and_listeners_disabled": "複製モードでは復元した送信接続とリスナーを無効にし、確認を待ちます。",
+      "clone_protocol_reenrollment_required": "複製モードではプロトコルとデバイスの再登録が必要です。",
+      "clone_s3_credentials_and_schedules_disabled": "複製モードでは元のS3認証情報を消去し、復元したスケジュールを無効にします。",
+      "original_instance_must_be_stopped": "マシン識別情報の重複を避けるため、元の環境を停止したままにしてください。",
+      "revoked_credentials_may_be_restored": "失効済みの認証情報やデバイスが再び有効になる可能性があります。",
+      "quota_and_usage_state_can_move_backwards": "割り当て量と使用状況はバックアップ時点に戻る可能性があります。",
+      "different_or_damaged_target_identity_will_be_replaced": "復元先の異なる、または破損した識別情報は置換されます。"
+    }
+  }
 }

@@ -775,5 +775,47 @@
     "legacyTitle": "기존 S3 설정 스냅샷",
     "legacyHint": "이 호환 스냅샷에는 설정 비밀 정보가 포함될 수 있습니다. 암호화된 전체 배포 보관 파일이 아닙니다."
   },
-  "backupIntervalMinutes": "설정 스냅샷 간격 (분)"
+  "backupIntervalMinutes": "설정 스냅샷 간격 (분)",
+  "recoveryImport": {
+    "title": "재해 복구 미리보기",
+    "description": "전체 백업을 업로드하고 인증한 뒤 교체 계획을 검토합니다.",
+    "archive": "암호화된 복구 아카이브",
+    "limits": "최대 2개, 합계 100 GiB까지 지원합니다. 업로드와 비공개 준비 파일은 30분 후 만료됩니다. 실행 중인 배포를 위해 최소 256 MiB의 여유 공간을 유지합니다.",
+    "sizeLimit": "비어 있지 않은 100 GiB 이하의 암호화 아카이브를 선택하세요.",
+    "upload": "암호화 아카이브 업로드",
+    "selected": "업로드한 아카이브",
+    "mode": "복구 인스턴스 식별 방식",
+    "original": "원래 인스턴스 복원",
+    "clone": "새 인스턴스로 복제",
+    "keyType": "복호화 입력 유형",
+    "passphrase": "백업 암호",
+    "keyHint": "복호화 입력은 제출 시 지워지며 저장되지 않습니다. 인증된 평문은 만료 시간이 있는 비공개 서버 준비 공간에 보관됩니다.",
+    "preview": "인증 및 미리보기",
+    "discard": "준비된 가져오기 삭제",
+    "discardWarning": "업로드한 아카이브와 비공개 준비 파일을 삭제합니다.",
+    "cancel": "업로드 취소",
+    "expires": "준비 파일 만료: {{time}}",
+    "version": "백업 애플리케이션 버전: {{version}}",
+    "source": "원본 인스턴스: {{id}}",
+    "target": "현재 대상 인스턴스: {{id}}",
+    "resultInstance": "복구 후 인스턴스: {{id}}",
+    "files": "파일 변경 ({{count}})",
+    "replace": "교체",
+    "install": "설치",
+    "remove": "제거",
+    "activationHint": "유지보수 전에 계획을 검토하세요. 웹 활성화는 통합 중입니다. 실제 복원에는 오프라인 복구 CLI를 사용하세요.",
+    "warnings": {
+      "service_restart_required": "복원하려면 제어된 서비스 재시작이 필요합니다.",
+      "recovery_point_contains_private_identity_material": "복원 전 복구 지점에는 비공개 식별 자료가 포함됩니다. 저장소를 보호하세요.",
+      "application_version_differs_requires_offline_review": "애플리케이션 버전이 다릅니다. 활성화 전에 오프라인에서 호환성을 검토하세요.",
+      "clone_credentials_reset": "복제 모드는 관리 인증 정보를 초기화합니다.",
+      "clone_outbounds_and_listeners_disabled": "복제 모드는 복원된 아웃바운드와 리스너를 비활성화하고 검토를 기다립니다.",
+      "clone_protocol_reenrollment_required": "복제 모드에서는 프로토콜과 장치를 다시 등록해야 합니다.",
+      "clone_s3_credentials_and_schedules_disabled": "복제 모드는 원본 S3 인증 정보를 지우고 복원된 일정을 비활성화합니다.",
+      "original_instance_must_be_stopped": "컴퓨터 식별 정보가 중복되지 않도록 원래 배포를 중지된 상태로 유지하세요.",
+      "revoked_credentials_may_be_restored": "이전에 취소한 인증 정보나 장치가 다시 유효해질 수 있습니다.",
+      "quota_and_usage_state_can_move_backwards": "할당량과 사용 상태가 백업 시점으로 되돌아갈 수 있습니다.",
+      "different_or_damaged_target_identity_will_be_replaced": "대상의 다른 식별 정보 또는 손상된 식별 정보가 교체됩니다."
+    }
+  }
 }
