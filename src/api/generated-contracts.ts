@@ -2,6 +2,31 @@
 
 export namespace Go {
   export namespace backup {
+    export interface RecoveryManifest {
+      format: string;
+      version: number;
+      id: string;
+      instanceId: string;
+      createdAt: string;
+      consistency: string;
+      includesHistory: boolean;
+      build: RecoveryBuild;
+      files: RecoveryFile[];
+    }
+    export interface RecoveryBuild {
+      version: string;
+      commit: string;
+      platform: string;
+      architecture: string;
+      goVersion: string;
+    }
+    export interface RecoveryFile {
+      path: string;
+      role: string;
+      size: number;
+      sha256: string;
+      schemaVersion?: number;
+    }
     export interface Option {
       instanceName: string;
       s3: S3;
