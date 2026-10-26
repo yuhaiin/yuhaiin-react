@@ -12,6 +12,10 @@ export namespace Go {
       includesHistory: boolean;
       build: RecoveryBuild;
       files: RecoveryFile[];
+      completeInventory?: boolean;
+      sourceDirectory?: string;
+      runtime?: RecoveryRuntime;
+      requirements?: RecoveryRequirement[];
     }
     export interface RecoveryBuild {
       version: string;
@@ -26,6 +30,21 @@ export namespace Go {
       size: number;
       sha256: string;
       schemaVersion?: number;
+      sourcePath?: string;
+    }
+    export interface RecoveryRuntime {
+      managementAuth?: boolean;
+      managementTLS: string;
+      certificateFile?: string;
+      keyFile?: string;
+      workingDirectory: string;
+      listenAddress?: string;
+      externalWebDirectory?: string;
+    }
+    export interface RecoveryRequirement {
+      kind: string;
+      nodeId?: string;
+      path?: string;
     }
     export interface Option {
       instanceName: string;

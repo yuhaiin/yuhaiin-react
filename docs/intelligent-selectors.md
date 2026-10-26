@@ -161,6 +161,12 @@ and [backend #622](https://github.com/yuhaiin/yuhaiin/pull/622), both targeting 
 Earlier component PRs are superseded. The three-stage goal remains in progress;
 future backup/restore and ACME work will use the same entries.
 
+The generated recovery contract now includes version 2 complete-inventory,
+startup-input, external dependency and uninitialized-identity metadata for the
+backend's offline create/verify commands. External source paths are descriptive
+metadata, never destinations to write. This synchronization does not yet expose
+full disaster-recovery creation or restore activation in the management UI.
+
 ## Native protocol lifecycle
 
 The Nodes runtime panel translates native session states and shows when the
