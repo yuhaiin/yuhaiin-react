@@ -160,3 +160,20 @@ All reliability work now uses [frontend #535](https://github.com/yuhaiin/yuhaiin
 and [backend #622](https://github.com/yuhaiin/yuhaiin/pull/622), both targeting main.
 Earlier component PRs are superseded. The three-stage goal remains in progress;
 future backup/restore and ACME work will use the same entries.
+
+## Native protocol lifecycle
+
+The Nodes runtime panel translates native session states and shows when the
+backend observed them. Native tunnel setup, control configuration, actual remote
+TCP/UDP responses and comparable measured RTT remain separate evidence. Tailscale
+control readiness and static L2TPv3 setup explicitly show configured rather than
+claiming a peer handshake. Authentication failure is shown as administrator
+attention, independently of traffic/loss counters. Automatic candidate details
+explain authentication, control or session unavailability while retaining raw
+measurements; manual lock continues to follow the existing backend behavior.
+
+Periodic checks reuse existing VPN sessions. They cannot start a lazy Tailnet
+identity/login or wake an idle GlobalProtect reconnect, even through a cached
+Set/endpoint chain. Ordinary traffic and manual checks retain protocol semantics.
+Not every protocol exposes native status; those continue to show the existing
+passive/explicit network evidence. All additions use the existing status API.

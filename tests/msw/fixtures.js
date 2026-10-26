@@ -106,6 +106,7 @@ const worker=setupWorker(
     else if(op==='node.extra') result=p.id==='node-1'
       ? {globalprotect:{tunnel_prefix:'192.0.2.8/32',data_transport:'esp',dns:['192.0.2.1']}}
       : {openvpn:{tunnel_prefixes:['10.88.0.2/24','fd88::2/64'],dns:['10.88.0.1'],routes:['route 10.99.0.0 255.255.0.0'],cipher:'AES-256-GCM',gateway:'10.88.0.1',mtu:1400}};
+    else if(op==='nodes.status') result={items:(p.ids||[]).filter(id=>nodes.some(node=>node.id===id)).map(id=>({id,state:'unknown',uploadBytes:'0',downloadBytes:'0',uploadBps:'0',downloadBps:'0',udpSentPackets:'0',udpRecvPackets:'0',tcpAttempts:'0',tcpConnections:'0',udpAttempts:'0',udpSessions:'0',pingAttempts:'0',failures:'0',activeTCP:0,activeUDP:0,lastSuccessAt:0,lastFailureAt:0,lastUsedAt:0,...(scenario==='reliability'?{protocol:{state:id==='node-1'?'authentication_failed':'configured',updatedAt:Math.floor(Date.now()/1000)}}:{})}))};
     else if(op==='nodes.selected') result={tcp:nodes.find(n=>n.id===selected.tcpId),udp:nodes.find(n=>n.id===selected.udpId)};
     else if(op==='nodes.select'){if(!nodes.some(n=>n.id===p.tcpId&&n.enabled)||!nodes.some(n=>n.id===p.udpId&&n.enabled))return errorResponse('Choose enabled nodes');selected=p;}
     else if(op==='node.use'){selected={tcpId:p.id,udpId:p.id};}

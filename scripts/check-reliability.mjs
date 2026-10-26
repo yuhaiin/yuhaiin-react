@@ -78,7 +78,15 @@ try {
   await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
   await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
   await wait(`!document.querySelector('[role="dialog"]')`);
-  checks.push({width,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true});
+  await send('Page.navigate',{url:`${base}/?scenario=reliability&native=${width}#/docs/group?node=node-0`});
+  await wait(`Boolean(document.querySelector('[data-testid="native-status-help"]'))`);
+  await waitForPreview(send,'[data-testid="native-status-help"]');
+  assert(await evaluate(`document.body.innerText.includes('Configured (no peer handshake evidence)')`));
+  await evaluate(`document.querySelector('[data-testid="native-status-help"]').scrollIntoView({block:'center'})`);
+  const nativeOverflow=await evaluate('document.documentElement.scrollWidth-innerWidth');
+  assert(nativeOverflow<=1,`${width}px native panel overflow: ${nativeOverflow}`);
+  await shot(`${width}-native-status`);
+  checks.push({width,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow});
   await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:init.identifier});
  }
  await writeFile(`${output}/checks.json`,JSON.stringify({source:'synthetic MSW visual/interaction data; backend behavior tested separately',checks},null,2));

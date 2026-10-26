@@ -470,7 +470,10 @@
       "eligible": "Eligible",
       "selected_node_unavailable": "Selected node unavailable",
       "circuit_open": "Circuit open",
-      "recovery_trial": "Limited recovery trial"
+      "recovery_trial": "Limited recovery trial",
+      "authentication_unavailable": "Authentication is unavailable; this candidate needs administrator attention.",
+      "session_unavailable": "Native tunnel session is unavailable.",
+      "control_unavailable": "Control service is unavailable."
     },
     "budgetHint": "Each test reserves the payload limit plus 65,536 bytes for TLS, HTTP headers and read-ahead. Failed and cancelled tests consume the reservation. VPN framing is outside this logical limit. Existing usage from an older accounting version pauses tests until the next UTC day."
   },
@@ -566,5 +569,20 @@
       "stun_tcp": "TCP STUN response",
       "native": "Protocol native handshake"
     }
-  }
+  },
+  "outboundNativeStates": {
+    "unknown": "Unknown",
+    "idle": "Idle",
+    "connecting": "Connecting",
+    "configured": "Configured (no peer handshake evidence)",
+    "connected": "Native tunnel session established",
+    "reconnecting": "Reconnecting",
+    "closed": "Closed",
+    "disconnected": "Disconnected",
+    "failed": "Tunnel session failed",
+    "authentication_failed": "Authentication requires attention",
+    "control_unavailable": "Control service unavailable"
+  },
+  "outboundProtocolObservedAt": "Native status observed",
+  "outboundNativeHelp": "Native session state is separate from TCP/UDP target reachability and measured RTT. Periodic measurements reuse established sessions and do not wake an idle VPN login. Ordinary traffic or a manual check may establish an idle session when the protocol supports it."
 }

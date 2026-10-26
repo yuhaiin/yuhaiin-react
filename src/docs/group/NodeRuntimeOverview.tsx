@@ -11,6 +11,12 @@ export function outboundStateVariant(state: OutboundState): "success" | "danger"
     }
 }
 
+const nativeStates = ['unknown', 'idle', 'connecting', 'configured', 'connected', 'reconnecting', 'closed', 'disconnected', 'failed', 'authentication_failed', 'control_unavailable'] as const;
+
+function nativeStateKey(state: string): string {
+    return (nativeStates as readonly string[]).includes(state) ? state : 'unknown';
+}
+
 export function formatNodeBytes(raw: string): string {
     const value = Number(raw);
     if (!Number.isFinite(value) || value < 0) return raw;
@@ -64,8 +70,12 @@ export function NodeRuntimeOverview({ status, error }: { status?: OutboundRuntim
             <div>{t("outboundLastSuccess")}: {dateTime(status.lastSuccessAt)}</div>
             <div>{t("outboundLastFailure")}: {dateTime(status.lastFailureAt)}</div>
             <div>{t("outboundLastUsed")}: {dateTime(status.lastUsedAt)}</div>
-            {status.protocol && <div>{t("outboundProtocolState")}: {status.protocol.state}</div>}
+            {status.protocol && <>
+                <div>{t("outboundProtocolState")}: {t(`outboundNativeStates.${nativeStateKey(status.protocol.state)}`)}</div>
+                <div>{t("outboundProtocolObservedAt")}: {dateTime(status.protocol.updatedAt)}</div>
+            </>}
         </div>
+        {status.protocol && <p className="text-xs text-ui-muted" data-testid="native-status-help">{t('outboundNativeHelp')}</p>}
         {(status.lastError || status.protocol?.lastError) &&
             <div className="rounded-ui-md border border-ui-danger/30 bg-ui-danger-soft p-3 text-sm text-ui-danger" role="alert">
                 <div className="text-xs font-medium">{t("outboundLastError")}</div>
