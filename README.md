@@ -100,3 +100,5 @@ speeds include configured routing/traffic controls. Tests pause while the backen
 loads its initial policy; selection and recovery continue to be backend-owned.
 
 Shared probe/measurement limits and inclusive speed-budget behavior are documented in [intelligent selectors](docs/intelligent-selectors.md).
+
+Enterprise reliability is being developed in one [frontend PR](https://github.com/yuhaiin/yuhaiin-react/pull/535) with its [backend companion](https://github.com/yuhaiin/yuhaiin/pull/622). Further health-routing, backup/restore and certificate lifecycle work continues in these two entries.

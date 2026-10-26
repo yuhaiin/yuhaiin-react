@@ -153,3 +153,10 @@ companion to obtain authoritative admission counts.
 Browser coverage verifies the shared count and expanded budget explanation at
 1440, 360 and 320 pixels using synthetic MSW fixtures; actual transport and
 budget persistence are covered by backend tests.
+
+## Review and delivery entry
+
+All reliability work now uses [frontend #535](https://github.com/yuhaiin/yuhaiin-react/pull/535)
+and [backend #622](https://github.com/yuhaiin/yuhaiin/pull/622), both targeting main.
+Earlier component PRs are superseded. The three-stage goal remains in progress;
+future backup/restore and ACME work will use the same entries.
