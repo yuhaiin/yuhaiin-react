@@ -70,3 +70,12 @@ it('keeps explicit server rejection visible without inventing an accepted operat
     expect(dialog.querySelector('[role=alert]')?.textContent).toBe('Preview expired');
     expect(admitted).not.toHaveBeenCalled(); expect(close).not.toHaveBeenCalled();
 });
+
+it('keeps a durable admission with uncertain helper launch visible as pending', async () => {
+    const dialog = await mount(); await consent(dialog);
+    vi.mocked(activateRecoveryImport).mockResolvedValue({ ...point(), state: 'activating', errorCode: 'launch_uncertain' });
+    await act(async () => confirmButton(dialog).click());
+    expect(admitted).toHaveBeenCalledWith(true);
+    expect(info).toHaveBeenCalledWith('recoveryActivation.uncertain');
+    expect(activateRecoveryImport).toHaveBeenCalledOnce();
+});

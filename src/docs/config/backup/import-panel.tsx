@@ -115,7 +115,7 @@ export function RecoveryImportPanel() {
                         <Button aria-label={t('recoveryImport.discard')} disabled={action.pending} onClick={() => setDiscard(item)}><Trash2 size={16} /></Button>
                     </div>
                     {item.state === 'activating' && <p role="status" className="mt-3 text-sm text-ui-muted">{t('recoveryActivation.admitted')}</p>}
-                    {item.errorCode && <p role="alert" className="mt-3 text-sm text-ui-danger">{t(item.errorCode === 'cleanup_failed' ? 'recoveryActivation.cleanupFailed' : 'recoveryActivation.failed')}</p>}
+                    {item.errorCode && <p role={item.errorCode === 'launch_uncertain' ? 'status' : 'alert'} className="mt-3 text-sm text-ui-danger">{t(item.errorCode === 'launch_uncertain' ? 'recoveryActivation.uncertain' : item.errorCode === 'cleanup_failed' ? 'recoveryActivation.cleanupFailed' : 'recoveryActivation.failed')}</p>}
                     {item.preview && <div className="mt-3 min-w-0">
                         <p className="text-sm">{t('recoveryImport.version', { version: item.preview.manifest.build.version })}</p>
                         <p className="mt-1 break-all text-xs">{t('recoveryImport.source', { id: item.preview.manifest.instanceId })}</p>

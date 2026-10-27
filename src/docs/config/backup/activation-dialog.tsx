@@ -32,12 +32,13 @@ export function RecoveryActivationDialog({ item, onClose, onAdmitted }: {
         if (!ready || pending) return;
         setPending(true); setError('');
         try {
-            await activateRecoveryImport({ id: item.id, confirmPreviewId: item.previewId!, confirmBackupId: preview.manifest.id,
+            const admission = await activateRecoveryImport({ id: item.id, confirmPreviewId: item.previewId!, confirmBackupId: preview.manifest.id,
                 confirmSourceInstanceId: preview.manifest.instanceId, confirmTargetInstanceId: target, confirmResultInstanceId: preview.instanceId,
                 confirmMaintenance: maintenance, confirmStartupChanges: startup, confirmSourceStopped: sourceStopped,
                 confirmCredentialRevival: revival, confirmIdentityReplacement: replacement, confirmCloneEnrollment: enrollment });
-            toast.Info(t('recoveryActivation.admitted'));
-            onAdmitted(false); onClose();
+            const uncertain = admission.errorCode === 'launch_uncertain';
+            toast.Info(t(uncertain ? 'recoveryActivation.uncertain' : 'recoveryActivation.admitted'));
+            onAdmitted(uncertain); onClose();
         } catch (failure) {
             const code = typeof failure === 'object' && failure !== null && 'code' in failure ? failure.code : undefined;
             if (typeof code === 'number' && code > 0) {
