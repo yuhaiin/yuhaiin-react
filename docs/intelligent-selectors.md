@@ -388,3 +388,20 @@ the target/direction/consent/budget sent, history labels, disabled default sched
 and layout. Actual verified-TLS measurement, persistence, shared budgets and
 selection correctness are covered by backend integration tests, rather than
 inferred from those browser fixtures.
+
+## Node observed traffic and active measurements
+
+Expand **Traffic window and active measurements** in a Node's existing runtime
+overview to inspect actual sampled traffic coverage, recent retained TCP dial
+failures, and the last download/upload measurements with their own timestamps,
+targets and sample counts. Current Bps and window-average Bps describe logical
+observed traffic, including tests; active Mbps measurements describe a specific
+target/time. Neither a load peak nor a window mean is a link-capacity estimate.
+
+The backend uses a bounded ring on its existing five-second observer, reports
+up to a minute of actual coverage and resets after restart, sleep/clock gaps or
+counter resets. Unknown windows and absent old-server fields are displayed as
+unavailable. A TCP dial ratio excludes later I/O, application/probe events and
+UDP session creation, and uses only retained eligible dial outcomes. Details
+remain collapsed until needed; the normal statistics and native-state panel are
+preserved. This follow-up adds no persistent database state or migration.

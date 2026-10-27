@@ -146,3 +146,7 @@ backend's actual systemd migration/failure/SIGKILL/CLI-recovery tests. See the [
 Selectors also provide opt-in active upload measurements, independent upload
 schedules and direction-labeled results while sharing the existing backend test
 budgets. See [upload measurement controls](docs/intelligent-selectors.md#upload-measurements-and-scheduling).
+
+Node runtime details separate current/window-average observed traffic, recent
+TCP dial failures and active download/upload measurements. The bounded window
+runs on the existing observer and resets after restart or a sleep/clock gap.

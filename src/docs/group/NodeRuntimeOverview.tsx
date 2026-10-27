@@ -66,6 +66,27 @@ export function NodeRuntimeOverview({ status, error }: { status?: OutboundRuntim
                 </div>,
             )}
         </div>
+        <details className="space-y-3 rounded-ui-md border border-ui-border/70 p-3 text-sm" data-testid="node-measurement-summary">
+            <summary className="cursor-pointer font-medium">{t('outboundMeasurementDetails')}</summary>
+            <p className="text-xs text-ui-muted">{t('outboundMeasurementSeparation')}</p>
+            {status.trafficWindow ? <div className="space-y-1">
+                <p>{t('outboundTrafficWindow', { seconds: (status.trafficWindow.windowMs / 1000).toFixed(1) })}</p>
+                <p className="break-words font-mono tabular-nums">↑ {formatNodeBytes(status.trafficWindow.uploadBps)}/s · ↓ {formatNodeBytes(status.trafficWindow.downloadBps)}/s</p>
+                <p className="text-xs text-ui-muted">{new Date(status.trafficWindow.at).toLocaleString()}</p>
+            </div> : <p className="text-xs text-ui-muted">{t('outboundNoTrafficWindow')}</p>}
+            {status.recentTcpDials && <div className="space-y-1">
+                <p>{t('outboundRecentDialFailures')}: {(status.recentTcpDials.failureRate * 100).toFixed(1)}% ({status.recentTcpDials.failures} / {status.recentTcpDials.samples})</p>
+                <p className="text-xs text-ui-muted">{t('outboundDialWindowHint', { seconds: status.recentTcpDials.windowMs / 1000, limit: status.recentTcpDials.sampleLimit })}</p>
+            </div>}
+            <div className="grid min-w-0 gap-3 sm:grid-cols-2">{([['download', status.throughput], ['upload', status.uploadThroughput]] as const).map(([direction, measurement]) => <div key={direction} className="min-w-0 space-y-1">
+                <p className="text-xs text-ui-muted">{t(direction === 'upload' ? 'auto.measuredUpload' : 'auto.measuredDownload')}</p>
+                {measurement?.at ? <>
+                    <p>{measurement.ok ? `${(direction === 'upload' ? measurement.uploadMbps ?? 0 : measurement.downloadMbps).toFixed(2)} Mbps (${measurement.samples})` : t('loadFailed')}</p>
+                    <p className="text-xs text-ui-muted">{new Date(measurement.at).toLocaleString()}</p>
+                    <p className="break-words text-xs text-ui-muted">{measurement.target}</p>
+                </> : <p className="text-xs text-ui-muted">{t('auto.unmeasured')}</p>}
+            </div>)}</div>
+        </details>
         <div className="grid gap-2 text-xs text-ui-muted sm:grid-cols-2">
             <div>{t("outboundLastSuccess")}: {dateTime(status.lastSuccessAt)}</div>
             <div>{t("outboundLastFailure")}: {dateTime(status.lastFailureAt)}</div>

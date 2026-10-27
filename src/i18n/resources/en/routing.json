@@ -594,5 +594,11 @@
     "control_unavailable": "Control service unavailable"
   },
   "outboundProtocolObservedAt": "Native status observed",
-  "outboundNativeHelp": "Native session state is separate from TCP/UDP target reachability and measured RTT. Periodic measurements reuse established sessions and do not wake an idle VPN login. Ordinary traffic or a manual check may establish an idle session when the protocol supports it."
+  "outboundNativeHelp": "Native session state is separate from TCP/UDP target reachability and measured RTT. Periodic measurements reuse established sessions and do not wake an idle VPN login. Ordinary traffic or a manual check may establish an idle session when the protocol supports it.",
+  "outboundMeasurementDetails": "Traffic window and active measurements",
+  "outboundMeasurementSeparation": "Observed traffic, including test traffic, shows current load. Active Mbps measurements describe a specific target and time; they do not guarantee capacity or current selector eligibility.",
+  "outboundTrafficWindow": "Observed average over {{seconds}} s",
+  "outboundNoTrafficWindow": "No fresh traffic window yet; sampling resets after restart or a clock/sleep gap.",
+  "outboundRecentDialFailures": "Recent TCP dial failure ratio",
+  "outboundDialWindowHint": "From retained dial outcomes within {{seconds}} s (shared history limit {{limit}}). Excludes later I/O, application errors and UDP session creation."
 }

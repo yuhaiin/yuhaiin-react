@@ -715,6 +715,8 @@ export namespace Go {
       result: LatencyResponse;
     }
     export interface RuntimeStatus {
+      trafficWindow?: TrafficWindow;
+      recentTcpDials?: DialObservationWindow;
       id: string;
       state: string;
       uploadBytes: string;
@@ -827,6 +829,19 @@ export namespace Go {
       stability: number;
       jitter: number;
       load: number;
+    }
+    export interface TrafficWindow {
+      at: number;
+      windowMs: number;
+      uploadBps: string;
+      downloadBps: string;
+    }
+    export interface DialObservationWindow {
+      windowMs: number;
+      sampleLimit: number;
+      samples: number;
+      failures: number;
+      failureRate: number;
     }
     export interface SelectorPolicy {
       circuit?: CircuitConfig;

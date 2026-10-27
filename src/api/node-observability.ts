@@ -33,6 +33,8 @@ export type OutboundRuntimeStatus = {
     probes?: Record<string, OutboundProbe>;
     tcpHealth?: Go.node.ChannelHealth;
     udpHealth?: Go.node.ChannelHealth;
+    trafficWindow?: Go.node.TrafficWindow;
+    recentTcpDials?: Go.node.DialObservationWindow;
     throughput?: Go.node.ThroughputMeasurement;
     uploadThroughput?: Go.node.ThroughputMeasurement;
     throughputHistory?: Go.node.ThroughputMeasurement[];

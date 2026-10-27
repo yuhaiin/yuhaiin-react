@@ -98,6 +98,10 @@ try {
   await waitForPreview(send,'[data-testid="native-status-help"]');
   assert(await evaluate(`document.body.innerText.includes('Configured (no peer handshake evidence)')`));
   await evaluate(`document.querySelector('[data-testid="native-status-help"]').scrollIntoView({block:'center'})`);
+  await clickText('Traffic window and active measurements','summary');
+  await wait(`document.body.innerText.includes('Observed average over 30.0 s')&&document.body.innerText.includes('25.0% (1 / 4)')&&document.body.innerText.includes('25.00 Mbps (2)')`);
+  await evaluate(`document.querySelector('[data-testid="node-measurement-summary"]').scrollIntoView({block:'center'})`);
+  await shot(`${width}-passive-and-active-measurements`);
   const nativeOverflow=await evaluate('document.documentElement.scrollWidth-innerWidth');
   assert(nativeOverflow<=1,`${width}px native panel overflow: ${nativeOverflow}`);
   await shot(`${width}-native-status`);
@@ -238,7 +242,7 @@ try {
   await wait(`document.querySelector('[data-update-phase="complete"]')!==null`);
   await evaluate(`document.querySelector('[data-testid="update-operation"]').scrollIntoView({block:'center'})`);
   await shot(`${width}-protected-update-completed`);
-  checks.push({width,updateSchemaMigrationBlocked:true,protectedMigrationConfirmed:true,protectedStartupReceipt:true,protectedConfirmationOverflow:protectedOverflow,legacyBinaryRollbackBlocked:true,updateCompatibilityOverflow:updateOverflow,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,s3RetrievalConfirmed:true,retrievalDialogOverflow:retrievalOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow,restoreRollbackResult:true,restoreResultOverflow:resultOverflow,restoreActivationConfirmed:true,restoreAdmissionDistinctFromCommit:true,restoreConfirmationOverflow:activationOverflow});
+  checks.push({width,updateSchemaMigrationBlocked:true,protectedMigrationConfirmed:true,protectedStartupReceipt:true,protectedConfirmationOverflow:protectedOverflow,legacyBinaryRollbackBlocked:true,updateCompatibilityOverflow:updateOverflow,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,passiveWindowSeparated:true,activeNodeMeasurements:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,s3RetrievalConfirmed:true,retrievalDialogOverflow:retrievalOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow,restoreRollbackResult:true,restoreResultOverflow:resultOverflow,restoreActivationConfirmed:true,restoreAdmissionDistinctFromCommit:true,restoreConfirmationOverflow:activationOverflow});
   await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:init.identifier});
  }
  await writeFile(`${output}/checks.json`,JSON.stringify({source:'synthetic MSW visual/interaction data; backend behavior tested separately',checks},null,2));

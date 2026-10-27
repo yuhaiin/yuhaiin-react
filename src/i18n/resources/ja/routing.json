@@ -594,5 +594,11 @@
     "control_unavailable": "制御サービスに接続できません"
   },
   "outboundProtocolObservedAt": "ネイティブ状態の確認時刻",
-  "outboundNativeHelp": "セッション状態は TCP/UDP の宛先到達性や RTT 測定とは別です。定期測定は確立済みセッションを再利用し、待機中の VPN ログインを起動しません。対応する VPN では、通常の通信や手動確認で待機セッションを開始できます。"
+  "outboundNativeHelp": "セッション状態は TCP/UDP の宛先到達性や RTT 測定とは別です。定期測定は確立済みセッションを再利用し、待機中の VPN ログインを起動しません。対応する VPN では、通常の通信や手動確認で待機セッションを開始できます。",
+  "outboundMeasurementDetails": "通信量の窓平均と能動測定",
+  "outboundMeasurementSeparation": "テスト通信を含む実際の転送量は現在の負荷を示します。能動測定の Mbps は特定の測定先と時点の値で、回線容量や現在の選択条件を保証しません。",
+  "outboundTrafficWindow": "観測期間 {{seconds}} 秒の平均",
+  "outboundNoTrafficWindow": "新しい通信量の窓平均はまだありません。再起動・休眠・時刻の変化後は測定をリセットします。",
+  "outboundRecentDialFailures": "最近の TCP 接続開始失敗率",
+  "outboundDialWindowHint": "{{seconds}} 秒以内に保持された接続開始結果から算出（共有履歴上限 {{limit}} 件）。後続の I/O・アプリケーションエラー・UDP セッション作成は含みません。"
 }

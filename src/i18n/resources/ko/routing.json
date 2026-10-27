@@ -594,5 +594,11 @@
     "control_unavailable": "제어 서비스 사용 불가"
   },
   "outboundProtocolObservedAt": "네이티브 상태 확인 시각",
-  "outboundNativeHelp": "세션 상태는 TCP/UDP 대상 도달 가능성 및 측정 RTT와 다릅니다. 주기 측정은 기존 세션을 재사용하며 유휴 VPN 로그인을 시작하지 않습니다. 프로토콜이 지원하면 일반 트래픽이나 수동 점검으로 유휴 세션을 연결할 수 있습니다."
+  "outboundNativeHelp": "세션 상태는 TCP/UDP 대상 도달 가능성 및 측정 RTT와 다릅니다. 주기 측정은 기존 세션을 재사용하며 유휴 VPN 로그인을 시작하지 않습니다. 프로토콜이 지원하면 일반 트래픽이나 수동 점검으로 유휴 세션을 연결할 수 있습니다.",
+  "outboundMeasurementDetails": "트래픽 구간 평균과 능동 측정",
+  "outboundMeasurementSeparation": "테스트 트래픽을 포함한 실제 전송량은 현재 부하를 보여 줍니다. 능동 Mbps 측정값은 특정 대상과 시점의 값이며 용량이나 현재 선택 자격을 보장하지 않습니다.",
+  "outboundTrafficWindow": "관측 구간 {{seconds}}초 평균",
+  "outboundNoTrafficWindow": "최신 트래픽 구간이 없습니다. 재시작, 절전 또는 시계 변화 후 측정을 초기화합니다.",
+  "outboundRecentDialFailures": "최근 TCP 연결 시작 실패 비율",
+  "outboundDialWindowHint": "{{seconds}}초 이내에 보관된 연결 시작 결과 기준(공유 기록 최대 {{limit}}개). 이후 I/O, 애플리케이션 오류 및 UDP 세션 생성은 제외합니다."
 }
