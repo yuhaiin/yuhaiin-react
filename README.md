@@ -114,5 +114,9 @@ in progress in the same two PRs. See [recovery contract status](docs/intelligent
 The Backup page now also uploads encrypted archives and shows authenticated
 original/clone recovery previews with identity warnings and file changes.
 Uploads and private staging are bounded and expire automatically. Web activation
-and recent-restore results remain in progress; actual restoration is available
+remains in progress; actual restoration is available
 through the backend offline CLI. See [preview behavior](docs/intelligent-selectors.md#disaster-recovery-preview).
+
+The Backup page also displays the latest recorded restore commit/rollback and
+whether restored startup settings persist across restarts. Failed result queries
+hide cached success. See [restore outcomes](docs/intelligent-selectors.md#latest-restore-result).

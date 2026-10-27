@@ -58,7 +58,7 @@ try {
   assert(card, 'Missing half-open candidate details');
   const candidatePoint=await evaluate(`(()=>{const e=document.querySelector('[data-reliability-candidate]');e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2};})()`);
   await send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...candidatePoint});await send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...candidatePoint});
-  await wait(`document.body.innerText.includes('Remote UDP reply received')`);
+  await wait(`document.body?.innerText.includes('Remote UDP reply received')`);
   assert(await evaluate(`document.body.innerText.includes('Half-open')&&document.body.innerText.includes('In flight: 1')`));
   await evaluate(`document.querySelector('[data-reliability-candidate]').parentElement.scrollIntoView({block:'start'})`);await sleep(200);
   const overflow=await evaluate('document.documentElement.scrollWidth-innerWidth');
@@ -66,10 +66,10 @@ try {
   await shot(`${width}-recovery-evidence`);
   await clickText('Monitoring defaults','button');
   await wait(`Boolean(document.querySelector('[role="dialog"]'))`);
-  await wait(`document.body.innerText.includes('Measurements obey routing and traffic controls.')`);
-  await wait(`document.body.innerText.includes('Measurements: 2 / 4 shared slots')`);
+  await wait(`document.body?.innerText.includes('Measurements obey routing and traffic controls.')`);
+  await wait(`document.body?.innerText.includes('Measurements: 2 / 4 shared slots')`);
   await clickText('Periodic download tests','summary');
-  await wait(`document.body.innerText.includes('65,536 bytes')`);
+  await wait(`document.body?.innerText.includes('65,536 bytes')`);
   await waitForPreview(send,'[role="dialog"]');
   const modalOverflow=await evaluate(`(()=>{const e=document.querySelector('[role="dialog"]');return e.scrollWidth-e.clientWidth;})()`);
   assert(modalOverflow<=1,`${width}px monitoring dialog overflow: ${modalOverflow}`);
@@ -89,7 +89,7 @@ try {
   assert(nativeOverflow<=1,`${width}px native panel overflow: ${nativeOverflow}`);
   await shot(`${width}-native-status`);
   await send('Page.navigate',{url:`${base}/?scenario=reliability&backup=${width}#/docs/config/backup`});
-  await wait(`document.body.innerText.includes('Full disaster recovery')`);
+  await wait(`document.body?.innerText.includes('Full disaster recovery')`);
   await waitForPreview(send,'fieldset');
   await wait(`[...document.querySelectorAll('[role="switch"]')].some(e=>document.getElementById(e.getAttribute('aria-labelledby'))?.textContent==='Allow maintenance for full backups')`);
   await evaluate(`[...document.querySelectorAll('[role="switch"]')].find(e=>document.getElementById(e.getAttribute('aria-labelledby'))?.textContent==='Allow maintenance for full backups').dataset.recoveryConsent=''`);
@@ -105,7 +105,7 @@ try {
   assert(await evaluate(`document.querySelector('[role="dialog"]').textContent.includes('active connections will be interrupted')`));
   await shot(`${width}-backup-maintenance-confirmation`);
   await clickText('OK','[role="dialog"] button');
-  await wait(`document.body.innerText.includes('Local encrypted archive ready')`);
+  await wait(`document.body?.innerText.includes('Local encrypted archive ready')`);
   const backupOverflow=await evaluate('document.documentElement.scrollWidth-innerWidth');
   assert(backupOverflow<=1,`${width}px backup page overflow: ${backupOverflow}`);
   await evaluate(`document.querySelector('article').scrollIntoView({block:'center'})`);
@@ -140,7 +140,15 @@ try {
   await wait(`Boolean(document.querySelector('[role="dialog"]'))`);
   await clickText('OK','[role="dialog"] button');
   await wait(`!document.querySelector('[data-testid="recovery-import-panel"] article')`);
-  checks.push({width,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow});
+  await wait(`document.querySelector('[data-testid="recovery-result-panel"]')?.textContent.includes('Restore rolled back to the previous deployment')`);
+  const resultText=await evaluate(`document.querySelector('[data-testid="recovery-result-panel"]').textContent`);
+  assert(resultText.includes('Restored startup settings are retained for future restarts.'));
+  assert(!resultText.includes('Restored deployment passed startup checks'));
+  await evaluate(`document.querySelector('[data-testid="recovery-result-panel"]').scrollIntoView({block:'center'})`);
+  const resultOverflow=await evaluate('document.documentElement.scrollWidth-innerWidth');
+  assert(resultOverflow<=1,`${width}px restore result overflow: ${resultOverflow}`);
+  await shot(`${width}-restore-result`);
+  checks.push({width,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow,restoreRollbackResult:true,restoreResultOverflow:resultOverflow});
   await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:init.identifier});
  }
  await writeFile(`${output}/checks.json`,JSON.stringify({source:'synthetic MSW visual/interaction data; backend behavior tested separately',checks},null,2));

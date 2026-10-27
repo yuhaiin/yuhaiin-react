@@ -21,6 +21,11 @@ export async function restoreBackup(option: RestoreOption): Promise<void> {
 export type RecoveryBackup = import('@/api/generated-contracts').Go.backup.RecoveryBackup;
 export type RecoveryPolicy = import('@/api/generated-contracts').Go.backup.RecoveryPolicy;
 export type RecoveryBackupStatus = import('@/api/generated-contracts').Go.backup.RecoveryBackupStatus;
+export type RecoveryRestoreStatus = import('@/api/generated-contracts').Go.backup.RecoveryRestoreStatus;
+
+export function getRecoveryRestoreStatus(): Promise<RecoveryRestoreStatus> {
+  return requestJSON('GET', '/api/v2/backup/recovery/restore');
+}
 
 export function getRecoveryBackups(): Promise<RecoveryBackupStatus> {
   return requestJSON('GET', '/api/v2/backup/recovery');

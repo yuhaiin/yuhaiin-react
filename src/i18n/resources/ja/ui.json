@@ -817,5 +817,22 @@
       "quota_and_usage_state_can_move_backwards": "割り当て量と使用状況はバックアップ時点に戻る可能性があります。",
       "different_or_damaged_target_identity_will_be_replaced": "復元先の異なる、または破損した識別情報は置換されます。"
     }
+  },
+  "recoveryResult": {
+    "title": "直近の復元結果",
+    "description": "起動確認後に、復元の確定またはロールバックの結果を記録します。",
+    "error": "直近の復元結果を読み込めませんでした。",
+    "loading": "復元結果を読み込み中…",
+    "empty": "復元結果はまだ記録されていません。",
+    "backup": "バックアップ ID",
+    "transaction": "トランザクション ID",
+    "instance": "インスタンス ID",
+    "point": "復元ポイント",
+    "adopted": "復元した起動設定を次回以降の再起動でも使用します。",
+    "hostSettings": "起動時は引き続きサービスの設定を使用します。",
+    "states": {
+      "committed": "復元した環境の起動確認に成功しました",
+      "rolled_back": "復元を取り消し、以前の環境に戻しました"
+    }
   }
 }

@@ -817,5 +817,22 @@
       "quota_and_usage_state_can_move_backwards": "할당량과 사용 상태가 백업 시점으로 되돌아갈 수 있습니다.",
       "different_or_damaged_target_identity_will_be_replaced": "대상의 다른 식별 정보 또는 손상된 식별 정보가 교체됩니다."
     }
+  },
+  "recoveryResult": {
+    "title": "최근 복원 결과",
+    "description": "시작 확인 후 복원된 배포의 확정 또는 롤백 결과를 기록합니다.",
+    "error": "최근 복원 결과를 불러오지 못했습니다.",
+    "loading": "복원 결과 불러오는 중…",
+    "empty": "아직 기록된 복원 결과가 없습니다.",
+    "backup": "백업 ID",
+    "transaction": "트랜잭션 ID",
+    "instance": "인스턴스 ID",
+    "point": "복구 지점",
+    "adopted": "이후 재시작에서도 복원된 시작 설정을 사용합니다.",
+    "hostSettings": "시작 시 기존 서비스 설정을 계속 사용합니다.",
+    "states": {
+      "committed": "복원된 배포가 시작 확인을 통과했습니다",
+      "rolled_back": "복원을 취소하고 이전 배포로 돌아갔습니다"
+    }
   }
 }

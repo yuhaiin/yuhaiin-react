@@ -262,3 +262,22 @@ Browser tests at 1440/360/320 px cover upload, private input clearing, identity
 warnings, file expansion and confirmed discard. Fixtures are synthetic; the
 backend's actual HTTPS service drill independently checks import authentication,
 read-only denial, a stable service PID during preview and staging removal.
+
+## Latest restore result
+
+The Backup page reads the backend's actual latest restore result under
+`backup:manage`. It distinguishes a restored deployment that passed startup
+checks from a rollback to the previous deployment, shows backup/transaction/
+instance/recovery-point references and states whether restored startup settings
+are retained. A backup or preview does not create a successful restore result.
+Missing history has an explicit empty state. Failed queries hide cached success;
+manual refresh is available without idle polling. Existing authentication-scope
+boundaries isolate the data across controller/session changes.
+
+The offline CLI's explicit `recovery restore -adopt-startup` can retain relocated
+TLS/authentication/listener/file inputs across restarts. Its transaction restores
+the previous adopted binding on a later failed restore. This status UI does not
+activate a preview or complete Web restoration. Compatible result fields require
+no additional SQLite migration beyond schema 22. EN/JA/KO and synthetic browser
+checks cover desktop/mobile result rendering; actual server-process certificate,
+restart, listener-failure and crash drills run in the backend.

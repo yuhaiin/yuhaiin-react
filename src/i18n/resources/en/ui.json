@@ -817,5 +817,22 @@
       "quota_and_usage_state_can_move_backwards": "Quota and usage state can move backwards to the backup time.",
       "different_or_damaged_target_identity_will_be_replaced": "The target has a different or damaged identity that restoration would replace."
     }
+  },
+  "recoveryResult": {
+    "title": "Latest restore result",
+    "description": "Recorded after startup checks commit the restored deployment or roll it back.",
+    "error": "The latest restore result could not be loaded.",
+    "loading": "Loading restore result…",
+    "empty": "No restore result has been recorded.",
+    "backup": "Backup ID",
+    "transaction": "Transaction ID",
+    "instance": "Instance ID",
+    "point": "Recovery point",
+    "adopted": "Restored startup settings are retained for future restarts.",
+    "hostSettings": "Startup continues to use the service settings.",
+    "states": {
+      "committed": "Restored deployment passed startup checks",
+      "rolled_back": "Restore rolled back to the previous deployment"
+    }
   }
 }

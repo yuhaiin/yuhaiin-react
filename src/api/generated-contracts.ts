@@ -103,6 +103,9 @@ export namespace Go {
       reason?: string;
       items: RecoveryBackup[];
     }
+    export interface RecoveryRestoreStatus {
+      result?: RecoveryRestoreResult;
+    }
     export interface RecoveryRestorePreview {
       manifest: RecoveryManifest;
       mode: string;
@@ -124,6 +127,7 @@ export namespace Go {
       recoveryPoint: string;
       state: string;
       runtime: RecoveryRuntime;
+      adoptStartup?: boolean;
     }
     export interface Option {
       instanceName: string;

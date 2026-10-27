@@ -129,6 +129,7 @@ const worker=setupWorker(
     }
     else if(scenario==='reliability' && op==='backup.recovery.retry')recoveryItems.find(item=>item.id===p.id).state='verified';
     else if(scenario==='reliability' && op==='backup.recovery.imports')result=recoveryImports;
+    else if(scenario==='reliability' && op==='backup.recovery.restore.status')result={result:{backupId:'22222222-2222-4222-8222-222222222222',transactionId:'44444444-4444-4444-8444-444444444444',instanceId:'33333333-3333-4333-8333-333333333333',recoveryPoint:'.recovery-point-44444444-4444-4444-8444-444444444444',state:'rolled_back',adoptStartup:true,runtime:{managementAuth:true,managementTLS:'files',workingDirectory:'/synthetic-deployment'}}};
     else if(scenario==='reliability' && op==='backup.recovery.import.preview'){
       if(!p.identity && !p.passphrase)return errorResponse('Private synthetic fixture input required',400);
       const item=recoveryImports.find(item=>item.id===p.id);

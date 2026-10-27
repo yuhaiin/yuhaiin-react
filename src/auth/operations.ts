@@ -21,6 +21,7 @@ export const operationPermissions: Record<RPCOperation, string> = {
     "backup.recovery.import.upload": "backup:manage",
     "backup.recovery.import.preview": "backup:manage",
     "backup.recovery.import.discard": "backup:manage",
+    "backup.recovery.restore.status": "backup:manage",
     "backup.config.get": "backup:manage",
     "backup.config.put": "backup:manage",
     "tools.diagnostics": "diagnostics:run",
