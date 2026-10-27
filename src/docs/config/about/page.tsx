@@ -132,7 +132,7 @@ export default function About() {
         setApplyingUpdate(true);
         recovery.begin(update, info);
         try {
-            await applyUpdate(channel, update.targetTag);
+            await applyUpdate(channel, update.targetTag, update.assetSha256);
             ctx.Info("Update started. The service will restart shortly.");
         } catch (err) {
             // A network disconnect may be the service restarting after accepting the update.

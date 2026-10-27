@@ -5,8 +5,8 @@ export async function checkUpdate(channel: UpdateChannel): Promise<UpdateCheck> 
   return requestJSON<UpdateCheck>("POST", "/api/v2/update/check", { channel });
 }
 
-export async function applyUpdate(channel: UpdateChannel, targetTag: string): Promise<void> {
-  await requestJSON<Record<string, never>>("POST", "/api/v2/update/apply", { channel, targetTag });
+export async function applyUpdate(channel: UpdateChannel, targetTag: string, expectedSha256?: string): Promise<void> {
+  await requestJSON<Record<string, never>>("POST", "/api/v2/update/apply", { channel, targetTag, expectedSha256 });
 }
 
 export async function getUpdateStatus(signal?: AbortSignal): Promise<UpdateStatus> {

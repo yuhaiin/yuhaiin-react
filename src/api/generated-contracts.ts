@@ -2041,6 +2041,7 @@ export namespace Go {
       channel: string;
       targetTag: string;
       includePrerelease: boolean;
+      expectedSha256?: string;
     }
     export interface Status {
       running: boolean;
