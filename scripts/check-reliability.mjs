@@ -29,7 +29,7 @@ try {
  async function wait(expression){for(let i=0;i<150;i++){try{if(await evaluate(expression))return;}catch(e){if(!/context|navigat/i.test(String(e)))throw e;}await sleep(100);}throw Error(`Not ready: ${expression}; ${await evaluate('document.body?.innerText')}`);}
  async function clickText(text,selector='button, summary'){
   if(selector.includes('[role="dialog"]'))await waitForPreview(send,'[role="dialog"]');
-  await evaluate(`(()=>{document.querySelector('[data-reliability-click-target]')?.removeAttribute('data-reliability-click-target');const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.textContent.trim()===${JSON.stringify(text)}&&e.getBoundingClientRect().width&&!e.disabled);if(!e)throw Error('Missing enabled '+${JSON.stringify(text)});e.dataset.reliabilityClickTarget='';e.scrollIntoView({block:'center'});})()`);
+  await evaluate(`(()=>{document.querySelector('[data-reliability-click-target]')?.removeAttribute('data-reliability-click-target');const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.textContent.trim()===${JSON.stringify(text)}&&e.getBoundingClientRect().width&&!e.disabled);if(!e)throw Error('Missing enabled '+${JSON.stringify(text)});const target=e.tagName==='LABEL'&&e.control?e.control:e;if(target.disabled)throw Error('Disabled control '+${JSON.stringify(text)});target.dataset.reliabilityClickTarget='';target.scrollIntoView({block:'center'});})()`);
   await waitForPreview(send,'[data-reliability-click-target]');
   const point=await evaluate(`(()=>{const r=document.querySelector('[data-reliability-click-target]').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);
   await send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...point});await send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...point});await sleep(150);
@@ -218,6 +218,7 @@ try {
   for(const label of ['I accept the interruption of active connections during service maintenance.', 'I have the external recovery private key and offline host access. I understand that recovery may require the matching old binary and database backup, and can restore older credential validity.']) {
    await clickText(label,'[role="dialog"] label');
   }
+  await wait(`[...document.querySelectorAll('[role="dialog"] [role="switch"]')].length===2&&[...document.querySelectorAll('[role="dialog"] [role="switch"]')].every(e=>e.getAttribute('aria-checked')==='true')`);
   const protectedOverflow=await evaluate(`(()=>{const e=document.querySelector('[role="dialog"]');return e.scrollWidth-e.clientWidth;})()`);
   assert(protectedOverflow<=1,`${width}px protected update confirmation overflow: ${protectedOverflow}`);
   await shot(`${width}-protected-update-consent`);
