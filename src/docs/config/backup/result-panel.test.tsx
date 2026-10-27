@@ -4,9 +4,9 @@ import { afterEach, expect, it, vi } from 'vitest';
 import type { RecoveryRestoreStatus } from '@/api/backup';
 import { RecoveryResultPanel } from './result-panel';
 
-const mocked = vi.hoisted(() => ({ data: {} as RecoveryRestoreStatus, error: undefined as Error | undefined, mutate: vi.fn(async () => undefined) }));
+const mocked = vi.hoisted(() => ({ data: {} as RecoveryRestoreStatus, error: undefined as Error | undefined, imports: vi.fn(async () => undefined), mutate: vi.fn(async () => undefined) }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
-vi.mock('swr', () => ({ default: () => ({ data: mocked.data, error: mocked.error, isLoading: false, mutate: mocked.mutate }) }));
+vi.mock('swr', () => ({ useSWRConfig: () => ({ mutate: mocked.imports }), default: () => ({ data: mocked.data, error: mocked.error, isLoading: false, mutate: mocked.mutate }) }));
 vi.mock('@/api/backup', () => ({ getRecoveryRestoreStatus: vi.fn() }));
 const roots: ReturnType<typeof createRoot>[] = [];
 afterEach(() => { act(() => roots.forEach(root => root.unmount())); roots.length = 0; document.body.innerHTML = ''; mocked.data = {}; mocked.error = undefined; vi.clearAllMocks(); });
@@ -55,4 +55,14 @@ it('hides cached success when the result can no longer be verified by the API', 
     expect(host.querySelector('[role=alert]')?.textContent).toBe('recoveryResult.error');
     expect(host.textContent).not.toContain('recoveryResult.states.committed');
     expect(host.querySelector('dl')).toBeNull();
+});
+
+it('suppresses cached committed history while another restore is admitted', async () => {
+    result('committed', true);
+    mocked.data.pendingImportId = 'pending-import';
+    mocked.data.pendingPreviewId = 'pending-preview';
+    const host = await mount();
+    expect(host.querySelector('[role=status]')?.textContent).toBe('recoveryActivation.admitted');
+    expect(host.textContent).not.toContain('recoveryResult.states.committed');
+    expect(host.textContent).not.toContain('recoveryResult.empty');
 });

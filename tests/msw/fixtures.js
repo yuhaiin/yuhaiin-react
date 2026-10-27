@@ -14,6 +14,7 @@ let backupConfig={instanceName:'preview',interval:0,lastBackupHash:'',s3:{enable
 let recoveryItems=[{id:'11111111-1111-4111-8111-111111111111',backupId:'22222222-2222-4222-8222-222222222222',instanceId:'33333333-3333-4333-8333-333333333333',target:'s3',state:'verified',createdAt:'2026-10-26T10:00:00Z',size:1048576,verification:'s3_ciphertext_readback',uploadAttempts:1,includesHistory:false}];
 let recoveryStartedAt=0;
 let recoveryImports=[];
+let recoveryRestoreResult={backupId:'22222222-2222-4222-8222-222222222222',transactionId:'44444444-4444-4444-8444-444444444444',instanceId:'33333333-3333-4333-8333-333333333333',recoveryPoint:'.recovery-point-44444444-4444-4444-8444-444444444444',state:'rolled_back',adoptStartup:true,runtime:{managementAuth:true,managementTLS:'files',workingDirectory:'/synthetic-deployment'}};
 const size = scenario === 'lazy' ? 10000 : scenario === 'large' ? 2000 : scenario === 'empty' ? 0 : scenario === 'connections-small' ? 3 : 95;
 const nodes = Array.from({length:size},(_,i)=>({id:`node-${i}`,name:i===0?'Mobile test node with a very long name for narrow screens':`Node ${i}`,group:'manual',origin:'manual',enabled:true,chain:[{type:'http_mock',http_mock:{data:'YQ=='}}]}));
 if (scenario === 'lazy') {
@@ -129,12 +130,21 @@ const worker=setupWorker(
     }
     else if(scenario==='reliability' && op==='backup.recovery.retry')recoveryItems.find(item=>item.id===p.id).state='verified';
     else if(scenario==='reliability' && op==='backup.recovery.imports')result=recoveryImports;
-    else if(scenario==='reliability' && op==='backup.recovery.restore.status')result={result:{backupId:'22222222-2222-4222-8222-222222222222',transactionId:'44444444-4444-4444-8444-444444444444',instanceId:'33333333-3333-4333-8333-333333333333',recoveryPoint:'.recovery-point-44444444-4444-4444-8444-444444444444',state:'rolled_back',adoptStartup:true,runtime:{managementAuth:true,managementTLS:'files',workingDirectory:'/synthetic-deployment'}}};
+    else if(scenario==='reliability' && op==='backup.recovery.restore.status')result={result:recoveryRestoreResult};
     else if(scenario==='reliability' && op==='backup.recovery.import.preview'){
       if(!p.identity && !p.passphrase)return errorResponse('Private synthetic fixture input required',400);
       const item=recoveryImports.find(item=>item.id===p.id);
       if(!item)return errorResponse('Synthetic import not found',404);
-      item.state='previewed';item.preview={mode:p.mode,targetInstanceId:'33333333-3333-4333-8333-333333333333',instanceId:'33333333-3333-4333-8333-333333333333',manifest:{id:recoveryItems[0].backupId,instanceId:'33333333-3333-4333-8333-333333333333',build:{version:'synthetic-preview'},completeInventory:true,files:[]},files:[{path:'state.db',install:true,replace:true},{path:'management.db',install:true,replace:true},{path:'identity/native/'+('long-device-file-'.repeat(8))+'.json',install:true,replace:false}],warnings:['service_restart_required','revoked_credentials_may_be_restored','quota_and_usage_state_can_move_backwards']};result=item;
+      item.state='previewed';item.previewId=crypto.randomUUID();item.preview={runtime:{managementAuth:true,managementTLS:'files',workingDirectory:'/synthetic-deployment',listenAddress:'127.0.0.1:50051'},mode:p.mode,targetInstanceId:'33333333-3333-4333-8333-333333333333',instanceId:'33333333-3333-4333-8333-333333333333',manifest:{id:recoveryItems[0].backupId,instanceId:'33333333-3333-4333-8333-333333333333',build:{version:'synthetic-preview'},completeInventory:true,files:[]},files:[{path:'state.db',install:true,replace:true},{path:'management.db',install:true,replace:true},{path:'identity/native/'+('long-device-file-'.repeat(8))+'.json',install:true,replace:false}],warnings:['service_restart_required','revoked_credentials_may_be_restored','quota_and_usage_state_can_move_backwards']};result=item;
+    }
+    else if(scenario==='reliability' && op==='backup.recovery.import.activate'){
+      const item=recoveryImports.find(item=>item.id===p.id);
+      if(!item || p.confirmPreviewId!==item.previewId || p.confirmBackupId!==item.preview.manifest.id || p.confirmSourceInstanceId!==item.preview.manifest.instanceId || p.confirmTargetInstanceId!==item.preview.targetInstanceId || p.confirmResultInstanceId!==item.preview.instanceId || !p.confirmMaintenance || !p.confirmStartupChanges || !p.confirmSourceStopped || !p.confirmCredentialRevival) return errorResponse('Exact-preview restore consent required',400);
+      item.state='activating';result=structuredClone(item);
+      // UI admission must still display pending until it explicitly reads the
+      // authoritative result. This fixture never stops or restores any service.
+      recoveryRestoreResult={backupId:item.preview.manifest.id,transactionId:item.previewId,instanceId:item.preview.instanceId,recoveryPoint:'.recovery-point-'+item.previewId,state:'committed',adoptStartup:true,runtime:item.preview.runtime};
+      recoveryImports=recoveryImports.filter(value=>value.id!==item.id);
     }
     else if(scenario==='reliability' && op==='backup.recovery.import.discard'){
       if(!p.confirm)return errorResponse('Discard confirmation required',400);

@@ -1,9 +1,10 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import useSWR from 'swr';
+import useSWR, { useSWRConfig } from 'swr';
 import { ArchiveRestore, RefreshCw, Trash2, Upload } from 'lucide-react';
 import { discardRecoveryImport, getRecoveryImports, previewRecoveryImport, uploadRecoveryImport } from '@/api/backup-import';
 import type { RecoveryImport } from '@/api/backup-import';
+import type { RecoveryRestoreStatus } from '@/api/backup';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader, IconBox, SettingLabel } from '@/component/v2/card';
 import { ConfirmModal } from '@/component/v2/confirm';
@@ -11,11 +12,15 @@ import { Select, SettingPasswordVertical } from '@/component/v2/forms';
 import { Input } from '@/component/v2/input';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { useAsyncAction } from '@/hooks/use-editor-draft';
+import { RecoveryActivationDialog } from './activation-dialog';
 
 export function RecoveryImportPanel() {
     const { t } = useTranslation('ui');
     const toast = useContext(GlobalToastContext);
     const { data = [], error, mutate } = useSWR('/api/v2/backup/recovery/imports', getRecoveryImports, { revalidateOnFocus: false });
+    const { mutate: mutateCache } = useSWRConfig();
+    const [restore, setRestore] = useState<RecoveryImport>();
+    const [uncertain, setUncertain] = useState('');
     const [discard, setDiscard] = useState<RecoveryImport>();
     const [selected, setSelected] = useState('');
     const [mode, setMode] = useState<'original' | 'clone'>('original');
@@ -59,6 +64,12 @@ export function RecoveryImportPanel() {
     return <section data-testid="recovery-import-panel" aria-label={t('recoveryImport.title')}><Card>
         <CardHeader><IconBox icon={ArchiveRestore} tone="primary" title={t('recoveryImport.title')} description={t('recoveryImport.description')} /></CardHeader>
         <CardBody>
+            {restore && <RecoveryActivationDialog key={restore.previewId} item={restore} onClose={() => setRestore(undefined)} onAdmitted={unknown => {
+                setUncertain(unknown ? restore.previewId ?? '' : '');
+                void mutate(data.map(item => item.id === restore.id ? { ...item, state: 'activating' } : item), { revalidate: false });
+                void mutateCache('/api/v2/backup/recovery/restore', { pendingImportId: restore.id, pendingPreviewId: restore.previewId }, { revalidate: false });
+            }} />}
+            {uncertain && <p role="status" className="mb-4 text-sm text-ui-muted">{t('recoveryActivation.uncertain')}</p>}
             <ConfirmModal show={discard !== undefined} title={t('recoveryImport.discard')} content={<p>{t('recoveryImport.discardWarning')}</p>}
                 disabled={action.pending} onHide={() => setDiscard(undefined)} onOk={() => {
                     if (!discard) return;
@@ -72,12 +83,16 @@ export function RecoveryImportPanel() {
                 <p className="mt-2 text-sm text-ui-muted">{t('recoveryImport.limits')}</p>
                 <div className="my-4 flex flex-wrap gap-2">
                     <Button onClick={upload} disabled={!file}><Upload size={16} /><span>{t('recoveryImport.upload')}</span></Button>
-                    <Button onClick={() => void mutate()}><RefreshCw size={16} /><span>{t('recoveryBackup.refresh')}</span></Button>
+                    <Button onClick={() => void action.run(async () => {
+                        await mutate();
+                        const status = await mutateCache<RecoveryRestoreStatus>('/api/v2/backup/recovery/restore');
+                        if (status?.result?.transactionId === uncertain) setUncertain('');
+                    })}><RefreshCw size={16} /><span>{t('recoveryBackup.refresh')}</span></Button>
                 </div>
                 {data.length > 0 && <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
                     <div><SettingLabel>{t('recoveryImport.selected')}</SettingLabel>
                         <Select ariaLabel={t('recoveryImport.selected')} value={selected} onValueChange={id => { setSelected(id); setSecret(''); }}
-                            items={data.filter(item => item.state !== 'uploading').map(item => ({ value: item.id, label: `${item.id.slice(0, 8)} · ${(item.size / 1048576).toFixed(1)} MiB` }))} /></div>
+                            items={data.filter(item => item.state === 'uploaded' || item.state === 'previewed').map(item => ({ value: item.id, label: `${item.id.slice(0, 8)} · ${(item.size / 1048576).toFixed(1)} MiB` }))} /></div>
                     <div><SettingLabel>{t('recoveryImport.mode')}</SettingLabel>
                         <Select ariaLabel={t('recoveryImport.mode')} value={mode} onValueChange={value => { if (value === 'original' || value === 'clone') setMode(value); }}
                             items={[{ value: 'original', label: t('recoveryImport.original') }, { value: 'clone', label: t('recoveryImport.clone') }]} /></div>
@@ -99,6 +114,8 @@ export function RecoveryImportPanel() {
                             <p className="mt-1 text-sm text-ui-muted">{t('recoveryImport.expires', { time: new Date(item.expiresAt).toLocaleString() })}</p></div>
                         <Button aria-label={t('recoveryImport.discard')} disabled={action.pending} onClick={() => setDiscard(item)}><Trash2 size={16} /></Button>
                     </div>
+                    {item.state === 'activating' && <p role="status" className="mt-3 text-sm text-ui-muted">{t('recoveryActivation.admitted')}</p>}
+                    {item.errorCode && <p role="alert" className="mt-3 text-sm text-ui-danger">{t(item.errorCode === 'cleanup_failed' ? 'recoveryActivation.cleanupFailed' : 'recoveryActivation.failed')}</p>}
                     {item.preview && <div className="mt-3 min-w-0">
                         <p className="text-sm">{t('recoveryImport.version', { version: item.preview.manifest.build.version })}</p>
                         <p className="mt-1 break-all text-xs">{t('recoveryImport.source', { id: item.preview.manifest.instanceId })}</p>
@@ -110,6 +127,7 @@ export function RecoveryImportPanel() {
                             <ul className="mt-2 space-y-2">{item.preview.files.map(entry => <li key={entry.path} className="break-all font-mono text-xs">
                                 {t(entry.install ? entry.replace ? 'recoveryImport.replace' : 'recoveryImport.install' : 'recoveryImport.remove')} · {entry.path}
                             </li>)}</ul></details>
+                        {item.state === 'previewed' && item.previewId && <Button className="mt-4" variant="outline-danger" disabled={action.pending} onClick={() => setRestore(item)}>{t('recoveryActivation.review')}</Button>}
                     </div>}
                 </article>)}
             </div>

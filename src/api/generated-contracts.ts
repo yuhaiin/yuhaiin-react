@@ -53,7 +53,23 @@ export namespace Go {
       size: number;
       sha256: string;
       state: string;
+      errorCode?: string;
+      previewId?: string;
       preview?: RecoveryRestorePreview;
+    }
+    export interface RecoveryImportActivateRequest {
+      id: string;
+      confirmPreviewId: string;
+      confirmBackupId: string;
+      confirmSourceInstanceId: string;
+      confirmTargetInstanceId: string;
+      confirmResultInstanceId: string;
+      confirmMaintenance: boolean;
+      confirmStartupChanges: boolean;
+      confirmSourceStopped: boolean;
+      confirmCredentialRevival: boolean;
+      confirmIdentityReplacement: boolean;
+      confirmCloneEnrollment: boolean;
     }
     export interface RecoveryImportPreviewRequest {
       id: string;
@@ -104,6 +120,8 @@ export namespace Go {
       items: RecoveryBackup[];
     }
     export interface RecoveryRestoreStatus {
+      pendingImportId?: string;
+      pendingPreviewId?: string;
       result?: RecoveryRestoreResult;
     }
     export interface RecoveryRestorePreview {

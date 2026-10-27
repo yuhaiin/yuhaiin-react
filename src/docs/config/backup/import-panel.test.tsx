@@ -7,8 +7,8 @@ import { RecoveryImportPanel } from './import-panel';
 
 const mocked = vi.hoisted(() => ({ items: [] as RecoveryImport[], mutate: vi.fn(async () => undefined) }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
-vi.mock('swr', () => ({ default: () => ({ data: mocked.items, error: undefined, mutate: mocked.mutate }) }));
-vi.mock('@/api/backup-import', () => ({ discardRecoveryImport: vi.fn(), getRecoveryImports: vi.fn(), previewRecoveryImport: vi.fn(), uploadRecoveryImport: vi.fn() }));
+vi.mock('swr', () => ({ useSWRConfig: () => ({ mutate: mocked.mutate }), default: () => ({ data: mocked.items, error: undefined, mutate: mocked.mutate }) }));
+vi.mock('@/api/backup-import', () => ({ activateRecoveryImport: vi.fn(), discardRecoveryImport: vi.fn(), getRecoveryImports: vi.fn(), previewRecoveryImport: vi.fn(), uploadRecoveryImport: vi.fn() }));
 const roots: ReturnType<typeof createRoot>[] = [];
 afterEach(() => { act(() => roots.forEach(root => root.unmount())); roots.length = 0; document.body.innerHTML = ''; mocked.items = []; vi.clearAllMocks(); });
 

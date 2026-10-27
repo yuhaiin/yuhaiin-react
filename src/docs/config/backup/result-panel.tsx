@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import useSWR from 'swr';
+import useSWR, { useSWRConfig } from 'swr';
 import { History, RefreshCw } from 'lucide-react';
 import { getRecoveryRestoreStatus } from '@/api/backup';
 import { Badge } from '@/component/v2/badge';
@@ -8,8 +8,10 @@ import { Card, CardBody, CardHeader, IconBox } from '@/component/v2/card';
 
 export function RecoveryResultPanel() {
     const { t } = useTranslation('ui');
+    const { mutate: mutateCache } = useSWRConfig();
     const { data, error, isLoading, mutate } = useSWR('/api/v2/backup/recovery/restore', getRecoveryRestoreStatus, { revalidateOnFocus: false });
-    const result = error ? undefined : data?.result;
+    const pending = !error && Boolean(data?.pendingImportId);
+    const result = error || pending ? undefined : data?.result;
     const fields = result ? [
         [t('recoveryResult.backup'), result.backupId],
         [t('recoveryResult.transaction'), result.transactionId],
@@ -21,7 +23,8 @@ export function RecoveryResultPanel() {
         <CardBody>
             {error && <p role="alert" className="text-sm text-ui-danger">{t('recoveryResult.error')}</p>}
             {isLoading && <p role="status" className="text-sm text-ui-muted">{t('recoveryResult.loading')}</p>}
-            {!error && !isLoading && !result && <p className="text-sm text-ui-muted">{t('recoveryResult.empty')}</p>}
+            {!error && !isLoading && !result && !pending && <p className="text-sm text-ui-muted">{t('recoveryResult.empty')}</p>}
+            {pending && <p role="status" className="text-sm text-ui-muted">{t('recoveryActivation.admitted')}</p>}
             {result && <div className="min-w-0">
                 <Badge variant={result.state === 'committed' ? 'success' : result.state === 'rolled_back' ? 'warning' : 'muted'}>
                     {t(`recoveryResult.states.${result.state}`, { defaultValue: result.state })}
@@ -33,7 +36,7 @@ export function RecoveryResultPanel() {
                     </div>)}
                 </dl>
             </div>}
-            <Button className="mt-4" onClick={() => void mutate()} disabled={isLoading}><RefreshCw size={16} /><span>{t('recoveryBackup.refresh')}</span></Button>
+            <Button className="mt-4" onClick={() => { void mutate().then(() => mutateCache('/api/v2/backup/recovery/imports')).catch(() => undefined); }} disabled={isLoading}><RefreshCw size={16} /><span>{t('refresh')}</span></Button>
         </CardBody>
     </Card></section>;
 }

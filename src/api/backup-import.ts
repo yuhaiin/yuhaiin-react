@@ -33,3 +33,7 @@ export function previewRecoveryImport(id: string, mode: 'original' | 'clone', id
 export function discardRecoveryImport(id: string): Promise<void> {
     return requestJSON('DELETE', `/api/v2/backup/recovery/imports/${encodeURIComponent(id)}`, { confirm: true });
 }
+
+export function activateRecoveryImport(request: Go.backup.RecoveryImportActivateRequest): Promise<RecoveryImport> {
+    return requestJSON('POST', `/api/v2/backup/recovery/imports/${encodeURIComponent(request.id)}/activate`, request, undefined, AbortSignal.timeout(15_000));
+}

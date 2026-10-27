@@ -148,7 +148,39 @@ try {
   const resultOverflow=await evaluate('document.documentElement.scrollWidth-innerWidth');
   assert(resultOverflow<=1,`${width}px restore result overflow: ${resultOverflow}`);
   await shot(`${width}-restore-result`);
-  checks.push({width,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow,restoreRollbackResult:true,restoreResultOverflow:resultOverflow});
+  // A second import exercises explicit destructive consent and admission.
+  // These are synthetic UI requests; the backend's systemd drill proves actual
+  // file switching, authentication, startup checks and rollback separately.
+  const restoreInput=await send('DOM.querySelector',{nodeId:(await send('DOM.getDocument')).root.nodeId,selector:'[data-testid="recovery-import-panel"] input[type="file"]'});
+  await send('DOM.setFileInputFiles',{nodeId:restoreInput.nodeId,files:[importFixture]});
+  await clickText('Upload encrypted archive','button');
+  await evaluate(`document.querySelector('[data-testid="recovery-import-panel"] input[type="password"]').focus()`);
+  await send('Input.insertText',{text:'AGE-SECRET-KEY-SYNTHETIC-BROWSER-FIXTURE'});
+  await clickText('Authenticate and preview','button');
+  await wait(`[...document.querySelectorAll('button')].some(e=>e.textContent.trim()==='Review and restore')`);
+  await clickText('Review and restore','button');
+  await wait(`Boolean(document.querySelector('#recovery-confirm-target'))`);
+  assert(await evaluate(`[...document.querySelectorAll('[role="dialog"] button')].find(e=>e.textContent.trim()==='Stop service and restore').disabled`));
+  await evaluate(`document.querySelector('#recovery-confirm-target').focus()`);
+  await send('Input.insertText',{text:'33333333-3333-4333-8333-333333333333'});
+  const switches=await evaluate(`(()=>{const values=[...document.querySelectorAll('[role="dialog"] [role="switch"]')];values.forEach((e,i)=>e.dataset.restoreConsent=String(i));return values.length;})()`);
+  assert.equal(switches,4);
+  for(let index=0;index<switches;index++){
+    const point=await evaluate(`(()=>{const e=document.querySelector('[data-restore-consent="${index}"]');e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2};})()`);
+    await send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...point});await send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...point});
+  }
+  await wait(`[...document.querySelectorAll('[role="dialog"] button')].some(e=>e.textContent.trim()==='Stop service and restore'&&!e.disabled)`);
+  const activationOverflow=await evaluate(`(()=>{const e=document.querySelector('[role="dialog"]');return e.scrollWidth-e.clientWidth;})()`);
+  assert(activationOverflow<=1,`${width}px restore confirmation overflow: ${activationOverflow}`);
+  await shot(`${width}-restore-confirmation`);
+  await clickText('Stop service and restore','[role="dialog"] button');
+  await wait(`document.querySelector('[data-testid="recovery-result-panel"] [role="status"]')?.textContent.includes('Restore is admitted')`);
+  assert(!await evaluate(`document.querySelector('[data-testid="recovery-result-panel"]').textContent.includes('Restored deployment passed startup checks')`));
+  await clickText('Refresh','[data-testid="recovery-result-panel"] button');
+  await wait(`document.querySelector('[data-testid="recovery-result-panel"]').textContent.includes('Restored deployment passed startup checks')`);
+  await evaluate(`document.querySelector('[data-testid="recovery-result-panel"]').scrollIntoView({block:'center'})`);
+  await shot(`${width}-restore-committed`);
+  checks.push({width,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow,restoreRollbackResult:true,restoreResultOverflow:resultOverflow,restoreActivationConfirmed:true,restoreAdmissionDistinctFromCommit:true,restoreConfirmationOverflow:activationOverflow});
   await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:init.identifier});
  }
  await writeFile(`${output}/checks.json`,JSON.stringify({source:'synthetic MSW visual/interaction data; backend behavior tested separately',checks},null,2));

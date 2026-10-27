@@ -107,15 +107,15 @@ The backend now provides offline encrypted recovery preview/activation and
 startup rollback; generated models are synchronized here. The corresponding Web
 backup page now manages confirmed local/S3 encrypted captures, schedules,
 history, verification, downloads and retention on root-owned Linux systemd.
-Web restore, safe updates, broader host maintenance and certificate UI remain
+Safe updates, broader host maintenance and certificate UI remain
 in progress in the same two PRs. See [recovery contract status](docs/intelligent-selectors.md#offline-recovery-contract-synchronization).
 
 
 The Backup page now also uploads encrypted archives and shows authenticated
 original/clone recovery previews with identity warnings and file changes.
-Uploads and private staging are bounded and expire automatically. Web activation
-remains in progress; actual restoration is available
-through the backend offline CLI. See [preview behavior](docs/intelligent-selectors.md#disaster-recovery-preview).
+Uploads and private staging are bounded. Supported systemd hosts can restore
+through explicit target-ID and identity-risk confirmations; independent startup
+checks decide commit or rollback. Other hosts retain the backend offline CLI. See [preview behavior](docs/intelligent-selectors.md#disaster-recovery-preview).
 
 The Backup page also displays the latest recorded restore commit/rollback and
 whether restored startup settings persist across restarts. Failed result queries

@@ -166,7 +166,7 @@ The generated recovery contract now includes version 2 complete-inventory,
 startup-input, external dependency and uninitialized-identity metadata for the
 backend's offline create/verify commands. External source paths are descriptive
 metadata, never destinations to write. Full disaster-recovery creation is now
-exposed by the managed-backup panel below. Web restore activation remains pending.
+exposed by the managed-backup panel below. Confirmed Web activation is available on the supported systemd host.
 
 ## Native protocol lifecycle
 
@@ -193,15 +193,14 @@ supports authenticated preview, explicit original/clone confirmation, staged
 activation, durable rollback and startup verification. File activation reports
 `awaiting_startup`; the actual healthy server start commits the transaction.
 The managed-backup panel adds root-owned Linux systemd capture coordination,
-schedules, history and retention. Web restore activation, update recovery-point
+schedules, history and retention. Web activation reuses that host; update recovery-point
 controls, broader host coordination and certificate management remain in progress.
 
 Original-instance recovery explicitly acknowledges revived credentials and
 reverted quota state. Clone recovery disables restored nodes/listeners, resets
 management identities and selected native machine identities, and disables S3/
-measurement schedules pending administrator review. Any future restore UI must
-present these backend warnings and require confirmation of backup/source/target
-identifiers; it must not overwrite live SQLite files through the legacy route.
+measurement schedules pending administrator review. The restore UI presents these backend warnings and requires confirmation of
+the exact preview and backup/source/target/resulting identifiers; it must not overwrite live SQLite files through the legacy route.
 See the backend [offline operator workflow](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/recovery-archive.md)
 for current support, tests and platform limits.
 
@@ -232,8 +231,8 @@ fixtures are synthetic; the backend separately exercises a real installed
 service, HTTPS authorization, S3 readback and helper-crash restart in an isolated
 systemd container.
 
-Web archive upload and authenticated preview are described below. Actual Web
-activation and recent-restore presentation are still required. Existing plaintext offline rollback points have separate retention;
+Web archive upload and authenticated preview are described below. Confirmed Web activation and recent-restore presentation use the same
+installed-service coordinator. Existing plaintext offline rollback points have separate retention;
 the managed encrypted-archive policy does not delete them. See the backend
 [managed-backup operator guide](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/managed-recovery-backups.md)
 for lifecycle details, resource limits and the remaining work.
@@ -249,15 +248,16 @@ version, file changes and explicit credential/device/quota warnings. Expanded
 file paths wrap on mobile. Discard requires confirmation.
 
 Backend schema 22 bounds staging to two imports, 100 GiB combined ciphertext
-and a 30-minute lifetime. Uploads stream the File directly, support cancellation
+and a 30-minute preview lifetime. Admitted maintenance retains staging until
+its controlled recovery resolves. Uploads stream the File directly, support cancellation
 and never call File.arrayBuffer. The server reuses the existing authenticated
 archive decoder and restore planner, keeps prepared files private, protects a
 disk reserve and runs expiry cleanup on the existing Backup scheduler. Import
 records belong to the creating administrator. Browser refresh can reload the
 remaining staged previews.
 
-Current Web operations stop at preview; actual activation remains in progress.
-The offline CLI continues to provide complete restoration and startup rollback.
+Supported systemd deployments can continue from authenticated preview to a
+confirmed maintenance restore. The offline CLI remains available for other hosts.
 Browser tests at 1440/360/320 px cover upload, private input clearing, identity
 warnings, file expansion and confirmed discard. Fixtures are synthetic; the
 backend's actual HTTPS service drill independently checks import authentication,
@@ -276,8 +276,49 @@ boundaries isolate the data across controller/session changes.
 
 The offline CLI's explicit `recovery restore -adopt-startup` can retain relocated
 TLS/authentication/listener/file inputs across restarts. Its transaction restores
-the previous adopted binding on a later failed restore. This status UI does not
-activate a preview or complete Web restoration. Compatible result fields require
-no additional SQLite migration beyond schema 22. EN/JA/KO and synthetic browser
+the previous adopted binding on a later failed restore. The separate confirmed
+activation dialog invokes the same controlled startup/rollback mechanism. Result
+fields are compatible; exclusive restore admission adds backend schema 23. EN/JA/KO and synthetic browser
 checks cover desktop/mobile result rendering; actual server-process certificate,
 restart, listener-failure and crash drills run in the backend.
+
+
+## Confirmed Web restore
+
+On the supported root-owned Linux systemd host, **Review and restore** opens a
+separate destructive-action dialog. Administrators type the target instance ID
+and acknowledge downtime/data replacement and restored TLS/auth/listener inputs.
+Original-instance mode requires stopped-source and revoked-credential/device/
+quota-rewind consent. Clone mode requires new administrator setup, protocol
+re-enrollment and disabled restored resources/schedules. A changed resulting
+identity has its own acknowledgement. All submitted identifiers are bound to one
+server-issued preview revision; replacing a preview invalidates prior consent.
+
+The backend seals projected files and SQLite schemas after authenticating the
+archive, stores no private decryption input, then takes the existing maintenance
+lease and stops SQLite owners before activation. A unique SQLite admission index
+excludes other restores and capture requests. Only the independent helper runs
+activation; the browser and request handler do not replace databases.
+
+The API response means **admitted**, not **committed**. A disconnect can occur
+after admission. The UI never automatically repeats that destructive request;
+it keeps an uncertain/pending state and offers manual result refresh. Old cached
+success is hidden during a pending operation. Refreshing the actual result also
+refreshes staged imports. Reconnect using restored HTTPS/listener settings or
+initialize a fresh clone administrator as needed.
+
+Actual startup checks, including database/listener health, determine commit.
+Startup failure, timeout and helper death use the existing rollback journal and
+restore the previous startup binding. Cleanup failures retain private-file
+ownership and an actionable error without preventing a safe service restart.
+An idle, unclaimed handoff can be discarded; a live helper's staging is protected
+by its maintenance lease and excluded from expiry cleanup. Web restoration
+requires a matching application version/platform; reviewed version changes and
+other maintenance hosts use the offline CLI.
+
+EN/JA/KO, typed-target/consent/uncertain-request unit tests and the existing
+1440/360/320 px real-browser regression cover the flow. Its MSW state remains
+synthetic. The backend's actual systemd/HTTPS drill separately restores changed
+configuration and tests clone certificate rotation, fresh administrator setup
+and rejection of the source session. Safe-update rollback, broader host support
+and ACME remain separate pending stages.
