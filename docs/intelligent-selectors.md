@@ -320,5 +320,40 @@ EN/JA/KO, typed-target/consent/uncertain-request unit tests and the existing
 1440/360/320 px real-browser regression cover the flow. Its MSW state remains
 synthetic. The backend's actual systemd/HTTPS drill separately restores changed
 configuration and tests clone certificate rotation, fresh administrator setup
-and rejection of the source session. Safe-update rollback, broader host support
-and ACME remain separate pending stages.
+and rejection of the source session. Protected updates and explicit paired offline recovery now use this same backup
+owner on root-owned Linux systemd. Broader host support and ACME remain pending.
+
+
+## Protected software maintenance
+
+The About page displays recovery readiness beside observed database catalogs.
+A database-migrating target is enabled only with configured protection and a
+supported host. The confirmation dialog requires maintenance and external-key /
+offline-recovery acknowledgement, with a separate no-point confirmation when an
+administrator disables protection. Missing protection is enabled by default in
+the existing Backup settings; periodic backup scheduling remains independent.
+A target must also declare support for the backend's startup-receipt protocol.
+
+The update observer persists the client operation UUID and reviewed executable
+SHA-256 across reloads. A matching committed startup receipt, produced after real
+backend database/inbound/Gateway/local-listener checks and verified against the
+installed MainPID, is required for protected-update success. A changed version or
+started helper alone cannot finish the observer. Retries poll status without
+replaying mutation requests. An unresolved operation shows its paired backup and
+source/target digests; only an unclaimed prepared handoff can be explicitly
+cancelled. Long outages display the host's `update-status` CLI procedure instead
+of inventing a successful update or automatic database rollback.
+
+Backend protection reuses coherent encrypted full snapshots. The point is local;
+configured S3 upload/readback resumes after service recovery. Potentially migrated
+failed stores require a reviewed matching source executable and database backup,
+with explicit original-instance and credential-revival confirmations. The full
+workflow and supported-host limitations are in the
+[backend update guide](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/update-rollback.md#protected-update-and-offline-recovery).
+
+Unit tests cover migrating/unknown/missing recovery state, consent, mismatched or
+stale operation/digest receipts and unchanged legacy-backend observation. The real
+browser harness at 1440/360/320 px confirms blocked unprotected migration,
+consented protected migration and matched receipt completion without horizontal
+overflow. Its data is synthetic; actual service migration, startup failure,
+SIGKILL and offline restoration run separately in the backend systemd fixture.

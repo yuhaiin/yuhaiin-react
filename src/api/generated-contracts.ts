@@ -87,6 +87,7 @@ export namespace Go {
       keepDays: number;
       includeHistory: boolean;
       allowMaintenance: boolean;
+      protectUpdates?: boolean;
     }
     export interface RecoveryBackup {
       id: string;
@@ -109,6 +110,7 @@ export namespace Go {
       retrieval?: string;
       retrievalErrorCode?: string;
       retrievedAt?: string;
+      updatePoint?: boolean;
     }
     export interface RecoveryRetrieveRequest {
       id: string;
@@ -2017,6 +2019,23 @@ export namespace Go {
       targetManagement: number;
       databaseRecoveryRequired: boolean;
     }
+    export interface RecoveryReadiness {
+      enabled: boolean;
+      supported: boolean;
+      ready: boolean;
+      reason: string;
+    }
+    export interface OperationStatus {
+      id: string;
+      phase: string;
+      backupJobId?: string;
+      backupId?: string;
+      targetSha256: string;
+      sourceSha256: string;
+      errorCode?: string;
+      startedAt: string;
+      completedAt?: string;
+    }
     export interface CheckResult {
       supported: boolean;
       channel: string;
@@ -2032,16 +2051,21 @@ export namespace Go {
       updateAvailable: boolean;
       reason: string;
       compatibility?: CompatibilityStatus;
+      recovery?: RecoveryReadiness;
     }
     export interface CheckRequest {
       channel: string;
       includePrerelease: boolean;
     }
     export interface ApplyRequest {
+      operationId?: string;
       channel: string;
       targetTag: string;
       includePrerelease: boolean;
       expectedSha256?: string;
+      confirmMaintenance: boolean;
+      confirmManualRecovery: boolean;
+      confirmNoRecoveryPoint: boolean;
     }
     export interface Status {
       running: boolean;
@@ -2050,6 +2074,7 @@ export namespace Go {
       bytesDownloaded: number;
       totalBytes: number;
       error: string;
+      operation?: OperationStatus;
     }
     export interface HistoryEntry {
       id: string;
@@ -2061,9 +2086,14 @@ export namespace Go {
     }
     export interface HistoryResult {
       items: HistoryEntry[];
+      recovery?: RecoveryReadiness;
     }
     export interface RollbackRequest {
+      operationId?: string;
       id: string;
+      confirmMaintenance: boolean;
+      confirmManualRecovery: boolean;
+      confirmNoRecoveryPoint: boolean;
     }
   }
   export namespace usage {

@@ -13,6 +13,7 @@ export function UpdateCompatibilityDetails({ value }: Props) {
             <div><dt className="text-ui-muted">{t('updateSafety.configuration')}</dt><dd>{value.currentConfiguration} → {value.targetConfiguration}</dd></div>
             <div><dt className="text-ui-muted">{t('updateSafety.management')}</dt><dd>{value.currentManagement || t('updateSafety.notEnabled')} → {value.targetManagement}</dd></div>
         </dl>}
+        {value?.reason === 'target_update_receipt_unsupported' && <p className="text-xs text-ui-danger">{t('protectedUpdate.missingReceipt')}</p>}
         <p className="text-xs text-ui-muted">{t(value?.databaseRecoveryRequired ? 'updateSafety.recoveryRequired' : 'updateSafety.binaryOnly')}</p>
     </div>;
 }

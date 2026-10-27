@@ -15,7 +15,7 @@ import { GlobalToastContext } from '@/component/v2/toast';
 
 export const defaultRecoveryPolicy: RecoveryPolicy = {
     enabled: false, target: 'local', recipient: '', intervalMinutes: 1440,
-    timeoutMinutes: 30, keepCount: 10, keepDays: 30, includeHistory: false, allowMaintenance: false,
+    timeoutMinutes: 30, keepCount: 10, keepDays: 30, includeHistory: false, allowMaintenance: false, protectUpdates: true,
 };
 const active = (item: RecoveryBackup) => item.retrieval === 'running' || ['queued', 'capturing', 'uploading', 'deleting'].includes(item.state)
     || (item.state === 'local_ready' && item.target === 's3');
@@ -106,6 +106,8 @@ export function RecoveryBackupPanel({ policy, onChange, dirty, saving, onSave }:
                     value={String(value.timeoutMinutes)} onChange={input => update({ timeoutMinutes: Number(input) })} />
                 <SwitchCard label={t('recoveryBackup.consent')} description={t('recoveryBackup.maintenanceWarning')}
                     checked={value.allowMaintenance} onCheckedChange={allowMaintenance => update({ allowMaintenance })} />
+                <SwitchCard label={t('protectedUpdate.protection')} description={t('protectedUpdate.protectionHint')}
+                    checked={value.protectUpdates !== false} onCheckedChange={protectUpdates => update({ protectUpdates })} />
                 <SwitchCard label={t('recoveryBackup.schedule')} description={t('recoveryBackup.scheduleHint')}
                     checked={value.enabled} onCheckedChange={enabled => update({ enabled })} />
                 <SettingInputVertical label={t('recoveryBackup.interval')} type="number" min={60} max={525600}
@@ -132,6 +134,7 @@ export function RecoveryBackupPanel({ policy, onChange, dirty, saving, onSave }:
                 {data?.items.map(item => <article key={item.id} className="min-w-0 rounded-ui-md border border-ui-border p-3">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                         <div className="min-w-0">
+                            {item.updatePoint && <p className="text-xs text-ui-primary">{t('protectedUpdate.point')}</p>}
                             <p className="text-sm font-medium">{new Date(item.createdAt).toLocaleString()} · {item.target === 'local' ? t('recoveryBackup.local') : 'S3'}</p>
                             <p className="text-sm">{t(`recoveryBackup.states.${item.state}`, { defaultValue: item.state })} · {(item.size / 1048576).toFixed(1)} MiB</p>
                             <p className="mt-1 break-all font-mono text-xs text-ui-muted">{item.id}</p>

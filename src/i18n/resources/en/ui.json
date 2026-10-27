@@ -888,5 +888,47 @@
       "incompatible": "Target binary cannot safely open the observed database schemas. Use a matching binary and database recovery point offline.",
       "unknown": "Target database compatibility is unverified. Automatic installation is unavailable for this release or history entry."
     }
+  },
+  "protectedUpdate": {
+    "protection": "Create a recovery point before software updates",
+    "protectionHint": "Enabled by default. Uses this external public backup recipient and the existing full-backup policy. Each update briefly stops the service and captures all required state, including history. Keep the private recovery key separately. Disabling protection permits compatible-schema updates only, with explicit consent each time. The required update point is local. Configured S3 upload resumes after service recovery; remote durability requires verified readback.",
+    "configure": "Configure encrypted backups",
+    "confirmTitle": "Confirm software maintenance",
+    "flow": "The independent service helper validates the target, stops the service, completes the encrypted recovery point, then replaces the executable. Success requires database, listener and application readiness checks. If the target may have migrated data, recovery requires the matching source executable and database backup; the old binary is never started against potentially migrated data automatically.",
+    "maintenance": "I accept the interruption of active connections during service maintenance.",
+    "manual": "I have the external recovery private key and offline host access. I understand that recovery may require the matching old binary and database backup, and can restore older credential validity.",
+    "manualUnprotected": "I have offline host access and accept that startup failure may require manual recovery. This update will not create a database recovery point.",
+    "noPoint": "I explicitly accept updating without an automatic recovery point. Database-migrating updates remain blocked.",
+    "confirm": "Start confirmed maintenance",
+    "point": "Update recovery point",
+    "operation": "Update operation",
+    "source": "Source executable SHA-256",
+    "target": "Target executable SHA-256",
+    "noPointShort": "No recovery point",
+    "offlineHint": "If the Web UI stays unavailable, inspect the durable operation on the host with update-status. A lost response or timeout does not prove failure. Do not submit the update again. For manual recovery, stop the service and restore the matching encrypted backup and source executable; review credential revival before restoring.",
+    "cancelPrepared": "Cancel unclaimed handoff",
+    "cancelWarning": "Cancel this prepared operation only if no helper has claimed it? The backend will refuse once maintenance has started. This never cancels an active backup or binary replacement.",
+    "readiness": {
+      "legacy": "This backend has no protected-update readiness contract. Verify an independent recovery point before proceeding.",
+      "configure": "Configure an external backup recipient and allow maintenance before upgrading.",
+      "unsupported": "This host cannot supervise encrypted update recovery. Automatic protection currently requires a root-owned Linux systemd service. Use the offline recovery tools on other hosts.",
+      "ready": "An encrypted full recovery point will be completed before executable replacement.",
+      "unprotected": "Automatic recovery protection is disabled by the administrator. Only schema-compatible targets may be installed, with explicit acknowledgement."
+    },
+    "phases": {
+      "prepared": "Update admitted; waiting for the independent helper",
+      "capturing": "Service stopped; creating the encrypted recovery point",
+      "backup_ready": "Recovery point complete; validating the target again",
+      "swapping": "Installing the reviewed executable",
+      "starting": "Waiting for real application and listener readiness",
+      "healthy": "Readiness receipt received; supervisor verification pending",
+      "completed": "Update committed after verified startup",
+      "failed": "Preparation failed or was cancelled; source deployment preserved",
+      "manual_recovery": "Startup failed; paired offline recovery is required",
+      "recovered": "Matching source executable and database backup recovered successfully",
+      "unknown": "Unrecognized update state; inspect offline status"
+    },
+    "missingReceipt": "This target cannot produce a verified update startup receipt. Automatic protected installation is refused; use reviewed offline recovery with matching databases.",
+    "refresh": "Refresh update status"
   }
 }

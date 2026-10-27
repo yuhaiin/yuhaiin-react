@@ -6,6 +6,7 @@ export const operationPermissions: Record<RPCOperation, string> = {
     "settings.put": "settings:write",
     "update.check": "update:manage",
     "update.apply": "update:manage",
+    "update.cancel": "update:manage",
     "update.status": "update:manage",
     "update.history": "update:manage",
     "update.rollback": "update:manage",

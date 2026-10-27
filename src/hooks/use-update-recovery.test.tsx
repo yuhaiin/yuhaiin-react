@@ -17,7 +17,7 @@ let host: HTMLDivElement, root: ReturnType<typeof createRoot>;
 const verified = vi.fn();
 function Probe() {
     const recovery = useUpdateRecovery(verified);
-    return <><output>{recovery.phase}</output><button onClick={() => recovery.begin(update, previous)}>begin</button><button onClick={recovery.retry}>retry</button></>;
+    return <><output>{recovery.phase}</output><button onClick={() => recovery.begin(update, previous, update.recovery?.supported ? 'operation-uuid' : undefined)}>begin</button><button onClick={recovery.retry}>retry</button></>;
 }
 beforeEach(() => {
     vi.useFakeTimers(); vi.clearAllMocks(); sessionStorage.clear();
@@ -61,4 +61,28 @@ it('requires the expected release or matching main commit rather than any change
     expect(isInstalledUpdate({ ...installed, version:'v9.0.0' },pending)).toBe(false);
     expect(isInstalledUpdate(installed,pending)).toBe(true);
     expect(isInstalledUpdate({ ...installed, version:'main', commit:'bbbbbbbcccc' },{ ...pending,target:'main-bbbbbbb' })).toBe(true);
+});
+
+it('requires the matching durable receipt and digest even when a new version responds', async () => {
+ update.recovery={ enabled:true,supported:true,ready:true,reason:'ready' }; update.assetSha256='reviewed-digest';
+ await render(); await begin();
+ vi.mocked(getInfo).mockResolvedValue(installed);
+ vi.mocked(getUpdateStatus).mockResolvedValue(idle);
+ await tick();expect(verified).not.toHaveBeenCalled();
+ const operation={ id:'operation-uuid',phase:'starting',sourceSha256:'source',targetSha256:'reviewed-digest',startedAt:new Date().toISOString() };
+ for(const wrong of [{...operation,phase:'healthy'}, {...operation,phase:'completed',id:'stale-operation'}, {...operation,phase:'completed',targetSha256:'other-digest'}]) {
+  vi.mocked(getUpdateStatus).mockResolvedValue({...idle,operation:wrong});
+  await tick();expect(verified).not.toHaveBeenCalled();
+ }
+ vi.mocked(getUpdateStatus).mockResolvedValue({...idle,operation:{...operation,phase:'completed'}});
+ await tick();expect(verified).toHaveBeenCalledExactlyOnceWith(installed);
+ delete update.recovery;update.assetSha256='';
+});
+
+it('reports paired recovery separately from successfully installing the target', async () => {
+ update.recovery={ enabled:true,supported:true,ready:true,reason:'ready' };update.assetSha256='reviewed-digest';
+ await render();await begin();
+ vi.mocked(getUpdateStatus).mockResolvedValue({...idle,operation:{id:'operation-uuid',phase:'recovered',sourceSha256:'source',targetSha256:'reviewed-digest',startedAt:new Date().toISOString()}});
+ await tick();expect(host.textContent).toContain('recovered');expect(verified).not.toHaveBeenCalled();expect(sessionStorage.length).toBe(0);
+ delete update.recovery;update.assetSha256='';
 });

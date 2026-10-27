@@ -1,15 +1,17 @@
+import { ProtectedUpdateDialog, UpdateRecoveryReadiness, UpdateOperationPanel, canInstallUpdate } from './protected-update';
+import { createID } from '@/common/id';
 import { UpdateCompatibilityDetails } from './update-compatibility';
 import { useUpdateRecovery } from '@/hooks/use-update-recovery';
 import { usePermission } from '@/auth/context';
 import { useTranslation } from 'react-i18next';
 
-import { applyUpdate, checkUpdate, getUpdateHistory, rollbackUpdate } from "@/api/update";
+import { applyUpdate, checkUpdate, getUpdateHistory, rollbackUpdate, cancelUpdate } from "@/api/update";
 import { getInfo } from "@/api/settings";
 import { Card, CardBody, CardFooter, CardHeader, IconBox, IconBoxRounded, ListItem, MainContainer, SettingLabel } from '@/component/v2/card';
 import { Button } from "@/component/v2/button";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import { GlobalToastContext } from "@/component/v2/toast";
-import type { UpdateChannel, UpdateCheck, UpdateHistoryEntry } from "@/contract/update";
+import type { UpdateChannel, UpdateCheck, UpdateHistoryEntry, UpdateConsent } from "@/contract/update";
 import { BadgeCheck, Calendar, Check, Code, Cpu, Download, ExternalLink, GitBranch, GitFork, Info, Laptop, Layers, LayoutGrid, RefreshCw, Rocket, Terminal, RotateCcw, History } from 'lucide-react';
 import React, { FC, useContext, useEffect, useState } from "react";
 import useSWR from "swr";
@@ -97,6 +99,8 @@ export default function About() {
     const [checkingUpdate, setCheckingUpdate] = useState(false);
     const [applyingUpdate, setApplyingUpdate] = useState(false);
     const [restoringVersion, setRestoringVersion] = useState(false);
+    const [confirmation, setConfirmation] = useState<'apply' | UpdateHistoryEntry>();
+    const [cancelling, setCancelling] = useState(false);
     const canManageUpdates = usePermission('update:manage');
     const { data: history, error: historyError, mutate: refreshHistory } = useSWR(
         canManageUpdates ? "/api/v2/update/history" : null,
@@ -109,8 +113,12 @@ export default function About() {
         setUpdate(undefined);
         void refreshHistory();
         ctx.Info(uiT('updateCompleted'));
-    });
+    }, canManageUpdates);
+    useEffect(() => {
+        if (recovery.phase === 'recovered') { void refreshInfo(); void refreshHistory(); }
+    }, [recovery.phase, refreshInfo, refreshHistory]);
     const updateStatus = recovery.status;
+    const recoveryReadiness = update?.recovery ?? history?.recovery;
 
     useEffect(() => {
         window.localStorage.setItem(updateChannelKey, channel);
@@ -127,12 +135,14 @@ export default function About() {
         }
     };
 
-    const handleApplyUpdate = async () => {
-        if (!update?.updateAvailable || !update.targetTag || update.compatibility?.state !== 'compatible' || recovery.active || !info) return;
+    const handleApplyUpdate = async (consent: UpdateConsent) => {
+        if (!update?.updateAvailable || !update.targetTag || !canInstallUpdate(update.compatibility, update.recovery) || recovery.active || !info) return;
         setApplyingUpdate(true);
-        recovery.begin(update, info);
+        const operationId = update.recovery?.supported ? createID() : undefined;
+        recovery.begin(update, info, operationId);
+        setConfirmation(undefined);
         try {
-            await applyUpdate(channel, update.targetTag, update.assetSha256);
+            await applyUpdate(channel, update.targetTag, update.assetSha256, update.recovery ? consent : undefined, operationId);
             ctx.Info("Update started. The service will restart shortly.");
         } catch (err) {
             // A network disconnect may be the service restarting after accepting the update.
@@ -144,13 +154,15 @@ export default function About() {
         }
     };
 
-    const handleRollback = async (entry: UpdateHistoryEntry) => {
+    const handleRollback = async (entry: UpdateHistoryEntry, consent: UpdateConsent) => {
         if (recovery.active || restoringVersion || applyingUpdate || !info || entry.compatibility?.state !== 'compatible') return;
-        if (!window.confirm(uiT("restoreVersionConfirm", { version: entry.version || entry.id.slice(0, 8) }))) return;
+        if (recoveryReadiness && !recoveryReadiness.ready) return;
         setRestoringVersion(true);
-        recovery.beginTarget(entry.version || entry.id, info);
+        const operationId = recoveryReadiness?.supported ? createID() : undefined;
+        recovery.beginTarget(entry.version || entry.id, info, operationId, entry.id, Boolean(recoveryReadiness?.supported));
+        setConfirmation(undefined);
         try {
-            await rollbackUpdate(entry.id);
+            await rollbackUpdate(entry.id, recoveryReadiness ? consent : undefined, operationId);
             ctx.Info(uiT("restoreVersionStarted"));
         } catch (err) {
             if (err && typeof err === "object" && "code" in err && err.code !== 0) {
@@ -171,6 +183,10 @@ export default function About() {
 
     return (
         <MainContainer className="flex flex-col">
+            {confirmation && <ProtectedUpdateDialog key={confirmation === 'apply' ? 'apply' : confirmation.id}
+                target={confirmation === 'apply' ? update?.targetVersion ?? '' : confirmation.version || confirmation.id}
+                recovery={confirmation === 'apply' ? update?.recovery : recoveryReadiness} pending={applyingUpdate || restoringVersion}
+                onClose={() => setConfirmation(undefined)} onConfirm={consent => { if (confirmation === 'apply') void handleApplyUpdate(consent); else void handleRollback(confirmation, consent); }} /> }
             <Card className="order-2">
                 <CardHeader className="py-3">
                     <IconBox icon={Info} tone="violet" title={uiT("systemInformation")} description={uiT("softwareVersionAndBuildEnvironment")} />
@@ -248,14 +264,20 @@ export default function About() {
                                 <RefreshCw className={checkingUpdate ? "mr-2 animate-spin" : "mr-2"} size={16} />
                                 {uiT("checkForUpdates")}</Button>
                             {update?.updateAvailable && (
-                                <Button permission="update:manage" className="min-w-0 max-w-full" variant="default" onClick={handleApplyUpdate} disabled={applyingUpdate || recovery.active || !update.supported || update.compatibility?.state !== 'compatible'}>
+                                <Button permission="update:manage" className="min-w-0 max-w-full" variant="default" onClick={() => setConfirmation('apply')} disabled={applyingUpdate || recovery.active || !update.supported || !canInstallUpdate(update.compatibility, update.recovery)}>
                                     <Download className="mr-2" size={16} />
                                     <span className="min-w-0 truncate">{applyingUpdate || recovery.active ? uiT('updateInProgress') : uiT('updateToVersion', { version: update.targetVersion })}</span>
                                 </Button>
                             )}
                         </div>
 
-                        {update?.updateAvailable && <UpdateCompatibilityDetails value={update.compatibility} />}
+                        {update?.updateAvailable && <><UpdateCompatibilityDetails value={update.compatibility} /><UpdateRecoveryReadiness value={update.recovery} /></>}
+                        <UpdateOperationPanel operation={canManageUpdates ? updateStatus?.operation : undefined} pending={cancelling} onCancel={() => {
+                            const id = updateStatus?.operation?.id;
+                            if (!id || !window.confirm(uiT('protectedUpdate.cancelWarning'))) return;
+                            setCancelling(true);
+                            void cancelUpdate(id).then(() => recovery.retry()).catch(failure => ctx.Error(updateErrorMessage(failure))).finally(() => setCancelling(false));
+                        }} />
 
                         {recovery.active && (
                             <div role="status" data-update-phase={recovery.phase} className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
@@ -277,11 +299,13 @@ export default function About() {
                         {recovery.phase === 'error' && (
                             <div className="rounded-ui-md border border-ui-danger/40 bg-ui-danger-soft p-4 text-sm text-ui-danger">
                                 {uiT("updateFailed")} {recovery.failure}
+                                <Button permission="update:manage" className="mt-3" onClick={recovery.retry}>{uiT('protectedUpdate.refresh')}</Button>
                             </div>
                         )}
 
-                        {(recovery.phase === 'complete' || recovery.phase === 'timeout') && <div role="status" data-update-phase={recovery.phase} className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
-                            {uiT(recovery.phase === 'complete' ? 'updateCompleted' : 'updateRecoveryTimeout')}
+                        {(recovery.phase === 'complete' || recovery.phase === 'recovered' || recovery.phase === 'timeout') && <div role="status" data-update-phase={recovery.phase} className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
+                            {uiT(recovery.phase === 'complete' ? 'updateCompleted' : recovery.phase === 'recovered' ? 'protectedUpdate.phases.recovered' : 'updateRecoveryTimeout')}
+                            {recovery.phase === 'timeout' && <p className="mt-2 text-xs">{uiT('protectedUpdate.offlineHint')} <code>yuhaiin update-status -path /deployment/data</code></p>}
                             {recovery.phase === 'timeout' && <Button size="sm" className="ml-3" onClick={recovery.retry}>{uiT('retry')}</Button>}
                         </div>}
 
@@ -313,8 +337,8 @@ export default function About() {
                                             permission="update:manage"
                                             size="sm"
                                             variant="default"
-                                            disabled={recovery.active || applyingUpdate || restoringVersion || entry.compatibility?.state !== 'compatible'}
-                                            onClick={() => void handleRollback(entry)}
+                                            disabled={recovery.active || applyingUpdate || restoringVersion || entry.compatibility?.state !== 'compatible' || Boolean(recoveryReadiness && !recoveryReadiness.ready)}
+                                            onClick={() => setConfirmation(entry)}
                                         >
                                             <RotateCcw size={14} className="mr-1.5" />
                                             {uiT("restoreVersion")}

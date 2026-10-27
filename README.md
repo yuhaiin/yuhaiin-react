@@ -107,7 +107,7 @@ The backend now provides offline encrypted recovery preview/activation and
 startup rollback; generated models are synchronized here. The corresponding Web
 backup page now manages confirmed local/S3 encrypted captures, schedules,
 history, verification, downloads and retention on root-owned Linux systemd.
-Safe updates, broader host maintenance and certificate UI remain
+Broader host maintenance and certificate UI remain
 in progress in the same two PRs. See [recovery contract status](docs/intelligent-selectors.md#offline-recovery-contract-synchronization).
 
 
@@ -131,6 +131,14 @@ Software Update and Previous versions show observed current/target database
 schemas and distinguish compatible, migration-required, incompatible and unknown
 binaries. Unknown/incompatible targets cannot be automatically installed or
 restored. A binary rollback does not restore credentials, usage or database
-contents. Automatic database-migrating updates remain unavailable until coordinated
-update recovery points are implemented; the backend's offline recovery workflow
-remains available. See the [update compatibility guide](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/update-rollback.md#verified-target-schema-preflight).
+contents. Root-owned Linux systemd hosts now support confirmed encrypted update recovery
+points, migration-aware installation and real startup supervision. Success is bound
+to the operation UUID, reviewed digest and durable startup receipt. The existing
+Backup page controls protection independently of its periodic schedule; disabling
+protection requires explicit consent and never enables a migrating target. The
+status panel identifies the paired point/source and provides offline inspection
+instructions when the service stays unavailable. Failed startup after possible
+migration requires the matching source binary and database backup, with explicit
+credential-revival review. Other hosts retain reviewed offline recovery. Browser
+checks at 1440/360/320 px cover consent and receipt completion separately from the
+backend's actual systemd migration/failure/SIGKILL/CLI-recovery tests. See the [update compatibility guide](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/update-rollback.md#verified-target-schema-preflight).

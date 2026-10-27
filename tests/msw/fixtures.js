@@ -4,6 +4,9 @@ import { createDefaultSettings } from '/src/contract/settings.ts';
 import { establishSession } from '/src/auth/session.ts';
 import { operationPermissions } from '/src/auth/operations.ts';
 const scenario = new URLSearchParams(location.search).get('scenario') || 'normal';
+const protectedUpdateReady = new URLSearchParams(location.search).get('protected') === 'ready';
+let updateOperationId = '';
+const reviewedUpdateDigest = 'a'.repeat(64);
 // The preview has its own localhost origin and never connects to a configured controller.
 localStorage.setItem('api_url_v2', JSON.stringify(''));
 const principal = { userId: 'preview-admin', credentialType: 'session', permissions: [...new Set([...Object.values(operationPermissions), 'identity:read', 'tokens:own', 'users:manage', 'tokens:manage', 'security:read', 'metrics:read'])] };
@@ -265,13 +268,13 @@ const worker=setupWorker(
     else if(op==='subscriptions.delete'){for(const name of p.names){const index=subscriptions.findIndex(value=>value.name===name);if(index>=0)subscriptions.splice(index,1);}}
     else if(op==='subscriptions.update'){}
     else if(op==='tools.diagnostics')result={schemaVersion:1,host:p.host,platform:'linux',version:'preview',startedAt:new Date().toISOString(),durationMs:12,ipv6Enabled:true,checks:[],findings:[],report:`Synthetic diagnostics for ${p.host}`};
-    else if(op==='update.check')result={compatibility:{state:scenario==='reliability'?'migration_required':'compatible',reason:'synthetic-schema',currentConfiguration:23,targetConfiguration:scenario==='reliability'?24:23,currentManagement:5,targetManagement:5,databaseRecoveryRequired:scenario==='reliability'},channel:p.channel,supported:true,currentVersion:'v1.0.0',targetVersion:'v2.0.0',targetTag:'v2.0.0',prerelease:false,releaseUrl:'',releaseNotes:'Synthetic update',publishedAt:'',assetName:'preview',assetUrl:'',assetSha256:'',updateAvailable:true,reason:''};
+    else if(op==='update.check')result={recovery:scenario==='reliability'?{enabled:true,supported:true,ready:protectedUpdateReady,reason:protectedUpdateReady?'ready':'configure_encrypted_backup'}:undefined,compatibility:{state:scenario==='reliability'?'migration_required':'compatible',reason:'synthetic-schema',currentConfiguration:23,targetConfiguration:scenario==='reliability'?24:23,currentManagement:5,targetManagement:5,databaseRecoveryRequired:scenario==='reliability'},channel:p.channel,supported:true,currentVersion:'v1.0.0',targetVersion:'v2.0.0',targetTag:'v2.0.0',prerelease:false,releaseUrl:'',releaseNotes:'Synthetic update',publishedAt:'',assetName:'preview',assetUrl:'',assetSha256:reviewedUpdateDigest,updateAvailable:true,reason:''};
     else if(op==='update.history')result={items:scenario==='reliability'?[{id:'synthetic-old-build',version:'legacy-no-schema-catalog',savedAt:'2026-10-27T00:00:00Z',size:1024,compatibility:{state:'unknown',reason:'history_manifest_unavailable',currentConfiguration:0,currentManagement:0,targetConfiguration:0,targetManagement:0,databaseRecoveryRequired:false}}]:[]};
-    else if(op==='update.apply'){updateStartedAt=Date.now();if(scenario==='update')sessionStorage.setItem('preview:updateStartedAt',String(updateStartedAt));}
+    else if(op==='update.apply'){if(scenario==='reliability'&&(!p.confirmMaintenance||!p.confirmManualRecovery||p.expectedSha256!==reviewedUpdateDigest))return HttpResponse.json({error:{code:'consent_required',message:'Synthetic admission refused'}},{status:400});updateOperationId=p.operationId||'';updateStartedAt=Date.now();if(scenario==='update')sessionStorage.setItem('preview:updateStartedAt',String(updateStartedAt));}
     else if(op==='update.status'){
       const elapsed=updateStartedAt?Date.now()-updateStartedAt:0;
       if(updateStartedAt&&elapsed>=3000&&elapsed<4500)return HttpResponse.error();
-      result={running:Boolean(updateStartedAt&&elapsed<1500),stage:elapsed>=1500&&elapsed<3000?'completed':updateStartedAt&&elapsed<1500?'downloading':'',progress:updateStartedAt&&elapsed<3000?100:0,bytesDownloaded:0,totalBytes:0,error:''};
+      result={running:Boolean(updateStartedAt&&elapsed<1500),stage:elapsed>=1500&&elapsed<3000?'completed':updateStartedAt&&elapsed<1500?'downloading':'',progress:updateStartedAt&&elapsed<3000?100:0,bytesDownloaded:0,totalBytes:0,error:'',operation:protectedUpdateReady&&updateOperationId?{id:updateOperationId,phase:elapsed>=4500?'completed':elapsed<1500?'capturing':'starting',sourceSha256:'b'.repeat(64),targetSha256:reviewedUpdateDigest,backupJobId:'synthetic-job',backupId:'synthetic-update-point',startedAt:new Date(updateStartedAt).toISOString()}:undefined};
     }
     else if(op==='info'){
       const elapsed=updateStartedAt?Date.now()-updateStartedAt:0;

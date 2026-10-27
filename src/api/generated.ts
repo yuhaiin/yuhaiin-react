@@ -142,6 +142,7 @@ export type RPCOperation =
   | "traffic_control.put"
   | "traffic_control.status"
   | "update.apply"
+  | "update.cancel"
   | "update.check"
   | "update.history"
   | "update.rollback"
@@ -166,6 +167,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/update/status", operation: "update.status" },
   { method: "GET", pattern: "/api/v2/update/history", operation: "update.history" },
   { method: "POST", pattern: "/api/v2/update/rollback", operation: "update.rollback" },
+  { method: "POST", pattern: "/api/v2/update/cancel", operation: "update.cancel" },
   { method: "GET", pattern: "/api/v2/settings", operation: "settings.get" },
   { method: "PUT", pattern: "/api/v2/settings", operation: "settings.put" },
   { method: "GET", pattern: "/api/v2/backup/config", operation: "backup.config.get" },

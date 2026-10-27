@@ -29,7 +29,9 @@ try {
  async function wait(expression){for(let i=0;i<150;i++){try{if(await evaluate(expression))return;}catch(e){if(!/context|navigat/i.test(String(e)))throw e;}await sleep(100);}throw Error(`Not ready: ${expression}; ${await evaluate('document.body?.innerText')}`);}
  async function clickText(text,selector='button, summary'){
   if(selector.includes('[role="dialog"]'))await waitForPreview(send,'[role="dialog"]');
-  const point=await evaluate(`(()=>{const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.textContent.trim()===${JSON.stringify(text)}&&e.getBoundingClientRect().width);if(!e)throw Error('Missing '+${JSON.stringify(text)});e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);
+  await evaluate(`(()=>{document.querySelector('[data-reliability-click-target]')?.removeAttribute('data-reliability-click-target');const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.textContent.trim()===${JSON.stringify(text)}&&e.getBoundingClientRect().width&&!e.disabled);if(!e)throw Error('Missing enabled '+${JSON.stringify(text)});e.dataset.reliabilityClickTarget='';e.scrollIntoView({block:'center'});})()`);
+  await waitForPreview(send,'[data-reliability-click-target]');
+  const point=await evaluate(`(()=>{const r=document.querySelector('[data-reliability-click-target]').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);
   await send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...point});await send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...point});await sleep(150);
  }
  async function shot(name){const r=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});await writeFile(`${output}/${name}.png`,Buffer.from(r.data,'base64'));}
@@ -205,7 +207,27 @@ try {
   assert(updateOverflow<=1,`${width}px update compatibility overflow: ${updateOverflow}`);
   await evaluate(`document.querySelector('[data-testid="update-compatibility"]').scrollIntoView({block:'center'})`);
   await shot(`${width}-update-compatibility`);
-  checks.push({width,updateSchemaMigrationBlocked:true,legacyBinaryRollbackBlocked:true,updateCompatibilityOverflow:updateOverflow,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,s3RetrievalConfirmed:true,retrievalDialogOverflow:retrievalOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow,restoreRollbackResult:true,restoreResultOverflow:resultOverflow,restoreActivationConfirmed:true,restoreAdmissionDistinctFromCommit:true,restoreConfirmationOverflow:activationOverflow});
+  await send('Page.navigate',{url:`${base}/?scenario=reliability&protected=ready&update=${width}#/docs/config/about`});
+  await wait(`document.body?.innerText.includes('Software Update')`);
+  await waitForPreview(send,'main');
+  await clickText('Check for Updates','button');
+  await wait(`document.body?.innerText.includes('An encrypted full recovery point will be completed')`);
+  await clickText('Update to v2.0.0','button');
+  await waitForPreview(send,'[role="dialog"]');
+  assert(await evaluate(`[...document.querySelectorAll('[role="dialog"] button')].find(e=>e.textContent==='Start confirmed maintenance')?.disabled`));
+  for(const label of ['I accept the interruption of active connections during service maintenance.', 'I have the external recovery private key and offline host access. I understand that recovery may require the matching old binary and database backup, and can restore older credential validity.']) {
+   await clickText(label,'[role="dialog"] label');
+  }
+  const protectedOverflow=await evaluate(`(()=>{const e=document.querySelector('[role="dialog"]');return e.scrollWidth-e.clientWidth;})()`);
+  assert(protectedOverflow<=1,`${width}px protected update confirmation overflow: ${protectedOverflow}`);
+  await shot(`${width}-protected-update-consent`);
+  await clickText('Start confirmed maintenance','[role="dialog"] button');
+  await wait(`document.body?.innerText.includes('Update committed after verified startup')`);
+  assert(await evaluate(`document.body.innerText.includes('synthetic-update-point')`));
+  await wait(`document.querySelector('[data-update-phase="complete"]')!==null`);
+  await evaluate(`document.querySelector('[data-testid="update-operation"]').scrollIntoView({block:'center'})`);
+  await shot(`${width}-protected-update-completed`);
+  checks.push({width,updateSchemaMigrationBlocked:true,protectedMigrationConfirmed:true,protectedStartupReceipt:true,protectedConfirmationOverflow:protectedOverflow,legacyBinaryRollbackBlocked:true,updateCompatibilityOverflow:updateOverflow,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,s3RetrievalConfirmed:true,retrievalDialogOverflow:retrievalOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow,restoreRollbackResult:true,restoreResultOverflow:resultOverflow,restoreActivationConfirmed:true,restoreAdmissionDistinctFromCommit:true,restoreConfirmationOverflow:activationOverflow});
   await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:init.identifier});
  }
  await writeFile(`${output}/checks.json`,JSON.stringify({source:'synthetic MSW visual/interaction data; backend behavior tested separately',checks},null,2));
