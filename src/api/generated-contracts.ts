@@ -2,168 +2,12 @@
 
 export namespace Go {
   export namespace backup {
-    export interface RecoveryManifest {
-      format: string;
-      version: number;
-      id: string;
-      instanceId: string;
-      createdAt: string;
-      consistency: string;
-      includesHistory: boolean;
-      build: RecoveryBuild;
-      files: RecoveryFile[];
-      completeInventory?: boolean;
-      sourceDirectory?: string;
-      runtime?: RecoveryRuntime;
-      requirements?: RecoveryRequirement[];
-    }
-    export interface RecoveryBuild {
-      version: string;
-      commit: string;
-      platform: string;
-      architecture: string;
-      goVersion: string;
-    }
-    export interface RecoveryFile {
-      path: string;
-      role: string;
-      size: number;
-      sha256: string;
-      schemaVersion?: number;
-      sourcePath?: string;
-    }
-    export interface RecoveryRuntime {
-      managementAuth?: boolean;
-      managementTLS: string;
-      certificateFile?: string;
-      keyFile?: string;
-      workingDirectory: string;
-      listenAddress?: string;
-      externalWebDirectory?: string;
-    }
-    export interface RecoveryRequirement {
-      kind: string;
-      nodeId?: string;
-      path?: string;
-    }
-    export interface RecoveryImport {
-      id: string;
-      createdAt: string;
-      expiresAt: string;
-      size: number;
-      sha256: string;
-      state: string;
-      errorCode?: string;
-      previewId?: string;
-      preview?: RecoveryRestorePreview;
-    }
-    export interface RecoveryImportActivateRequest {
-      id: string;
-      confirmPreviewId: string;
-      confirmBackupId: string;
-      confirmSourceInstanceId: string;
-      confirmTargetInstanceId: string;
-      confirmResultInstanceId: string;
-      confirmMaintenance: boolean;
-      confirmStartupChanges: boolean;
-      confirmSourceStopped: boolean;
-      confirmCredentialRevival: boolean;
-      confirmIdentityReplacement: boolean;
-      confirmCloneEnrollment: boolean;
-    }
-    export interface RecoveryImportPreviewRequest {
-      id: string;
-      mode: string;
-      identity?: string;
-      passphrase?: string;
-    }
-    export interface RecoveryPolicy {
-      enabled: boolean;
-      target: string;
-      recipient: string;
-      intervalMinutes: number;
-      timeoutMinutes: number;
-      keepCount: number;
-      keepDays: number;
-      includeHistory: boolean;
-      allowMaintenance: boolean;
-      protectUpdates?: boolean;
-    }
-    export interface RecoveryBackup {
-      id: string;
-      backupId?: string;
-      instanceId?: string;
-      createdAt: string;
-      completedAt?: string;
-      target: string;
-      state: string;
-      size: number;
-      sha256?: string;
-      objectKey?: string;
-      verification?: string;
-      errorCode?: string;
-      includesHistory: boolean;
-      uploadAttempts: number;
-      archiveCheck?: string;
-      archiveCheckedAt?: string;
-      localState?: string;
-      retrieval?: string;
-      retrievalErrorCode?: string;
-      retrievedAt?: string;
-      updatePoint?: boolean;
-    }
-    export interface RecoveryRetrieveRequest {
-      id: string;
-      confirmDownload: boolean;
-      confirmReplace: boolean;
-    }
-    export interface RecoveryVerifyRequest {
-      id: string;
-      identity?: string;
-      passphrase?: string;
-    }
-    export interface RecoveryBackupRequest {
-      confirmMaintenance: boolean;
-    }
-    export interface RecoveryBackupStatus {
-      supported: boolean;
-      reason?: string;
-      items: RecoveryBackup[];
-    }
-    export interface RecoveryRestoreStatus {
-      pendingImportId?: string;
-      pendingPreviewId?: string;
-      result?: RecoveryRestoreResult;
-    }
-    export interface RecoveryRestorePreview {
-      manifest: RecoveryManifest;
-      mode: string;
-      targetInstanceId: string;
-      instanceId: string;
-      runtime: RecoveryRuntime;
-      files: RecoveryChange[];
-      warnings: string[];
-    }
-    export interface RecoveryChange {
-      path: string;
-      replace: boolean;
-      install: boolean;
-    }
-    export interface RecoveryRestoreResult {
-      backupId: string;
-      transactionId: string;
-      instanceId: string;
-      recoveryPoint: string;
-      state: string;
-      runtime: RecoveryRuntime;
-      adoptStartup?: boolean;
-    }
     export interface Option {
       instanceName: string;
       s3: S3;
       interval: number;
       lastBackupHash: string;
-      recovery?: RecoveryPolicy;
+      recovery?: Go.recovery.Policy;
     }
     export interface S3 {
       enabled: boolean;
@@ -1542,6 +1386,164 @@ export namespace Go {
     export type Simple = Fixed;
     export type HTTP2 = Concurrency;
     export type Mux = Concurrency;
+  }
+  export namespace recovery {
+    export interface Import {
+      id: string;
+      createdAt: string;
+      expiresAt: string;
+      size: number;
+      sha256: string;
+      state: string;
+      errorCode?: string;
+      previewId?: string;
+      preview?: RestorePreview;
+    }
+    export interface ImportActivateRequest {
+      id: string;
+      confirmPreviewId: string;
+      confirmBackupId: string;
+      confirmSourceInstanceId: string;
+      confirmTargetInstanceId: string;
+      confirmResultInstanceId: string;
+      confirmMaintenance: boolean;
+      confirmStartupChanges: boolean;
+      confirmSourceStopped: boolean;
+      confirmCredentialRevival: boolean;
+      confirmIdentityReplacement: boolean;
+      confirmCloneEnrollment: boolean;
+    }
+    export interface ImportPreviewRequest {
+      id: string;
+      mode: string;
+      identity?: string;
+      passphrase?: string;
+    }
+    export interface Policy {
+      enabled: boolean;
+      target: string;
+      recipient: string;
+      intervalMinutes: number;
+      timeoutMinutes: number;
+      keepCount: number;
+      keepDays: number;
+      includeHistory: boolean;
+      allowMaintenance: boolean;
+      protectUpdates?: boolean;
+    }
+    export interface Backup {
+      id: string;
+      backupId?: string;
+      instanceId?: string;
+      createdAt: string;
+      completedAt?: string;
+      target: string;
+      state: string;
+      size: number;
+      sha256?: string;
+      objectKey?: string;
+      verification?: string;
+      errorCode?: string;
+      includesHistory: boolean;
+      uploadAttempts: number;
+      archiveCheck?: string;
+      archiveCheckedAt?: string;
+      localState?: string;
+      retrieval?: string;
+      retrievalErrorCode?: string;
+      retrievedAt?: string;
+      updatePoint?: boolean;
+    }
+    export interface RetrieveRequest {
+      id: string;
+      confirmDownload: boolean;
+      confirmReplace: boolean;
+    }
+    export interface VerifyRequest {
+      id: string;
+      identity?: string;
+      passphrase?: string;
+    }
+    export interface BackupRequest {
+      confirmMaintenance: boolean;
+    }
+    export interface BackupStatus {
+      supported: boolean;
+      reason?: string;
+      items: Backup[];
+    }
+    export interface Manifest {
+      format: string;
+      version: number;
+      id: string;
+      instanceId: string;
+      createdAt: string;
+      consistency: string;
+      includesHistory: boolean;
+      build: Build;
+      files: File[];
+      completeInventory?: boolean;
+      sourceDirectory?: string;
+      runtime?: Runtime;
+      requirements?: Requirement[];
+    }
+    export interface Build {
+      version: string;
+      commit: string;
+      platform: string;
+      architecture: string;
+      goVersion: string;
+    }
+    export interface File {
+      path: string;
+      role: string;
+      size: number;
+      sha256: string;
+      schemaVersion?: number;
+      sourcePath?: string;
+    }
+    export interface Runtime {
+      managementAuth?: boolean;
+      managementTLS: string;
+      certificateFile?: string;
+      keyFile?: string;
+      workingDirectory: string;
+      listenAddress?: string;
+      externalWebDirectory?: string;
+    }
+    export interface Requirement {
+      kind: string;
+      nodeId?: string;
+      path?: string;
+    }
+    export interface RestoreStatus {
+      pendingImportId?: string;
+      pendingPreviewId?: string;
+      result?: RestoreResult;
+    }
+    export interface RestorePreview {
+      manifest: Manifest;
+      mode: string;
+      targetInstanceId: string;
+      instanceId: string;
+      runtime: Runtime;
+      files: Change[];
+      warnings: string[];
+    }
+    export interface Change {
+      path: string;
+      replace: boolean;
+      install: boolean;
+    }
+    export interface RestoreResult {
+      backupId: string;
+      transactionId: string;
+      instanceId: string;
+      recoveryPoint: string;
+      state: string;
+      runtime: Runtime;
+      adoptStartup?: boolean;
+    }
   }
   export namespace resolver {
     export interface FakeIPEntry {

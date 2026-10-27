@@ -3,7 +3,7 @@ import type { Go } from '@/api/generated-contracts';
 import { can, getSession } from '@/auth/session';
 import { apiURL, authorizedFetch } from '@/auth/transport';
 
-export type RecoveryImport = Go.backup.RecoveryImport;
+export type RecoveryImport = Go.recovery.Import;
 const maxArchiveBytes = 100 * 1024 ** 3;
 
 export function getRecoveryImports(): Promise<RecoveryImport[]> {
@@ -34,6 +34,6 @@ export function discardRecoveryImport(id: string): Promise<void> {
     return requestJSON('DELETE', `/api/v2/backup/recovery/imports/${encodeURIComponent(id)}`, { confirm: true });
 }
 
-export function activateRecoveryImport(request: Go.backup.RecoveryImportActivateRequest): Promise<RecoveryImport> {
+export function activateRecoveryImport(request: Go.recovery.ImportActivateRequest): Promise<RecoveryImport> {
     return requestJSON('POST', `/api/v2/backup/recovery/imports/${encodeURIComponent(request.id)}/activate`, request, undefined, AbortSignal.timeout(15_000));
 }
