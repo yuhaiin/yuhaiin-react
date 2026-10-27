@@ -2,13 +2,13 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, expect, it, vi } from 'vitest';
 import type { RecoveryBackup, RecoveryBackupStatus } from '@/api/backup';
-import { createRecoveryBackup, deleteRecoveryBackup } from '@/api/backup';
+import { createRecoveryBackup, deleteRecoveryBackup, retrieveRecoveryBackup } from '@/api/backup';
 import { defaultRecoveryPolicy, RecoveryBackupPanel } from './recovery-panel';
 
 const mocked = vi.hoisted(() => ({ status: { supported: true, items: [] } as RecoveryBackupStatus, mutate: vi.fn(async () => undefined) }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('swr', () => ({ default: () => ({ data: mocked.status, error: undefined, mutate: mocked.mutate }) }));
-vi.mock('@/api/backup', () => ({ createRecoveryBackup: vi.fn(), deleteRecoveryBackup: vi.fn(), getRecoveryBackups: vi.fn(), retryRecoveryBackup: vi.fn(), verifyRecoveryBackup: vi.fn() }));
+vi.mock('@/api/backup', () => ({ createRecoveryBackup: vi.fn(), deleteRecoveryBackup: vi.fn(), getRecoveryBackups: vi.fn(), retryRecoveryBackup: vi.fn(), verifyRecoveryBackup: vi.fn(), retrieveRecoveryBackup: vi.fn() }));
 const roots: ReturnType<typeof createRoot>[] = [];
 afterEach(() => {
     act(() => roots.forEach(root => root.unmount()));
@@ -62,4 +62,45 @@ it('does not expose deletion while an upload is active', async () => {
     const host = await mount();
     expect(host.querySelector('[aria-label="recoveryBackup.delete"]')).toBeNull();
     expect(host.textContent).toContain('recoveryBackup.waiting');
+});
+
+
+it('requires confirmation before retrieving an S3 copy and refreshes actual history', async () => {
+    const item = { ...point('verified'), target: 's3', localState: 'missing' };
+    mocked.status.items = [item];
+    vi.mocked(retrieveRecoveryBackup).mockResolvedValue({ ...item, retrieval: 'verified', localState: 'present' });
+    const host = await mount();
+    expect(host.querySelector('[aria-label="recoveryBackup.download"]')).toBeNull();
+    expect(find(host, 'recoveryBackup.verify')).toBeUndefined();
+    await act(async () => find(host, 'recoveryBackup.retrieve').click());
+    expect(retrieveRecoveryBackup).not.toHaveBeenCalled();
+    expect(document.querySelector('[role=dialog]')?.textContent).toContain('recoveryBackup.retrieveWarning');
+    await act(async () => find(document.querySelector('[role=dialog]')!, 'action.ok').click());
+    expect(retrieveRecoveryBackup).toHaveBeenCalledWith('point', expect.any(AbortSignal));
+    expect(mocked.mutate).toHaveBeenCalled();
+    expect(host.textContent).not.toContain('recoveryBackup.archiveCheck.passed');
+});
+
+it('cancels an active retrieval and leaves its real result to the backend', async () => {
+    mocked.status.items = [{ ...point('verified'), target: 's3', localState: 'missing' }];
+    let signal: AbortSignal | undefined;
+    vi.mocked(retrieveRecoveryBackup).mockImplementation((_id, abort) => {
+        signal = abort;
+        return new Promise((_resolve, reject) => abort?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), { once: true }));
+    });
+    const host = await mount();
+    await act(async () => find(host, 'recoveryBackup.retrieve').click());
+    await act(async () => find(document.querySelector('[role=dialog]')!, 'action.ok').click());
+    expect(find(host, 'recoveryBackup.retrieve').disabled).toBe(true);
+    expect(signal?.aborted).toBe(false);
+    await act(async () => find(host, 'recoveryBackup.cancelRetrieval').click());
+    expect(signal?.aborted).toBe(true);
+    expect(mocked.mutate).toHaveBeenCalled();
+    expect(host.querySelector('[aria-label="recoveryBackup.download"]')).toBeNull();
+});
+
+it('does not expose S3 retrieval for a local or unverified point', async () => {
+    mocked.status.items = [point('local_ready'), { ...point('failed'), id: 'remote', target: 's3' }];
+    const host = await mount();
+    expect(find(host, 'recoveryBackup.retrieve')).toBeUndefined();
 });

@@ -773,7 +773,25 @@
       "cancelled": "보관 파일 검증 취소됨"
     },
     "legacyTitle": "기존 S3 설정 스냅샷",
-    "legacyHint": "이 호환 스냅샷에는 설정 비밀 정보가 포함될 수 있습니다. 암호화된 전체 배포 보관 파일이 아닙니다."
+    "legacyHint": "이 호환 스냅샷에는 설정 비밀 정보가 포함될 수 있습니다. 암호화된 전체 배포 보관 파일이 아닙니다.",
+    "retrieve": "로컬 사본 가져오기 / 복구",
+    "retrieveWarning": "기록된 S3 객체에서 {{size}} MiB를 다운로드합니다. 크기와 SHA-256이 일치할 때만 이 백업의 로컬 사본을 교체합니다. 배포를 복원하거나 복호화된 내용을 인증하지는 않습니다.",
+    "retrieving": "암호화된 S3 아카이브를 가져오는 중…",
+    "cancelRetrieval": "가져오기 취소",
+    "retrievalCancelled": "가져오기 요청이 취소되었습니다. 게시가 이미 완료되었는지 기록을 새로 고쳐 확인하세요.",
+    "saveMetadata": "복구 메타데이터 저장",
+    "localState": {
+      "present": "암호화된 로컬 사본 있음. 내용 인증에는 아카이브 검증을 사용하세요",
+      "missing": "로컬 사본 없음",
+      "unavailable": "로컬 사본을 사용할 수 없거나 기록된 크기 / 권한과 다름"
+    },
+    "retrieval": {
+      "running": "S3에서 가져오는 중",
+      "verified": "S3 가져오기 완료: 암호문 크기와 SHA-256 검증됨",
+      "failed": "S3 가져오기 실패. 검증되지 않은 파일로 교체하지 않았습니다",
+      "cancelled": "S3 가져오기 취소됨",
+      "interrupted": "S3 가져오기가 중단되었습니다. 명시적으로 다시 가져오세요"
+    }
   },
   "backupIntervalMinutes": "설정 스냅샷 간격 (분)",
   "recoveryImport": {

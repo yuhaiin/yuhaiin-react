@@ -120,3 +120,9 @@ checks decide commit or rollback. Other hosts retain the backend offline CLI. Se
 The Backup page also displays the latest recorded restore commit/rollback and
 whether restored startup settings persist across restarts. Failed result queries
 hide cached success. See [restore outcomes](docs/intelligent-selectors.md#latest-restore-result).
+
+The Backup history supports explicit S3 archive retrieval/repair when a local copy
+is missing or damaged. It shows ciphertext retrieval separately from authenticated
+archive verification, supports cancellation, and exports public recovery metadata
+for the backend's offline `recovery fetch` command. See the
+[backend recovery guide](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/managed-recovery-backups.md#recover-a-missing-or-damaged-local-s3-copy).

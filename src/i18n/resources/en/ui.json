@@ -773,7 +773,25 @@
       "cancelled": "Archive verification cancelled"
     },
     "legacyTitle": "Legacy S3 configuration snapshot",
-    "legacyHint": "This compatibility snapshot can contain configuration secrets and is not an encrypted full deployment archive."
+    "legacyHint": "This compatibility snapshot can contain configuration secrets and is not an encrypted full deployment archive.",
+    "retrieve": "Retrieve / repair local copy",
+    "retrieveWarning": "Download {{size}} MiB from the recorded S3 object. Replace this backup’s local copy only after its size and SHA-256 match. This does not restore the deployment or authenticate the decrypted contents.",
+    "retrieving": "Retrieving an encrypted S3 archive…",
+    "cancelRetrieval": "Cancel retrieval",
+    "retrievalCancelled": "Retrieval request cancelled. Refresh history to check whether publication already completed.",
+    "saveMetadata": "Save recovery metadata",
+    "localState": {
+      "present": "Local encrypted copy present; use Verify archive to authenticate its contents",
+      "missing": "Local copy missing",
+      "unavailable": "Local copy unavailable or does not match its recorded size / permissions"
+    },
+    "retrieval": {
+      "running": "S3 retrieval in progress",
+      "verified": "S3 retrieval: ciphertext size and SHA-256 verified",
+      "failed": "S3 retrieval failed; no unverified replacement was published",
+      "cancelled": "S3 retrieval cancelled",
+      "interrupted": "S3 retrieval interrupted; retrieve again explicitly"
+    }
   },
   "backupIntervalMinutes": "Configuration snapshot interval (minutes)",
   "recoveryImport": {

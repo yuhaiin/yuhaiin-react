@@ -105,6 +105,15 @@ export namespace Go {
       uploadAttempts: number;
       archiveCheck?: string;
       archiveCheckedAt?: string;
+      localState?: string;
+      retrieval?: string;
+      retrievalErrorCode?: string;
+      retrievedAt?: string;
+    }
+    export interface RecoveryRetrieveRequest {
+      id: string;
+      confirmDownload: boolean;
+      confirmReplace: boolean;
     }
     export interface RecoveryVerifyRequest {
       id: string;

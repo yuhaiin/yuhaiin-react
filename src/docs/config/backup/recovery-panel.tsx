@@ -1,11 +1,11 @@
 import { VerifyBackupDialog } from './verify-dialog';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { Archive, Download, RefreshCw, Save, Trash2 } from 'lucide-react';
-import { createRecoveryBackup, deleteRecoveryBackup, getRecoveryBackups, retryRecoveryBackup } from '@/api/backup';
+import { createRecoveryBackup, deleteRecoveryBackup, getRecoveryBackups, retryRecoveryBackup, retrieveRecoveryBackup } from '@/api/backup';
 import type { RecoveryBackup, RecoveryPolicy } from '@/api/backup';
-import { downloadRecoveryBackup } from '@/api/backup-download';
+import { downloadRecoveryBackup, saveRecoveryMetadata } from '@/api/backup-download';
 import { useAsyncAction } from '@/hooks/use-editor-draft';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader, IconBox, SettingLabel } from '@/component/v2/card';
@@ -17,7 +17,7 @@ export const defaultRecoveryPolicy: RecoveryPolicy = {
     enabled: false, target: 'local', recipient: '', intervalMinutes: 1440,
     timeoutMinutes: 30, keepCount: 10, keepDays: 30, includeHistory: false, allowMaintenance: false,
 };
-const active = (item: RecoveryBackup) => ['queued', 'capturing', 'uploading', 'deleting'].includes(item.state)
+const active = (item: RecoveryBackup) => item.retrieval === 'running' || ['queued', 'capturing', 'uploading', 'deleting'].includes(item.state)
     || (item.state === 'local_ready' && item.target === 's3');
 
 type Props = {
@@ -34,6 +34,10 @@ export function RecoveryBackupPanel({ policy, onChange, dirty, saving, onSave }:
     const [waiting, setWaiting] = useState(false);
     const [confirm, setConfirm] = useState<'create' | RecoveryBackup>();
     const [verifyPoint, setVerifyPoint] = useState<RecoveryBackup>();
+    const [retrievePoint, setRetrievePoint] = useState<RecoveryBackup>();
+    const [retrieving, setRetrieving] = useState<string>();
+    const retrieval = useRef<AbortController | undefined>(undefined);
+    useEffect(() => () => retrieval.current?.abort(), []);
     const action = useAsyncAction(error => {
         const text = error instanceof Error ? error.message : String((error as { msg?: string })?.msg ?? error);
         toast.Error(text === 'large_download_requires_streaming' ? t('recoveryBackup.largeDownload') : text);
@@ -57,6 +61,20 @@ export function RecoveryBackupPanel({ policy, onChange, dirty, saving, onSave }:
             throw failure;
         }
     });
+    const runRetrieve = (item: RecoveryBackup) => void action.run(async () => {
+        const controller = new AbortController();
+        retrieval.current = controller;
+        setRetrieving(item.id);
+        try { await retrieveRecoveryBackup(item.id, controller.signal); }
+        catch (failure) {
+            if (controller.signal.aborted) toast.Info(t('recoveryBackup.retrievalCancelled'));
+            else throw failure;
+        } finally {
+            retrieval.current = undefined;
+            setRetrieving(undefined);
+            await mutate();
+        }
+    });
     const runDelete = (item: RecoveryBackup) => void action.run(async () => {
         await deleteRecoveryBackup(item.id);
         await mutate();
@@ -66,6 +84,10 @@ export function RecoveryBackupPanel({ policy, onChange, dirty, saving, onSave }:
         <CardHeader><IconBox icon={Archive} tone="primary" title={t('recoveryBackup.title')} description={t('recoveryBackup.description')} /></CardHeader>
         <CardBody>
             <VerifyBackupDialog item={verifyPoint} onClose={() => setVerifyPoint(undefined)} onVerified={() => void mutate()} />
+            <ConfirmModal show={retrievePoint !== undefined} title={t('recoveryBackup.retrieve')}
+                content={<p>{t('recoveryBackup.retrieveWarning', { size: ((retrievePoint?.size ?? 0) / 1048576).toFixed(1) })}</p>}
+                onHide={() => setRetrievePoint(undefined)} disabled={disabled}
+                onOk={() => { if (retrievePoint) runRetrieve(retrievePoint); }} />
             <ConfirmModal show={confirm !== undefined} title={t(confirm === 'create' ? 'recoveryBackup.create' : 'recoveryBackup.delete')}
                 content={<p>{t(confirm === 'create' ? 'recoveryBackup.maintenanceWarning' : 'recoveryBackup.deleteWarning')}</p>}
                 onHide={() => setConfirm(undefined)} disabled={disabled}
@@ -97,6 +119,7 @@ export function RecoveryBackupPanel({ policy, onChange, dirty, saving, onSave }:
             </fieldset>
             <p className="mt-3 text-sm text-ui-muted">{t('recoveryBackup.retentionHint')}</p>
             {!data?.supported && <p className="mt-3 text-sm text-ui-muted">{t('recoveryBackup.unsupported')}</p>}
+            {retrieving && <p role="status" className="mt-3 text-sm">{t('recoveryBackup.retrieving')} <Button onClick={() => retrieval.current?.abort()}>{t('recoveryBackup.cancelRetrieval')}</Button></p>}
             {(waiting || data?.items.some(active)) && <p role="status" className="mt-3 text-sm">{t('recoveryBackup.waiting')}</p>}
             {error && !waiting && <p role="alert" className="mt-3 text-sm text-ui-danger">{t('recoveryBackup.statusError')}</p>}
             <div className="my-4 flex flex-wrap gap-2">
@@ -113,13 +136,19 @@ export function RecoveryBackupPanel({ policy, onChange, dirty, saving, onSave }:
                             <p className="text-sm">{t(`recoveryBackup.states.${item.state}`, { defaultValue: item.state })} · {(item.size / 1048576).toFixed(1)} MiB</p>
                             <p className="mt-1 break-all font-mono text-xs text-ui-muted">{item.id}</p>
                             {item.verification && <p className="mt-1 text-xs text-ui-muted">{t(`recoveryBackup.verification.${item.verification}`, { defaultValue: item.verification })}</p>}
+                            {item.localState && <p className="mt-1 text-xs text-ui-muted">{t(`recoveryBackup.localState.${item.localState}`, { defaultValue: item.localState })}</p>}
+                            {item.retrieval && <p className="mt-1 text-xs" role={['failed', 'cancelled', 'interrupted'].includes(item.retrieval) ? 'alert' : undefined}>{t(`recoveryBackup.retrieval.${item.retrieval}`, { defaultValue: item.retrieval })}</p>}
                             {item.archiveCheck && <p className="mt-1 text-xs">{t(`recoveryBackup.archiveCheck.${item.archiveCheck}`, { defaultValue: item.archiveCheck })}</p>}
                             {item.errorCode && <p role="alert" className="mt-1 text-sm text-ui-danger">{t(`recoveryBackup.errors.${item.errorCode}`, { defaultValue: item.errorCode })}</p>}
                         </div>
                         <div className="flex flex-wrap gap-2">
-                            {['local_ready', 'verified'].includes(item.state) && <Button aria-label={t('recoveryBackup.download')} disabled={disabled}
+                            {['local_ready', 'verified'].includes(item.state) && (!item.localState || item.localState === 'present') && <Button aria-label={t('recoveryBackup.download')} disabled={disabled}
                                 onClick={() => void action.run(() => downloadRecoveryBackup(item.id))}><Download size={16} /></Button>}
-                            {['local_ready', 'verified'].includes(item.state) && <Button disabled={disabled} onClick={() => setVerifyPoint(item)}>{t('recoveryBackup.verify')}</Button>}
+                            {['local_ready', 'verified'].includes(item.state) && (!item.localState || item.localState === 'present') && <Button disabled={disabled} onClick={() => setVerifyPoint(item)}>{t('recoveryBackup.verify')}</Button>}
+                            {item.state === 'verified' && item.target === 's3' && <>
+                                <Button disabled={disabled || item.retrieval === 'running'} onClick={() => setRetrievePoint(item)}>{t('recoveryBackup.retrieve')}</Button>
+                                <Button disabled={disabled} onClick={() => saveRecoveryMetadata(item)}>{t('recoveryBackup.saveMetadata')}</Button>
+                            </>}
                             {item.state === 'failed' && item.backupId && item.target === 's3' && <Button disabled={disabled}
                                 onClick={() => void action.run(async () => { await retryRecoveryBackup(item.id); await mutate(); })}>{t('recoveryBackup.retry')}</Button>}
                             {!active(item) && <Button aria-label={t('recoveryBackup.delete')} disabled={disabled} onClick={() => setConfirm(item)}><Trash2 size={16} /></Button>}

@@ -1,3 +1,4 @@
+import type { RecoveryBackup } from './backup';
 import { apiURL, authorizedFetch } from '@/auth/transport';
 import { can, getSession } from '@/auth/session';
 
@@ -57,6 +58,21 @@ export async function downloadRecoveryBackup(id: string): Promise<void> {
     const link = document.createElement('a');
     link.href = url;
     link.download = `${id}.yhb`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
+// This small public record contains object ownership and a ciphertext digest,
+// never S3 credentials or a decryption key. Retain it outside the deployment.
+export function saveRecoveryMetadata(item: RecoveryBackup): void {
+    const metadata = {
+        id: item.id, backupId: item.backupId, instanceId: item.instanceId,
+        target: item.target, size: item.size, sha256: item.sha256, objectKey: item.objectKey,
+    };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(metadata, null, 2)], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${item.id}.json`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }

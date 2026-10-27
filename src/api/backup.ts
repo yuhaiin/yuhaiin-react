@@ -46,3 +46,7 @@ export function retryRecoveryBackup(id: string): Promise<void> {
 export function verifyRecoveryBackup(id: string, identity: string): Promise<import('@/api/generated-contracts').Go.backup.RecoveryManifest> {
   return requestJSON('POST', `/api/v2/backup/recovery/${encodeURIComponent(id)}/verify`, { identity });
 }
+
+export function retrieveRecoveryBackup(id: string, signal?: AbortSignal): Promise<RecoveryBackup> {
+  return requestJSON('POST', `/api/v2/backup/recovery/${encodeURIComponent(id)}/retrieve`, { confirmDownload: true, confirmReplace: true }, undefined, signal);
+}

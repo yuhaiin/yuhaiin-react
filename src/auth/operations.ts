@@ -16,6 +16,7 @@ export const operationPermissions: Record<RPCOperation, string> = {
     "backup.recovery.download": "backup:manage",
     "backup.recovery.delete": "backup:manage",
     "backup.recovery.retry": "backup:manage",
+    "backup.recovery.retrieve": "backup:manage",
     "backup.recovery.verify": "backup:manage",
     "backup.recovery.imports": "backup:manage",
     "backup.recovery.import.upload": "backup:manage",

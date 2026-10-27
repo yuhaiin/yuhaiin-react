@@ -28,6 +28,7 @@ try {
  const evaluate=async expression=>{const r=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(r.exceptionDetails)throw Error(r.exceptionDetails.exception?.description||r.exceptionDetails.text);return r.result?.value;};
  async function wait(expression){for(let i=0;i<150;i++){try{if(await evaluate(expression))return;}catch(e){if(!/context|navigat/i.test(String(e)))throw e;}await sleep(100);}throw Error(`Not ready: ${expression}; ${await evaluate('document.body?.innerText')}`);}
  async function clickText(text,selector='button, summary'){
+  if(selector.includes('[role="dialog"]'))await waitForPreview(send,'[role="dialog"]');
   const point=await evaluate(`(()=>{const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.textContent.trim()===${JSON.stringify(text)}&&e.getBoundingClientRect().width);if(!e)throw Error('Missing '+${JSON.stringify(text)});e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);
   await send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...point});await send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...point});await sleep(150);
  }
@@ -110,6 +111,17 @@ try {
   assert(backupOverflow<=1,`${width}px backup page overflow: ${backupOverflow}`);
   await evaluate(`document.querySelector('article').scrollIntoView({block:'center'})`);
   await shot(`${width}-backup-history`);
+  await wait(`document.body?.innerText.includes('Local copy missing')`);
+  await clickText('Retrieve / repair local copy','button');
+  await wait(`Boolean(document.querySelector('[role="dialog"]'))`);
+  assert(await evaluate(`document.querySelector('[role="dialog"]').textContent.includes('does not restore the deployment')`));
+  const retrievalOverflow=await evaluate(`(()=>{const e=document.querySelector('[role="dialog"]');return e.scrollWidth-e.clientWidth;})()`);
+  assert(retrievalOverflow<=1,`${width}px S3 retrieval dialog overflow: ${retrievalOverflow}`);
+  await shot(`${width}-s3-retrieval-confirmation`);
+  await clickText('OK','[role="dialog"] button');
+  await wait(`document.body?.innerText.includes('S3 retrieval: ciphertext size and SHA-256 verified')`);
+  assert(!await evaluate(`document.body?.innerText.includes('Archive authenticated and inventory checked')`));
+  await shot(`${width}-s3-retrieved`);
   await clickText('Verify archive','button');
   await wait(`Boolean(document.querySelector('[role="dialog"] input[type="password"]'))`);
   const verifyOverflow=await evaluate(`(()=>{const e=document.querySelector('[role="dialog"]');return e.scrollWidth-e.clientWidth;})()`);
@@ -154,6 +166,7 @@ try {
   const restoreInput=await send('DOM.querySelector',{nodeId:(await send('DOM.getDocument')).root.nodeId,selector:'[data-testid="recovery-import-panel"] input[type="file"]'});
   await send('DOM.setFileInputFiles',{nodeId:restoreInput.nodeId,files:[importFixture]});
   await clickText('Upload encrypted archive','button');
+  await wait(`Boolean(document.querySelector('[data-testid="recovery-import-panel"] input[type="password"]'))`);
   await evaluate(`document.querySelector('[data-testid="recovery-import-panel"] input[type="password"]').focus()`);
   await send('Input.insertText',{text:'AGE-SECRET-KEY-SYNTHETIC-BROWSER-FIXTURE'});
   await clickText('Authenticate and preview','button');
@@ -180,7 +193,7 @@ try {
   await wait(`document.querySelector('[data-testid="recovery-result-panel"]').textContent.includes('Restored deployment passed startup checks')`);
   await evaluate(`document.querySelector('[data-testid="recovery-result-panel"]').scrollIntoView({block:'center'})`);
   await shot(`${width}-restore-committed`);
-  checks.push({width,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow,restoreRollbackResult:true,restoreResultOverflow:resultOverflow,restoreActivationConfirmed:true,restoreAdmissionDistinctFromCommit:true,restoreConfirmationOverflow:activationOverflow});
+  checks.push({width,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,s3RetrievalConfirmed:true,retrievalDialogOverflow:retrievalOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow,restoreRollbackResult:true,restoreResultOverflow:resultOverflow,restoreActivationConfirmed:true,restoreAdmissionDistinctFromCommit:true,restoreConfirmationOverflow:activationOverflow});
   await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:init.identifier});
  }
  await writeFile(`${output}/checks.json`,JSON.stringify({source:'synthetic MSW visual/interaction data; backend behavior tested separately',checks},null,2));

@@ -12,6 +12,7 @@ export type RPCOperation =
   | "backup.recovery.import.upload"
   | "backup.recovery.imports"
   | "backup.recovery.restore.status"
+  | "backup.recovery.retrieve"
   | "backup.recovery.retry"
   | "backup.recovery.status"
   | "backup.recovery.verify"
@@ -177,6 +178,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "DELETE", pattern: "/api/v2/backup/recovery/{id}", operation: "backup.recovery.delete" },
   { method: "POST", pattern: "/api/v2/backup/recovery/{id}/retry", operation: "backup.recovery.retry" },
   { method: "POST", pattern: "/api/v2/backup/recovery/{id}/verify", operation: "backup.recovery.verify" },
+  { method: "POST", pattern: "/api/v2/backup/recovery/{id}/retrieve", operation: "backup.recovery.retrieve" },
   { method: "GET", pattern: "/api/v2/backup/recovery/imports", operation: "backup.recovery.imports" },
   { method: "POST", pattern: "/api/v2/backup/recovery/imports", operation: "backup.recovery.import.upload" },
   { method: "POST", pattern: "/api/v2/backup/recovery/imports/{id}/preview", operation: "backup.recovery.import.preview" },

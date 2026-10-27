@@ -11,7 +11,7 @@ establishSession('synthetic-msw-session', principal, Math.floor(Date.now() / 100
 localStorage.setItem('yuhaiin.webui.language','en');
 // Synthetic backup state is confined to the reliability UI preview.
 let backupConfig={instanceName:'preview',interval:0,lastBackupHash:'',s3:{enabled:false,accessKey:'',secretKey:'',bucket:'',region:'',endpointUrl:'',usePathStyle:false,storageClass:''},recovery:{enabled:false,target:'local',recipient:'age1-synthetic-public-recipient',intervalMinutes:1440,timeoutMinutes:30,keepCount:10,keepDays:30,includeHistory:false,allowMaintenance:false}};
-let recoveryItems=[{id:'11111111-1111-4111-8111-111111111111',backupId:'22222222-2222-4222-8222-222222222222',instanceId:'33333333-3333-4333-8333-333333333333',target:'s3',state:'verified',createdAt:'2026-10-26T10:00:00Z',size:1048576,verification:'s3_ciphertext_readback',uploadAttempts:1,includesHistory:false}];
+let recoveryItems=[{id:'11111111-1111-4111-8111-111111111111',backupId:'22222222-2222-4222-8222-222222222222',instanceId:'33333333-3333-4333-8333-333333333333',target:'s3',state:'verified',localState:'missing',createdAt:'2026-10-26T10:00:00Z',size:1048576,verification:'s3_ciphertext_readback',uploadAttempts:1,includesHistory:false}];
 let recoveryStartedAt=0;
 let recoveryImports=[];
 let recoveryRestoreResult={backupId:'22222222-2222-4222-8222-222222222222',transactionId:'44444444-4444-4444-8444-444444444444',instanceId:'33333333-3333-4333-8333-333333333333',recoveryPoint:'.recovery-point-44444444-4444-4444-8444-444444444444',state:'rolled_back',adoptStartup:true,runtime:{managementAuth:true,managementTLS:'files',workingDirectory:'/synthetic-deployment'}};
@@ -118,6 +118,11 @@ const worker=setupWorker(
       recoveryStartedAt=Date.now();
       result={id:crypto.randomUUID(),backupId:crypto.randomUUID(),instanceId:'33333333-3333-4333-8333-333333333333',target:'local',state:'queued',createdAt:new Date().toISOString(),size:1048576,verification:'ciphertext_sha256',uploadAttempts:0,includesHistory:false};
       recoveryItems.unshift(result);
+    }
+    else if(scenario==='reliability' && op==='backup.recovery.retrieve'){
+      if(!p.confirmDownload || !p.confirmReplace)return errorResponse('Retrieval consent required',400);
+      const item=recoveryItems.find(item=>item.id===p.id);
+      item.localState='present';item.retrieval='verified';item.retrievedAt=new Date().toISOString();result=item;
     }
     else if(scenario==='reliability' && op==='backup.recovery.verify'){
       if(!p.identity)return errorResponse('A private fixture identity is required',400);
