@@ -1,3 +1,5 @@
+export type UpdateCompatibility = import('@/api/generated-contracts').Go.update.CompatibilityStatus;
+
 export type UpdateChannel = "stable" | "beta" | "main";
 
 export interface UpdateCheck {
@@ -15,6 +17,7 @@ export interface UpdateCheck {
   assetSha256: string;
   updateAvailable: boolean;
   reason: string;
+  compatibility?: UpdateCompatibility;
 }
 
 export interface UpdateStatus {
@@ -32,6 +35,7 @@ export interface UpdateHistoryEntry {
   commit: string;
   size: number;
   savedAt: string;
+  compatibility?: UpdateCompatibility;
 }
 
 export interface UpdateHistory {

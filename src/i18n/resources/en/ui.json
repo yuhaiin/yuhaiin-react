@@ -875,5 +875,18 @@
     "error": "Restore admission failed.",
     "failed": "The restore did not complete. Review the latest restore result, then authenticate a new preview before retrying.",
     "cleanupFailed": "Private staging cleanup failed. Review the restore result, repair storage access and discard this staged import before uploading again."
+  },
+  "updateSafety": {
+    "configuration": "Configuration schema",
+    "management": "Management identity schema",
+    "notEnabled": "No database",
+    "recoveryRequired": "This target needs database migrations. Use a verified database recovery point and the offline procedure until coordinated update recovery is available.",
+    "binaryOnly": "Compatibility checks do not restore database contents or make a migration reversible. Binary rollback does not revert credentials or usage state.",
+    "states": {
+      "compatible": "Target schema catalog matches the observed databases.",
+      "migration_required": "Database migration and a coordinated recovery point are required.",
+      "incompatible": "Target binary cannot safely open the observed database schemas. Use a matching binary and database recovery point offline.",
+      "unknown": "Target database compatibility is unverified. Automatic installation is unavailable for this release or history entry."
+    }
   }
 }

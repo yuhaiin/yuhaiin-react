@@ -1,3 +1,4 @@
+import { UpdateCompatibilityDetails } from './update-compatibility';
 import { useUpdateRecovery } from '@/hooks/use-update-recovery';
 import { usePermission } from '@/auth/context';
 import { useTranslation } from 'react-i18next';
@@ -127,7 +128,7 @@ export default function About() {
     };
 
     const handleApplyUpdate = async () => {
-        if (!update?.updateAvailable || !update.targetTag || recovery.active || !info) return;
+        if (!update?.updateAvailable || !update.targetTag || update.compatibility?.state !== 'compatible' || recovery.active || !info) return;
         setApplyingUpdate(true);
         recovery.begin(update, info);
         try {
@@ -144,7 +145,7 @@ export default function About() {
     };
 
     const handleRollback = async (entry: UpdateHistoryEntry) => {
-        if (recovery.active || restoringVersion || applyingUpdate || !info) return;
+        if (recovery.active || restoringVersion || applyingUpdate || !info || entry.compatibility?.state !== 'compatible') return;
         if (!window.confirm(uiT("restoreVersionConfirm", { version: entry.version || entry.id.slice(0, 8) }))) return;
         setRestoringVersion(true);
         recovery.beginTarget(entry.version || entry.id, info);
@@ -247,12 +248,14 @@ export default function About() {
                                 <RefreshCw className={checkingUpdate ? "mr-2 animate-spin" : "mr-2"} size={16} />
                                 {uiT("checkForUpdates")}</Button>
                             {update?.updateAvailable && (
-                                <Button permission="update:manage" className="min-w-0 max-w-full" variant="default" onClick={handleApplyUpdate} disabled={applyingUpdate || recovery.active || !update.supported}>
+                                <Button permission="update:manage" className="min-w-0 max-w-full" variant="default" onClick={handleApplyUpdate} disabled={applyingUpdate || recovery.active || !update.supported || update.compatibility?.state !== 'compatible'}>
                                     <Download className="mr-2" size={16} />
                                     <span className="min-w-0 truncate">{applyingUpdate || recovery.active ? uiT('updateInProgress') : uiT('updateToVersion', { version: update.targetVersion })}</span>
                                 </Button>
                             )}
                         </div>
+
+                        {update?.updateAvailable && <UpdateCompatibilityDetails value={update.compatibility} />}
 
                         {recovery.active && (
                             <div role="status" data-update-phase={recovery.phase} className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
@@ -296,19 +299,21 @@ export default function About() {
                             )}
                             <div className="space-y-2">
                                 {history?.items.map(entry => (
-                                    <div key={entry.id} className="flex flex-wrap items-center justify-between gap-3 rounded-ui-md border border-ui-border bg-ui-surface-muted p-3">
+                                    <div key={entry.id} className="flex flex-col items-stretch gap-3 rounded-ui-md border border-ui-border bg-ui-surface-muted p-3 sm:flex-row sm:items-start sm:justify-between">
                                         <div className="min-w-0 flex-1">
                                             <div className="font-mono text-sm font-semibold break-all">{entry.version || entry.id.slice(0, 12)}</div>
                                             <div className="mt-1 text-xs text-ui-muted">
                                                 {new Date(entry.savedAt).toLocaleString()} · {formatBytes(entry.size)}
                                                 {entry.commit ? ` · ${entry.commit.slice(0, 7)}` : ""}
                                             </div>
+                                            <UpdateCompatibilityDetails value={entry.compatibility} />
                                         </div>
                                         <Button
+                                            className="self-end sm:self-center"
                                             permission="update:manage"
                                             size="sm"
                                             variant="default"
-                                            disabled={recovery.active || applyingUpdate || restoringVersion}
+                                            disabled={recovery.active || applyingUpdate || restoringVersion || entry.compatibility?.state !== 'compatible'}
                                             onClick={() => void handleRollback(entry)}
                                         >
                                             <RotateCcw size={14} className="mr-1.5" />

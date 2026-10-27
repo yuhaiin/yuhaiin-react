@@ -193,7 +193,19 @@ try {
   await wait(`document.querySelector('[data-testid="recovery-result-panel"]').textContent.includes('Restored deployment passed startup checks')`);
   await evaluate(`document.querySelector('[data-testid="recovery-result-panel"]').scrollIntoView({block:'center'})`);
   await shot(`${width}-restore-committed`);
-  checks.push({width,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,s3RetrievalConfirmed:true,retrievalDialogOverflow:retrievalOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow,restoreRollbackResult:true,restoreResultOverflow:resultOverflow,restoreActivationConfirmed:true,restoreAdmissionDistinctFromCommit:true,restoreConfirmationOverflow:activationOverflow});
+  await send('Page.navigate',{url:`${base}/?scenario=reliability&update=${width}#/docs/config/about`});
+  await wait(`document.body?.innerText.includes('Software Update')`);
+  await waitForPreview(send,'main');
+  await clickText('Check for Updates','button');
+  await wait(`document.body?.innerText.includes('Database migration and a coordinated recovery point are required.')`);
+  assert(await evaluate(`[...document.querySelectorAll('button')].find(e=>e.textContent.includes('Update to v2.0.0'))?.disabled`));
+  assert(await evaluate(`[...document.querySelectorAll('button')].find(e=>e.textContent.trim()==='Restore')?.disabled`));
+  assert(await evaluate(`document.body?.innerText.includes('legacy-no-schema-catalog')`));
+  const updateOverflow=await evaluate('document.documentElement.scrollWidth-innerWidth');
+  assert(updateOverflow<=1,`${width}px update compatibility overflow: ${updateOverflow}`);
+  await evaluate(`document.querySelector('[data-testid="update-compatibility"]').scrollIntoView({block:'center'})`);
+  await shot(`${width}-update-compatibility`);
+  checks.push({width,updateSchemaMigrationBlocked:true,legacyBinaryRollbackBlocked:true,updateCompatibilityOverflow:updateOverflow,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,s3RetrievalConfirmed:true,retrievalDialogOverflow:retrievalOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow,restoreRollbackResult:true,restoreResultOverflow:resultOverflow,restoreActivationConfirmed:true,restoreAdmissionDistinctFromCommit:true,restoreConfirmationOverflow:activationOverflow});
   await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:init.identifier});
  }
  await writeFile(`${output}/checks.json`,JSON.stringify({source:'synthetic MSW visual/interaction data; backend behavior tested separately',checks},null,2));

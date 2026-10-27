@@ -126,3 +126,11 @@ is missing or damaged. It shows ciphertext retrieval separately from authenticat
 archive verification, supports cancellation, and exports public recovery metadata
 for the backend's offline `recovery fetch` command. See the
 [backend recovery guide](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/managed-recovery-backups.md#recover-a-missing-or-damaged-local-s3-copy).
+
+Software Update and Previous versions show observed current/target database
+schemas and distinguish compatible, migration-required, incompatible and unknown
+binaries. Unknown/incompatible targets cannot be automatically installed or
+restored. A binary rollback does not restore credentials, usage or database
+contents. Automatic database-migrating updates remain unavailable until coordinated
+update recovery points are implemented; the backend's offline recovery workflow
+remains available. See the [update compatibility guide](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/update-rollback.md#verified-target-schema-preflight).

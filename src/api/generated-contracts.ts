@@ -2008,6 +2008,15 @@ export namespace Go {
     }
   }
   export namespace update {
+    export interface CompatibilityStatus {
+      state: string;
+      reason: string;
+      currentConfiguration: number;
+      currentManagement: number;
+      targetConfiguration: number;
+      targetManagement: number;
+      databaseRecoveryRequired: boolean;
+    }
     export interface CheckResult {
       supported: boolean;
       channel: string;
@@ -2022,6 +2031,7 @@ export namespace Go {
       assetSha256: string;
       updateAvailable: boolean;
       reason: string;
+      compatibility?: CompatibilityStatus;
     }
     export interface CheckRequest {
       channel: string;
@@ -2046,6 +2056,7 @@ export namespace Go {
       commit: string;
       size: number;
       savedAt: string;
+      compatibility?: CompatibilityStatus;
     }
     export interface HistoryResult {
       items: HistoryEntry[];
