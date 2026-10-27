@@ -31,8 +31,16 @@ UTC daily-byte limits. Repeat measurements to reach the configured minimum
 sample count (default three). TLS is verified and redirects/compression are
 rejected. Failed/cancelled tests consume their reserved daily allowance.
 Measurements approximate this target and time; they do not guarantee link
-capacity. This delivery has download measurements only: leave upload weights
-and minimum upload thresholds at zero.
+capacity. **Active upload measurement** adds an independent HTTPS endpoint,
+byte/duration/daily limits and an explicit supported-endpoint acknowledgement.
+The backend first verifies support, then sends one bounded POST and validates the
+server's byte-count acknowledgement. Ordinary download URLs are not upload
+endpoints. **Measure upload now** is disabled without a saved target and consent.
+Upload samples, timestamps and EWMA remain independent from downloads; measured
+history labels each direction. Upload-only scoring does not require download
+samples. Configure minimum samples and freshness to suit the test interval;
+the default three-sample threshold requires repeated tests within the two-minute
+smoothing window, or lower the threshold explicitly for infrequent tests.
 
 Mode, candidate, thresholds and speed-test edits take effect on Save. Test
 buttons use the saved configuration so editing an unsaved URL does not initiate
@@ -357,3 +365,26 @@ browser harness at 1440/360/320 px confirms blocked unprotected migration,
 consented protected migration and matched receipt completion without horizontal
 overflow. Its data is synthetic; actual service migration, startup failure,
 SIGKILL and offline restoration run separately in the backend systemd fixture.
+
+## Upload measurements and scheduling
+
+Each Selector can independently configure **Active upload measurement** and
+**Override upload schedule**. Creating the override leaves tests disabled and
+does not grant endpoint consent. **Monitoring defaults → Periodic upload tests**
+provides an optional global schedule with its own target, consent, interval and
+network controls. Both directions share backend admission/concurrency and the
+same durable UTC-day allowance; failed/cancelled tests consume their reservation.
+Metered networks and Android background work remain off by default.
+
+Upload configuration extends the existing policy/monitoring JSON. Results extend
+the existing statistics JSON and bounded raw history. No new database migration
+is required for this follow-up. A separate HTTPS endpoint tool and protocol are
+specified in the backend measurement guide; it does not open an app listener.
+
+Local tests cover saved upload targets/limits, withheld consent, separate schedule
+enablement, and correct upload-history Mbps. The three-width browser harness
+executes the real upload button against explicit synthetic MSW data and checks
+the target/direction/consent/budget sent, history labels, disabled default schedule
+and layout. Actual verified-TLS measurement, persistence, shared budgets and
+selection correctness are covered by backend integration tests, rather than
+inferred from those browser fixtures.

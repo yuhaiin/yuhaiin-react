@@ -34,6 +34,7 @@ export type OutboundRuntimeStatus = {
     tcpHealth?: Go.node.ChannelHealth;
     udpHealth?: Go.node.ChannelHealth;
     throughput?: Go.node.ThroughputMeasurement;
+    uploadThroughput?: Go.node.ThroughputMeasurement;
     throughputHistory?: Go.node.ThroughputMeasurement[];
     protocol?: { state: string; lastError?: string; updatedAt: number };
 };

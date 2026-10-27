@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'src/component/selector-*.tsx'
+      - 'src/component/speed-test-fields.tsx'
       - 'src/docs/group/selectors/**'
       - 'src/api/monitoring.ts'
       - 'src/api/backup*.ts'

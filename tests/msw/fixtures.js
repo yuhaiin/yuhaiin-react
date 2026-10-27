@@ -52,6 +52,7 @@ let inboundConfig={hijackDns:true,hijackDnsFakeIp:false,sniff:true};
 let resolverServer={server:''},fakeDNS={enabled:false,ipv4Range:'198.18.0.0/15',ipv6Range:'fc00::/18'},resolverHosts={hosts:{'local.example':'127.0.0.1','service.example':'alias.example','router.example':'192.0.2.1','vpn.example:443':'192.0.2.2:8443'}};
 let selected={tcpId:nodes[0]?.id,udpId:nodes[0]?.id};
 const failedImports=new Set();
+const speedRecords=new Map();
 const selectors=scenario==='empty'?[]:[
   {id:'selector-work',name:'Work destination',nodeId:nodes[0]?.id||'',revision:1},
   {id:'selector-cloud',name:'Cloud services',nodeId:nodes[1]?.id||'',revision:1},
@@ -61,6 +62,7 @@ const selectors=scenario==='empty'?[]:[
 // Synthetic reliability data is scoped to browser layout/interaction checks.
 if (scenario === 'reliability') selectors[0].policy = {
   mode:'balanced', latencyTarget:'https://probe.example.invalid/health', speedTarget:'https://speed.example.invalid/sample',
+  uploadTarget:'https://upload.example.invalid/test',uploadTest:{url:'',direction:'upload',allowUpload:true,maxBytes:8192,durationMs:1000,timeoutMs:5000,dailyBudgetBytes:1048576},
   candidates:[{nodeId:'node-0',enabled:true,priority:0,weight:2},{nodeId:'node-1',enabled:true,priority:1,weight:1}],
   weights:{rtt:2,download:1,stability:2}, circuit:{halfOpenConcurrency:2,halfOpenMaxRequests:6},
 };
@@ -170,13 +172,19 @@ const worker=setupWorker(
     else if(op==='node.extra') result=p.id==='node-1'
       ? {globalprotect:{tunnel_prefix:'192.0.2.8/32',data_transport:'esp',dns:['192.0.2.1']}}
       : {openvpn:{tunnel_prefixes:['10.88.0.2/24','fd88::2/64'],dns:['10.88.0.1'],routes:['route 10.99.0.0 255.255.0.0'],cipher:'AES-256-GCM',gateway:'10.88.0.1',mtu:1400}};
-    else if(op==='nodes.status') result={items:(p.ids||[]).filter(id=>nodes.some(node=>node.id===id)).map(id=>({id,state:'unknown',uploadBytes:'0',downloadBytes:'0',uploadBps:'0',downloadBps:'0',udpSentPackets:'0',udpRecvPackets:'0',tcpAttempts:'0',tcpConnections:'0',udpAttempts:'0',udpSessions:'0',pingAttempts:'0',failures:'0',activeTCP:0,activeUDP:0,lastSuccessAt:0,lastFailureAt:0,lastUsedAt:0,...(scenario==='reliability'?{protocol:{state:id==='node-1'?'authentication_failed':'configured',updatedAt:Math.floor(Date.now()/1000)}}:{})}))};
+    else if(op==='nodes.status') result={items:(p.ids||[]).filter(id=>nodes.some(node=>node.id===id)).map(id=>({id,state:'unknown',uploadBytes:'0',downloadBytes:'0',uploadBps:'0',downloadBps:'0',udpSentPackets:'0',udpRecvPackets:'0',tcpAttempts:'0',tcpConnections:'0',udpAttempts:'0',udpSessions:'0',pingAttempts:'0',failures:'0',activeTCP:0,activeUDP:0,lastSuccessAt:0,lastFailureAt:0,lastUsedAt:0,...(scenario==='reliability'?{throughputHistory:speedRecords.get(id)||[],protocol:{state:id==='node-1'?'authentication_failed':'configured',updatedAt:Math.floor(Date.now()/1000)}}:{})}))};
     else if(op==='nodes.selected') result={tcp:nodes.find(n=>n.id===selected.tcpId),udp:nodes.find(n=>n.id===selected.udpId)};
     else if(op==='nodes.select'){if(!nodes.some(n=>n.id===p.tcpId&&n.enabled)||!nodes.some(n=>n.id===p.udpId&&n.enabled))return errorResponse('Choose enabled nodes');selected=p;}
     else if(op==='node.use'){selected={tcpId:p.id,udpId:p.id};}
     else if(op==='node.delete'){remove(nodes,p.id);}
     else if(op==='node.close'){activeIds.delete(p.id);}
     else if(op==='node.latency')result={ok:true,latencyMs:36};
+    else if(op==='node.speed'){
+      if(p.direction==='upload'&&!p.allowUpload)return errorResponse('Explicit upload consent required',400);
+      result={at:Date.now(),direction:p.direction||'download',target:p.url,ok:true,samples:1,bytes:p.maxBytes||8192,durationMs:20,downloadMbps:p.direction==='upload'?0:80,uploadMbps:p.direction==='upload'?25:0};
+      speedRecords.set(p.id,[...(speedRecords.get(p.id)||[]),result].slice(-16));
+      if(scenario==='reliability')window.__reliabilitySpeedTests=[...(window.__reliabilitySpeedTests||[]),structuredClone(p)];
+    }
     else if(op==='nodes.import.preview'){
       try { const raw=JSON.parse(p.text); const items=Array.isArray(raw)?raw:[raw];result={items:items.map(node=>({...node,id:crypto.randomUUID(),name:node.name||'Imported node',enabled:true,origin:'manual',group:p.group||'manual'})),errors:[]}; }
       catch {result={items:[],errors:[{line:1,message:'This preview accepts canonical node JSON. Share-link parsing is covered by backend tests.'}]};}

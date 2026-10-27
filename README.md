@@ -142,3 +142,7 @@ migration requires the matching source binary and database backup, with explicit
 credential-revival review. Other hosts retain reviewed offline recovery. Browser
 checks at 1440/360/320 px cover consent and receipt completion separately from the
 backend's actual systemd migration/failure/SIGKILL/CLI-recovery tests. See the [update compatibility guide](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/update-rollback.md#verified-target-schema-preflight).
+
+Selectors also provide opt-in active upload measurements, independent upload
+schedules and direction-labeled results while sharing the existing backend test
+budgets. See [upload measurement controls](docs/intelligent-selectors.md#upload-measurements-and-scheduling).

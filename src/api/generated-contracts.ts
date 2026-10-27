@@ -658,6 +658,7 @@ export namespace Go {
       reason: string;
     }
     export interface MonitoringConfig {
+      uploadSpeed?: SpeedSchedule;
       revision: number;
       probe: ProbeSchedule;
       speed: SpeedSchedule;
@@ -739,6 +740,7 @@ export namespace Go {
       tcpHealth: ChannelHealth;
       udpHealth: ChannelHealth;
       throughputHistory?: ThroughputMeasurement[];
+      uploadThroughput: ThroughputMeasurement;
       throughput: ThroughputMeasurement;
     }
     export interface ChannelHealth {
@@ -759,6 +761,7 @@ export namespace Go {
       target?: string;
     }
     export interface ThroughputMeasurement {
+      direction?: string;
       at: number;
       ok: boolean;
       target: string;
@@ -780,6 +783,10 @@ export namespace Go {
       jitterMs: number;
       failureRate: number;
       samples: number;
+      downloadAt?: number;
+      uploadAt?: number;
+      downloadSamples?: number;
+      uploadSamples?: number;
       downloadMbps: number;
       uploadMbps: number;
       activeConnections: number;
@@ -824,6 +831,7 @@ export namespace Go {
     export interface SelectorPolicy {
       circuit?: CircuitConfig;
       probe?: ProbeSchedule;
+      periodicUpload?: SpeedSchedule;
       periodicSpeed?: SpeedSchedule;
       mode?: string;
       candidates?: SelectorCandidate[];
@@ -833,6 +841,8 @@ export namespace Go {
       returnToPreferred?: boolean;
       latencyTarget?: string;
       udpLatencyTarget?: string;
+      uploadTarget?: string;
+      uploadTest?: SpeedTestRequest;
       speedTarget?: string;
       speedTest?: SpeedTestRequest;
       minSamples?: number;
@@ -869,6 +879,8 @@ export namespace Go {
       loadReference?: number;
     }
     export interface SpeedTestRequest {
+      direction?: string;
+      allowUpload?: boolean;
       url: string;
       maxBytes?: number;
       durationMs?: number;

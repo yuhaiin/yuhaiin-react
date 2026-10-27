@@ -33,7 +33,7 @@ it('requires separate explicit enablement when creating selector overrides', asy
         return <SelectorMonitoringEditor value={value} onChange={setValue} />;
     }
     await act(async () => root.render(<Harness />));
-    expect(latest.probe).toBeUndefined(); expect(latest.periodicSpeed).toBeUndefined();
+    expect(latest.probe).toBeUndefined(); expect(latest.periodicSpeed).toBeUndefined(); expect(latest.periodicUpload).toBeUndefined();
     await toggle('monitor.overrideProbe'); expect(latest.probe?.enabled).toBe(false);
     await toggle('monitor.probeEnabled'); expect(latest.probe?.enabled).toBe(true);
     await toggle('monitor.overrideSpeed'); expect(latest.periodicSpeed?.enabled).toBe(false);
@@ -68,5 +68,21 @@ it('shows shared admission status and the inclusive daily budget explanation', a
     await act(async () => [...host.querySelectorAll('button')].find(b => b.textContent === 'monitor.defaults')!.click());
     expect(document.querySelector('[data-testid="measurement-slots"]')?.textContent).toBe('2 / 4');
     expect(document.body.textContent).toContain('auto.budgetHint');
+    expect(api.saveMonitoring).not.toHaveBeenCalled();
+});
+
+it('creates an upload override without enabling tests or granting endpoint consent', async () => {
+    function Harness() {
+        const [value, setValue] = useState<Go.node.SelectorPolicy>({ mode: 'balanced', weights: { upload: 1 }, uploadTarget: 'https://upload.example/test' });
+        useEffect(() => { latest = value; }, [value]);
+        return <SelectorMonitoringEditor value={value} onChange={setValue} />;
+    }
+    await act(async () => root.render(<Harness />));
+    await toggle('monitor.overrideUpload');
+    expect(latest.periodicUpload).toEqual({ enabled: false, test: { url: 'https://upload.example/test', direction: 'upload' } });
+    expect(latest.periodicSpeed).toBeUndefined();
+    await toggle('monitor.uploadEnabled');
+    expect(latest.periodicUpload?.enabled).toBe(true);
+    expect(latest.periodicUpload?.test.allowUpload).toBeUndefined();
     expect(api.saveMonitoring).not.toHaveBeenCalled();
 });

@@ -6,9 +6,10 @@ import type { Selector } from '@/contract/node';
 import { SelectorLiveStatus, SelectorPolicyEditor } from './selector-policy-editor';
 import { authorizeTest, resetTestAuth } from '@/test/auth';
 
-const api = vi.hoisted(() => ({ getSelectorStatus: vi.fn(), measureNodeSpeed: vi.fn(), requestJSON: vi.fn() }));
+const api = vi.hoisted(() => ({ getSelectorStatus: vi.fn(), measureNodeSpeed: vi.fn(), requestJSON: vi.fn(), getNodeStatuses: vi.fn() }));
 vi.mock('@/api/selectors', () => api);
 vi.mock('@/api/client', () => api);
+vi.mock('@/api/node-observability', () => api);
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('./node-select', () => ({ NodeSelect: ({ onChange, label }: { onChange: (node: { id: string }) => void; label: string }) => <button onClick={() => onChange({ id: 'b' })}>{label}</button> }));
 vi.mock('./v2/forms', async importOriginal => {
@@ -62,4 +63,45 @@ it('shows measured throughput, raw RTT, score explanation, and separate UDP choi
     await click('auto.probeNow'); expect(api.requestJSON).toHaveBeenCalledWith('POST', '/api/v2/nodes/a/latency', { type: 'https', url: 'https://www.gstatic.com/generate_204' });
     await click('UDP'); expect(host.textContent).toContain('auto.reasons.no_healthy_candidate');
     expect(host.textContent).not.toContain('52.0 ms');
+});
+
+it('requires upload consent and sends only the saved upload target and budget', async () => {
+    const value: Selector = { ...base, policy: { mode: 'balanced', weights: { upload: 1 }, uploadTarget: 'https://upload.example/test', uploadTest: { url: '', allowUpload: true, maxBytes: 8192, dailyBudgetBytes: 1048576 }, speedTest: { url: 'https://download.example/test', maxBytes: 1024 } } };
+    await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><SelectorLiveStatus value={value} /></SWRConfig>));
+    await click('auto.measureUploadNow');
+    expect(api.measureNodeSpeed).toHaveBeenCalledWith('a', { direction: 'upload', url: 'https://upload.example/test', allowUpload: true, maxBytes: 8192, dailyBudgetBytes: 1048576 });
+    expect(api.requestJSON.mock.calls.filter(([method]) => method === 'POST')).toEqual([]);
+    api.measureNodeSpeed.mockClear();
+    const noConsent = { ...value, policy: { ...value.policy!, uploadTest: { url: '', allowUpload: false } } };
+    await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><SelectorLiveStatus value={noConsent} /></SWRConfig>));
+    const control = [...host.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent === 'auto.measureUploadNow')!;
+    expect(control.disabled).toBe(true);
+    await act(async () => control.click());
+    expect(api.measureNodeSpeed).not.toHaveBeenCalled();
+});
+it('keeps upload consent and manual controls separate from automatic schedule enablement', async () => {
+    await editor({ ...base, policy: { mode: 'balanced', weights: { upload: 1 }, candidates: [{ nodeId: 'a', enabled: true, priority: 0, weight: 1 }] } });
+    const fields = host.querySelector('[data-testid="upload-test-fields"]')!;
+    const label = [...fields.querySelectorAll('label')].find(l => l.textContent === 'auto.uploadTarget')!;
+    const input = document.getElementById(label.htmlFor) as HTMLInputElement;
+    act(() => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, 'https://upload.example/test'); input.dispatchEvent(new Event('input', { bubbles: true })); });
+    expect(latest.policy?.uploadTarget).toBe('https://upload.example/test');
+    expect(latest.policy?.uploadTest?.direction).toBe('upload');
+    expect(latest.policy?.uploadTest?.allowUpload).toBeUndefined();
+    const consent = fields.querySelector<HTMLButtonElement>('[role="switch"][aria-label="auto.allowUpload"]')!;
+    await act(async () => consent.click());
+    expect(latest.policy?.uploadTest?.allowUpload).toBe(true);
+    expect(latest.policy?.periodicUpload).toBeUndefined();
+    expect(latest.policy?.periodicSpeed).toBeUndefined();
+    expect(api.measureNodeSpeed).not.toHaveBeenCalled();
+});
+it('labels upload history using upload Mbps rather than the zero download field', async () => {
+    api.getNodeStatuses.mockResolvedValue({ a: { throughputHistory: [{ direction: 'upload', at: 1000, ok: true, uploadMbps: 25, downloadMbps: 0, bytes: 8192, durationMs: 20, target: 'https://upload.example/test' }] } });
+    const value = { ...base, policy: { mode: 'balanced', weights: { upload: 1 } } };
+    await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><SelectorLiveStatus value={value} /></SWRConfig>));
+    const details = [...host.querySelectorAll('summary')].find(s => s.textContent === 'monitor.measurementHistory')!.parentElement as HTMLDetailsElement;
+    await act(async () => { details.open = true; details.dispatchEvent(new Event('toggle')); });
+    expect(details.textContent).toContain('auto.measuredUpload');
+    expect(details.textContent).toContain('25.00 Mbps');
+    expect(details.textContent).not.toContain('0.00 Mbps');
 });

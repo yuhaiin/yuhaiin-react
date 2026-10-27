@@ -398,7 +398,7 @@
     "durationMs": "Payload measurement duration (ms)",
     "timeoutMs": "Total test timeout (ms)",
     "dailyBudgetBytes": "Instance daily measurement budget (bytes)",
-    "measurementHint": "Download measurements approximate this target at this time; live business Bps is separate. Repeat tests to reach the sample threshold. Periodic tests require explicit schedule enablement. Failed or cancelled tests consume the reserved daily budget.",
+    "measurementHint": "Measurements approximate this target at this time; live business Bps is separate. Repeat each direction to reach its sample threshold. Periodic tests require explicit enablement. Failed or cancelled tests consume the shared reserved daily budget.",
     "liveStatus": "Active selection and evidence",
     "current": "Selected node",
     "none": "No available node",
@@ -473,9 +473,15 @@
       "recovery_trial": "Limited recovery trial",
       "authentication_unavailable": "Authentication is unavailable; this candidate needs administrator attention.",
       "session_unavailable": "Native tunnel session is unavailable.",
-      "control_unavailable": "Control service is unavailable."
+      "control_unavailable": "Control service is unavailable.",
+      "no_fresh_upload_measurement": "No fresh, comparable upload measurement"
     },
-    "budgetHint": "Each test reserves the payload limit plus 65,536 bytes for TLS, HTTP headers and read-ahead. Failed and cancelled tests consume the reservation. VPN framing is outside this logical limit. Existing usage from an older accounting version pauses tests until the next UTC day."
+    "budgetHint": "Each test reserves the payload limit plus 65,536 bytes for TLS, HTTP headers and read-ahead. Failed and cancelled tests consume the reservation. VPN framing is outside this logical limit. Existing usage from an older accounting version pauses tests until the next UTC day.",
+    "uploadTarget": "Upload test HTTPS endpoint",
+    "allowUpload": "This endpoint explicitly supports upload testing",
+    "uploadHint": "Upload tests first verify endpoint support, then send a bounded streaming POST and validate its byte-count acknowledgement. Ordinary download URLs do not support this protocol. Upload and download keep independent samples and expiry times.",
+    "uploadConfiguration": "Active upload measurement",
+    "measureUploadNow": "Measure upload now"
   },
   "monitor": {
     "defaults": "Monitoring defaults",
@@ -520,13 +526,17 @@
       "cached_only": "Only existing outbound clients",
       "allow_expensive": "Allow metered probes; reuse established VPNs"
     },
-    "measurementHistory": "Recent download measurements",
+    "measurementHistory": "Recent active measurements",
     "policyStates": {
       "waiting": "Routing or traffic policy is not ready. Network probes and speed tests are paused until policy loading succeeds.",
       "enforced": "Measurements obey routing and traffic controls. Measured speeds include these limits.",
       "standalone": "No application routing or traffic policy is attached to measurements in this standalone runtime."
     },
-    "measurementSlots": "Measurements: {{active}} / {{limit}} shared slots (manual probes, periodic probes and speed tests)."
+    "measurementSlots": "Measurements: {{active}} / {{limit}} shared slots (manual probes, periodic probes and speed tests).",
+    "uploadEnabled": "Enable periodic upload tests",
+    "periodicUpload": "Periodic upload tests",
+    "overrideUpload": "Override upload schedule",
+    "uploadHint": "Uploads are off by default and require a supported HTTPS endpoint and explicit consent. They share the download concurrency and daily traffic allowance. Metered networks and mobile background work are disabled by default."
   },
   "circuit": {
     "title": "Circuit breaker and recovery",
