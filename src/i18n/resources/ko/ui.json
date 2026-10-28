@@ -713,6 +713,6 @@
   "sstpTLSCertificate": "SSTP TLS 인증서",
   "sstpUsers": "SSTP 자격 증명",
   "sstpUser": "사용자",
-  "sstpCredentialsHelp": "MS-CHAPv2에는 애플리케이션 로그인 해시와 별도의 SSTP 암호가 필요합니다. 설정을 보호하고 유효한 TLS 인증서를 사용하세요.",
+  "sstpCredentialsHelp": "아래 사용자 인증 섹션에서 허용할 관리 사용자를 선택하세요. SSTP 사용자 이름에는 계정 로그인 이름을, 암호에는 새로 발급하거나 갱신한 장치별 프록시 자격 증명을 사용합니다. 기존 장치 자격 증명은 SSTP에 사용하기 전에 갱신해야 합니다. 관리 로그인 암호는 사용할 수 없습니다.",
   "sstpNoExtraTransports": "SSTP는 TLS를 내부적으로 처리합니다. 추가 전송 계층은 지원하지 않습니다. SSTP 프로토콜 설정에서 인증서를 구성하세요."
 }

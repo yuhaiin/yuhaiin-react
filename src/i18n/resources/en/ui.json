@@ -713,6 +713,6 @@
   "sstpTLSCertificate": "SSTP TLS certificate",
   "sstpUsers": "SSTP credentials",
   "sstpUser": "User",
-  "sstpCredentialsHelp": "MS-CHAPv2 requires separate SSTP passwords, not hashed application-login credentials. Protect these settings and use a valid TLS certificate.",
+  "sstpCredentialsHelp": "Choose allowed management users in the User Authentication section below. Connect with the account login name and a newly issued or rotated per-device proxy credential as the SSTP password. Existing device credentials must be rotated before use with SSTP; management login passwords are not accepted.",
   "sstpNoExtraTransports": "SSTP handles TLS internally. Additional transports are not supported; configure the server certificate in the SSTP protocol settings."
 }
