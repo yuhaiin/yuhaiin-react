@@ -23,7 +23,7 @@ const base: Selector = { id: 's', name: 'Work', nodeId: 'a', revision: 7 };
 beforeEach(() => {
     vi.clearAllMocks(); authorizeTest();
     host = document.createElement('div'); document.body.append(host); root = createRoot(host);
-    api.getSelectorStatus.mockResolvedValue({ id: 's', revision: 7, tcp: { nodeId: 'a', reason: 'lowest_latency', candidates: [{ nodeId: 'a', state: 'healthy', eligible: true, reason: 'eligible', samples: 3, rttMs: 52, downloadMbps: 20, uploadMbps: 0, failureRate: 0, activeConnections: 2, score: .7, components: { rtt: .8 } }] }, udp: { nodeId: '', reason: 'no_healthy_candidate', candidates: [] }, switches: 1, suppressed: 2, events: [{ at: 1000, network: 'tcp', from: 'b', to: 'a', reason: 'lowest_latency' }] });
+    api.getSelectorStatus.mockResolvedValue({ id: 's', revision: 7, tcp: { nodeId: 'a', reason: 'lowest_latency', candidates: [{ nodeId: 'a', state: 'healthy', eligible: true, reason: 'eligible', samples: 3, rttMs: 52, downloadMbps: 20, uploadMbps: 0, failureRate: .4, timeoutRate: .2, healthSamples: 5, activeConnections: 2, score: .7, components: { rtt: .8 } }] }, udp: { nodeId: '', reason: 'no_healthy_candidate', candidates: [] }, switches: 1, suppressed: 2, events: [{ at: 1000, network: 'tcp', from: 'b', to: 'a', reason: 'lowest_latency' }] });
     api.measureNodeSpeed.mockResolvedValue({ ok: true }); api.requestJSON.mockResolvedValue({ ok: true });
 });
 afterEach(() => { act(() => root.unmount()); host.remove(); resetTestAuth(); });
@@ -131,4 +131,13 @@ it('explains a suppressed preferred return in live status', async () => {
     api.getSelectorStatus.mockResolvedValue({ id: 's', revision: 7, tcp: { nodeId: 'b', reason: 'preferred_return_disabled', candidates: [] }, udp: { nodeId: '', reason: 'no_healthy_candidate', candidates: [] }, events: [], switches: 0, suppressed: 1 });
     await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><SelectorLiveStatus value={{ ...base, policy: { mode: 'lowest_latency', weights: {} } }} /></SWRConfig>));
     expect(host.textContent).toContain('auto.reasons.preferred_return_disabled');
+});
+
+
+it('shows timeout outcomes separately from comparable RTT sample counts', async () => {
+    await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><SelectorLiveStatus value={base} /></SWRConfig>));
+    expect(host.textContent).toContain('auto.timeoutRate');
+    expect(host.textContent).toContain('20.0% (5)');
+    expect(host.textContent).toContain('52.0 ms (3)');
+    expect(host.textContent).toContain('auto.timeoutRateHint');
 });

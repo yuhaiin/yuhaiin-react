@@ -71,7 +71,7 @@ The initial editor requires schema 18; the monitoring follow-up described below
 requires schema 19. Circuit admission uses the existing policy/observation JSON
 and does not add a migration. Managed backup history subsequently adds backend
 schema 21. The existing Backup page now includes the full-backup controls
-described below; safe-update and certificate management remain in progress.
+described below; protected updates and certificate management are implemented in the companion backend.
 
 See the [backend guide](https://github.com/yuhaiin/yuhaiin/blob/main/docs/intelligent-selectors.md)
 for scoring formulas, fallback semantics, safety limits and reproducible
@@ -424,3 +424,15 @@ unavailable. A TCP dial ratio excludes later I/O, application/probe events and
 UDP session creation, and uses only retained eligible dial outcomes. Details
 remain collapsed until needed; the normal statistics and native-state panel are
 preserved. This follow-up adds no persistent database state or migration.
+
+
+## Fresh timeout outcomes
+
+The expanded candidate card shows a timeout ratio with its health-outcome count,
+separate from RTT EWMA/sample count. The backend derives it from the same fresh
+health window as the failure ratio, excluding stale/future and duplicate response
+evidence. Without a denominator (including an older backend response), it shows
+unmeasured. These are eligible connection/probe health timeouts, not a UDP
+packet-loss estimate. The normalized score and existing raw metrics remain visible.
+A component regression and synthetic Chrome fixture at 1440/360/320 px cover the
+projection; actual backend tests cover timeout classification, expiry and counts.

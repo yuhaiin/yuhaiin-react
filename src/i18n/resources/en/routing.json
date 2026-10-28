@@ -485,7 +485,9 @@
     "measureUploadNow": "Measure upload now",
     "failoverRecoveryHint": "The preferred node starts first, otherwise priority chooses the main node. Enable return to leave a healthy survivor after recovery, subject to hold and cooldown. Click Preferred again to clear it.",
     "metricRecoveryHint": "With a preferred node set, disabling return keeps an eligible non-preferred survivor and ranks other alternatives. Enable return only when the preferred node wins the metric and switching thresholds. Failure still permits failover. Click Preferred again to clear it.",
-    "weightedRecoveryHint": "Weighted selection distributes new flows by weight. Preferred-return controls do not apply."
+    "weightedRecoveryHint": "Weighted selection distributes new flows by weight. Preferred-return controls do not apply.",
+    "timeoutRate": "Timeout ratio",
+    "timeoutRateHint": "Share of recent connection/probe results that timed out. The count is health results, separate from RTT samples. This is not a packet-loss measurement."
   },
   "monitor": {
     "defaults": "Monitoring defaults",

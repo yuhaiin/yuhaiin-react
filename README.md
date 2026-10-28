@@ -107,8 +107,8 @@ The backend now provides offline encrypted recovery preview/activation and
 startup rollback; generated models are synchronized here. The corresponding Web
 backup page now manages confirmed local/S3 encrypted captures, schedules,
 history, verification, downloads and retention on root-owned Linux systemd.
-Broader host maintenance and broader certificate lifecycle qualification remain
-in progress in the same two PRs. See [recovery contract status](docs/intelligent-selectors.md#offline-recovery-contract-synchronization).
+Automatic disruptive maintenance is qualified on root-owned Linux systemd;
+other hosts retain documented offline and durability limits. See [recovery contract status](docs/intelligent-selectors.md#offline-recovery-contract-synchronization).
 
 
 The Backup page now also uploads encrypted archives and shows authenticated
@@ -170,3 +170,9 @@ latest, committed and configured-file dependencies remain protected. Clone resto
 clears inherited consent. This does not alter encrypted archive retention or start
 a backup. The paired Chrome harness also checks Save/readback at 1440/360/320 px.
 See the [backend retention guide](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/managed-recovery-backups.md#local-rollback-copy-retention).
+
+Selector details now show the timeout ratio and its fresh health-outcome count,
+separate from comparable RTT sample count. Older responses without a denominator
+show unmeasured. The hint explicitly avoids treating probe timeouts as packet
+loss. EN/JA/KO, generated contracts, component regression and the 1440/360/320 px
+browser fixture cover this projection of existing backend observations.

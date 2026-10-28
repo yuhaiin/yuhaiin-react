@@ -82,6 +82,7 @@ try {
   await send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...candidatePoint});await send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...candidatePoint});
   await wait(`document.body?.innerText.includes('Remote UDP reply received')`);
   assert(await evaluate(`document.body.innerText.includes('Half-open')&&document.body.innerText.includes('In flight: 1')`));
+  assert(await evaluate(`document.body.innerText.includes('Timeout ratio')&&document.body.innerText.includes('20.0% (5)')`), 'fresh timeout ratio/sample count missing');
   await evaluate(`document.querySelector('[data-reliability-candidate]').parentElement.scrollIntoView({block:'start'})`);await sleep(200);
   const overflow=await evaluate('document.documentElement.scrollWidth-innerWidth');
   assert(overflow<=1,`${width}px horizontal overflow: ${overflow}`);

@@ -870,6 +870,8 @@ export namespace Go {
       rttMs: number;
       jitterMs: number;
       failureRate: number;
+      timeoutRate?: number;
+      healthSamples?: number;
       samples: number;
       downloadAt?: number;
       uploadAt?: number;
