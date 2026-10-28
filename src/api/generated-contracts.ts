@@ -1543,6 +1543,17 @@ export namespace Go {
       includeHistory: boolean;
       allowMaintenance: boolean;
       protectUpdates?: boolean;
+      localPoints?: PointRetention;
+    }
+    export interface PointRetention {
+      enabled: boolean;
+      keepCount: number;
+      keepDays: number;
+    }
+    export interface PointCleanup {
+      deleted: string[];
+      protected: number;
+      retained: number;
     }
     export interface Backup {
       id: string;

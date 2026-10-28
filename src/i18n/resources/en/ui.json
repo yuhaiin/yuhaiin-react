@@ -791,7 +791,13 @@
       "failed": "S3 retrieval failed; no unverified replacement was published",
       "cancelled": "S3 retrieval cancelled",
       "interrupted": "S3 retrieval interrupted; retrieve again explicitly"
-    }
+    },
+    "localPointsTitle": "Local pre-restore rollback copies",
+    "localPointsHint": "These are private, unencrypted copies on this machine, separate from encrypted local/S3 backup archives. Cleanup runs at the next CLI service startup under its lifecycle lock; it does not stop forwarding to run a timer.",
+    "localPointsConsent": "Allow permanent cleanup of old local rollback copies",
+    "localPointsWarning": "Disabled by default. Latest committed copies, the current recovery transaction, last restore result, configured file dependencies and known open SQLite copies are protected. At most 32 copies are removed per startup; interrupted cleanup resumes when enabled. Protected copies can exceed the retention count or age.",
+    "localPointsCount": "Local rollback copies to retain",
+    "localPointsDays": "Local rollback-copy retention (days)"
   },
   "backupIntervalMinutes": "Configuration snapshot interval (minutes)",
   "recoveryImport": {

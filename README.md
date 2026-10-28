@@ -162,3 +162,11 @@ Management HTTPS uses explicit host-owned `-https-certificate-id` selection; the
 page shows the argument and live references. CA advice (ARI) displays the
 suggested window, persisted refresh timing and fallback status. See the
 [certificate controls and verification guide](docs/managed-certificates.md).
+
+Plaintext pre-restore rollback copies have separate, default-off cleanup consent
+and count/age controls under Backup. Saving uses the existing configuration API;
+cleanup runs at backend CLI startup or with the confirmed offline command. Active,
+latest, committed and configured-file dependencies remain protected. Clone restore
+clears inherited consent. This does not alter encrypted archive retention or start
+a backup. The paired Chrome harness also checks Save/readback at 1440/360/320 px.
+See the [backend retention guide](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/managed-recovery-backups.md#local-rollback-copy-retention).

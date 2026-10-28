@@ -18,11 +18,11 @@ afterEach(() => {
     vi.clearAllMocks();
 });
 
-async function mount(dirty = false) {
+async function mount(dirty = false, change = vi.fn()) {
     const host = document.createElement('div'); document.body.appendChild(host);
     const root = createRoot(host); roots.push(root);
     await act(async () => root.render(<RecoveryBackupPanel policy={{ ...defaultRecoveryPolicy, recipient: 'age1-fixture', allowMaintenance: true }}
-        onChange={vi.fn()} dirty={dirty} saving={false} onSave={vi.fn()} />));
+        onChange={change} dirty={dirty} saving={false} onSave={vi.fn()} />));
     return host;
 }
 const find = (host: ParentNode, key: string) => [...host.querySelectorAll('button')].find(button => button.textContent?.includes(key))!;
@@ -103,4 +103,14 @@ it('does not expose S3 retrieval for a local or unverified point', async () => {
     mocked.status.items = [point('local_ready'), { ...point('failed'), id: 'remote', target: 's3' }];
     const host = await mount();
     expect(find(host, 'recoveryBackup.retrieve')).toBeUndefined();
+});
+
+it('keeps local plaintext-copy deletion opt-in and separate from encrypted archive retention', async () => {
+ const change = vi.fn(); const host = await mount(false, change);
+ const toggle = [...host.querySelectorAll<HTMLElement>('[role="switch"]')].find(element => element.textContent?.includes('recoveryBackup.localPointsConsent'))!;
+ expect(toggle.getAttribute('aria-checked')).toBe('false');
+ await act(async () => toggle.click());
+ expect(change).toHaveBeenCalledWith(expect.objectContaining({ keepCount: 10, keepDays: 30, recipient: 'age1-fixture', localPoints: { enabled: true, keepCount: 3, keepDays: 30 } }));
+ expect(deleteRecoveryBackup).not.toHaveBeenCalled();
+ expect(host.textContent).toContain('recoveryBackup.localPointsWarning');
 });

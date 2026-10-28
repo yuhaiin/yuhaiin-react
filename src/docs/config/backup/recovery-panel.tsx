@@ -15,7 +15,7 @@ import { GlobalToastContext } from '@/component/v2/toast';
 
 export const defaultRecoveryPolicy: RecoveryPolicy = {
     enabled: false, target: 'local', recipient: '', intervalMinutes: 1440,
-    timeoutMinutes: 30, keepCount: 10, keepDays: 30, includeHistory: false, allowMaintenance: false, protectUpdates: true,
+    timeoutMinutes: 30, keepCount: 10, keepDays: 30, includeHistory: false, allowMaintenance: false, protectUpdates: true, localPoints: { enabled: false, keepCount: 3, keepDays: 30 },
 };
 const active = (item: RecoveryBackup) => item.retrieval === 'running' || ['queued', 'capturing', 'uploading', 'deleting'].includes(item.state)
     || (item.state === 'local_ready' && item.target === 's3');
@@ -48,6 +48,7 @@ export function RecoveryBackupPanel({ policy, onChange, dirty, saving, onSave }:
         onSuccess: current => { if (!current.items.some(active)) setWaiting(false); },
     });
     const value = policy ?? defaultRecoveryPolicy;
+    const points = value.localPoints ?? { enabled: false, keepCount: 3, keepDays: 30 };
     const update = (change: Partial<RecoveryPolicy>) => onChange({ ...value, ...change });
     const disabled = saving || action.pending;
     const runCreate = () => void action.run(async () => {
@@ -118,6 +119,18 @@ export function RecoveryBackupPanel({ policy, onChange, dirty, saving, onSave }:
                     value={String(value.keepCount)} onChange={input => update({ keepCount: Number(input) })} />
                 <SettingInputVertical label={t('recoveryBackup.keepDays')} type="number" min={1} max={3650}
                     value={String(value.keepDays)} onChange={input => update({ keepDays: Number(input) })} />
+                <details className="min-w-0 rounded-ui border border-ui-border p-4 md:col-span-2">
+                    <summary className="cursor-pointer text-sm font-medium">{t('recoveryBackup.localPointsTitle')}</summary>
+                    <p className="my-3 text-sm text-ui-muted">{t('recoveryBackup.localPointsHint')}</p>
+                    <div className="grid min-w-0 gap-4 md:grid-cols-2">
+                        <SwitchCard label={t('recoveryBackup.localPointsConsent')} description={t('recoveryBackup.localPointsWarning')}
+                            checked={points.enabled} onCheckedChange={enabled => update({ localPoints: { ...points, enabled } })} />
+                        <SettingInputVertical label={t('recoveryBackup.localPointsCount')} type="number" min={1} max={1000}
+                            value={String(points.keepCount)} onChange={input => update({ localPoints: { ...points, keepCount: Number(input) } })} />
+                        <SettingInputVertical label={t('recoveryBackup.localPointsDays')} type="number" min={1} max={3650}
+                            value={String(points.keepDays)} onChange={input => update({ localPoints: { ...points, keepDays: Number(input) } })} />
+                    </div>
+                </details>
             </fieldset>
             <p className="mt-3 text-sm text-ui-muted">{t('recoveryBackup.retentionHint')}</p>
             {!data?.supported && <p className="mt-3 text-sm text-ui-muted">{t('recoveryBackup.unsupported')}</p>}

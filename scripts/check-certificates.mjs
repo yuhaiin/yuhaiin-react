@@ -40,7 +40,7 @@ try {
   async function wait(expression, name = expression) { await until(async () => { try { return await evaluate(expression); } catch (error) { if (/context|navigat/i.test(String(error))) return false; throw error; } }, name); }
   async function click(expression) { const point = await evaluate(`(async()=>{const e=${expression};if(!e)throw Error('Missing click target');e.scrollIntoView({block:'center'});await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));const b=e.getBoundingClientRect();return{x:b.x+b.width/2,y:b.y+b.height/2}})()`); await send('Input.dispatchMouseEvent', { type: 'mousePressed', button: 'left', clickCount: 1, ...point }); await send('Input.dispatchMouseEvent', { type: 'mouseReleased', button: 'left', clickCount: 1, ...point }); }
   const button = text => `[...document.querySelectorAll('button')].find(e=>e.textContent.trim()===${JSON.stringify(text)})`;
-  async function fill(label, text) { const selector = await evaluate(`(()=>{const l=[...document.querySelectorAll('form label')].find(e=>e.textContent.trim()===${JSON.stringify(label)});const e=l?.htmlFor?document.getElementById(l.htmlFor):l?.querySelector('input');if(!e)throw Error('Missing field');e.dataset.certificateField='';return '[data-certificate-field]';})()`); await click(`document.querySelector(${JSON.stringify(selector)})`); await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'a', code: 'KeyA', windowsVirtualKeyCode: 65, modifiers: 2 }); await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'a', code: 'KeyA', windowsVirtualKeyCode: 65, modifiers: 2 }); await send('Input.insertText', { text }); await evaluate(`document.querySelector(${JSON.stringify(selector)}).removeAttribute('data-certificate-field')`); }
+  async function fill(label, text) { const selector = await evaluate(`(()=>{const l=[...document.querySelectorAll('label')].find(e=>e.textContent.trim()===${JSON.stringify(label)});const e=l?.htmlFor?document.getElementById(l.htmlFor):l?.querySelector('input');if(!e)throw Error('Missing field');e.dataset.certificateField='';return '[data-certificate-field]';})()`); await click(`document.querySelector(${JSON.stringify(selector)})`); await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'a', code: 'KeyA', windowsVirtualKeyCode: 65, modifiers: 2 }); await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'a', code: 'KeyA', windowsVirtualKeyCode: 65, modifiers: 2 }); await send('Input.insertText', { text }); await evaluate(`document.querySelector(${JSON.stringify(selector)}).removeAttribute('data-certificate-field')`); }
   async function choose(label, text) { await click(`document.querySelector('[role="combobox"][aria-label=${JSON.stringify(label)}]')`); await wait('Boolean(document.querySelector("[role=option]"))'); await click(`[...document.querySelectorAll('[role=option]')].find(e=>e.textContent.trim()===${JSON.stringify(text)})`); await wait('!document.querySelector("[role=option]")'); }
   await send('Page.enable'); await send('Runtime.enable'); await send('Network.enable');
   await send('Page.addScriptToEvaluateOnNewDocument', { source: "localStorage.setItem('yuhaiin.theme','light');localStorage.setItem('yuhaiin.accent','olive');" });
@@ -63,7 +63,7 @@ try {
     await fill('Name', `Site ${width}`); await fill('Account email', 'ops@example.com'); await fill('Domains and SANs (comma separated)', `site${width}.example.com`);
     await choose('Certificate authority', 'Custom ACME CA'); await fill('HTTPS directory URL', 'https://127.0.0.1:1/directory');
     await choose('DNS provider', 'Browser test zone · example.com');
-    await click(`(()=>{const l=[...document.querySelectorAll('form label')].find(e=>e.textContent==='I accept the selected ACME CA’s terms of service');return document.getElementById(l.htmlFor)})()`);
+    await click(`(()=>{const l=[...document.querySelectorAll('label')].find(e=>e.textContent==='I accept the selected ACME CA’s terms of service');return document.getElementById(l.htmlFor)})()`);
     assert(await evaluate('document.documentElement.scrollWidth<=innerWidth+1'), `${width}px certificate form overflow`);
     await send('Runtime.evaluate', { expression: 'window.scrollTo(0,0)' });
     const formShot = await send('Page.captureScreenshot', { format: 'png' }); await writeFile(join(artifacts, `${width}-form.png`), Buffer.from(formShot.data, 'base64'));
@@ -82,6 +82,29 @@ try {
     assert(await evaluate('document.documentElement.scrollWidth<=innerWidth+1'), `${width}px management guidance overflow`);
     const managementShot = await send('Page.captureScreenshot', { format: 'png' }); await writeFile(join(artifacts, `${width}-management.png`), Buffer.from(managementShot.data, 'base64'));
     checks.push({ width, saved: true, realBackgroundFailure: saved.status.failureCode, credentialRedacted: true, managementGuidance: true, overflow: false });
+  }
+  await evaluate("window.location.hash='/docs/config/backup'");
+  await wait('document.body.innerText.includes("Full disaster recovery")');
+  for (const [index, width] of [1440, 360, 320].entries()) {
+    await send('Emulation.setDeviceMetricsOverride', { width, height: 1000, deviceScaleFactor: 1, mobile: width < 768 });
+    const summary = "[...document.querySelectorAll('summary')].find(e=>e.textContent==='Local pre-restore rollback copies')";
+    if (!await evaluate(`(${summary}).parentElement.open`)) await click(summary);
+    const consent = "[...document.querySelectorAll('[role=switch]')].find(e=>e.textContent.includes('Allow permanent cleanup of old local rollback copies'))";
+    const enabled = await evaluate(`(${consent}).getAttribute('aria-checked')==='true'`);
+    if (index === 0) assert(!enabled, 'local deletion was enabled by default');
+    if (!enabled) await click(consent);
+    await fill('Local rollback copies to retain', String(3 + index));
+    await fill('Local rollback-copy retention (days)', String(14 + index));
+    await click(button('Save Config'));
+    await until(async () => { const saved = await rpc('backup.config.get'); return saved.recovery?.localPoints?.enabled && saved.recovery.localPoints.keepCount === 3 + index && saved.recovery.localPoints.keepDays === 14 + index; }, 'persisted local-copy policy');
+    assert((await rpc('backup.recovery.status')).items.length === 0, 'policy save launched a backup');
+    await evaluate("document.querySelectorAll('button[aria-label=Close]').forEach(button=>button.click())");
+    await wait("!document.querySelector('button[aria-label=Close]')");
+    await sleep(350); // Let the existing toast exit animation finish before capture.
+    await evaluate(`(${summary}).scrollIntoView({block:'start'});window.scrollBy(0,-72)`);
+    assert(await evaluate('document.documentElement.scrollWidth<=innerWidth+1'), `${width}px local-copy controls overflow`);
+    const shot = await send('Page.captureScreenshot', { format: 'png' }); await writeFile(join(artifacts, `${width}-local-points.png`), Buffer.from(shot.data, 'base64'));
+    checks.push({ width, localPointPolicySaved: true, priorExplicitConsent: index > 0, overflow: false });
   }
   assert.deepEqual(browserErrors, []);
   await writeFile(join(artifacts, 'checks.json'), JSON.stringify({ source: 'actual paired backend, private disposable SQLite, native Chrome; local failing CA directory only, no public issuance', checks }, null, 2));
