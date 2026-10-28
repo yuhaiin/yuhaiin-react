@@ -159,7 +159,7 @@ export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["t
         ? inbound.protocol : createDefaultProtocol(type);
     if (["tun", "tproxy", "redir", "krunlet", "wireguard"].includes(type)) return normalizeInbound({ ...inbound, protocol, network: { type: "empty", empty: {} }, transports: [] });
     if (type === "sstp") {
-        const host = inbound.network.type === "tcp_udp" ? inbound.network.tcp_udp.host : "127.0.0.1:8443";
+        const host = inbound.network.type === "tcp_udp" && inbound.network.tcp_udp.host !== ":9002" ? inbound.network.tcp_udp.host : "127.0.0.1:8443";
         return normalizeInbound({
             ...inbound,
             protocol,
