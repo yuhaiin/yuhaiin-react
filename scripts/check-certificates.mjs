@@ -76,7 +76,12 @@ try {
     await evaluate('window.scrollTo(0,0)'); await waitForPreview(send, 'article');
     assert(await evaluate('document.documentElement.scrollWidth<=innerWidth+1'), `${width}px certificate list overflow`);
     const shot = await send('Page.captureScreenshot', { format: 'png' }); await writeFile(join(artifacts, `${width}-status.png`), Buffer.from(shot.data, 'base64'));
-    checks.push({ width, saved: true, realBackgroundFailure: saved.status.failureCode, credentialRedacted: true, overflow: false });
+    const card = `[...document.querySelectorAll('article')].find(e=>e.querySelector('h2')?.textContent===${JSON.stringify(saved.config.name)})`;
+    await click(`(()=>{const card=${card};return [...card.querySelectorAll('summary')].find(e=>e.textContent==='Use for Management HTTPS')})()`);
+    assert(await evaluate(`(${card}).querySelector('code').textContent===${JSON.stringify('-https-certificate-id ' + saved.config.id)}`), 'management argument does not match the persisted resource ID');
+    assert(await evaluate('document.documentElement.scrollWidth<=innerWidth+1'), `${width}px management guidance overflow`);
+    const managementShot = await send('Page.captureScreenshot', { format: 'png' }); await writeFile(join(artifacts, `${width}-management.png`), Buffer.from(managementShot.data, 'base64'));
+    checks.push({ width, saved: true, realBackgroundFailure: saved.status.failureCode, credentialRedacted: true, managementGuidance: true, overflow: false });
   }
   assert.deepEqual(browserErrors, []);
   await writeFile(join(artifacts, 'checks.json'), JSON.stringify({ source: 'actual paired backend, private disposable SQLite, native Chrome; local failing CA directory only, no public issuance', checks }, null, 2));

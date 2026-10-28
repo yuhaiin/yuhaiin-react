@@ -21,7 +21,18 @@ and save. Pending/expired resources fail TLS handshakes until valid material is
 available. Valid renewed material is loaded for new connections without restarting
 the Gateway. Existing streams continue. Referenced certificates cannot be deleted
 or incompatibly edited; remove references first. File certificate/key settings
-remain supported. Management HTTPS managed binding is not yet available.
+remain supported. To bind Management HTTPS, first issue a valid certificate, expand **Use for
+Management HTTPS**, then add the shown `-https-certificate-id <id>` argument to
+the installed service and restart with reviewed host settings. Use the certificate
+DNS name. Do not combine with file-pair/generated-name arguments. Invalid material
+fails startup without a plaintext fallback. Renewals then apply automatically and
+actual management references prevent deletion. Host settings remain authoritative,
+matching existing self-signed/file deployment configuration. Removing the argument
+returns to that host mode. Restored deployments which adopted startup inputs also
+require explicit review of `-recovery-startup=false` before changing host settings.
+Clone recovery instead creates a new self-signed management identity and warns
+about re-enrollment. Restore confirmation shows the managed resource ID; Software
+Update explains targets without managed TLS support before replacement.
 
 Resource cards expose raw domains, issuer, validity, next attempt, last success,
 auto-renew status, failure explanation and listener references. Expiry/failure
@@ -29,7 +40,7 @@ alerts are explicit. **Renew now** obeys backend retry/rate protection. Delete u
 a confirmation. Provider tokens and certificate private keys are never returned.
 The page does not own background renewal; work continues when the browser closes.
 
-Validation passes lint, typecheck, style/translation checks, build and all 363
+Validation passes lint, typecheck, style/translation checks, build and all 364
 tests in 116 files. `scripts/check-certificates.mjs` also runs native Chrome against
 a real isolated backend/SQLite at 1440, 360 and 320 pixels. It initializes a real
 administrator, saves a provider/resource, reads persisted settings back, observes
@@ -44,5 +55,5 @@ CHROME_PATH=/path/to/chrome node scripts/check-certificates.mjs
 
 The harness creates and removes its own private data/profile and service processes.
 Its test-only loopback management HTTP does not change production TLS defaults.
-Artifacts remain outside Git. Live ARI retrieval, Management HTTPS binding and final
+Artifacts remain outside Git. Live ARI retrieval and final
 whole-application lifecycle qualification remain in progress in the same two PRs.

@@ -833,7 +833,8 @@
       "original_instance_must_be_stopped": "컴퓨터 식별 정보가 중복되지 않도록 원래 배포를 중지된 상태로 유지하세요.",
       "revoked_credentials_may_be_restored": "이전에 취소한 인증 정보나 장치가 다시 유효해질 수 있습니다.",
       "quota_and_usage_state_can_move_backwards": "할당량과 사용 상태가 백업 시점으로 되돌아갈 수 있습니다.",
-      "different_or_damaged_target_identity_will_be_replaced": "대상의 다른 식별 정보 또는 손상된 식별 정보가 교체됩니다."
+      "different_or_damaged_target_identity_will_be_replaced": "대상의 다른 식별 정보 또는 손상된 식별 정보가 교체됩니다.",
+      "clone_management_certificate_reenrollment_required": "복제 모드는 원본의 관리 HTTPS 인증서를 재사용하지 않고 새 자체 서명 인증서로 바꿉니다. 관리 인증서를 선택하기 전에 다시 등록하세요."
     }
   },
   "recoveryResult": {
@@ -874,7 +875,8 @@
     "uncertain": "요청 결과를 확인할 수 없습니다. 서비스가 다시 시작 중일 수 있습니다. 재시도 전에 최신 복원 결과를 새로 고치세요. 요청은 자동으로 재전송되지 않았습니다.",
     "error": "복원 접수에 실패했습니다.",
     "failed": "복원이 완료되지 않았습니다. 최신 복원 결과를 확인한 뒤 새 미리보기를 인증하고 다시 시도하세요.",
-    "cleanupFailed": "비공개 스테이징 정리에 실패했습니다. 복원 결과를 확인하고 저장소 접근을 복구한 뒤 이 가져오기를 폐기하고 다시 업로드하세요."
+    "cleanupFailed": "비공개 스테이징 정리에 실패했습니다. 복원 결과를 확인하고 저장소 접근을 복구한 뒤 이 가져오기를 폐기하고 다시 업로드하세요.",
+    "managedCertificate": "관리 HTTPS 인증서 ID"
   },
   "updateSafety": {
     "configuration": "설정 스키마",
@@ -929,6 +931,7 @@
       "unknown": "알 수 없는 업데이트 상태, 오프라인 상태 확인 필요"
     },
     "missingReceipt": "이 대상은 검증 가능한 업데이트 시작 확인을 생성할 수 없습니다. 보호된 자동 설치를 거부합니다. 일치하는 데이터베이스로 검토한 오프라인 복구를 사용하세요.",
-    "refresh": "업데이트 상태 새로 고침"
+    "refresh": "업데이트 상태 새로 고침",
+    "managedTLSUnsupported": "대상 버전은 관리 HTTPS의 관리 인증서를 지원하지 않습니다. 호환 릴리스를 선택하거나 오프라인으로 서비스 TLS 설정을 검토하세요."
   }
 }

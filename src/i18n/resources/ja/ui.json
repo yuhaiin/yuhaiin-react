@@ -833,7 +833,8 @@
       "original_instance_must_be_stopped": "マシン識別情報の重複を避けるため、元の環境を停止したままにしてください。",
       "revoked_credentials_may_be_restored": "失効済みの認証情報やデバイスが再び有効になる可能性があります。",
       "quota_and_usage_state_can_move_backwards": "割り当て量と使用状況はバックアップ時点に戻る可能性があります。",
-      "different_or_damaged_target_identity_will_be_replaced": "復元先の異なる、または破損した識別情報は置換されます。"
+      "different_or_damaged_target_identity_will_be_replaced": "復元先の異なる、または破損した識別情報は置換されます。",
+      "clone_management_certificate_reenrollment_required": "クローンでは元の管理 HTTPS 証明書を再利用せず、新しい自己署名証明書に切り替えます。管理証明書を選択する前に再登録してください。"
     }
   },
   "recoveryResult": {
@@ -874,7 +875,8 @@
     "uncertain": "要求の結果を確認できません。サービスが再起動中の可能性があります。再試行の前に最新の復元結果を更新してください。要求は自動再送されていません。",
     "error": "復元の受付に失敗しました。",
     "failed": "復元は完了しませんでした。最新の復元結果を確認し、新しいプレビューを認証してから再試行してください。",
-    "cleanupFailed": "非公開ステージングの削除に失敗しました。復元結果を確認し、ストレージへのアクセスを修復してこのインポートを破棄してから、再アップロードしてください。"
+    "cleanupFailed": "非公開ステージングの削除に失敗しました。復元結果を確認し、ストレージへのアクセスを修復してこのインポートを破棄してから、再アップロードしてください。",
+    "managedCertificate": "管理 HTTPS 証明書 ID"
   },
   "updateSafety": {
     "configuration": "設定スキーマ",
@@ -929,6 +931,7 @@
       "unknown": "不明な更新状態、オフラインの状態を確認してください"
     },
     "missingReceipt": "この更新先は検証可能な更新起動確認を生成できません。保護付き自動インストールを拒否します。対応するデータベースで確認済みのオフライン復旧を行ってください。",
-    "refresh": "更新状態を再確認"
+    "refresh": "更新状態を再確認",
+    "managedTLSUnsupported": "対象バージョンは管理 HTTPS の管理証明書に対応していません。対応するリリースを選ぶか、オフラインでサービスの TLS 設定を確認してください。"
   }
 }

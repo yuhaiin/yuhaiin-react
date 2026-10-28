@@ -833,7 +833,8 @@
       "original_instance_must_be_stopped": "Keep the original deployment stopped to avoid duplicate machine identities.",
       "revoked_credentials_may_be_restored": "Previously revoked credentials or devices can become valid again.",
       "quota_and_usage_state_can_move_backwards": "Quota and usage state can move backwards to the backup time.",
-      "different_or_damaged_target_identity_will_be_replaced": "The target has a different or damaged identity that restoration would replace."
+      "different_or_damaged_target_identity_will_be_replaced": "The target has a different or damaged identity that restoration would replace.",
+      "clone_management_certificate_reenrollment_required": "Clone mode replaces the source managed Management HTTPS identity with a new self-signed certificate. Re-enroll before selecting a managed certificate."
     }
   },
   "recoveryResult": {
@@ -874,7 +875,8 @@
     "uncertain": "The request outcome is unknown. The service may be restarting. Refresh the latest restore result before retrying; this request was not automatically replayed.",
     "error": "Restore admission failed.",
     "failed": "The restore did not complete. Review the latest restore result, then authenticate a new preview before retrying.",
-    "cleanupFailed": "Private staging cleanup failed. Review the restore result, repair storage access and discard this staged import before uploading again."
+    "cleanupFailed": "Private staging cleanup failed. Review the restore result, repair storage access and discard this staged import before uploading again.",
+    "managedCertificate": "Managed HTTPS certificate ID"
   },
   "updateSafety": {
     "configuration": "Configuration schema",
@@ -929,6 +931,7 @@
       "unknown": "Unrecognized update state; inspect offline status"
     },
     "missingReceipt": "This target cannot produce a verified update startup receipt. Automatic protected installation is refused; use reviewed offline recovery with matching databases.",
-    "refresh": "Refresh update status"
+    "refresh": "Refresh update status",
+    "managedTLSUnsupported": "The target does not support managed Management HTTPS. Choose a compatible release or review the service TLS settings offline."
   }
 }

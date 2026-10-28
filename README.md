@@ -107,7 +107,7 @@ The backend now provides offline encrypted recovery preview/activation and
 startup rollback; generated models are synchronized here. The corresponding Web
 backup page now manages confirmed local/S3 encrypted captures, schedules,
 history, verification, downloads and retention on root-owned Linux systemd.
-Broader host maintenance and Management HTTPS certificate binding remain
+Broader host maintenance and broader certificate lifecycle qualification remain
 in progress in the same two PRs. See [recovery contract status](docs/intelligent-selectors.md#offline-recovery-contract-synchronization).
 
 
@@ -158,5 +158,6 @@ management, renewal/failure/expiry alerts and listener references in EN/JA/KO.
 Gateway TLS termination can select managed certificate IDs; existing file
 certificates remain supported. HTTP-01 requires explicit opt-in on an existing
 port-80 Gateway. DNS tokens are write-only and private keys are never displayed.
-Management HTTPS binding and live ARI retrieval remain in progress. See the
+Management HTTPS uses explicit host-owned `-https-certificate-id` selection; the
+page shows the argument and live references. Live ARI retrieval remains in progress. See the
 [certificate controls and verification guide](docs/managed-certificates.md).

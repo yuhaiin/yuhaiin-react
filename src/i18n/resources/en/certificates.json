@@ -74,5 +74,11 @@
   "failure_dns_rate_limited": "The DNS provider rate limit was reached.",
   "failure_dns_api_rejected": "The DNS provider rejected the request. Check token permissions and zone ID.",
   "failure_dns_network_error": "The DNS provider could not be reached over verified HTTPS.",
-  "failure_dns_challenge_failed": "DNS challenge setup or cleanup failed. Check the provider and recent events."
+  "failure_dns_challenge_failed": "DNS challenge setup or cleanup failed. Check the provider and recent events.",
+  "managementBinding": "Use for Management HTTPS",
+  "managementBindingHelp": "First issue a valid certificate, then add this argument to the installed service and restart it. Use its DNS name to connect. Existing self-signed and file modes remain the default until you explicitly change the service.",
+  "managementBindingSafety": "Do not combine with certificate/key file or generated-name arguments. Missing or expired material stops startup; there is no plaintext fallback. Renewal then applies automatically. To return to the original mode, remove this argument and restart.",
+  "reference_management": "Management HTTPS",
+  "reference_gateway": "HTTP Gateway",
+  "managementRestoredHelp": "For a deployment that adopted restored startup inputs, review -recovery-startup=false before changing host TLS settings."
 }

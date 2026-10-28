@@ -1608,6 +1608,7 @@ export namespace Go {
     export interface Runtime {
       managementAuth?: boolean;
       managementTLS: string;
+      managedCertificateId?: string;
       certificateFile?: string;
       keyFile?: string;
       workingDirectory: string;

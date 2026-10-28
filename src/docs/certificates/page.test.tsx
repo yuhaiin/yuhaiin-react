@@ -16,11 +16,12 @@ afterEach(() => { resetTestAuth(); vi.clearAllMocks(); vi.unstubAllGlobals(); })
 
 const resource = (): Go.certificate.Resource => ({ config: { id: 'certificate', name: 'Site', domains: ['site.example'], directoryUrl: 'https://ca.example/directory', email: 'ops@example.com', termsAccepted: true, challenge: { type: 'dns-01', dnsProviderId: 'provider' }, autoRenew: true }, revision: 2, status: { state: 'failed', failureCode: 'ca_rate_limited', nextAttempt: '2030-01-01T00:00:00Z' }, references: [] });
 const provider = (): Go.certificate.DNSProvider => ({ id: 'provider', name: 'Zone', type: 'cloudflare', zoneName: 'site.example', zoneId: 'a'.repeat(32), revision: 3, hasCredential: true });
-const setup = async (readOnly = false) => {
+const setup = async (readOnly = false, bound = false) => {
   vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
   authorizeTest();
   if (readOnly) establishSession('', { userId: 'reader', credentialType: 'session', permissions: ['certificates:read'] }, Math.floor(Date.now() / 1000) + 600, getApiUrl());
   const overview: Go.certificate.Overview = { certificates: [resource()], providers: [provider()], events: [] };
+  if (bound) overview.certificates[0].references = [{ kind: 'management', id: 'cli', name: 'Management HTTPS' }];
   api.getCertificates.mockImplementation(async () => structuredClone(overview));
   api.getGatewayConfig.mockResolvedValue({ gateways: [] });
   api.saveCertificate.mockImplementation(async (request: Go.certificate.SaveRequest) => { overview.certificates[0] = { ...overview.certificates[0], config: request.certificate, revision: 3 }; return overview.certificates[0]; });
@@ -75,6 +76,18 @@ it('shows public state without credentials or mutation controls for a reader', a
   try {
     expect(host.textContent).toContain('Site'); expect(host.textContent).toContain('credentialConfigured');
     expect([...host.querySelectorAll('button')].some(button => ['create', 'edit', 'renew', 'delete', 'addProvider'].includes(button.textContent ?? ''))).toBe(false);
-    expect(host.querySelector('input[type="password"]')).toBeNull(); expect(api.getGatewayConfig).not.toHaveBeenCalled();
+    expect(host.querySelector('input[type="password"]')).toBeNull(); expect(host.textContent).not.toContain('managementBindingSafety'); expect(api.getGatewayConfig).not.toHaveBeenCalled();
   } finally { close(); }
+});
+
+it('shows the actual management reference and prevents deleting its certificate', async () => {
+ const { host, close } = await setup(false, true);
+ try {
+  const card = host.querySelector('article')!;
+  expect(card.textContent).toContain('reference_management');
+  expect(card.textContent).toContain('-https-certificate-id certificate');
+  const remove = [...card.querySelectorAll<HTMLButtonElement>('button')].find(button => button.textContent === 'delete')!;
+  expect(remove.disabled).toBe(true);
+  expect(api.deleteCertificate).not.toHaveBeenCalled();
+ } finally { close(); }
 });

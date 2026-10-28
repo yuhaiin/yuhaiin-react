@@ -74,5 +74,11 @@
   "failure_dns_rate_limited": "DNS プロバイダーのレート制限に達しました。",
   "failure_dns_api_rejected": "DNS プロバイダーがリクエストを拒否しました。トークンの権限とゾーン ID を確認してください。",
   "failure_dns_network_error": "検証済み HTTPS で DNS プロバイダーに接続できませんでした。",
-  "failure_dns_challenge_failed": "DNS 認証の準備またはクリーンアップに失敗しました。プロバイダーと最近のイベントを確認してください。"
+  "failure_dns_challenge_failed": "DNS 認証の準備またはクリーンアップに失敗しました。プロバイダーと最近のイベントを確認してください。",
+  "managementBinding": "管理 HTTPS に使用",
+  "managementBindingHelp": "有効な証明書を発行してから、インストール済みサービスにこの引数を追加して再起動します。証明書の DNS 名で接続してください。明示的に変更するまで自己署名・ファイル証明書の既存設定を維持します。",
+  "managementBindingSafety": "証明書・鍵ファイルや生成時の名前指定とは併用できません。証明書が未発行・期限切れの場合は起動を中止し、平文へ切り替えません。更新後は自動で反映します。元の設定へ戻すには、この引数を削除して再起動します。",
+  "reference_management": "管理 HTTPS",
+  "reference_gateway": "HTTP Gateway",
+  "managementRestoredHelp": "復元した起動設定を採用済みの環境では、ホストの TLS 設定を変更する前に -recovery-startup=false の使用を確認してください。"
 }

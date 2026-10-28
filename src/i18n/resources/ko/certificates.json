@@ -74,5 +74,11 @@
   "failure_dns_rate_limited": "DNS 제공자 요청 제한에 도달했습니다.",
   "failure_dns_api_rejected": "DNS 제공자가 요청을 거부했습니다. 토큰 권한과 영역 ID를 확인하세요.",
   "failure_dns_network_error": "검증된 HTTPS로 DNS 제공자에 연결할 수 없습니다.",
-  "failure_dns_challenge_failed": "DNS 인증 준비 또는 정리에 실패했습니다. 제공자와 최근 이벤트를 확인하세요."
+  "failure_dns_challenge_failed": "DNS 인증 준비 또는 정리에 실패했습니다. 제공자와 최근 이벤트를 확인하세요.",
+  "managementBinding": "관리 HTTPS에 사용",
+  "managementBindingHelp": "유효한 인증서를 먼저 발급한 다음 설치된 서비스에 이 인수를 추가하고 다시 시작하세요. 인증서의 DNS 이름으로 접속하세요. 서비스를 명시적으로 변경하기 전까지 기존 자체 서명 및 파일 인증서 설정을 유지합니다.",
+  "managementBindingSafety": "인증서/키 파일 또는 생성할 이름 인수와 함께 사용할 수 없습니다. 인증서가 없거나 만료되면 시작을 중단하며 평문으로 전환하지 않습니다. 이후 갱신은 자동으로 적용됩니다. 이전 모드로 돌아가려면 이 인수를 제거하고 다시 시작하세요.",
+  "reference_management": "관리 HTTPS",
+  "reference_gateway": "HTTP Gateway",
+  "managementRestoredHelp": "복원된 시작 설정을 적용한 배포에서는 호스트 TLS 설정을 바꾸기 전에 -recovery-startup=false 사용을 검토하세요."
 }

@@ -58,7 +58,7 @@ export function RecoveryActivationDialog({ item, onClose, onAdmitted }: {
             <dl className="my-4 grid min-w-0 gap-3 text-xs">
                 {[[t('recoveryResult.backup'), preview.manifest.id], [t('recoveryResult.transaction'), item.previewId ?? ''], [t('recoveryActivation.target'), preview.targetInstanceId],
                     [t('recoveryResult.instance'), preview.instanceId], [t('recoveryActivation.listener'), preview.runtime.listenAddress || t('recoveryActivation.hostListener')],
-                    [t('recoveryActivation.tls'), preview.runtime.managementTLS]].map(([label, value]) => <div key={label} className="min-w-0">
+                    [t('recoveryActivation.tls'), preview.runtime.managementTLS], ...(preview.runtime.managedCertificateId ? [[t('recoveryActivation.managedCertificate'), preview.runtime.managedCertificateId]] : [])].map(([label, value]) => <div key={label} className="min-w-0">
                         <dt className="text-ui-muted">{label}</dt><dd className="mt-1 break-all font-mono">{value}</dd>
                     </div>)}
             </dl>
