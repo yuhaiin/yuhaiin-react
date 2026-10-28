@@ -204,5 +204,10 @@
   "backendPoolHelp": "HTTP 규칙이나 기본 동작에서 리버스 프록시를 선택한 뒤 '새 백엔드 풀 만들기'를 선택하고 아래에서 풀을 추가하세요. 해당 동작에만 연결되며 다른 동작은 변경되지 않습니다.",
   "newFilterGateway": "HTTP 필터",
   "addInterceptionGateway": "가로채기 Gateway 추가",
-  "diagnostics": "진단"
+  "diagnostics": "진단",
+  "acmeHttp01": "ACME HTTP-01 활성화",
+  "acmeHttp01Help": "포트 80의 기존 일반 HTTP Gateway에서 ACME HTTP-01을 활성화하세요. 공개 DNS가 이 Gateway에 도달하고 소스 ACL이 CA 검증자를 허용해야 합니다. 리스너는 자동으로 열리지 않습니다. 와일드카드는 DNS-01이 필요합니다.",
+  "certificateSource": "인증서 출처",
+  "fileCertificate": "인증서 파일",
+  "managedCertificate": "관리 ACME 인증서"
 }

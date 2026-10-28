@@ -18,6 +18,7 @@ import {
   Toggle,
 } from "./fields";
 import { useTranslation } from "react-i18next";
+import { CertificatePicker } from '@/docs/certificates/picker';
 
 export function GatewayEditor({
   item,
@@ -61,9 +62,14 @@ export function GatewayEditor({
           value,
           label: t(value),
         }))}
-        onChange={(tlsMode) => change({ ...item, tlsMode })}
+        onChange={(tlsMode) => change({ ...item, tlsMode, acmeHttp01: false, ...(tlsMode === 'off' ? { managedCertificateIds: undefined } : {}) })}
       />
+      {item.tlsMode !== 'termination' && <Toggle label={t('acmeHttp01')} value={item.acmeHttp01 ?? false} onChange={acmeHttp01 => change({ ...item, acmeHttp01 })} />}
+      {item.acmeHttp01 && <p className="text-sm text-ui-secondary">{t('acmeHttp01Help')}</p>}
       {item.tlsMode === "termination" && (
+        <>
+        <Choice label={t('certificateSource')} value={item.managedCertificateIds !== undefined ? 'managed' : 'files'} values={[{ value: 'files', label: t('fileCertificate') }, { value: 'managed', label: t('managedCertificate') }]} onChange={source => change({ ...item, managedCertificateIds: source === 'managed' ? [] : undefined, certificateFile: '', keyFile: '' })} />
+        {item.managedCertificateIds !== undefined ? <CertificatePicker ids={item.managedCertificateIds} change={managedCertificateIds => change({ ...item, managedCertificateIds })} /> :
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <TextField
             label={t("certificateFile")}
@@ -75,7 +81,8 @@ export function GatewayEditor({
             value={item.keyFile}
             onChange={(keyFile) => change({ ...item, keyFile })}
           />
-        </div>
+        </div>}
+        </>
       )}
       <TextField
         type="number"

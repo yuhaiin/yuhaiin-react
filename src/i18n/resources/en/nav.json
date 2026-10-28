@@ -15,5 +15,6 @@
   "routeRules": "Routing rules",
   "gateway": "HTTP Gateway",
   "trafficControl": "Traffic Control",
-  "accountSecurity": "Account & security"
+  "accountSecurity": "Account & security",
+  "certificates": "Certificates"
 }

@@ -18,6 +18,12 @@ export type RPCOperation =
   | "backup.recovery.verify"
   | "backup.restore"
   | "backup.run"
+  | "certificate.delete"
+  | "certificate.provider.delete"
+  | "certificate.provider.save"
+  | "certificate.renew"
+  | "certificate.save"
+  | "certificates.list"
   | "connections"
   | "connections.close"
   | "connections.events"
@@ -152,6 +158,12 @@ export type RPCOperation =
 type LegacyRoute = { method: string; pattern: string; operation: RPCOperation };
 
 const legacyRoutes: LegacyRoute[] = [
+  { method: "GET", pattern: "/api/v2/certificates", operation: "certificates.list" },
+  { method: "PUT", pattern: "/api/v2/certificates", operation: "certificate.save" },
+  { method: "DELETE", pattern: "/api/v2/certificates/{id}", operation: "certificate.delete" },
+  { method: "POST", pattern: "/api/v2/certificates/{id}/renew", operation: "certificate.renew" },
+  { method: "PUT", pattern: "/api/v2/certificates/providers", operation: "certificate.provider.save" },
+  { method: "DELETE", pattern: "/api/v2/certificates/providers/{id}", operation: "certificate.provider.delete" },
   { method: "POST", pattern: "/api/v2/gateway/filters/refresh", operation: "gateway.filters.refresh" },
   { method: "GET", pattern: "/api/v2/gateway/workspace", operation: "gateway.workspace.get" },
   { method: "PUT", pattern: "/api/v2/gateway/workspace", operation: "gateway.workspace.put" },

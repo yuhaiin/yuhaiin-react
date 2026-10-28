@@ -107,7 +107,7 @@ The backend now provides offline encrypted recovery preview/activation and
 startup rollback; generated models are synchronized here. The corresponding Web
 backup page now manages confirmed local/S3 encrypted captures, schedules,
 history, verification, downloads and retention on root-owned Linux systemd.
-Broader host maintenance and certificate UI remain
+Broader host maintenance and Management HTTPS certificate binding remain
 in progress in the same two PRs. See [recovery contract status](docs/intelligent-selectors.md#offline-recovery-contract-synchronization).
 
 
@@ -150,3 +150,13 @@ budgets. See [upload measurement controls](docs/intelligent-selectors.md#upload-
 Node runtime details separate current/window-average observed traffic, recent
 TCP dial failures and active download/upload measurements. The bounded window
 runs on the existing observer and resets after restart or a sleep/clock gap.
+
+## Managed HTTPS certificates
+
+**Certificates** provides permission-gated ACME resource and Cloudflare provider
+management, renewal/failure/expiry alerts and listener references in EN/JA/KO.
+Gateway TLS termination can select managed certificate IDs; existing file
+certificates remain supported. HTTP-01 requires explicit opt-in on an existing
+port-80 Gateway. DNS tokens are write-only and private keys are never displayed.
+Management HTTPS binding and live ARI retrieval remain in progress. See the
+[certificate controls and verification guide](docs/managed-certificates.md).

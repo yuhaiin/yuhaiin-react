@@ -39,6 +39,7 @@ export const navigationSections: NavigationSection[] = [
     ] },
     { label: nav('system'), items: [
         { path: '/docs/security', label: nav('accountSecurity'), icon: Settings },
+        { path: '/docs/certificates', label: nav('certificates'), icon: ShieldBan },
         { label: nav('diagnostics'), icon: Wrench, items: [
             { path: '/docs/diagnostics', label: ui('networkDiagnostics'), icon: Activity },
             { path: '/docs/config/log', label: ui('log'), icon: ScrollText },

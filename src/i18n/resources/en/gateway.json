@@ -204,5 +204,10 @@
   "backendPoolHelp": "Choose Reverse proxy as an HTTP rule or fallback action, select Create a new backend pool, then add the pool below. The pool is attached to that action; other actions remain unchanged.",
   "newFilterGateway": "HTTP filter",
   "addInterceptionGateway": "Add interception Gateway",
-  "diagnostics": "Diagnostics"
+  "diagnostics": "Diagnostics",
+  "acmeHttp01": "Enable ACME HTTP-01",
+  "acmeHttp01Help": "Enable ACME HTTP-01 on an existing plain HTTP Gateway listening on port 80. Public DNS must reach it, and its source ACL must allow CA validators. No new listener is opened automatically. Wildcards require DNS-01.",
+  "certificateSource": "Certificate source",
+  "fileCertificate": "Certificate files",
+  "managedCertificate": "Managed ACME certificates"
 }

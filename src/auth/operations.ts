@@ -1,6 +1,12 @@
 // Keep in sync with the backend management permission registry. Unknown actions deny.
 import type { RPCOperation } from '@/api/generated';
 export const operationPermissions: Record<RPCOperation, string> = {
+    "certificates.list": "certificates:read",
+    "certificate.save": "certificates:manage",
+    "certificate.delete": "certificates:manage",
+    "certificate.renew": "certificates:manage",
+    "certificate.provider.save": "certificates:manage",
+    "certificate.provider.delete": "certificates:manage",
     "info": "settings:read",
     "settings.get": "settings:read",
     "settings.put": "settings:write",

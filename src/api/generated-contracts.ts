@@ -31,6 +31,78 @@ export namespace Go {
       source: string;
     }
   }
+  export namespace certificate {
+    export interface SaveRequest {
+      certificate: Config;
+      revision: number;
+    }
+    export interface RevisionRequest {
+      id: string;
+      revision: number;
+    }
+    export interface ProviderWrite {
+      provider: DNSProvider;
+      token?: string;
+    }
+    export interface Event {
+      sequence: number;
+      at: string;
+      code: string;
+    }
+    export interface Overview {
+      certificates: Resource[];
+      providers: DNSProvider[];
+      events: Event[];
+    }
+    export interface Challenge {
+      type: string;
+      dnsProviderId?: string;
+      httpGatewayId?: string;
+    }
+    export interface Config {
+      id: string;
+      name: string;
+      domains: string[];
+      directoryUrl: string;
+      email: string;
+      termsAccepted: boolean;
+      challenge: Challenge;
+      autoRenew: boolean;
+      trustPem?: string;
+    }
+    export interface Status {
+      state: string;
+      issuer?: string;
+      serial?: string;
+      notBefore?: string;
+      notAfter?: string;
+      nextAttempt?: string;
+      lastAttempt?: string;
+      lastSuccess?: string;
+      failureCode?: string;
+      failures?: number;
+    }
+    export interface Reference {
+      kind: string;
+      id: string;
+      name: string;
+    }
+    export interface Resource {
+      config: Config;
+      revision: number;
+      status: Status;
+      references: Reference[];
+    }
+    export interface DNSProvider {
+      id: string;
+      name: string;
+      type: string;
+      zoneId: string;
+      zoneName: string;
+      revision: number;
+      hasCredential: boolean;
+    }
+  }
   export namespace connection {
     export interface MatchTraceTemplate {
       Type: string;
@@ -204,6 +276,8 @@ export namespace Go {
       tlsMode: string;
       certificateFile: string;
       keyFile: string;
+      managedCertificateIds?: string[];
+      acmeHttp01?: boolean;
       ruleIds: string[];
       default: Action;
       maxBodyBytes: number;
@@ -398,6 +472,8 @@ export namespace Go {
       tlsMode: string;
       certificateFile?: string;
       keyFile?: string;
+      managedCertificateIds?: string[];
+      acmeHttp01?: boolean;
     }
     export interface InterceptionSettings {
       mode: string;
