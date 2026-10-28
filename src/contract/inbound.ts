@@ -86,7 +86,7 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
                 },
             };
         case "sstp":
-            return { type, sstp: { tls: { certificates: [], nextProtos: [], serverNameCertificate: {} }, serverAddress: "10.90.0.1", clientAddresses: ["10.90.0.2"], dns: "", mtu: 1400, maxSessions: 1, users: [] } };
+            return { type, sstp: { tls: { certificates: [], nextProtos: [], serverNameCertificate: {} }, serverAddress: "10.90.0.1", clientAddresses: ["10.90.0.2"], dns: "", mtu: 1400, maxSessions: 1 } };
         case "wireguard":
             return { type, wireguard: { privateKey: "", listenPort: 51820, addresses: ["10.66.0.1/24"], mtu: 1420, peers: [] } };
         case "krunlet":
@@ -163,6 +163,7 @@ export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["t
         return normalizeInbound({
             ...inbound,
             protocol,
+            authentication: inbound.authentication ?? { users: [] },
             network: { type: "tcp_udp", tcp_udp: { host, udp: "tcp_only" } },
             transports: [],
         });

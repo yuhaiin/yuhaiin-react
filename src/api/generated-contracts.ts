@@ -563,11 +563,6 @@ export namespace Go {
       dns?: string;
       mtu?: number;
       maxSessions?: number;
-      users: SSTPUser[];
-    }
-    export interface SSTPUser {
-      username: string;
-      password: string;
     }
     export interface WireguardProtocol {
       privateKey: string;

@@ -10,12 +10,11 @@ it('selects a rootless SSTP inbound with an internal TLS configuration and TCP-o
     const selected = selectInboundProtocol(createDefaultInbound('sstp'), 'sstp');
     expect(selected.network).toMatchObject({ type: 'tcp_udp', tcp_udp: { udp: 'tcp_only' } });
     expect(selected.transports).toEqual([]);
-    expect(selected.authentication).toBeUndefined();
+    expect(selected.authentication).toEqual({ users: [] });
     if (selected.protocol.type !== 'sstp') throw new Error('expected SSTP');
     expect(selected.protocol.sstp).toMatchObject({
         serverAddress: '10.90.0.1',
         clientAddresses: ['10.90.0.2'],
-        users: [],
         mtu: 1400,
     });
     const reloaded = normalizeInbound(JSON.parse(JSON.stringify(selected)));
@@ -23,7 +22,7 @@ it('selects a rootless SSTP inbound with an internal TLS configuration and TCP-o
     expect(reloaded.network).toEqual(selected.network);
 });
 
-it('edits SSTP credentials and shows its embedded TLS settings', () => {
+it('shows SSTP TLS settings without independent password fields', () => {
     let saved = selectInboundProtocol(createDefaultInbound('sstp'), 'sstp');
     const host = document.createElement('div');
     document.body.append(host);
@@ -36,21 +35,11 @@ it('edits SSTP credentials and shows its embedded TLS settings', () => {
         expect(host.textContent).toContain('sstpTLSCertificate');
         expect(host.textContent).toContain('sstpCredentialsHelp');
 
-        const add = [...host.querySelectorAll('button')].find(button =>
-            button.textContent?.includes('add') && button.parentElement?.textContent?.includes('sstpUsers'));
-        expect(add).toBeDefined();
-        act(() => add!.click());
+        expect(host.textContent).toContain('inboundUserAuthentication');
+        expect(host.textContent).not.toContain('sstpUsers');
+        expect(host.querySelectorAll('input[type="password"]')).toHaveLength(0);
         if (saved.protocol.type !== 'sstp') throw new Error('expected SSTP');
-        expect(saved.protocol.sstp.users).toEqual([{ username: '', password: '' }]);
-
-        saved = normalizeInbound(JSON.parse(JSON.stringify(saved)));
-        act(render);
-        expect(host.textContent).toContain('sstpUser');
-        const passwordLabel = [...host.querySelectorAll<HTMLLabelElement>('label')]
-            .find(label => label.textContent === 'password');
-        expect(passwordLabel).toBeDefined();
-        const input = host.querySelector<HTMLInputElement>(`[id="${passwordLabel!.htmlFor}"]`);
-        expect(input?.type).toBe('password');
+        expect(saved.protocol.sstp).not.toHaveProperty('users');
     } finally {
         act(() => root.unmount());
         host.remove();

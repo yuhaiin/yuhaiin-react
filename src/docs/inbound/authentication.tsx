@@ -8,12 +8,12 @@ import useSWR from 'swr';
 
 export function UserAuthentication({ inbound, onChange }: { inbound: Inbound; onChange: (value: Inbound) => void }) {
     const { t } = useTranslation('auth'); const session = useSession();
-    const supported = ['http', 'socks5', 'mixed', 'yuubinsya', 'hysteria2'].includes(inbound.protocol.type);
+    const supported = ['http', 'socks5', 'mixed', 'yuubinsya', 'hysteria2', 'sstp'].includes(inbound.protocol.type);
     const available = session?.principal.credentialType !== 'local' && session?.principal.permissions.includes('users:manage');
     const { data: users, error } = useSWR(available && supported && inbound.authentication ? 'auth-users' : null, () => authAPI<User[]>('GET', '/users'));
     if (!supported || !available && !inbound.authentication) return null;
     return <FormSection title={t('inboundUserAuthentication')}>
-        <SwitchCard label={t('inboundUserAuthentication')} description={t('inboundUserAuthenticationHelp')} checked={!!inbound.authentication} disabled={!available} onCheckedChange={enabled => onChange({ ...inbound, authentication: enabled ? { users: [] } : undefined })} />
+        <SwitchCard label={t('inboundUserAuthentication')} description={t('inboundUserAuthenticationHelp')} checked={!!inbound.authentication} disabled={!available || inbound.protocol.type === "sstp"} onCheckedChange={enabled => onChange({ ...inbound, authentication: enabled ? { users: [] } : undefined })} />
         {inbound.authentication && <div className="space-y-3">
             <p className="text-sm text-ui-muted">{t('legacyPasswordRemainsValid')}</p>
             {inbound.protocol.type === 'mixed' && <p className="text-sm text-ui-muted">{t('mixedUserAuthenticationHelp')}</p>}

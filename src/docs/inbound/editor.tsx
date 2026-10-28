@@ -312,11 +312,7 @@ const SSTPServerEditor: FC<{
     onChange: (value: Extract<InboundProtocol, { type: "sstp" }>["sstp"]) => void;
 }> = ({ value, onChange }) => {
     const { t: uiT } = useTranslation("ui");
-    const users = value.users ?? [];
     const patch = (fields: Partial<typeof value>) => onChange({ ...value, ...fields });
-    const editUser = (index: number, fields: Partial<(typeof users)[number]>) => {
-        patch({ users: users.map((user, i) => i === index ? { ...user, ...fields } : user) });
-    };
     return (
         <div className="grid gap-4">
             <p className="text-sm text-ui-muted">{uiT("sstpRootlessHelp")}</p>
@@ -337,29 +333,6 @@ const SSTPServerEditor: FC<{
             <FormSection title={uiT("sstpTLSCertificate")}>
                 <ServerTLSConfigEditor value={value.tls} showNextProtos={false} onChange={(tls) => patch({ tls })} />
             </FormSection>
-            <div className="flex items-center justify-between gap-3">
-                <SettingLabel className="mb-0">{uiT("sstpUsers")}</SettingLabel>
-                <Button size="sm" onClick={() => patch({ users: [...users, { username: "", password: "" }] })}>
-                    <Plus size={16} className="mr-1" />{uiT("add")}
-                </Button>
-            </div>
-            {users.map((user, index) => (
-                <div key={index} className="grid gap-3 rounded-ui-lg border border-ui-border p-4">
-                    <div className="flex items-center justify-between">
-                        <span className="font-semibold">{uiT("sstpUser")} #{index + 1}</span>
-                        <Button size="icon" variant="outline-danger" aria-label={`${uiT("delete")} ${uiT("sstpUser")} ${index + 1}`}
-                            onClick={() => patch({ users: users.filter((_, i) => i !== index) })}>
-                            <Trash size={16} />
-                        </Button>
-                    </div>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <SettingInputVertical label={uiT("username")} value={user.username}
-                            onChange={(username) => editUser(index, { username })} />
-                        <SettingInputVertical label={uiT("password")} type="password" value={user.password}
-                            onChange={(password) => editUser(index, { password })} />
-                    </div>
-                </div>
-            ))}
             <p className="text-xs text-ui-muted">{uiT("sstpCredentialsHelp")}</p>
         </div>
     );
