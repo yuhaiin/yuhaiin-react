@@ -484,6 +484,7 @@ export namespace Go {
       | { type: "redir"; redir: RedirProtocol }
       | { type: "tun"; tun: TunProtocol }
       | { type: "wireguard"; wireguard: WireguardProtocol }
+      | { type: "sstp"; sstp: SSTPProtocol }
       | { type: "krunlet"; krunlet: KrunletProtocol }
       | { type: "reverse_tcp"; reverse_tcp: ReverseTCPProtocol }
       | { type: "none"; none: NoneProtocol };
@@ -554,6 +555,14 @@ export namespace Go {
       experimentalBatch: boolean;
       batchSize?: number;
       pendingPackets?: number;
+    }
+    export interface SSTPProtocol {
+      tls?: ServerTLSConfig;
+      serverAddress: string;
+      clientAddresses: string[];
+      dns?: string;
+      mtu?: number;
+      maxSessions?: number;
     }
     export interface WireguardProtocol {
       privateKey: string;

@@ -20,7 +20,7 @@ import { UserAuthentication } from "./authentication";
 
 const networkTypes: InboundNetwork["type"][] = ["empty", "tcp_udp", "quic"];
 
-const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "masque", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "wireguard", "krunlet", "reverse_tcp", "none"];
+const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "masque", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "wireguard", "sstp", "krunlet", "reverse_tcp", "none"];
 
 const transportTypes: InboundTransport["type"][] = ["normal", "tls", "mux", "http2", "websocket", "reality", "tls_auto", "http_mock", "aead", "proxy"];
 
@@ -97,6 +97,10 @@ const NetworkSection: FC<{
         return <p className="text-sm text-ui-muted">{uiT("wgNoSystemTun")}</p>;
     }
 
+    if (inbound.protocol.type === "sstp") {
+        return <NetworkEditor value={inbound.network} tcpOnly onChange={(network) => onChange(normalizeInbound({ ...inbound, network }))} />;
+    }
+
     if (inbound.protocol.type === "hysteria2") {
         return <NetworkEditor value={inbound.network} udpOnly onChange={(network) => onChange(normalizeInbound({ ...inbound, network }))} />;
     }
@@ -156,8 +160,9 @@ const ProtocolSection: FC<{
 const NetworkEditor: FC<{
     value: InboundNetwork;
     udpOnly?: boolean;
+    tcpOnly?: boolean;
     onChange: (value: InboundNetwork) => void;
-}> = ({ value, udpOnly = false, onChange }) => {
+}> = ({ value, udpOnly = false, tcpOnly = false, onChange }) => {
     const { t: uiT } = useTranslation('ui');
 
     switch (value.type) {
@@ -175,8 +180,8 @@ const NetworkEditor: FC<{
                     <SettingSelectVertical
                         label="UDP"
                         value={value.tcp_udp.udp}
-                        values={udpOnly ? ["udp_only"] : ["enabled", "disabled", "tcp_only", "udp_only"]}
-                        disabled={udpOnly}
+                        values={udpOnly ? ["udp_only"] : tcpOnly ? ["tcp_only"] : ["enabled", "disabled", "tcp_only", "udp_only"]}
+                        disabled={udpOnly || tcpOnly}
                         onChange={(udp) => onChange({ ...value, tcp_udp: { ...value.tcp_udp, udp: udp as typeof value.tcp_udp.udp } })}
                     />
                 </div>
@@ -275,6 +280,8 @@ const ProtocolConfigEditor: FC<{
             );
         case "redir":
             return <SettingInputVertical label={uiT("host")} value={value.redir.host} onChange={(host) => onChange({ ...value, redir: { ...value.redir, host } })} placeholder=":12345" />;
+        case "sstp":
+            return <SSTPServerEditor value={value.sstp} onChange={(sstp) => onChange({ ...value, sstp })} />;
         case "wireguard":
             return <WireguardServerEditor value={value.wireguard} onChange={(wireguard) => onChange({ ...value, wireguard })} />;
         case "tun":
@@ -296,6 +303,37 @@ const AuthFields: FC<{
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <SettingInputVertical label={uiT("username")} value={username} onChange={(username) => onChange({ username })} />
             <SettingInputVertical label={uiT("password")} value={password} onChange={(password) => onChange({ password })} />
+        </div>
+    );
+};
+
+const SSTPServerEditor: FC<{
+    value: Extract<InboundProtocol, { type: "sstp" }>["sstp"];
+    onChange: (value: Extract<InboundProtocol, { type: "sstp" }>["sstp"]) => void;
+}> = ({ value, onChange }) => {
+    const { t: uiT } = useTranslation("ui");
+    const patch = (fields: Partial<typeof value>) => onChange({ ...value, ...fields });
+    return (
+        <div className="grid gap-4">
+            <p className="text-sm text-ui-muted">{uiT("sstpRootlessHelp")}</p>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <SettingInputVertical label={uiT("sstpServerAddress")} value={value.serverAddress}
+                    onChange={(serverAddress) => patch({ serverAddress })} placeholder="10.90.0.1" />
+                <SettingInputVertical label={uiT("sstpDNS")} value={value.dns ?? ""}
+                    onChange={(dns) => patch({ dns })} placeholder="1.1.1.1" />
+                <SettingInputVertical label="MTU" type="number" min={576} max={4000} step={1}
+                    value={String(value.mtu ?? 1400)} onChange={(mtu) => patch({ mtu: numberValue(mtu) })} />
+                <SettingInputVertical label={uiT("sstpMaxSessions")} type="number" min={1} max={1024} step={1}
+                    value={String(value.maxSessions ?? value.clientAddresses.length)}
+                    onChange={(maxSessions) => patch({ maxSessions: numberValue(maxSessions) })} />
+            </div>
+            <InputList title={uiT("sstpClientAddresses")} data={value.clientAddresses}
+                onChange={(clientAddresses) => patch({ clientAddresses })} textarea />
+            <p className="text-xs text-ui-muted">{uiT("sstpAddressHint")}</p>
+            <FormSection title={uiT("sstpTLSCertificate")}>
+                <ServerTLSConfigEditor value={value.tls} showNextProtos={false} onChange={(tls) => patch({ tls })} />
+            </FormSection>
+            <p className="text-xs text-ui-muted">{uiT("sstpCredentialsHelp")}</p>
         </div>
     );
 };
@@ -622,6 +660,7 @@ const TransportSection: FC<{
         onChange(normalizeInbound({ ...inbound, transports: transports.filter((_, current) => current !== index) }));
     };
 
+    if (inbound.protocol.type === "sstp") return <p className="text-sm text-ui-muted">{uiT("sstpNoExtraTransports")}</p>;
     if (inbound.protocol.type === "wireguard") return <p className="text-sm text-ui-muted">{uiT("wgNoExtraTransports")}</p>;
     if (inbound.protocol.type === "hysteria2") return <HysteriaTLSSection inbound={inbound} onChange={onChange} />;
 

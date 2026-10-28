@@ -85,6 +85,8 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
                     postDown: [],
                 },
             };
+        case "sstp":
+            return { type, sstp: { tls: { certificates: [], nextProtos: [], serverNameCertificate: {} }, serverAddress: "10.90.0.1", clientAddresses: ["10.90.0.2"], dns: "", mtu: 1400, maxSessions: 1 } };
         case "wireguard":
             return { type, wireguard: { privateKey: "", listenPort: 51820, addresses: ["10.66.0.1/24"], mtu: 1420, peers: [] } };
         case "krunlet":
@@ -156,6 +158,16 @@ export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["t
     const protocol = inbound.protocol.type === type
         ? inbound.protocol : createDefaultProtocol(type);
     if (["tun", "tproxy", "redir", "krunlet", "wireguard"].includes(type)) return normalizeInbound({ ...inbound, protocol, network: { type: "empty", empty: {} }, transports: [] });
+    if (type === "sstp") {
+        const host = inbound.network.type === "tcp_udp" && inbound.network.tcp_udp.host !== ":9002" ? inbound.network.tcp_udp.host : "127.0.0.1:8443";
+        return normalizeInbound({
+            ...inbound,
+            protocol,
+            authentication: inbound.authentication ?? { users: [] },
+            network: { type: "tcp_udp", tcp_udp: { host, udp: "tcp_only" } },
+            transports: [],
+        });
+    }
     if (type !== "hysteria2" && type !== "masque") {
         // A virtual inbound has no network listener; restore a normal listener
         // when switching back to a stream protocol.
