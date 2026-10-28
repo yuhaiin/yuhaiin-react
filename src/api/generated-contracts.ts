@@ -81,6 +81,16 @@ export namespace Go {
       lastSuccess?: string;
       failureCode?: string;
       failures?: number;
+      renewalInfo?: RenewalInfoStatus;
+    }
+    export interface RenewalInfoStatus {
+      state: string;
+      checkedAt?: string;
+      nextCheck?: string;
+      windowStart?: string;
+      windowEnd?: string;
+      explanationUrl?: string;
+      failures?: number;
     }
     export interface Reference {
       kind: string;

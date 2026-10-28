@@ -3,6 +3,10 @@ name: Enterprise reliability UI
 on:
   pull_request:
     paths:
+      - 'src/docs/certificates/**'
+      - 'src/api/certificates*.ts'
+      - 'src/i18n/resources/*/certificates.json'
+      - 'scripts/check-certificates.mjs'
       - 'src/component/selector-*.tsx'
       - 'src/component/speed-test-fields.tsx'
       - 'src/docs/group/NodeRuntimeOverview*.tsx'
@@ -27,6 +31,7 @@ permissions:
 
 jobs:
   monitoring-ui:
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

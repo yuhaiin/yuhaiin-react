@@ -40,8 +40,8 @@ alerts are explicit. **Renew now** obeys backend retry/rate protection. Delete u
 a confirmation. Provider tokens and certificate private keys are never returned.
 The page does not own background renewal; work continues when the browser closes.
 
-Validation passes lint, typecheck, style/translation checks, build and all 364
-tests in 116 files. `scripts/check-certificates.mjs` also runs native Chrome against
+Validation passes lint, typecheck, style/translation checks, build and all 366
+tests in 117 files. `scripts/check-certificates.mjs` also runs native Chrome against
 a real isolated backend/SQLite at 1440, 360 and 320 pixels. It initializes a real
 administrator, saves a provider/resource, reads persisted settings back, observes
 a local CA request failure and checks token redaction and horizontal overflow.
@@ -55,5 +55,10 @@ CHROME_PATH=/path/to/chrome node scripts/check-certificates.mjs
 
 The harness creates and removes its own private data/profile and service processes.
 Its test-only loopback management HTTP does not change production TLS defaults.
-Artifacts remain outside Git. Live ARI retrieval and final
-whole-application lifecycle qualification remain in progress in the same two PRs.
+Artifacts remain outside Git. CA advice (ARI) is now read and refreshed by the
+backend. Its details show raw suggested window, last/next check, failure count,
+fallback explanation and an optional safe HTTPS explanation link. Metadata retries
+retain the renewal plan and cannot reset issuance backoff. Unit tests check public
+status rendering and reject unsafe explanation URLs. Real backend protocol/clock
+and CLI tests cover the actual advice/SQLite/restart paths independently.
+Final whole-application/specification qualification remains in progress.

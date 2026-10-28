@@ -159,5 +159,6 @@ Gateway TLS termination can select managed certificate IDs; existing file
 certificates remain supported. HTTP-01 requires explicit opt-in on an existing
 port-80 Gateway. DNS tokens are write-only and private keys are never displayed.
 Management HTTPS uses explicit host-owned `-https-certificate-id` selection; the
-page shows the argument and live references. Live ARI retrieval remains in progress. See the
+page shows the argument and live references. CA advice (ARI) displays the
+suggested window, persisted refresh timing and fallback status. See the
 [certificate controls and verification guide](docs/managed-certificates.md).

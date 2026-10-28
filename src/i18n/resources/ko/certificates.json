@@ -80,5 +80,16 @@
   "managementBindingSafety": "인증서/키 파일 또는 생성할 이름 인수와 함께 사용할 수 없습니다. 인증서가 없거나 만료되면 시작을 중단하며 평문으로 전환하지 않습니다. 이후 갱신은 자동으로 적용됩니다. 이전 모드로 돌아가려면 이 인수를 제거하고 다시 시작하세요.",
   "reference_management": "관리 HTTPS",
   "reference_gateway": "HTTP Gateway",
-  "managementRestoredHelp": "복원된 시작 설정을 적용한 배포에서는 호스트 TLS 설정을 바꾸기 전에 -recovery-startup=false 사용을 검토하세요."
+  "managementRestoredHelp": "복원된 시작 설정을 적용한 배포에서는 호스트 TLS 설정을 바꾸기 전에 -recovery-startup=false 사용을 검토하세요.",
+  "renewalAdvice": "CA 갱신 권고 (ARI)",
+  "ari_available": "CA가 권고한 갱신 기간입니다. 백엔드는 갱신 시각을 분산하고 기록된 시각에 정보를 다시 확인합니다.",
+  "ari_unsupported": "ARI가 제공되지 않거나 이 인증서가 사용할 수 없습니다. 인증서 유효기간을 기준으로 갱신합니다.",
+  "ari_unavailable": "CA 갱신 권고를 새로 가져오지 못했습니다. 현재 갱신 계획과 유효한 인증서를 유지하며, 정보 재시도는 발급 백오프를 초기화하지 않습니다.",
+  "ari_unknown": "CA 갱신 권고가 아직 확인되지 않았습니다.",
+  "ariChecked": "마지막 권고 확인",
+  "ariNextCheck": "다음 권고 확인",
+  "ariWindowStart": "권고 기간 시작",
+  "ariWindowEnd": "권고 기간 종료",
+  "ariFailures": "연속 권고 확인 실패",
+  "ariExplanation": "CA 설명 열기"
 }
