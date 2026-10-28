@@ -722,7 +722,7 @@
     "keepCount": "Successful points to retain",
     "keepDays": "Maximum retention age (days)",
     "retentionHint": "The most recent successful point is always retained. Active uploads and downloads are protected. The list shows up to 1,000 recent records.",
-    "unsupported": "Automatic maintenance currently requires a root-owned Linux systemd service, with this process owning yuhaiin.service. Other installations can use the offline recovery CLI.",
+    "unsupported": "Automatic maintenance requires this process to own a Linux systemd yuhaiin.service. User services also require linger to be enabled. Other installations can use the offline recovery CLI.",
     "waiting": "A backup is in progress. The service may be temporarily unreachable; status will refresh when it returns.",
     "statusError": "Could not refresh backup status. Check connectivity and retry.",
     "create": "Create full backup",
@@ -919,7 +919,7 @@
     "readiness": {
       "legacy": "This backend has no protected-update readiness contract. Verify an independent recovery point before proceeding.",
       "configure": "Configure an external backup recipient and allow maintenance before upgrading.",
-      "unsupported": "This host cannot supervise encrypted update recovery. Automatic protection currently requires a root-owned Linux systemd service. Use the offline recovery tools on other hosts.",
+      "unsupported": "This host cannot supervise encrypted update recovery. Automatic protection requires a Linux systemd yuhaiin.service; user services also need linger. Use the offline recovery tools on other hosts.",
       "ready": "An encrypted full recovery point will be completed before executable replacement.",
       "unprotected": "Automatic recovery protection is disabled by the administrator. Only schema-compatible targets may be installed, with explicit acknowledgement."
     },

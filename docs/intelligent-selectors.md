@@ -219,7 +219,7 @@ replacement/removal decisions and `RecoveryRestoreResult`. The backend CLI now
 supports authenticated preview, explicit original/clone confirmation, staged
 activation, durable rollback and startup verification. File activation reports
 `awaiting_startup`; the actual healthy server start commits the transaction.
-The managed-backup panel adds root-owned Linux systemd capture coordination,
+The managed-backup panel adds Linux systemd system/user capture coordination,
 schedules, history and retention. Web activation reuses that host; update recovery-point
 controls, broader host coordination and certificate management remain in progress.
 
@@ -239,7 +239,7 @@ Open **Backup** to distinguish the existing configuration-only S3 snapshot from
 maintenance consent, timeout and count/age retention. Scheduling is opt-in and
 runs in the backend. Save before creating a backup; the confirmation explains
 the temporary service interruption. Automatic maintenance currently requires a
-root-owned Linux systemd service. Other hosts keep the offline CLI workflow.
+root-owned Linux systemd service or a lingering systemd user service. Other hosts keep the offline CLI workflow.
 
 History shows size, target, finite job state and failures. Ciphertext S3 readback
 and authenticated archive verification are distinct: **Verify archive** accepts
@@ -312,7 +312,7 @@ restart, listener-failure and crash drills run in the backend.
 
 ## Confirmed Web restore
 
-On the supported root-owned Linux systemd host, **Review and restore** opens a
+On a supported Linux systemd system or lingering user service, **Review and restore** opens a
 separate destructive-action dialog. Administrators type the target instance ID
 and acknowledge downtime/data replacement and restored TLS/auth/listener inputs.
 Original-instance mode requires stopped-source and revoked-credential/device/
@@ -348,7 +348,8 @@ EN/JA/KO, typed-target/consent/uncertain-request unit tests and the existing
 synthetic. The backend's actual systemd/HTTPS drill separately restores changed
 configuration and tests clone certificate rotation, fresh administrator setup
 and rejection of the source session. Protected updates and explicit paired offline recovery now use this same backup
-owner on root-owned Linux systemd. Broader host support and ACME remain pending.
+owner on supported Linux systemd services. Broader host support remains limited;
+managed ACME certificates are covered separately in the certificate guide.
 
 
 ## Protected software maintenance

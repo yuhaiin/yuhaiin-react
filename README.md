@@ -106,8 +106,8 @@ Enterprise reliability is being developed in one [frontend PR](https://github.co
 The backend now provides offline encrypted recovery preview/activation and
 startup rollback; generated models are synchronized here. The corresponding Web
 backup page now manages confirmed local/S3 encrypted captures, schedules,
-history, verification, downloads and retention on root-owned Linux systemd.
-Automatic disruptive maintenance is qualified on root-owned Linux systemd;
+history, verification, downloads and retention on root-owned Linux systemd and
+lingering systemd user services. Automatic disruptive maintenance is qualified on those hosts;
 other hosts retain documented offline and durability limits. See [recovery contract status](docs/intelligent-selectors.md#offline-recovery-contract-synchronization).
 
 
@@ -131,7 +131,7 @@ Software Update and Previous versions show observed current/target database
 schemas and distinguish compatible, migration-required, incompatible and unknown
 binaries. Unknown/incompatible targets cannot be automatically installed or
 restored. A binary rollback does not restore credentials, usage or database
-contents. Root-owned Linux systemd hosts now support confirmed encrypted update recovery
+contents. Root-owned Linux systemd and lingering user-service hosts support confirmed encrypted update recovery
 points, migration-aware installation and real startup supervision. Success is bound
 to the operation UUID, reviewed digest and durable startup receipt. The existing
 Backup page controls protection independently of its periodic schedule; disabling
