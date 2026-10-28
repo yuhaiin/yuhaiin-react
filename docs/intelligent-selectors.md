@@ -7,8 +7,27 @@ snapshots make the decisions without requiring an open browser.
 Add candidate nodes, enable them, set priorities (lower first) and connection
 weights, and choose how to handle no healthy candidates. Manual lock uses the
 selected node above the policy editor; unlocking resumes the retained policy.
-Recovery can remain sticky or return to the preferred/priority node in failover
-mode. Candidates in use are protected against deletion/subscription removal.
+Choose a preferred candidate with **Prefer this node**; click **Preferred** again
+to clear it. Replacing that candidate updates its preference reference.
+
+**Allow return to preferred node** has explicit mode-specific behavior:
+
+- Failover starts with the healthy preferred/priority node. After failure it
+  keeps a healthy survivor unless return is enabled and hold/cooldown permits it.
+- Latency, throughput and balanced modes can keep an eligible non-preferred
+  survivor while still ranking other alternatives. When return is enabled, the
+  preferred node must win the metric and clear the normal switching thresholds;
+  preference cannot force a slower node. With no preferred candidate set, normal
+  ranking continues.
+- Initial selection or loss of the current node's eligibility still permits
+  failover, including to the preferred node. Existing streams stay on their
+  original runtime reference.
+- Weighted mode uses weights for new flows; its unused preference/return controls
+  are hidden. Manual selection and lock retain their existing behavior.
+
+The live reason explains when preferred return is disabled. These settings use
+the existing persisted policy and add no schema migration. Candidates in use are
+protected against deletion/subscription removal.
 
 **Active selection and evidence** presents separate TCP/UDP decisions. Expand a
 candidate to inspect RTT EWMA/sample count, active-test Mbps, recent failure

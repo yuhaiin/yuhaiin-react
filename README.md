@@ -83,7 +83,7 @@ Backend details: https://github.com/yuhaiin/yuhaiin/tree/main/docs/gateway
 
 The existing Selector editor supports opt-in failover, lowest RTT, measured
 throughput, balanced scoring and weighted new connections, with candidate
-controls, manual lock, and explainable TCP/UDP status. It requires the companion
+controls, manual lock, explicit preferred-node recovery, and explainable TCP/UDP status. It requires the companion
 backend; see [configuration and delivery boundaries](docs/intelligent-selectors.md).
 
 The monitoring follow-up also exposes shared probe schedules, per-selector

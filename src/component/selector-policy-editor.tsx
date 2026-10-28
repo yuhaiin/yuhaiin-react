@@ -17,7 +17,7 @@ import useSWR from 'swr';
 
 type Policy = Go.node.SelectorPolicy;
 const modes = ['manual', 'failover', 'lowest_latency', 'highest_throughput', 'balanced', 'weighted'];
-const reasons = ['manual', 'manual_lock', 'no_healthy_candidate', 'fallback_selected', 'fallback_unknown', 'hold_or_cooldown', 'latency_hysteresis', 'score_hysteresis', 'throughput_hysteresis', 'sticky_failover', 'disabled', 'no_recent_remote_evidence', 'failure_threshold', 'no_successful_remote_evidence', 'recovering', 'insufficient_comparable_rtt', 'rtt_limit', 'no_fresh_speed_measurement', 'throughput_limit', 'no_upload_measurement', 'no_fresh_upload_measurement', 'zero_weight', 'eligible', 'selected_node_unavailable', 'circuit_open', 'recovery_trial'];
+const reasons = ['manual', 'manual_lock', 'no_healthy_candidate', 'fallback_selected', 'fallback_unknown', 'hold_or_cooldown', 'latency_hysteresis', 'score_hysteresis', 'throughput_hysteresis', 'sticky_failover', 'preferred_return_disabled', 'disabled', 'no_recent_remote_evidence', 'failure_threshold', 'no_successful_remote_evidence', 'recovering', 'insufficient_comparable_rtt', 'rtt_limit', 'no_fresh_speed_measurement', 'throughput_limit', 'no_upload_measurement', 'no_fresh_upload_measurement', 'zero_weight', 'eligible', 'selected_node_unavailable', 'circuit_open', 'recovery_trial'];
 const defaultWeights: Partial<Go.node.SelectorWeights> = { rtt: .5, download: .3, stability: .2, rttReferenceMs: 100, downloadReferenceMbps: 100, uploadReferenceMbps: 30, loadReference: 100 };
 const emptyPolicy = (): Policy => ({ mode: 'manual', weights: {} });
 
@@ -25,6 +25,7 @@ export function SelectorPolicyEditor({ value, onChange }: { value: Selector; onC
     const { t } = useTranslation('routing');
     const policy = value.policy ?? emptyPolicy();
     const automatic = (policy.mode ?? 'manual') !== 'manual';
+    const weighted = policy.mode === 'weighted';
     const update = (changes: Partial<Policy>) => onChange({ ...value, policy: { ...policy, ...changes } });
     const { data: monitoring } = useSWR(automatic ? 'node-monitoring' : null, getMonitoring, { revalidateOnFocus: false });
     const defaults = monitoring?.config;
@@ -42,15 +43,16 @@ export function SelectorPolicyEditor({ value, onChange }: { value: Selector; onC
             <div className="space-y-3">
                 <h3 className="text-sm font-medium">{t('auto.candidates')}</h3>
                 {candidates.map((candidate, index) => <div className="grid min-w-0 grid-cols-2 gap-3 rounded-ui-sm border border-ui-border p-3 sm:grid-cols-4" key={candidate.nodeId}>
-                    <div className="col-span-2 flex min-w-0 items-center gap-2 sm:col-span-4"><SwitchComponent ariaLabel={`${t('auto.enabled')} ${candidate.nodeId}`} checked={candidate.enabled} onCheckedChange={enabled => update({ candidates: candidates.map((c, i) => i === index ? { ...c, enabled } : c) })} /><div className="min-w-0 flex-1"><NodeSelect label={t('auto.candidate')} value={candidate.nodeId} onChange={node => { if (!candidates.some(c => c.nodeId === node.id)) update({ candidates: candidates.map((c, i) => i === index ? { ...c, nodeId: node.id } : c) }); }} /></div></div>
+                    <div className="col-span-2 flex min-w-0 items-center gap-2 sm:col-span-4"><SwitchComponent ariaLabel={`${t('auto.enabled')} ${candidate.nodeId}`} checked={candidate.enabled} onCheckedChange={enabled => update({ candidates: candidates.map((c, i) => i === index ? { ...c, enabled } : c) })} /><div className="min-w-0 flex-1"><NodeSelect label={t('auto.candidate')} value={candidate.nodeId} onChange={node => { if (!candidates.some(c => c.nodeId === node.id)) update({ candidates: candidates.map((c, i) => i === index ? { ...c, nodeId: node.id } : c), preferredId: policy.preferredId === candidate.nodeId ? node.id : policy.preferredId }); }} /></div></div>
                     {(['priority', 'weight'] as const).map(key => <SettingInputVertical key={key} label={t(`auto.${key}`)} type="number" min={0} max={key === 'weight' ? 1000000 : undefined} value={String(candidate[key])} onChange={text => { const n = Number(text); if (Number.isSafeInteger(n) && n >= 0) update({ candidates: candidates.map((c, i) => i === index ? { ...c, [key]: n } : c) }); }} />)}
-                    <Button size="sm" variant="outline-secondary" onClick={() => update({ preferredId: candidate.nodeId })}>{policy.preferredId === candidate.nodeId ? t('auto.preferred') : t('auto.prefer')}</Button>
-                    <Button size="sm" variant="outline-danger" onClick={() => update({ candidates: candidates.filter((_, i) => i !== index), preferredId: policy.preferredId === candidate.nodeId ? undefined : policy.preferredId })}>{t('auto.remove')}</Button>
+                    {!weighted && <Button size="sm" variant="outline-secondary" className="h-auto min-h-9 min-w-0 whitespace-normal" aria-pressed={policy.preferredId === candidate.nodeId} onClick={() => update({ preferredId: policy.preferredId === candidate.nodeId ? undefined : candidate.nodeId })}>{policy.preferredId === candidate.nodeId ? t('auto.preferred') : t('auto.prefer')}</Button>}
+                    <Button size="sm" variant="outline-danger" className="h-auto min-h-9 min-w-0 whitespace-normal" onClick={() => update({ candidates: candidates.filter((_, i) => i !== index), preferredId: policy.preferredId === candidate.nodeId ? undefined : policy.preferredId })}>{t('auto.remove')}</Button>
                 </div>)}
                 <NodeSelect label={t('auto.addCandidate')} value="" onChange={node => { if (!candidates.some(c => c.nodeId === node.id)) update({ candidates: [...candidates, { nodeId: node.id, enabled: true, priority: candidates.length, weight: 1 }] }); }} />
             </div>
             <label className="block space-y-2 text-sm"><span>{t('auto.fallback')}</span><Select ariaLabel={t('auto.fallback')} value={policy.fallback ?? 'reject'} items={['reject', 'selected', 'priority_unknown'].map(v => ({ value: v, label: t(`auto.fallbacks.${v}`) }))} onValueChange={fallback => update({ fallback })} /></label>
-            <div className="flex items-center justify-between gap-3 text-sm"><span>{t('auto.returnToPreferred')}</span><SwitchComponent ariaLabel={t('auto.returnToPreferred')} checked={policy.returnToPreferred ?? false} onCheckedChange={returnToPreferred => update({ returnToPreferred })} /></div>
+            {!weighted && <div className="flex items-center justify-between gap-3 text-sm"><span>{t('auto.returnToPreferred')}</span><SwitchComponent ariaLabel={t('auto.returnToPreferred')} checked={policy.returnToPreferred ?? false} onCheckedChange={returnToPreferred => update({ returnToPreferred })} /></div>}
+            <p className="text-xs text-ui-muted">{t(weighted ? 'auto.weightedRecoveryHint' : policy.mode === 'failover' ? 'auto.failoverRecoveryHint' : 'auto.metricRecoveryHint')}</p>
             <details className="space-y-3"><summary className="cursor-pointer text-sm font-medium">{t('auto.thresholds')}</summary><div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {numeric('minSamples', 3)}{numeric('maxAgeMs', 120000)}{numeric('maxRttMs', 5000)}{numeric('maxFailureRate', .5, .01)}
                 {numeric('minImprovementMs', 10)}{numeric('minImprovementPercent', 10)}{numeric('minScoreImprovement', .05, .01)}

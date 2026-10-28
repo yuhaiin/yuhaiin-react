@@ -45,6 +45,25 @@ try {
   await send('Page.navigate',{url:`${base}/?scenario=reliability&viewport=${width}#/docs/group/selectors?selector=selector-work`});
   await wait(`location.href.includes('viewport=${width}') && document.body?.innerText.includes('Circuit breaker and recovery')`);
   await waitForPreview(send,'fieldset');
+  // Exercise the actual preference control and ordinary persisted Save flow.
+  await clickText('Prefer this node');
+  const returnToggle='[role="switch"][aria-label="Allow return to preferred node"]';
+  await wait(`Boolean(document.querySelector(${JSON.stringify(returnToggle)}))`);
+  await evaluate(`document.querySelector(${JSON.stringify(returnToggle)}).scrollIntoView({block:'center'})`);
+  await waitForPreview(send,returnToggle);
+  const returnPoint=await evaluate(`(()=>{const r=document.querySelector(${JSON.stringify(returnToggle)}).getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2};})()`);
+  await send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...returnPoint});await send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...returnPoint});
+  await wait(`document.querySelector(${JSON.stringify(returnToggle)}).getAttribute('aria-checked')==='true'`);
+  await clickText('Save','button');
+  await wait(`!document.body.innerText.includes('Unsaved changes')`);
+  const savedPreferred=await evaluate(`(async()=>{const response=await fetch('/api/v2/rpc/outbound.selectors.get',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});const body=await response.json();return body.items.find(s=>s.id==='selector-work')})()`);
+  assert.equal(savedPreferred.policy.preferredId,'node-0');
+  assert.equal(savedPreferred.policy.returnToPreferred,true);
+  await evaluate(`document.querySelector(${JSON.stringify(returnToggle)}).scrollIntoView({block:'center'})`);
+  await waitForPreview(send,returnToggle);
+  assert(await evaluate('document.documentElement.scrollWidth-innerWidth<=1'),`${width}px preferred controls overflow`);
+  assert(await evaluate(`([...document.querySelectorAll('button')].filter(b=>['Preferred','Prefer this node','Remove candidate'].includes(b.textContent.trim())).every(b=>b.scrollWidth<=b.clientWidth+1))`),`${width}px candidate action text overflow`);
+  await shot(`${width}-preferred-return-controls`);
   await clickText('Circuit breaker and recovery');
   const toggle='[role="switch"][aria-label="Enable circuit breaker"]';
   await wait(`Boolean(document.querySelector(${JSON.stringify(toggle)}))`);
@@ -242,7 +261,7 @@ try {
   await wait(`document.querySelector('[data-update-phase="complete"]')!==null`);
   await evaluate(`document.querySelector('[data-testid="update-operation"]').scrollIntoView({block:'center'})`);
   await shot(`${width}-protected-update-completed`);
-  checks.push({width,updateSchemaMigrationBlocked:true,protectedMigrationConfirmed:true,protectedStartupReceipt:true,protectedConfirmationOverflow:protectedOverflow,legacyBinaryRollbackBlocked:true,updateCompatibilityOverflow:updateOverflow,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,passiveWindowSeparated:true,activeNodeMeasurements:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,s3RetrievalConfirmed:true,retrievalDialogOverflow:retrievalOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow,restoreRollbackResult:true,restoreResultOverflow:resultOverflow,restoreActivationConfirmed:true,restoreAdmissionDistinctFromCommit:true,restoreConfirmationOverflow:activationOverflow});
+  checks.push({width,preferredPolicyRoundTrip:true,updateSchemaMigrationBlocked:true,protectedMigrationConfirmed:true,protectedStartupReceipt:true,protectedConfirmationOverflow:protectedOverflow,legacyBinaryRollbackBlocked:true,updateCompatibilityOverflow:updateOverflow,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,passiveWindowSeparated:true,activeNodeMeasurements:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,s3RetrievalConfirmed:true,retrievalDialogOverflow:retrievalOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow,restoreRollbackResult:true,restoreResultOverflow:resultOverflow,restoreActivationConfirmed:true,restoreAdmissionDistinctFromCommit:true,restoreConfirmationOverflow:activationOverflow});
   await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:init.identifier});
  }
  await writeFile(`${output}/checks.json`,JSON.stringify({source:'synthetic MSW visual/interaction data; backend behavior tested separately',checks},null,2));

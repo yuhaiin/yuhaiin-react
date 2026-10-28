@@ -375,7 +375,7 @@
     "remove": "Remove candidate",
     "addCandidate": "Add candidate node",
     "fallback": "When no candidate is healthy",
-    "returnToPreferred": "Return after recovery (failover)",
+    "returnToPreferred": "Allow return to preferred node",
     "thresholds": "Thresholds and switching",
     "weights": "Balanced scoring weights",
     "minSamples": "Minimum valid samples",
@@ -474,14 +474,18 @@
       "authentication_unavailable": "Authentication is unavailable; this candidate needs administrator attention.",
       "session_unavailable": "Native tunnel session is unavailable.",
       "control_unavailable": "Control service is unavailable.",
-      "no_fresh_upload_measurement": "No fresh, comparable upload measurement"
+      "no_fresh_upload_measurement": "No fresh, comparable upload measurement",
+      "preferred_return_disabled": "Preferred return disabled; keep an eligible alternative"
     },
     "budgetHint": "Each test reserves the payload limit plus 65,536 bytes for TLS, HTTP headers and read-ahead. Failed and cancelled tests consume the reservation. VPN framing is outside this logical limit. Existing usage from an older accounting version pauses tests until the next UTC day.",
     "uploadTarget": "Upload test HTTPS endpoint",
     "allowUpload": "This endpoint explicitly supports upload testing",
     "uploadHint": "Upload tests first verify endpoint support, then send a bounded streaming POST and validate its byte-count acknowledgement. Ordinary download URLs do not support this protocol. Upload and download keep independent samples and expiry times.",
     "uploadConfiguration": "Active upload measurement",
-    "measureUploadNow": "Measure upload now"
+    "measureUploadNow": "Measure upload now",
+    "failoverRecoveryHint": "The preferred node starts first, otherwise priority chooses the main node. Enable return to leave a healthy survivor after recovery, subject to hold and cooldown. Click Preferred again to clear it.",
+    "metricRecoveryHint": "With a preferred node set, disabling return keeps an eligible non-preferred survivor and ranks other alternatives. Enable return only when the preferred node wins the metric and switching thresholds. Failure still permits failover. Click Preferred again to clear it.",
+    "weightedRecoveryHint": "Weighted selection distributes new flows by weight. Preferred-return controls do not apply."
   },
   "monitor": {
     "defaults": "Monitoring defaults",

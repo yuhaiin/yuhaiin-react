@@ -105,3 +105,30 @@ it('labels upload history using upload Mbps rather than the zero download field'
     expect(details.textContent).toContain('25.00 Mbps');
     expect(details.textContent).not.toContain('0.00 Mbps');
 });
+
+
+it('preserves preference when replacing a candidate and hides it for weighted distribution', async () => {
+    await editor({ ...base, policy: { mode: 'lowest_latency', weights: {}, candidates: [{ nodeId: 'a', enabled: true, priority: 0, weight: 1 }], preferredId: 'a' } });
+    expect(host.textContent).toContain('auto.metricRecoveryHint');
+    await click('auto.candidate');
+    expect(latest.policy?.preferredId).toBe('b');
+    expect(latest.policy?.candidates?.[0].nodeId).toBe('b');
+    const control = host.querySelector<HTMLButtonElement>('[role="switch"][aria-label="auto.returnToPreferred"]')!;
+    await act(async () => control.click());
+    expect(latest.policy?.returnToPreferred).toBe(true);
+    await click('auto.preferred');
+    expect(latest.policy?.preferredId).toBeUndefined();
+    setMode('weighted');
+    expect(host.textContent).toContain('auto.weightedRecoveryHint');
+    expect(host.querySelector('[aria-label="auto.returnToPreferred"]')).toBeNull();
+    expect(host.textContent).not.toContain('auto.prefer');
+    setMode('failover');
+    expect(host.textContent).toContain('auto.failoverRecoveryHint');
+    expect(latest.nodeId).toBe('a');
+});
+
+it('explains a suppressed preferred return in live status', async () => {
+    api.getSelectorStatus.mockResolvedValue({ id: 's', revision: 7, tcp: { nodeId: 'b', reason: 'preferred_return_disabled', candidates: [] }, udp: { nodeId: '', reason: 'no_healthy_candidate', candidates: [] }, events: [], switches: 0, suppressed: 1 });
+    await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><SelectorLiveStatus value={{ ...base, policy: { mode: 'lowest_latency', weights: {} } }} /></SWRConfig>));
+    expect(host.textContent).toContain('auto.reasons.preferred_return_disabled');
+});
