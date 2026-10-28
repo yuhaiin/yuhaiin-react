@@ -939,5 +939,16 @@
     "missingReceipt": "This target cannot produce a verified update startup receipt. Automatic protected installation is refused; use reviewed offline recovery with matching databases.",
     "refresh": "Refresh update status",
     "managedTLSUnsupported": "The target does not support managed Management HTTPS. Choose a compatible release or review the service TLS settings offline."
-  }
+  },
+  "sstpRootlessHelp": "Rootless SSTP over TLS and PPP. Uses the built-in userspace TCP/IP stack; no system TUN or host routes are required. Use a TCP-only listener and terminate TLS here.",
+  "sstpServerAddress": "Server IPv4 address",
+  "sstpDNS": "DNS server (IPv4)",
+  "sstpMaxSessions": "Maximum sessions",
+  "sstpClientAddresses": "Client IPv4 addresses",
+  "sstpAddressHint": "Enter individual IPv4 addresses, not CIDRs. Each connected client receives an exclusive address. The maximum session count cannot exceed the pool size.",
+  "sstpTLSCertificate": "SSTP TLS certificate",
+  "sstpUsers": "SSTP credentials",
+  "sstpUser": "User",
+  "sstpCredentialsHelp": "Choose allowed management users in the User Authentication section below. Connect with the account login name and a newly issued or rotated per-device proxy credential as the SSTP password. Existing device credentials must be rotated before use with SSTP; management login passwords are not accepted.",
+  "sstpNoExtraTransports": "SSTP handles TLS internally. Additional transports are not supported; configure the server certificate in the SSTP protocol settings."
 }

@@ -939,5 +939,16 @@
     "missingReceipt": "この更新先は検証可能な更新起動確認を生成できません。保護付き自動インストールを拒否します。対応するデータベースで確認済みのオフライン復旧を行ってください。",
     "refresh": "更新状態を再確認",
     "managedTLSUnsupported": "対象バージョンは管理 HTTPS の管理証明書に対応していません。対応するリリースを選ぶか、オフラインでサービスの TLS 設定を確認してください。"
-  }
+  },
+  "sstpRootlessHelp": "TLS と PPP による Rootless SSTP。内蔵のユーザー空間 TCP/IP スタックを使用するため、システム TUN やホストルートは不要です。TCP 専用で待ち受け、TLS はここで終端してください。",
+  "sstpServerAddress": "サーバー IPv4 アドレス",
+  "sstpDNS": "DNS サーバー (IPv4)",
+  "sstpMaxSessions": "最大セッション数",
+  "sstpClientAddresses": "クライアント IPv4 アドレス",
+  "sstpAddressHint": "CIDR ではなく個別の IPv4 アドレスを入力してください。各接続に固有のアドレスが割り当てられます。最大セッション数はアドレス数を超えられません。",
+  "sstpTLSCertificate": "SSTP TLS 証明書",
+  "sstpUsers": "SSTP 認証情報",
+  "sstpUser": "ユーザー",
+  "sstpCredentialsHelp": "下のユーザー認証セクションで許可する管理ユーザーを選択してください。SSTP のユーザー名にはログイン名、パスワードには新規発行またはローテーションした端末用プロキシ認証情報を使用します。既存の端末用認証情報は SSTP で使用する前にローテーションが必要です。管理画面のログインパスワードは使用できません。",
+  "sstpNoExtraTransports": "SSTP は TLS を内部処理します。追加のトランスポートは利用できません。SSTP プロトコル設定で証明書を指定してください。"
 }

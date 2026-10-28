@@ -939,5 +939,16 @@
     "missingReceipt": "이 대상은 검증 가능한 업데이트 시작 확인을 생성할 수 없습니다. 보호된 자동 설치를 거부합니다. 일치하는 데이터베이스로 검토한 오프라인 복구를 사용하세요.",
     "refresh": "업데이트 상태 새로 고침",
     "managedTLSUnsupported": "대상 버전은 관리 HTTPS의 관리 인증서를 지원하지 않습니다. 호환 릴리스를 선택하거나 오프라인으로 서비스 TLS 설정을 검토하세요."
-  }
+  },
+  "sstpRootlessHelp": "TLS 및 PPP 기반 루트리스 SSTP입니다. 내장 사용자 공간 TCP/IP 스택을 사용하므로 시스템 TUN이나 호스트 라우트가 필요하지 않습니다. TCP 전용 리스너를 사용하고 여기에서 TLS를 종료하세요.",
+  "sstpServerAddress": "서버 IPv4 주소",
+  "sstpDNS": "DNS 서버 (IPv4)",
+  "sstpMaxSessions": "최대 세션 수",
+  "sstpClientAddresses": "클라이언트 IPv4 주소",
+  "sstpAddressHint": "CIDR이 아닌 개별 IPv4 주소를 입력하세요. 연결마다 고유 주소가 할당됩니다. 최대 세션 수는 주소 풀 크기를 초과할 수 없습니다.",
+  "sstpTLSCertificate": "SSTP TLS 인증서",
+  "sstpUsers": "SSTP 자격 증명",
+  "sstpUser": "사용자",
+  "sstpCredentialsHelp": "아래 사용자 인증 섹션에서 허용할 관리 사용자를 선택하세요. SSTP 사용자 이름에는 계정 로그인 이름을, 암호에는 새로 발급하거나 갱신한 장치별 프록시 자격 증명을 사용합니다. 기존 장치 자격 증명은 SSTP에 사용하기 전에 갱신해야 합니다. 관리 로그인 암호는 사용할 수 없습니다.",
+  "sstpNoExtraTransports": "SSTP는 TLS를 내부적으로 처리합니다. 추가 전송 계층은 지원하지 않습니다. SSTP 프로토콜 설정에서 인증서를 구성하세요."
 }
