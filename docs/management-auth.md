@@ -23,6 +23,30 @@ Remote controllers require HTTPS; HTTP is accepted only on loopback. A separatel
 
 Changing your own password starts enrollment and immediately invalidates your old password, sessions and API tokens. Finish setting the new password before the capability expires. Refreshing the page during this exchange discards the capability; local recovery may then be needed.
 
+## Passkey sign-in
+
+Management Passkeys are optional, username-free WebAuthn credentials. Once the
+management user has been activated and signed in with a password or OAuth,
+**Account & security → Passkeys** can register and remove up to 20 credentials.
+The browser prompts for Touch ID, Face ID, Windows Hello, or another supported
+authenticator. All secrets remain under the authenticator's control: the server
+stores the public credential only.
+
+Passkey login is available on a stable HTTPS Web UI origin and on
+`http://localhost`. For local clients, open the interface at
+`http://localhost:50051` rather than `http://127.0.0.1:50051`.
+Registration and sign-in use the **Web UI's hostname** as their RP ID; a
+separately hosted UI must have its Origin allowlisted by the controller.
+A Passkey registered under `https://vpn.example.com` does not automatically
+work at `http://localhost`: register a second device credential using the
+local URL. Scheme and port are still enforced as exact ceremony origins, even
+when the RP ID hostname is the same.
+
+Password reset and administrator recovery remove all Passkeys. Browser sessions
+issued by Passkeys have the same eight-hour duration, revocation, and permission
+checks as password/OAuth sessions. The login screen disables Passkey when the
+browser is not in a supported secure context; password sign-in stays available.
+
 ## Sessions and API tokens
 
 The browser derives the credential with WebCrypto PBKDF2-SHA-256 using the backend's versioned parameters (NFC, 600,000 iterations, 32 bytes). Plaintext passwords are not sent to the server. The derived credential remains password-equivalent and needs HTTPS protection.
