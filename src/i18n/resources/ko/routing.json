@@ -462,6 +462,7 @@
       "no_successful_remote_evidence": "원격 연결 성공 없음",
       "recovering": "복구 샘플 대기",
       "insufficient_comparable_rtt": "비교 가능한 RTT 샘플 부족",
+      "insufficient_comparable_jitter": "지터를 추정하려면 비교 가능한 RTT 샘플이 2개 이상 필요합니다",
       "rtt_limit": "RTT 한도 초과",
       "no_fresh_speed_measurement": "최신 속도 측정 없음",
       "throughput_limit": "측정 속도가 하한 미만",

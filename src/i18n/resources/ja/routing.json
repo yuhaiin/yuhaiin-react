@@ -462,6 +462,7 @@
       "no_successful_remote_evidence": "遠隔接続の成功なし",
       "recovering": "復旧サンプル待ち",
       "insufficient_comparable_rtt": "比較可能な RTT サンプル不足",
+      "insufficient_comparable_jitter": "ジッターの推定には比較可能な RTT サンプルが 2 件以上必要です",
       "rtt_limit": "RTT 上限超過",
       "no_fresh_speed_measurement": "新しい速度測定なし",
       "throughput_limit": "測定速度が下限未満",

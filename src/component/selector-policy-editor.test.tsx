@@ -133,6 +133,22 @@ it('explains a suppressed preferred return in live status', async () => {
     expect(host.textContent).toContain('auto.reasons.preferred_return_disabled');
 });
 
+it('explains when a candidate needs another RTT sample for jitter', async () => {
+    api.getSelectorStatus.mockResolvedValue({ id: 's', revision: 7, tcp: { nodeId: '', reason: 'no_healthy_candidate', candidates: [{ nodeId: 'a', state: 'healthy', eligible: false, reason: 'insufficient_comparable_jitter', samples: 1, rttMs: 52, downloadMbps: 0, uploadMbps: 0, failureRate: 0, healthSamples: 1, activeConnections: 0, score: 0 }] }, udp: { nodeId: '', reason: 'no_healthy_candidate', candidates: [] }, events: [], switches: 0, suppressed: 0 });
+    await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><SelectorLiveStatus value={{ ...base, policy: { mode: 'balanced', weights: { jitter: 1 } } }} /></SWRConfig>));
+    expect(host.textContent).toContain('auto.reasons.insufficient_comparable_jitter');
+    const jitter = [...host.querySelectorAll('dt')].find(item => item.textContent === 'auto.weightLabels.jitter');
+    expect(jitter?.nextElementSibling?.textContent).toBe('auto.unmeasured');
+});
+
+it('shows measured RTT jitter separately from its scoring component', async () => {
+    api.getSelectorStatus.mockResolvedValue({ id: 's', revision: 7, tcp: { nodeId: 'a', reason: 'balanced', candidates: [{ nodeId: 'a', state: 'healthy', eligible: true, reason: 'eligible', samples: 3, rttMs: 52, jitterMs: 4.5, downloadMbps: 0, uploadMbps: 0, failureRate: 0, healthSamples: 3, activeConnections: 0, score: .8, components: { jitter: .95 } }] }, udp: { nodeId: '', reason: 'no_healthy_candidate', candidates: [] }, events: [], switches: 0, suppressed: 0 });
+    await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><SelectorLiveStatus value={{ ...base, policy: { mode: 'balanced', weights: { jitter: 1 } } }} /></SWRConfig>));
+    const jitter = [...host.querySelectorAll('dt')].find(item => item.textContent === 'auto.weightLabels.jitter');
+    expect(jitter?.nextElementSibling?.textContent).toBe('4.5 ms');
+    expect(host.textContent).toContain('auto.weightLabels.jitter: 0.950');
+});
+
 
 it('shows timeout outcomes separately from comparable RTT sample counts', async () => {
     await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><SelectorLiveStatus value={base} /></SWRConfig>));

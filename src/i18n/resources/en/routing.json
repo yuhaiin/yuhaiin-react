@@ -462,6 +462,7 @@
       "no_successful_remote_evidence": "No successful remote connection",
       "recovering": "Waiting for recovery samples",
       "insufficient_comparable_rtt": "Too few comparable RTT samples",
+      "insufficient_comparable_jitter": "At least two comparable RTT samples are needed to estimate jitter",
       "rtt_limit": "RTT exceeds limit",
       "no_fresh_speed_measurement": "No fresh speed measurement",
       "throughput_limit": "Measured speed below limit",
