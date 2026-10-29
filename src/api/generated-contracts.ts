@@ -279,6 +279,7 @@ export namespace Go {
       id: string;
       name: string;
       enabled: boolean;
+      rejectWhenDisabled?: boolean;
       debug: boolean;
       revision: number;
       listen: string;
@@ -466,6 +467,7 @@ export namespace Go {
       id: string;
       name: string;
       enabled: boolean;
+      rejectWhenDisabled?: boolean;
       debug: boolean;
       revision: number;
       listener?: ListenerSource;

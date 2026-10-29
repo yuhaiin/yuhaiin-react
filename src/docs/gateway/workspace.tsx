@@ -378,6 +378,11 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
               {gateway.enabled ? t("enabled") : t("disabled")} · {gateway.listen || t("interception")}
               {" · "}{runtime?.requests ?? 0} {t("requests")}
             </p>
+            {gateway.rejectWhenDisabled && !gateway.enabled && (
+              <p role="status" className="rounded-md border border-ui-warning/40 bg-ui-warning/10 p-3 text-sm text-ui-heading">
+                {t("importedGatewayGuard")}
+              </p>
+            )}
             <div className="grid min-w-0 gap-5 xl:grid-cols-[230px_minmax(0,1fr)]">
               <nav aria-label={t("gateway")} className={`min-w-0 max-h-[min(68vh,760px)] overflow-y-auto pr-1 ${narrowEditorOpen ? "hidden xl:block" : ""}`}>
                 <ul className="m-0 list-none space-y-0.5 p-0">

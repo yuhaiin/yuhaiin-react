@@ -120,6 +120,7 @@ export function flattenWorkspace(document: GatewayWorkspaceDocument): Config {
       id: item.id,
       name: item.name,
       enabled: item.enabled,
+      rejectWhenDisabled: item.rejectWhenDisabled,
       debug: item.debug,
       revision: item.revision,
       listen: item.listener?.listen ?? "",
@@ -162,6 +163,7 @@ export function groupWorkspace(config: Config): GatewayWorkspaceDocument {
         id: gateway.id,
         name: gateway.name,
         enabled: gateway.enabled,
+        rejectWhenDisabled: gateway.rejectWhenDisabled,
         debug: gateway.debug,
         revision: gateway.revision,
         listener: gateway.listen ? {
