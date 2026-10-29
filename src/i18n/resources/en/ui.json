@@ -773,7 +773,7 @@
       "cancelled": "Archive verification cancelled"
     },
     "legacyTitle": "Legacy S3 configuration snapshot",
-    "legacyHint": "Updated servers omit managed HTTPS and Gateway CA keys and S3 credentials from new snapshots. Snapshots are unencrypted and may contain node or inbound secrets and private keys; older objects may also contain the excluded secrets.",
+    "legacyHint": "Updated servers remove recognized credentials and disable affected nodes and listeners in new snapshots. Recreate subscription links and reconfigure publish paths, passwords and targets after restoring. Snapshots are unencrypted and opaque URLs or custom data may still contain secrets. Older objects can retain private keys.",
     "retrieve": "Retrieve / repair local copy",
     "retrieveWarning": "Download {{size}} MiB from the recorded S3 object. Replace this backup’s local copy only after its size and SHA-256 match. This does not restore the deployment or authenticate the decrypted contents.",
     "retrieving": "Retrieving an encrypted S3 archive…",
