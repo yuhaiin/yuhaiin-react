@@ -83,6 +83,7 @@ try {
   await wait(`document.body?.innerText.includes('Remote UDP reply received')`);
   assert(await evaluate(`document.body.innerText.includes('Half-open')&&document.body.innerText.includes('In flight: 1')`));
   assert(await evaluate(`document.body.innerText.includes('Timeout ratio')&&document.body.innerText.includes('20.0% (5)')`), 'fresh timeout ratio/sample count missing');
+  assert(await evaluate(`(()=>{const card=document.querySelector('[data-reliability-candidate]').parentElement;const jitter=[...card.querySelectorAll('dt')].find(e=>e.textContent==='RTT jitter');return jitter?.nextElementSibling?.textContent==='3.0 ms';})()`), 'measured jitter missing or confused with the score');
   await evaluate(`document.querySelector('[data-reliability-candidate]').parentElement.scrollIntoView({block:'start'})`);await sleep(200);
   const overflow=await evaluate('document.documentElement.scrollWidth-innerWidth');
   assert(overflow<=1,`${width}px horizontal overflow: ${overflow}`);
