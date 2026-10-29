@@ -1,7 +1,7 @@
 import { getApiUrl } from '@/common/apiurl';
-import { authAPI, directJSON, type Issued } from './api';
+import { authAPI, type Issued } from './api';
 import { authScope, establishSession } from './session';
-import { requireSecureController } from './transport';
+import { directJSON, requireSecureController } from './transport';
 
 export interface PasskeyInfo {
     id: string;
@@ -37,7 +37,7 @@ function creationOptions(options: Ceremony['options']): PublicKeyCredentialCreat
         ...p, challenge: fromBase64URL(p.challenge),
         user: { ...p.user, id: fromBase64URL(p.user.id) },
         excludeCredentials: p.excludeCredentials?.map(item => ({ ...item, id: fromBase64URL(item.id) })),
-    } as PublicKeyCredentialCreationOptions;
+    } as unknown as PublicKeyCredentialCreationOptions;
 }
 
 function requestOptions(options: Ceremony['options']): PublicKeyCredentialRequestOptions {
