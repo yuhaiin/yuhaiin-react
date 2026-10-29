@@ -1,5 +1,6 @@
 import { getApiUrl, setApiUrl } from '@/common/apiurl';
 import { enroll, initialize, initializationStatus, login } from '@/auth/api';
+import { loginWithPasskey, passkeySupported } from '@/auth/passkey';
 import { requireSecureController } from '@/auth/transport';
 import { discardEnrollment, pendingEnrollment, establishLocalConnection, getSession } from '@/auth/session';
 import { Button } from '@/component/v2/button';
@@ -69,6 +70,16 @@ export default function LoginPage() {
             setError(t(code === 429 ? 'rateLimited' : code === 401 ? mode === 'setup' ? 'setupFailed' : 'loginFailed' : code === 403 ? 'transportDenied' : 'requestFailed'));
         } finally { setBusy(false); }
     };
+    const passkeyLogin = async () => {
+        setBusy(true); setError(''); setNotice('');
+        try {
+            requireSecureController(controller);
+            setApiUrl(controller);
+            await loginWithPasskey();
+            window.location.hash = getSession()?.principal.permissions.includes('connections:read') ? '/' : '/docs/security';
+        } catch { setError(t('passkeyFailed')); }
+        finally { setBusy(false); }
+    };
     const title = mode === 'setup' ? 'createAdministrator' : mode === 'login' ? 'signIn' : 'activateAccount';
     return <div className="flex min-h-[100dvh] items-center justify-center bg-ui-bg p-4">
         <Card className="w-full max-w-md !mb-0">
@@ -96,7 +107,13 @@ export default function LoginPage() {
                     <Button asChild variant="ghost"><a href="#/docs/webui"><Settings size={16} />{t('ui:webui')}</a></Button>
                 </CardFooter>
             </form>
-            {required === false && mode === 'login' && <div className="px-5 pb-5"><OAuthLogin key={controller} controller={controller} /></div>}
+            {required === false && mode === 'login' && <>
+                <div className="px-5 pb-4">
+                    <Button className="w-full" disabled={busy || !passkeySupported()}
+                        onClick={() => void passkeyLogin()}>{t('signInPasskey')}</Button>
+                </div>
+                <div className="px-5 pb-5"><OAuthLogin key={controller} controller={controller} /></div>
+            </>}
         </Card>
     </div>;
 }
