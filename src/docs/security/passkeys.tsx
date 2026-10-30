@@ -34,7 +34,7 @@ export function Passkeys() {
     };
 
     return <Card>
-        <CardHeader><h2 className="font-medium">{t('passkeys')}</h2>
+        <CardHeader><h2 className="m-0 font-medium">{t('passkeys')}</h2>
             <Button disabled={busy} onClick={() => void mutate()}>{t('refresh')}</Button>
         </CardHeader>
         <CardBody className="space-y-4">

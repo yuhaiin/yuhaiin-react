@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { useUpdateRecovery } from '@/hooks/use-update-recovery';
 import { usePermission } from '@/auth/context';
 import { useTranslation } from 'react-i18next';
@@ -170,6 +171,7 @@ export default function About() {
 
     return (
         <MainContainer className="flex flex-col">
+            <PageHeader title={uiT("about")} className="order-first" />
             <Card className="order-2">
                 <CardHeader className="py-3">
                     <IconBox icon={Info} tone="violet" title={uiT("systemInformation")} description={uiT("softwareVersionAndBuildEnvironment")} />

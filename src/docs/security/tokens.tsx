@@ -31,7 +31,7 @@ export function Tokens() {
         if (!scopes.length || (expires && (!Number.isFinite(Date.parse(expires)) || Date.parse(expires) <= Date.now()))) { setError(t('tokenValidation')); return; }
         void run(async () => setIssued(await authAPI<Issued>('POST', '/tokens', { owner, scopes, expiresAt: expires ? Math.floor(Date.parse(expires) / 1000) : 0 })));
     };
-    return <Card><CardHeader><h2 className="font-medium">{t('tokens')}</h2><Button disabled={busy} onClick={() => void mutate()}>{t('refresh')}</Button></CardHeader><CardBody className="space-y-5">
+    return <Card><CardHeader><h2 className="m-0 font-medium">{t('tokens')}</h2><Button disabled={busy} onClick={() => void mutate()}>{t('refresh')}</Button></CardHeader><CardBody className="space-y-5">
         <p className="text-sm text-ui-muted">{t('tokenHint')}</p>
         {users && <Select ariaLabel={t('owner')} value={owner} items={users.filter(user => user.enrolled && !user.disabled).map(user => ({ value: user.id, label: user.login }))} disabled={busy} onValueChange={id => { setOwner(id); setScopes([]); }} />}
         <form onSubmit={create} className="space-y-4">

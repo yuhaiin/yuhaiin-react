@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
 import { useTranslation } from 'react-i18next';
 
@@ -56,6 +57,7 @@ function BackupPage() {
 
     return (
         <MainContainer>
+            <PageHeader title={uiT("backup")} />
             <ConfirmModal
                 show={showConfirmModal}
                 title={uiT("restoreBackup")}

@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { clearHashSearch, useHashSearch } from '@/hooks/useHashLocation';
 import { useTranslation } from 'react-i18next';
 import NodeImportModal from "./NodeImportModal";
@@ -603,10 +604,7 @@ export default function Group() {
 
     return <MainContainer className="max-w-[1440px]">
         <NodeImportModal show={importOpen} group={selectedGroup || 'manual'} onHide={() => setImportOpen(false)} onChanged={() => { void mutate(); void mutateGroups(); }} onSaved={() => setImportOpen(false)} />
-        <header className={clsx('mb-6 flex-wrap items-center justify-between gap-4', showdata.show ? 'hidden md:flex' : 'flex')}>
-            <div><h1 className="sr-only text-2xl font-semibold tracking-tight text-ui-heading lg:not-sr-only">{t('nodesTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('nodeDirectoryCount', { count: groups.length, nodes: nodeCount, groups: groups.length })}</p></div>
-            <div className="flex items-center gap-2"><Button permission="nodes:write" variant="outline-secondary" disabled={editorState.pending} onClick={() => setImportOpen(true)}><Upload className="mr-1.5" size={16} />{uiT('import')}</Button><Button permission="nodes:write" variant="primary" onClick={handleCreate} disabled={editorState.pending || showdata.new}><Plus className="mr-1.5" size={16} />{uiT('new')}</Button></div>
-        </header>
+        <PageHeader title={t('nodesTask')} description={t('nodeDirectoryCount', { count: groups.length, nodes: nodeCount, groups: groups.length })} className={showdata.show ? 'max-md:hidden' : undefined} actions={<><Button permission="nodes:write" variant="outline-secondary" disabled={editorState.pending} onClick={() => setImportOpen(true)}><Upload className="mr-1.5" size={16} />{uiT('import')}</Button><Button permission="nodes:write" variant="primary" onClick={handleCreate} disabled={editorState.pending || showdata.new}><Plus className="mr-1.5" size={16} />{uiT('new')}</Button></>} />
         {groups.length === 0 && !showdata.show ? <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center">
             <Network className="mx-auto mb-3 text-ui-primary" size={28} aria-hidden="true" /><h2 className="text-sm font-medium text-ui-heading">{uiT('noOutboundGroupsYet')}</h2>
             <p className="mt-1 text-xs text-ui-muted">{uiT('createANodeOrImportJsonToGetStarted')}</p><Button permission="nodes:write" className="mt-4 gap-2" variant="primary" onClick={handleCreate}><Plus size={16} />{uiT('newNode')}</Button>

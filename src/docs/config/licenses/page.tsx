@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { useTranslation } from 'react-i18next';
 
 import { getLicenses } from "@/api/tools";
@@ -73,6 +74,7 @@ export default function Licenses() {
 
     return (
         <MainContainer className="h-full min-h-0 flex flex-col">
+            <PageHeader title={uiT("licenses")} className="shrink-0 lg:mb-3" />
             <Card noMargin className="flex-1 min-h-0">
                 <CardHeader className="shrink-0 py-3">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-3">

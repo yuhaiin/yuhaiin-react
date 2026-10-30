@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { clearHashSearch, useHashSearch } from "@/hooks/useHashLocation";
 import { connectionRuleDraft } from "@/docs/connections/actions";
 import { getNode } from "@/api/nodes";
@@ -180,10 +181,7 @@ function BypassComponent() {
     const showEditor = creating || editing !== null;
     return (
         <MainContainer className="max-w-[1440px]">
-            <header className={`mb-6 flex-wrap items-center justify-between gap-4 ${showEditor ? 'hidden md:flex' : 'flex'}`}>
-                <div><h1 className="sr-only text-2xl font-semibold tracking-tight text-ui-heading lg:not-sr-only">{t('routingTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('routingOverviewHelp')}</p></div>
-                <Button permission="routes:write" variant="primary" onClick={newRule} disabled={reordering || editorState.pending || creating}><Plus size={16} className="mr-1.5" />{uiT('add')}</Button>
-            </header>
+            <PageHeader title={t('routingTask')} description={t('routingOverviewHelp')} className={showEditor ? 'max-md:hidden' : undefined} actions={<Button permission="routes:write" variant="primary" onClick={newRule} disabled={reordering || editorState.pending || creating}><Plus size={16} className="mr-1.5" />{uiT('add')}</Button>} />
             <div className={showEditor ? 'hidden md:block' : undefined}>
                 <RouteConfigCard destinations={destinations} onSaved={() => { void mutateActivation(); }} />
             </div>

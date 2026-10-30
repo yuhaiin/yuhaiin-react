@@ -22,7 +22,7 @@ export function OAuthSettingsPanel({ embedded = false, onConfigured }: { embedde
             return <ProviderSettings key={JSON.stringify([provider, settings])} provider={provider} settings={settings} updated={updated} configured={configured} />;
         })}
     </div>;
-    return embedded ? content : <Card><CardHeader><h2 className="font-medium">{t('oauthSettings')}</h2></CardHeader><CardBody>{content}</CardBody></Card>;
+    return embedded ? content : <Card><CardHeader><h2 className="m-0 font-medium">{t('oauthSettings')}</h2></CardHeader><CardBody>{content}</CardBody></Card>;
 }
 function ProviderSettings({ provider, settings, updated, configured }: { provider: OAuthProvider; settings?: OAuthSettings; updated: () => Promise<void>; configured: () => Promise<void> }) {
     const { t } = useTranslation('auth');
@@ -42,7 +42,7 @@ function ProviderSettings({ provider, settings, updated, configured }: { provide
         catch { setError(t('requestFailed')); } finally { setBusy(false); }
     };
     return <form onSubmit={event => void save(event)} className="space-y-4 rounded-ui-md border border-ui-border p-4" aria-label={oauthNames[provider]} autoComplete="off">
-        <h3 className="font-medium">{oauthNames[provider]}</h3>
+        <h3 className="m-0 font-medium">{oauthNames[provider]}</h3>
         <label className="block space-y-2"><span>{t('oauthClientId')}</span><Input required maxLength={512} disabled={busy} value={clientId} onChange={event => setClientId(event.target.value)} /></label>
         <label className="block space-y-2"><span>{t('oauthClientSecret')}</span><Input type="password" required={!settings?.secretConfigured} maxLength={2048} autoComplete="off" disabled={busy} value={secret} onChange={event => setSecret(event.target.value)} placeholder={settings?.secretConfigured ? t('oauthKeepSecret') : ''} /></label>
         <label className="block space-y-2"><span>{t('oauthRedirectUrl')}</span><Input type="url" required maxLength={2048} disabled={busy} value={redirectUrl} onChange={event => setRedirectUrl(event.target.value)} /></label>

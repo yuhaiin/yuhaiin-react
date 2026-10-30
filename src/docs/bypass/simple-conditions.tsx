@@ -114,7 +114,7 @@ export function SimpleConditions({ value, matcher, options, onChange, privateHis
                         ? options.listTypes?.[id] === 'process'
                         : ['host', 'hosts_as_host'].includes(options.listTypes?.[id] ?? 'host'));
                     if (listId && !local && !listChoices.includes(listId)) listChoices.unshift(listId);
-                    return <div key={index} className="min-w-0 space-y-3 rounded-ui-lg border border-ui-border/70 bg-ui-surface-muted/20 p-3 sm:p-4">
+                    return <div key={index} className="flex min-w-0 flex-col gap-3 rounded-ui-lg border border-ui-border/70 bg-ui-surface-muted/20 p-3 sm:p-4">
                         <div className="flex min-w-0 items-start gap-2">
                             <span className="mt-2 shrink-0 font-mono text-xs text-ui-muted">#{index + 1}</span>
                             <div className="min-w-0 flex-1">
@@ -156,7 +156,7 @@ export function SimpleConditions({ value, matcher, options, onChange, privateHis
                                     <p className="text-xs text-ui-muted">{t('shareMatchingHelp')}</p>
                                 </>}
                             </> : <>
-                                <SettingSelectVertical className="mb-0" label={t('chooseSharedList')} value={listId}
+                                <SettingSelectVertical className="mb-0" label={t('sharedList')} value={listId}
                                     emptyChoose emptyChooseName={t('chooseSharedList')}
                                     values={listChoices.map(id => [options.listNames?.[id] ?? id, id] as [string, string])}
                                     onChange={id => replaceItem(index, listExpr(listType, id))} />

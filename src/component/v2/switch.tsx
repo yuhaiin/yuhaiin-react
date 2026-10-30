@@ -58,7 +58,7 @@ export const SwitchCard: React.FC<SwitchProps & { className?: string }> = ({ lab
       aria-labelledby={label ? labelId : undefined}
       aria-describedby={description ? descriptionId : undefined}
       className={clsx(
-        "group flex w-full items-center justify-between min-h-11 cursor-pointer px-2 py-2 rounded-ui-md border-0 bg-transparent transition-colors duration-[var(--motion-fast)] text-left hover:bg-ui-hover/60",
+        "group -mx-2 flex w-[calc(100%+1rem)] items-center justify-between min-h-11 cursor-pointer px-2 py-2 rounded-ui-md border-0 bg-transparent transition-colors duration-[var(--motion-fast)] text-left hover:bg-ui-hover/60",
         ui.focusRing, className, disabled && "text-ui-disabled-fg cursor-not-allowed"
       )}
     >
