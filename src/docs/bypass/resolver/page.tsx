@@ -81,7 +81,7 @@ function ResolverList() {
         if (!await confirmAction(uiT('deleteResolver'))) return;
         void run(async () => { await deleteResolver(id); selection.close(); await mutate(); });
     };
-    return <ResourceWorkspace embedded createDisabled={selection.creating} title={uiT('resolvers')} description={uiT('upstreamDnsResolvers')} selectedId={selection.id} editing={selection.creating || Boolean(selection.id)}
+    return <ResourceWorkspace embedded createDisabled={selection.creating} title={uiT('resolvers')} selectedId={selection.id} editing={selection.creating || Boolean(selection.id)}
         onSelect={selection.select} onCreate={() => selection.create()} search={{ value: query, onChange: value => { setQuery(value); setPage(1); } }}
         pagination={{ page: data?.page.page || page, pageSize: PAGE_SIZE, total: data?.page.total ?? 0, onChange: setPage }}
         items={items.map(item => ({ id: item.id, name: item.name, icon: ['doh','doh3'].includes(item.type) ? <Globe2 /> : <Network />, description: `${item.type} · ${item.host || uiT('system')}` }))}>

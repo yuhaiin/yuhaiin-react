@@ -365,7 +365,7 @@ const NodeDirectoryItem = memo(function NodeDirectoryItem({ item, selected, onOp
     const { t: uiT } = useTranslation('ui');
     const { t } = useTranslation('routing');
     return <button type="button" aria-label={item.name || item.id} aria-current={selected ? 'true' : undefined} title={item.name || item.id} onClick={onOpen}
-        className={clsx('relative flex w-full min-w-0 items-center gap-2.5 rounded-ui-md px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus', selected ? 'bg-ui-selected' : 'hover:bg-ui-surface-muted/75')}>
+        className={clsx('relative flex w-full min-w-0 items-center gap-2.5 rounded-ui-md px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus', !selected && 'hover:bg-ui-surface-muted/75')}>
         {selected && <WorkspaceSelectionMarker />}
         <div className="min-w-0 flex-1">
             <div className="flex min-w-0 items-center gap-2"><span className="min-w-0 flex-1 truncate text-sm font-medium leading-5 text-ui-heading">{item.name || item.id}</span>

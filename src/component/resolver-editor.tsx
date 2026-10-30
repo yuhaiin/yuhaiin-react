@@ -71,7 +71,7 @@ export const ResolverModal: FC<{
         });
     };
 
-    return <ResourceEditorFrame title={resolver?.name || t("addResolver")} label={uiT("resolvers")} presentation={presentation} open={show} onClose={close}
+    return <ResourceEditorFrame title={resolver?.name || (isNew ? t("addResolver") : " ")} label={uiT("resolvers")} presentation={presentation} open={show} onClose={close}
         footer={<>
                     <div>
                         {onDelete && id !== 'bootstrap' && !isNew &&
