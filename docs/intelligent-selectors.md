@@ -246,7 +246,7 @@ This does not provide a Windows automatic service-maintenance coordinator.
 Native crash/rollback and CLI/TLS qualification run separately from compilation.
 
 Updated servers refuse new unencrypted configuration backups when route,
-registry, GeoIP or DNS source URLs have user credentials, queries or fragments.
+registry, GeoIP, DNS, health-probe or speed-test URLs have user credentials, queries or fragments.
 The API explains that an encrypted full backup is required; it does not change
 the configured resource or routing policy. The configuration panel explains
 this in EN/JA/KO. Source paths can also contain secrets, so private URLs still
