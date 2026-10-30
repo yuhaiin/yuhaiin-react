@@ -129,6 +129,13 @@ try {
   await send('Page.navigate',{url:`${base}/?scenario=reliability&backup=${width}#/docs/config/backup`});
   await wait(`document.body?.innerText.includes('Full disaster recovery')`);
   await waitForPreview(send,'fieldset');
+  await wait(`document.body?.innerText.includes('probe or speed-test URLs with user credentials')`);
+  assert(await evaluate(`document.body.innerText.includes('Use encrypted full recovery backups for private URLs')&&document.body.innerText.includes('server that supports the Gateway import guard')`));
+  await evaluate(`[...document.querySelectorAll('p')].find(e=>e.textContent.includes('probe or speed-test URLs')).scrollIntoView({block:'center'})`);
+  await waitForPreview(send,'fieldset');
+  const privacyHintOverflow=await evaluate(`(()=>{const e=[...document.querySelectorAll('p')].find(e=>e.textContent.includes('probe or speed-test URLs'));const r=e.getBoundingClientRect();return Math.max(-r.left,r.right-innerWidth,e.scrollWidth-e.clientWidth);})()`);
+  assert(privacyHintOverflow<=1,`${width}px configuration privacy hint overflow: ${privacyHintOverflow}`);
+  await shot(`${width}-configuration-backup-privacy`);
   await wait(`[...document.querySelectorAll('[role="switch"]')].some(e=>document.getElementById(e.getAttribute('aria-labelledby'))?.textContent==='Allow maintenance for full backups')`);
   await evaluate(`[...document.querySelectorAll('[role="switch"]')].find(e=>document.getElementById(e.getAttribute('aria-labelledby'))?.textContent==='Allow maintenance for full backups').dataset.recoveryConsent=''`);
   const consent='[data-recovery-consent]';
@@ -263,7 +270,7 @@ try {
   await wait(`document.querySelector('[data-update-phase="complete"]')!==null`);
   await evaluate(`document.querySelector('[data-testid="update-operation"]').scrollIntoView({block:'center'})`);
   await shot(`${width}-protected-update-completed`);
-  checks.push({width,preferredPolicyRoundTrip:true,updateSchemaMigrationBlocked:true,protectedMigrationConfirmed:true,protectedStartupReceipt:true,protectedConfirmationOverflow:protectedOverflow,legacyBinaryRollbackBlocked:true,updateCompatibilityOverflow:updateOverflow,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,passiveWindowSeparated:true,activeNodeMeasurements:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,s3RetrievalConfirmed:true,retrievalDialogOverflow:retrievalOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow,restoreRollbackResult:true,restoreResultOverflow:resultOverflow,restoreActivationConfirmed:true,restoreAdmissionDistinctFromCommit:true,restoreConfirmationOverflow:activationOverflow});
+  checks.push({width,configurationPrivacyHintShown:true,configurationPrivacyHintOverflow:privacyHintOverflow,preferredPolicyRoundTrip:true,updateSchemaMigrationBlocked:true,protectedMigrationConfirmed:true,protectedStartupReceipt:true,protectedConfirmationOverflow:protectedOverflow,legacyBinaryRollbackBlocked:true,updateCompatibilityOverflow:updateOverflow,horizontalOverflow:overflow,savedCircuitToggle:true,halfOpenEvidence:true,passiveWindowSeparated:true,activeNodeMeasurements:true,nativeStateMeaning:true,nativeHorizontalOverflow:nativeOverflow,s3RetrievalConfirmed:true,retrievalDialogOverflow:retrievalOverflow,backupMaintenanceConfirmed:true,backupHorizontalOverflow:backupOverflow,verificationDialogOverflow:verifyOverflow,restorePreview:true,privateInputCleared:true,restorePreviewOverflow:importOverflow,restoreRollbackResult:true,restoreResultOverflow:resultOverflow,restoreActivationConfirmed:true,restoreAdmissionDistinctFromCommit:true,restoreConfirmationOverflow:activationOverflow});
   await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:init.identifier});
  }
  await writeFile(`${output}/checks.json`,JSON.stringify({source:'synthetic MSW visual/interaction data; backend behavior tested separately',checks},null,2));
