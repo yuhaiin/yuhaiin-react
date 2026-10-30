@@ -93,7 +93,6 @@
   "platform": "プラットフォーム",
   "buildParameters": "ビルドパラメータ",
   "resolvers": "リゾルバー",
-  "upstreamDnsResolvers": "上流 DNS リゾルバー",
   "staticHosts": "静的ホスト",
   "localDomainMappings": "ローカルドメインマッピング",
   "fakedns": "FakeDNS",

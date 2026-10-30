@@ -1,7 +1,8 @@
 import clsx from 'clsx';
-import { useId, type ReactNode } from 'react';
-import { AnimatePresence, LayoutGroup, motion } from 'motion/react';
+import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { LayoutGroup, motion } from 'motion/react';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { motionTiming } from './v2/styles';
 
 /** Shared shell for list/detail configuration pages. Keeps both workspaces aligned. */
 export function WorkspaceLayout({ children, className }: { children: ReactNode; className?: string }) {
@@ -16,22 +17,64 @@ export function WorkspaceDirectory({ children, label, hiddenOnMobile = false }: 
     hiddenOnMobile?: boolean;
 }) {
     const scope = useId();
+    // The isolated stacking context lets the sliding selection pass underneath every row's text.
     return <LayoutGroup id={scope}><aside aria-label={label} className={clsx(
-        'min-w-0 rounded-ui-lg border border-ui-border bg-ui-surface-muted/50 p-2 md:mr-4',
+        'isolate min-w-0 rounded-ui-lg border border-ui-border bg-ui-surface-muted/50 p-2 md:mr-4',
         hiddenOnMobile && 'hidden md:block',
     )}>{children}</aside></LayoutGroup>;
 }
 
+const DETAIL_MIN_HEIGHT = 320;
+const SPINNER_DELAY_MS = 200;
+const HEIGHT_HOLD_MS = 3000;
+
+/**
+ * Swaps editors as one step: the outgoing height stays reserved and the next editor
+ * stays hidden until it has loaded, so fast requests never flash a spinner.
+ */
+function useDetailSwap(key: string, reducedMotion: boolean) {
+    const [content, setContent] = useState<HTMLElement | null>(null);
+    const [held, setHeld] = useState<{ key: string; minHeight?: number; hidden?: boolean }>({ key });
+    const shownKey = useRef(key);
+    if (held.key !== key) {
+        // Updating during render reads the outgoing editor before React replaces it.
+        const height = content?.getBoundingClientRect().height ?? 0;
+        setHeld({ key, minHeight: height > DETAIL_MIN_HEIGHT ? height : undefined, hidden: true });
+    }
+    useLayoutEffect(() => {
+        if (!content || shownKey.current === key) return;
+        shownKey.current = key;
+        const spinner = setTimeout(() => setHeld(current => ({ ...current, hidden: false })), SPINNER_DELAY_MS);
+        const hold = setTimeout(() => setHeld(current => ({ ...current, minHeight: undefined })), HEIGHT_HOLD_MS);
+        const observer = new MutationObserver(() => settle());
+        const stop = () => { clearTimeout(spinner); clearTimeout(hold); observer.disconnect(); };
+        const settle = () => {
+            if (content.querySelector('[data-loading]')) return;
+            stop();
+            setHeld(current => ({ key: current.key }));
+            if (!reducedMotion) content.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: motionTiming.fast * 1000, easing: 'ease-out' });
+        };
+        observer.observe(content, { childList: true, subtree: true });
+        settle();
+        return stop;
+    }, [key, content, reducedMotion]);
+    return { setContent, minHeight: held.minHeight, hidden: held.hidden };
+}
+
 export function WorkspaceDetail({ children, hiddenOnMobile = false, transitionKey = 'workspace' }: { children: ReactNode; hiddenOnMobile?: boolean; transitionKey?: string }) {
     const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+    const { setContent, minHeight, hidden } = useDetailSwap(transitionKey, reducedMotion);
     return <div className={clsx('min-w-0 rounded-ui-lg border border-ui-border bg-ui-surface p-4 xl:p-5', hiddenOnMobile && 'hidden md:block')}>
-        <AnimatePresence initial={false}>
-        <motion.div data-ui-transition="detail" key={transitionKey} initial={reducedMotion ? false : { opacity: 0.65, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reducedMotion ? 0 : 0.18, ease: 'easeOut' }} className="min-w-0 min-h-80">{children}</motion.div>
-        </AnimatePresence>
+        <div className="min-w-0" style={{ minHeight }}><div ref={setContent} className="min-w-0" style={{ opacity: hidden ? 0 : undefined }}>
+            <div data-ui-transition="detail" key={transitionKey} className="min-w-0 min-h-80">{children}</div>
+        </div></div>
     </div>;
 }
 
+/** One highlight that slides between rows. WorkspaceDirectory provides its stacking context. */
 export function WorkspaceSelectionMarker() {
     const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
-    return <motion.span aria-hidden="true" layoutId="workspace-selection" className="absolute inset-y-3 left-0 w-0.5 rounded-full bg-ui-primary" transition={reducedMotion ? { duration: 0 } : { duration: 0.18, ease: 'easeOut' }} />;
+    return <motion.span aria-hidden="true" layoutId="workspace-selection" className="absolute inset-0 -z-10 rounded-[inherit] bg-ui-selected" transition={reducedMotion ? { duration: 0 } : { duration: motionTiming.normal, ease: 'easeOut' }}>
+        <span className="absolute inset-y-3 left-0 w-0.5 rounded-full bg-ui-primary" />
+    </motion.span>;
 }

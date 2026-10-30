@@ -4,8 +4,10 @@ import { clsx } from "clsx";
 import { ChevronRight } from 'lucide-react';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { LayoutGroup, motion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import React from "react";
+import { motionTiming } from "./styles";
 
 /* -------------------------------------------------------------------------- */
 /*                                Sidebar Root                                */
@@ -59,9 +61,16 @@ Sidebar.displayName = "Sidebar";
 /* -------------------------------------------------------------------------- */
 
 const SidebarNav = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
-    <nav className={clsx("flex flex-col px-3.5 gap-1", className)} ref={ref} {...props} />
+    <nav className={clsx("isolate flex flex-col px-3.5 gap-1", className)} ref={ref} {...props} />
 ));
 SidebarNav.displayName = "SidebarNav";
+
+const markerTransition = { duration: motionTiming.normal, ease: 'easeOut' } as const;
+
+/** One highlight that slides between items. SidebarNav provides its stacking context. */
+const NavActiveMarker = () => <motion.span aria-hidden="true" layoutId="nav-active" className="absolute inset-0 -z-10 rounded-[inherit] bg-sidebar-active-bg" transition={markerTransition}>
+    <span className="absolute inset-y-3 left-0 w-0.5 rounded-full bg-ui-primary" />
+</motion.span>;
 
 /* -------------------------------------------------------------------------- */
 /*                                Sidebar Item                                */
@@ -79,12 +88,13 @@ const SidebarItem = React.forwardRef<HTMLAnchorElement, SidebarItemProps>(({ cla
             aria-current={active ? "page" : undefined}
             className={clsx(
                 "relative flex min-h-11 items-center w-full px-3.5 py-2.5 text-sm font-medium text-sidebar-color rounded-ui-md transition-colors duration-150 border-none no-underline cursor-pointer bg-transparent outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar-bg",
-                "hover:bg-sidebar-hover hover:text-sidebar-active",
-                active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold before:absolute before:inset-y-3 before:left-0 before:w-0.5 before:rounded-full before:bg-ui-primary",
+                "hover:text-sidebar-active",
+                active ? "!text-sidebar-active font-semibold" : "hover:bg-sidebar-hover",
                 className
             )}
             {...props}
         >
+            {active && <NavActiveMarker />}
             {icon && (
                 <span className="flex justify-center items-center text-[1.2rem] w-6 shrink-0 mr-2.5 transition-transform">
                     {icon}
@@ -117,6 +127,7 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
     onOpenChange,
     ...props
 }, ref) => {
+    const sectionId = React.useId();
     return (
         <CollapsiblePrimitive.Root
             open={open}
@@ -131,10 +142,11 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
                     type="button"
                     className={clsx(
                         "group relative flex min-h-11 items-center w-full px-3.5 py-2.5 text-sm font-medium text-sidebar-color rounded-ui-md transition-colors duration-150 border-none cursor-pointer bg-transparent outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-focus focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar-bg",
-                        "hover:bg-sidebar-hover hover:text-sidebar-active",
-                        active && "!bg-sidebar-active-bg !text-sidebar-active font-semibold before:absolute before:inset-y-3 before:left-0 before:w-0.5 before:rounded-full before:bg-ui-primary"
+                        "hover:text-sidebar-active",
+                        active ? "!text-sidebar-active font-semibold" : "hover:bg-sidebar-hover"
                     )}
                 >
+                    {active && <NavActiveMarker />}
                     {icon && (
                         <span className="flex justify-center items-center text-[1.2rem] w-6 shrink-0 mr-2.5 transition-transform">
                             {icon}
@@ -143,7 +155,7 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
                     <span className="min-w-0 flex-1 text-left">{title}</span>
                     <ChevronRight
                         className={clsx(
-                            "ml-auto shrink-0 text-xs opacity-60 transition-transform w-auto",
+                            "ml-auto shrink-0 text-xs opacity-60 transition-transform duration-[var(--motion-slow)] ease-out w-auto",
                             "group-data-[state=open]:rotate-90 group-data-[state=open]:text-sidebar-active group-data-[state=open]:opacity-100"
                         )}
                         size={16}
@@ -152,9 +164,12 @@ const SidebarCollapsible = React.forwardRef<HTMLDivElement, SidebarCollapsiblePr
             </CollapsiblePrimitive.Trigger>
 
             <CollapsiblePrimitive.Content className="sidebar-section overflow-hidden">
-                <div className="relative ml-6 py-1 border-l border-sidebar-border">
-                    {children}
-                </div>
+                {/* A section's marker slides inside it and never jumps across closing sections. */}
+                <LayoutGroup id={sectionId}>
+                    <div className="relative ml-6 py-1 border-l border-sidebar-border">
+                        {children}
+                    </div>
+                </LayoutGroup>
             </CollapsiblePrimitive.Content>
         </CollapsiblePrimitive.Root>
     );
@@ -179,12 +194,11 @@ const SidebarSubLink = React.forwardRef<HTMLAnchorElement, SidebarSubLinkProps>(
                 "hover:opacity-100 hover:text-sidebar-active hover:bg-sidebar-hover",
                 // Active state
                 active && "!text-sidebar-active opacity-100 font-semibold",
-                // Dot indicator
-                active && "before:content-[''] before:absolute before:left-[-3px] before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-4 before:rounded-full before:bg-sidebar-active before:z-10",
                 className
             )}
             {...props}
         >
+            {active && <motion.span aria-hidden="true" layoutId="nav-sub-active" className="absolute inset-y-0 left-[-3px] z-10 my-auto h-4 w-[3px] rounded-full bg-sidebar-active" transition={markerTransition} />}
             {children}
         </a>
     );
