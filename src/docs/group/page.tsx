@@ -34,7 +34,7 @@ import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/comp
 import { Input } from "@/component/v2/input";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
-import type { Node, NodeLatencyResponse } from "@/contract/node";
+import { nodeGroupName, type Node, type NodeLatencyResponse } from "@/contract/node";
 import clsx from "clsx";
 import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Gauge, Layers, Network, Plus, Power, Search, Upload } from "lucide-react";
 import { FC, memo, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -459,15 +459,23 @@ export default function Group() {
     const [latencyIPUrl] = useLocalStorage(LatencyIPUrlKey, LatencyIPUrlDefault);
     const [latencyStunUrl] = useLocalStorage(LatencyStunUrlKey, LatencyStunUrlDefault);
     const [latencyStunTCPUrl] = useLocalStorage(LatencyStunTCPUrlKey, LatencyStunTCPUrlDefault);
-    const { data: defaults, error: defaultsError, mutate: mutateDefaults } = useSWR("/api/v2/nodes/selected", selectedNodes, { revalidateOnFocus: false });
+    const { data: defaults, error: defaultsError, isLoading: defaultsLoading, mutate: mutateDefaults } = useSWR("/api/v2/nodes/selected", selectedNodes, { revalidateOnFocus: false });
+    const { data: routeNode, isLoading: routeNodeLoading } = useSWR(linkedId ? ['/api/v2/nodes/detail', linkedId] : null, () => getNode(linkedId!), { revalidateOnFocus: false });
     const { pending: using, run: runUse } = useAsyncAction(error => ctx.Error(errorOf(error)?.msg ?? t("defaultNodeFailed")));
     const { data: groupData, error: groupsError, mutate: mutateGroups } = useSWR('/api/v2/nodes/groups', listNodeGroups, { revalidateOnFocus: false });
     const groups = useMemo(() => groupData?.items.map(group => group.name) ?? [], [groupData]);
+    // Open on the linked node's group, then the default node's. Decided once per
+    // visit, so later changes to the default never move the list being browsed.
+    const inferringGroup = !preferredGroup && (defaultsLoading || routeNodeLoading);
+    if (!preferredGroup && !inferringGroup && groups.length) {
+        const known = [routeNode, defaults?.tcp].find(node => node && groups.includes(nodeGroupName(node)));
+        setSelectedGroup(known ? nodeGroupName(known) : groups[0]);
+    }
     const selectedGroup = groups.includes(preferredGroup) ? preferredGroup : groups[0] ?? '';
     const groupCounts = useMemo(() => new Map(groupData?.items.map(group => [group.name, group.count])), [groupData]);
     const nodeCount = groupData?.items.reduce((sum, group) => sum + group.count, 0) ?? 0;
     const { data, error, isLoading, mutate } = useSWR(
-        selectedGroup && querySettled ? ['/api/v2/nodes/directory', selectedGroup, page, debouncedQuery] : null,
+        selectedGroup && querySettled && !inferringGroup ? ['/api/v2/nodes/directory', selectedGroup, page, debouncedQuery] : null,
         () => listNodes({ group: selectedGroup, page, pageSize: NODE_PAGE_SIZE, query: debouncedQuery }),
         { revalidateOnFocus: false, keepPreviousData: false },
     );
@@ -515,13 +523,14 @@ export default function Group() {
     useEffect(() => {
         if (!initialized.current && desktop && groupItems.length && !showdata.show && debouncedQuery === query.trim()) {
             initialized.current = true;
-            setSelectedPreview(groupItems[0]);
-            setShowdata({ show: true, id: groupItems[0].id, new: false });
+            const first = !debouncedQuery && defaults?.tcp && nodeGroupName(defaults.tcp) === selectedGroup ? defaults.tcp : groupItems[0];
+            setSelectedPreview(first);
+            setShowdata({ show: true, id: first.id, new: false });
         }
-    }, [desktop, groupItems, showdata.show, debouncedQuery, query]);
+    }, [desktop, groupItems, showdata.show, debouncedQuery, query, defaults, selectedGroup]);
 
     if (groupsError && !groupData && apiError) return <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} />;
-    if (!groupData) return <Loading />;
+    if (!groupData || inferringGroup) return <Loading />;
 
     const closeDetails = () => {
         initialized.current = true;

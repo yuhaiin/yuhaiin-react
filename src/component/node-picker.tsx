@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react';
 import { getNode } from '@/api/nodes';
+import { nodeGroupName } from '@/contract/node';
 import { NodeSelectionDialog } from './node-select';
 import { Button } from '@/component/v2/button';
 import { useState } from 'react';
@@ -11,7 +12,15 @@ export default function NodePicker({ value, onChange, disabled = false, excludeI
 }) {
     const { t } = useTranslation('routing');
     const [open, setOpen] = useState(false);
+    const [startGroup, setStartGroup] = useState<string>();
     const { mutate } = useSWRConfig();
+    const lastId = value[value.length - 1];
+    const { data: lastNode } = useSWR(lastId ? ['/api/v2/nodes/detail', lastId] : null, () => getNode(lastId!), { revalidateOnFocus: false });
+    // Read when opening, so toggling nodes in the dialog does not move the list.
+    const openDialog = () => {
+        setStartGroup(lastNode && nodeGroupName(lastNode));
+        setOpen(true);
+    };
     const move = (index: number, direction: -1 | 1) => {
         const next = [...value];
         [next[index], next[index + direction]] = [next[index + direction], next[index]];
@@ -20,8 +29,8 @@ export default function NodePicker({ value, onChange, disabled = false, excludeI
     return <div className="grid gap-3">
         <ol className="m-0 list-none divide-y divide-ui-border p-0">{value.map((id, index) => <SelectedNode key={id} id={id} index={index} disabled={disabled} last={index === value.length - 1}
             onMove={direction => move(index, direction)} onRemove={() => onChange(value.filter(item => item !== id))} />)}</ol>
-        {!disabled && <Button type="button" variant="outline-secondary" className="justify-start gap-2" onClick={() => setOpen(true)}><Plus size={16} aria-hidden="true" />{t('chooseNode')}</Button>}
-        <NodeSelectionDialog open={open} label={t('chooseNode')} value="" multiple={value} excludeId={excludeId} enabledOnly={enabledOnly} disabled={disabled} onClose={() => setOpen(false)}
+        {!disabled && <Button type="button" variant="outline-secondary" className="justify-start gap-2" onClick={openDialog}><Plus size={16} aria-hidden="true" />{t('chooseNode')}</Button>}
+        <NodeSelectionDialog open={open} label={t('chooseNode')} value="" preferredGroup={startGroup} multiple={value} excludeId={excludeId} enabledOnly={enabledOnly} disabled={disabled} onClose={() => setOpen(false)}
             onChange={node => {
                 if (node.id === excludeId) return;
                 void mutate(['/api/v2/nodes/detail', node.id], node, { revalidate: false });
