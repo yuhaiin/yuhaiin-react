@@ -93,7 +93,6 @@
   "platform": "Platform",
   "buildParameters": "Build Parameters",
   "resolvers": "Resolvers",
-  "upstreamDnsResolvers": "Upstream DNS Resolvers",
   "staticHosts": "Static Hosts",
   "localDomainMappings": "Local Domain Mappings",
   "fakedns": "FakeDNS",

@@ -8,6 +8,7 @@ import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import type { FakeIPEntry } from '@/contract/resolver';
 import { useAsyncAction, useCloseGuard } from '@/hooks/use-editor-draft';
+import { useFillViewport } from '@/hooks/use-fill-viewport';
 import { useServerPageClamp } from '@/hooks/use-pagination';
 import { RotateCw, Search, Trash } from 'lucide-react';
 import { useContext, useState } from 'react';
@@ -22,6 +23,7 @@ export function FakeIPList() {
     const { t } = useTranslation('routing');
     const { t: uiT } = useTranslation('ui');
     const ctx = useContext(GlobalToastContext);
+    const [panelRef, panelMaxHeight] = useFillViewport();
     const [page, setPage] = useState(1);
     const [query, setQuery] = useState('');
     const [debouncedQuery] = useDebounceValue(query.trim(), 250);
@@ -44,15 +46,17 @@ export function FakeIPList() {
         });
     };
     return <section aria-label={t('fakeIPTab')} className="min-w-0">
-        <header className="mb-5"><h2 className="text-xl font-semibold text-ui-heading">{t('fakeIPTab')}</h2><p className="mt-2 text-sm text-ui-muted">{t('fakeIPListHelp')}</p></header>
-        <div className="mb-4 flex items-center gap-3">
-            <div className="relative min-w-0 flex-1 sm:max-w-sm"><Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" aria-hidden="true" /><Input type="search" value={query} aria-label={t('searchFakeIP')} placeholder={t('searchFakeIP')} className="pl-9" onChange={event => { setQuery(event.target.value); setPage(1); }} /></div>
-            <Button variant="outline-secondary" size="icon" aria-label={uiT('refresh')} disabled={!settled || isValidating || pending} onClick={() => void mutate()}>{isValidating ? <Spinner size="sm" /> : <RotateCw size={16} />}</Button>
-            <span className="ml-auto shrink-0 text-xs tabular-nums text-ui-muted" role="status">{data?.page.total ?? 0}</span>
-        </div>
-        {error ? <Loading code={error.code} onRetry={() => void mutate()}>{error.msg ?? String(error)}</Loading> : !settled || isLoading || !data ? <Loading /> : <>
-            <div className="max-h-[60dvh] overflow-y-auto overscroll-contain rounded-ui-lg border border-ui-border bg-ui-surface" aria-busy={isValidating || pending}>
-                <div className="sticky top-0 hidden grid-cols-[minmax(0,1fr)_minmax(0,1fr)_44px] gap-3 border-b border-ui-border bg-ui-surface-muted px-4 py-3 text-xs font-medium text-ui-muted sm:grid"><span>{t('hostAddress')}</span><span>FakeIP</span><span /></div>
+        <header className="mb-3 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+            <p className="min-w-0 text-xs text-ui-muted">{t('fakeIPListHelp')}</p>
+            <div className="flex shrink-0 items-center gap-3">
+                <div className="relative min-w-0 flex-1 lg:w-80 lg:flex-none"><Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" aria-hidden="true" /><Input type="search" value={query} aria-label={t('searchFakeIP')} placeholder={t('searchFakeIP')} className="pl-9" onChange={event => { setQuery(event.target.value); setPage(1); }} /></div>
+                <Button variant="outline-secondary" size="icon" aria-label={uiT('refresh')} disabled={!settled || isValidating || pending} onClick={() => void mutate()}>{isValidating ? <Spinner size="sm" /> : <RotateCw size={16} />}</Button>
+                <span className="shrink-0 text-xs tabular-nums text-ui-muted" role="status">{data?.page.total ?? 0}</span>
+            </div>
+        </header>
+        {error ? <Loading code={error.code} onRetry={() => void mutate()}>{error.msg ?? String(error)}</Loading> : !settled || isLoading || !data ? <Loading /> : <div ref={panelRef} className="flex min-w-0 flex-col" style={{ maxHeight: panelMaxHeight }}>
+            <div className="min-h-0 overflow-y-auto overscroll-contain rounded-ui-lg border border-ui-border bg-ui-surface" aria-busy={isValidating || pending}>
+                <div className="sticky top-0 z-10 hidden grid-cols-[minmax(0,1fr)_minmax(0,1fr)_44px] gap-3 border-b border-ui-border bg-ui-surface-muted px-4 py-3 text-xs font-medium text-ui-muted sm:grid"><span>{t('hostAddress')}</span><span>FakeIP</span><span /></div>
                 <ul className="m-0 list-none divide-y divide-ui-border p-0">
                     {data.items.map(item => <li key={`${item.domain}\0${item.ip}`} className="grid min-w-0 grid-cols-[minmax(0,1fr)_44px] items-center gap-3 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_44px]">
                         <span className="min-w-0"><span className="block break-all font-mono text-sm font-medium text-ui-heading">{item.domain}</span><span className="mt-1 block break-all font-mono text-xs text-ui-muted sm:hidden">{item.ip}</span></span>
@@ -62,7 +66,7 @@ export function FakeIPList() {
                     {!data.items.length && <li className="px-4 py-12 text-center text-sm text-ui-muted">{uiT('noRecordsFound')}</li>}
                 </ul>
             </div>
-            <div className="mt-4 flex justify-end"><Pagination currentPage={page} pageSize={PAGE_SIZE} totalItems={data.page.total} onPageChange={setPage} /></div>
-        </>}
+            <div className="mt-4 flex shrink-0 justify-center"><Pagination currentPage={page} pageSize={PAGE_SIZE} totalItems={data.page.total} onPageChange={setPage} /></div>
+        </div>}
     </section>;
 }

@@ -93,7 +93,6 @@
   "platform": "플랫폼",
   "buildParameters": "빌드 매개변수",
   "resolvers": "리졸버",
-  "upstreamDnsResolvers": "상위 DNS 리졸버",
   "staticHosts": "정적 호스트",
   "localDomainMappings": "로컬 도메인 매핑",
   "fakedns": "FakeDNS",
