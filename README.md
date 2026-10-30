@@ -79,100 +79,50 @@ limitations remain unchanged. Certificate pinning, ECH and HTTP/3 are not bypass
 
 Backend details: https://github.com/yuhaiin/yuhaiin/tree/main/docs/gateway
 
-## Intelligent selectors
+## Enterprise reliability
 
-The existing Selector editor supports opt-in failover, lowest RTT, measured
-throughput, balanced scoring and weighted new connections, with candidate
-controls, manual lock, explicit preferred-node recovery, and explainable TCP/UDP status. It requires the companion
-backend; see [configuration and delivery boundaries](docs/intelligent-selectors.md).
+The existing application exposes the reliability features in one
+[frontend PR](https://github.com/yuhaiin/yuhaiin-react/pull/535) with its
+[backend companion](https://github.com/yuhaiin/yuhaiin/pull/622).
+Controls retain EN/JA/KO, the existing state/editing conventions and responsive
+mobile layouts.
 
-The monitoring follow-up also exposes shared probe schedules, per-selector
-inheritance/overrides, explicit periodic download controls, mobile/network-cost
-policy and bounded measurement history. Automatic monitoring remains opt-in.
+**Selectors and Nodes** manage opt-in failover, lowest RTT, measured throughput,
+balanced scoring and weighted new flows. Manual selection remains the default.
+Candidate evidence, raw score components, switch reasons, circuit state,
+preferred return, manual lock and independent probe/download/upload schedules
+are visible. Business Bps/window averages remain separate from active Mbps
+measurements, with explicit endpoint consent and backend-enforced budgets.
+See [configuration, measurement and qualification](docs/intelligent-selectors.md).
 
-Automatic selectors also expose Circuit Breaker cooldown, bounded half-open
-recovery controls and distinct TCP/UDP evidence. Candidate details explain
-whether the remote observation was a connect, response, DNS/HTTPS/STUN probe or
-protocol-native handshake; the circuit state and recovery counters are separate.
+**Backup** distinguishes configuration migration from encrypted full recovery.
+It manages local/S3 schedules, maintenance consent, history, download/retrieval,
+verification, retention and authenticated original/clone previews. Confirmation
+binds backup/source/target identities and startup changes; result panels
+separate admission, committed startup and rollback. Private key inputs clear
+after use. Pre-restore plaintext copies have independent default-off cleanup
+consent. Configuration snapshots remove recognized credentials and disable
+affected entries; private URLs/custom data still require protected storage or
+an encrypted full archive.
 
-The monitoring dialog also reports policy readiness and explains that measured
-speeds include configured routing/traffic controls. Tests pause while the backend
-loads its initial policy; selection and recovery continue to be backend-owned.
+**About / Software Update** shows current/target schemas, compatibility and
+update recovery points. Confirmed protected installation uses the backend's
+independent startup receipt. A failed migration requires the matching source
+binary and database backup, with credential-revival review; the UI provides
+offline inspection guidance when the service cannot start.
+See the [backup and update workflows](docs/intelligent-selectors.md#managed-full-backups).
 
-Shared probe/measurement limits and inclusive speed-budget behavior are documented in [intelligent selectors](docs/intelligent-selectors.md).
+Automatic disruptive service maintenance is qualified for root-owned Linux
+systemd and lingering user services. Windows offline restore through validation,
+finalization and rollback requires elevated local NTFS access. Other hosts retain
+the documented offline/capability limits; see the backend companion's operator
+guides. UI browser checks use explicit synthetic fixtures, separately from the
+backend's real service, migration, TLS, crypto and crash-recovery tests.
 
-Enterprise reliability is being developed in one [frontend PR](https://github.com/yuhaiin/yuhaiin-react/pull/535) with its [backend companion](https://github.com/yuhaiin/yuhaiin/pull/622). Further health-routing, backup/restore and certificate lifecycle work continues in these two entries.
-
-The backend now provides offline encrypted recovery preview/activation and
-startup rollback; generated models are synchronized here. The corresponding Web
-backup page now manages confirmed local/S3 encrypted captures, schedules,
-history, verification, downloads and retention on root-owned Linux systemd and
-lingering systemd user services. Automatic disruptive maintenance is qualified on those hosts;
-other hosts retain documented offline and durability limits. See [recovery contract status](docs/intelligent-selectors.md#offline-recovery-contract-synchronization).
-
-
-The Backup page now also uploads encrypted archives and shows authenticated
-original/clone recovery previews with identity warnings and file changes.
-Uploads and private staging are bounded. Supported systemd hosts can restore
-through explicit target-ID and identity-risk confirmations; independent startup
-checks decide commit or rollback. Other hosts retain the backend offline CLI. See [preview behavior](docs/intelligent-selectors.md#disaster-recovery-preview).
-
-The Backup page also displays the latest recorded restore commit/rollback and
-whether restored startup settings persist across restarts. Failed result queries
-hide cached success. See [restore outcomes](docs/intelligent-selectors.md#latest-restore-result).
-
-The Backup history supports explicit S3 archive retrieval/repair when a local copy
-is missing or damaged. It shows ciphertext retrieval separately from authenticated
-archive verification, supports cancellation, and exports public recovery metadata
-for the backend's offline `recovery fetch` command. See the
-[backend recovery guide](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/managed-recovery-backups.md#recover-a-missing-or-damaged-local-s3-copy).
-
-Software Update and Previous versions show observed current/target database
-schemas and distinguish compatible, migration-required, incompatible and unknown
-binaries. Unknown/incompatible targets cannot be automatically installed or
-restored. A binary rollback does not restore credentials, usage or database
-contents. Root-owned Linux systemd and lingering user-service hosts support confirmed encrypted update recovery
-points, migration-aware installation and real startup supervision. Success is bound
-to the operation UUID, reviewed digest and durable startup receipt. The existing
-Backup page controls protection independently of its periodic schedule; disabling
-protection requires explicit consent and never enables a migrating target. The
-status panel identifies the paired point/source and provides offline inspection
-instructions when the service stays unavailable. Failed startup after possible
-migration requires the matching source binary and database backup, with explicit
-credential-revival review. Other hosts retain reviewed offline recovery. Browser
-checks at 1440/360/320 px cover consent and receipt completion separately from the
-backend's actual systemd migration/failure/SIGKILL/CLI-recovery tests. See the [update compatibility guide](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/update-rollback.md#verified-target-schema-preflight).
-
-Selectors also provide opt-in active upload measurements, independent upload
-schedules and direction-labeled results while sharing the existing backend test
-budgets. See [upload measurement controls](docs/intelligent-selectors.md#upload-measurements-and-scheduling).
-
-Node runtime details separate current/window-average observed traffic, recent
-TCP dial failures and active download/upload measurements. The bounded window
-runs on the existing observer and resets after restart or a sleep/clock gap.
-
-## Managed HTTPS certificates
-
-**Certificates** provides permission-gated ACME resource and Cloudflare provider
-management, renewal/failure/expiry alerts and listener references in EN/JA/KO.
-Gateway TLS termination can select managed certificate IDs; existing file
-certificates remain supported. HTTP-01 requires explicit opt-in on an existing
-port-80 Gateway. DNS tokens are write-only and private keys are never displayed.
-Management HTTPS uses explicit host-owned `-https-certificate-id` selection; the
-page shows the argument and live references. CA advice (ARI) displays the
-suggested window, persisted refresh timing and fallback status. See the
-[certificate controls and verification guide](docs/managed-certificates.md).
-
-Plaintext pre-restore rollback copies have separate, default-off cleanup consent
-and count/age controls under Backup. Saving uses the existing configuration API;
-cleanup runs at backend CLI startup or with the confirmed offline command. Active,
-latest, committed and configured-file dependencies remain protected. Clone restore
-clears inherited consent. This does not alter encrypted archive retention or start
-a backup. The paired Chrome harness also checks Save/readback at 1440/360/320 px.
-See the [backend retention guide](https://github.com/yuhaiin/yuhaiin/blob/codex/reliability-selector/docs/managed-recovery-backups.md#local-rollback-copy-retention).
-
-Selector details now show the timeout ratio and its fresh health-outcome count,
-separate from comparable RTT sample count. Older responses without a denominator
-show unmeasured. The hint explicitly avoids treating probe timeouts as packet
-loss. EN/JA/KO, generated contracts, component regression and the 1440/360/320 px
-browser fixture cover this projection of existing backend observations.
+**Certificates** manages ACME resources, Cloudflare providers, renewal/failure/
+expiry alerts and listener references. HTTP-01 requires an opted-in existing
+port-80 Gateway. DNS tokens are write-only; private keys are not displayed.
+Gateway TLS can select managed IDs, and Management HTTPS shows the explicit
+host-owned `-https-certificate-id` configuration and live references. File TLS
+remains supported, with site certificates separate from MITM/TLS Auto CAs.
+See [certificate controls and verification](docs/managed-certificates.md).
