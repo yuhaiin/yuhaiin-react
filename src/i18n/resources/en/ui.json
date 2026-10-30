@@ -773,7 +773,7 @@
       "cancelled": "Archive verification cancelled"
     },
     "legacyTitle": "Legacy S3 configuration snapshot",
-    "legacyHint": "Updated servers remove recognized credentials and disable affected nodes, listeners and Gateways in new snapshots. Restore only to a server that supports the Gateway import guard; older versions may bypass disabled Gateway policies. Recreate subscription links and review affected policies and publish paths, passwords and targets. Snapshots are unencrypted and opaque URLs or custom data may still contain secrets. Older objects can retain private keys.",
+    "legacyHint": "Updated servers remove recognized credentials and disable affected nodes, listeners and Gateways in new snapshots. Unused historical configuration copies are omitted; current nodes, Sets and Selector settings remain included. Restore only to a server that supports the Gateway import guard; older versions may bypass disabled Gateway policies. Recreate subscription links and review affected policies and publish paths, passwords and targets. Snapshots are unencrypted and opaque URLs or custom data may still contain secrets. Older objects can retain private keys.",
     "retrieve": "Retrieve / repair local copy",
     "retrieveWarning": "Download {{size}} MiB from the recorded S3 object. Replace this backup’s local copy only after its size and SHA-256 match. This does not restore the deployment or authenticate the decrypted contents.",
     "retrieving": "Retrieving an encrypted S3 archive…",

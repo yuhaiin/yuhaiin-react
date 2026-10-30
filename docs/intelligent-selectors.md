@@ -248,6 +248,10 @@ the configured resource or routing policy. The configuration panel explains
 this in EN/JA/KO. Source paths can also contain secrets, so private URLs still
 require an encrypted full backup. Historical SQLite objects remain locally
 restorable without changing their source URLs.
+New configuration backups omit unused historical configuration copies, while
+keeping current nodes, Sets and Selector settings. The EN/JA/KO hint explains
+this distinction; private historical imports and encrypted full recovery retain
+the old records.
 
 History shows size, target, finite job state and failures. Ciphertext S3 readback
 and authenticated archive verification are distinct: **Verify archive** accepts
