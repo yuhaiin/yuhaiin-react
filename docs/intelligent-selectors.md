@@ -241,6 +241,14 @@ runs in the backend. Save before creating a backup; the confirmation explains
 the temporary service interruption. Automatic maintenance currently requires a
 root-owned Linux systemd service or a lingering systemd user service. Other hosts keep the offline CLI workflow.
 
+Updated servers refuse new unencrypted configuration backups when route,
+registry, GeoIP or DNS source URLs have user credentials, queries or fragments.
+The API explains that an encrypted full backup is required; it does not change
+the configured resource or routing policy. The configuration panel explains
+this in EN/JA/KO. Source paths can also contain secrets, so private URLs still
+require an encrypted full backup. Historical SQLite objects remain locally
+restorable without changing their source URLs.
+
 History shows size, target, finite job state and failures. Ciphertext S3 readback
 and authenticated archive verification are distinct: **Verify archive** accepts
 a transient private identity, clears the field on submission and validates the

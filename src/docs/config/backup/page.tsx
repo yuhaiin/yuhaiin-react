@@ -102,6 +102,7 @@ function BackupPage() {
             <Card>
                 <CardHeader><IconBox icon={CloudUpload} tone="primary" title={uiT('recoveryBackup.legacyTitle')} description={uiT('recoveryBackup.legacyHint')} /></CardHeader>
                 <CardBody>
+                    <p className="mb-4 text-sm text-ui-muted">{uiT('recoveryBackup.privateURLHint')}</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <SwitchCard
                             label={uiT("s3BackupEnabled")}

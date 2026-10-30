@@ -797,7 +797,8 @@
     "localPointsConsent": "Allow permanent cleanup of old local rollback copies",
     "localPointsWarning": "Disabled by default. Latest committed copies, the current recovery transaction, last restore result, configured file dependencies and known open SQLite copies are protected. At most 32 copies are removed per startup; interrupted cleanup resumes when enabled. Protected copies can exceed the retention count or age.",
     "localPointsCount": "Local rollback copies to retain",
-    "localPointsDays": "Local rollback-copy retention (days)"
+    "localPointsDays": "Local rollback-copy retention (days)",
+    "privateURLHint": "Updated servers refuse unencrypted configuration backups containing route, registry, GeoIP or DNS source URLs with user credentials, a query or a fragment. Use encrypted full recovery backups for private URLs; source paths can also contain secrets."
   },
   "backupIntervalMinutes": "Configuration snapshot interval (minutes)",
   "recoveryImport": {
