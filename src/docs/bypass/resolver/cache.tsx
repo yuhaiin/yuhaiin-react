@@ -155,7 +155,7 @@ export function DNSCache() {
                         </div>
                     </div>
                 </CardHeader>
-                <CardBody density="compact" className="flex min-h-0 flex-col overflow-hidden">
+                <CardBody className="flex min-h-0 flex-col overflow-hidden">
                     <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-2 text-xs text-ui-muted">
                         <span>{allEntries.length} active cache entr{allEntries.length === 1 ? "y" : "ies"}</span>
                         {query.trim() && (

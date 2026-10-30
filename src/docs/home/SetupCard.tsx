@@ -59,8 +59,8 @@ export default function SetupCard() {
                     <span className="min-w-0 flex-1 truncate">{selection?.tcp?.id === selection?.udp?.id ? selection?.tcp?.name : t('separateDestinations')} · {t('setupEntryEnabled')}</span>
                     <ChevronDown size={16} className="shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
                 </summary>
-                <CardBody density="compact" className="border-t border-ui-border">{body}</CardBody>
-            </details> : <><CardHeader><h2 className="text-base font-medium">{t('setupTitle')}</h2></CardHeader><CardBody density="compact">{body}</CardBody></>}
+                <CardBody className="border-t border-ui-border">{body}</CardBody>
+            </details> : <><CardHeader><h2 className="text-base font-medium">{t('setupTitle')}</h2></CardHeader><CardBody>{body}</CardBody></>}
         </Card>
     </>;
 }

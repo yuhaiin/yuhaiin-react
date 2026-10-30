@@ -256,7 +256,7 @@ const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral";
                 "relative flex min-h-[76px] flex-col justify-center overflow-hidden transition-colors",
                 compact && flowStyles.metric,
                 summary
-                    ? "border-ui-border/80 bg-transparent px-4 py-3 first:border-l-0 sm:border-l sm:first:border-l-0"
+                    ? "border-ui-border/80 bg-transparent px-3 py-3 sm:px-4 first:border-l-0 sm:border-l sm:first:border-l-0"
                     : "rounded-ui-xl border bg-[var(--metric-bg)] p-4 shadow-ui-card border-[var(--metric-border)] hover:border-ui-primary/25",
             )}
         >
@@ -277,7 +277,7 @@ const MetricCard: FC<MetricProps & { accent?: "download" | "upload" | "neutral";
             </div>
             <div className={clsx(
                 "truncate font-mono font-medium leading-tight tabular-nums text-[var(--metric-value)]",
-                summary && emphasized ? "text-2xl" : "text-xl",
+                summary && emphasized ? "text-[length:clamp(1rem,5vw,1.5rem)]" : "text-xl",
                 compact && flowStyles.value,
                 pulse && "animate-dataUpdate",
                 error && "text-ui-danger"

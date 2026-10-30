@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { TabContent } from '@/component/v2/tab-content';
 import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
 import { confirmAction } from '@/component/v2/confirmation';
@@ -48,7 +49,7 @@ export default function ResolverComponent() {
     }, [tab, t]);
     const entries = [['resolvers', uiT('resolvers')], ['roles', t('dnsRolesTab')], ['server', t('dnsServerTab')], ['hosts', uiT('staticHosts')], ['responses', t('dnsResponsesTab')], ['cache', t('dnsCacheTab')], ['fakeip', t('fakeIPTab')]];
     return <MainContainer className="max-w-[1440px]">
-        <header className="mb-5"><h1 className="sr-only text-2xl font-semibold tracking-tight text-ui-heading lg:not-sr-only">{t('dnsTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('dnsPageHelp')}</p></header>
+        <PageHeader title={t('dnsTask')} description={t('dnsPageHelp')} className="mb-5" />
         <LayoutGroup id={groupId}><Tabs.Root activationMode="manual" value={tab} onValueChange={async next => { if (next !== tab && await allowNavigation()) { setDirection(Math.sign(entries.findIndex(([key]) => key === next) - entries.findIndex(([key]) => key === tab))); setTab(next); } }}>
             <Tabs.List ref={tabs} aria-label={t('dnsSections')} className="mb-6 flex min-w-0 gap-1 overflow-x-auto border-b border-ui-border">
                 {entries.map(([value, label]) => <Tabs.Trigger key={value} value={value} className="relative min-h-11 shrink-0 whitespace-nowrap rounded-t-ui-md px-3 py-2 text-sm text-ui-muted transition-colors hover:text-ui-heading focus-visible:bg-ui-selected focus-visible:outline-none data-[state=active]:font-semibold data-[state=active]:text-ui-primary">{label}{value === tab && <motion.span aria-hidden="true" layoutId="dns-active-tab" className="pointer-events-none absolute bottom-0 inset-x-0 h-0.5 bg-ui-primary" transition={{ duration: reduced ? 0 : 0.2, ease: "easeOut" }} />}</Tabs.Trigger>)}

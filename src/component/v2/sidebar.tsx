@@ -22,7 +22,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
     const { t } = useTranslation('nav');
     React.useEffect(() => { if (desktop && show) onHide?.(); }, [desktop, show, onHide]);
     const panelClass = clsx(
-        "fixed z-[1050] bg-sidebar-bg text-sidebar-color border border-sidebar-border shadow-sidebar py-4 overflow-y-auto [&::-webkit-scrollbar]:w-0",
+        "sidebar-panel fixed z-[1050] text-sidebar-color border border-sidebar-border shadow-sidebar py-4 overflow-y-auto [&::-webkit-scrollbar]:w-0",
         className
     );
     if (desktop) return (
