@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { getTelemetry, getTraffic } from "@/api/connections";
@@ -123,10 +124,7 @@ function HomePage() {
                 onHide={() => setNodeModal({ show: false })}
             />
 
-            <header className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                <h1 className="m-0 sr-only text-2xl font-semibold tracking-tight text-ui-heading lg:not-sr-only">{t('nav:home')}</h1>
-                {activeError ? <span className="text-sm text-ui-danger">{activeError.msg}</span> : <span className="flex items-center gap-2 text-xs text-ui-muted"><Activity size={15} aria-hidden="true" className="text-ui-success" />{active?.items.length ?? '—'} {uiT('activeNodes')}</span>}
-            </header>
+            <PageHeader title={t('nav:home')} className="mb-4" actions={activeError ? <span className="text-sm text-ui-danger">{activeError.msg}</span> : <span className="flex items-center gap-2 text-xs text-ui-muted"><Activity size={15} aria-hidden="true" className="text-ui-success" />{active?.items.length ?? '—'} {uiT('activeNodes')}</span>} />
             <div className="mb-4 grid grid-cols-2 shrink-0 gap-2 sm:gap-3">
                 <EndpointCard
                     label={t("tcpEndpoint")}
@@ -188,7 +186,7 @@ function HomePage() {
                             description={`Top traffic and failures · ${isLiveTraffic ? "24H" : range.label}`}
                         />
                     </CardHeader>
-                    <CardBody className="pt-4" density="compact">
+                    <CardBody>
                         <TelemetryOverview data={telemetry} error={telemetryError?.msg} />
                     </CardBody>
                 </Card>

@@ -40,8 +40,8 @@ export const CardHeader: FC<{ children: React.ReactNode, className?: string, sty
     </div>
 );
 
-export const CardBody: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties, density?: Density }> = ({ children, className, style, density = "normal" }) => (
-    <div className={clsx("grow", density === "compact" ? "p-4" : "p-5", className)} style={style}>
+export const CardBody: FC<{ children: React.ReactNode, className?: string, style?: React.CSSProperties }> = ({ children, className, style }) => (
+    <div className={clsx("grow p-4", className)} style={style}>
         {children}
     </div>
 );
@@ -61,7 +61,7 @@ export const CardFooter: FC<{
 }> = ({ children, className, style, bordered = true, compact = false }) => (
     <div
         className={clsx(
-            compact ? "px-4 py-3" : "px-6 py-4",
+            compact ? "px-4 py-3" : "px-4 py-4",
             "bg-transparent",
             bordered && "border-t border-ui-border",
             className
@@ -164,7 +164,7 @@ export function CardList<T>({
     return (
         <Card density={density}>
             {header && <CardHeader>{header}</CardHeader>}
-            <CardBody density={density}>
+            <CardBody>
                 <div className="flex flex-col gap-3">
                     {items.length > 0 ? (
                         shouldAnimate ? (
@@ -383,7 +383,7 @@ export function CardRowList<T>({
                     )}
                 </CardHeader>
             )}
-            <CardBody density={density} className={layout === "list" ? "!p-0" : undefined}>
+            <CardBody className={layout === "list" ? "!p-0" : undefined}>
                 <div className={clsx(
                     layout === "list"
                         ? "flex flex-col"

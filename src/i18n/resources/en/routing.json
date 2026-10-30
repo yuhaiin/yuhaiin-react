@@ -97,6 +97,7 @@
   "addNode": "Add node",
   "matchingSource": "Matching data",
   "enterMatchingData": "Enter data for this rule",
+  "sharedList": "Shared list",
   "chooseSharedList": "Choose a shared list",
   "sharedListHelp": "This rule references an existing list. Editing that list affects every rule using it.",
   "defaultDestination": "Default destination",

@@ -97,6 +97,7 @@
   "addNode": "ノードを追加",
   "matchingSource": "一致条件のデータ",
   "enterMatchingData": "このルール用のデータを入力",
+  "sharedList": "共有リスト",
   "chooseSharedList": "共有リストを選択",
   "sharedListHelp": "このルールは既存のリストを参照します。リストの変更は、それを使用するすべてのルールに反映されます。",
   "defaultDestination": "既定の接続先",

@@ -21,7 +21,7 @@ export function Sessions() {
         } catch { setError(t('requestFailed')); } finally { setBusy(false); }
     };
     const date = (value: number) => value ? new Date(value * 1000).toLocaleString() : t('unknownDevice');
-    return <Card><CardHeader><h2 className="font-medium">{t('sessions')}</h2><Button disabled={busy} onClick={() => void mutate()}>{t('refresh')}</Button></CardHeader><CardBody className="space-y-3">
+    return <Card><CardHeader><h2 className="m-0 font-medium">{t('sessions')}</h2><Button disabled={busy} onClick={() => void mutate()}>{t('refresh')}</Button></CardHeader><CardBody className="space-y-3">
         {(error || loadError) && <p role="alert" className="text-sm text-ui-danger">{error || t('requestFailed')}</p>}
         {!data && !loadError && <p role="status">{t('loadingSessions')}</p>}
         {data?.length === 0 && <p className="text-sm text-ui-muted">{t('noSessions')}</p>}

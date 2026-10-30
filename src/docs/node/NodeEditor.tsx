@@ -45,7 +45,7 @@ const NodeEditor: FC<{
     const { t } = useTranslation('routing');
     const [advanced, setAdvanced] = useState(false);
     return (
-    <EditingNodeID.Provider value={value.id}><div className="p-1">
+    <EditingNodeID.Provider value={value.id}><div>
         {editable && (
             <div className="mb-4 grid max-w-3xl grid-cols-1 gap-4 md:grid-cols-2">
                 <SettingInputVertical label={uiT("name")} value={value.name} onChange={(name) => onChange({ name })} disabled={!editable} />
@@ -131,7 +131,7 @@ const NodeProtocolChain: FC<{
 
     return (
         <div className="mb-3">
-            <div className="mb-2 flex items-center justify-between px-1">
+            <div className="mb-2 flex items-center justify-between">
                 <h6 className="mb-0 text-base font-medium text-ui-heading">{uiT("protocolChain")}</h6>
                 <small className="text-ui-muted">{normalizedChain.length} {uiT("steps")}</small>
             </div>

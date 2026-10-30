@@ -234,27 +234,18 @@ html[data-bs-theme="dark"] .accent-swatch { background: var(--accent-dark); }
     }
 
     h1 {
-        font-size: 2.5rem;
+        font-size: var(--font-page);
     }
 
     h2 {
-        font-size: 2rem;
+        font-size: var(--font-section);
     }
 
-    h3 {
-        font-size: 1.75rem;
-    }
-
-    h4 {
-        font-size: 1.5rem;
-    }
-
-    h5 {
-        font-size: 1.25rem;
-    }
-
+    h3,
+    h4,
+    h5,
     h6 {
-        font-size: 1rem;
+        font-size: var(--font-body);
     }
 
     small {
@@ -310,6 +301,19 @@ html[data-bs-theme="dark"] .accent-swatch { background: var(--accent-dark); }
         --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
         --scrollbar-thumb-active: rgba(255, 255, 255, 0.6);
     }
+}
+
+/* The sidebar hides its scrollbar. These layers stay fixed while the two covers
+   scroll with the content, so a shadow shows only on an edge with more items. */
+:root { --sidebar-scroll-shadow: rgb(20 25 32 / 14%); }
+html[data-bs-theme="dark"] { --sidebar-scroll-shadow: rgb(0 0 0 / 50%); }
+.sidebar-panel {
+    background:
+        linear-gradient(var(--sidebar-bg) 40%, transparent) top / 100% 40px no-repeat local,
+        linear-gradient(transparent, var(--sidebar-bg) 60%) bottom / 100% 40px no-repeat local,
+        linear-gradient(var(--sidebar-scroll-shadow), transparent) top / 100% 14px no-repeat scroll,
+        linear-gradient(transparent, var(--sidebar-scroll-shadow)) bottom / 100% 14px no-repeat scroll,
+        var(--sidebar-bg);
 }
 
 /* Radix Presence keeps closing panels mounted until these animations finish. */

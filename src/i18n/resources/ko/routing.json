@@ -97,6 +97,7 @@
   "addNode": "노드 추가",
   "matchingSource": "일치 조건 데이터",
   "enterMatchingData": "이 규칙에 사용할 데이터 입력",
+  "sharedList": "공유 목록",
   "chooseSharedList": "공유 목록 선택",
   "sharedListHelp": "이 규칙은 기존 목록을 참조합니다. 목록을 수정하면 이를 사용하는 모든 규칙에 영향을 줍니다.",
   "defaultDestination": "기본 대상",

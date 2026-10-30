@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { clearHashSearch, useHashSearch } from '@/hooks/useHashLocation';
 import { useTranslation } from 'react-i18next';
 import NodeImportModal from "./NodeImportModal";
@@ -33,7 +34,7 @@ import { Dropdown, DropdownContent, DropdownItem, DropdownTrigger } from "@/comp
 import { Input } from "@/component/v2/input";
 import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
-import type { Node, NodeLatencyResponse } from "@/contract/node";
+import { nodeGroupName, type Node, type NodeLatencyResponse } from "@/contract/node";
 import clsx from "clsx";
 import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Gauge, Layers, Network, Plus, Power, Search, Upload } from "lucide-react";
 import { FC, memo, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -458,15 +459,23 @@ export default function Group() {
     const [latencyIPUrl] = useLocalStorage(LatencyIPUrlKey, LatencyIPUrlDefault);
     const [latencyStunUrl] = useLocalStorage(LatencyStunUrlKey, LatencyStunUrlDefault);
     const [latencyStunTCPUrl] = useLocalStorage(LatencyStunTCPUrlKey, LatencyStunTCPUrlDefault);
-    const { data: defaults, error: defaultsError, mutate: mutateDefaults } = useSWR("/api/v2/nodes/selected", selectedNodes, { revalidateOnFocus: false });
+    const { data: defaults, error: defaultsError, isLoading: defaultsLoading, mutate: mutateDefaults } = useSWR("/api/v2/nodes/selected", selectedNodes, { revalidateOnFocus: false });
+    const { data: routeNode, isLoading: routeNodeLoading } = useSWR(linkedId ? ['/api/v2/nodes/detail', linkedId] : null, () => getNode(linkedId!), { revalidateOnFocus: false });
     const { pending: using, run: runUse } = useAsyncAction(error => ctx.Error(errorOf(error)?.msg ?? t("defaultNodeFailed")));
     const { data: groupData, error: groupsError, mutate: mutateGroups } = useSWR('/api/v2/nodes/groups', listNodeGroups, { revalidateOnFocus: false });
     const groups = useMemo(() => groupData?.items.map(group => group.name) ?? [], [groupData]);
+    // Open on the linked node's group, then the default node's. Decided once per
+    // visit, so later changes to the default never move the list being browsed.
+    const inferringGroup = !preferredGroup && (defaultsLoading || routeNodeLoading);
+    if (!preferredGroup && !inferringGroup && groups.length) {
+        const known = [routeNode, defaults?.tcp].find(node => node && groups.includes(nodeGroupName(node)));
+        setSelectedGroup(known ? nodeGroupName(known) : groups[0]);
+    }
     const selectedGroup = groups.includes(preferredGroup) ? preferredGroup : groups[0] ?? '';
     const groupCounts = useMemo(() => new Map(groupData?.items.map(group => [group.name, group.count])), [groupData]);
     const nodeCount = groupData?.items.reduce((sum, group) => sum + group.count, 0) ?? 0;
     const { data, error, isLoading, mutate } = useSWR(
-        selectedGroup && querySettled ? ['/api/v2/nodes/directory', selectedGroup, page, debouncedQuery] : null,
+        selectedGroup && querySettled && !inferringGroup ? ['/api/v2/nodes/directory', selectedGroup, page, debouncedQuery] : null,
         () => listNodes({ group: selectedGroup, page, pageSize: NODE_PAGE_SIZE, query: debouncedQuery }),
         { revalidateOnFocus: false, keepPreviousData: false },
     );
@@ -514,13 +523,14 @@ export default function Group() {
     useEffect(() => {
         if (!initialized.current && desktop && groupItems.length && !showdata.show && debouncedQuery === query.trim()) {
             initialized.current = true;
-            setSelectedPreview(groupItems[0]);
-            setShowdata({ show: true, id: groupItems[0].id, new: false });
+            const first = !debouncedQuery && defaults?.tcp && nodeGroupName(defaults.tcp) === selectedGroup ? defaults.tcp : groupItems[0];
+            setSelectedPreview(first);
+            setShowdata({ show: true, id: first.id, new: false });
         }
-    }, [desktop, groupItems, showdata.show, debouncedQuery, query]);
+    }, [desktop, groupItems, showdata.show, debouncedQuery, query, defaults, selectedGroup]);
 
     if (groupsError && !groupData && apiError) return <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} />;
-    if (!groupData) return <Loading />;
+    if (!groupData || inferringGroup) return <Loading />;
 
     const closeDetails = () => {
         initialized.current = true;
@@ -603,10 +613,7 @@ export default function Group() {
 
     return <MainContainer className="max-w-[1440px]">
         <NodeImportModal show={importOpen} group={selectedGroup || 'manual'} onHide={() => setImportOpen(false)} onChanged={() => { void mutate(); void mutateGroups(); }} onSaved={() => setImportOpen(false)} />
-        <header className={clsx('mb-6 flex-wrap items-center justify-between gap-4', showdata.show ? 'hidden md:flex' : 'flex')}>
-            <div><h1 className="sr-only text-2xl font-semibold tracking-tight text-ui-heading lg:not-sr-only">{t('nodesTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('nodeDirectoryCount', { count: groups.length, nodes: nodeCount, groups: groups.length })}</p></div>
-            <div className="flex items-center gap-2"><Button permission="nodes:write" variant="outline-secondary" disabled={editorState.pending} onClick={() => setImportOpen(true)}><Upload className="mr-1.5" size={16} />{uiT('import')}</Button><Button permission="nodes:write" variant="primary" onClick={handleCreate} disabled={editorState.pending || showdata.new}><Plus className="mr-1.5" size={16} />{uiT('new')}</Button></div>
-        </header>
+        <PageHeader title={t('nodesTask')} description={t('nodeDirectoryCount', { count: groups.length, nodes: nodeCount, groups: groups.length })} className={showdata.show ? 'max-md:hidden' : undefined} actions={<><Button permission="nodes:write" variant="outline-secondary" disabled={editorState.pending} onClick={() => setImportOpen(true)}><Upload className="mr-1.5" size={16} />{uiT('import')}</Button><Button permission="nodes:write" variant="primary" onClick={handleCreate} disabled={editorState.pending || showdata.new}><Plus className="mr-1.5" size={16} />{uiT('new')}</Button></>} />
         {groups.length === 0 && !showdata.show ? <div className="rounded-ui-lg border border-dashed border-ui-border px-4 py-10 text-center">
             <Network className="mx-auto mb-3 text-ui-primary" size={28} aria-hidden="true" /><h2 className="text-sm font-medium text-ui-heading">{uiT('noOutboundGroupsYet')}</h2>
             <p className="mt-1 text-xs text-ui-muted">{uiT('createANodeOrImportJsonToGetStarted')}</p><Button permission="nodes:write" className="mt-4 gap-2" variant="primary" onClick={handleCreate}><Plus size={16} />{uiT('newNode')}</Button>

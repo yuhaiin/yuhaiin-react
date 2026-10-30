@@ -1,14 +1,15 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { usePageVisible } from "@/common/hooks";
 import { LogRingBuffer, levelStyles, parseLogLine, type LogEntry } from "./log-buffer";
 
 import { AuthenticatedEventSource } from "@/auth/event-stream";
 import { Badge } from "@/component/v2/badge"
 import { Button } from "@/component/v2/button"
-import { Card, CardBody, CardHeader, FilterSearch, IconBox, MainContainer } from '@/component/v2/card'
+import { Card, CardBody, CardHeader, FilterSearch, MainContainer } from '@/component/v2/card'
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import type { LogBatch } from "@/contract/tools"
 import { clsx } from "clsx"
-import { Pause, Play, Radio, Terminal, Trash2 } from 'lucide-react'
+import { Pause, Play, Radio, Trash2 } from 'lucide-react'
 import { FC, memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { VList, type VListHandle } from "virtua"
@@ -162,20 +163,16 @@ export default function LogComponent() {
 
     return (
         <MainContainer className="h-full min-h-0 flex flex-col">
+            <PageHeader
+                title={uiT("log")}
+                description={uiT("realTimeSystemEvents")}
+                className="mb-3 shrink-0"
+                actions={<Badge variant={logError ? "danger" : "warning"} pill className="shrink-0 text-[0.7rem] px-2 py-1">
+                    <Radio className="mr-1" size={12} />{uiT(paused || !visible ? "paused" : logError ? "reconnecting" : "live")}
+                </Badge>}
+            />
             <Card noMargin className="flex-1 min-h-0 flex flex-col overflow-hidden">
                 <CardHeader className="shrink-0 !px-3 py-3 sm:!px-4">
-                    <div className="flex w-full min-w-0 items-center justify-between gap-3">
-                        <IconBox
-                            icon={Terminal}
-                            tone="warning"
-                            title={uiT("liveLogcat")}
-                            description={uiT("realTimeSystemEvents")}
-                            className="!mr-3 !h-10 !w-10 !rounded-[10px]"
-                        />
-                        <Badge variant={logError ? "danger" : "warning"} pill className="shrink-0 text-[0.7rem] px-2 py-1">
-                            <Radio className="mr-1" size={12} />{uiT(paused || !visible ? "paused" : logError ? "reconnecting" : "live")}
-                        </Badge>
-                    </div>
                     <div className="grid w-full min-w-0 grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-3">
                         <FilterSearch size="sm" onEnter={(term) => { followLatestRef.current = true; setSearchTerm(term); }} className="w-full min-w-0" inputClassName="max-sm:min-h-11 max-sm:text-base" />
                         <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-end">

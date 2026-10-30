@@ -1,5 +1,5 @@
 import { listNodes, type NodeGroup } from '@/api/nodes';
-import type { Node } from '@/contract/node';
+import { nodeGroupName, type Node } from '@/contract/node';
 import { Button } from '@/component/v2/button';
 import { SettingSelectVertical } from '@/component/v2/forms';
 import { Input } from '@/component/v2/input';
@@ -15,11 +15,14 @@ const PAGE_SIZE = 40;
 /**
  * Fetch nodes only for the selected group and page. A selected node supplied
  * by the parent stays visible even when its group/page is not currently loaded.
+ * The list opens on the selected node's group, then `preferredGroup`, for parents
+ * whose choice has no single selected node.
  */
-export function GroupNodeSelect({ label, value, selected, groups, onChange, multiple, excludeId, disabled = false, enabled = true, enabledOnly = true }: {
+export function GroupNodeSelect({ label, value, selected, preferredGroup, groups, onChange, multiple, excludeId, disabled = false, enabled = true, enabledOnly = true }: {
     label: string;
     value: string;
     selected?: Node;
+    preferredGroup?: string;
     groups: NodeGroup[];
     onChange: (node: Node) => void;
     multiple?: string[];
@@ -34,8 +37,8 @@ export function GroupNodeSelect({ label, value, selected, groups, onChange, mult
     const [page, setPage] = useState(1);
     const [searchInput, setSearchInput] = useState('');
     const [query, setQuery] = useState('');
-    const selectedGroup = selected?.group || 'manual';
-    const group = chosenGroup || (groups.some(item => item.name === selectedGroup) ? selectedGroup : groups[0]?.name || '');
+    const initialGroup = [selected && nodeGroupName(selected), preferredGroup, 'manual'].find(name => groups.some(item => item.name === name));
+    const group = chosenGroup || initialGroup || groups[0]?.name || '';
     const { data, error, isLoading, mutate } = useSWR(
         enabled && group ? ['/api/v2/nodes/group-page', group, page, query, enabledOnly] : null,
         () => listNodes({ page, pageSize: PAGE_SIZE, group, query, enabledOnly }),

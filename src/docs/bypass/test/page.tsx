@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { useTranslation } from 'react-i18next';
 
 import { testRule } from '@/api/route';
@@ -155,6 +156,7 @@ function Test() {
 
     return (
         <MainContainer>
+            <PageHeader title={uiT("testRoute")} />
             {manualCopyModal}
 
             {/* 1. Input Card */}

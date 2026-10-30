@@ -1,6 +1,7 @@
 import { ProtectedUpdateDialog, UpdateRecoveryReadiness, UpdateOperationPanel, canInstallUpdate } from './protected-update';
 import { createID } from '@/common/id';
 import { UpdateCompatibilityDetails } from './update-compatibility';
+import { PageHeader } from '@/component/v2/page-header';
 import { useUpdateRecovery } from '@/hooks/use-update-recovery';
 import { usePermission } from '@/auth/context';
 import { useTranslation } from 'react-i18next';
@@ -187,6 +188,7 @@ export default function About() {
                 target={confirmation === 'apply' ? update?.targetVersion ?? '' : confirmation.version || confirmation.id}
                 recovery={confirmation === 'apply' ? update?.recovery : recoveryReadiness} pending={applyingUpdate || restoringVersion}
                 onClose={() => setConfirmation(undefined)} onConfirm={consent => { if (confirmation === 'apply') void handleApplyUpdate(consent); else void handleRollback(confirmation, consent); }} /> }
+            <PageHeader title={uiT("about")} className="order-first" />
             <Card className="order-2">
                 <CardHeader className="py-3">
                     <IconBox icon={Info} tone="violet" title={uiT("systemInformation")} description={uiT("softwareVersionAndBuildEnvironment")} />

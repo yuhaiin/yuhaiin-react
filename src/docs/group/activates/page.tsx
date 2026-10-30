@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { activeNodes, closeNode } from '@/api/nodes';
 import { Button } from '@/component/v2/button';
 import { MainContainer } from '@/component/v2/card';
@@ -34,12 +35,14 @@ export default function Activates({ showFooter = true }: { showFooter?: boolean 
         const node = confirm;
         void run(async () => { await closeNode(node.id); setConfirm(undefined); await mutate(); ctx.Info(t('activeNodeClosed', { name: node.name })); });
     };
-    const Heading = showFooter ? 'h1' : 'h2';
     return <MainContainer><section aria-label={uiT('activeNodes')} className="min-w-0">
-        <header className="mb-5 flex flex-wrap items-start justify-between gap-4">
-            <div><Heading className={showFooter ? "flex items-center gap-2 text-2xl font-semibold tracking-tight text-ui-heading" : "flex items-center gap-2 text-base font-medium text-ui-heading"}><Activity size={22} className="text-ui-success" />{uiT('activeNodes')}</Heading><p className="mt-2 text-sm text-ui-muted">{uiT('liveOutboundConnectionInstances')}</p></div>
-            <div className="flex items-center gap-2 rounded-full bg-ui-success-soft px-3 py-1.5 text-xs font-medium text-ui-success"><span className="size-1.5 rounded-full bg-ui-success" aria-hidden="true" />{all.length} {uiT('running')}</div>
-        </header>
+        <PageHeader
+            embedded={!showFooter}
+            className="mb-5"
+            title={showFooter ? uiT('activeNodes') : <span className="flex items-center gap-2"><Activity size={18} className="text-ui-success" />{uiT('activeNodes')}</span>}
+            description={uiT('liveOutboundConnectionInstances')}
+            actions={<div className="flex items-center gap-2 rounded-full bg-ui-success-soft px-3 py-1.5 text-xs font-medium text-ui-success"><span className="size-1.5 rounded-full bg-ui-success" aria-hidden="true" />{all.length} {uiT('running')}</div>}
+        />
         {showFooter && <div className="relative mb-5 max-w-sm"><Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" /><Input type="search" className="pl-9" value={query} aria-label={commonT('state.search')} placeholder={commonT('state.search')} onChange={event => setQuery(event.target.value)} /></div>}
         <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,280px),1fr))] gap-3 p-0">
             {items.map(node => <li key={node.id} className="group flex min-w-0 items-center gap-2 rounded-ui-lg border border-ui-border bg-ui-surface p-3 transition-colors hover:border-ui-primary/30 hover:bg-ui-surface-muted/30">

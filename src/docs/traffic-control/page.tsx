@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { ui } from '@/component/v2/styles';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader, MainContainer } from '@/component/v2/card';
@@ -11,7 +12,6 @@ import {
     ArrowUpFromLine,
     Plus,
     Save,
-    ShieldCheck,
     Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -52,17 +52,7 @@ export default function TrafficControlPage() {
     return (
         <MainContainer className="max-w-screen-xl">
             <div className="space-y-5 pb-8">
-                <header className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                        <h1 className="flex items-center gap-2 text-xl font-semibold text-ui-heading">
-                            <ShieldCheck size={22} />
-                            {t('title')}
-                        </h1>
-                        <p className="mt-1 text-sm text-ui-secondary">
-                            {t('description')}
-                        </p>
-                    </div>
-                    <div className="flex gap-2">
+                <PageHeader title={t('title')} description={t('description')} actions={<>
                         <Button
                             variant="outline-secondary"
                             disabled={!dirty || saving}
@@ -79,8 +69,7 @@ export default function TrafficControlPage() {
                             <Save size={16} />
                             {t('save')}
                         </Button>
-                    </div>
-                </header>
+                </>} />
                 {(failure || invalid) && (
                     <p
                         role="alert"

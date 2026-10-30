@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { WorkspaceDetail, WorkspaceDirectory, WorkspaceLayout, WorkspaceSelectionMarker } from './workspace-layout';
 import { Button } from './v2/button';
 import { Input } from './v2/input';
@@ -64,14 +65,9 @@ export function ResourceWorkspace({ title, description, items, selectedId, editi
     const { t } = useTranslation('routing');
     const { t: uiT } = useTranslation('ui');
     const { t: commonT } = useTranslation('common');
-    const Heading = embedded ? 'h2' : 'h1';
     const pages = pagination ? Math.max(1, Math.ceil(pagination.total / pagination.pageSize)) : 1;
     return <>
-        <header className={clsx('mb-6 flex-wrap items-center justify-between gap-4', editing ? 'hidden md:flex' : 'flex')}>
-            <div className="min-w-0"><Heading className={clsx("tracking-tight text-ui-heading", embedded ? "text-base font-medium" : "sr-only text-2xl font-semibold lg:not-sr-only")}>{title}</Heading>
-                {description && <p className="mt-1 text-sm text-ui-muted">{description}</p>}</div>
-            <div className="flex flex-wrap items-center gap-2">{actions}<Button variant="primary" onClick={onCreate} disabled={createDisabled} className="gap-1.5"><Plus size={16} aria-hidden="true" />{uiT('add')}</Button></div>
-        </header>
+        <PageHeader title={title} description={description} embedded={embedded} className={editing ? 'max-md:hidden' : undefined} actions={<>{actions}<Button variant="primary" onClick={onCreate} disabled={createDisabled} className="gap-1.5"><Plus size={16} aria-hidden="true" />{uiT('add')}</Button></>} />
         <WorkspaceLayout>
             <WorkspaceDirectory label={title} hiddenOnMobile={editing}>
                 <div className="mb-2 space-y-3 border-b border-ui-border/50 px-1 pb-3">
