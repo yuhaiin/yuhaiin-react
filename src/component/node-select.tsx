@@ -8,8 +8,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 
-export function NodeSelectionDialog({ open, value, selected, label, disabled = false, onClose, onChange, multiple, excludeId, enabledOnly = true }: {
-    open: boolean; value: string; selected?: Node; label: string; disabled?: boolean;
+export function NodeSelectionDialog({ open, value, selected, preferredGroup, label, disabled = false, onClose, onChange, multiple, excludeId, enabledOnly = true }: {
+    open: boolean; value: string; selected?: Node; preferredGroup?: string; label: string; disabled?: boolean;
     onClose: () => void; onChange: (node: Node) => void;
     multiple?: string[]; enabledOnly?: boolean;
     excludeId?: string;
@@ -21,7 +21,7 @@ export function NodeSelectionDialog({ open, value, selected, label, disabled = f
         <ModalBody>
             {error ? <div role="alert" className="text-sm text-ui-danger">{t('nodePickerFailed')} <Button size="sm" onClick={() => void mutate()}>{t('retry')}</Button></div>
                 : !data ? <p role="status" className="text-sm text-ui-muted">{t('loading')}</p>
-                    : open && <GroupNodeSelect label={label} value={value} selected={selected} groups={data.items} disabled={disabled} multiple={multiple} excludeId={excludeId} enabledOnly={enabledOnly}
+                    : open && <GroupNodeSelect label={label} value={value} selected={selected} preferredGroup={preferredGroup} groups={data.items} disabled={disabled} multiple={multiple} excludeId={excludeId} enabledOnly={enabledOnly}
                         onChange={node => { onChange(node); if (!multiple) onClose(); }} />}
         </ModalBody>
     </ModalContent></Modal>;

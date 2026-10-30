@@ -41,7 +41,9 @@ let runningConfig=structuredClone(routeConfig);
 let listConfig={revision:0,refreshInterval:'3600',lastRefreshTime:'0',error:'',hostIndexDisk:false,maxMindDbGeoIp:{downloadUrl:'',error:''}};
 let inboundConfig={hijackDns:true,hijackDnsFakeIp:false,sniff:true};
 let resolverServer={server:''},fakeDNS={enabled:false,ipv4Range:'198.18.0.0/15',ipv6Range:'fc00::/18'},resolverHosts={hosts:{'local.example':'127.0.0.1','service.example':'alias.example','router.example':'192.0.2.1','vpn.example:443':'192.0.2.2:8443'}};
-let selected={tcpId:nodes[0]?.id,udpId:nodes[0]?.id};
+// Node 0 stays in the first group (manual); the default node belongs to another one.
+if (scenario === 'groups') for (const node of nodes.slice(60)) node.group='work';
+let selected=scenario==='groups'?{tcpId:'node-70',udpId:'node-70'}:{tcpId:nodes[0]?.id,udpId:nodes[0]?.id};
 const failedImports=new Set();
 const selectors=scenario==='empty'?[]:[
   {id:'selector-work',name:'Work destination',nodeId:nodes[0]?.id||'',revision:1},

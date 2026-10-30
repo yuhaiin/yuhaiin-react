@@ -1,5 +1,5 @@
 import { listNodeGroups, selectNodes, selectedNodes } from '@/api/nodes';
-import type { Node } from '@/contract/node';
+import { nodeGroupName, type Node } from '@/contract/node';
 import { GroupNodeSelect } from '@/component/group-node-select';
 import { Button } from '@/component/v2/button';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from '@/component/v2/modal';
@@ -37,6 +37,7 @@ export function DefaultSelectionEditor({ open, onClose }: { open: boolean; onClo
     const selected = (id: string) => cachedNodes[id]
         ?? (selection?.tcp?.id === id ? selection.tcp : undefined)
         ?? (selection?.udp?.id === id ? selection.udp : undefined);
+    const tcpNode = selected(value.tcpId);
     const setNode = (node: Node, protocol: 'both' | 'tcp' | 'udp') => {
         setCachedNodes(previous => ({ ...previous, [node.id]: node }));
         setValue(previous => protocol === 'both' ? { tcpId: node.id, udpId: node.id }
@@ -55,7 +56,7 @@ export function DefaultSelectionEditor({ open, onClose }: { open: boolean; onClo
             <fieldset disabled={pending || !selection || Boolean(selectionError)} className="space-y-4">
                 <p className="text-sm text-ui-muted">{t('defaultDestinationHelp')}</p>
                 {groups && <GroupNodeSelect key="both" label={t('combinedDestination')} value={mixed ? '' : value.tcpId}
-                    selected={mixed ? undefined : selected(value.tcpId)} groups={groups.items}
+                    selected={mixed ? undefined : tcpNode} preferredGroup={tcpNode && nodeGroupName(tcpNode)} groups={groups.items}
                     enabled={open && !pending} onChange={node => setNode(node, 'both')} />}
                 <details open={showSeparate} onToggle={event => setExpanded(event.currentTarget.open)}>
                     <summary className="cursor-pointer text-sm font-medium">{t('separateDestinations')}</summary>

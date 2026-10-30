@@ -1,9 +1,10 @@
 import { authorizeTest, resetTestAuth } from '@/test/auth';
 import { confirmAction } from '@/component/v2/confirmation';
+import { clearHashSearch, useHashLocation } from '@/hooks/useHashLocation';
 import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { SWRConfig } from 'swr';
-import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { normalizeNode, type Node } from '@/contract/node';
 import { GlobalToastContext } from '@/component/v2/toast';
 import Group from './page';
@@ -156,6 +157,52 @@ it('loads only the active group page and retains the open draft when paging', as
     expect(api.listNodes.mock.calls.some(([request]) => request.group === 'work')).toBe(false);
 });
 
+function AcceptLocation() { useHashLocation(); return null; }
+
+describe('initial group', () => {
+    const withWorkGroup = () => {
+        nodes = [...nodes, normalizeNode({ id: 'c', name: 'Work default', group: 'work', enabled: true })];
+    };
+    const requestedGroups = () => api.listNodes.mock.calls.map(([request]) => request.group);
+
+    it('opens the default node and its group without loading the first group', async () => {
+        withWorkGroup(); defaultId = 'c';
+        await render();
+        expect(settings()?.querySelector('output')?.textContent).toBe('Work default');
+        expect(new Set(requestedGroups())).toEqual(new Set(['work']));
+    });
+
+    it('prefers the group of a linked node over the default node', async () => {
+        withWorkGroup(); defaultId = 'a';
+        window.history.replaceState(null, '', '#/docs/group?node=c');
+        const accept = createRoot(document.createElement('div'));
+        await act(async () => accept.render(<AcceptLocation />));
+        await render();
+        act(() => accept.unmount());
+        expect(settings()?.querySelector('output')?.textContent).toBe('Work default');
+        expect(new Set(requestedGroups())).toEqual(new Set(['work']));
+    });
+
+    it('falls back to the first group when no default node can be read', async () => {
+        withWorkGroup();
+        api.selectedNodes.mockRejectedValue({ msg: 'unavailable' });
+        await render();
+        expect(settings()?.querySelector('output')?.textContent).toBe('First');
+        expect(new Set(requestedGroups())).toEqual(new Set(['manual']));
+    });
+
+    it('keeps the browsed group when the default node later moves elsewhere', async () => {
+        withWorkGroup(); defaultId = 'c';
+        await render();
+        api.useNode.mockImplementation(async () => { defaultId = 'a'; });
+        await click('setDefaultNode');
+        expect(api.useNode).toHaveBeenCalledWith('c');
+        expect(api.selectedNodes.mock.calls.length).toBeGreaterThan(1);
+        expect(settings()?.querySelector('output')?.textContent).toBe('Work default');
+        expect(new Set(requestedGroups())).toEqual(new Set(['work']));
+    });
+});
+
 vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));
 
-afterEach(resetTestAuth);
+afterEach(() => { clearHashSearch(); resetTestAuth(); });
