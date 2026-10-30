@@ -240,6 +240,10 @@ maintenance consent, timeout and count/age retention. Scheduling is opt-in and
 runs in the backend. Save before creating a backup; the confirmation explains
 the temporary service interruption. Automatic maintenance currently requires a
 root-owned Linux systemd service or a lingering systemd user service. Other hosts keep the offline CLI workflow.
+On Windows, the offline restore, validation startup, journal finalization and
+rollback require an elevated account with deployment access on local NTFS.
+This does not provide a Windows automatic service-maintenance coordinator.
+Native crash/rollback and CLI/TLS qualification run separately from compilation.
 
 Updated servers refuse new unencrypted configuration backups when route,
 registry, GeoIP or DNS source URLs have user credentials, queries or fragments.
