@@ -6,6 +6,16 @@ export const DataList: FC<{ children: React.ReactNode; className?: string }> = (
     <ul className={clsx("list-none p-0 m-0", className)}>{children}</ul>
 );
 
+// --- Titled Group of Items ---
+export const DataSection: FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+    <section className="rounded-ui-lg border border-sidebar-border bg-sidebar-bg/60">
+        <div className="border-b border-sidebar-border px-4 py-2 text-xs font-bold uppercase tracking-wider text-sidebar-header">
+            {title}
+        </div>
+        <DataList className="px-4">{children}</DataList>
+    </section>
+);
+
 // --- Key-Value Item ---
 interface DataListItemProps {
     label: string;

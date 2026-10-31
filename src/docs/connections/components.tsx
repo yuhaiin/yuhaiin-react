@@ -4,7 +4,7 @@ import { ConnectionActions } from './connection-actions';
 import { resourceLink } from './actions';
 
 import { getConnectionMatchTrace, getTotalFlow } from "@/api/connections";
-import { DataList, DataListCustomItem, DataListItem } from "@/component/v2/datalist";
+import { DataListCustomItem, DataListItem, DataSection } from "@/component/v2/datalist";
 import type { Connection, Counter, MatchHistoryEntry, TotalFlow } from "@/contract/connection";
 import { clsx } from "clsx";
 import { ArrowDown, ArrowUp, Check, ChevronDown, ChevronRight, X } from "lucide-react";
@@ -391,34 +391,25 @@ export const ConnectionInfo: FC<{
     return (
         <div className="space-y-4">
             <ConnectionActions connection={value} />
-            <ConnectionSection title={label("Basic")}>
+            <DataSection title={label("Basic")}>
                 {startContent}
                 {basicRows}
                 {endContent}
-            </ConnectionSection>
-            {pathRows.length > 0 && <ConnectionSection title={label("Path")}>{pathRows}</ConnectionSection>}
+            </DataSection>
+            {pathRows.length > 0 && <DataSection title={label("Path")}>{pathRows}</DataSection>}
             {(routeRows.length > 0 || (value.matchHistory?.length ?? 0) > 0) && (
-                <ConnectionSection title={label("Route")}>
+                <DataSection title={label("Route")}>
                     {routeRows}
                     <MatchHistoryItem key={value.id} connectionId={value.id} matchedRuleId={value.ruleId} value={value.matchHistory ?? []} />
-                </ConnectionSection>
+                </DataSection>
             )}
-            {processRows.length > 0 && <ConnectionSection title={label("Process")}>{processRows}</ConnectionSection>}
+            {processRows.length > 0 && <DataSection title={label("Process")}>{processRows}</DataSection>}
             {tlsRows.length > 0 && (
-                <ConnectionSection title={label("TlsHttp")}>{tlsRows}</ConnectionSection>
+                <DataSection title={label("TlsHttp")}>{tlsRows}</DataSection>
             )}
         </div>
     );
 };
-
-const ConnectionSection: FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-    <section className="rounded-ui-lg border border-sidebar-border bg-sidebar-bg/60">
-        <div className="border-b border-sidebar-border px-4 py-2 text-xs font-bold uppercase tracking-wider text-sidebar-header">
-            {title}
-        </div>
-        <DataList className="px-4">{children}</DataList>
-    </section>
-);
 
 const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string; matchedRuleId?: string }> = ({ value, connectionId, matchedRuleId }) => {
     const { t } = useTranslation(["connections", "common"]);

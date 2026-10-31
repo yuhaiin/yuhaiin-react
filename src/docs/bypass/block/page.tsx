@@ -5,7 +5,7 @@ import { usePagination } from "@/hooks/use-pagination";
 import { blockHistory } from "@/api/route";
 import { Button } from "@/component/v2/button";
 import { MainContainer } from "@/component/v2/card";
-import { DataList, DataListItem } from "@/component/v2/datalist";
+import { DataListItem, DataSection } from "@/component/v2/datalist";
 import { HistoryList, HistoryListSkeleton, HistoryRow, HistoryToolbar, formatHistoryTime, formatProtocolLabel, matchesHistorySearch } from "@/component/v2/history-list";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import type { BlockHistory } from "@/contract/route";
@@ -13,6 +13,7 @@ import { Ban, Network, ShieldOff } from 'lucide-react';
 import React, { FC, useMemo, useState } from "react";
 import useSWR from "swr";
 import Loading from "../../../component/v2/loading";
+import { ConnectionActions } from "../../connections/connection-actions";
 
 const ZeroDate = new Date(0);
 
@@ -45,22 +46,26 @@ const ListItem: FC<{ data: BlockHistory }> = React.memo(({ data }) => {
 // --- Component: Details Modal ---
 const InfoModal: FC<{ data?: BlockHistory, show: boolean, onClose: () => void }> = React.memo(({ data, show, onClose }) => {
     const { t: uiT } = useTranslation('ui');
+    const { t: detailT } = useTranslation('connections');
 
     if (!data) return null;
     return (
         <Modal open={show} onOpenChange={(open) => !open && onClose()}>
             <ModalContent mobileSheet>
                 <ModalHeader closeButton>
-                    <ModalTitle>{uiT("blockedSessionDetails")}</ModalTitle>
+                    <ModalTitle className="font-bold">{uiT("blockedSessionDetails")}</ModalTitle>
                 </ModalHeader>
                 <ModalBody>
-                    <DataList>
-                        <DataListItem label={uiT("time")} value={historyDate(data.time).toLocaleString()} />
-                        <DataListItem label={uiT("network")} value={formatProtocolLabel(data.protocol)} />
-                        <DataListItem label={uiT("host")} value={data.host} />
-                        <DataListItem label={uiT("totalBlocks")} value={String(data.blockCount)} />
-                        <DataListItem label={uiT("process")} value={data.process || "Unknown"} />
-                    </DataList>
+                    <div className="space-y-4">
+                        <ConnectionActions host={data.host.replace(/^([^:]+):\d+$/, "$1")} process={data.process} />
+                        <DataSection title={detailT("detail.Basic")}>
+                            <DataListItem label={uiT("totalBlocks")} value={String(data.blockCount)} />
+                            <DataListItem label={uiT("time")} value={historyDate(data.time).toLocaleString()} />
+                            <DataListItem label={uiT("host")} value={data.host} />
+                            <DataListItem label={uiT("network")} value={formatProtocolLabel(data.protocol)} />
+                        </DataSection>
+                        {data.process && <DataSection title={detailT("detail.Process")}><DataListItem label={uiT("process")} value={data.process} /></DataSection>}
+                    </div>
                 </ModalBody>
                 <ModalFooter className="border-0 max-md:hidden">
                     <Button className="w-full" onClick={onClose}>{uiT("close")}</Button>

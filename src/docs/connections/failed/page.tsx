@@ -6,7 +6,7 @@ import { usePagination } from "@/hooks/use-pagination";
 import { getFailedHistory } from "@/api/connections"
 import { Button } from "@/component/v2/button"
 import { MainContainer } from "@/component/v2/card"
-import { DataList, DataListItem } from "@/component/v2/datalist"
+import { DataListItem, DataSection } from "@/component/v2/datalist"
 import { HistoryList, HistoryListSkeleton, HistoryRow, HistoryToolbar, formatHistoryTime, formatProtocolLabel, matchesHistorySearch } from "@/component/v2/history-list"
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal"
 import type { FailedHistory as FailedHistoryItem } from "@/contract/connection"
@@ -49,6 +49,7 @@ const ListItem: FC<{ data: FailedHistoryItem }> = React.memo(({ data }) => {
 
 function FailedHistory() {
     const { t: uiT } = useTranslation('ui');
+    const { t: detailT } = useTranslation('connections');
 
     const [sortBy, setSortBy] = useState("Time");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -73,21 +74,19 @@ function FailedHistory() {
         <MainContainer className="flex min-h-full min-w-0 flex-col">
             <Modal open={info.show} onOpenChange={(open) => !open && setInfo({ ...info, show: false })}>
                 <ModalContent mobileSheet>
-                    <ModalHeader closeButton><ModalTitle className="font-bold text-red-500">{uiT("failureDetails")}</ModalTitle></ModalHeader>
+                    <ModalHeader closeButton><ModalTitle className="font-bold">{uiT("failureDetails")}</ModalTitle></ModalHeader>
                     <ModalBody>
-                        {info.data && <ConnectionActions host={info.data.host.replace(/^([^:]+):\d+$/, "$1")} process={info.data.process} />}
-                        <DataList>
-                            {info.data && (
-                                <>
-                                    <DataListItem label={uiT("host")} value={info.data.host} />
-                                    <DataListItem label={uiT("network")} value={formatProtocolLabel(info.data.protocol)} />
-                                    <DataListItem label={uiT("failures")} value={info.data.failedCount} />
-                                    <DataListItem label={uiT("lastError")} value={info.data.error} />
-                                    <DataListItem label={uiT("process")} value={info.data.process || "System"} />
-                                    <DataListItem label={uiT("timestamp")} value={new Date(info.data.time).toLocaleString()} />
-                                </>
-                            )}
-                        </DataList>
+                        {info.data && <div className="space-y-4">
+                            <ConnectionActions host={info.data.host.replace(/^([^:]+):\d+$/, "$1")} process={info.data.process} />
+                            <DataSection title={detailT("detail.Basic")}>
+                                <DataListItem label={uiT("failures")} value={info.data.failedCount} />
+                                <DataListItem label={uiT("timestamp")} value={new Date(info.data.time).toLocaleString()} />
+                                <DataListItem label={uiT("host")} value={info.data.host} />
+                                <DataListItem label={uiT("network")} value={formatProtocolLabel(info.data.protocol)} />
+                                <DataListItem label={uiT("lastError")} value={info.data.error} />
+                            </DataSection>
+                            {info.data.process && <DataSection title={detailT("detail.Process")}><DataListItem label={uiT("process")} value={info.data.process} /></DataSection>}
+                        </div>}
                     </ModalBody>
                     <ModalFooter className="border-0 max-md:hidden"><Button className="w-full" onClick={() => setInfo({ ...info, show: false })}>{uiT("close")}</Button></ModalFooter>
                 </ModalContent>
