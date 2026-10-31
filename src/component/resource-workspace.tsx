@@ -94,7 +94,7 @@ export function ResourceWorkspace({ title, description, items, selectedId, editi
                     <Button variant="outline-secondary" size="icon" disabled={pagination.page >= pages} aria-label={t('nextPage')} onClick={() => pagination.onChange(pagination.page + 1)}><ChevronRight size={16} /></Button>
                 </div>}
             </WorkspaceDirectory>
-            <WorkspaceDetail hiddenOnMobile={!editing} transitionKey={selectedId || (editing ? 'new-resource' : 'empty')}>
+            <WorkspaceDetail hiddenOnMobile={!editing} transitionKey={selectedId || (editing ? 'new-resource' : 'empty')} order={items.findIndex(item => item.id === selectedId)}>
                 {editing ? children : <div className="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-ui-muted"><h2 className="text-lg font-medium text-ui-heading">{t('selectResource')}</h2><p className="max-w-sm text-sm">{t('selectResourceHelp')}</p><Button variant="outline-primary" className="gap-2" onClick={onCreate}><Plus size={16} />{uiT('add')}</Button></div>}
             </WorkspaceDetail>
         </WorkspaceLayout>
