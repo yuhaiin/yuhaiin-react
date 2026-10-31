@@ -101,7 +101,8 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
                     ui.fieldReadonly,
                     ui.fieldDisabled,
                     // Grows with its text where supported; older browsers keep the drag handle.
-                    "min-h-20 h-auto max-h-[60dvh] py-2.5 field-sizing-content resize-y supports-[field-sizing:content]:resize-none",
+                    // Containment keeps long lines from widening ancestors, since field-sizing also sets the intrinsic width.
+                    "min-h-20 h-auto max-h-[60dvh] py-2.5 field-sizing-content [contain:inline-size] resize-y supports-[field-sizing:content]:resize-none",
                     code && "font-mono leading-relaxed",
                     groupRadiusClass(groupPosition),
                     error && 'pr-9',
