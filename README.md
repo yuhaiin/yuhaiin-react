@@ -78,3 +78,51 @@ security restrictions, HTTP/2 request-specific outbound selection and TLS
 limitations remain unchanged. Certificate pinning, ECH and HTTP/3 are not bypassed.
 
 Backend details: https://github.com/yuhaiin/yuhaiin/tree/main/docs/gateway
+
+## Enterprise reliability
+
+The existing application exposes the reliability features in one
+[frontend PR](https://github.com/yuhaiin/yuhaiin-react/pull/535) with its
+[backend companion](https://github.com/yuhaiin/yuhaiin/pull/622).
+Controls retain EN/JA/KO, the existing state/editing conventions and responsive
+mobile layouts.
+
+**Selectors and Nodes** manage opt-in failover, lowest RTT, measured throughput,
+balanced scoring and weighted new flows. Manual selection remains the default.
+Candidate evidence, raw score components, switch reasons, circuit state,
+preferred return, manual lock and independent probe/download/upload schedules
+are visible. Business Bps/window averages remain separate from active Mbps
+measurements, with explicit endpoint consent and backend-enforced budgets.
+See [configuration, measurement and qualification](docs/intelligent-selectors.md).
+
+**Backup** distinguishes configuration migration from encrypted full recovery.
+It manages local/S3 schedules, maintenance consent, history, download/retrieval,
+verification, retention and authenticated original/clone previews. Confirmation
+binds backup/source/target identities and startup changes; result panels
+separate admission, committed startup and rollback. Private key inputs clear
+after use. Pre-restore plaintext copies have independent default-off cleanup
+consent. Configuration snapshots remove recognized credentials and disable
+affected entries; private URLs/custom data still require protected storage or
+an encrypted full archive.
+
+**About / Software Update** shows current/target schemas, compatibility and
+update recovery points. Confirmed protected installation uses the backend's
+independent startup receipt. A failed migration requires the matching source
+binary and database backup, with credential-revival review; the UI provides
+offline inspection guidance when the service cannot start.
+See the [backup and update workflows](docs/intelligent-selectors.md#managed-full-backups).
+
+Automatic disruptive service maintenance is qualified for root-owned Linux
+systemd and lingering user services. Windows offline restore through validation,
+finalization and rollback requires elevated local NTFS access. Other hosts retain
+the documented offline/capability limits; see the backend companion's operator
+guides. UI browser checks use explicit synthetic fixtures, separately from the
+backend's real service, migration, TLS, crypto and crash-recovery tests.
+
+**Certificates** manages ACME resources, Cloudflare providers, renewal/failure/
+expiry alerts and listener references. HTTP-01 requires an opted-in existing
+port-80 Gateway. DNS tokens are write-only; private keys are not displayed.
+Gateway TLS can select managed IDs, and Management HTTPS shows the explicit
+host-owned `-https-certificate-id` configuration and live references. File TLS
+remains supported, with site certificates separate from MITM/TLS Auto CAs.
+See [certificate controls and verification](docs/managed-certificates.md).

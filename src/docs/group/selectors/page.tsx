@@ -1,6 +1,7 @@
 import { useHashSearch } from '@/hooks/useHashLocation';
 import { getNode } from '@/api/nodes';
 import { listSelectors } from '@/api/selectors';
+import { MonitoringSettings } from '@/component/selector-monitoring';
 import { SelectorEditor } from '@/component/selector-editor';
 import { MainContainer } from '@/component/v2/card';
 import { ResourceWorkspace, useResourceSelection } from '@/component/resource-workspace';
@@ -33,6 +34,7 @@ export default function SelectorsPage() {
     if (isLoading || !data) return <Loading />;
     return <MainContainer className="max-w-[1440px]">
         {selection.id && !editing && <p role="alert" className="mb-4 text-sm text-ui-danger">{t('resourceUnavailable')} <button type="button" className="underline" onClick={selection.close}>{t('close')}</button></p>}
+        <div className="mb-4 flex justify-end"><MonitoringSettings /></div>
         <ResourceWorkspace title={t('selectorsTitle')} description={t('selectorsHelp')} selectedId={selection.id} editing={selection.creating || Boolean(editing)}
             createDisabled={selection.creating || editorState.pending} onCreate={() => selection.create()} onSelect={selection.select} search={{ value: query, onChange: setQuery }}
             items={items.filter(item => item.name.toLowerCase().includes(query.trim().toLowerCase())).map(item => ({ id: item.id, name: item.name, icon: <ArrowLeftRight />, description: <SelectedNodeName id={item.nodeId} /> }))}>

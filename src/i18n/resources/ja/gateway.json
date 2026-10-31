@@ -25,6 +25,7 @@
   "name": "名前",
   "enabled": "有効",
   "disabled": "無効",
+  "importedGatewayGuard": "設定のエクスポート時にポリシーの値が削除されたため、この Gateway は無効になっています。この Gateway を指定する通信は拒否されます。有効にする前に、対象の値とルールを復元して確認してください。",
   "listen": "待受アドレス",
   "listenHelp": "傍受専用の場合は空欄にします。公開待受には送信元 CIDR の制限が必要です。元の宛先への転送は、許可された傍受接続でのみ使用できます。",
   "allowedSources": "許可する送信元 CIDR（カンマ区切り）",
@@ -204,5 +205,10 @@
   "backendPoolHelp": "HTTP ルールまたは既定アクションでリバースプロキシを選択し、「新しいバックエンドプールを作成」を選んでから下のボタンで追加してください。選択したアクションにのみ紐付けられ、他のアクションは変更されません。",
   "newFilterGateway": "HTTP フィルター",
   "addInterceptionGateway": "傍受 Gateway を追加",
-  "diagnostics": "診断"
+  "diagnostics": "診断",
+  "acmeHttp01": "ACME HTTP-01 を有効化",
+  "acmeHttp01Help": "ポート 80 の既存の平文 HTTP Gateway で ACME HTTP-01 を有効にします。公開 DNS がこの Gateway に到達し、接続元 ACL が CA の検証元を許可する必要があります。リスナーは自動作成されません。ワイルドカードには DNS-01 が必要です。",
+  "certificateSource": "証明書の取得元",
+  "fileCertificate": "証明書ファイル",
+  "managedCertificate": "管理対象 ACME 証明書"
 }

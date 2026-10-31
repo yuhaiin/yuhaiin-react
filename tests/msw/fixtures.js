@@ -4,11 +4,20 @@ import { createDefaultSettings } from '/src/contract/settings.ts';
 import { establishSession } from '/src/auth/session.ts';
 import { operationPermissions } from '/src/auth/operations.ts';
 const scenario = new URLSearchParams(location.search).get('scenario') || 'normal';
+const protectedUpdateReady = new URLSearchParams(location.search).get('protected') === 'ready';
+let updateOperationId = '';
+const reviewedUpdateDigest = 'a'.repeat(64);
 // The preview has its own localhost origin and never connects to a configured controller.
 localStorage.setItem('api_url_v2', JSON.stringify(''));
 const principal = { userId: 'preview-admin', credentialType: 'session', permissions: [...new Set([...Object.values(operationPermissions), 'identity:read', 'tokens:own', 'users:manage', 'tokens:manage', 'security:read', 'metrics:read'])] };
 establishSession('synthetic-msw-session', principal, Math.floor(Date.now() / 1000) + 28800, '');
 localStorage.setItem('yuhaiin.webui.language','en');
+// Synthetic backup state is confined to the reliability UI preview.
+let backupConfig={instanceName:'preview',interval:0,lastBackupHash:'',s3:{enabled:false,accessKey:'',secretKey:'',bucket:'',region:'',endpointUrl:'',usePathStyle:false,storageClass:''},recovery:{enabled:false,target:'local',recipient:'age1-synthetic-public-recipient',intervalMinutes:1440,timeoutMinutes:30,keepCount:10,keepDays:30,includeHistory:false,allowMaintenance:false}};
+let recoveryItems=[{id:'11111111-1111-4111-8111-111111111111',backupId:'22222222-2222-4222-8222-222222222222',instanceId:'33333333-3333-4333-8333-333333333333',target:'s3',state:'verified',localState:'missing',createdAt:'2026-10-26T10:00:00Z',size:1048576,verification:'s3_ciphertext_readback',uploadAttempts:1,includesHistory:false}];
+let recoveryStartedAt=0;
+let recoveryImports=[];
+let recoveryRestoreResult={backupId:'22222222-2222-4222-8222-222222222222',transactionId:'44444444-4444-4444-8444-444444444444',instanceId:'33333333-3333-4333-8333-333333333333',recoveryPoint:'.recovery-point-44444444-4444-4444-8444-444444444444',state:'rolled_back',adoptStartup:true,runtime:{managementAuth:true,managementTLS:'files',workingDirectory:'/synthetic-deployment'}};
 const size = scenario === 'lazy' ? 10000 : scenario === 'large' ? 2000 : scenario === 'empty' ? 0 : scenario === 'connections-small' ? 3 : 95;
 const nodes = Array.from({length:size},(_,i)=>({id:`node-${i}`,name:i===0?'Mobile test node with a very long name for narrow screens':`Node ${i}`,group:'manual',origin:'manual',enabled:true,chain:[{type:'http_mock',http_mock:{data:'YQ=='}}]}));
 if (scenario === 'lazy') {
@@ -45,12 +54,26 @@ let resolverServer={server:''},fakeDNS={enabled:false,ipv4Range:'198.18.0.0/15',
 if (scenario === 'groups') for (const node of nodes.slice(60)) node.group='work';
 let selected=scenario==='groups'?{tcpId:'node-70',udpId:'node-70'}:{tcpId:nodes[0]?.id,udpId:nodes[0]?.id};
 const failedImports=new Set();
+const speedRecords=new Map();
 const selectors=scenario==='empty'?[]:[
   {id:'selector-work',name:'Work destination',nodeId:nodes[0]?.id||'',revision:1},
   {id:'selector-cloud',name:'Cloud services',nodeId:nodes[1]?.id||'',revision:1},
   {id:'selector-travel',name:'Travel destination',nodeId:nodes[2]?.id||'',revision:1},
   {id:'selector-local',name:'Local network',nodeId:nodes[3]?.id||'',revision:1},
 ];
+// Synthetic reliability data is scoped to browser layout/interaction checks.
+if (scenario === 'reliability') selectors[0].policy = {
+  mode:'balanced', latencyTarget:'https://probe.example.invalid/health', speedTarget:'https://speed.example.invalid/sample',
+  uploadTarget:'https://upload.example.invalid/test',uploadTest:{url:'',direction:'upload',allowUpload:true,maxBytes:8192,durationMs:1000,timeoutMs:5000,dailyBudgetBytes:1048576},
+  candidates:[{nodeId:'node-0',enabled:true,priority:0,weight:2},{nodeId:'node-1',enabled:true,priority:1,weight:1}],
+  weights:{rtt:2,download:1,stability:2}, circuit:{halfOpenConcurrency:2,halfOpenMaxRequests:6},
+};
+let monitoringConfig={revision:1,probe:{enabled:false},speed:{enabled:false,test:{url:''}}};
+const monitoringStatus=()=>({activeMeasurements:2,measurementLimit:4,policyState:'enforced',config:monitoringConfig,network:{online:true,metered:false,foreground:true,generation:1},platform:'linux',jobs:0,workers:0,running:0,completed:0,failed:0,skipped:0});
+function selectorStatus(id) {
+  const candidate=(nodeId,trial,udp=false)=>({nodeId,state:trial?'degraded':'healthy',eligible:true,reason:trial?'recovery_trial':'eligible',samples:4,rttMs:trial?58:42,jitterMs:3,downloadMbps:trial?35:80,uploadMbps:0,failureRate:trial?.2:0,timeoutRate:trial?.2:0,healthSamples:trial?5:4,activeConnections:3,score:trial?.65:.83,components:{rtt:.7,download:.6,upload:0,stability:trial?.8:1,jitter:.9,load:.75},evidence:trial?(udp?'reply':'tcp_connect'):'https',circuit:{state:trial?'half_open':'closed',reason:trial?'cooldown_elapsed':'recovered',inFlight:trial?1:0,issued:trial?2:0,recovered:trial?1:0}});
+  return {id,revision:selectors.find(s=>s.id===id)?.revision||1,tcp:{nodeId:'node-0',reason:'balanced',since:Date.now()-60000,candidates:[candidate('node-0',false),candidate('node-1',true)]},udp:{nodeId:'node-1',reason:'failover',since:Date.now()-30000,candidates:[candidate('node-1',true,true)]},switches:2,suppressed:3,events:[{at:Date.now()-30000,network:'tcp',from:'node-1',to:'node-0',reason:'balanced'}]};
+}
 const publishes=scenario==='empty'?[]:[{name:'Work devices',address:'example.invalid:443',path:'work',password:'',insecure:false,points:['node-0','node-1']},{name:'Travel devices',address:'example.invalid:443',path:'travel',password:'',insecure:false,points:['node-2']}];
 const resolvers=[{id:'bootstrap',name:'Server address lookup',type:'system',host:'system default',system:true},{id:'dns-local',name:'Local network DNS',type:'system',host:'system default',system:true},{id:'dns-proxy',name:'Encrypted DNS',type:'doh',host:'https://dns.example.invalid/dns-query',system:false}];
 const inbounds=scenario==='empty'?[]:[{id:'inbound-local',name:'Local proxy',enabled:true,network:{type:'tcp_udp',tcp_udp:{host:'127.0.0.1:9002',udp:'enabled'}},transports:[],protocol:{type:'mixed',mixed:{username:'',password:''}}}];
@@ -75,6 +98,13 @@ function stream(event,payload,repeat=false){
 }
 if (scenario === 'lazy') resolverHosts = {hosts: Object.fromEntries(Array.from({length:10000}, (_, i) => [`host-${String(i).padStart(5,'0')}.example.invalid`, `192.0.2.${i%254+1}`]))};
 const worker=setupWorker(
+  http.post('/api/v2/backup/recovery/imports',()=>{
+    if(scenario!=='reliability')return errorResponse('Synthetic import fixture is unavailable',404);
+    // Synthetic browser data only; actual age verification is covered by the
+    // backend's real HTTPS/systemd integration test.
+    const item={id:crypto.randomUUID(),createdAt:new Date().toISOString(),expiresAt:new Date(Date.now()+1800000).toISOString(),size:1048576,sha256:'synthetic',state:'uploaded'};
+    recoveryImports.push(item);return HttpResponse.json(item);
+  }),
   http.get('/api/v2/management',()=>HttpResponse.json({authentication:'local-users'})),
   http.get('/api/v2/auth/setup',()=>HttpResponse.json({required:false,expiresAt:0})),
   http.get('/api/v2/auth/me',()=>HttpResponse.json(principal)),
@@ -84,7 +114,55 @@ const worker=setupWorker(
     const p=await request.json(); const op=params.operation;
     if(scenario==='error' && ['connections.history','node.get','route.rule.get'].includes(op)) return HttpResponse.json({error:{message:'Synthetic upstream unavailable'}},{status:503});
     let result={};
-    if(op==='nodes.groups') {
+    if(scenario==='reliability' && op==='backup.config.get')result=backupConfig;
+    else if(scenario==='reliability' && op==='backup.config.put')result=backupConfig=structuredClone(p);
+    else if(scenario==='reliability' && op==='backup.recovery.status'){
+      if(recoveryStartedAt && Date.now()-recoveryStartedAt>1200)recoveryItems[0].state='local_ready';
+      result={supported:true,items:recoveryItems};
+    }
+    else if(scenario==='reliability' && op==='backup.recovery.create'){
+      if(!p.confirmMaintenance)return errorResponse('Maintenance confirmation required',400);
+      recoveryStartedAt=Date.now();
+      result={id:crypto.randomUUID(),backupId:crypto.randomUUID(),instanceId:'33333333-3333-4333-8333-333333333333',target:'local',state:'queued',createdAt:new Date().toISOString(),size:1048576,verification:'ciphertext_sha256',uploadAttempts:0,includesHistory:false};
+      recoveryItems.unshift(result);
+    }
+    else if(scenario==='reliability' && op==='backup.recovery.retrieve'){
+      if(!p.confirmDownload || !p.confirmReplace)return errorResponse('Retrieval consent required',400);
+      const item=recoveryItems.find(item=>item.id===p.id);
+      item.localState='present';item.retrieval='verified';item.retrievedAt=new Date().toISOString();result=item;
+    }
+    else if(scenario==='reliability' && op==='backup.recovery.verify'){
+      if(!p.identity)return errorResponse('A private fixture identity is required',400);
+      const item=recoveryItems.find(item=>item.id===p.id);item.archiveCheck='passed';
+      result={completeInventory:true,files:[],id:item.backupId,instanceId:item.instanceId};
+    }
+    else if(scenario==='reliability' && op==='backup.recovery.delete'){
+      if(!p.confirm)return errorResponse('Deletion confirmation required',400);
+      recoveryItems=recoveryItems.filter(item=>item.id!==p.id);
+    }
+    else if(scenario==='reliability' && op==='backup.recovery.retry')recoveryItems.find(item=>item.id===p.id).state='verified';
+    else if(scenario==='reliability' && op==='backup.recovery.imports')result=recoveryImports;
+    else if(scenario==='reliability' && op==='backup.recovery.restore.status')result={result:recoveryRestoreResult};
+    else if(scenario==='reliability' && op==='backup.recovery.import.preview'){
+      if(!p.identity && !p.passphrase)return errorResponse('Private synthetic fixture input required',400);
+      const item=recoveryImports.find(item=>item.id===p.id);
+      if(!item)return errorResponse('Synthetic import not found',404);
+      item.state='previewed';item.previewId=crypto.randomUUID();item.preview={runtime:{managementAuth:true,managementTLS:'files',workingDirectory:'/synthetic-deployment',listenAddress:'127.0.0.1:50051'},mode:p.mode,targetInstanceId:'33333333-3333-4333-8333-333333333333',instanceId:'33333333-3333-4333-8333-333333333333',manifest:{id:recoveryItems[0].backupId,instanceId:'33333333-3333-4333-8333-333333333333',build:{version:'synthetic-preview'},completeInventory:true,files:[]},files:[{path:'state.db',install:true,replace:true},{path:'management.db',install:true,replace:true},{path:'identity/native/'+('long-device-file-'.repeat(8))+'.json',install:true,replace:false}],warnings:['service_restart_required','revoked_credentials_may_be_restored','quota_and_usage_state_can_move_backwards']};result=item;
+    }
+    else if(scenario==='reliability' && op==='backup.recovery.import.activate'){
+      const item=recoveryImports.find(item=>item.id===p.id);
+      if(!item || p.confirmPreviewId!==item.previewId || p.confirmBackupId!==item.preview.manifest.id || p.confirmSourceInstanceId!==item.preview.manifest.instanceId || p.confirmTargetInstanceId!==item.preview.targetInstanceId || p.confirmResultInstanceId!==item.preview.instanceId || !p.confirmMaintenance || !p.confirmStartupChanges || !p.confirmSourceStopped || !p.confirmCredentialRevival) return errorResponse('Exact-preview restore consent required',400);
+      item.state='activating';result=structuredClone(item);
+      // UI admission must still display pending until it explicitly reads the
+      // authoritative result. This fixture never stops or restores any service.
+      recoveryRestoreResult={backupId:item.preview.manifest.id,transactionId:item.previewId,instanceId:item.preview.instanceId,recoveryPoint:'.recovery-point-'+item.previewId,state:'committed',adoptStartup:true,runtime:item.preview.runtime};
+      recoveryImports=recoveryImports.filter(value=>value.id!==item.id);
+    }
+    else if(scenario==='reliability' && op==='backup.recovery.import.discard'){
+      if(!p.confirm)return errorResponse('Discard confirmation required',400);
+      recoveryImports=recoveryImports.filter(item=>item.id!==p.id);
+    }
+    else if(op==='nodes.groups') {
       const byGroup=new Map();
       for(const node of nodes){const name=node.group||'manual';const entry=byGroup.get(name)||{name,count:0,enabled:0};entry.count++;if(node.enabled)entry.enabled++;byGroup.set(name,entry);}
       result={items:[...byGroup.values()].sort((a,b)=>a.name.localeCompare(b.name))};
@@ -96,12 +174,19 @@ const worker=setupWorker(
     else if(op==='node.extra') result=p.id==='node-1'
       ? {globalprotect:{tunnel_prefix:'192.0.2.8/32',data_transport:'esp',dns:['192.0.2.1']}}
       : {openvpn:{tunnel_prefixes:['10.88.0.2/24','fd88::2/64'],dns:['10.88.0.1'],routes:['route 10.99.0.0 255.255.0.0'],cipher:'AES-256-GCM',gateway:'10.88.0.1',mtu:1400}};
+    else if(op==='nodes.status') result={items:(p.ids||[]).filter(id=>nodes.some(node=>node.id===id)).map(id=>({id,state:'unknown',uploadBytes:'0',downloadBytes:'0',uploadBps:'0',downloadBps:'0',udpSentPackets:'0',udpRecvPackets:'0',tcpAttempts:'0',tcpConnections:'0',udpAttempts:'0',udpSessions:'0',pingAttempts:'0',failures:'0',activeTCP:0,activeUDP:0,lastSuccessAt:0,lastFailureAt:0,lastUsedAt:0,...(scenario==='reliability'?{trafficWindow:{at:Date.now(),windowMs:30000,uploadBps:'1024',downloadBps:'2048'},recentTcpDials:{windowMs:120000,sampleLimit:64,samples:4,failures:1,failureRate:.25},throughput:{direction:'download',at:Date.now()-10000,ok:true,target:'https://download.example.invalid/test',downloadMbps:80,bytes:8192,durationMs:100,samples:3},uploadThroughput:{direction:'upload',at:Date.now()-5000,ok:true,target:'https://upload.example.invalid/test',downloadMbps:0,uploadMbps:25,bytes:8192,durationMs:100,samples:2},throughputHistory:speedRecords.get(id)||[],protocol:{state:id==='node-1'?'authentication_failed':'configured',updatedAt:Math.floor(Date.now()/1000)}}:{})}))};
     else if(op==='nodes.selected') result={tcp:nodes.find(n=>n.id===selected.tcpId),udp:nodes.find(n=>n.id===selected.udpId)};
     else if(op==='nodes.select'){if(!nodes.some(n=>n.id===p.tcpId&&n.enabled)||!nodes.some(n=>n.id===p.udpId&&n.enabled))return errorResponse('Choose enabled nodes');selected=p;}
     else if(op==='node.use'){selected={tcpId:p.id,udpId:p.id};}
     else if(op==='node.delete'){remove(nodes,p.id);}
     else if(op==='node.close'){activeIds.delete(p.id);}
     else if(op==='node.latency')result={ok:true,latencyMs:36};
+    else if(op==='node.speed'){
+      if(p.direction==='upload'&&!p.allowUpload)return errorResponse('Explicit upload consent required',400);
+      result={at:Date.now(),direction:p.direction||'download',target:p.url,ok:true,samples:1,bytes:p.maxBytes||8192,durationMs:20,downloadMbps:p.direction==='upload'?0:80,uploadMbps:p.direction==='upload'?25:0};
+      speedRecords.set(p.id,[...(speedRecords.get(p.id)||[]),result].slice(-16));
+      if(scenario==='reliability')window.__reliabilitySpeedTests=[...(window.__reliabilitySpeedTests||[]),structuredClone(p)];
+    }
     else if(op==='nodes.import.preview'){
       try { const raw=JSON.parse(p.text); const items=Array.isArray(raw)?raw:[raw];result={items:items.map(node=>({...node,id:crypto.randomUUID(),name:node.name||'Imported node',enabled:true,origin:'manual',group:p.group||'manual'})),errors:[]}; }
       catch {result={items:[],errors:[{line:1,message:'This preview accepts canonical node JSON. Share-link parsing is covered by backend tests.'}]};}
@@ -150,6 +235,9 @@ const worker=setupWorker(
     else if(op==='route.registries.get'||op==='route.registries.catalogs')result={items:[]};
     else if(op==='route.rules.test')result={mode:'proxy',target:{type:'selector',id:'selector-work'},resolver:'dns-proxy',afterAddr:p.host,lists:['shared-websites'],listNames:{'shared-websites':'Work websites'},ips:['192.0.2.1'],matchResult:connections[0]?.matchHistory||[]};
     else if(op==='route.rules.block_history')result={items:[]};
+    else if(scenario==='reliability' && op==='node.monitoring.get')result=monitoringStatus();
+    else if(scenario==='reliability' && op==='node.monitoring.put'){monitoringConfig={...p,revision:p.revision+1};result=monitoringStatus();}
+    else if(scenario==='reliability' && op==='outbound.selector.status')result=selectorStatus(p.id);
     else if(op==='outbound.selectors.get')result={items:selectors};
     else if(op==='outbound.selector.put'){const old=selectors.find(item=>item.id===p.id);if((old?.revision||0)!==p.revision)return errorResponse('Configuration changed; reload before saving',409);result=upsert(selectors,{...p,id:p.id||crypto.randomUUID(),revision:p.revision+1});}
     else if(op==='outbound.selector.references')result=references(rule=>rule.target?.type==='selector'&&rule.target.id===p.id);
@@ -190,12 +278,13 @@ const worker=setupWorker(
     else if(op==='subscriptions.delete'){for(const name of p.names){const index=subscriptions.findIndex(value=>value.name===name);if(index>=0)subscriptions.splice(index,1);}}
     else if(op==='subscriptions.update'){}
     else if(op==='tools.diagnostics')result={schemaVersion:1,host:p.host,platform:'linux',version:'preview',startedAt:new Date().toISOString(),durationMs:12,ipv6Enabled:true,checks:[],findings:[],report:`Synthetic diagnostics for ${p.host}`};
-    else if(op==='update.check')result={channel:p.channel,supported:true,currentVersion:'v1.0.0',targetVersion:'v2.0.0',targetTag:'v2.0.0',prerelease:false,releaseUrl:'',releaseNotes:'Synthetic update',publishedAt:'',assetName:'preview',assetUrl:'',assetSha256:'',updateAvailable:true,reason:''};
-    else if(op==='update.apply'){updateStartedAt=Date.now();if(scenario==='update')sessionStorage.setItem('preview:updateStartedAt',String(updateStartedAt));}
+    else if(op==='update.check')result={recovery:scenario==='reliability'?{enabled:true,supported:true,ready:protectedUpdateReady,reason:protectedUpdateReady?'ready':'configure_encrypted_backup'}:undefined,compatibility:{state:scenario==='reliability'?'migration_required':'compatible',reason:'synthetic-schema',currentConfiguration:23,targetConfiguration:scenario==='reliability'?24:23,currentManagement:5,targetManagement:5,databaseRecoveryRequired:scenario==='reliability'},channel:p.channel,supported:true,currentVersion:'v1.0.0',targetVersion:'v2.0.0',targetTag:'v2.0.0',prerelease:false,releaseUrl:'',releaseNotes:'Synthetic update',publishedAt:'',assetName:'preview',assetUrl:'',assetSha256:reviewedUpdateDigest,updateAvailable:true,reason:''};
+    else if(op==='update.history')result={items:scenario==='reliability'?[{id:'synthetic-old-build',version:'legacy-no-schema-catalog',savedAt:'2026-10-27T00:00:00Z',size:1024,compatibility:{state:'unknown',reason:'history_manifest_unavailable',currentConfiguration:0,currentManagement:0,targetConfiguration:0,targetManagement:0,databaseRecoveryRequired:false}}]:[]};
+    else if(op==='update.apply'){if(scenario==='reliability'&&(!p.confirmMaintenance||!p.confirmManualRecovery||p.expectedSha256!==reviewedUpdateDigest))return HttpResponse.json({error:{code:'consent_required',message:'Synthetic admission refused'}},{status:400});updateOperationId=p.operationId||'';updateStartedAt=Date.now();if(scenario==='update')sessionStorage.setItem('preview:updateStartedAt',String(updateStartedAt));}
     else if(op==='update.status'){
       const elapsed=updateStartedAt?Date.now()-updateStartedAt:0;
       if(updateStartedAt&&elapsed>=3000&&elapsed<4500)return HttpResponse.error();
-      result={running:Boolean(updateStartedAt&&elapsed<1500),stage:elapsed>=1500&&elapsed<3000?'completed':updateStartedAt&&elapsed<1500?'downloading':'',progress:updateStartedAt&&elapsed<3000?100:0,bytesDownloaded:0,totalBytes:0,error:''};
+      result={running:Boolean(updateStartedAt&&elapsed<1500),stage:elapsed>=1500&&elapsed<3000?'completed':updateStartedAt&&elapsed<1500?'downloading':'',progress:updateStartedAt&&elapsed<3000?100:0,bytesDownloaded:0,totalBytes:0,error:'',operation:protectedUpdateReady&&updateOperationId?{id:updateOperationId,phase:elapsed>=4500?'completed':elapsed<1500?'capturing':'starting',sourceSha256:'b'.repeat(64),targetSha256:reviewedUpdateDigest,backupJobId:'synthetic-job',backupId:'synthetic-update-point',startedAt:new Date(updateStartedAt).toISOString()}:undefined};
     }
     else if(op==='info'){
       const elapsed=updateStartedAt?Date.now()-updateStartedAt:0;

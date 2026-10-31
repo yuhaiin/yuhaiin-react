@@ -15,5 +15,6 @@
   "routeRules": "振り分けルール",
   "gateway": "HTTP Gateway",
   "trafficControl": "トラフィック制御",
-  "accountSecurity": "アカウントとセキュリティ"
+  "accountSecurity": "アカウントとセキュリティ",
+  "certificates": "証明書"
 }

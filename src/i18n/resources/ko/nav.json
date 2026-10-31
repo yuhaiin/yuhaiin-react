@@ -15,5 +15,6 @@
   "routeRules": "라우팅 규칙",
   "gateway": "HTTP Gateway",
   "trafficControl": "트래픽 제어",
-  "accountSecurity": "계정 및 보안"
+  "accountSecurity": "계정 및 보안",
+  "certificates": "인증서"
 }
