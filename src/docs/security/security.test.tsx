@@ -17,7 +17,8 @@ it('protects the last enrolled administrator while permitting a fresh user with 
     }); vi.stubGlobal('fetch', fetch);
     const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
     await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><Users /></SWRConfig>));
-    expect(host.querySelector<HTMLButtonElement>('[role=switch]')!.disabled).toBe(true);
+    const row = host.querySelector('section[aria-label=admin]')!;
+    expect(row.querySelector('[role=switch]')).toBeNull(); expect(row.querySelector('[role=combobox]')).toBeNull();
     const remove = [...host.querySelectorAll('button')].find(button => button.textContent === 'delete')!; expect(remove.disabled).toBe(true);
     await act(async () => { host.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); });
     expect(document.body.textContent).toContain('only-once-enrollment');

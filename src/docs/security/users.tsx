@@ -1,4 +1,5 @@
-import Switch from '@/component/v2/switch';
+import { Badge } from '@/component/v2/badge';
+import { SwitchCard } from '@/component/v2/switch';
 import { authAPI, type Issued, type User } from '@/auth/api';
 import { clearSession, getSession, setPendingEnrollment, updatePrincipal, type Principal } from '@/auth/session';
 import { Button } from '@/component/v2/button';
@@ -6,6 +7,7 @@ import { Card, CardBody, CardHeader } from '@/component/v2/card';
 import { confirmAction } from '@/component/v2/confirmation';
 import { Input } from '@/component/v2/input';
 import { Select } from '@/component/v2/select';
+import { Lock } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
@@ -53,19 +55,31 @@ export function Users() {
         </CardBody>{issued && <IssuedSecret value={issued} onClose={() => setIssued(null)} />}
     </Card>;
 }
+const statusBadge = { active: 'success', pending: 'warning', disabled: 'secondary' } as const;
 function UserRow({ user, busy, lastAdmin, onSave, onReset, onDelete }: { user: User; busy: boolean; lastAdmin: boolean; onSave: (user: Pick<User, 'login' | 'role' | 'disabled'>) => void; onReset: () => void; onDelete: () => void }) {
     const { t } = useTranslation('auth');
     const [name, setName] = useState(user.login); const [role, setRole] = useState(user.role); const [disabled, setDisabled] = useState(user.disabled);
-    return <section className="space-y-3 rounded-ui-md border border-ui-border p-4" aria-label={user.login}>
-        <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="m-0 font-medium">{user.login}</h3><span className="text-xs text-ui-muted">{t(user.disabled ? 'disabled' : user.enrolled ? 'active' : 'pending')}</span></div>
-        <p className="break-all text-xs text-ui-muted">{user.id}</p>
-        <form className="flex flex-wrap items-end gap-3" onSubmit={event => { event.preventDefault(); onSave({ login: name, role, disabled }); }}>
-            <label className="min-w-0 flex-1 space-y-2"><span>{t('loginName')}</span><Input value={name} onChange={event => setName(event.target.value)} pattern="[A-Za-z0-9_.-]{1,64}" required disabled={busy} /></label>
-            <div className="min-w-40"><Select ariaLabel={t('role')} value={role} onValueChange={value => setRole(value as User['role'])} items={[{ value: 'admin', label: t('admin') }, { value: 'read-only', label: t('readOnly') }, { value: 'none', label: t('proxyOnly') }]} disabled={busy || lastAdmin} /></div>
-            <div className="w-fit"><Switch label={t('active')} checked={!disabled} onCheckedChange={active => setDisabled(!active)} disabled={busy || lastAdmin} /></div>
-            <Button type="submit" disabled={busy}>{t('save')}</Button>
+    const status = user.disabled ? 'disabled' : user.enrolled ? 'active' : 'pending';
+    return <section className="rounded-ui-md border border-ui-border p-4" aria-label={user.login}>
+        <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="m-0 font-medium">{user.login}</h3><Badge variant={statusBadge[status]}>{t(status)}</Badge></div>
+        <p className="mt-1 break-all text-xs text-ui-muted">{user.id}</p>
+        {/* Saving only pauses these fields for a moment, so they keep their frame without the grey fill. */}
+        <form className="mt-4 [&_:is(input,[role=combobox]):disabled]:bg-transparent" onSubmit={event => { event.preventDefault(); onSave({ login: name, role, disabled }); }}>
+            <div className="grid gap-3 sm:grid-cols-2">
+                <label className="min-w-0 space-y-2"><span className="block text-sm">{t('loginName')}</span><Input value={name} onChange={event => setName(event.target.value)} pattern="[A-Za-z0-9_.-]{1,64}" required disabled={busy} /></label>
+                <div className="min-w-0 space-y-2"><span className="block text-sm">{t('role')}</span>
+                    {lastAdmin
+                        ? <p className="m-0 flex min-h-field items-center gap-2 text-sm"><Lock size={14} aria-hidden="true" className="shrink-0 text-ui-muted" />{t('admin')}</p>
+                        : <Select ariaLabel={t('role')} value={role} onValueChange={value => setRole(value as User['role'])} items={[{ value: 'admin', label: t('admin') }, { value: 'read-only', label: t('readOnly') }, { value: 'none', label: t('proxyOnly') }]} disabled={busy} />}
+                </div>
+            </div>
+            {lastAdmin
+                ? <p className="mb-0 mt-3 text-xs text-ui-muted">{t('lastAdmin')}</p>
+                : <SwitchCard className="mt-2" label={t('active')} checked={!disabled} onCheckedChange={active => setDisabled(!active)} disabled={busy} />}
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-ui-border pt-4">
+                <div className="flex flex-wrap gap-2"><Button type="button" disabled={busy || lastAdmin} onClick={onReset}>{t('resetEnrollment')}</Button><Button type="button" variant="outline-danger" disabled={busy || lastAdmin} onClick={onDelete}>{t('delete')}</Button></div>
+                <Button type="submit" disabled={busy}>{t('save')}</Button>
+            </div>
         </form>
-        {lastAdmin && <p className="text-xs text-ui-muted">{t('lastAdmin')}</p>}
-        <div className="flex flex-wrap gap-2"><Button disabled={busy || lastAdmin} onClick={onReset}>{t('resetEnrollment')}</Button><Button variant="outline-danger" disabled={busy || lastAdmin} onClick={onDelete}>{t('delete')}</Button></div>
     </section>;
 }
