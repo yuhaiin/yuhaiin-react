@@ -4,6 +4,7 @@ import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader } from '@/component/v2/card';
 import { confirmAction } from '@/component/v2/confirmation';
 import { Input, Textarea } from '@/component/v2/input';
+import { MultiSelectChips } from '@/component/v2/multi-select';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
@@ -55,10 +56,7 @@ function GroupEditor({ group, users, busy, onSave, onDelete, onCancel, onCommitt
             {group && <p className="break-all text-xs text-ui-muted">{group.id}</p>}
             <label className="block space-y-2"><span>{t('credentialName')}</span><Input required maxLength={128} value={name} disabled={busy} onChange={event => setName(event.target.value)} /></label>
             <label className="block space-y-2"><span>{t('groups.description')}</span><Textarea maxLength={2048} value={description} disabled={busy} onChange={event => setDescription(event.target.value)} /></label>
-            <fieldset className="max-h-64 space-y-1 overflow-auto"><legend>{t('groups.members')}</legend>
-                {users.map(user => <label key={user.id} className="flex min-h-11 items-center gap-2 break-all"><input type="checkbox" checked={members.includes(user.id)} disabled={busy} onChange={() => setMembers(selected => selected.includes(user.id) ? selected.filter(id => id !== user.id) : [...selected, user.id])} />{user.login}{user.disabled && ` (${t('disabled')})`}</label>)}
-                {members.filter(id => !users.some(user => user.id === id)).map(id => <label key={id} className="flex min-h-11 items-center gap-2 break-all"><input type="checkbox" checked disabled={busy} onChange={() => setMembers(selected => selected.filter(member => member !== id))} />{id}</label>)}
-            </fieldset>
+            <fieldset className="max-h-64 space-y-2 overflow-auto"><legend className="text-sm font-medium">{t('groups.members')}</legend><MultiSelectChips value={members} onChange={setMembers} disabled={busy} options={[...users.map(user => ({ value: user.id, label: `${user.login}${user.disabled ? ` (${t('disabled')})` : ''}` })), ...members.filter(id => !users.some(user => user.id === id)).map(id => ({ value: id, label: id }))]} /></fieldset>
             <div className="flex flex-wrap gap-2"><Button type="submit" disabled={busy}>{t('save')}</Button><StageChangeButton disabled={busy || !name.trim()} request={{ store: "identity", kind: "group", resourceId: group?.id, payload: { name, description, members, revision: group?.revision ?? 0 } }} onCommitted={onCommitted} />{onDelete && <Button type="button" variant="outline-danger" disabled={busy} onClick={onDelete}>{t('delete')}</Button>}{onCancel && <Button type="button" disabled={busy} onClick={onCancel}>{t('cancel')}</Button>}</div>
         </form>
     </details>;

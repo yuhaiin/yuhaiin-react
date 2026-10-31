@@ -1,3 +1,4 @@
+import Switch from '@/component/v2/switch';
 import { StageChangeButton } from "@/component/configuration-change";
 import type { Go } from '@/api/generated-contracts';
 import { authAPI } from '@/auth/api';
@@ -58,9 +59,9 @@ function AccessEditor({ initial, writable, onSaved }: { initial: Go.access.Confi
     return <form aria-label={t('access.title')} onSubmit={event => { event.preventDefault(); void submit(true); }} className="space-y-4">
         <p className="text-xs text-ui-muted">{t('access.revision', { revision: config.revision })}</p>
         <fieldset disabled={!writable || busy} className="min-w-0 space-y-4">
-            <label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={config.enabled} onChange={event => patch({ ...config, enabled: event.target.checked })} />{t('enabled')}</label>
+            <div className="w-fit"><Switch label={t('enabled')} checked={config.enabled} onCheckedChange={enabled => patch({ ...config, enabled })} /></div>
             <p className="text-sm text-ui-warning">{t('access.scopeHelp')}</p>
-            <label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={config.scope.allInbounds} onChange={event => patch({ ...config, scope: { allInbounds: event.target.checked, inbounds: [] } })} />{t('access.allInbounds')}</label>
+            <div className="w-fit"><Switch label={t('access.allInbounds')} checked={config.scope.allInbounds} onCheckedChange={allInbounds => patch({ ...config, scope: { allInbounds, inbounds: [] } })} /></div>
             {!config.scope.allInbounds && <InboundCondition values={config.scope.inbounds} onChange={inbounds => patch({ ...config, scope: { allInbounds: false, inbounds } })} />}
             <label className="block space-y-2"><span>{t('access.default')}</span><Select value={config.defaultAction} items={['deny', 'allow'].map(value => ({ value, label: t(`access.${value}`) }))} onValueChange={defaultAction => patch({ ...config, defaultAction })} /></label>
             <p className="text-sm text-ui-muted">{t('access.orderHelp')}</p>
@@ -68,7 +69,7 @@ function AccessEditor({ initial, writable, onSaved }: { initial: Go.access.Confi
                 <div className="flex flex-wrap items-center gap-2"><span>{index + 1}</span><Button type="button" disabled={index === 0} onClick={() => reorder(index, index - 1)}>{t('access.moveUp')}</Button><Button type="button" disabled={index === config.rules.length - 1} onClick={() => reorder(index, index + 1)}>{t('access.moveDown')}</Button><Button type="button" variant="outline-danger" onClick={() => patch({ ...config, rules: config.rules.filter(item => item.id !== rule.id) })}>{t('delete')}</Button></div>
                 <Input aria-label={t('credentialName')} value={rule.name} maxLength={128} onChange={event => patch({ ...config, rules: config.rules.map(item => item.id === rule.id ? { ...item, name: event.target.value } : item) })} />
                 <Select ariaLabel={t('access.action')} value={rule.action} items={['allow', 'deny'].map(value => ({ value, label: t(`access.${value}`) }))} onValueChange={action => patch({ ...config, rules: config.rules.map(item => item.id === rule.id ? { ...item, action } : item) })} />
-                <label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={!rule.disabled} onChange={event => patch({ ...config, rules: config.rules.map(item => item.id === rule.id ? { ...item, disabled: !event.target.checked } : item) })} />{t('enabled')}</label>
+                <div className="w-fit"><Switch label={t('enabled')} checked={!rule.disabled} onCheckedChange={enabled => patch({ ...config, rules: config.rules.map(item => item.id === rule.id ? { ...item, disabled: !enabled } : item) })} /></div>
                 <RuleExprListEditor value={rule.conditions} options={options} onChange={conditions => patch({ ...config, rules: config.rules.map(item => item.id === rule.id ? { ...item, conditions } : item) })} />
             </section>)}
             <Button type="button" onClick={() => patch({ ...config, rules: [...config.rules, { id: createID(), name: '', action: 'allow', disabled: false, conditions: [{ type: 'all', all: [{ type: 'group', group: { ids: [] } }, { type: 'destination', destination: { domains: [], cidrs: [] } }] }] }] })}>{t('access.addRule')}</Button>

@@ -3,13 +3,14 @@ import { useSession } from '@/auth/context';
 import { authScope } from '@/auth/session';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader } from '@/component/v2/card';
-import { Input } from '@/component/v2/input';
+import { DateTimeField } from '@/component/v2/date-time-field';
+import { PageTabs } from '@/component/v2/page-tabs';
 import { Select } from '@/component/v2/select';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { UsageAuditList } from './usage-audit';
-import { UsageRetention } from './usage-retention';
+import { UsageTrendChart } from './usage-trend';
 import { ResourceUsage } from './resource-usage';
 import { fetchUsage, usageBytes, usageDate, usageDuration, usageRange, type UsageBreakdown, type UsageReport } from './usage-api';
 
@@ -25,18 +26,13 @@ function UsagePanel({ self, canReadAll, canManage }: { self: string; canReadAll:
     const [preset, setPreset] = useState('today');
     const [dates, setDates] = useState({ from: '', to: '' });
     const [applied, setApplied] = useState(dates);
-    const [group, setGroup] = useState<'nodes' | 'inbounds' | 'credentials' | 'protocols'>('nodes');
     const [rangeError, setRangeError] = useState(false);
     const scope = authScope();
     const { data: users } = useSWR(canManage ? [scope, 'usage-users'] : null, () => authAPI<User[]>('GET', '/users'));
     const { data: historical } = useSWR(canReadAll ? [scope, 'usage-owners'] : null, () => fetchUsage<string[]>('/owners', {}));
     const owners = [...new Set([self, ...(users?.map(user => user.id) ?? []), ...(historical ?? []).filter(Boolean), 'unattributed'])];
-    const validRange = preset !== 'custom' || Boolean(applied.from && applied.to);
-    const { data, error, isLoading, mutate } = useSWR(validRange ? [scope, 'user-usage', owner, preset, applied.from, applied.to] : null,
-        () => fetchUsage<UsageReport>('', { owner, ...usageRange(preset, applied.from, applied.to) }), { refreshInterval: 5000, keepPreviousData: false });
-    const summary = data?.summary;
     return <Card>
-        <CardHeader><h2 className="m-0 font-medium">{t('usage.title')}</h2><Button disabled={isLoading} onClick={() => void mutate()}>{t('refresh')}</Button></CardHeader>
+        <CardHeader><h2 className="m-0 font-medium">{t('usage.title')}</h2></CardHeader>
         <CardBody className="space-y-5">
             <p className="text-sm text-ui-muted">{t('usage.hint')}</p>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -44,40 +40,55 @@ function UsagePanel({ self, canReadAll, canManage }: { self: string; canReadAll:
                 <label className="min-w-0 space-y-2"><span>{t('usage.period')}</span><Select ariaLabel={t('usage.period')} value={preset} onValueChange={value => { setPreset(value); setRangeError(false); }} items={['today', 'month', '30days', 'custom'].map(value => ({ value, label: t(`usage.range.${value}`) }))} /></label>
             </div>
             {preset === 'custom' && <form className="flex flex-wrap items-end gap-3" onSubmit={event => { event.preventDefault(); try { usageRange('custom', dates.from, dates.to); setApplied(dates); setRangeError(false); } catch { setRangeError(true); } }}>
-                <label className="min-w-0 flex-1 space-y-2"><span>{t('usage.from')}</span><Input type="date" value={dates.from} onChange={event => setDates({ ...dates, from: event.target.value })} required /></label>
-                <label className="min-w-0 flex-1 space-y-2"><span>{t('usage.to')}</span><Input type="date" value={dates.to} onChange={event => setDates({ ...dates, to: event.target.value })} required /></label>
+                <label className="min-w-0 flex-1 space-y-2"><span>{t('usage.from')}</span><DateTimeField type="date" value={dates.from} onChange={from => setDates({ ...dates, from })} required /></label>
+                <label className="min-w-0 flex-1 space-y-2"><span>{t('usage.to')}</span><DateTimeField type="date" value={dates.to} onChange={to => setDates({ ...dates, to })} required /></label>
                 <Button type="submit">{t('usage.apply')}</Button>
             </form>}
-            {(error || rangeError) && <p role="alert" className="text-sm text-ui-danger">{rangeError ? t('usage.invalidRange') : t('usage.loadFailed')}</p>}
-            {isLoading && <p role="status" className="text-sm text-ui-muted">{t('usage.loading')}</p>}
-            {summary && <>
-                <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                    <Metric label={t('usage.periodUpload')} value={usageBytes(summary.period.upload)} exact={summary.period.upload} />
-                    <Metric label={t('usage.periodDownload')} value={usageBytes(summary.period.download)} exact={summary.period.download} />
-                    <Metric label={t('usage.lifetimeUpload')} value={usageBytes(summary.lifetime.upload)} exact={summary.lifetime.upload} />
-                    <Metric label={t('usage.lifetimeDownload')} value={usageBytes(summary.lifetime.download)} exact={summary.lifetime.download} />
-                    <Metric label={t('usage.currentRate')} value={`↑ ${usageBytes(summary.uploadRate)}/s · ↓ ${usageBytes(summary.downloadRate)}/s`} />
-                    <Metric label={t('usage.connections')} value={`TCP ${summary.activeTcp} · UDP ${summary.activeUdp}`} />
-                    <Metric label={t('usage.peak')} value={`TCP ${summary.peakTcp} · UDP ${summary.peakUdp}`} />
-                    <Metric label={t('usage.activeMinutes')} value={summary.periodActiveMinutes} />
-                    <Metric label={t('usage.opened')} value={summary.period.opened} />
-                    <Metric label={t('usage.failed')} value={summary.period.failed} />
-                    <Metric label={t('usage.firstSeen')} value={usageDate(summary.lifetime.firstSeen)} />
-                    <Metric label={t('usage.lastSeen')} value={usageDate(summary.lifetime.lastSeen)} />
-                    <Metric label={t('usage.sessionDuration')} value={usageDuration(summary.period.sessionMillis)} />
-                </dl>
-                <p className="text-xs text-ui-muted">{t('usage.timeHint')}</p>
-                {(data.health.persistenceError || data.health.droppedAudit !== '0') && <p role="alert" className="text-sm text-ui-danger">{t('usage.incomplete', { dropped: data.health.droppedAudit })}</p>}
-                <p className="text-xs text-ui-muted">{t('usage.updated')}: {usageDate(data.updatedAt)}</p>
-                <UsageTrend report={data} />
-                <div role="group" aria-label={t('usage.breakdown')} className="flex flex-wrap gap-2">{(['nodes', 'inbounds', 'credentials', 'protocols'] as const).map(value => <Button key={value} aria-pressed={group === value} variant={group === value ? 'primary' : 'default'} onClick={() => setGroup(value)}>{t(`usage.${value}`)}</Button>)}</div>
-                <BreakdownTable rows={data[group]} label={t(`usage.${group}`)} />
-            </>}
-            <ResourceUsage key={`${scope}:${owner}`} owner={owner} />
-            <UsageAuditList key={`${scope}:${owner}:${preset}:${applied.from}:${applied.to}`} owner={owner} preset={preset} from={applied.from} to={applied.to} />
-            {canManage && <UsageRetention />}
+            {rangeError && <p role="alert" className="text-sm text-ui-danger">{t('usage.invalidRange')}</p>}
+            <PageTabs label={t('usage.title')} items={[
+                { value: 'overview', label: t('usage.overview'), content: <UsageOverview owner={owner} preset={preset} from={applied.from} to={applied.to} /> },
+                { value: 'connections', label: t('usage.audit'), content: <UsageAuditList key={`${scope}:${owner}:${preset}:${applied.from}:${applied.to}`} owner={owner} preset={preset} from={applied.from} to={applied.to} /> },
+            ]} />
         </CardBody>
     </Card>;
+}
+
+function UsageOverview({ owner, preset, from, to }: { owner: string; preset: string; from: string; to: string }) {
+    const { t } = useTranslation('auth');
+    const [group, setGroup] = useState<'nodes' | 'inbounds' | 'credentials' | 'protocols'>('nodes');
+    const scope = authScope();
+    const validRange = preset !== 'custom' || Boolean(from && to);
+    const { data, error, isLoading, mutate } = useSWR(validRange ? [scope, 'user-usage', owner, preset, from, to] : null,
+        () => fetchUsage<UsageReport>('', { owner, ...usageRange(preset, from, to) }), { refreshInterval: 5000, keepPreviousData: false });
+    const summary = data?.summary;
+    return <div className="space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-2"><p className="m-0 text-xs text-ui-muted">{data && `${t('usage.updated')}: ${usageDate(data.updatedAt)}`}</p><Button disabled={isLoading} onClick={() => void mutate()}>{t('refresh')}</Button></div>
+        {error && <p role="alert" className="text-sm text-ui-danger">{t('usage.loadFailed')}</p>}
+        {isLoading && <p role="status" className="text-sm text-ui-muted">{t('usage.loading')}</p>}
+        {summary && <>
+            <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <Metric label={t('usage.periodUpload')} value={usageBytes(summary.period.upload)} exact={summary.period.upload} />
+                <Metric label={t('usage.periodDownload')} value={usageBytes(summary.period.download)} exact={summary.period.download} />
+                <Metric label={t('usage.lifetimeUpload')} value={usageBytes(summary.lifetime.upload)} exact={summary.lifetime.upload} />
+                <Metric label={t('usage.lifetimeDownload')} value={usageBytes(summary.lifetime.download)} exact={summary.lifetime.download} />
+                <Metric label={t('usage.currentRate')} value={`↑ ${usageBytes(summary.uploadRate)}/s · ↓ ${usageBytes(summary.downloadRate)}/s`} />
+                <Metric label={t('usage.connections')} value={`TCP ${summary.activeTcp} · UDP ${summary.activeUdp}`} />
+                <Metric label={t('usage.peak')} value={`TCP ${summary.peakTcp} · UDP ${summary.peakUdp}`} />
+                <Metric label={t('usage.activeMinutes')} value={summary.periodActiveMinutes} />
+                <Metric label={t('usage.opened')} value={summary.period.opened} />
+                <Metric label={t('usage.failed')} value={summary.period.failed} />
+                <Metric label={t('usage.firstSeen')} value={usageDate(summary.lifetime.firstSeen)} />
+                <Metric label={t('usage.lastSeen')} value={usageDate(summary.lifetime.lastSeen)} />
+                <Metric label={t('usage.sessionDuration')} value={usageDuration(summary.period.sessionMillis)} />
+            </dl>
+            <p className="text-xs text-ui-muted">{t('usage.timeHint')}</p>
+            {(data.health.persistenceError || data.health.droppedAudit !== '0') && <p role="alert" className="text-sm text-ui-danger">{t('usage.incomplete', { dropped: data.health.droppedAudit })}</p>}
+            <UsageTrend report={data} />
+            <div role="group" aria-label={t('usage.breakdown')} className="flex flex-wrap gap-2">{(['nodes', 'inbounds', 'credentials', 'protocols'] as const).map(value => <Button key={value} aria-pressed={group === value} variant={group === value ? 'primary' : 'default'} onClick={() => setGroup(value)}>{t(`usage.${value}`)}</Button>)}</div>
+            <BreakdownTable rows={data[group]} label={t(`usage.${group}`)} />
+        </>}
+        <ResourceUsage key={`${scope}:${owner}`} owner={owner} />
+    </div>;
 }
 
 function Metric({ label, value, exact }: { label: string; value: string; exact?: string }) {
@@ -94,13 +105,8 @@ function BreakdownTable({ rows, label }: { rows: UsageBreakdown[]; label: string
 
 function UsageTrend({ report }: { report: UsageReport }) {
     const { t } = useTranslation('auth');
-    const values = report.series.map(point => BigInt(point.upload) + BigInt(point.download));
-    const peak = values.reduce((a, b) => a > b ? a : b, 1n);
-    const span = Math.max(report.to - report.from, 1);
-    const bucketSeconds = report.interval === 'hour' ? 3600 : 86400;
-    const width = Math.max(1, Math.min(600, bucketSeconds / span * 600) - 1);
-    return <details className="space-y-3"><summary className="cursor-pointer text-sm font-medium">{t('usage.trend')}</summary>
-        <svg role="img" aria-label={t('usage.trend')} viewBox="0 0 600 110" className="h-36 w-full text-ui-primary" preserveAspectRatio="none">{report.series.map((point, index) => { const height = Number(values[index] * 100n / peak); return <rect key={point.start} x={(point.start - report.from) / span * 600} y={100 - height} width={width} height={height} fill="currentColor" />; })}</svg>
+    return <details open className="space-y-3"><summary className="cursor-pointer text-sm font-medium">{t('usage.trend')}</summary>
+        <UsageTrendChart report={report} />
         <div className="max-h-64 overflow-auto"><table className="w-full text-left text-sm"><thead><tr><th scope="col" className="p-2">UTC</th><th scope="col" className="p-2">{t('usage.upload')}</th><th scope="col" className="p-2">{t('usage.download')}</th></tr></thead><tbody>{report.series.map(point => <tr key={point.start}><th scope="row" className="p-2 font-normal">{new Date(point.start * 1000).toISOString().replace('T', ' ').slice(0, 16)}</th><td className="p-2" title={point.upload}>{usageBytes(point.upload)}</td><td className="p-2" title={point.download}>{usageBytes(point.download)}</td></tr>)}</tbody></table></div>
     </details>;
 }

@@ -8,6 +8,9 @@ const TrafficControlPage = dynamic(() => import('@/docs/traffic-control/page'), 
 const GatewayPage = dynamic(() => import('@/docs/gateway/page'), { loading });
 const CertificatesPage = dynamic(() => import('@/docs/certificates/page'), { loading });
 const SecurityPage = dynamic(() => import('@/docs/security/page'), { loading });
+const CredentialsPage = dynamic(() => import('@/docs/security/credentials/page'), { loading });
+const UsagePage = dynamic(() => import('@/docs/security/usage/page'), { loading });
+const AdministrationPage = dynamic(() => import('@/docs/security/admin/page'), { loading });
 const LoginPage = dynamic(() => import('@/docs/login/page'), { loading });
 const HomePage = dynamic(() => import('@/docs/home/page'), { loading });
 const GroupPage = dynamic(() => import('@/docs/group/page'), { loading });
@@ -36,6 +39,9 @@ const ConfigAboutPage = dynamic(() => import('@/docs/config/about/page'), { load
 
 export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/security", component: SecurityPage },
+    { path: "/docs/security/credentials", component: CredentialsPage },
+    { path: "/docs/security/usage", component: UsagePage },
+    { path: "/docs/security/admin", component: AdministrationPage },
     { path: "/login", component: LoginPage },
     { path: "/", component: HomePage },
     { path: "/docs/group", component: GroupPage },

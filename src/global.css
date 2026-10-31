@@ -50,6 +50,8 @@
     --color-success: #237546;
     --color-warning: #855A12;
     --color-info: #296C85;
+    --chart-download: #1F7FB8;
+    --chart-upload: #B5762A;
     --color-violet: #79546D;
     --elevation-0: none;
     --elevation-1: 0 1px 2px rgb(20 25 32 / 8%);
@@ -126,6 +128,8 @@ html[data-bs-theme="dark"] {
     --color-success: #98CCA9;
     --color-warning: #E4C17D;
     --color-info: #9BC9D7;
+    --chart-download: #3E9BD1;
+    --chart-upload: #C4863A;
     --color-violet: #D5AAC7;
     --elevation-2: 0 16px 40px -12px rgb(0 0 0 / 45%), 0 2px 6px rgb(0 0 0 / 20%);
     --elevation-1: 0 1px 2px rgb(0 0 0 / 12%);
@@ -210,6 +214,12 @@ html[data-bs-theme="dark"] .accent-swatch { background: var(--accent-dark); }
     }
 
     input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width: 16px; height: 16px; flex-shrink: 0; }
+    input[type="checkbox"] { appearance: none; display: inline-grid; place-content: center; margin: 0; cursor: pointer; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 4px; transition: background-color var(--motion-fast) ease-out, border-color var(--motion-fast) ease-out; }
+    input[type="checkbox"]::before { content: ""; width: 10px; height: 10px; background: var(--accent-foreground); clip-path: polygon(14% 44%, 0 59%, 39% 100%, 100% 22%, 85% 8%, 38% 68%); transform: scale(0); transition: transform var(--motion-fast) ease-out; }
+    input[type="checkbox"]:hover:not(:disabled) { border-color: var(--accent); }
+    input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+    input[type="checkbox"]:checked::before { transform: scale(1); }
+    input[type="checkbox"]:disabled { cursor: not-allowed; opacity: 0.5; }
     input[type="checkbox"]:focus-visible, input[type="radio"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     input::placeholder, textarea::placeholder { color: var(--text-tertiary); opacity: 1; }
 

@@ -1,3 +1,4 @@
+import { MultiSelectChips } from '@/component/v2/multi-select';
 import { authAPI, type User } from '@/auth/api';
 import { useSession } from '@/auth/context';
 import type { Inbound } from '@/contract/inbound';
@@ -20,7 +21,7 @@ export function UserAuthentication({ inbound, onChange }: { inbound: Inbound; on
             {inbound.protocol.type !== 'sstp' && (inbound.authentication.mode || 'mixed') === 'mixed' && <p role="note" className="text-sm text-ui-warning">{t('authenticationMode.mixedWarning')}</p>}
             {inbound.protocol.type === 'mixed' && <p className="text-sm text-ui-muted">{t('mixedUserAuthenticationHelp')}</p>}
             {error && <p role="alert" className="text-sm text-ui-danger">{t('requestFailed')}</p>}
-            <fieldset className="space-y-2" disabled={!available || inbound.authentication.mode === 'legacy'}><legend>{t('allowedUsers')}</legend>{users?.map(user => <label key={user.id} className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={inbound.authentication!.users.includes(user.id)} onChange={() => { const selected = inbound.authentication!.users; onChange({ ...inbound, authentication: { ...inbound.authentication!, users: selected.includes(user.id) ? selected.filter(id => id !== user.id) : [...selected, user.id] } }); }} />{user.login}{user.disabled ? ` (${t('disabled')})` : ''}</label>)}</fieldset>
+            <fieldset className="space-y-2" disabled={!available || inbound.authentication.mode === 'legacy'}><legend className="text-sm font-medium">{t('allowedUsers')}</legend><MultiSelectChips value={inbound.authentication.users} onChange={selected => onChange({ ...inbound, authentication: { ...inbound.authentication!, users: selected } })} options={users?.map(user => ({ value: user.id, label: `${user.login}${user.disabled ? ` (${t('disabled')})` : ''}` })) ?? []} /></fieldset>
             {inbound.authentication.users.filter(id => !users?.some(user => user.id === id)).map(id => <p key={id} className="break-all text-xs text-ui-muted">{id}</p>)}
             <p className="text-xs text-ui-muted">{t('emptyUserSelectionHelp')}</p>
         </div>}

@@ -1,5 +1,5 @@
 import { useSession } from '@/auth/context';
-import { routePermissions } from '@/auth/policy';
+import { canReadRoute } from '@/auth/policy';
 import { navigationSections } from './navigation';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -41,7 +41,7 @@ function Sidebar({ id, show, onHide, triggerRef }: SidebarProps) {
         path={path} current={pathname} onSelect={handleNavLinkClick} icon={icon}>{title}</SelectableLink>;
 
     const session = useSession();
-    const visible = (path: string) => !session || !routePermissions[path] || session.principal.permissions.includes(routePermissions[path].read);
+    const visible = (path: string) => !session || canReadRoute(path, session.principal.permissions);
     const sections = navigationSections.map(section => ({
         ...section,
         items: section.items.flatMap<(typeof navigationSections)[number]['items'][number]>(item => {

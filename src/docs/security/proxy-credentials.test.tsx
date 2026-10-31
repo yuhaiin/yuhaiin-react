@@ -45,9 +45,9 @@ it('offers permanent validity by default and requires a future date when it is d
     vi.stubGlobal('fetch', fetch);
     const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
     await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><ProxyCredentials /></SWRConfig>));
-    const permanent = host.querySelector<HTMLInputElement>('input[type=checkbox]')!;
-    expect(permanent.closest('label')!.textContent).toContain('permanentCredential');
-    expect(permanent.checked).toBe(true);
+    const permanent = host.querySelector<HTMLButtonElement>('[role=switch]')!;
+    expect(permanent.parentElement!.textContent).toContain('permanentCredential');
+    expect(permanent.getAttribute('aria-checked')).toBe('true');
     expect(host.querySelector('input[type=datetime-local]')).toBeNull();
     const input = host.querySelector('input')!;
     await act(async () => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, 'phone'); input.dispatchEvent(new Event('input', { bubbles: true })); permanent.click(); });

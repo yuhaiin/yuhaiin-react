@@ -66,7 +66,7 @@ async function loginUI(name) {
     await fill('input[name="username"]', name); await fill('input[type="password"]', password);
     await evaluate(`document.querySelector('input[type="password"]').closest('form').requestSubmit()`);
     await until(() => evaluate(`!document.querySelector('input[type="password"]')`), 'successful sign in');
-    await send('Page.navigate', { url: `${base}/#/docs/security` });
+    await send('Page.navigate', { url: `${base}/#/docs/security/usage` });
     await until(() => evaluate(`document.body.innerText.includes('User traffic and audit')`), 'usage panel');
 }
 async function screenshot(name) { await evaluate(`new Promise(resolve=>setTimeout(resolve,250))`); const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false }); await writeFile(join(artifacts, name), Buffer.from(shot.data, 'base64')); }
@@ -114,6 +114,7 @@ try {
     await key('Enter', 'Enter', 13);
     console.log('Selected owner:', await evaluate(`(${panel}).querySelector('[role="combobox"][aria-label="Owner"]').textContent`));
     await until(() => evaluate(`Boolean((${panel}).querySelector('dd[title="${report.summary.lifetime.download}"]'))`), 'selected user totals');
+    await evaluate(`[...(${panel}).querySelectorAll('[role="tab"]')].find(tab=>tab.textContent==='Connection audit').dispatchEvent(new MouseEvent('mousedown',{bubbles:true,button:0}))`);
     await until(() => evaluate(`Boolean([...(${panel}).querySelectorAll('button')].find(b=>b.textContent==='Next' && !b.disabled))`), 'audit first page');
     await evaluate(`(${panel}).scrollIntoView({block:'start',behavior:'instant'}); for (let p=(${panel}).parentElement;p;p=p.parentElement) { if (p.scrollHeight>p.clientHeight && ['auto','scroll'].includes(getComputedStyle(p).overflowY)) {p.scrollTop-=72;break;} }`); await screenshot('usage-desktop.png');
     await click(`[...(${panel}).querySelectorAll('button')].find(b=>b.textContent==='Next')`);
@@ -121,6 +122,7 @@ try {
     await send('Emulation.setDeviceMetricsOverride', { width: 360, height: 900, deviceScaleFactor: 1, mobile: true });
     await evaluate(`(${panel}).scrollIntoView({block:'start',behavior:'instant'}); for (let p=(${panel}).parentElement;p;p=p.parentElement) { if (p.scrollHeight>p.clientHeight && ['auto','scroll'].includes(getComputedStyle(p).overflowY)) {p.scrollTop-=72;break;} }`); await screenshot('usage-mobile.png');
     assert(await evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'mobile viewport overflow');
+    await send('Page.navigate', { url: `${base}/#/docs/security` });
     await click(`[...document.querySelectorAll('button')].find(b=>b.textContent==='Sign out')`);
     await loginUI('bob');
     await until(() => evaluate(`(${panel}).innerText.includes('3')`), 'self usage');

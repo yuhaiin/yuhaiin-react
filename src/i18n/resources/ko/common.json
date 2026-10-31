@@ -41,5 +41,17 @@
     "title": "언어",
     "auto": "자동",
     "preference": "언어 설정"
+  },
+  "dateTime": {
+    "placeholderDateTime": "날짜와 시간 선택",
+    "placeholderDate": "날짜 선택",
+    "clear": "지우기",
+    "today": "오늘",
+    "now": "지금",
+    "done": "완료",
+    "previousMonth": "이전 달",
+    "nextMonth": "다음 달",
+    "hour": "시",
+    "minute": "분"
   }
 }

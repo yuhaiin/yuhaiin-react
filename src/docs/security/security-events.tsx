@@ -1,3 +1,4 @@
+import Switch from '@/component/v2/switch';
 import { StageChangeButton } from "@/component/configuration-change";
 import { authAPI } from '@/auth/api';
 import { useSession } from '@/auth/context';
@@ -7,6 +8,7 @@ import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader } from '@/component/v2/card';
 import { confirmAction } from '@/component/v2/confirmation';
 import { Input } from '@/component/v2/input';
+import { DateTimeField } from '@/component/v2/date-time-field';
 import { Select } from '@/component/v2/select';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -61,7 +63,7 @@ function AuditWorkspace({ scope, permissions }: { scope: string; permissions: st
         <form aria-label={t('audit.filters')} onSubmit={apply} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {(['search', 'event', 'actorId', 'subjectId', 'authMethod', 'reason'] as const).map(key => <label key={key} className="space-y-2"><span className="text-sm">{t(`audit.${key}`)}</span><Input maxLength={256} value={draft[key]} onChange={event => setDraft({ ...draft, [key]: event.target.value })} /></label>)}
             <label className="space-y-2"><span className="text-sm">{t('usage.result')}</span><Select ariaLabel={t('usage.result')} value={draft.result || 'all'} onValueChange={value => setDraft({ ...draft, result: value === 'all' ? '' : value })} items={[{ value: 'all', label: t('audit.allResults') }, { value: 'succeeded', label: t('audit.succeeded') }, { value: 'failed', label: t('audit.failed') }]} /></label>
-            {(['from', 'to'] as const).map(key => <label key={key} className="space-y-2"><span className="text-sm">{t(`audit.${key}`)}</span><Input type="datetime-local" value={draft[key]} onChange={event => setDraft({ ...draft, [key]: event.target.value })} /></label>)}
+            {(['from', 'to'] as const).map(key => <label key={key} className="space-y-2"><span className="text-sm">{t(`audit.${key}`)}</span><DateTimeField value={draft[key]} onChange={value => setDraft({ ...draft, [key]: value })} /></label>)}
             <div className="flex items-end gap-2"><Button type="submit">{t('audit.apply')}</Button><Button type="button" onClick={() => { setDraft(emptyFilters); setFilters(emptyFilters); setCursor(''); setPrevious([]); }}>{t('audit.clear')}</Button></div>
         </form>
         {data && <p className="break-all text-xs text-ui-muted">{t('audit.instance')}: {data.instanceId}</p>}
@@ -95,7 +97,7 @@ function AuditSettingsEditor({ scope, settings, permissions, onSaved, onReload }
         <Button type="button" disabled={busy} onClick={async () => { if (await confirmAction(t('audit.reloadConfirm')) && scope === authScope()) await onReload(); }}>{t('refresh')}</Button><p className="text-sm text-ui-muted">{t('audit.retentionHelp')}</p>{failure && <p role="alert" className="text-sm text-ui-danger">{failure}</p>}
         <fieldset disabled={!writable || busy} className="space-y-3">
             <div className="grid gap-3 sm:grid-cols-3">{(['maxEvents', 'maxAgeDays', 'outboxLimit'] as const).map(key => <label key={key} className="space-y-2"><span className="text-sm">{t(`audit.${key}`)}</span><Input type="number" min={key === 'maxEvents' ? 1000 : key === 'outboxLimit' ? 64 : 0} max={key === 'maxEvents' ? 100000 : key === 'outboxLimit' ? 16384 : 3650} required step={1} value={draft[key]} onChange={event => setDraft({ ...draft, [key]: Number(event.target.value) })} /></label>)}</div>
-            <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" checked={draft.forwardEnabled} onChange={event => setDraft({ ...draft, forwardEnabled: event.target.checked })} />{t('audit.forwardEnabled')}</label>
+            <div className="w-fit"><Switch label={t('audit.forwardEnabled')} checked={draft.forwardEnabled} onCheckedChange={forwardEnabled => setDraft({ ...draft, forwardEnabled })} /></div>
             <Select ariaLabel={t('audit.transport')} value={draft.transport} onValueChange={value => setDraft({ ...draft, transport: value })} items={[{ value: 'https', label: t('audit.https') }, { value: 'syslog-tls', label: t('audit.syslog') }]} />
             <p className="break-all text-sm">{t('audit.destination')}: {settings.destination || t('audit.unconfigured')}</p>
             <label className="block space-y-2"><span className="text-sm">{t('audit.endpoint')}</span><Input type="password" autoComplete="new-password" disabled={!manage || clearEndpoint} maxLength={2048} value={draft.endpoint} placeholder={t(settings.endpointConfigured ? 'audit.preserve' : 'audit.endpointHint')} onChange={event => setDraft({ ...draft, endpoint: event.target.value })} /></label>

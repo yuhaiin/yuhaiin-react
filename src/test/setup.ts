@@ -20,3 +20,6 @@ if (!HTMLElement.prototype.scrollIntoView) {
         value: () => {},
     });
 }
+
+// Radix form controls measure themselves; jsdom has no layout to observe.
+globalThis.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {} };

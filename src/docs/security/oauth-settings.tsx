@@ -1,3 +1,4 @@
+import Switch from '@/component/v2/switch';
 import { StageChangeButton } from "@/component/configuration-change";
 import { authAPI } from '@/auth/api';
 import { useSession } from '@/auth/context';
@@ -12,7 +13,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR, { useSWRConfig } from 'swr';
 
-export function OAuthSettingsPanel({ embedded = false, onConfigured }: { embedded?: boolean; onConfigured?: (ready: boolean) => void } = {}) {
+export function OAuthSettingsPanel({ onConfigured }: { onConfigured?: (ready: boolean) => void } = {}) {
     const { t } = useTranslation('auth');
     const session = useSession(); const scope = authScope();
     const writable = session?.principal.permissions.includes('security:write') ?? false;
@@ -23,7 +24,7 @@ export function OAuthSettingsPanel({ embedded = false, onConfigured }: { embedde
     const [creating, setCreating] = useState<OAuthProvider>();
     const updated = async () => { if (scope !== authScope()) return; await mutate(); await refresh(key => key === 'auth-oauth-providers' || Array.isArray(key) && key.includes('auth-oauth-providers')); };
     const configured = async (ready: boolean, signal?: AbortSignal) => { if (!active.current || signal?.aborted || scope !== authScope()) return; await updated(); if (scope === authScope() && active.current) { setCreating(undefined); onConfigured?.(ready); } };
-    const content = <div className="space-y-5">
+    return <Card><CardHeader><h2 className="m-0 font-medium">{t('oauthSettings')}</h2></CardHeader><CardBody className="space-y-5">
         <p className="text-sm text-ui-muted">{t('oauthSetupHint')}</p>
         <p className="text-sm text-ui-muted">{t('oidc.localRecovery')}</p>
         {error && <p role="alert" className="text-sm text-ui-danger">{t('requestFailed')}</p>}
@@ -33,8 +34,7 @@ export function OAuthSettingsPanel({ embedded = false, onConfigured }: { embedde
         })}
         {writable && !creating && <Button onClick={() => setCreating(`oidc-${crypto.randomUUID()}`)}>{t('oidc.add')}</Button>}
         {creating && <ProviderSettings key={JSON.stringify([scope,creating])} provider={creating} creating updated={updated} configured={configured} cancel={() => setCreating(undefined)} />}
-    </div>;
-    return embedded ? content : <Card><CardHeader><h2 className="m-0 font-medium">{t('oauthSettings')}</h2></CardHeader><CardBody>{content}</CardBody></Card>;
+    </CardBody></Card>;
 }
 
 function ProviderSettings({ provider, settings, creating, updated, configured, cancel }: { provider: OAuthProvider; settings?: OAuthSettings; creating?: boolean; updated: () => Promise<void>; configured: (ready: boolean, signal?: AbortSignal) => Promise<void>; cancel?: () => void }) {
@@ -90,7 +90,7 @@ function ProviderSettings({ provider, settings, creating, updated, configured, c
         <label className="block space-y-2"><span>{t('oauthClientSecret')}</span><Input type="password" required={!generic && !settings?.secretConfigured} maxLength={2048} autoComplete="off" disabled={!writable || !manageSecret || busy || clearSecret} value={secret} onChange={event => setSecret(event.target.value)} placeholder={settings?.secretConfigured ? t('oauthKeepSecret') : ''} /></label>
         {generic && settings?.secretConfigured && manageSecret && <label className="flex items-center gap-2"><input type="checkbox" disabled={!writable || busy} checked={clearSecret} onChange={event => setClearSecret(event.target.checked)} />{t('oidc.publicClient')}</label>}
         <label className="block space-y-2"><span>{t('oauthRedirectUrl')}</span><Input type="url" required maxLength={2048} disabled={!writable || busy} value={redirectUrl} onChange={event => setRedirectUrl(event.target.value)} /></label>
-        <label className="flex items-center gap-2"><input type="checkbox" disabled={!writable || busy} checked={enabled} onChange={event => setEnabled(event.target.checked)} />{t('oidc.enabled')}</label>
+        <div className="w-fit"><Switch label={t('oidc.enabled')} checked={enabled} onCheckedChange={setEnabled} disabled={!writable || busy} /></div>
         <div className="flex flex-wrap gap-2">
             {writable && <><Button type="submit" variant="primary" permission="security:write" loading={busy}>{t('save')}</Button><StageChangeButton disabled={busy} request={{ store: "identity", kind: "oidc-provider", resourceId: provider, payload: { provider, clientId, clientSecret: clearSecret ? "" : secret, redirectUrl, revision: settings?.revision ?? 0, enabled, ...(generic ? { issuer, name, clearSecret } : {}) } }} onCommitted={async () => { setSecret(""); setClearSecret(false); await updated(); }} /></>}
             {settings && <><Button type="button" disabled={busy} onClick={() => void check()}>{t('oidc.check')}</Button>{writable && <Button type="button" permission="security:write" variant="outline-danger" disabled={busy} onClick={() => void remove()}>{t('deleteOAuth')}</Button>}</>}

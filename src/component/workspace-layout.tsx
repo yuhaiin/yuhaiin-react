@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { LayoutGroup, motion } from 'motion/react';
+import { animate, LayoutGroup, motion } from 'motion/react';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { motionTiming } from './v2/styles';
 
@@ -27,15 +27,17 @@ export function WorkspaceDirectory({ children, label, hiddenOnMobile = false }: 
 const DETAIL_MIN_HEIGHT = 320;
 const SPINNER_DELAY_MS = 200;
 const HEIGHT_HOLD_MS = 3000;
+const DETAIL_ENTER_OFFSET = 12;
 
 /**
  * Swaps editors as one step: the outgoing height stays reserved and the next editor
  * stays hidden until it has loaded, so fast requests never flash a spinner.
  */
-function useDetailSwap(key: string, reducedMotion: boolean) {
+function useDetailSwap(key: string, order: number, reducedMotion: boolean) {
     const [content, setContent] = useState<HTMLElement | null>(null);
     const [held, setHeld] = useState<{ key: string; minHeight?: number; hidden?: boolean }>({ key });
     const shownKey = useRef(key);
+    const shownOrder = useRef(order);
     if (held.key !== key) {
         // Updating during render reads the outgoing editor before React replaces it.
         const height = content?.getBoundingClientRect().height ?? 0;
@@ -44,6 +46,9 @@ function useDetailSwap(key: string, reducedMotion: boolean) {
     useLayoutEffect(() => {
         if (!content || shownKey.current === key) return;
         shownKey.current = key;
+        // The editor enters from the side of the list it was picked from.
+        const direction = order >= 0 && shownOrder.current >= 0 && order < shownOrder.current ? -1 : 1;
+        shownOrder.current = order;
         const spinner = setTimeout(() => setHeld(current => ({ ...current, hidden: false })), SPINNER_DELAY_MS);
         const hold = setTimeout(() => setHeld(current => ({ ...current, minHeight: undefined })), HEIGHT_HOLD_MS);
         const observer = new MutationObserver(() => settle());
@@ -52,18 +57,20 @@ function useDetailSwap(key: string, reducedMotion: boolean) {
             if (content.querySelector('[data-loading]')) return;
             stop();
             setHeld(current => ({ key: current.key }));
-            if (!reducedMotion) content.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: motionTiming.fast * 1000, easing: 'ease-out' });
+            // Only the keyed editor moves, so its styles leave with it on the next swap.
+            const editor = content.firstElementChild;
+            if (!reducedMotion && editor) void animate(editor, { opacity: [0, 1], y: [direction * DETAIL_ENTER_OFFSET, 0] }, { duration: motionTiming.slow, ease: 'easeOut' });
         };
         observer.observe(content, { childList: true, subtree: true });
         settle();
         return stop;
-    }, [key, content, reducedMotion]);
+    }, [key, order, content, reducedMotion]);
     return { setContent, minHeight: held.minHeight, hidden: held.hidden };
 }
 
-export function WorkspaceDetail({ children, hiddenOnMobile = false, transitionKey = 'workspace' }: { children: ReactNode; hiddenOnMobile?: boolean; transitionKey?: string }) {
+export function WorkspaceDetail({ children, hiddenOnMobile = false, transitionKey = 'workspace', order = -1 }: { children: ReactNode; hiddenOnMobile?: boolean; transitionKey?: string; /** Position of the selected row; -1 when it has none. */ order?: number }) {
     const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
-    const { setContent, minHeight, hidden } = useDetailSwap(transitionKey, reducedMotion);
+    const { setContent, minHeight, hidden } = useDetailSwap(transitionKey, order, reducedMotion);
     return <div className={clsx('min-w-0 rounded-ui-lg border border-ui-border bg-ui-surface p-4 xl:p-5', hiddenOnMobile && 'hidden md:block')}>
         <div className="min-w-0" style={{ minHeight }}><div ref={setContent} className="min-w-0" style={{ opacity: hidden ? 0 : undefined }}>
             <div data-ui-transition="detail" key={transitionKey} className="min-w-0 min-h-80">{children}</div>
