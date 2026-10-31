@@ -96,8 +96,8 @@
     --height-field: 38px;
     --surface-selected: color-mix(in srgb, var(--text-primary) 7%, var(--surface));
     --surface-readonly: var(--surface-muted);
-    --disabled-bg: #EBEEF1;
-    --disabled-border: #CDD3DA;
+    --disabled-bg: color-mix(in srgb, var(--surface-muted) 30%, var(--surface));
+    --disabled-border: color-mix(in srgb, var(--border) 70%, transparent);
     --disabled-fg: #5D6774;
     --shadow-control: var(--elevation-1);
     --height-field-sm: 32px;
@@ -133,8 +133,8 @@ html[data-bs-theme="dark"] {
     --color-violet: #D5AAC7;
     --elevation-2: 0 16px 40px -12px rgb(0 0 0 / 45%), 0 2px 6px rgb(0 0 0 / 20%);
     --elevation-1: 0 1px 2px rgb(0 0 0 / 12%);
-    --disabled-bg: #292D32;
-    --disabled-border: #424A54;
+    --disabled-bg: color-mix(in srgb, var(--surface-muted) 30%, var(--surface));
+    --disabled-border: color-mix(in srgb, var(--border) 70%, transparent);
     --disabled-fg: #96A1AF;
 }
 

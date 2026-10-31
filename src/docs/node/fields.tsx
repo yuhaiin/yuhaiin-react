@@ -37,7 +37,7 @@ const StringField: FC<{ label: string; value: unknown; secret?: boolean; disable
     return (
         <div className="relative mb-4 min-w-0 max-w-full">
             <SettingLabel className="mb-2 block">{label}</SettingLabel>
-            <div className="min-h-field min-w-0 max-w-full whitespace-pre-wrap break-all rounded-ui-md border border-ui-border bg-ui-surface-muted px-3.5 py-2 text-[0.9375rem] leading-normal text-ui-muted shadow-inner-subtle">
+            <div className="min-h-field min-w-0 max-w-full whitespace-pre-wrap break-all rounded-ui-md border border-ui-disabled-border bg-ui-disabled px-3.5 py-2 text-[0.9375rem] leading-normal text-ui-disabled-fg">
                 {access.masked ? t("secrets.savedValue") : text || "-"}
             </div>
         </div>

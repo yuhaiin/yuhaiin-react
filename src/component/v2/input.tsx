@@ -51,6 +51,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                     ui.fieldReadonly,
                     ui.fieldDisabled,
                     "placeholder:not-italic max-sm:min-h-11",
+                    // :read-only also matches file inputs, which would otherwise always look read-only.
+                    props.type === "file" && "cursor-pointer py-1 text-ui-muted read-only:cursor-pointer read-only:border-ui-border read-only:bg-ui-surface file:mr-3 file:h-[28px] file:cursor-pointer file:rounded-ui-sm file:border file:border-solid file:border-ui-border file:bg-ui-surface file:px-3 file:text-sm file:font-medium file:text-ui-fg hover:file:bg-ui-hover disabled:read-only:border-ui-disabled-border disabled:read-only:bg-ui-disabled disabled:cursor-not-allowed disabled:file:cursor-not-allowed disabled:file:border-ui-disabled-border disabled:file:text-ui-disabled-fg disabled:hover:file:bg-ui-surface max-sm:py-2",
                     {
                         "min-h-field": size === "default",
                         "h-field-sm min-h-field-sm py-1 px-2.5 sm:text-[0.8125rem]": size === "sm",

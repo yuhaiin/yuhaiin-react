@@ -63,8 +63,7 @@ function UserRow({ user, busy, lastAdmin, onSave, onReset, onDelete }: { user: U
     return <section className="rounded-ui-md border border-ui-border p-4" aria-label={user.login}>
         <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="m-0 font-medium">{user.login}</h3><Badge variant={statusBadge[status]}>{t(status)}</Badge></div>
         <p className="mt-1 break-all text-xs text-ui-muted">{user.id}</p>
-        {/* Saving only pauses these fields for a moment, so they keep their frame without the grey fill. */}
-        <form className="mt-4 [&_:is(input,[role=combobox]):disabled]:bg-transparent" onSubmit={event => { event.preventDefault(); onSave({ login: name, role, disabled }); }}>
+        <form className="mt-4" onSubmit={event => { event.preventDefault(); onSave({ login: name, role, disabled }); }}>
             <div className="grid gap-3 sm:grid-cols-2">
                 <label className="min-w-0 space-y-2"><span className="block text-sm">{t('loginName')}</span><Input value={name} onChange={event => setName(event.target.value)} pattern="[A-Za-z0-9_.-]{1,64}" required disabled={busy} /></label>
                 <div className="min-w-0 space-y-2"><span className="block text-sm">{t('role')}</span>
