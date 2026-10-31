@@ -18,6 +18,10 @@ export async function restoreBackup(option: RestoreOption): Promise<void> {
   await requestJSON<void>("POST", "/api/v2/backup/restore", option);
 }
 
+export async function getBackupSecrets(signal?: AbortSignal): Promise<BackupOption> {
+  return normalizeBackupOption(await requestJSON<BackupOption>("GET", "/api/v2/backup/config", undefined, undefined, signal, { revealSecrets: true }));
+}
+
 export type RecoveryBackup = import('@/api/generated-contracts').Go.recovery.Backup;
 export type RecoveryPolicy = import('@/api/generated-contracts').Go.recovery.Policy;
 export type RecoveryBackupStatus = import('@/api/generated-contracts').Go.recovery.BackupStatus;

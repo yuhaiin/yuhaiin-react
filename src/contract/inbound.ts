@@ -154,7 +154,7 @@ export function createDefaultInbound(id: string): Inbound {
 // Select a protocol with its required listener and certificate setup, keeping a
 // usable existing certificate (and its persisted CA) rather than regenerating it.
 export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["type"]): Inbound {
-    if (!["http", "socks5", "mixed", "yuubinsya", "hysteria2"].includes(type)) inbound = { ...inbound, authentication: undefined };
+    if (!["http", "socks5", "mixed", "yuubinsya", "hysteria2", "sstp"].includes(type)) inbound = { ...inbound, authentication: undefined };
     const protocol = inbound.protocol.type === type
         ? inbound.protocol : createDefaultProtocol(type);
     if (["tun", "tproxy", "redir", "krunlet", "wireguard"].includes(type)) return normalizeInbound({ ...inbound, protocol, network: { type: "empty", empty: {} }, transports: [] });
@@ -163,7 +163,7 @@ export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["t
         return normalizeInbound({
             ...inbound,
             protocol,
-            authentication: inbound.authentication ?? { users: [] },
+            authentication: inbound.authentication ?? { mode: "users", users: [] },
             network: { type: "tcp_udp", tcp_udp: { host, udp: "tcp_only" } },
             transports: [],
         });
@@ -190,7 +190,7 @@ export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["t
 
 export function normalizeInbound(value: Partial<Inbound> & { id?: string }): Inbound {
     return {
-        ...(value.authentication ? { authentication: { users: [...value.authentication.users] } } : {}),
+        ...(value.authentication ? { authentication: { ...value.authentication, users: [...value.authentication.users] } } : {}),
         id: value.id ?? "",
         name: value.name ?? value.id ?? "",
         enabled: value.enabled ?? false,

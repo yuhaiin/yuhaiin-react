@@ -11,7 +11,7 @@ vi.mock('react-i18next', () => { const t = (key: string) => key; return { useTra
 vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));
 vi.mock('@/auth/oauth', async original => ({ ...await original<typeof import('@/auth/oauth')>(), beginOAuth: vi.fn(async () => {}) }));
 afterEach(() => { clearSession(); localStorage.clear(); vi.unstubAllGlobals(); vi.clearAllMocks(); });
-function authenticate() { setApiUrl('https://controller.example'); establishSession('test', { userId: 'admin', credentialType: 'session', permissions: ['identity:read', 'users:manage'] }, Math.floor(Date.now() / 1000) + 600, 'https://controller.example'); }
+function authenticate() { setApiUrl('https://controller.example'); establishSession('test', { userId: 'admin', credentialType: 'session', permissions: ['identity:read', 'users:manage', 'security:read', 'security:write', 'secrets:manage'] }, Math.floor(Date.now() / 1000) + 600, 'https://controller.example'); }
 it('lists connections, starts a session-bound link, and removes only the selected provider', async () => {
     authenticate();
     let links = [{ provider: 'github', subject: '123', displayName: 'github-user', createdAt: 1 }];
@@ -83,4 +83,86 @@ it('shows an unconfigured notice without administrator app settings for ordinary
     await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><OAuthLinks /></SWRConfig>));
     expect(host.textContent).toContain('oauthAskAdmin'); expect(host.textContent).not.toContain('oauthSettings'); expect(document.querySelector('form[aria-label=GitHub]')).toBeNull();
     act(() => root.unmount()); host.remove();
+});
+it('creates a generic OIDC provider with a stable callback and preserves the draft on conflict', async () => {
+    authenticate();
+    const fetch = vi.fn(async (_url: URL, init: RequestInit) => {
+        if (init.method === 'POST') return Response.json({}, { status: 409 });
+        return Response.json([]);
+    }); vi.stubGlobal('fetch', fetch);
+    const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
+    try {
+        await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><OAuthSettingsPanel /></SWRConfig>));
+        await act(async () => [...host.querySelectorAll<HTMLButtonElement>('button')].find(button => button.textContent === 'oidc.add')!.click());
+        const form = host.querySelector<HTMLFormElement>('form[aria-label="OpenID Connect"]')!;
+        const fields = form.querySelectorAll<HTMLInputElement>('input');
+        await act(async () => {
+            for (const [field,value] of [[fields[0],'Company'],[fields[1],'https://idp.example'],[fields[2],'company-client']] as const) {
+                Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(field,value); field.dispatchEvent(new Event('input',{bubbles:true}));
+            }
+        });
+        const callback = fields[4].value;
+        expect(callback).toMatch(/^https:\/\/controller.example\/api\/v2\/auth\/oauth\/oidc-[0-9a-f-]+\/callback$/);
+        expect(fields[3].required).toBe(false);
+        await act(async () => form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
+        const writes = fetch.mock.calls.filter(([,init]) => init.method === 'POST');
+        expect(writes).toHaveLength(1); expect(writes[0][0].pathname).toBe('/api/v2/auth/oidc/settings');
+        expect(JSON.parse(String(writes[0][1].body))).toMatchObject({ name:'Company',issuer:'https://idp.example',clientId:'company-client',clientSecret:'',redirectUrl:callback,revision:0,enabled:true });
+        expect(fields[0].value).toBe('Company'); expect(form.textContent).toContain('oidc.conflict');
+    } finally {act(() => root.unmount());host.remove();}
+});
+it('lets a security auditor inspect provider metadata without editing or retrieving its secret', async () => {
+    setApiUrl('https://controller.example');establishSession('reader',{userId:'auditor',credentialType:'session',permissions:['identity:read','security:read']},Math.floor(Date.now()/1000)+600,'https://controller.example');
+    const fetch = vi.fn(async () => Response.json([{provider:'oidc-12345678-1234-1234-1234-123456789abc',name:'Company',issuer:'https://idp.example',clientId:'company-client',secretConfigured:true,redirectUrl:'https://controller.example/callback',enabled:true,revision:2}]));vi.stubGlobal('fetch',fetch);
+    const host=document.createElement('div');document.body.append(host);const root=createRoot(host);
+    try {
+        await act(async () => root.render(<SWRConfig value={{provider:()=>new Map()}}><OAuthSettingsPanel /></SWRConfig>));
+        const form=host.querySelector<HTMLFormElement>('form[aria-label="Company"]')!;
+        expect(form.querySelector<HTMLInputElement>('input[type="password"]')!.value).toBe('');
+        expect([...form.querySelectorAll('input')].every(field=>field.disabled)).toBe(true);
+        expect(form.querySelector('button[type="submit"]')).toBeNull();expect(host.textContent).not.toContain('oidc.add');
+        expect(fetch.mock.calls).toHaveLength(1);
+    } finally {act(() => root.unmount());host.remove();}
+});
+it('aborts a pending OIDC save when its editor unmounts and ignores a late response', async () => {
+    authenticate(); let signal: AbortSignal | undefined; let complete!: (response: Response) => void;
+    const fetch = vi.fn(async (_url: URL, init: RequestInit) => {
+        if (init.method === 'POST') { signal = init.signal as AbortSignal; return new Promise<Response>(resolve => { complete = resolve; }); }
+        return Response.json([]);
+    }); vi.stubGlobal('fetch', fetch);
+    const configured = vi.fn(); const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
+    await act(async () => root.render(<SWRConfig value={{provider:()=>new Map()}}><OAuthSettingsPanel onConfigured={configured} /></SWRConfig>));
+    await act(async () => [...host.querySelectorAll<HTMLButtonElement>('button')].find(button=>button.textContent==='oidc.add')!.click());
+    const form=host.querySelector<HTMLFormElement>('form[aria-label="OpenID Connect"]')!;
+    await act(async () => form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
+    expect(signal?.aborted).toBe(false);
+    act(()=>root.unmount());host.remove();expect(signal?.aborted).toBe(true);
+    await act(async()=>complete(Response.json({})));
+    expect(configured).not.toHaveBeenCalled();expect(fetch.mock.calls.filter(([,init])=>init.method==='POST')).toHaveLength(1);
+});
+it('suspends a built-in provider without deleting it and names deletion as destructive', async () => {
+    authenticate();
+    const confirmation = vi.mocked((await import('@/component/v2/confirmation')).confirmAction);
+    const bodies: Array<{ method?: string; body: Record<string, unknown> }> = [];
+    const fetch = vi.fn(async (url: URL, init: RequestInit) => {
+        if (init.method === 'PUT' || init.method === 'DELETE') { bodies.push({ method: init.method, body: init.body ? JSON.parse(String(init.body)) : {} }); return Response.json({}); }
+        if (url.pathname.endsWith('/providers')) return Response.json(['github']);
+        return Response.json([{ provider: 'github', clientId: 'client-id', secretConfigured: true, redirectUrl: 'https://controller.example/api/v2/auth/oauth/github/callback', enabled: true, revision: 1 }]);
+    }); vi.stubGlobal('fetch', fetch);
+    const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
+    try {
+        await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><OAuthSettingsPanel /></SWRConfig>));
+        const form = host.querySelector<HTMLFormElement>('form[aria-label="GitHub"]')!;
+        const enabled = form.querySelector<HTMLInputElement>('input[type="checkbox"]')!;
+        expect(enabled.checked).toBe(true);
+        await act(async () => enabled.click());
+        await act(async () => form.requestSubmit());
+        expect(bodies).toEqual([{ method: 'PUT', body: expect.objectContaining({ enabled: false }) }]);
+        expect(confirmation).not.toHaveBeenCalled();
+        await act(async () => [...host.querySelectorAll<HTMLButtonElement>('button')].find(button => button.textContent === 'oidc.check')!.click());
+        expect(bodies).toHaveLength(1);
+        await act(async () => [...host.querySelectorAll<HTMLButtonElement>('button')].find(button => button.textContent === 'deleteOAuth')!.click());
+        expect(confirmation).toHaveBeenCalledWith('deleteOAuthConfirm');
+        expect(bodies.map(item => item.method)).toEqual(['PUT', 'DELETE']);
+    } finally { act(() => root.unmount()); host.remove(); }
 });

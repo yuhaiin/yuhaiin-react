@@ -1,3 +1,4 @@
+import { useSecretField, isSecretPlaceholder, useProtectedSetting } from "@/auth/secret-fields";
 import { useTranslation } from 'react-i18next';
 
 import { Plus, Trash } from 'lucide-react';
@@ -14,9 +15,14 @@ export const InputList: FC<{
     textarea?: boolean;
     placeholder?: string;
     disabled?: boolean;
-}> = ({ title, data, onChange, className, textarea, placeholder, disabled }) => {
+    secret?: boolean;
+    executable?: boolean;
+}> = ({ title, data, onChange, className, textarea, placeholder, disabled, secret, executable }) => {
     const { t: uiT } = useTranslation('ui');
     const items = Array.isArray(data) ? data : [];
+    const access = useSecretField(items.find(isSecretPlaceholder), secret);
+    const execute = useProtectedSetting("execute");
+    disabled = disabled || access.disabled || Boolean(executable && !execute);
     const [newItem, setNewItem] = useState("");
 
     const add = () => {

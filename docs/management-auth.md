@@ -125,3 +125,171 @@ and 55 independent audit rows, exercises owner selection/pagination and proxy-on
 self-service, checks 360px layout, and saves screenshots. It leaves production
 state and browser profiles untouched. Its backend logs contain disposable setup
 capabilities and are created with private file permissions.
+
+## Traffic groups and identity conditions
+
+Account & Security includes Traffic groups for identities with `users:manage`.
+Create a named group, expand its form to edit the description and select multiple
+members, then save. A conflicting revision leaves the unsaved form visible for
+review. Deletion requires confirmation and removes memberships; the backend
+retains the stable ID as an immutable tombstone. Deleted groups are omitted from
+the active list. Management roles remain separate from traffic memberships.
+
+Both routing condition editors support user, group and credential ID leaves
+inside the existing Boolean expressions. Administrators can select users/groups
+by name; stable IDs remain visible and can be entered directly. The trace viewer
+shows translated identity condition labels and evaluation results. Connection
+audits include the group IDs recorded at observation time.
+
+Inbound user authentication now has explicit legacy, users and mixed modes.
+Newly enabling user authentication chooses users-only with no users selected.
+Existing objects without a mode remain mixed. Mixed mode displays a shared-secret
+revocation warning, and saving membership changes preserves the selected mode.
+No UI control grants permissions independently of the backend.
+
+## Traffic Access Policy
+
+Account & Security includes the active policy and status for `traffic-access:read`.
+The editor also requires `traffic-access:write` to validate or activate changes.
+The backend enforces both permissions. Existing scoped tokens do not acquire the
+new scopes automatically; issue a suitably scoped token where needed.
+
+Choose all inbounds or explicit stable inbound IDs, an explicit default action,
+and ordered allow/deny rules. The existing route expression editor supports
+identity, inbound IDs, domain/IP destinations, network, port and nested AND/OR/NOT
+conditions. It omits routing-only host/process lists and GeoIP from access policy
+choices. Rules use first-match precedence, with no implicit group or deny
+priority. Top-level conditions are OR; the initial rule template uses AND for a
+group and destination. Domains and CIDRs in one leaf are OR: separate them inside
+AND when both original name and resolved address must match.
+
+Validate leaves the active policy unchanged. Save and activate asks for
+confirmation because sessions that lose access close. Validation failures and
+revision conflicts retain the draft. Reload explicitly discards it after
+confirmation. Policy-referenced groups cannot be deleted until the references
+are removed; disabled rules also retain their group references.
+
+Effective access preview takes an active proxy credential ID, trusted inbound ID,
+TCP/UDP, destination host:port and an explicit resolved IP. It uses the current
+active policy, not the draft, and never looks up DNS. Inspecting another owner's
+credential requires `users:manage`. Credential/inbound authentication restrictions
+are still applied by the listener separately from this authorization preview.
+The result distinguishes allowed, denied and unprotected scope, and shows the
+revision, reason and matched rule ID. Connection audit details include historical
+access decision metadata and distinguish policy denial/revocation from ordinary
+close and credential invalidation.
+
+Protected scope requires a valid authenticated user even with default allow.
+Legacy shared/anonymous traffic does not acquire user identity. A direct Gateway
+listener currently lacks proxy-user authentication and is denied when protected;
+use an authenticated proxy inbound with Gateway interception for that flow.
+Review all alternate listeners before selecting only a subset of inbounds.
+
+User resource policies and reports extend the existing Traffic Control and usage
+pages; see [resource governance](resource-governance.md). Custom roles, security
+change history and generic OIDC are subsequent work. Routing conditions alone
+remain insufficient as an enterprise authorization boundary.
+
+
+## Custom management roles
+
+Account & Security shows effective permissions for the current session or scoped
+API token. The Management roles card requires `roles:read`; definition edits
+require `roles:write`, and assignments also require `users:manage`. Built-in
+Administrator, Read-only and Proxy-only roles remain protected. Custom roles add
+permission collections to the base role; use Proxy-only as the base for a narrowly
+scoped operator, auditor or helpdesk account. Traffic groups remain independent.
+The backend rejects grants above the actor's current permissions, changes to
+stronger accounts and deletion of assigned roles. Old scoped tokens do not gain
+new scopes after a promotion. Active requests recheck permissions within one
+second. Revision conflicts retain drafts, and reload confirms discard.
+
+Password changes keep the old local verifier until replacement enrollment
+commits, then revoke earlier credentials atomically. Abandoning a change cannot
+remove the last administrator's login. Administrative enrollment reset is disabled
+for that last active local administrator; its own password-change flow remains
+available. Deliberate local recovery retains its separate backend capability.
+
+## Secret configuration editing
+
+Managed servers advertise `secret-isolation` in `/api/v2/management`. Ordinary
+configuration responses keep upstream credential references and replace inline
+proofs with resource-bound preservation markers. Editors retain these markers
+while showing a saved-value placeholder. Secret inputs require `secrets:manage`;
+trusted Origin changes require `security:write`, and executable TUN/native-library
+settings also require `system:execute`. The backend independently checks writes.
+
+The explicit reveal action requires `secrets:read` and requests
+`X-Yuhaiin-Secret-Access: reveal`. Plaintext is displayed separately from the draft
+and shared caches, and is discarded on hide, unmount or authentication-scope change.
+Copying a masked node copies masked configuration, not a portable credential
+export. Reload an editor after a server restart or a stale-reference conflict.
+
+Node import commits the original caller-provided source when previews are masked.
+It retains preview IDs, submits only failed indices on retry, and does not require
+secret read permission. Older servers with unmasked previews retain the existing
+batch-save flow. Source edits and authentication-scope changes reset the preview.
+
+## Enterprise OpenID Connect
+
+Account & Security reuses its identity-provider settings and account-linking popup
+for generic OIDC providers. Security readers can inspect configuration; security
+writers can create revisioned provider settings, check fresh discovery, enable or
+disable a provider, and remove it. Client secrets are write-only and require
+`secrets:manage` to change or explicitly clear. A blank update preserves the
+existing secret. Configure public clients without a secret and use PKCE S256.
+
+The form allocates a stable provider ID and exact HTTPS callback before saving,
+so the callback can first be registered with the external IdP. It retains the
+draft on revision conflict. Issuers are immutable; existing accounts must be
+linked explicitly. Provider display names appear in the existing login and
+account-linking controls. Email and role claims never create accounts or grant
+local permissions. Local password login/recovery remain available during an IdP
+outage; provider changes revoke that provider's existing sessions.
+
+The security audit panel uses server-side filters and fixed-upper-ID cursor
+pagination. It displays exact decimal event IDs, safe before/after metadata,
+authentication method and policy revision. `security:export` separately controls
+authenticated JSON export of the current filtered page. Exports do not put tokens
+in URLs. Retention and external forwarding use revision-checked forms; conflicts
+retain edits, and explicit reload confirms discarding them. Full webhook URLs
+and bearer tokens stay write-only, blank preserves saved values, and replacement
+or clearing requires `secrets:manage`. The panel shows persistent delivery/drop
+counters and backlog separately from process-local audit write failures. HTTPS
+may replay events, syslog TLS only confirms socket writes, and expired/full
+forward queues may drop delivery copies. Management history, connection audit
+and aggregate usage have distinct durability semantics. Scope changes/unmount
+abort pending writes/exports and reset form state. EN/JA/KO strings are included.
+
+## Configuration stages, differences and rollback
+
+The enterprise backend adds `configuration:read`, `configuration:write` and
+`configuration:rollback`. These permissions supplement each resource's existing
+read/write permissions. Built-in read-only accounts keep their existing scopes;
+assign a custom role to grant history access. Provider settings additionally
+require a browser session.
+
+Use **Stage and preview** in the existing group, role, role assignment, access,
+Traffic Control resource, provider, audit, routing rule/default and list editors.
+Review the changed fields, select **Validate**, then **Commit and activate**.
+Validation is repeated by the server at commit. Closing the preview keeps the
+draft in **Account & security → Configuration changes**. Filter by resource or
+state, inspect actor/activation metadata, discard a draft, or prepare rollback
+from a commit. A rollback is a new draft and requires its own review/validation.
+Routing order can also be staged using **Move earlier** in the routing list;
+existing drag operations retain their direct-save behavior and record history.
+
+Each change commits one resource in one database. Create prerequisites before
+staging dependent policies. History is bounded to 128 commits and 32 live drafts
+per store; drafts expire after 24 hours. Private matching data cannot be promoted
+into a separate shared list in a staged rule change. The existing direct editor
+supports that ownership transfer. Revision conflicts retain local editor values.
+Backend documentation defines the transaction and recovery guarantees.
+
+Differences never return private rollback documents. Remote routing-list URLs
+and previews are masked in full, including path-only access capabilities.
+Operators without `secrets:manage` can edit metadata while preserving saved URLs;
+explicit reveal requires `secrets:read` and remains read-only editor-local state.
+Changing sessions/controllers or closing the editor aborts pending requests.
+
+The workflow adds no enterprise initialization to local Android controllers.

@@ -65,6 +65,6 @@ function UserRow({ user, busy, lastAdmin, onSave, onReset, onDelete }: { user: U
             <Button type="submit" disabled={busy}>{t('save')}</Button>
         </form>
         {lastAdmin && <p className="text-xs text-ui-muted">{t('lastAdmin')}</p>}
-        <div className="flex flex-wrap gap-2"><Button disabled={busy} onClick={onReset}>{t('resetEnrollment')}</Button><Button variant="outline-danger" disabled={busy || lastAdmin} onClick={onDelete}>{t('delete')}</Button></div>
+        <div className="flex flex-wrap gap-2"><Button disabled={busy || lastAdmin} onClick={onReset}>{t('resetEnrollment')}</Button><Button variant="outline-danger" disabled={busy || lastAdmin} onClick={onDelete}>{t('delete')}</Button></div>
     </section>;
 }

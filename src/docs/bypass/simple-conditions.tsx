@@ -11,8 +11,9 @@ import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { buildSimpleMatcher, type SimpleLeafType, type SimpleMatcher } from './draft';
 import type { RuleEditorOptions } from './rule-form';
+import { IdentityCondition, identityCondition } from './identity-condition';
 
-const conditionTypes: SimpleLeafType[] = ['host', 'process', 'inbound', 'network', 'port', 'geoip'];
+const conditionTypes: SimpleLeafType[] = ['host', 'process', 'inbound', 'network', 'port', 'geoip', 'user', 'group', 'credential'];
 
 function listReference(expr: RuleExpr): string {
     return expr.type === 'host' ? expr.host.list : expr.type === 'process' ? expr.process.list : '';
@@ -33,6 +34,7 @@ function newPrivateList(type: 'host' | 'process', draft: RuleDraft, name: string
 
 function otherCondition(type: SimpleLeafType): RuleExpr {
     switch (type) {
+        case 'user': case 'group': case 'credential': return identityCondition(type, []);
         case 'inbound': return { type, inbound: { names: [] } };
         case 'network': return { type, network: { network: 'tcp' } };
         case 'port': return { type, port: { ports: '' } };
@@ -163,6 +165,9 @@ export function SimpleConditions({ value, matcher, options, onChange, privateHis
                                 {!listId && <p role="status" className="text-xs text-ui-warning">{t('selectMatchingData')}</p>}
                             </>}
                         </>}
+                        {expr.type === 'user' && <IdentityCondition kind="user" ids={expr.user.ids} onChange={ids => replaceItem(index, identityCondition('user', ids))} />}
+                        {expr.type === 'group' && <IdentityCondition kind="group" ids={expr.group.ids} onChange={ids => replaceItem(index, identityCondition('group', ids))} />}
+                        {expr.type === 'credential' && <IdentityCondition kind="credential" ids={expr.credential.ids} onChange={ids => replaceItem(index, identityCondition('credential', ids))} />}
                         {expr.type === 'network' && <SettingSelectVertical className="mb-0" label={uiT('network')}
                             value={expr.network.network} values={[[uiT('tcp'), 'tcp'], [uiT('udp'), 'udp']]}
                             onChange={network => replaceItem(index, { type: 'network', network: { network } })} />}

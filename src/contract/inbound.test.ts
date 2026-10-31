@@ -103,3 +103,19 @@ describe('WireGuard inbound contract', () => {
         expect(restored.protocol).toEqual(result.protocol);
     });
 });
+
+it('preserves explicit user-only authentication through normalization', () => {
+    const inbound = createDefaultInbound('entry');
+    inbound.authentication = { mode: 'users', users: ['alice', 'bob'] };
+    const normalized = normalizeInbound(inbound);
+    expect(normalized.authentication).toEqual({ mode: 'users', users: ['alice', 'bob'] });
+    expect(normalized.authentication!.users).not.toBe(inbound.authentication.users);
+    expect(normalizeInbound({ ...inbound, authentication: { users: ['alice'] } }).authentication!.mode).toBeUndefined();
+});
+
+it('keeps SSTP user authentication when selecting its protocol again', () => {
+    const selected = selectInboundProtocol(createDefaultInbound('sstp'), 'sstp');
+    expect(selected.authentication).toEqual({ mode: 'users', users: [] });
+    selected.authentication!.users = ['alice'];
+    expect(selectInboundProtocol(selected, 'sstp').authentication).toEqual({ mode: 'users', users: ['alice'] });
+});

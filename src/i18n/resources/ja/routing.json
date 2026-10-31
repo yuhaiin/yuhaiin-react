@@ -38,7 +38,11 @@
     "all": "すべて一致 (AND)",
     "any": "いずれか一致 (OR)",
     "not": "条件を除外 (NOT)",
-    "always": "すべての通信"
+    "always": "すべての通信",
+    "user": "認証済みユーザー ID",
+    "group": "トラフィックグループ ID",
+    "credential": "トラフィック認証情報 ID",
+    "destination": "宛先ドメイン / IP"
   },
   "selectorsTitle": "共有出口",
   "selectorsHelp": "選択したノードを変更すると、この出口を使うすべてのルールに適用されます。",
@@ -608,5 +612,6 @@
   "outboundTrafficWindow": "観測期間 {{seconds}} 秒の平均",
   "outboundNoTrafficWindow": "新しい通信量の窓平均はまだありません。再起動・休眠・時刻の変化後は測定をリセットします。",
   "outboundRecentDialFailures": "最近の TCP 接続開始失敗率",
-  "outboundDialWindowHint": "{{seconds}} 秒以内に保持された接続開始結果から算出（共有履歴上限 {{limit}} 件）。後続の I/O・アプリケーションエラー・UDP セッション作成は含みません。"
+  "outboundDialWindowHint": "{{seconds}} 秒以内に保持された接続開始結果から算出（共有履歴上限 {{limit}} 件）。後続の I/O・アプリケーションエラー・UDP セッション作成は含みません。",
+  "nodeImportSaveFailed": "ノードをインポートできませんでした。権限と設定を確認し、失敗した項目を再試行してください。"
 }

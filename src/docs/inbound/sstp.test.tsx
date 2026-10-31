@@ -10,7 +10,7 @@ it('selects a rootless SSTP inbound with an internal TLS configuration and TCP-o
     const selected = selectInboundProtocol(createDefaultInbound('sstp'), 'sstp');
     expect(selected.network).toMatchObject({ type: 'tcp_udp', tcp_udp: { udp: 'tcp_only' } });
     expect(selected.transports).toEqual([]);
-    expect(selected.authentication).toEqual({ users: [] });
+    expect(selected.authentication).toEqual({ mode: "users", users: [] });
     if (selected.protocol.type !== 'sstp') throw new Error('expected SSTP');
     expect(selected.protocol.sstp).toMatchObject({
         serverAddress: '10.90.0.1',

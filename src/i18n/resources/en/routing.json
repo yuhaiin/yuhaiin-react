@@ -38,7 +38,11 @@
     "all": "All conditions (AND)",
     "any": "Any condition (OR)",
     "not": "Exclude condition (NOT)",
-    "always": "All traffic"
+    "always": "All traffic",
+    "user": "Authenticated user IDs",
+    "group": "Traffic group IDs",
+    "credential": "Traffic credential IDs",
+    "destination": "Destination domain / IP"
   },
   "selectorsTitle": "Shared destinations",
   "selectorsHelp": "Change one selected node to update every rule using this destination.",
@@ -608,5 +612,6 @@
   "outboundTrafficWindow": "Observed average over {{seconds}} s",
   "outboundNoTrafficWindow": "No fresh traffic window yet; sampling resets after restart or a clock/sleep gap.",
   "outboundRecentDialFailures": "Recent TCP dial failure ratio",
-  "outboundDialWindowHint": "From retained dial outcomes within {{seconds}} s (shared history limit {{limit}}). Excludes later I/O, application errors and UDP session creation."
+  "outboundDialWindowHint": "From retained dial outcomes within {{seconds}} s (shared history limit {{limit}}). Excludes later I/O, application errors and UDP session creation.",
+  "nodeImportSaveFailed": "The node could not be imported. Retry the failed item after checking permissions and configuration."
 }

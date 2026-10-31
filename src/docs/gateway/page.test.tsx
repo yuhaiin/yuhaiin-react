@@ -9,6 +9,7 @@ import GatewayPage from "./page";
 
 const api = vi.hoisted(() => ({
   getGatewayConfig: vi.fn(),
+  getGatewaySecrets: vi.fn(),
   saveGatewayConfig: vi.fn(),
   gatewayStatus: vi.fn(),
   resetGatewayStatistics: vi.fn(),

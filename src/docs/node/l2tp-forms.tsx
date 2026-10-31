@@ -34,7 +34,7 @@ export const L2TPForm: FC<FormProps<"l2tp">> = ({ config, editable, onChange }) 
                 options={[["auto", t("l2tpAutoAuth")], ["pap", "PAP"], ["chap-md5", "CHAP-MD5"], ["mschap-v2", "MS-CHAPv2"]]}
                 onChange={(auth_type) => onChange({ auth_type })} />
             <SettingInputVertical label={t("username")} value={config.username ?? ""} disabled={!editable} onChange={(username) => onChange({ username })} />
-            <SettingInputVertical label={t("password")} type="password" value={config.password ?? ""} disabled={!editable} onChange={(password) => onChange({ password })} />
+            <SettingInputVertical secret label={t("password")} type="password" value={config.password ?? ""} disabled={!editable} onChange={(password) => onChange({ password })} />
             <SettingInputVertical label={t("l2tpSharedSecret")} type="password" value={config.shared_secret ?? ""} disabled={!editable} onChange={(shared_secret) => onChange({ shared_secret })} />
             <SettingInputVertical label={t("hostname")} value={config.hostname ?? ""} disabled={!editable} onChange={(hostname) => onChange({ hostname })} />
         </div>
@@ -63,9 +63,9 @@ export const L2TPv3Form: FC<FormProps<"l2tpv3">> = ({ config, editable, onChange
                 disabled={!editable} onChange={(value) => onChange({ local_session_id: Number(value) || 0 })} />
             <SettingInputVertical label={t("l2tpPeerSessionID")} type="number" min={1} max={4294967295} step={1} value={config.peer_session_id ?? 0}
                 disabled={!editable} onChange={(value) => onChange({ peer_session_id: Number(value) || 0 })} />
-            <SettingInputVertical label={t("l2tpLocalCookie")} value={config.local_cookie ?? ""}
+            <SettingInputVertical secret label={t("l2tpLocalCookie")} value={config.local_cookie ?? ""}
                 disabled={!editable} onChange={(local_cookie) => onChange({ local_cookie })} />
-            <SettingInputVertical label={t("l2tpPeerCookie")} value={config.peer_cookie ?? ""}
+            <SettingInputVertical secret label={t("l2tpPeerCookie")} value={config.peer_cookie ?? ""}
                 disabled={!editable} onChange={(peer_cookie) => onChange({ peer_cookie })} />
             <p className="mb-0 text-sm text-ui-muted md:col-span-2">{t("l2tpCookieHelp")}</p>
         </div> : <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

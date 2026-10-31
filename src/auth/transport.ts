@@ -26,8 +26,8 @@ export async function authorizedFetch(path: string | URL, init: RequestInit = {}
     if (response.status === 403 && scope === authScope()) window.dispatchEvent(new Event('management-permissions'));
     return response;
 }
-export async function directJSON<T>(method: string, path: string, body?: unknown, authorization?: string): Promise<T> {
-    const response = await authorizedFetch(path, { method, headers: {
+export async function directJSON<T>(method: string, path: string, body?: unknown, authorization?: string, signal?: AbortSignal): Promise<T> {
+    const response = await authorizedFetch(path, { method, signal, headers: {
         Accept: 'application/json', 'Content-Type': 'application/json', ...(authorization ? { Authorization: authorization } : {}),
     }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
     if (!response.ok) throw { code: response.status, msg: response.statusText || `HTTP ${response.status}` };

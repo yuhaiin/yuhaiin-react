@@ -29,7 +29,7 @@ const GlobalProtectForm: FC<{
                     disabled={!editable}
                     onChange={(username) => onChange({ username })}
                 />
-                <SettingInputVertical
+                <SettingInputVertical secret
                     label={uiT("password")}
                     type="password"
                     value={config.password ?? ""}

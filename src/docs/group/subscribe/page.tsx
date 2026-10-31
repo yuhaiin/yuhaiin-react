@@ -1,3 +1,6 @@
+import { SecretValues } from "@/component/secret-values";
+import { isSecretPlaceholder } from "@/auth/secret-fields";
+import { getSubscriptionSecrets } from "@/api/subscriptions";
 import { confirmAction } from '@/component/v2/confirmation';
 import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection } from '@/component/resource-workspace';
 import { deleteSubscriptions, listSubscriptions, saveSubscriptions, updateSubscriptions } from '@/api/subscriptions';
@@ -58,13 +61,13 @@ function SubscriptionEditor({ item, creating, onClose, onSaved, onDeleted, refre
             <div className="flex flex-wrap justify-end gap-2"><Button disabled={pending} onClick={close}>{uiT('cancel')}</Button><Button permission="nodes:write" variant="primary" disabled={pending || !valid} className="gap-2" onClick={save}>{pending ? <Spinner size="sm" /> : <Check size={16} />}{uiT('save')}</Button></div>
         </>}>
         {manualCopyModal}
-        <fieldset disabled={pending} className="min-w-0 space-y-5">
+        <SecretValues key={item?.name ?? 'new'} value={value} load={item ? signal => getSubscriptionSecrets(item.name, signal) : undefined}><fieldset disabled={pending} className="min-w-0 space-y-5">
             <div className="grid gap-4 sm:grid-cols-2"><SettingInputVertical label={uiT('name')} value={value.name} disabled={!creating} onChange={name => setValue(previous => ({ ...previous, name }))} />
                 <SettingSelectVertical label={uiT('type')} value={value.type || 'reserve'} values={subscriptionTypes.map(type => [type === 'reserve' ? t('subscriptionAutoDetect') : type, type] as [string, string])} onChange={type => setValue(previous => ({ ...previous, type }))} /></div>
-            <div className="rounded-ui-lg border border-ui-border p-4"><SettingInputVertical label={uiT('subscriptionUrl')} value={value.url} placeholder="https://example.com/sub/..." onChange={url => setValue(previous => ({ ...previous, url }))} />
-                <Button variant="outline-secondary" className="gap-2" disabled={!value.url} onClick={() => copy(value.url)}><Copy size={15} />{copied ? t('subscriptionCopied') : t('copySubscription')}</Button></div>
+            <div className="rounded-ui-lg border border-ui-border p-4"><SettingInputVertical secret label={uiT('subscriptionUrl')} value={value.url} placeholder="https://example.com/sub/..." onChange={url => setValue(previous => ({ ...previous, url }))} />
+                <Button variant="outline-secondary" className="gap-2" disabled={!value.url || isSecretPlaceholder(value.url)} onClick={() => copy(value.url)}><Copy size={15} />{copied ? t('subscriptionCopied') : t('copySubscription')}</Button></div>
             {!creating && <div className="flex flex-wrap items-center justify-between gap-3 rounded-ui-lg border border-ui-border bg-ui-surface-muted/50 p-4"><p className="max-w-md text-sm text-ui-muted">{dirty ? t('saveSubscriptionBeforeUpdate') : t('subscriptionUpdateHelp')}</p><Button permission="nodes:write" variant="outline-primary" className="gap-2" disabled={dirty || pending} onClick={update}><RefreshCw size={16} />{uiT('update')}</Button></div>}
-        </fieldset>
+        </fieldset></SecretValues>
         {actionError && <p role="alert" className="mt-3 break-words text-sm text-ui-danger">{actionError}</p>}
     </ResourceEditorFrame>;
 }

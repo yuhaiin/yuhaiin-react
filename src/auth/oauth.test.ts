@@ -54,3 +54,17 @@ it('cancels cleanly, rejects blocked popups and cannot finish after switching co
     const switched = beginOAuth('github', false, new AbortController().signal); await startReady(); setApiUrl('https://new.example'); message(popup);
     await expect(switched).rejects.toThrow('changed'); expect(getSession()).toBeNull();
 });
+it('accepts a configured generic OIDC authorization endpoint while binding completion to the controller', async () => {
+    const { popup, fetch } = setup();
+    fetch.mockImplementationOnce(async () => Response.json({ state: 'state', secret: 'start-proof', authorizationUrl: 'https://enterprise-idp.example/authorize?state=state&nonce=nonce&code_challenge_method=S256', expiresAt: 12345 }));
+    const operation = beginOAuth('oidc-12345678-1234-1234-1234-123456789abc', false, new AbortController().signal);
+    await startReady(); expect(popup.location.href).toContain('https://enterprise-idp.example/');
+    message(popup, { origin: 'https://enterprise-idp.example' }); expect(fetch).toHaveBeenCalledTimes(1);
+    message(popup); await operation; expect(getSession()?.principal.userId).toBe('reader');
+});
+it('rejects insecure OIDC authorization URLs before navigating the popup', async () => {
+    const { popup, fetch } = setup();
+    fetch.mockImplementationOnce(async () => Response.json({ state: 'state', secret: 'start-proof', authorizationUrl: 'http://enterprise-idp.example/authorize', expiresAt: 12345 }));
+    await expect(beginOAuth('oidc-12345678-1234-1234-1234-123456789abc', false, new AbortController().signal)).rejects.toThrow('Invalid authorization');
+    expect(popup.location.href).toBe('about:blank'); expect(popup.close).toHaveBeenCalled();
+});

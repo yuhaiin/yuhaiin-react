@@ -38,7 +38,11 @@
     "all": "모든 조건 (AND)",
     "any": "하나 이상의 조건 (OR)",
     "not": "조건 제외 (NOT)",
-    "always": "모든 트래픽"
+    "always": "모든 트래픽",
+    "user": "인증된 사용자 ID",
+    "group": "트래픽 그룹 ID",
+    "credential": "트래픽 인증 정보 ID",
+    "destination": "목적지 도메인 / IP"
   },
   "selectorsTitle": "공유 출구",
   "selectorsHelp": "선택한 노드를 바꾸면 이 출구를 사용하는 모든 규칙에 적용됩니다.",
@@ -608,5 +612,6 @@
   "outboundTrafficWindow": "관측 구간 {{seconds}}초 평균",
   "outboundNoTrafficWindow": "최신 트래픽 구간이 없습니다. 재시작, 절전 또는 시계 변화 후 측정을 초기화합니다.",
   "outboundRecentDialFailures": "최근 TCP 연결 시작 실패 비율",
-  "outboundDialWindowHint": "{{seconds}}초 이내에 보관된 연결 시작 결과 기준(공유 기록 최대 {{limit}}개). 이후 I/O, 애플리케이션 오류 및 UDP 세션 생성은 제외합니다."
+  "outboundDialWindowHint": "{{seconds}}초 이내에 보관된 연결 시작 결과 기준(공유 기록 최대 {{limit}}개). 이후 I/O, 애플리케이션 오류 및 UDP 세션 생성은 제외합니다.",
+  "nodeImportSaveFailed": "노드를 가져오지 못했습니다. 권한과 설정을 확인한 뒤 실패한 항목을 다시 시도하세요."
 }

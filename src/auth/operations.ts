@@ -72,6 +72,7 @@ export const operationPermissions: Record<RPCOperation, string> = {
     "publish.resolve": "nodes:write",
     "nodes.select": "nodes:write",
     "nodes.import.preview": "nodes:write",
+    "nodes.import.commit": "nodes:write",
     "node.use": "nodes:write",
     "node.monitoring.get": "nodes:read",
     "node.monitoring.put": "nodes:write",

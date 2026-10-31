@@ -1,3 +1,4 @@
+import { SecretValues } from "@/component/secret-values";
 import { RecoveryBackupPanel } from './recovery-panel';
 import { RecoveryImportPanel } from './import-panel';
 import { RecoveryResultPanel } from './result-panel';
@@ -5,7 +6,7 @@ import { PageHeader } from '@/component/v2/page-header';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
 import { useTranslation } from 'react-i18next';
 
-import { getBackupConfig, restoreBackup, runBackup, saveBackupConfig } from "@/api/backup"
+import { getBackupConfig, getBackupSecrets, restoreBackup, runBackup, saveBackupConfig } from "@/api/backup"
 import { Button } from "@/component/v2/button"
 import { Card, CardBody, CardFooter, CardHeader, IconBox, ListItem, MainContainer, SettingLabel } from "@/component/v2/card"
 import { ConfirmModal } from "@/component/v2/confirm"
@@ -59,7 +60,8 @@ function BackupPage() {
     if (isLoading || !data) return <Loading />
 
     return (
-        <MainContainer>
+        <MainContainer><SecretValues value={data} load={getBackupSecrets}>
+
             <PageHeader title={uiT("backup")} />
             <ConfirmModal
                 show={showConfirmModal}
@@ -119,7 +121,7 @@ function BackupPage() {
                             onCheckedChange={(checked) => update(prev => ({ ...prev, s3: { ...prev.s3, usePathStyle: checked } }))}
                         />
                         <div className="md:col-span-2">
-                            <SettingInputVertical
+                            <SettingInputVertical secret
                                 label={uiT("endpointUrl")}
                                 value={data.s3.endpointUrl}
                                 onChange={(endpointUrl) => update(prev => ({ ...prev, s3: { ...prev.s3, endpointUrl } }))}
@@ -181,7 +183,7 @@ function BackupPage() {
                     <Info className="mr-1 inline" size={14} />
                     {uiT("backupsIncludeAllListsRulesAndNodeConfigurations")}</small>
             </div>
-        </MainContainer>
+        </SecretValues></MainContainer>
     );
 }
 

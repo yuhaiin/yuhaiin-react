@@ -20,6 +20,7 @@ import { BindingTable } from './bindings';
 import { TrafficControlDiagnostics } from './diagnostics';
 import { ProfileEditor } from './rates';
 import { useTrafficControlEditor } from './use-editor';
+import { IdentityResourcePolicies } from './resources';
 
 export default function TrafficControlPage() {
     const { t } = useTranslation('trafficControl');
@@ -236,6 +237,7 @@ export default function TrafficControlPage() {
                         />
                     </CardBody>
                 </Card>
+                <IdentityResourcePolicies />
                 <TrafficControlDiagnostics />
                 <p className="text-xs text-ui-muted flex items-start gap-2">
                     <ArrowUpFromLine size={14} />

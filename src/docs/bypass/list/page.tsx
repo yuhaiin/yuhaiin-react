@@ -1,3 +1,6 @@
+import { StageChangeButton } from "@/component/configuration-change";
+import { SecretValues } from "@/component/secret-values";
+import { hasSecretPlaceholder, isSecretPlaceholder, useProtectedSetting } from "@/auth/secret-fields";
 import { confirmAction } from '@/component/v2/confirmation';
 import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection } from '@/component/resource-workspace';
 import { useHashSearch } from '@/hooks/useHashLocation';
@@ -5,7 +8,7 @@ import { useServerPageClamp } from "@/hooks/use-pagination";
 import { useTranslation } from 'react-i18next';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
 
-import { applyRouteChanges, createRouteList, deleteRouteList, getRouteActivationStatus, getRouteList, getRouteListConfig, listRouteLists, refreshRouteLists, saveRouteList, saveRouteListConfig } from "@/api/route";
+import { applyRouteChanges, createRouteList, deleteRouteList, getRouteActivationStatus, getRouteList, getRouteListSecrets, getRouteListConfig, listRouteLists, refreshRouteLists, saveRouteList, saveRouteListConfig } from "@/api/route";
 import { Badge } from "@/component/v2/badge";
 import { Button } from "@/component/v2/button";
 import { Card, CardBody, CardFooter, CardHeader, IconBox, MainContainer, SettingLabel, SettingsBox } from "@/component/v2/card";
@@ -36,7 +39,8 @@ const routeListTypes = ["host", "process", "cidr", "domain", "regexp", "keyword"
 const sourceTypes = ["local", "remote"];
 const PAGE_SIZE = 12;
 
-function shortPreview(value?: string) {
+function shortPreview(value: string | undefined, savedLabel: string) {
+    if (isSecretPlaceholder(value)) return savedLabel;
     const preview = (value || "").trim();
     if (!preview) return "Empty list";
     try {
@@ -53,6 +57,7 @@ function shortPreview(value?: string) {
 
 function Lists() {
     const { t: uiT } = useTranslation('ui');
+    const { t: authT } = useTranslation('auth');
     const ctx = useContext(GlobalToastContext);
     const [page, setPage] = useState(1);
     const [query, setQuery] = useState('');
@@ -84,7 +89,7 @@ function Lists() {
             onSelect={selection.select} onCreate={() => selection.create(() => setCreatingDraft(undefined))}
             search={{ value: query, onChange: value => { setPage(1); setQuery(value); } }}
             pagination={{ page: data?.page.page || page, pageSize: PAGE_SIZE, total: data?.page.total ?? 0, onChange: setPage }}
-            items={items.map(item => ({ id: item.id, name: item.name, description: `${item.type === 'host' ? '' : `${item.type} · `}${shortPreview(item.preview)}`, status: <span className="flex shrink-0 items-center gap-1.5 text-xs tabular-nums text-ui-muted" title={uiT('entries')}>{item.errorCount > 0 && <TriangleAlert size={14} className="text-ui-danger" aria-hidden="true" />}{item.itemCount}</span> }))}
+            items={items.map(item => ({ id: item.id, name: item.name, description: `${item.type === 'host' ? '' : `${item.type} · `}${shortPreview(item.preview, authT("secrets.saved"))}`, status: <span className="flex shrink-0 items-center gap-1.5 text-xs tabular-nums text-ui-muted" title={uiT('entries')}>{item.errorCount > 0 && <TriangleAlert size={14} className="text-ui-danger" aria-hidden="true" />}{item.itemCount}</span> }))}
             actions={<><Button size="sm" variant="outline-secondary" onClick={refresh} disabled={isRefreshing}>{isRefreshing ? <Spinner size="sm" /> : <RefreshCw size={16} className="mr-2" />}{uiT('sync')}</Button><Button size="sm" variant="outline-secondary" onClick={() => setRegistryOpen(true)}><CloudDownload size={16} className="mr-2" />Registry</Button></>}>
             {selection.creating ? <CreateListModal presentation="inline" open initialValue={creatingDraft} initialName={creatingDraft?.name}
                 onSaved={id => { saved(); selection.saved(id); }} onClose={selection.close} />
@@ -240,6 +245,7 @@ function ListEditorModal({ name, onSaved, onClose, presentation = "modal" }: { n
                     </div>
                     <div className="flex flex-wrap justify-end gap-2">
                         <Button onClick={close} disabled={pending}>{uiT("cancel")}</Button>
+                        <StageChangeButton disabled={pending || deleted || isLoading || Boolean(error) || !data} request={{ store: "configuration", kind: "route-list", resourceId: draft.id, payload: draft }} onCommitted={async () => { const next = await getRouteList(draft.id); commit(next); await mutate(next, { revalidate: false }); onSaved(); }} />
                         <Button permission="routes:write" variant="primary" disabled={pending || isLoading || Boolean(error) || !data} onClick={save}><Check className="mr-2" size={16} />{t(actionError && !dirty ? "retryApply" : "saveAndApply")}</Button>
                     </div>
                 </>}>
@@ -286,6 +292,7 @@ function CreateListModal({ open, initialName, initialValue, onSaved, onClose, pr
     return <ResourceEditorFrame title={uiT("newRouteList")} label={uiT('definedLists')} presentation={presentation} open={open} onClose={close}
         footer={<>
                     <Button onClick={close} disabled={pending}>{uiT("cancel")}</Button>
+                    <StageChangeButton disabled={pending || !draft.name.trim()} request={{ store: "configuration", kind: "route-list", resourceId: draft.id || undefined, payload: draft }} onCommitted={async change => { onSaved(change.resourceId); }} />
                     <Button permission="routes:write" variant="primary" onClick={save} disabled={pending || !draft.name.trim()}><Check className="mr-2" size={16} />{t(actionError && !dirty && draft.revision > 0 ? "retryApply" : "saveAndApply")}</Button>
                 </>}>
                     <fieldset disabled={pending} className="contents">
@@ -295,13 +302,19 @@ function CreateListModal({ open, initialName, initialValue, onSaved, onClose, pr
                 </ResourceEditorFrame>;
 }
 
-function RouteListForm({ value, onChange, lockName }: { value: RouteListDetail; onChange: (value: RouteListDetail) => void; lockName?: boolean }) {
+type RouteListFormProps = { value: RouteListDetail; onChange: (value: RouteListDetail) => void; lockName?: boolean };
+export function RouteListForm(props: RouteListFormProps) {
+    return <SecretValues value={props.value} load={props.value.revision > 0 ? signal => getRouteListSecrets(props.value.id, signal) : undefined}><RouteListFormFields {...props} /></SecretValues>;
+}
+function RouteListFormFields({ value, onChange, lockName }: RouteListFormProps) {
+    const manageSecrets = useProtectedSetting("manage");
     const { t: uiT } = useTranslation('ui');
 
     const sourceType = value.source.type || "local";
     const patch = (patchValue: Partial<RouteListDetail>) => onChange(normalizeRouteList({ ...value, ...patchValue }));
     const updateSourceType = (type: string) => {
-        const currentLines = sourceType === "remote" ? value.source.remote?.urls ?? [] : value.source.local?.lists ?? [];
+        const previousLines = sourceType === "remote" ? value.source.remote?.urls ?? [] : value.source.local?.lists ?? [];
+        const currentLines = hasSecretPlaceholder(previousLines) ? [] : previousLines;
         patch({ source: type === "remote" ? { type, remote: { urls: currentLines } } : { type, local: { lists: currentLines } } });
     };
     const lines = sourceType === "remote" ? value.source.remote?.urls ?? [] : value.source.local?.lists ?? [];
@@ -327,9 +340,9 @@ function RouteListForm({ value, onChange, lockName }: { value: RouteListDetail; 
                             onValueChange={(type) => type && updateSourceType(type)}
                             className="w-full flex-nowrap"
                         >
-                            <ToggleItem value={sourceTypes[0]} className="flex-grow whitespace-nowrap">
+                            <ToggleItem disabled={sourceType === "remote" && !manageSecrets} value={sourceTypes[0]} className="flex-grow whitespace-nowrap">
                                 <Network className="mr-2" size={16} />{uiT("local")}</ToggleItem>
-                            <ToggleItem value={sourceTypes[1]} className="flex-grow whitespace-nowrap">
+                            <ToggleItem disabled={!manageSecrets} value={sourceTypes[1]} className="flex-grow whitespace-nowrap">
                                 <CloudDownload className="mr-2" size={16} />{uiT("remote")}</ToggleItem>
                         </ToggleGroup>
                     </div>
@@ -351,6 +364,7 @@ function RouteListForm({ value, onChange, lockName }: { value: RouteListDetail; 
                     <InputList
                         title={sourceType === "remote" ? "URL" : "Rule"}
                         data={lines}
+                        secret={sourceType === "remote"}
                         onChange={updateLines}
                         textarea
                         placeholder={sourceType === "remote" ? "https://example.com/list.txt" : "Add list entry"}

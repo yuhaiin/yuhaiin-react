@@ -31,3 +31,7 @@ export const refreshGatewayFilter = async (id: string): Promise<Config> =>
   flattenWorkspace(await requestJSON<GatewayWorkspaceDocument>(
     "POST", "/api/v2/gateway/filters/refresh", { id },
   ));
+
+export async function getGatewaySecrets(signal?: AbortSignal): Promise<Config> {
+ return flattenWorkspace(await requestJSON<GatewayWorkspaceDocument>("GET", "/api/v2/gateway/workspace", undefined, undefined, signal, { revealSecrets: true }));
+}
