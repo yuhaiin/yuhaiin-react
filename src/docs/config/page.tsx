@@ -198,7 +198,7 @@ function ConfigComponent() {
                         </div>
                         <div>
                             <SettingLabel htmlFor="trusted-ui-origins">{uiT("additionalTrustedOrigins")}</SettingLabel>
-                            <Textarea id="trusted-ui-origins" aria-label={uiT("additionalTrustedOrigins")} spellCheck={false}
+                            <Textarea code id="trusted-ui-origins" aria-label={uiT("additionalTrustedOrigins")} spellCheck={false}
                                 rows={4} autoCapitalize="off" autoComplete="off" disabled={!securityWritable}
                                 placeholder="https://admin.example.com"
                                 value={originsText ?? setting.trustedOrigins.join("\n")}

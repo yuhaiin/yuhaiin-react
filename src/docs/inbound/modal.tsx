@@ -1,5 +1,5 @@
 import { confirmAction } from '@/component/v2/confirmation';
-import { ResourceEditorFrame } from '@/component/resource-workspace';
+import { ResourceEditorFrame, EditorDeleteButton, editorActionsClass } from '@/component/resource-workspace';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
 import { InboundRuntimePanel } from "./runtime";
 import { InboundTaskEditor } from "./task-editor";
@@ -15,7 +15,7 @@ import { FormSection } from "@/component/v2/form-section";
 
 
 import { normalizeInbound } from "@/contract/inbound";
-import { Check, Trash } from "lucide-react";
+import { Check } from "lucide-react";
 import { FC, useContext, useState } from "react";
 import useSWR from "swr";
 import Loading from "../../component/v2/loading";
@@ -102,11 +102,10 @@ const InboundModal: FC<{
         footer={<>
                     <div>
                         {!isNew && (
-                            <Button variant="outline-danger" disabled={saving || isLoading || Boolean(error)} onClick={onDelete}>
-                                <Trash className="mr-2" size={16} />{uiT("delete")}</Button>
+                            <EditorDeleteButton label={uiT("delete")} disabled={saving || isLoading || Boolean(error)} onClick={onDelete} />
                         )}
                     </div>
-                    <div className="flex flex-wrap justify-end gap-2">
+                    <div className={editorActionsClass}>
                         <Button onClick={close} disabled={saving}>{uiT("cancel")}</Button>
                         <Button permission="inbounds:write" loading={saving} variant="primary" disabled={saving || !inbound || isLoading || Boolean(error) || inbound.enabled && !supportedProtocols.includes(inbound.protocol.type)} onClick={handleSave}>
                             <Check size={16} />{uiT("save")}

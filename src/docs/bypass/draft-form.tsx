@@ -53,7 +53,7 @@ export function RuleDraftForm({ value, onChange, options }: { value: RuleDraft; 
                 <SettingInputVertical label={t('matchingData')} value={list.name} onChange={name => onChange({ ...value, lists: value.lists.map(item => item.id === list.id ? { ...item, name } : item) })} />
                 <SettingSelectVertical label={t('conditionType')} value={list.type} values={[[t('websites'), 'host'], [t('applications'), 'process']]} onChange={type => onChange({ ...value, lists: value.lists.map(item => item.id === list.id ? { ...item, type } : item) })} />
                 <label className="block space-y-2"><SettingLabel>{t('onePerLine')}</SettingLabel>
-                    <Textarea value={list.source.local?.lists?.join('\n') ?? ''} onChange={event => setListText(list.id, event.target.value)} />
+                    <Textarea code value={list.source.local?.lists?.join('\n') ?? ''} onChange={event => setListText(list.id, event.target.value)} />
                 </label>
                 {shareControl(list.id)}
             </SettingsBox>)}

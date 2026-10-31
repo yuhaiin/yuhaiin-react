@@ -1,8 +1,8 @@
 
 import { clsx } from "clsx";
-import { History, Plus, Search, TriangleAlert } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
-import React, { FC, useState } from 'react';
+import { History, Plus, Search, TriangleAlert, X } from 'lucide-react';
+import { AnimatePresence, motion, type HTMLMotionProps } from 'motion/react';
+import React, { FC, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from "./badge";
 import { Pagination } from './pagination';
@@ -89,6 +89,7 @@ export const ListItem: FC<{
             selected && "border-ui-border-strong bg-ui-selected text-ui-heading",
             onClick && ui.focusRing,
             disabled ? "cursor-not-allowed opacity-60" : onClick && "cursor-pointer",
+            !disabled && onClick && !flat && "transition-[color,background-color,border-color,transform] active:bg-ui-list-hover motion-safe:active:scale-[0.99]",
             className
         )}
         style={style}
@@ -119,6 +120,11 @@ type CardListProps<T> = {
     animated?: boolean | "auto";
     animationLimit?: number;
     density?: Density;
+    bodyClassName?: string;
+    listClassName?: string;
+    /** Replays the entrance on the whole list when listKey changes; rows swap without waiting for an exit. */
+    listKey?: string;
+    listMotion?: HTMLMotionProps<'div'>;
 };
 
 export function CardList<T>({
@@ -130,7 +136,11 @@ export function CardList<T>({
     getKey,
     animated = "auto",
     animationLimit = 100,
-    density = "normal"
+    density = "normal",
+    bodyClassName,
+    listClassName,
+    listKey,
+    listMotion
 }: CardListProps<T>) {
     const { t } = useTranslation('common');
     const shouldAnimate = animated === true || (animated === "auto" && items.length <= animationLimit);
@@ -161,24 +171,27 @@ export function CardList<T>({
         );
     };
 
+    const listClasses = clsx("flex flex-col gap-3", listClassName);
+    const rows = items.length > 0 ? (
+        shouldAnimate ? (
+            <AnimatePresence initial={false} mode="popLayout">
+                {items.map(renderItem)}
+            </AnimatePresence>
+        ) : items.map(renderItem)
+    ) : (
+        <div className="text-center text-ui-muted p-5 opacity-50">
+            <History className="block mb-2 mx-auto" size={40} />
+            {t('state.noRecords')}
+        </div>
+    );
+
     return (
         <Card density={density}>
             {header && <CardHeader>{header}</CardHeader>}
-            <CardBody>
-                <div className="flex flex-col gap-3">
-                    {items.length > 0 ? (
-                        shouldAnimate ? (
-                            <AnimatePresence initial={false} mode="popLayout">
-                                {items.map(renderItem)}
-                            </AnimatePresence>
-                        ) : items.map(renderItem)
-                    ) : (
-                        <div className="text-center text-ui-muted p-5 opacity-50">
-                            <History className="block mb-2 mx-auto" size={40} />
-                            {t('state.noRecords')}
-                        </div>
-                    )}
-                </div>
+            <CardBody className={bodyClassName}>
+                {listMotion
+                    ? <motion.div key={listKey} className={listClasses} {...listMotion}>{rows}</motion.div>
+                    : <div className={listClasses}>{rows}</div>}
             </CardBody>
             {footer && (
                 <CardFooter compact={density === "compact"}>
@@ -415,7 +428,7 @@ export function CardRowList<T>({
                     layout === "list" && "px-4 py-3"
                 )}>
                     <div className="text-xs font-medium text-ui-muted">
-                        {paginated && (totalPages > 1 ? `${itemTotal} items · page ${safePage}/${totalPages}` : `${itemTotal} items`)}
+                        {paginated && (totalPages > 1 ? `${t('pagination.itemCount', { count: itemTotal })} · ${t('pagination.pageOf', { page: safePage, pages: totalPages })}` : t('pagination.itemCount', { count: itemTotal }))}
                     </div>
                     <div className="flex items-center gap-3">
                         {footer}
@@ -524,15 +537,31 @@ export const IconBoxRounded: FC<{
     );
 };
 
+const FILTER_SEARCH_DELAY = 200;
+
 export const FilterSearch: FC<{
-    onEnter: (str: string) => void,
+    onSearch: (str: string) => void,
     className?: string,
     style?: React.CSSProperties, size?: 'sm' | 'lg',
     inputStyle?: React.CSSProperties,
     inputClassName?: string,
-}> = ({ onEnter, className, style, size, inputStyle, inputClassName }) => {
+}> = ({ onSearch, className, style, size, inputStyle, inputClassName }) => {
     const { t } = useTranslation('common');
     const [filterInput, setFilterInput] = useState('');
+    const composing = useRef(false);
+    const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+    useEffect(() => () => clearTimeout(timer.current), []);
+
+    const emit = (value: string, delay = 0) => {
+        clearTimeout(timer.current);
+        if (delay) timer.current = setTimeout(() => onSearch(value.toLowerCase()), delay);
+        else onSearch(value.toLowerCase());
+    };
+    const clear = () => {
+        setFilterInput('');
+        emit('');
+    };
+
     return (
         <div className={clsx("relative", className)} style={style}>
             <div
@@ -542,17 +571,46 @@ export const FilterSearch: FC<{
             </div>
             <input
                 value={filterInput}
-                onChange={(e) => setFilterInput(e.target.value)}
+                onChange={(e) => {
+                    setFilterInput(e.target.value);
+                    // An IME's unconverted text is not a query yet.
+                    if (!composing.current) emit(e.target.value, FILTER_SEARCH_DELAY);
+                }}
+                onCompositionStart={() => {
+                    composing.current = true;
+                    clearTimeout(timer.current);
+                }}
+                onCompositionEnd={(e) => {
+                    composing.current = false;
+                    emit(e.currentTarget.value, FILTER_SEARCH_DELAY);
+                }}
                 placeholder={t('state.search')}
-                onKeyDown={(e) => e.key === 'Enter' && onEnter(filterInput.toLowerCase())}
+                onKeyDown={(e) => {
+                    if (e.nativeEvent.isComposing) return;
+                    if (e.key === 'Enter') emit(filterInput);
+                    if (e.key === 'Escape' && filterInput) {
+                        e.stopPropagation();
+                        clear();
+                    }
+                }}
                 className={clsx(
                     "w-full bg-ui-surface-muted border border-ui-border rounded-ui-md focus:bg-ui-bg focus:border-ui-primary focus:outline-none transition-colors",
-                    size === 'sm' ? "h-8 pl-10 text-sm" : "h-10 pl-12",
+                    size === 'sm' ? "h-8 pl-10 pr-8 max-sm:pr-11 text-sm" : "h-10 pl-12 pr-10 max-sm:pr-11",
                     inputClassName
                 )}
                 style={inputStyle}
                 autoComplete="off"
             />
+            {filterInput && (
+                <button
+                    type="button"
+                    aria-label={t('dateTime.clear')}
+                    onClick={clear}
+                    className={clsx("absolute inset-y-0 right-0 flex w-8 items-center justify-center rounded-ui-md border-0 bg-transparent text-ui-muted hover:text-ui-fg max-sm:w-11", ui.focusRing)}
+                >
+                    <X size={size === 'sm' ? 14 : 16} aria-hidden="true" />
+                </button>
+            )}
         </div>
     );
 };

@@ -119,8 +119,8 @@ export default function NodeImportModal({ show, group, onHide, onSaved, onChange
                                 event.target.value = '';
                             }} />
                     </label>}
-                    <Textarea aria-label={t(source === 'nodes' ? 'nodeLinksOrJSON' : 'subscriptionURL')}
-                        className="min-h-[25dvh] font-mono" value={text} disabled={pending || successful > 0}
+                    <Textarea code aria-label={t(source === 'nodes' ? 'nodeLinksOrJSON' : 'subscriptionURL')}
+                        className="min-h-[25dvh]" value={text} disabled={pending || successful > 0}
                         onChange={event => changeText(event.target.value)}
                         placeholder={source === 'nodes' ? 'ss://…\ntrojan://…\n[{"name":"…","chain":[…]}]' : 'https://example.com/sub/…'} />
                     {source === 'subscription' && <SettingInputVertical className="mt-3" label={t('subscriptionNameOptional')}

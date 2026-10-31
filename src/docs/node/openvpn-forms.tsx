@@ -19,7 +19,7 @@ const PEMField: FC<{
     const id = useId();
     return <div className="min-w-0">
         <SettingLabel htmlFor={id} className="mb-2 block">{label}</SettingLabel>
-        <Textarea secret={secret} id={id} rows={4} spellCheck={false} autoComplete="off"
+        <Textarea code secret={secret} id={id} rows={4} spellCheck={false} autoComplete="off"
             value={value ?? ""} disabled={disabled} placeholder={placeholder}
             onChange={(event) => onChange(event.target.value)} />
     </div>;

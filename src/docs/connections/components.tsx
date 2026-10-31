@@ -26,23 +26,6 @@ export function numberValue(value?: string | number): number {
     return Number.isFinite(parsed) ? parsed : 0;
 }
 
-export const ConnectionBadge: FC<{
-    icon: React.ElementType;
-    text: React.ReactNode;
-    tone?: "info" | "success" | "warning" | "neutral";
-}> = ({ icon: Icon, text, tone = "info" }) => (
-    <span className={clsx(
-        "inline-flex shrink-0 items-center gap-1 rounded-ui-xs border px-2 py-1 text-[11px] font-medium leading-none whitespace-nowrap",
-        tone === "info" && "border-ui-info/20 bg-ui-info-soft text-ui-info",
-        tone === "success" && "border-ui-success/20 bg-ui-success-soft text-ui-success",
-        tone === "warning" && "border-ui-warning/20 bg-ui-warning-soft text-ui-warning",
-        tone === "neutral" && "border-ui-border bg-ui-surface-muted text-ui-muted",
-    )}>
-        <Icon size={12} aria-hidden="true" />
-        <span>{text}</span>
-    </span>
-);
-
 function errorText(error: unknown): string | undefined {
     if (!error) return undefined;
     if (typeof error === "object" && "msg" in error && typeof (error as { msg?: unknown }).msg === "string") {
@@ -575,7 +558,7 @@ const MatchHistoryItem: FC<{ value: MatchHistoryEntry[]; connectionId: string; m
                 </div>
                 <div className="min-w-0 w-full grow overflow-hidden rounded-ui-lg border border-sidebar-border">
                     <div className="flex items-center justify-between gap-2 border-b border-sidebar-border bg-ui-surface-muted/50 px-3 py-2 text-[11px] text-ui-muted">
-                        <span>{value.length} {t("circuit.rules", { defaultValue: "rules checked" })}</span>
+                        <span>{t("circuit.rulesChecked", { count: value.length })}</span>
                         <div className="flex gap-2">
                             <button type="button" className="hover:text-ui-heading" onClick={collapseAll}>
                                 {t("circuit.collapseAll", { defaultValue: "Collapse all" })}

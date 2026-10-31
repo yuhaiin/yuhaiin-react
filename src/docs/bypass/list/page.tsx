@@ -2,7 +2,7 @@ import { StageChangeButton } from "@/component/configuration-change";
 import { SecretValues } from "@/component/secret-values";
 import { hasSecretPlaceholder, isSecretPlaceholder, useProtectedSetting } from "@/auth/secret-fields";
 import { confirmAction } from '@/component/v2/confirmation';
-import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection } from '@/component/resource-workspace';
+import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection, EditorDeleteButton, editorActionsClass } from '@/component/resource-workspace';
 import { useHashSearch } from '@/hooks/useHashLocation';
 import { useServerPageClamp } from "@/hooks/use-pagination";
 import { useTranslation } from 'react-i18next';
@@ -22,16 +22,7 @@ import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import type { RouteListDetail } from "@/contract/route";
 import { createDefaultRouteList, normalizeRouteList } from "@/contract/route";
 import { RegistryCatalogModal } from "./registry-catalog";
-import {
-    Check,
-    Clock,
-    CloudDownload,
-    Network,
-    RefreshCw,
-    Save,
-    Trash,
-    TriangleAlert,
-} from "lucide-react";
+import { Check, Clock, CloudDownload, Network, RefreshCw, Save, TriangleAlert } from "lucide-react";
 import { useCallback, useContext, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
@@ -239,11 +230,10 @@ function ListEditorModal({ name, onSaved, onClose, presentation = "modal" }: { n
         footer={<>
                     <div>
                         {name !== "bootstrap" && (
-                            <Button permission="routes:write" variant="outline-danger" disabled={pending || deleted || isLoading || Boolean(error) || !data} onClick={remove}>
-                                <Trash className="mr-2" size={16} />{uiT("deleteList")}</Button>
+                            <EditorDeleteButton permission="routes:write" label={uiT("deleteList")} disabled={pending || deleted || isLoading || Boolean(error) || !data} onClick={remove} />
                         )}
                     </div>
-                    <div className="flex flex-wrap justify-end gap-2">
+                    <div className={editorActionsClass}>
                         <Button onClick={close} disabled={pending}>{uiT("cancel")}</Button>
                         <StageChangeButton disabled={pending || deleted || isLoading || Boolean(error) || !data} request={{ store: "configuration", kind: "route-list", resourceId: draft.id, payload: draft }} onCommitted={async () => { const next = await getRouteList(draft.id); commit(next); await mutate(next, { revalidate: false }); onSaved(); }} />
                         <Button permission="routes:write" variant="primary" disabled={pending || isLoading || Boolean(error) || !data} onClick={save}><Check className="mr-2" size={16} />{t(actionError && !dirty ? "retryApply" : "saveAndApply")}</Button>
@@ -357,19 +347,17 @@ function RouteListFormFields({ value, onChange, lockName }: RouteListFormProps) 
                             {sourceType === "remote" ? "Files will be downloaded and updated automatically." : "Define rules manually for this list."}
                         </small>
                     </div>
-                    <Badge variant="secondary" pill>{lines.length} {uiT("entries")}</Badge>
+                    <Badge variant="secondary" pill>{uiT("entryCount", { count: lines.length })}</Badge>
                 </div>
 
-                <div className="rounded-ui-lg border border-ui-border bg-ui-surface-muted p-4">
-                    <InputList
-                        title={sourceType === "remote" ? "URL" : "Rule"}
-                        data={lines}
-                        secret={sourceType === "remote"}
-                        onChange={updateLines}
-                        textarea
-                        placeholder={sourceType === "remote" ? "https://example.com/list.txt" : "Add list entry"}
-                    />
-                </div>
+                <InputList
+                    title={sourceType === "remote" ? "URL" : "Rule"}
+                    hideHeader
+                    data={lines}
+                    secret={sourceType === "remote"}
+                    onChange={updateLines}
+                    placeholder={sourceType === "remote" ? "https://example.com/list.txt" : undefined}
+                />
             </div>
 
             {(value.errorMsgs?.length ?? 0) > 0 && (

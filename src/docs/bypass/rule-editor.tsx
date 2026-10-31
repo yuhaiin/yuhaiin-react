@@ -1,3 +1,4 @@
+import { EditorDeleteButton, editorActionsClass } from '@/component/resource-workspace';
 import { StageChangeButton } from "@/component/configuration-change";
 import { confirmAction } from '@/component/v2/confirmation';
 import { applyRouteChanges, createRule, deleteRule, getRule, saveRule } from '@/api/route';
@@ -7,7 +8,7 @@ import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { createDefaultRuleDraft, type RuleDraft, type RuleItem } from '@/contract/route';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
-import { ArrowLeft, Save, Trash } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR, { useSWRConfig } from 'swr';
@@ -94,8 +95,8 @@ export function RuleEditor({ item, creating, initial, options, blocked = false, 
             {!unavailable && !deleted && <RuleDraftForm value={draft} onChange={setDraft} options={options} />}
         </fieldset>
         <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-ui-border/60 pt-4">
-            {item && !creating ? <Button permission="routes:write" variant="outline-danger" className="gap-2 border-transparent" disabled={busy || deleted || unavailable} onClick={remove}><Trash size={16} />{uiT('deleteRule')}</Button> : <Button disabled={busy} onClick={back}>{uiT('cancel')}</Button>}
-            <div className="flex flex-wrap items-center gap-2">
+            {item && !creating ? <EditorDeleteButton permission="routes:write" label={uiT('deleteRule')} className="border-transparent" disabled={busy || deleted || unavailable} onClick={remove} /> : <Button disabled={busy} onClick={back}>{uiT('cancel')}</Button>}
+            <div className={editorActionsClass}>
                 {!creating && dirty && <Button disabled={busy} onClick={reset}>{t('discardChanges')}</Button>}
                 <StageChangeButton disabled={busy || unavailable || deleted || !draft.rule.name.trim() || (draft.shareLists?.length ?? 0) > 0} request={{ store: "configuration", kind: "route-rule", resourceId: draft.rule.id || undefined, payload: draftForSave(draft) }} onCommitted={async () => { const next = draft.rule.id ? await getRule(draft.rule.id) : null; if (next) { commit(next); await mutate(next, { revalidate: false }); } onSaved(next); }} />
                 <Button permission="routes:write" variant="primary" className="gap-2" disabled={busy || unavailable || !draft.rule.name.trim()} onClick={save}>{pending ? <Spinner size="sm" /> : <Save size={16} />}{t(actionError && !dirty ? 'retryApply' : 'saveAndApply')}</Button>

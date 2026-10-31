@@ -66,10 +66,9 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
             disabled={disabled}
         >
             <SelectPrimitive.Trigger className={cn(
-                "flex min-w-0 items-center justify-between rounded-ui-sm px-3 text-sm leading-none h-field max-sm:min-h-11 gap-2 bg-ui-surface text-ui-fg border border-ui-border w-full cursor-pointer",
+                ui.selectTrigger,
                 ui.interactive,
                 ui.focusRing,
-                "hover:bg-ui-hover hover:border-ui-border-strong data-[state=open]:border-ui-primary aria-invalid:border-ui-danger",
                 size === 'sm' && "h-field-sm text-[0.875rem] px-2.5",
                 radiusClass,
                 triggerClassName,
@@ -83,28 +82,24 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
             <SelectPrimitive.Portal>
                 <SelectPrimitive.Content
                     className={cn(
-                        "overflow-hidden bg-ui-surface-raised rounded-ui-lg border border-ui-border shadow-ui-elevated z-[2000] max-h-[var(--radix-select-content-available-height)] origin-[var(--radix-select-content-transform-origin)] will-change-[transform,opacity]",
-                        "data-[state=closed]:animate-fadeOut",
-                        "data-[side=top]:data-[state=open]:animate-slideUpAndFadeIn data-[side=bottom]:data-[state=open]:animate-slideDownAndFadeIn",
+                        ui.menuSurface,
+                        "max-h-[var(--radix-select-content-available-height)]",
                         contentClassName
                     )}
                     position="popper"
                     sideOffset={5}
                     align="start"
+                    data-ui-transition="popover"
                     style={{ width: 'var(--radix-select-trigger-width)' }}
                 >
 
-                        <SelectPrimitive.Viewport className={cn("p-1 overflow-y-auto max-h-[50vh] max-h-[var(--radix-select-content-available-height)]", viewportClassName)}>
+                        <SelectPrimitive.Viewport className={cn("p-1 overflow-y-auto overscroll-contain max-h-[min(320px,var(--radix-select-content-available-height))]", viewportClassName)}>
                             {safeItems.map((item, index) => {
                                 const itemValue = item.value === "" ? emptyValue : item.value;
                                 return (
-                                    <SelectPrimitive.Item key={`${itemValue}-${index}`} value={itemValue} className={cn(
-                                        "min-w-0 text-sm leading-normal text-ui-fg rounded-ui-sm flex items-center h-field-sm max-sm:min-h-11 pl-[25px] pr-3 relative select-none cursor-pointer",
-                                        "data-[state=checked]:bg-ui-selected data-[state=checked]:text-ui-heading data-[highlighted]:bg-ui-hover data-[highlighted]:text-ui-heading data-[highlighted]:ring-1 data-[highlighted]:ring-inset data-[highlighted]:ring-ui-primary",
-                                        ui.interactive
-                                    )}>
+                                    <SelectPrimitive.Item key={`${itemValue}-${index}`} value={itemValue} className={ui.menuItem}>
                                         <SelectPrimitive.ItemText className="min-w-0 truncate">{item.label}</SelectPrimitive.ItemText>
-                                        <SelectPrimitive.ItemIndicator className="absolute left-0 w-[25px] inline-flex items-center justify-center">
+                                        <SelectPrimitive.ItemIndicator className={ui.menuIndicator}>
                                             <Check size={14} />
                                         </SelectPrimitive.ItemIndicator>
                                     </SelectPrimitive.Item>
@@ -116,66 +111,6 @@ export const Select: FC<SelectProps> = ({ value, onValueChange, items, placehold
         </SelectPrimitive.Root></FieldFeedback>
     );
 }
-
-export const SwitchSelect: FC<{ value: boolean, onChange: (x: boolean) => void, disabled?: boolean }> = ({ value, onChange, disabled }) => {
-    const items: SelectItem[] = [
-        { value: "true", label: "TRUE" },
-        { value: "false", label: "FALSE" },
-    ];
-    return <Select value={String(value)} onValueChange={(val) => onChange(val === 'true')} items={items} disabled={disabled} />;
-}
-
-const SettingSelectComponent: FC<{
-    label: string,
-    value: string,
-    values: string[],
-    onChange: (x: string) => void,
-    emptyChoose?: boolean,
-    emptyChooseName?: string,
-    disabled?: boolean
-}> = ({ label, value, values, onChange, emptyChoose, emptyChooseName, disabled }) => {
-    const { t } = useTranslation('common');
-    const safeValues = Array.isArray(values) ? values : [];
-    const items: SelectItem[] = safeValues.map(v => ({ value: v, label: v }));
-    if (emptyChoose) {
-        items.unshift({ value: "", label: emptyChooseName ?? t('state.choose') });
-    }
-    return (
-        <div className={cn("flex items-center mb-[var(--field-margin,var(--space-field))] flex-wrap", disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
-            <label className="basis-[150px] shrink-0 mr-6 font-medium max-[576px]:basis-full max-[576px]:mr-0 max-[576px]:mb-2">{label}</label>
-            <div className="grow min-w-0 relative">
-                <Select value={value} onValueChange={onChange} items={items} disabled={disabled} ariaLabel={label} />
-            </div>
-        </div>
-    );
-}
-export const SettingSelect = React.memo(SettingSelectComponent);
-
-
-const FormSelectComponent: FC<{
-    value: string,
-    values: string[] | [string, string][],
-    onChange: (x: string) => void,
-    format?: (v: string) => string,
-    emptyChoose?: boolean,
-    emptyChooseName?: string,
-    disabled?: boolean,
-    triggerClassName?: string,
-    groupPosition?: 'first' | 'middle' | 'last' | 'single'
-}> = ({ value, values, onChange, format, emptyChoose, emptyChooseName, disabled, triggerClassName, groupPosition }) => {
-    const { t } = useTranslation('common');
-    const safeValues = Array.isArray(values) ? values : [];
-    const items: SelectItem[] = safeValues.map((v) => {
-        const itemValue = typeof v === 'string' ? v : v[1];
-        const itemLabel = typeof v === 'string' ? v : v[0];
-        return { value: itemValue, label: format ? format(itemLabel) : itemLabel };
-    });
-    if (emptyChoose) {
-        items.unshift({ value: "", label: emptyChooseName ?? t('state.choose') });
-    }
-    return <Select value={value} onValueChange={onChange} items={items} disabled={disabled} triggerClassName={triggerClassName} groupPosition={groupPosition} />;
-}
-export const FormSelect = React.memo(FormSelectComponent);
 
 const DropdownSelectComponent: FC<{
     values: string[],
@@ -199,17 +134,17 @@ const DropdownSelectComponent: FC<{
     return (
         <Dropdown>
             <DropdownTrigger asChild>
-                <div
+                <button
+                    type="button"
                     className={cn(
-                        "flex items-center justify-between rounded-ui-md px-3 text-sm leading-none h-field max-sm:min-h-11 gap-2 bg-ui-surface text-ui-fg border border-ui-border w-full cursor-pointer",
+                        ui.selectTrigger,
                         ui.interactive,
                         ui.focusRing,
-                        "hover:bg-ui-hover hover:border-ui-border-strong data-[state=open]:border-ui-primary aria-invalid:border-ui-danger",
                         radiusClass,
                         triggerClassName
                     )}
                 >
-                    <div className="flex items-center gap-2 overflow-hidden min-w-0">
+                    <span className="flex items-center gap-2 overflow-hidden min-w-0">
                         {safeValues.length > 0 && (
                             <span className="inline-flex items-center justify-center bg-ui-primary-soft text-ui-primary text-[0.75rem] font-semibold h-[20px] min-w-[20px] px-[6px] rounded-full leading-none">
                                 {safeValues.length}
@@ -218,9 +153,9 @@ const DropdownSelectComponent: FC<{
                         <span className={cn("truncate", safeValues.length === 0 && "text-ui-muted")}>
                             {safeValues.length === 0 ? resolvedPlaceholder : safeValues.map(format).join(", ")}
                         </span>
-                    </div>
+                    </span>
                     <ChevronDown className="text-ui-tertiary flex-shrink-0" size={16} />
-                </div>
+                </button>
             </DropdownTrigger>
             <DropdownContent className="min-w-[min(300px,90vw)]">
                 {safeItems.map((v) => (

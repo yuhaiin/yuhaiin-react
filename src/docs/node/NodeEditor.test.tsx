@@ -25,16 +25,12 @@ it('edits relay addresses and hopping intervals while preserving authentication,
             Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(newAddresses, 'relay-b.example:30000-30020\n[2001:db8::1]:443');
             newAddresses.dispatchEvent(new Event('input', { bubbles: true }));
         });
-        act(() => host.querySelector<HTMLButtonElement>('button[aria-label="add hysteria2HopAddresses"]')!.click());
         act(render);
-        expect(host.querySelector<HTMLInputElement>('input[aria-label="hysteria2HopAddresses 1"]')!.value).toBe('relay-b.example:30000-30020');
-        const relay = host.querySelector<HTMLInputElement>('input[aria-label="hysteria2HopAddresses 2"]')!;
+        expect(newAddresses.value).toBe('relay-b.example:30000-30020\n[2001:db8::1]:443');
         act(() => {
-            Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(relay, '[2001:db8::2]:443,8443');
-            relay.dispatchEvent(new Event('input', { bubbles: true }));
+            Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(newAddresses, '[2001:db8::2]:443,8443');
+            newAddresses.dispatchEvent(new Event('input', { bubbles: true }));
         });
-        act(render);
-        act(() => host.querySelector<HTMLButtonElement>('button[aria-label="delete hysteria2HopAddresses 1"]')!.click());
         act(render);
         for (const [key, value] of [['minHopIntervalSeconds', '15'], ['maxHopIntervalSeconds', '45']]) {
             const label = [...host.querySelectorAll('label')].find(element => element.textContent === key)!;

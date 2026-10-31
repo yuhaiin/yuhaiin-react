@@ -14,7 +14,7 @@ export function DestinationCondition({ value, onChange }: { value: Go.route.Dest
 function DestinationValues({ label, values, onChange }: { label: string; values: string[]; onChange: (values: string[]) => void }) {
     const source = values.join('\n');
     const [edit, setEdit] = useState({ source, text: source });
-    return <label className="block space-y-2 text-sm"><span>{label}</span><Textarea value={edit.source === source ? edit.text : source} onChange={event => {
+    return <label className="block space-y-2 text-sm"><span>{label}</span><Textarea code value={edit.source === source ? edit.text : source} onChange={event => {
         const next = event.target.value.split(/[\n,]/).map(value => value.trim()).filter(Boolean);
         setEdit({ source: next.join('\n'), text: event.target.value }); onChange(next);
     }} /></label>;

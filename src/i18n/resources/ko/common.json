@@ -26,8 +26,13 @@
     "justNow": "방금"
   },
   "pagination": {
+    "page": "페이지",
     "previous": "이전 페이지",
-    "next": "다음 페이지"
+    "next": "다음 페이지",
+    "itemCount": "{{count}}개",
+    "itemCount_one": "{{count}}개",
+    "itemCount_other": "{{count}}개",
+    "pageOf": "{{page}}/{{pages}} 페이지"
   },
   "form": {
     "hidePassword": "비밀번호 숨기기",

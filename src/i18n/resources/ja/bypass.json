@@ -1,5 +1,7 @@
 {
   "blockedTraffic": "ブロックされた通信",
   "details": "ブロックされたセッションの詳細",
-  "displayingDenied": "ルールにより拒否された接続を {{count}} 件表示中"
+  "displayingDenied": "ルールにより拒否された接続を {{count}} 件表示中",
+  "displayingDenied_one": "ルールにより拒否された接続を {{count}} 件表示中",
+  "displayingDenied_other": "ルールにより拒否された接続を {{count}} 件表示中"
 }

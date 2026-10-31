@@ -54,7 +54,7 @@ export const FortinetForm: FC<Props<"fortinet">> = ({ config, editable, onChange
     <SettingInputVertical label="TOTP secret" type="password" value={config.totp_secret ?? ""} disabled={!editable} onChange={(totp_secret) => onChange({ totp_secret })} />
     <div className="md:col-span-2">
       <SettingLabel className="mb-2 block">Trusted CA certificate (PEM)</SettingLabel>
-      <Textarea aria-label="Trusted CA certificate (PEM)" rows={5} spellCheck={false}
+      <Textarea code aria-label="Trusted CA certificate (PEM)" rows={5} spellCheck={false}
         disabled={!editable} placeholder="-----BEGIN CERTIFICATE-----"
         value={config.ca_cert_pem ?? ""} onChange={(event) => onChange({ ca_cert_pem: event.target.value })} />
     </div>

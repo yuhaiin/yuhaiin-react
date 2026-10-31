@@ -26,8 +26,13 @@
     "justNow": "just now"
   },
   "pagination": {
+    "page": "Page",
     "previous": "Previous page",
-    "next": "Next page"
+    "next": "Next page",
+    "itemCount": "{{count}} items",
+    "itemCount_one": "1 item",
+    "itemCount_other": "{{count}} items",
+    "pageOf": "page {{page}}/{{pages}}"
   },
   "form": {
     "hidePassword": "Hide password",

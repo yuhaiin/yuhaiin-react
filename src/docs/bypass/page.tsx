@@ -191,7 +191,7 @@ function BypassComponent() {
                 <WorkspaceDirectory label={t('ruleDirectory')} hiddenOnMobile={showEditor}>
                     <div className="mb-2 space-y-2 border-b border-ui-border/50 px-1 pb-3">
                         <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-medium text-ui-heading">{uiT('routeRules')}</h2><div className="flex shrink-0 items-center gap-2">{isValidating && <Spinner size="sm" />}<span title={t('ruleOrderHelp', { count: data.page.total })} className="text-xs tabular-nums text-ui-muted">{data.page.total}</span></div></div>
-                        <FilterSearch className="w-full" onEnter={v => { setPage(1); setQuery(v); }} size="sm" />
+                        <FilterSearch className="w-full" onSearch={v => { setPage(1); setQuery(v); }} size="sm" />
                     </div>
                     <div className="max-h-[min(72vh,900px)] overflow-y-auto overscroll-contain">
                         {error ? <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading> : <RuleList onReordered={refresh} items={data.items} selectedId={creating ? undefined : editing?.id} destinations={destinations}

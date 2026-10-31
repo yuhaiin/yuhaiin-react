@@ -140,7 +140,7 @@ export function SimpleConditions({ value, matcher, options, onChange, privateHis
                             {local ? <>
                                 <label className="block space-y-2">
                                     <SettingLabel>{t('onePerLine')}</SettingLabel>
-                                    <Textarea className="min-h-28 w-full bg-ui-surface font-mono text-sm leading-relaxed"
+                                    <Textarea code className="min-h-28 w-full bg-ui-surface"
                                         value={local.source.local?.lists?.join('\n') ?? ''}
                                         onChange={event => updateList(local.id, list => ({
                                             ...list, source: { type: 'local', local: { lists: event.target.value.split('\n') } },

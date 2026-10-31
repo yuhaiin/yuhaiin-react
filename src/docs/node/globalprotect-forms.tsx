@@ -58,7 +58,7 @@ const GlobalProtectForm: FC<{
             />
             <div>
                 <SettingLabel className="mb-2 block">{uiT("caCert")}</SettingLabel>
-                <Textarea
+                <Textarea code
                     value={config.ca_cert_pem ?? ""}
                     disabled={!editable}
                     rows={5}

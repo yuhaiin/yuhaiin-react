@@ -234,7 +234,7 @@ const worker=setupWorker(
     else if(op==='route.lists.refresh'){}
     else if(op==='route.registries.get'||op==='route.registries.catalogs')result={items:[]};
     else if(op==='route.rules.test')result={mode:'proxy',target:{type:'selector',id:'selector-work'},resolver:'dns-proxy',afterAddr:p.host,lists:['shared-websites'],listNames:{'shared-websites':'Work websites'},ips:['192.0.2.1'],matchResult:connections[0]?.matchHistory||[]};
-    else if(op==='route.rules.block_history')result={items:[]};
+    else if(op==='route.rules.block_history')result={dumpProcessEnabled:true,items:history.map((x,i)=>({host:x.connection.addr,protocol:'tcp',process:i%3?'audit':'',time:x.time,blockCount:String(i+1)}))};
     else if(scenario==='reliability' && op==='node.monitoring.get')result=monitoringStatus();
     else if(scenario==='reliability' && op==='node.monitoring.put'){monitoringConfig={...p,revision:p.revision+1};result=monitoringStatus();}
     else if(scenario==='reliability' && op==='outbound.selector.status')result=selectorStatus(p.id);

@@ -146,6 +146,10 @@ function Connections() {
             .finally(() => setClosing(false));
     }, [ctx]);
 
+    // Keeps the sheet's height while it slides away after `selected` clears.
+    const [detail, setDetail] = useState(selected);
+    if (selected && selected !== detail) setDetail(selected);
+
     if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
     if ((isLoading && !initial) || !hydrated) return <Loading />
 
@@ -222,20 +226,20 @@ function Connections() {
             </section>
 
             <Modal open={selected !== undefined} onOpenChange={(open) => !open && setSelected(undefined)}>
-                <ModalContent>
+                <ModalContent mobileSheet>
                     <ModalHeader closeButton>
                         <ModalTitle>{uiT("connectionDetails")}</ModalTitle>
                     </ModalHeader>
                     <ModalBody className="pt-2">
-                        {selected && <ConnectionInfo value={selected} showNodeModal={(id) => setNodeModal({ show: true, id })} />}
+                        {detail && <ConnectionInfo value={detail} showNodeModal={(id) => setNodeModal({ show: true, id })} />}
                     </ModalBody>
                     <ModalFooter className="border-t-0 pt-0 pb-3 px-3">
-                        {selected && (
+                        {detail && (
                             <Button permission="connections:write"
                                 variant="danger"
                                 className="w-full py-2 flex items-center justify-center notranslate"
                                 disabled={closing}
-                                onClick={() => handleClose(selected.id)}
+                                onClick={() => handleClose(detail.id)}
                             >
                                 {closing ? <Spinner size="sm" className="mr-2" /> : <Power className="text-xl mr-2" />}
                                 <span>{uiT("disconnect")}</span>

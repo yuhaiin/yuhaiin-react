@@ -331,7 +331,7 @@ const SSTPServerEditor: FC<{
                     onChange={(maxSessions) => patch({ maxSessions: numberValue(maxSessions) })} />
             </div>
             <InputList title={uiT("sstpClientAddresses")} data={value.clientAddresses}
-                onChange={(clientAddresses) => patch({ clientAddresses })} textarea />
+                onChange={(clientAddresses) => patch({ clientAddresses })} />
             <p className="text-xs text-ui-muted">{uiT("sstpAddressHint")}</p>
             <FormSection title={uiT("sstpTLSCertificate")}>
                 <ServerTLSConfigEditor value={value.tls} showNextProtos={false} onChange={(tls) => patch({ tls })} />
@@ -363,7 +363,7 @@ const WireguardServerEditor: FC<{
                     value={String(value.mtu ?? 1420)} onChange={(mtu) => patch({ mtu: numberValue(mtu) })} />
             </div>
             <InputList title={uiT("wgServerAddresses")} data={value.addresses ?? []}
-                onChange={(addresses) => patch({ addresses })} textarea />
+                onChange={(addresses) => patch({ addresses })} />
             <p className="text-xs text-ui-muted">{uiT("wgAddressesHint")}</p>
             <div className="flex items-center justify-between gap-3">
                 <SettingLabel className="mb-0">{uiT("wgPeers")}</SettingLabel>
@@ -386,7 +386,7 @@ const WireguardServerEditor: FC<{
                     <SettingInputVertical label={uiT("wgPresharedKey")} type="password" value={peer.preSharedKey ?? ""}
                         onChange={(preSharedKey) => updatePeer(index, { preSharedKey })} />
                     <InputList title={uiT("wgAllowedIps")} data={peer.allowedIps}
-                        onChange={(allowedIps) => updatePeer(index, { allowedIps })} textarea />
+                        onChange={(allowedIps) => updatePeer(index, { allowedIps })} />
                 </div>
             ))}
             <p className="text-xs text-ui-muted">{uiT("wgSecurityHint")}</p>
@@ -449,10 +449,10 @@ const TunEditor: FC<{
                     <p className="text-xs text-ui-muted">{uiT("tunDarwinPendingHint")}</p>
                 </>}
             </FormSection>}
-            <InputList title={uiT("routes")} data={value.routes} onChange={(routes) => patch({ routes })} textarea />
-            <InputList title="Excludes" data={value.excludes} onChange={(excludes) => patch({ excludes })} textarea />
-            <InputList secret executable title={uiT("postUp")} data={value.postUp} onChange={(postUp) => patch({ postUp })} textarea />
-            <InputList secret executable title={uiT("postDown")} data={value.postDown} onChange={(postDown) => patch({ postDown })} textarea />
+            <InputList title={uiT("routes")} data={value.routes} onChange={(routes) => patch({ routes })} />
+            <InputList title="Excludes" data={value.excludes} onChange={(excludes) => patch({ excludes })} />
+            <InputList secret executable title={uiT("postUp")} data={value.postUp} onChange={(postUp) => patch({ postUp })} />
+            <InputList secret executable title={uiT("postDown")} data={value.postDown} onChange={(postDown) => patch({ postDown })} />
         </div>
     );
 };
@@ -512,12 +512,12 @@ const BytesTextarea: FC<{
     return (
         <div>
             <SettingLabel className="mb-2 block">{label}</SettingLabel>
-            <Textarea secret={secret}
+            <Textarea code secret={secret}
                 value={text}
                 readOnly={readOnly}
                 onChange={(event) => onChangeBase64(bytesToBase64(new TextEncoder().encode(event.target.value)))}
                 rows={rows}
-                className="font-mono text-sm"
+                
             />
         </div>
     );
@@ -790,7 +790,7 @@ const TransportConfigEditor: FC<{
                 </div>
             );
         case "http_mock":
-            return <Textarea className="min-h-[120px] font-mono text-sm" value={value.http_mock.dataBase64} onChange={(event) => onChange({ ...value, http_mock: { dataBase64: event.target.value } })} placeholder={uiT("base64MockResponseData")} />;
+            return <Textarea code className="min-h-[120px]" value={value.http_mock.dataBase64} onChange={(event) => onChange({ ...value, http_mock: { dataBase64: event.target.value } })} placeholder={uiT("base64MockResponseData")} />;
         case "aead":
             return (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -174,7 +174,7 @@ export default function LogComponent() {
             <Card noMargin className="flex-1 min-h-0 flex flex-col overflow-hidden">
                 <CardHeader className="shrink-0 !px-3 py-3 sm:!px-4">
                     <div className="grid w-full min-w-0 grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-3">
-                        <FilterSearch size="sm" onEnter={(term) => { followLatestRef.current = true; setSearchTerm(term); }} className="w-full min-w-0" inputClassName="max-sm:min-h-11 max-sm:text-base" />
+                        <FilterSearch size="sm" onSearch={(term) => { followLatestRef.current = true; setSearchTerm(term); }} className="w-full min-w-0" inputClassName="max-sm:min-h-11 max-sm:text-base" />
                         <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-end">
                             <ToggleGroup className="shrink-0 flex-nowrap max-sm:p-0" type="single" value={String(retention)} onValueChange={(v) => v && changeRetention(v)}>
                                 {LOG_RETENTION_OPTIONS.map(value => (

@@ -7,8 +7,8 @@ import { allowNavigation } from '@/hooks/navigation-guard';
 import { clearHashSearch } from '@/hooks/useHashLocation';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import clsx from 'clsx';
-import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Search, Trash } from 'lucide-react';
+import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /** Selection survives directory filtering, pagination and server refreshes. */
@@ -102,6 +102,16 @@ export function ResourceWorkspace({ title, description, items, selectedId, editi
 }
 
 /** One frame for inline editors and their existing quick-create dialogs. */
+/** Right side of an editor footer; below sm the primary action, always last, takes the free width. */
+export const editorActionsClass = 'flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2 max-sm:[&>button:last-child]:flex-1';
+
+/** Icon-only below sm, so delete, cancel and save share one row on a phone. */
+export function EditorDeleteButton({ label, className, ...props }: ComponentProps<typeof Button> & { label: string }) {
+    return <Button variant="outline-danger" aria-label={label} className={clsx('gap-2 max-sm:border-transparent', className)} {...props}>
+        <Trash size={16} /><span className="max-sm:hidden">{label}</span>
+    </Button>;
+}
+
 export function ResourceEditorFrame({ title, label, presentation = 'modal', open, onClose, children, footer }: {
     title: ReactNode;
     label: string;
