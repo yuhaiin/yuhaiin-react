@@ -75,10 +75,12 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
     secret?: boolean;
     groupPosition?: GroupPosition;
     error?: string;
+    /** Machine-readable text: keys, certificates, addresses. */
+    code?: boolean;
 }
 
 export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-    ({ className, groupPosition, error, secret, ...props }, ref) => {
+    ({ className, groupPosition, error, secret, code = false, style, ...props }, ref) => {
         const { t } = useTranslation('auth');
         const access = useSecretField(props.value, secret);
         const generatedId = React.useId();
@@ -98,11 +100,15 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
                     ui.fieldFocus,
                     ui.fieldReadonly,
                     ui.fieldDisabled,
-                    "min-h-field h-auto py-2.5",
+                    // Grows with its text where supported; older browsers keep the drag handle.
+                    "min-h-20 h-auto max-h-[60dvh] py-2.5 field-sizing-content resize-y supports-[field-sizing:content]:resize-none",
+                    code && "font-mono leading-relaxed",
                     groupRadiusClass(groupPosition),
                     error && 'pr-9',
                     className
                 )}
+                style={props.rows ? { minHeight: `calc(${props.rows} * 1.5em + 1.25rem + 2px)`, ...style } : style}
+                {...(code ? { spellCheck: false, autoCapitalize: 'off', autoCorrect: 'off' } : {})}
                 {...textareaProps}
                 aria-invalid={Boolean(error) || props['aria-invalid'] || undefined}
                 aria-describedby={[props['aria-describedby'], error ? feedbackId : undefined].filter(Boolean).join(' ') || undefined}

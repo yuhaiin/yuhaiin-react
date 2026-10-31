@@ -43,7 +43,7 @@ export function CertificateForm({ initial, providers, gateways, pending, save, c
       </>}
       <Switch label={t('autoRenew')} checked={draft.autoRenew} onCheckedChange={autoRenew => setDraft({ ...draft, autoRenew })} />
       <Switch label={t('terms')} checked={draft.termsAccepted} onCheckedChange={termsAccepted => setDraft({ ...draft, termsAccepted })} />
-      <details className="text-sm"><summary className="cursor-pointer text-ui-secondary">{t('privateTrust')}</summary><p className="my-2 text-ui-secondary">{t('privateTrustHelp')}</p><Textarea aria-label={t('privateTrust')} rows={4} value={draft.trustPem ?? ''} onChange={e => setDraft({ ...draft, trustPem: e.target.value })} /></details>
+      <details className="text-sm"><summary className="cursor-pointer text-ui-secondary">{t('privateTrust')}</summary><p className="my-2 text-ui-secondary">{t('privateTrustHelp')}</p><Textarea code aria-label={t('privateTrust')} rows={4} value={draft.trustPem ?? ''} onChange={e => setDraft({ ...draft, trustPem: e.target.value })} /></details>
       <p className="text-sm text-ui-secondary">{t('identityEditHelp')}</p>
       <div className="flex flex-wrap gap-2"><Button type="submit" variant="primary" loading={pending} disabled={!draft.termsAccepted}>{t('save')}</Button><Button type="button" variant="outline-secondary" onClick={cancel}>{t('cancel')}</Button></div>
     </fieldset>

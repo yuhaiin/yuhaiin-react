@@ -184,7 +184,9 @@ export const SettingRangeVertical: FC<{
                     aria-label={label}
                     aria-valuetext={`${value.toLocaleString()} ${unit ?? ''}`}
                     className={clsx(
-                        "relative flex size-11 items-center justify-center rounded-full bg-transparent outline-none sm:size-5 before:size-4 before:rounded-full before:border before:border-ui-border-strong before:bg-ui-surface before:shadow-ui-control hover:before:border-ui-primary data-[disabled]:before:bg-ui-disabled data-[disabled]:before:border-ui-disabled-border",
+                        // Radix keeps the thumb in bounds by shifting it up to half its width from the range's end,
+                        // so the visible size stays small and a pseudo-element supplies the 44px target.
+                        "relative block size-[18px] rounded-full bg-ui-heading shadow-ui-control outline-none transition-shadow duration-[var(--motion-fast)] after:absolute after:-inset-[13px] after:content-[''] hover:ring-4 hover:ring-ui-primary/25 data-[disabled]:bg-ui-disabled-fg data-[disabled]:hover:ring-0",
                         ui.focusRing
                     )}
                 /></SliderPrimitive.Thumb>

@@ -15,6 +15,7 @@ vi.mock('@/docs/login/oauth', () => ({ OAuthLogin: () => null }));
 vi.mock('@/docs/nav/NavBarContainer', () => ({ default: ({ children }: { children: ReactNode }) => <div data-management-navigation>{children}</div> }));
 vi.mock('motion/react', () => ({
     useReducedMotion: () => true,
+    useDragControls: () => ({ start() {} }),
     MotionConfig: ({ children }: { children: ReactNode }) => children,
     AnimatePresence: ({ children }: { children: ReactNode }) => children,
     motion: { div: ({ children, className }: { children: ReactNode; className?: string }) => <div className={className}>{children}</div>, create: (component: unknown) => component },

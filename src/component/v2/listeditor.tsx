@@ -1,115 +1,112 @@
 import { useSecretField, isSecretPlaceholder, useProtectedSetting } from "@/auth/secret-fields";
 import { useTranslation } from 'react-i18next';
 
-import { Plus, Trash } from 'lucide-react';
-import { FC, useState } from 'react';
+import { Lock, Plus, Trash } from 'lucide-react';
+import { FC, useId, useRef, useState } from 'react';
 import { Button } from './button';
-import { Input, Textarea } from './input';
-import { InputGroup } from './inputgroup';
+import { Textarea } from './input';
+import { cn, ui } from './styles';
+
+const MIN_EDITOR_ROWS = 3;
+const MAX_EDITOR_ROWS = 16;
+
+const parseLines = (text: string) => text.split('\n').map(line => line.trim()).filter(line => line !== "");
+
+/** Puts saved secrets back at their positions, since order can matter (commands). */
+function mergeSaved(saved: { value: string; index: number }[], entries: string[]) {
+    const merged = [...entries];
+    for (const { value, index } of saved) merged.splice(Math.min(index, merged.length), 0, value);
+    return merged;
+}
 
 export const InputList: FC<{
     title: string;
     data?: string[] | null;
     onChange: (data: string[]) => void;
     className?: string;
-    textarea?: boolean;
     placeholder?: string;
     disabled?: boolean;
     secret?: boolean;
     executable?: boolean;
-}> = ({ title, data, onChange, className, textarea, placeholder, disabled, secret, executable }) => {
+    /** The surrounding section already names the list and shows its size. */
+    hideHeader?: boolean;
+}> = ({ title, data, onChange, className, placeholder, disabled, secret, executable, hideHeader }) => {
     const { t: uiT } = useTranslation('ui');
+    const { t: authT } = useTranslation('auth');
+    const id = useId();
+    const gutter = useRef<HTMLPreElement>(null);
     const items = Array.isArray(data) ? data : [];
     const access = useSecretField(items.find(isSecretPlaceholder), secret);
     const execute = useProtectedSetting("execute");
     disabled = disabled || access.disabled || Boolean(executable && !execute);
-    const [newItem, setNewItem] = useState("");
 
-    const add = () => {
-        if (!newItem || disabled) return;
-        const lines = newItem.split('\n').map(x => x.trim()).filter(x => x !== "");
-        if (lines.length > 0) {
-            onChange([...items, ...lines]);
-            setNewItem("");
-        }
-    }
+    // Saved secrets never enter the editable text: they show as locked rows and survive edits.
+    const saved = items.flatMap((value, index) => isSecretPlaceholder(value) ? [{ value, index }] : []);
+    const entries = items.filter(item => !isSecretPlaceholder(item));
 
-    const remove = (i: number) => {
-        if (disabled) return;
-        const newData = [...items];
-        newData.splice(i, 1);
-        onChange(newData);
-    }
+    // Blank lines and spaces stay in the draft while typing so the caret never jumps;
+    // the data only ever holds cleaned entries, and blur tidies the draft to match.
+    const source = parseLines(entries.join('\n')).join('\n');
+    const [draft, setDraft] = useState(entries.join('\n'));
+    if (parseLines(draft).join('\n') !== source) setDraft(entries.join('\n'));
 
-    const edit = (i: number, val: string) => {
-        if (disabled) return;
-        const newData = [...items];
-        newData[i] = val;
-        onChange(newData);
-    }
+    const lineCount = draft.split('\n').length;
+    const update = (text: string) => {
+        setDraft(text);
+        const next = parseLines(text);
+        if (next.join('\n') !== source) onChange(mergeSaved(saved, next));
+    };
+    const removeSaved = (index: number) => onChange(items.filter((_, position) => position !== index));
 
     return (
         <div className={className}>
-            <label className="block mb-2 font-bold">{title}</label>
-            {!disabled && (
-                <InputGroup className="mb-2">
-                    <Textarea
-                        aria-label={title}
-                        value={newItem}
-                        onChange={(e) => setNewItem(e.target.value)}
-                        placeholder={placeholder || `Add new ${title}${textarea ? " (one per line)" : ""}`}
-                        rows={textarea ? 3 : undefined}
-                        className="grow"
-                        style={{
-                            borderTopRightRadius: 0,
-                            borderBottomRightRadius: 0
-                        }}
-                    />
-                    <Button
-                        aria-label={uiT("add") + " " + title}
-                        onClick={add}
-                        style={{
-                            borderTopLeftRadius: 0,
-                            borderBottomLeftRadius: 0,
-                            marginLeft: '-1px'
-                        }}
-                    >
-                        <Plus size={18} />
-                    </Button>
-                </InputGroup>
+            {!hideHeader && (
+                <div className="mb-2 flex items-center justify-between gap-3">
+                    <label htmlFor={id} className="min-w-0 truncate text-sm font-medium text-ui-heading">{title}</label>
+                    {items.length > 0 && <span className="shrink-0 text-xs tabular-nums text-ui-muted">{items.length}</span>}
+                </div>
             )}
-
-            <div className="flex flex-col gap-2">
-                {items.map((item, i) => (
-                    <InputGroup key={i}>
-                        <Input
-                            aria-label={`${title} ${i + 1}`}
-                            value={item}
-                            onChange={(e) => edit(i, e.target.value)}
-                            className="grow"
-                            disabled={disabled}
-                            style={{
-                                borderTopRightRadius: 0,
-                                borderBottomRightRadius: 0
-                            }}
-                        />
-                        {!disabled && (
-                            <Button
-                                variant="outline-danger"
-                                aria-label={uiT("delete") + " " + `${title} ${i + 1}`}
-                                onClick={() => remove(i)}
-                                style={{
-                                    borderTopLeftRadius: 0,
-                                    borderBottomLeftRadius: 0,
-                                    marginLeft: '-1px' // Merge borders
-                                }}
-                            >
-                                <Trash size={16} />
-                            </Button>
-                        )}
-                    </InputGroup>
-                ))}
-            </div>
+            {saved.map(({ index }) => (
+                <div key={index} className="mb-2 flex min-h-field items-center gap-2 rounded-ui-sm border border-ui-border bg-ui-surface-muted/50 pl-3 pr-1 text-sm text-ui-muted">
+                    <Lock size={14} aria-hidden="true" className="shrink-0" />
+                    <span className="min-w-0 flex-1 truncate">{authT('secrets.savedValue')}</span>
+                    {!disabled && (
+                        <Button variant="ghost" size="icon" className="hover:text-ui-danger" aria-label={`${uiT("delete")} ${title} ${index + 1}`} onClick={() => removeSaved(index)}>
+                            <Trash size={16} />
+                        </Button>
+                    )}
+                </div>
+            ))}
+            {/* The cap applies here because the full-height gutter would otherwise stretch the textarea past its rows. */}
+            {(!disabled || saved.length === 0) && <div style={{ maxHeight: `calc(${MAX_EDITOR_ROWS} * 1.5rem + 1rem + 2px)` }} className={cn(
+                "flex overflow-hidden rounded-ui-sm border border-ui-border bg-ui-surface transition-colors duration-[var(--motion-fast)] hover:border-ui-border-strong focus-within:border-ui-primary focus-within:ring-1 focus-within:ring-ui-primary",
+                disabled && "border-ui-disabled-border bg-ui-disabled hover:border-ui-disabled-border",
+            )}>
+                <pre ref={gutter} aria-hidden="true" className="m-0 min-w-9 shrink-0 select-none overflow-hidden border-r border-ui-border bg-ui-surface-muted/50 px-2 py-2 text-right font-mono text-base leading-6 tabular-nums text-ui-muted sm:text-sm">
+                    {Array.from({ length: lineCount }, (_, index) => index + 1).join('\n')}
+                </pre>
+                <textarea
+                    id={id}
+                    aria-label={title}
+                    value={draft}
+                    disabled={disabled}
+                    rows={Math.min(Math.max(lineCount, MIN_EDITOR_ROWS), MAX_EDITOR_ROWS)}
+                    wrap="off"
+                    spellCheck={false}
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    autoComplete="off"
+                    placeholder={placeholder ?? uiT("onePerLine")}
+                    onChange={event => update(event.target.value)}
+                    onBlur={() => setDraft(parseLines(draft).join('\n'))}
+                    onScroll={event => { if (gutter.current) gutter.current.scrollTop = event.currentTarget.scrollTop; }}
+                    className={cn(
+                        "min-w-0 flex-1 resize-none overflow-auto whitespace-pre border-0 bg-transparent px-3 py-2 font-mono text-base leading-6 text-ui-fg outline-none placeholder:text-ui-muted sm:text-sm",
+                        ui.fieldDisabled,
+                        "disabled:bg-transparent",
+                    )}
+                />
+            </div>}
         </div>
     );
 }
@@ -148,48 +145,47 @@ export const InputBytesList: FC<{
 
     return (
         <div className={className}>
-            <label className="block mb-2 text-sm font-bold opacity-75">{title}</label>
-            {!disabled && (
-                <div className="flex gap-2 mb-3">
-                    <Textarea
-                        aria-label={title}
-                        placeholder={`Paste or type ${title} bytes here...`}
-                        value={newItem}
-                        onChange={(e) => setNewItem(e.target.value)}
-                        rows={3}
-                        className="font-mono shadow-none sm:text-[0.85rem]"
-                    />
-                    <Button onClick={add} aria-label={uiT("add") + " " + title} style={{ alignSelf: 'flex-start' }}>
-                        <Plus size={18} />
-                    </Button>
-                </div>
-            )}
+            <div className="mb-2 flex items-center justify-between gap-3">
+                <span className="min-w-0 truncate text-sm font-medium text-ui-heading">{title}</span>
+                {items.length > 0 && <span className="shrink-0 text-xs tabular-nums text-ui-muted">{items.length}</span>}
+            </div>
 
             <div className="flex flex-col gap-3">
                 {items.map((v, i) => (
-                    <div key={i} className="relative p-3 rounded-ui-md bg-ui-surface-muted group">
-                        <div className="flex items-center justify-between mb-2">
-                            <small className="font-bold text-ui-muted">{uiT("entry")} {i + 1}</small>
-                            {!disabled && (
-                                <Button variant="outline-danger" size="sm" aria-label={uiT("delete") + " " + `${title} ${i + 1}`} onClick={() => remove(i)}>
-                                    <Trash size={16} />
-                                </Button>
-                            )}
-                        </div>
+                    <div key={i} className="relative">
                         <Textarea
+                            code
                             aria-label={`${title} ${i + 1}`}
                             value={new TextDecoder().decode(v)}
                             onChange={(e) => edit(i, e.target.value)}
                             readOnly={disabled}
                             rows={3}
-                            className="p-0 text-sm font-mono bg-transparent border-0 shadow-none"
-                            style={{ lineHeight: '1.4' }}
+                            className={cn(!disabled && "pr-12")}
                         />
+                        {!disabled && (
+                            <Button variant="ghost" size="icon" className="absolute top-1 right-1 z-[3] text-ui-muted hover:text-ui-danger" aria-label={uiT("delete") + " " + `${title} ${i + 1}`} onClick={() => remove(i)}>
+                                <Trash size={16} />
+                            </Button>
+                        )}
                     </div>
                 ))}
-                {items.length === 0 && (
-                    <div className="py-4 italic text-center border border-dashed rounded-ui-md opacity-50 text-ui-muted">
-                        {uiT("emptyEntries", { title })}</div>
+                {disabled && items.length === 0 && (
+                    <p className="m-0 text-sm text-ui-muted">{uiT("emptyEntries", { title })}</p>
+                )}
+                {!disabled && (
+                    <div className="flex flex-col gap-2">
+                        <Textarea
+                            code
+                            aria-label={title}
+                            placeholder={uiT("pasteEntry")}
+                            value={newItem}
+                            onChange={(e) => setNewItem(e.target.value)}
+                            rows={3}
+                        />
+                        <Button size="sm" className="self-end" onClick={add} disabled={!newItem.trim()} aria-label={uiT("add") + " " + title}>
+                            <Plus size={16} />{uiT("add")}
+                        </Button>
+                    </div>
                 )}
             </div>
         </div>

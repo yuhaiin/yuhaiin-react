@@ -26,8 +26,13 @@
     "justNow": "たった今"
   },
   "pagination": {
+    "page": "ページ",
     "previous": "前のページ",
-    "next": "次のページ"
+    "next": "次のページ",
+    "itemCount": "{{count}} 件",
+    "itemCount_one": "{{count}} 件",
+    "itemCount_other": "{{count}} 件",
+    "pageOf": "{{page}}/{{pages}} ページ"
   },
   "form": {
     "hidePassword": "パスワードを隠す",

@@ -1,6 +1,6 @@
 import { confirmAction } from '@/component/v2/confirmation';
 import { FormSection } from '@/component/v2/form-section';
-import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection } from '@/component/resource-workspace';
+import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection, EditorDeleteButton, editorActionsClass } from '@/component/resource-workspace';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
 import { useTranslation } from 'react-i18next';
 
@@ -13,7 +13,7 @@ import { SwitchCard } from "@/component/v2/switch";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { Publish } from "@/contract/subscription";
 import { defaultPublish } from "@/contract/subscription";
-import { Check, Share2, Trash } from "lucide-react";
+import { Check, Share2 } from "lucide-react";
 import { FC, useContext, useState } from "react";
 import useSWR from "swr";
 import Loading from "../../../component/v2/loading";
@@ -42,8 +42,8 @@ const EditModal: FC<{
 
     return <ResourceEditorFrame title={isEdit ? item.name : uiT("publishConfig")} label={uiT("publishConfig")} presentation={presentation} open={show} onClose={close}
         footer={<>
-            <div>{isEdit && onDelete && <Button variant="outline-danger" onClick={onDelete} disabled={saving}><Trash size={16} className="mr-2" />{uiT("delete")}</Button>}</div>
-            <div className="flex flex-wrap justify-end gap-2">
+            <div>{isEdit && onDelete && <EditorDeleteButton label={uiT("delete")} onClick={onDelete} disabled={saving} />}</div>
+            <div className={editorActionsClass}>
                 <Button variant="outline-secondary" onClick={close} disabled={saving}>{uiT("cancel")}</Button>
                 <Button permission="nodes:write" loading={saving} variant="primary" onClick={handleSave} disabled={saving || !newItem.name}>
                     <Check size={16} />{uiT("saveConfig")}

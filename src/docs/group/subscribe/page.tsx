@@ -2,7 +2,7 @@ import { SecretValues } from "@/component/secret-values";
 import { isSecretPlaceholder } from "@/auth/secret-fields";
 import { getSubscriptionSecrets } from "@/api/subscriptions";
 import { confirmAction } from '@/component/v2/confirmation';
-import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection } from '@/component/resource-workspace';
+import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection, EditorDeleteButton, editorActionsClass } from '@/component/resource-workspace';
 import { deleteSubscriptions, listSubscriptions, saveSubscriptions, updateSubscriptions } from '@/api/subscriptions';
 import { Button } from '@/component/v2/button';
 import { MainContainer } from '@/component/v2/card';
@@ -13,7 +13,7 @@ import { Spinner } from '@/component/v2/spinner';
 import { GlobalToastContext } from '@/component/v2/toast';
 import { normalizeLink, type Link } from '@/contract/subscription';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from '@/hooks/use-editor-draft';
-import { Check, Copy, RefreshCw, Rss, Trash } from 'lucide-react';
+import { Check, Copy, RefreshCw, Rss } from 'lucide-react';
 import { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
@@ -57,8 +57,8 @@ function SubscriptionEditor({ item, creating, onClose, onSaved, onDeleted, refre
     };
     return <ResourceEditorFrame title={creating ? uiT('addSubscription') : value.name} label={t('subscriptionsTitle')} presentation="inline" open onClose={close}
         footer={<>
-            <div>{!creating && <Button permission="nodes:write" variant="outline-danger" disabled={pending} className="gap-2" onClick={remove}><Trash size={16} />{uiT('delete')}</Button>}</div>
-            <div className="flex flex-wrap justify-end gap-2"><Button disabled={pending} onClick={close}>{uiT('cancel')}</Button><Button permission="nodes:write" variant="primary" disabled={pending || !valid} className="gap-2" onClick={save}>{pending ? <Spinner size="sm" /> : <Check size={16} />}{uiT('save')}</Button></div>
+            <div>{!creating && <EditorDeleteButton permission="nodes:write" label={uiT('delete')} disabled={pending} onClick={remove} />}</div>
+            <div className={editorActionsClass}><Button disabled={pending} onClick={close}>{uiT('cancel')}</Button><Button permission="nodes:write" variant="primary" disabled={pending || !valid} className="gap-2" onClick={save}>{pending ? <Spinner size="sm" /> : <Check size={16} />}{uiT('save')}</Button></div>
         </>}>
         {manualCopyModal}
         <SecretValues key={item?.name ?? 'new'} value={value} load={item ? signal => getSubscriptionSecrets(item.name, signal) : undefined}><fieldset disabled={pending} className="min-w-0 space-y-5">

@@ -137,7 +137,7 @@ const NodeProtocolChain: FC<{
         <div className="mb-3">
             <div className="mb-2 flex items-center justify-between">
                 <h6 className="mb-0 text-base font-medium text-ui-heading">{uiT("protocolChain")}</h6>
-                <small className="text-ui-muted">{normalizedChain.length} {uiT("steps")}</small>
+                <small className="text-ui-muted">{uiT("stepCount", { count: normalizedChain.length })}</small>
             </div>
 
             <Accordion type="multiple" defaultValue={normalizedChain.map((_, index) => `item-${index}`)} className="mb-3">
@@ -306,7 +306,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                     </div>
                     <div className="grid gap-2">
                         <SettingLabel>{uiT("sshPrivateKey")}</SettingLabel>
-                        <Textarea secret aria-label={uiT("sshPrivateKey")} className="min-h-32 w-full rounded-ui-md border border-ui-border bg-ui-surface p-3 font-mono text-sm text-ui-heading" spellCheck={false} autoComplete="off" value={protocol.ssh.private_key ?? ""} disabled={!editable} onChange={(event) => patch(protocol, { private_key: event.target.value })} />
+                        <Textarea code secret aria-label={uiT("sshPrivateKey")} className="min-h-32 w-full rounded-ui-md border border-ui-border bg-ui-surface p-3 text-ui-heading" spellCheck={false} autoComplete="off" value={protocol.ssh.private_key ?? ""} disabled={!editable} onChange={(event) => patch(protocol, { private_key: event.target.value })} />
                     </div>
                     <p className="text-sm text-ui-muted">{uiT("sshTCPOnlyHelp")}</p>
                 </div>
@@ -381,7 +381,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                         <StringField secret label={uiT("salamanderPassword")} value={protocol.hysteria2.salamander_password} disabled={!editable} onChange={(salamander_password) => patch(protocol, { salamander_password })} />
                     </div>
                     <p className="text-sm text-ui-muted">{uiT("hysteria2BandwidthHelp")}</p>
-                    <InputList title={uiT("hysteria2HopAddresses")} data={protocol.hysteria2.hop_addresses ?? []} textarea placeholder="relay-b.example:443,20000-20020" disabled={!editable} onChange={(hop_addresses) => patch(protocol, { hop_addresses })} />
+                    <InputList title={uiT("hysteria2HopAddresses")} data={protocol.hysteria2.hop_addresses ?? []} placeholder="relay-b.example:443,20000-20020" disabled={!editable} onChange={(hop_addresses) => patch(protocol, { hop_addresses })} />
                     <p className="text-sm text-ui-muted">{uiT("hysteria2AddressHopHelp")}</p>
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <SettingInputVertical label={uiT("hopIntervalSeconds")} type="number" min={0} step={1} value={String(protocol.hysteria2.hop_interval_seconds ?? 0)} disabled={!editable} onChange={(value) => patch(protocol, { hop_interval_seconds: Number(value) })} />

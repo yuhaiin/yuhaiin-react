@@ -55,7 +55,7 @@ const AddressList: FC<{
         <div>
             <div className="mb-2 flex items-center justify-between px-1">
                 <h6 className="mb-0 font-bold opacity-75">{title}</h6>
-                <small className="text-ui-muted">{items.length} {uiT("entriesLabel")}</small>
+                <small className="text-ui-muted">{uiT("entryCount", { count: items.length })}</small>
             </div>
 
             <Accordion type="multiple" defaultValue={items.length > 0 ? [`${title}-0`] : []} className="mb-3">
@@ -172,7 +172,7 @@ const WireguardForm: FC<{
             <div>
                 <div className="mb-2 flex items-center justify-between px-1">
                     <h6 className="mb-0 font-bold opacity-75">{uiT("peers")}</h6>
-                    <small className="text-ui-muted">{peers.length} {uiT("peersLabel")}</small>
+                    <small className="text-ui-muted">{uiT("peerCount", { count: peers.length })}</small>
                 </div>
 
                 <Accordion type="multiple" defaultValue={peers.length > 0 ? ["peer-0"] : []} className="mb-3">

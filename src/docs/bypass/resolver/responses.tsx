@@ -84,7 +84,7 @@ export function CustomResponses() {
                         </div>
                         {rule.rcode === 'NOERROR' && rule.queryType !== '*' && rule.queryType !== 'ANY' && <div className="mt-2">
                             <label htmlFor={`${id}-${index}-answers`} className="mb-2 block text-sm text-ui-muted">{t('dnsResponseAnswers')}</label>
-                            <Textarea id={`${id}-${index}-answers`} value={rule.answers.join('\n')} rows={3} placeholder={rule.queryType === 'AAAA' ? '::1' : rule.queryType === 'A' ? '127.0.0.1' : rule.queryType === 'TXT' ? '"custom text"' : ''} onChange={event => update(index, { answers: event.target.value.split('\n') })} />
+                            <Textarea code id={`${id}-${index}-answers`} value={rule.answers.join('\n')} rows={3} placeholder={rule.queryType === 'AAAA' ? '::1' : rule.queryType === 'A' ? '127.0.0.1' : rule.queryType === 'TXT' ? '"custom text"' : ''} onChange={event => update(index, { answers: event.target.value.split('\n') })} />
                         </div>}
                         <p className="mt-2 text-xs text-ui-muted">{rule.rcode === 'NOERROR' ? t('dnsResponseAnswersHelp') : t('dnsResponseCodeHelp')}</p>
                     </section>)}

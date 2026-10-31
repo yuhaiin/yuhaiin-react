@@ -73,6 +73,10 @@ export const ui = {
     pageDescription: "mt-0.5 text-xs text-ui-muted",
     softPanel: "rounded-ui-lg bg-ui-surface-muted border border-ui-border",
     chip: "rounded-full border border-ui-border px-2 py-0.5 text-xs font-normal leading-normal bg-ui-chip text-ui-chip-fg",
+    selectTrigger: "flex min-w-0 w-full items-center justify-between gap-2 rounded-ui-sm border border-ui-border bg-ui-surface px-3 h-field max-sm:min-h-11 text-sm leading-none text-ui-fg cursor-pointer hover:bg-ui-hover hover:border-ui-border-strong data-[state=open]:border-ui-primary aria-invalid:border-ui-danger",
+    menuSurface: "z-[2000] overflow-hidden rounded-ui-lg border border-ui-border bg-ui-surface-raised shadow-ui-elevated data-[state=closed]:animate-fadeOut data-[side=top]:data-[state=open]:animate-slideUpAndFadeIn data-[side=bottom]:data-[state=open]:animate-slideDownAndFadeIn",
+    menuItem: "relative flex w-full min-w-0 items-center gap-2 min-h-8 max-sm:min-h-11 px-3 py-1.5 text-sm text-ui-fg text-left rounded-ui-sm select-none cursor-pointer outline-none transition-colors duration-[var(--motion-fast)] ease-out data-[highlighted]:bg-ui-selected data-[highlighted]:text-ui-heading data-[state=checked]:font-medium data-[state=checked]:text-ui-heading data-[disabled]:opacity-50 data-[disabled]:pointer-events-none",
+    menuIndicator: "ml-auto shrink-0 inline-flex items-center justify-center text-ui-primary",
     switchTrack: "w-[42px] h-[24px] shrink-0 bg-ui-surface-muted rounded-full relative flex items-center p-[2px] border border-ui-border-strong cursor-pointer transition-colors duration-[var(--motion-fast)] ease-out data-[state=checked]:bg-ui-primary data-[state=checked]:border-ui-primary group-data-[disabled]:bg-ui-disabled group-data-[disabled]:border-ui-disabled-border disabled:cursor-not-allowed",
     switchThumb: "block h-[18px] w-[18px] translate-x-0 rounded-full bg-ui-heading data-[state=checked]:bg-ui-primary-foreground group-data-[disabled]:bg-ui-disabled-fg shadow-ui-control transition-transform duration-[var(--motion-normal)] ease-out will-change-transform data-[state=checked]:translate-x-[18px]",
 };

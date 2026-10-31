@@ -314,7 +314,7 @@ export function RegistryCatalogModal({
                                     <>
                                         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ui-muted">
                                             <span>
-                                                {rows.length} files · page {currentPage}/{totalPages}
+                                                {rows.length} {rows.length === 1 ? "file" : "files"} · page {currentPage}/{totalPages}
                                             </span>
                                             <span>
                                                 Showing {(currentPage - 1) * PAGE_SIZE + 1}-{Math.min(currentPage * PAGE_SIZE, rows.length)}

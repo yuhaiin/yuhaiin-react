@@ -85,7 +85,7 @@ const ServerTLSForm: FC<{
             <div>
                 <div className="mb-2 flex items-center justify-between px-1">
                     <h6 className="mb-0 font-bold opacity-75">{uiT("certificates")}</h6>
-                    <small className="text-ui-muted">{certificates.length} {uiT("entriesLabel")}</small>
+                    <small className="text-ui-muted">{uiT("entryCount", { count: certificates.length })}</small>
                 </div>
                 <Accordion type="multiple" defaultValue={certificates.length > 0 ? ["cert-0"] : []} className="mb-3">
                     {certificates.map((cert, index) => (
@@ -120,7 +120,7 @@ const ServerTLSForm: FC<{
             <div>
                 <div className="mb-2 flex items-center justify-between px-1">
                     <h6 className="mb-0 font-bold opacity-75">{uiT("sniCertificates")}</h6>
-                    <small className="text-ui-muted">{Object.keys(sni).length} {uiT("entriesLabel")}</small>
+                    <small className="text-ui-muted">{uiT("entryCount", { count: Object.keys(sni).length })}</small>
                 </div>
                 <Accordion type="multiple" className="mb-3">
                     {Object.entries(sni).map(([serverName, cert]) => (

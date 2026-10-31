@@ -46,13 +46,13 @@ export const SoftEtherForm: FC<{
             {certificateAuth && <div className="grid gap-3">
                 <div>
                     <SettingLabel className="mb-2 block">{t("softEtherClientCert")}</SettingLabel>
-                    <Textarea aria-label={t("softEtherClientCert")} rows={5} spellCheck={false}
+                    <Textarea code aria-label={t("softEtherClientCert")} rows={5} spellCheck={false}
                         disabled={!editable} placeholder="-----BEGIN CERTIFICATE-----"
                         value={config.client_cert_pem ?? ""} onChange={(e) => onChange({ client_cert_pem: e.target.value })} />
                 </div>
                 <div>
                     <SettingLabel className="mb-2 block">{t("softEtherClientKey")}</SettingLabel>
-                    <Textarea secret aria-label={t("softEtherClientKey")} rows={5} spellCheck={false}
+                    <Textarea code secret aria-label={t("softEtherClientKey")} rows={5} spellCheck={false}
                         disabled={!editable} placeholder="-----BEGIN PRIVATE KEY-----"
                         value={config.client_key_pem ?? ""} onChange={(e) => onChange({ client_key_pem: e.target.value })} />
                 </div>
@@ -81,7 +81,7 @@ export const SoftEtherForm: FC<{
                 disabled={!editable} onChange={(auto_reconnect) => onChange({ auto_reconnect })} />
             <div>
                 <SettingLabel className="mb-2 block">{t("caCert")}</SettingLabel>
-                <Textarea aria-label={t("caCert")} rows={5} spellCheck={false}
+                <Textarea code aria-label={t("caCert")} rows={5} spellCheck={false}
                     disabled={!editable} placeholder="-----BEGIN CERTIFICATE-----"
                     value={config.ca_cert_pem ?? ""} onChange={(e) => onChange({ ca_cert_pem: e.target.value })} />
             </div>
