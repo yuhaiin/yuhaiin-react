@@ -15,7 +15,7 @@ import { GlobalToastContext } from '@/component/v2/toast';
 
 export const defaultRecoveryPolicy: RecoveryPolicy = {
     enabled: false, target: 'local', recipient: '', intervalMinutes: 1440,
-    timeoutMinutes: 30, keepCount: 10, keepDays: 30, includeHistory: false, allowMaintenance: false, protectUpdates: true, localPoints: { enabled: false, keepCount: 3, keepDays: 30 },
+    timeoutMinutes: 30, keepCount: 10, keepDays: 30, includeHistory: false, allowMaintenance: false, localPoints: { enabled: false, keepCount: 3, keepDays: 30 },
 };
 const active = (item: RecoveryBackup) => item.retrieval === 'running' || ['queued', 'capturing', 'uploading', 'deleting'].includes(item.state)
     || (item.state === 'local_ready' && item.target === 's3');
@@ -36,6 +36,7 @@ export function RecoveryBackupPanel({ policy, onChange, dirty, saving, onSave }:
     const [verifyPoint, setVerifyPoint] = useState<RecoveryBackup>();
     const [retrievePoint, setRetrievePoint] = useState<RecoveryBackup>();
     const [retrieving, setRetrieving] = useState<string>();
+    const defaultedUpdateProtection = useRef(false);
     const retrieval = useRef<AbortController | undefined>(undefined);
     useEffect(() => () => retrieval.current?.abort(), []);
     const action = useAsyncAction(error => {
@@ -47,10 +48,19 @@ export function RecoveryBackupPanel({ policy, onChange, dirty, saving, onSave }:
         revalidateOnFocus: false,
         onSuccess: current => { if (!current.items.some(active)) setWaiting(false); },
     });
-    const value = policy ?? defaultRecoveryPolicy;
+    const value: RecoveryPolicy = {
+        ...defaultRecoveryPolicy,
+        ...policy,
+        protectUpdates: policy?.protectUpdates ?? (data?.supported !== false),
+    };
     const points = value.localPoints ?? { enabled: false, keepCount: 3, keepDays: 30 };
     const update = (change: Partial<RecoveryPolicy>) => onChange({ ...value, ...change });
     const disabled = saving || action.pending;
+    useEffect(() => {
+        if (data?.supported !== false || policy?.protectUpdates !== undefined || defaultedUpdateProtection.current) return;
+        defaultedUpdateProtection.current = true;
+        onChange({ ...defaultRecoveryPolicy, ...policy, protectUpdates: false });
+    }, [data?.supported, onChange, policy]);
     const runCreate = () => void action.run(async () => {
         setWaiting(true);
         try {
@@ -109,6 +119,7 @@ export function RecoveryBackupPanel({ policy, onChange, dirty, saving, onSave }:
                     checked={value.allowMaintenance} onCheckedChange={allowMaintenance => update({ allowMaintenance })} />
                 <SwitchCard label={t('protectedUpdate.protection')} description={t('protectedUpdate.protectionHint')}
                     checked={value.protectUpdates !== false} onCheckedChange={protectUpdates => update({ protectUpdates })} />
+                {data?.supported === false && <p className="text-sm text-ui-muted">{t('protectedUpdate.unsupportedPlatformHint')}</p>}
                 <SwitchCard label={t('recoveryBackup.schedule')} description={t('recoveryBackup.scheduleHint')}
                     checked={value.enabled} onCheckedChange={enabled => update({ enabled })} />
                 <SettingInputVertical label={t('recoveryBackup.interval')} type="number" min={60} max={525600}

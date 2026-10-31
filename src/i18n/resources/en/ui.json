@@ -899,7 +899,8 @@
   },
   "protectedUpdate": {
     "protection": "Create a recovery point before software updates",
-    "protectionHint": "Enabled by default. Uses this external public backup recipient and the existing full-backup policy. Each update briefly stops the service and captures all required state, including history. Keep the private recovery key separately. Disabling protection permits compatible-schema updates only, with explicit consent each time. The required update point is local. Configured S3 upload resumes after service recovery; remote durability requires verified readback.",
+    "protectionHint": "Enabled by default where encrypted update recovery is supported; on unsupported hosts, an unset policy defaults to off. On supported hosts, this uses the external public backup recipient and existing full-backup policy. Each update briefly stops the service and captures all required state, including history. Keep the private recovery key separately. Disabling protection permits compatible-schema updates only, with explicit consent each time. The required update point is local. Configured S3 upload resumes after service recovery; remote durability requires verified readback.",
+    "unsupportedPlatformHint": "This host cannot supervise encrypted update recovery. If this option was unset, it defaults off here and is marked unsaved. With protection off, same-schema updates are available after explicit manual-recovery consent; database-migrating updates still require offline recovery.",
     "configure": "Configure encrypted backups",
     "confirmTitle": "Confirm software maintenance",
     "flow": "The independent service helper validates the target, stops the service, completes the encrypted recovery point, then replaces the executable. Success requires database, listener and application readiness checks. If the target may have migrated data, recovery requires the matching source executable and database backup; the old binary is never started against potentially migrated data automatically.",
@@ -919,7 +920,7 @@
     "readiness": {
       "legacy": "This backend has no protected-update readiness contract. Verify an independent recovery point before proceeding.",
       "configure": "Configure an external backup recipient and allow maintenance before upgrading.",
-      "unsupported": "This host cannot supervise encrypted update recovery. Automatic protection requires a Linux systemd yuhaiin.service; user services also need linger. Use the offline recovery tools on other hosts.",
+      "unsupported": "This host cannot supervise encrypted update recovery. Automatic protection requires a Linux systemd yuhaiin.service; user services also need linger. To install same-schema updates here, turn off update protection in Backup settings and confirm manual recovery. Database-migrating updates require offline recovery.",
       "ready": "An encrypted full recovery point will be completed before executable replacement.",
       "unprotected": "Automatic recovery protection is disabled by the administrator. Only schema-compatible targets may be installed, with explicit acknowledgement."
     },
