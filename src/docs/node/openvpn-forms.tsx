@@ -1,3 +1,4 @@
+import { MultiSelectChips } from '@/component/v2/multi-select';
 import { getNodeExtraInfo } from "@/api/nodes";
 import { Button } from "@/component/v2/button";
 import { SettingLabel } from "@/component/v2/card";
@@ -83,13 +84,8 @@ export const OpenVPNForm: FC<{
         <p className="mb-0 text-sm text-ui-muted">{uiT("openVPNProtectionHelp")}</p>
         <fieldset className="grid gap-2 rounded-ui-md border border-ui-border p-3" disabled={!editable}>
             <legend className="px-1 text-sm font-semibold">{uiT("openVPNDataCiphers")}</legend>
-            {defaultCiphers.map((cipher) => <label key={cipher} className="flex min-h-11 items-center gap-3 text-sm">
-                <input type="checkbox" checked={ciphers.includes(cipher)}
-                    disabled={!editable || ciphers.length === 1 && ciphers.includes(cipher)}
-                    onChange={(event) => onChange({ data_ciphers: event.target.checked
-                        ? [...ciphers, cipher] : ciphers.filter((item) => item !== cipher) })} />
-                {cipher}
-            </label>)}
+            <MultiSelectChips value={ciphers} disabled={!editable} onChange={(data_ciphers) => onChange({ data_ciphers })}
+                options={defaultCiphers.map((cipher) => ({ value: cipher, label: cipher, disabled: ciphers.length === 1 && ciphers.includes(cipher) }))} />
             <p className="mb-0 text-sm text-ui-muted">{uiT("openVPNCipherHelp")}</p>
         </fieldset>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

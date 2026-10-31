@@ -64,3 +64,21 @@ it('reports incomplete coverage and does not expose data without the usage scope
     authenticate(['identity:read']); fetch.mockClear();
     const denied = await renderUsage(); expect(fetch).not.toHaveBeenCalled(); expect(denied.host.textContent).toBe(''); denied.close();
 });
+
+it('reads every series for a hovered or focused bucket and leaves no tooltip behind', async () => {
+    authenticate(['identity:read', 'usage:own']);
+    const point = (start: number, upload: string, download: string) => ({ ...counters, start, upload, download });
+    const series = [point(1700000000, '1024', '2048'), point(1700003600, '0', '1048576')];
+    const fetch = vi.fn(async (url: URL) => url.pathname.endsWith('/audit') ? Response.json({ items: [], next: '', health }) : Response.json({ ...report, series, from: 1700000000, to: 1700003700 })); vi.stubGlobal('fetch', fetch);
+    const view = await renderUsage();
+    const bars = view.host.querySelectorAll<HTMLButtonElement>('figure button');
+    expect(bars).toHaveLength(2);
+    expect(view.host.querySelector('figure [role=status]')).toBeNull();
+    await act(async () => { bars[0].focus(); });
+    const tip = view.host.querySelector('figure [role=status]')!.textContent;
+    expect(tip).toContain('2023-11-14 22:13 UTC');
+    expect(tip).toContain('1.00 KiB'); expect(tip).toContain('2.00 KiB'); expect(tip).toContain('3.00 KiB');
+    await act(async () => { bars[0].blur(); });
+    expect(view.host.querySelector('figure [role=status]')).toBeNull();
+    view.close();
+});

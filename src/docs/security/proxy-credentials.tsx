@@ -1,3 +1,4 @@
+import Switch from '@/component/v2/switch';
 import { authAPI, type User } from '@/auth/api';
 import { useSession } from '@/auth/context';
 import type { IssuedProxyCredential, ProxyCredential, UpstreamCredential } from '@/auth/proxy';
@@ -5,12 +6,16 @@ import { listInbounds } from '@/api/inbounds';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader } from '@/component/v2/card';
 import { confirmAction } from '@/component/v2/confirmation';
+import { DateTimeField } from '@/component/v2/date-time-field';
 import { Input } from '@/component/v2/input';
+import { MultiSelectChips } from '@/component/v2/multi-select';
 import { Select } from '@/component/v2/select';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { IssuedSecret } from './secret';
+
+const proxyProtocols = [{ value: 'http', label: 'HTTP' }, { value: 'socks5', label: 'SOCKS5' }, { value: 'yuubinsya', label: 'Yuubinsya' }, { value: 'hysteria2', label: 'Hysteria2' }, { value: 'sstp', label: 'SSTP' }];
 
 export function ProxyCredentials() {
     const { t } = useTranslation('auth'); const session = useSession()!;
@@ -35,17 +40,16 @@ export function ProxyCredentials() {
         if (!name.trim() || (!permanent && (!Number.isFinite(Date.parse(expires)) || Date.parse(expires) <= Date.now()))) { setError(t('proxyCredentialValidation')); return; }
         void run(async () => { setIssued(await authAPI<IssuedProxyCredential>('POST', '/proxy-credentials', { owner, name, inbounds, protocols, expiresAt: permanent ? 0 : Math.floor(Date.parse(expires) / 1000) })); setName(''); });
     };
-    const toggle = (values: string[], value: string) => values.includes(value) ? values.filter(item => item !== value) : [...values, value];
     return <Card><CardHeader><h2 className="m-0 font-medium">{t('proxyCredentials')}</h2></CardHeader><CardBody className="space-y-4">
         <p className="text-sm text-ui-muted">{t('proxyCredentialsHelp')}</p>
         <form className="space-y-4" onSubmit={create}>
             <div className="flex flex-wrap items-end gap-3">
                 {users && <div className="min-w-48"><Select ariaLabel={t('owner')} value={owner} onValueChange={setOwner} items={users.filter(user => !user.disabled).map(user => ({ value: user.id, label: user.login }))} disabled={busy} /></div>}
                 <label className="min-w-0 flex-1 space-y-2"><span>{t('credentialName')}</span><Input value={name} onChange={event => setName(event.target.value)} required maxLength={128} disabled={busy} /></label>
-                <fieldset className="space-y-2"><legend>{t('expires')}</legend><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={permanent} onChange={event => setPermanent(event.target.checked)} disabled={busy} />{t('permanentCredential')}</label>{!permanent && <Input aria-label={t('expires')} type="datetime-local" value={expires} onChange={event => setExpires(event.target.value)} required disabled={busy} />}</fieldset>
             </div>
-            <fieldset className="space-y-2"><legend>{t('protocols')}</legend><p className="text-xs text-ui-muted">{t('credentialScopeHelp')}</p><div className="flex flex-wrap gap-4">{['http', 'socks5', 'yuubinsya', 'hysteria2', 'sstp'].map(protocol => <label key={protocol} className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={protocols.includes(protocol)} onChange={() => setProtocols(toggle(protocols, protocol))} disabled={busy} />{protocol}</label>)}</div></fieldset>
-            {entries && <fieldset><legend>{t('inbounds')}</legend><div className="flex flex-wrap gap-4">{entries.items.filter(entry => ['http', 'socks5', 'mixed', 'yuubinsya', 'hysteria2', 'sstp'].includes(entry.protocol.type)).map(entry => <label key={entry.id} className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={inbounds.includes(entry.id)} onChange={() => setInbounds(toggle(inbounds, entry.id))} disabled={busy} />{entry.name}</label>)}</div></fieldset>}
+            <fieldset className="space-y-2"><legend className="text-sm font-medium">{t('expires')}</legend><div className="flex flex-wrap items-center gap-x-4 gap-y-2"><Switch label={t('permanentCredential')} checked={permanent} onCheckedChange={setPermanent} disabled={busy} />{!permanent && <div className="min-w-56 flex-1 sm:max-w-xs"><DateTimeField ariaLabel={t('expires')} value={expires} onChange={setExpires} required disabled={busy} /></div>}</div></fieldset>
+            <fieldset className="space-y-2"><legend className="text-sm font-medium">{t('protocols')}</legend><p className="text-xs text-ui-muted">{t('credentialScopeHelp')}</p><MultiSelectChips value={protocols} onChange={setProtocols} disabled={busy} options={proxyProtocols} /></fieldset>
+            {entries && <fieldset className="space-y-2"><legend className="text-sm font-medium">{t('inbounds')}</legend><MultiSelectChips value={inbounds} onChange={setInbounds} disabled={busy} options={entries.items.filter(entry => ['http', 'socks5', 'mixed', 'yuubinsya', 'hysteria2', 'sstp'].includes(entry.protocol.type)).map(entry => ({ value: entry.id, label: entry.name }))} /></fieldset>}
             <Button type="submit" variant="primary" disabled={busy}>{t('createProxyCredential')}</Button>
         </form>
         {(error || loadError) && <p role="alert" className="text-sm text-ui-danger">{error || t('requestFailed')}</p>}

@@ -41,5 +41,17 @@
     "title": "言語",
     "auto": "自動",
     "preference": "言語設定"
+  },
+  "dateTime": {
+    "placeholderDateTime": "日時を選択",
+    "placeholderDate": "日付を選択",
+    "clear": "クリア",
+    "today": "今日",
+    "now": "現在",
+    "done": "完了",
+    "previousMonth": "前の月",
+    "nextMonth": "次の月",
+    "hour": "時",
+    "minute": "分"
   }
 }

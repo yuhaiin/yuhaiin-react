@@ -159,8 +159,8 @@ it('suspends a built-in provider without deleting it and names deletion as destr
     try {
         await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><OAuthSettingsPanel /></SWRConfig>));
         const form = host.querySelector<HTMLFormElement>('form[aria-label="GitHub"]')!;
-        const enabled = form.querySelector<HTMLInputElement>('input[type="checkbox"]')!;
-        expect(enabled.checked).toBe(true);
+        const enabled = form.querySelector<HTMLButtonElement>('[role="switch"]')!;
+        expect(enabled.getAttribute('aria-checked')).toBe('true');
         await act(async () => enabled.click());
         await act(async () => form.requestSubmit());
         expect(bodies).toEqual([{ method: 'PUT', body: expect.objectContaining({ enabled: false }) }]);

@@ -3,12 +3,13 @@ import { useSession } from '@/auth/context';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader } from '@/component/v2/card';
 import { confirmAction } from '@/component/v2/confirmation';
-import { Input } from '@/component/v2/input';
+import { DateTimeField } from '@/component/v2/date-time-field';
 import { Select } from '@/component/v2/select';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { IssuedSecret } from './secret';
+import { PermissionPicker } from './permission-picker';
 const readerScopes = new Set(['nodes:read', 'inbounds:read', 'routes:read', 'resolver:read', 'connections:read', 'gateway:read', 'settings:read', 'metrics:read', 'identity:read', 'tokens:own', 'proxy-credentials:own']);
 export function Tokens() {
     const { t } = useTranslation('auth'); const session = useSession()!;
@@ -35,8 +36,8 @@ export function Tokens() {
         <p className="text-sm text-ui-muted">{t('tokenHint')}</p>
         {users && <Select ariaLabel={t('owner')} value={owner} items={users.filter(user => user.enrolled && !user.disabled).map(user => ({ value: user.id, label: user.login }))} disabled={busy} onValueChange={id => { setOwner(id); setScopes([]); }} />}
         <form onSubmit={create} className="space-y-4">
-            <fieldset disabled={busy}><legend className="mb-2 text-sm font-medium">{t('scopes')}</legend><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{available.map(scope => <label key={scope} className="flex min-w-0 items-center gap-2 text-sm"><input type="checkbox" checked={scopes.includes(scope)} onChange={event => setScopes(previous => event.target.checked ? [...previous, scope] : previous.filter(item => item !== scope))} /><span className="break-all">{scope}</span></label>)}</div></fieldset>
-            <label className="block space-y-2"><span>{t('optionalExpiry')}</span><Input type="datetime-local" value={expires} onChange={event => setExpires(event.target.value)} disabled={busy} /></label>
+            <PermissionPicker legend={t('scopes')} permissions={available} value={scopes} onChange={setScopes} disabled={busy} />
+            <label className="block space-y-2"><span>{t('optionalExpiry')}</span><DateTimeField value={expires} onChange={setExpires} disabled={busy} /></label>
             <Button type="submit" variant="primary" disabled={busy || !scopes.length}>{t('createToken')}</Button>
         </form>
         {(error || loadError) && <p role="alert" className="text-sm text-ui-danger">{error || t('requestFailed')}</p>}

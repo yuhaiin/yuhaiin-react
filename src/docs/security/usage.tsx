@@ -3,13 +3,14 @@ import { useSession } from '@/auth/context';
 import { authScope } from '@/auth/session';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader } from '@/component/v2/card';
-import { Input } from '@/component/v2/input';
+import { DateTimeField } from '@/component/v2/date-time-field';
 import { PageTabs } from '@/component/v2/page-tabs';
 import { Select } from '@/component/v2/select';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { UsageAuditList } from './usage-audit';
+import { UsageTrendChart } from './usage-trend';
 import { ResourceUsage } from './resource-usage';
 import { fetchUsage, usageBytes, usageDate, usageDuration, usageRange, type UsageBreakdown, type UsageReport } from './usage-api';
 
@@ -39,8 +40,8 @@ function UsagePanel({ self, canReadAll, canManage }: { self: string; canReadAll:
                 <label className="min-w-0 space-y-2"><span>{t('usage.period')}</span><Select ariaLabel={t('usage.period')} value={preset} onValueChange={value => { setPreset(value); setRangeError(false); }} items={['today', 'month', '30days', 'custom'].map(value => ({ value, label: t(`usage.range.${value}`) }))} /></label>
             </div>
             {preset === 'custom' && <form className="flex flex-wrap items-end gap-3" onSubmit={event => { event.preventDefault(); try { usageRange('custom', dates.from, dates.to); setApplied(dates); setRangeError(false); } catch { setRangeError(true); } }}>
-                <label className="min-w-0 flex-1 space-y-2"><span>{t('usage.from')}</span><Input type="date" value={dates.from} onChange={event => setDates({ ...dates, from: event.target.value })} required /></label>
-                <label className="min-w-0 flex-1 space-y-2"><span>{t('usage.to')}</span><Input type="date" value={dates.to} onChange={event => setDates({ ...dates, to: event.target.value })} required /></label>
+                <label className="min-w-0 flex-1 space-y-2"><span>{t('usage.from')}</span><DateTimeField type="date" value={dates.from} onChange={from => setDates({ ...dates, from })} required /></label>
+                <label className="min-w-0 flex-1 space-y-2"><span>{t('usage.to')}</span><DateTimeField type="date" value={dates.to} onChange={to => setDates({ ...dates, to })} required /></label>
                 <Button type="submit">{t('usage.apply')}</Button>
             </form>}
             {rangeError && <p role="alert" className="text-sm text-ui-danger">{t('usage.invalidRange')}</p>}
@@ -104,13 +105,8 @@ function BreakdownTable({ rows, label }: { rows: UsageBreakdown[]; label: string
 
 function UsageTrend({ report }: { report: UsageReport }) {
     const { t } = useTranslation('auth');
-    const values = report.series.map(point => BigInt(point.upload) + BigInt(point.download));
-    const peak = values.reduce((a, b) => a > b ? a : b, 1n);
-    const span = Math.max(report.to - report.from, 1);
-    const bucketSeconds = report.interval === 'hour' ? 3600 : 86400;
-    const width = Math.max(1, Math.min(600, bucketSeconds / span * 600) - 1);
-    return <details className="space-y-3"><summary className="cursor-pointer text-sm font-medium">{t('usage.trend')}</summary>
-        <svg role="img" aria-label={t('usage.trend')} viewBox="0 0 600 110" className="h-36 w-full text-ui-primary" preserveAspectRatio="none">{report.series.map((point, index) => { const height = Number(values[index] * 100n / peak); return <rect key={point.start} x={(point.start - report.from) / span * 600} y={100 - height} width={width} height={height} fill="currentColor" />; })}</svg>
+    return <details open className="space-y-3"><summary className="cursor-pointer text-sm font-medium">{t('usage.trend')}</summary>
+        <UsageTrendChart report={report} />
         <div className="max-h-64 overflow-auto"><table className="w-full text-left text-sm"><thead><tr><th scope="col" className="p-2">UTC</th><th scope="col" className="p-2">{t('usage.upload')}</th><th scope="col" className="p-2">{t('usage.download')}</th></tr></thead><tbody>{report.series.map(point => <tr key={point.start}><th scope="row" className="p-2 font-normal">{new Date(point.start * 1000).toISOString().replace('T', ' ').slice(0, 16)}</th><td className="p-2" title={point.upload}>{usageBytes(point.upload)}</td><td className="p-2" title={point.download}>{usageBytes(point.download)}</td></tr>)}</tbody></table></div>
     </details>;
 }

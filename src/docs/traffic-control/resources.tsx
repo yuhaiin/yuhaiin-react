@@ -1,3 +1,4 @@
+import Switch from '@/component/v2/switch';
 import { StageChangeButton } from "@/component/configuration-change";
 import type { Go } from '@/api/generated-contracts';
 import { authAPI } from '@/auth/api';
@@ -79,7 +80,7 @@ function ResourceEditor({ initial, writable, onSaved }: { initial: ResourceConfi
     return <form ref={form} aria-label={t('resources.title')} className="min-w-0 space-y-5" onSubmit={event => { event.preventDefault(); void submit(true); }}>
         <p className="text-xs text-ui-muted">{t('resources.revision', { revision: config.revision })}</p>
         <fieldset disabled={disabled} className="min-w-0 space-y-5">
-            <label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={config.enabled} onChange={event => patch({ ...config, enabled: event.target.checked })} />{t('resources.enabled')}</label>
+            <div className="w-fit"><Switch label={t('resources.enabled')} checked={config.enabled} onCheckedChange={enabled => patch({ ...config, enabled })} /></div>
             <section className="min-w-0 space-y-4"><h3 className="font-medium">{t('resources.defaultUser')}</h3><p className="text-xs text-ui-muted">{t('resources.overrideHelp')}</p><ResourcePolicyEditor policy={config.defaultUser} disabled={disabled} onChange={defaultUser => patch({ ...config, defaultUser })} /></section>
             <section className="min-w-0 space-y-4"><h3 className="font-medium">{t('resources.groups')}</h3><p className="text-xs text-ui-muted">{t('resources.groupHelp')}</p>
                 {config.groups.map((group, index) => <section key={keys.groups[index]} className="min-w-0 space-y-4 rounded-ui-md border border-ui-border p-4">

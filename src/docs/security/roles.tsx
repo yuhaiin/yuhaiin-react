@@ -7,6 +7,8 @@ import { Card, CardBody, CardHeader } from '@/component/v2/card';
 import { confirmAction } from '@/component/v2/confirmation';
 import { Input, Textarea } from '@/component/v2/input';
 import { Select } from '@/component/v2/select';
+import { MultiSelectChips } from '@/component/v2/multi-select';
+import { PermissionPicker } from './permission-picker';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
@@ -81,7 +83,7 @@ function RoleEditor({ role, catalog, permissions, writable, busy, onSave, onDele
             <fieldset disabled={busy || !writable} className="space-y-3">
                 <label className="block space-y-2"><span>{t('roles.name')}</span><Input required maxLength={128} value={name} onChange={event => setName(event.target.value)} /></label>
                 <label className="block space-y-2"><span>{t('groups.description')}</span><Textarea maxLength={2048} value={description} onChange={event => setDescription(event.target.value)} /></label>
-                <fieldset className="grid max-h-80 gap-1 overflow-auto sm:grid-cols-2"><legend>{t('roles.permissions')}</legend>{catalog.map(permission => <label key={permission.id} className="flex min-h-11 items-center gap-2 break-all text-xs"><input type="checkbox" aria-label={permission.id} checked={selected.includes(permission.id)} disabled={!permissions.includes(permission.id)} onChange={() => setSelected(current => current.includes(permission.id) ? current.filter(id => id !== permission.id) : [...current, permission.id])} />{permission.id}</label>)}</fieldset>
+                <div className="max-h-96 overflow-auto"><PermissionPicker legend={t('roles.permissions')} permissions={catalog.map(permission => permission.id)} value={selected} onChange={setSelected} isDisabled={permission => !permissions.includes(permission)} /></div>
                 {writable && <div className="flex flex-wrap gap-2"><Button type="submit">{t('save')}</Button><StageChangeButton request={{ store: "identity", kind: "role", resourceId: role?.id, payload: { id: role?.id ?? "", revision: role?.revision ?? 0, name, description, permissions: selected, builtIn: false } }} onCommitted={onCommitted} />{role && onDelete && <Button type="button" variant="outline-danger" onClick={onDelete}>{t('delete')}</Button>}{onCancel && <Button type="button" onClick={onCancel}>{t('cancel')}</Button>}</div>}
             </fieldset>
         </form></details>;
@@ -118,7 +120,7 @@ function AssignmentEditor({ assignment, roles, writable, onSaved }: { assignment
         <p className="break-all text-xs text-ui-muted">{assignment.userId} · {t('roles.baseRole')}: {t(`roles.builtin_${assignment.baseRole}`)}</p>
         {assignment.disabled && <p className="text-sm text-ui-muted">{t('disabled')}</p>}{assignment.enrolled === false && <p className="text-sm text-ui-muted">{t('pending')}</p>}
         {failure && <p role="alert" className="text-sm text-ui-danger">{failure}</p>}
-        <fieldset disabled={!writable || busy} className="grid gap-1 sm:grid-cols-2"><legend>{t('roles.additional')}</legend>{roles.map(role => <label key={role.id} className="flex min-h-11 items-center gap-2 break-words text-sm"><input type="checkbox" checked={selected.includes(role.id)} onChange={() => setSelected(current => current.includes(role.id) ? current.filter(id => id !== role.id) : [...current, role.id])} />{role.name}</label>)}</fieldset>
+        <fieldset disabled={!writable || busy} className="space-y-2"><legend className="text-sm font-medium">{t('roles.additional')}</legend><MultiSelectChips value={selected} onChange={setSelected} options={roles.map(role => ({ value: role.id, label: role.name }))} /></fieldset>
         {writable && <><Button disabled={busy} type="submit">{t('roles.saveAssignment')}</Button><StageChangeButton disabled={busy} request={{ store: "identity", kind: "role-assignment", resourceId: assignment.userId, payload: { revision: assignment.revision, roleIds: selected } }} onCommitted={onSaved} /></>}
         <details><summary className="cursor-pointer text-sm">{t('roles.effective')}</summary><ul className="mt-3 grid gap-2 text-xs sm:grid-cols-2">{assignment.permissions.map(permission => <li key={permission} className="break-all">{permission}</li>)}</ul></details>
     </form>;

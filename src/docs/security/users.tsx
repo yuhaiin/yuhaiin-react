@@ -1,3 +1,4 @@
+import Switch from '@/component/v2/switch';
 import { authAPI, type Issued, type User } from '@/auth/api';
 import { clearSession, getSession, setPendingEnrollment, updatePrincipal, type Principal } from '@/auth/session';
 import { Button } from '@/component/v2/button';
@@ -61,7 +62,7 @@ function UserRow({ user, busy, lastAdmin, onSave, onReset, onDelete }: { user: U
         <form className="flex flex-wrap items-end gap-3" onSubmit={event => { event.preventDefault(); onSave({ login: name, role, disabled }); }}>
             <label className="min-w-0 flex-1 space-y-2"><span>{t('loginName')}</span><Input value={name} onChange={event => setName(event.target.value)} pattern="[A-Za-z0-9_.-]{1,64}" required disabled={busy} /></label>
             <div className="min-w-40"><Select ariaLabel={t('role')} value={role} onValueChange={value => setRole(value as User['role'])} items={[{ value: 'admin', label: t('admin') }, { value: 'read-only', label: t('readOnly') }, { value: 'none', label: t('proxyOnly') }]} disabled={busy || lastAdmin} /></div>
-            <label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={disabled} onChange={event => setDisabled(event.target.checked)} disabled={busy || lastAdmin} />{t('disabled')}</label>
+            <div className="w-fit"><Switch label={t('active')} checked={!disabled} onCheckedChange={active => setDisabled(!active)} disabled={busy || lastAdmin} /></div>
             <Button type="submit" disabled={busy}>{t('save')}</Button>
         </form>
         {lastAdmin && <p className="text-xs text-ui-muted">{t('lastAdmin')}</p>}

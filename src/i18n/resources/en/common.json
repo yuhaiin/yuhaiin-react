@@ -41,5 +41,17 @@
     "title": "Language",
     "auto": "Auto",
     "preference": "Language Preference"
+  },
+  "dateTime": {
+    "placeholderDateTime": "Select date and time",
+    "placeholderDate": "Select date",
+    "clear": "Clear",
+    "today": "Today",
+    "now": "Now",
+    "done": "Done",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "hour": "Hour",
+    "minute": "Minute"
   }
 }
