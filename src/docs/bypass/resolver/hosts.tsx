@@ -2,7 +2,7 @@ import { confirmAction } from '@/component/v2/confirmation';
 import { deleteHostEntry, listHostEntries, saveHostEntry, type HostEntry } from '@/api/resolvers';
 import { ResourceEditorFrame } from '@/component/resource-workspace';
 import { Button } from '@/component/v2/button';
-import { SettingInputVertical } from '@/component/v2/forms';
+import { SettingInputVertical, SettingValue } from '@/component/v2/forms';
 import { Input } from '@/component/v2/input';
 import Loading from '@/component/v2/loading';
 import { Pagination } from '@/component/v2/pagination';
@@ -34,7 +34,7 @@ function HostEditor({ item, creating, onClose, onSaved }: { item?: HostEntry; cr
     return <ResourceEditorFrame title={creating ? t('addHostMapping') : item?.host} label={t('hostMapping')} open onClose={close}
         footer={<><Button disabled={pending} onClick={close}>{uiT('cancel')}</Button><Button permission="resolver:write" variant="primary" className="gap-2" disabled={pending || !value.host.trim() || !value.target.trim()} onClick={save}>{pending ? <Spinner size="sm" /> : <Check size={16} />}{uiT('save')}</Button></>}>
         <fieldset disabled={pending} className="min-w-0 space-y-4">
-            <SettingInputVertical label={t('hostAddress')} value={value.host} disabled={!creating} placeholder="local.example" onChange={host => setValue(previous => ({ ...previous, host }))} />
+            {creating ? <SettingInputVertical label={t('hostAddress')} value={value.host} placeholder="local.example" onChange={host => setValue(previous => ({ ...previous, host }))} /> : <SettingValue label={t('hostAddress')} value={value.host} />}
             <SettingInputVertical label={uiT('target')} value={value.target} placeholder="192.0.2.1" onChange={target => setValue(previous => ({ ...previous, target }))} />
             <p className="text-sm text-ui-muted">{t('hostTargetHelp')}</p>
         </fieldset>

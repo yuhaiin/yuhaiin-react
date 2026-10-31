@@ -3,7 +3,7 @@ import { bytesToBase64 } from "@/common/base64";
 
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import { clsx } from 'clsx';
-import { CircleAlert, Eye, EyeOff } from 'lucide-react';
+import { CircleAlert, Eye, EyeOff, Lock } from 'lucide-react';
 import React, { FC, useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from './button';
@@ -22,7 +22,7 @@ export { SwitchCard } from './switch';
 const SettingCheckComponent: FC<{ label: string, checked: boolean, onChange: (c: boolean) => void, className?: string, disabled?: boolean }> =
     ({ label, checked, onChange, className, disabled }) => {
         return (
-            <div className={clsx("flex items-center mb-[var(--field-margin,var(--space-field))]", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
+            <div className={clsx("flex items-center mb-[var(--field-margin,var(--space-field))]", className)}>
                 <label className="basis-[150px] shrink-0 mr-6 font-medium">{label}</label>
                 <div className="grow min-w-0 relative">
                     <SwitchComponent ariaLabel={label} checked={checked} onCheckedChange={onChange} disabled={disabled} />
@@ -51,6 +51,17 @@ interface SettingInputVerticalProps extends Omit<InputProps, 'onChange'> {
     reminds?: Remind[];
     showAllOnFocus?: boolean;
 }
+
+/** A value fixed after creation: plain text, since a greyed-out field reads as temporarily unavailable. */
+export const SettingValue: FC<{ label: React.ReactNode; value: React.ReactNode; className?: string }> = ({ label, value, className }) => (
+    <div className={clsx("relative mb-[var(--field-margin,var(--space-field))] flex min-w-0 max-w-full flex-col", className)}>
+        <span className={clsx(ui.sectionLabel, "cursor-default")}>{label}</span>
+        <p className="m-0 flex min-h-field min-w-0 items-center gap-2 text-sm text-ui-fg">
+            <Lock size={14} aria-hidden="true" className="shrink-0 text-ui-muted" />
+            <span className="min-w-0 break-all">{value}</span>
+        </p>
+    </div>
+);
 
 export const SettingInputVertical: FC<SettingInputVerticalProps> = React.memo(({
     label,

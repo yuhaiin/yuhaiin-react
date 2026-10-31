@@ -8,7 +8,7 @@ import NodePicker from "@/component/node-picker";
 import { deletePublish, listPublishes, savePublish } from "@/api/subscriptions";
 import { Button } from "@/component/v2/button";
 import { MainContainer } from "@/component/v2/card";
-import { SettingInputVertical } from "@/component/v2/forms";
+import { SettingInputVertical, SettingValue } from "@/component/v2/forms";
 import { SwitchCard } from "@/component/v2/switch";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { Publish } from "@/contract/subscription";
@@ -53,7 +53,7 @@ const EditModal: FC<{
                     <fieldset disabled={saving} className="min-w-0 flex flex-col gap-4">
                         <FormSection title={uiT("identity")}>
                             <div className="flex min-w-0 max-w-2xl flex-col gap-4">
-                                <SettingInputVertical label={uiT("configIdentifier")} value={newItem.name} disabled={isEdit} onChange={(name) => setNewItem(prev => ({ ...prev, name }))} placeholder="internal-sub" />
+                                {isEdit ? <SettingValue label={uiT("configIdentifier")} value={newItem.name} /> : <SettingInputVertical label={uiT("configIdentifier")} value={newItem.name} onChange={(name) => setNewItem(prev => ({ ...prev, name }))} placeholder="internal-sub" />}
                             </div>
                         </FormSection>
                         <FormSection title={uiT("connection")}>

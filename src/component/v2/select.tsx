@@ -197,7 +197,7 @@ const SettingSelectVerticalComponent: FC<{
         items.unshift({ value: "", label: emptyChooseName ?? "Choose..." });
     }
     return (
-        <div className={cn("flex flex-col mb-[var(--field-margin,var(--space-field))] relative", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
+        <div className={cn("flex flex-col mb-[var(--field-margin,var(--space-field))] relative", className)}>
             <SettingLabel className="mb-2 basis-auto mr-0 font-medium">{label}</SettingLabel>
             <Select value={value} onValueChange={onChange} items={items} disabled={disabled} ariaLabel={label} />
         </div>
@@ -222,7 +222,7 @@ const SettingEnumSelectVerticalComponent: FC<{
     }, [type, filter, format]);
 
     return (
-        <div className={cn("flex flex-col mb-[var(--field-margin,var(--space-field))] relative", className, disabled && "opacity-60 pointer-events-none grayscale-[0.5]")}>
+        <div className={cn("flex flex-col mb-[var(--field-margin,var(--space-field))] relative", className)}>
             <SettingLabel className="mb-2 basis-auto mr-0 font-medium">{label}</SettingLabel>
             <Select value={String(value)} onValueChange={(val) => onChange(Number(val))} items={items} disabled={disabled} />
         </div>
@@ -256,7 +256,7 @@ const SettingTypeSelectComponent: FC<{
     }
 
     return (
-        <div className={cn("flex items-center mb-[var(--field-margin,var(--space-field))] flex-wrap", disabled && "opacity-60 pointer-events-none grayscale-[0.5]", className)} style={style}>
+        <div className={cn("flex items-center mb-[var(--field-margin,var(--space-field))] flex-wrap", className)} style={style}>
             {label && <label className="basis-[150px] shrink-0 mr-6 font-medium max-[576px]:basis-full max-[576px]:mr-0 max-[576px]:mb-2">{label}</label>}
             <div className="grow min-w-0 relative">
                 <Select value={String(value)} onValueChange={(val) => onChange(Number(val))} items={items} disabled={disabled} triggerClassName={triggerClassName} size={size} />

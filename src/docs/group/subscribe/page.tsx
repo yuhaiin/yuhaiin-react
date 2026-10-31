@@ -6,7 +6,7 @@ import { ResourceEditorFrame, ResourceWorkspace, useResourceSelection, EditorDel
 import { deleteSubscriptions, listSubscriptions, saveSubscriptions, updateSubscriptions } from '@/api/subscriptions';
 import { Button } from '@/component/v2/button';
 import { MainContainer } from '@/component/v2/card';
-import { SettingInputVertical, SettingSelectVertical } from '@/component/v2/forms';
+import { SettingInputVertical, SettingSelectVertical, SettingValue } from '@/component/v2/forms';
 import { useClipboard } from '@/component/v2/clipboard';
 import Loading from '@/component/v2/loading';
 import { Spinner } from '@/component/v2/spinner';
@@ -62,7 +62,7 @@ function SubscriptionEditor({ item, creating, onClose, onSaved, onDeleted, refre
         </>}>
         {manualCopyModal}
         <SecretValues key={item?.name ?? 'new'} value={value} load={item ? signal => getSubscriptionSecrets(item.name, signal) : undefined}><fieldset disabled={pending} className="min-w-0 space-y-5">
-            <div className="grid gap-4 sm:grid-cols-2"><SettingInputVertical label={uiT('name')} value={value.name} disabled={!creating} onChange={name => setValue(previous => ({ ...previous, name }))} />
+            <div className="grid gap-4 sm:grid-cols-2">{creating ? <SettingInputVertical label={uiT('name')} value={value.name} onChange={name => setValue(previous => ({ ...previous, name }))} /> : <SettingValue label={uiT('name')} value={value.name} />}
                 <SettingSelectVertical label={uiT('type')} value={value.type || 'reserve'} values={subscriptionTypes.map(type => [type === 'reserve' ? t('subscriptionAutoDetect') : type, type] as [string, string])} onChange={type => setValue(previous => ({ ...previous, type }))} /></div>
             <div className="rounded-ui-lg border border-ui-border p-4"><SettingInputVertical secret label={uiT('subscriptionUrl')} value={value.url} placeholder="https://example.com/sub/..." onChange={url => setValue(previous => ({ ...previous, url }))} />
                 <Button variant="outline-secondary" className="gap-2" disabled={!value.url || isSecretPlaceholder(value.url)} onClick={() => copy(value.url)}><Copy size={15} />{copied ? t('subscriptionCopied') : t('copySubscription')}</Button></div>
