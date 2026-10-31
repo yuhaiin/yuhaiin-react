@@ -45,7 +45,7 @@ it('never displays an existing app secret and sends blank to preserve it when up
     expect(fetch.mock.calls.filter(([, init]) => init.method === 'PUT')).toHaveLength(1);
     act(() => root.unmount()); host.remove();
 });
-it('guides an unconfigured administrator through setup and then opens the provider binding flow', async () => {
+it('sends an unconfigured administrator to Administration and binds once a provider is ready', async () => {
     authenticate();
     let configured = false;
     const fetch = vi.fn(async (url: URL, init: RequestInit) => {
@@ -58,11 +58,14 @@ it('guides an unconfigured administrator through setup and then opens the provid
         }
         return Response.json(configured ? [{ provider: 'github', clientId: 'admin-client', secretConfigured: true, redirectUrl: 'https://controller.example/api/v2/auth/oauth/github/callback' }] : []);
     }); vi.stubGlobal('fetch', fetch);
+    const cache = new Map();
     const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
-    await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><OAuthLinks /></SWRConfig>));
+    await act(async () => root.render(<SWRConfig value={{ provider: () => cache, dedupingInterval: 0 }}><OAuthLinks /></SWRConfig>));
     expect(host.textContent).toContain('oauthConfigureFirst'); expect(host.querySelector('input')).toBeNull();
-    await act(async () => { [...host.querySelectorAll('button')].find(button => button.textContent === 'oauthSettings')!.click(); });
-    const form = document.querySelector('form[aria-label=GitHub]')!;
+    expect(host.querySelector('a')!.getAttribute('href')).toBe('#/docs/security/admin');
+    const ready = vi.fn();
+    await act(async () => root.render(<SWRConfig value={{ provider: () => cache, dedupingInterval: 0 }}><OAuthSettingsPanel onConfigured={ready} /></SWRConfig>));
+    const form = host.querySelector('form[aria-label=GitHub]')!;
     const fields = form.querySelectorAll('input');
     await act(async () => {
         for (const [field, value] of [[fields[0], 'admin-client'], [fields[1], 'admin-secret']] as const) {
@@ -71,7 +74,10 @@ it('guides an unconfigured administrator through setup and then opens the provid
         }
     });
     await act(async () => { form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); });
-    expect(host.textContent).toContain('oauthReadyToBind'); expect(beginOAuth).not.toHaveBeenCalled();
+    expect(ready).toHaveBeenCalledWith(true); expect(beginOAuth).not.toHaveBeenCalled();
+    await act(async () => root.render(<SWRConfig value={{ provider: () => cache, dedupingInterval: 0 }}><OAuthLinks /></SWRConfig>));
+    // SWR revalidates cached keys on the next animation frame.
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 50)); });
     await act(async () => { [...host.querySelectorAll('button')].find(button => button.textContent === 'bindOAuth')!.click(); });
     expect(beginOAuth).toHaveBeenCalledWith('github', true, expect.any(AbortSignal));
     act(() => root.unmount()); host.remove();

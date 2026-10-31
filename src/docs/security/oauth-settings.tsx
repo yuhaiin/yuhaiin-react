@@ -12,7 +12,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR, { useSWRConfig } from 'swr';
 
-export function OAuthSettingsPanel({ embedded = false, onConfigured }: { embedded?: boolean; onConfigured?: (ready: boolean) => void } = {}) {
+export function OAuthSettingsPanel({ onConfigured }: { onConfigured?: (ready: boolean) => void } = {}) {
     const { t } = useTranslation('auth');
     const session = useSession(); const scope = authScope();
     const writable = session?.principal.permissions.includes('security:write') ?? false;
@@ -23,7 +23,7 @@ export function OAuthSettingsPanel({ embedded = false, onConfigured }: { embedde
     const [creating, setCreating] = useState<OAuthProvider>();
     const updated = async () => { if (scope !== authScope()) return; await mutate(); await refresh(key => key === 'auth-oauth-providers' || Array.isArray(key) && key.includes('auth-oauth-providers')); };
     const configured = async (ready: boolean, signal?: AbortSignal) => { if (!active.current || signal?.aborted || scope !== authScope()) return; await updated(); if (scope === authScope() && active.current) { setCreating(undefined); onConfigured?.(ready); } };
-    const content = <div className="space-y-5">
+    return <Card><CardHeader><h2 className="m-0 font-medium">{t('oauthSettings')}</h2></CardHeader><CardBody className="space-y-5">
         <p className="text-sm text-ui-muted">{t('oauthSetupHint')}</p>
         <p className="text-sm text-ui-muted">{t('oidc.localRecovery')}</p>
         {error && <p role="alert" className="text-sm text-ui-danger">{t('requestFailed')}</p>}
@@ -33,8 +33,7 @@ export function OAuthSettingsPanel({ embedded = false, onConfigured }: { embedde
         })}
         {writable && !creating && <Button onClick={() => setCreating(`oidc-${crypto.randomUUID()}`)}>{t('oidc.add')}</Button>}
         {creating && <ProviderSettings key={JSON.stringify([scope,creating])} provider={creating} creating updated={updated} configured={configured} cancel={() => setCreating(undefined)} />}
-    </div>;
-    return embedded ? content : <Card><CardHeader><h2 className="m-0 font-medium">{t('oauthSettings')}</h2></CardHeader><CardBody>{content}</CardBody></Card>;
+    </CardBody></Card>;
 }
 
 function ProviderSettings({ provider, settings, creating, updated, configured, cancel }: { provider: OAuthProvider; settings?: OAuthSettings; creating?: boolean; updated: () => Promise<void>; configured: (ready: boolean, signal?: AbortSignal) => Promise<void>; cancel?: () => void }) {

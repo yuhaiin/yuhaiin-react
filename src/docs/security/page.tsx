@@ -1,4 +1,3 @@
-import { ConfigurationChanges } from './configuration-changes';
 import { PageHeader } from '@/component/v2/page-header';
 import { authAPI, logout, type Issued } from '@/auth/api';
 import { useSession } from '@/auth/context';
@@ -8,22 +7,14 @@ import { Card, CardBody, MainContainer } from '@/component/v2/card';
 import { confirmAction } from '@/component/v2/confirmation';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SecurityEvents } from './security-events';
 import { Sessions } from './sessions';
 import { Passkeys } from './passkeys';
 import { OAuthLinks } from './oauth-links';
-import { Tokens } from './tokens';
-import { Users } from './users';
-import { Groups } from './groups';
-import { EffectivePermissions, ManagementRoles } from './roles';
-import { TrafficAccess } from './traffic-access';
-import { ProxyCredentials, UpstreamCredentials } from './proxy-credentials';
-import { UserUsage } from './usage';
+import { EffectivePermissions } from './roles';
 export default function SecurityPage() {
-    const { t } = useTranslation('auth'); const session = useSession();
+    const { t } = useTranslation('auth'); const { t: navT } = useTranslation('nav'); const session = useSession();
     const [busy, setBusy] = useState(false); const [error, setError] = useState('');
     if (!session) return null;
-    const permissions = session.principal.permissions;
     const changePassword = async () => {
         if (!await confirmAction(t('passwordChangeConfirm'))) return;
         setBusy(true); setError('');
@@ -31,7 +22,7 @@ export default function SecurityPage() {
         catch { setError(t('requestFailed')); } finally { setBusy(false); }
     };
     return <MainContainer>
-        <PageHeader title={t('accountSecurity')} />
+        <PageHeader title={navT('account')} />
         <Card><CardBody className="space-y-4">
             <p className="break-all text-sm text-ui-muted">{session.principal.userId}</p>
             <p className="text-sm text-ui-muted">{t('sessionExpires')}: {new Date(session.expiresAt * 1000).toLocaleString()}</p>
@@ -39,13 +30,6 @@ export default function SecurityPage() {
             {error && <p role="alert" className="text-sm text-ui-danger">{error}</p>}
         </CardBody></Card>
         {session.principal.credentialType === 'session' && <><Sessions /><Passkeys /><OAuthLinks /></>}
-        <EffectivePermissions /><ManagementRoles /><ConfigurationChanges />
-        {permissions.includes('usage:own') && <UserUsage />}
-        {permissions.includes('users:manage') && <><Users /><Groups /></>}
-        {permissions.includes('traffic-access:read') && <TrafficAccess writable={permissions.includes('traffic-access:write')} />}
-        {permissions.includes('tokens:own') && <Tokens />}
-        {permissions.includes('proxy-credentials:own') && <ProxyCredentials />}
-        {permissions.includes('upstream-credentials:manage') && <UpstreamCredentials />}
-        {permissions.includes('security:read') && <SecurityEvents />}
+        <EffectivePermissions />
     </MainContainer>;
 }

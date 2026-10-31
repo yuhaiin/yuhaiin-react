@@ -47,6 +47,8 @@ it('displays audit details, follows the cursor and restores the previous page', 
     const item = { id: 'one', userId: 'alice', credentialId: 'phone', inboundId: 'entry', inboundName: 'Front door', nodeId: 'node', nodeName: 'Office', selectorId: '', selectorName: '', ruleId: 'rule', ruleName: 'Work', protocol: 'tcp', mode: 'proxy', source: '192.0.2.1:1234', target: 'example.com:443', ip: '192.0.2.2', startedAt: 1700000000000, endedAt: 1700000060000, lastSeen: 1700000060000, durationMillis: '60000', upload: '10', download: '20', result: 'closed', reason: 'closed' };
     const fetch = vi.fn(async (url: URL) => url.pathname.endsWith('/audit') ? Response.json({ items: [{ ...item, id: url.searchParams.has('before') ? 'two' : 'one', target: url.searchParams.has('before') ? 'second.example:443' : item.target }], next: url.searchParams.has('before') ? '' : 'cursor-next', health }) : Response.json(report)); vi.stubGlobal('fetch', fetch);
     const view = await renderUsage();
+    expect(fetch.mock.calls.some(([url]) => url.pathname.endsWith('/audit'))).toBe(false);
+    await act(async () => { [...view.host.querySelectorAll('[role=tab]')].find(tab => tab.textContent === 'usage.audit')!.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 })); });
     expect(view.host.textContent).toContain('example.com:443'); expect(view.host.textContent).toContain('Front door'); expect(view.host.textContent).toContain('phone');
     await act(async () => { [...view.host.querySelectorAll('button')].find(button => button.textContent === 'usage.next')!.click(); });
     expect(view.host.textContent).toContain('second.example:443');

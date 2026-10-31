@@ -16,5 +16,9 @@
   "gateway": "HTTP Gateway",
   "trafficControl": "Traffic Control",
   "accountSecurity": "Account & security",
-  "certificates": "Certificates"
+  "certificates": "Certificates",
+  "account": "Account",
+  "credentials": "Credentials",
+  "usageAudit": "Usage & audit",
+  "administration": "Administration"
 }

@@ -1,4 +1,4 @@
-import { Activity, ArrowLeftRight, BookOpen, CircleHelp, Cpu, DatabaseBackup, ExternalLink, FileClock, FileText, Filter, FlaskConical, Gauge, Globe, History, House, Info, Layers, ListFilter, LogIn, MonitorCog, Radio, Router, Rss, ScrollText, Server, Settings, Share2, ShieldBan, SlidersHorizontal, Stethoscope, UserCog, Waypoints, Wrench, type LucideIcon } from 'lucide-react';
+import { Activity, ArrowLeftRight, BookOpen, ChartColumn, CircleHelp, Cpu, DatabaseBackup, ExternalLink, FileClock, FileText, Filter, FlaskConical, Gauge, Globe, History, House, Info, KeyRound, Layers, ListFilter, LogIn, MonitorCog, Radio, Router, Rss, ScrollText, Server, Settings, Share2, ShieldBan, ShieldCheck, SlidersHorizontal, Stethoscope, UserCog, UserRound, Waypoints, Wrench, type LucideIcon } from 'lucide-react';
 
 type Label = { namespace: 'nav' | 'ui' | 'routing'; key: string };
 export interface NavigationLink { path: string; label: Label; icon: LucideIcon; divider?: boolean }
@@ -38,7 +38,12 @@ export const navigationSections: NavigationSection[] = [
         { path: '/docs/bypass/resolver', label: routing('dnsTask'), icon: Globe },
     ] },
     { label: nav('system'), items: [
-        { path: '/docs/security', label: nav('accountSecurity'), icon: UserCog },
+        { label: nav('accountSecurity'), icon: UserCog, items: [
+            { path: '/docs/security', label: nav('account'), icon: UserRound },
+            { path: '/docs/security/credentials', label: nav('credentials'), icon: KeyRound },
+            { path: '/docs/security/usage', label: nav('usageAudit'), icon: ChartColumn },
+            { path: '/docs/security/admin', label: nav('administration'), icon: ShieldCheck },
+        ] },
         { path: '/docs/certificates', label: nav('certificates'), icon: ShieldBan },
         { label: nav('diagnostics'), icon: Wrench, items: [
             { path: '/docs/diagnostics', label: ui('networkDiagnostics'), icon: Stethoscope },

@@ -16,5 +16,9 @@
   "gateway": "HTTP Gateway",
   "trafficControl": "トラフィック制御",
   "accountSecurity": "アカウントとセキュリティ",
-  "certificates": "証明書"
+  "certificates": "証明書",
+  "account": "アカウント",
+  "credentials": "認証情報",
+  "usageAudit": "利用状況",
+  "administration": "管理"
 }

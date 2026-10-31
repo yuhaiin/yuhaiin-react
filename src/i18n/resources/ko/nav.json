@@ -16,5 +16,9 @@
   "gateway": "HTTP Gateway",
   "trafficControl": "트래픽 제어",
   "accountSecurity": "계정 및 보안",
-  "certificates": "인증서"
+  "certificates": "인증서",
+  "account": "계정",
+  "credentials": "인증 정보",
+  "usageAudit": "사용량 및 감사",
+  "administration": "관리"
 }

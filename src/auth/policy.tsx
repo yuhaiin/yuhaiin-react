@@ -2,7 +2,7 @@ import { createContext, useContext, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSession } from './context';
 export const ActionPermissionContext = createContext<string | null>(null);
-export const routePermissions: Record<string, { read: string; write?: string }> = {
+export const routePermissions: Record<string, { read: string | string[]; write?: string }> = {
     '/': { read: 'connections:read' },
     '/docs/group': { read: 'nodes:read', write: 'nodes:write' },
     '/docs/group/selectors': { read: 'nodes:read', write: 'nodes:write' },
@@ -25,7 +25,15 @@ export const routePermissions: Record<string, { read: string; write?: string }> 
     '/docs/diagnostics': { read: 'diagnostics:run', write: 'diagnostics:run' },
     '/docs/config/about': { read: 'settings:read' }, '/docs/config/licenses': { read: 'settings:read' },
     '/docs/security': { read: 'identity:read' },
+    '/docs/security/credentials': { read: ['tokens:own', 'proxy-credentials:own', 'upstream-credentials:manage'] },
+    '/docs/security/usage': { read: 'usage:own' },
+    '/docs/security/admin': { read: ['users:manage', 'roles:read', 'traffic-access:read', 'security:read', 'security:write', 'configuration:read'] },
 };
+/** A route listing several read permissions opens with any one of them. */
+export function canReadRoute(path: string, permissions: string[]) {
+    const read = routePermissions[path]?.read;
+    return !read || [read].flat().some(permission => permissions.includes(permission));
+}
 export function useActionAllowed(permission: string | undefined, isAction: boolean) {
     const inherited = useContext(ActionPermissionContext);
     const session = useSession();
@@ -36,7 +44,7 @@ export function PagePermissions({ path, children }: { path: string; children: Re
     const { t } = useTranslation('auth');
     const session = useSession();
     const policy = routePermissions[path.split('?')[0]];
-    if (policy && !session?.principal.permissions.includes(policy.read)) return <p role="alert">{t('forbidden')}</p>;
+    if (policy && !canReadRoute(path.split('?')[0], session?.principal.permissions ?? [])) return <p role="alert">{t('forbidden')}</p>;
     const readOnly = policy?.write && !session?.principal.permissions.includes(policy.write);
     return <ActionPermissionContext value={policy?.write ?? null}>
         {readOnly && <p role="status" className="mb-4 rounded-ui-md border border-ui-border bg-ui-surface p-3 text-sm text-ui-muted">{t('readOnlyNotice')}</p>}
