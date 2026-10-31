@@ -24,6 +24,7 @@ module.exports = {
           tertiary: 'var(--color-tertiary)',
           'surface-raised': 'var(--color-surface-raised)',
           hover: 'var(--color-hover)',
+          'menu-highlight': 'var(--color-menu-highlight)',
           primary: 'var(--color-primary)',
           'primary-hover': 'var(--color-primary-hover)',
           'primary-active': 'var(--color-primary-active)',

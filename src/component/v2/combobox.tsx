@@ -154,8 +154,8 @@ export const Combobox: FC<ComboboxProps> = ({
                                         }}
                                         className={clsx(
                                             "group min-h-8 max-sm:min-h-11 p-2 px-3 cursor-pointer rounded-ui-md text-sm transition-colors duration-[var(--motion-fast)] text-ui-fg",
-                                            "hover:bg-ui-hover hover:text-ui-fg",
-                                            "data-[highlighted=true]:bg-ui-hover data-[highlighted=true]:text-ui-fg data-[highlighted=true]:ring-1 data-[highlighted=true]:ring-inset data-[highlighted=true]:ring-ui-focus"
+                                            "hover:bg-ui-menu-highlight hover:text-ui-fg",
+                                            "data-[highlighted=true]:bg-ui-menu-highlight data-[highlighted=true]:text-ui-fg data-[highlighted=true]:ring-1 data-[highlighted=true]:ring-inset data-[highlighted=true]:ring-ui-focus"
                                         )}
                                         data-highlighted={i === highlightedIndex}
                                         onClick={() => {

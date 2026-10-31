@@ -104,7 +104,7 @@ function DatePanel({ locale, selected, time, hasTime, onChange, onClose }: {
                         const key = dayKey(date);
                         return <button key={key} type="button" tabIndex={key === dayKey(cursor) ? 0 : -1} aria-pressed={key === selectedKey} aria-label={new Intl.DateTimeFormat(locale, { dateStyle: 'long' }).format(date)} onClick={() => pickDay(date)} className={cn(
                             'flex aspect-square min-w-0 items-center justify-center rounded-ui-sm text-sm tabular-nums transition-colors', ui.focusRing,
-                            key === selectedKey ? 'bg-ui-primary font-medium text-ui-primary-foreground' : 'hover:bg-ui-hover',
+                            key === selectedKey ? 'bg-ui-primary font-medium text-ui-primary-foreground' : 'hover:bg-ui-menu-highlight',
                             key !== selectedKey && (date.getMonth() === first.getMonth() ? 'text-ui-fg' : 'text-ui-muted/60'),
                             key === today && key !== selectedKey && 'font-medium text-ui-primary ring-1 ring-inset ring-ui-primary/50',
                         )}>{date.getDate()}</button>;
@@ -135,7 +135,7 @@ function TimeColumn({ label, count, value, onSelect }: { label: string; count: n
     return <div role="group" aria-label={label} className="relative flex w-full flex-col gap-0.5 overflow-y-auto overscroll-contain [scrollbar-width:none] max-sm:h-28 sm:h-[19rem] sm:w-12">
         {Array.from({ length: count }, (_, index) => pad(index)).map(item => <button key={item} type="button" ref={item === value ? center : undefined} aria-pressed={item === value} aria-label={`${label} ${item}`} onClick={() => onSelect(item)} className={cn(
             'min-h-9 shrink-0 rounded-ui-sm text-sm tabular-nums transition-colors', ui.focusRing,
-            item === value ? 'bg-ui-primary font-medium text-ui-primary-foreground' : 'text-ui-fg hover:bg-ui-hover',
+            item === value ? 'bg-ui-primary font-medium text-ui-primary-foreground' : 'text-ui-fg hover:bg-ui-menu-highlight',
         )}>{item}</button>)}
     </div>;
 }

@@ -162,6 +162,7 @@ html[data-bs-theme="dark"] {
     --color-disabled-border: var(--disabled-border);
     --color-disabled-fg: var(--disabled-fg);
     --color-hover: color-mix(in srgb, var(--text-primary) 6%, var(--surface));
+    --color-menu-highlight: color-mix(in srgb, var(--text-primary) 10%, var(--surface-raised));
     --color-danger-soft: color-mix(in srgb, var(--color-danger) 10%, var(--surface));
     --color-danger-foreground: #FFFFFF;
     --color-success-soft: color-mix(in srgb, var(--color-success) 10%, var(--surface));
