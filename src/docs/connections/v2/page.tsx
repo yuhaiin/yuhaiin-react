@@ -39,6 +39,7 @@ function Connections() {
     const [streamError, setStreamError] = useState("");
     const [streamNonce, setStreamNonce] = useState(0);
     const hasStreamSnapshot = useRef(false);
+    const [hydrated, setHydrated] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const rowHeight = isMobile ? connectionRowHeight.mobile : connectionRowHeight.desktop;
 
@@ -60,6 +61,7 @@ function Connections() {
         // may be stale and must not replace the live connection state.
         if (!initial || hasStreamSnapshot.current) return;
         setConnections(Object.fromEntries(initial.connections.map(conn => [conn.id, conn])));
+        setHydrated(true);
     }, [initial]);
 
     useEffect(() => {
@@ -76,6 +78,7 @@ function Connections() {
             const events = pending;
             pending = [];
             setConnections(previous => applyConnectionEvents(previous, events));
+            setHydrated(true);
         };
         const queue = (event: ConnectionEvent) => {
             pending.push(event);
@@ -144,7 +147,7 @@ function Connections() {
     }, [ctx]);
 
     if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
-    if (isLoading && !initial) return <Loading />
+    if ((isLoading && !initial) || !hydrated) return <Loading />
 
     return (
         <MainContainer className="flex h-full min-h-0 min-w-0 flex-col">
@@ -156,7 +159,7 @@ function Connections() {
             />
 
             <div className="mb-3 flex shrink-0 items-center gap-2 md:gap-3">
-                <h1 className="sr-only mt-1 text-2xl font-semibold leading-tight text-ui-heading lg:not-sr-only lg:mr-auto">{uiT("activeConnections")}</h1>
+                <h1 className="sr-only text-2xl font-semibold tracking-tight text-ui-heading lg:not-sr-only lg:mr-auto">{uiT("activeConnections")}</h1>
                 <span className="flex shrink-0 items-baseline gap-1 text-xs text-ui-muted md:ml-auto"><span className="font-mono text-sm font-medium tabular-nums text-ui-heading">{sorted.length}</span>{uiT("active")}</span>
                 <MobileConnectionSort sortBy={sortBy} sortOrder={sortOrder} onFieldChange={setSortBy} onOrderChange={() => setSortOrder(order => order === 'asc' ? 'desc' : 'asc')} />
                 <Button onClick={() => { setStreamError(""); setStreamNonce(value => value + 1); }} size="sm" className="shrink-0 max-md:min-h-11 max-md:min-w-11" variant="outline-secondary" aria-label={uiT("refreshConnections")}>

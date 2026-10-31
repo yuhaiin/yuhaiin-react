@@ -28,3 +28,20 @@ it('lazily loads candidates, excludes itself and preserves selected ordering acr
         expect(onChange).toHaveBeenLastCalledWith(['a']);
     } finally { act(() => root.unmount()); host.remove(); }
 });
+it('opens on the group of the last selected node and stays there while toggling', async () => {
+    const manual = normalizeNode({ id: 'a', name: 'Manual node', group: 'manual', enabled: true });
+    const work = normalizeNode({ id: 'b', name: 'Work node', group: 'work', enabled: true });
+    api.getNode.mockImplementation(async id => id === 'a' ? manual : work);
+    api.listNodeGroups.mockResolvedValue({ items: [{ name: 'manual', count: 1, enabled: 1 }, { name: 'work', count: 1, enabled: 1 }] });
+    api.listNodes.mockReset();
+    api.listNodes.mockImplementation(async ({ group, page }) => ({ items: group === 'work' ? [work] : [manual], page: { page, pageSize: 40, total: 1 } }));
+    const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
+    const tree = (value: string[]) => <SWRConfig value={{ provider: () => new Map() }}><NodePicker value={value} onChange={vi.fn()} /></SWRConfig>;
+    try {
+        await act(async () => root.render(tree(['a', 'b'])));
+        await act(async () => [...host.querySelectorAll('button')].find(button => button.textContent?.trim() === 'chooseNode')!.click());
+        expect(api.listNodes).toHaveBeenCalledExactlyOnceWith({ page: 1, pageSize: 40, group: 'work', query: '', enabledOnly: true });
+        await act(async () => root.render(tree(['a'])));
+        expect(api.listNodes.mock.calls.every(([request]) => request.group === 'work')).toBe(true);
+    } finally { act(() => root.unmount()); host.remove(); }
+});

@@ -34,7 +34,7 @@ export function OAuthSettingsPanel({ embedded = false, onConfigured }: { embedde
         {writable && !creating && <Button onClick={() => setCreating(`oidc-${crypto.randomUUID()}`)}>{t('oidc.add')}</Button>}
         {creating && <ProviderSettings key={JSON.stringify([scope,creating])} provider={creating} creating updated={updated} configured={configured} cancel={() => setCreating(undefined)} />}
     </div>;
-    return embedded ? content : <Card><CardHeader><h2 className="font-medium">{t('oauthSettings')}</h2></CardHeader><CardBody>{content}</CardBody></Card>;
+    return embedded ? content : <Card><CardHeader><h2 className="m-0 font-medium">{t('oauthSettings')}</h2></CardHeader><CardBody>{content}</CardBody></Card>;
 }
 
 function ProviderSettings({ provider, settings, creating, updated, configured, cancel }: { provider: OAuthProvider; settings?: OAuthSettings; creating?: boolean; updated: () => Promise<void>; configured: (ready: boolean, signal?: AbortSignal) => Promise<void>; cancel?: () => void }) {
@@ -80,7 +80,7 @@ function ProviderSettings({ provider, settings, creating, updated, configured, c
         catch { if (scope === authScope() && !controller.signal.aborted) setError(t('requestFailed')); } finally { if (scope === authScope() && !controller.signal.aborted) setBusy(false); }
     };
     return <form onSubmit={event => void save(event)} className="space-y-4 rounded-ui-md border border-ui-border p-4" aria-label={label} autoComplete="off">
-        <h3 className="font-medium">{label}</h3>
+        <h3 className="m-0 font-medium">{label}</h3>
         {generic && <>
             <label className="block space-y-2"><span>{t('oidc.name')}</span><Input required maxLength={128} disabled={!writable || busy} value={name} onChange={event => setName(event.target.value)} /></label>
             <label className="block space-y-2"><span>{t('oidc.issuer')}</span><Input type="url" required maxLength={2048} readOnly={Boolean(settings)} disabled={!writable || busy} value={issuer} placeholder="https://login.example.com/realms/company" onChange={event => setIssuer(event.target.value)} /></label>

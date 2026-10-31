@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { ConnectionActions } from '../connection-actions';
 import { useTranslation } from 'react-i18next';
 import { usePagination } from "@/hooks/use-pagination";
@@ -107,15 +108,11 @@ function FailedHistory() {
                 </ModalContent>
             </Modal>
 
-            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-                <div>
-                    <h1 className="mt-1 text-xl font-semibold leading-tight text-ui-heading sm:text-2xl">{uiT("failedConnections")}</h1>
-                    <div className="mt-1 flex items-center text-xs text-ui-muted">
-                        <Bug className="mr-1.5 text-ui-danger" size={14} />
-                        <span>{uiT("failureCount", { count: values.length })}</span>
-                    </div>
-                </div>
-                <div className="flex flex-wrap items-center justify-end gap-2 rounded-ui-lg border border-ui-border bg-ui-surface-muted/50 px-2 py-2">
+            <PageHeader
+                title={uiT("failedConnections")}
+                className="mb-4"
+                description={<span className="flex items-center text-xs"><Bug className="mr-1.5 text-ui-danger" size={14} /><span>{uiT("failureCount", { count: values.length })}</span></span>}
+                actions={<div className="flex flex-wrap items-center justify-end gap-2 rounded-ui-lg border border-ui-border bg-ui-surface-muted/50 px-2 py-2">
                     <Button size="sm" onClick={() => mutate()} disabled={isValidating}>
                         {isValidating ? <Spinner size="sm" /> : <RotateCw size={16} />}
                     </Button>
@@ -137,8 +134,8 @@ function FailedHistory() {
                             </ToggleGroup>
                         </DropdownContent>
                     </Dropdown>
-                </div>
-            </div>
+                </div>}
+            />
 
             <CardList
                 items={paginatedItems}

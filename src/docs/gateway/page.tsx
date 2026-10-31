@@ -1,4 +1,5 @@
 import { SecretValues } from "@/component/secret-values";
+import { PageHeader } from '@/component/v2/page-header';
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
@@ -93,20 +94,14 @@ export default function GatewayPage() {
   return (
     <MainContainer className="max-w-screen-xl">
       <div className="space-y-6">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-semibold">{t("title")}</h1>
-            <p className="mt-1 text-sm text-ui-secondary">{t("unifiedDescription")}</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
+        <PageHeader title={t("title")} description={t("unifiedDescription")} actions={<>
             <Button variant="primary" loading={pending} disabled={!dirty}
               onClick={() => void save()}>{t("saveActivate")}</Button>
             <Button variant="outline-secondary" disabled={!dirty || pending}
               onClick={() => { setDraft(structuredClone(data)); setFailure(""); }}>
               {t("discard")}
             </Button>
-          </div>
-        </div>
+        </>} />
         {(failure || status?.startupError) && <p role="alert"
           className="rounded-ui-sm border border-ui-border p-3 text-sm text-ui-danger">
           {failure || status?.startupError}

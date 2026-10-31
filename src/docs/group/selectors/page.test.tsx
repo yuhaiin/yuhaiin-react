@@ -8,7 +8,7 @@ import { normalizeNode, type Selector } from '@/contract/node';
 import { GlobalToastContext } from '@/component/v2/toast';
 import SelectorsPage from './page';
 
-const api = vi.hoisted(() => ({ listSelectors: vi.fn(), saveSelector: vi.fn(), deleteSelector: vi.fn(), selectorReferences: vi.fn(), getNode: vi.fn(), listNodeGroups: vi.fn(), listNodes: vi.fn() }));
+const api = vi.hoisted(() => ({ listSelectors: vi.fn(), saveSelector: vi.fn(), deleteSelector: vi.fn(), selectorReferences: vi.fn(), getSelectorStatus: vi.fn(), getNode: vi.fn(), listNodeGroups: vi.fn(), listNodes: vi.fn() }));
 const viewport = vi.hoisted(() => ({ desktop: true }));
 vi.mock('@/api/selectors', () => api);
 vi.mock('@/api/nodes', () => api);
@@ -25,6 +25,7 @@ beforeEach(() => {
     api.listSelectors.mockImplementation(async () => ({ items: [...selectors] }));
     api.saveSelector.mockImplementation(async (item: Selector) => { const saved = { ...item, revision: item.revision + 1 }; selectors = selectors.map(value => value.id === item.id ? saved : value); return saved; });
     api.selectorReferences.mockResolvedValue({ items: [] });
+    api.getSelectorStatus.mockResolvedValue({ id: "work", revision: 1, tcp: { nodeId: "a", reason: "manual", candidates: [] }, udp: { nodeId: "a", reason: "manual", candidates: [] }, events: [], switches: 0, suppressed: 0 });
     api.getNode.mockImplementation(async id => normalizeNode({ id, name: `Node ${id}`, group: 'manual', enabled: true }));
     api.listNodeGroups.mockResolvedValue({ items: [{ name: 'manual', count: 10000, enabled: 10000 }] });
     api.listNodes.mockResolvedValue({ items: [normalizeNode({ id: 'c', name: 'Node c', group: 'manual', enabled: true })], page: { page: 1, pageSize: 40, total: 10000 } });

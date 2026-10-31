@@ -36,7 +36,7 @@ export function ProxyCredentials() {
         void run(async () => { setIssued(await authAPI<IssuedProxyCredential>('POST', '/proxy-credentials', { owner, name, inbounds, protocols, expiresAt: permanent ? 0 : Math.floor(Date.parse(expires) / 1000) })); setName(''); });
     };
     const toggle = (values: string[], value: string) => values.includes(value) ? values.filter(item => item !== value) : [...values, value];
-    return <Card><CardHeader><h2 className="font-medium">{t('proxyCredentials')}</h2></CardHeader><CardBody className="space-y-4">
+    return <Card><CardHeader><h2 className="m-0 font-medium">{t('proxyCredentials')}</h2></CardHeader><CardBody className="space-y-4">
         <p className="text-sm text-ui-muted">{t('proxyCredentialsHelp')}</p>
         <form className="space-y-4" onSubmit={create}>
             <div className="flex flex-wrap items-end gap-3">
@@ -44,13 +44,13 @@ export function ProxyCredentials() {
                 <label className="min-w-0 flex-1 space-y-2"><span>{t('credentialName')}</span><Input value={name} onChange={event => setName(event.target.value)} required maxLength={128} disabled={busy} /></label>
                 <fieldset className="space-y-2"><legend>{t('expires')}</legend><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={permanent} onChange={event => setPermanent(event.target.checked)} disabled={busy} />{t('permanentCredential')}</label>{!permanent && <Input aria-label={t('expires')} type="datetime-local" value={expires} onChange={event => setExpires(event.target.value)} required disabled={busy} />}</fieldset>
             </div>
-            <fieldset className="space-y-2"><legend>{t('protocols')}</legend><p className="text-xs text-ui-muted">{t('credentialScopeHelp')}</p><div className="flex flex-wrap gap-4">{['http', 'socks5', 'yuubinsya', 'hysteria2'].map(protocol => <label key={protocol} className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={protocols.includes(protocol)} onChange={() => setProtocols(toggle(protocols, protocol))} disabled={busy} />{protocol}</label>)}</div></fieldset>
-            {entries && <fieldset><legend>{t('inbounds')}</legend><div className="flex flex-wrap gap-4">{entries.items.filter(entry => ['http', 'socks5', 'mixed', 'yuubinsya', 'hysteria2'].includes(entry.protocol.type)).map(entry => <label key={entry.id} className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={inbounds.includes(entry.id)} onChange={() => setInbounds(toggle(inbounds, entry.id))} disabled={busy} />{entry.name}</label>)}</div></fieldset>}
+            <fieldset className="space-y-2"><legend>{t('protocols')}</legend><p className="text-xs text-ui-muted">{t('credentialScopeHelp')}</p><div className="flex flex-wrap gap-4">{['http', 'socks5', 'yuubinsya', 'hysteria2', 'sstp'].map(protocol => <label key={protocol} className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={protocols.includes(protocol)} onChange={() => setProtocols(toggle(protocols, protocol))} disabled={busy} />{protocol}</label>)}</div></fieldset>
+            {entries && <fieldset><legend>{t('inbounds')}</legend><div className="flex flex-wrap gap-4">{entries.items.filter(entry => ['http', 'socks5', 'mixed', 'yuubinsya', 'hysteria2', 'sstp'].includes(entry.protocol.type)).map(entry => <label key={entry.id} className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={inbounds.includes(entry.id)} onChange={() => setInbounds(toggle(inbounds, entry.id))} disabled={busy} />{entry.name}</label>)}</div></fieldset>}
             <Button type="submit" variant="primary" disabled={busy}>{t('createProxyCredential')}</Button>
         </form>
         {(error || loadError) && <p role="alert" className="text-sm text-ui-danger">{error || t('requestFailed')}</p>}
         <div className="space-y-3">{data?.map(item => <section key={item.id} className="space-y-2 rounded-ui-md border border-ui-border p-4">
-            <div className="flex flex-wrap justify-between gap-2"><h3 className="font-medium">{item.name}</h3><span className="text-xs text-ui-muted">{t(item.revoked ? 'revoked' : item.expiresAt && item.expiresAt * 1000 <= now ? 'expired' : 'active')}</span></div>
+            <div className="flex flex-wrap justify-between gap-2"><h3 className="m-0 font-medium">{item.name}</h3><span className="text-xs text-ui-muted">{t(item.revoked ? 'revoked' : item.expiresAt && item.expiresAt * 1000 <= now ? 'expired' : 'active')}</span></div>
             <p className="break-all text-xs text-ui-muted">{item.id}</p><p className="text-sm">{item.protocols?.join(', ') || t('allProtocols')} · {item.expiresAt ? new Date(item.expiresAt * 1000).toLocaleString() : t('never')}</p>
             <p className="text-xs text-ui-muted">{item.inbounds?.map(id => entries?.items.find(entry => entry.id === id)?.name || id).join(', ') || t('allAuthorizedInbounds')}</p>
             <div className="flex flex-wrap gap-2">
@@ -74,7 +74,7 @@ export function UpstreamCredentials() {
     const save = (event: FormEvent) => {
         event.preventDefault(); void run(async () => { await authAPI(editing ? 'PUT' : 'POST', `/upstream-credentials${editing ? `/${editing.id}` : ''}`, { name, type, username: type === 'username-password' ? username : '', password }); reset(); });
     };
-    return <Card><CardHeader><h2 className="font-medium">{t('upstreamCredentials')}</h2></CardHeader><CardBody className="space-y-4">
+    return <Card><CardHeader><h2 className="m-0 font-medium">{t('upstreamCredentials')}</h2></CardHeader><CardBody className="space-y-4">
         <p className="text-sm text-ui-muted">{t('upstreamCredentialsHelp')}</p>
         <form className="flex flex-wrap items-end gap-3" onSubmit={save}>
             <label className="min-w-0 flex-1 space-y-2"><span>{t('credentialName')}</span><Input value={name} onChange={event => setName(event.target.value)} required maxLength={128} disabled={busy} /></label>
@@ -84,6 +84,6 @@ export function UpstreamCredentials() {
             <Button type="submit" variant="primary" disabled={busy}>{t(editing ? 'replaceCredential' : 'createUpstreamCredential')}</Button>{editing && <Button disabled={busy} onClick={reset}>{t('cancel')}</Button>}
         </form>
         {(error || loadError) && <p role="alert" className="text-sm text-ui-danger">{error || t('requestFailed')}</p>}
-        <div className="space-y-3">{data?.map(item => <section key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-ui-md border border-ui-border p-4"><div className="min-w-0"><h3 className="font-medium">{item.name}</h3><p className="break-all text-xs text-ui-muted">{item.type} · {item.id}</p></div><div className="flex flex-wrap gap-2"><Button disabled={busy} onClick={() => { setEditing(item); setName(item.name); setType(item.type); setUsername(''); setPassword(''); }}>{t('replaceCredential')}</Button><Button variant="outline-danger" disabled={busy} onClick={() => void run(async () => { if (await confirmAction(t('deleteUpstreamCredentialConfirm'))) await authAPI('DELETE', `/upstream-credentials/${item.id}`); if (editing?.id === item.id) reset(); })}>{t('delete')}</Button></div></section>)}</div>
+        <div className="space-y-3">{data?.map(item => <section key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-ui-md border border-ui-border p-4"><div className="min-w-0"><h3 className="m-0 font-medium">{item.name}</h3><p className="break-all text-xs text-ui-muted">{item.type} · {item.id}</p></div><div className="flex flex-wrap gap-2"><Button disabled={busy} onClick={() => { setEditing(item); setName(item.name); setType(item.type); setUsername(''); setPassword(''); }}>{t('replaceCredential')}</Button><Button variant="outline-danger" disabled={busy} onClick={() => void run(async () => { if (await confirmAction(t('deleteUpstreamCredentialConfirm'))) await authAPI('DELETE', `/upstream-credentials/${item.id}`); if (editing?.id === item.id) reset(); })}>{t('delete')}</Button></div></section>)}</div>
     </CardBody></Card>;
 }

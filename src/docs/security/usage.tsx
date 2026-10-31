@@ -36,7 +36,7 @@ function UsagePanel({ self, canReadAll, canManage }: { self: string; canReadAll:
         () => fetchUsage<UsageReport>('', { owner, ...usageRange(preset, applied.from, applied.to) }), { refreshInterval: 5000, keepPreviousData: false });
     const summary = data?.summary;
     return <Card>
-        <CardHeader><h2 className="font-medium">{t('usage.title')}</h2><Button disabled={isLoading} onClick={() => void mutate()}>{t('refresh')}</Button></CardHeader>
+        <CardHeader><h2 className="m-0 font-medium">{t('usage.title')}</h2><Button disabled={isLoading} onClick={() => void mutate()}>{t('refresh')}</Button></CardHeader>
         <CardBody className="space-y-5">
             <p className="text-sm text-ui-muted">{t('usage.hint')}</p>
             <div className="grid gap-3 sm:grid-cols-2">

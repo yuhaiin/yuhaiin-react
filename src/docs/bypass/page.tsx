@@ -1,4 +1,5 @@
 import { StageChangeButton } from "@/component/configuration-change";
+import { PageHeader } from '@/component/v2/page-header';
 import { clearHashSearch, useHashSearch } from "@/hooks/useHashLocation";
 import { connectionRuleDraft } from "@/docs/connections/actions";
 import { getNode } from "@/api/nodes";
@@ -181,10 +182,7 @@ function BypassComponent() {
     const showEditor = creating || editing !== null;
     return (
         <MainContainer className="max-w-[1440px]">
-            <header className={`mb-6 flex-wrap items-center justify-between gap-4 ${showEditor ? 'hidden md:flex' : 'flex'}`}>
-                <div><h1 className="sr-only text-2xl font-semibold tracking-tight text-ui-heading lg:not-sr-only">{t('routingTask')}</h1><p className="mt-2 text-sm text-ui-muted">{t('routingOverviewHelp')}</p></div>
-                <Button permission="routes:write" variant="primary" onClick={newRule} disabled={reordering || editorState.pending || creating}><Plus size={16} className="mr-1.5" />{uiT('add')}</Button>
-            </header>
+            <PageHeader title={t('routingTask')} description={t('routingOverviewHelp')} className={showEditor ? 'max-md:hidden' : undefined} actions={<Button permission="routes:write" variant="primary" onClick={newRule} disabled={reordering || editorState.pending || creating}><Plus size={16} className="mr-1.5" />{uiT('add')}</Button>} />
             <div className={showEditor ? 'hidden md:block' : undefined}>
                 <RouteConfigCard destinations={destinations} onSaved={() => { void mutateActivation(); }} />
             </div>
@@ -192,8 +190,7 @@ function BypassComponent() {
             <WorkspaceLayout className={showEditor ? 'md:mt-6' : 'mt-6'}>
                 <WorkspaceDirectory label={t('ruleDirectory')} hiddenOnMobile={showEditor}>
                     <div className="mb-2 space-y-2 border-b border-ui-border/50 px-1 pb-3">
-                        <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-medium text-ui-heading">{uiT('routeRules')}</h2>{isValidating && <Spinner size="sm" />}</div>
-                        <p className="text-xs text-ui-muted">{t('ruleOrderHelp', { count: data.page.total })}</p>
+                        <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-medium text-ui-heading">{uiT('routeRules')}</h2><div className="flex shrink-0 items-center gap-2">{isValidating && <Spinner size="sm" />}<span title={t('ruleOrderHelp', { count: data.page.total })} className="text-xs tabular-nums text-ui-muted">{data.page.total}</span></div></div>
                         <FilterSearch className="w-full" onEnter={v => { setPage(1); setQuery(v); }} size="sm" />
                     </div>
                     <div className="max-h-[min(72vh,900px)] overflow-y-auto overscroll-contain">

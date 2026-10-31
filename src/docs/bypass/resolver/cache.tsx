@@ -11,6 +11,7 @@ import { Select } from "@/component/v2/select";
 import { GlobalToastContext } from "@/component/v2/toast";
 import type { DNSCacheEntry, DNSCacheRecord } from "@/contract/resolver";
 import { Database, RefreshCw, Search, Trash2 } from "lucide-react";
+import { useFillViewport } from "@/hooks/use-fill-viewport";
 import { useContext, useMemo, useState } from "react";
 import useSWR from "swr";
 import Loading from "../../../component/v2/loading";
@@ -54,6 +55,7 @@ const EMPTY_CACHE_ENTRIES: DNSCacheEntry[] = [];
 
 export function DNSCache() {
     const ctx = useContext(GlobalToastContext);
+    const [panelRef, panelMaxHeight] = useFillViewport();
     const [query, setQuery] = useState("");
     const [selectedResolver, setSelectedResolver] = useState("");
     const [confirm, setConfirm] = useState<{ resolver: string; domain: string } | null>(null);
@@ -133,7 +135,8 @@ export function DNSCache() {
                 onHide={() => setConfirm(null)}
             />
 
-            <Card density="compact" className="w-full max-h-[min(75dvh,56rem)] overflow-hidden">
+            <div ref={panelRef} className="flex min-w-0 flex-col" style={{ maxHeight: panelMaxHeight }}>
+            <Card noMargin density="compact" className="min-h-0 w-full overflow-hidden">
                 <CardHeader className="shrink-0">
                     <div className="flex w-full flex-col items-stretch gap-3 xl:flex-row xl:items-center xl:justify-between">
                         <IconBox icon={Database} tone="info" title="DNS Cache" description="Runtime Resolver Cache" />
@@ -155,7 +158,7 @@ export function DNSCache() {
                         </div>
                     </div>
                 </CardHeader>
-                <CardBody density="compact" className="flex min-h-0 flex-col overflow-hidden">
+                <CardBody className="flex min-h-0 flex-col overflow-hidden">
                     <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-2 text-xs text-ui-muted">
                         <span>{allEntries.length} active cache entr{allEntries.length === 1 ? "y" : "ies"}</span>
                         {query.trim() && (
@@ -212,6 +215,7 @@ export function DNSCache() {
                     )}
                 </CardBody>
             </Card>
+            </div>
         </>
     );
 }

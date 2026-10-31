@@ -1,6 +1,8 @@
 import type { Go } from "@/api/generated-contracts";
 
 export type NodeOrigin = "reserve" | "remote" | "manual";
+/** Nodes saved without a group are listed under the backend's "manual" group. */
+export const nodeGroupName = (node: { group?: string }) => node.group || "manual";
 export type NodeProtocolType = Go.node.Protocol["type"];
 export type EmptyNodeProtocolConfig = { readonly __emptyProtocolConfig?: never };
 export type ShadowsocksConfig = Partial<Go.node.Shadowsocks>;

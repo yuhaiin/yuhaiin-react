@@ -8,6 +8,7 @@ function Loading(props: { children?: string, code?: number, style?: CSSPropertie
     const failed = props.children !== undefined || props.code !== undefined;
     return (
         <div
+            data-loading={failed ? undefined : ''}
             className="min-h-32 gap-2 flex flex-col justify-center items-center"
             style={{ height: "100%", ...props.style }}
         >

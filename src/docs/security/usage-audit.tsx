@@ -19,7 +19,7 @@ export function UsageAuditList({ owner, preset, from, to }: { owner: string; pre
     const { data, error, isLoading, mutate } = useSWR(validRange ? [scope, 'usage-audit', owner, preset, from, to, result, filter.source, filter.target, before] : null,
         () => fetchUsage<UsageAuditPage>('/audit', { owner, result, ...filter, before, limit: '50', ...usageRange(preset, from, to) }), { refreshInterval: before ? 0 : 10000, keepPreviousData: false });
     return <section className="space-y-3" aria-label={t('usage.audit')}>
-        <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-medium">{t('usage.audit')}</h3><Button disabled={isLoading} onClick={() => void mutate()}>{t('refresh')}</Button></div>
+        <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="m-0 font-medium">{t('usage.audit')}</h3><Button disabled={isLoading} onClick={() => void mutate()}>{t('refresh')}</Button></div>
         <form className="grid items-end gap-3 sm:grid-cols-2" onSubmit={event => { event.preventDefault(); setFilter(draft); setCursors(['']); }}>
             <label className="space-y-2"><span className="text-sm">{t('usage.source')}</span><Input value={draft.source} maxLength={256} onChange={event => setDraft({ ...draft, source: event.target.value })} /></label>
             <label className="space-y-2"><span className="text-sm">{t('usage.target')}</span><Input value={draft.target} maxLength={256} onChange={event => setDraft({ ...draft, target: event.target.value })} /></label>

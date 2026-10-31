@@ -71,7 +71,7 @@ it('edits hopping ports and explains why automatic server hopping needs root', (
     }
 });
 
-it('shows experimental TCP/IP stack options only when lightweight is selected', () => {
+it('always shows lightweight congestion/scheduling and never offers deleted TUN backends', () => {
     let saved: Inbound = { ...createDefaultInbound('tun'), protocol: createDefaultProtocol('tun') };
     const host = document.createElement('div');
     document.body.append(host);
@@ -79,33 +79,40 @@ it('shows experimental TCP/IP stack options only when lightweight is selected', 
     const render = () => root.render(<InboundEditor inbound={saved} onChange={(value) => { saved = value; }} />);
     try {
         act(render);
-        expect(host.textContent).toContain('tunStack');
-        expect(host.textContent).not.toContain('tunCongestionControl');
-        const driver = host.querySelector('[role="combobox"][aria-label="Driver"]');
-        expect(driver?.textContent).toContain('fdbased');
-        expect(host.querySelector('input[aria-label="Driver"]')).toBeNull();
-        if (saved.protocol.type !== 'tun') throw new Error('unexpected protocol');
-        saved = { ...saved, protocol: { ...saved.protocol, tun: { ...saved.protocol.tun, stack: 'lightweight', driver: 'channel', congestionControl: 'bbr' } } };
-        act(render);
-        expect(host.textContent).toContain('tunStackExperimentalWarning');
         expect(host.textContent).toContain('tunCongestionControl');
-        expect(host.textContent).toContain('tunStackDriverHint');
-        const combos = [...host.querySelectorAll('[role="combobox"]')];
-        expect(combos.length).toBeGreaterThanOrEqual(3);
-        const congestion = combos.find(combo => combo.getAttribute('aria-label') === 'tunCongestionControl');
-        expect(congestion?.textContent).toContain('BBR v3');
-        expect(combos.some(combo => combo.getAttribute('aria-label') === 'Driver')).toBe(true);
+        expect(host.textContent).toContain('tunOutputScheduler');
+        expect(host.textContent).not.toContain('tunStackLegacy');
+        expect(host.textContent).not.toContain('tunStackExperimentalWarning');
+        expect(host.querySelector('[role="combobox"][aria-label="Driver"]')).toBeNull();
+        expect(host.querySelector('[role="combobox"][aria-label="tunStack"]')).toBeNull();
+
+        // A saved legacy TUN still exposes the supported settings and
+        // becomes lightweight/channel as soon as the user edits it.
+        if (saved.protocol.type !== 'tun') throw new Error('unexpected protocol');
+        saved = { ...saved, protocol: { ...saved.protocol, tun: {
+            ...saved.protocol.tun, stack: undefined, driver: 'system_gvisor', congestionControl: undefined, mtu: 1200,
+        } } };
+        act(render);
+        const congestion = host.querySelector('[role="combobox"][aria-label="tunCongestionControl"]');
+        expect(congestion?.textContent).toContain('CUBIC');
+        const mtuLabel = [...host.querySelectorAll<HTMLLabelElement>('label')].find(label => label.textContent === 'MTU')!;
+        const mtu = document.getElementById(mtuLabel.htmlFor) as HTMLInputElement;
+        expect(mtu.value).toBe('1200');
+        expect(mtu.checkValidity()).toBe(true);
+        expect(mtu.min).toBe('576');
+        expect(mtu.max).toBe('65535');
         const scheduler = () => host.querySelector<HTMLButtonElement>('[role="combobox"][aria-label="tunOutputScheduler"]')!;
         expect(scheduler().textContent).toContain('tunOutputSchedulerFIFO');
         act(() => scheduler().dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
         const fair = [...document.querySelectorAll<HTMLElement>('[role="option"]')].find(option => option.textContent === 'tunOutputSchedulerFair')!;
         act(() => fair.click());
         if (saved.protocol.type !== 'tun') throw new Error('unexpected protocol');
-        expect(saved.protocol.tun.outputScheduler).toBe('fq_codel');
+        expect(saved.protocol.tun).toMatchObject({
+            stack: 'lightweight', driver: 'channel', outputScheduler: 'fq_codel', mtu: 1200,
+        });
         saved = JSON.parse(JSON.stringify(saved)) as Inbound;
         act(render);
         expect(scheduler().textContent).toContain('tunOutputSchedulerFair');
-
     } finally {
         act(() => root.unmount());
         host.remove();

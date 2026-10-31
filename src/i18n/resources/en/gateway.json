@@ -25,6 +25,7 @@
   "name": "Name",
   "enabled": "Enabled",
   "disabled": "Disabled",
+  "importedGatewayGuard": "This Gateway was disabled during configuration export because some policy values were removed. Routes targeting it are blocked. Restore and review the affected values and rules before enabling it.",
   "listen": "Listen address",
   "listenHelp": "Leave empty for interception only. Public listeners require source CIDRs. Forwarding to an original destination is available only on admitted intercepted streams.",
   "allowedSources": "Allowed source CIDRs (separate with commas)",
@@ -204,5 +205,10 @@
   "backendPoolHelp": "Choose Reverse proxy as an HTTP rule or fallback action, select Create a new backend pool, then add the pool below. The pool is attached to that action; other actions remain unchanged.",
   "newFilterGateway": "HTTP filter",
   "addInterceptionGateway": "Add interception Gateway",
-  "diagnostics": "Diagnostics"
+  "diagnostics": "Diagnostics",
+  "acmeHttp01": "Enable ACME HTTP-01",
+  "acmeHttp01Help": "Enable ACME HTTP-01 on an existing plain HTTP Gateway listening on port 80. Public DNS must reach it, and its source ACL must allow CA validators. No new listener is opened automatically. Wildcards require DNS-01.",
+  "certificateSource": "Certificate source",
+  "fileCertificate": "Certificate files",
+  "managedCertificate": "Managed ACME certificates"
 }

@@ -26,7 +26,6 @@ import {
     Check,
     Clock,
     CloudDownload,
-    List,
     Network,
     RefreshCw,
     Save,
@@ -90,7 +89,7 @@ function Lists() {
             onSelect={selection.select} onCreate={() => selection.create(() => setCreatingDraft(undefined))}
             search={{ value: query, onChange: value => { setPage(1); setQuery(value); } }}
             pagination={{ page: data?.page.page || page, pageSize: PAGE_SIZE, total: data?.page.total ?? 0, onChange: setPage }}
-            items={items.map(item => ({ id: item.id, name: item.name, icon: item.errorCount ? <TriangleAlert className="text-ui-danger" /> : <List />, description: `${item.type} · ${shortPreview(item.preview, authT("secrets.saved"))}`, status: <span className="shrink-0 text-xs tabular-nums text-ui-muted">{item.itemCount}</span> }))}
+            items={items.map(item => ({ id: item.id, name: item.name, description: `${item.type === 'host' ? '' : `${item.type} · `}${shortPreview(item.preview, authT("secrets.saved"))}`, status: <span className="flex shrink-0 items-center gap-1.5 text-xs tabular-nums text-ui-muted" title={uiT('entries')}>{item.errorCount > 0 && <TriangleAlert size={14} className="text-ui-danger" aria-hidden="true" />}{item.itemCount}</span> }))}
             actions={<><Button size="sm" variant="outline-secondary" onClick={refresh} disabled={isRefreshing}>{isRefreshing ? <Spinner size="sm" /> : <RefreshCw size={16} className="mr-2" />}{uiT('sync')}</Button><Button size="sm" variant="outline-secondary" onClick={() => setRegistryOpen(true)}><CloudDownload size={16} className="mr-2" />Registry</Button></>}>
             {selection.creating ? <CreateListModal presentation="inline" open initialValue={creatingDraft} initialName={creatingDraft?.name}
                 onSaved={id => { saved(); selection.saved(id); }} onClose={selection.close} />
@@ -236,7 +235,7 @@ function ListEditorModal({ name, onSaved, onClose, presentation = "modal" }: { n
         });
     };
 
-    return <ResourceEditorFrame title={draft.name || name} label={uiT('definedLists')} presentation={presentation} open={!!name} onClose={close}
+    return <ResourceEditorFrame title={draft.name || (isLoading ? ' ' : name)} label={uiT('definedLists')} presentation={presentation} open={!!name} onClose={close}
         footer={<>
                     <div>
                         {name !== "bootstrap" && (

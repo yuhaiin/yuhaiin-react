@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { apiURL, directJSON } from "@/auth/transport";
 import { profileDocument, downloadProfile } from "./authenticated-view";
 import { Button } from "@/component/v2/button";
@@ -226,8 +227,9 @@ export default function PprofPage() {
 
     return (
         <MainContainer className="flex h-full min-h-0 flex-col max-sm:h-auto max-sm:min-h-full">
+            <PageHeader title={t("pprof")} className="shrink-0 lg:mb-3" />
             <Card noMargin className="flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden max-sm:overflow-visible">
-                <CardHeader className="!block shrink-0 space-y-3 !px-3 !py-3 sm:space-y-4 sm:!px-5 sm:!py-4">
+                <CardHeader className="!block shrink-0 space-y-3 !px-3 !py-3 sm:space-y-4 sm:!px-4 sm:!py-4">
                     <div className="flex w-full flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                             <Activity size={20} className="text-ui-muted" />

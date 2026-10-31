@@ -41,6 +41,7 @@ export namespace Go {
       s3: S3;
       interval: number;
       lastBackupHash: string;
+      recovery?: Go.recovery.Policy;
     }
     export interface S3 {
       enabled: boolean;
@@ -62,6 +63,88 @@ export namespace Go {
       inbounds: boolean;
       subscribes: boolean;
       source: string;
+    }
+  }
+  export namespace certificate {
+    export interface SaveRequest {
+      certificate: Config;
+      revision: number;
+    }
+    export interface RevisionRequest {
+      id: string;
+      revision: number;
+    }
+    export interface ProviderWrite {
+      provider: DNSProvider;
+      token?: string;
+    }
+    export interface Event {
+      sequence: number;
+      at: string;
+      code: string;
+    }
+    export interface Overview {
+      certificates: Resource[];
+      providers: DNSProvider[];
+      events: Event[];
+    }
+    export interface Challenge {
+      type: string;
+      dnsProviderId?: string;
+      httpGatewayId?: string;
+    }
+    export interface Config {
+      id: string;
+      name: string;
+      domains: string[];
+      directoryUrl: string;
+      email: string;
+      termsAccepted: boolean;
+      challenge: Challenge;
+      autoRenew: boolean;
+      trustPem?: string;
+    }
+    export interface Status {
+      state: string;
+      issuer?: string;
+      serial?: string;
+      notBefore?: string;
+      notAfter?: string;
+      nextAttempt?: string;
+      lastAttempt?: string;
+      lastSuccess?: string;
+      failureCode?: string;
+      failures?: number;
+      renewalInfo?: RenewalInfoStatus;
+    }
+    export interface RenewalInfoStatus {
+      state: string;
+      checkedAt?: string;
+      nextCheck?: string;
+      windowStart?: string;
+      windowEnd?: string;
+      explanationUrl?: string;
+      failures?: number;
+    }
+    export interface Reference {
+      kind: string;
+      id: string;
+      name: string;
+    }
+    export interface Resource {
+      config: Config;
+      revision: number;
+      status: Status;
+      references: Reference[];
+    }
+    export interface DNSProvider {
+      id: string;
+      name: string;
+      type: string;
+      zoneId: string;
+      zoneName: string;
+      revision: number;
+      hasCredential: boolean;
     }
   }
   export namespace connection {
@@ -232,6 +315,7 @@ export namespace Go {
       id: string;
       name: string;
       enabled: boolean;
+      rejectWhenDisabled?: boolean;
       debug: boolean;
       revision: number;
       listen: string;
@@ -239,6 +323,8 @@ export namespace Go {
       tlsMode: string;
       certificateFile: string;
       keyFile: string;
+      managedCertificateIds?: string[];
+      acmeHttp01?: boolean;
       ruleIds: string[];
       default: Action;
       maxBodyBytes: number;
@@ -417,6 +503,7 @@ export namespace Go {
       id: string;
       name: string;
       enabled: boolean;
+      rejectWhenDisabled?: boolean;
       debug: boolean;
       revision: number;
       listener?: ListenerSource;
@@ -433,6 +520,8 @@ export namespace Go {
       tlsMode: string;
       certificateFile?: string;
       keyFile?: string;
+      managedCertificateIds?: string[];
+      acmeHttp01?: boolean;
     }
     export interface InterceptionSettings {
       mode: string;
@@ -521,6 +610,7 @@ export namespace Go {
       | { type: "redir"; redir: RedirProtocol }
       | { type: "tun"; tun: TunProtocol }
       | { type: "wireguard"; wireguard: WireguardProtocol }
+      | { type: "sstp"; sstp: SSTPProtocol }
       | { type: "krunlet"; krunlet: KrunletProtocol }
       | { type: "reverse_tcp"; reverse_tcp: ReverseTCPProtocol }
       | { type: "none"; none: NoneProtocol };
@@ -604,6 +694,14 @@ export namespace Go {
       preSharedKey?: string;
       allowedIps: string[];
     }
+    export interface SSTPProtocol {
+      tls?: ServerTLSConfig;
+      serverAddress: string;
+      clientAddresses: string[];
+      dns?: string;
+      mtu?: number;
+      maxSessions?: number;
+    }
     export interface KrunletProtocol {
       socket: string;
     }
@@ -678,6 +776,21 @@ export namespace Go {
     }
   }
   export namespace node {
+    export interface CircuitConfig {
+      disabled?: boolean;
+      cooldownMs?: number;
+      halfOpenConcurrency?: number;
+      halfOpenMaxRequests?: number;
+      trialTimeoutMs?: number;
+    }
+    export interface CircuitStatus {
+      state: string;
+      openUntil?: number;
+      inFlight: number;
+      issued: number;
+      recovered: number;
+      reason: string;
+    }
     export interface ImportCommit {
       text: string;
       group: string;
@@ -693,11 +806,66 @@ export namespace Go {
     export interface ImportResults {
       items: ImportResult[];
     }
+    export interface MonitoringConfig {
+      uploadSpeed?: SpeedSchedule;
+      revision: number;
+      probe: ProbeSchedule;
+      speed: SpeedSchedule;
+    }
+    export interface ProbeSchedule {
+      enabled: boolean;
+      intervalMs?: number;
+      timeoutMs?: number;
+      concurrency?: number;
+      failureThreshold?: number;
+      recoveryThreshold?: number;
+      cooldownMs?: number;
+      jitter?: number;
+      latencyTarget?: string;
+      tcpAddress?: string;
+      dnsAddress?: string;
+      dnsDomain?: string;
+      stunAddress?: string;
+      kinds?: string[];
+      maxProbeBandwidth?: number;
+      networkCostPolicy?: string;
+      allowMobile?: boolean;
+    }
+    export interface SpeedSchedule {
+      allowMetered?: boolean;
+      enabled: boolean;
+      intervalMs?: number;
+      concurrency?: number;
+      allowMobile?: boolean;
+      test: SpeedTestRequest;
+    }
+    export interface MonitoringNetworkState {
+      online: boolean;
+      metered: boolean;
+      foreground: boolean;
+      generation: number;
+    }
+    export interface MonitoringStatus {
+      activeMeasurements: number;
+      measurementLimit: number;
+      policyState: string;
+      config: MonitoringConfig;
+      network: MonitoringNetworkState;
+      platform: string;
+      jobs: number;
+      running: number;
+      workers: number;
+      completed: number;
+      skipped: number;
+      failed: number;
+    }
     export interface ProbeStatus {
       checkedAt: number;
       result: LatencyResponse;
     }
     export interface RuntimeStatus {
+      trafficWindow?: TrafficWindow;
+      recentTcpDials?: DialObservationWindow;
       id: string;
       state: string;
       uploadBytes: string;
@@ -720,11 +888,170 @@ export namespace Go {
       lastError?: string;
       probes?: Record<string, ProbeStatus>;
       protocol?: ProtocolRuntimeStatus;
+      tcpHealth: ChannelHealth;
+      udpHealth: ChannelHealth;
+      throughputHistory?: ThroughputMeasurement[];
+      uploadThroughput: ThroughputMeasurement;
+      throughput: ThroughputMeasurement;
+    }
+    export interface ChannelHealth {
+      sequence?: number;
+      state: string;
+      consecutiveFailures: number;
+      consecutiveSuccesses: number;
+      samples?: HealthSample[];
+      latencySamples?: HealthSample[];
+    }
+    export interface HealthSample {
+      sequence?: number;
+      at: number;
+      ok: boolean;
+      timeout?: boolean;
+      rttMs?: number;
+      kind: string;
+      target?: string;
+    }
+    export interface ThroughputMeasurement {
+      direction?: string;
+      at: number;
+      ok: boolean;
+      target: string;
+      downloadMbps: number;
+      uploadMbps?: number;
+      bytes: number;
+      durationMs: number;
+      samples: number;
+      error?: string;
+    }
+    export interface SelectorCandidateStatus {
+      evidence: string;
+      circuit?: CircuitStatus;
+      nodeId: string;
+      eligible: boolean;
+      reason: string;
+      state: string;
+      rttMs: number;
+      jitterMs: number;
+      failureRate: number;
+      timeoutRate?: number;
+      healthSamples?: number;
+      samples: number;
+      downloadAt?: number;
+      uploadAt?: number;
+      downloadSamples?: number;
+      uploadSamples?: number;
+      downloadMbps: number;
+      uploadMbps: number;
+      activeConnections: number;
+      score: number;
+      components?: SelectorScoreComponents;
+    }
+    export interface SelectorDecision {
+      nodeId: string;
+      reason: string;
+      since: number;
+      candidates: SelectorCandidateStatus[];
+    }
+    export interface SelectorEvent {
+      at: number;
+      network: string;
+      from: string;
+      to: string;
+      reason: string;
+    }
+    export interface SelectorRuntimeStatus {
+      id: string;
+      revision: number;
+      tcp: SelectorDecision;
+      udp: SelectorDecision;
+      events: SelectorEvent[];
+      switches: number;
+      suppressed: number;
     }
     export interface ProtocolRuntimeStatus {
       state: string;
       lastError?: string;
       updatedAt: number;
+    }
+    export interface SelectorScoreComponents {
+      rtt: number;
+      download: number;
+      upload: number;
+      stability: number;
+      jitter: number;
+      load: number;
+    }
+    export interface TrafficWindow {
+      at: number;
+      windowMs: number;
+      uploadBps: string;
+      downloadBps: string;
+    }
+    export interface DialObservationWindow {
+      windowMs: number;
+      sampleLimit: number;
+      samples: number;
+      failures: number;
+      failureRate: number;
+    }
+    export interface SelectorPolicy {
+      circuit?: CircuitConfig;
+      probe?: ProbeSchedule;
+      periodicUpload?: SpeedSchedule;
+      periodicSpeed?: SpeedSchedule;
+      mode?: string;
+      candidates?: SelectorCandidate[];
+      preferredId?: string;
+      locked?: boolean;
+      fallback?: string;
+      returnToPreferred?: boolean;
+      latencyTarget?: string;
+      udpLatencyTarget?: string;
+      uploadTarget?: string;
+      uploadTest?: SpeedTestRequest;
+      speedTarget?: string;
+      speedTest?: SpeedTestRequest;
+      minSamples?: number;
+      failureThreshold?: number;
+      recoveryThreshold?: number;
+      maxAgeMs?: number;
+      maxRttMs?: number;
+      maxFailureRate?: number;
+      minImprovementMs?: number;
+      minImprovementPercent?: number;
+      minScoreImprovement?: number;
+      minHoldMs?: number;
+      cooldownMs?: number;
+      minDownloadMbps?: number;
+      minUploadMbps?: number;
+      weights: SelectorWeights;
+    }
+    export interface SelectorCandidate {
+      nodeId: string;
+      enabled: boolean;
+      priority: number;
+      weight: number;
+    }
+    export interface SelectorWeights {
+      rtt?: number;
+      download?: number;
+      upload?: number;
+      stability?: number;
+      jitter?: number;
+      load?: number;
+      rttReferenceMs?: number;
+      downloadReferenceMbps?: number;
+      uploadReferenceMbps?: number;
+      loadReference?: number;
+    }
+    export interface SpeedTestRequest {
+      direction?: string;
+      allowUpload?: boolean;
+      url: string;
+      maxBytes?: number;
+      durationMs?: number;
+      timeoutMs?: number;
+      dailyBudgetBytes?: number;
     }
     export type IPVersion = string;
     export interface Node {
@@ -766,6 +1093,7 @@ export namespace Go {
       name: string;
       nodeId: string;
       revision: number;
+      policy?: SelectorPolicy;
     }
     export interface SelectorList {
       items: Selector[];
@@ -1236,6 +1564,176 @@ export namespace Go {
     export type Simple = Fixed;
     export type HTTP2 = Concurrency;
     export type Mux = Concurrency;
+  }
+  export namespace recovery {
+    export interface Import {
+      id: string;
+      createdAt: string;
+      expiresAt: string;
+      size: number;
+      sha256: string;
+      state: string;
+      errorCode?: string;
+      previewId?: string;
+      preview?: RestorePreview;
+    }
+    export interface ImportActivateRequest {
+      id: string;
+      confirmPreviewId: string;
+      confirmBackupId: string;
+      confirmSourceInstanceId: string;
+      confirmTargetInstanceId: string;
+      confirmResultInstanceId: string;
+      confirmMaintenance: boolean;
+      confirmStartupChanges: boolean;
+      confirmSourceStopped: boolean;
+      confirmCredentialRevival: boolean;
+      confirmIdentityReplacement: boolean;
+      confirmCloneEnrollment: boolean;
+    }
+    export interface ImportPreviewRequest {
+      id: string;
+      mode: string;
+      identity?: string;
+      passphrase?: string;
+    }
+    export interface Policy {
+      enabled: boolean;
+      target: string;
+      recipient: string;
+      intervalMinutes: number;
+      timeoutMinutes: number;
+      keepCount: number;
+      keepDays: number;
+      includeHistory: boolean;
+      allowMaintenance: boolean;
+      protectUpdates?: boolean;
+      localPoints?: PointRetention;
+    }
+    export interface PointRetention {
+      enabled: boolean;
+      keepCount: number;
+      keepDays: number;
+    }
+    export interface PointCleanup {
+      deleted: string[];
+      protected: number;
+      retained: number;
+    }
+    export interface Backup {
+      id: string;
+      backupId?: string;
+      instanceId?: string;
+      createdAt: string;
+      completedAt?: string;
+      target: string;
+      state: string;
+      size: number;
+      sha256?: string;
+      objectKey?: string;
+      verification?: string;
+      errorCode?: string;
+      includesHistory: boolean;
+      uploadAttempts: number;
+      archiveCheck?: string;
+      archiveCheckedAt?: string;
+      localState?: string;
+      retrieval?: string;
+      retrievalErrorCode?: string;
+      retrievedAt?: string;
+      updatePoint?: boolean;
+    }
+    export interface RetrieveRequest {
+      id: string;
+      confirmDownload: boolean;
+      confirmReplace: boolean;
+    }
+    export interface VerifyRequest {
+      id: string;
+      identity?: string;
+      passphrase?: string;
+    }
+    export interface BackupRequest {
+      confirmMaintenance: boolean;
+    }
+    export interface BackupStatus {
+      supported: boolean;
+      reason?: string;
+      items: Backup[];
+    }
+    export interface Manifest {
+      format: string;
+      version: number;
+      id: string;
+      instanceId: string;
+      createdAt: string;
+      consistency: string;
+      includesHistory: boolean;
+      build: Build;
+      files: File[];
+      completeInventory?: boolean;
+      sourceDirectory?: string;
+      runtime?: Runtime;
+      requirements?: Requirement[];
+    }
+    export interface Build {
+      version: string;
+      commit: string;
+      platform: string;
+      architecture: string;
+      goVersion: string;
+    }
+    export interface File {
+      path: string;
+      role: string;
+      size: number;
+      sha256: string;
+      schemaVersion?: number;
+      sourcePath?: string;
+    }
+    export interface Runtime {
+      managementAuth?: boolean;
+      managementTLS: string;
+      managedCertificateId?: string;
+      certificateFile?: string;
+      keyFile?: string;
+      workingDirectory: string;
+      listenAddress?: string;
+      externalWebDirectory?: string;
+    }
+    export interface Requirement {
+      kind: string;
+      nodeId?: string;
+      path?: string;
+    }
+    export interface RestoreStatus {
+      pendingImportId?: string;
+      pendingPreviewId?: string;
+      result?: RestoreResult;
+    }
+    export interface RestorePreview {
+      manifest: Manifest;
+      mode: string;
+      targetInstanceId: string;
+      instanceId: string;
+      runtime: Runtime;
+      files: Change[];
+      warnings: string[];
+    }
+    export interface Change {
+      path: string;
+      replace: boolean;
+      install: boolean;
+    }
+    export interface RestoreResult {
+      backupId: string;
+      transactionId: string;
+      instanceId: string;
+      recoveryPoint: string;
+      state: string;
+      runtime: Runtime;
+      adoptStartup?: boolean;
+    }
   }
   export namespace resolver {
     export interface FakeIPEntry {
@@ -1847,6 +2345,32 @@ export namespace Go {
     }
   }
   export namespace update {
+    export interface CompatibilityStatus {
+      state: string;
+      reason: string;
+      currentConfiguration: number;
+      currentManagement: number;
+      targetConfiguration: number;
+      targetManagement: number;
+      databaseRecoveryRequired: boolean;
+    }
+    export interface RecoveryReadiness {
+      enabled: boolean;
+      supported: boolean;
+      ready: boolean;
+      reason: string;
+    }
+    export interface OperationStatus {
+      id: string;
+      phase: string;
+      backupJobId?: string;
+      backupId?: string;
+      targetSha256: string;
+      sourceSha256: string;
+      errorCode?: string;
+      startedAt: string;
+      completedAt?: string;
+    }
     export interface CheckResult {
       supported: boolean;
       channel: string;
@@ -1861,15 +2385,22 @@ export namespace Go {
       assetSha256: string;
       updateAvailable: boolean;
       reason: string;
+      compatibility?: CompatibilityStatus;
+      recovery?: RecoveryReadiness;
     }
     export interface CheckRequest {
       channel: string;
       includePrerelease: boolean;
     }
     export interface ApplyRequest {
+      operationId?: string;
       channel: string;
       targetTag: string;
       includePrerelease: boolean;
+      expectedSha256?: string;
+      confirmMaintenance: boolean;
+      confirmManualRecovery: boolean;
+      confirmNoRecoveryPoint: boolean;
     }
     export interface Status {
       running: boolean;
@@ -1878,6 +2409,7 @@ export namespace Go {
       bytesDownloaded: number;
       totalBytes: number;
       error: string;
+      operation?: OperationStatus;
     }
     export interface HistoryEntry {
       id: string;
@@ -1885,12 +2417,18 @@ export namespace Go {
       commit: string;
       size: number;
       savedAt: string;
+      compatibility?: CompatibilityStatus;
     }
     export interface HistoryResult {
       items: HistoryEntry[];
+      recovery?: RecoveryReadiness;
     }
     export interface RollbackRequest {
+      operationId?: string;
       id: string;
+      confirmMaintenance: boolean;
+      confirmManualRecovery: boolean;
+      confirmNoRecoveryPoint: boolean;
     }
   }
   export namespace usage {

@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { WorkspaceDetail, WorkspaceDirectory, WorkspaceLayout, WorkspaceSelectionMarker } from './workspace-layout';
 import { Button } from './v2/button';
 import { Input } from './v2/input';
@@ -41,7 +42,7 @@ export interface ResourceDirectoryItem {
     id: string;
     name: string;
     description?: ReactNode;
-    icon: ReactNode;
+    icon?: ReactNode;
     status?: ReactNode;
 }
 
@@ -64,29 +65,26 @@ export function ResourceWorkspace({ title, description, items, selectedId, editi
     const { t } = useTranslation('routing');
     const { t: uiT } = useTranslation('ui');
     const { t: commonT } = useTranslation('common');
-    const Heading = embedded ? 'h2' : 'h1';
     const pages = pagination ? Math.max(1, Math.ceil(pagination.total / pagination.pageSize)) : 1;
     return <>
-        <header className={clsx('mb-6 flex-wrap items-center justify-between gap-4', editing ? 'hidden md:flex' : 'flex')}>
-            <div className="min-w-0"><Heading className={clsx("tracking-tight text-ui-heading", embedded ? "text-base font-medium" : "sr-only text-2xl font-semibold lg:not-sr-only")}>{title}</Heading>
-                {description && <p className="mt-1 text-sm text-ui-muted">{description}</p>}</div>
-            <div className="flex flex-wrap items-center gap-2">{actions}<Button variant="primary" onClick={onCreate} disabled={createDisabled} className="gap-1.5"><Plus size={16} aria-hidden="true" />{uiT('add')}</Button></div>
-        </header>
+        {!embedded && <PageHeader title={title} description={description} className={editing ? 'max-md:hidden' : undefined} actions={<>{actions}<Button variant="primary" onClick={onCreate} disabled={createDisabled} className="gap-1.5"><Plus size={16} aria-hidden="true" />{uiT('add')}</Button></>} />}
         <WorkspaceLayout>
             <WorkspaceDirectory label={title} hiddenOnMobile={editing}>
                 <div className="mb-2 space-y-3 border-b border-ui-border/50 px-1 pb-3">
-                    <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-medium text-ui-heading">{title}</h2><span className="text-xs tabular-nums text-ui-muted">{pagination?.total ?? items.length}</span></div>
+                    <div className="flex items-center justify-between gap-2"><h2 className="min-w-0 truncate text-sm font-medium text-ui-heading">{title}</h2>
+                        <div className="flex shrink-0 items-center gap-2"><span className="text-xs tabular-nums text-ui-muted">{pagination?.total ?? items.length}</span>
+                            {embedded && <>{actions}<Button variant="primary" size="sm" onClick={onCreate} disabled={createDisabled} className="gap-1.5"><Plus size={14} aria-hidden="true" />{uiT('add')}</Button></>}</div></div>
                     {search && <div className="relative"><Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui-muted" aria-hidden="true" />
                         <Input type="search" aria-label={commonT('state.search')} placeholder={commonT('state.search')} value={search.value} onChange={event => search.onChange(event.target.value)} className="h-9 bg-ui-surface-muted/70 pl-9 text-xs" /></div>}
                 </div>
-                <ul className="m-0 max-h-[min(72vh,900px)] list-none space-y-1 overflow-y-auto overscroll-contain p-0">
+                <ul className="m-0 max-h-[min(72vh,900px)] list-none divide-y divide-ui-border/40 overflow-y-auto overscroll-contain p-0">
                     {items.map(item => <li key={item.id}><button type="button" aria-label={item.name} aria-current={selectedId === item.id ? 'true' : undefined}
-                        className={clsx('relative flex min-h-[52px] w-full min-w-0 items-center gap-2.5 rounded-ui-md px-2.5 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus', selectedId === item.id ? 'bg-ui-selected' : 'hover:bg-ui-surface-muted/75')}
+                        className={clsx('relative flex min-h-[52px] w-full min-w-0 items-center gap-2.5 rounded-ui-md px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus', selectedId !== item.id && 'hover:bg-ui-surface-muted/75')}
                         onClick={() => onSelect(item.id)}>
                         {selectedId === item.id && <WorkspaceSelectionMarker />}
-                        <span aria-hidden="true" className="shrink-0 text-ui-muted [&>svg]:size-4">{item.icon}</span>
-                        <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-ui-heading" title={item.name}>{item.name}</span>
-                            {item.description && <span className="mt-1 block truncate text-xs text-ui-muted">{item.description}</span>}</span>{item.status}
+                        {item.icon && <span aria-hidden="true" className="shrink-0 text-ui-muted [&>svg]:size-4">{item.icon}</span>}
+                        <span className="min-w-0 flex-1"><span className="flex min-w-0 items-center gap-2"><span className="min-w-0 flex-1 truncate text-sm font-medium text-ui-heading" title={item.name}>{item.name}</span>{item.status}</span>
+                            {item.description && <span className="mt-1 block truncate text-xs text-ui-muted">{item.description}</span>}</span>
                     </button></li>)}
                     {!items.length && <li className="px-3 py-8 text-center text-sm text-ui-muted">{uiT('noRecordsFound')}</li>}
                 </ul>

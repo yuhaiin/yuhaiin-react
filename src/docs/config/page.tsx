@@ -1,5 +1,6 @@
 import { useSecretIsolation } from "@/component/secret-values";
 import { useSession } from "@/auth/context";
+import { PageHeader } from '@/component/v2/page-header';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
 import { useTranslation } from 'react-i18next';
 
@@ -9,13 +10,11 @@ import { Card, CardBody, CardHeader, IconBox, MainContainer, SettingLabel } from
 import { SettingInputVertical, SettingRangeVertical, SwitchCard } from "@/component/v2/forms";
 import { Textarea } from "@/component/v2/input";
 import Loading from "@/component/v2/loading";
-import { Spinner } from "@/component/v2/spinner";
 import { GlobalToastContext } from "@/component/v2/toast";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import type { Settings } from "@/contract/settings";
 import { Cpu, Globe, NotebookText, Save, ShieldCheck } from "lucide-react";
 import { useContext, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
 import useSWR from "swr";
 import { useInterfaces } from "../../common/interfaces";
 
@@ -87,6 +86,7 @@ function ConfigComponent() {
 
     return (
         <MainContainer>
+            <PageHeader title={uiT("config")} />
             <fieldset disabled={saving} className="contents">
             <Card>
                 <CardHeader className="py-3">
@@ -253,22 +253,18 @@ function ConfigComponent() {
                 </CardBody>
             </Card>
 
-            {createPortal(
-                <div className="fixed bottom-10 right-10 z-[100] sm:bottom-12 sm:right-12">
-                    <Button permission="settings:write"
-                        variant="primary"
-                        size="icon"
-                        className="h-12 w-12 rounded-full shadow-ui-elevated"
-                        disabled={saving}
-                        onClick={handleSave}
-                        aria-label={uiT("saveAllSettings")}
-                        title={uiT("saveAllSettings")}
-                    >
-                        {saving ? <Spinner size="sm" /> : <Save size={20} />}
-                    </Button>
-                </div>,
-                document.body,
-            )}
+            {/* Sticky offsets exclude the page scroller's bottom padding, so cancel it to sit flush. */}
+            <div className="sticky bottom-[calc(-20px-env(safe-area-inset-bottom))] z-10 flex justify-end border-t border-ui-border bg-ui-bg pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+                <Button permission="settings:write"
+                    variant="primary"
+                    className="gap-1.5 max-sm:w-full"
+                    loading={saving}
+                    disabled={saving}
+                    onClick={handleSave}
+                >
+                    <Save size={16} aria-hidden="true" />{uiT("saveAllSettings")}
+                </Button>
+            </div>
             </fieldset>
         </MainContainer>
     );

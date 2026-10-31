@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { useHashSearch } from '@/hooks/useHashLocation';
 import { runDiagnostics } from '@/api/tools';
 import { Badge } from '@/component/v2/badge';
@@ -70,11 +71,8 @@ export default function DiagnosticsPage() {
     };
 
     return (
-        <div className="mx-auto max-w-5xl space-y-5">
-            <div>
-                <h1 className="flex items-center gap-2 text-2xl font-bold text-ui-heading"><Activity size={24} />{t('title')}</h1>
-                <p className="mt-2 text-sm text-ui-muted">{t('description')}</p>
-            </div>
+        <div className="max-w-5xl space-y-5">
+            <PageHeader title={t('title')} description={t('description')} />
             <Card noMargin>
                 <CardBody>
                     <form onSubmit={event => { event.preventDefault(); void run(); }} className="space-y-3">

@@ -36,7 +36,7 @@ export function OAuthLinks() {
     };
     const [previousScope,setPreviousScope] = useState(scope);
     if (previousScope !== scope) { setPreviousScope(scope); setSettingsOpen(false); setConfigured(false); setBusy(false); setFailure(''); }
-    return <Card><CardHeader><h2 className="font-medium">{t('oauthAccounts')}</h2><div className="flex flex-wrap gap-2">{admin && <Button disabled={busy} onClick={() => { setConfigured(false); setSettingsOpen(true); }}>{t('oauthSettings')}</Button>}<Button disabled={busy} onClick={() => void mutate()}>{t('refresh')}</Button></div></CardHeader><CardBody className="space-y-4">
+    return <Card><CardHeader><h2 className="m-0 font-medium">{t('oauthAccounts')}</h2><div className="flex flex-wrap gap-2">{admin && <Button disabled={busy} onClick={() => { setConfigured(false); setSettingsOpen(true); }}>{t('oauthSettings')}</Button>}<Button disabled={busy} onClick={() => void mutate()}>{t('refresh')}</Button></div></CardHeader><CardBody className="space-y-4">
         <p className="text-sm text-ui-muted">{t('oauthBindingHint')}</p>
         {(failure || error || providerError) && <p role="alert" className="text-sm text-ui-danger">{failure || t('requestFailed')}</p>}
         {configured && <p role="status" className="text-sm text-ui-muted">{t('oauthReadyToBind')}</p>}

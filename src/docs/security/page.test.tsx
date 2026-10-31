@@ -19,6 +19,7 @@ it.each([true, false])('keeps sessions and OAuth alongside permission-gated cred
         await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><SecurityPage /></SWRConfig>));
         const headings = [...host.querySelectorAll('h2')].map(heading => heading.textContent);
         expect(headings).toContain('sessions');
+        expect(headings).toContain('passkeys');
         expect(headings).toContain('oauthAccounts');
         expect(headings).toContain('proxyCredentials');
         expect(headings.includes('upstreamCredentials')).toBe(upstream);

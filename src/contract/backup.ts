@@ -8,6 +8,7 @@ export function normalizeBackupOption(value: Partial<BackupOption>): BackupOptio
     instanceName: value.instanceName ?? "",
     interval: value.interval ?? 0,
     lastBackupHash: value.lastBackupHash ?? "",
+    ...(value.recovery ? { recovery: { ...value.recovery } } : {}),
     s3: {
       enabled: value.s3?.enabled ?? false,
       accessKey: value.s3?.accessKey ?? "",

@@ -78,7 +78,7 @@ export function Hosts() {
                 {!data?.items.length && <li className="px-4 py-12 text-center text-sm text-ui-muted">{uiT('noRecordsFound')}</li>}
             </ul>
         </div>
-        <div className="mt-4 flex justify-end"><Pagination currentPage={page} pageSize={PAGE_SIZE} totalItems={data?.page.total ?? 0} onPageChange={setPage} /></div>
+        <div className="mt-4 flex justify-center"><Pagination currentPage={page} pageSize={PAGE_SIZE} totalItems={data?.page.total ?? 0} onPageChange={setPage} /></div>
         {editor && <HostEditor item={editor.item} creating={editor.creating} onClose={() => setEditor(undefined)} onSaved={() => { setEditor(undefined); void refreshPages(); ctx.Info(uiT('save')); }} />}
     </section>;
 }

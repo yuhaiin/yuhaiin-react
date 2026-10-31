@@ -74,7 +74,9 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
                     autoFakeIpRoute: true,
                     darwin: { experimentalBatch: false, batchSize: 32, pendingPackets: 32 },
                     skipMulticast: false,
-                    driver: "fdbased",
+                    driver: "channel",
+                    stack: "lightweight",
+                    congestionControl: "cubic",
                     portal: "",
                     portalV6: "",
                     routes: [],
@@ -83,6 +85,8 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
                     postDown: [],
                 },
             };
+        case "sstp":
+            return { type, sstp: { tls: { certificates: [], nextProtos: [], serverNameCertificate: {} }, serverAddress: "10.90.0.1", clientAddresses: ["10.90.0.2"], dns: "", mtu: 1400, maxSessions: 1 } };
         case "wireguard":
             return { type, wireguard: { privateKey: "", listenPort: 51820, addresses: ["10.66.0.1/24"], mtu: 1420, peers: [] } };
         case "krunlet":
@@ -130,13 +134,10 @@ export function createDefaultTransport(type: InboundTransport["type"] = "normal"
     }
 }
 
-// The backend accepts the lightweight stack only with the channel device driver.
-// Keep an omitted stack as the legacy default, including in serialized configurations.
-export function selectTunStack(value: TunProtocol, stack: "" | "lightweight", legacyDriver?: string): TunProtocol {
-    if (stack === "lightweight") {
-        return { ...value, stack, driver: "channel", congestionControl: value.congestionControl || "cubic" };
-    }
-    return { ...value, stack: undefined, congestionControl: undefined, outputScheduler: undefined, driver: legacyDriver ?? value.driver };
+// A persisted legacy TUN configuration is normalized before editing and
+// serialization. The backend no longer includes gVisor or tun2socket paths.
+export function normalizeTunProtocol(value: TunProtocol): TunProtocol {
+    return { ...value, stack: "lightweight", driver: "channel", congestionControl: value.congestionControl || "cubic" };
 }
 
 export function createDefaultInbound(id: string): Inbound {
@@ -153,10 +154,20 @@ export function createDefaultInbound(id: string): Inbound {
 // Select a protocol with its required listener and certificate setup, keeping a
 // usable existing certificate (and its persisted CA) rather than regenerating it.
 export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["type"]): Inbound {
-    if (!["http", "socks5", "mixed", "yuubinsya", "hysteria2"].includes(type)) inbound = { ...inbound, authentication: undefined };
+    if (!["http", "socks5", "mixed", "yuubinsya", "hysteria2", "sstp"].includes(type)) inbound = { ...inbound, authentication: undefined };
     const protocol = inbound.protocol.type === type
         ? inbound.protocol : createDefaultProtocol(type);
     if (["tun", "tproxy", "redir", "krunlet", "wireguard"].includes(type)) return normalizeInbound({ ...inbound, protocol, network: { type: "empty", empty: {} }, transports: [] });
+    if (type === "sstp") {
+        const host = inbound.network.type === "tcp_udp" && inbound.network.tcp_udp.host !== ":9002" ? inbound.network.tcp_udp.host : "127.0.0.1:8443";
+        return normalizeInbound({
+            ...inbound,
+            protocol,
+            authentication: inbound.authentication ?? { mode: "users", users: [] },
+            network: { type: "tcp_udp", tcp_udp: { host, udp: "tcp_only" } },
+            transports: [],
+        });
+    }
     if (type !== "hysteria2" && type !== "masque") {
         // A virtual inbound has no network listener; restore a normal listener
         // when switching back to a stream protocol.
@@ -186,7 +197,7 @@ export function normalizeInbound(value: Partial<Inbound> & { id?: string }): Inb
         network: value.network ?? createDefaultNetwork(),
         transports: Array.isArray(value.transports) ? value.transports : [],
         protocol: value.protocol?.type === "tun"
-            ? { ...value.protocol, tun: { ...value.protocol.tun, autoFakeIpRoute: value.protocol.tun.autoFakeIpRoute ?? false } }
+            ? { ...value.protocol, tun: normalizeTunProtocol({ ...value.protocol.tun, autoFakeIpRoute: value.protocol.tun.autoFakeIpRoute ?? false }) }
             : value.protocol ?? createDefaultProtocol(),
     };
 }

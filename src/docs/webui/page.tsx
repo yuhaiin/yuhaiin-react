@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { AccentPicker } from '@/component/accent-picker';
 import { useSession } from '@/auth/context';
 
@@ -256,6 +257,7 @@ function Setting() {
 
     return (
         <MainContainer>
+            <PageHeader title={t('ui:webui')} />
             {!session && <div className="mb-4"><Button asChild variant="ghost"><a href="#/login"><ArrowLeft size={16} />{t('auth:backToLogin')}</a></Button></div>}
             {/* 1. API Connection */}
             <ApiHostsCard />

@@ -1,0 +1,64 @@
+name: Enterprise reliability UI
+
+on:
+  pull_request:
+    paths:
+      - 'src/docs/certificates/**'
+      - 'src/api/certificates*.ts'
+      - 'src/i18n/resources/*/certificates.json'
+      - 'scripts/check-certificates.mjs'
+      - 'src/component/selector-*.tsx'
+      - 'src/component/speed-test-fields.tsx'
+      - 'src/docs/group/NodeRuntimeOverview*.tsx'
+      - 'src/api/node-observability.ts'
+      - 'src/docs/group/selectors/**'
+      - 'src/api/monitoring.ts'
+      - 'src/api/backup*.ts'
+      - 'src/docs/config/backup/**'
+      - 'src/i18n/resources/*/ui.json'
+      - 'src/api/generated*.ts'
+      - 'src/i18n/resources/*/routing.json'
+      - 'tests/msw/fixtures.js'
+      - 'scripts/check-reliability.mjs'
+      - '.github/workflows/reliability.yml'
+
+concurrency:
+  group: reliability-ui-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  monitoring-ui:
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '23'
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm run i18n:check
+      - run: npm run style:audit
+      - run: npm test -- --maxWorkers=2
+      - run: npm run build
+      - name: Selector desktop and mobile browser checks
+        run: |
+          npm run dev:msw -- --port 5187 > /tmp/reliability-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 100); do
+            if curl --fail --silent http://127.0.0.1:5187/ > /dev/null; then break; fi
+            sleep 0.1
+          done
+          CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable)" node scripts/check-reliability.mjs
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: reliability-browser
+          path: /tmp/yuhaiin-reliability-shots/
+          if-no-files-found: ignore

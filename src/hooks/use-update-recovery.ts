@@ -5,8 +5,8 @@ import { getApiUrl } from '@/common/apiurl';
 import type { Info } from '@/contract/settings';
 import type { UpdateCheck, UpdateStatus } from '@/contract/update';
 
-type PendingUpdate = { target: string; previous: Pick<Info, 'version' | 'commit' | 'buildTime'>; startedAt: number };
-export type RecoveryPhase = 'idle' | 'updating' | 'restarting' | 'complete' | 'timeout' | 'error';
+type PendingUpdate = { operationId?: string; expectedSha256?: string; requireReceipt?: boolean; target: string; previous: Pick<Info, 'version' | 'commit' | 'buildTime'>; startedAt: number };
+export type RecoveryPhase = 'idle' | 'updating' | 'restarting' | 'complete' | 'recovered' | 'timeout' | 'error';
 const storageKey = () => `yuhaiin:update-pending:${getApiUrl()}`;
 function readPending(): PendingUpdate | undefined {
     try {
@@ -30,7 +30,7 @@ export function isInstalledUpdate(info: Info, pending: PendingUpdate): boolean {
     return ['main', 'beta', 'stable', ''].includes(target);
 }
 
-export function useUpdateRecovery(onVerified: (info: Info) => void) {
+export function useUpdateRecovery(onVerified: (info: Info) => void, enabled = true) {
     const [pending, setPending] = useState<PendingUpdate | undefined>(readPending);
     const [phase, setPhase] = useState<RecoveryPhase>(() => readPending() ? 'restarting' : 'idle');
     const [status, setStatus] = useState<UpdateStatus>();
@@ -39,6 +39,7 @@ export function useUpdateRecovery(onVerified: (info: Info) => void) {
     const verified = useRef(onVerified);
     useEffect(() => { verified.current = onVerified; }, [onVerified]);
     useEffect(() => {
+        if (!enabled) return;
         let stopped = false;
         let timer: ReturnType<typeof setTimeout> | undefined;
         let request: AbortController | undefined;
@@ -54,19 +55,22 @@ export function useUpdateRecovery(onVerified: (info: Info) => void) {
                 if (stopped) return;
                 if (next) {
                     setStatus(next);
-                    if (next.error) {
+                    if (pending?.requireReceipt && next.operation && next.operation.id !== pending.operationId) {
+                        recoveryStartedAt ??= Date.now(); setPhase('restarting');
+                    }
+                    else if (next.error) {
                         setFailure(next.error); setPhase('error'); persist(); setPending(undefined); return;
                     }
-                    if (next.running) {
+                    if (next.running && (!pending?.requireReceipt || !next.operation || next.operation.id === pending.operationId)) {
                         recoveryStartedAt = undefined; setPhase('updating'); again = true;
                         if (!pending) {
                             const info = await getInfo(request.signal);
                             if (stopped) return;
-                            const resumed = { target: '', previous: { version: info.version, commit: info.commit, buildTime: info.buildTime }, startedAt: Date.now() };
+                            const resumed = { operationId: next.operation?.id, expectedSha256: next.operation?.targetSha256, requireReceipt: Boolean(next.operation), target: '', previous: { version: info.version, commit: info.commit, buildTime: info.buildTime }, startedAt: Date.now() };
                             persist(resumed); setPending(resumed);
                         }
                     }
-                    else if (!pending) { setPhase(previous => previous === 'updating' ? 'idle' : previous); }
+                    else if (!pending) { if (next.operation?.phase === 'recovered') { setFailure(''); setPhase('recovered'); } else setPhase(previous => previous === 'updating' ? 'idle' : previous); }
                     else if (pending) {
                         recoveryStartedAt ??= Date.now();
                         setPhase('restarting');
@@ -75,7 +79,14 @@ export function useUpdateRecovery(onVerified: (info: Info) => void) {
                 if (pending && !next?.running) {
                     const info = await getInfo(request.signal);
                     if (stopped) return;
-                    if (isInstalledUpdate(info, pending)) {
+                    const receipt = next?.operation;
+                    if (pending.requireReceipt && receipt && receipt.id === pending.operationId && receipt.phase === 'recovered' && receipt.targetSha256 === pending.expectedSha256) {
+                        persist(); setPending(undefined); setFailure(''); setPhase('recovered'); return;
+                    }
+                    const installed = pending.requireReceipt
+                        ? Boolean(receipt && receipt.id === pending.operationId && receipt.phase === 'completed' && pending.expectedSha256 && receipt.targetSha256 === pending.expectedSha256)
+                        : isInstalledUpdate(info, pending);
+                    if (installed) {
                         persist(); setPending(undefined); setPhase('complete'); verified.current(info); return;
                     }
                     setPhase('restarting');
@@ -88,16 +99,16 @@ export function useUpdateRecovery(onVerified: (info: Info) => void) {
         };
         void poll();
         return () => { stopped = true; clearTimeout(timer); request?.abort(); };
-    }, [pending, attempt]);
+    }, [pending, attempt, enabled]);
     return {
         phase, status, failure,
-        active: phase === 'updating' || phase === 'restarting',
-        beginTarget: (target: string, info: Info) => {
-            const next = { target, previous: { version: info.version, commit: info.commit, buildTime: info.buildTime }, startedAt: Date.now() };
+        active: enabled && (phase === 'updating' || phase === 'restarting'),
+        beginTarget: (target: string, info: Info, operationId?: string, expectedSha256?: string, requireReceipt = false) => {
+            const next = { target, operationId, expectedSha256, requireReceipt, previous: { version: info.version, commit: info.commit, buildTime: info.buildTime }, startedAt: Date.now() };
             persist(next); setPending(next); setFailure(''); setPhase('updating');
         },
-        begin: (update: UpdateCheck, info: Info) => {
-            const next = { target: update.targetVersion || update.targetTag, previous: { version: info.version, commit: info.commit, buildTime: info.buildTime }, startedAt: Date.now() };
+        begin: (update: UpdateCheck, info: Info, operationId?: string) => {
+            const next = { operationId, expectedSha256: update.assetSha256, requireReceipt: Boolean(update.recovery?.supported), target: update.targetVersion || update.targetTag, previous: { version: info.version, commit: info.commit, buildTime: info.buildTime }, startedAt: Date.now() };
             persist(next); setPending(next); setFailure(''); setPhase('updating');
         },
         fail: (message: string) => { persist(); setPending(undefined); setFailure(message); setPhase('error'); },

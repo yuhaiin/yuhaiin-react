@@ -3,8 +3,27 @@
 export type RPCOperation =
   | "backup.config.get"
   | "backup.config.put"
+  | "backup.recovery.create"
+  | "backup.recovery.delete"
+  | "backup.recovery.download"
+  | "backup.recovery.import.activate"
+  | "backup.recovery.import.discard"
+  | "backup.recovery.import.preview"
+  | "backup.recovery.import.upload"
+  | "backup.recovery.imports"
+  | "backup.recovery.restore.status"
+  | "backup.recovery.retrieve"
+  | "backup.recovery.retry"
+  | "backup.recovery.status"
+  | "backup.recovery.verify"
   | "backup.restore"
   | "backup.run"
+  | "certificate.delete"
+  | "certificate.provider.delete"
+  | "certificate.provider.save"
+  | "certificate.renew"
+  | "certificate.save"
+  | "certificates.list"
   | "connections"
   | "connections.close"
   | "connections.events"
@@ -40,7 +59,11 @@ export type RPCOperation =
   | "node.extra"
   | "node.get"
   | "node.latency"
+  | "node.monitoring.get"
+  | "node.monitoring.network.put"
+  | "node.monitoring.put"
   | "node.put"
+  | "node.speed"
   | "node.use"
   | "nodes.active"
   | "nodes.get"
@@ -54,6 +77,7 @@ export type RPCOperation =
   | "outbound.selector.delete"
   | "outbound.selector.put"
   | "outbound.selector.references"
+  | "outbound.selector.status"
   | "outbound.selectors.get"
   | "publish.delete"
   | "publish.put"
@@ -125,6 +149,7 @@ export type RPCOperation =
   | "traffic_control.put"
   | "traffic_control.status"
   | "update.apply"
+  | "update.cancel"
   | "update.check"
   | "update.history"
   | "update.rollback"
@@ -134,6 +159,12 @@ export type RPCOperation =
 type LegacyRoute = { method: string; pattern: string; operation: RPCOperation };
 
 const legacyRoutes: LegacyRoute[] = [
+  { method: "GET", pattern: "/api/v2/certificates", operation: "certificates.list" },
+  { method: "PUT", pattern: "/api/v2/certificates", operation: "certificate.save" },
+  { method: "DELETE", pattern: "/api/v2/certificates/{id}", operation: "certificate.delete" },
+  { method: "POST", pattern: "/api/v2/certificates/{id}/renew", operation: "certificate.renew" },
+  { method: "PUT", pattern: "/api/v2/certificates/providers", operation: "certificate.provider.save" },
+  { method: "DELETE", pattern: "/api/v2/certificates/providers/{id}", operation: "certificate.provider.delete" },
   { method: "POST", pattern: "/api/v2/gateway/filters/refresh", operation: "gateway.filters.refresh" },
   { method: "GET", pattern: "/api/v2/gateway/workspace", operation: "gateway.workspace.get" },
   { method: "PUT", pattern: "/api/v2/gateway/workspace", operation: "gateway.workspace.put" },
@@ -149,12 +180,26 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/update/status", operation: "update.status" },
   { method: "GET", pattern: "/api/v2/update/history", operation: "update.history" },
   { method: "POST", pattern: "/api/v2/update/rollback", operation: "update.rollback" },
+  { method: "POST", pattern: "/api/v2/update/cancel", operation: "update.cancel" },
   { method: "GET", pattern: "/api/v2/settings", operation: "settings.get" },
   { method: "PUT", pattern: "/api/v2/settings", operation: "settings.put" },
   { method: "GET", pattern: "/api/v2/backup/config", operation: "backup.config.get" },
   { method: "PUT", pattern: "/api/v2/backup/config", operation: "backup.config.put" },
   { method: "POST", pattern: "/api/v2/backup/run", operation: "backup.run" },
   { method: "POST", pattern: "/api/v2/backup/restore", operation: "backup.restore" },
+  { method: "GET", pattern: "/api/v2/backup/recovery", operation: "backup.recovery.status" },
+  { method: "POST", pattern: "/api/v2/backup/recovery", operation: "backup.recovery.create" },
+  { method: "GET", pattern: "/api/v2/backup/recovery/{id}/download", operation: "backup.recovery.download" },
+  { method: "DELETE", pattern: "/api/v2/backup/recovery/{id}", operation: "backup.recovery.delete" },
+  { method: "POST", pattern: "/api/v2/backup/recovery/{id}/retry", operation: "backup.recovery.retry" },
+  { method: "POST", pattern: "/api/v2/backup/recovery/{id}/verify", operation: "backup.recovery.verify" },
+  { method: "POST", pattern: "/api/v2/backup/recovery/{id}/retrieve", operation: "backup.recovery.retrieve" },
+  { method: "GET", pattern: "/api/v2/backup/recovery/imports", operation: "backup.recovery.imports" },
+  { method: "POST", pattern: "/api/v2/backup/recovery/imports", operation: "backup.recovery.import.upload" },
+  { method: "POST", pattern: "/api/v2/backup/recovery/imports/{id}/preview", operation: "backup.recovery.import.preview" },
+  { method: "DELETE", pattern: "/api/v2/backup/recovery/imports/{id}", operation: "backup.recovery.import.discard" },
+  { method: "POST", pattern: "/api/v2/backup/recovery/imports/{id}/activate", operation: "backup.recovery.import.activate" },
+  { method: "GET", pattern: "/api/v2/backup/recovery/restore", operation: "backup.recovery.restore.status" },
   { method: "POST", pattern: "/api/v2/tools/diagnostics", operation: "tools.diagnostics" },
   { method: "GET", pattern: "/api/v2/tools/interfaces", operation: "tools.interfaces" },
   { method: "GET", pattern: "/api/v2/tools/licenses", operation: "tools.licenses" },
@@ -216,6 +261,7 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "DELETE", pattern: "/api/v2/nodes/{id}", operation: "node.delete" },
   { method: "POST", pattern: "/api/v2/nodes/{id}/use", operation: "node.use" },
   { method: "POST", pattern: "/api/v2/nodes/status", operation: "nodes.status" },
+  { method: "POST", pattern: "/api/v2/nodes/{id}/speed", operation: "node.speed" },
   { method: "POST", pattern: "/api/v2/nodes/{id}/latency", operation: "node.latency" },
   { method: "POST", pattern: "/api/v2/nodes/{id}/close", operation: "node.close" },
   { method: "GET", pattern: "/api/v2/nodes/{id}/extra", operation: "node.extra" },
@@ -250,10 +296,14 @@ const legacyRoutes: LegacyRoute[] = [
   { method: "GET", pattern: "/api/v2/route/registries/catalogs", operation: "route.registries.catalogs" },
   { method: "PUT", pattern: "/api/v2/route/registries/{id}", operation: "route.registry.put" },
   { method: "DELETE", pattern: "/api/v2/route/registries/{id}", operation: "route.registry.delete" },
+  { method: "GET", pattern: "/api/v2/nodes/monitoring", operation: "node.monitoring.get" },
+  { method: "PUT", pattern: "/api/v2/nodes/monitoring", operation: "node.monitoring.put" },
+  { method: "PUT", pattern: "/api/v2/nodes/monitoring/network", operation: "node.monitoring.network.put" },
   { method: "GET", pattern: "/api/v2/outbound/selectors", operation: "outbound.selectors.get" },
   { method: "PUT", pattern: "/api/v2/outbound/selectors", operation: "outbound.selector.put" },
   { method: "DELETE", pattern: "/api/v2/outbound/selectors/{id}", operation: "outbound.selector.delete" },
   { method: "GET", pattern: "/api/v2/outbound/selectors/{id}/references", operation: "outbound.selector.references" },
+  { method: "GET", pattern: "/api/v2/outbound/selectors/{id}/status", operation: "outbound.selector.status" },
   { method: "GET", pattern: "/api/v2/route/rules", operation: "route.rules.get" },
   { method: "POST", pattern: "/api/v2/route/rules", operation: "route.rules.post" },
   { method: "POST", pattern: "/api/v2/route/rules/priority", operation: "route.rules.priority" },

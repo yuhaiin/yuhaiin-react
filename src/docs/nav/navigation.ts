@@ -1,4 +1,4 @@
-import { Activity, ArrowLeftRight, BookOpen, CircleHelp, Download, ExternalLink, FileClock, FileText, Filter, Gauge, History, House, Layers, ListFilter, Network, Radio, ScrollText, Settings, Share2, ShieldBan, SlidersHorizontal, Upload, Waypoints, Wrench, type LucideIcon } from 'lucide-react';
+import { Activity, ArrowLeftRight, BookOpen, CircleHelp, Cpu, DatabaseBackup, ExternalLink, FileClock, FileText, Filter, FlaskConical, Gauge, Globe, History, House, Info, Layers, ListFilter, LogIn, MonitorCog, Radio, Router, Rss, ScrollText, Server, Settings, Share2, ShieldBan, SlidersHorizontal, Stethoscope, UserCog, Waypoints, Wrench, type LucideIcon } from 'lucide-react';
 
 type Label = { namespace: 'nav' | 'ui' | 'routing'; key: string };
 export interface NavigationLink { path: string; label: Label; icon: LucideIcon; divider?: boolean }
@@ -21,37 +21,38 @@ export const navigationSections: NavigationSection[] = [
     ] },
     { label: nav('trafficConfiguration'), items: [
         { label: routing('destinationsTask'), icon: ExternalLink, items: [
-            { path: '/docs/group', label: routing('nodesTask'), icon: Network },
+            { path: '/docs/group', label: routing('nodesTask'), icon: Server },
             { path: '/docs/group/selectors', label: routing('selectorsTitle'), icon: Waypoints },
-            { path: '/docs/group/subscribe', label: ui('subscribe'), icon: Download },
+            { path: '/docs/group/subscribe', label: ui('subscribe'), icon: Rss },
             { path: '/docs/group/publish', label: ui('publish'), icon: Share2, divider: true },
             { path: '/docs/group/activates', label: ui('activeNodes'), icon: Radio },
         ] },
         { label: routing('routingTask'), icon: Filter, items: [
             { path: '/docs/bypass', label: nav('routeRules'), icon: ListFilter },
             { path: '/docs/bypass/list', label: routing('sharedMatchingData'), icon: Layers },
-            { path: '/docs/bypass/test', label: ui('testRoute'), icon: Waypoints },
+            { path: '/docs/bypass/test', label: ui('testRoute'), icon: FlaskConical },
         ] },
-        { path: '/docs/gateway', label: nav('gateway'), icon: Network },
+        { path: '/docs/gateway', label: nav('gateway'), icon: Router },
         { path: '/docs/traffic-control', label: nav('trafficControl'), icon: Gauge },
-        { path: '/docs/inbound', label: routing('trafficEntryTask'), icon: Download },
-        { path: '/docs/bypass/resolver', label: routing('dnsTask'), icon: Network },
+        { path: '/docs/inbound', label: routing('trafficEntryTask'), icon: LogIn },
+        { path: '/docs/bypass/resolver', label: routing('dnsTask'), icon: Globe },
     ] },
     { label: nav('system'), items: [
-        { path: '/docs/security', label: nav('accountSecurity'), icon: Settings },
+        { path: '/docs/security', label: nav('accountSecurity'), icon: UserCog },
+        { path: '/docs/certificates', label: nav('certificates'), icon: ShieldBan },
         { label: nav('diagnostics'), icon: Wrench, items: [
-            { path: '/docs/diagnostics', label: ui('networkDiagnostics'), icon: Activity },
+            { path: '/docs/diagnostics', label: ui('networkDiagnostics'), icon: Stethoscope },
             { path: '/docs/config/log', label: ui('log'), icon: ScrollText },
-            { path: '/docs/config/pprof', label: ui('pprof'), icon: Gauge },
+            { path: '/docs/config/pprof', label: ui('pprof'), icon: Cpu },
         ] },
         { label: nav('setting'), icon: Settings, items: [
             { path: '/docs/config', label: ui('config'), icon: SlidersHorizontal },
-            { path: '/docs/webui', label: ui('webui'), icon: Settings },
-            { path: '/docs/config/backup', label: ui('backup'), icon: Upload },
+            { path: '/docs/webui', label: ui('webui'), icon: MonitorCog },
+            { path: '/docs/config/backup', label: ui('backup'), icon: DatabaseBackup },
         ] },
         { label: nav('help'), icon: CircleHelp, items: [
             { path: '/docs/config/documents', label: ui('documents'), icon: BookOpen },
-            { path: '/docs/config/about', label: ui('about'), icon: CircleHelp },
+            { path: '/docs/config/about', label: ui('about'), icon: Info },
             { path: '/docs/config/licenses', label: ui('licenses'), icon: FileText },
         ] },
     ] },

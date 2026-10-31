@@ -33,7 +33,7 @@ export function Users() {
         if (user.id === getSession()?.principal.userId) { setPendingEnrollment(enrollment.secret); clearSession(); }
         else setIssued(enrollment);
     });
-    return <Card><CardHeader><h2 className="font-medium">{t('users')}</h2><Button disabled={busy} onClick={() => void mutate()}>{t('refresh')}</Button></CardHeader>
+    return <Card><CardHeader><h2 className="m-0 font-medium">{t('users')}</h2><Button disabled={busy} onClick={() => void mutate()}>{t('refresh')}</Button></CardHeader>
         <CardBody className="space-y-5">
             <form onSubmit={create} className="flex flex-wrap items-end gap-3">
                 <label className="min-w-0 flex-1 space-y-2"><span>{t('loginName')}</span><Input value={name} onChange={event => setName(event.target.value)} pattern="[A-Za-z0-9_.-]{1,64}" required maxLength={64} disabled={busy} /></label>
@@ -56,7 +56,7 @@ function UserRow({ user, busy, lastAdmin, onSave, onReset, onDelete }: { user: U
     const { t } = useTranslation('auth');
     const [name, setName] = useState(user.login); const [role, setRole] = useState(user.role); const [disabled, setDisabled] = useState(user.disabled);
     return <section className="space-y-3 rounded-ui-md border border-ui-border p-4" aria-label={user.login}>
-        <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-medium">{user.login}</h3><span className="text-xs text-ui-muted">{t(user.disabled ? 'disabled' : user.enrolled ? 'active' : 'pending')}</span></div>
+        <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="m-0 font-medium">{user.login}</h3><span className="text-xs text-ui-muted">{t(user.disabled ? 'disabled' : user.enrolled ? 'active' : 'pending')}</span></div>
         <p className="break-all text-xs text-ui-muted">{user.id}</p>
         <form className="flex flex-wrap items-end gap-3" onSubmit={event => { event.preventDefault(); onSave({ login: name, role, disabled }); }}>
             <label className="min-w-0 flex-1 space-y-2"><span>{t('loginName')}</span><Input value={name} onChange={event => setName(event.target.value)} pattern="[A-Za-z0-9_.-]{1,64}" required disabled={busy} /></label>

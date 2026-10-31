@@ -1,3 +1,4 @@
+import { PageHeader } from '@/component/v2/page-header';
 import { useTranslation } from 'react-i18next';
 import { usePagination } from "@/hooks/use-pagination";
 
@@ -117,15 +118,11 @@ function History() {
                 </ModalContent>
             </Modal>
 
-            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-                <div>
-                    <h1 className="mt-1 text-xl font-semibold leading-tight text-ui-heading sm:text-2xl">{uiT("connectionHistory")}</h1>
-                    <div className="mt-1 flex items-center text-xs text-ui-muted">
-                        <Info className="mr-1.5" size={14} />
-                        <span>{uiT("historyCount", { count: values.length })}</span>
-                    </div>
-                </div>
-                <div className="flex flex-wrap items-center justify-end gap-2 rounded-ui-lg border border-ui-border bg-ui-surface-muted/50 px-2 py-2">
+            <PageHeader
+                title={uiT("connectionHistory")}
+                className="mb-4"
+                description={<span className="flex items-center text-xs"><Info className="mr-1.5" size={14} /><span>{uiT("historyCount", { count: values.length })}</span></span>}
+                actions={<div className="flex flex-wrap items-center justify-end gap-2 rounded-ui-lg border border-ui-border bg-ui-surface-muted/50 px-2 py-2">
                     <FilterSearch onEnter={setFilter} size="sm" />
                     <Dropdown>
                         <DropdownTrigger asChild>
@@ -163,8 +160,8 @@ function History() {
                             </ToggleGroup>
                         </DropdownContent>
                     </Dropdown>
-                </div>
-            </div>
+                </div>}
+            />
 
             <CardList
                 items={paginatedItems}

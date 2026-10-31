@@ -12,6 +12,8 @@ import { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR, { useSWRConfig } from 'swr';
 
+import { SelectorPolicyEditor, SelectorLiveStatus } from './selector-policy-editor';
+
 import { NodeModal } from '@/docs/node/modal';
 
 const emptySelector = (): Selector => ({ id: "", name: "", nodeId: "", revision: 0 });
@@ -54,6 +56,8 @@ export function SelectorEditor({ item, onClose, onSaved, onDeleted, presentation
             <NodeSelect label={t('selectedNode')} value={value.nodeId} disabled={pending} onChange={node => { void refreshCache(['/api/v2/nodes/detail', node.id], node, { revalidate: false }); setValue(prev => ({ ...prev, nodeId: node.id })); }} />
         </div>
         <Button size="sm" variant="outline-secondary" onClick={() => setCreatingNode(true)}><Plus size={16} />{t("addNode")}</Button>
+        <SelectorPolicyEditor value={value} onChange={setValue} />
+        {item && <SelectorLiveStatus key={item.id} value={item} />}
         {refs && <div className="space-y-2 text-sm"><details><summary className="cursor-pointer text-ui-muted">{t('impact', { count: refs.items.length })}</summary><ul className="mt-2 max-h-48 overflow-auto list-disc pl-5">{refs.items.map(ref => <li key={`${ref.kind}:${ref.id}`}>{ref.name}</li>)}</ul></details></div>}
         {refsError && <p role="alert" className="text-sm text-ui-danger">{t('loadFailed')}</p>}
         {actionError && <p role="alert" className="text-sm text-ui-danger">{actionError}</p>}

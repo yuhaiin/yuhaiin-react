@@ -107,6 +107,13 @@ async function render() {
     ),
   );
 }
+
+it("explains why an imported disabled Gateway blocks selected traffic", async () => {
+  config.gateways[0].enabled = false;
+  config.gateways[0].rejectWhenDisabled = true;
+  await render();
+  expect(host.textContent).toContain("importedGatewayGuard");
+});
 async function click(label: string) {
   const button = [...host.querySelectorAll<HTMLButtonElement>("button")].find(
     (button) => button.textContent?.trim() === label || button.getAttribute("aria-label") === label,
