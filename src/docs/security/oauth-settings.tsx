@@ -67,8 +67,8 @@ function ProviderSettings({ provider, settings, creating, updated, configured, c
         } catch (error) { if (scope === authScope() && !controller.signal.aborted) setError(t((error as { code?: number }).code === 409 ? 'oidc.conflict' : 'requestFailed')); }
         finally { if (scope === authScope() && !controller.signal.aborted) setBusy(false); }
     };
-    const disable = async () => {
-        if (!writable || busy || !await confirmAction(t('disableOAuthConfirm', { provider: label })) || scope !== authScope()) return;
+    const remove = async () => {
+        if (!writable || busy || !await confirmAction(t('deleteOAuthConfirm', { provider: label })) || scope !== authScope()) return;
         const controller = beginRequest();
         setBusy(true); setError('');
         try { await authAPI('DELETE', `/oauth/settings/${provider}`, undefined, controller.signal); if (scope !== authScope() || controller.signal.aborted) return; setSecret(''); await updated(); }
@@ -90,13 +90,13 @@ function ProviderSettings({ provider, settings, creating, updated, configured, c
         <label className="block space-y-2"><span>{t('oauthClientSecret')}</span><Input type="password" required={!generic && !settings?.secretConfigured} maxLength={2048} autoComplete="off" disabled={!writable || !manageSecret || busy || clearSecret} value={secret} onChange={event => setSecret(event.target.value)} placeholder={settings?.secretConfigured ? t('oauthKeepSecret') : ''} /></label>
         {generic && settings?.secretConfigured && manageSecret && <label className="flex items-center gap-2"><input type="checkbox" disabled={!writable || busy} checked={clearSecret} onChange={event => setClearSecret(event.target.checked)} />{t('oidc.publicClient')}</label>}
         <label className="block space-y-2"><span>{t('oauthRedirectUrl')}</span><Input type="url" required maxLength={2048} disabled={!writable || busy} value={redirectUrl} onChange={event => setRedirectUrl(event.target.value)} /></label>
-        {generic && <label className="flex items-center gap-2"><input type="checkbox" disabled={!writable || busy} checked={enabled} onChange={event => setEnabled(event.target.checked)} />{t('oidc.enabled')}</label>}
+        <label className="flex items-center gap-2"><input type="checkbox" disabled={!writable || busy} checked={enabled} onChange={event => setEnabled(event.target.checked)} />{t('oidc.enabled')}</label>
         <div className="flex flex-wrap gap-2">
             {writable && <><Button type="submit" variant="primary" permission="security:write" loading={busy}>{t('save')}</Button><StageChangeButton disabled={busy} request={{ store: "identity", kind: "oidc-provider", resourceId: provider, payload: { provider, clientId, clientSecret: clearSecret ? "" : secret, redirectUrl, revision: settings?.revision ?? 0, enabled, ...(generic ? { issuer, name, clearSecret } : {}) } }} onCommitted={async () => { setSecret(""); setClearSecret(false); await updated(); }} /></>}
-            {settings && <><Button disabled={busy} onClick={() => void check()}>{t('oidc.check')}</Button>{writable && <Button permission="security:write" variant="outline-danger" disabled={busy} onClick={() => void disable()}>{t('disableOAuth')}</Button>}</>}
-            {cancel && <Button disabled={busy} onClick={cancel}>{t('cancel')}</Button>}
+            {settings && <><Button type="button" disabled={busy} onClick={() => void check()}>{t('oidc.check')}</Button>{writable && <Button type="button" permission="security:write" variant="outline-danger" disabled={busy} onClick={() => void remove()}>{t('deleteOAuth')}</Button>}</>}
+            {cancel && <Button type="button" disabled={busy} onClick={cancel}>{t('cancel')}</Button>}
         </div>
         {status && <p role="status">{t(!status.enabled ? 'oidc.disabled' : status.ready ? 'oidc.available' : 'oidc.unavailable')}</p>}
-        {error && <div><p role="alert" className="text-sm text-ui-danger">{error}</p><Button disabled={busy} onClick={async () => { if (await confirmAction(t('common:form.discardChanges')) && scope === authScope()) await updated(); }}>{t('refresh')}</Button></div>}{saved && <p role="status">{t('oauthSaved')}</p>}
+        {error && <div><p role="alert" className="text-sm text-ui-danger">{error}</p><Button type="button" disabled={busy} onClick={async () => { if (await confirmAction(t('common:form.discardChanges')) && scope === authScope()) await updated(); }}>{t('refresh')}</Button></div>}{saved && <p role="status">{t('oauthSaved')}</p>}
     </form>;
 }

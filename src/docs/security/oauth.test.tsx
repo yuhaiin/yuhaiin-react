@@ -140,3 +140,29 @@ it('aborts a pending OIDC save when its editor unmounts and ignores a late respo
     await act(async()=>complete(Response.json({})));
     expect(configured).not.toHaveBeenCalled();expect(fetch.mock.calls.filter(([,init])=>init.method==='POST')).toHaveLength(1);
 });
+it('suspends a built-in provider without deleting it and names deletion as destructive', async () => {
+    authenticate();
+    const confirmation = vi.mocked((await import('@/component/v2/confirmation')).confirmAction);
+    const bodies: Array<{ method?: string; body: Record<string, unknown> }> = [];
+    const fetch = vi.fn(async (url: URL, init: RequestInit) => {
+        if (init.method === 'PUT' || init.method === 'DELETE') { bodies.push({ method: init.method, body: init.body ? JSON.parse(String(init.body)) : {} }); return Response.json({}); }
+        if (url.pathname.endsWith('/providers')) return Response.json(['github']);
+        return Response.json([{ provider: 'github', clientId: 'client-id', secretConfigured: true, redirectUrl: 'https://controller.example/api/v2/auth/oauth/github/callback', enabled: true, revision: 1 }]);
+    }); vi.stubGlobal('fetch', fetch);
+    const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
+    try {
+        await act(async () => root.render(<SWRConfig value={{ provider: () => new Map() }}><OAuthSettingsPanel /></SWRConfig>));
+        const form = host.querySelector<HTMLFormElement>('form[aria-label="GitHub"]')!;
+        const enabled = form.querySelector<HTMLInputElement>('input[type="checkbox"]')!;
+        expect(enabled.checked).toBe(true);
+        await act(async () => enabled.click());
+        await act(async () => form.requestSubmit());
+        expect(bodies).toEqual([{ method: 'PUT', body: expect.objectContaining({ enabled: false }) }]);
+        expect(confirmation).not.toHaveBeenCalled();
+        await act(async () => [...host.querySelectorAll<HTMLButtonElement>('button')].find(button => button.textContent === 'oidc.check')!.click());
+        expect(bodies).toHaveLength(1);
+        await act(async () => [...host.querySelectorAll<HTMLButtonElement>('button')].find(button => button.textContent === 'deleteOAuth')!.click());
+        expect(confirmation).toHaveBeenCalledWith('deleteOAuthConfirm');
+        expect(bodies.map(item => item.method)).toEqual(['PUT', 'DELETE']);
+    } finally { act(() => root.unmount()); host.remove(); }
+});
