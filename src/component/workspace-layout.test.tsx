@@ -16,26 +16,20 @@ async function render(key: string, loading: boolean) {
     await act(async () => root.render(<WorkspaceDetail transitionKey={key}>{loading ? <Loading /> : <p>{key}</p>}</WorkspaceDetail>));
 }
 
-it('replaces the outgoing editor without stacking both editors', async () => {
+it('swaps editors without stacking, hides fast loads and reveals slow-loading feedback', async () => {
+    vi.useFakeTimers();
     await render('a', false);
     await render('b', false);
     expect(details()).toHaveLength(1);
     expect(host.textContent).toBe('b');
     expect(opacity()).toBe('');
-});
-
-it('hides the next editor until it has loaded', async () => {
-    await render('a', false);
-    await render('b', true);
+    await render('c', true);
     expect(opacity()).toBe('0');
-    await render('b', false);
+    await render('c', false);
     expect(opacity()).toBe('');
-});
-
-it('shows the spinner when loading is slow', async () => {
-    vi.useFakeTimers();
-    await render('a', false);
-    await render('b', true);
+    expect(details()).toHaveLength(1);
+    expect(host.textContent).toBe('c');
+    await render('d', true);
     expect(opacity()).toBe('0');
     await act(async () => { await vi.advanceTimersByTimeAsync(200); });
     expect(opacity()).toBe('');

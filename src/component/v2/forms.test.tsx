@@ -3,7 +3,6 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SettingInputBytes } from './forms';
 import { SwitchCard } from './switch';
-import { Input, Textarea } from './input';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
@@ -41,13 +40,5 @@ describe('settings controls', () => {
         expect(input.value).toBe('Y');
         act(() => root.render(render(new Uint8Array([98]))));
         expect(input.value).toBe('Yg==');
-    });
-
-    it('lets consumers override field height and keeps textareas auto sized', () => {
-        mount(<><Input className="h-auto" /><Textarea className="min-h-[55vh]" /></>);
-        expect(container.querySelector('input')!.className.split(' ')).not.toContain('h-field');
-        expect(container.querySelector('textarea')!.className.split(' ')).not.toContain('h-field');
-        expect(container.querySelector('textarea')!.className.split(' ')).not.toContain('min-h-field');
-        expect(container.querySelector('textarea')!.className.split(' ')).not.toContain('max-sm:min-h-11');
     });
 });

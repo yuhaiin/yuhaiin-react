@@ -5,13 +5,14 @@ import { useAsyncAction, useEditorDraft } from './use-editor-draft';
 
 const create = () => ({ name: '' });
 
-it('retains edits during refresh and clears drafts when the selected record changes', () => {
+it('protects dirty edits, accepts refreshes after saving and resets when the record changes', () => {
     function Probe({ id, data }: { id: string; data?: { name: string } }) {
         const draft = useEditorDraft(id, data, create);
         return <>
             <span>{draft.value.name}</span>
             <output data-testid="dirty">{String(draft.dirty)}</output>
             <button onClick={() => draft.setValue({ name: 'Edited' })}>edit</button>
+            <button onClick={() => draft.commit({ name: 'Saved' })}>save</button>
         </>;
     }
     const host = document.createElement('div');
@@ -22,6 +23,12 @@ it('retains edits during refresh and clears drafts when the selected record chan
         act(() => root.render(<Probe id="a" data={{ name: 'Refreshed' }} />));
         expect(host.querySelector('span')?.textContent).toBe('Edited');
         expect(host.querySelector('[data-testid="dirty"]')?.textContent).toBe('true');
+        act(() => host.querySelectorAll('button')[1].click());
+        expect(host.querySelector('[data-testid="dirty"]')?.textContent).toBe('false');
+        expect(host.querySelector('span')?.textContent).toBe('Saved');
+        act(() => root.render(<Probe id="a" data={{ name: 'Refreshed after save' }} />));
+        expect(host.querySelector('span')?.textContent).toBe('Refreshed after save');
+        act(() => host.querySelector('button')!.click());
         act(() => root.render(<Probe id="b" />));
         expect(host.querySelector('span')?.textContent).toBe('');
         expect(host.querySelector('[data-testid="dirty"]')?.textContent).toBe('false');
@@ -50,32 +57,6 @@ it('rejects duplicate submission while an action is pending and unlocks after fa
         act(() => root.render(<Probe execute={next} />));
         await act(async () => { host.querySelector('button')!.click(); });
         expect(next).toHaveBeenCalledTimes(1);
-    } finally {
-        act(() => root.unmount());
-    }
-});
-
-it('treats a saved draft as pristine and accepts the next server refresh', () => {
-    function Probe({ data }: { data: { name: string } }) {
-        const draft = useEditorDraft('a', data, create);
-        return <>
-            <span>{draft.value.name}</span>
-            <output data-testid="dirty">{String(draft.dirty)}</output>
-            <button onClick={() => draft.setValue({ name: 'Edited' })}>edit</button>
-            <button onClick={() => draft.commit({ name: 'Saved' })}>save</button>
-        </>;
-    }
-    const host = document.createElement('div');
-    const root = createRoot(host);
-    try {
-        const server = { name: 'Original' };
-        act(() => root.render(<Probe data={server} />));
-        act(() => host.querySelectorAll('button')[0].click());
-        act(() => host.querySelectorAll('button')[1].click());
-        expect(host.querySelector('[data-testid="dirty"]')?.textContent).toBe('false');
-        expect(host.querySelector('span')?.textContent).toBe('Saved');
-        act(() => root.render(<Probe data={{ name: 'Refreshed' }} />));
-        expect(host.querySelector('span')?.textContent).toBe('Refreshed');
     } finally {
         act(() => root.unmount());
     }

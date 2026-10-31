@@ -42,7 +42,7 @@ async function tab(label: string) {
     });
 }
 
-it('separates resolver editing from query policies and the listener', async () => {
+it('switches between resolver editing, query policies, the listener and FakeIP mappings', async () => {
     await render();
     expect(host.querySelector('input[aria-label="Editor name"]')).not.toBeNull();
     expect(host.textContent).not.toContain('Query policies');
@@ -52,6 +52,8 @@ it('separates resolver editing from query policies and the listener', async () =
     expect(host.querySelector('input[aria-label="Editor name"]')).toBeNull();
     await tab('dnsServerTab');
     expect(host.textContent).toContain('DNS listener');
+    await tab('fakeIPTab');
+    expect(host.textContent).toContain('FakeIP mappings');
 });
 
 it('guards leaving a tab with an unsaved resolver draft', async () => {
@@ -71,9 +73,3 @@ it('guards leaving a tab with an unsaved resolver draft', async () => {
 });
 
 vi.mock('@/component/v2/confirmation', () => ({ confirmAction: vi.fn(async () => true) }));
-
-it('opens the FakeIP mappings tab', async () => {
-    await render();
-    await tab('fakeIPTab');
-    expect(host.textContent).toContain('FakeIP mappings');
-});

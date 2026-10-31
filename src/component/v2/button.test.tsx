@@ -29,25 +29,6 @@ it('keeps the action label mounted and blocks duplicate clicks while loading', (
     } finally { act(() => root.unmount()); host.remove(); }
 });
 
-it('blocks disabled actions and disabled slotted links without confusing them with pending actions', () => {
-    const host = document.createElement('div'); document.body.append(host);
-    const root = createRoot(host);
-    const click = vi.fn();
-    try {
-        act(() => root.render(<><Button variant="destructive" disabled onClick={click}>Delete entry</Button><Button asChild disabled><a href="#disabled" onClick={click}>Unavailable link</a></Button></>));
-        const button = host.querySelector('button')!;
-        expect(button.disabled).toBe(true);
-        expect(button.getAttribute('aria-busy')).toBeNull();
-        act(() => button.click());
-        const link = host.querySelector('a')!;
-        expect(link.getAttribute('aria-disabled')).toBe('true');
-        const event = new MouseEvent('click', { bubbles: true, cancelable: true });
-        act(() => link.dispatchEvent(event));
-        expect(event.defaultPrevented).toBe(true);
-        expect(click).not.toHaveBeenCalled();
-    } finally { act(() => root.unmount()); host.remove(); }
-});
-
 it('keeps disabled variants distinct from the pending state, including icon and slotted actions', () => {
     const host = document.createElement('div'); document.body.append(host);
     const root = createRoot(host);
@@ -77,7 +58,9 @@ it('keeps disabled variants distinct from the pending state, including icon and 
         const link = host.querySelector('a')!;
         expect(link.dataset.variant).toBe('ghost');
         expect(link.getAttribute('aria-disabled')).toBe('true');
-        act(() => link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })));
+        const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+        act(() => link.dispatchEvent(event));
+        expect(event.defaultPrevented).toBe(true);
         expect(click).not.toHaveBeenCalled();
     } finally { act(() => root.unmount()); host.remove(); }
 });

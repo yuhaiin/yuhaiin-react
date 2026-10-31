@@ -423,40 +423,7 @@ it("never changes the Gateway fallback merely to create a backend pool", async (
   expect(api.saveGatewayConfig).not.toHaveBeenCalled();
 });
 
-
-it("initializes the stream idle timeout to disabled", () => {
-  expect(newUpstream().streamIdleTimeoutMs).toBe(0);
-});
-
-it("preserves a configured stream idle timeout when editing another upstream field", async () => {
-  const pool = {
-    ...newUpstream(),
-    id: "pool-a",
-    name: "Pool A",
-    streamIdleTimeoutMs: 45000,
-  };
-  config.upstreams = [pool];
-  config.gateways[0].default = {
-    ...config.gateways[0].default,
-    type: "reverse_proxy",
-    upstream: pool.id,
-  };
-  await render();
-  await selectGatewayItem("Pool A");
-  expect(input("streamIdleTimeoutMs").value).toBe("45000");
-  edit(input("name"), "Renamed pool");
-  await click("saveActivate");
-  const saved = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
-  expect(saved.upstreams).toEqual([
-    expect.objectContaining({
-      id: pool.id,
-      name: "Renamed pool",
-      streamIdleTimeoutMs: 45000,
-    }),
-  ]);
-});
-
-it("edits and saves the stream idle timeout independently of request timeout", async () => {
+it("defaults stream idle timeout to disabled, saves it independently and retains it during other edits", async () => {
   const pool = {
     ...newUpstream(),
     id: "pool-a",
@@ -482,6 +449,15 @@ it("edits and saves the stream idle timeout independently of request timeout", a
       streamIdleTimeoutMs: 30000,
     }),
   );
+  edit(input("name"), "Renamed pool");
+  await click("saveActivate");
+  const renamed = api.saveGatewayConfig.mock.lastCall?.[0] as Config;
+  expect(renamed.upstreams).toEqual([
+    expect.objectContaining({
+      id: pool.id, name: "Renamed pool", requestTimeoutMs: 5000,
+      idleTimeoutMs: 90000, streamIdleTimeoutMs: 30000,
+    }),
+  ]);
 });
 
 it("creates a backend pool only for an explicitly selected reverse proxy action", async () => {

@@ -8,6 +8,8 @@ export default defineConfig({
         },
     },
     test: {
+        // Keep nested worktrees out of this checkout's test run and aliases.
+        include: ["src/**/*.test.{ts,tsx}"],
         environment: "jsdom",
         environmentOptions: {
             jsdom: { url: "http://127.0.0.1:5173/" },
