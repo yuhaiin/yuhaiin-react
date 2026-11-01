@@ -294,9 +294,9 @@ function RouteConfigCard({ onSaved, destinations }: { onSaved: () => void; desti
                 )}
 
             <div className="mt-4 flex flex-wrap justify-end gap-2">
-                {data && <StageChangeButton disabled={saving || Boolean(error)} request={{ store: "configuration", kind: "route-defaults", payload: data }} onCommitted={async () => { const next = await getRouteConfig(); commit(next); await mutate(next, { revalidate: false }); onSaved(); }} />}
-                <Button permission="routes:write" size="sm" variant="outline-primary" disabled={saving || !data || Boolean(error)} onClick={save}>
-                    {saving ? <Spinner size="sm" className="mr-2" /> : <Save size={16} className="mr-2" />}
+                {data && <StageChangeButton showDiffIcon disabled={saving || Boolean(error)} request={{ store: "configuration", kind: "route-defaults", payload: data }} onCommitted={async () => { const next = await getRouteConfig(); commit(next); await mutate(next, { revalidate: false }); onSaved(); }} />}
+                <Button permission="routes:write" variant="primary" disabled={saving || !data || Boolean(error)} onClick={save}>
+                    {saving ? <Spinner size="sm" /> : <Save size={16} />}
                     {t("saveAndApply")}</Button>
             </div>
         </fieldset>

@@ -5,7 +5,8 @@ import { authScope, updatePrincipal, type Principal } from '@/auth/session';
 import { Button } from '@/component/v2/button';
 import { confirmAction } from '@/component/v2/confirmation';
 import { Modal, ModalBody, ModalContent, ModalHeader, ModalTitle } from '@/component/v2/modal';
-import { useEffect, useRef, useState } from 'react';
+import { FileDiff } from 'lucide-react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSWRConfig } from 'swr';
 
@@ -78,7 +79,7 @@ export function ChangeReview({ initial, writable, rollback, onChanged }: { initi
     </div>;
 }
 
-export function StageChangeButton({ request: payload, disabled, onCommitted, label }: { label?: string; request: StageRequest; disabled?: boolean; onCommitted?: (change: ConfigurationChange) => void | Promise<unknown> }) {
+export function StageChangeButton({ request: payload, disabled, onCommitted, label, icon, showDiffIcon }: { label?: string; icon?: ReactNode; showDiffIcon?: boolean; request: StageRequest; disabled?: boolean; onCommitted?: (change: ConfigurationChange) => void | Promise<unknown> }) {
     const session = useSession(); const scope = authScope();
     if (!session?.principal.permissions.includes('configuration:read') || !session.principal.permissions.includes('configuration:write')) return null;
     const required: Record<string, string[]> = {
@@ -88,9 +89,9 @@ export function StageChangeButton({ request: payload, disabled, onCommitted, lab
         'route-rule': ['routes:read', 'routes:write'], 'route-defaults': ['routes:read', 'routes:write'], 'route-list': ['routes:read', 'routes:write'], 'route-order': ['routes:read', 'routes:write'],
     };
     if (!required[payload.kind]?.every(permission => session.principal.permissions.includes(permission)) || payload.kind === 'oidc-provider' && session.principal.credentialType !== 'session') return null;
-    return <StageControl key={scope} request={payload} disabled={disabled} onCommitted={onCommitted} label={label} />;
+    return <StageControl key={scope} request={payload} disabled={disabled} onCommitted={onCommitted} label={label} icon={icon} showDiffIcon={showDiffIcon} />;
 }
-function StageControl({ request: payload, disabled, onCommitted, label }: { label?: string; request: StageRequest; disabled?: boolean; onCommitted?: (change: ConfigurationChange) => void | Promise<unknown> }) {
+function StageControl({ request: payload, disabled, onCommitted, label, icon, showDiffIcon }: { label?: string; icon?: ReactNode; showDiffIcon?: boolean; request: StageRequest; disabled?: boolean; onCommitted?: (change: ConfigurationChange) => void | Promise<unknown> }) {
     const { t } = useTranslation('auth'); const scope = authScope();
     const [change, setChange] = useState<ConfigurationChange>(); const [open, setOpen] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
     const request = useRef<AbortController | undefined>(undefined);
@@ -102,7 +103,8 @@ function StageControl({ request: payload, disabled, onCommitted, label }: { labe
         catch (cause) { if (!controller.signal.aborted && scope === authScope()) setError(t(cause && typeof cause === 'object' && 'code' in cause && cause.code === 409 ? 'changes.conflict' : 'requestFailed')); }
         finally { if (!controller.signal.aborted && scope === authScope()) setBusy(false); }
     };
-    return <><Button type="button" title={t("changes.stage")} aria-label={label ? `${label} · ${t("changes.stage")}` : undefined} disabled={disabled || busy} onClick={event => void stage(event.currentTarget)}>{label || t("changes.stage")}</Button>
+    const description = label ? `${label} · ${t("changes.stage")}` : undefined;
+    return <><Button type="button" variant={icon ? "ghost" : "default"} size={icon ? "icon" : "default"} title={icon ? description : t("changes.stage")} aria-label={description} disabled={disabled || busy} onClick={event => void stage(event.currentTarget)}>{icon || <>{showDiffIcon && <FileDiff size={16} aria-hidden="true" />}{label || t("changes.stage")}</>}</Button>
         {error && <p role="alert" className="text-sm text-ui-danger">{error}</p>}
         <Modal open={open} onOpenChange={setOpen}><ModalContent width={850} aria-describedby={undefined}><ModalHeader closeButton><ModalTitle>{t('changes.preview')}</ModalTitle></ModalHeader><ModalBody>
             {change && <ChangeReview key={change.id} initial={change} writable rollback={false} onChanged={async next => { if (!next || next.state === 'committed') { setOpen(false); if (next) await onCommitted?.(next); } }} />}

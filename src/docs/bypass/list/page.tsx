@@ -235,7 +235,7 @@ function ListEditorModal({ name, onSaved, onClose, presentation = "modal" }: { n
                     </div>
                     <div className={editorActionsClass}>
                         <Button onClick={close} disabled={pending}>{uiT("cancel")}</Button>
-                        <StageChangeButton disabled={pending || deleted || isLoading || Boolean(error) || !data} request={{ store: "configuration", kind: "route-list", resourceId: draft.id, payload: draft }} onCommitted={async () => { const next = await getRouteList(draft.id); commit(next); await mutate(next, { revalidate: false }); onSaved(); }} />
+                        <StageChangeButton showDiffIcon disabled={pending || deleted || isLoading || Boolean(error) || !data} request={{ store: "configuration", kind: "route-list", resourceId: draft.id, payload: draft }} onCommitted={async () => { const next = await getRouteList(draft.id); commit(next); await mutate(next, { revalidate: false }); onSaved(); }} />
                         <Button permission="routes:write" variant="primary" disabled={pending || isLoading || Boolean(error) || !data} onClick={save}><Check className="mr-2" size={16} />{t(actionError && !dirty ? "retryApply" : "saveAndApply")}</Button>
                     </div>
                 </>}>
@@ -282,7 +282,7 @@ function CreateListModal({ open, initialName, initialValue, onSaved, onClose, pr
     return <ResourceEditorFrame title={uiT("newRouteList")} label={uiT('definedLists')} presentation={presentation} open={open} onClose={close}
         footer={<>
                     <Button onClick={close} disabled={pending}>{uiT("cancel")}</Button>
-                    <StageChangeButton disabled={pending || !draft.name.trim()} request={{ store: "configuration", kind: "route-list", resourceId: draft.id || undefined, payload: draft }} onCommitted={async change => { onSaved(change.resourceId); }} />
+                    <StageChangeButton showDiffIcon disabled={pending || !draft.name.trim()} request={{ store: "configuration", kind: "route-list", resourceId: draft.id || undefined, payload: draft }} onCommitted={async change => { onSaved(change.resourceId); }} />
                     <Button permission="routes:write" variant="primary" onClick={save} disabled={pending || !draft.name.trim()}><Check className="mr-2" size={16} />{t(actionError && !dirty && draft.revision > 0 ? "retryApply" : "saveAndApply")}</Button>
                 </>}>
                     <fieldset disabled={pending} className="contents">

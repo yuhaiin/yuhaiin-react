@@ -2,7 +2,7 @@ import { StageChangeButton } from "@/component/configuration-change";
 import { WorkspaceSelectionMarker } from '@/component/workspace-layout';
 import type { RuleItem } from '@/contract/route';
 import clsx from 'clsx';
-import { ArrowRight, ArrowUpRight, Ban, GripVertical, Network, type LucideIcon } from 'lucide-react';
+import { ArrowRight, ArrowUp, ArrowUpRight, Ban, GripVertical, Network, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useId } from 'react';
 import { useRuleDrag, type RuleDrop } from './rule-drag';
@@ -83,7 +83,7 @@ export function RuleList({ items, selectedId, onOpen, onMove, onDrop, destinatio
                         {item.resolver && <div className="mt-1 truncate text-xs text-ui-muted">{uiT('resolver')}: {resolverNames[item.resolver] ?? item.resolver}</div>}
                     </div>
                 </button>
-                {index > 0 && <StageChangeButton disabled={busy || filtered} label={t("moveEarlier")} request={{ store: "configuration", kind: "route-order", payload: { source: { id: item.id }, target: { id: items[index - 1].id }, operate: "exchange" } }} onCommitted={() => onReordered?.()} />}
+                {index > 0 && <StageChangeButton disabled={busy || filtered} label={t("moveEarlier")} icon={<ArrowUp aria-hidden="true" />} request={{ store: "configuration", kind: "route-order", payload: { source: { id: item.id }, target: { id: items[index - 1].id }, operate: "exchange" } }} onCommitted={() => onReordered?.()} />}
             </li>;
         })}
         {!items.length && <li className="py-12 text-center text-sm text-ui-muted">{uiT('noRecordsFound')}</li>}
