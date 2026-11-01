@@ -85,6 +85,12 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
                     postDown: [],
                 },
             };
+        case "ssh":
+            return { type, ssh: {
+                hostKey: "", username: "", authorizedKey: "", uid: 65534, gid: 65534,
+                shell: "/bin/sh", mtu: 1500, ipv6: true, maxSessions: 8,
+                allowUnsafeShell: false,
+            } };
         case "sstp":
             return { type, sstp: { tls: { certificates: [], nextProtos: [], serverNameCertificate: {} }, serverAddress: "10.90.0.1", clientAddresses: ["10.90.0.2"], dns: "", mtu: 1400, maxSessions: 1 } };
         case "wireguard":
@@ -158,6 +164,17 @@ export function selectInboundProtocol(inbound: Inbound, type: InboundProtocol["t
     const protocol = inbound.protocol.type === type
         ? inbound.protocol : createDefaultProtocol(type);
     if (["tun", "tproxy", "redir", "krunlet", "wireguard"].includes(type)) return normalizeInbound({ ...inbound, protocol, network: { type: "empty", empty: {} }, transports: [] });
+    if (type === "ssh") {
+        return normalizeInbound({
+            ...inbound, protocol, authentication: undefined,
+            network: { type: "tcp_udp", tcp_udp: {
+                host: inbound.network.type === "tcp_udp" && inbound.network.tcp_udp.host !== ":9002"
+                    ? inbound.network.tcp_udp.host : "127.0.0.1:2222",
+                udp: "tcp_only",
+            } },
+            transports: [],
+        });
+    }
     if (type === "sstp") {
         const host = inbound.network.type === "tcp_udp" && inbound.network.tcp_udp.host !== ":9002" ? inbound.network.tcp_udp.host : "127.0.0.1:8443";
         return normalizeInbound({

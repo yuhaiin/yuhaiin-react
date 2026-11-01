@@ -20,7 +20,7 @@ import { UserAuthentication } from "./authentication";
 
 const networkTypes: InboundNetwork["type"][] = ["empty", "tcp_udp", "quic"];
 
-const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "masque", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "wireguard", "sstp", "krunlet", "reverse_tcp", "none"];
+const protocolTypes: InboundProtocol["type"][] = ["hysteria2", "masque", "http", "socks5", "yuubinsya", "mixed", "socks4a", "tproxy", "redir", "tun", "wireguard", "sstp", "ssh", "krunlet", "reverse_tcp", "none"];
 
 const transportTypes: InboundTransport["type"][] = ["normal", "tls", "mux", "http2", "websocket", "reality", "tls_auto", "http_mock", "aead", "proxy"];
 
@@ -100,7 +100,7 @@ const NetworkSection: FC<{
         return <p className="text-sm text-ui-muted">{uiT("wgNoSystemTun")}</p>;
     }
 
-    if (inbound.protocol.type === "sstp") {
+    if (inbound.protocol.type === "sstp" || inbound.protocol.type === "ssh") {
         return <NetworkEditor value={inbound.network} tcpOnly onChange={(network) => onChange(normalizeInbound({ ...inbound, network }))} />;
     }
 
@@ -283,6 +283,8 @@ const ProtocolConfigEditor: FC<{
             );
         case "redir":
             return <SettingInputVertical label={uiT("host")} value={value.redir.host} onChange={(host) => onChange({ ...value, redir: { ...value.redir, host } })} placeholder=":12345" />;
+        case "ssh":
+            return <SSHServerEditor value={value.ssh} onChange={(ssh) => onChange({ ...value, ssh })} />;
         case "sstp":
             return <SSTPServerEditor value={value.sstp} onChange={(sstp) => onChange({ ...value, sstp })} />;
         case "wireguard":
@@ -306,6 +308,66 @@ const AuthFields: FC<{
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <SettingInputVertical label={uiT("username")} value={username} onChange={(username) => onChange({ username })} />
             <SettingInputVertical label={uiT("password")} value={password} onChange={(password) => onChange({ password })} />
+        </div>
+    );
+};
+
+const SSHServerEditor: FC<{
+    value: Extract<InboundProtocol, { type: "ssh" }>["ssh"];
+    onChange: (value: Extract<InboundProtocol, { type: "ssh" }>["ssh"]) => void;
+}> = ({ value, onChange }) => {
+    const { t: uiT } = useTranslation("ui");
+    const patch = (fields: Partial<typeof value>) => onChange({ ...value, ...fields });
+    return (
+        <div className="grid gap-4">
+            <p className="text-sm text-ui-muted">{uiT("sshSessionHelp")}</p>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <SettingInputVertical label={uiT("sshLoginUsername")} value={value.username}
+                    onChange={(username) => patch({ username })} placeholder="alice" />
+                <SettingInputVertical label={uiT("sshShell")} value={value.shell ?? "/bin/sh"}
+                    onChange={(shell) => patch({ shell })} placeholder="/bin/sh" />
+                <SettingInputVertical label={uiT("sshUID")} type="number" min={1} step={1}
+                    value={String(value.uid)} onChange={(uid) => patch({ uid: numberValue(uid) })} />
+                <SettingInputVertical label={uiT("sshGID")} type="number" min={1} step={1}
+                    value={String(value.gid)} onChange={(gid) => patch({ gid: numberValue(gid) })} />
+                <SettingInputVertical label="MTU" type="number" min={1280} max={9000} step={1}
+                    value={String(value.mtu ?? 1500)} onChange={(mtu) => patch({ mtu: numberValue(mtu) })} />
+                <SettingInputVertical label={uiT("sshMaxSessions")} type="number" min={1} max={128} step={1}
+                    value={String(value.maxSessions ?? 8)} onChange={(maxSessions) => patch({ maxSessions: numberValue(maxSessions) })} />
+            </div>
+            <div>
+                <p className="mb-2 text-sm font-medium text-ui-heading">{uiT("sshAuthorizedPublicKey")}</p>
+                <Textarea code rows={3} value={value.authorizedKey} onChange={(event) => patch({ authorizedKey: event.target.value })}
+                    placeholder="ssh-ed25519 AAAA... user@device" />
+            </div>
+            <p className="text-xs text-ui-muted">{uiT("sshHostKeyAutoHelp")}</p>
+            <details>
+                <summary className="cursor-pointer text-sm text-ui-heading">{uiT("sshAdvancedSettings")}</summary>
+                <div className="mt-3 grid gap-4">
+                    <div>
+                        <p className="mb-2 text-sm font-medium text-ui-heading">{uiT("sshOverrideHostKey")}</p>
+                        <Textarea code secret rows={3} value={value.hostKey} onChange={(event) => patch({ hostKey: event.target.value })}
+                            placeholder="-----BEGIN PRIVATE KEY-----" />
+                    </div>
+                    <SwitchCard label={uiT("sshEnableIPv6")} checked={value.ipv6}
+                        onCheckedChange={(ipv6) => patch({ ipv6 })} />
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <SettingInputVertical label={uiT("sshGatewayIPv4")} value={value.gatewayIPv4 ?? ""}
+                            onChange={(gatewayIPv4) => patch({ gatewayIPv4 })} placeholder="172.31.254.1" />
+                        <SettingInputVertical label={uiT("sshSessionIPv4")} value={value.sessionIPv4 ?? ""}
+                            onChange={(sessionIPv4) => patch({ sessionIPv4 })} placeholder="172.31.254.2/30" />
+                        {value.ipv6 && <>
+                            <SettingInputVertical label={uiT("sshGatewayIPv6")} value={value.gatewayIPv6 ?? ""}
+                                onChange={(gatewayIPv6) => patch({ gatewayIPv6 })} placeholder="fd42:7d2a:9b31::1" />
+                            <SettingInputVertical label={uiT("sshSessionIPv6")} value={value.sessionIPv6 ?? ""}
+                                onChange={(sessionIPv6) => patch({ sessionIPv6 })} placeholder="fd42:7d2a:9b31::2/64" />
+                        </>}
+                    </div>
+                </div>
+            </details>
+            <SwitchCard label={uiT("sshUnsafeShellAcknowledgement")} description={uiT("sshUnsafeShellWarning")}
+                checked={value.allowUnsafeShell}
+                onCheckedChange={(allowUnsafeShell) => patch({ allowUnsafeShell })} />
         </div>
     );
 };
@@ -664,6 +726,7 @@ const TransportSection: FC<{
         onChange(normalizeInbound({ ...inbound, transports: transports.filter((_, current) => current !== index) }));
     };
 
+    if (inbound.protocol.type === "ssh") return <p className="text-sm text-ui-muted">{uiT("sshNoExtraTransports")}</p>;
     if (inbound.protocol.type === "sstp") return <p className="text-sm text-ui-muted">{uiT("sstpNoExtraTransports")}</p>;
     if (inbound.protocol.type === "wireguard") return <p className="text-sm text-ui-muted">{uiT("wgNoExtraTransports")}</p>;
     if (inbound.protocol.type === "hysteria2") return <HysteriaTLSSection inbound={inbound} onChange={onChange} />;
