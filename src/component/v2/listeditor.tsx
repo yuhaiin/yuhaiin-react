@@ -78,7 +78,7 @@ export const InputList: FC<{
                 </div>
             ))}
             {/* The cap applies here because the full-height gutter would otherwise stretch the textarea past its rows. */}
-            {(!disabled || saved.length === 0) && <div style={{ maxHeight: `calc(${MAX_EDITOR_ROWS} * 1.5rem + 1rem + 2px)` }} className={cn(
+            {(!disabled || saved.length === 0 || entries.length > 0) && <div style={{ maxHeight: `calc(${MAX_EDITOR_ROWS} * 1.5rem + 1rem + 2px)` }} className={cn(
                 "flex overflow-hidden rounded-ui-sm border border-ui-border bg-ui-surface transition-colors duration-[var(--motion-fast)] hover:border-ui-border-strong focus-within:border-ui-primary focus-within:ring-1 focus-within:ring-ui-primary",
                 disabled && "border-ui-disabled-border bg-ui-disabled hover:border-ui-disabled-border",
             )}>

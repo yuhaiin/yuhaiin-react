@@ -62,6 +62,12 @@ it('follows data replaced from outside', () => {
     expect(editor().value).toBe('z.example');
 });
 
+it('still shows plain entries beside saved secrets when read-only', () => {
+    act(() => root.render(<InputList title="URLs" data={['https://example.com/list.txt', '__saved__']} disabled onChange={vi.fn()} />));
+    expect(host.querySelector('textarea')?.value).toBe('https://example.com/list.txt');
+    expect(host.textContent).toContain('secrets.savedValue');
+});
+
 it('keeps saved secrets out of the text and in place through edits', () => {
     const changed = vi.fn();
     act(() => root.render(<InputList title="Commands" data={['first', '__saved__', 'last']} onChange={changed} />));
