@@ -611,6 +611,7 @@ export namespace Go {
       | { type: "tun"; tun: TunProtocol }
       | { type: "wireguard"; wireguard: WireguardProtocol }
       | { type: "sstp"; sstp: SSTPProtocol }
+      | { type: "ssh"; ssh: SSHProtocol }
       | { type: "krunlet"; krunlet: KrunletProtocol }
       | { type: "reverse_tcp"; reverse_tcp: ReverseTCPProtocol }
       | { type: "none"; none: NoneProtocol };
@@ -701,6 +702,22 @@ export namespace Go {
       dns?: string;
       mtu?: number;
       maxSessions?: number;
+    }
+    export interface SSHProtocol {
+      hostKey: string;
+      username: string;
+      authorizedKey: string;
+      uid: number;
+      gid: number;
+      shell?: string;
+      mtu?: number;
+      gatewayIPv4?: string;
+      sessionIPv4?: string;
+      gatewayIPv6?: string;
+      sessionIPv6?: string;
+      ipv6: boolean;
+      maxSessions?: number;
+      allowUnsafeShell: boolean;
     }
     export interface KrunletProtocol {
       socket: string;
