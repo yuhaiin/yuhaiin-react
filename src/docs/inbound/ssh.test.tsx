@@ -1,6 +1,9 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
+import english from '@/i18n/resources/en/ui.json';
+import japanese from '@/i18n/resources/ja/ui.json';
+import korean from '@/i18n/resources/ko/ui.json';
 import { InboundEditor } from './editor';
 import { createDefaultInbound, normalizeInbound, selectInboundProtocol } from '@/contract/inbound';
 
@@ -40,5 +43,34 @@ it('shows SSH host-key generation help and the explicit security acknowledgement
     } finally {
         act(() => root.unmount());
         host.remove();
+    }
+});
+
+it('translations provide localized SSH inbound settings and safety warnings', () => {
+    const sshInboundKeys = [
+            "sshNoExtraTransports",
+            "sshSessionHelp",
+            "sshLoginUsername",
+            "sshShell",
+            "sshUID",
+            "sshGID",
+            "sshMaxSessions",
+            "sshAuthorizedPublicKey",
+            "sshHostKeyAutoHelp",
+            "sshAdvancedSettings",
+            "sshOverrideHostKey",
+            "sshEnableIPv6",
+            "sshGatewayIPv4",
+            "sshSessionIPv4",
+            "sshGatewayIPv6",
+            "sshSessionIPv6",
+            "sshUnsafeShellAcknowledgement",
+            "sshUnsafeShellWarning"
+    ] as const;
+    for (const key of sshInboundKeys) {
+        expect(japanese[key], `Missing Japanese translation: ${key}`).toMatch(/[\u3040-\u30ff\u3400-\u9fff]/);
+        expect(korean[key], `Missing Korean translation: ${key}`).toMatch(/[\uac00-\ud7a3]/);
+        expect(japanese[key]).not.toBe(english[key]);
+        expect(korean[key]).not.toBe(english[key]);
     }
 });
