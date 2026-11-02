@@ -2365,7 +2365,9 @@ export namespace Go {
       outputQueuedBytes: number;
     }
     export interface TCPStackDiagnostic {
-      inboundId: string;
+      scope: string;
+      inboundId?: string;
+      nodeId?: string;
       mtu: number;
       statistics: TCPStackStatistics;
       flows: TCPFlowDiagnostic[];
