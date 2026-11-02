@@ -999,5 +999,8 @@
   "sshShellHelp": "HOME과 시작 디렉터리는 UID로 지정한 시스템 계정을 따릅니다. 셸을 비우면 해당 계정의 로그인 셸을 사용하며, 사용할 수 없으면 /bin/sh를 사용합니다. Bash 시작 파일을 사용하려면 /bin/bash를 직접 지정하세요. /bin/sh는 다른 시작 규칙을 사용할 수 있습니다.",
   "sshSFTPHelp": "내장 SFTP는 같은 SSH 키와 Linux UID/GID를 사용합니다. 외부 SFTP 서버가 필요하지 않습니다.",
   "sshSFTPReadOnlyPaths": "SFTP 읽기 전용 디렉터리",
-  "sshSFTPReadOnlyHelp": "한 줄에 절대 경로 하나를 입력하세요. 지정한 디렉터리와 그 안의 파일은 심볼릭 링크로 접근해도 SFTP에서 읽기 전용입니다. 비워 두면 일반 시스템 권한을 따릅니다. SSH 셸이나 exec 명령에는 적용되지 않습니다."
+  "sshSFTPReadOnlyHelp": "한 줄에 절대 경로 하나를 입력하세요. 지정한 디렉터리와 그 안의 파일은 심볼릭 링크로 접근해도 SFTP에서 읽기 전용입니다. 비워 두면 일반 시스템 권한을 따릅니다. SSH 셸이나 exec 명령에는 적용되지 않습니다.",
+  "sshTimezone": "세션 시간대",
+  "sshTimezoneSystem": "시스템 기본값 상속",
+  "sshTimezoneHelp": "IANA 시간대 이름 또는 UTC 오프셋으로 검색할 수 있습니다. 비워 두면 호스트 시간대를 상속합니다. 자식 shell/exec 프로세스에만 적용되며 일광 절약 시간 규칙에는 tzdata가 필요합니다."
 }

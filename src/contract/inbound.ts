@@ -88,7 +88,7 @@ export function createDefaultProtocol(type: InboundProtocol["type"] = "mixed"): 
         case "ssh":
             return { type, ssh: {
                 hostKey: "", username: "", authorizedKey: "", uid: 65534, gid: 65534,
-                shell: "", sftpReadOnlyPaths: [], mtu: 1500, ipv6: true, maxSessions: 8,
+                shell: "", timezone: "", sftpReadOnlyPaths: [], mtu: 1500, ipv6: true, maxSessions: 8,
                 allowUnsafeShell: false,
             } };
         case "sstp":
