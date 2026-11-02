@@ -65,7 +65,9 @@ it('translations provide localized SSH inbound settings and safety warnings', ()
             "sshGatewayIPv6",
             "sshSessionIPv6",
             "sshUnsafeShellAcknowledgement",
-            "sshUnsafeShellWarning"
+            "sshUnsafeShellWarning",
+            "sshCgroupRoot",
+            "sshCgroupRootHelp"
     ] as const;
     for (const key of sshInboundKeys) {
         expect(japanese[key], `Missing Japanese translation: ${key}`).toMatch(/[\u3040-\u30ff\u3400-\u9fff]/);
