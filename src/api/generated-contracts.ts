@@ -711,6 +711,7 @@ export namespace Go {
       uid: number;
       gid: number;
       shell?: string;
+      sftpReadOnlyPaths?: string[];
       mtu?: number;
       gatewayIPv4?: string;
       sessionIPv4?: string;

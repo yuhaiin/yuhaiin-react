@@ -994,5 +994,10 @@
   "sshUnsafeShellAcknowledgement": "I understand the unsafe shell isolation limitations",
   "sshUnsafeShellWarning": "Required to enable this inbound. SSH commands can still access the host filesystem and Unix sockets. Use only with trusted SSH identities and a restricted, non-root account.",
   "sshCgroupRoot": "cgroup v2 root (optional)",
-  "sshCgroupRootHelp": "SSH requires cgroup v2 for crash-safe process cleanup. Leave blank to use a stable directory under /sys/fs/cgroup/yuhaiin/ssh. For systemd delegation, enter a dedicated writable cgroup v2 path. The SSH listener refuses to start if it cannot create or recover its cgroup."
+  "sshCgroupRootHelp": "SSH requires cgroup v2 for crash-safe process cleanup. Leave blank to use a stable directory under /sys/fs/cgroup/yuhaiin/ssh. For systemd delegation, enter a dedicated writable cgroup v2 path. The SSH listener refuses to start if it cannot create or recover its cgroup.",
+  "sshShellAuto": "Automatic (system login shell)",
+  "sshShellHelp": "HOME and the starting directory follow the system account selected by UID. Leave the shell empty to use its login shell, with /bin/sh as fallback. Select /bin/bash explicitly for Bash startup files; /bin/sh may use different startup rules.",
+  "sshSFTPHelp": "Built-in SFTP uses the same SSH key and Linux UID/GID. No external SFTP server is required.",
+  "sshSFTPReadOnlyPaths": "Read-only SFTP directories",
+  "sshSFTPReadOnlyHelp": "One absolute path per line. These directories and their contents are read-only over SFTP, including access through symbolic links. Leave empty to use normal system permissions. These rules do not restrict SSH shell or exec commands."
 }

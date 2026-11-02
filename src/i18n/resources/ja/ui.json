@@ -994,5 +994,10 @@
   "sshUnsafeShellAcknowledgement": "シェルの隔離に関するセキュリティ上の制限を理解しています",
   "sshUnsafeShellWarning": "このインバウンドを有効にするには確認が必要です。SSH コマンドからホストのファイルシステムや Unix ソケットにアクセスできる場合があります。信頼できる SSH ユーザーと、権限を制限した非 root アカウントでのみ使用してください。",
   "sshCgroupRoot": "cgroup v2 のルート（任意）",
-  "sshCgroupRootHelp": "SSH では異常終了後のプロセスを確実にクリーンアップするため、cgroup v2 が必須です。空欄の場合は /sys/fs/cgroup/yuhaiin/ssh 配下の固定パスを使います。systemd から委譲された環境では、書き込み可能な専用の cgroup v2 ディレクトリを指定してください。cgroup を作成または復旧できない場合、SSH リスナーは起動しません。"
+  "sshCgroupRootHelp": "SSH では異常終了後のプロセスを確実にクリーンアップするため、cgroup v2 が必須です。空欄の場合は /sys/fs/cgroup/yuhaiin/ssh 配下の固定パスを使います。systemd から委譲された環境では、書き込み可能な専用の cgroup v2 ディレクトリを指定してください。cgroup を作成または復旧できない場合、SSH リスナーは起動しません。",
+  "sshShellAuto": "自動（システムのログインシェル）",
+  "sshShellHelp": "HOME と開始ディレクトリは UID で指定したシステムアカウントに従います。空欄の場合はログインシェルを使い、取得できなければ /bin/sh を使います。Bash の起動ファイルを使う場合は /bin/bash を明示してください。/bin/sh では読み込むファイルが異なる場合があります。",
+  "sshSFTPHelp": "内蔵 SFTP は同じ SSH 公開鍵と Linux UID/GID を使います。外部の SFTP サーバーは不要です。",
+  "sshSFTPReadOnlyPaths": "SFTP の読み取り専用ディレクトリ",
+  "sshSFTPReadOnlyHelp": "絶対パスを1行に1つ入力します。指定ディレクトリとその内容は、シンボリックリンク経由でも SFTP では読み取り専用になります。空欄の場合は通常のシステム権限に従います。SSH のシェルや exec コマンドには適用されません。"
 }
