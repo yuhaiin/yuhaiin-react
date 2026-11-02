@@ -79,7 +79,7 @@
     "snapshot": "スナップショット取得",
     "takenAt": "取得日時: {{date}}",
     "failed": "TCP スタックの診断情報を取得できませんでした。バックエンドと権限を確認してください。",
-    "empty": "診断に対応する稼働中の軽量 TUN スタックはありません。",
+    "empty": "診断に対応する稼働中の軽量 Inbound スタックはありません。",
     "activeFlows": "アクティブな TCP フロー: {{count}}",
     "packetsIn": "受信パケット",
     "packetsOut": "送信パケット",
