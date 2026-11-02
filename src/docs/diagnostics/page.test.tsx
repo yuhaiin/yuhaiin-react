@@ -23,6 +23,13 @@ const report: DiagnosticReport = {
     checks: [{ id: 'dns4', status: 'pass', message: 'dns_resolved', durationMs: 12, evidence: ['192.0.2.1'] }],
     findings: ['core_path_works', 'scope_limit'], report: 'safe report',
 };
+it('uses the available viewport width instead of a fixed narrow diagnostics column', () => {
+    mount();
+    const page = host.firstElementChild as HTMLElement;
+    expect(page.classList.contains('w-full')).toBe(true);
+    expect(page.classList.contains('min-w-0')).toBe(true);
+    expect(page.classList.contains('max-w-5xl')).toBe(false);
+});
 it('runs only on demand, prevents duplicate requests and renders evidence and guidance', async () => {
     let complete!: (value: DiagnosticReport) => void;
     vi.mocked(runDiagnostics).mockImplementation(() => new Promise(resolve => { complete = resolve; }));

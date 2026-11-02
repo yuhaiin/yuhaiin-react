@@ -55,7 +55,7 @@ function FlowRow({ flow }: { flow: TCPFlowDiagnostic }) {
 function StackDetails({ stack }: { stack: TCPStackDiagnostic }) {
     const { t } = useTranslation('diagnostics');
     const s = stack.statistics;
-    return <div className="mt-3 space-y-3">
+    return <div className="mt-3 min-w-0 space-y-3">
         <div className="flex flex-wrap gap-2">
             <Badge variant="muted">Lightweight TCP/IP</Badge>
             <Badge variant="muted">MTU {stack.mtu}</Badge>
@@ -77,7 +77,7 @@ function StackDetails({ stack }: { stack: TCPStackDiagnostic }) {
         </div>
         {stack.flows.length > 0 && <div>
             <div className="mb-2 text-xs font-medium text-ui-heading">{t('tcp.flowSamples', { shown: stack.flows.length, total: s.connections })}</div>
-            <div className="max-w-full overflow-x-auto rounded-ui-md border border-ui-border">
+            <div className="min-w-0 max-w-full overflow-x-auto rounded-ui-md border border-ui-border">
                 <table className="w-full min-w-[700px] text-left">
                     <thead className="text-xs text-ui-muted"><tr>
                         <th className="px-3 py-2 font-medium">{t('tcp.endpoints')}</th>
@@ -96,7 +96,7 @@ function StackDetails({ stack }: { stack: TCPStackDiagnostic }) {
 function InboundDetail({ inbound, stack }: { inbound?: InboundRuntimeStatus; stack?: TCPStackDiagnostic }) {
     const { t } = useTranslation('diagnostics');
     const id = inbound?.id || stack?.inboundId || '';
-    return <details className="rounded-ui-lg border border-ui-border bg-ui-surface p-3">
+    return <details className="min-w-0 rounded-ui-lg border border-ui-border bg-ui-surface p-3">
         <summary className="flex cursor-pointer flex-wrap items-center gap-2 text-sm">
             <span className="min-w-0 flex-1 break-all font-semibold text-ui-heading">{inbound?.name || id}</span>
             {inbound && <Badge variant={inbound.status === 'running' ? 'success' : inbound.status === 'failed' ? 'danger' : 'muted'}>{inbound.status}</Badge>}
@@ -119,7 +119,7 @@ function OutboundDetail({ outbound, stack }: { outbound?: OutboundEntry; stack?:
     const { t } = useTranslation('diagnostics');
     const id = outbound?.id || stack?.nodeId || '';
     const state = outbound?.status;
-    return <details className="rounded-ui-lg border border-ui-border bg-ui-surface p-3">
+    return <details className="min-w-0 rounded-ui-lg border border-ui-border bg-ui-surface p-3">
         <summary className="flex cursor-pointer flex-wrap items-center gap-2 text-sm">
             <span className="min-w-0 flex-1 break-all font-semibold text-ui-heading">{outbound?.name || id}</span>
             {state && <Badge variant={state.state === 'healthy' ? 'success' : state.state === 'degraded' ? 'warning' : 'muted'}>{state.state}</Badge>}
@@ -219,7 +219,7 @@ export function TCPStackPanel() {
     const inboundsByID = new Map((snapshot?.inbounds ?? []).map(i => [i.id, i]));
     const outboundsByID = new Map((snapshot?.outbounds ?? []).map(n => [n.id, n]));
 
-    return <section className="space-y-4">
+    return <section className="min-w-0 space-y-4">
         <Card noMargin><CardBody>
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -262,21 +262,21 @@ export function TCPStackPanel() {
                 {snapshot.missing.length > 0 && <ul role="status" className="mt-3 space-y-1 text-xs text-ui-warning">{snapshot.missing.map((msg, i) => <li key={i}>{msg}</li>)}</ul>}
             </>}
         </CardBody></Card>
-        {snapshot && <>
-            <div className="space-y-2">
+        {snapshot && <div className="grid min-w-0 grid-cols-1 items-start gap-4 2xl:grid-cols-2">
+            <div className="min-w-0 space-y-2">
                 <h3 className="text-sm font-semibold text-ui-heading">{t('tcp.inboundsTitle')} ({inboundIDs.size})</h3>
                 <p className="text-xs text-ui-muted">{t('tcp.inboundsHint')}</p>
                 {[...inboundIDs].sort().map(id => <InboundDetail key={id} inbound={inboundsByID.get(id)} stack={inboundStacks.find(s => s.inboundId === id)} />)}
                 {inboundIDs.size === 0 && <p className="text-xs text-ui-muted">{t('tcp.noInbounds')}</p>}
             </div>
-            <div className="space-y-2">
+            <div className="min-w-0 space-y-2">
                 <h3 className="text-sm font-semibold text-ui-heading">{t('tcp.outboundsTitle')} ({outboundIDs.size})</h3>
                 <p className="text-xs text-ui-muted">{t('tcp.outboundsHint')}</p>
                 {[...outboundIDs].sort().map(id => <OutboundDetail key={id} outbound={outboundsByID.get(id)} stack={outboundStacks.find(s => s.nodeId === id)} />)}
                 {outboundIDs.size === 0 && <p className="text-xs text-ui-muted">{t('tcp.noOutbounds')}</p>}
                 {snapshot.truncatedNodes && <p className="text-xs text-ui-warning">{t('tcp.truncatedNodes')}</p>}
             </div>
-            <p className="text-xs text-ui-muted">{t('tcp.privacy')}</p>
-        </>}
+            <p className="text-xs text-ui-muted 2xl:col-span-2">{t('tcp.privacy')}</p>
+        </div>}
     </section>;
 }
