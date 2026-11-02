@@ -11,6 +11,10 @@ export async function getLicenses(): Promise<Licenses> {
   return { yuhaiin: data.yuhaiin ?? [], android: data.android ?? [] };
 }
 
+export function getTCPStackDiagnostics(signal?: AbortSignal): Promise<DiagnosticReport> {
+  return requestJSON<DiagnosticReport>("POST", "/api/v2/tools/diagnostics", { host: "", tcpOnly: true }, undefined, signal);
+}
+
 export function runDiagnostics(host: string, signal?: AbortSignal): Promise<DiagnosticReport> {
   return requestJSON<DiagnosticReport>("POST", "/api/v2/tools/diagnostics", { host }, undefined, signal);
 }

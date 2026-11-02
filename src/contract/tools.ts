@@ -8,3 +8,5 @@ export type LogBatch = Go.tools.LogBatch;
 
 export type DiagnosticCheck = Go.tools.DiagnosticCheck;
 export type DiagnosticReport = Go.tools.DiagnosticReport;
+export type TCPStackDiagnostic = Go.tools.TCPStackDiagnostic;
+export type TCPFlowDiagnostic = Go.tools.TCPFlowDiagnostic;

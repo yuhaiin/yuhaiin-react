@@ -11,6 +11,7 @@ import type { DiagnosticReport } from '@/contract/tools';
 import { Activity, Copy, Download, Square } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TCPStackPanel } from './tcp-stack';
 
 export default function DiagnosticsPage() {
     const { t } = useTranslation('diagnostics');
@@ -88,6 +89,7 @@ export default function DiagnosticsPage() {
                     {error && <p role="alert" className="mt-3 text-sm text-ui-danger">{error}</p>}
                 </CardBody>
             </Card>
+            <TCPStackPanel />
             {report && <>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="min-w-0 break-words text-sm text-ui-muted">{report.host} · {report.platform} · {new Date(report.startedAt).toLocaleString()} · {report.durationMs} ms</div>
