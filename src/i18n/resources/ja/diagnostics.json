@@ -72,5 +72,32 @@
     "check_direct_path": "直接 IP の接続確認に失敗しました。インターフェースの指定、回線、宛先の制限を確認してください。プロキシ経路は利用できる場合があります。",
     "select_tcp_node": "ルーティングに選択中の TCP ノードが必要ですが、未選択です。ノードを選ぶか、対象に直接接続／タグ付きルートを設定してください。",
     "check_routed_https": "対象へのルート経由 HTTPS に失敗しました。DNS とルートの根拠、エラー種別を確認し、別の宛先でも試してください。"
+  },
+  "tcp": {
+    "title": "TCP スタック診断",
+    "description": "軽量 TCP スタックの状態を要求時にのみ取得します。パケットキャプチャやバックグラウンドのポーリングは行いません。",
+    "snapshot": "スナップショット取得",
+    "takenAt": "取得日時: {{date}}",
+    "failed": "TCP スタックの診断情報を取得できませんでした。バックエンドと権限を確認してください。",
+    "empty": "診断に対応する稼働中の軽量 TUN スタックはありません。",
+    "activeFlows": "アクティブな TCP フロー: {{count}}",
+    "packetsIn": "受信パケット",
+    "packetsOut": "送信パケット",
+    "retransmissions": "再送回数",
+    "drops": "入力破棄",
+    "rstSent": "RST 送信",
+    "rstReceived": "RST 受信",
+    "invalidInput": "不正入力の破棄",
+    "rateLimited": "レート制限による破棄",
+    "aqmDrops": "AQM 破棄",
+    "overloadDrops": "過負荷による破棄",
+    "queueRejected": "キュー拒否",
+    "queueDepth": "待機中パケット",
+    "flowSamples": "TCP フローのサンプル ({{shown}} / {{total}}、最大 32)",
+    "endpoints": "接続先 / ローカル",
+    "inFlight": "送信中",
+    "lost": "損失バイト",
+    "pacing": "ペーシング",
+    "privacy": "読み取り専用の情報ですが、IP アドレスとポート番号を含みます。各スタック最大 32 フローで、パケット内容は保存しません。共有前に確認してください。"
   }
 }
