@@ -1,4 +1,5 @@
 import { FormSection } from '@/component/v2/form-section';
+import { timezoneOptions } from '@/common/timezones';
 import { base64ToBytes, bytesToBase64 } from "@/common/base64";
 
 import { useTranslation } from 'react-i18next';
@@ -14,7 +15,7 @@ import { InputList } from "@/component/v2/listeditor";
 
 import { createDefaultNetwork, createDefaultTransport, selectInboundProtocol, Certificate, Inbound, InboundNetwork, InboundProtocol, InboundTransport, normalizeInbound, ServerTLSConfig, TLSAutoTransport } from "@/contract/inbound";
 import { ArrowDown, ArrowUp, Plus, Trash } from "lucide-react";
-import { FC, useId, useState } from "react";
+import { FC, useId, useMemo, useState } from "react";
 
 import { UserAuthentication } from "./authentication";
 
@@ -318,6 +319,7 @@ const SSHServerEditor: FC<{
 }> = ({ value, onChange }) => {
     const { t: uiT } = useTranslation("ui");
     const patch = (fields: Partial<typeof value>) => onChange({ ...value, ...fields });
+    const timezoneChoices = useMemo(() => timezoneOptions(), []);
     return (
         <div className="grid gap-4">
             <p className="text-sm text-ui-muted">{uiT("sshSessionHelp")}</p>
@@ -336,6 +338,13 @@ const SSHServerEditor: FC<{
                     value={String(value.maxSessions ?? 8)} onChange={(maxSessions) => patch({ maxSessions: numberValue(maxSessions) })} />
             </div>
             <p className="text-xs text-ui-muted">{uiT("sshShellHelp")}</p>
+            <div>
+                <SettingInputVertical label={uiT("sshTimezone")} value={value.timezone ?? ""}
+                    onChange={(timezone) => patch({ timezone })}
+                    reminds={[{ value: "", label: uiT("sshTimezoneSystem") }, ...timezoneChoices]}
+                    showAllOnFocus placeholder={uiT("sshTimezoneSystem")} spellCheck={false} autoComplete="off" />
+                <p className="mt-1 text-xs text-ui-muted">{uiT("sshTimezoneHelp")}</p>
+            </div>
             <FormSection title="SFTP">
                 <p className="text-sm text-ui-muted">{uiT("sshSFTPHelp")}</p>
                 <InputList title={uiT("sshSFTPReadOnlyPaths")} data={value.sftpReadOnlyPaths}

@@ -18,8 +18,9 @@ it('configures SSH as TCP-only with no extra transports and an automatic host ke
     expect(ssh.protocol.ssh).toMatchObject({
         hostKey: '', mtu: 1500, ipv6: true, maxSessions: 8,
         uid: 65534, gid: 65534, allowUnsafeShell: false,
-        shell: '', sftpReadOnlyPaths: [],
+        shell: '', timezone: '', sftpReadOnlyPaths: [],
     });
+    ssh.protocol.ssh.timezone = "Asia/Tokyo";
     const restored = normalizeInbound(JSON.parse(JSON.stringify(ssh)));
     expect(restored.protocol).toEqual(ssh.protocol);
 });
@@ -86,6 +87,9 @@ it('translations provide localized SSH inbound settings and safety warnings', ()
             "sshShell",
             "sshShellAuto",
             "sshShellHelp",
+            "sshTimezone",
+            "sshTimezoneSystem",
+            "sshTimezoneHelp",
             "sshSFTPHelp",
             "sshSFTPReadOnlyPaths",
             "sshSFTPReadOnlyHelp",

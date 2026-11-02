@@ -999,5 +999,8 @@
   "sshShellHelp": "HOME and the starting directory follow the system account selected by UID. Leave the shell empty to use its login shell, with /bin/sh as fallback. Select /bin/bash explicitly for Bash startup files; /bin/sh may use different startup rules.",
   "sshSFTPHelp": "Built-in SFTP uses the same SSH key and Linux UID/GID. No external SFTP server is required.",
   "sshSFTPReadOnlyPaths": "Read-only SFTP directories",
-  "sshSFTPReadOnlyHelp": "One absolute path per line. These directories and their contents are read-only over SFTP, including access through symbolic links. Leave empty to use normal system permissions. These rules do not restrict SSH shell or exec commands."
+  "sshSFTPReadOnlyHelp": "One absolute path per line. These directories and their contents are read-only over SFTP, including access through symbolic links. Leave empty to use normal system permissions. These rules do not restrict SSH shell or exec commands.",
+  "sshTimezone": "Session time zone",
+  "sshTimezoneSystem": "System default (inherit)",
+  "sshTimezoneHelp": "Search by IANA time zone name or UTC offset. Blank inherits the host time zone; only child shell/exec processes are affected. Daylight-saving rules depend on installed tzdata."
 }
