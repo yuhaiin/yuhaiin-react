@@ -93,8 +93,8 @@
     "overloadDrops": "과부하 드롭",
     "queueRejected": "큐 거부",
     "queueDepth": "대기 패킷",
-    "flowSamples": "TCP 흐름 샘플 ({{shown}} / {{total}}, 최대 32)",
-    "endpoints": "원격 / 로컬",
+    "flowSamples": "TCP 흐름 샘플 ({{shown}} / {{total}})",
+    "endpoints": "원격 → 로컬",
     "inFlight": "전송 중",
     "lost": "손실 바이트",
     "pacing": "페이싱",
@@ -133,6 +133,13 @@
     "unavailableConnections": "활성 연결 수를 가져올 수 없습니다(connections:read 권한 필요).",
     "unavailableInbounds": "인바운드 상태를 가져올 수 없습니다(inbounds:read 권한 필요).",
     "unavailableOutbounds": "아웃바운드 노드 목록을 가져올 수 없습니다(nodes:read 권한 필요).",
-    "unavailableNodeStatus": "아웃바운드 실행 상태를 가져올 수 없습니다(nodes:read 권한 필요)."
+    "unavailableNodeStatus": "아웃바운드 실행 상태를 가져올 수 없습니다(nodes:read 권한 필요).",
+    "groupTraffic": "트래픽",
+    "groupErrors": "오류",
+    "groupDrops": "드롭 및 큐",
+    "state": "상태",
+    "rtt": "RTT",
+    "cwnd": "CWND",
+    "mss": "MSS"
   }
 }

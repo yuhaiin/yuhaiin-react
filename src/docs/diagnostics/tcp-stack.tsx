@@ -27,8 +27,14 @@ type Snapshot = {
 };
 
 const number = (value: number) => value.toLocaleString();
-const ms = (value: number) => value > 0 ? `${value.toFixed(1)} ms` : '—';
-const bytes = (value: number) => `${(value / 1024).toFixed(1)} KiB`;
+const ms = (value: number) => value <= 0 ? '—' : value >= 1000 ? `${(value / 1000).toFixed(value % 1000 ? 2 : 0)} s` : `${value.toFixed(1)} ms`;
+const bytes = (value: number) => {
+    if (value <= 0) return '0 B';
+    const units = ['B', 'KiB', 'MiB', 'GiB'];
+    let unit = 0;
+    while (unit + 1 < units.length && value >= 1024) { value /= 1024; unit++; }
+    return unit === 0 ? `${value} B` : `${value.toFixed(1)} ${units[unit]}`;
+};
 
 function Metric({ label, value, exact }: { label: string; value: string; exact?: string }) {
     return <div className="min-w-0 rounded-ui-md border border-ui-border/60 bg-ui-surface-muted px-3 py-2">
@@ -37,54 +43,91 @@ function Metric({ label, value, exact }: { label: string; value: string; exact?:
     </div>;
 }
 
+// Counters where any non-zero value deserves attention are tinted; zeros are
+// dimmed so the few interesting numbers stand out in a mostly idle stack.
+type Stat = { label: string; value: number; alert?: boolean };
+
+function StatGroup({ title, stats }: { title: string; stats: Stat[] }) {
+    return <div className="min-w-0 rounded-ui-md border border-ui-border/60 bg-ui-surface-muted px-3 py-2">
+        <h4 className="mb-1 text-xs font-medium text-ui-heading">{title}</h4>
+        <dl className="space-y-0.5 text-xs">
+            {stats.map(stat => <div key={stat.label} className="flex items-baseline justify-between gap-3">
+                <dt className="min-w-0 truncate text-ui-muted" title={stat.label}>{stat.label}</dt>
+                <dd className={`font-mono tabular-nums ${stat.value === 0 ? 'text-ui-muted' : stat.alert ? 'font-semibold text-ui-warning' : 'font-semibold text-ui-heading'}`}>{number(stat.value)}</dd>
+            </div>)}
+        </dl>
+    </div>;
+}
+
 function FlowRow({ flow }: { flow: TCPFlowDiagnostic }) {
     const { t } = useTranslation('diagnostics');
-    return <tr className="border-t border-ui-border/50 text-xs">
-        <td className="min-w-52 py-2 pr-4 align-top">
-            <div className="break-all font-mono">{flow.remote}</div>
-            <div className="break-all font-mono text-ui-muted">{flow.local}</div>
-            <div className="text-ui-muted">{flow.state}{flow.bbrMode ? ` · ${flow.bbrMode}${flow.bbrPhase ? ` / ${flow.bbrPhase}` : ''}` : ''}</div>
+    const cell = 'px-3 py-1.5 align-top';
+    const num = `${cell} text-right font-mono tabular-nums`;
+    const sub = 'text-[11px] text-ui-muted';
+    return <tr className="border-t border-ui-border/50 text-xs hover:bg-ui-surface-muted/60">
+        <td className={cell}>
+            <div className="break-all font-mono text-ui-heading">{flow.remote}</div>
+            <div className="break-all font-mono text-ui-muted">→ {flow.local}</div>
         </td>
-        <td className="py-2 pr-4 align-top tabular-nums">{ms(flow.srttMs)}<div className="text-ui-muted">RTO {ms(flow.rtoMs)}</div></td>
-        <td className="py-2 pr-4 align-top tabular-nums">{bytes(flow.cwndBytes)}<div className="text-ui-muted">{t('tcp.inFlight')}: {bytes(flow.bytesInFlight)}</div></td>
-        <td className="py-2 pr-4 align-top tabular-nums">{number(flow.retransmissions)}<div className="text-ui-muted">{t('tcp.lost')}: {bytes(flow.lostBytes)}</div></td>
-        <td className="py-2 align-top tabular-nums">{flow.pathMss}<div className="text-ui-muted">{t('tcp.pacing')}: {bytes(flow.pacingBytesPerSecond)}/s</div></td>
+        <td className={`${cell} whitespace-nowrap`}>
+            <Badge variant={flow.state === 'ESTABLISHED' ? 'success' : 'muted'}>{flow.state}</Badge>
+            {flow.bbrMode && <div className={`mt-0.5 ${sub}`}>{flow.bbrMode}{flow.bbrPhase ? ` / ${flow.bbrPhase}` : ''}</div>}
+        </td>
+        <td className={num}>{ms(flow.srttMs)}<div className={sub}>RTO {ms(flow.rtoMs)}</div></td>
+        <td className={num}>{bytes(flow.cwndBytes)}<div className={sub}>{t('tcp.inFlight')} {bytes(flow.bytesInFlight)}</div></td>
+        <td className={num}>{bytes(flow.pacingBytesPerSecond)}/s</td>
+        <td className={num}>
+            <span className={flow.retransmissions > 0 ? 'font-semibold text-ui-warning' : 'text-ui-muted'}>{number(flow.retransmissions)}</span>
+            {flow.lostBytes > 0 && <div className={sub}>{t('tcp.lost')} {bytes(flow.lostBytes)}</div>}
+        </td>
+        <td className={num}>{flow.pathMss}</td>
     </tr>;
 }
 
 function StackDetails({ stack }: { stack: TCPStackDiagnostic }) {
     const { t } = useTranslation('diagnostics');
     const s = stack.statistics;
+    const errors: Stat[] = [
+        { label: t('tcp.retransmissions'), value: s.retransmissions, alert: true },
+        { label: t('tcp.rstSent'), value: s.rstSent },
+        { label: t('tcp.rstReceived'), value: s.rstReceived },
+    ];
+    const drops: Stat[] = [
+        { label: t('tcp.drops'), value: s.drops, alert: true },
+        { label: t('tcp.invalidInput'), value: s.invalidInputDrops, alert: true },
+        { label: t('tcp.rateLimited'), value: s.rateLimitedDrops, alert: true },
+        { label: t('tcp.aqmDrops'), value: s.outputAqmDrops, alert: true },
+        { label: t('tcp.overloadDrops'), value: s.outputOverloadDrops, alert: true },
+        { label: t('tcp.queueRejected'), value: s.outputRejected, alert: true },
+        { label: t('tcp.queueDepth'), value: s.outputQueuedPackets },
+    ];
+    const th = 'px-3 py-2 font-medium';
     return <div className="mt-3 min-w-0 space-y-3">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
             <Badge variant="muted">Lightweight TCP/IP</Badge>
             <Badge variant="muted">MTU {stack.mtu}</Badge>
             <span className="text-xs text-ui-muted">{t('tcp.activeFlows', { count: s.connections })}</span>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
-            <Metric label={t('tcp.packetsIn')} value={number(s.packetsIn)} />
-            <Metric label={t('tcp.packetsOut')} value={number(s.packetsOut)} />
-            <Metric label={t('tcp.retransmissions')} value={number(s.retransmissions)} />
-            <Metric label={t('tcp.drops')} value={number(s.drops)} />
-            <Metric label={t('tcp.rstSent')} value={number(s.rstSent)} />
-            <Metric label={t('tcp.rstReceived')} value={number(s.rstReceived)} />
-            <Metric label={t('tcp.invalidInput')} value={number(s.invalidInputDrops)} />
-            <Metric label={t('tcp.rateLimited')} value={number(s.rateLimitedDrops)} />
-            <Metric label={t('tcp.aqmDrops')} value={number(s.outputAqmDrops)} />
-            <Metric label={t('tcp.overloadDrops')} value={number(s.outputOverloadDrops)} />
-            <Metric label={t('tcp.queueRejected')} value={number(s.outputRejected)} />
-            <Metric label={t('tcp.queueDepth')} value={number(s.outputQueuedPackets)} />
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <StatGroup title={t('tcp.groupTraffic')} stats={[
+                { label: t('tcp.packetsIn'), value: s.packetsIn },
+                { label: t('tcp.packetsOut'), value: s.packetsOut },
+            ]} />
+            <StatGroup title={t('tcp.groupErrors')} stats={errors} />
+            <StatGroup title={t('tcp.groupDrops')} stats={drops} />
         </div>
         {stack.flows.length > 0 && <div>
             <div className="mb-2 text-xs font-medium text-ui-heading">{t('tcp.flowSamples', { shown: stack.flows.length, total: s.connections })}</div>
-            <div className="min-w-0 max-w-full overflow-x-auto rounded-ui-md border border-ui-border">
-                <table className="w-full min-w-[700px] text-left">
-                    <thead className="text-xs text-ui-muted"><tr>
-                        <th className="px-3 py-2 font-medium">{t('tcp.endpoints')}</th>
-                        <th className="pr-4 font-medium">RTT / RTO</th>
-                        <th className="pr-4 font-medium">CWND</th>
-                        <th className="pr-4 font-medium">{t('tcp.retransmissions')}</th>
-                        <th className="font-medium">MSS</th>
+            <div className="max-h-[28rem] min-w-0 max-w-full overflow-auto rounded-ui-md border border-ui-border">
+                <table className="w-full min-w-[760px] text-left">
+                    <thead className="sticky top-0 z-10 bg-ui-surface text-xs text-ui-muted"><tr>
+                        <th className={th}>{t('tcp.endpoints')}</th>
+                        <th className={th}>{t('tcp.state')}</th>
+                        <th className={`${th} text-right`}>{t('tcp.rtt')}</th>
+                        <th className={`${th} text-right`}>{t('tcp.cwnd')}</th>
+                        <th className={`${th} text-right`}>{t('tcp.pacing')}</th>
+                        <th className={`${th} text-right`}>{t('tcp.retransmissions')}</th>
+                        <th className={`${th} text-right`}>{t('tcp.mss')}</th>
                     </tr></thead>
                     <tbody>{stack.flows.map((flow, i) => <FlowRow key={`${flow.local}:${flow.remote}:${i}`} flow={flow} />)}</tbody>
                 </table>
@@ -103,7 +146,7 @@ function InboundDetail({ inbound, stack }: { inbound?: InboundRuntimeStatus; sta
             {stack && <Badge variant="muted">TCP Stack</Badge>}
         </summary>
         <div className="mt-2 space-y-2">
-            <p className="break-all text-xs text-ui-muted">ID: {id}</p>
+            {inbound?.name && inbound.name !== id && <p className="break-all text-xs text-ui-muted">ID: {id}</p>}
             {inbound && <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 <Metric label={t('tcp.acceptedStreams')} value={formatCounter(inbound.statistics?.acceptedStreams)} />
                 <Metric label={t('tcp.ingressPackets')} value={formatCounter(inbound.statistics?.receivedPackets)} />

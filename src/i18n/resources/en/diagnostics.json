@@ -93,8 +93,8 @@
     "overloadDrops": "Overload drops",
     "queueRejected": "Queue rejected",
     "queueDepth": "Queued packets",
-    "flowSamples": "TCP flow sample ({{shown}} / {{total}}, max 32)",
-    "endpoints": "Remote / local",
+    "flowSamples": "TCP flow sample ({{shown}} / {{total}})",
+    "endpoints": "Remote → local",
     "inFlight": "In flight",
     "lost": "Lost bytes",
     "pacing": "Pacing",
@@ -133,6 +133,13 @@
     "unavailableConnections": "Active connection count unavailable (connections:read permission required).",
     "unavailableInbounds": "Inbound status unavailable (inbounds:read permission required).",
     "unavailableOutbounds": "Outbound node list unavailable (nodes:read permission required).",
-    "unavailableNodeStatus": "Outbound runtime status unavailable (nodes:read permission required)."
+    "unavailableNodeStatus": "Outbound runtime status unavailable (nodes:read permission required).",
+    "groupTraffic": "Traffic",
+    "groupErrors": "Errors",
+    "groupDrops": "Drops & queue",
+    "state": "State",
+    "rtt": "RTT",
+    "cwnd": "CWND",
+    "mss": "MSS"
   }
 }

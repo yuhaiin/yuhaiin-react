@@ -93,8 +93,8 @@
     "overloadDrops": "過負荷による破棄",
     "queueRejected": "キュー拒否",
     "queueDepth": "待機中パケット",
-    "flowSamples": "TCP フローのサンプル ({{shown}} / {{total}}、最大 32)",
-    "endpoints": "接続先 / ローカル",
+    "flowSamples": "TCP フローのサンプル ({{shown}} / {{total}})",
+    "endpoints": "リモート → ローカル",
     "inFlight": "送信中",
     "lost": "損失バイト",
     "pacing": "ペーシング",
@@ -133,6 +133,13 @@
     "unavailableConnections": "接続数を取得できません（connections:read 権限が必要です）。",
     "unavailableInbounds": "Inbound の状態を取得できません（inbounds:read 権限が必要です）。",
     "unavailableOutbounds": "Outbound ノード一覧を取得できません（nodes:read 権限が必要です）。",
-    "unavailableNodeStatus": "Outbound の実行状態を取得できません（nodes:read 権限が必要です）。"
+    "unavailableNodeStatus": "Outbound の実行状態を取得できません（nodes:read 権限が必要です）。",
+    "groupTraffic": "トラフィック",
+    "groupErrors": "エラー",
+    "groupDrops": "破棄・キュー",
+    "state": "状態",
+    "rtt": "RTT",
+    "cwnd": "CWND",
+    "mss": "MSS"
   }
 }
