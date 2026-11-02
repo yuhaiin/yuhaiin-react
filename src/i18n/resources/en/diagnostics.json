@@ -72,5 +72,32 @@
     "check_direct_path": "Direct IP control probes did not connect. Check interface binding, underlying connectivity and endpoint restrictions; proxy paths may still work.",
     "select_tcp_node": "Routing requires a selected TCP node, but none is selected. Select a node or choose a direct/tagged route for this target.",
     "check_routed_https": "Routed HTTPS failed for this target. Compare DNS and route evidence, check the error category, and retry another destination."
+  },
+  "tcp": {
+    "title": "TCP stack diagnostics",
+    "description": "On-demand, bounded snapshots of lightweight TCP stacks. No packet capture or background polling.",
+    "snapshot": "Capture snapshot",
+    "takenAt": "Captured at {{date}}",
+    "failed": "Could not read TCP stack diagnostics. Check the backend and your permissions.",
+    "empty": "No active lightweight TUN stack supports diagnostics.",
+    "activeFlows": "{{count}} active TCP flows",
+    "packetsIn": "Packets received",
+    "packetsOut": "Packets sent",
+    "retransmissions": "Retransmissions",
+    "drops": "Input drops",
+    "rstSent": "RST sent",
+    "rstReceived": "RST received",
+    "invalidInput": "Invalid input drops",
+    "rateLimited": "Rate-limited drops",
+    "aqmDrops": "AQM drops",
+    "overloadDrops": "Overload drops",
+    "queueRejected": "Queue rejected",
+    "queueDepth": "Queued packets",
+    "flowSamples": "TCP flow sample ({{shown}} / {{total}}, max 32)",
+    "endpoints": "Remote / local",
+    "inFlight": "In flight",
+    "lost": "Lost bytes",
+    "pacing": "Pacing",
+    "privacy": "This read-only sample contains IP addresses and port numbers. It is limited to 32 active TCP flows per stack and does not retain packet contents. Review before sharing."
   }
 }
