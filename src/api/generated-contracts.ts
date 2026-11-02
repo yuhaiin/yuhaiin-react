@@ -2320,6 +2320,7 @@ export namespace Go {
   export namespace tools {
     export interface DiagnosticRequest {
       host: string;
+      tcpOnly?: boolean;
     }
     export interface DiagnosticCheck {
       id: string;
@@ -2327,6 +2328,47 @@ export namespace Go {
       message: string;
       durationMs: number;
       evidence: string[];
+    }
+    export interface TCPFlowDiagnostic {
+      state: string;
+      local: string;
+      remote: string;
+      cwndBytes: number;
+      bytesInFlight: number;
+      srttMs: number;
+      rtoMs: number;
+      pacingBytesPerSecond: number;
+      lostBytes: number;
+      retransmissions: number;
+      duplicateAcks: number;
+      pathMss: number;
+      retries: number;
+      recovering: boolean;
+      bbrMode?: string;
+      bbrPhase?: string;
+    }
+    export interface TCPStackStatistics {
+      connections: number;
+      memoryBytes: number;
+      packetsIn: number;
+      packetsOut: number;
+      drops: number;
+      retransmissions: number;
+      rstSent: number;
+      rstReceived: number;
+      invalidInputDrops: number;
+      rateLimitedDrops: number;
+      outputAqmDrops: number;
+      outputRejected: number;
+      outputOverloadDrops: number;
+      outputQueuedPackets: number;
+      outputQueuedBytes: number;
+    }
+    export interface TCPStackDiagnostic {
+      inboundId: string;
+      mtu: number;
+      statistics: TCPStackStatistics;
+      flows: TCPFlowDiagnostic[];
     }
     export interface DiagnosticReport {
       schemaVersion: number;
@@ -2338,6 +2380,7 @@ export namespace Go {
       ipv6Enabled: boolean;
       checks: DiagnosticCheck[];
       findings: string[];
+      tcpStacks?: TCPStackDiagnostic[];
       report: string;
     }
     export interface Interfaces {
