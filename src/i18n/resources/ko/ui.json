@@ -1016,4 +1016,7 @@
   "wrapTimezone": "wrap 프로세스 시간대",
   "wrapTimezoneInherit": "호출자 시간대 상속",
   "wrapTimezoneHelp": "IANA 이름이나 UTC 오프셋으로 검색하세요. 비워 두면 호출자의 TZ를 유지합니다. 지정하면 wrap 명령과 그 자식 프로세스에만 TZ가 적용됩니다. 일광 절약 시간에는 tzdata가 필요합니다."
+  "sshTimezone": "세션 시간대",
+  "sshTimezoneSystem": "시스템 기본값 상속",
+  "sshTimezoneHelp": "IANA 시간대 이름 또는 UTC 오프셋으로 검색할 수 있습니다. 비워 두면 호스트 시간대를 상속합니다. 자식 shell/exec 프로세스에만 적용되며 일광 절약 시간 규칙에는 tzdata가 필요합니다."
 }

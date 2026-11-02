@@ -1016,4 +1016,7 @@
   "wrapTimezone": "Wrapped process time zone",
   "wrapTimezoneInherit": "Inherit caller time zone",
   "wrapTimezoneHelp": "Search IANA names or UTC offsets. Blank keeps the invoking shell's TZ. Setting a zone overrides TZ only for wrapped programs and their children; requires tzdata for daylight saving time."
+  "sshTimezone": "Session time zone",
+  "sshTimezoneSystem": "System default (inherit)",
+  "sshTimezoneHelp": "Search by IANA time zone name or UTC offset. Blank inherits the host time zone; only child shell/exec processes are affected. Daylight-saving rules depend on installed tzdata."
 }

@@ -1016,4 +1016,7 @@
   "wrapTimezone": "wrap プロセスのタイムゾーン",
   "wrapTimezoneInherit": "呼び出し元のタイムゾーンを継承",
   "wrapTimezoneHelp": "IANA 名または UTC オフセットで検索できます。空欄では呼び出し元の TZ を保持します。指定時は wrap されたプログラムと子プロセスの TZ のみを上書きします。夏時間には tzdata が必要です。"
+  "sshTimezone": "セッションのタイムゾーン",
+  "sshTimezoneSystem": "システムのタイムゾーンを引き継ぐ",
+  "sshTimezoneHelp": "IANA タイムゾーン名または UTC オフセットで検索できます。空欄ではホストのタイムゾーンを継承します。変更は子プロセスの shell/exec のみに適用され、夏時間には tzdata が必要です。"
 }
