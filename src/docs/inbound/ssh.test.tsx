@@ -65,7 +65,9 @@ it('translations provide localized SSH inbound settings and safety warnings', ()
             "sshGatewayIPv6",
             "sshSessionIPv6",
             "sshUnsafeShellAcknowledgement",
-            "sshUnsafeShellWarning"
+            "sshUnsafeShellWarning",
+            "sshCgroupRoot",
+            "sshCgroupRootHelp"
     ] as const;
     for (const key of sshInboundKeys) {
         expect(japanese[key], `Missing Japanese translation: ${key}`).toMatch(/[\u3040-\u30ff\u3400-\u9fff]/);
@@ -73,4 +75,13 @@ it('translations provide localized SSH inbound settings and safety warnings', ()
         expect(japanese[key]).not.toBe(english[key]);
         expect(korean[key]).not.toBe(english[key]);
     }
+});
+
+it('preserves the optional delegated cgroup root in SSH inbound configuration', () => {
+    const inbound = selectInboundProtocol(createDefaultInbound('ssh'), 'ssh');
+    if (inbound.protocol.type !== 'ssh') throw new Error('expected SSH protocol');
+    inbound.protocol.ssh.cgroupRoot = '/sys/fs/cgroup/delegated/ssh-session';
+    const normalized = normalizeInbound(JSON.parse(JSON.stringify(inbound)));
+    if (normalized.protocol.type !== 'ssh') throw new Error('expected SSH protocol');
+    expect(normalized.protocol.ssh.cgroupRoot).toBe('/sys/fs/cgroup/delegated/ssh-session');
 });
