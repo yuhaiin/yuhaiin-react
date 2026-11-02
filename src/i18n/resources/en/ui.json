@@ -1009,7 +1009,7 @@
   "wrapCgroupRoot": "Delegated cgroup v2 root (optional)",
   "wrapCgroupDefault": "Automatic cgroup path",
   "wrapMaxSessions": "Max concurrent sessions (0 = 8)",
-  "wrapSettingsInvalid": "Provide non-root UID/GID, absolute paths and a session limit of 0–128.",
+  "wrapSettingsInvalid": "Provide valid non-root UID/GID, absolute paths, a maximum of 0–128 sessions, and a valid IANA time zone.",
   "wrapRestartHelp": "Save and restart Yuhaiin to apply. Explicit -wrap-* startup options take precedence; running sockets are not changed.",
   "wrapSecurityHelp": "Network isolation is not a filesystem sandbox. Only allow trusted local users and use an appropriately delegated cgroup and TUN.",
   "wrapCommandExample": "Command using this socket",
