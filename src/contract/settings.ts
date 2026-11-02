@@ -15,6 +15,7 @@ export function createDefaultSettings(value?: Partial<Settings>): Settings {
       uid: value?.wrap?.uid ?? 0,
       gid: value?.wrap?.gid ?? 0,
       cgroupRoot: value?.wrap?.cgroupRoot ?? "",
+      timezone: value?.wrap?.timezone ?? "",
       maxSessions: value?.wrap?.maxSessions ?? 8,
     },
 	pprof: value?.pprof ?? true,
