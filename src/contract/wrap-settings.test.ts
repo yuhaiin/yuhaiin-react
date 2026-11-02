@@ -9,7 +9,7 @@ describe("local wrap settings", () => {
         const original = createDefaultSettings();
         original.wrap = {
             enabled: true, socket: "/run/yuhaiin/custom.sock",
-            uid: 1000, gid: 1000, cgroupRoot: "/sys/fs/cgroup/delegated/wrap", maxSessions: 16,
+            uid: 1000, gid: 1000, cgroupRoot: "/sys/fs/cgroup/delegated/wrap", timezone: "Asia/Tokyo", maxSessions: 16,
         };
         expect(normalizeSettings(JSON.parse(JSON.stringify(original))).wrap).toEqual(original.wrap);
     });
