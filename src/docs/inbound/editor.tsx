@@ -319,7 +319,7 @@ const SSHServerEditor: FC<{
 }> = ({ value, onChange }) => {
     const { t: uiT } = useTranslation("ui");
     const patch = (fields: Partial<typeof value>) => onChange({ ...value, ...fields });
-    const timezoneOptions = useMemo(() => timezoneOptions(), []);
+    const timezoneChoices = useMemo(() => timezoneOptions(), []);
     return (
         <div className="grid gap-4">
             <p className="text-sm text-ui-muted">{uiT("sshSessionHelp")}</p>
@@ -341,7 +341,7 @@ const SSHServerEditor: FC<{
             <div>
                 <SettingInputVertical label={uiT("sshTimezone")} value={value.timezone ?? ""}
                     onChange={(timezone) => patch({ timezone })}
-                    reminds={[{ value: "", label: uiT("sshTimezoneSystem") }, ...timezoneOptions]}
+                    reminds={[{ value: "", label: uiT("sshTimezoneSystem") }, ...timezoneChoices]}
                     showAllOnFocus placeholder={uiT("sshTimezoneSystem")} spellCheck={false} autoComplete="off" />
                 <p className="mt-1 text-xs text-ui-muted">{uiT("sshTimezoneHelp")}</p>
             </div>
