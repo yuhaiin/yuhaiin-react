@@ -79,7 +79,7 @@
     "snapshot": "Capture snapshot",
     "takenAt": "Captured at {{date}}",
     "failed": "Could not read TCP stack diagnostics. Check the backend and your permissions.",
-    "empty": "No active lightweight TUN stack supports diagnostics.",
+    "empty": "No active lightweight inbound stack supports diagnostics.",
     "activeFlows": "{{count}} active TCP flows",
     "packetsIn": "Packets received",
     "packetsOut": "Packets sent",
