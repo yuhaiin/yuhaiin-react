@@ -277,6 +277,6 @@ export function TCPStackPanel() {
                 {snapshot.truncatedNodes && <p className="text-xs text-ui-warning">{t('tcp.truncatedNodes')}</p>}
             </div>
             <p className="text-xs text-ui-muted 2xl:col-span-2">{t('tcp.privacy')}</p>
-        </div>
+        </div>}
     </section>;
 }
