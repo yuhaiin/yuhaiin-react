@@ -704,6 +704,7 @@ export namespace Go {
       maxSessions?: number;
     }
     export interface SSHProtocol {
+      cgroupRoot?: string;
       hostKey: string;
       username: string;
       authorizedKey: string;

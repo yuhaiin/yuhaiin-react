@@ -992,5 +992,7 @@
   "sshGatewayIPv6": "Gateway IPv6",
   "sshSessionIPv6": "Session IPv6 CIDR",
   "sshUnsafeShellAcknowledgement": "I understand the unsafe shell isolation limitations",
-  "sshUnsafeShellWarning": "Required to enable this inbound. SSH commands can still access the host filesystem and Unix sockets. Use only with trusted SSH identities and a restricted, non-root account."
+  "sshUnsafeShellWarning": "Required to enable this inbound. SSH commands can still access the host filesystem and Unix sockets. Use only with trusted SSH identities and a restricted, non-root account.",
+  "sshCgroupRoot": "cgroup v2 root (optional)",
+  "sshCgroupRootHelp": "SSH requires cgroup v2 for crash-safe process cleanup. Leave blank to use a stable directory under /sys/fs/cgroup/yuhaiin/ssh. For systemd delegation, enter a dedicated writable cgroup v2 path. The SSH listener refuses to start if it cannot create or recover its cgroup."
 }

@@ -74,3 +74,12 @@ it('translations provide localized SSH inbound settings and safety warnings', ()
         expect(korean[key]).not.toBe(english[key]);
     }
 });
+
+it('preserves the optional delegated cgroup root in SSH inbound configuration', () => {
+    const inbound = selectInboundProtocol(createDefaultInbound('ssh'), 'ssh');
+    if (inbound.protocol.type !== 'ssh') throw new Error('expected SSH protocol');
+    inbound.protocol.ssh.cgroupRoot = '/sys/fs/cgroup/delegated/ssh-session';
+    const normalized = normalizeInbound(JSON.parse(JSON.stringify(inbound)));
+    if (normalized.protocol.type !== 'ssh') throw new Error('expected SSH protocol');
+    expect(normalized.protocol.ssh.cgroupRoot).toBe('/sys/fs/cgroup/delegated/ssh-session');
+});

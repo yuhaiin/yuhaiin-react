@@ -349,6 +349,9 @@ const SSHServerEditor: FC<{
                         <Textarea code secret rows={3} value={value.hostKey} onChange={(event) => patch({ hostKey: event.target.value })}
                             placeholder="-----BEGIN PRIVATE KEY-----" />
                     </div>
+                    <SettingInputVertical label={uiT("sshCgroupRoot")} value={value.cgroupRoot ?? ""}
+                        onChange={(cgroupRoot) => patch({ cgroupRoot })} placeholder="/sys/fs/cgroup/yuhaiin/ssh/..." />
+                    <p className="text-xs text-ui-muted">{uiT("sshCgroupRootHelp")}</p>
                     <SwitchCard label={uiT("sshEnableIPv6")} checked={value.ipv6}
                         onCheckedChange={(ipv6) => patch({ ipv6 })} />
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

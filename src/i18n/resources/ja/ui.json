@@ -992,5 +992,7 @@
   "sshGatewayIPv6": "ゲートウェイ IPv6 アドレス",
   "sshSessionIPv6": "セッション IPv6 アドレス (CIDR)",
   "sshUnsafeShellAcknowledgement": "シェルの隔離に関するセキュリティ上の制限を理解しています",
-  "sshUnsafeShellWarning": "このインバウンドを有効にするには確認が必要です。SSH コマンドからホストのファイルシステムや Unix ソケットにアクセスできる場合があります。信頼できる SSH ユーザーと、権限を制限した非 root アカウントでのみ使用してください。"
+  "sshUnsafeShellWarning": "このインバウンドを有効にするには確認が必要です。SSH コマンドからホストのファイルシステムや Unix ソケットにアクセスできる場合があります。信頼できる SSH ユーザーと、権限を制限した非 root アカウントでのみ使用してください。",
+  "sshCgroupRoot": "cgroup v2 のルート（任意）",
+  "sshCgroupRootHelp": "SSH では異常終了後のプロセスを確実にクリーンアップするため、cgroup v2 が必須です。空欄の場合は /sys/fs/cgroup/yuhaiin/ssh 配下の固定パスを使います。systemd から委譲された環境では、書き込み可能な専用の cgroup v2 ディレクトリを指定してください。cgroup を作成または復旧できない場合、SSH リスナーは起動しません。"
 }
