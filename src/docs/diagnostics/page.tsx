@@ -72,7 +72,7 @@ export default function DiagnosticsPage() {
     };
 
     return (
-        <div className="max-w-5xl space-y-5">
+        <div className="w-full min-w-0 space-y-5">
             <PageHeader title={t('title')} description={t('description')} />
             <Card noMargin>
                 <CardBody>
