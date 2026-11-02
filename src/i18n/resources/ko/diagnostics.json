@@ -72,5 +72,32 @@
     "check_direct_path": "직접 IP 연결 확인에 실패했습니다. 인터페이스 바인딩, 기본 회선, 대상 제한을 확인하세요. 프록시 경로는 작동할 수 있습니다.",
     "select_tcp_node": "라우팅에 선택한 TCP 노드가 필요하지만 선택되지 않았습니다. 노드를 선택하거나 대상에 직접/태그 경로를 지정하세요.",
     "check_routed_https": "대상의 경로 경유 HTTPS에 실패했습니다. DNS와 경로 근거, 오류 분류를 확인하고 다른 대상도 시도하세요."
+  },
+  "tcp": {
+    "title": "TCP 스택 진단",
+    "description": "경량 TCP 스택의 상태를 요청할 때만 조회합니다. 패킷 캡처나 백그라운드 폴링은 없습니다.",
+    "snapshot": "스냅샷 가져오기",
+    "takenAt": "수집 시각: {{date}}",
+    "failed": "TCP 스택 진단을 가져올 수 없습니다. 백엔드 및 권한을 확인하세요.",
+    "empty": "진단을 지원하는 활성 경량 TUN 스택이 없습니다.",
+    "activeFlows": "활성 TCP 흐름 {{count}}개",
+    "packetsIn": "수신 패킷",
+    "packetsOut": "송신 패킷",
+    "retransmissions": "재전송",
+    "drops": "입력 드롭",
+    "rstSent": "RST 송신",
+    "rstReceived": "RST 수신",
+    "invalidInput": "잘못된 입력 드롭",
+    "rateLimited": "속도 제한 드롭",
+    "aqmDrops": "AQM 드롭",
+    "overloadDrops": "과부하 드롭",
+    "queueRejected": "큐 거부",
+    "queueDepth": "대기 패킷",
+    "flowSamples": "TCP 흐름 샘플 ({{shown}} / {{total}}, 최대 32)",
+    "endpoints": "원격 / 로컬",
+    "inFlight": "전송 중",
+    "lost": "손실 바이트",
+    "pacing": "페이싱",
+    "privacy": "읽기 전용 샘플이지만 IP 주소와 포트 번호가 포함됩니다. 스택당 최대 32개의 흐름만 보여 주며 패킷 내용은 저장하지 않습니다. 공유 전에 확인하세요."
   }
 }
