@@ -92,7 +92,7 @@ export default function GatewayPage() {
   if (isLoading || !draft) return <Loading />;
 
   return (
-    <MainContainer className="max-w-screen-xl">
+    <MainContainer className="max-w-[1440px]">
       <div className="space-y-6">
         <PageHeader title={t("title")} description={t("unifiedDescription")} actions={<>
             <Button variant="primary" loading={pending} disabled={!dirty}

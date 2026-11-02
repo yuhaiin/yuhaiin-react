@@ -37,7 +37,7 @@ export default function CertificatesPage() {
   if (!allowed) return <MainContainer><p role="alert">{t('permission')}</p></MainContainer>;
   if (isLoading && !data) return <Loading />;
   if (error && !data) return <Loading onRetry={() => void mutate()}>{errorMessage(error)}</Loading>;
-  return <MainContainer className="max-w-screen-xl"><div className="space-y-6">
+  return <MainContainer className="max-w-[1440px]"><div className="space-y-6">
     <div className="flex flex-wrap items-start justify-between gap-3"><div><h1 className="text-xl font-semibold">{t('title')}</h1><p className="mt-1 text-sm text-ui-secondary">{t('description')}</p></div>
       <div className="flex flex-wrap gap-2">{manage && <Button disabled={pending} variant="primary" onClick={() => { setEditor({ config: newCertificate(), revision: 0 }); setProvider(undefined); }}>{t('create')}</Button>}<Button permission="certificates:read" variant="outline-secondary" disabled={pending} onClick={() => void mutate()}>{t('refresh')}</Button></div>
     </div>

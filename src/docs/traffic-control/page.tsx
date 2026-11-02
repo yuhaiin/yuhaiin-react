@@ -51,7 +51,7 @@ export default function TrafficControlPage() {
     if (isLoading || !data) return <Loading />;
     const names = Object.keys(draft.profiles).sort();
     return (
-        <MainContainer className="max-w-screen-xl">
+        <MainContainer className="max-w-[1440px]">
             <div className="space-y-5 pb-8">
                 <PageHeader title={t('title')} description={t('description')} actions={<>
                         <Button
