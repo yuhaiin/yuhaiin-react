@@ -1,4 +1,5 @@
 import { useSecretIsolation } from "@/component/secret-values";
+import { isValidTimezone, timezoneOptions } from "@/common/timezones";
 import { useSession } from "@/auth/context";
 import { PageHeader } from '@/component/v2/page-header';
 import { useAsyncAction, useCloseGuard, useEditorDraft } from "@/hooks/use-editor-draft";
@@ -55,11 +56,12 @@ function ConfigComponent() {
     const origins = additionalOrigins(originsText ?? setting?.trustedOrigins?.join("\n") ?? "");
     const invalidOrigin = origins.length > 32 || origins.some((origin) => !validTrustedOrigin(origin)) || new Set(origins).size !== origins.length;
     const wrap = setting?.wrap;
+    const timezoneChoices = useMemo(() => timezoneOptions(), []);
     const validID = (value: number) => Number.isSafeInteger(value) && value > 0 && value <= 0xffffffff;
-    const wrapInvalid = Boolean(wrap?.enabled && (!validID(wrap.uid) || !validID(wrap.gid) ||
+    const wrapInvalid = Boolean((wrap?.timezone && !isValidTimezone(wrap.timezone)) || (wrap?.enabled && (!validID(wrap.uid) || !validID(wrap.gid) ||
         (wrap.socket !== "" && !wrap.socket.startsWith("/")) ||
         (wrap.cgroupRoot !== "" && !wrap.cgroupRoot.startsWith("/")) ||
-        !Number.isInteger(wrap.maxSessions) || wrap.maxSessions < 0 || wrap.maxSessions > 128));
+        !Number.isInteger(wrap.maxSessions) || wrap.maxSessions < 0 || wrap.maxSessions > 128)));
 
     const systemProxy = useMemo(() => {
         const value: string[] = [];
@@ -179,6 +181,13 @@ function ConfigComponent() {
                             <SettingInputVertical label={uiT("wrapGID")} type="number" min={1} max={4294967295} step={1}
                                 value={String(setting.wrap.gid)}
                                 onChange={(value) => update(prev => ({ ...prev, wrap: { ...prev.wrap, gid: Number(value) } }))} />
+                            <div className="md:col-span-2">
+                                <SettingInputVertical label={uiT("wrapTimezone")} value={setting.wrap.timezone}
+                                    onChange={(timezone) => update(prev => ({ ...prev, wrap: { ...prev.wrap, timezone } }))}
+                                    reminds={[{ value: "", label: uiT("wrapTimezoneInherit") }, ...timezoneChoices]}
+                                    showAllOnFocus placeholder={uiT("wrapTimezoneInherit")} spellCheck={false} autoComplete="off" />
+                                <p className="mt-1 text-xs text-ui-muted">{uiT("wrapTimezoneHelp")}</p>
+                            </div>
                             <div className="md:col-span-2">
                                 <SettingInputVertical label={uiT("wrapCgroupRoot")} value={setting.wrap.cgroupRoot}
                                     placeholder={uiT("wrapCgroupDefault")}
