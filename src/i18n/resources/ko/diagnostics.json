@@ -79,7 +79,7 @@
     "snapshot": "스냅샷 가져오기",
     "takenAt": "수집 시각: {{date}}",
     "failed": "TCP 스택 진단을 가져올 수 없습니다. 백엔드 및 권한을 확인하세요.",
-    "empty": "진단을 지원하는 활성 경량 TUN 스택이 없습니다.",
+    "empty": "진단을 지원하는 활성 경량 인바운드 스택이 없습니다.",
     "activeFlows": "활성 TCP 흐름 {{count}}개",
     "packetsIn": "수신 패킷",
     "packetsOut": "송신 패킷",
