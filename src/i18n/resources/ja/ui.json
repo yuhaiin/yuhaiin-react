@@ -1009,7 +1009,7 @@
   "wrapCgroupRoot": "委譲された cgroup v2 のルート（任意）",
   "wrapCgroupDefault": "自動 cgroup パス",
   "wrapMaxSessions": "最大同時セッション数（0 = 8）",
-  "wrapSettingsInvalid": "非 root の UID/GID、絶対パス、0～128 のセッション数を指定してください。",
+  "wrapSettingsInvalid": "非 root の UID/GID、絶対パス、0～128 のセッション数、および有効な IANA タイムゾーンを指定してください。",
   "wrapRestartHelp": "保存後に Yuhaiin を再起動すると適用されます。起動時の -wrap-* オプションが優先され、稼働中のソケットは変更されません。",
   "wrapSecurityHelp": "ネットワーク隔離はファイルシステムを隔離しません。信頼できるユーザーと適切な cgroup・TUN 権限がある場合にのみ使用してください。",
   "wrapCommandExample": "このソケットを使用するコマンド",
