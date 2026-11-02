@@ -2253,6 +2253,15 @@ export namespace Go {
       advanced: AdvancedConfig;
       backup: BackupReference;
       trustedOrigins: string[];
+      wrap: WrapSettings;
+    }
+    export interface WrapSettings {
+      enabled: boolean;
+      socket: string;
+      uid: number;
+      gid: number;
+      cgroupRoot: string;
+      maxSessions: number;
     }
     export interface SystemProxy {
       http: boolean;

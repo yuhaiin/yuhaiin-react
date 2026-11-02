@@ -13,7 +13,7 @@ import Loading from "@/component/v2/loading";
 import { GlobalToastContext } from "@/component/v2/toast";
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup";
 import type { Settings } from "@/contract/settings";
-import { Cpu, Globe, NotebookText, Save, ShieldCheck } from "lucide-react";
+import { Cpu, Globe, NotebookText, Save, ShieldCheck, Terminal } from "lucide-react";
 import { useContext, useMemo, useState } from "react";
 import useSWR from "swr";
 import { useInterfaces } from "../../common/interfaces";
@@ -54,6 +54,12 @@ function ConfigComponent() {
     const securityWritable = !isolated || session?.principal.credentialType === "local" || session?.principal.permissions.includes("security:write");
     const origins = additionalOrigins(originsText ?? setting?.trustedOrigins?.join("\n") ?? "");
     const invalidOrigin = origins.length > 32 || origins.some((origin) => !validTrustedOrigin(origin)) || new Set(origins).size !== origins.length;
+    const wrap = setting?.wrap;
+    const validID = (value: number) => Number.isSafeInteger(value) && value > 0 && value <= 0xffffffff;
+    const wrapInvalid = Boolean(wrap?.enabled && (!validID(wrap.uid) || !validID(wrap.gid) ||
+        (wrap.socket !== "" && !wrap.socket.startsWith("/")) ||
+        (wrap.cgroupRoot !== "" && !wrap.cgroupRoot.startsWith("/")) ||
+        !Number.isInteger(wrap.maxSessions) || wrap.maxSessions < 0 || wrap.maxSessions > 128));
 
     const systemProxy = useMemo(() => {
         const value: string[] = [];
@@ -70,6 +76,10 @@ function ConfigComponent() {
         if (!setting || saving || error || isLoading) return;
         if (invalidOrigin) {
             ctx.Error(uiT("trustedOriginsInvalid"));
+            return;
+        }
+        if (wrapInvalid) {
+            ctx.Error(uiT("wrapSettingsInvalid"));
             return;
         }
         void run(async () => {
@@ -144,6 +154,45 @@ function ConfigComponent() {
                             </ToggleGroup>
                         </div>
                     </div>
+                </CardBody>
+            </Card>
+
+
+            <Card>
+                <CardHeader className="py-3">
+                    <IconBox icon={Terminal} tone="neutral" title={uiT("wrapSettingsTitle")} description={uiT("wrapSettingsDescription")} />
+                </CardHeader>
+                <CardBody>
+                    <fieldset disabled={!securityWritable} className="grid gap-4">
+                        <SwitchCard label={uiT("wrapEnabled")} checked={setting.wrap.enabled}
+                            onCheckedChange={(enabled) => update(prev => ({ ...prev, wrap: { ...prev.wrap, enabled } }))} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <SettingInputVertical label={uiT("wrapSocket")} value={setting.wrap.socket}
+                                placeholder="/run/yuhaiin/wrap.sock"
+                                onChange={(socket) => update(prev => ({ ...prev, wrap: { ...prev.wrap, socket } }))} />
+                            <SettingInputVertical label={uiT("wrapMaxSessions")} type="number" min={0} max={128} step={1}
+                                value={String(setting.wrap.maxSessions)}
+                                onChange={(value) => update(prev => ({ ...prev, wrap: { ...prev.wrap, maxSessions: Number(value) } }))} />
+                            <SettingInputVertical label={uiT("wrapUID")} type="number" min={1} max={4294967295} step={1}
+                                value={String(setting.wrap.uid)}
+                                onChange={(value) => update(prev => ({ ...prev, wrap: { ...prev.wrap, uid: Number(value) } }))} />
+                            <SettingInputVertical label={uiT("wrapGID")} type="number" min={1} max={4294967295} step={1}
+                                value={String(setting.wrap.gid)}
+                                onChange={(value) => update(prev => ({ ...prev, wrap: { ...prev.wrap, gid: Number(value) } }))} />
+                            <div className="md:col-span-2">
+                                <SettingInputVertical label={uiT("wrapCgroupRoot")} value={setting.wrap.cgroupRoot}
+                                    placeholder={uiT("wrapCgroupDefault")}
+                                    onChange={(cgroupRoot) => update(prev => ({ ...prev, wrap: { ...prev.wrap, cgroupRoot } }))} />
+                            </div>
+                        </div>
+                        {wrapInvalid && <p role="alert" className="text-sm text-ui-danger">{uiT("wrapSettingsInvalid")}</p>}
+                        <p className="text-xs text-ui-muted">{uiT("wrapRestartHelp")}</p>
+                        <p className="text-xs text-ui-muted">{uiT("wrapSecurityHelp")}</p>
+                        <div className="min-w-0 rounded-ui-sm border border-ui-border bg-ui-surface-muted/40 p-3">
+                            <SettingLabel>{uiT("wrapCommandExample")}</SettingLabel>
+                            <code className="block break-all text-xs text-ui-secondary">yuhaiin wrap -socket {setting.wrap.socket || "/run/yuhaiin/wrap.sock"} -- &lt;program&gt; [args...]</code>
+                        </div>
+                    </fieldset>
                 </CardBody>
             </Card>
 

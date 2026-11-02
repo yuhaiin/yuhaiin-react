@@ -999,5 +999,18 @@
   "sshShellHelp": "HOME and the starting directory follow the system account selected by UID. Leave the shell empty to use its login shell, with /bin/sh as fallback. Select /bin/bash explicitly for Bash startup files; /bin/sh may use different startup rules.",
   "sshSFTPHelp": "Built-in SFTP uses the same SSH key and Linux UID/GID. No external SFTP server is required.",
   "sshSFTPReadOnlyPaths": "Read-only SFTP directories",
-  "sshSFTPReadOnlyHelp": "One absolute path per line. These directories and their contents are read-only over SFTP, including access through symbolic links. Leave empty to use normal system permissions. These rules do not restrict SSH shell or exec commands."
+  "sshSFTPReadOnlyHelp": "One absolute path per line. These directories and their contents are read-only over SFTP, including access through symbolic links. Leave empty to use normal system permissions. These rules do not restrict SSH shell or exec commands.",
+  "wrapSettingsTitle": "Local wrap service",
+  "wrapSettingsDescription": "Configure Linux-only local command network isolation defaults.",
+  "wrapEnabled": "Enable after restarting Yuhaiin",
+  "wrapSocket": "Unix socket path",
+  "wrapUID": "Authorized non-root UID",
+  "wrapGID": "Socket group GID",
+  "wrapCgroupRoot": "Delegated cgroup v2 root (optional)",
+  "wrapCgroupDefault": "Automatic cgroup path",
+  "wrapMaxSessions": "Max concurrent sessions (0 = 8)",
+  "wrapSettingsInvalid": "Provide non-root UID/GID, absolute paths and a session limit of 0–128.",
+  "wrapRestartHelp": "Save and restart Yuhaiin to apply. Explicit -wrap-* startup options take precedence; running sockets are not changed.",
+  "wrapSecurityHelp": "Network isolation is not a filesystem sandbox. Only allow trusted local users and use an appropriately delegated cgroup and TUN.",
+  "wrapCommandExample": "Command using this socket"
 }

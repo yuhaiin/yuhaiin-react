@@ -9,6 +9,14 @@ export function createDefaultSettings(value?: Partial<Settings>): Settings {
     useDefaultInterface: value?.useDefaultInterface ?? true,
     netInterface: value?.netInterface ?? "",
     trustedOrigins: value?.trustedOrigins ?? [],
+    wrap: {
+      enabled: value?.wrap?.enabled ?? false,
+      socket: value?.wrap?.socket ?? "/run/yuhaiin/wrap.sock",
+      uid: value?.wrap?.uid ?? 0,
+      gid: value?.wrap?.gid ?? 0,
+      cgroupRoot: value?.wrap?.cgroupRoot ?? "",
+      maxSessions: value?.wrap?.maxSessions ?? 8,
+    },
 	pprof: value?.pprof ?? true,
     systemProxy: {
       http: value?.systemProxy?.http ?? false,
