@@ -325,7 +325,7 @@ function sessionTimezoneOptions(): { value: string; label: string; label_childre
         try {
             const part = new Intl.DateTimeFormat("en", { timeZone: zone, timeZoneName: "shortOffset" })
                 .formatToParts(new Date()).find(item => item.type === "timeZoneName")?.value ?? "";
-            const match = /^GMT([+-])(\\d{1,2})(?::(\\d{2}))?$/.exec(part);
+            const match = /^GMT([+-])(\d{1,2})(?::(\d{2}))?$/.exec(part);
             offset = match ? `UTC${match[1]}${match[2].padStart(2, "0")}:${match[3] ?? "00"}` : "UTC+00:00";
         } catch { /* The backend rejects unsupported zones. */ }
         return { value: zone, label: zone, label_children: offset ? [offset] : [] };
