@@ -1012,5 +1012,8 @@
   "wrapSettingsInvalid": "Provide non-root UID/GID, absolute paths and a session limit of 0–128.",
   "wrapRestartHelp": "Save and restart Yuhaiin to apply. Explicit -wrap-* startup options take precedence; running sockets are not changed.",
   "wrapSecurityHelp": "Network isolation is not a filesystem sandbox. Only allow trusted local users and use an appropriately delegated cgroup and TUN.",
-  "wrapCommandExample": "Command using this socket"
+  "wrapCommandExample": "Command using this socket",
+  "wrapTimezone": "Wrapped process time zone",
+  "wrapTimezoneInherit": "Inherit caller time zone",
+  "wrapTimezoneHelp": "Search IANA names or UTC offsets. Blank keeps the invoking shell's TZ. Setting a zone overrides TZ only for wrapped programs and their children; requires tzdata for daylight saving time."
 }
