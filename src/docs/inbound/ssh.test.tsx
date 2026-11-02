@@ -18,9 +18,41 @@ it('configures SSH as TCP-only with no extra transports and an automatic host ke
     expect(ssh.protocol.ssh).toMatchObject({
         hostKey: '', mtu: 1500, ipv6: true, maxSessions: 8,
         uid: 65534, gid: 65534, allowUnsafeShell: false,
+        shell: '', sftpReadOnlyPaths: [],
     });
     const restored = normalizeInbound(JSON.parse(JSON.stringify(ssh)));
     expect(restored.protocol).toEqual(ssh.protocol);
+});
+
+it('edits and restores optional SFTP read-only directories without changing shell permissions', () => {
+    let inbound = selectInboundProtocol(createDefaultInbound('ssh'), 'ssh');
+    const host = document.createElement('div');
+    document.body.append(host);
+    const root = createRoot(host);
+    const render = () => root.render(<InboundEditor inbound={inbound} onChange={next => { inbound = next; render(); }} protocols={['ssh']} />);
+    try {
+        act(render);
+        expect(host.textContent).toContain('sshSFTPHelp');
+        expect(host.textContent).toContain('sshSFTPReadOnlyHelp');
+        expect(host.textContent).toContain('sshShellHelp');
+        const editor = host.querySelector<HTMLTextAreaElement>('textarea[aria-label="sshSFTPReadOnlyPaths"]')!;
+        expect(editor).not.toBeNull();
+        const setValue = (value: string) => act(() => {
+            Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(editor, value);
+            editor.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        setValue('/srv/archive\n/srv/backups');
+        if (inbound.protocol.type !== 'ssh') throw new Error('expected SSH protocol');
+        expect(inbound.protocol.ssh.sftpReadOnlyPaths).toEqual(['/srv/archive', '/srv/backups']);
+        expect(inbound.protocol.ssh.shell).toBe('');
+        const restored = normalizeInbound(JSON.parse(JSON.stringify(inbound)));
+        expect(restored.protocol).toEqual(inbound.protocol);
+        setValue('');
+        expect(inbound.protocol.ssh.sftpReadOnlyPaths).toEqual([]);
+    } finally {
+        act(() => root.unmount());
+        host.remove();
+    }
 });
 
 it('shows SSH host-key generation help and the explicit security acknowledgement', () => {
@@ -52,6 +84,11 @@ it('translations provide localized SSH inbound settings and safety warnings', ()
             "sshSessionHelp",
             "sshLoginUsername",
             "sshShell",
+            "sshShellAuto",
+            "sshShellHelp",
+            "sshSFTPHelp",
+            "sshSFTPReadOnlyPaths",
+            "sshSFTPReadOnlyHelp",
             "sshUID",
             "sshGID",
             "sshMaxSessions",

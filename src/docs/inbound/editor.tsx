@@ -324,8 +324,8 @@ const SSHServerEditor: FC<{
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <SettingInputVertical label={uiT("sshLoginUsername")} value={value.username}
                     onChange={(username) => patch({ username })} placeholder="alice" />
-                <SettingInputVertical label={uiT("sshShell")} value={value.shell ?? "/bin/sh"}
-                    onChange={(shell) => patch({ shell })} placeholder="/bin/sh" />
+                <SettingInputVertical label={uiT("sshShell")} value={value.shell ?? ""}
+                    onChange={(shell) => patch({ shell })} placeholder={uiT("sshShellAuto")} />
                 <SettingInputVertical label={uiT("sshUID")} type="number" min={1} step={1}
                     value={String(value.uid)} onChange={(uid) => patch({ uid: numberValue(uid) })} />
                 <SettingInputVertical label={uiT("sshGID")} type="number" min={1} step={1}
@@ -335,6 +335,13 @@ const SSHServerEditor: FC<{
                 <SettingInputVertical label={uiT("sshMaxSessions")} type="number" min={1} max={128} step={1}
                     value={String(value.maxSessions ?? 8)} onChange={(maxSessions) => patch({ maxSessions: numberValue(maxSessions) })} />
             </div>
+            <p className="text-xs text-ui-muted">{uiT("sshShellHelp")}</p>
+            <FormSection title="SFTP">
+                <p className="text-sm text-ui-muted">{uiT("sshSFTPHelp")}</p>
+                <InputList title={uiT("sshSFTPReadOnlyPaths")} data={value.sftpReadOnlyPaths}
+                    onChange={(sftpReadOnlyPaths) => patch({ sftpReadOnlyPaths })} placeholder="/srv/archive" />
+                <p className="text-xs text-ui-muted">{uiT("sshSFTPReadOnlyHelp")}</p>
+            </FormSection>
             <div>
                 <p className="mb-2 text-sm font-medium text-ui-heading">{uiT("sshAuthorizedPublicKey")}</p>
                 <Textarea code rows={3} value={value.authorizedKey} onChange={(event) => patch({ authorizedKey: event.target.value })}
