@@ -2261,6 +2261,7 @@ export namespace Go {
       uid: number;
       gid: number;
       cgroupRoot: string;
+      timezone: string;
       maxSessions: number;
     }
     export interface SystemProxy {
