@@ -1009,7 +1009,7 @@
   "wrapCgroupRoot": "위임된 cgroup v2 루트(선택)",
   "wrapCgroupDefault": "자동 cgroup 경로",
   "wrapMaxSessions": "최대 동시 세션 수(0 = 8)",
-  "wrapSettingsInvalid": "비-root UID/GID, 절대 경로, 0~128 세션 수를 입력하세요.",
+  "wrapSettingsInvalid": "유효한 비-root UID/GID, 절대 경로, 0~128의 세션 수 및 IANA 시간대를 입력하세요.",
   "wrapRestartHelp": "저장 후 Yuhaiin을 다시 시작해야 적용됩니다. 명시된 -wrap-* 시작 옵션이 우선하며 실행 중인 소켓은 변경되지 않습니다.",
   "wrapSecurityHelp": "네트워크 격리는 파일 시스템 격리가 아닙니다. 신뢰할 수 있는 사용자와 적절한 cgroup/TUN 권한이 있을 때만 사용하세요.",
   "wrapCommandExample": "이 소켓을 사용하는 명령",
