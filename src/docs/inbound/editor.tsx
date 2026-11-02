@@ -1,4 +1,5 @@
 import { FormSection } from '@/component/v2/form-section';
+import { timezoneOptions } from '@/common/timezones';
 import { base64ToBytes, bytesToBase64 } from "@/common/base64";
 
 import { useTranslation } from 'react-i18next';
@@ -312,33 +313,13 @@ const AuthFields: FC<{
     );
 };
 
-// Browser-provided IANA zones avoid shipping a stale, separately maintained
-// list. UTC and the current zone are included even when not enumerated.
-function sessionTimezoneOptions(): { value: string; label: string; label_children: string[] }[] {
-    const browserIntl = Intl as typeof Intl & { supportedValuesOf?: (key: string) => string[] };
-    const zones = new Set(["UTC", Intl.DateTimeFormat().resolvedOptions().timeZone, ...(browserIntl.supportedValuesOf?.("timeZone") ?? [
-        "Asia/Tokyo", "Asia/Shanghai", "Asia/Singapore", "Europe/London",
-        "Europe/Berlin", "America/New_York", "America/Los_Angeles",
-    ])].filter(Boolean));
-    return [...zones].sort().map(zone => {
-        let offset = "";
-        try {
-            const part = new Intl.DateTimeFormat("en", { timeZone: zone, timeZoneName: "shortOffset" })
-                .formatToParts(new Date()).find(item => item.type === "timeZoneName")?.value ?? "";
-            const match = /^GMT([+-])(\d{1,2})(?::(\d{2}))?$/.exec(part);
-            offset = match ? `UTC${match[1]}${match[2].padStart(2, "0")}:${match[3] ?? "00"}` : "UTC+00:00";
-        } catch { /* The backend rejects unsupported zones. */ }
-        return { value: zone, label: zone, label_children: offset ? [offset] : [] };
-    });
-}
-
 const SSHServerEditor: FC<{
     value: Extract<InboundProtocol, { type: "ssh" }>["ssh"];
     onChange: (value: Extract<InboundProtocol, { type: "ssh" }>["ssh"]) => void;
 }> = ({ value, onChange }) => {
     const { t: uiT } = useTranslation("ui");
     const patch = (fields: Partial<typeof value>) => onChange({ ...value, ...fields });
-    const timezoneOptions = useMemo(() => sessionTimezoneOptions(), []);
+    const timezoneOptions = useMemo(() => timezoneOptions(), []);
     return (
         <div className="grid gap-4">
             <p className="text-sm text-ui-muted">{uiT("sshSessionHelp")}</p>
