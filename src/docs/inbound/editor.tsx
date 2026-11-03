@@ -1,3 +1,4 @@
+import { TCPSettingsEditor } from '@/component/tcp-settings';
 import { FormSection } from '@/component/v2/form-section';
 import { timezoneOptions } from '@/common/timezones';
 import { base64ToBytes, bytesToBase64 } from "@/common/base64";
@@ -490,15 +491,9 @@ const TunEditor: FC<{
     return (
         <div className="grid gap-4">
             <div className="grid gap-3 rounded-ui-lg border border-ui-border p-4">
-                <div className="grid gap-1">
-                    <SettingSelectVertical
-                        label={uiT("tunCongestionControl")}
-                        value={value.congestionControl || "cubic"}
-                        values={[["Reno + HyStart++", "reno"], ["CUBIC + HyStart++", "cubic"], ["BBR v3", "bbr"]]}
-                        onChange={(congestionControl) => patch({ congestionControl })}
-                    />
-                    <p className="text-xs text-ui-muted">{uiT("tunCongestionControlHint")}</p>
-                </div>
+                <TCPSettingsEditor defaultCongestion="cubic"
+                    value={{ congestionControl: value.congestionControl, lossRecovery: value.lossRecovery }}
+                    onChange={(settings) => patch(settings)} />
                 <SettingSelectVertical
                     label={uiT("tunOutputScheduler")}
                     value={value.outputScheduler || "fifo"}

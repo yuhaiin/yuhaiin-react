@@ -1,4 +1,9 @@
 {
+  "tcpCongestionControl": "TCP 輻輳制御",
+  "tcpLossRecovery": "TCP 損失検出",
+  "tcpDefault": "デフォルト",
+  "tcpClassic": "従来方式 (DupACK / SACK)",
+  "tcpSettingsHint": "内部の Lightweight TCP スタックに適用する設定です。スタックが再作成されると有効になります。接続先と SACK をネゴシエートできない場合、RACK-TLP は従来方式にフォールバックします。DSACK フィードバックはどちらの方式でも利用できます。",
   "outbound6": "アウトバウンド",
   "subscribe": "購読",
   "publish": "公開",
