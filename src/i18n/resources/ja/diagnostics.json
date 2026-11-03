@@ -112,7 +112,7 @@
     "noDoubleCount": "再送・破棄数は表示中の軽量スタックのみの値です。同じ通信を Inbound と Outbound で観測するため、両者は合算しません。",
     "inboundsTitle": "Inbound",
     "outboundsTitle": "Outbound ノード",
-    "inboundsHint": "流入統計は受け入れた要求の累積値で、転送成功数ではありません。展開するとスタックの詳細を表示します。",
+    "inboundsHint": "流入統計は受け入れた要求の累積値で、転送成功数ではありません。",
     "outboundsHint": "稼働中または選択中のノードのみ確認します（最大100件）。ノードごとの通信量は全体値に加算しません。VPN 状態と TCP RTT は別の指標です。",
     "noInbounds": "Inbound の観測データはありません。",
     "noOutbounds": "稼働中または選択中の Outbound ノードはありません。",
@@ -149,6 +149,14 @@
     "state": "状態",
     "rtt": "RTT",
     "cwnd": "CWND",
-    "mss": "MSS"
+    "mss": "MSS",
+    "stackHealthy": "再送・破棄なし",
+    "backToList": "一覧に戻る",
+    "selectItem": "項目を選択すると詳細を表示します。",
+    "listHelp": "この数値について",
+    "autoRefresh": "自動更新",
+    "refreshOff": "自動更新オフ",
+    "refreshEvery": "{{count}} 秒ごと",
+    "deltaHint": "2 回目以降のスナップショットでは、+N は前回からの増加分、全体の速度はその間の平均です。"
   }
 }

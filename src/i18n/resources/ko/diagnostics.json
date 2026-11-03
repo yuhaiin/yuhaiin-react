@@ -112,7 +112,7 @@
     "noDoubleCount": "재전송 및 드롭은 표시된 경량 스택에서만 측정합니다. 동일한 트래픽이 인바운드와 아웃바운드에서 관측될 수 있어 합산하지 않습니다.",
     "inboundsTitle": "인바운드",
     "outboundsTitle": "아웃바운드 노드",
-    "inboundsHint": "유입 카운터는 수락된 요청의 누적 값이며 전달 성공 수가 아닙니다. 펼쳐서 TCP 스택 정보를 확인하세요.",
+    "inboundsHint": "유입 카운터는 수락된 요청의 누적 값이며 전달 성공 수가 아닙니다.",
     "outboundsHint": "활성/선택된 노드만 조회합니다(최대 100개). 노드별 전송량은 전체 값에 더하지 않습니다. VPN 상태와 TCP RTT는 별개입니다.",
     "noInbounds": "인바운드 관측 데이터가 없습니다.",
     "noOutbounds": "활성 또는 선택된 아웃바운드 노드가 없습니다.",
@@ -149,6 +149,14 @@
     "state": "상태",
     "rtt": "RTT",
     "cwnd": "CWND",
-    "mss": "MSS"
+    "mss": "MSS",
+    "stackHealthy": "재전송·폐기 없음",
+    "backToList": "목록으로 돌아가기",
+    "selectItem": "항목을 선택하면 세부 정보가 표시됩니다.",
+    "listHelp": "이 수치에 대해",
+    "autoRefresh": "자동 새로고침",
+    "refreshOff": "자동 새로고침 끔",
+    "refreshEvery": "{{count}}초마다",
+    "deltaHint": "두 번째 스냅샷부터 +N은 이전 스냅샷 이후 증가분이며, 전체 속도는 그 사이의 평균입니다."
   }
 }
