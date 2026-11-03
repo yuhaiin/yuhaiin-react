@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { SettingLabel } from "@/component/v2/card";
 import { SettingInputVertical, SwitchCard } from "@/component/v2/forms";
 
-import { FC, useId } from "react";
+import { FC, ReactNode, useId, useState } from "react";
 
 function stringValue(value: unknown): string {
     if (typeof value === "string") return value;
@@ -44,15 +44,31 @@ const StringField: FC<{ label: string; value: unknown; secret?: boolean; disable
     );
 };
 
-const NumberField: FC<{ label: string; value: unknown; disabled?: boolean; onChange: (value: number) => void }> = ({ label, value, disabled, onChange }) => (
-    <SettingInputVertical label={label} type="number" value={String(numberValue(value))} onChange={(next) => onChange(numberValue(next))} disabled={disabled} />
-);
+/** 0 means "unset" in node configs, so it is shown as an empty field with a placeholder and an empty field saves 0. */
+const NumberField: FC<{ label: string; value: unknown; disabled?: boolean; onChange: (value: number) => void }> = ({ label, value, disabled, onChange }) => {
+    const { t } = useTranslation("ui");
+    const number = numberValue(value);
+    return <SettingInputVertical label={label} type="number" value={number === 0 ? "" : String(number)} placeholder={t("unsetPlaceholder")} onChange={(next) => onChange(numberValue(next))} disabled={disabled} />;
+};
 
 const BoolField: FC<{ label: string; value: unknown; description?: string; disabled?: boolean; onChange: (value: boolean) => void }> = ({ label, value, description, disabled, onChange }) => (
     <SwitchCard label={label} description={description} checked={boolValue(value)} onCheckedChange={onChange} disabled={disabled} />
 );
 
-export { StringField, NumberField, BoolField };
+/** Rarely changed options. Starts open when any of them is set so configured values are never hidden. */
+const MoreOptions: FC<{ active: boolean; children: ReactNode }> = ({ active, children }) => {
+    const { t } = useTranslation("ui");
+    // Only the first render decides; reacting later would collapse the section while someone clears a value.
+    const [initiallyOpen] = useState(active);
+    return (
+        <details open={initiallyOpen || undefined}>
+            <summary className="mb-3 cursor-pointer text-sm text-ui-muted">{t("moreOptions")}</summary>
+            {children}
+        </details>
+    );
+};
+
+export { StringField, NumberField, BoolField, MoreOptions };
 
 export { stringValue, numberValue };
 

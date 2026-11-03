@@ -1038,5 +1038,14 @@
   "trafficHistory": "트래픽 기록",
   "trafficHistoryDescription": "기간별 다운로드 및 업로드 합계",
   "telemetryCopy": "클릭하여 복사",
-  "telemetryCopied": "복사됨"
+  "telemetryCopied": "복사됨",
+  "unsetPlaceholder": "기본값",
+  "optionalPlaceholder": "선택 사항",
+  "moveUp": "위로 이동",
+  "moveDown": "아래로 이동",
+  "addItem": "{{item}} 추가",
+  "noAuthentication": "인증 없음",
+  "sharedCredentialShort": "공유 자격 증명",
+  "viaInterface": "{{name}} 경유",
+  "moreOptions": "추가 옵션"
 }

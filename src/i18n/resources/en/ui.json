@@ -1038,5 +1038,14 @@
   "trafficHistory": "Traffic history",
   "trafficHistoryDescription": "Download and upload totals by period",
   "telemetryCopy": "Click to copy",
-  "telemetryCopied": "Copied"
+  "telemetryCopied": "Copied",
+  "unsetPlaceholder": "Default",
+  "optionalPlaceholder": "Optional",
+  "moveUp": "Move up",
+  "moveDown": "Move down",
+  "addItem": "Add {{item}}",
+  "noAuthentication": "no auth",
+  "sharedCredentialShort": "shared credential",
+  "viaInterface": "via {{name}}",
+  "moreOptions": "More options"
 }
