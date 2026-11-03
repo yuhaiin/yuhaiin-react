@@ -439,7 +439,7 @@ export function TCPStackPanel() {
                     <p className="mt-1 text-xs text-ui-muted">{t('tcp.globalDescription')}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                    <Select size="sm" ariaLabel={t('tcp.autoRefresh')} value={String(autoRefresh)} onValueChange={changeAutoRefresh} triggerClassName="w-auto min-w-28"
+                    <Select ariaLabel={t('tcp.autoRefresh')} value={String(autoRefresh)} onValueChange={changeAutoRefresh} triggerClassName="w-auto min-w-28"
                         items={AUTO_REFRESH_SECONDS.map(seconds => ({ value: String(seconds), label: seconds ? t('tcp.refreshEvery', { count: seconds }) : t('tcp.refreshOff') }))} />
                     <Button type="button" variant="outline-secondary" disabled={busy && !autoRefresh} permission="diagnostics:run" onClick={() => void refresh()}>
                         <RefreshCw size={15} className={busy ? 'animate-spin' : ''} />
