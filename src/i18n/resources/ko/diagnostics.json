@@ -157,6 +157,7 @@
     "autoRefresh": "자동 새로고침",
     "refreshOff": "자동 새로고침 끔",
     "refreshEvery": "{{count}}초마다",
-    "deltaHint": "두 번째 스냅샷부터 +N은 이전 스냅샷 이후 증가분이며, 전체 속도는 그 사이의 평균입니다."
+    "deltaHint": "두 번째 스냅샷부터 +N은 이전 스냅샷 이후 증가분이며, 전체 속도는 그 사이의 평균입니다.",
+    "udpSources": "출발지 {{count}}개"
   }
 }
