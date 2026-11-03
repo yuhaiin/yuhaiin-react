@@ -1,3 +1,4 @@
+import { OutboundTCPSettings } from './tcp-settings';
 import { base64ToBytes, bytesToBase64 } from "@/common/base64";
 import { WireguardForm, FixedForm, FixedV2Form } from "./tunnel-forms";
 import { AmneziaWGForm } from "./amneziawg-forms";
@@ -297,6 +298,7 @@ const ProtocolConfigEditor: FC<{
     return (
         <div className="grid gap-3">
             <OutboundCredential value={normalized} editable={editable} onChange={onChange} />
+            <OutboundTCPSettings protocol={normalized} editable={editable} onChange={onChange} />
             {form ?? (
                 <div className="rounded-ui-lg border border-dashed border-ui-border p-4 text-sm text-ui-muted">
                     {uiT("noStructuredEditorForThisProtocolYet")}</div>

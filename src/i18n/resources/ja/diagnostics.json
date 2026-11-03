@@ -74,6 +74,8 @@
     "check_routed_https": "対象へのルート経由 HTTPS に失敗しました。DNS とルートの根拠、エラー種別を確認し、別の宛先でも試してください。"
   },
   "tcp": {
+    "recoveryFallback": "SACK unavailable",
+    "undo": "Undo",
     "title": "TCP スタック診断",
     "description": "軽量 TCP スタックの状態を要求時にのみ取得します。パケットキャプチャやバックグラウンドのポーリングは行いません。",
     "snapshot": "スナップショット取得",

@@ -1,4 +1,9 @@
 {
+  "tcpCongestionControl": "TCP congestion control",
+  "tcpLossRecovery": "TCP loss detection",
+  "tcpDefault": "Default",
+  "tcpClassic": "Classic (DupACK / SACK)",
+  "tcpSettingsHint": "These settings control the inner Lightweight TCP stack. They take effect when the stack is recreated. RACK-TLP falls back to classic recovery when the peer does not negotiate SACK. DSACK feedback is supported by both modes.",
   "outbound6": "아웃바운드",
   "subscribe": "구독",
   "publish": "게시",

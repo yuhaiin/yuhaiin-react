@@ -79,7 +79,7 @@ it('always shows lightweight congestion/scheduling and never offers deleted TUN 
     const render = () => root.render(<InboundEditor inbound={saved} onChange={(value) => { saved = value; }} />);
     try {
         act(render);
-        expect(host.textContent).toContain('tunCongestionControl');
+        expect(host.textContent).toContain('tcpCongestionControl');
         expect(host.textContent).toContain('tunOutputScheduler');
         expect(host.textContent).not.toContain('tunStackLegacy');
         expect(host.textContent).not.toContain('tunStackExperimentalWarning');
@@ -93,7 +93,7 @@ it('always shows lightweight congestion/scheduling and never offers deleted TUN 
             ...saved.protocol.tun, stack: undefined, driver: 'system_gvisor', congestionControl: undefined, mtu: 1200,
         } } };
         act(render);
-        const congestion = host.querySelector('[role="combobox"][aria-label="tunCongestionControl"]');
+        const congestion = host.querySelector('[role="combobox"][aria-label="tcpCongestionControl"]');
         expect(congestion?.textContent).toContain('CUBIC');
         const mtuLabel = [...host.querySelectorAll<HTMLLabelElement>('label')].find(label => label.textContent === 'MTU')!;
         const mtu = document.getElementById(mtuLabel.htmlFor) as HTMLInputElement;
@@ -113,6 +113,16 @@ it('always shows lightweight congestion/scheduling and never offers deleted TUN 
         saved = JSON.parse(JSON.stringify(saved)) as Inbound;
         act(render);
         expect(scheduler().textContent).toContain('tunOutputSchedulerFair');
+        const recovery = () => host.querySelector<HTMLButtonElement>('[role="combobox"][aria-label="tcpLossRecovery"]')!;
+        act(() => recovery().dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
+        const rack = [...document.querySelectorAll<HTMLElement>('[role="option"]')].find(option => option.textContent === 'RACK-TLP')!;
+        act(() => rack.click());
+        if (saved.protocol.type !== 'tun') throw new Error('unexpected protocol');
+        expect(saved.protocol.tun.lossRecovery).toBe('rack-tlp');
+        expect(saved.protocol.tun.outputScheduler).toBe('fq_codel');
+        saved = JSON.parse(JSON.stringify(saved)) as Inbound;
+        act(render);
+        expect(recovery().textContent).toContain('RACK-TLP');
     } finally {
         act(() => root.unmount());
         host.remove();

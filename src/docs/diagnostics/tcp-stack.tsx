@@ -104,6 +104,12 @@ function FlowRow({ flow }: { flow: TCPFlowDiagnostic }) {
         </td>
         <td className={`${cell} whitespace-nowrap`}>
             <Badge variant={flow.state === 'ESTABLISHED' ? 'success' : 'muted'}>{flow.state}</Badge>
+            {flow.lossRecovery && <div className={`mt-0.5 ${sub}`}>
+                {flow.congestionControl?.toUpperCase()} / {flow.lossRecovery}
+                {flow.configuredLossRecovery !== flow.lossRecovery && <span> ({t('tcp.recoveryFallback')})</span>}
+            </div>}
+            {(flow.tailLossProbes > 0 || flow.dsackSent > 0 || flow.dsackReceived > 0 || flow.spuriousRecoveries > 0) &&
+                <div className={sub}>TLP {number(flow.tailLossProbes)} · DSACK ↑{number(flow.dsackSent)} ↓{number(flow.dsackReceived)} · {t('tcp.undo')} {number(flow.spuriousRecoveries)}</div>}
             {flow.bbrMode && <div className={`mt-0.5 ${sub}`}>{flow.bbrMode}{flow.bbrPhase ? ` / ${flow.bbrPhase}` : ''}</div>}
         </td>
         <td className={num}>{ms(flow.srttMs)}<div className={sub}>RTO {ms(flow.rtoMs)}</div></td>

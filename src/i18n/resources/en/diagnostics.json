@@ -74,6 +74,8 @@
     "check_routed_https": "Routed HTTPS failed for this target. Compare DNS and route evidence, check the error category, and retry another destination."
   },
   "tcp": {
+    "recoveryFallback": "SACK unavailable",
+    "undo": "Undo",
     "title": "TCP stack diagnostics",
     "description": "On-demand, bounded snapshots of lightweight TCP stacks. No packet capture or background polling.",
     "snapshot": "Capture snapshot",

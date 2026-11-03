@@ -74,6 +74,8 @@
     "check_routed_https": "대상의 경로 경유 HTTPS에 실패했습니다. DNS와 경로 근거, 오류 분류를 확인하고 다른 대상도 시도하세요."
   },
   "tcp": {
+    "recoveryFallback": "SACK unavailable",
+    "undo": "Undo",
     "title": "TCP 스택 진단",
     "description": "경량 TCP 스택의 상태를 요청할 때만 조회합니다. 패킷 캡처나 백그라운드 폴링은 없습니다.",
     "snapshot": "스냅샷 가져오기",
