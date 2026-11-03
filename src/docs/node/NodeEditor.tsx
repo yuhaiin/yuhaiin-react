@@ -578,7 +578,10 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             return (
                 <div className="grid gap-4">
                     <StringField secret label={uiT("privateKey")} value={protocol.cloudflare_warp_masque.private_key} disabled={!editable} onChange={(private_key) => patch(protocol, { private_key })} />
-                    <StringField label={uiT("endpointPublicKey")} value={protocol.cloudflare_warp_masque.endpoint_public_key} disabled={!editable} onChange={(endpoint_public_key) => patch(protocol, { endpoint_public_key })} />
+                    <div className="grid min-w-0 gap-2">
+                        <SettingLabel>{uiT("endpointPublicKey")}</SettingLabel>
+                        <Textarea code aria-label={uiT("endpointPublicKey")} rows={4} value={protocol.cloudflare_warp_masque.endpoint_public_key ?? ""} disabled={!editable} onChange={(event) => patch(protocol, { endpoint_public_key: event.target.value })} />
+                    </div>
                     <InputList title="Endpoints" data={protocol.cloudflare_warp_masque.endpoint ?? []} disabled={!editable} onChange={(endpoint) => patch(protocol, { endpoint })} />
                     <InputList title={uiT("localAddresses")} data={protocol.cloudflare_warp_masque.local_addresses ?? []} disabled={!editable} onChange={(local_addresses) => patch(protocol, { local_addresses })} />
                     <NumberField label="MTU" value={protocol.cloudflare_warp_masque.mtu} disabled={!editable} onChange={(mtu) => patch(protocol, { mtu })} />
