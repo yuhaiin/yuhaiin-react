@@ -30,8 +30,8 @@ export const Tooltip = forwardRef<ChartTooltipHandle>(function Tooltip(_, ref) {
             root.style.left = `${left}px`;
             root.style.top = `${top}px`;
             if (labelRef.current) labelRef.current.textContent = label;
-            if (uploadRef.current) uploadRef.current.textContent = `${formatBytes(upload, 2, " ")}/S`;
-            if (downloadRef.current) downloadRef.current.textContent = `${formatBytes(download, 2, " ")}/S`;
+            if (uploadRef.current) uploadRef.current.textContent = `${formatBytes(upload, 1, " ")}/s`;
+            if (downloadRef.current) downloadRef.current.textContent = `${formatBytes(download, 1, " ")}/s`;
         },
         hide() {
             if (rootRef.current) rootRef.current.style.display = "none";
@@ -43,19 +43,19 @@ export const Tooltip = forwardRef<ChartTooltipHandle>(function Tooltip(_, ref) {
     return createPortal(
         <div
             ref={rootRef}
-            className="fixed pointer-events-none hidden rounded bg-ui-heading p-2 text-xs text-ui-bg shadow-md w-[176px] z-[2147483646]"
+            className="fixed pointer-events-none hidden w-[208px] whitespace-nowrap rounded-ui-md border border-ui-border bg-ui-surface-raised px-3 py-2 text-xs text-ui-fg shadow-lg z-[2147483646]"
             style={{ left: 0, top: 0 }}
         >
-            <div ref={labelRef} className="mb-1 font-semibold text-ui-bg/95" />
-            <div className="mb-0.5 flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-ui-success" />
-                <span className="text-ui-bg/70">{uiT("uploadLabel")}</span>
-                <span ref={uploadRef} className="font-medium" />
+            <div ref={labelRef} className="mb-1.5 tabular-nums text-ui-muted" />
+            <div className="mb-1 flex items-center gap-2">
+                <span className="h-0.5 w-3 shrink-0 rounded-full bg-ui-info" aria-hidden />
+                <span className="text-ui-muted">{uiT("download")}</span>
+                <span ref={downloadRef} className="ml-auto font-medium tabular-nums text-ui-heading" />
             </div>
             <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-ui-info" />
-                <span className="text-ui-bg/70">{uiT("downloadLabel")}</span>
-                <span ref={downloadRef} className="font-medium" />
+                <span className="h-0.5 w-3 shrink-0 rounded-full bg-ui-success" aria-hidden />
+                <span className="text-ui-muted">{uiT("upload")}</span>
+                <span ref={uploadRef} className="ml-auto font-medium tabular-nums text-ui-heading" />
             </div>
         </div>,
         document.body
