@@ -7,13 +7,14 @@ import { Badge } from '@/component/v2/badge';
 import { NodeRuntimeError } from '@/component/node-runtime-error';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody } from '@/component/v2/card';
-import type { TotalFlow } from '@/contract/connection';
+import type { Connection, TotalFlow } from '@/contract/connection';
 import type { Node } from '@/contract/node';
 import type { TCPFlowDiagnostic, TCPStackDiagnostic } from '@/contract/tools';
 import { RefreshCw } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatBytes, formatCounter, stackScopeSummary } from './network-overview';
+import { UDPSessions } from './udp-sessions';
 
 type OutboundEntry = { id: string; name: string; chain: string; status?: OutboundRuntimeStatus };
 type Snapshot = {
@@ -21,6 +22,7 @@ type Snapshot = {
     stacks?: TCPStackDiagnostic[];
     totals?: TotalFlow;
     activeConnections?: number;
+    connections?: Connection[];
     inbounds?: InboundRuntimeStatus[];
     outbounds?: OutboundEntry[];
     truncatedNodes: boolean;
@@ -159,7 +161,7 @@ function InboundDetail({ inbound, stack }: { inbound?: InboundRuntimeStatus; sta
     </details>;
 }
 
-function OutboundDetail({ outbound, stack }: { outbound?: OutboundEntry; stack?: TCPStackDiagnostic }) {
+function OutboundDetail({ outbound, stack, udpSessions, counters }: { outbound?: OutboundEntry; stack?: TCPStackDiagnostic; udpSessions?: Connection[]; counters?: TotalFlow['counters'] }) {
     const { t } = useTranslation('diagnostics');
     const id = outbound?.id || stack?.nodeId || '';
     const state = outbound?.status;
@@ -183,6 +185,7 @@ function OutboundDetail({ outbound, stack }: { outbound?: OutboundEntry; stack?:
             {state?.protocol && <p className="text-xs text-ui-muted">{t('tcp.nativeState')}: {state.protocol.state} · {state.protocol.updatedAt ? new Date(state.protocol.updatedAt * 1000).toLocaleString() : '—'}</p>}
             <NodeRuntimeError status={state} />
             {stack ? <StackDetails stack={stack} /> : <p className="text-xs text-ui-muted">{t('tcp.unsupportedStack')}</p>}
+            <UDPSessions sessions={udpSessions} counters={counters} />
         </div>
     </details>;
 }
@@ -238,6 +241,7 @@ export function TCPStackPanel() {
                 stacks: stacks.status === 'fulfilled' ? stacks.value.tcpStacks : undefined,
                 totals: totals.status === 'fulfilled' ? totals.value : undefined,
                 activeConnections: connections.status === 'fulfilled' ? connections.value.connections.length : undefined,
+                connections: connections.status === 'fulfilled' ? connections.value.connections : undefined,
                 inbounds: inbounds.status === 'fulfilled' ? inbounds.value : undefined,
                 outbounds: active.status === 'fulfilled' || selected.status === 'fulfilled' ? outbounds : undefined,
                 truncatedNodes: nodes.size > chosen.length,
@@ -262,6 +266,13 @@ export function TCPStackPanel() {
     const outboundIDs = new Set([...(snapshot?.outbounds ?? []).map(n => n.id), ...outboundStacks.map(s => s.nodeId).filter((v): v is string => !!v)]);
     const inboundsByID = new Map((snapshot?.inbounds ?? []).map(i => [i.id, i]));
     const outboundsByID = new Map((snapshot?.outbounds ?? []).map(n => [n.id, n]));
+    const udpByNode = new Map<string, Connection[]>();
+    for (const connection of snapshot?.connections ?? []) {
+        if (connection.network.connType !== 'udp') continue;
+        const sessions = udpByNode.get(connection.nodeId);
+        if (sessions) sessions.push(connection);
+        else udpByNode.set(connection.nodeId, [connection]);
+    }
 
     return <section className="min-w-0 space-y-4">
         <Card noMargin><CardBody>
@@ -316,7 +327,7 @@ export function TCPStackPanel() {
             <div className="min-w-0 space-y-2">
                 <h3 className="text-sm font-semibold text-ui-heading">{t('tcp.outboundsTitle')} ({outboundIDs.size})</h3>
                 <p className="text-xs text-ui-muted">{t('tcp.outboundsHint')}</p>
-                {[...outboundIDs].sort().map(id => <OutboundDetail key={id} outbound={outboundsByID.get(id)} stack={outboundStacks.find(s => s.nodeId === id)} />)}
+                {[...outboundIDs].sort().map(id => <OutboundDetail key={id} outbound={outboundsByID.get(id)} stack={outboundStacks.find(s => s.nodeId === id)} udpSessions={snapshot.connections ? udpByNode.get(id) ?? [] : undefined} counters={snapshot.totals?.counters} />)}
                 {outboundIDs.size === 0 && <p className="text-xs text-ui-muted">{t('tcp.noOutbounds')}</p>}
                 {snapshot.truncatedNodes && <p className="text-xs text-ui-warning">{t('tcp.truncatedNodes')}</p>}
             </div>
