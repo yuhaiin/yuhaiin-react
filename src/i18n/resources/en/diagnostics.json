@@ -112,7 +112,7 @@
     "noDoubleCount": "Stack retransmissions and drops cover only displayed lightweight stacks. Inbound and outbound figures may observe the same traffic and are never added together.",
     "inboundsTitle": "Inbounds",
     "outboundsTitle": "Outbound nodes",
-    "inboundsHint": "Ingress counters are cumulative and represent admitted requests, not confirmed forwarding. Expand an inbound for stack details.",
+    "inboundsHint": "Ingress counters are cumulative and represent admitted requests, not confirmed forwarding.",
     "outboundsHint": "Only active/selected nodes are queried (up to 100); node byte counters are per-hop and are not added to global traffic. Native VPN state is separate from TCP RTT.",
     "noInbounds": "No inbound observations are available.",
     "noOutbounds": "No active or selected outbound nodes were observed.",
@@ -149,6 +149,14 @@
     "state": "State",
     "rtt": "RTT",
     "cwnd": "CWND",
-    "mss": "MSS"
+    "mss": "MSS",
+    "stackHealthy": "No retransmissions or drops",
+    "backToList": "Back to list",
+    "selectItem": "Select an item to see its details.",
+    "listHelp": "About these numbers",
+    "autoRefresh": "Auto refresh",
+    "refreshOff": "Auto refresh off",
+    "refreshEvery": "Every {{count}} s",
+    "deltaHint": "From the second snapshot on, +N shows growth since the previous one and total speed is averaged over that interval."
   }
 }

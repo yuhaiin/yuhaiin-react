@@ -18,6 +18,7 @@ vi.mock('@/api/node-observability', () => ({ getNodeStatuses: vi.fn() }));
 let host: HTMLDivElement;
 let root: Root;
 beforeEach(() => {
+    vi.stubGlobal('matchMedia', () => ({ matches: true, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} }));
     vi.mocked(getConnections).mockResolvedValue({ connections: [] });
     vi.mocked(getTotalFlow).mockResolvedValue({ upload: '0', download: '0', counters: {} });
 });
@@ -34,7 +35,7 @@ function mount() {
 }
 async function refresh(value: OutboundRuntimeStatus) {
     vi.mocked(getNodeStatuses).mockResolvedValue({ a: value });
-    await act(async () => host.querySelector('button')!.click());
+    await act(async () => [...host.querySelectorAll('button')].find(button => button.textContent?.includes('tcp.snapshot'))!.click());
 }
 it('moves recovered outbound errors into collapsed history on the next snapshot', async () => {
     mount();
@@ -106,4 +107,43 @@ it('distinguishes unavailable connections from an empty UDP session list', async
     expect(host.textContent).toContain('tcp.unavailableConnections');
     expect(host.textContent).not.toContain('tcp.noUdpSessions');
     expect(host.querySelector('[data-testid="udp-sessions"]')).toBeNull();
+});
+
+it('lists nodes with a status summary and switches to inbounds', async () => {
+    mount();
+    await refresh(status);
+    const row = host.querySelector<HTMLButtonElement>('aside li button')!;
+    expect(row.getAttribute('aria-current')).toBe('true');
+    expect(row.textContent).toContain('masque');
+    expect(row.textContent).toContain('↑0 B/s ↓0 B/s');
+    expect(row.textContent).not.toContain('tcp.failures');
+    await refresh({ ...status, failures: '4', uploadBps: '2048', trafficWindow: { at: 1, windowMs: 30000, uploadBps: '1024', downloadBps: '0' } });
+    const updated = host.querySelector<HTMLButtonElement>('aside li button')!;
+    expect(updated.textContent).toContain('↑1.0 KiB/s');
+    expect(updated.textContent).toContain('tcp.failures +3');
+    const inboundTab = [...host.querySelectorAll<HTMLButtonElement>('[role="radio"]')].find(tab => tab.textContent?.includes('tcp.inboundsTitle'))!;
+    await act(async () => inboundTab.click());
+    expect(host.textContent).toContain('tcp.noInbounds');
+    expect(host.textContent).toContain('tcp.selectItem');
+});
+
+it('polls on the saved interval and pauses while the tab is hidden', async () => {
+    vi.useFakeTimers();
+    localStorage.setItem('diagnostics.tcp.autoRefresh', '5');
+    vi.mocked(getNodeStatuses).mockResolvedValue({ a: status });
+    try {
+        mount();
+        await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+        expect(getConnections).toHaveBeenCalledTimes(1);
+        expect(host.textContent).toContain('masque');
+        await act(async () => { await vi.advanceTimersByTimeAsync(5000); });
+        expect(getConnections).toHaveBeenCalledTimes(2);
+        Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+        await act(async () => { await vi.advanceTimersByTimeAsync(5000); });
+        expect(getConnections).toHaveBeenCalledTimes(2);
+    } finally {
+        Object.defineProperty(document, 'hidden', { configurable: true, value: false });
+        localStorage.removeItem('diagnostics.tcp.autoRefresh');
+        vi.useRealTimers();
+    }
 });
