@@ -4,6 +4,7 @@ import { listInboundStatuses, type InboundRuntimeStatus } from '@/api/inbounds';
 import { activeNodes, selectedNodes } from '@/api/nodes';
 import { getNodeStatuses, type OutboundRuntimeStatus } from '@/api/node-observability';
 import { Badge } from '@/component/v2/badge';
+import { NodeRuntimeError } from '@/component/node-runtime-error';
 import { Button } from '@/component/v2/button';
 import { Card, CardBody } from '@/component/v2/card';
 import type { TotalFlow } from '@/contract/connection';
@@ -180,7 +181,7 @@ function OutboundDetail({ outbound, stack }: { outbound?: OutboundEntry; stack?:
                 <Metric label={t('tcp.tcpSuccess')} value={`${formatCounter(state.tcpConnections)} / ${formatCounter(state.tcpAttempts)}`} />
             </div>}
             {state?.protocol && <p className="text-xs text-ui-muted">{t('tcp.nativeState')}: {state.protocol.state} · {state.protocol.updatedAt ? new Date(state.protocol.updatedAt * 1000).toLocaleString() : '—'}</p>}
-            {state?.lastError && <p role="alert" className="break-words text-xs text-ui-danger">{state.lastError}</p>}
+            <NodeRuntimeError status={state} />
             {stack ? <StackDetails stack={stack} /> : <p className="text-xs text-ui-muted">{t('tcp.unsupportedStack')}</p>}
         </div>
     </details>;
