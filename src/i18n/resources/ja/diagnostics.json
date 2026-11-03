@@ -157,6 +157,7 @@
     "autoRefresh": "自動更新",
     "refreshOff": "自動更新オフ",
     "refreshEvery": "{{count}} 秒ごと",
-    "deltaHint": "2 回目以降のスナップショットでは、+N は前回からの増加分、全体の速度はその間の平均です。"
+    "deltaHint": "2 回目以降のスナップショットでは、+N は前回からの増加分、全体の速度はその間の平均です。",
+    "udpSources": "送信元 {{count}} 件"
   }
 }

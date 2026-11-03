@@ -157,6 +157,7 @@
     "autoRefresh": "Auto refresh",
     "refreshOff": "Auto refresh off",
     "refreshEvery": "Every {{count}} s",
-    "deltaHint": "From the second snapshot on, +N shows growth since the previous one and total speed is averaged over that interval."
+    "deltaHint": "From the second snapshot on, +N shows growth since the previous one and total speed is averaged over that interval.",
+    "udpSources": "Sources: {{count}}"
   }
 }

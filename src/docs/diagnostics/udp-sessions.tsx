@@ -1,16 +1,22 @@
 import type { Connection, TotalFlow } from '@/contract/connection';
 import { useTranslation } from 'react-i18next';
+import { DetailSection } from './detail-section';
 import { formatBytes } from './network-overview';
 
 export function UDPSessions({ sessions, counters }: { sessions?: Connection[]; counters?: TotalFlow['counters'] }) {
     const { t } = useTranslation('diagnostics');
     if (!sessions) return <p className="text-xs text-ui-muted">{t('tcp.unavailableConnections')}</p>;
+    if (sessions.length === 0) return <p className="text-xs text-ui-muted">{t('tcp.noUdpSessions')}</p>;
     const shown = sessions.slice(0, 32);
     const cell = 'px-3 py-2 align-top';
-    return <div className="min-w-0 space-y-2" data-testid="udp-sessions">
-        <h4 className="text-xs font-medium text-ui-heading">{t('tcp.udpSessions', { shown: shown.length, total: sessions.length })}</h4>
+    const total = (direction: 'upload' | 'download') => String(shown.reduce((sum, session) => {
+        try { return sum + BigInt(counters?.[session.id]?.[direction] ?? 0); } catch { return sum; }
+    }, 0n));
+    return <DetailSection testId="udp-sessions" title={t('tcp.udpSessions', { shown: shown.length, total: sessions.length })}
+        meta={t('tcp.udpSources', { count: new Set(sessions.map(session => session.source)).size })}
+        status={counters ? `↑${formatBytes(total('upload'))} ↓${formatBytes(total('download'))}` : undefined}>
         <p className="text-xs text-ui-muted">{t('tcp.udpSessionHelp')}</p>
-        {shown.length === 0 ? <p className="text-xs text-ui-muted">{t('tcp.noUdpSessions')}</p> : <div className="max-h-[28rem] min-w-0 max-w-full overflow-auto rounded-ui-md border border-ui-border">
+        <div className="max-h-[28rem] min-w-0 max-w-full overflow-auto rounded-ui-md border border-ui-border">
             <table className="w-full min-w-[640px] text-left text-xs">
                 <thead className="sticky top-0 z-10 bg-ui-surface text-ui-muted"><tr>
                     <th className={cell}>{t('tcp.udpSource')}</th>
@@ -31,6 +37,6 @@ export function UDPSessions({ sessions, counters }: { sessions?: Connection[]; c
                     <td className={`${cell} text-right font-mono tabular-nums`}>{formatBytes(counters?.[session.id]?.download)}</td>
                 </tr>)}</tbody>
             </table>
-        </div>}
-    </div>;
+        </div>
+    </DetailSection>;
 }

@@ -15,10 +15,11 @@ import type { Connection, TotalFlow } from '@/contract/connection';
 import type { Node } from '@/contract/node';
 import type { TCPFlowDiagnostic, TCPStackDiagnostic } from '@/contract/tools';
 import clsx from 'clsx';
-import { ChevronLeft, ChevronRight, Info, RefreshCw } from 'lucide-react';
+import { ChevronLeft, Info, RefreshCw } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatBytes, formatCounter, stackScopeSummary } from './network-overview';
+import { DetailSection } from './detail-section';
 import { UDPSessions } from './udp-sessions';
 
 type View = 'inbound' | 'outbound';
@@ -141,38 +142,29 @@ function StackDetails({ stack }: { stack: TCPStackDiagnostic }) {
     ].map(group => ({ ...group, stats: group.stats.filter(stat => stat.value !== 0) })).filter(group => group.stats.length > 0);
     const alerts = [...errors, ...drops].filter(stat => stat.alert && stat.value > 0);
     const th = 'px-3 py-2 font-medium';
-    return <details className="group min-w-0 rounded-ui-md border border-ui-border/70">
-        <summary className="flex cursor-pointer list-none flex-wrap items-center gap-2 px-3 py-2 text-xs [&::-webkit-details-marker]:hidden">
-            <ChevronRight size={14} aria-hidden="true" className="shrink-0 text-ui-muted transition-transform group-open:rotate-90" />
-            <span className="font-medium text-ui-heading">TCP Stack</span>
-            <span className="text-ui-muted">MTU {stack.mtu} · {t('tcp.activeFlows', { count: s.connections })}</span>
-            <span className={`ml-auto ${alerts.length ? 'font-medium text-ui-warning' : 'text-ui-muted'}`}>
-                {alerts.length ? alerts.map(stat => `${stat.label} ${number(stat.value)}`).join(' · ') : t('tcp.stackHealthy')}
-            </span>
-        </summary>
-        <div className="min-w-0 space-y-3 border-t border-ui-border/60 p-3">
-            {groups.length > 0 && <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                {groups.map(group => <StatGroup key={group.title} title={group.title} stats={group.stats} />)}
-            </div>}
-            {stack.flows.length > 0 && <div>
-                <div className="mb-2 text-xs font-medium text-ui-heading">{t('tcp.flowSamples', { shown: stack.flows.length, total: s.connections })}</div>
-                <div className="max-h-[28rem] min-w-0 max-w-full overflow-auto rounded-ui-md border border-ui-border">
-                    <table className="w-full min-w-[760px] text-left">
-                        <thead className="sticky top-0 z-10 bg-ui-surface text-xs text-ui-muted"><tr>
-                            <th className={th}>{t('tcp.endpoints')}</th>
-                            <th className={th}>{t('tcp.state')}</th>
-                            <th className={`${th} text-right`}>{t('tcp.rtt')}</th>
-                            <th className={`${th} text-right`}>{t('tcp.cwnd')}</th>
-                            <th className={`${th} text-right`}>{t('tcp.pacing')}</th>
-                            <th className={`${th} text-right`}>{t('tcp.retransmissions')}</th>
-                            <th className={`${th} text-right`}>{t('tcp.mss')}</th>
-                        </tr></thead>
-                        <tbody>{stack.flows.map((flow, i) => <FlowRow key={`${flow.local}:${flow.remote}:${i}`} flow={flow} />)}</tbody>
-                    </table>
-                </div>
-            </div>}
-        </div>
-    </details>;
+    return <DetailSection title="TCP Stack" meta={`MTU ${stack.mtu} · ${t('tcp.activeFlows', { count: s.connections })}`} alert={alerts.length > 0}
+        status={alerts.length ? alerts.map(stat => `${stat.label} ${number(stat.value)}`).join(' · ') : t('tcp.stackHealthy')}>
+        {groups.length > 0 && <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {groups.map(group => <StatGroup key={group.title} title={group.title} stats={group.stats} />)}
+        </div>}
+        {stack.flows.length > 0 && <div>
+            <div className="mb-2 text-xs font-medium text-ui-heading">{t('tcp.flowSamples', { shown: stack.flows.length, total: s.connections })}</div>
+            <div className="max-h-[28rem] min-w-0 max-w-full overflow-auto rounded-ui-md border border-ui-border">
+                <table className="w-full min-w-[760px] text-left">
+                    <thead className="sticky top-0 z-10 bg-ui-surface text-xs text-ui-muted"><tr>
+                        <th className={th}>{t('tcp.endpoints')}</th>
+                        <th className={th}>{t('tcp.state')}</th>
+                        <th className={`${th} text-right`}>{t('tcp.rtt')}</th>
+                        <th className={`${th} text-right`}>{t('tcp.cwnd')}</th>
+                        <th className={`${th} text-right`}>{t('tcp.pacing')}</th>
+                        <th className={`${th} text-right`}>{t('tcp.retransmissions')}</th>
+                        <th className={`${th} text-right`}>{t('tcp.mss')}</th>
+                    </tr></thead>
+                    <tbody>{stack.flows.map((flow, i) => <FlowRow key={`${flow.local}:${flow.remote}:${i}`} flow={flow} />)}</tbody>
+                </table>
+            </div>
+        </div>}
+    </DetailSection>;
 }
 
 type Tone = 'success' | 'warning' | 'danger' | 'muted';
