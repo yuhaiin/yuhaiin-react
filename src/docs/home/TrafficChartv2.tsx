@@ -27,14 +27,6 @@ export function niceMax(value: number) {
     return step * Y_SPLITS * unit;
 }
 
-/** Scale to the bulk of the samples so one burst does not flatten the rest; bursts are clipped at the top. */
-export function chartMax(upload: number[], download: number[], rawMax: number) {
-    const values = [...upload, ...download].filter(value => value > 0).sort((a, b) => a - b);
-    if (values.length < 10) return niceMax(rawMax);
-    const typical = values[Math.floor(values.length * 0.95)] * 1.5;
-    return niceMax(rawMax > typical * 2 ? typical : rawMax);
-}
-
 interface TrafficChartProps {
     data: {
         download: number[];
@@ -285,7 +277,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
             },
             scales: {
                 x: { time: false },
-                y: { auto: false, range: [0, chartMax(data.upload, data.download, data.rawMax)] }
+                y: { auto: false, range: [0, niceMax(data.rawMax)] }
             },
             hooks: {
                 setCursor: [
@@ -353,7 +345,7 @@ const TrafficChart: FC<TrafficChartProps> = ({ data, minHeight }) => {
     useEffect(() => {
         if (!uPlotInst.current) return;
         const u = uPlotInst.current;
-        const yMax = chartMax(data.upload, data.download, data.rawMax);
+        const yMax = niceMax(data.rawMax);
         const newData = [indices, data.upload, data.download] as [number[], number[], number[]];
 
         u.batch(() => {
