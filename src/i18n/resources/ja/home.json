@@ -2,5 +2,6 @@
   "tcpEndpoint": "TCP エンドポイント",
   "udpEndpoint": "UDP エンドポイント",
   "upload": "アップロード",
-  "download": "ダウンロード"
+  "download": "ダウンロード",
+  "now": "現在"
 }

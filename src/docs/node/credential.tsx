@@ -2,6 +2,8 @@ import { authAPI } from '@/auth/api';
 import { usePermission } from '@/auth/context';
 import type { UpstreamCredential } from '@/auth/proxy';
 import { Select } from '@/component/v2/select';
+import { Tooltip } from '@/component/v2/tooltip';
+import { Info } from 'lucide-react';
 import type { NodeProtocol } from '@/contract/node';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
@@ -30,5 +32,14 @@ export function OutboundCredential({ value, editable, onChange }: { value: NodeP
     if (!kind || !permitted && !value.credentialRef) return null;
     const items = [{ value: 'inline', label: t('inlineCredential') }, ...(data || []).filter(item => item.type === kind).map(item => ({ value: item.id, label: item.name }))];
     if (value.credentialRef && !items.some(item => item.value === value.credentialRef)) items.push({ value: value.credentialRef, label: value.credentialRef });
-    return <div className="space-y-2"><Select ariaLabel={t('upstreamCredential')} value={value.credentialRef || 'inline'} items={items} disabled={!editable || !permitted} onValueChange={ref => onChange(selectCredential(value, ref === 'inline' ? '' : ref))} /><p className="text-xs text-ui-muted">{t('credentialReferenceHelp')}</p>{error && <p role="alert" className="text-sm text-ui-danger">{t('requestFailed')}</p>}</div>;
+    const shared = value.credentialRef ? items.find(item => item.value === value.credentialRef)?.label ?? value.credentialRef : '';
+    return <div className="space-y-1.5">
+        <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm text-ui-muted">{t('upstreamCredential')}</span>
+            <div className="min-w-48"><Select size="sm" ariaLabel={t('upstreamCredential')} value={value.credentialRef || 'inline'} items={items} disabled={!editable || !permitted} onValueChange={ref => onChange(selectCredential(value, ref === 'inline' ? '' : ref))} /></div>
+            <Tooltip content={t('credentialReferenceHelp')} openOnClick><button type="button" aria-label={t('credentialReferenceHelp')} className="rounded-full p-1 text-ui-muted hover:text-ui-heading"><Info size={14} aria-hidden /></button></Tooltip>
+        </div>
+        {shared && <p className="text-xs text-ui-muted">{t('usingSharedCredential', { name: shared })}</p>}
+        {error && <p role="alert" className="text-sm text-ui-danger">{t('requestFailed')}</p>}
+    </div>;
 }

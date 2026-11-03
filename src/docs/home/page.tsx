@@ -17,9 +17,12 @@ import dynamic from "../../component/AsyncComponent";
 import { Flow, FlowContainer } from "../connections/components";
 import Activates from "../group/activates/page";
 import { NodeModal } from "../node/modal";
+import { formatBytes } from "./format";
 import TelemetryOverview from "./TelemetryOverview";
 import SetupCard from "./SetupCard";
 import { appendTrafficSample } from "./traffic";
+
+const formatRate = (value?: number) => value == null ? "—" : `${formatBytes(value, 1, " ")}/s`;
 
 const trafficRanges: Array<{ key: string; label: string; interval?: TrafficSeries["interval"]; durationMs?: number }> = [
     { key: "live", label: "Live" },
@@ -145,13 +148,13 @@ function HomePage() {
             <MainContainer>
                 <SetupCard />
                 <Card className="min-h-[240px] sm:min-h-[300px]" density="compact">
-                    <CardHeader className="flex-col items-stretch gap-3 px-4 py-3.5 sm:flex-row sm:items-center">
+                    <CardHeader className="flex-col items-stretch gap-3 !border-b-0 px-4 pb-1 pt-3.5 sm:flex-row sm:items-center">
                         <div className="flex w-full min-w-0 items-start gap-3 sm:flex-1">
                             <IconBox
                                 icon={Activity}
                                 tone="neutral"
-                                title={isLiveTraffic ? "Live traffic" : "Traffic history"}
-                                description={isLiveTraffic ? "Current download and upload speed" : "Download and upload totals by period"}
+                                title={uiT(isLiveTraffic ? "liveTraffic" : "trafficHistory")}
+                                description={uiT(isLiveTraffic ? "liveTrafficDescription" : "trafficHistoryDescription")}
                             />
                         </div>
 
@@ -159,13 +162,17 @@ function HomePage() {
                             <ToggleGroup type="single" value={selectedRange} aria-label={uiT("trafficRange")} onValueChange={value => { if (value) setSelectedRange(value); }}>
                                 {trafficRanges.map(item => <ToggleItem key={item.key} value={item.key}>{item.key === 'live' && <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />}{item.label}</ToggleItem>)}
                             </ToggleGroup>
-                            <div className="flex items-center justify-end gap-3 text-xs text-ui-muted">
-                                <span className="inline-flex items-center gap-1.5">
-                                    <ArrowDownToLine size={12} className="text-ui-info" />
-                                    {uiT("download")}</span>
-                                <span className="inline-flex items-center gap-1.5">
-                                    <ArrowUpFromLine size={12} className="text-ui-success" />
-                                    {uiT("upload")}</span>
+                            <div className="flex items-center justify-end gap-4 text-xs text-ui-muted">
+                                <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                                    <ArrowDownToLine size={13} className="text-ui-info" />
+                                    <span className={isLiveTraffic ? "sr-only sm:not-sr-only" : undefined}>{uiT("download")}</span>
+                                    {isLiveTraffic && <span className="min-w-[4.5rem] text-right text-sm font-medium tabular-nums text-ui-heading">{formatRate(traffic.download[traffic.download.length - 1])}</span>}
+                                </span>
+                                <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                                    <ArrowUpFromLine size={13} className="text-ui-success" />
+                                    <span className={isLiveTraffic ? "sr-only sm:not-sr-only" : undefined}>{uiT("upload")}</span>
+                                    {isLiveTraffic && <span className="min-w-[4.5rem] text-right text-sm font-medium tabular-nums text-ui-heading">{formatRate(traffic.upload[traffic.upload.length - 1])}</span>}
+                                </span>
                             </div>
                         </div>
                     </CardHeader>
@@ -183,7 +190,7 @@ function HomePage() {
                             icon={Activity}
                             tone="neutral"
                             title={uiT("trafficBreakdown")}
-                            description={`Top traffic and failures · ${isLiveTraffic ? "24H" : range.label}`}
+                            description={uiT("trafficBreakdownDescription", { range: isLiveTraffic ? "24H" : range.label })}
                         />
                     </CardHeader>
                     <CardBody>

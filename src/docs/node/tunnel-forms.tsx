@@ -1,8 +1,9 @@
 import { base64ToBytes, bytesToBase64 } from "@/common/base64";
 
-import { StringField, NumberField, BoolField, stringValue, numberValue } from "./fields";
+import { StringField, NumberField, BoolField, MoreOptions, stringValue, numberValue } from "./fields";
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
+import { Input } from "@/component/v2/input";
 
 import { Button } from "@/component/v2/button";
 import { SettingInputBytes } from "@/component/v2/forms";
@@ -51,51 +52,44 @@ const AddressList: FC<{
         return port > 0 ? `${host}:${port}` : host;
     };
 
+    // Header and rows are separate grids, so the action column needs a fixed width to line up.
+    const columns = editable ? "md:grid-cols-[minmax(0,2fr)_7rem_minmax(0,1fr)_7.5rem]" : "md:grid-cols-[minmax(0,2fr)_7rem_minmax(0,1fr)]";
+
     return (
         <div>
             <div className="mb-2 flex items-center justify-between px-1">
-                <h6 className="mb-0 font-bold opacity-75">{title}</h6>
+                <h6 className="mb-0 text-sm font-medium text-ui-heading">{title}</h6>
                 <small className="text-ui-muted">{uiT("entryCount", { count: items.length })}</small>
             </div>
 
-            <Accordion type="multiple" defaultValue={items.length > 0 ? [`${title}-0`] : []} className="mb-3">
-                {items.map((item, index) => (
-                    <AccordionItem value={`${title}-${index}`} key={index}>
-                        <AccordionTrigger>
-                            <span className="min-w-0 flex-1 whitespace-normal break-all text-left leading-snug sm:truncate sm:whitespace-nowrap">{label(index)}</span>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                            <div className="p-1">
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                    <StringField label={uiT("host")} value={item.host} disabled={!editable} onChange={(host) => update(index, { host })} />
-                                    <NumberField label={uiT("port")} value={item.port} disabled={!editable} onChange={(port) => update(index, { port })} />
-                                    <StringField label={uiT("networkInterface")} value={item.network_interface} disabled={!editable} onChange={(network_interface) => update(index, { network_interface })} />
+            {items.length > 0 && (
+                <div className="divide-y divide-ui-border rounded-ui-md border border-ui-border">
+                    <div className={`hidden gap-2 px-2.5 pb-1.5 pt-2 text-xs text-ui-muted md:grid ${columns}`}>
+                        <span className="truncate">{uiT("host")}</span>
+                        <span className="truncate">{uiT("port")}</span>
+                        <span className="truncate" title={uiT("networkInterface")}>{uiT("networkInterface")}</span>
+                    </div>
+                    {items.map((item, index) => (
+                        <div key={index} className={`grid grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-2 p-2.5 ${columns}`}>
+                            <Input size="sm" className="max-md:col-span-2" aria-label={`${uiT("host")} ${index + 1}`} placeholder="example.com:443" value={stringValue(item.host)} disabled={!editable} onChange={(event) => update(index, { host: event.target.value })} />
+                            <Input size="sm" type="number" min={0} aria-label={`${uiT("port")} ${index + 1}`} placeholder={uiT("unsetPlaceholder")} value={numberValue(item.port) || ""} disabled={!editable} onChange={(event) => update(index, { port: numberValue(event.target.value) })} />
+                            <Input size="sm" aria-label={`${uiT("networkInterface")} ${index + 1}`} placeholder={uiT("optionalPlaceholder")} value={stringValue(item.network_interface)} disabled={!editable} onChange={(event) => update(index, { network_interface: event.target.value })} />
+                            {editable && (
+                                <div className="flex justify-end gap-1 max-md:col-span-2 max-md:-my-1">
+                                    <Button size="icon" variant="ghost" aria-label={`${uiT("moveUp")} ${label(index)}`} onClick={() => move(index, -1)} disabled={index === 0}><ArrowUp size={15} /></Button>
+                                    <Button size="icon" variant="ghost" aria-label={`${uiT("moveDown")} ${label(index)}`} onClick={() => move(index, 1)} disabled={index === items.length - 1}><ArrowDown size={15} /></Button>
+                                    <Button size="icon" variant="ghost" className="text-ui-danger" aria-label={`${uiT("delete")} ${label(index)}`} onClick={() => onChange(items.filter((_, current) => current !== index))}><Trash size={15} /></Button>
                                 </div>
-
-                                {editable && (
-                                    <div className="mt-3 flex justify-end gap-2 pt-3">
-                                        <Button size="sm" onClick={() => move(index, -1)} disabled={index === 0}>
-                                            <ArrowUp size={16} />
-                                        </Button>
-                                        <Button size="sm" onClick={() => move(index, 1)} disabled={index === items.length - 1}>
-                                            <ArrowDown size={16} />
-                                        </Button>
-                                        <Button variant="outline-danger" size="sm" onClick={() => onChange(items.filter((_, current) => current !== index))}>
-                                            <Trash size={16} className="mr-2" /> {uiT("delete")}</Button>
-                                    </div>
-                                )}
-                            </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                ))}
-            </Accordion>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
 
             {editable && (
-                <div className="flex justify-end px-1">
-                    <Button onClick={() => onChange([...items, { host: "", port: 0, network_interface: "" }])}>
-                        <Plus className="mr-1" size={16} /> {uiT("add")} {title}
-                    </Button>
-                </div>
+                <Button size="sm" variant="ghost" className="mt-2" onClick={() => onChange([...items, { host: "", port: 0, network_interface: "" }])}>
+                    <Plus className="mr-1" size={15} /> {uiT("addItem", { item: title })}
+                </Button>
             )}
         </div>
     );
@@ -136,7 +130,9 @@ const FixedV2Form: FC<{
     return (
         <div className="grid gap-4">
             <AddressList title={uiT("hosts")} data={addresses} editable={editable} onChange={(next) => onChange({ addresses: next })} />
-            <BoolField label={uiT("udpHappyeyeballs")} value={config.udp_happy_eyeballs} disabled={!editable} onChange={(udp_happy_eyeballs) => onChange({ udp_happy_eyeballs })} />
+            <MoreOptions active={config.udp_happy_eyeballs === true}>
+                <BoolField label={uiT("udpHappyeyeballs")} value={config.udp_happy_eyeballs} disabled={!editable} onChange={(udp_happy_eyeballs) => onChange({ udp_happy_eyeballs })} />
+            </MoreOptions>
         </div>
     );
 };

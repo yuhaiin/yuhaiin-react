@@ -9,7 +9,7 @@ import { SoftEtherForm } from "./softether-forms";
 import { L2TPForm, L2TPv3Form, L2TPRuntimeInfo } from "./l2tp-forms";
 import { OpenVPNForm, OpenVPNRuntimeInfo } from "./openvpn-forms";
 import { TLSConfigForm, TLSTerminationForm } from "./tls-forms";
-import { StringField, NumberField, BoolField } from "./fields";
+import { StringField, NumberField, BoolField, MoreOptions, numberValue, stringValue } from "./fields";
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/component/v2/accordion";
 import { Badge } from "@/component/v2/badge";
@@ -51,7 +51,7 @@ const NodeEditor: FC<{
     return (
     <EditingNodeID.Provider value={value.id}><SecretValues key={value.id} value={value} load={value.id ? signal => getNodeSecrets(value.id, signal) : undefined}><div>
         {editable && (
-            <div className="mb-4 grid max-w-3xl grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <SettingInputVertical label={uiT("name")} value={value.name} onChange={(name) => onChange({ name })} disabled={!editable} />
                 <SettingInputVertical label={uiT("groupLabel")} value={value.group} reminds={groups.map(group => ({ label: group, value: group }))} showAllOnFocus onChange={(group) => onChange({ group })} disabled={!editable} />
                 <div className="md:col-span-2">
@@ -59,21 +59,21 @@ const NodeEditor: FC<{
                 </div>
                 <details className="md:col-span-2"><summary className="mb-3 cursor-pointer text-sm font-medium">{t("nodeAdvancedSettings")}</summary>
                 <p className="mb-3 break-all text-sm text-ui-muted">{t("nodeIdentity")}: {value.id} · {value.origin}</p>
-                <div>
-                    <SettingSelectVertical
-                        label={uiT("nodeIPVersion")}
-                        value={value.ip_version ?? "auto"}
-                        values={[
-                            [uiT("nodeIPVersionAuto"), "auto"],
-                            [uiT("nodeIPVersionIPv4"), "ipv4"],
-                            [uiT("nodeIPVersionIPv6"), "ipv6"],
-                        ]}
-                        onChange={(ip_version) => onChange({ ip_version: ip_version as NodeIPVersion })}
-                        disabled={!editable}
-                    />
-                    <p className="-mt-3 mb-2 text-sm text-ui-muted">{uiT("nodeIPVersionHelp")}</p>
-                </div>
-                <div className="grid gap-3 border-t border-ui-border pt-4 md:col-span-2">
+                <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
+                    <div>
+                        <SettingSelectVertical
+                            label={uiT("nodeIPVersion")}
+                            value={value.ip_version ?? "auto"}
+                            values={[
+                                [uiT("nodeIPVersionAuto"), "auto"],
+                                [uiT("nodeIPVersionIPv4"), "ipv4"],
+                                [uiT("nodeIPVersionIPv6"), "ipv6"],
+                            ]}
+                            onChange={(ip_version) => onChange({ ip_version: ip_version as NodeIPVersion })}
+                            disabled={!editable}
+                        />
+                        <p className="-mt-3 mb-0 text-sm text-ui-muted">{uiT("nodeIPVersionHelp")}</p>
+                    </div>
                     <div>
                         <SettingInputVertical
                             label={uiT("nodeLatencyURL")}
@@ -82,15 +82,17 @@ const NodeEditor: FC<{
                             onChange={(url) => onChange({ latency: { ...value.latency, url } })}
                             disabled={!editable}
                         />
-                        <p className="mb-0 mt-1 text-sm text-ui-muted">{uiT("nodeLatencyURLHelp")}</p>
+                        <p className="-mt-3 mb-0 text-sm text-ui-muted">{uiT("nodeLatencyURLHelp")}</p>
                     </div>
-                    <SwitchCard
-                        label={uiT("nodeLatencyInsecureSkipVerify")}
-                        description={uiT("nodeLatencyInsecureSkipVerifyHelp")}
-                        checked={value.latency?.insecure_skip_verify ?? false}
-                        onCheckedChange={(insecure_skip_verify) => onChange({ latency: { ...value.latency, insecure_skip_verify } })}
-                        disabled={!editable}
-                    />
+                    <div className="md:col-span-2">
+                        <SwitchCard
+                            label={uiT("nodeLatencyInsecureSkipVerify")}
+                            description={uiT("nodeLatencyInsecureSkipVerifyHelp")}
+                            checked={value.latency?.insecure_skip_verify ?? false}
+                            onCheckedChange={(insecure_skip_verify) => onChange({ latency: { ...value.latency, insecure_skip_verify } })}
+                            disabled={!editable}
+                        />
+                    </div>
                 </div>
                 </details>
             </div>
@@ -113,6 +115,38 @@ const NodeEditor: FC<{
 );
 };
 
+type Endpoint = { host?: unknown; port?: unknown; network_interface?: unknown };
+
+function endpointLabel(value?: Endpoint): string {
+    const host = stringValue(value?.host);
+    const port = numberValue(value?.port);
+    return host && port > 0 ? `${host}:${port}` : host;
+}
+
+/** One-line description of a step for its collapsed header; empty when nothing identifying is configured. */
+export function protocolSummary(protocol: NodeProtocol, labels: { noAuth: string; sharedCredential: string; via: (name: string) => string }): string {
+    const config = ((protocol as unknown as Record<string, unknown>)[protocol.type] ?? {}) as Record<string, unknown>;
+    const parts: string[] = [];
+    if (protocol.type === "fixed" || protocol.type === "fixedv2") {
+        const addresses = protocol.type === "fixed" ? [config as Endpoint, ...((config.alternate_host as Endpoint[] | undefined) ?? [])] : ((config.addresses as Endpoint[] | undefined) ?? []);
+        const named = addresses.filter(address => stringValue(address.host));
+        if (named.length > 0) parts.push(endpointLabel(named[0]) + (named.length > 1 ? ` +${named.length - 1}` : ""));
+        const iface = stringValue(named[0]?.network_interface);
+        if (iface) parts.push(labels.via(iface));
+        return parts.join(" · ");
+    }
+    const host = stringValue(config.host) || stringValue(config.hostname) || stringValue(config.server) || stringValue(config.servername);
+    if (host) parts.push(host);
+    const path = stringValue(config.path);
+    if (path) parts.push(path);
+    if (protocol.type === "direct" && stringValue(config.network_interface)) parts.push(labels.via(stringValue(config.network_interface)));
+    if (protocol.type === "socks5" || protocol.type === "http" || protocol.type === "ssh") {
+        const user = stringValue(config.user);
+        parts.push(protocol.credentialRef ? labels.sharedCredential : user || labels.noAuth);
+    }
+    return parts.join(" · ");
+}
+
 function containsProtocol(protocol: NodeProtocol, type: "globalprotect" | "openvpn" | "l2tp" | "l2tpv3"): boolean {
     if (protocol.type === type) return true;
     if (protocol.type !== "network_split") return false;
@@ -132,6 +166,13 @@ const NodeProtocolChain: FC<{
 
     const [newProtocol, setNewProtocol] = useState<NodeProtocolType>("direct");
     const normalizedChain = chain.length > 0 ? chain.map(normalizeProtocol) : [createDefaultProtocol("direct")];
+    // A single step opens directly; longer chains start collapsed so the whole chain reads at a glance.
+    const [openSteps, setOpenSteps] = useState<string[]>(() => normalizedChain.length > 1 ? [] : ["item-0"]);
+    const summaryLabels = { noAuth: uiT("noAuthentication"), sharedCredential: uiT("sharedCredentialShort"), via: (name: string) => uiT("viaInterface", { name }) };
+    const addStep = (type: NodeProtocolType) => {
+        setOpenSteps(previous => [...previous, `item-${chain.length}`]);
+        onAddProtocol(type);
+    };
 
     return (
         <div className="mb-3">
@@ -140,43 +181,47 @@ const NodeProtocolChain: FC<{
                 <small className="text-ui-muted">{uiT("stepCount", { count: normalizedChain.length })}</small>
             </div>
 
-            <Accordion type="multiple" defaultValue={normalizedChain.map((_, index) => `item-${index}`)} className="mb-3">
-                {normalizedChain.map((protocol, index) => (
-                    <AccordionItem value={`item-${index}`} key={`${index}-${protocol.type}`}>
-                        <AccordionTrigger>
-                            <div className="flex min-w-0 flex-1 items-center gap-2">
-                                <Badge variant="secondary" className="px-2 text-xs">
-                                    {index + 1}
-                                </Badge>
-                                <span className="truncate">{protocol.type}</span>
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                            <div className="p-1">
-                                <ProtocolEditor
-                                    value={protocol}
-                                    index={index}
-                                    editable={editable}
-                                    structureEditable={structureEditable}
-                                    onChange={(next) => onProtocolChange(index, next)}
-                                />
+            <Accordion type="multiple" value={openSteps} onValueChange={setOpenSteps} className="mb-3">
+                {normalizedChain.map((protocol, index) => {
+                    const summary = protocolSummary(protocol, summaryLabels);
+                    return (
+                        <AccordionItem value={`item-${index}`} key={`${index}-${protocol.type}`}>
+                            <AccordionTrigger>
+                                <div className="flex min-w-0 flex-1 items-center gap-2">
+                                    <Badge variant="secondary" className="px-2 text-xs">
+                                        {index + 1}
+                                    </Badge>
+                                    <span className="shrink-0">{protocol.type}</span>
+                                    {summary && <span className="min-w-0 truncate text-sm font-normal text-ui-muted group-data-[state=open]:hidden">{summary}</span>}
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent>
+                                <div className="p-1">
+                                    <ProtocolEditor
+                                        value={protocol}
+                                        index={index}
+                                        editable={editable}
+                                        structureEditable={structureEditable}
+                                        onChange={(next) => onProtocolChange(index, next)}
+                                    />
 
-                                {editable && structureEditable && (
-                                    <div className="mt-3 flex justify-end gap-2 pt-3">
-                                        <Button size="sm" aria-label={uiT("moveStepUp")} onClick={() => onMoveProtocol(index, -1)} disabled={index === 0}>
-                                            <ArrowUp size={16} />
-                                        </Button>
-                                        <Button size="sm" aria-label={uiT("moveStepDown")} onClick={() => onMoveProtocol(index, 1)} disabled={index === normalizedChain.length - 1}>
-                                            <ArrowDown size={16} />
-                                        </Button>
-                                        <Button variant="outline-danger" size="sm" onClick={() => onRemoveProtocol(index)}>
-                                            <Trash size={16} className="mr-2" /> {uiT("delete")}</Button>
-                                    </div>
-                                )}
-                            </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                ))}
+                                    {editable && structureEditable && (
+                                        <div className="mt-3 flex justify-end gap-2 pt-3">
+                                            <Button size="sm" aria-label={uiT("moveStepUp")} onClick={() => onMoveProtocol(index, -1)} disabled={index === 0}>
+                                                <ArrowUp size={16} />
+                                            </Button>
+                                            <Button size="sm" aria-label={uiT("moveStepDown")} onClick={() => onMoveProtocol(index, 1)} disabled={index === normalizedChain.length - 1}>
+                                                <ArrowDown size={16} />
+                                            </Button>
+                                            <Button variant="outline-danger" size="sm" onClick={() => onRemoveProtocol(index)}>
+                                                <Trash size={16} className="mr-2" /> {uiT("delete")}</Button>
+                                        </div>
+                                    )}
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    );
+                })}
             </Accordion>
 
             {editable && structureEditable && (
@@ -191,7 +236,7 @@ const NodeProtocolChain: FC<{
                     </div>
                     <Button
                         className="mb-1"
-                        onClick={() => onAddProtocol(newProtocol)}
+                        onClick={() => addStep(newProtocol)}
                     >
                         <Plus className="mr-1" size={16} /> {uiT("addStep")}</Button>
                 </div>
@@ -287,19 +332,25 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
             return <div className="rounded-ui-lg border border-dashed border-ui-border p-4 text-sm text-ui-muted">{uiT("noExtraProtocolConfiguration")}</div>;
         case "socks5":
             return (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <StringField label={uiT("hostname")} value={protocol.socks5.hostname} disabled={!editable} onChange={(hostname) => patch(protocol, { hostname })} />
-                    <StringField label={uiT("username")} value={protocol.socks5.user} disabled={!editable || !!protocol.credentialRef} onChange={(user) => patch(protocol, { user })} />
-                    <StringField secret label={uiT("password")} value={protocol.socks5.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
-                    <NumberField label={uiT("overridePort")} value={protocol.socks5.override_port} disabled={!editable} onChange={(override_port) => patch(protocol, { override_port })} />
+                <div className="grid gap-2">
+                    {!protocol.credentialRef && <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2">
+                        <StringField label={uiT("username")} value={protocol.socks5.user} disabled={!editable} onChange={(user) => patch(protocol, { user })} />
+                        <StringField secret label={uiT("password")} value={protocol.socks5.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />
+                    </div>}
+                    <MoreOptions active={!!protocol.socks5.hostname || numberValue(protocol.socks5.override_port) > 0}>
+                        <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2">
+                            <StringField label={uiT("hostname")} value={protocol.socks5.hostname} disabled={!editable} onChange={(hostname) => patch(protocol, { hostname })} />
+                            <NumberField label={uiT("overridePort")} value={protocol.socks5.override_port} disabled={!editable} onChange={(override_port) => patch(protocol, { override_port })} />
+                        </div>
+                    </MoreOptions>
                 </div>
             );
         case "ssh":
             return (
                 <div className="grid gap-4">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <StringField label={uiT("username")} value={protocol.ssh.user} disabled={!editable || !!protocol.credentialRef} onChange={(user) => patch(protocol, { user })} />
-                        <SettingInputVertical secret label={uiT("password")} type="password" value={protocol.ssh.password ?? ""} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
+                        {!protocol.credentialRef && <StringField label={uiT("username")} value={protocol.ssh.user} disabled={!editable} onChange={(user) => patch(protocol, { user })} />}
+                        {!protocol.credentialRef && <SettingInputVertical secret label={uiT("password")} type="password" value={protocol.ssh.password ?? ""} disabled={!editable} onChange={(password) => patch(protocol, { password })} />}
                         <SettingInputVertical label={uiT("sshHostKey")} value={protocol.ssh.host_key ?? ""} placeholder="SHA256:... / ssh-ed25519 AAAA..." disabled={!editable} onChange={(host_key) => patch(protocol, { host_key })} />
                         <NumberField label={uiT("sshKeepAliveSeconds")} value={protocol.ssh.keep_alive_seconds} disabled={!editable} onChange={(keep_alive_seconds) => patch(protocol, { keep_alive_seconds })} />
                         <SettingInputVertical secret label={uiT("sshPrivateKeyPassphrase")} type="password" value={protocol.ssh.private_key_passphrase ?? ""} disabled={!editable} onChange={(private_key_passphrase) => patch(protocol, { private_key_passphrase })} />
@@ -314,15 +365,15 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
         case "http":
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <StringField label={uiT("username")} value={protocol.http.user} disabled={!editable || !!protocol.credentialRef} onChange={(user) => patch(protocol, { user })} />
-                    <StringField secret label={uiT("password")} value={protocol.http.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
+                    {!protocol.credentialRef && <StringField label={uiT("username")} value={protocol.http.user} disabled={!editable} onChange={(user) => patch(protocol, { user })} />}
+                    {!protocol.credentialRef && <StringField secret label={uiT("password")} value={protocol.http.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />}
                 </div>
             );
         case "shadowsocks":
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <StringField label={uiT("method")} value={protocol.shadowsocks.method} disabled={!editable} onChange={(method) => patch(protocol, { method })} />
-                    <StringField secret label={uiT("password")} value={protocol.shadowsocks.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
+                    {!protocol.credentialRef && <StringField secret label={uiT("password")} value={protocol.shadowsocks.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />}
                 </div>
             );
         case "shadowsocksr":
@@ -331,7 +382,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                     <StringField label={uiT("server")} value={protocol.shadowsocksr.server} disabled={!editable} onChange={(server) => patch(protocol, { server })} />
                     <StringField label={uiT("port")} value={protocol.shadowsocksr.port} disabled={!editable} onChange={(port) => patch(protocol, { port })} />
                     <StringField label={uiT("method")} value={protocol.shadowsocksr.method} disabled={!editable} onChange={(method) => patch(protocol, { method })} />
-                    <StringField secret label={uiT("password")} value={protocol.shadowsocksr.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
+                    {!protocol.credentialRef && <StringField secret label={uiT("password")} value={protocol.shadowsocksr.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />}
                     <StringField label="Obfs" value={protocol.shadowsocksr.obfs} disabled={!editable} onChange={(obfs) => patch(protocol, { obfs })} />
                     <StringField label={uiT("obfsParam")} value={protocol.shadowsocksr.obfsparam} disabled={!editable} onChange={(obfsparam) => patch(protocol, { obfsparam })} />
                     <StringField label={uiT("protocol")} value={protocol.shadowsocksr.protocol} disabled={!editable} onChange={(nextProtocol) => patch(protocol, { protocol: nextProtocol })} />
@@ -351,14 +402,14 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
         case "trojan":
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <StringField secret label={uiT("password")} value={protocol.trojan.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
+                    {!protocol.credentialRef && <StringField secret label={uiT("password")} value={protocol.trojan.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />}
                     <StringField label="Peer" value={protocol.trojan.peer} disabled={!editable} onChange={(peer) => patch(protocol, { peer })} />
                 </div>
             );
         case "yuubinsya":
             return (
                 <div className="grid gap-4">
-                    <StringField secret label={uiT("password")} value={protocol.yuubinsya.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
+                    {!protocol.credentialRef && <StringField secret label={uiT("password")} value={protocol.yuubinsya.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />}
                     <BoolField label={uiT("udpOverStream")} value={protocol.yuubinsya.udp_over_stream} disabled={!editable} onChange={(udp_over_stream) => patch(protocol, { udp_over_stream })} />
                     <BoolField label={uiT("udpCoalesce")} value={protocol.yuubinsya.udp_coalesce} disabled={!editable} onChange={(udp_coalesce) => patch(protocol, { udp_coalesce })} />
                 </div>
@@ -375,7 +426,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                 <div className="grid gap-4">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <StringField label={uiT("host")} value={protocol.hysteria2.host} disabled={!editable} onChange={(host) => patch(protocol, { host })} />
-                        <StringField secret label={uiT("password")} value={protocol.hysteria2.auth} disabled={!editable || !!protocol.credentialRef} onChange={(auth) => patch(protocol, { auth })} />
+                        {!protocol.credentialRef && <StringField secret label={uiT("password")} value={protocol.hysteria2.auth} disabled={!editable} onChange={(auth) => patch(protocol, { auth })} />}
                         <NumberField label={uiT("uploadBandwidthBytes")} value={protocol.hysteria2.upload_bps} disabled={!editable} onChange={(upload_bps) => patch(protocol, { upload_bps })} />
                         <NumberField label={uiT("downloadBandwidthBytes")} value={protocol.hysteria2.download_bps} disabled={!editable} onChange={(download_bps) => patch(protocol, { download_bps })} />
                         <StringField secret label={uiT("salamanderPassword")} value={protocol.hysteria2.salamander_password} disabled={!editable} onChange={(salamander_password) => patch(protocol, { salamander_password })} />
@@ -476,7 +527,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
         case "aead":
             return (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <StringField secret label={uiT("password")} value={protocol.aead.password} disabled={!editable || !!protocol.credentialRef} onChange={(password) => patch(protocol, { password })} />
+                    {!protocol.credentialRef && <StringField secret label={uiT("password")} value={protocol.aead.password} disabled={!editable} onChange={(password) => patch(protocol, { password })} />}
                     <StringField label={uiT("cryptoMethod")} value={protocol.aead.crypto_method} disabled={!editable} onChange={(crypto_method) => patch(protocol, { crypto_method })} />
                 </div>
             );
@@ -507,7 +558,7 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                         <StringField label="Server name (SNI)" value={protocol.masque.server_name} disabled={!editable} onChange={(server_name) => patch(protocol, { server_name })} />
                     </div>
                     <StringField label="HTTPS CONNECT-IP URL" value={protocol.masque.url} disabled={!editable} onChange={(url) => patch(protocol, { url })} />
-                    <StringField secret label="Bearer token" value={protocol.masque.bearer_token} disabled={!editable || !!protocol.credentialRef} onChange={(bearer_token) => patch(protocol, { bearer_token })} />
+                    {!protocol.credentialRef && <StringField secret label="Bearer token" value={protocol.masque.bearer_token} disabled={!editable} onChange={(bearer_token) => patch(protocol, { bearer_token })} />}
                     <InputList title={uiT("localAddresses")} data={protocol.masque.local_addresses ?? []} disabled={!editable} onChange={(local_addresses) => patch(protocol, { local_addresses })} />
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <NumberField label="MTU" value={protocol.masque.mtu} disabled={!editable} onChange={(mtu) => patch(protocol, { mtu })} />
