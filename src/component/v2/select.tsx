@@ -157,7 +157,8 @@ const DropdownSelectComponent: FC<{
                     <ChevronDown className="text-ui-tertiary flex-shrink-0" size={16} />
                 </button>
             </DropdownTrigger>
-            <DropdownContent className="min-w-[min(300px,90vw)]">
+            {/* A select's menu matches its field: lift the 520px menu cap and align to the field's left edge. */}
+            <DropdownContent align="start" className="min-w-[min(300px,90vw)]" style={{ maxWidth: "min(var(--radix-dropdown-menu-trigger-width), var(--radix-dropdown-menu-content-available-width), calc(100vw - 24px))" }}>
                 {safeItems.map((v) => (
                     <DropdownCheckboxItem
                         key={v}

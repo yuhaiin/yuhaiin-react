@@ -374,3 +374,6 @@ html[data-bs-theme="dark"] { --sidebar-scroll-shadow: rgb(0 0 0 / 50%); }
 
 .group[data-disabled] [data-switch-track] { background: var(--disabled-bg); border-color: var(--disabled-border); }
 .group[data-disabled] [data-switch-track] > span { background: var(--disabled-fg); }
+
+/* Collapsed <details> keep their hidden children in the DOM, so space-y-* and mb-* still push the summary's bottom margin out as an empty band. Unlayered so it wins over utilities. */
+details:not([open]) > summary { margin-block-end: 0; }
