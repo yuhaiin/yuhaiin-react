@@ -4,12 +4,15 @@ import { Button } from '@/component/v2/button';
 import { Card, CardBody, CardHeader } from '@/component/v2/card';
 import { confirmAction } from '@/component/v2/confirmation';
 import { DateTimeField } from '@/component/v2/date-time-field';
+import { Input, Textarea } from '@/component/v2/input';
 import { Select } from '@/component/v2/select';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { IssuedSecret } from './secret';
 import { PermissionPicker } from './permission-picker';
+export const tokenNameMax = 64;
+export const tokenNoteMax = 512;
 const readerScopes = new Set(['nodes:read', 'inbounds:read', 'routes:read', 'resolver:read', 'connections:read', 'gateway:read', 'settings:read', 'metrics:read', 'identity:read', 'tokens:own', 'proxy-credentials:own']);
 export function Tokens() {
     const { t } = useTranslation('auth'); const session = useSession()!;
@@ -17,6 +20,8 @@ export function Tokens() {
     useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 60000); return () => clearInterval(timer); }, []);
     const [owner, setOwner] = useState(session.principal.userId);
     const [scopes, setScopes] = useState<string[]>(session.principal.permissions.includes('nodes:read') ? ['nodes:read'] : []);
+    const [name, setName] = useState(''); const [note, setNote] = useState('');
+    const [editing, setEditing] = useState<string | null>(null); const [editName, setEditName] = useState(''); const [editNote, setEditNote] = useState('');
     const [expires, setExpires] = useState(''); const [issued, setIssued] = useState<Issued | null>(null);
     const [busy, setBusy] = useState(false); const [error, setError] = useState('');
     const { data: users } = useSWR(session.principal.permissions.includes('users:manage') && session.principal.permissions.includes('tokens:manage') ? 'auth-users' : null, () => authAPI<User[]>('GET', '/users'));
@@ -30,12 +35,22 @@ export function Tokens() {
     const create = (event: FormEvent) => {
         event.preventDefault();
         if (!scopes.length || (expires && (!Number.isFinite(Date.parse(expires)) || Date.parse(expires) <= Date.now()))) { setError(t('tokenValidation')); return; }
-        void run(async () => setIssued(await authAPI<Issued>('POST', '/tokens', { owner, scopes, expiresAt: expires ? Math.floor(Date.parse(expires) / 1000) : 0 })));
+        void run(async () => {
+            setIssued(await authAPI<Issued>('POST', '/tokens', { owner, scopes, expiresAt: expires ? Math.floor(Date.parse(expires) / 1000) : 0, name: name.trim(), note: note.trim() }));
+            setName(''); setNote('');
+        });
+    };
+    const startEdit = (token: Token) => { setEditing(token.id); setEditName(token.name ?? ''); setEditNote(token.note ?? ''); };
+    const saveEdit = (event: FormEvent, id: string) => {
+        event.preventDefault();
+        void run(async () => { await authAPI<Token>('PATCH', `/tokens/${id}`, { name: editName.trim(), note: editNote.trim() }); setEditing(null); });
     };
     return <Card><CardHeader><h2 className="m-0 font-medium">{t('tokens')}</h2><Button disabled={busy} onClick={() => void mutate()}>{t('refresh')}</Button></CardHeader><CardBody className="space-y-5">
         <p className="text-sm text-ui-muted">{t('tokenHint')}</p>
         {users && <Select ariaLabel={t('owner')} value={owner} items={users.filter(user => user.enrolled && !user.disabled).map(user => ({ value: user.id, label: user.login }))} disabled={busy} onValueChange={id => { setOwner(id); setScopes([]); }} />}
         <form onSubmit={create} className="space-y-4">
+            <label className="block space-y-2"><span>{t('tokenName')}</span><Input maxLength={tokenNameMax} value={name} placeholder={t('tokenNamePlaceholder')} disabled={busy} onChange={event => setName(event.target.value)} /></label>
+            <label className="block space-y-2"><span>{t('tokenNote')}</span><Textarea maxLength={tokenNoteMax} rows={2} value={note} disabled={busy} onChange={event => setNote(event.target.value)} /></label>
             <PermissionPicker legend={t('scopes')} permissions={available} value={scopes} onChange={setScopes} disabled={busy} />
             <label className="block space-y-2"><span>{t('optionalExpiry')}</span><DateTimeField value={expires} onChange={setExpires} disabled={busy} /></label>
             <Button type="submit" variant="primary" disabled={busy || !scopes.length}>{t('createToken')}</Button>
@@ -44,12 +59,18 @@ export function Tokens() {
         {tokens?.length === 0 && <p className="text-sm text-ui-muted">{t('noTokens')}</p>}
         <div className="space-y-3">{tokens?.map(token => {
             const inactive = token.revoked || (token.expiresAt !== 0 && token.expiresAt * 1000 <= now);
-            return <section key={token.id} className="space-y-2 rounded-ui-md border border-ui-border p-4" aria-label={token.prefix}>
-                <div className="flex flex-wrap justify-between gap-2"><code>{token.prefix}…</code><span className="text-sm text-ui-muted">{t(token.revoked ? 'revoked' : inactive ? 'expired' : 'active')}</span></div>
+            const label = token.name || `${token.prefix}…`;
+            return <section key={token.id} className="space-y-2 rounded-ui-md border border-ui-border p-4" aria-label={label}>
+                <div className="flex flex-wrap justify-between gap-2"><div className="min-w-0 space-y-1">{token.name ? <><p className="m-0 break-words font-medium">{token.name}</p><code className="text-xs text-ui-muted">{token.prefix}…</code></> : <code>{token.prefix}…</code>}</div><span className="text-sm text-ui-muted">{t(token.revoked ? 'revoked' : inactive ? 'expired' : 'active')}</span></div>
+                {token.note && editing !== token.id && <p className="whitespace-pre-wrap break-words text-sm">{token.note}</p>}
                 <p className="break-all text-xs text-ui-muted">{t('owner')}: {token.userId}</p>
                 <p className="break-words text-sm">{token.scopes.join(', ')}</p>
                 <p className="text-xs text-ui-muted">{t('expires')}: {token.expiresAt ? new Date(token.expiresAt * 1000).toLocaleString() : t('never')}</p>
-                <div className="flex flex-wrap gap-2"><Button disabled={busy || inactive} onClick={() => void run(async () => { if (await confirmAction(t('rotateConfirm'))) setIssued(await authAPI<Issued>('POST', `/tokens/${token.id}/rotate`, {})); })}>{t('rotate')}</Button><Button variant="outline-danger" disabled={busy || inactive} onClick={() => void run(async () => { if (await confirmAction(t('revokeConfirm'))) await authAPI('DELETE', `/tokens/${token.id}`); })}>{t('revoke')}</Button></div>
+                {editing === token.id ? <form className="space-y-3" onSubmit={event => saveEdit(event, token.id)}>
+                    <label className="block space-y-2"><span>{t('tokenName')}</span><Input maxLength={tokenNameMax} value={editName} disabled={busy} onChange={event => setEditName(event.target.value)} /></label>
+                    <label className="block space-y-2"><span>{t('tokenNote')}</span><Textarea maxLength={tokenNoteMax} rows={2} value={editNote} disabled={busy} onChange={event => setEditNote(event.target.value)} /></label>
+                    <div className="flex flex-wrap gap-2"><Button type="submit" variant="primary" disabled={busy}>{t('save')}</Button><Button disabled={busy} onClick={() => setEditing(null)}>{t('cancel')}</Button></div>
+                </form> : <div className="flex flex-wrap gap-2"><Button disabled={busy || token.revoked} onClick={() => startEdit(token)}>{t('editToken')}</Button><Button disabled={busy || inactive} onClick={() => void run(async () => { if (await confirmAction(t('rotateConfirm'))) setIssued(await authAPI<Issued>('POST', `/tokens/${token.id}/rotate`, {})); })}>{t('rotate')}</Button><Button variant="outline-danger" disabled={busy || inactive} onClick={() => void run(async () => { if (await confirmAction(t('revokeConfirm'))) await authAPI('DELETE', `/tokens/${token.id}`); })}>{t('revoke')}</Button></div>}
             </section>;
         })}</div>
     </CardBody>{issued && <IssuedSecret value={issued} onClose={() => setIssued(null)} />}</Card>;
