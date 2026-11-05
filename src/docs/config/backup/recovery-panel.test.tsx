@@ -6,7 +6,7 @@ import { createRecoveryBackup, deleteRecoveryBackup, retrieveRecoveryBackup } fr
 import { defaultRecoveryPolicy, RecoveryBackupPanel } from './recovery-panel';
 
 const mocked = vi.hoisted(() => ({ status: { supported: true, items: [] } as RecoveryBackupStatus, mutate: vi.fn(async () => undefined) }));
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string, options?: { defaultValue?: string }) => key.includes('private-') ? options?.defaultValue ?? key : key }) }));
 vi.mock('swr', () => ({ default: () => ({ data: mocked.status, error: undefined, mutate: mocked.mutate }) }));
 vi.mock('@/api/backup', () => ({ createRecoveryBackup: vi.fn(), deleteRecoveryBackup: vi.fn(), getRecoveryBackups: vi.fn(), retryRecoveryBackup: vi.fn(), verifyRecoveryBackup: vi.fn(), retrieveRecoveryBackup: vi.fn() }));
 const roots: ReturnType<typeof createRoot>[] = [];
@@ -113,4 +113,23 @@ it('keeps local plaintext-copy deletion opt-in and separate from encrypted archi
  expect(change).toHaveBeenCalledWith(expect.objectContaining({ keepCount: 10, keepDays: 30, recipient: 'age1-fixture', localPoints: { enabled: true, keepCount: 3, keepDays: 30 } }));
  expect(deleteRecoveryBackup).not.toHaveBeenCalled();
  expect(host.textContent).toContain('recoveryBackup.localPointsWarning');
+});
+
+
+it('separates ciphertext verification, recovery requirements and structured capture failures', async () => {
+    mocked.status.items = [
+        { ...point('local_ready'), id: 'with-requirements', verification: 'ciphertext_sha256', requirementCount: 2, warnings: ['missing_dependency', 'external_runtime'] },
+        { ...point('failed'), id: 'failed-point', errorCode: 'capture_failed', failureStage: 'dependency_inventory', failureCode: 'permission_denied' },
+        { ...point('failed'), id: 'unknown-point', errorCode: 'capture_failed', failureStage: 'private-log-marker', failureCode: 'password=private-marker' },
+    ];
+    const host = await mount();
+    expect(host.textContent).toContain('recoveryBackup.withRequirements');
+    expect(host.textContent).toContain('recoveryBackup.requirements.missing_dependency');
+    expect(host.textContent).toContain('recoveryBackup.requirements.external_runtime');
+    expect(host.textContent).toContain('recoveryBackup.inspectRequirements');
+    expect(host.textContent).toContain('recoveryBackup.failureCodes.permission_denied');
+    expect(host.textContent).toContain('recoveryBackup.failureCodes.unknown');
+    expect(host.textContent).not.toContain('private-marker');
+    expect(host.textContent).not.toContain('private-log-marker');
+    expect(host.textContent).not.toContain('recoveryBackup.archiveCheck.passed');
 });

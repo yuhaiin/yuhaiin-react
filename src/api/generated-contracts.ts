@@ -1670,6 +1670,10 @@ export namespace Go {
       objectKey?: string;
       verification?: string;
       errorCode?: string;
+      failureStage?: string;
+      failureCode?: string;
+      warnings?: string[];
+      requirementCount?: number;
       includesHistory: boolean;
       uploadAttempts: number;
       archiveCheck?: string;

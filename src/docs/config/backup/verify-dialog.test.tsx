@@ -9,7 +9,8 @@ vi.mock('@/api/backup', () => ({ verifyRecoveryBackup: vi.fn(async () => ({ comp
 const roots: ReturnType<typeof createRoot>[] = [];
 afterEach(() => { act(() => roots.forEach(root => root.unmount())); roots.length = 0; document.body.innerHTML = ''; vi.clearAllMocks(); });
 
-it('uses the private identity once and clears it when the dialog closes', async () => {
+it('clears the identity immediately, displays authenticated obligations, and clears results on close', async () => {
+    vi.mocked(verifyRecoveryBackup).mockResolvedValueOnce({ completeInventory: true, requirements: [{ kind: 'missing_dependency', path: '/old-machine/missing.pem' }, { kind: 'protocol_reconfiguration', nodeId: 'nebula-fixture' }] } as Awaited<ReturnType<typeof verifyRecoveryBackup>>);
     const host = document.createElement('div'); document.body.appendChild(host);
     const root = createRoot(host); roots.push(root);
     function Harness() {
@@ -28,6 +29,13 @@ it('uses the private identity once and clears it when the dialog closes', async 
     const verify = [...document.querySelectorAll<HTMLButtonElement>('[role=dialog] button')].find(button => button.textContent === 'recoveryBackup.verify')!;
     await act(async () => verify.click());
     expect(verifyRecoveryBackup).toHaveBeenCalledWith('point', 'transient-private-fixture');
+    expect(document.body.textContent).toContain('recoveryBackup.verifyWithRequirements');
+    expect(document.body.textContent).toContain('/old-machine/missing.pem');
+    expect(document.body.textContent).toContain('nebula-fixture');
+    expect(document.querySelector<HTMLInputElement>('input[type=password]')!.value).toBe('');
+    const close = [...document.querySelectorAll<HTMLButtonElement>('[role=dialog] button')].find(button => button.textContent === 'recoveryBackup.close')!;
+    await act(async () => close.click());
     await act(async () => host.querySelector('button')!.click());
     expect(document.querySelector<HTMLInputElement>('input[type=password]')!.value).toBe('');
+    expect(document.body.textContent).not.toContain('/old-machine/missing.pem');
 });

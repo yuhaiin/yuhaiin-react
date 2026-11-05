@@ -825,7 +825,43 @@
     "localPointsWarning": "기본값은 비활성입니다. 최신 확정 사본, 진행 중인 복원, 최근 복원 결과, 설정에서 참조하는 파일 및 열려 있다고 확인된 SQLite 사본을 보호합니다. 시작마다 최대 32개를 삭제하며 활성 상태에서 중단된 정리를 재개합니다. 보호 사본은 설정된 개수나 기간을 초과하여 보관될 수 있습니다.",
     "localPointsCount": "보관할 로컬 롤백 사본 수",
     "localPointsDays": "로컬 롤백 사본 보관 일수",
-    "privateURLHint": "업데이트된 서버는 암호화되지 않은 설정 백업에서 사용자 정보, 쿼리 또는 프래그먼트가 포함된 라우팅, 레지스트리, GeoIP, DNS, S3 엔드포인트, 상태 검사 및 속도 측정 URL을 거부합니다. 비공개 URL에는 암호화된 전체 복구 백업을 사용하세요. URL 경로에도 비밀 정보가 포함될 수 있습니다."
+    "privateURLHint": "업데이트된 서버는 암호화되지 않은 설정 백업에서 사용자 정보, 쿼리 또는 프래그먼트가 포함된 라우팅, 레지스트리, GeoIP, DNS, S3 엔드포인트, 상태 검사 및 속도 측정 URL을 거부합니다. 비공개 URL에는 암호화된 전체 복구 백업을 사용하세요. URL 경로에도 비밀 정보가 포함될 수 있습니다.",
+    "requirements": {
+      "identity_not_initialized": "백업 시점에 프로토콜 ID가 초기화되지 않았습니다. 복원 후 등록이 필요할 수 있습니다.",
+      "missing_dependency": "설정된 파일이 없었습니다. 복원 시 참조를 격리하고 관련 리소스를 비활성화합니다. 파일을 제공하고 설정을 확인한 뒤 활성화하세요.",
+      "external_runtime": "대상 환경에 맞는 ZeroTier 라이브러리를 제공하고 경로를 다시 설정한 뒤 노드를 활성화하세요. 라이브러리는 ID 자료가 아니며 보관되지 않습니다.",
+      "missing_web_assets": "외부 웹 디렉터리가 없었습니다. 복원 시 시작 경로 설정을 해제합니다. 다시 선택하기 전에 파일을 배포하세요.",
+      "protocol_reconfiguration": "Nebula PKI가 불완전하거나 하드웨어에 연결되어 있습니다. 존재하는 파일은 저장했지만 사용할 수 없는 개인 키는 백업되지 않았습니다. PKI를 설정할 때까지 노드를 비활성화합니다.",
+      "inactive_node_configuration": "비활성 노드에 오래된 실행 설정이 있습니다. 설정과 수집된 자격 증명은 유지됩니다. 활성화하기 전에 검토하세요.",
+      "inactive_inbound_configuration": "비활성 리스너에 잘못된 실행 설정이 있습니다. 설정과 수집된 자격 증명은 유지됩니다. 활성화하기 전에 검토하세요.",
+      "unknown": "이 아카이브에는 추가 복구 요구 사항이 있습니다. 호환되는 복구 도구로 검토한 뒤 활성화하세요."
+    },
+    "requirementsTitle": "복구 요구 사항",
+    "requirementsHint": "아카이브 인증은 저장된 바이트를 확인합니다. 설정된 모든 파일이나 외부 키가 존재했다는 의미는 아닙니다.",
+    "withRequirements": "아카이브가 준비되었습니다. 복구 요구 사항 {{count}}개를 확인하세요.",
+    "inspectRequirements": "아카이브 검증/복호화 또는 복원 미리보기에서 관련 경로와 리소스 ID를 확인하세요.",
+    "verifyWithRequirements": "아카이브 인증에 성공했습니다. 복구 요구 사항을 확인하세요.",
+    "legacyInventory": "전체 배포 목록이 없는 아카이브입니다. 검토된 오프라인 복구 절차를 사용하세요.",
+    "failureStage": "실패 단계: {{stage}}",
+    "stages": {
+      "capture": "백업 생성",
+      "admission": "유지보수 및 사전 검사",
+      "database_snapshot": "데이터베이스 스냅샷",
+      "startup_inputs": "시작 설정",
+      "dependency_inventory": "파일 및 ID 수집",
+      "archive_write": "암호화 아카이브 기록",
+      "service_stop": "서비스 중지"
+    },
+    "failureCodes": {
+      "cancelled": "백업 생성을 취소했습니다. 서비스 상태를 확인하고 다시 시도하세요.",
+      "timeout": "시간 제한을 초과했습니다. 저장소 성능과 작업 시간 제한을 확인하세요.",
+      "permission_denied": "읽기 또는 쓰기 권한이 없습니다. 서비스 계정과 파일 권한을 확인하세요.",
+      "insufficient_space": "저장 공간이 부족합니다. 스냅샷과 아카이브 파일 시스템의 공간을 확보하세요.",
+      "required_file_missing": "필수 시작 또는 ID 파일이 없습니다. 파일을 복원하거나 활성 설정을 수정하세요. 선택적 참조 파일 누락은 이 오류를 일으키지 않습니다.",
+      "io_error": "I/O 또는 불완전한 읽기 오류가 발생했습니다. 저장소 상태와 외부 기록 작업을 확인하세요.",
+      "invalid_or_unsafe_input": "입력이 잘못되었거나 안전하지 않습니다. 유지보수 로그에서 설정, 손상 또는 심볼릭 링크를 확인하세요. 검사를 우회하지 마세요.",
+      "unknown": "백업 생성에 실패했습니다. 유지보수 로그와 서비스 상태를 확인하세요."
+    }
   },
   "backupIntervalMinutes": "설정 스냅샷 간격 (분)",
   "recoveryImport": {
@@ -868,7 +904,14 @@
       "revoked_credentials_may_be_restored": "이전에 취소한 인증 정보나 장치가 다시 유효해질 수 있습니다.",
       "quota_and_usage_state_can_move_backwards": "할당량과 사용 상태가 백업 시점으로 되돌아갈 수 있습니다.",
       "different_or_damaged_target_identity_will_be_replaced": "대상의 다른 식별 정보 또는 손상된 식별 정보가 교체됩니다.",
-      "clone_management_certificate_reenrollment_required": "복제 모드는 원본의 관리 HTTPS 인증서를 재사용하지 않고 새 자체 서명 인증서로 바꿉니다. 관리 인증서를 선택하기 전에 다시 등록하세요."
+      "clone_management_certificate_reenrollment_required": "복제 모드는 원본의 관리 HTTPS 인증서를 재사용하지 않고 새 자체 서명 인증서로 바꿉니다. 관리 인증서를 선택하기 전에 다시 등록하세요.",
+      "identity_not_initialized": "백업 시점에 프로토콜 ID가 초기화되지 않았습니다. 복원 후 등록이 필요할 수 있습니다.",
+      "missing_dependency": "설정된 파일이 없었습니다. 복원 시 참조를 격리하고 관련 리소스를 비활성화합니다. 파일을 제공하고 설정을 확인한 뒤 활성화하세요.",
+      "external_runtime": "대상 환경에 맞는 ZeroTier 라이브러리를 제공하고 경로를 다시 설정한 뒤 노드를 활성화하세요. 라이브러리는 ID 자료가 아니며 보관되지 않습니다.",
+      "missing_web_assets": "외부 웹 디렉터리가 없었습니다. 복원 시 시작 경로 설정을 해제합니다. 다시 선택하기 전에 파일을 배포하세요.",
+      "protocol_reconfiguration": "Nebula PKI가 불완전하거나 하드웨어에 연결되어 있습니다. 존재하는 파일은 저장했지만 사용할 수 없는 개인 키는 백업되지 않았습니다. PKI를 설정할 때까지 노드를 비활성화합니다.",
+      "inactive_node_configuration": "비활성 노드에 오래된 실행 설정이 있습니다. 설정과 수집된 자격 증명은 유지됩니다. 활성화하기 전에 검토하세요.",
+      "inactive_inbound_configuration": "비활성 리스너에 잘못된 실행 설정이 있습니다. 설정과 수집된 자격 증명은 유지됩니다. 활성화하기 전에 검토하세요."
     }
   },
   "recoveryResult": {
