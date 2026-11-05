@@ -273,7 +273,7 @@ export default function About() {
                             )}
                         </div>
 
-                        {update?.updateAvailable && <><UpdateCompatibilityDetails value={update.compatibility} /><UpdateRecoveryReadiness value={update.recovery} /></>}
+                        {update?.updateAvailable && <><UpdateCompatibilityDetails value={update.compatibility} /><UpdateRecoveryReadiness value={update.recovery} compatibility={update.compatibility} assetUrl={update.assetUrl} releaseUrl={update.releaseUrl} assetSha256={update.assetSha256} /></>}
                         <UpdateOperationPanel operation={canManageUpdates ? updateStatus?.operation : undefined} pending={cancelling} onCancel={() => {
                             const id = updateStatus?.operation?.id;
                             if (!id || !window.confirm(uiT('protectedUpdate.cancelWarning'))) return;

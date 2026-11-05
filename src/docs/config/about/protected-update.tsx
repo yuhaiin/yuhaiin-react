@@ -11,12 +11,37 @@ export function canInstallUpdate(compatibility?: UpdateCompatibility, recovery?:
     return compatibility?.state === 'compatible' || (compatibility?.state === 'migration_required' && Boolean(recovery?.enabled && recovery.supported && recovery.ready));
 }
 
-export function UpdateRecoveryReadiness({ value }: { value?: Readiness }) {
+function httpsLink(value?: string): string | undefined {
+    try { return value && new URL(value).protocol === 'https:' ? value : undefined; }
+    catch { return undefined; }
+}
+
+export function UpdateRecoveryReadiness({ value, compatibility, assetUrl, releaseUrl, assetSha256 }: {
+    value?: Readiness; compatibility?: UpdateCompatibility; assetUrl?: string; releaseUrl?: string; assetSha256?: string;
+}) {
     const { t } = useTranslation('ui');
+    if (compatibility?.state === 'migration_required' && !value?.supported) {
+        const asset = httpsLink(assetUrl), release = httpsLink(releaseUrl);
+        return <div className="mt-3 min-w-0 space-y-3 rounded-ui-md border border-ui-border p-4 text-sm" data-testid="update-recovery-readiness">
+            <p role="status" className="text-ui-danger">{t('protectedUpdate.manualMigration')}</p>
+            <ol className="list-decimal space-y-2 pl-5 text-ui-muted">
+                <li>{t('protectedUpdate.manualDownload')}</li>
+                <li>{t('protectedUpdate.manualBackup')}</li>
+                <li>{t('protectedUpdate.manualInstall')}</li>
+                <li>{t('protectedUpdate.manualRollback')}</li>
+            </ol>
+            <div className="flex flex-wrap gap-4">
+                <a href="https://github.com/yuhaiin/yuhaiin/blob/main/docs/update-rollback.md#manual-upgrade-on-unsupported-hosts" target="_blank" rel="noreferrer" className="text-ui-primary underline">{t('protectedUpdate.manualGuide')}</a>
+                {asset && <a href={asset} target="_blank" rel="noreferrer" className="text-ui-primary underline">{t('protectedUpdate.downloadTarget')}</a>}
+                {release && <a href={release} target="_blank" rel="noreferrer" className="text-ui-primary underline">{t('protectedUpdate.releaseFiles')}</a>}
+            </div>
+            {assetSha256 && /^[a-f0-9]{64}$/i.test(assetSha256) && <p className="text-xs text-ui-muted">SHA-256: <code className="break-all">{assetSha256}</code></p>}
+        </div>;
+    }
     const state = !value ? 'legacy' : !value.ready ? (value.supported ? 'configure' : 'unsupported') : value.enabled ? 'ready' : 'unprotected';
     return <div className="mt-3 min-w-0 space-y-2 text-sm" data-testid="update-recovery-readiness">
         <p className={value?.ready && value.enabled ? 'text-ui-muted' : 'text-ui-danger'}>{t(`protectedUpdate.readiness.${state}`)}</p>
-        <Link href="/docs/config/backup" className="text-ui-primary underline">{t('protectedUpdate.configure')}</Link>
+        {(!value || value.supported || value.enabled) && <Link href="/docs/config/backup" className="text-ui-primary underline">{t('protectedUpdate.configure')}</Link>}
     </div>;
 }
 

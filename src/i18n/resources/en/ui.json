@@ -967,7 +967,15 @@
     },
     "missingReceipt": "This target cannot produce a verified update startup receipt. Automatic protected installation is refused; use reviewed offline recovery with matching databases.",
     "refresh": "Refresh update status",
-    "managedTLSUnsupported": "The target does not support managed Management HTTPS. Choose a compatible release or review the service TLS settings offline."
+    "managedTLSUnsupported": "The target does not support managed Management HTTPS. Choose a compatible release or review the service TLS settings offline.",
+    "manualMigration": "This host does not support online updates that migrate databases. Configuring backups cannot enable this update here; use the offline upgrade procedure below.",
+    "manualDownload": "Download the matching platform file and verify its SHA-256 before stopping the working service.",
+    "manualBackup": "Stop the service and all other writers. Preserve the old executable and create and verify a full database and dependency backup.",
+    "manualInstall": "Replace the executable with the verified target and restart the service. Startup applies the database migrations; then check management access, proxy connections and DNS.",
+    "manualRollback": "If startup fails, keep the service stopped and restore the matching backup and old executable together. Replacing only the executable does not revert the databases.",
+    "manualGuide": "Offline upgrade instructions",
+    "downloadTarget": "Download the selected platform file",
+    "releaseFiles": "Release files and checksums"
   },
   "sstpRootlessHelp": "Rootless SSTP over TLS and PPP. Uses the built-in userspace TCP/IP stack; no system TUN or host routes are required. Use a TCP-only listener and terminate TLS here.",
   "sstpServerAddress": "Server IPv4 address",
