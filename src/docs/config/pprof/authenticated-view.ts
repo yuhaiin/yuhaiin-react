@@ -11,6 +11,12 @@ export async function profileDocument(path: string, signal: AbortSignal) {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const document = new DOMParser().parseFromString(await response.text(), 'text/html');
     document.querySelectorAll('base,meta[http-equiv]').forEach(node => node.remove());
+    // Cloudflare Rocket Loader rewrites scripts to type="<hash>-text/javascript"
+    // and relies on its own external loader, which this sandbox blocks. Restore
+    // the original type so pprof's inline viewer code still runs.
+    for (const script of document.querySelectorAll('script[type]')) {
+        if (/-text\/javascript$/i.test(script.getAttribute('type') ?? '')) script.removeAttribute('type');
+    }
     for (const element of document.querySelectorAll('script[src],link[rel="stylesheet"]')) {
         const source = new URL(element.getAttribute(element.tagName === 'SCRIPT' ? 'src' : 'href')!, url);
         if (source.origin !== url.origin || !source.pathname.startsWith(prefix)) { element.remove(); continue; }
@@ -31,6 +37,14 @@ export async function profileDocument(path: string, signal: AbortSignal) {
         window.__yuhaiinProfilePushState = (_state, _title, value) => { current = new URL(value, current); };
         document.addEventListener('keydown', event => { if (event.key !== 'Enter' || event.target.id !== 'search') return; event.preventDefault(); event.stopImmediatePropagation(); const url = new URL(current); url.searchParams.set('f', event.target.value); send(url); }, true);
         document.addEventListener('click', event => { const link = event.target.closest?.('a[href]'); if (!link) return; event.preventDefault(); send(new URL(link.href)); }, true);
+        // pprof lays out the flame graph from the frame width when it loads and
+        // re-renders on window resize. A frame that loads while it has no width
+        // renders nothing, and browsers do not reliably fire resize inside it
+        // when it later gets a real size, so the viewer would stay blank.
+        if (typeof ResizeObserver === 'function') document.addEventListener('DOMContentLoaded', () => {
+            const root = document.documentElement; let width = root.clientWidth;
+            new ResizeObserver(() => { const next = root.clientWidth; if (next === width) return; width = next; window.dispatchEvent(new Event('resize')); }).observe(root);
+        });
         document.addEventListener('submit', event => { event.preventDefault(); const form = event.target; const url = new URL(form.action || location.href, document.baseURI); for (const [key,value] of new FormData(form)) if (typeof value === 'string') url.searchParams.set(key,value); send(url); }, true);
     })();`;
     // pprof reads and updates its page URL for focus/search and flamegraph zoom.

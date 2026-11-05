@@ -273,6 +273,26 @@ export default function About() {
                             )}
                         </div>
 
+                        {update && (
+                            <div className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
+                                {update.updateAvailable ? (
+                                    <>
+                                        <div className="flex items-center gap-2 font-semibold text-ui-heading">
+                                            <Check size={16} className="text-ui-success" />
+                                            <span className="min-w-0 break-all">{update.targetVersion} {uiT("isAvailable")}</span></div>
+                                        <div className="mt-2 space-y-1 text-ui-muted">
+                                            <div>{uiT("currentVersion")}<span className="break-all font-mono">{update.currentVersion || "Unknown"}</span></div>
+                                            <div>{uiT("asset")}<span className="break-all font-mono">{update.assetName}</span></div>
+                                            {update.publishedAt && <div>{uiT("published")} {new Date(update.publishedAt).toLocaleString()}</div>}
+                                        </div>
+                                        {update.releaseNotes && <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap text-xs text-ui-muted">{update.releaseNotes}</pre>}
+                                    </>
+                                ) : (
+                                    <div className="text-ui-muted">{update.reason || "You are using the latest available version."}</div>
+                                )}
+                            </div>
+                        )}
+
                         {update?.updateAvailable && <><UpdateCompatibilityDetails value={update.compatibility} /><UpdateRecoveryReadiness value={update.recovery} compatibility={update.compatibility} assetUrl={update.assetUrl} releaseUrl={update.releaseUrl} assetSha256={update.assetSha256} /></>}
                         <UpdateOperationPanel operation={canManageUpdates ? updateStatus?.operation : undefined} pending={cancelling} onCancel={() => {
                             const id = updateStatus?.operation?.id;
@@ -350,26 +370,6 @@ export default function About() {
                             </div>
                             {history?.items.length ? <p className="mt-3 text-xs text-ui-muted">{uiT("rollbackBinaryOnly")}</p> : null}
                         </section>}
-
-                        {update && (
-                            <div className="rounded-ui-md border border-ui-border bg-ui-surface-muted p-4 text-sm">
-                                {update.updateAvailable ? (
-                                    <>
-                                        <div className="flex items-center gap-2 font-semibold text-ui-heading">
-                                            <Check size={16} className="text-ui-success" />
-                                            <span className="min-w-0 break-all">{update.targetVersion} {uiT("isAvailable")}</span></div>
-                                        <div className="mt-2 space-y-1 text-ui-muted">
-                                            <div>{uiT("currentVersion")}<span className="break-all font-mono">{update.currentVersion || "Unknown"}</span></div>
-                                            <div>{uiT("asset")}<span className="break-all font-mono">{update.assetName}</span></div>
-                                            {update.publishedAt && <div>{uiT("published")} {new Date(update.publishedAt).toLocaleString()}</div>}
-                                        </div>
-                                        {update.releaseNotes && <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap text-xs text-ui-muted">{update.releaseNotes}</pre>}
-                                    </>
-                                ) : (
-                                    <div className="text-ui-muted">{update.reason || "You are using the latest available version."}</div>
-                                )}
-                            </div>
-                        )}
                     </div>
                 </CardBody>
             </Card>
