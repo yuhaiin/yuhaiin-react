@@ -123,7 +123,7 @@ export function RecoveryImportPanel() {
                         <p className="mt-1 break-all text-xs">{t('recoveryImport.target', { id: item.preview.targetInstanceId })}</p>
                         <p className="mt-1 break-all text-xs">{t('recoveryImport.resultInstance', { id: item.preview.instanceId })}</p>
                         <p className="mt-1 text-sm">{t(item.preview.mode === 'clone' ? 'recoveryImport.clone' : 'recoveryImport.original')}</p>
-                        <ul className="my-3 list-disc space-y-1 pl-5 text-sm">{item.preview.warnings.map(warning => <li key={warning}>{t(`recoveryImport.warnings.${warning}`, { defaultValue: warning })}</li>)}</ul>
+                        <ul className="my-3 list-disc space-y-1 pl-5 text-sm">{item.preview.warnings.filter(warning => !item.preview?.manifest.requirements?.some(requirement => requirement.kind === warning)).map(warning => <li key={warning}>{t(`recoveryImport.warnings.${warning}`, { defaultValue: warning })}</li>)}</ul>
                         <RecoveryRequirements requirements={item.preview.manifest.requirements} />
                         <details><summary className="cursor-pointer text-sm">{t('recoveryImport.files', { count: item.preview.files.length })}</summary>
                             <ul className="mt-2 space-y-2">{item.preview.files.map(entry => <li key={entry.path} className="break-all font-mono text-xs">

@@ -23,6 +23,7 @@ export function VerifyBackupDialog({ item, onClose, onVerified }: Props) {
         if (!item || !identity) return;
         const secret = identity;
         setIdentity('');
+        setVerified(undefined);
         void action.run(async () => {
             const manifest = await verifyRecoveryBackup(item.id, secret);
             setVerified({ jobId: item.id, manifest });

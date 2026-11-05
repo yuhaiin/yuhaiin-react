@@ -831,7 +831,7 @@
       "missing_dependency": "設定されたファイルが存在しませんでした。復元時に参照を隔離し、関連リソースを無効にします。ファイルを用意し、設定を確認してから有効にしてください。",
       "external_runtime": "復元先に適した ZeroTier ライブラリを用意し、パスを再設定してからノードを有効にしてください。ライブラリは ID 情報ではなく、バックアップには含まれません。",
       "missing_web_assets": "外部 Web ディレクトリが存在しませんでした。復元時に起動設定を解除します。再指定する前にアセットを配置してください。",
-      "protocol_reconfiguration": "Nebula PKI が未完成、またはハードウェアに依存しています。存在するファイルは保存されましたが、利用できない秘密鍵は含まれません。PKI を再設定するまでノードは無効です。",
+      "protocol_reconfiguration": "Nebula PKI が未完成、またはハードウェアに依存しています。保存されたファイルを確認し、不足しているファイルやハードウェア鍵を用意してからノードを有効にしてください。",
       "inactive_node_configuration": "無効なノードに古い起動設定があります。設定と収集済みの認証情報は保持されます。有効にする前に確認してください。",
       "inactive_inbound_configuration": "無効なリスナーの起動設定が不正です。設定と収集済みの認証情報は保持されます。有効にする前に確認してください。",
       "unknown": "このアーカイブには追加の復元要件があります。互換性のある復元ツールで内容を確認してから有効化してください。"
@@ -904,14 +904,7 @@
       "revoked_credentials_may_be_restored": "失効済みの認証情報やデバイスが再び有効になる可能性があります。",
       "quota_and_usage_state_can_move_backwards": "割り当て量と使用状況はバックアップ時点に戻る可能性があります。",
       "different_or_damaged_target_identity_will_be_replaced": "復元先の異なる、または破損した識別情報は置換されます。",
-      "clone_management_certificate_reenrollment_required": "クローンでは元の管理 HTTPS 証明書を再利用せず、新しい自己署名証明書に切り替えます。管理証明書を選択する前に再登録してください。",
-      "identity_not_initialized": "作成時点ではプロトコルの ID が未初期化でした。復元後に再登録が必要な場合があります。",
-      "missing_dependency": "設定されたファイルが存在しませんでした。復元時に参照を隔離し、関連リソースを無効にします。ファイルを用意し、設定を確認してから有効にしてください。",
-      "external_runtime": "復元先に適した ZeroTier ライブラリを用意し、パスを再設定してからノードを有効にしてください。ライブラリは ID 情報ではなく、バックアップには含まれません。",
-      "missing_web_assets": "外部 Web ディレクトリが存在しませんでした。復元時に起動設定を解除します。再指定する前にアセットを配置してください。",
-      "protocol_reconfiguration": "Nebula PKI が未完成、またはハードウェアに依存しています。存在するファイルは保存されましたが、利用できない秘密鍵は含まれません。PKI を再設定するまでノードは無効です。",
-      "inactive_node_configuration": "無効なノードに古い起動設定があります。設定と収集済みの認証情報は保持されます。有効にする前に確認してください。",
-      "inactive_inbound_configuration": "無効なリスナーの起動設定が不正です。設定と収集済みの認証情報は保持されます。有効にする前に確認してください。"
+      "clone_management_certificate_reenrollment_required": "クローンでは元の管理 HTTPS 証明書を再利用せず、新しい自己署名証明書に切り替えます。管理証明書を選択する前に再登録してください。"
     }
   },
   "recoveryResult": {

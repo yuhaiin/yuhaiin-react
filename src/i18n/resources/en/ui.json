@@ -831,7 +831,7 @@
       "missing_dependency": "A configured file was absent. The reference is isolated and the affected resource is disabled on restoration; provide the file and review before enabling.",
       "external_runtime": "Provide the ZeroTier runtime library for the target environment, then reconfigure its path and enable the node. The library is not identity material and was not archived.",
       "missing_web_assets": "The external web directory was absent. Restoration clears its startup override; redeploy assets before selecting it again.",
-      "protocol_reconfiguration": "Nebula PKI is incomplete or hardware-bound. Existing files were captured, but the unavailable private key was not. Restore keeps the node disabled until PKI is configured.",
+      "protocol_reconfiguration": "Nebula PKI is incomplete or hardware-bound. Review the available files and provide missing material or access to the hardware key before enabling the node.",
       "inactive_node_configuration": "An inactive node has obsolete activation settings. Its configuration and inventoried credentials are retained; review before enabling.",
       "inactive_inbound_configuration": "An inactive listener has invalid activation settings. Its configuration and inventoried credentials are retained; review before enabling.",
       "unknown": "This archive has additional recovery requirements. Review them with a compatible recovery tool before activation."
@@ -904,14 +904,7 @@
       "revoked_credentials_may_be_restored": "Previously revoked credentials or devices can become valid again.",
       "quota_and_usage_state_can_move_backwards": "Quota and usage state can move backwards to the backup time.",
       "different_or_damaged_target_identity_will_be_replaced": "The target has a different or damaged identity that restoration would replace.",
-      "clone_management_certificate_reenrollment_required": "Clone mode replaces the source managed Management HTTPS identity with a new self-signed certificate. Re-enroll before selecting a managed certificate.",
-      "identity_not_initialized": "This protocol identity did not exist at capture time. Enrollment may be needed after restoration.",
-      "missing_dependency": "A configured file was absent. The reference is isolated and the affected resource is disabled on restoration; provide the file and review before enabling.",
-      "external_runtime": "Provide the ZeroTier runtime library for the target environment, then reconfigure its path and enable the node. The library is not identity material and was not archived.",
-      "missing_web_assets": "The external web directory was absent. Restoration clears its startup override; redeploy assets before selecting it again.",
-      "protocol_reconfiguration": "Nebula PKI is incomplete or hardware-bound. Existing files were captured, but the unavailable private key was not. Restore keeps the node disabled until PKI is configured.",
-      "inactive_node_configuration": "An inactive node has obsolete activation settings. Its configuration and inventoried credentials are retained; review before enabling.",
-      "inactive_inbound_configuration": "An inactive listener has invalid activation settings. Its configuration and inventoried credentials are retained; review before enabling."
+      "clone_management_certificate_reenrollment_required": "Clone mode replaces the source managed Management HTTPS identity with a new self-signed certificate. Re-enroll before selecting a managed certificate."
     }
   },
   "recoveryResult": {
