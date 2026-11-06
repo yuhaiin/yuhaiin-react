@@ -93,8 +93,9 @@ const Segmented: FC<{
     items: { value: string; label: string }[];
     onChange: (value: string) => void;
 }> = ({ label, value, items, onChange }) => (
-    <ToggleGroup type="single" aria-label={label} value={value} onValueChange={(next) => next && next !== value && onChange(next)} className="flex w-full flex-wrap">
-        {items.map(item => <ToggleItem key={item.value} value={item.value} className="grow px-3">{item.label}</ToggleItem>)}
+    <ToggleGroup type="single" aria-label={label} value={value} onValueChange={(next) => next && next !== value && onChange(next)} className="flex w-full">
+        {/* Equal widths on one line; a long label truncates instead of wrapping to a second row. */}
+        {items.map(item => <ToggleItem key={item.value} value={item.value} title={item.label} className="min-w-0 flex-1 basis-0 overflow-hidden whitespace-nowrap px-2">{item.label}</ToggleItem>)}
     </ToggleGroup>
 );
 
@@ -192,7 +193,7 @@ const NetworkEditor: FC<{
             return <div className="rounded-ui-lg border border-dashed border-ui-border p-4 text-sm text-ui-muted">{uiT("thisInboundDoesNotBindANetworkListener")}</div>;
         case "tcp_udp":
             return (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-4">
                     <SettingInputVertical
                         label={uiT("listenHost")}
                         value={value.tcp_udp.host}
