@@ -29,7 +29,7 @@ it('bounds oversized lines and total retained text independently of entry count'
 
 it('keeps streamed entries cheap and formats slog fields only when a row needs them', () => {
     const original = 'time=2026-10-16T12:00:00.123Z level=INFO source=main.go:2 msg="ready to serve" extra=1';
-    const format = vi.spyOn(Date.prototype, 'toLocaleTimeString');
+    const format = vi.spyOn(Intl, 'DateTimeFormat');
     try {
         const buffer = new LogRingBuffer(1000);
         buffer.append(Array.from({ length: 1000 }, () => original));
@@ -45,4 +45,11 @@ it('keeps streamed entries cheap and formats slog fields only when a row needs t
     } finally {
         format.mockRestore();
     }
+});
+
+it('reads quoted slog values with escapes', () => {
+    const parsed = parseLogLine('level=WARN msg="say \\"hi\\" to C:\\\\tmp" k=v');
+    expect(parsed.level).toBe('WARN');
+    expect(parsed.message).toBe('say "hi" to C:\\tmp');
+    expect(parseLogLine('msg="unterminated').message).toBe('unterminated');
 });

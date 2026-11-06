@@ -12,6 +12,8 @@ type ParsedLogLine = {
 export type LogEntry = {
     id: number;
     line: string;
+    /** Lazily cached `line.toLowerCase()` so repeated searches don't re-lowercase every retained line. */
+    lowerLine?: string;
 }
 
 export const levelStyles: Record<LogLevel, { bar: string; badge: string; text: string }> = {
@@ -63,18 +65,20 @@ const readSlogValue = (line: string, key: string): string | undefined => {
     }
 
     i += 1;
+    // Copy unescaped runs as slices instead of concatenating one character at a time.
     let value = "";
+    let runStart = i;
     for (; i < line.length; i++) {
-        const char = line[i];
-        if (char === "\\" && i + 1 < line.length) {
-            value += line[i + 1];
+        const char = line.charCodeAt(i);
+        if (char === 92 /* \\ */ && i + 1 < line.length) {
+            value += line.slice(runStart, i) + line[i + 1];
             i += 1;
+            runStart = i + 1;
             continue;
         }
-        if (char === '"') break;
-        value += char;
+        if (char === 34 /* " */) break;
     }
-    return value;
+    return value + line.slice(runStart, i);
 }
 
 const trimSlogFields = (line: string) => {
@@ -86,16 +90,28 @@ const trimSlogFields = (line: string) => {
         .trim();
 }
 
+// toLocaleTimeString with options builds a new formatter on every call; reuse one per locale.
+let timeFormatter: Intl.DateTimeFormat | undefined;
+let timeFormatterLocale: string | undefined;
+const getTimeFormatter = () => {
+    const locale = typeof navigator === "undefined" ? undefined : navigator.language;
+    if (!timeFormatter || timeFormatterLocale !== locale) {
+        timeFormatter = new Intl.DateTimeFormat(undefined, {
+            hour12: false,
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+        });
+        timeFormatterLocale = locale;
+    }
+    return timeFormatter;
+}
+
 const formatLogTime = (value?: string) => {
     if (!value) return undefined;
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
-    const time = date.toLocaleTimeString(undefined, {
-        hour12: false,
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-    });
+    const time = getTimeFormatter().format(date);
     return `${time}.${String(date.getMilliseconds()).padStart(3, "0")}`;
 }
 
@@ -128,6 +144,11 @@ export class LogRingBuffer {
 
     get currentVersion() {
         return this.version
+    }
+
+    /** Id of the newest retained entry, or the last assigned id when empty. */
+    get latestId() {
+        return this.count > 0 ? this.entries[this.head]!.id : this.nextId
     }
 
     get(index: number) {

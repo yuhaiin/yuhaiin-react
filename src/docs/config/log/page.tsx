@@ -9,7 +9,7 @@ import { Card, CardBody, CardHeader, FilterSearch, MainContainer } from '@/compo
 import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import type { LogBatch } from "@/contract/tools"
 import { clsx } from "clsx"
-import { Pause, Play, Radio, Trash2 } from 'lucide-react'
+import { ArrowUp, Pause, Play, Radio, Trash2 } from 'lucide-react'
 import { FC, memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { VList, type VListHandle } from "virtua"
@@ -79,6 +79,23 @@ export default function LogComponent() {
     const [streamNonce, setStreamNonce] = useState(0)
     const logListRef = useRef<VListHandle>(null);
     const followLatestRef = useRef(true);
+    // Newest log id included in the published snapshot; used to count lines held back while the view is frozen.
+    const shownLatestIdRef = useRef(0);
+    const [pendingCount, setPendingCount] = useState(0);
+
+    // Publishing a snapshot is the only thing that changes the virtual list's data. While the user is
+    // reading older lines (not following), snapshots are held back so rows never move under them.
+    const publish = useCallback(() => {
+        shownLatestIdRef.current = logBuffer.latestId;
+        setPendingCount(0);
+        setLocalVersion(logBuffer.currentVersion);
+    }, [logBuffer]);
+
+    const resumeFollowing = useCallback(() => {
+        if (followLatestRef.current) return;
+        followLatestRef.current = true;
+        publish();
+    }, [publish]);
 
     useEffect(() => {
         if (paused || !visible) return;
@@ -96,7 +113,9 @@ export default function LogComponent() {
                     logBuffer.append(batch.log.slice(-retention).reverse());
                     if (flushTimer === undefined) flushTimer = window.setTimeout(() => {
                         flushTimer = undefined;
-                        if (!stopped) setLocalVersion(logBuffer.currentVersion);
+                        if (stopped) return;
+                        if (followLatestRef.current) publish();
+                        else setPendingCount(logBuffer.latestId - shownLatestIdRef.current);
                     }, LOG_RENDER_INTERVAL_MS);
                 }
                 setLogError(undefined);
@@ -115,10 +134,10 @@ export default function LogComponent() {
             stopped = true;
             source.close();
             if (flushTimer !== undefined) window.clearTimeout(flushTimer);
-            setLocalVersion(logBuffer.currentVersion);
+            if (followLatestRef.current) publish();
             if (reconnectTimer !== undefined) window.clearTimeout(reconnectTimer);
         };
-    }, [logBuffer, streamNonce, paused, visible, retention])
+    }, [logBuffer, publish, streamNonce, paused, visible, retention])
 
     // Snapshot publication, not mutable buffer writes, controls virtual-list reconciliation.
     const version = localVersion
@@ -131,7 +150,7 @@ export default function LogComponent() {
         for (let i = 0; i < logBuffer.size; i++) {
             const entry = logBuffer.get(i)
             if (!entry) continue
-            if (!search || entry.line.toLowerCase().includes(search)) {
+            if (!search || (entry.lowerLine ??= entry.line.toLowerCase()).includes(search)) {
                 entries.push(entry)
             }
         }
@@ -154,12 +173,15 @@ export default function LogComponent() {
         const next = Number(value) as LogRetention
         if (!LOG_RETENTION_OPTIONS.includes(next)) return
         setRetention(next)
-        setLocalVersion(logBuffer.setCapacity(next))
-    }, [logBuffer])
+        logBuffer.setCapacity(next)
+        publish()
+    }, [logBuffer, publish])
 
     const clearLogs = useCallback(() => {
-        setLocalVersion(logBuffer.clear())
-    }, [logBuffer])
+        logBuffer.clear()
+        followLatestRef.current = true
+        publish()
+    }, [logBuffer, publish])
 
     return (
         <MainContainer className="h-full min-h-0 flex flex-col">
@@ -174,7 +196,7 @@ export default function LogComponent() {
             <Card noMargin className="flex-1 min-h-0 flex flex-col overflow-hidden">
                 <CardHeader className="shrink-0 !px-3 py-3 sm:!px-4">
                     <div className="grid w-full min-w-0 grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-3">
-                        <FilterSearch size="sm" onSearch={(term) => { followLatestRef.current = true; setSearchTerm(term); }} className="w-full min-w-0" inputClassName="max-sm:min-h-11 max-sm:text-base" />
+                        <FilterSearch size="sm" onSearch={(term) => { followLatestRef.current = true; publish(); setSearchTerm(term); }} className="w-full min-w-0" inputClassName="max-sm:min-h-11 max-sm:text-base" />
                         <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-end">
                             <ToggleGroup className="shrink-0 flex-nowrap max-sm:p-0" type="single" value={String(retention)} onValueChange={(v) => v && changeRetention(v)}>
                                 {LOG_RETENTION_OPTIONS.map(value => (
@@ -195,7 +217,7 @@ export default function LogComponent() {
                             {logError.msg}{uiT("retrying")}</div>
                     )}
                 </CardHeader>
-                <CardBody className="!p-0 bg-ui-surface-muted flex-1 min-h-0 overflow-hidden rounded-b-[inherit]">
+                <CardBody className="relative !p-0 bg-ui-surface-muted flex-1 min-h-0 overflow-hidden rounded-b-[inherit]">
                     {visibleLog.length === 0 ? (
                         <div className="flex h-full min-h-40 items-center justify-center px-6 text-center text-sm text-ui-muted">
                             {searchTerm ? t("log.noSearchResults") : t("log.empty")}
@@ -214,18 +236,28 @@ export default function LogComponent() {
                                 key={deferredSearchTerm}
                                 ref={logListRef}
                                 data={visibleLog}
-                                bufferSize={200}
-                                shift
+                                // No `shift`: rows are prepended *and* trimmed from the end, which virtua's
+                                // index-based size cache cannot track in shift mode. New rows are only
+                                // published while following at the top, so no anchoring is needed.
                                 onScroll={(offset) => {
-                                    // Shift may adjust the offset without user input. Only user gestures
-                                    // disable following; returning to the top re-enables it.
-                                    if (offset < 40) followLatestRef.current = true;
+                                    // Only user gestures disable following; returning to the top re-enables it.
+                                    if (offset < 40) resumeFollowing();
                                 }}
                                 style={{ height: '100%', width: '100%', overflowAnchor: 'none' }}
                             >
                                 {renderLogLine}
                             </VList>
                         </div>
+                    )}
+                    {pendingCount > 0 && (
+                        <Button
+                            size="sm"
+                            variant="primary"
+                            className="absolute left-1/2 top-3 z-10 -translate-x-1/2 rounded-full shadow-md"
+                            onClick={() => { resumeFollowing(); logListRef.current?.scrollTo(0); }}
+                        >
+                            <ArrowUp size={14} aria-hidden="true" />{uiT("newLogCount", { count: pendingCount })}
+                        </Button>
                     )}
                 </CardBody>
             </Card>
