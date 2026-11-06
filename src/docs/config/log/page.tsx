@@ -10,7 +10,7 @@ import { ToggleGroup, ToggleItem } from "@/component/v2/togglegroup"
 import type { LogBatch } from "@/contract/tools"
 import { clsx } from "clsx"
 import { ArrowUp, Pause, Play, Radio, Trash2 } from 'lucide-react'
-import { FC, memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
+import { FC, memo, useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { VList, type VListHandle } from "virtua"
 
@@ -157,7 +157,26 @@ export default function LogComponent() {
 
         return entries
     }, [logBuffer, version, deferredSearchTerm])
-    const latestLogId = visibleLog[0]?.id;
+
+    // virtua caches item sizes by index and only reconciles the cache by the change in length: at the
+    // start when `shift` is set, otherwise at the end. A flush both prepends new rows and trims old rows
+    // from the end, so it is fed to the list in two commits (prepend with shift, then trim without) to
+    // keep every measured size attached to its own row. Both commits happen before paint.
+    const [display, setDisplay] = useState<{ items: LogEntry[]; shift: boolean; epoch: number; search: string }>(
+        () => ({ items: visibleLog, shift: false, epoch: 0, search: deferredSearchTerm }));
+    useLayoutEffect(() => {
+        setDisplay(prev => {
+            if (prev.search !== deferredSearchTerm) return { items: visibleLog, shift: false, epoch: prev.epoch + 1, search: deferredSearchTerm };
+            if (prev.items === visibleLog) return prev.shift ? { ...prev, shift: false } : prev;
+            const head = prev.items[0];
+            const prepended = head ? visibleLog.findIndex(entry => entry.id === head.id) : -1;
+            if (prepended > 0 && !prev.shift) return { ...prev, items: visibleLog.slice(0, prepended).concat(prev.items), shift: true };
+            // Nothing in common (cleared, or every shown row trimmed): remount so no stale sizes survive.
+            if (prepended < 0 && head && visibleLog.length > 0) return { ...prev, items: visibleLog, shift: false, epoch: prev.epoch + 1 };
+            return { ...prev, items: visibleLog, shift: false };
+        });
+    }, [visibleLog, display, deferredSearchTerm]);
+    const latestLogId = display.items[0]?.id;
 
     useEffect(() => {
         if (!followLatestRef.current) return;
@@ -167,7 +186,7 @@ export default function LogComponent() {
         });
 
         return () => cancelAnimationFrame(frame);
-    }, [visibleLog.length, latestLogId]);
+    }, [display.items.length, latestLogId]);
 
     const changeRetention = useCallback((value: string) => {
         const next = Number(value) as LogRetention
@@ -218,7 +237,7 @@ export default function LogComponent() {
                     )}
                 </CardHeader>
                 <CardBody className="relative !p-0 bg-ui-surface-muted flex-1 min-h-0 overflow-hidden rounded-b-[inherit]">
-                    {visibleLog.length === 0 ? (
+                    {display.items.length === 0 ? (
                         <div className="flex h-full min-h-40 items-center justify-center px-6 text-center text-sm text-ui-muted">
                             {searchTerm ? t("log.noSearchResults") : t("log.empty")}
                         </div>
@@ -233,12 +252,10 @@ export default function LogComponent() {
                             }}
                         >
                             <VList
-                                key={deferredSearchTerm}
+                                key={display.epoch}
                                 ref={logListRef}
-                                data={visibleLog}
-                                // No `shift`: rows are prepended *and* trimmed from the end, which virtua's
-                                // index-based size cache cannot track in shift mode. New rows are only
-                                // published while following at the top, so no anchoring is needed.
+                                data={display.items}
+                                shift={display.shift}
                                 onScroll={(offset) => {
                                     // Only user gestures disable following; returning to the top re-enables it.
                                     if (offset < 40) resumeFollowing();
