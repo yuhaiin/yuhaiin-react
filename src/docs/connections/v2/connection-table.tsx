@@ -66,7 +66,7 @@ export const ConnectionRow = memo(function ConnectionRow({ conn, counter, onSele
     const Row = animated ? motion.div : 'div';
     const exit = conn.selectorName || conn.nodeName || conn.nodeId || '—';
     return <Row role="row" data-connection-id={conn.id} onClick={handleClick}
-        className={cn(styles.row, styles.columns, 'group min-w-0 cursor-pointer items-center gap-x-3 border-b border-ui-border/60 px-3 py-2 md:py-1 xl:py-2 text-sm transition-colors hover:bg-ui-hover focus-within:bg-ui-hover')}
+        className={cn(styles.row, styles.columns, 'group min-w-0 cursor-pointer items-center gap-x-3 border-b border-ui-border/60 bg-ui-surface px-3 py-2 md:py-1 xl:py-2 text-sm hover:bg-ui-hover focus-within:bg-ui-hover [[data-scrolling]_&]:pointer-events-none')}
         {...(animated ? { initial: reduced ? false : { opacity: 0, y: 3 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0 }, transition: { duration: reduced ? 0 : 0.12, ease: 'easeOut' as const } } : {})}>
         <div role="cell" className={cn(styles.id, 'truncate font-mono text-xs tabular-nums text-ui-muted')} title={conn.id}>{conn.id}</div>
         <div role="cell" className={cn(styles.target, 'min-w-0')}><button type="button" className={cn('block min-h-6 w-full truncate rounded-ui-sm text-left text-sm font-medium text-ui-heading', ui.focusRing)} title={conn.addr} aria-label={`${t('connectionDetails')}: ${conn.addr}`}>{conn.addr}</button>
