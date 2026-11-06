@@ -825,7 +825,43 @@
     "localPointsWarning": "Disabled by default. Latest committed copies, the current recovery transaction, last restore result, configured file dependencies and known open SQLite copies are protected. At most 32 copies are removed per startup; interrupted cleanup resumes when enabled. Protected copies can exceed the retention count or age.",
     "localPointsCount": "Local rollback copies to retain",
     "localPointsDays": "Local rollback-copy retention (days)",
-    "privateURLHint": "Updated servers refuse unencrypted configuration backups containing route, registry, GeoIP, DNS, S3 endpoint, probe or speed-test URLs with user credentials, a query or a fragment. Use encrypted full recovery backups for private URLs; source paths can also contain secrets."
+    "privateURLHint": "Updated servers refuse unencrypted configuration backups containing route, registry, GeoIP, DNS, S3 endpoint, probe or speed-test URLs with user credentials, a query or a fragment. Use encrypted full recovery backups for private URLs; source paths can also contain secrets.",
+    "requirements": {
+      "identity_not_initialized": "This protocol identity did not exist at capture time. Enrollment may be needed after restoration.",
+      "missing_dependency": "A configured file was absent. The reference is isolated and the affected resource is disabled on restoration; provide the file and review before enabling.",
+      "external_runtime": "Provide the ZeroTier runtime library for the target environment, then reconfigure its path and enable the node. The library is not identity material and was not archived.",
+      "missing_web_assets": "The external web directory was absent. Restoration clears its startup override; redeploy assets before selecting it again.",
+      "protocol_reconfiguration": "Nebula PKI is incomplete or hardware-bound. Review the available files and provide missing material or access to the hardware key before enabling the node.",
+      "inactive_node_configuration": "An inactive node has obsolete activation settings. Its configuration and inventoried credentials are retained; review before enabling.",
+      "inactive_inbound_configuration": "An inactive listener has invalid activation settings. Its configuration and inventoried credentials are retained; review before enabling.",
+      "unknown": "This archive has additional recovery requirements. Review them with a compatible recovery tool before activation."
+    },
+    "requirementsTitle": "Recovery requirements",
+    "requirementsHint": "Archive authentication checks the captured bytes. It does not mean every configured file or external key was available.",
+    "withRequirements": "Archive ready with {{count}} recovery requirement(s).",
+    "inspectRequirements": "Verify/decrypt the archive or open restoration preview to inspect the affected paths and resource IDs.",
+    "verifyWithRequirements": "Archive authenticated. Recovery requirements still need attention.",
+    "legacyInventory": "This archive has no complete deployment inventory. Use a reviewed offline recovery procedure.",
+    "failureStage": "Failure stage: {{stage}}",
+    "stages": {
+      "capture": "Capture",
+      "admission": "Admission and maintenance checks",
+      "database_snapshot": "Database snapshot",
+      "startup_inputs": "Startup inputs",
+      "dependency_inventory": "File and identity inventory",
+      "archive_write": "Encrypted archive writing",
+      "service_stop": "Stopping service"
+    },
+    "failureCodes": {
+      "cancelled": "Capture was cancelled. Confirm service status, then retry.",
+      "timeout": "Capture timed out. Check storage performance and the job timeout before retrying.",
+      "permission_denied": "Read or write permission was denied. Review the service account and file permissions.",
+      "insufficient_space": "Storage is full. Free space on both snapshot and archive filesystems before retrying.",
+      "required_file_missing": "A required startup or identity file is absent. Restore it or correct the active configuration; optional missing references do not cause this failure.",
+      "io_error": "An I/O or incomplete-read error occurred. Check storage health and external writers before retrying.",
+      "invalid_or_unsafe_input": "Input is invalid or unsafe. Inspect the maintenance service log for the affected configuration, corruption or symlink; do not bypass the check.",
+      "unknown": "Capture failed. Inspect the maintenance service log and confirm service status before retrying."
+    }
   },
   "backupIntervalMinutes": "Configuration snapshot interval (minutes)",
   "recoveryImport": {
