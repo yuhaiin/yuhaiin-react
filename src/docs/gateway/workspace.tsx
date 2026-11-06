@@ -503,7 +503,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
                       onClick={() => setNarrowEditorOpen(false)}>
                       <ArrowLeft size={16} />{t("backToGatewayItems")}
                     </Button>
-                    <h3 className="break-words text-base font-medium text-ui-heading">{editorTitle}</h3>
+                    <h3 className="line-clamp-2 break-all text-base font-medium text-ui-heading" title={editorTitle}>{editorTitle}</h3>
                   </div>
                   <div className="flex shrink-0 flex-wrap justify-end gap-2">
                     {selectedRule && <Button size="sm" variant="outline-danger" onClick={() => removeGatewayRule(selectedRule)}>

@@ -14,6 +14,11 @@ describe("gateway summaries", () => {
     }, t)).toBe("Host domain example.com AND (Path prefix /a OR Header[X-Ad] present)");
   });
 
+  it("shows only the first of several values with a count", () => {
+    expect(conditionSummary({ field: "url", operator: "regex", values: ["https://a/.*", "https://b/.*", "https://c/.*"] }, t))
+      .toBe("URL regex https://a/.* +2");
+  });
+
   it("flags a reverse proxy without a pool and names an assigned pool", () => {
     const pool = { ...newUpstream(), id: "p", name: "Pool A" };
     expect(actionSummary({ ...newAction("reverse_proxy") }, [pool], t)).toBe("reverse_proxy: noBackendPool");

@@ -24,7 +24,9 @@ export function conditionSummary(condition: Condition, t: Translate): string {
   if (operator === "present") return `${subject} ${t("present")}`;
   const values = conditionValues(condition);
   if (!values.length) return t("conditionUnset");
-  return `${subject} ${t(operator)} ${values.join(", ")}`;
+  // Long value lists (e.g. ad-block URL sets) would swamp a one-line label.
+  const shown = values.length > 1 ? `${values[0]} +${values.length - 1}` : values[0];
+  return `${subject} ${t(operator)} ${shown}`;
 }
 
 function wrap(condition: Condition, t: Translate): string {
