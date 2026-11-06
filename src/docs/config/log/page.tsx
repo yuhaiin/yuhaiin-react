@@ -29,10 +29,10 @@ const LogLine: FC<{ entry: LogEntry }> = memo(({ entry }) => {
     return (
         <div
             data-log-id={entry.id}
-            className="group grid grid-cols-[3px_minmax(0,1fr)] border-b border-ui-border/70 bg-ui-surface/80 hover:bg-ui-surface-muted/70"
+            className="grid grid-cols-[3px_minmax(0,1fr)] border-b border-ui-border bg-ui-surface hover:bg-ui-surface-muted [[data-scrolling]_&]:pointer-events-none"
             style={{ contain: "layout paint style" }}
         >
-            <div className={clsx("opacity-75 transition-opacity group-hover:opacity-100", style.bar)} />
+            <div className={style.bar} />
             <div className="min-w-0 px-3 py-2 font-mono text-[12.5px] leading-5 selection:bg-amber-300/30">
                 <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
                     <span className={clsx("inline-flex h-5 min-w-[52px] items-center justify-center rounded px-1.5 text-[10px] font-semibold leading-none tracking-normal ring-1", style.badge)}>
@@ -78,6 +78,7 @@ export default function LogComponent() {
     const [paused, setPaused] = useState(false);
     const [streamNonce, setStreamNonce] = useState(0)
     const logListRef = useRef<VListHandle>(null);
+    const listWrapperRef = useRef<HTMLDivElement>(null);
     const followLatestRef = useRef(true);
     // Newest log id included in the published snapshot; used to count lines held back while the view is frozen.
     const shownLatestIdRef = useRef(0);
@@ -239,14 +240,17 @@ export default function LogComponent() {
                             {logError.msg}{uiT("retrying")}</div>
                     )}
                 </CardHeader>
-                <CardBody className="relative !p-0 bg-ui-surface-muted flex-1 min-h-0 overflow-hidden rounded-b-[inherit]">
+                {/* No rounded clip here: a bottom-only radius on the scroller's ancestor forces a mask render pass on
+                    every scrolled frame. The Card's uniform rounded clip uses the compositor's fast path. */}
+                <CardBody className="relative !p-0 bg-ui-surface-muted flex-1 min-h-0 overflow-hidden">
                     {display.items.length === 0 ? (
                         <div className="flex h-full min-h-40 items-center justify-center px-6 text-center text-sm text-ui-muted">
                             {searchTerm ? t("log.noSearchResults") : t("log.empty")}
                         </div>
                     ) : (
                         <div
-                            className="h-full min-h-0 w-full rounded-[inherit] font-mono"
+                            ref={listWrapperRef}
+                            className="h-full min-h-0 w-full font-mono"
                             onWheelCapture={(event) => { if (event.deltaY > 0) followLatestRef.current = false; }}
                             onTouchMoveCapture={() => { followLatestRef.current = false; }}
                             onPointerDownCapture={() => { followLatestRef.current = false; }}
@@ -262,7 +266,10 @@ export default function LogComponent() {
                                 onScroll={(offset) => {
                                     // Only user gestures disable following; returning to the top re-enables it.
                                     if (offset < 40) resumeFollowing();
+                                    // Rows under a still cursor would otherwise toggle :hover (and repaint) on every frame.
+                                    listWrapperRef.current?.setAttribute("data-scrolling", "");
                                 }}
+                                onScrollEnd={() => listWrapperRef.current?.removeAttribute("data-scrolling")}
                                 style={{ height: '100%', width: '100%', overflowAnchor: 'none' }}
                             >
                                 {renderLogLine}
