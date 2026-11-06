@@ -1,11 +1,11 @@
 import { clsx } from "clsx";
-import { ArrowDown, ArrowDownWideNarrow, ArrowUp, ArrowUpDown, RotateCw } from "lucide-react";
+import { ArrowDown, ArrowDownWideNarrow, ArrowUp, ArrowUpDown, ListFilter, RotateCw } from "lucide-react";
 import { motion } from "motion/react";
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "./button";
 import { FilterSearch, SettingLabel } from "./card";
-import { Dropdown, DropdownContent, DropdownTrigger } from "./dropdown";
+import { Dropdown, DropdownContent, DropdownRadioGroup, DropdownRadioItem, DropdownTrigger } from "./dropdown";
 import { Pagination } from "./pagination";
 import { Spinner } from "./spinner";
 import { cn, motionTiming, ui } from "./styles";
@@ -63,9 +63,37 @@ export type HistoryColumn<T> = {
     role?: "primary" | "aside";
     numeric?: boolean;
     sortKey?: string;
+    /** A single-choice filter offered from the column header; the first option means "all". */
+    filter?: HistoryColumnFilter;
     tone?: HistoryTone;
     mono?: boolean;
 };
+
+export type HistoryColumnFilter = {
+    label: string;
+    value: string;
+    options: { value: string; label: string }[];
+    onChange: (value: string) => void;
+};
+
+function ColumnFilter({ filter, align }: { filter: HistoryColumnFilter; align: "start" | "end" }) {
+    const active = filter.value !== filter.options[0]?.value;
+    const current = filter.options.find(option => option.value === filter.value)?.label ?? filter.value;
+    return <Dropdown>
+        <DropdownTrigger asChild>
+            <button type="button" aria-label={`${filter.label}: ${current}`} title={current}
+                className={cn("relative inline-flex size-7 shrink-0 items-center justify-center rounded-ui-sm hover:bg-ui-hover hover:text-ui-heading", ui.focusRing, active ? "text-ui-primary" : "text-ui-tertiary")}>
+                <ListFilter size={13} aria-hidden="true" />
+                {active && <span aria-hidden="true" className="absolute right-1 top-1 size-1.5 rounded-full bg-ui-primary" />}
+            </button>
+        </DropdownTrigger>
+        <DropdownContent align={align} className="w-auto min-w-[160px] max-w-[240px]">
+            <DropdownRadioGroup value={filter.value} onValueChange={filter.onChange}>
+                {filter.options.map(option => <DropdownRadioItem key={option.value} value={option.value}>{option.label}</DropdownRadioItem>)}
+            </DropdownRadioGroup>
+        </DropdownContent>
+    </Dropdown>;
+}
 
 /** Primary cell content: a title with an optional muted second line. */
 export function HistoryTitle({ title, detail, detailTone = "neutral" }: { title: string; detail?: React.ReactNode; detailTone?: HistoryTone }) {
@@ -83,9 +111,12 @@ function HistoryHeader<T>({ columns, template, sortBy, sortOrder, onSort }: {
             {columns.map(column => {
                 const active = column.sortKey !== undefined && column.sortKey === sortBy;
                 const sort = active ? sortOrder === "asc" ? "ascending" : "descending" : "none";
-                if (!column.sortKey || !onSort) return <div key={column.id} role="columnheader" className={clsx("min-w-0 truncate text-xs text-ui-muted", column.numeric && "text-right")}>{column.header}</div>;
+                const filter = column.filter && <ColumnFilter filter={column.filter} align={column.numeric ? "end" : "start"} />;
+                if (!column.sortKey || !onSort) return <div key={column.id} role="columnheader" className={clsx("flex min-h-9 min-w-0 items-center gap-1 text-xs text-ui-muted", column.numeric && "justify-end")}>
+                    <span className="min-w-0 truncate">{column.header}</span>{filter}
+                </div>;
                 // Numeric columns align right, so their sort arrow sits before the label.
-                return <div key={column.id} role="columnheader" aria-sort={sort} className="min-w-0">
+                return <div key={column.id} role="columnheader" aria-sort={sort} className="flex min-w-0 items-center gap-1">
                     <button type="button" onClick={() => onSort(column.sortKey!)}
                         className={cn("relative inline-flex min-h-9 w-full min-w-0 items-center rounded-ui-sm text-xs font-medium hover:text-ui-heading", column.numeric ? "justify-end" : "justify-start", ui.focusRing, active ? "text-ui-heading" : "text-ui-muted")}>
                         <span className={cn("relative min-w-0 max-w-full", column.numeric ? "pl-4" : "pr-4")}>
@@ -95,6 +126,7 @@ function HistoryHeader<T>({ columns, template, sortBy, sortOrder, onSort }: {
                             </span>
                         </span>
                     </button>
+                    {filter}
                 </div>;
             })}
         </div>
@@ -155,12 +187,13 @@ export function HistoryToolbar({ onSearch, filter, onRefresh, refreshing, sortOr
                 className="min-w-0 flex-1 lg:flex-none"
                 inputClassName="max-sm:h-11 max-sm:text-base"
             />
-            {filter}
+            {/* From md up the table header sorts and filters; the toolbar keeps them for phones. */}
+            {filter && <div className="contents md:hidden">{filter}</div>}
             <Button size="sm" className={historyToolbarButton} aria-label={uiT("refresh")} onClick={onRefresh} disabled={refreshing}>
                 {refreshing ? <Spinner size="sm" /> : <RotateCw size={16} />}
             </Button>
             <Dropdown>
-                <DropdownTrigger asChild><Button size="sm" className={historyToolbarButton} aria-label={uiT("sortOrder")}><ArrowDownWideNarrow size={16} /></Button></DropdownTrigger>
+                <DropdownTrigger asChild><Button size="sm" className={cn(historyToolbarButton, "md:hidden")} aria-label={uiT("sortOrder")}><ArrowDownWideNarrow size={16} /></Button></DropdownTrigger>
                 <DropdownContent align="end" className="w-[min(320px,calc(100vw-2rem))] min-w-0 max-w-[calc(100vw-2rem)] p-3">
                     <div className="mb-3">
                         <SettingLabel>{uiT("sortOrder")}</SettingLabel>

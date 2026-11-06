@@ -66,3 +66,21 @@ it('flips the active column and starts a new one in its natural order', () => {
     expect(nextHistorySort('Host', 'Time', 'desc')).toEqual({ sortBy: 'Host', sortOrder: 'asc' });
     expect(nextHistorySort('Count', 'Host', 'asc')).toEqual({ sortBy: 'Count', sortOrder: 'desc' });
 });
+
+it('offers a column filter from the table header and marks it when narrowed', () => {
+    const host = document.createElement('div');
+    const root = createRoot(host);
+    const render = (value: string) => act(() => root.render(
+        <HistoryList label="history" items={['one']} getKey={item => item} onClickItem={() => undefined} page={1} totalItems={1} pageSize={30} onPageChange={() => undefined} resetKey="a"
+            columns={[...columns, { id: 'net', header: 'Protocol', width: '6rem', cell: () => 'TCP', filter: { label: 'Network', value, onChange: () => undefined, options: [{ value: 'all', label: 'All' }, { value: 'tcp', label: 'TCP' }] } }]} />,
+    ));
+    const trigger = () => host.querySelector('[role="columnheader"] button[aria-label^="Network"]');
+
+    render('all');
+    expect(trigger()?.getAttribute('aria-label')).toBe('Network: All');
+    expect(trigger()?.querySelector('.bg-ui-primary')).toBeNull();
+    render('tcp');
+    expect(trigger()?.getAttribute('aria-label')).toBe('Network: TCP');
+    expect(trigger()?.querySelector('.bg-ui-primary')).not.toBeNull();
+    act(() => root.unmount());
+});
