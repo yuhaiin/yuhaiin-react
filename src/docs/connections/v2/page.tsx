@@ -39,6 +39,7 @@ function Connections() {
     const [streamError, setStreamError] = useState("");
     const [streamNonce, setStreamNonce] = useState(0);
     const hasStreamSnapshot = useRef(false);
+    const listWrapperRef = useRef<HTMLDivElement>(null);
     const [hydrated, setHydrated] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const rowHeight = isMobile ? connectionRowHeight.mobile : connectionRowHeight.desktop;
@@ -185,9 +186,13 @@ function Connections() {
                     <div className="min-h-[220px] flex-1 p-6 text-center text-sm text-ui-muted">
                         {uiT("noActiveConnections")}</div>
                 ) : sorted.length > VIRTUALIZE_THRESHOLD ? (
-                    <div role="rowgroup" className="min-h-0 flex-1 overflow-hidden">
+                    <div ref={listWrapperRef} role="rowgroup" className="min-h-0 flex-1 overflow-hidden">
                         <VList
                             data={sorted}
+                            // Rows ignore the pointer while scrolling so hover
+                            // repaints don't follow the content under a still cursor.
+                            onScroll={() => listWrapperRef.current?.setAttribute("data-scrolling", "")}
+                            onScrollEnd={() => listWrapperRef.current?.removeAttribute("data-scrolling")}
                             itemSize={rowHeight}
                             bufferSize={rowHeight * 10}
                             style={{
