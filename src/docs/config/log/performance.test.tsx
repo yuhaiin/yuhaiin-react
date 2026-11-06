@@ -109,20 +109,47 @@ it('does not force-scroll after a user moves away and resumes following at the t
         viewport.dispatchEvent(new Event('scroll', { bubbles: true }));
     });
 
+    list.snapshots.mockClear();
     emit(['second']);
     await advance(300);
     // React commits the list after the timer; the scheduled follow frame runs next.
     await advance(1);
     expect(list.scrollTo).not.toHaveBeenCalled();
+    // The view stays frozen while reading older lines; new lines are announced instead of inserted.
+    expect(list.snapshots.mock.lastCall?.[0] ?? ['first']).toEqual(['first']);
+    expect(host.textContent).toContain('newLogCount');
 
     act(() => {
         viewport.scrollTop = 0;
         viewport.dispatchEvent(new Event('scroll', { bubbles: true }));
     });
+    await advance(1);
+    expect(list.snapshots.mock.lastCall?.[0]).toEqual(['second', 'first']);
+    expect(host.textContent).not.toContain('newLogCount');
+    list.scrollTo.mockClear();
+
     emit(['third']);
     await advance(300);
     // React commits the list after the timer; the scheduled follow frame runs next.
     await advance(1);
     expect(list.scrollTo).toHaveBeenCalledTimes(1);
+    expect(list.scrollTo).toHaveBeenCalledWith(0);
+});
+
+it('publishes held-back lines and scrolls to the top when the new-logs button is clicked', async () => {
+    emit(['first']);
+    await advance(301);
+    const viewport = host.querySelector<HTMLElement>('[data-testid="virtual-log"]')!;
+    act(() => { viewport.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: 100 })); });
+
+    emit(['second', 'third']);
+    await advance(301);
+    const button = [...host.querySelectorAll('button')].find(node => node.textContent?.includes('newLogCount'));
+    expect(button).toBeDefined();
+    list.scrollTo.mockClear();
+
+    act(() => button!.click());
+    await advance(1);
+    expect(list.snapshots.mock.lastCall?.[0]).toEqual(['third', 'second', 'first']);
     expect(list.scrollTo).toHaveBeenCalledWith(0);
 });
