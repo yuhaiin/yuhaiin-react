@@ -25,7 +25,7 @@ vi.mock('react-i18next', () => ({
 
 const cacheProvider = () => new Map();
 const config: TrafficControlConfig = {
-    enabled: false,
+    enabled: true,
     global: {
         upload: { bytesPerSecond: 0, burstBytes: 0 },
         download: { bytesPerSecond: 0, burstBytes: 0 },
@@ -156,6 +156,8 @@ async function selectProfile(label: string, profile: string) {
 
 it('creates a profile, binds it to inbound and route scopes, then saves the complete policy', async () => {
     await render();
+    expect(host.textContent).toContain('bindingsNeedProfile');
+    await act(async () => button('addProfile').click());
     editInput(input('newProfile'), 'video');
     await act(async () => button('add').click());
     await selectProfile('VPN', 'video');
@@ -179,6 +181,7 @@ it('creates a profile, binds it to inbound and route scopes, then saves the comp
 });
 
 it('paginates the binding choices so resources after the first 120 remain bindable', async () => {
+    api.getTrafficControl.mockResolvedValue({ ...structuredClone(config), profiles: { video: { upload: { bytesPerSecond: 0, burstBytes: 0 }, download: { bytesPerSecond: 0, burstBytes: 0 } } } });
     api.listInbounds.mockImplementation(
         async ({ page = 1 }: { page?: number }) => ({
             items:
@@ -229,22 +232,33 @@ it('keeps the edited draft and reports a failed configuration write', async () =
     expect(button('save').disabled).toBe(false);
 });
 
-it('reports a diagnostics refresh failure separately from a successful save', async () => {
-    api.getTrafficStatus
-        .mockResolvedValueOnce(status)
-        .mockRejectedValueOnce(new Error('diagnostics offline'));
+it('keeps diagnostics failures on the diagnostics tab, apart from a successful save', async () => {
+    api.getTrafficStatus.mockRejectedValue(new Error('diagnostics offline'));
     await render();
     editInput(input('upload mbps'), '0.1');
 
     await act(async () => button('save').click());
+
+    expect(host.querySelector('[role="status"]')?.textContent).toBe('saved');
+    expect(host.querySelectorAll('[role="alert"]')).toHaveLength(0);
+    expect(api.getTrafficStatus).not.toHaveBeenCalled();
+
+    const tab = [...host.querySelectorAll('[role=tab]')].find((item) => item.textContent === 'tabDiagnostics')!;
+    await act(async () => {
+        tab.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
+    });
     await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 0));
     });
-
-    expect(host.querySelector('[role="status"]')?.textContent).toBe('saved');
     const alerts = [...host.querySelectorAll('[role="alert"]')];
     expect(alerts).toHaveLength(1);
     expect(alerts[0].textContent).toBe('statusUnavailable');
+});
+
+it('hides global rate fields while traffic limiting is disabled', async () => {
+    api.getTrafficControl.mockResolvedValue({ ...structuredClone(config), enabled: false });
+    await render();
+    expect(host.querySelector('input[aria-label="upload mbps"]')).toBeNull();
 });
 
 it('preserves a configured burst when replacing a rate through an empty field', async () => {
@@ -253,8 +267,9 @@ it('preserves a configured burst when replacing a rate through an empty field', 
     saved.global.upload = { bytesPerSecond: 125000, burstBytes: 256 * 1024 };
     api.getTrafficControl.mockResolvedValue(saved);
     await render();
+    // Clearing the field means unlimited; the burst is restored when a rate returns.
     editInput(input('upload mbps'), '');
-    expect(button('save').disabled).toBe(true);
+    expect(button('save').disabled).toBe(false);
     editInput(input('upload mbps'), '2');
     await act(async () => button('save').click());
     expect(api.putTrafficControl).toHaveBeenLastCalledWith(
