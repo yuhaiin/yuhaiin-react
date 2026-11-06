@@ -1186,6 +1186,7 @@ export namespace Go {
       | { type: "vless"; credentialRef?: string; vless: Vless }
       | { type: "bootstrap_dns_warp"; credentialRef?: string; bootstrap_dns_warp: BootstrapDNSWarp }
       | { type: "tailscale"; credentialRef?: string; tailscale: Tailscale }
+      | { type: "tailscale-lite"; credentialRef?: string; "tailscale-lite": TailscaleLite }
       | { type: "set"; credentialRef?: string; set: Set }
       | { type: "tls_termination"; credentialRef?: string; tls_termination: TLSTermination }
       | { type: "http_mock"; credentialRef?: string; http_mock: HTTPMock }
@@ -1557,6 +1558,7 @@ export namespace Go {
       control_url: string;
       debug?: boolean;
     }
+    export type TailscaleLite = Tailscale;
     export interface Set {
       nodes?: string[];
       strategy?: string;
