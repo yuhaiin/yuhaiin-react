@@ -12,15 +12,16 @@ vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => k
 vi.mock('virtua', async () => {
     const { createElement, forwardRef, useImperativeHandle } = await import('react');
     const VList = forwardRef(function FakeVList(
-        { data, children, onScroll }: {
+        { data, children, onScroll, shift }: {
             data: LogEntry[];
+            shift?: boolean;
             children: (entry: LogEntry) => ReactNode;
             onScroll: (offset: number) => void;
         },
         ref,
     ) {
         useImperativeHandle(ref, () => ({ scrollTo: list.scrollTo }));
-        list.snapshots(data.map(entry => entry.line));
+        list.snapshots(data.map(entry => entry.line), Boolean(shift));
         return createElement('div', {
             'data-testid': 'virtual-log',
             onScroll: (event: ReactUIEvent<HTMLDivElement>) => onScroll(event.currentTarget.scrollTop),
@@ -87,11 +88,12 @@ it('batches frequent SSE events without dropping newer logs or rendering each ev
     expect(list.snapshots).not.toHaveBeenCalled();
 
     await advance(125);
-    expect(list.snapshots).toHaveBeenCalledTimes(1);
+    expect(list.snapshots).toHaveBeenCalled();
     expect(list.snapshots.mock.lastCall?.[0]).toEqual(['third', 'second', 'first']);
+    const published = list.snapshots.mock.calls.length;
 
     await advance(500);
-    expect(list.snapshots).toHaveBeenCalledTimes(1);
+    expect(list.snapshots).toHaveBeenCalledTimes(published);
 });
 
 it('does not force-scroll after a user moves away and resumes following at the top', async () => {
@@ -152,4 +154,24 @@ it('publishes held-back lines and scrolls to the top when the new-logs button is
     await advance(1);
     expect(list.snapshots.mock.lastCall?.[0]).toEqual(['third', 'second', 'first']);
     expect(list.scrollTo).toHaveBeenCalledWith(0);
+});
+
+it('feeds a full buffer to the list as a shifted prepend followed by an unshifted trim', async () => {
+    const initial = Array.from({ length: 2000 }, (_, index) => `line ${index}`);
+    emit(initial);
+    await advance(301);
+    list.snapshots.mockClear();
+
+    emit(['newest']);
+    await advance(301);
+    const calls = list.snapshots.mock.calls as [string[], boolean][];
+    const prepend = calls.find(([, shift]) => shift);
+    expect(prepend?.[0]).toHaveLength(2001);
+    expect(prepend?.[0][0]).toBe('newest');
+    expect(prepend?.[0][1]).toBe('line 1999');
+    const [last, lastShift] = calls[calls.length - 1];
+    expect(lastShift).toBe(false);
+    expect(last).toHaveLength(2000);
+    expect(last[0]).toBe('newest');
+    expect(last[last.length - 1]).toBe('line 1');
 });
