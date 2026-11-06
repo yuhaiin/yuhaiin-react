@@ -6,10 +6,10 @@ import { blockHistory } from "@/api/route";
 import { Button } from "@/component/v2/button";
 import { MainContainer } from "@/component/v2/card";
 import { DataListItem, DataSection } from "@/component/v2/datalist";
-import { HistoryList, HistoryListSkeleton, HistoryRow, HistoryToolbar, formatHistoryTime, formatProtocolLabel, matchesHistorySearch } from "@/component/v2/history-list";
+import { HistoryList, HistoryListSkeleton, HistoryTitle, HistoryToolbar, formatHistoryTime, formatProtocolLabel, matchesHistorySearch, nextHistorySort, type HistoryColumn } from "@/component/v2/history-list";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal";
 import type { BlockHistory } from "@/contract/route";
-import { Ban, Network, ShieldOff } from 'lucide-react';
+import { ShieldOff } from 'lucide-react';
 import React, { FC, useMemo, useState } from "react";
 import useSWR from "swr";
 import Loading from "../../../component/v2/loading";
@@ -22,26 +22,6 @@ function historyDate(value?: string): Date {
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? ZeroDate : date;
 }
-
-// --- Component: Individual Blocked History Row ---
-const ListItem: FC<{ data: BlockHistory }> = React.memo(({ data }) => {
-    const { t: uiT } = useTranslation('ui');
-
-    return (
-        <HistoryRow
-            icon={ShieldOff}
-            iconTone="danger"
-            title={data.host}
-            subtitle={data.process || "System Filter"}
-            subtitleOnMobile
-            time={formatHistoryTime(historyDate(data.time))}
-            meta={[
-                { icon: Ban, text: uiT("blockCount", { count: Number(data.blockCount) }), tone: "danger" },
-                { icon: Network, text: formatProtocolLabel(data.protocol) },
-            ]}
-        />
-    );
-});
 
 // --- Component: Details Modal ---
 const InfoModal: FC<{ data?: BlockHistory, show: boolean, onClose: () => void }> = React.memo(({ data, show, onClose }) => {
@@ -110,6 +90,21 @@ function BypassBlockHistory() {
     if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
 
     const paginatedItems = values.slice((page - 1) * pageSize, page * pageSize);
+    // With process capture on, the process gets its own sortable column.
+    const showProcess = Boolean(data?.dumpProcessEnabled);
+    const columns: HistoryColumn<BlockHistory>[] = [
+        { id: "host", header: uiT("host"), width: "minmax(0,1fr)", role: "primary", sortKey: "Host",
+          label: v => `${uiT("blockedSessionDetails")}: ${v.host}`,
+          cell: v => <HistoryTitle title={v.host} detail={showProcess ? undefined : v.process || "System Filter"} /> },
+        ...(showProcess ? [{ id: "process", header: uiT("process"), width: "minmax(0,0.7fr)", sortKey: "Proc",
+          cell: (v: BlockHistory) => v.process || "System Filter" }] : []),
+        { id: "protocol", header: uiT("protocol"), width: "4.5rem", mono: true, cell: v => formatProtocolLabel(v.protocol) },
+        { id: "blocks", header: uiT("totalBlocks"), width: "6rem", numeric: true, mono: true, sortKey: "Count", tone: "danger",
+          cell: v => Number(v.blockCount).toLocaleString(), mobileCell: v => uiT("blockCount", { count: Number(v.blockCount) }) },
+        { id: "time", header: uiT("time"), width: "9.5rem", numeric: true, mono: true, role: "aside", sortKey: "Time",
+          cell: v => formatHistoryTime(historyDate(v.time)) },
+    ];
+    const sort = (field: string) => { const next = nextHistorySort(field, sortBy, sortOrder); setSortBy(next.sortBy); setSortOrder(next.sortOrder); };
 
     return (
         <MainContainer className="flex min-h-full min-w-0 flex-col">
@@ -139,10 +134,14 @@ function BypassBlockHistory() {
             />
 
             {isLoading || data === undefined ? <HistoryListSkeleton /> : <HistoryList
+                label={uiT("blockedTraffic")}
                 items={paginatedItems}
+                columns={columns}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={sort}
                 getKey={(v) => `${v.host}-${v.time}`}
                 onClickItem={(item) => setInfo({ show: true, data: item })}
-                renderRow={(item) => <ListItem data={item} />}
                 page={page}
                 totalItems={values.length}
                 pageSize={pageSize}

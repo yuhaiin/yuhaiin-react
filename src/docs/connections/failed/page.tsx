@@ -7,11 +7,11 @@ import { getFailedHistory } from "@/api/connections"
 import { Button } from "@/component/v2/button"
 import { MainContainer } from "@/component/v2/card"
 import { DataListItem, DataSection } from "@/component/v2/datalist"
-import { HistoryList, HistoryListSkeleton, HistoryRow, HistoryToolbar, formatHistoryTime, formatProtocolLabel, matchesHistorySearch } from "@/component/v2/history-list"
+import { HistoryList, HistoryListSkeleton, HistoryTitle, HistoryToolbar, formatHistoryTime, formatProtocolLabel, matchesHistorySearch, nextHistorySort, type HistoryColumn } from "@/component/v2/history-list"
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal"
 import type { FailedHistory as FailedHistoryItem } from "@/contract/connection"
-import { Bug, Network, OctagonAlert } from "lucide-react"
-import React, { FC, useMemo, useState } from "react"
+import { Bug } from "lucide-react"
+import { useMemo, useState } from "react"
 import useSWR from "swr"
 import Loading from "../../../component/v2/loading"
 
@@ -27,25 +27,6 @@ export function sortFailedHistory(
         return (new Date(a.time).getTime() - new Date(b.time).getTime()) * dir;
     });
 }
-
-const ListItem: FC<{ data: FailedHistoryItem }> = React.memo(({ data }) => {
-    const { t: uiT } = useTranslation("ui");
-    return (
-        <HistoryRow
-            icon={Bug}
-            iconTone="danger"
-            title={data.host}
-            titleClassName="text-ui-danger"
-            subtitle={data.error || "Unknown Error"}
-            subtitleOnMobile
-            time={formatHistoryTime(new Date(data.time))}
-            meta={[
-                { icon: OctagonAlert, text: uiT("failedBadge", { count: Number(data.failedCount) }), tone: "warning" },
-                { icon: Network, text: formatProtocolLabel(data.protocol) },
-            ]}
-        />
-    );
-});
 
 function FailedHistory() {
     const { t: uiT } = useTranslation('ui');
@@ -69,6 +50,17 @@ function FailedHistory() {
     if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
 
     const paginatedItems = values.slice((page - 1) * pageSize, page * pageSize);
+    const columns: HistoryColumn<FailedHistoryItem>[] = [
+        { id: "host", header: uiT("host"), width: "minmax(0,1fr)", role: "primary", sortKey: "Host",
+          label: v => `${uiT("failureDetails")}: ${v.host}`,
+          cell: v => <HistoryTitle title={v.host} detail={v.error || "Unknown Error"} detailTone="danger" /> },
+        { id: "protocol", header: uiT("protocol"), width: "4.5rem", mono: true, cell: v => formatProtocolLabel(v.protocol) },
+        { id: "failures", header: uiT("failures"), width: "5rem", numeric: true, mono: true, sortKey: "Count", tone: "warning",
+          cell: v => Number(v.failedCount).toLocaleString(), mobileCell: v => uiT("failedBadge", { count: Number(v.failedCount) }) },
+        { id: "time", header: uiT("time"), width: "9.5rem", numeric: true, mono: true, role: "aside", sortKey: "Time",
+          cell: v => formatHistoryTime(new Date(v.time)) },
+    ];
+    const sort = (field: string) => { const next = nextHistorySort(field, sortBy, sortOrder); setSortBy(next.sortBy); setSortOrder(next.sortOrder); };
 
     return (
         <MainContainer className="flex min-h-full min-w-0 flex-col">
@@ -114,10 +106,14 @@ function FailedHistory() {
             />
 
             {isLoading || data === undefined ? <HistoryListSkeleton /> : <HistoryList
+                label={uiT("failedConnections")}
                 items={paginatedItems}
+                columns={columns}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={sort}
                 getKey={(v) => `${v.host}-${v.time}`}
                 onClickItem={(item) => setInfo({ show: true, data: item })}
-                renderRow={(item) => <ListItem data={item} />}
                 page={page}
                 totalItems={values.length}
                 pageSize={pageSize}

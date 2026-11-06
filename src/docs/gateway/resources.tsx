@@ -138,10 +138,14 @@ export function RuleEditor({
   item,
   config,
   change,
+  onCreatePool,
+  onEditPool,
 }: {
   item: Rule;
   config: Config;
   change: (next: Rule) => void;
+  onCreatePool?: () => void;
+  onEditPool?: (id: string) => void;
 }) {
   const { t } = useTranslation("gateway");
   return (
@@ -174,6 +178,8 @@ export function RuleEditor({
           value={item.action}
           upstreams={config.upstreams}
           onChange={(action) => change({ ...item, action })}
+          onCreatePool={onCreatePool}
+          onEditPool={onEditPool}
         />
       </div>
     </div>

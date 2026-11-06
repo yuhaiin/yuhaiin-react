@@ -2,6 +2,7 @@ import type { NodeProtocolConfig } from "@/contract/node";
 import { SettingLabel } from "@/component/v2/card";
 import { Textarea } from "@/component/v2/input";
 import type { FC } from "react";
+import { useTranslation } from "react-i18next";
 
 // Nebula's full YAML is intentionally kept as one field. Importing the standard
 // config preserves Lighthouse, static-host mappings, PKI and firewall policies.
@@ -9,12 +10,14 @@ export const NebulaForm: FC<{
     config: NodeProtocolConfig<"nebula">;
     editable: boolean;
     onChange: (patch: Partial<NodeProtocolConfig<"nebula">>) => void;
-}> = ({ config, editable, onChange }) => (
+}> = ({ config, editable, onChange }) => {
+    const { t } = useTranslation("ui");
+    return (
     <div className="grid gap-3">
         <div>
-            <SettingLabel className="mb-2 block">Nebula client configuration (YAML)</SettingLabel>
+            <SettingLabel className="mb-2 block">{t("nodeForm.nebulaConfig")}</SettingLabel>
             <Textarea code secret
-                aria-label="Nebula client configuration (YAML)"
+                aria-label={t("nodeForm.nebulaConfig")}
                 rows={18}
                 spellCheck={false}
                 disabled={!editable}
@@ -30,4 +33,5 @@ export const NebulaForm: FC<{
             Custom unsafe routes, the built-in SSH server and external statistics listeners are not supported.
         </p>
     </div>
-);
+    );
+};

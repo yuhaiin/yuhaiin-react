@@ -241,7 +241,7 @@ function Connections() {
                     <ModalFooter className="border-t-0 pt-0 pb-3 px-3">
                         {detail && (
                             <Button permission="connections:write"
-                                variant="danger"
+                                variant="destructive"
                                 className="w-full py-2 flex items-center justify-center notranslate"
                                 disabled={closing}
                                 onClick={() => handleClose(detail.id)}

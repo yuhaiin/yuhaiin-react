@@ -70,7 +70,8 @@ function chainLabel(node: Node): string {
 
 type NodeIPLatency = NonNullable<NodeLatencyResponse["ip"]>;
 type NodeSTUNLatency = NonNullable<NodeLatencyResponse["stun"]>;
-type NodeLatencyValue = string | NodeIPLatency | NodeSTUNLatency;
+type NodeLatencyError = { error: string };
+type NodeLatencyValue = string | NodeIPLatency | NodeSTUNLatency | NodeLatencyError;
 type NodeLatencyState = Partial<Record<NodeLatencyType, NodeLatencyValue>>;
 
 const latencyActions: Array<{ type: NodeLatencyType; label: string }> = [
@@ -84,6 +85,7 @@ const latencyActions: Array<{ type: NodeLatencyType; label: string }> = [
 function latencyText(value: NodeLatencyValue | undefined): string {
     if (!value) return "N/A";
     if (typeof value === "string") return value;
+    if (isLatencyError(value)) return value.error;
     if (isIPLatency(value)) {
         return [value.ipv4, value.ipv6].filter(Boolean).join(" / ") || "N/A";
     }
@@ -93,7 +95,7 @@ function latencyText(value: NodeLatencyValue | undefined): string {
 type LatencyDetailKey = "ipv4" | "ipv6" | "mapping" | "filtering" | "mappedAddress" | "xorMappedAddress";
 
 function latencyDetail(value: NodeLatencyValue | undefined, key: LatencyDetailKey): string {
-    if (!value || typeof value === "string") return "N/A";
+    if (!value || typeof value === "string" || isLatencyError(value)) return "N/A";
     if (isIPLatency(value)) {
         switch (key) {
             case "ipv4":
@@ -118,6 +120,10 @@ function latencyDetail(value: NodeLatencyValue | undefined, key: LatencyDetailKe
     }
 }
 
+export function isLatencyError(value: NodeLatencyValue | undefined): value is NodeLatencyError {
+    return typeof value === "object" && value !== null && "error" in value;
+}
+
 function isIPLatency(value: NodeIPLatency | NodeSTUNLatency): value is NodeIPLatency {
     return "ipv4" in value || "ipv6" in value;
 }
@@ -130,6 +136,7 @@ function latencyMilliseconds(value: NodeLatencyValue | undefined): number | unde
 
 function latencyVariant(value: NodeLatencyValue | undefined): "secondary" | "success" | "warning" | "danger" {
     if (!value) return "secondary";
+    if (isLatencyError(value)) return "danger";
     if (typeof value === "string") {
         if (value.trim().toLowerCase() === "n/a") return "secondary";
         if (value.toLowerCase().includes("error")) return "danger";
@@ -142,6 +149,7 @@ function latencyVariant(value: NodeLatencyValue | undefined): "secondary" | "suc
 }
 
 function latencyTextClass(value: NodeLatencyValue | undefined): string {
+    if (isLatencyError(value)) return "text-ui-danger";
     if (!value || typeof value !== "string" || value.trim().toLowerCase() === "n/a") return "text-ui-muted";
     if (value.toLowerCase().includes("error")) return "text-ui-danger";
     if (latencyMilliseconds(value) === undefined) return "text-ui-fg";
@@ -153,8 +161,8 @@ function latencyTextClass(value: NodeLatencyValue | undefined): string {
     }[latencyVariant(value)];
 }
 
-function latencyResultValue(result: NodeLatencyResponse): NodeLatencyValue {
-    if (!result.ok) return result.error || "error";
+export function latencyResultValue(result: NodeLatencyResponse): NodeLatencyValue {
+    if (!result.ok) return { error: result.error || "error" };
     if (result.latencyMs !== undefined) return `${result.latencyMs}ms`;
     if (result.ip) return result.ip;
     if (result.stun) return result.stun;
@@ -172,13 +180,15 @@ function isEmptyLatency(value: NodeLatencyValue | undefined): boolean {
 }
 
 const ResultChip: FC<{ label: string; value: NodeLatencyValue | undefined; loading?: boolean }> = ({ label, value, loading }) => {
+    const { t: uiT } = useTranslation('ui');
     if (!loading && isEmptyLatency(value)) return null;
+    const failed = !loading && isLatencyError(value);
     return (
-        <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-ui-border/80 bg-ui-bg px-3 py-1.5">
+        <div title={failed ? value.error : undefined} className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-ui-border/80 bg-ui-bg px-3 py-1.5">
             <span className="shrink-0 text-[11px] font-medium uppercase tracking-wide text-ui-muted">{label}</span>
             {loading
                 ? <Spinner size="sm" />
-                : <span className={clsx("truncate text-sm font-medium font-mono", latencyTextClass(value))}>{latencyText(value)}</span>}
+                : <span className={clsx("truncate text-sm font-medium", !failed && "font-mono", latencyTextClass(value))}>{failed ? uiT('failedLabel') : latencyText(value)}</span>}
         </div>
     );
 };
@@ -379,7 +389,9 @@ const NodeDirectoryItem = memo(function NodeDirectoryItem({ item, selected, onOp
                 {runtime && <span className="shrink-0 font-mono text-[11px] tabular-nums text-ui-muted" title={t('outboundTrafficHelp')}>
                     ↓ {formatNodeBytes(runtime.downloadBps)}/s
                 </span>}
-                {busy?.tcp ? <Spinner size="sm" /> : latency?.tcp && <span className={clsx('shrink-0 font-mono text-xs tabular-nums', latencyTextClass(latency.tcp))}>{latencyText(latency.tcp)}</span>}
+                {busy?.tcp ? <Spinner size="sm" /> : latency?.tcp && (isLatencyError(latency.tcp)
+                    ? <span className="shrink-0 text-xs text-ui-danger" title={latency.tcp.error}>{uiT('failedLabel')}</span>
+                    : <span className={clsx('shrink-0 font-mono text-xs tabular-nums', latencyTextClass(latency.tcp))}>{latencyText(latency.tcp)}</span>)}
             </div>
         </div>
     </button>;
@@ -420,7 +432,12 @@ function NodeOverview({ item, latency, busy, defaults, onLatency, onUse, onBack,
                 </div>
             </div>
             {hasLatency || hasIp || hasStun ? <div className="grid gap-4 sm:grid-cols-2">
-                {hasLatency && <ResultGroup title={t('lastLatencyResults')}><div className="flex flex-wrap gap-2"><ResultChip label="TCP" value={latency?.tcp} loading={busy?.tcp} /><ResultChip label="UDP" value={latency?.udp} loading={busy?.udp} /></div></ResultGroup>}
+                {hasLatency && <ResultGroup title={t('lastLatencyResults')}><div className="flex flex-wrap gap-2"><ResultChip label="TCP" value={latency?.tcp} loading={busy?.tcp} /><ResultChip label="UDP" value={latency?.udp} loading={busy?.udp} /></div>
+                    {(['tcp', 'udp'] as const).map(kind => {
+                        const value = latency?.[kind];
+                        return !busy?.[kind] && isLatencyError(value) && <p key={kind} className="break-all font-mono text-xs leading-snug text-ui-danger"><span className="mr-2 uppercase text-ui-muted">{kind}</span>{value.error}</p>;
+                    })}
+                </ResultGroup>}
                 {hasIp && <ResultGroup title={uiT('ip')}><ResultRow label="IPv4" value={latencyDetail(latency?.ip, 'ipv4')} loading={busy?.ip} /><ResultRow label="IPv6" value={latencyDetail(latency?.ip, 'ipv6')} loading={busy?.ip} /></ResultGroup>}
                 {hasStun && <ResultGroup title="STUN"><div className="flex flex-wrap gap-2"><ResultChip label="NAT" value={latencyDetail(latency?.stun, 'mapping')} loading={busy?.stun} /><ResultChip label="Filter" value={latencyDetail(latency?.stun, 'filtering')} loading={busy?.stun} /></div><ResultRow label="Mapped" value={latencyDetail(latency?.stun, 'mappedAddress')} loading={busy?.stun} /><ResultRow label="TCP" value={latencyDetail(latency?.stun_tcp, 'mappedAddress')} loading={busy?.stun_tcp} /></ResultGroup>}
             </div> : <p className="text-sm text-ui-muted">{uiT('noTestResultsYet')}</p>}
@@ -600,7 +617,7 @@ export default function Group() {
             .catch((err: unknown) => {
                 const apiErr = errorOf(err);
                 setLatency((prev) => pruneLatencyMap(
-                    { ...prev, [id]: { ...prev[id], [type]: "error" } },
+                    { ...prev, [id]: { ...prev[id], [type]: { error: apiErr?.msg ?? "error" } } },
                     [id, ...nodeIdsRef.current, ...Object.keys(prev)],
                 ));
                 ctx.Error(apiErr?.msg ?? "Latency failed");

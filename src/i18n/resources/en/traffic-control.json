@@ -159,6 +159,42 @@
       "quota_exhausted": "Traffic quota exhausted",
       "bandwidth_limit": "Bandwidth limit",
       "quota_credit_pending": "Quota credit or window update pending"
+    },
+    "statusTitle": "Quota engine status",
+    "unassigned": "Not selected",
+    "noQuotaShort": "No quota",
+    "statusField": {
+      "windows": "Quota windows",
+      "pendingWrites": "Pending writes",
+      "denied": "Denied",
+      "persistenceFailures": "Persistence failures",
+      "refreshFailures": "Refresh failures",
+      "droppedAlerts": "Dropped alerts",
+      "pendingAlerts": "Pending alerts",
+      "alertPersistenceFailures": "Alert persistence failures"
     }
-  }
+  },
+  "sections": "Traffic control sections",
+  "tabBandwidth": "Bandwidth",
+  "tabResources": "User resources",
+  "tabDiagnostics": "Diagnostics",
+  "unlimited": "Unlimited",
+  "burstDefault": "Default",
+  "burstSettings": "Burst settings",
+  "burstHint": "Burst lets short spikes exceed the rate. Empty uses the default. 1 Mbps = 125,000 bytes/s.",
+  "addProfile": "Add profile",
+  "cancel": "Cancel",
+  "defaultBadge": "Default",
+  "usedBy_one": "used by {{count}} target",
+  "usedBy_other": "used by {{count}} targets",
+  "setDefault": "Make default",
+  "unsetDefault": "Remove default",
+  "noDefaultHint": "No default profile: inbounds and routes without a profile are not limited.",
+  "profilesInactive": "Traffic limiting is off, so profiles are saved but not enforced.",
+  "bindingsNeedProfile": "Create a QoS profile to assign it to inbounds and routing rules.",
+  "assignedCount_one": "{{count}} assigned",
+  "assignedCount_other": "{{count}} assigned",
+  "showAll": "Show all",
+  "showAssigned": "Show assigned only",
+  "inheritDefault": "Inherit ({{name}})"
 }

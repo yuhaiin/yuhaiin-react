@@ -8,33 +8,14 @@ import { MainContainer } from "@/component/v2/card"
 import { DataListItem } from "@/component/v2/datalist"
 import { Dropdown, DropdownContent, DropdownRadioGroup, DropdownRadioItem, DropdownTrigger } from "@/component/v2/dropdown"
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/component/v2/modal"
-import { HistoryList, HistoryListSkeleton, HistoryRow, HistoryToolbar, formatHistoryTime, formatProtocolLabel, historyToolbarButton, matchesHistorySearch } from "@/component/v2/history-list"
+import { HistoryList, HistoryListSkeleton, HistoryTitle, HistoryToolbar, formatHistoryTime, formatProtocolLabel, historyToolbarButton, matchesHistorySearch, nextHistorySort, type HistoryColumn } from "@/component/v2/history-list"
 import type { AllHistory } from "@/contract/connection"
-import { ArrowLeftRight, Info, ListFilter, Network, Radio, RefreshCw, ShieldCheck } from "lucide-react"
-import React, { FC, useMemo, useState } from "react"
+import { Info, ListFilter } from "lucide-react"
+import { useMemo, useState } from "react"
 import useSWR from "swr"
 import Loading from "../../../component/v2/loading"
 import { NodeModal } from "../../node/modal"
 import { ConnectionInfo } from "../components"
-
-const ListItem: FC<{ data: AllHistory }> = React.memo(({ data }) => {
-    const { t: uiT } = useTranslation('ui');
-    const connType = data.connection.network.connType;
-
-    return (
-        <HistoryRow
-            icon={connType.startsWith("udp") ? Radio : ArrowLeftRight}
-            title={data.connection.addr || "-"}
-            subtitle={<>{uiT("idLabel")} {data.connection.id} • {formatProtocolLabel(connType)}</>}
-            time={formatHistoryTime(new Date(data.time))}
-            meta={[
-                { icon: Network, text: formatProtocolLabel(connType), mobileOnly: true },
-                { icon: ShieldCheck, text: formatProtocolLabel(data.connection.mode) },
-                { icon: RefreshCw, text: uiT("eventCount", { count: Number(data.count) }), tone: "success" },
-            ]}
-        />
-    );
-});
 
 function History() {
     const { t: uiT } = useTranslation('ui');
@@ -74,6 +55,20 @@ function History() {
     if (error) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>
 
     const paginatedItems = values.slice((page - 1) * pageSize, page * pageSize);
+    const columns: HistoryColumn<AllHistory>[] = [
+        { id: "destination", header: uiT("destination"), width: "minmax(0,1fr)", role: "primary", sortKey: "Host",
+          label: v => `${uiT("sessionDetail")}: ${v.connection.addr}`,
+          cell: v => <HistoryTitle title={v.connection.addr || "-"} detail={v.connection.process} /> },
+        { id: "mode", header: uiT("mode"), width: "5rem", cell: v => v.connection.mode || "—" },
+        { id: "protocol", header: uiT("protocol"), width: "6rem", mono: true, cell: v => formatProtocolLabel(v.connection.network.connType),
+          filter: { label: uiT("network"), value: networkFilter, onChange: setNetworkFilter,
+            options: [{ value: "all", label: uiT("allNetworks") }, ...networkOptions.map(option => ({ value: option, label: formatProtocolLabel(option) }))] } },
+        { id: "count", header: uiT("count"), width: "4.5rem", numeric: true, mono: true, sortKey: "Count", tone: "success",
+          cell: v => Number(v.count).toLocaleString(), mobileCell: v => uiT("eventCount", { count: Number(v.count) }) },
+        { id: "time", header: uiT("time"), width: "9.5rem", numeric: true, mono: true, role: "aside", sortKey: "Time",
+          cell: v => formatHistoryTime(new Date(v.time)) },
+    ];
+    const sort = (field: string) => { const next = nextHistorySort(field, sortBy, sortOrder); setSortBy(next.sortBy); setSortOrder(next.sortOrder); };
     const networkLabel = networkFilter === "all" ? uiT("allNetworks") : formatProtocolLabel(networkFilter);
 
     return (
@@ -142,10 +137,14 @@ function History() {
             />
 
             {isLoading || data === undefined ? <HistoryListSkeleton /> : <HistoryList
+                label={uiT("connectionHistory")}
                 items={paginatedItems}
+                columns={columns}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={sort}
                 getKey={(v) => `${v.connection.id}-${v.time}`}
                 onClickItem={(v) => setModalData({ show: true, data: v })}
-                renderRow={(v) => <ListItem data={v} />}
                 page={page}
                 totalItems={values.length}
                 pageSize={pageSize}

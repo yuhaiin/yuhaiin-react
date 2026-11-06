@@ -1,25 +1,17 @@
 import { clsx } from "clsx";
-import { ArrowDownWideNarrow, ChevronRight, Clock, RotateCw } from "lucide-react";
+import { ArrowDown, ArrowDownWideNarrow, ArrowUp, ArrowUpDown, ListFilter, RotateCw } from "lucide-react";
 import { motion } from "motion/react";
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "./button";
-import { Card, CardBody, CardList, FilterSearch, SettingLabel } from "./card";
-import { Dropdown, DropdownContent, DropdownTrigger } from "./dropdown";
+import { FilterSearch, SettingLabel } from "./card";
+import { Dropdown, DropdownContent, DropdownRadioGroup, DropdownRadioItem, DropdownTrigger } from "./dropdown";
 import { Pagination } from "./pagination";
 import { Spinner } from "./spinner";
-import { motionTiming } from "./styles";
+import { cn, motionTiming, ui } from "./styles";
 import { ToggleGroup, ToggleItem } from "./togglegroup";
 
-type HistoryTone = "info" | "success" | "warning" | "danger" | "neutral";
-
-const badgeTones: Record<HistoryTone, string> = {
-    info: "border-ui-info/20 bg-ui-info-soft text-ui-info",
-    success: "border-ui-success/20 bg-ui-success-soft text-ui-success",
-    warning: "border-ui-warning/20 bg-ui-warning-soft text-ui-warning",
-    danger: "border-ui-danger/20 bg-ui-danger-soft text-ui-danger",
-    neutral: "border-ui-border bg-ui-surface-muted text-ui-muted",
-};
+export type HistoryTone = "info" | "success" | "warning" | "danger" | "neutral";
 
 const textTones: Record<HistoryTone, string> = {
     info: "text-ui-info",
@@ -46,64 +38,130 @@ export function matchesHistorySearch(query: string, ...fields: (string | undefin
     return !query || fields.some(field => field?.toLowerCase().includes(query));
 }
 
-export type HistoryMeta = {
-    icon: React.ElementType;
-    text: React.ReactNode;
+export type HistorySortOrder = "asc" | "desc";
+
+/** Clicking the active column flips it; a new column starts in its natural order. */
+export function nextHistorySort(field: string, sortBy: string, sortOrder: HistorySortOrder): { sortBy: string; sortOrder: HistorySortOrder } {
+    if (field === sortBy) return { sortBy, sortOrder: sortOrder === "asc" ? "desc" : "asc" };
+    return { sortBy: field, sortOrder: field === "Time" || field === "Count" ? "desc" : "asc" };
+}
+
+/**
+ * A column of the history table. Below md a row collapses to two lines: the
+ * primary cell with the `aside` cell beside it, then the remaining cells.
+ */
+export type HistoryColumn<T> = {
+    id: string;
+    header: string;
+    /** CSS grid track used from md up. */
+    width: string;
+    cell: (item: T) => React.ReactNode;
+    /** Wording for the collapsed mobile line, where there is no column header. */
+    mobileCell?: (item: T) => React.ReactNode;
+    /** Accessible name of the primary cell's button. */
+    label?: (item: T) => string;
+    role?: "primary" | "aside";
+    numeric?: boolean;
+    sortKey?: string;
+    /** A single-choice filter offered from the column header; the first option means "all". */
+    filter?: HistoryColumnFilter;
     tone?: HistoryTone;
-    /** The desktop subtitle already carries this value. */
-    mobileOnly?: boolean;
+    mono?: boolean;
 };
 
-const HistoryBadge = ({ icon: Icon, text, tone = "info" }: HistoryMeta) => (
-    <span className={clsx("inline-flex shrink-0 items-center gap-1 rounded-ui-xs border px-2 py-1 text-[11px] font-medium leading-none whitespace-nowrap", badgeTones[tone])}>
-        <Icon size={12} aria-hidden="true" />
-        <span>{text}</span>
-    </span>
-);
+export type HistoryColumnFilter = {
+    label: string;
+    value: string;
+    options: { value: string; label: string }[];
+    onChange: (value: string) => void;
+};
 
-/** Two lines below md, so a phone shows about twice as many records per screen. */
-export const HistoryRow = React.memo(({ icon: Icon, iconTone = "primary", title, titleClassName = "text-ui-heading", subtitle, subtitleOnMobile = false, time, meta }: {
-    icon: React.ElementType;
-    iconTone?: "primary" | "danger";
-    title: string;
-    titleClassName?: string;
-    subtitle: React.ReactNode;
-    /** Appends the subtitle to the mobile line when no badge carries its value. */
-    subtitleOnMobile?: boolean;
-    time: string;
-    meta: HistoryMeta[];
-}) => (
-    <div className="flex w-full min-w-0 items-center gap-3">
-        <div className={clsx(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-ui-md border",
-            iconTone === "danger" ? "border-ui-danger/20 bg-ui-danger-soft text-ui-danger" : "border-ui-primary/20 bg-ui-primary-soft text-ui-primary",
-        )}>
-            <Icon size={17} />
+function ColumnFilter({ filter, align }: { filter: HistoryColumnFilter; align: "start" | "end" }) {
+    const active = filter.value !== filter.options[0]?.value;
+    const current = filter.options.find(option => option.value === filter.value)?.label ?? filter.value;
+    return <Dropdown>
+        <DropdownTrigger asChild>
+            <button type="button" aria-label={`${filter.label}: ${current}`} title={current}
+                className={cn("relative inline-flex size-7 shrink-0 items-center justify-center rounded-ui-sm hover:bg-ui-hover hover:text-ui-heading", ui.focusRing, active ? "text-ui-primary" : "text-ui-tertiary")}>
+                <ListFilter size={13} aria-hidden="true" />
+                {active && <span aria-hidden="true" className="absolute right-1 top-1 size-1.5 rounded-full bg-ui-primary" />}
+            </button>
+        </DropdownTrigger>
+        <DropdownContent align={align} className="w-auto min-w-[160px] max-w-[240px]">
+            <DropdownRadioGroup value={filter.value} onValueChange={filter.onChange}>
+                {filter.options.map(option => <DropdownRadioItem key={option.value} value={option.value}>{option.label}</DropdownRadioItem>)}
+            </DropdownRadioGroup>
+        </DropdownContent>
+    </Dropdown>;
+}
+
+/** Primary cell content: a title with an optional muted second line. */
+export function HistoryTitle({ title, detail, detailTone = "neutral" }: { title: string; detail?: React.ReactNode; detailTone?: HistoryTone }) {
+    return <>
+        <span className="block truncate text-sm font-medium text-ui-heading" title={title}>{title}</span>
+        {detail && <span className={clsx("block truncate text-xs leading-[18px]", textTones[detailTone])}>{detail}</span>}
+    </>;
+}
+
+function HistoryHeader<T>({ columns, template, sortBy, sortOrder, onSort }: {
+    columns: HistoryColumn<T>[]; template: string; sortBy?: string; sortOrder?: HistorySortOrder; onSort?: (field: string) => void;
+}) {
+    return <div role="rowgroup" className="hidden border-b border-ui-border bg-ui-surface-muted/40 md:block">
+        <div role="row" className="grid items-center gap-x-3 px-3 py-1" style={{ gridTemplateColumns: template }}>
+            {columns.map(column => {
+                const active = column.sortKey !== undefined && column.sortKey === sortBy;
+                const sort = active ? sortOrder === "asc" ? "ascending" : "descending" : "none";
+                const filter = column.filter && <ColumnFilter filter={column.filter} align={column.numeric ? "end" : "start"} />;
+                if (!column.sortKey || !onSort) return <div key={column.id} role="columnheader" className={clsx("flex min-h-9 min-w-0 items-center gap-1 text-xs text-ui-muted", column.numeric && "justify-end")}>
+                    <span className="min-w-0 truncate">{column.header}</span>{filter}
+                </div>;
+                // Numeric columns align right, so their sort arrow sits before the label.
+                return <div key={column.id} role="columnheader" aria-sort={sort} className="flex min-w-0 items-center gap-1">
+                    <button type="button" onClick={() => onSort(column.sortKey!)}
+                        className={cn("relative inline-flex min-h-9 w-full min-w-0 items-center rounded-ui-sm text-xs font-medium hover:text-ui-heading", column.numeric ? "justify-end" : "justify-start", ui.focusRing, active ? "text-ui-heading" : "text-ui-muted")}>
+                        <span className={cn("relative min-w-0 max-w-full", column.numeric ? "pl-4" : "pr-4")}>
+                            <span className="block truncate">{column.header}</span>
+                            <span className={cn("absolute top-1/2 -translate-y-1/2", column.numeric ? "left-0" : "right-0")} aria-hidden="true">
+                                {active ? sortOrder === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} /> : <ArrowUpDown size={12} className="text-ui-tertiary" />}
+                            </span>
+                        </span>
+                    </button>
+                    {filter}
+                </div>;
+            })}
         </div>
-        <div className="flex min-w-0 flex-1 flex-col">
-            <div className="flex min-w-0 items-baseline gap-2">
-                <span className={clsx("truncate text-sm font-semibold md:text-base", titleClassName)} title={title}>{title}</span>
-                <small className="ml-auto shrink-0 font-mono text-[11px] tabular-nums text-ui-muted md:hidden">{time}</small>
-            </div>
-            <small className="hidden truncate font-mono text-xs text-ui-muted md:block">{subtitle}</small>
-            <small className="truncate text-xs text-ui-muted md:hidden">
-                {meta.map((item, index) => (
-                    <React.Fragment key={index}>
-                        {index > 0 && <span aria-hidden="true"> · </span>}
-                        <span className={textTones[item.tone ?? "neutral"]}>{item.text}</span>
-                    </React.Fragment>
-                ))}
-                {subtitleOnMobile && <><span aria-hidden="true"> · </span>{subtitle}</>}
-            </small>
-        </div>
-        <div className="hidden shrink-0 items-center gap-2 md:flex">
-            {meta.filter(item => !item.mobileOnly).map((item, index) => <HistoryBadge key={index} {...item} />)}
-            <HistoryBadge icon={Clock} text={time} tone="neutral" />
-            <ChevronRight size={17} className="ml-1 text-ui-muted/50" />
-        </div>
-    </div>
-));
-HistoryRow.displayName = "HistoryRow";
+    </div>;
+}
+
+function cellClass<T>(column: HistoryColumn<T>) {
+    return clsx("min-w-0 truncate", column.numeric && "text-right tabular-nums", column.mono && "font-mono", column.role !== "primary" && "text-xs", textTones[column.tone ?? "neutral"]);
+}
+
+function HistoryTableRow<T>({ item, columns, template, onClick, fresh }: {
+    item: T; columns: HistoryColumn<T>[]; template: string; onClick: (item: T) => void; fresh: boolean;
+}) {
+    const primary = columns.find(column => column.role === "primary") ?? columns[0];
+    const aside = columns.find(column => column.role === "aside");
+    const rest = columns.filter(column => column !== primary && column !== aside);
+    const Row = fresh ? motion.div : "div";
+    // From md up every cell is a grid column in declaration order; below md the
+    // rest collapse into one dotted line under the title.
+    return <Row role="row" onClick={() => onClick(item)} {...(fresh ? { "data-history-fresh": "", initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { duration: 0.4, ease: "easeOut" as const } } : {})}
+        style={{ "--history-columns": template } as React.CSSProperties}
+        className="grid min-w-0 cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-0.5 border-b border-ui-border/60 bg-ui-surface px-3 py-2 text-sm last:border-b-0 hover:bg-ui-hover focus-within:bg-ui-hover md:min-h-[52px] md:[grid-template-columns:var(--history-columns)]">
+        {columns.map(column => {
+            if (column === primary) return <div key={column.id} role="cell" className="col-start-1 row-start-1 min-w-0 md:col-auto md:row-auto">
+                <button type="button" aria-label={column.label?.(item)} className={cn("block w-full min-w-0 rounded-ui-sm text-left", ui.focusRing)}>{column.cell(item)}</button>
+            </div>;
+            if (column === aside) return <div key={column.id} role="cell" className={clsx(cellClass(column), "col-start-2 row-start-1 md:col-auto md:row-auto")}>{column.cell(item)}</div>;
+            return <div key={column.id} role="cell" className={clsx(cellClass(column), "hidden md:block")}>{column.cell(item)}</div>;
+        })}
+        {/* Below md the secondary cells share one line under the title. */}
+        {rest.length > 0 && <div className="col-span-2 row-start-2 min-w-0 truncate text-xs text-ui-muted md:hidden">
+            {rest.map((column, index) => <React.Fragment key={column.id}>{index > 0 && <span aria-hidden="true"> · </span>}<span className={textTones[column.tone ?? "neutral"]}>{(column.mobileCell ?? column.cell)(item)}</span></React.Fragment>)}
+        </div>}
+    </Row>;
+}
 
 /** Borderless below lg, where the bar sits directly on the page instead of in its own frame. */
 export const historyToolbarButton = "max-lg:border-transparent max-lg:bg-transparent max-lg:shadow-none";
@@ -129,12 +187,13 @@ export function HistoryToolbar({ onSearch, filter, onRefresh, refreshing, sortOr
                 className="min-w-0 flex-1 lg:flex-none"
                 inputClassName="max-sm:h-11 max-sm:text-base"
             />
-            {filter}
+            {/* From md up the table header sorts and filters; the toolbar keeps them for phones. */}
+            {filter && <div className="contents md:hidden">{filter}</div>}
             <Button size="sm" className={historyToolbarButton} aria-label={uiT("refresh")} onClick={onRefresh} disabled={refreshing}>
                 {refreshing ? <Spinner size="sm" /> : <RotateCw size={16} />}
             </Button>
             <Dropdown>
-                <DropdownTrigger asChild><Button size="sm" className={historyToolbarButton} aria-label={uiT("sortOrder")}><ArrowDownWideNarrow size={16} /></Button></DropdownTrigger>
+                <DropdownTrigger asChild><Button size="sm" className={cn(historyToolbarButton, "md:hidden")} aria-label={uiT("sortOrder")}><ArrowDownWideNarrow size={16} /></Button></DropdownTrigger>
                 <DropdownContent align="end" className="w-[min(320px,calc(100vw-2rem))] min-w-0 max-w-[calc(100vw-2rem)] p-3">
                     <div className="mb-3">
                         <SettingLabel>{uiT("sortOrder")}</SettingLabel>
@@ -153,25 +212,25 @@ export function HistoryToolbar({ onSearch, filter, onRefresh, refreshing, sortOr
     );
 }
 
+const tableFrame = "min-w-0 overflow-hidden rounded-ui-lg border border-ui-border bg-ui-surface";
+
 export function HistoryListSkeleton({ rows = 8 }: { rows?: number }) {
     const { t } = useTranslation("common");
 
     return (
-        <Card>
-            <CardBody className="max-md:p-1.5">
-                <div data-loading="" role="status" aria-label={t("state.loading")} className="flex flex-col gap-3 motion-safe:animate-pulse max-md:gap-0">
-                    {Array.from({ length: rows }, (_, index) => (
-                        <div key={index} className="flex min-h-list-row items-center gap-3 px-3 py-2">
-                            <div className="h-9 w-9 shrink-0 rounded-ui-md bg-ui-surface-muted" />
-                            <div className="flex min-w-0 flex-1 flex-col gap-2">
-                                <div className="h-3.5 w-3/5 rounded-ui-xs bg-ui-surface-muted" />
-                                <div className="h-2.5 w-2/5 rounded-ui-xs bg-ui-surface-muted" />
-                            </div>
-                        </div>
-                    ))}
+        <div data-loading="" role="status" aria-label={t("state.loading")} className={cn(tableFrame, "motion-safe:animate-pulse")}>
+            <div className="hidden h-[38px] border-b border-ui-border bg-ui-surface-muted/40 md:block" />
+            {Array.from({ length: rows }, (_, index) => (
+                <div key={index} className="flex min-h-[52px] items-center gap-3 border-b border-ui-border/60 px-3 py-2 last:border-b-0">
+                    <div className="flex min-w-0 flex-1 flex-col gap-2">
+                        <div className="h-3.5 w-3/5 rounded-ui-xs bg-ui-surface-muted" />
+                        <div className="h-2.5 w-2/5 rounded-ui-xs bg-ui-surface-muted md:hidden" />
+                    </div>
+                    <div className="hidden h-3 w-16 rounded-ui-xs bg-ui-surface-muted md:block" />
+                    <div className="h-3 w-20 rounded-ui-xs bg-ui-surface-muted" />
                 </div>
-            </CardBody>
-        </Card>
+            ))}
+        </div>
     );
 }
 
@@ -185,18 +244,24 @@ function useFreshKeys(keys: string[], position: string) {
     return fresh;
 }
 
-export function HistoryList<T>({ items, getKey, onClickItem, renderRow, page, totalItems, pageSize, onPageChange, resetKey }: {
+export function HistoryList<T>({ label, items, columns, getKey, onClickItem, page, totalItems, pageSize, onPageChange, resetKey, sortBy, sortOrder, onSort, empty }: {
+    label: string;
     items: T[];
+    columns: HistoryColumn<T>[];
     getKey: (item: T) => string;
     onClickItem: (item: T) => void;
-    renderRow: (item: T) => React.ReactNode;
     page: number;
     totalItems: number;
     pageSize: number;
     onPageChange: (page: number) => void;
     /** The same key given to usePagination: filters and sorting also restart at the top. */
     resetKey: string;
+    sortBy?: string;
+    sortOrder?: HistorySortOrder;
+    onSort?: (field: string) => void;
+    empty?: React.ReactNode;
 }) {
+    const { t } = useTranslation("common");
     const root = useRef<HTMLDivElement>(null);
     const position = `${page}|${resetKey}`;
     const lastPosition = useRef(position);
@@ -206,6 +271,7 @@ export function HistoryList<T>({ items, getKey, onClickItem, renderRow, page, to
     const direction = !moved ? view.direction : view.resetKey === resetKey ? Math.sign(page - view.page) : 0;
     if (moved) setView({ page, resetKey, direction });
     const fresh = useFreshKeys(items.map(getKey), position);
+    const template = columns.map(column => column.width).join(" ");
 
     useLayoutEffect(() => {
         if (lastPosition.current === position) return;
@@ -215,25 +281,17 @@ export function HistoryList<T>({ items, getKey, onClickItem, renderRow, page, to
     }, [position]);
 
     return (
-        <div ref={root}>
-            <CardList
-                items={items}
-                animated={false}
-                bodyClassName="max-md:p-1.5"
-                listClassName="max-md:gap-0 max-md:divide-y max-md:divide-ui-border/60"
-                listKey={position}
-                listMotion={{
-                    initial: { opacity: 0, x: direction * 16 },
-                    animate: { opacity: 1, x: 0 },
-                    transition: { duration: motionTiming.slow, ease: "easeOut" },
-                }}
-                getKey={getKey}
-                onClickItem={onClickItem}
-                renderListItem={item => fresh.has(getKey(item))
-                    ? <motion.div data-history-fresh="" className="w-full min-w-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, ease: "easeOut" }}>{renderRow(item)}</motion.div>
-                    : renderRow(item)}
-                footer={totalItems > pageSize ? <Pagination currentPage={page} totalItems={totalItems} pageSize={pageSize} onPageChange={onPageChange} /> : undefined}
-            />
+        <div ref={root} className="space-y-3">
+            <section role="table" aria-label={label} aria-rowcount={totalItems} className={tableFrame}>
+                <HistoryHeader columns={columns} template={template} sortBy={sortBy} sortOrder={sortOrder} onSort={onSort} />
+                <motion.div key={position} role="rowgroup" initial={{ opacity: 0, x: direction * 16 }} animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: motionTiming.slow, ease: "easeOut" }}>
+                    {items.map(item => <HistoryTableRow key={getKey(item)} item={item} columns={columns} template={template}
+                        onClick={onClickItem} fresh={fresh.has(getKey(item))} />)}
+                    {!items.length && <div className="min-h-[160px] p-6 text-center text-sm text-ui-muted">{empty ?? t("state.noRecords")}</div>}
+                </motion.div>
+            </section>
+            {totalItems > pageSize && <div className="flex justify-center"><Pagination currentPage={page} totalItems={totalItems} pageSize={pageSize} onPageChange={onPageChange} /></div>}
         </div>
     );
 }

@@ -366,14 +366,21 @@ export function ConditionEditor({
   );
 }
 
+const CREATE_POOL = "__create_pool__";
+
 export function ActionEditor({
   value,
   upstreams,
   onChange,
+  onCreatePool,
+  onEditPool,
 }: {
   value: Action;
   upstreams: Upstream[];
   onChange: (value: Action) => void;
+  /** Creates a pool and assigns it to this action in one draft change. */
+  onCreatePool?: () => void;
+  onEditPool?: (id: string) => void;
 }) {
   const { t } = useTranslation("gateway");
   return (
@@ -397,14 +404,30 @@ export function ActionEditor({
             label={t("upstream")}
             value={value.upstream ?? ""}
             values={[
-              { value: "", label: t("newBackendPool") },
+              { value: "", label: t("noBackendPool") },
               ...upstreams.map((item) => ({
                 value: item.id,
                 label: item.name || item.id,
               })),
+              ...(onCreatePool ? [{ value: CREATE_POOL, label: t("newBackendPool") }] : []),
             ]}
-            onChange={(upstream) => onChange({ ...value, upstream })}
+            onChange={(upstream) => upstream === CREATE_POOL
+              ? onCreatePool?.()
+              : onChange({ ...value, upstream })}
           />
+          {!value.upstream && (
+            <div role="status" className="flex flex-wrap items-center gap-3 rounded-ui-sm border border-ui-warning/40 bg-ui-warning/10 px-3 py-2 text-sm text-ui-heading">
+              <span className="min-w-0 flex-1">{t("backendPoolMissing")}</span>
+              {onCreatePool && <Button size="sm" variant="outline-secondary" onClick={onCreatePool}>
+                {t("createBackendPool")}
+              </Button>}
+            </div>
+          )}
+          {value.upstream && onEditPool && (
+            <Button size="sm" variant="outline-secondary" onClick={() => onEditPool(value.upstream!)}>
+              {t("editBackendPool")}
+            </Button>
+          )}
           <Toggle
             label={t("preserveHost")}
             value={value.preserveHost}
