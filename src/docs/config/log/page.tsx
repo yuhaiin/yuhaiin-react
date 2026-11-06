@@ -165,6 +165,9 @@ export default function LogComponent() {
     const [display, setDisplay] = useState<{ items: LogEntry[]; shift: boolean; epoch: number; search: string }>(
         () => ({ items: visibleLog, shift: false, epoch: 0, search: deferredSearchTerm }));
     useLayoutEffect(() => {
+        // The second render is the point: virtua's cache only reconciles on a committed data change, so the
+        // shifted prepend must commit before the unshifted trim. Deriving during render would merge them.
+        // oxlint-disable-next-line react/set-state-in-effect
         setDisplay(prev => {
             if (prev.search !== deferredSearchTerm) return { items: visibleLog, shift: false, epoch: prev.epoch + 1, search: deferredSearchTerm };
             if (prev.items === visibleLog) return prev.shift ? { ...prev, shift: false } : prev;
