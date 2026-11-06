@@ -121,7 +121,7 @@ function AssignmentEditor({ assignment, roles, writable, onSaved }: { assignment
         {assignment.disabled && <p className="text-sm text-ui-muted">{t('disabled')}</p>}{assignment.enrolled === false && <p className="text-sm text-ui-muted">{t('pending')}</p>}
         {failure && <p role="alert" className="text-sm text-ui-danger">{failure}</p>}
         <fieldset disabled={!writable || busy} className="space-y-2"><legend className="text-sm font-medium">{t('roles.additional')}</legend><MultiSelectChips value={selected} onChange={setSelected} options={roles.map(role => ({ value: role.id, label: role.name }))} /></fieldset>
-        {writable && <><Button disabled={busy} type="submit">{t('roles.saveAssignment')}</Button><StageChangeButton disabled={busy} request={{ store: "identity", kind: "role-assignment", resourceId: assignment.userId, payload: { revision: assignment.revision, roleIds: selected } }} onCommitted={onSaved} /></>}
+        {writable && <div className="flex flex-wrap gap-2"><Button disabled={busy} type="submit">{t('roles.saveAssignment')}</Button><StageChangeButton disabled={busy} request={{ store: "identity", kind: "role-assignment", resourceId: assignment.userId, payload: { revision: assignment.revision, roleIds: selected } }} onCommitted={onSaved} /></div>}
         <details><summary className="cursor-pointer text-sm">{t('roles.effective')}</summary><ul className="mt-3 grid gap-2 text-xs sm:grid-cols-2">{assignment.permissions.map(permission => <li key={permission} className="break-all">{permission}</li>)}</ul></details>
     </form>;
 }
