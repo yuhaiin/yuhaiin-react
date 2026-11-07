@@ -28,7 +28,11 @@ it('uses the trigger click position on the first opened render', async () => {
         act(() => document.body.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 120, clientY: 80 })));
         await act(async () => root.render(<Modal open><ModalContent>Dialog content</ModalContent></Modal>));
         const content = document.querySelector<HTMLElement>('[role="dialog"]');
-        expect(content?.style.transformOrigin).toBe('calc(120px - 50vw + 50%) calc(80px - 50dvh + 50%)');
+        // CSSOM may normalize equivalent calc() expressions differently across jsdom versions.
+        // Parse the expected coordinates through the same CSSOM before comparing.
+        const expectedStyle = document.createElement('div').style;
+        expectedStyle.transformOrigin = 'calc(120px - 50vw + 50%) calc(80px - 50dvh + 50%)';
+        expect(content?.style.transformOrigin).toBe(expectedStyle.transformOrigin);
     } finally {
         act(() => root.unmount());
         host.remove();
