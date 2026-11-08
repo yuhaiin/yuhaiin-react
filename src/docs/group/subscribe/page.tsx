@@ -79,7 +79,7 @@ export default function Subscribe() {
     const [query, setQuery] = useState('');
     const all = [...(data?.items ?? [])].sort((a, b) => a.name.localeCompare(b.name));
     const items = all.filter(item => `${item.name} ${subscriptionSource(item.url)} ${item.type}`.toLowerCase().includes(query.toLowerCase()));
-    const selection = useResourceSelection(items.map(item => item.name));
+    const selection = useResourceSelection(items.map(item => item.name), 'subscription');
     const selected = all.find(item => item.name === selection.id);
     if (error && !data) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>;
     if (isLoading && !data) return <Loading />;

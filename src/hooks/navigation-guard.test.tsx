@@ -8,6 +8,8 @@ import { useHashLocation } from './useHashLocation';
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 afterEach(() => vi.restoreAllMocks());
 
+const settle = () => act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
 it('protects hash navigation, confirms once for multiple drafts, and blocks pending saves', async () => {
     window.history.replaceState(null, '', '#/docs/config');
     function Probe({ pending }: { pending: boolean }) {
@@ -30,16 +32,21 @@ it('protects hash navigation, confirms once for multiple drafts, and blocks pend
         expect(window.location.hash).toBe('#/docs/config');
         expect(confirm).toHaveBeenCalledTimes(1);
         confirm.mockResolvedValue(true);
-        await act(async () => { navigate(0); await Promise.resolve(); await Promise.resolve(); window.dispatchEvent(new HashChangeEvent('hashchange')); });
+        await act(async () => { navigate(0); await Promise.resolve(); });
         expect(host.querySelector('span')?.textContent).toBe('/docs/group');
         expect(confirm).toHaveBeenCalledTimes(2);
+        // Browser Back is undone when the user keeps the drafts.
         confirm.mockResolvedValue(false);
-        await act(async () => { window.history.replaceState(null, '', '#/docs/config'); window.dispatchEvent(new HashChangeEvent('hashchange')); });
+        await act(async () => window.history.back());
+        await settle();
         expect(window.location.hash).toBe('#/docs/group');
         expect(host.querySelector('span')?.textContent).toBe('/docs/group');
+        expect(confirm).toHaveBeenCalledTimes(3);
+        // A pending save blocks without asking.
         act(() => root.render(<Probe pending />));
         await act(async () => navigate(1));
         expect(window.location.hash).toBe('#/docs/group');
+        expect(confirm).toHaveBeenCalledTimes(3);
     } finally {
         act(() => root.unmount());
     }

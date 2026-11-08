@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useDragControls, useReducedMotion, type DragCo
 import * as React from "react";
 import { useLastClickPosition } from "../../hooks/use-last-click";
 import { useMediaQuery } from "../../hooks/use-media-query";
+import { useHistoryLayer } from "../../hooks/use-history-layer";
 import { cn, motionTiming, ui } from "./styles";
 
 // --- Context ---
@@ -15,13 +16,18 @@ const SheetDragContext = React.createContext<DragControls | null>(null);
 
 // --- Wrapper ---
 // We wrap DialogPrimitive.Root to capture the open state and pass it down
-const Modal: React.FC<React.ComponentProps<typeof DialogPrimitive.Root>> = ({ children, open, defaultOpen = false, onOpenChange, ...props }) => {
+type ModalProps = React.ComponentProps<typeof DialogPrimitive.Root> & {
+    /** Back closes the dialog through its own history entry. Off for confirmations. */
+    history?: boolean;
+};
+const Modal: React.FC<ModalProps> = ({ children, open, defaultOpen = false, onOpenChange, history = true, ...props }) => {
     const [internalOpen, setInternalOpen] = React.useState(defaultOpen);
     const isOpen = open ?? internalOpen;
     const changeOpen = (next: boolean) => {
         if (open === undefined) setInternalOpen(next);
         onOpenChange?.(next);
     };
+    useHistoryLayer(isOpen, () => changeOpen(false), history);
     const getLastClick = useLastClickPosition();
     const [opening, setOpening] = React.useState({ open: isOpen, origin: "center center" });
     // Capture the click origin before the new open state is committed, so the
