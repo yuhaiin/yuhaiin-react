@@ -9,6 +9,7 @@ describe('Hysteria 2 contracts', () => {
             download_bps: 12500000, salamander_password: 'separate-secret',
             hop_interval_seconds: 0, min_hop_interval_seconds: 15, max_hop_interval_seconds: 45,
             hop_addresses: ['relay-b.example:30000-30020', '[2001:db8::1]:443'],
+            happy_eyeballs: true,
             tls: { servernames: ['sni.example'], ca_cert: ['Y2E='], insecure_skip_verify: false },
         };
         const saved = normalizeNode({ chain: [{ type: 'hysteria2', hysteria2: config }] });

@@ -432,13 +432,18 @@ function ProtocolForm({ protocol, onChange, editable }: { protocol: NodeProtocol
                     </div>
                     <p className="text-sm text-ui-muted">{uiT("hysteria2BandwidthHelp")}</p>
                     <InputList title={uiT("hysteria2HopAddresses")} data={protocol.hysteria2.hop_addresses ?? []} placeholder="relay-b.example:443,20000-20020" disabled={!editable} onChange={(hop_addresses) => patch(protocol, { hop_addresses })} />
-                    <p className="text-sm text-ui-muted">{uiT("hysteria2AddressHopHelp")}</p>
+                    <SwitchCard label={uiT("hysteria2HappyEyeballs")} description={uiT("hysteria2HappyEyeballsDescription")} checked={protocol.hysteria2.happy_eyeballs ?? false} disabled={!editable} onCheckedChange={(happy_eyeballs) => patch(protocol, { happy_eyeballs })} />
+                    <p className="text-sm text-ui-muted">{uiT(protocol.hysteria2.happy_eyeballs ? "hysteria2HappyEyeballsHelp" : "hysteria2AddressHopHelp")}</p>
+                    {!protocol.hysteria2.happy_eyeballs && (
+                        <>
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <SettingInputVertical label={uiT("hopIntervalSeconds")} type="number" min={0} step={1} value={String(protocol.hysteria2.hop_interval_seconds ?? 0)} disabled={!editable} onChange={(value) => patch(protocol, { hop_interval_seconds: Number(value) })} />
                         <SettingInputVertical label={uiT("minHopIntervalSeconds")} type="number" min={0} step={1} value={String(protocol.hysteria2.min_hop_interval_seconds ?? 0)} disabled={!editable} onChange={(value) => patch(protocol, { min_hop_interval_seconds: Number(value) })} />
                         <SettingInputVertical label={uiT("maxHopIntervalSeconds")} type="number" min={0} step={1} value={String(protocol.hysteria2.max_hop_interval_seconds ?? 0)} disabled={!editable} onChange={(value) => patch(protocol, { max_hop_interval_seconds: Number(value) })} />
                     </div>
                     <p className="text-sm text-ui-muted">{uiT("hysteria2HopClientHelp")}</p>
+                        </>
+                    )}
                     <TLSConfigForm config={protocol.hysteria2.tls ?? {}} editable={editable} showEnabled={false} showNextProtos={false} onChange={(tls) => patch(protocol, { tls })} />
                 </div>
             );

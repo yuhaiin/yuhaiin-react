@@ -1368,6 +1368,7 @@ export namespace Go {
       download_bps?: number;
       salamander_password?: string;
       hop_addresses?: string[];
+      happy_eyeballs?: boolean;
       hop_interval_seconds?: number;
       min_hop_interval_seconds?: number;
       max_hop_interval_seconds?: number;

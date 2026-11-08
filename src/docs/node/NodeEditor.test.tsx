@@ -20,6 +20,7 @@ it('edits relay addresses and hopping intervals while preserving authentication,
         act(render);
         expect(host.textContent).toContain('hysteria2HopClientHelp');
         expect(host.textContent).toContain('hysteria2AddressHopHelp');
+        expect(host.textContent).toContain('hysteria2HappyEyeballs');
         const newAddresses = host.querySelector<HTMLTextAreaElement>('textarea[aria-label="hysteria2HopAddresses"]')!;
         act(() => {
             Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(newAddresses, 'relay-b.example:30000-30020\n[2001:db8::1]:443');
