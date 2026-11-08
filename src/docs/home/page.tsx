@@ -20,6 +20,8 @@ import { NodeModal } from "../node/modal";
 import { formatBytes } from "./format";
 import TelemetryOverview from "./TelemetryOverview";
 import SetupCard from "./SetupCard";
+import { AndroidVpnCard } from "../android/AndroidVpnCard";
+import { useAndroidPlatform } from "@/hooks/use-android-platform";
 import { appendTrafficSample } from "./traffic";
 
 const formatRate = (value?: number) => value == null ? "—" : `${formatBytes(value, 1, " ")}/s`;
@@ -82,6 +84,7 @@ const EndpointCard: FC<{
 };
 
 function HomePage() {
+    const android = useAndroidPlatform();
     const mobile = useMediaQuery('(max-width: 639px)');
     const chartHeight = mobile ? 220 : 300;
     const { t: uiT } = useTranslation('ui');
@@ -146,6 +149,7 @@ function HomePage() {
             <div className="mb-3"><FlowContainer onFlow={isLiveTraffic ? appendTraffic : undefined} variant="summary" /></div>
 
             <MainContainer>
+                {android && <AndroidVpnCard compact />}
                 <SetupCard />
                 <Card className="min-h-[240px] sm:min-h-[300px]" density="compact">
                     <CardHeader className="flex-col items-stretch gap-3 !border-b-0 px-4 pb-1 pt-3.5 sm:flex-row sm:items-center">

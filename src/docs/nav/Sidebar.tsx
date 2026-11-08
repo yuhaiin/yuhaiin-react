@@ -1,6 +1,7 @@
 import { useSession } from '@/auth/context';
 import { canReadRoute } from '@/auth/policy';
 import { navigationSections } from './navigation';
+import { useAndroidPlatform } from '@/hooks/use-android-platform';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
@@ -41,11 +42,12 @@ function Sidebar({ id, show, onHide, triggerRef }: SidebarProps) {
         path={path} current={pathname} onSelect={handleNavLinkClick} icon={icon}>{title}</SelectableLink>;
 
     const session = useSession();
+    const android = useAndroidPlatform();
     const visible = (path: string) => !session || canReadRoute(path, session.principal.permissions);
     const sections = navigationSections.map(section => ({
         ...section,
         items: section.items.flatMap<(typeof navigationSections)[number]['items'][number]>(item => {
-            if ('path' in item) return visible(item.path) ? [item] : [];
+            if ('path' in item) return visible(item.path) && (!item.platform || android) ? [item] : [];
             const items = item.items.filter(link => visible(link.path));
             return items.length ? [{ ...item, items }] : [];
         }),

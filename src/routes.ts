@@ -36,6 +36,7 @@ const ConfigPprofPage = dynamic(() => import('@/docs/config/pprof/page'), { load
 const ConfigDocumentsPage = dynamic(() => import('@/docs/config/documents/page'), { loading });
 const ConfigLicensesPage = dynamic(() => import('@/docs/config/licenses/page'), { loading });
 const ConfigAboutPage = dynamic(() => import('@/docs/config/about/page'), { loading });
+const AndroidPage = dynamic(() => import('@/docs/android/page'), { loading });
 
 export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/security", component: SecurityPage },
@@ -70,4 +71,5 @@ export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/config/documents", component: ConfigDocumentsPage },
     { path: "/docs/config/licenses", component: ConfigLicensesPage },
     { path: "/docs/config/about", component: ConfigAboutPage },
+    { path: "/docs/android", component: AndroidPage },
 ];

@@ -1,0 +1,99 @@
+{
+  "title": "Android",
+  "description": "Android VPN、アプリ別ルーティング、端末設定。VPN をオフにしてもコアは動作し続けます。",
+  "unavailable": "Android の端末設定は yuhaiin Android アプリ内でのみ利用できます。",
+  "state": {
+    "stopped": "オフ",
+    "establishing": "接続中",
+    "running": "接続済み",
+    "reconfiguring": "変更を適用中",
+    "stopping": "停止中",
+    "failed": "失敗",
+    "revoked": "取り消し"
+  },
+  "core": {
+    "running": "コア実行中",
+    "stopped": "コア停止",
+    "port": "ポート {{port}}",
+    "lan": "LAN アクセス有効"
+  },
+  "vpn": {
+    "title": "Android VPN",
+    "connect": "接続",
+    "disconnect": "切断",
+    "desiredOn": "TUN インバウンド有効",
+    "desiredOff": "TUN インバウンド無効",
+    "reconfiguring": "VPN インターフェースを再構築しています。コアと他のインバウンドは動作し続けます。",
+    "mismatch": "TUN インバウンドの設定と VPN の状態が一致していません。下のエラーを確認するか再接続してください。",
+    "permissionRequired": "yuhaiin による VPN の作成を Android で許可する必要があります。",
+    "consentRequired": "先にアプリで VPN のデータ開示を確認してください。",
+    "authorize": "アプリで許可",
+    "generation": "インターフェース世代",
+    "addresses": "アドレス",
+    "fakeIpRoutes": "FakeIP ルート",
+    "routes": "ルート",
+    "profileRoutes": "Android ルートプロファイル",
+    "reconfigurations": "再構築 / 失敗",
+    "lastSwitch": "前回の切り替え",
+    "pending": "保留中: MTU {{mtu}}、FakeIP {{routes}}",
+    "rebuild": "VPN を再構築"
+  },
+  "settings": {
+    "title": "Android 設定",
+    "vpnHint": "VPN 設定を変更すると、コアを再起動せずに VPN インターフェースを再構築します。",
+    "routeProfile": "ルートプロファイル",
+    "mtuProfile": "VPN MTU",
+    "meteredMode": "従量制モード",
+    "coreBackgroundPolicy": "バックグラウンドのコア",
+    "bootConnectPolicy": "起動時の接続",
+    "appendHTTPProxy": "HTTP プロキシをアプリに通知",
+    "autoConnect": "起動・更新後に VPN を接続",
+    "autoConnectHint": "VPN 権限が必要です。権限がなければ接続しません。",
+    "notificationSpeed": "通知に通信速度を表示",
+    "trackUnderlyingNetwork": "Wi-Fi とモバイル回線の切り替えに追従"
+  },
+  "options": {
+    "mtuProfile": {
+      "auto": "自動 (9000)",
+      "1500": "1500",
+      "9000": "9000"
+    },
+    "meteredMode": {
+      "auto": "ネットワークに従う",
+      "metered": "常に従量制"
+    },
+    "coreBackgroundPolicy": {
+      "while_needed": "VPN またはアプリの使用中のみ",
+      "always": "常に実行"
+    },
+    "bootConnectPolicy": {
+      "always": "常に",
+      "charging_only": "充電中のみ",
+      "skip_in_power_save": "省電力モードではしない"
+    }
+  },
+  "perApp": {
+    "title": "アプリ別 VPN",
+    "enabled": "選択したアプリのみルーティング",
+    "hint": "Android VPN に適用されます。プロキシや他のインバウンドには影響しません。",
+    "mode": "選択したアプリ",
+    "allow": "VPN を使用",
+    "bypass": "VPN を迂回",
+    "consent": "インストール済みアプリの一覧にはアプリでの同意が必要です。",
+    "openNative": "アプリ一覧を開く",
+    "search": "アプリを検索",
+    "system": "システムアプリ",
+    "count_one": "{{count}} 件のアプリを選択",
+    "count_other": "{{count}} 件のアプリを選択"
+  },
+  "native": {
+    "title": "Android",
+    "hint": "Android のネイティブ画面を開きます。",
+    "logs": "ログ",
+    "backup": "バックアップと復元",
+    "update": "アップデート",
+    "privacy": "プライバシー",
+    "routes": "ルートプロファイル",
+    "settings": "その他の Android 設定"
+  }
+}

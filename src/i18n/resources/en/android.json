@@ -1,0 +1,99 @@
+{
+  "title": "Android",
+  "description": "Android VPN, per-app routing and device settings. The core keeps running when the VPN is off.",
+  "unavailable": "Android device settings are available only inside the yuhaiin Android app.",
+  "state": {
+    "stopped": "Off",
+    "establishing": "Connecting",
+    "running": "Connected",
+    "reconfiguring": "Applying changes",
+    "stopping": "Stopping",
+    "failed": "Failed",
+    "revoked": "Revoked"
+  },
+  "core": {
+    "running": "Core running",
+    "stopped": "Core stopped",
+    "port": "Port {{port}}",
+    "lan": "LAN access on"
+  },
+  "vpn": {
+    "title": "Android VPN",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "desiredOn": "TUN inbound enabled",
+    "desiredOff": "TUN inbound disabled",
+    "reconfiguring": "Rebuilding the VPN interface. The core and other inbounds keep running.",
+    "mismatch": "The TUN inbound setting and the VPN state differ. Check the error below or reconnect.",
+    "permissionRequired": "Android must allow yuhaiin to create a VPN.",
+    "consentRequired": "Review the VPN data disclosure in the app first.",
+    "authorize": "Allow in the app",
+    "generation": "Interface generation",
+    "addresses": "Addresses",
+    "fakeIpRoutes": "FakeIP routes",
+    "routes": "Routes",
+    "profileRoutes": "Android route profile",
+    "reconfigurations": "Rebuilds / failures",
+    "lastSwitch": "Last switch",
+    "pending": "Pending: MTU {{mtu}}, FakeIP {{routes}}",
+    "rebuild": "Rebuild VPN"
+  },
+  "settings": {
+    "title": "Android settings",
+    "vpnHint": "Changes to VPN settings rebuild the VPN interface without restarting the core.",
+    "routeProfile": "Route profile",
+    "mtuProfile": "VPN MTU",
+    "meteredMode": "Metered mode",
+    "coreBackgroundPolicy": "Core in background",
+    "bootConnectPolicy": "Connect at boot",
+    "appendHTTPProxy": "Advertise the HTTP proxy to apps",
+    "autoConnect": "Connect VPN after boot or update",
+    "autoConnectHint": "Requires VPN permission; nothing connects without it.",
+    "notificationSpeed": "Show traffic rate in the notification",
+    "trackUnderlyingNetwork": "Follow Wi-Fi and mobile network changes"
+  },
+  "options": {
+    "mtuProfile": {
+      "auto": "Automatic (9000)",
+      "1500": "1500",
+      "9000": "9000"
+    },
+    "meteredMode": {
+      "auto": "Follow network",
+      "metered": "Always metered"
+    },
+    "coreBackgroundPolicy": {
+      "while_needed": "Only while the VPN or app is in use",
+      "always": "Always keep running"
+    },
+    "bootConnectPolicy": {
+      "always": "Always",
+      "charging_only": "Only while charging",
+      "skip_in_power_save": "Skip in battery saver"
+    }
+  },
+  "perApp": {
+    "title": "Per-app VPN",
+    "enabled": "Route only selected apps",
+    "hint": "Applies to the Android VPN. Proxies and other inbounds are not affected.",
+    "mode": "Selected apps",
+    "allow": "Use the VPN",
+    "bypass": "Bypass the VPN",
+    "consent": "Listing installed apps needs your consent in the app.",
+    "openNative": "Open the app list",
+    "search": "Search apps",
+    "system": "System apps",
+    "count_one": "{{count}} app selected",
+    "count_other": "{{count}} apps selected"
+  },
+  "native": {
+    "title": "Android",
+    "hint": "These open native Android screens.",
+    "logs": "Logs",
+    "backup": "Backup & restore",
+    "update": "Updates",
+    "privacy": "Privacy",
+    "routes": "Route profiles",
+    "settings": "More Android settings"
+  }
+}

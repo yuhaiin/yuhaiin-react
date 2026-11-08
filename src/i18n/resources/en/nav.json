@@ -20,5 +20,6 @@
   "account": "Account",
   "credentials": "Credentials",
   "usageAudit": "Usage & audit",
-  "administration": "Administration"
+  "administration": "Administration",
+  "android": "Android"
 }
