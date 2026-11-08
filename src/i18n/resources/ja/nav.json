@@ -7,6 +7,7 @@
   "setting": "設定",
   "toggle": "ナビゲーションを切り替え",
   "close": "ナビゲーションを閉じる",
+  "reload": "ページを再読み込み",
   "monitoring": "概要とモニタリング",
   "trafficConfiguration": "トラフィック設定",
   "system": "システム",

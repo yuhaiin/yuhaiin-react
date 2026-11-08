@@ -47,3 +47,17 @@ it('uses the owning page label for mobile titles without resource query or trail
     expect(navigationLabel('/docs/bypass/resolver')).toEqual({ namespace: 'routing', key: 'dnsTask' });
     expect(navigationLabel('/unknown')).toBeUndefined();
 });
+
+it('shows the reload control only to the in-app WebView session', async () => {
+    const { default: NavBarContainer } = await import('./NavBarContainer');
+    for (const session of [true, false]) {
+        android = session ? { platform: 'android', session: true } : null;
+        const host = document.createElement('div'); document.body.append(host);
+        const root = createRoot(host);
+        try {
+            await act(async () => root.render(<NavBarContainer><p /></NavBarContainer>));
+            expect(host.querySelector('header button[aria-label="reload"]') !== null).toBe(session);
+        } finally { act(() => root.unmount()); host.remove(); }
+    }
+    android = { platform: 'android', session: true };
+});

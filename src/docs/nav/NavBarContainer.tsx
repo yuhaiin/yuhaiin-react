@@ -2,7 +2,8 @@ import { navigationLabel } from './navigation';
 import { useLocation } from 'wouter';
 
 import { Button } from '@/component/v2/button';
-import { Menu } from 'lucide-react';
+import { Menu, RotateCw } from 'lucide-react';
+import { useAndroidPlatform } from '@/hooks/use-android-platform';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
@@ -14,6 +15,8 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
     const title = label ? t(`${label.namespace}:${label.key}`) : 'Yuhaiin';
     const triggerRef = useRef<HTMLButtonElement>(null);
     const [showSidebar, setShowSidebar] = useState(false);
+    // The Android app has no browser chrome, so its WebView gets a reload control here.
+    const android = useAndroidPlatform();
 
     return (
         <>
@@ -31,6 +34,9 @@ function NavBarContainer({ children }: { children: React.ReactNode }) {
                     <Menu />
                 </Button>
                 <span className="min-w-0 truncate text-sm font-semibold text-ui-heading" title={title}>{title}</span>
+                {android && <Button variant="ghost" size="icon" type="button" className="ml-auto h-11 w-11 shrink-0" onClick={() => window.location.reload()} aria-label={t('reload')}>
+                    <RotateCw />
+                </Button>}
             </header>
 
             <Sidebar id="app-sidebar" triggerRef={triggerRef} show={showSidebar} onHide={() => setShowSidebar(false)} />
