@@ -17,6 +17,7 @@ interface SidebarProps {
 function Sidebar({ id, show, onHide, triggerRef }: SidebarProps) {
     const { t: uiT } = useTranslation('ui');
     const { t: routeT } = useTranslation('routing');
+    const { t: androidT } = useTranslation('android');
 
     const { t } = useTranslation('nav');
     const [pathname, navigate] = useLocation();
@@ -48,11 +49,12 @@ function Sidebar({ id, show, onHide, triggerRef }: SidebarProps) {
         ...section,
         items: section.items.flatMap<(typeof navigationSections)[number]['items'][number]>(item => {
             if ('path' in item) return visible(item.path) && (!item.platform || android) ? [item] : [];
+            if (item.platform && !android) return [];
             const items = item.items.filter(link => visible(link.path));
             return items.length ? [{ ...item, items }] : [];
         }),
     }));
-    const labels = { nav: t, ui: uiT, routing: routeT };
+    const labels = { nav: t, ui: uiT, routing: routeT, android: androidT };
     return <SidebarRoot id={id} show={show} onHide={onHide} triggerRef={triggerRef}>
         <SidebarNav aria-label={t('toggle')}>
             {sections.filter(section => section.items.length > 0).map(section => <SidebarSection key={section.label.key} title={labels[section.label.namespace](section.label.key)}>

@@ -37,6 +37,11 @@ const ConfigDocumentsPage = dynamic(() => import('@/docs/config/documents/page')
 const ConfigLicensesPage = dynamic(() => import('@/docs/config/licenses/page'), { loading });
 const ConfigAboutPage = dynamic(() => import('@/docs/config/about/page'), { loading });
 const AndroidPage = dynamic(() => import('@/docs/android/page'), { loading });
+const AndroidRoutesPage = dynamic(() => import('@/docs/android/routes/page'), { loading });
+const AndroidLogsPage = dynamic(() => import('@/docs/android/logs/page'), { loading });
+const AndroidBackupPage = dynamic(() => import('@/docs/android/backup/page'), { loading });
+const AndroidUpdatePage = dynamic(() => import('@/docs/android/update/page'), { loading });
+const AndroidPrivacyPage = dynamic(() => import('@/docs/android/privacy/page'), { loading });
 
 export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/security", component: SecurityPage },
@@ -72,4 +77,9 @@ export const appRoutes: { path: string; component: ComponentType }[] = [
     { path: "/docs/config/licenses", component: ConfigLicensesPage },
     { path: "/docs/config/about", component: ConfigAboutPage },
     { path: "/docs/android", component: AndroidPage },
+    { path: "/docs/android/routes", component: AndroidRoutesPage },
+    { path: "/docs/android/logs", component: AndroidLogsPage },
+    { path: "/docs/android/backup", component: AndroidBackupPage },
+    { path: "/docs/android/update", component: AndroidUpdatePage },
+    { path: "/docs/android/privacy", component: AndroidPrivacyPage },
 ];
