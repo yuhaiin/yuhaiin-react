@@ -99,7 +99,9 @@
     "missing_one": "{{count}} selected app is not installed",
     "missing_other": "{{count}} selected apps are not installed",
     "removeMissing": "Remove",
-    "empty": "No matching apps"
+    "empty": "No matching apps",
+    "loading": "Loading installed apps…",
+    "waitingConsent": "Waiting for your choice in the app…"
   },
   "vpnSettings": "VPN & settings",
   "routes": {

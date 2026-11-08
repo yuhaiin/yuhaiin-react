@@ -109,11 +109,13 @@ export function missingApps(apps: AndroidApp[], selected: Set<string>): string[]
 
 const AppIcon: FC<{ app: AndroidApp }> = ({ app }) => {
     const [failed, setFailed] = useState(false);
+    const [loaded, setLoaded] = useState(false);
     if (failed) return <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-md bg-ui-surface-muted text-sm font-semibold text-ui-muted">
         {(app.name.trim()[0] ?? '?').toUpperCase()}
     </span>;
     return <img src={androidAppIconURL(app.packageName)} alt="" loading="lazy" decoding="async" width={40} height={40}
-        className="h-10 w-10 shrink-0 rounded-ui-md object-contain" onError={() => setFailed(true)} />;
+        className={`h-10 w-10 shrink-0 rounded-ui-md object-contain ${loaded ? '' : 'animate-pulse bg-ui-surface-muted motion-reduce:animate-none'}`}
+        onLoad={() => setLoaded(true)} onError={() => setFailed(true)} />;
 };
 
 const PerAppCard: FC = () => {
@@ -128,7 +130,9 @@ const PerAppCard: FC = () => {
     useEffect(() => {
         if (!waitingConsent) return;
         const timer = setInterval(() => void reloadApps(), 1500);
-        return () => clearInterval(timer);
+        // "Not now" in the native dialog leaves consent_required; stop waiting then.
+        const giveUp = setTimeout(() => setWaitingConsent(false), 30_000);
+        return () => { clearInterval(timer); clearTimeout(giveUp); };
     }, [waitingConsent, reloadApps]);
     const [query, setQuery] = useState('');
     const [showSystem, setShowSystem] = useState(false);
@@ -153,11 +157,11 @@ const PerAppCard: FC = () => {
                     <Select ariaLabel={t('perApp.mode')} value={v.appBypass ? 'bypass' : 'allow'} onValueChange={mode => save({ appBypass: mode === 'bypass' })}
                         items={[{ value: 'allow', label: t('perApp.allow') }, { value: 'bypass', label: t('perApp.bypass') }]} />
                 </label>
-                {consent && <div className="text-sm">
+                {consent && !waitingConsent && <div className="text-sm">
                     <p className="m-0 text-ui-heading">{t('perApp.consent')}</p>
                     <a className="font-medium text-ui-primary underline" href={nativeActionURL('consent/apps')} onClick={() => setWaitingConsent(true)}>{t('perApp.openNative')}</a>
                 </div>}
-                {apps.error && !consent && <p className="m-0 text-sm text-ui-danger">{(apps.error as Error).message}</p>}
+                {apps.error && !consent && !apps.isValidating && <p className="m-0 text-sm text-ui-danger">{(apps.error as Error).message}</p>}
                 {apps.data && <div className="flex flex-col gap-2">
                     <div className="relative">
                         <Search aria-hidden="true" size={16} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-ui-muted" />
@@ -191,7 +195,10 @@ const PerAppCard: FC = () => {
                         {visible.length === 0 && <li className="px-3 py-6 text-center text-sm text-ui-muted">{t('perApp.empty')}</li>}
                     </ul>
                 </div>}
-                {!apps.data && !apps.error && <Loading />}
+                {!apps.data && (waitingConsent || apps.isValidating || !apps.error) && <div className="flex flex-col items-center">
+                    <Loading style={{ minHeight: '6rem' }} />
+                    <p className="m-0 text-xs text-ui-muted">{t(waitingConsent ? 'perApp.waitingConsent' : 'perApp.loading')}</p>
+                </div>}
             </>}
             {saveError && <p className="m-0 text-sm text-ui-danger">{saveError}</p>}
         </CardBody>
