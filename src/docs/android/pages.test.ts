@@ -1,0 +1,50 @@
+import { afterEach, expect, it, vi } from 'vitest';
+import { previewAndroidBackup, startDownload } from '@/api/android';
+import { filterLogLines } from './logs/page';
+import { routeLines } from './routes/page';
+import { updateBusy } from './update/page';
+
+vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+afterEach(() => vi.unstubAllGlobals());
+
+const log = [
+    '11-08 19:00:00.000  100  101 D yuhaiin: debug line',
+    '11-08 19:00:01.000  100  101 W yuhaiin: warn about example.com',
+    '11-08 19:00:02.000  100  101 E yuhaiin: error line',
+    '--------- beginning of main',
+].join('\n');
+
+it('filters logcat lines by level and text', () => {
+    expect(filterLogLines(log, '', 'V')).toHaveLength(4);
+    expect(filterLogLines(log, '', 'W')).toEqual([expect.stringContaining('warn'), expect.stringContaining('error'), '--------- beginning of main']);
+    expect(filterLogLines(log, 'EXAMPLE', 'V')).toEqual([expect.stringContaining('example.com')]);
+});
+
+it('counts route lines ignoring blanks', () => {
+    expect(routeLines('10.0.0.0/8\n\n  \n1.1.1.1\n')).toBe(2);
+});
+
+it('treats only in-flight update stages as busy', () => {
+    const base = { channel: 'stable', channels: [], checking: false, progress: 0, downloadedBytes: 0, totalBytes: 0, currentVersion: 'v' };
+    expect(updateBusy({ ...base, stage: 'DOWNLOADING' })).toBe(true);
+    expect(updateBusy({ ...base, stage: 'IDLE', checking: true })).toBe(true);
+    expect(updateBusy({ ...base, stage: 'WAITING_PERMISSION' })).toBe(false);
+    expect(updateBusy({ ...base, stage: 'ERROR' })).toBe(false);
+});
+
+it('sends backups verbatim, not JSON-encoded twice', async () => {
+    const fetch = vi.fn(async () => new Response('{"createdAt":"now","nodes":1,"routes":2,"preferences":3}'));
+    vi.stubGlobal('fetch', fetch);
+    await previewAndroidBackup('{"format":"yuhaiin-config"}');
+    const init = (fetch.mock.calls[0] as unknown as [string, RequestInit])[1];
+    expect(init.body).toBe('{"format":"yuhaiin-config"}');
+    expect((init.headers as Record<string, string>)['X-Yuhaiin-Platform-Request']).toBe('1');
+});
+
+it('starts downloads with a same-origin one-time link', () => {
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+    startDownload({ url: '/android/v1/download/abc', name: 'backup.json' });
+    expect(click).toHaveBeenCalledOnce();
+    expect(document.querySelector('a[download]')).toBeNull();
+    click.mockRestore();
+});
