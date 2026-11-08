@@ -3,6 +3,7 @@ import * as CollapsiblePrimitive from "@radix-ui/react-collapsible";
 import { clsx } from "clsx";
 import { ChevronRight } from 'lucide-react';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { useHistoryLayer } from '@/hooks/use-history-layer';
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { LayoutGroup, motion } from "motion/react";
 import { useTranslation } from "react-i18next";
@@ -23,6 +24,8 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, sho
     const desktop = useMediaQuery('(min-width: 1024px)');
     const { t } = useTranslation('nav');
     React.useEffect(() => { if (desktop && show) onHide?.(); }, [desktop, show, onHide]);
+    // Android Back closes the drawer first.
+    useHistoryLayer(Boolean(show) && !desktop, () => onHide?.());
     const panelClass = clsx(
         "sidebar-panel fixed z-[1050] text-sidebar-color border border-sidebar-border shadow-sidebar py-4 overflow-y-auto [&::-webkit-scrollbar]:w-0",
         className

@@ -1,5 +1,4 @@
 import { PageHeader } from '@/component/v2/page-header';
-import { clearHashSearch, useHashSearch } from '@/hooks/useHashLocation';
 import { useTranslation } from 'react-i18next';
 import NodeImportModal from "./NodeImportModal";
 
@@ -23,7 +22,8 @@ import {
     normalizeLatencyDNSUrl,
 } from "@/common/apiurl";
 import { allowNavigation } from "@/hooks/navigation-guard";
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { navigation } from "@/hooks/navigation";
+import { parentLocation, useWorkspaceNavigation } from "@/hooks/use-workspace-navigation";
 import { useServerPageClamp } from "@/hooks/use-pagination";
 import { useAsyncAction } from "@/hooks/use-editor-draft";
 import { Badge } from "@/component/v2/badge";
@@ -451,14 +451,12 @@ export default function Group() {
     const { t: commonT } = useTranslation('common');
 
     const ctx = useContext(GlobalToastContext);
-    const desktop = useMediaQuery('(min-width: 768px)');
-    const initialized = useRef(false);
     const [editorState, setEditorState] = useState({ dirty: false, pending: false });
-    const [localShowdata, setShowdata] = useState({ show: false, id: "", new: false });
-    const search = useHashSearch();
-    const linkedId = new URLSearchParams(search).get('node');
-    const showdata = linkedId ? { show: true, id: linkedId, new: false } : localShowdata;
-    const closeLink = () => { if (linkedId) clearHashSearch(); };
+    const [autoSelect, setAutoSelect] = useState<string>();
+    // The open node lives in the URL (`?node=`, `?new=node`): Back/Forward and reload restore it.
+    const workspace = useWorkspaceNavigation('node', { autoSelect });
+    const linkedId = workspace.id || null;
+    const showdata = { show: workspace.creating || Boolean(workspace.id), id: workspace.id, new: workspace.creating };
     const [importOpen, setImportOpen] = useState(false);
     const [preferredGroup, setSelectedGroup] = useState("");
     const [query, setQuery] = useState("");
@@ -537,32 +535,22 @@ export default function Group() {
     const visibleBusyLatency = useMemo(() => data ? pruneBusyLatency(busyLatency, nodeIds) : busyLatency, [data, busyLatency, nodeIds]);
     useEffect(() => { nodeIdsRef.current = data ? nodeIds : []; }, [data, nodeIds]);
 
-    useEffect(() => {
-        if (!initialized.current && desktop && groupItems.length && !showdata.show && debouncedQuery === query.trim()) {
-            initialized.current = true;
-            const first = !debouncedQuery && defaults?.tcp && nodeGroupName(defaults.tcp) === selectedGroup ? defaults.tcp : groupItems[0];
-            setSelectedPreview(first);
-            setShowdata({ show: true, id: first.id, new: false });
-        }
-    }, [desktop, groupItems, showdata.show, debouncedQuery, query, defaults, selectedGroup]);
+    // Desktop fills the empty detail pane by replacing the entry; it adds no history.
+    const autoNode = groupItems.length && debouncedQuery === query.trim()
+        ? (!debouncedQuery && defaults?.tcp && nodeGroupName(defaults.tcp) === selectedGroup ? defaults.tcp : groupItems[0]) : undefined;
+    if (autoNode?.id !== autoSelect) setAutoSelect(autoNode?.id);
 
     if (groupsError && !groupData && apiError) return <ErrorDisplay statusCode={apiError.code} title={apiError.msg} raw={errorRaw(apiError.raw)} />;
     if (!groupData || inferringGroup) return <Loading />;
 
     const closeDetails = () => {
-        initialized.current = true;
-        setShowdata({ show: false, id: '', new: false });
         setSelectedPreview(undefined);
         setEditorState({ dirty: false, pending: false });
-        closeLink();
+        workspace.close();
     };
     const openNode = async (id: string) => {
-        if (showdata.show && !showdata.new && showdata.id === id) return;
-        if (!await allowNavigation()) return;
-        initialized.current = true;
-        closeLink();
-        setSelectedPreview(items.find(item => item.id === id));
-        setShowdata({ show: true, id, new: false });
+        const preview = items.find(item => item.id === id);
+        if (await workspace.open(id)) setSelectedPreview(preview);
     };
     const deleteCurrentNode = async () => {
         await deleteNode(showdata.id);
@@ -570,23 +558,16 @@ export default function Group() {
         closeDetails();
         await Promise.all([mutate(), mutateGroups()]);
     };
-    const handleCreate = async () => {
-        if (!await allowNavigation()) return;
-        initialized.current = true;
-        closeLink();
-        setShowdata({ show: true, id: '', new: true });
-    };
+    const handleCreate = async () => { await workspace.create(); };
     const changeGroup = async (group: string) => {
         if (group === selectedGroup || !await allowNavigation()) return;
-        initialized.current = true;
-        closeLink();
         setSelectedGroup(group);
         setPage(1);
         setQuery('');
         setSelectedPreview(undefined);
-        initialized.current = !desktop;
-        setShowdata({ show: false, id: '', new: false });
         setEditorState({ dirty: false, pending: false });
+        // A filter, not a step: drop the open node from this entry; desktop re-selects.
+        navigation.replace(parentLocation(navigation.current.location, 'node'));
     };
     const handleUse = (id: string) => {
         void runUse(async () => {
@@ -658,7 +639,7 @@ export default function Group() {
                     {defaultsError && <div role="alert" className="mb-4 text-sm text-ui-danger">{t('defaultNodeStateFailed')} <Button size="sm" onClick={() => void mutateDefaults()}>{t('retry')}</Button></div>}
                     <NodeModal node={selectedItem} key={showdata.new ? 'new-node' : showdata.id} show id={showdata.id} isNew={showdata.new} editable presentation="inline" groups={modalGroups} onStateChange={setEditorState}
                         onChanged={node => { setSelectedPreview(node); void mutate(); }}
-                        onSave={node => { setSelectedPreview(node); setSelectedGroup(node.group || 'manual'); initialized.current = true; closeLink(); setShowdata({ show: true, id: node.id, new: false }); void mutateDefaults(); }}
+                        onSave={node => { setSelectedPreview(node); setSelectedGroup(node.group || 'manual'); workspace.saved(node.id); void mutateDefaults(); }}
                         onHide={saved => { if (!saved) closeDetails(); }} onDelete={showdata.new ? undefined : deleteCurrentNode} />
                 </> : <div className="flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-ui-muted"><Network size={28} aria-hidden="true" /><h2 className="text-lg font-medium text-ui-heading">{t('selectNode')}</h2><p className="max-w-sm text-sm">{t('selectNodeHelp')}</p><Button permission="nodes:write" variant="outline-primary" className="gap-2" onClick={handleCreate}><Plus size={16} />{uiT('newNode')}</Button></div>}
             </WorkspaceDetail>

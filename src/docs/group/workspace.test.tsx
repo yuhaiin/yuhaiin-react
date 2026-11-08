@@ -89,7 +89,10 @@ it('shows the mobile directory first and protects returning from an edited node'
     await click('Second'); await click('Edit draft');
     const confirm = vi.mocked(confirmAction).mockResolvedValue(false);
     await click('backToNodes'); expect(settings()).not.toBeNull();
-    confirm.mockResolvedValue(true); await click('backToNodes'); expect(settings()).toBeNull();
+    confirm.mockResolvedValue(true); await click('backToNodes');
+    // Closing returns to the list entry with Back, so Android Back does not reopen it.
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+    expect(settings()).toBeNull(); expect(window.location.hash).not.toContain('node=');
     await click('Second'); expect(settings()?.querySelector('output')?.textContent).toBe('Second');
 });
 

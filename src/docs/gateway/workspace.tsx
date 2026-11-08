@@ -1,3 +1,5 @@
+import { navigation } from "@/hooks/navigation";
+import { parentLocation, useWorkspaceNavigation } from "@/hooks/use-workspace-navigation";
 import { createID } from "@/common/id";
 import { Button } from "@/component/v2/button";
 import {
@@ -133,7 +135,11 @@ function pruneUnusedPools(config: Config): Config {
 
 export function GatewayWorkspace({ config, status, onChange, refreshFilter, canRefreshFilter }: Props) {
   const { t } = useTranslation("gateway");
-  const [selectedId, setSelectedId] = useState<string | null>(() => config.gateways[0]?.id ?? null);
+  // The open gateway lives in the URL (`?gateway=`). As before, the first one opens
+  // on every screen size; selecting it replaces the entry and adds no history.
+  const workspace = useWorkspaceNavigation("gateway", { autoSelect: config.gateways[0]?.id, autoSelectOnMobile: true });
+  const selectedId = workspace.id || null;
+  const openGateway = workspace.open;
   const [editorByGateway, setEditorByGateway] = useState<Record<string, GatewayEditorSelection>>({});
   const [narrowEditorOpen, setNarrowEditorOpen] = useState(false);
   const [creatingGateway, setCreatingGateway] = useState(false);
@@ -142,10 +148,11 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
   useEffect(() => {
     const added = config.gateways.find((gateway) => !knownGatewayIds.current.has(gateway.id));
     knownGatewayIds.current = new Set(config.gateways.map((gateway) => gateway.id));
-    if (added) setSelectedId(added.id);
+    if (added) void openGateway(added.id);
+    // A removed gateway (or a stale link) closes to the list without a new step.
     else if (selectedId && !knownGatewayIds.current.has(selectedId))
-      setSelectedId(config.gateways[0]?.id ?? null);
-  }, [config.gateways, selectedId]);
+      navigation.replace(parentLocation(navigation.current.location, "gateway"));
+  }, [config.gateways, selectedId, openGateway]);
   const selectedGateway = config.gateways.find((gateway) => gateway.id === selectedId) ?? null;
 
   const createGateway = (mode: "listener" | "interception") => {
@@ -165,7 +172,6 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
         } satisfies Gateway
       : newGateway();
     setCreatingGateway(false);
-    setSelectedId(gateway.id);
     setNarrowEditorOpen(false);
     onChange({
       ...config,
@@ -363,8 +369,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
                   type="button"
                   aria-current={selected ? "true" : undefined}
                   onClick={() => {
-                    setSelectedId(item.id);
-                    setNarrowEditorOpen(false);
+                    void workspace.open(item.id).then((opened) => { if (opened) setNarrowEditorOpen(false); });
                   }}
                   className="min-w-0 w-full rounded-ui-md py-2.5 pl-3 pr-3 text-left hover:bg-ui-surface-muted/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-focus"
                 >
@@ -395,7 +400,7 @@ export function GatewayWorkspace({ config, status, onChange, refreshFilter, canR
           <div className="space-y-4">
             <header className="border-b border-ui-border/60 pb-4">
               <Button size="sm" variant="outline-secondary" className="mb-3 gap-2 border-transparent md:hidden"
-                onClick={() => setSelectedId(null)}>
+                onClick={workspace.close}>
                 <ArrowLeft size={16} />{t("backToGateways")}
               </Button>
               <div className="flex min-w-0 items-start gap-3">

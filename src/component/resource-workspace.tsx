@@ -3,38 +3,27 @@ import { WorkspaceDetail, WorkspaceDirectory, WorkspaceLayout, WorkspaceSelectio
 import { Button } from './v2/button';
 import { Input } from './v2/input';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from './v2/modal';
-import { allowNavigation } from '@/hooks/navigation-guard';
-import { clearHashSearch } from '@/hooks/useHashLocation';
-import { useMediaQuery } from '@/hooks/use-media-query';
+import { useWorkspaceNavigation } from '@/hooks/use-workspace-navigation';
 import clsx from 'clsx';
 import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Search, Trash } from 'lucide-react';
-import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
+import { type ComponentProps, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
-/** Selection survives directory filtering, pagination and server refreshes. */
-export function useResourceSelection(ids: string[], linkedId?: string | null) {
-    const [id, setId] = useState('');
-    const [creating, setCreating] = useState(false);
-    const initialized = useRef(false);
-    const desktop = useMediaQuery('(min-width: 768px)');
-    useEffect(() => {
-        if (!initialized.current && desktop && ids.length && !linkedId && !creating) {
-            initialized.current = true;
-            setId(ids[0]);
-        }
-    }, [desktop, ids, linkedId, creating]);
-    const update = (next: string, create = false) => {
-        initialized.current = true;
-        if (linkedId) clearHashSearch();
-        setId(next); setCreating(create);
-    };
+/**
+ * Selection survives directory filtering, pagination and server refreshes. It
+ * lives in the URL (`?<param>=<id>`, `?new=<param>`), so Back/Forward, reload
+ * and deep links restore it. Desktop selects the first record by replacing the
+ * entry; opening a record pushes a step.
+ */
+export function useResourceSelection(ids: string[], param: string) {
+    const navigation = useWorkspaceNavigation(param, { autoSelect: ids[0] });
     return {
-        id: creating ? '' : linkedId || id,
-        creating,
-        select: async (next: string) => { if (!creating && next === (linkedId || id)) return; if (await allowNavigation()) update(next); },
-        create: async (onStart?: () => void) => { if (await allowNavigation()) { update('', true); onStart?.(); } },
-        saved: (next: string) => update(next),
-        close: () => update(''),
+        id: navigation.id,
+        creating: navigation.creating,
+        select: (next: string) => { void navigation.open(next); },
+        create: (onStart?: () => void) => { void navigation.create(onStart); },
+        saved: navigation.saved,
+        close: navigation.close,
     };
 }
 

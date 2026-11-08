@@ -1,3 +1,4 @@
+import { navigation } from '@/hooks/navigation';
 import { resolveRPCRoute, rpcPath } from "@/api/generated";
 import { operationPermissions } from "@/auth/operations";
 import { can, getSession } from "@/auth/session";
@@ -26,7 +27,7 @@ async function decodeBody(response: Response): Promise<unknown> {
 
 function redirectUnauthorized(status: number) {
     if (status === 401 && window.location.hash !== "#/login") {
-        window.location.hash = "/login";
+        navigation.replace("/login");
     }
 }
 

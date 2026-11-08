@@ -4,6 +4,11 @@ import { ConfirmModal } from './confirm';
 
 type Request = { message: string; resolve: (accepted: boolean) => void };
 let present: ((request: Request) => void) | undefined;
+let dismiss: (() => void) | undefined;
+
+/** Window event: answer every open confirmation with "no" (Back while a dialog is open). */
+export const DISMISS_CONFIRMATIONS = 'yuhaiin:dismiss-confirmations';
+if (typeof window !== 'undefined') window.addEventListener(DISMISS_CONFIRMATIONS, () => dismiss?.());
 
 /** Application confirmations are asynchronous; no action runs before approval. */
 export function confirmAction(message: string): Promise<boolean> {
@@ -20,7 +25,8 @@ export function ConfirmationHost() {
     useEffect(() => {
         const outstanding = pending.current;
         present = request => { outstanding.add(request); setRequests(previous => [...previous, request]); };
-        return () => { present = undefined; outstanding.forEach(request => request.resolve(false)); outstanding.clear(); };
+        dismiss = () => { outstanding.forEach(request => request.resolve(false)); outstanding.clear(); setRequests([]); };
+        return () => { present = undefined; dismiss = undefined; outstanding.forEach(request => request.resolve(false)); outstanding.clear(); };
     }, []);
     const [finished] = useState(() => new WeakSet<Request>());
     const finish = (accepted: boolean) => {

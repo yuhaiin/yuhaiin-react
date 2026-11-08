@@ -1,13 +1,12 @@
 import { StageChangeButton } from "@/component/configuration-change";
 import { PageHeader } from '@/component/v2/page-header';
-import { clearHashSearch, useHashSearch } from "@/hooks/useHashLocation";
+import { useHashSearch } from "@/hooks/useHashLocation";
+import { useWorkspaceNavigation } from "@/hooks/use-workspace-navigation";
 import { connectionRuleDraft } from "@/docs/connections/actions";
 import { getNode } from "@/api/nodes";
 import { getGatewayConfig } from "@/api/gateway";
 import { listSelectors } from "@/api/selectors";
 import { RuleEditor } from "./rule-editor";
-import { allowNavigation } from "@/hooks/navigation-guard";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import { ResolverPicker } from "@/component/resolver-picker";
 import { RouteTargetPicker } from "@/component/route-target-picker";
 import { type RuleEditorOptions } from "./rule-form";
@@ -33,9 +32,11 @@ import type { RuleDraft, RuleItem } from "@/contract/route";
 import { RuleList } from "./rule-list";
 import type { RuleDrop } from "./rule-drag";
 import { ArrowRight, ChevronDown, Plus, Save, ListFilter } from "lucide-react";
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import useSWR from "swr";
 const PAGE_SIZE = 25;
+
+const CONNECTION_DRAFT_PARAMS = ['match', 'value'] as const;
 
 function BypassComponent() {
     const { t: uiT } = useTranslation('ui');
@@ -44,17 +45,10 @@ function BypassComponent() {
     const ctx = useContext(GlobalToastContext);
     const [page, setPage] = useState(1);
     const [query, setQuery] = useState("");
-    const [localEditing, setEditing] = useState<Pick<RuleItem, "id" | "name"> | null>(null);
-    const desktop = useMediaQuery("(min-width: 768px)");
-    const initialized = useRef(false);
     const [editorState, setEditorState] = useState({ dirty: false, pending: false });
     const search = useHashSearch();
-    const linkedId = new URLSearchParams(search).get('rule');
+    // A connection's "create rule" link (`?match=&value=`) opens a prefilled draft.
     const linkedDraft = useMemo(() => connectionRuleDraft(search), [search]);
-    const editing = useMemo(() => localEditing ?? (linkedId ? { id: linkedId, name: '' } : null), [localEditing, linkedId]);
-    const closeLink = () => { if (search) clearHashSearch(); };
-    const [localCreating, setCreating] = useState(false);
-    const creating = localCreating || Boolean(linkedDraft);
     const { data: activation, mutate: mutateActivation } = useSWR(
         "/api/v2/route/activation",
         getRouteActivationStatus,
@@ -69,33 +63,18 @@ function BypassComponent() {
         { revalidateOnFocus: false, keepPreviousData: true },
     );
     useServerPageClamp(data?.page, page, setPage);
-    useEffect(() => {
-        if (!initialized.current && desktop && data?.items.length && !creating && !editing) {
-            initialized.current = true;
-            setEditing(data.items[0]);
-        }
-    }, [desktop, data?.items, creating, editing]);
+    // The open rule lives in the URL (`?rule=`, `?new=rule`).
+    const workspace = useWorkspaceNavigation('rule', { autoSelect: linkedDraft ? undefined : data?.items[0]?.id, owns: CONNECTION_DRAFT_PARAMS });
+    const creating = workspace.creating || Boolean(linkedDraft);
+    const editing = useMemo(() => workspace.id ? data?.items.find(item => item.id === workspace.id) ?? { id: workspace.id, name: '' } : null, [workspace.id, data?.items]);
     const selectRule = async (item: RuleItem) => {
-        if (reordering || !creating && editing?.id === item.id) return;
-        if (!await allowNavigation()) return;
-        initialized.current = true;
-        closeLink();
-        setCreating(false);
-        setEditing(item);
+        if (reordering) return;
+        await workspace.open(item.id);
     };
-    const newRule = async () => {
-        if (!await allowNavigation()) return;
-        initialized.current = true;
-        closeLink();
-        setEditing(null);
-        setCreating(true);
-    };
+    const newRule = async () => { await workspace.create(); };
     const backToRules = () => {
-        initialized.current = true;
-        closeLink();
-        setEditing(null);
-        setCreating(false);
         setEditorState({ dirty: false, pending: false });
+        workspace.close();
     };
     const needEditorOptions = creating || editing !== null;
     const { data: listsData } = useSWR(
@@ -168,12 +147,10 @@ function BypassComponent() {
         void mutateActivation();
     };
     const saved = (draft: RuleDraft | null) => {
-        initialized.current = true;
         refresh();
-        closeLink();
-        setCreating(false);
-        setEditing(draft ? { id: draft.rule.id, name: draft.rule.name } : null);
         setEditorState({ dirty: false, pending: false });
+        if (draft) workspace.saved(draft.rule.id);
+        else workspace.close();
     };
 
     if (error && !data) return <Loading code={error.code} onRetry={() => void mutate()}>{error.msg}</Loading>

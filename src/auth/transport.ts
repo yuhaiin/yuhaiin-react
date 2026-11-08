@@ -1,3 +1,4 @@
+import { navigation } from '@/hooks/navigation';
 import { getApiUrl } from '@/common/apiurl';
 import { authHeaders, authScope, clearSession, getSession } from './session';
 
@@ -22,7 +23,7 @@ export async function authorizedFetch(path: string | URL, init: RequestInit = {}
     if (getSession()?.principal.credentialType === 'session' || new Headers({ ...authHeaders(), ...Object.fromEntries(new Headers(init.headers)) }).has('Authorization')) requireSecureController();
     const response = await fetch(url, { ...init, credentials: 'include', cache: 'no-store', redirect: 'error', referrerPolicy: 'no-referrer',
         headers: { ...authHeaders(), ...Object.fromEntries(new Headers(init.headers)) } });
-    if (response.status === 401 && scope === authScope()) { clearSession(); window.location.hash = '/login'; }
+    if (response.status === 401 && scope === authScope()) { clearSession(); navigation.replace('/login'); }
     if (response.status === 403 && scope === authScope()) window.dispatchEvent(new Event('management-permissions'));
     return response;
 }
