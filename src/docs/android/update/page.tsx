@@ -65,7 +65,7 @@ const UpdateCard: FC = () => {
             {busy && <p className="m-0 text-ui-info">{t(`update.stages.${data.stage}`)}{data.stage === 'DOWNLOADING' ? ` ${percent}%` : ''}</p>}
             {data.stage === 'WAITING_PERMISSION' && <p className="m-0 text-ui-warning">{data.reason ?? t('update.permission')}</p>}
             {data.stage === 'COMPLETED' && <p className="m-0 text-ui-success">{data.reason ?? t('update.stages.COMPLETED')}</p>}
-            {(data.error || actionError) && <p className="m-0 text-ui-danger">{actionError ?? data.error}</p>}
+            {(data.error || actionError) && <p className="m-0 break-all text-ui-danger">{actionError ?? data.error}</p>}
             <div className="flex flex-wrap gap-2">
                 <Button size="sm" variant="outline-primary" disabled={busy} onClick={() => act('check')}>{t('update.check')}</Button>
                 {data.release && <Button size="sm" variant="primary" disabled={busy} onClick={() => act('apply')}>{t('update.install')}</Button>}

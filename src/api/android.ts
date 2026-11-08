@@ -161,7 +161,11 @@ export const deleteRouteProfile = (name: string) => request<{ deleted: boolean }
 
 export async function getAndroidLogs(lines: number, signal?: AbortSignal): Promise<string> {
     const { response, text } = await send('GET', `logs?lines=${lines}`, undefined, signal);
-    if (!response.ok) throw new AndroidAPIError(response.status, 'logs_failed', text || `HTTP ${response.status}`);
+    if (!response.ok) {
+        let error: { code?: string; message?: string } | undefined;
+        try { error = (JSON.parse(text) as { error?: typeof error }).error; } catch { /* plain text */ }
+        throw new AndroidAPIError(response.status, error?.code ?? 'logs_failed', error?.message ?? (text || `HTTP ${response.status}`));
+    }
     return text;
 }
 
